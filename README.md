@@ -12,6 +12,16 @@ chloro is a minimal Rust code formatter.
 
 For when you want to format two source files in a consistent way, as fast as possible.
 
+## How it works
+
+Using [rowan][rowan] from the rust-analyzer project, which can give both green and red trees.
+The latter are notoriously expensive, but a formatter should only need the former.
+
+Proof of concept library/CLI to explore a fast and low memory code formatter [WIP],
+with use cases of code diffing in mind.
+
+[rowan]: https://github.com/rust-analyzer/rowan
+
 ## Installation
 
 Add chloro to your `Cargo.toml`:
