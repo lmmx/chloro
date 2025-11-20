@@ -1,0 +1,8 @@
+---
+source: chloro-core/tests/basic.rs
+expression: format_source(input)
+---
+pub struct Foo {
+    x: i32,
+    y: String,
+}

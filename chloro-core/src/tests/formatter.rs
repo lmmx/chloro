@@ -1,4 +1,4 @@
-use super::*;
+use crate::format_source;
 
 #[test]
 fn format_simple_function() {

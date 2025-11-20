@@ -1,4 +1,4 @@
-use rustfmt_minimal::format_source;
+use chloro_core::format_source;
 
 #[test]
 fn test_function_formatting() {

@@ -1,0 +1,7 @@
+---
+source: chloro-core/tests/basic.rs
+expression: format_source(input)
+---
+fn main() {
+    let x=1;
+}

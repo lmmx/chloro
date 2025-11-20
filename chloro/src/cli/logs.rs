@@ -9,6 +9,7 @@ macro_rules! vlog {
 }
 
 /// Helper macro for conditional verbose logging, expecting the last argument(s) in braces
+#[allow(dead_code)]
 #[macro_export]
 macro_rules! vlog_if {
     ($args:expr, $cond:expr, { $($arg:tt)* }) => {

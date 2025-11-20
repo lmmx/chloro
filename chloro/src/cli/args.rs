@@ -2,41 +2,17 @@ use facet::Facet;
 
 #[derive(Facet)]
 pub struct Args {
-    /// Path to source directory to process
-    #[facet(positional, default = "src".to_string())]
+    /// Path to source file or directory to format
+    #[facet(positional, default = ".".to_string())]
     pub source: String,
 
-    /// Path to docs directory (default: 'docs' or from Cargo.toml if set)
-    #[facet(named, short = 'd', long, default)]
-    pub docs: Option<String>,
+    /// Check mode: exit with error if files need formatting
+    #[facet(named, short = 'c', long, default)]
+    pub check: bool,
 
-    /// Swap doc comments for #[omnidoc] attributes (implies cut and add)
-    #[facet(named, short = 'm', long, default)]
-    pub migrate: bool,
-
-    /// Remove doc comments from source files
-    #[facet(named, rename = "cut", short = 'c', long, default)]
-    pub strip_docs: bool,
-
-    /// Add #[omnidoc] attributes to items
-    #[facet(named, rename = "add", short = 'a', long, default)]
-    pub annotate: bool,
-
-    /// Add #[omnidoc] attributes to items
-    #[facet(named, short = 't', long, default)]
-    pub touch: bool,
-
-    /// Restore inline doc comments from markdown files (opposite of migrate)
-    #[facet(named, short = 'r', long, default)]
-    pub restore: bool,
-
-    /// Preview changes without writing files
-    #[facet(named, short = 'n', long, default)]
-    pub dry_run: bool,
-
-    /// Use inline path parameters instead of Cargo.toml config
-    #[facet(named, long, default)]
-    pub inline_paths: bool,
+    /// Write formatted output back to files (default: print to stdout)
+    #[facet(named, short = 'w', long, default)]
+    pub write: bool,
 
     /// Show verbose output
     #[facet(named, short = 'v', long, default)]
@@ -50,38 +26,24 @@ pub struct Args {
 pub fn print_usage() {
     println!("Usage: chloro [OPTIONS] <SOURCE>");
     println!();
-    println!("Migrate Rust documentation to external markdown files.");
+    println!("A minimal Rust code formatter.");
     println!();
     println!("Arguments:");
-    println!("  <SOURCE>           Path to source directory to process (default: 'src')");
+    println!("  <SOURCE>           Path to file or directory to format (default: '.')");
     println!();
     println!("Options:");
-    println!(
-        "  -d, --docs <dir>   Path to docs directory (default: 'docs' or from Cargo.toml if set)"
-    );
-    println!("  -m, --migrate      Swap doc comments for #[omnidoc] (cut + add + touch)");
-    println!("  -c, --cut          Cut out doc comments from source files");
-    println!("  -a, --add          Rewrite code with #[omnidoc] attributes");
-    println!("  -t, --touch        Touch empty markdown files for any that don't exist");
-    println!("      --inline-paths Use inline path= parameters instead of Cargo.toml");
-    println!("  -r, --restore      Restore inline doc comments from markdown files");
-    println!("  -n, --dry-run      Preview changes without writing files");
+    println!("  -c, --check        Check if files need formatting (exit 1 if so)");
+    println!("  -w, --write        Write formatted output back to files");
     println!("  -v, --verbose      Show verbose output");
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");
-    println!("  # 'Sync' the docs dir with the docstrings in src/");
-    println!("  chloro");
+    println!("  # Format and print to stdout");
+    println!("  chloro src/lib.rs");
     println!();
-    println!("  # Preview a full migration without running it");
-    println!("  chloro --migrate --dry-run (or `-m -n` for short)");
+    println!("  # Check if files need formatting");
+    println!("  chloro --check src/");
     println!();
-    println!("  # Full migration: cut docs, add attributes, and touch missing files");
-    println!("  chloro --migrate (or `-m` for short, equal to `--cut --add --touch`)");
-    println!();
-    println!("  # Migrate with inline paths instead of Cargo.toml config");
-    println!("  chloro --migrate --inline-paths");
-    println!();
-    println!("  # Restore documentation from markdown back to source");
-    println!("  chloro --restore");
+    println!("  # Format files in-place");
+    println!("  chloro --write src/");
 }
