@@ -1,0 +1,55 @@
+[[bin]]
+name = "chloro"
+path = "src/cli.rs"
+required-features = ["cli"]
+
+[package]
+description = "A minimal Rust code formatter"
+documentation = "https://docs.rs/chloro"
+edition.workspace = true
+homepage = "https://github.com/lmmx/chloro"
+include = ["README.md", "src/**/*"]
+license.workspace = true
+name = "chloro"
+readme = "README.md"
+repository.workspace = true
+rust-version.workspace = true
+version = "0.1.0"
+
+[package.metadata.binstall]
+pkg-fmt = "tgz"
+pkg-url = "https://github.com/lmmx/chloro/releases/download/chloro-v{ version }/chloro-{ target }-v{ version }.tar.gz"
+
+[package.metadata.binstall.overrides.aarch64-pc-windows-msvc]
+pkg-fmt = "zip"
+pkg-url = "https://github.com/lmmx/chloro/releases/download/chloro-v{ version }/chloro-aarch64-pc-windows-msvc-v{ version }.zip"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+pkg-url = "https://github.com/lmmx/chloro/releases/download/chloro-v{ version }/chloro-x86_64-pc-windows-msvc-v{ version }.zip"
+
+[features]
+cli = ["dep:facet", "dep:facet-args"]
+default = []
+
+[dependencies]
+chloro-core = { workspace = true }
+
+# Optional dependencies for CLI
+facet = { optional = true, workspace = true }
+facet-args = { optional = true, workspace = true }
+
+[dev-dependencies]
+assert_cmd.workspace = true
+ctor = "0.6.1"
+insta.workspace = true
+tempfile.workspace = true
+
+# [lints.clippy]
+# all = "deny"
+# cargo = "deny"
+# pedantic = "deny"
+#
+# [lints.rust]
+# missing_docs = "deny"
+# unsafe_code = "forbid"

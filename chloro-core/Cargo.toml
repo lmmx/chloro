@@ -1,0 +1,25 @@
+[package]
+description = "Core functionality for chloro - a minimal Rust code formatter"
+documentation = "https://docs.rs/chloro-core"
+edition.workspace = true
+homepage = "https://github.com/lmmx/chloro"
+include = ["README.md", "src/**/*"]
+license.workspace = true
+name = "chloro-core"
+readme = "README.md"
+repository.workspace = true
+rust-version.workspace = true
+version = "0.5.0"
+
+[features]
+default = []
+
+[dependencies]
+ctor = "0.6.1"
+
+[dev-dependencies]
+braces = "0.2.6"
+ctor = "0.6.1"
+duct = "1.1.1"
+insta.workspace = true
+tempfile.workspace = true
