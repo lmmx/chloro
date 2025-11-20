@@ -16,6 +16,7 @@ default = []
 
 [dependencies]
 ctor = "0.6.1"
+ra_ap_syntax = "0.0.259"
 
 [dev-dependencies]
 braces = "0.2.6"

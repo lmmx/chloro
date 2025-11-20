@@ -1,5 +1,8 @@
 /// chloro-core: minimal Rust code formatter
 pub mod debug;
+pub mod formatter;
+
+pub use formatter::format_source;
 
 /// Macro for debug output in chloro.
 ///
@@ -13,3 +16,6 @@ macro_rules! chloro_debug {
         }
     };
 }
+
+#[cfg(test)]
+mod tests;
