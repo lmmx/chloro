@@ -1,9 +1,8 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
-    AstNode, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
+    AstNode, AstToken, SyntaxNode,
 };
 
-use super::format_preceding_docs_and_attrs;
 use crate::formatter::write_indent;
 
 pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -12,8 +11,12 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format preceding doc comments and attributes
-    format_preceding_docs_and_attrs(node, buf, indent);
+    // Format doc comments using the trait
+    for doc_comment in enum_.doc_comments() {
+        write_indent(buf, indent);
+        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push('\n');
+    }
 
     // Format attributes from the AST (like #[derive(...)])
     for attr in enum_.attrs() {
@@ -41,9 +44,14 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     if let Some(variants) = enum_.variant_list() {
         buf.push_str(" {\n");
+
         for variant in variants.variants() {
-            // Format variant doc comments and attributes
-            format_preceding_docs_and_attrs(variant.syntax(), buf, indent + 4);
+            // Format variant doc comments using the trait
+            for doc_comment in variant.doc_comments() {
+                write_indent(buf, indent + 4);
+                buf.push_str(doc_comment.syntax().text().to_string().trim());
+                buf.push('\n');
+            }
 
             // Format variant attributes
             for attr in variant.attrs() {
@@ -62,7 +70,11 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         buf.push_str(" {\n");
                         for field in fields.fields() {
                             // Format field doc comments
-                            format_preceding_docs_and_attrs(field.syntax(), buf, indent + 8);
+                            for doc_comment in field.doc_comments() {
+                                write_indent(buf, indent + 8);
+                                buf.push_str(doc_comment.syntax().text().to_string().trim());
+                                buf.push('\n');
+                            }
 
                             // Format field attributes
                             for attr in field.attrs() {

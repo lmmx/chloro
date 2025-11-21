@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3468 bytes
-Chloro size:   2474 bytes
+Chloro size:   2480 bytes
 Rustfmt size:  3468 bytes
 
 ✗ Outputs DIFFER
@@ -14,11 +14,8 @@ Rustfmt size:  3468 bytes
  //! asterism uses textum for generic line-based patching that works with any text format.
 -
  use serde::{Deserialize, Serialize};
-+
  use std::collections::HashMap;
-+
  use std::io;
-+
  use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
  
 -/// Serialisable collection of file modifications for atomic application.
@@ -57,8 +54,7 @@ Rustfmt size:  3468 bytes
 -    /// # Errors
 -    ///
 -    /// Returns an error if file operations, patching, or line number conversion fails.
--    pub fn apply(&mut self) -> io::Result<()> {
-+    pub fn apply() -> io::Result<()> {
+     pub fn apply(&mut self) -> io::Result<()> {
          let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
 -
          for edit in &self.edits {

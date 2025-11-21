@@ -38,8 +38,8 @@ pub fn is_enabled() -> bool {
     DEBUG_ENABLED.load(Ordering::Relaxed)
 }
 
-/// Automatically enable debug output for tests, respecting the env var.
-#[ctor::ctor]
-fn init_debug() {
-    init_from_env();
-}
+// /// Automatically enable debug output for tests, respecting the env var.
+// #[ctor::ctor]
+// fn init_debug() {
+//     init_from_env();
+// }

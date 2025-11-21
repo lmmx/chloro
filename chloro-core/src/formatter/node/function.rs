@@ -56,12 +56,24 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     // Parameters
     if let Some(params) = func.param_list() {
         buf.push('(');
-        for (idx, param) in params.params().enumerate() {
-            if idx > 0 {
+
+        let mut param_count = 0;
+
+        // Handle self parameter first
+        if let Some(self_param) = params.self_param() {
+            buf.push_str(&self_param.syntax().text().to_string());
+            param_count += 1;
+        }
+
+        // Then handle regular parameters
+        for param in params.params() {
+            if param_count > 0 {
                 buf.push_str(", ");
             }
             buf.push_str(&param.syntax().text().to_string());
+            param_count += 1;
         }
+
         buf.push(')');
     } else {
         buf.push_str("()");
