@@ -93,11 +93,13 @@ impl<'db> InferCtxt<'db> {
     }
 }
 
-fn to_trace(
-    cause: &ObligationCause,
-    a: Self,
-    b: Self,
-) -> TypeTrace<'db>;
+pub trait ToTrace<'db> {
+    fn to_trace(
+        cause: &ObligationCause,
+        a: Self,
+        b: Self,
+    ) -> TypeTrace<'db>;
+}
 
 impl<'a, 'db> At<'a, 'db> {
     /// Makes `actual <: expected`. For example, if type-checking a

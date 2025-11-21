@@ -15,18 +15,22 @@ use super::{
 /// Any implementation must make sure that each bound variable always
 /// gets mapped to the same result. `BoundVarReplacer` caches by using
 /// a `DelayedMap` which does not cache the first few types it encounters.
-fn replace_region(
-    &mut self,
-    br: BoundRegion,
-) -> Region<'db>;
-fn replace_ty(
-    &mut self,
-    bt: BoundTy,
-) -> Ty<'db>;
-fn replace_const(
-    &mut self,
-    bv: BoundConst,
-) -> Const<'db>;
+pub trait BoundVarReplacerDelegate<'db> {
+    fn replace_region(
+        &mut self,
+        br: BoundRegion,
+    ) -> Region<'db>;
+
+    fn replace_ty(
+        &mut self,
+        bt: BoundTy,
+    ) -> Ty<'db>;
+
+    fn replace_const(
+        &mut self,
+        bv: BoundConst,
+    ) -> Const<'db>;
+}
 
 /// A simple delegate taking 3 mutable functions. The used functions must
 /// always return the same result for each bound variable, no matter how

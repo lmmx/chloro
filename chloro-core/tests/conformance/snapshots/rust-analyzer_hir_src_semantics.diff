@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   101484 bytes
+Chloro size:   101525 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -1327,17 +1327,17 @@ Rustfmt size:  101650 bytes
  }
  
 -pub trait ToDef: AstNode + Clone {
--    type Def;
++pub trait ToDef {
+     type Def;
 -    fn to_def(sema: &SemanticsImpl<'_>, src: InFile<&Self>) -> Option<Self::Def>;
--}
-+type Def;
-+fn to_def(
-+    sema: &SemanticsImpl<'_>,
-+    src: InFile<&Self>,
-+) -> Option<Self::Def>;
++
++    fn to_def(
++        sema: &SemanticsImpl<'_>,
++        src: InFile<&Self>,
++    ) -> Option<Self::Def>;
+ }
  
  macro_rules! to_def_impls {
-     ($(($def:path, $ast:path, $meth:ident)),* ,) => {$(
          }
      )*}
  }

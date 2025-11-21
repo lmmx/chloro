@@ -81,19 +81,23 @@ impl<'db> Discr<'db> {
     }
 }
 
-fn to_ty<'db>(
-    &self,
-    interner: DbInterner<'db>,
-) -> Ty<'db>;
-fn initial_discriminant<'db>(
-    &self,
-    interner: DbInterner<'db>,
-) -> Discr<'db>;
-fn disr_incr<'db>(
-    &self,
-    interner: DbInterner<'db>,
-    val: Option<Discr<'db>>,
-) -> Option<Discr<'db>>;
+pub trait IntegerTypeExt {
+    fn to_ty<'db>(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Ty<'db>;
+
+    fn initial_discriminant<'db>(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Discr<'db>;
+
+    fn disr_incr<'db>(
+        &self,
+        interner: DbInterner<'db>,
+        val: Option<Discr<'db>>,
+    ) -> Option<Discr<'db>>;
+}
 
 impl IntegerTypeExt for IntegerType {
     fn to_ty<'db>(
@@ -129,26 +133,31 @@ impl IntegerTypeExt for IntegerType {
     }
 }
 
-fn to_ty<'db>(
-    &self,
-    interner: DbInterner<'db>,
-    signed: bool,
-) -> Ty<'db>;
-fn from_int_ty<C: HasDataLayout>(
-    cx: &C,
-    ity: IntTy,
-) -> Integer;
-fn from_uint_ty<C: HasDataLayout>(
-    cx: &C,
-    ity: UintTy,
-) -> Integer;
-fn repr_discr<'db>(
-    interner: DbInterner<'db>,
-    ty: Ty<'db>,
-    repr: &ReprOptions,
-    min: i128,
-    max: i128,
-) -> (Integer, bool);
+pub trait IntegerExt {
+    fn to_ty<'db>(
+        &self,
+        interner: DbInterner<'db>,
+        signed: bool,
+    ) -> Ty<'db>;
+
+    fn from_int_ty<C: HasDataLayout>(
+        cx: &C,
+        ity: IntTy,
+    ) -> Integer;
+
+    fn from_uint_ty<C: HasDataLayout>(
+        cx: &C,
+        ity: UintTy,
+    ) -> Integer;
+
+    fn repr_discr<'db>(
+        interner: DbInterner<'db>,
+        ty: Ty<'db>,
+        repr: &ReprOptions,
+        min: i128,
+        max: i128,
+    ) -> (Integer, bool);
+}
 
 impl IntegerExt for Integer {
     #[inline]
@@ -247,11 +256,14 @@ impl IntegerExt for Integer {
     }
 }
 
-fn to_ty<'db>(
-    &self,
-    interner: DbInterner<'db>,
-) -> Ty<'db>;
-fn from_float_ty(fty: FloatTy) -> Self;
+pub trait FloatExt {
+    fn to_ty<'db>(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Ty<'db>;
+
+    fn from_float_ty(fty: FloatTy) -> Self;
+}
 
 impl FloatExt for Float {
     #[inline]
@@ -279,14 +291,17 @@ impl FloatExt for Float {
     }
 }
 
-fn to_ty<'db>(
-    &self,
-    interner: DbInterner<'db>,
-) -> Ty<'db>;
-fn to_int_ty<'db>(
-    &self,
-    interner: DbInterner<'db>,
-) -> Ty<'db>;
+pub trait PrimitiveExt {
+    fn to_ty<'db>(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Ty<'db>;
+
+    fn to_int_ty<'db>(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Ty<'db>;
+}
 
 impl PrimitiveExt for Primitive {
     #[inline]
@@ -331,10 +346,12 @@ impl<'db> HasDataLayout for DbInterner<'db> {
     }
 }
 
-fn discr_ty(
-    &self,
-    interner: DbInterner<'db>,
-) -> Ty<'db>;
+pub trait CoroutineArgsExt<'db> {
+    fn discr_ty(
+        &self,
+        interner: DbInterner<'db>,
+    ) -> Ty<'db>;
+}
 
 impl<'db> CoroutineArgsExt<'db> for CoroutineArgs<DbInterner<'db>> {
     /// The type of the state discriminant used in the coroutine type.

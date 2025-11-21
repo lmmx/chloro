@@ -64,12 +64,15 @@ use crate::{
     utils::{self, detect_variant_from_bytes},
 };
 
-fn start_location_link(
-    &mut self,
-    _location: ModuleDefId,
-) {
-}
-fn end_location_link(&mut self) {
+pub trait HirWrite {
+    fn start_location_link(
+        &mut self,
+        _location: ModuleDefId,
+    ) {
+    }
+
+    fn end_location_link(&mut self) {
+    }
 }
 
 impl HirWrite for String {
@@ -196,29 +199,31 @@ impl<'db> HirFormatter<'_, 'db> {
     }
 }
 
-fn hir_fmt(
-    &self,
-    f: &mut HirFormatter<'_, 'db>,
-) -> Result<(), HirDisplayError>;
-/// Returns a `Display`able type that is human-readable.
-fn into_displayable<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    max_size: Option<usize>,
-    limited_size: Option<usize>,
-    omit_verbose_types: bool,
-    display_target: DisplayTarget,
-    display_kind: DisplayKind,
-    closure_style: ClosureStyle,
-    show_container_bounds: bool,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+pub trait HirDisplay<'db> {
+    fn hir_fmt(
+        &self,
+        f: &mut HirFormatter<'_, 'db>,
+    ) -> Result<(), HirDisplayError>;
+
+    /// Returns a `Display`able type that is human-readable.
+    fn into_displayable<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        max_size: Option<usize>,
+        limited_size: Option<usize>,
+        omit_verbose_types: bool,
+        display_target: DisplayTarget,
+        display_kind: DisplayKind,
+        closure_style: ClosureStyle,
+        show_container_bounds: bool,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    assert!(
+        assert!(
             !matches!(display_kind, DisplayKind::SourceCode { .. }),
             "HirDisplayWrapper cannot fail with DisplaySourceCodeError, use HirDisplay::hir_fmt directly instead"
         );
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size,
@@ -230,17 +235,18 @@ where
             show_container_bounds,
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
-}
-/// Returns a `Display`able type that is human-readable.
-/// Use this for showing types to the user (e.g. diagnostics)
-fn display<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    display_target: DisplayTarget,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+    }
+
+    /// Returns a `Display`able type that is human-readable.
+    /// Use this for showing types to the user (e.g. diagnostics)
+    fn display<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        display_target: DisplayTarget,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size: None,
@@ -252,18 +258,19 @@ where
             show_container_bounds: false,
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
-}
-/// Returns a `Display`able type that is human-readable and tries to be succinct.
-/// Use this for showing types to the user where space is constrained (e.g. doc popups)
-fn display_truncated<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    max_size: Option<usize>,
-    display_target: DisplayTarget,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+    }
+
+    /// Returns a `Display`able type that is human-readable and tries to be succinct.
+    /// Use this for showing types to the user where space is constrained (e.g. doc popups)
+    fn display_truncated<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        max_size: Option<usize>,
+        display_target: DisplayTarget,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size,
@@ -275,18 +282,19 @@ where
             show_container_bounds: false,
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
-}
-/// Returns a `Display`able type that is human-readable and tries to limit the number of items inside.
-/// Use this for showing definitions which may contain too many items, like `trait`, `struct`, `enum`
-fn display_limited<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    limited_size: Option<usize>,
-    display_target: DisplayTarget,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+    }
+
+    /// Returns a `Display`able type that is human-readable and tries to limit the number of items inside.
+    /// Use this for showing definitions which may contain too many items, like `trait`, `struct`, `enum`
+    fn display_limited<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        limited_size: Option<usize>,
+        display_target: DisplayTarget,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size: None,
@@ -298,19 +306,20 @@ where
             show_container_bounds: false,
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
-}
-/// Returns a String representation of `self` that can be inserted into the given module.
-/// Use this when generating code (e.g. assists)
-fn display_source_code<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    module_id: ModuleId,
-    allow_opaque: bool,
-) -> Result<String, DisplaySourceCodeError> {
-    let mut result = String::new();
-    let interner =
+    }
+
+    /// Returns a String representation of `self` that can be inserted into the given module.
+    /// Use this when generating code (e.g. assists)
+    fn display_source_code<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        module_id: ModuleId,
+        allow_opaque: bool,
+    ) -> Result<String, DisplaySourceCodeError> {
+        let mut result = String::new();
+        let interner =
             DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
-    match self.hir_fmt(&mut HirFormatter {
+        match self.hir_fmt(&mut HirFormatter {
             db,
             interner,
             fmt: &mut result,
@@ -330,17 +339,18 @@ fn display_source_code<'a>(
             Err(HirDisplayError::FmtError) => panic!("Writing to String can't fail!"),
             Err(HirDisplayError::DisplaySourceCodeError(e)) => return Err(e),
         };
-    Ok(result)
-}
-/// Returns a String representation of `self` for test purposes
-fn display_test<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    display_target: DisplayTarget,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+        Ok(result)
+    }
+
+    /// Returns a String representation of `self` for test purposes
+    fn display_test<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        display_target: DisplayTarget,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size: None,
@@ -352,18 +362,19 @@ where
             show_container_bounds: false,
             display_lifetimes: DisplayLifetime::Always,
         }
-}
-/// Returns a String representation of `self` that shows the constraint from
-/// the container for functions
-fn display_with_container_bounds<'a>(
-    &'a self,
-    db: &'db dyn HirDatabase,
-    show_container_bounds: bool,
-    display_target: DisplayTarget,
-) -> HirDisplayWrapper<'a, 'db, Self>
-where
+    }
+
+    /// Returns a String representation of `self` that shows the constraint from
+    /// the container for functions
+    fn display_with_container_bounds<'a>(
+        &'a self,
+        db: &'db dyn HirDatabase,
+        show_container_bounds: bool,
+        display_target: DisplayTarget,
+    ) -> HirDisplayWrapper<'a, 'db, Self>
+    where
         Self: Sized, {
-    HirDisplayWrapper {
+        HirDisplayWrapper {
             db,
             t: self,
             max_size: None,
@@ -375,6 +386,7 @@ where
             show_container_bounds,
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
+    }
 }
 
 impl<'db> HirFormatter<'_, 'db> {
@@ -2132,11 +2144,13 @@ pub fn write_visibility<'db>(
     }
 }
 
-fn hir_fmt(
-    &self,
-    f: &mut HirFormatter<'_, 'db>,
-    store: &ExpressionStore,
-) -> Result<(), HirDisplayError>;
+pub trait HirDisplayWithExpressionStore<'db> {
+    fn hir_fmt(
+        &self,
+        f: &mut HirFormatter<'_, 'db>,
+        store: &ExpressionStore,
+    ) -> Result<(), HirDisplayError>;
+}
 
 impl<'db, T: ?Sized + HirDisplayWithExpressionStore<'db>> HirDisplayWithExpressionStore<'db> for &'_ T {
     fn hir_fmt(

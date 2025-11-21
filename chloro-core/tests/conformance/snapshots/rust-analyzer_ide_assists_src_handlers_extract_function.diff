@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   141932 bytes
+Chloro size:   141975 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
@@ -476,13 +476,13 @@ Rustfmt size:  141954 bytes
      Some(false)
  }
  
--trait HasTokenAtOffset {
+ trait HasTokenAtOffset {
 -    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken>;
--}
-+fn token_at_offset(
-+    &self,
-+    offset: TextSize,
-+) -> TokenAtOffset<SyntaxToken>;
++    fn token_at_offset(
++        &self,
++        offset: TextSize,
++    ) -> TokenAtOffset<SyntaxToken>;
+ }
  
  impl HasTokenAtOffset for SyntaxNode {
 -    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken> {

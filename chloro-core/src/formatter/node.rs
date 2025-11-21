@@ -8,6 +8,7 @@ mod implblock;
 mod imports;
 mod module;
 mod structdef;
+mod traitdef;
 mod typealias;
 mod useitem;
 
@@ -24,6 +25,7 @@ pub use implblock::format_impl;
 pub use imports::sort_and_format_imports;
 pub use module::format_module;
 pub use structdef::format_struct;
+pub use traitdef::format_trait;
 pub use typealias::format_type_alias;
 pub use useitem::format_use;
 
@@ -149,6 +151,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::STRUCT => format_struct(node, buf, indent),
         SyntaxKind::ENUM => format_enum(node, buf, indent),
         SyntaxKind::IMPL => format_impl(node, buf, indent),
+        SyntaxKind::TRAIT => format_trait(node, buf, indent),
         SyntaxKind::USE => format_use(node, buf, indent),
         SyntaxKind::MODULE => format_module(node, buf, indent),
         SyntaxKind::TYPE_ALIAS => format_type_alias(node, buf, indent),

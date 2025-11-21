@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29592 bytes
+Chloro size:   29649 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -93,30 +93,12 @@ Rustfmt size:  29841 bytes
          let mut query_state = OriginalQueryValues::default();
          Canonicalizer::canonicalize(
              value,
- /// maximally general query. But if we are canonicalizing a *query
- /// response*, then we don't typically replace free regions, as they
- /// must have been introduced from other parts of the system.
--trait CanonicalizeMode {
--    fn canonicalize_free_region<'db>(
--        &self,
--        canonicalizer: &mut Canonicalizer<'_, 'db>,
--        r: Region<'db>,
--    ) -> Region<'db>;
--
--    fn any(&self) -> bool;
--
--    // Do we preserve universe of variables.
--    fn preserve_universes(&self) -> bool;
--}
-+fn canonicalize_free_region<'db>(
-+    &self,
-+    canonicalizer: &mut Canonicalizer<'_, 'db>,
-+    r: Region<'db>,
-+) -> Region<'db>;
-+fn any(&self) -> bool;
-+fn preserve_universes(&self) -> bool;
  
- struct CanonicalizeQueryResponse;
+     fn any(&self) -> bool;
+ 
+-    // Do we preserve universe of variables.
+     fn preserve_universes(&self) -> bool;
+ }
  
          mut r: Region<'db>,
      ) -> Region<'db> {

@@ -2010,6 +2010,9 @@ fn main() {
 impl T for Foo {
 }
 
+trait T
+where Self: Copy {
+}
 
 fn f() {
     unsafe { }
@@ -2290,6 +2293,8 @@ fn main() {
 
 type T = S<true>;
 
+trait X<U: Debug + Display> {
+}
 
 type T = StreamingIterator<Item<'a> = &'a T>;
 
@@ -2370,7 +2375,9 @@ fn foo() {
 fn foo<T: for<'a> [const]();
 type A = dyn Iterator<Item=Foo<'a>> + 'a;
 
-fn new() -> Self;
+trait T {
+    fn new() -> Self;
+}
 
 fn foo() {
     let _s = S { .. };
@@ -2826,8 +2833,17 @@ impl Foo {
 }
 
 const C: ;
-const C: i32;
+trait Foo {
+    const C: i32;
 
+
+
+
+
+}
+
+trait T {
+}
 
 fn foo() {
     ();
@@ -2920,7 +2936,9 @@ fn foo() {
     xs[..];
 }
 
-fn foo();
+trait T {
+    fn foo();
+}
 
 fn f() {
     let x: i32 = 92;
@@ -3512,10 +3530,12 @@ fn printf(
     format: *const i8,
     #[attr] ...,
 ) -> i32;
-fn bar(
-    #[attr] _: u64,
-    # [attr] mut x: i32,
-);
+trait Foo {
+    fn bar(
+        #[attr] _: u64,
+        # [attr] mut x: i32,
+    );
+}
 
 impl S {
     fn f(#[must_use] self) {
@@ -3615,8 +3635,14 @@ async unsafe fn foo() {
 const unsafe fn bar() {
 }
 
+trait T {
+}
 
+trait T {
+}
 
+trait T {
+}
 
 unsafe impl Foo {
 }
@@ -3874,18 +3900,24 @@ fn main() {
     const fn f() {}
 }
 
-fn f1((a, b): (usize, usize)) {
+trait T {
+    fn f1((a, b): (usize, usize)) {
+    }
+
+    fn f2(S { a, b }: S) {
+    }
+
+    fn f3(NewType(a): NewType) {
+    }
+
+    fn f4(&&a: &&usize) {
+    }
+
+    fn bar(
+        _: u64,
+        mut x: i32,
+    );
 }
-fn f2(S { a, b }: S) {
-}
-fn f3(NewType(a): NewType) {
-}
-fn f4(&&a: &&usize) {
-}
-fn bar(
-    _: u64,
-    mut x: i32,
-);
 
 fn f<T>()
 where T: Fn() -> u8 + Send {
@@ -3905,11 +3937,16 @@ impl U {
     }
 }
 
-type T = Bar;
-const f: u8 = 0;
-fn foo() {
-}
-unsafe fn bar() {
+trait T {
+    type T = Bar;
+
+    const f: u8 = 0;
+
+    fn foo() {
+    }
+
+    unsafe fn bar() {
+    }
 }
 
 impl T for Foo {
@@ -3969,9 +4006,13 @@ struct S14<T, U>;
 
 struct S15<'a, T, U>;
 
-fn handler();
+trait Runnable {
+    fn handler();
+}
 
-fn fn_with_expr(x: [i32; 1]);
+trait TraitWithExpr {
+    fn fn_with_expr(x: [i32; 1]);
+}
 
 fn foo() {
 }

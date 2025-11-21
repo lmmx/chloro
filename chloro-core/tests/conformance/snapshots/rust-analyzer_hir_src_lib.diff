@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   233850 bytes
+Chloro size:   234239 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -2235,16 +2235,15 @@ Rustfmt size:  227843 bytes
          match self {
              ItemInNs::Types(it) | ItemInNs::Values(it) => it.attrs(db),
              ItemInNs::Macros(it) => Some(it.attrs(db)),
-     TypeAlias(TypeAlias),
  }
  
--pub trait AsExternAssocItem {
+ pub trait AsExternAssocItem {
 -    fn as_extern_assoc_item(self, db: &dyn HirDatabase) -> Option<ExternAssocItem>;
--}
-+fn as_extern_assoc_item(
-+    self,
-+    db: &dyn HirDatabase,
-+) -> Option<ExternAssocItem>;
++    fn as_extern_assoc_item(
++        self,
++        db: &dyn HirDatabase,
++    ) -> Option<ExternAssocItem>;
+ }
  
  impl AsExternAssocItem for Function {
 -    fn as_extern_assoc_item(self, db: &dyn HirDatabase) -> Option<ExternAssocItem> {
@@ -2275,16 +2274,15 @@ Rustfmt size:  227843 bytes
          as_extern_assoc_item(db, ExternAssocItem::TypeAlias, self.id)
      }
  }
-     Impl(Impl),
  }
  
--pub trait AsAssocItem {
+ pub trait AsAssocItem {
 -    fn as_assoc_item(self, db: &dyn HirDatabase) -> Option<AssocItem>;
--}
-+fn as_assoc_item(
-+    self,
-+    db: &dyn HirDatabase,
-+) -> Option<AssocItem>;
++    fn as_assoc_item(
++        self,
++        db: &dyn HirDatabase,
++    ) -> Option<AssocItem>;
+ }
  
  impl AsAssocItem for Function {
 -    fn as_assoc_item(self, db: &dyn HirDatabase) -> Option<AssocItem> {
@@ -4026,36 +4024,33 @@ Rustfmt size:  227843 bytes
          match self {
              ScopeDef::ModuleDef(it) => it.module(db).map(|m| m.krate()),
              ScopeDef::GenericParam(it) => Some(it.module(db).krate()),
- #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
  pub struct OverloadedDeref(pub Mutability);
  
--pub trait HasVisibility {
+ pub trait HasVisibility {
 -    fn visibility(&self, db: &dyn HirDatabase) -> Visibility;
 -    fn is_visible_from(&self, db: &dyn HirDatabase, module: Module) -> bool {
--        let vis = self.visibility(db);
--        vis.is_visible_from(db, module.id)
--    }
-+fn visibility(
-+    &self,
-+    db: &dyn HirDatabase,
-+) -> Visibility;
-+fn is_visible_from(
-+    &self,
-+    db: &dyn HirDatabase,
-+    module: Module,
-+) -> bool {
-+    let vis = self.visibility(db);
-+    vis.is_visible_from(db, module.id)
- }
++    fn visibility(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> Visibility;
++
++    fn is_visible_from(
++        &self,
++        db: &dyn HirDatabase,
++        module: Module,
++    ) -> bool {
+         let vis = self.visibility(db);
+         vis.is_visible_from(db, module.id)
+     }
  
  /// Trait for obtaining the defining crate of an item.
--pub trait HasCrate {
+ pub trait HasCrate {
 -    fn krate(&self, db: &dyn HirDatabase) -> Crate;
--}
-+fn krate(
-+    &self,
-+    db: &dyn HirDatabase,
-+) -> Crate;
++    fn krate(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> Crate;
+ }
  
  impl<T: hir_def::HasModule> HasCrate for T {
 -    fn krate(&self, db: &dyn HirDatabase) -> Crate {
@@ -4227,13 +4222,13 @@ Rustfmt size:  227843 bytes
      }
  }
  
--pub trait HasContainer {
+ pub trait HasContainer {
 -    fn container(&self, db: &dyn HirDatabase) -> ItemContainer;
--}
-+fn container(
-+    &self,
-+    db: &dyn HirDatabase,
-+) -> ItemContainer;
++    fn container(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> ItemContainer;
+ }
  
  impl HasContainer for ExternCrateDecl {
 -    fn container(&self, db: &dyn HirDatabase) -> ItemContainer {
@@ -4345,22 +4340,21 @@ Rustfmt size:  227843 bytes
          ItemContainer::Module(Module { id: self.id.lookup(db).container })
      }
  }
-     }
  }
  
--pub trait MethodCandidateCallback {
+ pub trait MethodCandidateCallback {
 -    fn on_inherent_method(&mut self, f: Function) -> ControlFlow<()>;
--
++    fn on_inherent_method(
++        &mut self,
++        f: Function,
++    ) -> ControlFlow<()>;
+ 
 -    fn on_trait_method(&mut self, f: Function) -> ControlFlow<()>;
--}
-+fn on_inherent_method(
-+    &mut self,
-+    f: Function,
-+) -> ControlFlow<()>;
-+fn on_trait_method(
-+    &mut self,
-+    f: Function,
-+) -> ControlFlow<()>;
++    fn on_trait_method(
++        &mut self,
++        f: Function,
++    ) -> ControlFlow<()>;
+ }
  
  impl<F> MethodCandidateCallback for F
  where
@@ -4384,19 +4378,19 @@ Rustfmt size:  227843 bytes
      }
  }
  
--pub trait PathCandidateCallback {
+ pub trait PathCandidateCallback {
 -    fn on_inherent_item(&mut self, item: AssocItem) -> ControlFlow<()>;
--
++    fn on_inherent_item(
++        &mut self,
++        item: AssocItem,
++    ) -> ControlFlow<()>;
+ 
 -    fn on_trait_item(&mut self, item: AssocItem) -> ControlFlow<()>;
--}
-+fn on_inherent_item(
-+    &mut self,
-+    item: AssocItem,
-+) -> ControlFlow<()>;
-+fn on_trait_item(
-+    &mut self,
-+    item: AssocItem,
-+) -> ControlFlow<()>;
++    fn on_trait_item(
++        &mut self,
++        item: AssocItem,
++    ) -> ControlFlow<()>;
+ }
  
  impl<F> PathCandidateCallback for F
  where

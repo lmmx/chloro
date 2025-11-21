@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11761 bytes
+Chloro size:   11810 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -106,28 +106,6 @@ Rustfmt size:  13263 bytes
      if let Some(struct_ast) = ctx.find_node_at_offset::<ast::Struct>() {
          add_sort_field_list_assist(acc, struct_ast.field_list())
      } else if let Some(union_ast) = ctx.find_node_at_offset::<ast::Union>() {
-     }
- }
- 
--trait AddRewrite {
--    fn add_rewrite<T: AstNode>(
--        &mut self,
--        label: &str,
--        old: Vec<T>,
--        new: Vec<T>,
--        target: &SyntaxNode,
--    ) -> Option<()>;
--}
-+fn add_rewrite<T: AstNode>(
-+    &mut self,
-+    label: &str,
-+    old: Vec<T>,
-+    new: Vec<T>,
-+    target: &SyntaxNode,
-+) -> Option<()>;
- 
- impl AddRewrite for Assists {
-     fn add_rewrite<T: AstNode>(
          new: Vec<T>,
          target: &SyntaxNode,
      ) -> Option<()> {

@@ -17,12 +17,15 @@ use stdx::process::streaming_output;
 
 /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
 /// cargo output into a Rust data type
-fn from_line(
-    &self,
-    line: &str,
-    error: &mut String,
-) -> Option<T>;
-fn from_eof(&self) -> Option<T>;
+pub(crate) trait CargoParser<T> {
+    fn from_line(
+        &self,
+        line: &str,
+        error: &mut String,
+    ) -> Option<T>;
+
+    fn from_eof(&self) -> Option<T>;
+}
 
 struct CargoActor<T> {
     parser: Box<dyn CargoParser<T>>,

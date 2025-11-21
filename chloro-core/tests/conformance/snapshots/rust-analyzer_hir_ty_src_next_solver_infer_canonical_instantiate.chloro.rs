@@ -18,21 +18,24 @@ use crate::next_solver::{
     DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
 };
 
-fn instantiate(
-    &self,
-    tcx: DbInterner<'db>,
-    var_values: &CanonicalVarValues<'db>,
-) -> V
-where
+pub trait CanonicalExt<'db, V> {
+    fn instantiate(
+        &self,
+        tcx: DbInterner<'db>,
+        var_values: &CanonicalVarValues<'db>,
+    ) -> V
+    where
         V: TypeFoldable<DbInterner<'db>>;
-fn instantiate_projected<T>(
-    &self,
-    tcx: DbInterner<'db>,
-    var_values: &CanonicalVarValues<'db>,
-    projection_fn: impl FnOnce(&V) -> T,
-) -> T
-where
+
+    fn instantiate_projected<T>(
+        &self,
+        tcx: DbInterner<'db>,
+        var_values: &CanonicalVarValues<'db>,
+        projection_fn: impl FnOnce(&V) -> T,
+    ) -> T
+    where
         T: TypeFoldable<DbInterner<'db>>;
+}
 
 /// FIXME(-Znext-solver): This or public because it is shared with the
 /// new trait solver implementation. We should deduplicate canonicalization.

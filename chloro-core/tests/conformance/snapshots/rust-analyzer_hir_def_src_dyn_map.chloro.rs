@@ -138,18 +138,24 @@ impl<K, V, P> Clone for Key<K, V, P> {
     }
 }
 
-type K;
-type V;
-fn insert(
-    map: &mut DynMap,
-    key: Self::K,
-    value: Self::V,
-);
-fn get<'a>(
-    map: &'a DynMap,
-    key: &Self::K,
-) -> Option<&'a Self::V>;
-fn is_empty(map: &DynMap) -> bool;
+pub trait Policy {
+    type K;
+
+    type V;
+
+    fn insert(
+        map: &mut DynMap,
+        key: Self::K,
+        value: Self::V,
+    );
+
+    fn get<'a>(
+        map: &'a DynMap,
+        key: &Self::K,
+    ) -> Option<&'a Self::V>;
+
+    fn is_empty(map: &DynMap) -> bool;
+}
 
 impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
     type K = K;

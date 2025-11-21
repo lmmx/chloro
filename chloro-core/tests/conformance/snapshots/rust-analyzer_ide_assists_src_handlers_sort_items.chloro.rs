@@ -37,13 +37,15 @@ pub(crate) fn sort_items(
     }
 }
 
-fn add_rewrite<T: AstNode>(
-    &mut self,
-    label: &str,
-    old: Vec<T>,
-    new: Vec<T>,
-    target: &SyntaxNode,
-) -> Option<()>;
+trait AddRewrite {
+    fn add_rewrite<T: AstNode>(
+        &mut self,
+        label: &str,
+        old: Vec<T>,
+        new: Vec<T>,
+        target: &SyntaxNode,
+    ) -> Option<()>;
+}
 
 impl AddRewrite for Assists {
     fn add_rewrite<T: AstNode>(

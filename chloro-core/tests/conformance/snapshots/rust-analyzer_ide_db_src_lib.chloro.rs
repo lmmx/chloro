@@ -277,11 +277,13 @@ impl RootDatabase {
 }
 
 #[query_group::query_group]
-#[salsa::invoke_interned(line_index)]
-fn line_index(
-    &self,
-    file_id: FileId,
-) -> Arc<LineIndex>;
+pub trait LineIndexDatabase {
+    #[salsa::invoke_interned(line_index)]
+    fn line_index(
+        &self,
+        file_id: FileId,
+    ) -> Arc<LineIndex>;
+}
 
 fn line_index(
     db: &dyn LineIndexDatabase,

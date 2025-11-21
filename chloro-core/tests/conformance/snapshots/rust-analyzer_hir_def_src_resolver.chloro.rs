@@ -1302,11 +1302,13 @@ impl ScopeNames {
     }
 }
 
-/// Builds a resolver for type references inside this def.
-fn resolver(
-    self,
-    db: &dyn DefDatabase,
-) -> Resolver<'_>;
+pub trait HasResolver {
+    /// Builds a resolver for type references inside this def.
+    fn resolver(
+        self,
+        db: &dyn DefDatabase,
+    ) -> Resolver<'_>;
+}
 
 impl HasResolver for ModuleId {
     fn resolver(

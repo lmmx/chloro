@@ -277,10 +277,12 @@ impl<FileKind, L, R> InFileWrapper<FileKind, Either<L, R>> {
     }
 }
 
-fn file_syntax(
-    self,
-    db: &dyn db::ExpandDatabase,
-) -> SyntaxNode;
+trait FileIdToSyntax {
+    fn file_syntax(
+        self,
+        db: &dyn db::ExpandDatabase,
+    ) -> SyntaxNode;
+}
 
 impl FileIdToSyntax for EditionedFileId {
     fn file_syntax(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   40461 bytes
+Chloro size:   40474 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -114,20 +114,35 @@ Rustfmt size:  40650 bytes
      pub type Delimiter = ::tt::Delimiter<Span>;
      pub type DelimSpan = ::tt::DelimSpan<Span>;
      pub type Subtree = ::tt::Subtree<Span>;
+     };
  }
  
- // ideally these would be defined in base-db, but the orphan rule doesn't let us
--pub trait Intern {
+-// ideally these would be defined in base-db, but the orphan rule doesn't let us
+ pub trait Intern {
 -    type Database: ?Sized;
--    type ID;
++    type Database;
++
+     type ID;
 -    fn intern(self, db: &Self::Database) -> Self::ID;
--}
--
--pub trait Lookup {
++
++    fn intern(
++        self,
++        db: &Self::Database,
++    ) -> Self::ID;
+ }
+ 
+ pub trait Lookup {
 -    type Database: ?Sized;
--    type Data;
++    type Database;
++
+     type Data;
 -    fn lookup(&self, db: &Self::Database) -> Self::Data;
--}
++
++    fn lookup(
++        &self,
++        db: &Self::Database,
++    ) -> Self::Data;
+ }
 -
 -impl_intern_lookup!(
 -    ExpandDatabase,
@@ -136,19 +151,7 @@ Rustfmt size:  40650 bytes
 -    intern_macro_call,
 -    lookup_intern_macro_call
 -);
-+type Database;
-+type ID;
-+fn intern(
-+    self,
-+    db: &Self::Database,
-+) -> Self::ID;
- 
-+type Database;
-+type Data;
-+fn lookup(
-+    &self,
-+    db: &Self::Database,
-+) -> Self::Data;
+-
  pub type ExpandResult<T> = ValueResult<T, ExpandError>;
  
  #[derive(Debug, PartialEq, Eq, Clone, Hash)]

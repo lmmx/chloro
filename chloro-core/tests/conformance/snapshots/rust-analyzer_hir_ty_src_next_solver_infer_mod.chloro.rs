@@ -329,7 +329,9 @@ pub struct InferCtxtBuilder<'db> {
     interner: DbInterner<'db>,
 }
 
-fn infer_ctxt(self) -> InferCtxtBuilder<'db>;
+pub trait DbInternerInferExt<'db> {
+    fn infer_ctxt(self) -> InferCtxtBuilder<'db>;
+}
 
 impl<'db> DbInternerInferExt<'db> for DbInterner<'db> {
     fn infer_ctxt(self) -> InferCtxtBuilder<'db> {

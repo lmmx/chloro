@@ -1251,10 +1251,12 @@ fn expr_require_exclusive_access(
     Some(false)
 }
 
-fn token_at_offset(
-    &self,
-    offset: TextSize,
-) -> TokenAtOffset<SyntaxToken>;
+trait HasTokenAtOffset {
+    fn token_at_offset(
+        &self,
+        offset: TextSize,
+    ) -> TokenAtOffset<SyntaxToken>;
+}
 
 impl HasTokenAtOffset for SyntaxNode {
     fn token_at_offset(

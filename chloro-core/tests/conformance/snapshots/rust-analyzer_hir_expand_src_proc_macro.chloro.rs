@@ -20,22 +20,25 @@ pub enum ProcMacroKind {
 }
 
 /// A proc-macro expander implementation.
-/// Run the expander with the given input subtree, optional attribute input subtree (for
-/// [`ProcMacroKind::Attr`]), environment variables, and span information.
-fn expand(
-    &self,
-    subtree: &tt::TopSubtree,
-    attrs: Option<&tt::TopSubtree>,
-    env: &Env,
-    def_site: Span,
-    call_site: Span,
-    mixed_site: Span,
-    current_dir: String,
-) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
-fn eq_dyn(
-    &self,
-    other: &dyn ProcMacroExpander,
-) -> bool;
+pub trait ProcMacroExpander {
+    /// Run the expander with the given input subtree, optional attribute input subtree (for
+    /// [`ProcMacroKind::Attr`]), environment variables, and span information.
+    fn expand(
+        &self,
+        subtree: &tt::TopSubtree,
+        attrs: Option<&tt::TopSubtree>,
+        env: &Env,
+        def_site: Span,
+        call_site: Span,
+        mixed_site: Span,
+        current_dir: String,
+    ) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
+
+    fn eq_dyn(
+        &self,
+        other: &dyn ProcMacroExpander,
+    ) -> bool;
+}
 
 impl PartialEq for dyn ProcMacroExpander {
     fn eq(

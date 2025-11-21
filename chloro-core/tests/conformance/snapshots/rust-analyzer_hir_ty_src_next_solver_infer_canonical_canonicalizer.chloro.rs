@@ -156,13 +156,17 @@ impl<'db> InferCtxt<'db> {
 /// maximally general query. But if we are canonicalizing a *query
 /// response*, then we don't typically replace free regions, as they
 /// must have been introduced from other parts of the system.
-fn canonicalize_free_region<'db>(
-    &self,
-    canonicalizer: &mut Canonicalizer<'_, 'db>,
-    r: Region<'db>,
-) -> Region<'db>;
-fn any(&self) -> bool;
-fn preserve_universes(&self) -> bool;
+trait CanonicalizeMode {
+    fn canonicalize_free_region<'db>(
+        &self,
+        canonicalizer: &mut Canonicalizer<'_, 'db>,
+        r: Region<'db>,
+    ) -> Region<'db>;
+
+    fn any(&self) -> bool;
+
+    fn preserve_universes(&self) -> bool;
+}
 
 struct CanonicalizeQueryResponse;
 

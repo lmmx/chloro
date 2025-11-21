@@ -22,12 +22,15 @@ use crate::{
     Struct, Trait, Type, TypeAlias, TypeParam, Union, Variant, VariantDef,
 };
 
-fn attrs(
-    self,
-    db: &dyn HirDatabase,
-) -> AttrsWithOwner;
-#[doc(hidden)]
-fn attr_id(self) -> AttrDefId;
+pub trait HasAttrs {
+    fn attrs(
+        self,
+        db: &dyn HirDatabase,
+    ) -> AttrsWithOwner;
+
+    #[doc(hidden)]
+    fn attr_id(self) -> AttrDefId;
+}
 
 macro_rules! impl_has_attrs {
     ($(($def:ident, $def_id:ident),)*) => {$(

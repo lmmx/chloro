@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   6012 bytes
+Chloro size:   6100 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -21,42 +21,26 @@ Rustfmt size:  6179 bytes
      BoundVarIndexKind, GenericArgKind, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable,
      TypeVisitableExt,
 +    inherent::{GenericArg as _, IntoKind, SliceLike},
- };
- 
--pub trait CanonicalExt<'db, V> {
--    fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
--    where
++};
++
 +use crate::next_solver::{
 +    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
 +    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
-+};
-+
-+fn instantiate(
-+    &self,
-+    tcx: DbInterner<'db>,
-+    var_values: &CanonicalVarValues<'db>,
-+) -> V
-+where
-         V: TypeFoldable<DbInterner<'db>>;
--    fn instantiate_projected<T>(
--        &self,
--        tcx: DbInterner<'db>,
--        var_values: &CanonicalVarValues<'db>,
--        projection_fn: impl FnOnce(&V) -> T,
--    ) -> T
--    where
-+fn instantiate_projected<T>(
-+    &self,
-+    tcx: DbInterner<'db>,
-+    var_values: &CanonicalVarValues<'db>,
-+    projection_fn: impl FnOnce(&V) -> T,
-+) -> T
-+where
-         T: TypeFoldable<DbInterner<'db>>;
--}
+ };
  
- /// FIXME(-Znext-solver): This or public because it is shared with the
- /// new trait solver implementation. We should deduplicate canonicalization.
+ pub trait CanonicalExt<'db, V> {
+-    fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
++    fn instantiate(
++        &self,
++        tcx: DbInterner<'db>,
++        var_values: &CanonicalVarValues<'db>,
++    ) -> V
+     where
+         V: TypeFoldable<DbInterner<'db>>;
++
+     fn instantiate_projected<T>(
+         &self,
+         tcx: DbInterner<'db>,
  impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
      /// Instantiate the wrapped value, replacing each canonical value
      /// with the value given in `var_values`.

@@ -3821,10 +3821,12 @@ pub enum ExternAssocItem {
     TypeAlias(TypeAlias),
 }
 
-fn as_extern_assoc_item(
-    self,
-    db: &dyn HirDatabase,
-) -> Option<ExternAssocItem>;
+pub trait AsExternAssocItem {
+    fn as_extern_assoc_item(
+        self,
+        db: &dyn HirDatabase,
+    ) -> Option<ExternAssocItem>;
+}
 
 impl AsExternAssocItem for Function {
     fn as_extern_assoc_item(
@@ -3868,10 +3870,12 @@ pub enum AssocItemContainer {
     Impl(Impl),
 }
 
-fn as_assoc_item(
-    self,
-    db: &dyn HirDatabase,
-) -> Option<AssocItem>;
+pub trait AsAssocItem {
+    fn as_assoc_item(
+        self,
+        db: &dyn HirDatabase,
+    ) -> Option<AssocItem>;
+}
 
 impl AsAssocItem for Function {
     fn as_assoc_item(
@@ -7025,24 +7029,29 @@ pub enum AutoBorrow {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OverloadedDeref(pub Mutability);
 
-fn visibility(
-    &self,
-    db: &dyn HirDatabase,
-) -> Visibility;
-fn is_visible_from(
-    &self,
-    db: &dyn HirDatabase,
-    module: Module,
-) -> bool {
-    let vis = self.visibility(db);
-    vis.is_visible_from(db, module.id)
+pub trait HasVisibility {
+    fn visibility(
+        &self,
+        db: &dyn HirDatabase,
+    ) -> Visibility;
+
+    fn is_visible_from(
+        &self,
+        db: &dyn HirDatabase,
+        module: Module,
+    ) -> bool {
+        let vis = self.visibility(db);
+        vis.is_visible_from(db, module.id)
+    }
 }
 
 /// Trait for obtaining the defining crate of an item.
-fn krate(
-    &self,
-    db: &dyn HirDatabase,
-) -> Crate;
+pub trait HasCrate {
+    fn krate(
+        &self,
+        db: &dyn HirDatabase,
+    ) -> Crate;
+}
 
 impl<T: hir_def::HasModule> HasCrate for T {
     fn krate(
@@ -7197,10 +7206,12 @@ impl HasCrate for Module {
     }
 }
 
-fn container(
-    &self,
-    db: &dyn HirDatabase,
-) -> ItemContainer;
+pub trait HasContainer {
+    fn container(
+        &self,
+        db: &dyn HirDatabase,
+    ) -> ItemContainer;
+}
 
 impl HasContainer for ExternCrateDecl {
     fn container(
@@ -7347,14 +7358,17 @@ fn push_ty_diagnostics<'db>(
     }
 }
 
-fn on_inherent_method(
-    &mut self,
-    f: Function,
-) -> ControlFlow<()>;
-fn on_trait_method(
-    &mut self,
-    f: Function,
-) -> ControlFlow<()>;
+pub trait MethodCandidateCallback {
+    fn on_inherent_method(
+        &mut self,
+        f: Function,
+    ) -> ControlFlow<()>;
+
+    fn on_trait_method(
+        &mut self,
+        f: Function,
+    ) -> ControlFlow<()>;
+}
 
 impl<F> MethodCandidateCallback for F
 where
@@ -7374,14 +7388,17 @@ where
     }
 }
 
-fn on_inherent_item(
-    &mut self,
-    item: AssocItem,
-) -> ControlFlow<()>;
-fn on_trait_item(
-    &mut self,
-    item: AssocItem,
-) -> ControlFlow<()>;
+pub trait PathCandidateCallback {
+    fn on_inherent_item(
+        &mut self,
+        item: AssocItem,
+    ) -> ControlFlow<()>;
+
+    fn on_trait_item(
+        &mut self,
+        item: AssocItem,
+    ) -> ControlFlow<()>;
+}
 
 impl<F> PathCandidateCallback for F
 where
