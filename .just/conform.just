@@ -91,3 +91,40 @@ conf-impact:
                 $1, $2, $3, $4, $5, $6, $7
         }'
     }
+
+conf-md:
+    #!/usr/bin/env bash
+    output=$(just conf-plain)
+
+    # Extract the summary line
+    summary=$(echo "$output" | head -1)
+    added=$(echo "$summary" | grep -oP '\+\K[0-9,]+')
+    removed=$(echo "$summary" | grep -oP '(?<=-)[0-9,]+' | head -1)
+
+    echo "**Summary:** +$added / -$removed"
+    echo
+
+    # Extract and format top added lines
+    echo "### Top 5 Added Lines"
+    echo
+    echo "$output" | awk '/^Top 5 added lines:/,/^Top 5 removed lines:/' | \
+        grep -E '^\s*[0-9]' | head -5 | nl -nln | \
+        awk '{count=$2; $1=""; $2=""; line=substr($0,3); printf "%d. (%s) `%s`\n", NR, count, line}'
+    echo
+
+    # Extract and format top removed lines
+    echo "### Top 5 Removed Lines"
+    echo
+    echo "$output" | awk '/^Top 5 removed lines:/,/^Top 20 most impacted/' | \
+        grep -E '^\s*[0-9]' | head -5 | nl -nln | \
+        awk '{count=$2; $1=""; $2=""; line=substr($0,3); printf "%d. (%s) `%s`\n", NR, count, line}'
+    echo
+
+    # Extract and format the impact table
+    echo "### Top 20 Most Impacted Files"
+    echo
+    echo "| Rank | Size Rank | Diff Rank | Impact | Added | Removed | File |"
+    echo "|------|-----------|-----------|--------|-------|---------|------|"
+    echo "$output" | awk '/^────────────────────────────────────────────────────────────────────────────$/,0' | \
+        tail -n +2 | grep -E '^\s*[0-9]' | head -20 | \
+        awk '{printf "| %s | %s | %s | %s | %s | %s | `%s` |\n", $1, $2, $3, $4, $5, $7, $8}'
