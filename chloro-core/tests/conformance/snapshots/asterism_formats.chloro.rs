@@ -10,8 +10,8 @@ pub mod markdown;
 ///
 /// Enables support for markdown and other structured formats by providing format-specific parsing
 /// queries (tree-sitter uses SCM lisp queries).
-fn file_extension() -> &'static str;
-fn language() -> tree_sitter::Language;
-fn section_query() -> &str;
-fn title_query() -> &str;
-fn format_section_display(level: usize, title: &str) -> ratatui::text::Line<'static>;
+fn file_extension(&self) -> &'static str;
+fn language(&self) -> tree_sitter::Language;
+fn section_query(&self) -> &str;
+fn title_query(&self) -> &str;
+fn format_section_display(&self, level: usize, title: &str) -> ratatui::text::Line<'static>;

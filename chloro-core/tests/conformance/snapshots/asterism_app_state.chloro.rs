@@ -182,7 +182,7 @@ impl AppState {
         }
         nodes
     }
-    pub fn rebuild_tree() {
+    pub fn rebuild_tree(&mut self) {
         self.tree_nodes = Self::build_tree(&self.files, &self.sections);
         // Try to maintain current position by finding same section
         if let Some(current_section_idx) = self.get_current_section_index() {
@@ -196,7 +196,7 @@ impl AppState {
         }
     }
     #[must_use]
-    pub fn get_current_section_index() -> Option<usize> {
+    pub fn get_current_section_index(&self) -> Option<usize> {
         if self.current_node_index < self.tree_nodes.len() {
             self.tree_nodes[self.current_node_index].section_index
         } else {
@@ -204,11 +204,11 @@ impl AppState {
         }
     }
     #[must_use]
-    pub fn get_current_section() -> Option<&Section> {
+    pub fn get_current_section(&self) -> Option<&Section> {
         self.get_current_section_index()
             .and_then(|idx| self.sections.get(idx))
     }
-    fn rebuild_file_offsets() {
+    fn rebuild_file_offsets(&mut self) {
         self.file_offsets.clear();
         if let Some(section_idx) = self.get_current_section_index() {
             if let Some(section) = self.sections.get(section_idx) {
@@ -224,7 +224,7 @@ impl AppState {
         }
     }
     #[must_use]
-    pub fn cumulative_offset(index: usize) -> usize {
+    pub fn cumulative_offset(&self, index: usize) -> usize {
         let section = &self.sections[index];
         let target_file = &section.file_path;
         let target_line = section.line_start;
@@ -238,7 +238,7 @@ impl AppState {
             0
         }
     }
-    pub fn load_docs(plan: EditPlan) {
+    pub fn load_docs(&mut self, plan: EditPlan) {
         let mut doc_map: HashMap<String, Vec<String>> = HashMap::new();
         for edit in plan.edits {
             let key = format!(
@@ -269,7 +269,7 @@ impl AppState {
         }
     }
     #[must_use]
-    pub fn generate_edit_plan() -> EditPlan {
+    pub fn generate_edit_plan(&self) -> EditPlan {
         let mut edits = Vec::new();
         for section in &self.sections {
             if let Some(ref doc_lines) = section.section_content {
@@ -288,7 +288,7 @@ impl AppState {
         }
         EditPlan { edits }
     }
-    pub fn enter_detail_view() {
+    pub fn enter_detail_view(&mut self) {
         let Some(section_idx) = self.get_current_section_index() else {
             return;
         };
@@ -340,7 +340,7 @@ impl AppState {
         }
         self.current_view = View::Detail;
     }
-    pub fn exit_detail_view(save: bool) {
+    pub fn exit_detail_view(&mut self, save: bool) {
         if save {
             if let Some(ref editor_state) = self.editor_state {
                 if let Some(section_idx) = self.get_current_section_index() {
@@ -356,7 +356,7 @@ impl AppState {
         self.editor_state = None;
         self.current_view = View::List;
     }
-    pub fn save_current() -> io::Result<()> {
+    pub fn save_current(&mut self) -> io::Result<()> {
         let editor_lines = if let Some(ref editor_state) = self.editor_state {
             editor_state
                 .lines
@@ -424,18 +424,18 @@ impl AppState {
         Ok(())
     }
     #[must_use]
-    pub fn find_next_node() -> Option<usize> {
+    pub fn find_next_node(&self) -> Option<usize> {
         ((self.current_node_index + 1)..self.tree_nodes.len())
             .find(|&i| self.tree_nodes[i].navigable)
     }
     #[must_use]
-    pub fn find_prev_node() -> Option<usize> {
+    pub fn find_prev_node(&self) -> Option<usize> {
         (0..self.current_node_index)
             .rev()
             .find(|&i| self.tree_nodes[i].navigable)
     }
     #[must_use]
-    pub fn navigate_to_parent() -> Option<usize> {
+    pub fn navigate_to_parent(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let parent_section_idx = self.sections[section_idx].parent_index?;
         // Find tree node with this section index
@@ -444,7 +444,7 @@ impl AppState {
             .position(|n| n.section_index == Some(parent_section_idx))
     }
     #[must_use]
-    pub fn navigate_to_first_child() -> Option<usize> {
+    pub fn navigate_to_first_child(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let first_child_idx = self.sections[section_idx].children_indices.first()?;
         self.tree_nodes
@@ -452,7 +452,7 @@ impl AppState {
             .position(|n| n.section_index == Some(*first_child_idx))
     }
     #[must_use]
-    pub fn navigate_to_next_descendant() -> Option<usize> {
+    pub fn navigate_to_next_descendant(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         // First try immediate children
         if let Some(first_child) = self.sections[section_idx].children_indices.first() {
@@ -473,7 +473,7 @@ impl AppState {
         None
     }
     #[must_use]
-    pub fn navigate_to_next_sibling() -> Option<usize> {
+    pub fn navigate_to_next_sibling(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let current_level = self.sections[section_idx].level;
         for i in (section_idx + 1)..self.sections.len() {
@@ -490,7 +490,7 @@ impl AppState {
         None
     }
     #[must_use]
-    pub fn navigate_to_prev_sibling() -> Option<usize> {
+    pub fn navigate_to_prev_sibling(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let current_level = self.sections[section_idx].level;
         for i in (0..section_idx).rev() {
@@ -507,15 +507,15 @@ impl AppState {
         None
     }
     #[must_use]
-    pub fn navigate_to_first() -> Option<usize> {
+    pub fn navigate_to_first(&self) -> Option<usize> {
         self.tree_nodes.iter().position(|n| n.navigable)
     }
     #[must_use]
-    pub fn navigate_to_last() -> Option<usize> {
+    pub fn navigate_to_last(&self) -> Option<usize> {
         self.tree_nodes.iter().rposition(|n| n.navigable)
     }
     #[must_use]
-    pub fn navigate_to_first_at_level() -> Option<usize> {
+    pub fn navigate_to_first_at_level(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let current_level = self.sections[section_idx].level;
         for i in 0..self.sections.len() {
@@ -529,7 +529,7 @@ impl AppState {
         None
     }
     #[must_use]
-    pub fn navigate_to_last_at_level() -> Option<usize> {
+    pub fn navigate_to_last_at_level(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let current_level = self.sections[section_idx].level;
         for i in (0..self.sections.len()).rev() {
@@ -543,7 +543,7 @@ impl AppState {
         None
     }
     #[must_use]
-    pub fn get_indent() -> usize {
+    pub fn get_indent(&self) -> usize {
         if let Some(section) = self.get_current_section() {
             section.level * 2
         } else {
@@ -551,25 +551,25 @@ impl AppState {
         }
     }
     #[must_use]
-    pub fn get_max_line_width() -> usize {
+    pub fn get_max_line_width(&self) -> usize {
         let indent = self.get_indent();
         self.wrap_width.saturating_sub(indent)
     }
     // --- Section List Movement ---
-    pub fn start_move() {
+    pub fn start_move(&mut self) {
         if let Some(section_idx) = self.get_current_section_index() {
             self.moving_section_index = Some(section_idx);
             self.move_state = MoveState::Selected;
         }
     }
-    pub fn cancel_move() {
+    pub fn cancel_move(&mut self) {
         self.moving_section_index = None;
         self.move_state = MoveState::None;
     }
-    pub fn mark_moved() {
+    pub fn mark_moved(&mut self) {
         self.move_state = MoveState::Moved;
     }
-    pub fn move_section_up() -> bool {
+    pub fn move_section_up(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             if moving_idx > 0 {
                 self.sections.swap(moving_idx, moving_idx - 1);
@@ -591,7 +591,7 @@ impl AppState {
         }
         false
     }
-    pub fn move_section_down() -> bool {
+    pub fn move_section_down(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             if moving_idx < self.sections.len() - 1 {
                 self.sections.swap(moving_idx, moving_idx + 1);
@@ -612,7 +612,7 @@ impl AppState {
         }
         false
     }
-    pub fn move_section_to_top() -> bool {
+    pub fn move_section_to_top(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             if moving_idx > 0 {
                 let section = self.sections.remove(moving_idx);
@@ -634,7 +634,7 @@ impl AppState {
         }
         false
     }
-    pub fn move_section_to_bottom() -> bool {
+    pub fn move_section_to_bottom(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             let last_idx = self.sections.len() - 1;
             if moving_idx < last_idx {
@@ -657,7 +657,7 @@ impl AppState {
         }
         false
     }
-    pub fn move_section_in() -> bool {
+    pub fn move_section_in(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             if self.sections[moving_idx].level > 1 {
                 self.sections[moving_idx].level -= 1;
@@ -668,7 +668,7 @@ impl AppState {
         }
         false
     }
-    pub fn move_section_out() -> bool {
+    pub fn move_section_out(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
             if self.sections[moving_idx].level < 6 {
                 self.sections[moving_idx].level += 1;
@@ -679,7 +679,7 @@ impl AppState {
         }
         false
     }
-    pub fn save_section_reorder() -> io::Result<()> {
+    pub fn save_section_reorder(&mut self) -> io::Result<()> {
         if self.move_state != MoveState::Moved {
             return Ok(());
         }

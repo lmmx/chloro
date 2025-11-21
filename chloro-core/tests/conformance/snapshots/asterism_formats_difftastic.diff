@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16579 bytes
-Chloro size:   14873 bytes
+Chloro size:   14900 bytes
 Rustfmt size:  16579 bytes
 
 ✗ Outputs DIFFER
@@ -71,33 +71,27 @@ Rustfmt size:  16579 bytes
  pub struct DifftasticFormat;
  
 -impl Format for DifftasticFormat {
--    fn file_extension(&self) -> &'static str {
 +impl DifftasticFormat {
-+    fn file_extension() -> &'static str {
+     fn file_extension(&self) -> &'static str {
          "diff"
      }
 -
--    fn language(&self) -> tree_sitter::Language {
-+    fn language() -> tree_sitter::Language {
+     fn language(&self) -> tree_sitter::Language {
          // Difftastic doesn't use tree-sitter parsing
          tree_sitter_md::LANGUAGE.into()
      }
 -
--    fn section_query(&self) -> &'static str {
-+    fn section_query() -> &'static str {
+     fn section_query(&self) -> &'static str {
          ""
      }
 -
--    fn title_query(&self) -> &'static str {
-+    fn title_query() -> &'static str {
+     fn title_query(&self) -> &'static str {
          ""
      }
 -
--    fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
-+    fn format_section_display(level: usize, title: &str) -> Line<'static> {
+     fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
          // Check if this is a hunk header with format: (N) @@ -X,Y +A,B @@
          if title.contains("@@") && title.starts_with('(') {
-             if let Some(close_paren) = title.find(')') {
                  return Line::from(spans);
              }
          }

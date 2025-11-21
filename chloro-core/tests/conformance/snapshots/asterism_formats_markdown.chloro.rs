@@ -11,19 +11,19 @@ use ratatui::{
 pub struct MarkdownFormat;
 
 impl MarkdownFormat {
-    fn file_extension() -> &'static str {
+    fn file_extension(&self) -> &'static str {
         "md"
     }
-    fn language() -> tree_sitter::Language {
+    fn language(&self) -> tree_sitter::Language {
         tree_sitter_md::LANGUAGE.into()
     }
-    fn section_query() -> &'static str {
+    fn section_query(&self) -> &'static str {
         "(atx_heading) @heading"
     }
-    fn title_query() -> &'static str {
+    fn title_query(&self) -> &'static str {
         "(atx_heading heading_content: (inline) @title)"
     }
-    fn format_section_display(level: usize, title: &str) -> Line<'static> {
+    fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
         // Cycle through colors for different heading levels
         let colors = [
             Color::Cyan,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1158 bytes
-Chloro size:   750 bytes
+Chloro size:   777 bytes
 Rustfmt size:  1158 bytes
 
 ✗ Outputs DIFFER
@@ -34,8 +34,8 @@ Rustfmt size:  1158 bytes
 -    /// Format a section heading for display with syntax highlighting
 -    fn format_section_display(&self, level: usize, title: &str) -> ratatui::text::Line<'static>;
 -}
-+fn file_extension() -> &'static str;
-+fn language() -> tree_sitter::Language;
-+fn section_query() -> &str;
-+fn title_query() -> &str;
-+fn format_section_display(level: usize, title: &str) -> ratatui::text::Line<'static>;
++fn file_extension(&self) -> &'static str;
++fn language(&self) -> tree_sitter::Language;
++fn section_query(&self) -> &str;
++fn title_query(&self) -> &str;
++fn format_section_display(&self, level: usize, title: &str) -> ratatui::text::Line<'static>;

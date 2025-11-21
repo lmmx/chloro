@@ -24,7 +24,7 @@ pub struct Edit {
 }
 
 impl EditPlan {
-    pub fn apply() -> io::Result<()> {
+    pub fn apply(&mut self) -> io::Result<()> {
         let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
         for edit in &self.edits {
             file_groups
