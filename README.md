@@ -72,10 +72,6 @@ Add chloro to your `Cargo.toml`:
 chloro = "0.5"
 ```
 
-### Migration
-
-The CLI automatically migrates code from doc comments to chloro `#[omnidoc]` attributes.
-
 #### CLI Installation
 
 - pre-built binary: `cargo binstall chloro` (requires [cargo-binstall][cargo-binstall]),
