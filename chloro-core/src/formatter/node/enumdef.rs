@@ -11,14 +11,14 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format doc comments using the trait
+    // Format doc comments using HasDocComments trait
     for doc_comment in enum_.doc_comments() {
         write_indent(buf, indent);
-        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push_str(doc_comment.text().trim());
         buf.push('\n');
     }
 
-    // Format attributes from the AST (like #[derive(...)])
+    // Format attributes using HasAttrs trait
     for attr in enum_.attrs() {
         write_indent(buf, indent);
         buf.push_str(&attr.syntax().text().to_string());
@@ -46,10 +46,10 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(" {\n");
 
         for variant in variants.variants() {
-            // Format variant doc comments using the trait
+            // Format variant doc comments
             for doc_comment in variant.doc_comments() {
                 write_indent(buf, indent + 4);
-                buf.push_str(doc_comment.syntax().text().to_string().trim());
+                buf.push_str(doc_comment.text().trim());
                 buf.push('\n');
             }
 
@@ -72,7 +72,7 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             // Format field doc comments
                             for doc_comment in field.doc_comments() {
                                 write_indent(buf, indent + 8);
-                                buf.push_str(doc_comment.syntax().text().to_string().trim());
+                                buf.push_str(doc_comment.text().trim());
                                 buf.push('\n');
                             }
 

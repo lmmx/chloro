@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14069 bytes
-Chloro size:   14097 bytes
+Chloro size:   14133 bytes
 Rustfmt size:  14657 bytes
 
 ✗ Outputs DIFFER
@@ -53,7 +53,7 @@ Rustfmt size:  14657 bytes
      pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
  }
  
--#[salsa::tracked]
+ #[salsa::tracked]
  impl TraitItems {
      #[inline]
 -    pub(crate) fn query(db: &dyn DefDatabase, tr: TraitId) -> &TraitItems {
@@ -152,7 +152,7 @@ Rustfmt size:  14657 bytes
      pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
  }
  
--#[salsa::tracked]
+ #[salsa::tracked]
  impl ImplItems {
      #[salsa::tracked(returns(ref))]
 -    pub fn of(db: &dyn DefDatabase, id: ImplId) -> (ImplItems, DefDiagnostics) {

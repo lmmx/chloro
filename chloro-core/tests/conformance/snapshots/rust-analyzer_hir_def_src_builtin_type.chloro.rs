@@ -132,6 +132,7 @@ impl fmt::Display for BuiltinType {
     }
 }
 
+#[rustfmt::skip]
 impl BuiltinInt {
     pub fn from_suffix(suffix: &str) -> Option<BuiltinInt> {
         let res = match suffix {
@@ -161,6 +162,7 @@ impl BuiltinInt {
     }
 }
 
+#[rustfmt::skip]
 impl BuiltinUint {
     pub fn from_suffix(suffix: &str) -> Option<BuiltinUint> {
         let res = match suffix {
@@ -191,6 +193,7 @@ impl BuiltinUint {
     }
 }
 
+#[rustfmt::skip]
 impl BuiltinFloat {
     pub fn from_suffix(suffix: &str) -> Option<BuiltinFloat> {
         let res = match suffix {

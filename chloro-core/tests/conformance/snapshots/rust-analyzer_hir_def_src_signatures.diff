@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33467 bytes
-Chloro size:   30605 bytes
+Chloro size:   30641 bytes
 Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
@@ -562,13 +562,6 @@ Rustfmt size:  34530 bytes
  pub type EnumVariantBody = SimpleBody;
  
  #[derive(Debug, PartialEq, Eq)]
-     pub shape: FieldsShape,
- }
- 
--#[salsa::tracked]
- impl VariantFields {
-     #[salsa::tracked(returns(clone))]
-     pub(crate) fn query(
          };
          match result {
              Some((fields, store, source_map)) => (
@@ -639,13 +632,6 @@ Rustfmt size:  34530 bytes
                  idx += 1;
              }
              Err(cfg) => {
-     pub variants: Box<[(EnumVariantId, Name, FieldsShape)]>,
- }
- 
--#[salsa::tracked]
- impl EnumVariants {
-     #[salsa::tracked(returns(ref))]
-     pub(crate) fn of(
          let source = loc.source(db);
          let ast_id_map = db.ast_id_map(source.file_id);
          let span_map = db.span_map(source.file_id);

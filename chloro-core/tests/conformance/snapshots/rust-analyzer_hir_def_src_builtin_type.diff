@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8029 bytes
-Chloro size:   8073 bytes
+Chloro size:   8124 bytes
 Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
@@ -28,13 +28,6 @@ Rustfmt size:  8029 bytes
          match self {
              BuiltinType::Char => f.write_str("char"),
              BuiltinType::Bool => f.write_str("bool"),
-     }
- }
- 
--#[rustfmt::skip]
- impl BuiltinInt {
-     pub fn from_suffix(suffix: &str) -> Option<BuiltinInt> {
-         let res = match suffix {
          };
          Some(res)
      }
@@ -42,13 +35,6 @@ Rustfmt size:  8029 bytes
      pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinInt> {
          let res = match suffix {
              s if *s == sym::isize => Self::Isize,
-     }
- }
- 
--#[rustfmt::skip]
- impl BuiltinUint {
-     pub fn from_suffix(suffix: &str) -> Option<BuiltinUint> {
-         let res = match suffix {
          };
          Some(res)
      }
@@ -56,13 +42,6 @@ Rustfmt size:  8029 bytes
      pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinUint> {
          let res = match suffix {
              s if *s == sym::usize => Self::Usize,
-     }
- }
- 
--#[rustfmt::skip]
- impl BuiltinFloat {
-     pub fn from_suffix(suffix: &str) -> Option<BuiltinFloat> {
-         let res = match suffix {
  }
  
  impl fmt::Display for BuiltinInt {

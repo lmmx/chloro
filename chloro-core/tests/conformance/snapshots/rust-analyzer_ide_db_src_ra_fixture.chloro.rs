@@ -297,6 +297,7 @@ impl<T, const N: usize> IsEmpty for SmallVec<[T; N]> {
     }
 }
 
+#[allow(clippy::disallowed_types)]
 impl<K, V, S> IsEmpty for std::collections::HashMap<K, V, S> {
     fn is_empty(&self) -> bool {
         self.is_empty()
@@ -364,6 +365,7 @@ impl<T: UpmapFromRaFixture, const N: usize> UpmapFromRaFixture for SmallVec<[T; 
     }
 }
 
+#[allow(clippy::disallowed_types)]
 impl<K: UpmapFromRaFixture + Hash + Eq, V: UpmapFromRaFixture, S: BuildHasher + Default> UpmapFromRaFixture for std::collections::HashMap<K, V, S> {
     fn upmap_from_ra_fixture(
         self,
@@ -375,6 +377,7 @@ impl<K: UpmapFromRaFixture + Hash + Eq, V: UpmapFromRaFixture, S: BuildHasher + 
     }
 }
 
+#[allow(clippy::disallowed_types)]
 impl<V: UpmapFromRaFixture, S: BuildHasher + Default> UpmapFromRaFixture for std::collections::HashMap<FileId, V, S> {
     fn upmap_from_ra_fixture(
         self,

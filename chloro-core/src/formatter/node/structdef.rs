@@ -11,14 +11,14 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format doc comments using the trait
+    // Format doc comments using HasDocComments trait
     for doc_comment in strukt.doc_comments() {
         write_indent(buf, indent);
-        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push_str(doc_comment.text().trim());
         buf.push('\n');
     }
 
-    // Format attributes from the AST (like #[derive(...)])
+    // Format attributes using HasAttrs trait
     for attr in strukt.attrs() {
         write_indent(buf, indent);
         buf.push_str(&attr.syntax().text().to_string());
@@ -47,14 +47,14 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
             ast::FieldList::RecordFieldList(fields) => {
                 buf.push_str(" {\n");
                 for field in fields.fields() {
-                    // Format field doc comments using the trait
+                    // Format field doc comments
                     for doc_comment in field.doc_comments() {
                         write_indent(buf, indent + 4);
-                        buf.push_str(doc_comment.syntax().text().to_string().trim());
+                        buf.push_str(doc_comment.text().trim());
                         buf.push('\n');
                     }
 
-                    // Format field attributes (like #[serde(...)])
+                    // Format field attributes
                     for attr in field.attrs() {
                         write_indent(buf, indent + 4);
                         buf.push_str(&attr.syntax().text().to_string());

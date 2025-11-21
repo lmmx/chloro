@@ -71,6 +71,7 @@ impl fmt::Debug for TestDB {
     }
 }
 
+#[salsa_macros::db]
 impl SourceDatabase for TestDB {
     fn file_text(
         &self,
@@ -142,6 +143,7 @@ impl SourceDatabase for TestDB {
     }
 }
 
+#[salsa_macros::db]
 impl salsa::Database for TestDB {
 }
 

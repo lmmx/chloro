@@ -364,6 +364,7 @@ impl ImplId {
 type UseLoc = ItemLoc<ast::Use>;
 type ExternCrateLoc = ItemLoc<ast::ExternCrate>;
 type ExternBlockLoc = ItemLoc<ast::ExternBlock>;
+#[salsa::tracked]
 impl ExternBlockId {
     #[salsa::tracked]
     pub fn abi(

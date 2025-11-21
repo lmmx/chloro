@@ -311,6 +311,7 @@ impl FileIdToSyntax for HirFileId {
     }
 }
 
+#[allow(private_bounds)]
 impl<FileId: FileIdToSyntax, T> InFileWrapper<FileId, T> {
     pub fn file_syntax(
         &self,
@@ -320,6 +321,7 @@ impl<FileId: FileIdToSyntax, T> InFileWrapper<FileId, T> {
     }
 }
 
+#[allow(private_bounds)]
 impl<FileId: FileIdToSyntax, N: AstNode> InFileWrapper<FileId, AstPtr<N>> {
     pub fn to_node(
         &self,

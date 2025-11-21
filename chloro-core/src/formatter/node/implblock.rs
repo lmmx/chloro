@@ -1,5 +1,5 @@
 use ra_ap_syntax::{
-    ast::{self, HasDocComments, HasGenericParams},
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams},
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
@@ -12,10 +12,17 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format impl doc comments if any
+    // Format doc comments using HasDocComments trait
     for doc_comment in impl_.doc_comments() {
         write_indent(buf, indent);
-        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push_str(doc_comment.text().trim());
+        buf.push('\n');
+    }
+
+    // Format attributes using HasAttrs trait
+    for attr in impl_.attrs() {
+        write_indent(buf, indent);
+        buf.push_str(&attr.syntax().text().to_string());
         buf.push('\n');
     }
 

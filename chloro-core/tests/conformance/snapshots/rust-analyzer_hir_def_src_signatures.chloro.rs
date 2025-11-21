@@ -643,6 +643,7 @@ pub struct VariantFields {
     pub shape: FieldsShape,
 }
 
+#[salsa::tracked]
 impl VariantFields {
     #[salsa::tracked(returns(clone))]
     pub(crate) fn query(
@@ -819,6 +820,7 @@ pub struct EnumVariants {
     pub variants: Box<[(EnumVariantId, Name, FieldsShape)]>,
 }
 
+#[salsa::tracked]
 impl EnumVariants {
     #[salsa::tracked(returns(ref))]
     pub(crate) fn of(

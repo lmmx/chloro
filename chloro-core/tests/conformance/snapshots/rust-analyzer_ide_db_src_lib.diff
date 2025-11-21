@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   11982 bytes
+Chloro size:   12022 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -131,7 +131,7 @@ Rustfmt size:  12539 bytes
 +impl std::panic::RefUnwindSafe for RootDatabase {
 +}
  
--#[salsa_macros::db]
+ #[salsa_macros::db]
 -impl salsa::Database for RootDatabase {}
 +impl salsa::Database for RootDatabase {
 +}
@@ -150,7 +150,7 @@ Rustfmt size:  12539 bytes
      }
  }
  
--#[salsa_macros::db]
+ #[salsa_macros::db]
  impl SourceDatabase for RootDatabase {
 -    fn file_text(&self, file_id: vfs::FileId) -> FileText {
 +    fn file_text(

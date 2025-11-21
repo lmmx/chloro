@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19702 bytes
+Chloro size:   19752 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -349,7 +349,7 @@ Rustfmt size:  20465 bytes
      }
  }
  
--#[allow(private_bounds)]
+ #[allow(private_bounds)]
  impl<FileId: FileIdToSyntax, T> InFileWrapper<FileId, T> {
 -    pub fn file_syntax(&self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
 +    pub fn file_syntax(
@@ -360,7 +360,7 @@ Rustfmt size:  20465 bytes
      }
  }
  
--#[allow(private_bounds)]
+ #[allow(private_bounds)]
  impl<FileId: FileIdToSyntax, N: AstNode> InFileWrapper<FileId, AstPtr<N>> {
 -    pub fn to_node(&self, db: &dyn ExpandDatabase) -> N {
 +    pub fn to_node(

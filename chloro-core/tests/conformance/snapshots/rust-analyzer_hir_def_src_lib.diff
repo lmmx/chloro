@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   39224 bytes
+Chloro size:   39242 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -398,7 +398,7 @@ Rustfmt size:  45085 bytes
 -    lookup_intern_extern_block
 -);
 -
--#[salsa::tracked]
+ #[salsa::tracked]
  impl ExternBlockId {
      #[salsa::tracked]
 -    pub fn abi(self, db: &dyn DefDatabase) -> Option<Symbol> {

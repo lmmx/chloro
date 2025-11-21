@@ -101,6 +101,7 @@ pub struct RootDatabase {
 impl std::panic::RefUnwindSafe for RootDatabase {
 }
 
+#[salsa_macros::db]
 impl salsa::Database for RootDatabase {
 }
 
@@ -130,6 +131,7 @@ impl fmt::Debug for RootDatabase {
     }
 }
 
+#[salsa_macros::db]
 impl SourceDatabase for RootDatabase {
     fn file_text(
         &self,

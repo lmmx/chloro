@@ -66,6 +66,7 @@ impl Clone for TestDB {
     }
 }
 
+#[salsa_macros::db]
 impl salsa::Database for TestDB {
 }
 
@@ -81,6 +82,7 @@ impl fmt::Debug for TestDB {
 impl panic::RefUnwindSafe for TestDB {
 }
 
+#[salsa_macros::db]
 impl SourceDatabase for TestDB {
     fn file_text(
         &self,

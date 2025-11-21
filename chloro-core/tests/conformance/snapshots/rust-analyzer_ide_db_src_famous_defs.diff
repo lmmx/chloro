@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7323 bytes
-Chloro size:   7459 bytes
+Chloro size:   7484 bytes
 Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- /// ```
- pub struct FamousDefs<'a, 'b>(pub &'a Semantics<'b, RootDatabase>, pub Crate);
- 
--#[allow(non_snake_case)]
- impl FamousDefs<'_, '_> {
-     pub fn std(&self) -> Option<Crate> {
-         self.find_lang_crate(LangCrateOrigin::Std)
      pub fn alloc_string_ToString(&self) -> Option<Trait> {
          self.find_trait("alloc:string:ToString")
      }

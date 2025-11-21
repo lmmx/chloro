@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6478 bytes
-Chloro size:   6639 bytes
+Chloro size:   6679 bytes
 Rustfmt size:  6513 bytes
 
 ✗ Outputs DIFFER
@@ -29,7 +29,7 @@ Rustfmt size:  6513 bytes
      }
  }
  
--#[salsa_macros::db]
+ #[salsa_macros::db]
  impl SourceDatabase for TestDB {
 -    fn file_text(&self, file_id: base_db::FileId) -> FileText {
 +    fn file_text(
@@ -81,7 +81,7 @@ Rustfmt size:  6513 bytes
      }
  }
  
--#[salsa_macros::db]
+ #[salsa_macros::db]
 -impl salsa::Database for TestDB {}
 +impl salsa::Database for TestDB {
 +}

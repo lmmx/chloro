@@ -7,14 +7,14 @@ use crate::formatter::write_indent;
 
 pub fn format_const_or_static(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(c) = ast::Const::cast(node.clone()) {
-        // Doc comments
+        // Format doc comments using HasDocComments trait
         for doc_comment in c.doc_comments() {
             write_indent(buf, indent);
-            buf.push_str(&doc_comment.syntax().text().trim().to_string());
+            buf.push_str(doc_comment.text().trim());
             buf.push('\n');
         }
 
-        // Attributes
+        // Format attributes using HasAttrs trait
         for attr in c.attrs() {
             write_indent(buf, indent);
             buf.push_str(&attr.syntax().text().to_string());
@@ -50,14 +50,14 @@ pub fn format_const_or_static(node: &SyntaxNode, buf: &mut String, indent: usize
 
         buf.push_str(";\n");
     } else if let Some(s) = ast::Static::cast(node.clone()) {
-        // Doc comments
+        // Format doc comments using HasDocComments trait
         for doc_comment in s.doc_comments() {
             write_indent(buf, indent);
-            buf.push_str(&doc_comment.syntax().text().trim().to_string());
+            buf.push_str(doc_comment.text().trim());
             buf.push('\n');
         }
 
-        // Attributes
+        // Format attributes using HasAttrs trait
         for attr in s.attrs() {
             write_indent(buf, indent);
             buf.push_str(&attr.syntax().text().to_string());

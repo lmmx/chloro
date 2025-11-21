@@ -37,6 +37,7 @@ pub struct TraitItems {
     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
 }
 
+#[salsa::tracked]
 impl TraitItems {
     #[inline]
     pub(crate) fn query(
@@ -117,6 +118,7 @@ pub struct ImplItems {
     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
 }
 
+#[salsa::tracked]
 impl ImplItems {
     #[salsa::tracked(returns(ref))]
     pub fn of(

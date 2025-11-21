@@ -20,6 +20,7 @@ use crate::RootDatabase;
 /// ```
 pub struct FamousDefs<'a, 'b>(pub &'a Semantics<'b, RootDatabase>, pub Crate);
 
+#[allow(non_snake_case)]
 impl FamousDefs<'_, '_> {
     pub fn std(&self) -> Option<Crate> {
         self.find_lang_crate(LangCrateOrigin::Std)
