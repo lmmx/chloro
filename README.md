@@ -32,6 +32,33 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
 ```
+✨📸 Conformance: +152,221/-16,336
+
+Top 5 added lines:
+1,157	+        &self,
+652	+        &mut self,
+518	+        self,
+463	+    ) {
+351	+        db: &dyn HirDatabase,
+217	+    ) -> bool {
+165	+    ctx: &AssistContext<'_>,
+150	+) -> Option<()> {
+147	+    ) -> Self {
+142	+    acc: &mut Assists,
+
+Top 5 removed lines:
+154	-        }
+135	-    {
+93	-            },
+87	-        );
+72	-        ///
+64	-                },
+63	-        )
+59	-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+54	-    };
+53	-    );
+
+Top 20 most impacted (by LOC/diff size):
 Score  SizeRank  DiffRank    Impact       +   / -       File
 ────────────────────────────────────────────────────────────────────────────
     3         3         1     28.2%   2,118  /  7,503   hir/src_lib
