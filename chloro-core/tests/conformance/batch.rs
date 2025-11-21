@@ -161,7 +161,6 @@ fn compare_rust_analyzer_ide_diagnostics() {
 }
 
 #[test]
-#[ignore = "too many big snapshots for repo"]
 fn compare_rust_analyzer_parser() {
     compare_rust_analyzer_crate("parser");
 }
@@ -172,7 +171,6 @@ fn compare_rust_analyzer_rust_analyzer() {
 }
 
 #[test]
-#[ignore = "too many big snapshots for repo"]
 fn compare_rust_analyzer_syntax() {
     compare_rust_analyzer_crate("syntax");
 }

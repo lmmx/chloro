@@ -1,3 +1,6 @@
+chloro-core/tests/conformance/snapshots/ra/parser
+chloro-core/tests/conformance/snapshots/ra/syntax
+
 docs/initial
 /target
 points.json
