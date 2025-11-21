@@ -4,8 +4,11 @@
 //! and edits. We achieve this by syncing the editor save state with the files on disk. We keep
 //! track of the cumulative total number of lines that have been added to the file during the
 //! session so that we can determine the correct offset to insert content at without re-parsing.
+/// Determines navigation scope and quit behavior based on project size.
 #[derive(PartialEq)]
 pub enum FileMode {
+    /// Single-file mode quits directly to shell.
     Single,
+    /// Multi-file mode shows file tree in list view.
     Multi,
 }

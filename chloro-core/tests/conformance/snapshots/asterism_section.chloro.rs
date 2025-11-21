@@ -23,24 +23,37 @@ pub struct Section {
     pub rhs_content: Option<String>,
 }
 
+/// What sort of hunk (syntactic diff atomic unit) it is.
 #[derive(Clone)]
 pub enum ChunkType {
+    /// Only RHS exists
     Added,
+    /// Only LHS exists
     Deleted,
+    /// Both LHS and RHS exist (and differ)
     Modified,
+    /// Both LHS and RHS exist (and are the same, at least syntactically)
     Unchanged,
 }
 
+/// Types of nodes that can appear in the file tree view.
 #[derive(Clone)]
 pub enum NodeType {
+    /// Directory node showing a path component
     Directory {
+        /// Directory name (not full path)
         name: String,
+        /// Full path for reference
         path: String,
     },
+    /// File node (non-navigable, just shows filename)
     File {
+        /// File name
         name: String,
+        /// Full path for reference
         path: String,
     },
+    /// Actual document section (navigable)
     Section(Section),
 }
 

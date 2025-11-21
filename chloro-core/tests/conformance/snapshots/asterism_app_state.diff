@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   27630 bytes
+Chloro size:   28317 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
@@ -18,26 +18,6 @@ Rustfmt size:  31467 bytes
  use crate::edit_plan::{Edit, EditPlan};
  use crate::formats::markdown::MarkdownFormat;
  use crate::input;
- use std::path::PathBuf;
- use std::{fs, io};
- 
--/// Determines navigation scope and quit behavior based on project size.
- #[derive(PartialEq)]
- pub enum FileMode {
--    /// Single-file mode quits directly to shell.
-     Single,
--    /// Multi-file mode shows file tree in list view.
-     Multi,
- }
- 
--/// Tracks the lifecycle of a section reordering operation.
- #[derive(Clone, PartialEq, Debug)]
- pub enum MoveState {
--    /// No section is being moved; normal navigation mode.
-     None,
--    /// A section has been selected for moving but no changes made yet.
-     Selected,
--    /// Section has been repositioned but changes not yet persisted to disk.
      Moved,
  }
  
@@ -71,15 +51,6 @@ Rustfmt size:  31467 bytes
      pub moving_section_index: Option<usize>,
  }
  
--/// Determines which UI screen renders and how input is interpreted.
- #[derive(PartialEq)]
- pub enum View {
--    /// Shows hierarchical section tree with navigation.
-     List,
--    /// Provides vim-like editor for section content.
-     Detail,
--    /// Captures vim-style command input after ':' keystroke.
-     Command,
  }
  
  impl AppState {
