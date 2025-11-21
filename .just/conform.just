@@ -104,27 +104,29 @@ conf-md:
     echo "**Summary:** +$added / -$removed"
     echo
 
-    # Extract and format top added lines
-    echo "**Top 5 Added Lines**"
-    echo
-    echo "$output" | awk '/^Top 5 added lines:/,/^Top 5 removed lines:/' | \
-        grep -E '^\s*[0-9]' | head -5 | nl -nln | \
-        awk '{count=$2; $1=""; $2=""; line=substr($0,3); printf "%d. (%s) `%s`\n", NR, count, line}'
+    # Build multiline added block with backticks per line
+    added_block=$(
+        echo "$output" | awk '/^Top 5 added lines:/,/^Top 5 removed lines:/' \
+        | grep -E '^[[:space:]]*[0-9]' | head -5 \
+        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "(%s) `%s`<br>", count, line}'
+    )
+
+    # Build multiline removed block with backticks per line
+    removed_block=$(
+        echo "$output" | awk '/^Top 5 removed lines:/,/^Top 20 most impacted/' \
+        | grep -E '^[[:space:]]*[0-9]' | head -5 \
+        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "(%s) `%s`<br>", count, line}'
+    )
+
+    echo "| **Top 5 Removed Lines** | **Top 5 Added Lines** |"
+    echo "|---|---|"
+    echo "| $removed_block | $added_block |"
     echo
 
-    # Extract and format top removed lines
-    echo "**Top 5 Removed Lines**"
-    echo
-    echo "$output" | awk '/^Top 5 removed lines:/,/^Top 20 most impacted/' | \
-        grep -E '^\s*[0-9]' | head -5 | nl -nln | \
-        awk '{count=$2; $1=""; $2=""; line=substr($0,3); printf "%d. (%s) `%s`\n", NR, count, line}'
-    echo
-
-    # Extract and format the impact table
     echo "### Top 20 Most Impacted Files"
     echo
     echo "| Rank | Size Rank | Diff Rank | Impact | Added | Removed | File |"
     echo "|------|-----------|-----------|--------|-------|---------|------|"
-    echo "$output" | awk '/^────────────────────────────────────────────────────────────────────────────$/,0' | \
-        tail -n +2 | grep -E '^\s*[0-9]' | head -20 | \
-        awk '{printf "| %s | %s | %s | %s | %s | %s | `%s` |\n", $1, $2, $3, $4, $5, $7, $8}'
+    echo "$output" | awk '/^────────────────────────────────────────────────────────────────────────────$/,0' \
+        | tail -n +2 | grep -E '^[[:space:]]*[0-9]' | head -20 \
+        | awk '{printf "| %s | %s | %s | %s | %s | %s | `%s` |\n", $1, $2, $3, $4, $5, $7, $8}'

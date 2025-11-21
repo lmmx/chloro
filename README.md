@@ -34,21 +34,9 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 <!-- just: conf-md -->
 **Summary:** +152,221 / -16,336
 
-**Top 5 Added Lines**
-
-1. (1,157) `+ &self,`
-2. (652) `+ &mut self,`
-3. (518) `+ self,`
-4. (463) `+ ) {`
-5. (351) `+ db: &dyn HirDatabase,`
-
-**Top 5 Removed Lines**
-
-1. (154) `- }`
-2. (135) `- {`
-3. (93) `- },`
-4. (87) `- );`
-5. (72) `- ///`
+| **Top 5 Removed Lines** | **Top 5 Added Lines** |
+|---|---|
+| (154) `- }`<br>(135) `- {`<br>(93) `- },`<br>(87) `- );`<br>(72) `- ///`<br> | (1,157) `+ &self,`<br>(652) `+ &mut self,`<br>(518) `+ self,`<br>(463) `+ ) {`<br>(351) `+ db: &dyn HirDatabase,`<br> |
 
 ### Top 20 Most Impacted Files
 
