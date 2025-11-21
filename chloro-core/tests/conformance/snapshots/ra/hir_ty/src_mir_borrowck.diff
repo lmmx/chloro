@@ -7,7 +7,7 @@ Rustfmt size:  25852 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! MIR borrow checker, which is used in diagnostics like `unused_mut`
  
 -// Currently it is an ad-hoc implementation, only useful for mutability analysis. Feel free to remove all of these

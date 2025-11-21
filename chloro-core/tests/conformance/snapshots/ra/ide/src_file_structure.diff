@@ -7,7 +7,7 @@ Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::SymbolKind;
  use syntax::{
 +    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange, WalkEvent,

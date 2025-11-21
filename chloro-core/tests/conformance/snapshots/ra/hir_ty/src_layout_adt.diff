@@ -7,7 +7,7 @@ Rustfmt size:  6451 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Compute the binary representation of structs, unions and enums
  
  use std::{cmp, ops::Bound};

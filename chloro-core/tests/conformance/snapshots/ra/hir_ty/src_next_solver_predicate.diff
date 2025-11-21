@@ -7,7 +7,7 @@ Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to predicates.
  
  use std::cmp::Ordering;

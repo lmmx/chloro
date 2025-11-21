@@ -7,7 +7,7 @@ Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! `NameDefinition` keeps information about the element we want to search references for.
  //! The element is represented by `NameKind`. It's located inside some `container` and
  //! has a `visibility`, which defines a search scope.

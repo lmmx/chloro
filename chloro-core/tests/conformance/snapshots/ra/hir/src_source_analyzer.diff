@@ -7,7 +7,7 @@ Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //!
  //! So, this modules should not be used during hir construction, it exists
  //! purely for "IDE needs".

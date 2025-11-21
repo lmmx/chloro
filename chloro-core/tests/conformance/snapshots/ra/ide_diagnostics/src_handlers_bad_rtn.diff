@@ -7,7 +7,7 @@ Rustfmt size:  1132 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::Severity;
  
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};

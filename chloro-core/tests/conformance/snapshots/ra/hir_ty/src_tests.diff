@@ -7,7 +7,7 @@ Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -mod closure_captures;
 -mod coercion;
 -mod diagnostics;

@@ -7,7 +7,7 @@ Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //!  - Building the type for an item: This happens through the `ty` query.
  //!
  //! This usually involves resolving names, collecting generic arguments etc.

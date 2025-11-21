@@ -7,7 +7,7 @@ Rustfmt size:  1159 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion of field list position.
  
  use crate::{

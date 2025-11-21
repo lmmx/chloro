@@ -7,7 +7,7 @@ Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::cmp::Reverse;
  
  use either::Either;

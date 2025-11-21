@@ -7,7 +7,7 @@ Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to generic args in the next-trait-solver.
  
  use hir_def::{GenericDefId, GenericParamId};

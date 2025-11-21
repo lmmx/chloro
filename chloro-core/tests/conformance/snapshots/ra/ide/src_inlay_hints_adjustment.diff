@@ -7,7 +7,7 @@ Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "adjustment" inlay hints:
  //! ```no_run
  //! let _: u32  = /* <never-to-any> */ loop {};

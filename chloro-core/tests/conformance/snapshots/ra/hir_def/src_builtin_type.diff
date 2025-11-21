@@ -7,7 +7,7 @@ Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::fmt;
  
  use hir_expand::name::{AsName, Name};

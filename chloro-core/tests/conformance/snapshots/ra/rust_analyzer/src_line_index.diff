@@ -7,7 +7,7 @@ Rustfmt size:  3393 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          // While we *can* call `as_mut_vec` and do surgery on the live string
          // directly, let's rather steal the contents of `src`. This makes the code
          // safe even if a panic occurs.

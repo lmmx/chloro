@@ -7,7 +7,7 @@ Rustfmt size:  5830 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Infrastructure for lazy project discovery. Currently only support rust-project.json discovery
  //! via a custom discover command.
 +

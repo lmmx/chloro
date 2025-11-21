@@ -7,7 +7,7 @@ Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "type" inlay hints:
  //! ```no_run
  //! fn f(a: i32, b: i32) -> i32 { a + b }

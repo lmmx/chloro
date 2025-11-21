@@ -7,7 +7,7 @@ Rustfmt size:  448 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Type inference-based diagnostics.
 -mod decl_check;
 -mod expr;

@@ -7,7 +7,7 @@ Rustfmt size:  16197 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -mod block;
 -
 -use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};

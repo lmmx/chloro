@@ -7,7 +7,7 @@ Rustfmt size:  10039 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Utility module for converting between hir_def ids and code_model wrappers.
  //!
  //! It's unclear if we need this long-term, but it's definitely useful while we

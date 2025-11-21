@@ -7,7 +7,7 @@ Rustfmt size:  976 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to the infer context of the next-trait-solver.
  
 -pub(crate) mod table;

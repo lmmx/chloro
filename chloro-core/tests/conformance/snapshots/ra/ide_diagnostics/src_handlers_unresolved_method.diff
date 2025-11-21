@@ -7,7 +7,7 @@ Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use hir::{db::ExpandDatabase, FileRange, HirDisplay, InFile};
 +use hir::{FileRange, HirDisplay, InFile, db::ExpandDatabase};
  use ide_db::text_edit::TextEdit;

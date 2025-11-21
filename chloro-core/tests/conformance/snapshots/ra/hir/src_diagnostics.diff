@@ -7,7 +7,7 @@ Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Re-export diagnostics such that clients of `hir` don't have to depend on
  //! low-level crates.
  //!

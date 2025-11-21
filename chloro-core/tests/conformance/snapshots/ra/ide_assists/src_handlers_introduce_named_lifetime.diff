@@ -7,7 +7,7 @@ Rustfmt size:  11546 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::FxHashSet;
  use syntax::{
 -    ast::{self, edit_in_place::GenericParamsOwnerEdit, make, HasGenericParams},

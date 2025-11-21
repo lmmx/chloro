@@ -7,7 +7,7 @@ Rustfmt size:  3415 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Re-exports various subcrates databases so that the calling code can depend
  //! only on `hir`. This breaks abstraction boundary a bit, it would be cool if
  //! we didn't do that.

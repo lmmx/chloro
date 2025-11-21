@@ -7,7 +7,7 @@ Rustfmt size:  58838 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      test_runner::{CargoTestMessage, CargoTestOutput, TestState},
  };
  

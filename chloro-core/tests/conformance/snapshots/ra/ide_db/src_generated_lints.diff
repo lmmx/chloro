@@ -7,7 +7,7 @@ Rustfmt size:  639771 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
              warn_since: None,
              deny_since: None,
          },

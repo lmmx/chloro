@@ -7,7 +7,7 @@ Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      helpers::mod_path_to_ast,
      imports::import_assets::{ImportCandidate, LocatedImport},
  };

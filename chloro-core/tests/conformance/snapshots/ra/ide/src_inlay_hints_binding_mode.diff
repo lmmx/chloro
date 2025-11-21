@@ -7,7 +7,7 @@ Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "binding mode" inlay hints:
  //! ```no_run
  //! let /* & */ (/* ref */ x,) = &(0,);

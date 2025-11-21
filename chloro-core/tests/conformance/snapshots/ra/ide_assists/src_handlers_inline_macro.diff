@@ -7,7 +7,7 @@ Rustfmt size:  8483 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::db::ExpandDatabase;
  use ide_db::syntax_helpers::prettify_macro_expansion;
  use syntax::ast::{self, AstNode};

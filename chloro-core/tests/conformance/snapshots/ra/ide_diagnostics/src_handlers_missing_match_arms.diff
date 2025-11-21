@@ -7,7 +7,7 @@ Rustfmt size:  27822 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: missing-match-arm

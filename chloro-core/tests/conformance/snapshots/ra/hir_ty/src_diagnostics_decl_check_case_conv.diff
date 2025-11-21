@@ -7,7 +7,7 @@ Rustfmt size:  6228 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Functions for string case manipulation, such as detecting the identifier case,
  //! and converting it into appropriate form.
  

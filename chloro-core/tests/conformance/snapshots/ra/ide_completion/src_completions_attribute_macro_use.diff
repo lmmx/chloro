@@ -7,7 +7,7 @@ Rustfmt size:  1262 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion for macros in `#[macro_use(...)]`
 +
  use hir::ModuleDef;

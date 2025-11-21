@@ -7,7 +7,7 @@ Rustfmt size:  5051 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Utilities for creating `Analysis` instances for tests.
 +
  use test_fixture::ChangeFixture;

@@ -7,7 +7,7 @@ Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [`Name`].
  
  use std::fmt;

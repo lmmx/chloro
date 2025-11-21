@@ -7,7 +7,7 @@ Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //!
  //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
  

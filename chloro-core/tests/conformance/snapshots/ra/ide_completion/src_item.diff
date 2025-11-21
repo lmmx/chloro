@@ -7,7 +7,7 @@ Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  pub struct CompletionItem {
      /// Label in the completion pop up which identifies completion.
      pub label: CompletionItemLabel,

@@ -7,7 +7,7 @@ Rustfmt size:  6522 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::HirDisplay;
  use ide_db::{assists::AssistId, defs::Definition};
  use stdx::to_upper_snake_case;

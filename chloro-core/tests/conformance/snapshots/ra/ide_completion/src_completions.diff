@@ -7,7 +7,7 @@ Rustfmt size:  25726 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module defines an accumulator for completions which are going to be presented to user.
  
 -pub(crate) mod attribute;

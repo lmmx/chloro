@@ -7,7 +7,7 @@ Rustfmt size:  1461 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Defines a unit of change that can applied to the database to get the next
  //! state. Changes are transactional.
 -use base_db::{salsa::Durability, CrateGraphBuilder, FileChange, SourceRoot};

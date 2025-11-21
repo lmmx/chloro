@@ -7,7 +7,7 @@ Rustfmt size:  3367 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use ide_db::base_db::{BuiltCrateData, ExtraCrateData};
  use ide_db::RootDatabase;
 +use ide_db::base_db::{BuiltCrateData, ExtraCrateData};

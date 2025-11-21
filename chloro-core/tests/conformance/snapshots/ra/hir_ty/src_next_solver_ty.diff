@@ -7,7 +7,7 @@ Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to tys in the next-trait-solver.
  
  use std::ops::ControlFlow;

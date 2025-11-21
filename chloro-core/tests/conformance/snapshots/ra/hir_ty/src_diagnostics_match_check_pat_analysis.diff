@@ -7,7 +7,7 @@ Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Interface with `rustc_pattern_analysis`.
  
  use std::{cell::LazyCell, fmt};

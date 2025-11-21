@@ -7,7 +7,7 @@ Rustfmt size:  29702 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::Semantics;
  use ide_db::{
 -    line_index::{LineCol, LineIndex},

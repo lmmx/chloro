@@ -7,7 +7,7 @@ Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  };
  
  const GLOB_RECURSION_LIMIT: usize = 100;

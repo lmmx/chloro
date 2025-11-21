@@ -7,7 +7,7 @@ Rustfmt size:  7864 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Shim implementation for simd intrinsics
  
  use std::cmp::Ordering;

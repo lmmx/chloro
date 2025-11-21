@@ -7,7 +7,7 @@ Rustfmt size:  9092 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of inlay hints for generic parameters.
 +
  use either::Either;

@@ -7,7 +7,7 @@ Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things to wrap other things in file ids.
 +
  use std::borrow::Borrow;

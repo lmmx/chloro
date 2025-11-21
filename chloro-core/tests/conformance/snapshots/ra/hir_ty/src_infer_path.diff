@@ -7,7 +7,7 @@ Rustfmt size:  16341 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Path expression resolution.
  
  use hir_def::{

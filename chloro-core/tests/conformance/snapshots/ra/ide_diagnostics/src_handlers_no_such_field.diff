@@ -7,7 +7,7 @@ Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use either::Either;
 -use hir::{db::ExpandDatabase, HasSource, HirDisplay, Semantics, VariantId};
 +use hir::{HasSource, HirDisplay, Semantics, VariantId, db::ExpandDatabase};

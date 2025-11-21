@@ -7,7 +7,7 @@ Rustfmt size:  11348 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Complete fields in record literals and patterns.
 +
  use ide_db::SymbolKind;

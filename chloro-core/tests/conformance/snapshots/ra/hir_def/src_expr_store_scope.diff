@@ -7,7 +7,7 @@ Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Name resolution for expressions.
 -use hir_expand::{name::Name, MacroDefId};
 +

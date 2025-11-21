@@ -7,7 +7,7 @@ Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Snapshotting in the infer ctxt of the next-trait-solver.
  
  use ena::undo_log::UndoLogs;

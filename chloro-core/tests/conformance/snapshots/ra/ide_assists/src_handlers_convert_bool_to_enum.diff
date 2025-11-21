@@ -7,7 +7,7 @@ Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use either::Either;
  use hir::ModuleDef;
  use ide_db::text_edit::TextRange;

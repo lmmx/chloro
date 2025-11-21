@@ -7,7 +7,7 @@ Rustfmt size:  2294 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl RangeMapper {

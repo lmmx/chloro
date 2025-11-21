@@ -7,7 +7,7 @@ Rustfmt size:  5758 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use either::Either;
  use ide_db::FxHashMap;
  use itertools::Itertools;

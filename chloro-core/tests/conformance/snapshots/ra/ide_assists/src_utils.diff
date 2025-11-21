@@ -7,7 +7,7 @@ Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  };
  
  mod gen_trait_fn_body;

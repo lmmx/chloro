@@ -7,7 +7,7 @@ Rustfmt size:  1117 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Configuration to acknowledge developer preferences as well as set defaults.
  //!
  //! Specifically, we try to find an asterism.toml, and if present we load settings from there.

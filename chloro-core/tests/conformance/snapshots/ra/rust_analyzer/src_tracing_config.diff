@@ -7,7 +7,7 @@ Rustfmt size:  4820 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use anyhow::Context;
  use tracing::level_filters::LevelFilter;
  use tracing_subscriber::{

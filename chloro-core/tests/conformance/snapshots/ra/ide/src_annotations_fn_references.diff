@@ -7,7 +7,7 @@ Rustfmt size:  2808 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module implements a methods and free functions search in the specified file.
  //! We have to skip tests, so cannot reuse file_structure module.
  

@@ -7,7 +7,7 @@ Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! track of the cumulative total number of lines that have been added to the file during the
  //! session so that we can determine the correct offset to insert content at without re-parsing.
  

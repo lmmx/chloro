@@ -7,7 +7,7 @@ Rustfmt size:  3378 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Run all tests in a project, similar to `cargo test`, but using the mir interpreter.
  
  use hir::{Crate, Module};

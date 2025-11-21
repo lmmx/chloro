@@ -7,7 +7,7 @@ Rustfmt size:  6524 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Type inhabitedness logic.
 +
  use std::ops::ControlFlow::{self, Break, Continue};

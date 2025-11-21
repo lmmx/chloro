@@ -7,7 +7,7 @@ Rustfmt size:  5963 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl AssistKind {

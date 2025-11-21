@@ -7,7 +7,7 @@ Rustfmt size:  4506 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::{
      source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
  };

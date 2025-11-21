@@ -7,7 +7,7 @@ Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::sync::LazyLock;
  
  use ide_db::{

@@ -7,7 +7,7 @@ Rustfmt size:  17604 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::{PathResolution, StructKind};
  use ide_db::syntax_helpers::suggest_name::NameGenerator;
  use syntax::{

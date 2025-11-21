@@ -7,7 +7,7 @@ Rustfmt size:  1115 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Markdown formatting.
  //!
  //! Sometimes, we want to display a "rich text" in the UI. At the moment, we use

@@ -7,7 +7,7 @@ Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Defines `ExpressionStore`: a lowered representation of functions, statics and
  //! consts.
 -pub mod body;

@@ -7,7 +7,7 @@ Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use parser::T;
  use span::TextSize;
  use syntax::{

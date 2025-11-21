@@ -7,7 +7,7 @@ Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use ide_db::{defs::Definition, search::FileReference, EditionedFileId};
 +use SyntaxKind::WHITESPACE;
 +use ide_db::{EditionedFileId, defs::Definition, search::FileReference};

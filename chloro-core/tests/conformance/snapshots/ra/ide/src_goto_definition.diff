@@ -7,7 +7,7 @@ Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::{iter, mem::discriminant};
  
 -use crate::Analysis;

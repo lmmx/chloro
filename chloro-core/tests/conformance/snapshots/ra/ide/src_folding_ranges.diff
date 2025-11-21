@@ -7,7 +7,7 @@ Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 +use std::hash::Hash;
 +
  use ide_db::{FxHashSet, syntax_helpers::node_ext::vis_eq};

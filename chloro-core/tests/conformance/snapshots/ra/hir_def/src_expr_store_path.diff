@@ -7,7 +7,7 @@ Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! A desugared representation of paths like `crate::foo` or `<Type as Trait>::bar`.
  
  use std::iter;

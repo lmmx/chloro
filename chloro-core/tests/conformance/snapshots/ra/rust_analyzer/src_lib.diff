@@ -7,7 +7,7 @@ Rustfmt size:  2169 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! The `cli` submodule implements some batch-processing analysis, primarily as
  //! a debugging aid.
  

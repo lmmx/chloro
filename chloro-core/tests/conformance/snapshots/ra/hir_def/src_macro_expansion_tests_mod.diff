@@ -7,7 +7,7 @@ Rustfmt size:  15554 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! write unit-tests (in fact, we used to do that), but that makes tests brittle
  //! and harder to understand.
  

@@ -7,7 +7,7 @@ Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [`AssistContext`].
  
  use hir::{EditionedFileId, FileRange, Semantics};

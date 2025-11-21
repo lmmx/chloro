@@ -7,7 +7,7 @@ Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      TokenStaticData, VendoredLibrariesConfig,
  };
  use ide_db::LineIndexDatabase;

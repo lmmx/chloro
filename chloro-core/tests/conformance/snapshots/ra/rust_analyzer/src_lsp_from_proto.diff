@@ -7,7 +7,7 @@ Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Conversion lsp_types types to rust-analyzer specific ones.
 +
  use anyhow::format_err;

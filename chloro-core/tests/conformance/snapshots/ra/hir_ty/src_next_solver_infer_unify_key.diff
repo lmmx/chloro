@@ -7,7 +7,7 @@ Rustfmt size:  6436 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Unification keyes for the infer context the next-trait-solver.
  
  use std::cmp;

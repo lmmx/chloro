@@ -7,7 +7,7 @@ Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
          _ => return,
      };

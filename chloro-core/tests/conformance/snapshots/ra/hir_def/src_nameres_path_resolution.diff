@@ -7,7 +7,7 @@ Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use stdx::TupleExt;
  
  use crate::{

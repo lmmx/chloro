@@ -7,7 +7,7 @@ Rustfmt size:  14005 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      keyword_item: &ast::Item,
  ) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);

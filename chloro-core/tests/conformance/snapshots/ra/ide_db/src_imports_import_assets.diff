@@ -7,7 +7,7 @@ Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Look up accessible paths for items.
  
  use std::{convert::Infallible, ops::ControlFlow};

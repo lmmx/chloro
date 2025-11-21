@@ -7,7 +7,7 @@ Rustfmt size:  6316 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Reports references in code that the IDE layer cannot resolve.
 -use hir::{db::HirDatabase, sym, AnyDiagnostic, Crate, Module, Semantics};
 +

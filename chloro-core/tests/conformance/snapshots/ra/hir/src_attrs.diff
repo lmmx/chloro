@@ -7,7 +7,7 @@ Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Attributes & documentation for hir types.
  
  use std::ops::ControlFlow;

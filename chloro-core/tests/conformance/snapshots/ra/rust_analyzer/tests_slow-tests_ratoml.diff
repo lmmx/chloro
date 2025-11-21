@@ -7,7 +7,7 @@ Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use crate::support::{Project, Server};
 -use crate::testdir::TestDir;
  use lsp_types::{

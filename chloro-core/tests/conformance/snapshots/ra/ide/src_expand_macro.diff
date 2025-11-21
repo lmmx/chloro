@@ -7,7 +7,7 @@ Rustfmt size:  21133 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      pub expansion: String,
  }
  

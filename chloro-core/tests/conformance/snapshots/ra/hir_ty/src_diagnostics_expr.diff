@@ -7,7 +7,7 @@ Rustfmt size:  25126 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      lang_item::LangItem,
      resolver::{HasResolver, ValueNs},
  };

@@ -7,7 +7,7 @@ Rustfmt size:  2014 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl MemDocs {

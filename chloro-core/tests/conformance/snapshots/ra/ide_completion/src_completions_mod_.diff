@@ -7,7 +7,7 @@ Rustfmt size:  9425 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      if mod_under_caret.item_list().is_some() {
          return None;
      }

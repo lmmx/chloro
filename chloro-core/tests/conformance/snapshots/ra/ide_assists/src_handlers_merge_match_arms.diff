@@ -7,7 +7,7 @@ Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 +use std::iter::successors;
 +
  use hir::Type;

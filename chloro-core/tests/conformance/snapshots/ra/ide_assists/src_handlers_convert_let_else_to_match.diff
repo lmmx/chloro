@@ -7,7 +7,7 @@ Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 +use syntax::T;
 +use syntax::ast::RangeItem;
  use syntax::ast::edit::IndentLevel;

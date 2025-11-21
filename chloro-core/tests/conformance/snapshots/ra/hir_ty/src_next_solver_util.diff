@@ -7,7 +7,7 @@ Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          infer::InferCtxt,
      },
  };

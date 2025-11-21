@@ -7,7 +7,7 @@ Rustfmt size:  6291 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Discovers tests
  
  use hir::{Crate, Module, ModuleDef, Semantics};

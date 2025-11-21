@@ -7,7 +7,7 @@ Rustfmt size:  1619 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl<T> TaskPool<T> {

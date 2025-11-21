@@ -7,7 +7,7 @@ Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Handle syntactic aspects of merging UseTrees.
 +
  use std::cmp::Ordering;

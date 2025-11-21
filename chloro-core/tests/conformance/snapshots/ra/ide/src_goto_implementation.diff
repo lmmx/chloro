@@ -7,7 +7,7 @@ Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::{AsAssocItem, Impl, Semantics};
  use ide_db::{
 +    RootDatabase,

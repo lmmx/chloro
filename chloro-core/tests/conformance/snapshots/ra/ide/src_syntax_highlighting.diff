@@ -7,7 +7,7 @@ Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -pub(crate) mod tags;
 -
 -mod highlights;

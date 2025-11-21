@@ -7,7 +7,7 @@ Rustfmt size:  18564 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Entry point for call-hierarchy
  
  use std::iter;

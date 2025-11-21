@@ -7,7 +7,7 @@ Rustfmt size:  3900 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use crate::{CompletionItem, completions::Completions, context::CompletionContext};
  

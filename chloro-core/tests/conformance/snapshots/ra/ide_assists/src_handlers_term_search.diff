@@ -7,7 +7,7 @@ Rustfmt size:  9410 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Term search assist
 +
  use hir::term_search::{TermSearchConfig, TermSearchCtx};

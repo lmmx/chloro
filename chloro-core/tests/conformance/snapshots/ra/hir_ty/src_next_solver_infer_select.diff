@@ -7,7 +7,7 @@ Rustfmt size:  16174 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -#![expect(dead_code, reason = "this is used by rustc")]
 -
  use std::ops::ControlFlow;

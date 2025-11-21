@@ -7,7 +7,7 @@ Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! `render` module provides utilities for rendering completion suggestions
  //! into code pieces that will be presented to user.
  

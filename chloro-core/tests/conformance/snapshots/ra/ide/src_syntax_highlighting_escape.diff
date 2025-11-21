@@ -7,7 +7,7 @@ Rustfmt size:  2422 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Syntax highlighting for escape sequences
 -use crate::syntax_highlighting::highlights::Highlights;
 -use crate::{HlRange, HlTag};

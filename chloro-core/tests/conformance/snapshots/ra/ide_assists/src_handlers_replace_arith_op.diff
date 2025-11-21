@@ -7,7 +7,7 @@ Rustfmt size:  6494 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::assists::{AssistId, GroupLabel};
  use syntax::{
 -    ast::{self, syntax_factory::SyntaxFactory, ArithOp, BinaryOp},

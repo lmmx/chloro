@@ -7,7 +7,7 @@ Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Handle syntactic aspects of inserting a new `use` item.
 -#[cfg(test)]
 -mod tests;

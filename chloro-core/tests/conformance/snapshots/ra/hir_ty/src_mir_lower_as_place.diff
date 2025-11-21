@@ -7,7 +7,7 @@ Rustfmt size:  15480 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! MIR lowering for places
  
  use hir_def::FunctionId;

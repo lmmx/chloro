@@ -7,7 +7,7 @@ Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to regions.
  
  use hir_def::LifetimeParamId;

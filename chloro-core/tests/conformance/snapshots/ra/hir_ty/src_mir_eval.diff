@@ -7,7 +7,7 @@ Rustfmt size:  131517 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module provides a MIR interpreter, which is used in const eval.
  
  use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};

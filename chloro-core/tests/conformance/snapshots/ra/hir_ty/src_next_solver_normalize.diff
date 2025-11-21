@@ -7,7 +7,7 @@ Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use rustc_next_trait_solver::placeholder::BoundVarReplacer;
  use rustc_type_ir::{
 -    inherent::{IntoKind, Term as _},

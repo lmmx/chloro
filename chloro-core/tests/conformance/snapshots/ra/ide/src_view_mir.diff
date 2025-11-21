@@ -7,7 +7,7 @@ Rustfmt size:  1047 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::{DefWithBody, Semantics};
  use ide_db::{FilePosition, RootDatabase};
 -use syntax::{algo::ancestors_at_offset, ast, AstNode};

@@ -7,7 +7,7 @@ Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See `Semantics`.
  
 -mod child_by_source;

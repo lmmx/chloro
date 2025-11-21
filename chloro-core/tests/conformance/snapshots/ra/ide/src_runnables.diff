@@ -7,7 +7,7 @@ Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      pub cfg: Option<CfgExpr>,
      pub update_test: UpdateTest,
  }

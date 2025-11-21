@@ -7,7 +7,7 @@ Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      },
      traits::FnTrait,
  };

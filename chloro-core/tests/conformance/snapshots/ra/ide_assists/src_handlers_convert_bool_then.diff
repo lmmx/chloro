@@ -7,7 +7,7 @@ Rustfmt size:  15319 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      utils::{invert_boolean_expression, unwrap_trivial_block},
  };
  

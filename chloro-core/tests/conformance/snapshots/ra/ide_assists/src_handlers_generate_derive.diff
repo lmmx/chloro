@@ -7,7 +7,7 @@ Rustfmt size:  5853 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use syntax::{
 -    ast::{self, edit::IndentLevel, make, AstNode, HasAttrs},
 -    syntax_editor::{Element, Position},

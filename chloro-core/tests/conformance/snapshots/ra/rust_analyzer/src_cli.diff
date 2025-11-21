@@ -7,7 +7,7 @@ Rustfmt size:  2201 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Various batch processing tasks, intended primarily for debugging.
  
 -#![allow(clippy::print_stdout, clippy::print_stderr)]

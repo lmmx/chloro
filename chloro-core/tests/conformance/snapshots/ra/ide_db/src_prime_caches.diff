@@ -7,7 +7,7 @@ Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! rust-analyzer is lazy and doesn't compute anything unless asked. This
  //! sometimes is counter productive when, for example, the first goto definition
  //! request takes longer to compute. This module implements prepopulation of

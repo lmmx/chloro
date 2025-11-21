@@ -7,7 +7,7 @@ Rustfmt size:  23406 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      assist_context::{AssistContext, Assists},
  };
  

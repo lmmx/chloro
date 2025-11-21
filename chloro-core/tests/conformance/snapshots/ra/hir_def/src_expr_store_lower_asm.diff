@@ -7,7 +7,7 @@ Rustfmt size:  14081 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Lowering of inline assembly.
 +
  use hir_expand::name::Name;

@@ -7,7 +7,7 @@ Rustfmt size:  6321 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use cfg::DnfExpr;
  use stdx::format_to;
  

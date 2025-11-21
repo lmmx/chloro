@@ -7,7 +7,7 @@ Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! `hir_expand` deals with macro expansion.
  //!
  //! Specifically, it implements a concept of `MacroFile` -- a file whose syntax

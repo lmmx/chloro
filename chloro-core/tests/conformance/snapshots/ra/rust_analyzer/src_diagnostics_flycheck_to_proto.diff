@@ -7,7 +7,7 @@ Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module provides the functionality needed to convert diagnostics from
  //! `cargo check` json format to the LSP diagnostic format.
  

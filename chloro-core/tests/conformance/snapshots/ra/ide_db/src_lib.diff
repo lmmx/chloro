@@ -7,7 +7,7 @@ Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This crate defines the core data structure representing IDE state -- `RootDatabase`.
  //!
  //! It is mainly a `HirDatabase` for semantic analysis, plus a `SymbolsDatabase`, for fuzzy search.

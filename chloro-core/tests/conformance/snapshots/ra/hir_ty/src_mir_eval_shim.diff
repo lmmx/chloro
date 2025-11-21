@@ -7,7 +7,7 @@ Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Interpret intrinsics, lang items and `extern "C"` wellknown functions which their implementation
  //! is not available.
  //!

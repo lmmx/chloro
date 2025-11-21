@@ -7,7 +7,7 @@ Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
      VendoredLibrariesConfig,
  };

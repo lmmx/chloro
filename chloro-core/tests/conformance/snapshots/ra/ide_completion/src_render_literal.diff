@@ -7,7 +7,7 @@ Rustfmt size:  6748 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Renderer for `enum` variants.
  
 -use hir::{db::HirDatabase, StructKind};

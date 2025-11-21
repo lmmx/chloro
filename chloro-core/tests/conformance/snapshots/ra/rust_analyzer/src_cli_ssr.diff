@@ -7,7 +7,7 @@ Rustfmt size:  3539 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Applies structured search replace rules from the command line.
  
  use anyhow::Context;

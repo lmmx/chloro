@@ -7,7 +7,7 @@ Rustfmt size:  14657 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Expansion of associated items
  
  use std::mem;

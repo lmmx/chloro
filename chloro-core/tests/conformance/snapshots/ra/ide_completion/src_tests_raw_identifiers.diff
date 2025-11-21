@@ -7,7 +7,7 @@ Rustfmt size:  1812 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use base_db::SourceDatabase;
 -use expect_test::{expect, Expect};
 +use expect_test::{Expect, expect};

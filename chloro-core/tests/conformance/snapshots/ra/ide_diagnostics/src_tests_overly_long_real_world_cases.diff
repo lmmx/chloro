@@ -7,7 +7,7 @@ Rustfmt size:  84525 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  tracing::error!();
  }
      "#,

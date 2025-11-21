@@ -7,7 +7,7 @@ Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Working with the fixtures in r-a tests, and providing IDE services for them.
  
  use std::hash::{BuildHasher, Hash};

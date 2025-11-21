@@ -7,7 +7,7 @@ Rustfmt size:  2435 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion for lints
 -use ide_db::{documentation::Documentation, generated::lints::Lint, SymbolKind};
 +

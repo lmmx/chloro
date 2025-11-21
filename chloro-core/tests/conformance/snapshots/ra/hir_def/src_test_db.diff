@@ -7,7 +7,7 @@ Rustfmt size:  10686 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      Crate, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
      SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
  };

@@ -99,7 +99,7 @@ impl ComparisonResult {
             output.push_str("✓ Outputs are IDENTICAL\n");
         } else {
             output.push_str("✗ Outputs DIFFER\n\n");
-            output.push_str("--- DIFF (- rustfmt, + chloro) ---\n");
+            output.push_str("=== DIFF (- rustfmt, + chloro) ===\n");
 
             let config = UnifiedDiffConfig::default();
             let printer = BasicLineDiffPrinter(&input.interner);

@@ -7,7 +7,7 @@ Rustfmt size:  7242 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [`patch_json_for_outdated_configs`]
 +
  use serde_json::{Value, json};

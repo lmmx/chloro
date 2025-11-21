@@ -7,7 +7,7 @@ Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      infer::{select::EvaluationResult, traits::PredicateObligation},
      obligation_ctxt::ObligationCtxt,
  };

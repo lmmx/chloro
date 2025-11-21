@@ -7,7 +7,7 @@ Rustfmt size:  5934 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Rustdoc specific doc comment handling
  
  use crate::documentation::Documentation;

@@ -7,7 +7,7 @@ Rustfmt size:  2604 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! attempt to simulate the full IDE experience through the lifetime of the
  //! an editing session.
  

@@ -7,7 +7,7 @@ Rustfmt size:  7507 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! User (postfix)-snippet definitions.
  //!
  //! Actual logic is implemented in [`crate::completions::postfix`] and [`crate::completions::snippet`] respectively.

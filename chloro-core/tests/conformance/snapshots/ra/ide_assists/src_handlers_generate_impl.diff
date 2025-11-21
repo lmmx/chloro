@@ -7,7 +7,7 @@ Rustfmt size:  21468 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      utils::{self, DefaultMethods, IgnoreAssocItems},
  };
  

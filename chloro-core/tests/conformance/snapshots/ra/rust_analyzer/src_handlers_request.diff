@@ -7,7 +7,7 @@ Rustfmt size:  101181 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module is responsible for implementing handlers for Language Server
  //! Protocol. This module specifically handles requests.
  

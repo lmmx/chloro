@@ -7,7 +7,7 @@ Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      time::Duration,
  };
  

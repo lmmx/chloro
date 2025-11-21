@@ -7,7 +7,7 @@ Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! A pretty-printer for HIR.
 -#![allow(dead_code)]
  

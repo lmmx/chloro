@@ -7,7 +7,7 @@ Rustfmt size:  4655 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Tests for user-defined procedural macros.
  //!
  //! Note `//- proc_macros: identity` fixture metas in tests -- we don't use real

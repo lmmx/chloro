@@ -7,7 +7,7 @@ Rustfmt size:  2269 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Syntax highlighting for format macro strings.
 +
  use ide_db::{

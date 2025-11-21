@@ -7,7 +7,7 @@ Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use thin_vec::ThinVec;
  
  use crate::{

@@ -7,7 +7,7 @@ Rustfmt size:  1822 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl fmt::Display for VersionInfo {

@@ -7,7 +7,7 @@ Rustfmt size:  3468 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! The edit plan manages document modifications using textum patches.
  //!
  //! This module defines the transformation that work in the TUI manifests as actual edits on disk.

@@ -7,7 +7,7 @@ Rustfmt size:  14552 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Processes out #[cfg] and #[cfg_attr] attributes from the input for the derive macro
 +
  use std::iter::Peekable;

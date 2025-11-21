@@ -7,7 +7,7 @@ Rustfmt size:  15195 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Basic tree diffing functionality.
 +
  use rustc_hash::FxHashMap;

@@ -7,7 +7,7 @@ Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [RequestDispatcher].
 +
  use std::{

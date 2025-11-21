@@ -7,7 +7,7 @@ Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use hir::{Adt, AsAssocItem, Crate, HirDisplay, MacroKind, Semantics};
  use ide_db::{

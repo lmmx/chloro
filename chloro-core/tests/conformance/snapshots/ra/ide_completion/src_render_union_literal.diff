@@ -7,7 +7,7 @@ Rustfmt size:  3345 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use syntax::ToSmolStr;
  
  use crate::{

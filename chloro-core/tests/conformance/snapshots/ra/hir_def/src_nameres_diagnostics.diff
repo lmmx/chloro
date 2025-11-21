@@ -7,7 +7,7 @@ Rustfmt size:  4722 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Diagnostics emitted during DefMap construction.
  
  use std::ops::Not;

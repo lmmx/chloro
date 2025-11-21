@@ -7,7 +7,7 @@ Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use macros::{TypeFoldable, TypeVisitable};
  use rustc_ast_ir::visit::VisitorResult;
  use rustc_type_ir::{

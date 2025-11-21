@@ -7,7 +7,7 @@ Rustfmt size:  36173 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Tests specific to declarative macros, aka macros by example. This covers
  //! both stable `macro_rules!` macros as well as unstable `macro` macros.
  

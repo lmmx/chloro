@@ -7,7 +7,7 @@ Rustfmt size:  3948 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Extern block hints
 +
  use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};

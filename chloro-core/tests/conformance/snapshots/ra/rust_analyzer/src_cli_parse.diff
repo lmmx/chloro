@@ -7,7 +7,7 @@ Rustfmt size:  526 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Read Rust code on stdin, print syntax tree on stdout.
 +
  use ide::Edition;

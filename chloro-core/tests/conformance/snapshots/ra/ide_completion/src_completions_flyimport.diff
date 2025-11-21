@@ -7,7 +7,7 @@ Rustfmt size:  15488 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [`import_on_the_fly`].
 +
  use hir::{ItemInNs, ModuleDef};

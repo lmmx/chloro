@@ -7,7 +7,7 @@ Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Compute the binary representation of a type
  
  use std::fmt;

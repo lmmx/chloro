@@ -7,7 +7,7 @@ Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Tools to work with format string literals for the `format_args!` family of macros.
 +
  use syntax::{

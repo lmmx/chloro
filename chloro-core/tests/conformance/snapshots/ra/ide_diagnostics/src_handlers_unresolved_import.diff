@@ -7,7 +7,7 @@ Rustfmt size:  2169 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: unresolved-import

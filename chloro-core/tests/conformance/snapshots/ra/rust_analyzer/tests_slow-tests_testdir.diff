@@ -7,7 +7,7 @@ Rustfmt size:  3740 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          // on *every* OS, as on windows `canonicalize` itself creates problems.
          #[cfg(target_os = "macos")]
          let temp_dir = temp_dir.canonicalize().unwrap();

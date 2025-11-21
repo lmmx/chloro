@@ -7,7 +7,7 @@ Rustfmt size:  7454 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Renderer for patterns.
  
 -use hir::{db::HirDatabase, Name, StructKind};

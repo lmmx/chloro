@@ -7,7 +7,7 @@ Rustfmt size:  4014 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of trait bound hints.
  //!
  //! Currently this renders the implied `Sized` bound.

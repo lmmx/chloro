@@ -7,7 +7,7 @@ Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  impl IntoIterator for UsageSearchResult {
      type Item = (EditionedFileId, Vec<FileReference>);

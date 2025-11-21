@@ -7,7 +7,7 @@ Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Utilities for mapping between hir IDs and the surface syntax.
  
  use either::Either;

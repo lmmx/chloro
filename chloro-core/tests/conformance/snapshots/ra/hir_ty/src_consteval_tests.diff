@@ -7,7 +7,7 @@ Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use base_db::RootQueryDb;
  use hir_def::db::DefDatabase;
  use hir_expand::EditionedFileId;

@@ -7,7 +7,7 @@ Rustfmt size:  5492 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use bitflags::bitflags;
  
  use crate::{

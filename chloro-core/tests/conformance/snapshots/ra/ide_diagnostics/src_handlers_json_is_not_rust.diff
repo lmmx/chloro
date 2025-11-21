@@ -7,7 +7,7 @@ Rustfmt size:  11337 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This diagnostic provides an assist for creating a struct definition from a JSON
  //! example.
  

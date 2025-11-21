@@ -7,7 +7,7 @@ Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use either::Either;
  use itertools::Itertools;
  use syntax::{

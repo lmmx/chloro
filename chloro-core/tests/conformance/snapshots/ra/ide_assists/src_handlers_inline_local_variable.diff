@@ -7,7 +7,7 @@ Rustfmt size:  18858 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir::{PathResolution, Semantics};
  use ide_db::{
 +    EditionedFileId, RootDatabase,

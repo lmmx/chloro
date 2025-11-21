@@ -7,7 +7,7 @@ Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module has the functionality to search the project and its dependencies for a certain item,
  //! by its name and a few criteria.
  //! The main reason for this module to exist is the fact that project's items and dependencies' items

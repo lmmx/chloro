@@ -7,7 +7,7 @@ Rustfmt size:  21606 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      func_kind: FuncKind<'_>,
  ) -> Builder {
      let db = completion.db;

@@ -7,7 +7,7 @@ Rustfmt size:  4904 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! # The Call-site Hierarchy
  //!
  //! `ExpnData::call_site` in rustc, [`MacroCallLoc::call_site`] in rust-analyzer.

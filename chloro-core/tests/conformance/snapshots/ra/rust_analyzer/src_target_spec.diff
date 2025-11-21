@@ -7,7 +7,7 @@ Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
              &[crate_id, ..] => crate_id,
              _ => return Ok(None),
          };

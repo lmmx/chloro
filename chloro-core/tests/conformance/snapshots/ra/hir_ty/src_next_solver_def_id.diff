@@ -7,7 +7,7 @@ Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use stdx::impl_from;
  
  use crate::db::{InternedClosureId, InternedCoroutineId, InternedOpaqueTyId};

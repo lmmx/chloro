@@ -7,7 +7,7 @@ Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use rustc_type_ir::{Interner, TypeVisitable, TypeVisitableExt};
  use tracing::{debug, instrument, warn};
  

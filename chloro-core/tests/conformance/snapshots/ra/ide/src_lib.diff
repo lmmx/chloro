@@ -7,7 +7,7 @@ Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! However, IDE specific bits of the analysis (most notably completion) happen
  //! in this crate.
  

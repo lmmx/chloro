@@ -7,7 +7,7 @@ Rustfmt size:  9083 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::fmt::Display;
  
  use hir::{ModPath, ModuleDef};

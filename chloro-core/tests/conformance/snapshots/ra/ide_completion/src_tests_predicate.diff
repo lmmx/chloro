@@ -7,7 +7,7 @@ Rustfmt size:  3940 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion tests for predicates and bounds.
 +
  use expect_test::expect;

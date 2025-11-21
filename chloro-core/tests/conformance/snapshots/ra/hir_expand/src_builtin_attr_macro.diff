@@ -7,7 +7,7 @@ Rustfmt size:  5475 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Builtin attributes.
 +
  use intern::sym;

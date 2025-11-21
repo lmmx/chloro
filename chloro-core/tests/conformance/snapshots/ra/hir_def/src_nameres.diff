@@ -7,7 +7,7 @@ Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! path and, upon success, we run macro expansion and "collect module" phase on
  //! the result
  

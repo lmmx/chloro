@@ -7,7 +7,7 @@ Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module is concerned with finding methods that a given type provides.
  //! For details about how this works in rustc, see the method lookup page in the
  //! [rustc guide](https://rust-lang.github.io/rustc-guide/method-lookup.html)

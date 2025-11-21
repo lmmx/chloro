@@ -7,7 +7,7 @@ Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Name resolution façade.
 +
  use std::{fmt, mem};

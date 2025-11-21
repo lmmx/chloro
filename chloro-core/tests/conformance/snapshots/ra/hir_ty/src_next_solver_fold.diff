@@ -7,7 +7,7 @@ Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Fold impls for the next-trait-solver.
  
  use rustc_type_ir::{

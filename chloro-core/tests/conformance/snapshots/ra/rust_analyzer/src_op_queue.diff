@@ -7,7 +7,7 @@ Rustfmt size:  2365 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  impl<Args, Output> Default for OpQueue<Args, Output> {
      fn default() -> Self {

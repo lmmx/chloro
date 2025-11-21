@@ -7,7 +7,7 @@ Rustfmt size:  8413 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      pattern_ctx: &PatternContext,
  ) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);

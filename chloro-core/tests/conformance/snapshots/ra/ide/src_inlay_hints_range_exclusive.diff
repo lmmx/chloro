@@ -7,7 +7,7 @@ Rustfmt size:  3239 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "range exclusive" inlay hints:
  //! ```ignore
  //! for i in 0../* < */10 {}

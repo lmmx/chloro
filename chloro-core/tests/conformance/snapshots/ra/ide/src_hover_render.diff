@@ -7,7 +7,7 @@ Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Logic for rendering the different hover messages
 +
  use std::{env, mem, ops::Not};

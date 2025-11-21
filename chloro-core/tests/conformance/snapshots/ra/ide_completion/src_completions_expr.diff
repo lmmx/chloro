@@ -7,7 +7,7 @@ Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion of names from the current scope in expression position.
  
  use std::ops::ControlFlow;

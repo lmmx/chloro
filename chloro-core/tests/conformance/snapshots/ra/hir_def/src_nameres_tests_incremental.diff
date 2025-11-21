@@ -7,7 +7,7 @@ Rustfmt size:  16061 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use base_db::{
      CrateDisplayName, CrateGraphBuilder, CrateName, CrateOrigin, CrateWorkspaceData,
      DependencyBuilder, Env, RootQueryDb, SourceDatabase,

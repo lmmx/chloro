@@ -7,7 +7,7 @@ Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! to certain types. To record this, we use the union-find implementation from
  //! the `ena` crate, which is extracted from rustc.
  

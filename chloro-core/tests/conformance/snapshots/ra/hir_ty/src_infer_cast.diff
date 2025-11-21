@@ -7,7 +7,7 @@ Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      Float,
      FnPtr,
      Ptr(Ty<'db>, Mutability),

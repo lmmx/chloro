@@ -7,7 +7,7 @@ Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::iter::{self, Peekable};
  
  use either::Either;

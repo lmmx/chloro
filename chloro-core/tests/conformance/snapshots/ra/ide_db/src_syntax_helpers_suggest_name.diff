@@ -7,7 +7,7 @@ Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use rustc_hash::FxHashMap;
  use stdx::to_lower_snake_case;
  use syntax::{

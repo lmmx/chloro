@@ -7,7 +7,7 @@ Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Defines `Body`: a lowered representation of functions, statics and
  //! consts.
 +

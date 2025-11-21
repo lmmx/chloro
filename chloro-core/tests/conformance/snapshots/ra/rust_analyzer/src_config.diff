@@ -7,7 +7,7 @@ Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Config used by the language server.
  //!
  //! Of particular interest is the `feature_flags` hash map: while other fields

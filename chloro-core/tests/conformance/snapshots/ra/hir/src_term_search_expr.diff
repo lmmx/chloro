@@ -7,7 +7,7 @@ Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      /// Constant generic parameter
      ConstParam(ConstParam),
      /// Well known type (such as `true` for bool)

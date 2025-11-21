@@ -7,7 +7,7 @@ Rustfmt size:  3850 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      ///
      /// [rustc dev guide]: https://rustc-dev-guide.rust-lang.org/traits/hrtb.html
      #[instrument(level = "debug", skip(self), ret)]

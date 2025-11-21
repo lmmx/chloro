@@ -7,7 +7,7 @@ Rustfmt size:  3466 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module tests tt <-> syntax tree conversion specifically. In particular,
  //! it, among other things, check that we convert `tt` to the right kind of
  //! syntax node depending on the macro call-site.

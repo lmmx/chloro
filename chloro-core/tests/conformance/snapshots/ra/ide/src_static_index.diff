@@ -7,7 +7,7 @@ Rustfmt size:  19028 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  pub struct TokenStore(Vec<TokenStaticData>);
  
  impl TokenStore {

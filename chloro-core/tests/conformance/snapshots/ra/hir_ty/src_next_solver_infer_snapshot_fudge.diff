@@ -7,7 +7,7 @@ Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      unify::{self as ut, UnifyKey},
  };
  use rustc_type_ir::{

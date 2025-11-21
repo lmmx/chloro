@@ -7,7 +7,7 @@ Rustfmt size:  12893 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Driver for rust-analyzer.
  //!
  //! Based on cli flags, either spawns an LSP server, or runs a batch analysis

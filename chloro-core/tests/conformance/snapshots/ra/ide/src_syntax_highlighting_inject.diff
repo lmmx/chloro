@@ -7,7 +7,7 @@ Rustfmt size:  12342 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! "Recursive" Syntax highlighting for code in doctests and fixtures.
  
  use std::mem;

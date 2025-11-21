@@ -7,7 +7,7 @@ Rustfmt size:  41840 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! correct. Instead, we try to provide a best-effort service. Even if the
  //! project is currently loading and we don't have a full project model, we
  //! still want to respond to various  requests.

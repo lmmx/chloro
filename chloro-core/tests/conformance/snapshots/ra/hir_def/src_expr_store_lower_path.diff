@@ -7,7 +7,7 @@ Rustfmt size:  11991 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Transforms syntax into `Path` objects, ideally with accounting for hygiene
  
 -#[cfg(test)]

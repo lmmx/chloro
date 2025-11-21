@@ -7,7 +7,7 @@ Rustfmt size:  2723 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Helper tools for intra doc links.
  
 -const TYPES: (&[&str], &[&str]) = (

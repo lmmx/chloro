@@ -7,7 +7,7 @@ Rustfmt size:  1553 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  fn set_rerun() {
      println!("cargo:rerun-if-env-changed=CFG_RELEASE");

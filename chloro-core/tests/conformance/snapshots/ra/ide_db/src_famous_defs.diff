@@ -7,7 +7,7 @@ Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      pub fn alloc_string_ToString(&self) -> Option<Trait> {
          self.find_trait("alloc:string:ToString")
      }

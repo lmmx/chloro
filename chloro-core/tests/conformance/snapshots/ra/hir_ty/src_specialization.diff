@@ -7,7 +7,7 @@ Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Impl specialization related things
  
 -use hir_def::{nameres::crate_def_map, ImplId};

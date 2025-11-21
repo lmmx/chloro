@@ -7,7 +7,7 @@ Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::cmp::Ordering;
  
  use itertools::Itertools;

@@ -7,7 +7,7 @@ Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! To make attribute macros work reliably when typing, we need to take care to
  //! fix up syntax errors in the code we're passing to them.
  

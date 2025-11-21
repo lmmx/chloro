@@ -7,7 +7,7 @@ Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Constant evaluation details
  
 -#[cfg(test)]

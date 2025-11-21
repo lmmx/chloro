@@ -7,7 +7,7 @@ Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Span maps for real files and macro expansions.
  
 +pub use span::RealSpanMap;

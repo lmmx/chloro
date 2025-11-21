@@ -7,7 +7,7 @@ Rustfmt size:  573 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
  
 -// Diagnostic: unimplemented-builtin-macro

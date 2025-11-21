@@ -7,7 +7,7 @@ Rustfmt size:  3394 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! A simple progress bar
  //!
  //! A single thread non-optimized progress bar

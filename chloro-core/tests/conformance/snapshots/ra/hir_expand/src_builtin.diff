@@ -7,7 +7,7 @@ Rustfmt size:  398 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Builtin macros and attributes
 +
 +pub use self::{

@@ -7,7 +7,7 @@ Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Postfix completions, like `Ok(10).ifl$0` => `if let Ok() = Ok(10) { $0 }`.
  
 -mod format_like;

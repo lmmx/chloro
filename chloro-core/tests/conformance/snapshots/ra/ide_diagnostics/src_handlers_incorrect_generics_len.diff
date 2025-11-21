@@ -7,7 +7,7 @@ Rustfmt size:  5407 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  use hir::IncorrectGenericsLenKind;
  

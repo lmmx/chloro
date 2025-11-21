@@ -7,7 +7,7 @@ Rustfmt size:  3608 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Functions to detect special lang items
  
 -use hir_def::{lang_item::LangItem, signatures::StructFlags, AdtId};

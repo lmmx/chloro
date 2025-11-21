@@ -7,7 +7,7 @@ Rustfmt size:  12638 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          self.infer_mut_expr(self.body.body_expr, Mutability::Not);
      }
  

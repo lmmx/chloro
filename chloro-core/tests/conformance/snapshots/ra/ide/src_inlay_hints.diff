@@ -7,7 +7,7 @@ Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use crate::{FileId, navigation_target::TryToNav};
  
  mod adjustment;

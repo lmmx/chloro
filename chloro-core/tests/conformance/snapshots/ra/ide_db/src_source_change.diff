@@ -7,7 +7,7 @@ Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use std::{collections::hash_map::Entry, fmt, iter, mem};
  

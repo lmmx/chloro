@@ -7,7 +7,7 @@ Rustfmt size:  11433 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Definition of `InferCtxtLike` from the librarified type layer.
  
  use rustc_type_ir::{

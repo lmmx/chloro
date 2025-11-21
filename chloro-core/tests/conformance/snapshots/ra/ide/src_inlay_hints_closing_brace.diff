@@ -7,7 +7,7 @@ Rustfmt size:  6951 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "closing brace" inlay hints:
  //! ```no_run
  //! fn g() {

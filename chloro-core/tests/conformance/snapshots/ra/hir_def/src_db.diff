@@ -7,7 +7,7 @@ Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Defines database & queries for name resolution.
 +
  use base_db::{Crate, RootQueryDb, SourceDatabase};

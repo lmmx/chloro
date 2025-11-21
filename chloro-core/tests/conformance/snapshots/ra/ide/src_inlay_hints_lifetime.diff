@@ -7,7 +7,7 @@ Rustfmt size:  17157 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "lifetime elision" inlay hints:
  //! ```no_run
  //! fn example/* <'0> */(a: &/* '0 */()) {}

@@ -7,7 +7,7 @@ Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -pub(crate) use rustc_next_trait_solver::solve::inspect::*;
 -
  use rustc_ast_ir::try_visit;

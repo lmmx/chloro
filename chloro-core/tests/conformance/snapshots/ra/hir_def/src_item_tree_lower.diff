@@ -7,7 +7,7 @@ Rustfmt size:  20372 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  }
  
  impl<'a> Ctx<'a> {

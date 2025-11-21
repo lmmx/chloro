@@ -7,7 +7,7 @@ Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::time::Instant;
  
 -use expect_test::{expect_file, ExpectFile};

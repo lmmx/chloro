@@ -7,7 +7,7 @@ Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  #[derive(PartialEq, Eq, Hash)]
  pub struct HighlightedRange {
      pub range: TextRange,

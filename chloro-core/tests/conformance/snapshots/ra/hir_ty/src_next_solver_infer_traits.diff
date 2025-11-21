@@ -7,7 +7,7 @@ Rustfmt size:  8281 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use hir_def::TraitId;
  use macros::{TypeFoldable, TypeVisitable};

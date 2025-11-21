@@ -7,7 +7,7 @@ Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use crate::assist_context::{AssistContext, Assists};
  

@@ -7,7 +7,7 @@ Rustfmt size:  6332 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use hir_def::TraitId;
  use rustc_type_ir::{TypeFoldable, Upcast, Variance};
  

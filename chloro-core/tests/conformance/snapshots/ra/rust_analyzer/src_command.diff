@@ -7,7 +7,7 @@ Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
  /// cargo output into a Rust data type

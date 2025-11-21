@@ -7,7 +7,7 @@ Rustfmt size:  18467 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See also this post:
  //! <https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html>
  

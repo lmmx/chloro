@@ -7,7 +7,7 @@ Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion of names from the current scope in type position.
  
  use hir::{HirDisplay, ScopeDef};

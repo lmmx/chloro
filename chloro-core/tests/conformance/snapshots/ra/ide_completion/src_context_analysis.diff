@@ -7,7 +7,7 @@ Rustfmt size:  89146 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Module responsible for analyzing the code surrounding the cursor for completion.
 +
  use std::iter;

@@ -7,7 +7,7 @@ Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ena::undo_log::Rollback;
  use ena::unify as ut;
  use rustc_index::IndexVec;

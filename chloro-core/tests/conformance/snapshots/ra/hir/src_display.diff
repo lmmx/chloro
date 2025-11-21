@@ -7,7 +7,7 @@ Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! HirDisplay implementations for various hir types.
  
  use either::Either;

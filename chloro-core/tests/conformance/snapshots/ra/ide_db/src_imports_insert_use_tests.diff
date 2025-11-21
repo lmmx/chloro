@@ -7,7 +7,7 @@ Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use stdx::trim_indent;
  use test_fixture::WithFixture;
 -use test_utils::{assert_eq_text, CURSOR_MARKER};

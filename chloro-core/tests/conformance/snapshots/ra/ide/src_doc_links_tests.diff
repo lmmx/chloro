@@ -7,7 +7,7 @@ Rustfmt size:  20051 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::iter;
  
 -use expect_test::{expect, Expect};

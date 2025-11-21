@@ -7,7 +7,7 @@ Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! `completions` crate provides utilities for generating completions of user input.
  
 -mod completions;

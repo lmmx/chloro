@@ -7,7 +7,7 @@ Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use mbe::MatchedArmIndex;
  use rustc_hash::FxHashSet;
  use span::{AstIdMap, Edition, Span, SyntaxContext};

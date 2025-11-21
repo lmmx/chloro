@@ -7,7 +7,7 @@ Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Functionality for obtaining data related to traits from the DB.
  
 -use crate::{defs::Definition, RootDatabase};

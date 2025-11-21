@@ -7,7 +7,7 @@ Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
          Attrs(RawAttrs::new_expanded(db, owner, span_map, cfg_options))
      }
  

@@ -7,7 +7,7 @@ Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
          TextRange::new(first_child.text_range().start(), ctx.source_range().end())
      };

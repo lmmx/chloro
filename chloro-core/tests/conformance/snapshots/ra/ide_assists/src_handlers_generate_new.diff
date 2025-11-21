@@ -7,7 +7,7 @@ Rustfmt size:  21912 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      utils::{find_struct_impl, generate_impl_with_item},
  };
  

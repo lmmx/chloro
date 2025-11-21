@@ -7,7 +7,7 @@ Rustfmt size:  3353 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things related to opaques in the next-trait-solver.
  
  use rustc_ast_ir::try_visit;

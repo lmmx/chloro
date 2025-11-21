@@ -7,7 +7,7 @@ Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! A higher level attributes based on TokenTree, with also some shortcuts.
 +
  use std::iter;

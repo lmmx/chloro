@@ -7,7 +7,7 @@ Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  /// Coercing a mutable reference to an immutable works, while
  /// coercing `&T` to `&mut T` should be forbidden.

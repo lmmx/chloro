@@ -7,7 +7,7 @@ Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Provides set of implementation for hir's objects that allows get back location in file.
  
  use either::Either;

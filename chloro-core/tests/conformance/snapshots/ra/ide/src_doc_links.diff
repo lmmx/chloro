@@ -7,7 +7,7 @@ Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Extracts, resolves and rewrites links and intra-doc links in markdown documentation.
  
 -#[cfg(test)]

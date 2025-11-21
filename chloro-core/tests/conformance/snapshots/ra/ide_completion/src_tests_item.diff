@@ -7,7 +7,7 @@ Rustfmt size:  6722 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completion tests for item specifics overall.
  //!
  //! Except for use items which are tested in [super::use_tree] and mod declarations with are tested

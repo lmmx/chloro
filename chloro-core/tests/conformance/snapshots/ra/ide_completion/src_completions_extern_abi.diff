@@ -7,7 +7,7 @@ Rustfmt size:  2243 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completes function abi strings.
 +
  use syntax::{

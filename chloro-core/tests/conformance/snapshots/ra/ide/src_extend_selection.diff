@@ -7,7 +7,7 @@ Rustfmt size:  21059 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  
  use crate::FileRange;
  

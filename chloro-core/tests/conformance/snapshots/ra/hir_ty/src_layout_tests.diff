@@ -7,7 +7,7 @@ Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use base_db::target::TargetData;
  use either::Either;
  use hir_def::db::DefDatabase;

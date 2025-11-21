@@ -7,7 +7,7 @@ Rustfmt size:  13389 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! The home of `HirDatabase`, which is the Salsa database containing all the
  //! type inference-related queries.
  

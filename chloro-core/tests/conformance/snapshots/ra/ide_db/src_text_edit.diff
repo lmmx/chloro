@@ -7,7 +7,7 @@ Rustfmt size:  9801 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Representation of a `TextEdit`.
  //!
  //! `rust-analyzer` never mutates text itself and only sends diffs to clients,

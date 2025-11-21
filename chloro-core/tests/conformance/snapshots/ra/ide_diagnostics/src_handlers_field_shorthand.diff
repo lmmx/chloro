@@ -7,7 +7,7 @@ Rustfmt size:  5860 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Suggests shortening `Foo { field: field }` to `Foo { field }` in both
  //! expressions and patterns.
  

@@ -7,7 +7,7 @@ Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Language server executes such typing assists synchronously. That is, they
  //! block user's typing and should be pretty fast for this reason!
  

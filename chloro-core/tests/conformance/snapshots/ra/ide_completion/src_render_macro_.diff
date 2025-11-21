@@ -7,7 +7,7 @@ Rustfmt size:  7898 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Renderer for macro invocations.
  
  use hir::HirDisplay;

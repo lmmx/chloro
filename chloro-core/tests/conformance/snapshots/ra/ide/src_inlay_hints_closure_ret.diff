@@ -7,7 +7,7 @@ Rustfmt size:  3222 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Implementation of "closure return type" inlay hints.
  //!
  //! Tests live in [`bind_pat`][super::bind_pat] module.

@@ -7,7 +7,7 @@ Rustfmt size:  2660 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Target dependent parameters needed for layouts
  
 -use base_db::{target::TargetLoadError, Crate};

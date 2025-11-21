@@ -7,7 +7,7 @@ Rustfmt size:  4425 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Completes identifiers in format string literals.
  
  use hir::{ModuleDef, ScopeDef};

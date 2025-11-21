@@ -7,7 +7,7 @@ Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! An algorithm to find a path to refer to a certain item.
  
  use std::{cell::Cell, cmp::Ordering, iter};

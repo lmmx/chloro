@@ -7,7 +7,7 @@ Rustfmt size:  7094 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use rustc_type_ir::IntVid;
  use tracing::debug;
  

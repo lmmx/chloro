@@ -7,7 +7,7 @@ Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      Method(FunctionId, MethodViolationCode),
      AssocConst(ConstId),
      GAT(TypeAliasId),

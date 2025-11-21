@@ -7,7 +7,7 @@ Rustfmt size:  5132 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module contains a helper for converting a field access expression into a
  //! path expression. This is used when destructuring a tuple or struct.
  //!

@@ -7,7 +7,7 @@ Rustfmt size:  8816 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::ops::ControlFlow;
  
 +use DynCompatibilityViolationKind::*;

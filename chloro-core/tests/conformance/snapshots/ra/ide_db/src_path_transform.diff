@@ -7,7 +7,7 @@ Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! See [`PathTransform`].
  
 -use crate::helpers::mod_path_to_ast;

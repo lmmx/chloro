@@ -7,7 +7,7 @@ Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      utils::{self, detect_variant_from_bytes},
  };
  

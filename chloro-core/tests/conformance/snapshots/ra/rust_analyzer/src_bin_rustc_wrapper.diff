@@ -7,7 +7,7 @@ Rustfmt size:  2455 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! We setup RUSTC_WRAPPER to point to `rust-analyzer` binary itself during the
  //! initial `cargo check`. That way, we avoid checking the actual project, and
  //! only build proc macros and build.rs.

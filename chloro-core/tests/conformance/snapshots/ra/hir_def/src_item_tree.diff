@@ -7,7 +7,7 @@ Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! In general, any item in the `ItemTree` stores its `AstId`, which allows mapping it back to its
  //! surface syntax.
  

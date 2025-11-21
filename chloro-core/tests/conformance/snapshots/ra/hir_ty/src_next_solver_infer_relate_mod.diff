@@ -7,7 +7,7 @@ Rustfmt size:  544 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This module contains the definitions of most `TypeRelation`s in the type system
  //! (except for some relations used for diagnostics and heuristics in the compiler).
  //! As well as the implementation of `Relate` for interned things (`Ty`/`Const`/etc).

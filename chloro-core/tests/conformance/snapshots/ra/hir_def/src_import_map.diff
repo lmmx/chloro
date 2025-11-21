@@ -7,7 +7,7 @@ Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! A map of all publicly exported items in a crate.
  
  use std::fmt;

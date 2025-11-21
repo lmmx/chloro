@@ -7,7 +7,7 @@ Rustfmt size:  3508 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
 -use ide_db::{base_db::SourceDatabase, FilePosition, LineIndexDatabase, RootDatabase};
  use std::time::{Duration, Instant};

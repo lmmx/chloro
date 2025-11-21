@@ -7,7 +7,7 @@ Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use std::ops::{Deref, DerefMut};
  
  use either::Either;

@@ -7,7 +7,7 @@ Rustfmt size:  3074 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use dot::{Id, LabelText};
  use ide_db::base_db::salsa::plumbing::AsId;
  use ide_db::{

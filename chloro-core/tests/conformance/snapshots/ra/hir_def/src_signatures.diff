@@ -7,7 +7,7 @@ Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use bitflags::bitflags;
  use cfg::{CfgExpr, CfgOptions};
  use hir_expand::{

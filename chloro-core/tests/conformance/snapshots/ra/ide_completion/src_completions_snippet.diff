@@ -7,7 +7,7 @@ Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! This file provides snippet completions, like `pd` => `eprintln!(...)`.
  
 -use ide_db::{documentation::Documentation, imports::insert_use::ImportScope, SnippetCap};

@@ -7,7 +7,7 @@ Rustfmt size:  1147 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Injected inlay hints for `#[rust_analyzer::rust_fixture]`.
  
  use hir::{EditionedFileId, Semantics};

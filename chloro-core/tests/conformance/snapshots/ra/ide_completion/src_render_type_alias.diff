@@ -7,7 +7,7 @@ Rustfmt size:  1934 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      with_eq: bool,
  ) -> Option<CompletionItem> {
      let db = ctx.db();

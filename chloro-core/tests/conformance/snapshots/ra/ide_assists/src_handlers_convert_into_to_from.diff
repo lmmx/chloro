@@ -7,7 +7,7 @@ Rustfmt size:  7739 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ide_db::{famous_defs::FamousDefs, helpers::mod_path_to_ast, traits::resolve_target_trait};
  use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
  

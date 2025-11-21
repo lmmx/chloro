@@ -7,7 +7,7 @@ Rustfmt size:  17677 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Utilities for LSP-related boilerplate code.
 +
  use std::{mem, ops::Range};

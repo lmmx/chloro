@@ -7,7 +7,7 @@ Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Collects lang items: items marked with `#[lang = "..."]` attribute.
  //!
  //! This attribute to tell the compiler about semi built-in std library

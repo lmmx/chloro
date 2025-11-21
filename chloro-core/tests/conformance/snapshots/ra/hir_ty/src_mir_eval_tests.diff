@@ -7,7 +7,7 @@ Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      setup_tracing,
      test_db::TestDB,
  };

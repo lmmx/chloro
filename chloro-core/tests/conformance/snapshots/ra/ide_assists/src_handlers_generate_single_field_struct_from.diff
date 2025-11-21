@@ -7,7 +7,7 @@ Rustfmt size:  27358 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use ast::make;
  use hir::next_solver::{DbInterner, TypingMode};
  use hir::{HasCrate, ModuleDef, Semantics};

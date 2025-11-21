@@ -7,7 +7,7 @@ Rustfmt size:  1615 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Things relevant to the next trait solver.
  
 -pub mod abi;

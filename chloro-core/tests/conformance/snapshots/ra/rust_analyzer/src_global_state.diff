@@ -7,7 +7,7 @@ Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
  }
  

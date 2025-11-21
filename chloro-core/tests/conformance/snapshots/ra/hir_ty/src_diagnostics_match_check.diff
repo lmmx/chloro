@@ -7,7 +7,7 @@ Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //!
  //! It is modeled on the rustc module `rustc_mir_build::thir::pattern`.
  

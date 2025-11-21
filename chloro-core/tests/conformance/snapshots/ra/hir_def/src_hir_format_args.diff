@@ -7,7 +7,7 @@ Rustfmt size:  17849 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //! Parses `format_args` input.
  
 +use PositionUsedAs::*;

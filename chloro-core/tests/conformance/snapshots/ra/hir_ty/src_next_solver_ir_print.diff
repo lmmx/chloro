@@ -7,7 +7,7 @@ Rustfmt size:  8070 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  use rustc_type_ir::inherent::SliceLike;
  use rustc_type_ir::{self as ty, ir_print::IrPrint};
  

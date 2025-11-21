@@ -7,7 +7,7 @@ Rustfmt size:  5590 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
 -#![allow(clippy::match_single_binding)]
 -#![allow(clippy::no_effect)]
 -

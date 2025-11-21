@@ -7,7 +7,7 @@ Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
  //!
  //! The correct behavior in such cases is probably to show a dialog to the user.
  //! Our current behavior is ¯\_(ツ)_/¯.

@@ -7,7 +7,7 @@ Rustfmt size:  2830 bytes
 
 ✗ Outputs DIFFER
 
---- DIFF (- rustfmt, + chloro) ---
+=== DIFF (- rustfmt, + chloro) ===
      /// Generic arguments directly on the segment.
      Segment(u32),
      /// Generic arguments on an associated type, e.g. `Foo<Assoc<A, B> = C>` or `Foo<Assoc<A, B>: Bound>`.
