@@ -69,7 +69,12 @@ pub fn debug_children_with_tokens(node: &SyntaxNode, label: &str, max_depth: usi
 }
 
 #[cfg(not(debug_assertions))]
-pub fn debug_node_siblings(_node: &SyntaxNode, _label: &str, _max_depth: usize) {}
+pub fn debug_node_siblings(_node: &ra_ap_syntax::SyntaxNode, _label: &str, _max_depth: usize) {}
 
 #[cfg(not(debug_assertions))]
-pub fn debug_children_with_tokens(_node: &SyntaxNode, _label: &str, _max_depth: usize) {}
+pub fn debug_children_with_tokens(
+    _node: &ra_ap_syntax::SyntaxNode,
+    _label: &str,
+    _max_depth: usize,
+) {
+}
