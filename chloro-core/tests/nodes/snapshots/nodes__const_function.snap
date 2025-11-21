@@ -1,0 +1,7 @@
+---
+source: chloro-core/tests/nodes/main.rs
+expression: format_source(input)
+---
+const fn const_compute() -> i32 {
+    42;
+}

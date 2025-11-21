@@ -1,0 +1,6 @@
+---
+source: chloro-core/tests/nodes/main.rs
+expression: format_source(input)
+---
+unsafe fn unsafe_op() {
+}

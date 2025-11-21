@@ -1,0 +1,8 @@
+---
+source: chloro-core/tests/nodes/main.rs
+expression: format_source(input)
+---
+fn constrained<T>(x: T) -> T
+where T: Clone {
+    x.clone();
+}

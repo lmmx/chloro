@@ -1,0 +1,7 @@
+---
+source: chloro-core/tests/nodes/main.rs
+expression: format_source(input)
+---
+fn generic<T>(x: T) -> T {
+    x;
+}

@@ -1,0 +1,6 @@
+---
+source: chloro-core/tests/nodes/main.rs
+expression: format_source(input)
+---
+async fn async_work() {
+}
