@@ -4,6 +4,7 @@ use ra_ap_syntax::{
 };
 
 use super::format_preceding_docs_and_attrs;
+use super::{debug_children_with_tokens, debug_node_siblings};
 use crate::formatter::write_indent;
 
 pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -11,6 +12,9 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         Some(e) => e,
         None => return,
     };
+
+    // Debug: Check what's before the enum
+    debug_node_siblings(node, "ENUM NODE SIBLINGS", 10);
 
     // Format preceding doc comments and attributes
     format_preceding_docs_and_attrs(node, buf, indent);
@@ -41,6 +45,10 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     if let Some(variants) = enum_.variant_list() {
         buf.push_str(" {\n");
+
+        // Debug: Print what's in the variant list
+        debug_children_with_tokens(variants.syntax(), "VARIANT LIST CHILDREN", 5);
+
         for variant in variants.variants() {
             // Format variant doc comments and attributes
             format_preceding_docs_and_attrs(variant.syntax(), buf, indent + 4);
@@ -61,10 +69,8 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     ast::FieldList::RecordFieldList(fields) => {
                         buf.push_str(" {\n");
                         for field in fields.fields() {
-                            // Format field doc comments
                             format_preceding_docs_and_attrs(field.syntax(), buf, indent + 8);
 
-                            // Format field attributes
                             for attr in field.attrs() {
                                 write_indent(buf, indent + 8);
                                 buf.push_str(&attr.syntax().text().to_string());

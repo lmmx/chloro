@@ -1,4 +1,5 @@
 mod block;
+mod debug;
 mod doccomment;
 mod enumdef;
 mod function;
@@ -10,6 +11,7 @@ mod useitem;
 use ra_ap_syntax::{ast, AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
+pub use debug::{debug_children_with_tokens, debug_node_siblings};
 pub use doccomment::format_preceding_docs_and_attrs;
 pub use enumdef::format_enum;
 pub use function::format_function;
