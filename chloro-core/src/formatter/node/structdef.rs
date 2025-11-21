@@ -1,5 +1,5 @@
 use ra_ap_syntax::{
-    ast::{self, HasGenericParams, HasName, HasVisibility},
+    ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
     AstNode, SyntaxNode,
 };
 
@@ -14,6 +14,13 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     // Format preceding doc comments and attributes
     format_preceding_docs_and_attrs(node, buf, indent);
+
+    // Format attributes from the AST (like #[derive(...)])
+    for attr in strukt.attrs() {
+        write_indent(buf, indent);
+        buf.push_str(&attr.syntax().text().to_string());
+        buf.push('\n');
+    }
 
     write_indent(buf, indent);
 
@@ -39,6 +46,13 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 for field in fields.fields() {
                     // Format field doc comments and attributes
                     format_preceding_docs_and_attrs(field.syntax(), buf, indent + 4);
+
+                    // Format field attributes (like #[serde(...)])
+                    for attr in field.attrs() {
+                        write_indent(buf, indent + 4);
+                        buf.push_str(&attr.syntax().text().to_string());
+                        buf.push('\n');
+                    }
 
                     write_indent(buf, indent + 4);
                     if let Some(vis) = field.visibility() {

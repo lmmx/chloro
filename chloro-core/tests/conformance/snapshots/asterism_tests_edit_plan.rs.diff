@@ -8,7 +8,6 @@ Rustfmt size:  15044 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -1,7 +1,11 @@
  use super::{Edit, EditPlan};
 +
  use crate::formats::markdown::MarkdownFormat;
@@ -20,7 +19,6 @@ Rustfmt size:  15044 bytes
  use tempfile::NamedTempFile;
  
  #[test]
-@@ -9,7 +13,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "Line 1\nLine 2\nLine 3").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -28,7 +26,6 @@ Rustfmt size:  15044 bytes
      let edit = Edit {
          file_name: path.clone(),
          line_start: 1,
-@@ -19,12 +22,9 @@
          section_content: "Modified".to_string(), // No padding
          item_name: "test".to_string(),
      };
@@ -41,7 +38,6 @@ Rustfmt size:  15044 bytes
      // Just check the content exists, don't assume line positions
      assert!(content.contains("Line 1"));
      assert!(content.contains("Modified"));
-@@ -36,7 +36,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Hello\n\n?\n\n## World").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -49,7 +45,6 @@ Rustfmt size:  15044 bytes
      // Section content starts at line 3 (after "# Hello\n\n")
      let edit = Edit {
          file_name: path.clone(),
-@@ -47,9 +46,7 @@
          section_content: "Yeah".to_string(),
          item_name: "Hello".to_string(),
      };
@@ -59,7 +54,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(&path).unwrap();
-@@ -74,7 +71,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "A\nB\nC\nD").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -67,7 +61,6 @@ Rustfmt size:  15044 bytes
      let edit = Edit {
          file_name: path.clone(),
          line_start: 1,
-@@ -84,14 +80,10 @@
          section_content: "REPLACED".to_string(), // No padding
          item_name: "test".to_string(),
      };
@@ -82,7 +75,6 @@ Rustfmt size:  15044 bytes
      assert!(content.contains('A'));
      assert!(content.contains("REPLACED"));
      assert!(
-@@ -107,7 +99,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "First\nSecond\nThird").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -90,7 +82,6 @@ Rustfmt size:  15044 bytes
      // Try to replace "Second" (line 2 in 1-indexed)
      let edit = Edit {
          file_name: path.clone(),
-@@ -118,9 +109,7 @@
          section_content: "SECOND".to_string(),
          item_name: "test".to_string(),
      };
@@ -100,7 +91,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(&path).unwrap();
-@@ -150,14 +139,11 @@
      // This test verifies that our section extraction gives correct line numbers
      use crate::formats::markdown::MarkdownFormat;
      use crate::input::extract_sections;
@@ -115,7 +105,6 @@ Rustfmt size:  15044 bytes
      println!("\nExtracted sections:");
      for (i, section) in sections.iter().enumerate() {
          println!("Section {}: {:?}", i, section.title);
-@@ -169,14 +155,12 @@
          );
          println!("  Bytes: {} to {}", section.byte_start, section.byte_end);
      }
@@ -130,7 +119,6 @@ Rustfmt size:  15044 bytes
      // Verify the first section's byte range
      let section = &sections[0];
      let section_content = &content.as_bytes()[section.byte_start..section.byte_end];
-@@ -194,7 +178,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "Line 0\nLine 1\nLine 2\nLine 3").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -138,7 +126,6 @@ Rustfmt size:  15044 bytes
      // Try both 0-indexed and 1-indexed to see which works
      let edit_zero = Edit {
          file_name: path.clone(),
-@@ -205,18 +188,14 @@
          section_content: "ZERO".to_string(),
          item_name: "test".to_string(),
      };
@@ -157,7 +144,6 @@ Rustfmt size:  15044 bytes
      let edit_one = Edit {
          file_name: path.clone(),
          line_start: 1, // 1-indexed: should target "Line 1"?
-@@ -226,12 +205,10 @@
          section_content: "ONE".to_string(),
          item_name: "test".to_string(),
      };
@@ -170,7 +156,6 @@ Rustfmt size:  15044 bytes
      let content2 = fs::read_to_string(&path).unwrap();
      println!("After 1-indexed edit:\n{content2}");
  }
-@@ -239,14 +216,11 @@
  #[test]
  fn test_app_section_to_textum_conversion() {
      use crate::input::extract_sections;
@@ -185,7 +170,6 @@ Rustfmt size:  15044 bytes
      println!("\nSection 0 (Hello):");
      println!(
          "  line_start={}, line_end={}",
-@@ -256,7 +230,6 @@
          "  byte_start={}, byte_end={}",
          sections[0].byte_start, sections[0].byte_end
      );
@@ -193,7 +177,6 @@ Rustfmt size:  15044 bytes
      let edit = Edit {
          file_name: path.to_string_lossy().to_string(),
          line_start: sections[0].line_start,
-@@ -266,15 +239,12 @@
          section_content: "Yeah".to_string(),
          item_name: "Hello".to_string(),
      };
@@ -209,7 +192,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(path).unwrap();
-@@ -292,27 +262,22 @@
  #[test]
  fn test_exact_scenario() {
      use crate::input::extract_sections;
@@ -237,7 +219,6 @@ Rustfmt size:  15044 bytes
      // Read actual content at those byte positions
      let file_bytes = orig.as_bytes();
      let actual_content = &file_bytes[sec.byte_start..sec.byte_end.min(file_bytes.len())];
-@@ -322,7 +287,6 @@
          sec.byte_end,
          String::from_utf8_lossy(actual_content)
      );
@@ -245,7 +226,6 @@ Rustfmt size:  15044 bytes
      // Now apply edit with CORRECTED line numbers
      // If tree-sitter gives 1-indexed but textum wants 0-indexed, subtract 1
      let edit = Edit {
-@@ -334,28 +298,23 @@
          section_content: "Yeah".to_string(),
          item_name: "Hello".to_string(),
      };
@@ -274,7 +254,6 @@ Rustfmt size:  15044 bytes
      // Show exactly what's in the file
      let content = fs::read_to_string(path).unwrap();
      println!("\n=== FILE CONTENT ===");
-@@ -363,11 +322,9 @@
          println!("Line {i} (0-idx): {line:?}");
      }
      println!("Total lines: {}", content.lines().count());
@@ -286,7 +265,6 @@ Rustfmt size:  15044 bytes
      println!("\n=== EXTRACTED SECTIONS ===");
      for (i, sec) in sections.iter().enumerate() {
          println!("\nSection {}: {:?}", i, sec.title);
-@@ -388,7 +345,6 @@
              println!("  byte content: {section_text:?}");
          }
      }
@@ -294,7 +272,6 @@ Rustfmt size:  15044 bytes
      // Now try to edit the first section
      println!("\n=== ATTEMPTING EDIT ===");
      let sec = &sections[0];
-@@ -401,14 +357,11 @@
          section_content: "Yeah".to_string(),
          item_name: "Hello".to_string(),
      };
@@ -309,7 +286,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let result = fs::read_to_string(path).unwrap();
-@@ -430,13 +383,11 @@
      writeln!(file, "Line0\nLine1\nLine2\nLine3").unwrap();
      file.flush().unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -323,7 +299,6 @@ Rustfmt size:  15044 bytes
      // Test 1: Replace line 1 (0-indexed) with Include/Exclude
      let edit = Edit {
          file_name: path.clone(),
-@@ -447,22 +398,18 @@
          section_content: "REPLACED".to_string(),
          item_name: "test".to_string(),
      };

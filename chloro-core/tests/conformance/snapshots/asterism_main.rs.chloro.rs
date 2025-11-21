@@ -20,11 +20,19 @@ use std::io::Read;
 
 use std::path::PathBuf;
 
+#[derive(Parser)]
+#[command(name = "asterism")]
+#[command(about = "Hyperbolic navigation for tree data", long_about = None)]
 struct Args {
+    #[arg(value_name = "PATH")]
     paths: Vec<PathBuf>,
+    #[arg(long)]
     load_docs: Option<PathBuf>,
+    #[arg(long, short = 'e', value_name = "EXT")]
     ext: Vec<String>,
+    #[arg(long, short = 'd')]
     difft: bool,
+    #[arg(long)]
     stdin: bool,
 }
 

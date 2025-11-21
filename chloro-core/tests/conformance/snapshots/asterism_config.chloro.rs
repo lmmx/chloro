@@ -6,8 +6,11 @@ use facet::Facet;
 
 use std::fs;
 
+#[derive(Facet, Clone)]
 pub struct Config {
+    #[facet(default = 100)]
     pub wrap_width: usize,
+    #[facet(default = vec!["md".to_string()])]
     pub file_extensions: Vec<String>,
 }
 

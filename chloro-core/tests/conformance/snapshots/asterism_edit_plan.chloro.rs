@@ -10,10 +10,12 @@ use std::io;
 
 use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct EditPlan {
     pub edits: Vec<Edit>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Edit {
     pub file_name: String,
     pub line_start: i64,

@@ -8,7 +8,6 @@ Rustfmt size:  6944 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -1,7 +1,11 @@
  use super::AppState;
 +
  use crate::section::Section;
@@ -20,7 +19,6 @@ Rustfmt size:  6944 bytes
  use tempfile::NamedTempFile;
  
  #[test]
-@@ -9,7 +13,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB\n\n### Three\n\nC").unwrap();
      let path = file.path().to_path_buf();
@@ -28,7 +26,6 @@ Rustfmt size:  6944 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -54,14 +57,11 @@
              section_content: None,
          },
      ];
@@ -43,7 +40,6 @@ Rustfmt size:  6944 bytes
      app.move_section_up();
      assert_eq!(app.move_state, MoveState::Moved);
      assert_eq!(app.sections[1].title, "Three");
-@@ -73,7 +73,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -51,7 +47,6 @@ Rustfmt size:  6944 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -104,18 +103,14 @@
              section_content: None,
          },
      ];
@@ -70,7 +65,6 @@ Rustfmt size:  6944 bytes
      // Move out (increase level number)
      app.move_section_out();
      assert_eq!(app.sections[1].level, 2);
-@@ -131,43 +126,33 @@
      .unwrap();
      file.flush().unwrap();
      let path = file.path().to_path_buf();
@@ -114,7 +108,6 @@ Rustfmt size:  6944 bytes
      // Verify order in file
      let gamma_pos = lines
          .iter()
-@@ -175,7 +160,6 @@
          .unwrap();
      let alpha_pos = lines.iter().position(|l| l.starts_with("# Alpha")).unwrap();
      let beta_pos = lines.iter().position(|l| l.starts_with("## Beta")).unwrap();
@@ -122,7 +115,6 @@ Rustfmt size:  6944 bytes
      assert!(gamma_pos < alpha_pos, "Gamma should come before Alpha");
      assert!(alpha_pos < beta_pos, "Alpha should come before Beta");
  }
-@@ -186,24 +170,17 @@
      writeln!(file, "# Title\n\nContent\n\n## Subtitle\n\nMore content").unwrap();
      file.flush().unwrap();
      let path = file.path().to_path_buf();
@@ -147,7 +139,6 @@ Rustfmt size:  6944 bytes
      assert!(
          content.contains("# Subtitle"),
          "Should be level 1 heading now"
-@@ -215,19 +192,14 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\n## Two").unwrap();
      let path = file.path().to_path_buf();

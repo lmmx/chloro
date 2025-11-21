@@ -26,11 +26,13 @@ use std::path::PathBuf;
 
 use std::{fs, io};
 
+#[derive(PartialEq)]
 pub enum FileMode {
     Single,
     Multi,
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub enum MoveState {
     None,
     Selected,
@@ -53,6 +55,7 @@ pub struct AppState {
     pub moving_section_index: Option<usize>,
 }
 
+#[derive(PartialEq)]
 pub enum View {
     List,
     Detail,

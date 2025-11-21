@@ -4,6 +4,7 @@
 //! corresponding to a heading in markdown. Sections track their position
 //! in the document tree through parent/child relationships and maintain
 //! precise byte and line coordinates for content extraction and modification.
+#[derive(Clone)]
 pub struct Section {
     pub title: String,
     pub level: usize,
@@ -22,6 +23,7 @@ pub struct Section {
     pub rhs_content: Option<String>,
 }
 
+#[derive(Clone)]
 pub enum ChunkType {
     Added,
     Deleted,
@@ -29,12 +31,20 @@ pub enum ChunkType {
     Unchanged,
 }
 
+#[derive(Clone)]
 pub enum NodeType {
-    Directory { ... },
-    File { ... },
+    Directory {
+        name: String,
+        path: String,
+    },
+    File {
+        name: String,
+        path: String,
+    },
     Section(Section),
 }
 
+#[derive(Clone)]
 pub struct TreeNode {
     pub node_type: NodeType,
     pub tree_level: usize,

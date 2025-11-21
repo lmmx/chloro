@@ -2,13 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3468 bytes
-Chloro size:   2392 bytes
+Chloro size:   2474 bytes
 Rustfmt size:  3468 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -2,59 +2,38 @@
  //! The edit plan manages document modifications using textum patches.
  //!
  //! This module defines the transformation that work in the TUI manifests as actual edits on disk.
@@ -23,14 +22,14 @@ Rustfmt size:  3468 bytes
  use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
  
 -/// Serialisable collection of file modifications for atomic application.
--#[derive(Serialize, Deserialize, Clone)]
+ #[derive(Serialize, Deserialize, Clone)]
  pub struct EditPlan {
 -    /// Individual section replacements grouped for batch processing.
      pub edits: Vec<Edit>,
  }
  
 -/// Precise coordinates and content for replacing a section in a file.
--#[derive(Serialize, Deserialize, Clone)]
+ #[derive(Serialize, Deserialize, Clone)]
  pub struct Edit {
 -    /// Target file path for this modification.
      pub file_name: String,
@@ -72,7 +71,6 @@ Rustfmt size:  3468 bytes
          for (file_name, edits) in file_groups {
              let mut patchset = PatchSet::new();
  
-@@ -88,7 +67,6 @@
                  std::fs::write(&file_name, new_content)?;
              }
          }

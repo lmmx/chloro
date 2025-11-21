@@ -2,13 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16579 bytes
-Chloro size:   14586 bytes
+Chloro size:   14880 bytes
 Rustfmt size:  16579 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -2,90 +2,67 @@
  //! Difftastic format implementation for displaying structural diffs.
  //!
  //! This module provides support for parsing difftastic JSON output and
@@ -34,32 +33,32 @@ Rustfmt size:  16579 bytes
  use std::{fs, io};
  
 -/// Represents a file in difftastic output
--#[derive(Debug, Serialize, Deserialize)]
+ #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftFile {
 -    /// Programming language identified by difftastic for syntax highlighting.
      pub language: String,
 -    /// File path relative to the comparison root.
      pub path: String,
 -    /// Grouped diff hunks, each containing lines that changed together.
--    #[serde(default)]
+     #[serde(default)]
      pub chunks: Option<Vec<Vec<DifftLine>>>,
 -    /// Change classification: "unchanged", "changed", "created", or "deleted".
      pub status: String,
  }
  
 -/// Represents a line in a diff chunk
--#[derive(Debug, Serialize, Deserialize)]
+ #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftLine {
 -    /// Left-hand (original) side of the comparison, absent for pure additions.
--    #[serde(skip_serializing_if = "Option::is_none")]
+     #[serde(skip_serializing_if = "Option::is_none")]
      pub lhs: Option<DifftSide>,
 -    /// Right-hand (modified) side of the comparison, absent for pure deletions.
--    #[serde(skip_serializing_if = "Option::is_none")]
+     #[serde(skip_serializing_if = "Option::is_none")]
      pub rhs: Option<DifftSide>,
  }
  
 -/// Represents one side (left or right) of a diff line
--#[derive(Debug, Serialize, Deserialize)]
+ #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftSide {
 -    /// Original line position in the source file (1-indexed).
      pub line_number: u32,
@@ -68,7 +67,7 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Represents a change within a line
--#[derive(Debug, Serialize, Deserialize)]
+ #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftChange {
 -    /// Column offset where this change begins (0-indexed).
      pub start: u32,
@@ -112,7 +111,6 @@ Rustfmt size:  16579 bytes
          // Check if this is a hunk header with format: (N) @@ -X,Y +A,B @@
          if title.contains("@@") && title.starts_with('(') {
              if let Some(close_paren) = title.find(')') {
-@@ -103,25 +80,21 @@
                  return Line::from(spans);
              }
          }
@@ -138,7 +136,6 @@ Rustfmt size:  16579 bytes
      fn determine_hunk_color_from_header(header: &str) -> Color {
          // Parse @@ -X,Y +A,B @@
          if let Some(hunk_part) = header.strip_prefix("@@").and_then(|s| s.split("@@").next()) {
-@@ -159,21 +132,13 @@
                  }
              }
          }
@@ -163,7 +160,6 @@ Rustfmt size:  16579 bytes
      Section {
          title,
          level: 2,
-@@ -193,13 +158,6 @@
      }
  }
  
@@ -177,7 +173,6 @@ Rustfmt size:  16579 bytes
  pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
      let files: Vec<DifftFile> = if let Ok(files) = serde_json::from_str::<Vec<DifftFile>>(json_str)
      {
-@@ -226,10 +184,8 @@
              })
              .collect::<Result<Vec<DifftFile>, io::Error>>()?
      };
@@ -188,7 +183,6 @@ Rustfmt size:  16579 bytes
      for file in &files {
          // Skip unchanged files
          if file.status == "unchanged" {
-@@ -325,11 +281,9 @@
              global_line += i64::try_from(line_count).unwrap_or(0) + 1;
          }
      }
@@ -200,7 +194,6 @@ Rustfmt size:  16579 bytes
  fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
      let (lhs_line, rhs_line) = match (&change.lhs, &change.rhs) {
          (Some(lhs), Some(rhs)) => (lhs.line_number, rhs.line_number),
-@@ -337,18 +291,14 @@
          (None, Some(rhs)) => (0, rhs.line_number),
          _ => (0, 0),
      };
@@ -219,7 +212,6 @@ Rustfmt size:  16579 bytes
      match (&change.lhs, &change.rhs) {
          (Some(lhs), Some(rhs)) => {
              // Modified line - show both sides
-@@ -384,7 +334,6 @@
              output.push_str(" \n");
          }
      }
@@ -227,7 +219,6 @@ Rustfmt size:  16579 bytes
      output
  }
  
-@@ -401,36 +350,26 @@
  
  fn extract_column_range(side: &Value) -> (i64, i64) {
      let changes = side.get("changes").and_then(|c| c.as_array());
@@ -264,7 +255,6 @@ Rustfmt size:  16579 bytes
      for value in lines {
          let file_path = value
              .get("path")
-@@ -480,7 +419,6 @@
              }
          }
      }

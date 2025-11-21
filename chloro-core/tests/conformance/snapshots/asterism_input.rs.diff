@@ -8,7 +8,6 @@ Rustfmt size:  7367 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -2,24 +2,21 @@
  //! Document discovery and section extraction using tree-sitter.
  //!
  //! This module handles finding markdown files in the filesystem and parsing
@@ -39,7 +38,6 @@ Rustfmt size:  7367 bytes
  pub fn find_documents(paths: Vec<PathBuf>, extensions: &[String]) -> io::Result<Vec<PathBuf>> {
      if paths.is_empty() {
          find_in_directory(Path::new("."), extensions)
-@@ -44,7 +41,6 @@
  
  fn find_in_directory(dir: &Path, extensions: &[String]) -> io::Result<Vec<PathBuf>> {
      let mut results = Vec::new();
@@ -47,7 +45,6 @@ Rustfmt size:  7367 bytes
      if let Ok(entries) = fs::read_dir(dir) {
          for entry in entries.flatten() {
              let path = entry.path();
-@@ -69,49 +65,32 @@
              }
          }
      }
@@ -97,7 +94,6 @@ Rustfmt size:  7367 bytes
      for (i, heading) in headings.iter().enumerate() {
          // Determine level from the heading marker child node
          let mut level = 1;
-@@ -183,16 +162,14 @@
              rhs_content: None,
          });
      }

@@ -8,7 +8,6 @@ Rustfmt size:  16168 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -2,13 +2,17 @@
  //! The UI renders the application state into something visible and vim-able.
  //!
  //! The draw function dispatches based on the current view (list or editor).
@@ -27,7 +26,6 @@ Rustfmt size:  16168 bytes
  use ratatui::{
      layout::{Constraint, Direction, Layout},
      style::{Color, Modifier, Style},
-@@ -16,7 +20,6 @@
      Frame,
  };
  
@@ -35,7 +33,6 @@ Rustfmt size:  16168 bytes
  pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
      match app.current_view {
          View::List => draw_list(f, app),
-@@ -25,14 +28,11 @@
      }
  }
  
@@ -50,7 +47,6 @@ Rustfmt size:  16168 bytes
      // Draw indentation and vertical lines for parent levels
      for i in 0..level.saturating_sub(1) {
          prefix.push_str("  "); // Two spaces for indentation
-@@ -42,13 +42,10 @@
              prefix.push_str("  ");
          }
      }
@@ -64,7 +60,6 @@ Rustfmt size:  16168 bytes
      prefix
  }
  
-@@ -58,19 +55,15 @@
          .direction(Direction::Vertical)
          .constraints([Constraint::Min(0), Constraint::Length(3)])
          .split(f.area());
@@ -84,7 +79,6 @@ Rustfmt size:  16168 bytes
      // Calculate which nodes are last children of their parent for box-drawing
      for (i, node) in app.tree_nodes.iter().enumerate() {
          // A node is "last" if there's no subsequent sibling (same parent, same tree_level)
-@@ -102,10 +95,8 @@
  
          is_last_at_level[i] = !has_sibling_after;
      }
@@ -95,7 +89,6 @@ Rustfmt size:  16168 bytes
      let items: Vec<ListItem> = app
          .tree_nodes
          .iter()
-@@ -195,7 +186,6 @@
              ListItem::new(line).style(style)
          })
          .collect();
@@ -103,7 +96,6 @@ Rustfmt size:  16168 bytes
      let title = match (
          app.file_mode == crate::app_state::FileMode::Multi,
          &app.move_state,
-@@ -205,17 +195,13 @@
          (false, MoveState::None) => "Sections".to_string(),
          (false, _) => "Sections (MOVING)".to_string(),
      };
@@ -121,7 +113,6 @@ Rustfmt size:  16168 bytes
      let help_widget = Paragraph::new(help).block(Block::default().borders(Borders::ALL));
      f.render_widget(help_widget, chunks[1]);
  }
-@@ -226,17 +212,14 @@
          .direction(Direction::Vertical)
          .constraints([Constraint::Min(0), Constraint::Length(3)])
          .split(f.area());
@@ -139,7 +130,6 @@ Rustfmt size:  16168 bytes
      // Calculate which nodes are last at their level
      let mut is_last_at_level: Vec<bool> = vec![false; app.tree_nodes.len()];
      for (i, node) in app.tree_nodes.iter().enumerate() {
-@@ -253,9 +236,7 @@
          }
          is_last_at_level[i] = !found_next;
      }
@@ -149,7 +139,6 @@ Rustfmt size:  16168 bytes
      let items: Vec<ListItem> = app
          .tree_nodes
          .iter()
-@@ -343,7 +324,6 @@
              ListItem::new(line).style(style)
          })
          .collect();
@@ -157,7 +146,6 @@ Rustfmt size:  16168 bytes
      let title = match (
          app.file_mode == crate::app_state::FileMode::Multi,
          &app.move_state,
-@@ -353,11 +333,8 @@
          (false, MoveState::None) => "Sections".to_string(),
          (false, _) => "Sections (MOVING)".to_string(),
      };
@@ -169,7 +157,6 @@ Rustfmt size:  16168 bytes
      // Show command buffer instead of help
      let command_text = format!(":{}", app.command_buffer);
      let command_widget =
-@@ -374,7 +351,6 @@
              Constraint::Length(3), // Help
          ])
          .split(f.area());
@@ -177,7 +164,6 @@ Rustfmt size:  16168 bytes
      // Breadcrumb navigation
      if let Some(section_idx) = app.get_current_section_index() {
          let section = &app.sections[section_idx];
-@@ -411,7 +387,6 @@
              f.render_widget(editor, inner);
          }
      }
@@ -185,7 +171,6 @@ Rustfmt size:  16168 bytes
      // Help/command line
      let help_text = if app.current_view == View::Command {
          format!(":{}", app.command_buffer)
-@@ -421,7 +396,6 @@
          ":w Save | :x Save & Exit | :q Quit | :q! Force Quit | :wn Save & Next | :wp Save & Prev"
              .to_string()
      };

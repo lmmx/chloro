@@ -2,13 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3903 bytes
-Chloro size:   1991 bytes
+Chloro size:   2147 bytes
 Rustfmt size:  3903 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -4,94 +4,48 @@
  //! Section representation for tree-sitter parsed documents.
  //!
  //! A section represents a hierarchical division of a document, typically
@@ -17,7 +16,7 @@ Rustfmt size:  3903 bytes
  //! precise byte and line coordinates for content extraction and modification.
 -
 -/// Hierarchical document division with precise coordinates for extraction and modification.
--#[derive(Clone)]
+ #[derive(Clone)]
  pub struct Section {
 -    /// Section heading text without markup symbols.
      pub title: String,
@@ -52,7 +51,7 @@ Rustfmt size:  3903 bytes
  }
  
 -/// What sort of hunk (syntactic diff atomic unit) it is.
--#[derive(Clone)]
+ #[derive(Clone)]
  pub enum ChunkType {
 -    /// Only RHS exists
      Added,
@@ -65,30 +64,28 @@ Rustfmt size:  3903 bytes
  }
  
 -/// Types of nodes that can appear in the file tree view.
--#[derive(Clone)]
+ #[derive(Clone)]
  pub enum NodeType {
 -    /// Directory node showing a path component
--    Directory {
+     Directory {
 -        /// Directory name (not full path)
--        name: String,
+         name: String,
 -        /// Full path for reference
--        path: String,
--    },
+         path: String,
+     },
 -    /// File node (non-navigable, just shows filename)
--    File {
+     File {
 -        /// File name
--        name: String,
+         name: String,
 -        /// Full path for reference
--        path: String,
--    },
+         path: String,
+     },
 -    /// Actual document section (navigable)
-+    Directory { ... },
-+    File { ... },
      Section(Section),
  }
  
 -/// A node in the unified file + section tree.
--#[derive(Clone)]
+ #[derive(Clone)]
  pub struct TreeNode {
 -    /// The type of node (directory, file, or section)
      pub node_type: NodeType,
@@ -105,7 +102,6 @@ Rustfmt size:  3903 bytes
      #[must_use]
      pub fn directory(name: String, path: String, tree_level: usize) -> Self {
          Self {
-@@ -98,8 +52,6 @@
              section_index: None,
          }
      }
@@ -114,7 +110,6 @@ Rustfmt size:  3903 bytes
      #[must_use]
      pub fn file(name: String, path: String, tree_level: usize) -> Self {
          Self {
-@@ -109,8 +61,6 @@
              section_index: None,
          }
      }

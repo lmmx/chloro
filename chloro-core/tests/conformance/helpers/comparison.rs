@@ -8,6 +8,13 @@ pub struct ComparisonResult {
     pub rustfmt: String,
 }
 
+fn strip_hunk_headers(diff: &str) -> String {
+    diff.lines()
+        .filter(|line| !line.starts_with("@@"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 impl ComparisonResult {
     /// Write comparison files and show diff
     pub fn write_comparison_files(&self, fixture_name: &str) {
@@ -33,8 +40,9 @@ impl ComparisonResult {
 
         // Generate and write diff
         let diff_content = self.generate_diff_content();
+        let nohed_content = strip_hunk_headers(&diff_content);
         let diff_path = output_dir.join(format!("{}.diff", safe_name));
-        fs::write(&diff_path, diff_content).unwrap();
+        fs::write(&diff_path, nohed_content).unwrap();
         eprintln!("Wrote: {}", diff_path.display());
 
         // Show diff in terminal
@@ -54,9 +62,10 @@ impl ComparisonResult {
 
             let config = UnifiedDiffConfig::default();
             let printer = BasicLineDiffPrinter(&input.interner);
-            let unified = diff.unified_diff(&printer, config, &input);
+            let unified_diff = diff.unified_diff(&printer, config, &input);
+            let cleaned_diff = strip_hunk_headers(&unified_diff.to_string());
 
-            eprintln!("{}", unified);
+            eprintln!("{}", cleaned_diff);
             eprintln!("=== END DIFF ===\n");
         }
     }

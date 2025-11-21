@@ -8,7 +8,6 @@ Rustfmt size:  3207 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -3,35 +3,24 @@
  //! Syntax highlighting for displaying source code with visual distinction between language elements.
  use ratatui::{
      style::{Color, Style},
@@ -49,7 +48,6 @@ Rustfmt size:  3207 bytes
      for (i, line_text) in lines[start..end].iter().enumerate() {
          let line_num = start + i + 1;
          let marker = if line_num == target_line + 1 {
-@@ -57,21 +46,15 @@
  
          display_lines.push(Line::from(spans));
      }

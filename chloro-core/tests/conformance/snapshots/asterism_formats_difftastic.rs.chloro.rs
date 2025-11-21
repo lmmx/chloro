@@ -21,23 +21,30 @@ use std::path::Path;
 
 use std::{fs, io};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DifftFile {
     pub language: String,
     pub path: String,
+    #[serde(default)]
     pub chunks: Option<Vec<Vec<DifftLine>>>,
     pub status: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DifftLine {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lhs: Option<DifftSide>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rhs: Option<DifftSide>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DifftSide {
     pub line_number: u32,
     pub changes: Vec<DifftChange>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DifftChange {
     pub start: u32,
     pub end: u32,

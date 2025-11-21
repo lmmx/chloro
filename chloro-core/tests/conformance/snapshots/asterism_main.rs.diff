@@ -2,13 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17397 bytes
-Chloro size:   16886 bytes
+Chloro size:   17157 bytes
 Rustfmt size:  17397 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -1,53 +1,40 @@
  //! asterism: A tree-sitter document section editor.
  #![allow(clippy::multiple_crate_versions)]
 -
@@ -32,31 +31,30 @@ Rustfmt size:  17397 bytes
 +
  use std::path::PathBuf;
  
--#[derive(Parser)]
--#[command(name = "asterism")]
--#[command(about = "Hyperbolic navigation for tree data", long_about = None)]
+ #[derive(Parser)]
+ #[command(name = "asterism")]
+ #[command(about = "Hyperbolic navigation for tree data", long_about = None)]
  struct Args {
 -    /// Files or directories to edit
--    #[arg(value_name = "PATH")]
+     #[arg(value_name = "PATH")]
      paths: Vec<PathBuf>,
 -
 -    /// Load edit plan from JSON file
--    #[arg(long)]
+     #[arg(long)]
      load_docs: Option<PathBuf>,
 -
 -    /// File extensions to match
--    #[arg(long, short = 'e', value_name = "EXT")]
+     #[arg(long, short = 'e', value_name = "EXT")]
      ext: Vec<String>,
 -
 -    /// Parse difftastic JSON output (from stdin or file)
--    #[arg(long, short = 'd')]
+     #[arg(long, short = 'd')]
      difft: bool,
 -
 -    /// Read difftastic output from stdin
--    #[arg(long)]
+     #[arg(long)]
      stdin: bool,
  }
- 
  fn main() -> io::Result<()> {
      let args = Args::parse();
      let mut cfg = config::Config::load();
@@ -69,7 +67,6 @@ Rustfmt size:  17397 bytes
      // Handle difftastic mode
      if args.difft || args.stdin {
          let json_content = if args.stdin {
-@@ -81,38 +68,30 @@
          let state = app_state::AppState::new(files, sections, cfg.wrap_width);
          return run_tui(state, &cfg);
      }
@@ -108,7 +105,6 @@ Rustfmt size:  17397 bytes
      run_tui(state, &cfg)
  }
  
-@@ -122,15 +101,11 @@
      execute!(stdout, EnterAlternateScreen)?;
      let backend = CrosstermBackend::new(stdout);
      let mut terminal = Terminal::new(backend)?;
@@ -124,7 +120,6 @@ Rustfmt size:  17397 bytes
      if let Err(e) = result {
          eprintln!("Error: {e}");
      } else {
-@@ -138,17 +113,11 @@
          let json = serde_json::to_string_pretty(&plan).map_err(io::Error::other)?;
          println!("{json}");
      }

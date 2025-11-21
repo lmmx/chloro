@@ -2,13 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   27326 bytes
+Chloro size:   27403 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -4,83 +4,61 @@
  //! The core state machine bridging document sections and the interactive editor.
  //!
  //! A TUI needs a single source of truth that can be interrogated and mutated as the user navigates
@@ -35,7 +34,7 @@ Rustfmt size:  31467 bytes
  use std::{fs, io};
  
 -/// Determines navigation scope and quit behavior based on project size.
--#[derive(PartialEq)]
+ #[derive(PartialEq)]
  pub enum FileMode {
 -    /// Single-file mode quits directly to shell.
      Single,
@@ -44,7 +43,7 @@ Rustfmt size:  31467 bytes
  }
  
 -/// Tracks the lifecycle of a section reordering operation.
--#[derive(Clone, PartialEq, Debug)]
+ #[derive(Clone, PartialEq, Debug)]
  pub enum MoveState {
 -    /// No section is being moved; normal navigation mode.
      None,
@@ -85,7 +84,7 @@ Rustfmt size:  31467 bytes
  }
  
 -/// Determines which UI screen renders and how input is interpreted.
--#[derive(PartialEq)]
+ #[derive(PartialEq)]
  pub enum View {
 -    /// Shows hierarchical section tree with navigation.
      List,
@@ -100,7 +99,6 @@ Rustfmt size:  31467 bytes
      #[must_use]
      pub fn new(files: Vec<PathBuf>, sections: Vec<Section>, wrap_width: usize) -> Self {
          let file_mode = if files.len() == 1 {
-@@ -85,12 +63,9 @@
          } else {
              FileMode::Multi
          };
@@ -113,7 +111,6 @@ Rustfmt size:  31467 bytes
          Self {
              sections,
              tree_nodes,
-@@ -107,10 +82,8 @@
              moving_section_index: None,
          }
      }
@@ -124,7 +121,6 @@ Rustfmt size:  31467 bytes
          // Determine if this is difftastic mode by checking if multiple sections share the same file_path
          // (in markdown mode, each section has a unique file path or sections are from the same file)
          let mut file_section_counts: HashMap<String, usize> = HashMap::new();
-@@ -120,7 +93,6 @@
                  .or_insert(0) += 1;
          }
          let is_difftastic = file_section_counts.values().any(|&count| count > 1);
@@ -132,7 +128,6 @@ Rustfmt size:  31467 bytes
          if files.len() == 1 && !is_difftastic {
              // Single markdown file mode: use section level for tree indentation
              for (idx, section) in sections.iter().enumerate() {
-@@ -213,14 +185,10 @@
                  }
              }
          }
@@ -148,7 +143,6 @@ Rustfmt size:  31467 bytes
          // Try to maintain current position by finding same section
          if let Some(current_section_idx) = self.get_current_section_index() {
              if let Some(node_idx) = self
-@@ -232,27 +200,21 @@
              }
          }
      }
@@ -179,7 +173,6 @@ Rustfmt size:  31467 bytes
          if let Some(section_idx) = self.get_current_section_index() {
              if let Some(section) = self.sections.get(section_idx) {
                  let lines_added = self.editor_state.as_ref().map_or(0, |es| es.lines.len());
-@@ -266,14 +228,11 @@
              }
          }
      }
@@ -195,7 +188,6 @@ Rustfmt size:  31467 bytes
          if let Some(file_map) = self.file_offsets.get(target_file) {
              file_map
                  .iter()
-@@ -284,9 +243,7 @@
              0
          }
      }
@@ -206,7 +198,6 @@ Rustfmt size:  31467 bytes
          let mut doc_map: HashMap<String, Vec<String>> = HashMap::new();
          for edit in plan.edits {
              let key = format!(
-@@ -300,7 +257,6 @@
                  .collect();
              doc_map.insert(key, lines);
          }
@@ -214,7 +205,6 @@ Rustfmt size:  31467 bytes
          // Match edits to sections and pre-populate editor content
          for section in &mut self.sections {
              let key = format!(
-@@ -317,12 +273,9 @@
              }
          }
      }
@@ -228,7 +218,6 @@ Rustfmt size:  31467 bytes
          for section in &self.sections {
              if let Some(ref doc_lines) = section.section_content {
                  let section_content = doc_lines.join("\n");
-@@ -338,18 +291,13 @@
                  });
              }
          }
@@ -248,7 +237,6 @@ Rustfmt size:  31467 bytes
          // Handle difftastic chunks differently
          if let Some(chunk_type) = &section.chunk_type {
              let content = match chunk_type {
-@@ -395,12 +343,9 @@
              let lines = Lines::from(lines_text.as_str());
              self.editor_state = Some(EditorState::new(lines));
          }
@@ -262,7 +250,6 @@ Rustfmt size:  31467 bytes
          if save {
              if let Some(ref editor_state) = self.editor_state {
                  if let Some(section_idx) = self.get_current_section_index() {
-@@ -416,13 +361,7 @@
          self.editor_state = None;
          self.current_view = View::List;
      }
@@ -277,7 +264,6 @@ Rustfmt size:  31467 bytes
          let editor_lines = if let Some(ref editor_state) = self.editor_state {
              editor_state
                  .lines
-@@ -432,19 +371,14 @@
          } else {
              return Ok(());
          };
@@ -297,7 +283,6 @@ Rustfmt size:  31467 bytes
          let edit = Edit {
              file_name: section.file_path.clone(),
              line_start: section.line_start,
-@@ -454,10 +388,8 @@
              section_content: padded_content,
              item_name: section.title.clone(),
          };
@@ -308,7 +293,6 @@ Rustfmt size:  31467 bytes
          // Reload sections
          let format = MarkdownFormat;
          if let Ok(new_sections) =
-@@ -492,55 +424,41 @@
                  self.rebuild_tree();
              }
          }
@@ -369,7 +353,6 @@ Rustfmt size:  31467 bytes
          // First try immediate children
          if let Some(first_child) = self.sections[section_idx].children_indices.first() {
              return self
-@@ -548,7 +466,6 @@
                  .iter()
                  .position(|n| n.section_index == Some(*first_child));
          }
@@ -377,7 +360,6 @@ Rustfmt size:  31467 bytes
          // Otherwise find next section at deeper level
          for i in (section_idx + 1)..self.sections.len() {
              if self.sections[i].level > self.sections[section_idx].level {
-@@ -558,16 +475,12 @@
                      .position(|n| n.section_index == Some(i));
              }
          }
@@ -395,7 +377,6 @@ Rustfmt size:  31467 bytes
          for i in (section_idx + 1)..self.sections.len() {
              if self.sections[i].level == current_level {
                  return self
-@@ -579,16 +492,12 @@
                  break;
              }
          }
@@ -413,7 +394,6 @@ Rustfmt size:  31467 bytes
          for i in (0..section_idx).rev() {
              if self.sections[i].level == current_level {
                  return self
-@@ -600,28 +509,20 @@
                  break;
              }
          }
@@ -445,7 +425,6 @@ Rustfmt size:  31467 bytes
          for i in 0..self.sections.len() {
              if self.sections[i].level == current_level {
                  return self
-@@ -630,16 +531,12 @@
                      .position(|n| n.section_index == Some(i));
              }
          }
@@ -463,7 +442,6 @@ Rustfmt size:  31467 bytes
          for i in (0..self.sections.len()).rev() {
              if self.sections[i].level == current_level {
                  return self
-@@ -648,50 +545,36 @@
                      .position(|n| n.section_index == Some(i));
              }
          }
@@ -520,7 +498,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              if moving_idx > 0 {
                  self.sections.swap(moving_idx, moving_idx - 1);
-@@ -713,9 +596,7 @@
          }
          false
      }
@@ -531,7 +508,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              if moving_idx < self.sections.len() - 1 {
                  self.sections.swap(moving_idx, moving_idx + 1);
-@@ -736,9 +617,7 @@
          }
          false
      }
@@ -542,7 +518,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              if moving_idx > 0 {
                  let section = self.sections.remove(moving_idx);
-@@ -760,9 +639,7 @@
          }
          false
      }
@@ -553,7 +528,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              let last_idx = self.sections.len() - 1;
              if moving_idx < last_idx {
-@@ -785,9 +662,7 @@
          }
          false
      }
@@ -564,7 +538,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              if self.sections[moving_idx].level > 1 {
                  self.sections[moving_idx].level -= 1;
-@@ -798,9 +673,7 @@
          }
          false
      }
@@ -575,7 +548,6 @@ Rustfmt size:  31467 bytes
          if let Some(moving_idx) = self.moving_section_index {
              if self.sections[moving_idx].level < 6 {
                  self.sections[moving_idx].level += 1;
-@@ -811,17 +684,10 @@
          }
          false
      }
@@ -594,7 +566,6 @@ Rustfmt size:  31467 bytes
          // Group sections by file
          let mut file_sections: HashMap<String, Vec<&Section>> = HashMap::new();
          for section in &self.sections {
-@@ -830,12 +696,10 @@
                  .or_default()
                  .push(section);
          }
@@ -607,7 +578,6 @@ Rustfmt size:  31467 bytes
          // Reload sections to get updated positions
          let format = MarkdownFormat;
          let mut new_sections = Vec::new();
-@@ -844,20 +708,15 @@
                  new_sections.extend(secs);
              }
          }
@@ -628,7 +598,6 @@ Rustfmt size:  31467 bytes
          for section in sections {
              let heading_prefix = "#".repeat(section.level);
              let heading = format!("{} {}", heading_prefix, section.title);
-@@ -880,7 +739,6 @@
                  new_content.push_str("\n\n");
              }
          }

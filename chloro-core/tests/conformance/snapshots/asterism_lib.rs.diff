@@ -8,7 +8,6 @@ Rustfmt size:  375 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -3,14 +3,20 @@
  //! A tree-sitter document section editor.
  //!
  //! asterism uses ratatui to provide hierarchical navigation of markdown documents

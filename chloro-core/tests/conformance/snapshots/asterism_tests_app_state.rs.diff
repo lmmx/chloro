@@ -8,7 +8,6 @@ Rustfmt size:  12822 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -1,7 +1,11 @@
  use super::AppState;
 +
  use crate::section::Section;
@@ -20,7 +19,6 @@ Rustfmt size:  12822 bytes
  use tempfile::NamedTempFile;
  
  #[test]
-@@ -10,7 +14,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Hello\n\n?\n\n## World\n\n??").unwrap();
      let path = file.path().to_path_buf();
@@ -28,7 +26,6 @@ Rustfmt size:  12822 bytes
      // Create sections matching the file
      let sections = vec![
          Section {
-@@ -48,31 +51,23 @@
              rhs_content: None,
          },
      ];
@@ -60,7 +57,6 @@ Rustfmt size:  12822 bytes
      assert_eq!(
          lines,
          vec!["# Hello", "", "", "Yeah", "", "## World", "", "??"]
-@@ -84,7 +79,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Test\n\nOriginal").unwrap();
      let path = file.path().to_path_buf();
@@ -68,7 +64,6 @@ Rustfmt size:  12822 bytes
      let sections = vec![Section {
          title: "Test".to_string(),
          level: 1,
-@@ -102,26 +96,19 @@
          lhs_content: None,
          rhs_content: None,
      }];
@@ -95,7 +90,6 @@ Rustfmt size:  12822 bytes
      assert!(
          !plan.edits.is_empty(),
          "Edit plan should contain the saved edit"
-@@ -134,7 +121,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB\n\n### Three\n\nC").unwrap();
      let path = file.path().to_path_buf();
@@ -103,7 +97,6 @@ Rustfmt size:  12822 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -188,9 +174,7 @@
              rhs_content: None,
          },
      ];
@@ -113,7 +106,6 @@ Rustfmt size:  12822 bytes
      // Find and edit first section
      if let Some(first) = app.navigate_to_first() {
          app.current_node_index = first;
-@@ -201,7 +185,6 @@
      }
      app.save_current().unwrap();
      app.exit_detail_view(true);
@@ -121,7 +113,6 @@ Rustfmt size:  12822 bytes
      // Find and edit third section (index 2)
      // After rebuild, need to find the section again
      if let Some(node_idx) = app.tree_nodes.iter().position(|n| {
-@@ -215,13 +198,11 @@
      }) {
          app.current_node_index = node_idx;
      }
@@ -135,7 +126,6 @@ Rustfmt size:  12822 bytes
      // Verify file content
      let content = fs::read_to_string(&path).unwrap();
      assert!(
-@@ -240,7 +221,6 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -143,7 +133,6 @@ Rustfmt size:  12822 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -277,9 +257,7 @@
              rhs_content: None,
          },
      ];
@@ -153,7 +142,6 @@ Rustfmt size:  12822 bytes
      // Single file mode should only show sections, no file nodes
      assert_eq!(app.tree_nodes.len(), 2);
      assert!(app.tree_nodes[0].navigable);
-@@ -290,13 +268,10 @@
  fn test_tree_structure_multi_file() {
      let mut file1 = NamedTempFile::new().unwrap();
      let mut file2 = NamedTempFile::new().unwrap();
@@ -167,7 +155,6 @@ Rustfmt size:  12822 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -333,13 +308,10 @@
              rhs_content: None,
          },
      ];
@@ -181,7 +168,6 @@ Rustfmt size:  12822 bytes
      // File nodes should not be navigable
      let mut file_nodes = 0;
      let mut section_nodes = 0;
-@@ -350,7 +322,6 @@
              file_nodes += 1;
          }
      }
@@ -189,7 +175,6 @@ Rustfmt size:  12822 bytes
      assert_eq!(file_nodes, 2, "Should have 2 file nodes");
      assert_eq!(section_nodes, 2, "Should have 2 section nodes");
  }
-@@ -360,12 +331,10 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -202,7 +187,6 @@ Rustfmt size:  12822 bytes
      let sections = vec![
          Section {
              title: "One".to_string(),
-@@ -419,21 +388,17 @@
              rhs_content: None,
          },
      ];

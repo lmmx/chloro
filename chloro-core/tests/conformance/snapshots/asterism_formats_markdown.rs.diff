@@ -8,7 +8,6 @@ Rustfmt size:  1436 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -2,35 +2,30 @@
  //! Markdown format implementation using tree-sitter-md.
  //!
  //! This module provides tree-sitter queries for parsing markdown documents
@@ -51,7 +50,6 @@ Rustfmt size:  1436 bytes
          // Cycle through colors for different heading levels
          let colors = [
              Color::Cyan,
-@@ -39,16 +34,13 @@
              Color::Blue,
              Color::Red,
          ];

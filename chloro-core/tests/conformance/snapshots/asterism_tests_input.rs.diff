@@ -8,7 +8,6 @@ Rustfmt size:  3169 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-@@ -1,13 +1,16 @@
  use super::*;
 +
  use crate::formats::markdown::MarkdownFormat;
@@ -26,7 +25,6 @@ Rustfmt size:  3169 bytes
      if node.child_count() == 0 {
          let text = &source[node.byte_range()];
          println!(
-@@ -20,7 +23,6 @@
      } else {
          println!("{}{}[{}]", indent, node.kind(), node.id());
      }
@@ -34,7 +32,6 @@ Rustfmt size:  3169 bytes
      if cursor.goto_first_child() {
          loop {
              print_tree(cursor, source, depth + 1);
-@@ -37,11 +39,9 @@
      let file = NamedTempFile::new().unwrap();
      let path = file.path().with_extension("md");
      fs::rename(file.path(), &path).unwrap();
@@ -46,7 +43,6 @@ Rustfmt size:  3169 bytes
      fs::remove_file(path).unwrap();
  }
  
-@@ -50,19 +50,14 @@
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Hello\n\n?\n\n## World\n\n??\n\n### Hmm\n\n???").unwrap();
      let path = file.path();
@@ -66,7 +62,6 @@ Rustfmt size:  3169 bytes
      assert_eq!(sections[2].title, "Hmm");
      assert_eq!(sections[2].level, 3);
  }
-@@ -76,16 +71,12 @@
      )
      .unwrap();
      let path = file.path();
@@ -83,7 +78,6 @@ Rustfmt size:  3169 bytes
      // Both children have parent
      assert_eq!(sections[1].parent_index, Some(0));
      assert_eq!(sections[2].parent_index, Some(0));
-@@ -94,19 +85,14 @@
  #[test]
  fn test_tree_sitter_parsing() {
      use tree_sitter::Parser;
