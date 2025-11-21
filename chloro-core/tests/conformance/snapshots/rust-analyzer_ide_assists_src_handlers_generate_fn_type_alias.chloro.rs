@@ -104,6 +104,7 @@ enum ParamStyle {
 }
 
 impl ParamStyle {
+    const ALL: &'static [ParamStyle] = &[ParamStyle::Named, ParamStyle::Unnamed];
 
     fn assist_id(&self) -> AssistId {
         let s = match self {

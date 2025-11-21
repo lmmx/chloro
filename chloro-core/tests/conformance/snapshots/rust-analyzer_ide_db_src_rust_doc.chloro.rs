@@ -27,6 +27,7 @@ pub fn is_rust_fence(s: &str) -> bool {
     !seen_other_tags || seen_rust_tags
 }
 
+const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
 
 pub fn format_docs(src: &Documentation) -> String {
     format_docs_(src.as_str())

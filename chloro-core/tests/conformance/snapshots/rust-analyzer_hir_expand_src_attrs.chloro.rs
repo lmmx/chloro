@@ -41,6 +41,7 @@ impl ops::Deref for RawAttrs {
 }
 
 impl RawAttrs {
+    pub const EMPTY: Self = Self { entries: None };
 
     pub fn new(
         db: &dyn ExpandDatabase,
@@ -173,6 +174,7 @@ pub struct AttrId {
 }
 
 impl AttrId {
+    const INNER_ATTR_SET_BIT: u32 = 1 << 31;
 
     pub fn new(
         id: usize,

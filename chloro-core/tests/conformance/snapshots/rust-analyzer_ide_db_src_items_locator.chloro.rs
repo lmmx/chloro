@@ -16,6 +16,7 @@ use crate::{
 };
 
 /// A value to use, when uncertain which limit to pick.
+pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
 
 /// Searches for importable items with the given name in the crate and its dependencies.
 pub fn items_with_name(

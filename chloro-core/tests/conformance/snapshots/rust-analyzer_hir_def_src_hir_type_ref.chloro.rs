@@ -147,6 +147,7 @@ pub enum TypeRef {
 }
 
 #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+const () = assert!(size_of::<TypeRef>() == 24);
 
 pub type TypeRefId = Idx<TypeRef>;
 
@@ -171,6 +172,7 @@ pub enum TypeBound {
 }
 
 #[cfg(target_pointer_width = "64")]
+const [(); 16] = [(); size_of::<TypeBound>()];
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum UseArgRef {

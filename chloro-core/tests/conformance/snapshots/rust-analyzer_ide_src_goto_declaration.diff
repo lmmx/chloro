@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6351 bytes
-Chloro size:   5789 bytes
+Chloro size:   5895 bytes
 Rustfmt size:  6484 bytes
 
 ✗ Outputs DIFFER
@@ -77,6 +77,7 @@ Rustfmt size:  6484 bytes
 -    };
 -
 +    use crate::{GotoDefinitionConfig, fixture};
++    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
          let navs = analysis

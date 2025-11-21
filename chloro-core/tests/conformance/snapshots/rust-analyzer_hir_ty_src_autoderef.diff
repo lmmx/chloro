@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12913 bytes
+Chloro size:   12958 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -34,10 +34,7 @@ Rustfmt size:  13256 bytes
 -    TraitEnvironment,
  };
  
--const AUTODEREF_RECURSION_LIMIT: usize = 20;
- 
- /// Returns types that `ty` transitively dereferences to. This function is only meant to be used
- /// outside `hir-ty`.
+ const AUTODEREF_RECURSION_LIMIT: usize = 20;
      v.into_iter()
  }
  

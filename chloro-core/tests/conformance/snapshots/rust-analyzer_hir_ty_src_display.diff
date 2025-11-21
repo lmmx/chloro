@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99203 bytes
+Chloro size:   99245 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -437,10 +437,7 @@ Rustfmt size:  99713 bytes
          match self.write_to(f) {
              Ok(()) => Ok(()),
              Err(HirDisplayError::FmtError) => Err(fmt::Error),
-     }
- }
- 
--const TYPE_HINT_TRUNCATION: &str = "…";
+ const TYPE_HINT_TRUNCATION: &str = "…";
  
  impl<'db, T: HirDisplay<'db>> HirDisplay<'db> for &T {
 -    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {

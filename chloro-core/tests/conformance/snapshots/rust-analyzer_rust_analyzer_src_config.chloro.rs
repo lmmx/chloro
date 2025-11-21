@@ -1123,6 +1123,14 @@ pub struct HoverActionsConfig {
 }
 
 impl HoverActionsConfig {
+    pub const NO_ACTIONS: Self = Self {
+        implementations: false,
+        references: false,
+        run: false,
+        debug: false,
+        update_test: false,
+        goto_type_def: false,
+    };
 
     pub fn any(&self) -> bool {
         self.implementations || self.references || self.runnable() || self.goto_type_def
@@ -3020,6 +3028,7 @@ struct GlobalWorkspaceLocalConfigInput {
 }
 
 impl GlobalWorkspaceLocalConfigInput {
+    const FIELDS: &'static [&'static [&'static str]] = &[GlobalConfigInput::FIELDS, LocalConfigInput::FIELDS];
 
     fn from_toml(
         toml: toml::Table,
@@ -3045,6 +3054,7 @@ struct WorkspaceLocalConfigInput {
 
 impl WorkspaceLocalConfigInput {
     #[allow(dead_code)]
+    const FIELDS: &'static [&'static [&'static str]] = &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
 
     fn from_toml(
         toml: toml::Table,

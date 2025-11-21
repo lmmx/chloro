@@ -146,7 +146,27 @@ impl TyFingerprint {
     }
 }
 
+pub(crate) const ALL_INT_FPS: [TyFingerprint; 12] = [
+    TyFingerprint::Int(IntTy::I8),
+    TyFingerprint::Int(IntTy::I16),
+    TyFingerprint::Int(IntTy::I32),
+    TyFingerprint::Int(IntTy::I64),
+    TyFingerprint::Int(IntTy::I128),
+    TyFingerprint::Int(IntTy::Isize),
+    TyFingerprint::Uint(UintTy::U8),
+    TyFingerprint::Uint(UintTy::U16),
+    TyFingerprint::Uint(UintTy::U32),
+    TyFingerprint::Uint(UintTy::U64),
+    TyFingerprint::Uint(UintTy::U128),
+    TyFingerprint::Uint(UintTy::Usize),
+];
 
+pub(crate) const ALL_FLOAT_FPS: [TyFingerprint; 4] = [
+    TyFingerprint::Float(FloatTy::F16),
+    TyFingerprint::Float(FloatTy::F32),
+    TyFingerprint::Float(FloatTy::F64),
+    TyFingerprint::Float(FloatTy::F128),
+];
 
 type TraitFpMap =
     FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;

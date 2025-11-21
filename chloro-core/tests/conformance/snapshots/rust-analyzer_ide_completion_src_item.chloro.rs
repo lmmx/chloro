@@ -240,15 +240,16 @@ pub enum CompletionRelevanceReturnType {
 }
 
 impl CompletionRelevance {
-/// Provides a relevance score. Higher values are more relevant.
-///
-/// The absolute value of the relevance score is not meaningful, for
-/// example a value of BASE_SCORE doesn't mean "not relevant", rather
-/// it means "least relevant". The score value should only be used
-/// for relative ordering.
-///
-/// See is_relevant if you need to make some judgement about score
-/// in an absolute sense.
+    /// Provides a relevance score. Higher values are more relevant.
+    ///
+    /// The absolute value of the relevance score is not meaningful, for
+    /// example a value of BASE_SCORE doesn't mean "not relevant", rather
+    /// it means "least relevant". The score value should only be used
+    /// for relative ordering.
+    ///
+    /// See is_relevant if you need to make some judgement about score
+    /// in an absolute sense.
+    const BASE_SCORE: u32 = u32::MAX / 2;
 
     pub fn score(self) -> u32 {
         let mut score = Self::BASE_SCORE;

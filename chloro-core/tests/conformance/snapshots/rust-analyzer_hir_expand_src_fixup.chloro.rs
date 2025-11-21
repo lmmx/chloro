@@ -39,13 +39,14 @@ pub struct SyntaxFixupUndoInfo {
 }
 
 impl SyntaxFixupUndoInfo {
+    pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
 }
 
-// We mark spans with `FIXUP_DUMMY_AST_ID` to indicate that they are fake.
+const FIXUP_DUMMY_AST_ID: ErasedFileAstId = FIXUP_ERASED_FILE_AST_ID_MARKER;
 
+const FIXUP_DUMMY_RANGE: TextRange = TextRange::empty(TextSize::new(0));
 
-// If the fake span has this range end, that means that the range start is an index into the
-// `original` list in `SyntaxFixupUndoInfo`.
+const FIXUP_DUMMY_RANGE_END: TextSize = TextSize::new(!0);
 
 pub(crate) fn fixup_syntax(
     span_map: SpanMapRef<'_>,

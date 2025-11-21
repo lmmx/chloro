@@ -250,6 +250,7 @@ enum ExtractionKind {
 }
 
 impl ExtractionKind {
+    const ALL: &'static [ExtractionKind] = &[ExtractionKind::Variable, ExtractionKind::Constant, ExtractionKind::Static];
 
     fn assist_id(&self) -> AssistId {
         let s = match self {

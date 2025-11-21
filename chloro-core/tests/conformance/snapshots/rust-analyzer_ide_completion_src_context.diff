@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30413 bytes
+Chloro size:   30948 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
@@ -45,15 +45,14 @@ Rustfmt size:  31005 bytes
 +    context::analysis::{AnalysisResult, expand_and_analyze},
  };
  
--const COMPLETION_MARKER: &str = "raCompletionMarker";
 +mod analysis;
 +
 +#[cfg(test)]
 +mod tests;
 +
+ const COMPLETION_MARKER: &str = "raCompletionMarker";
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub(crate) enum PatternRefutability {
  /// Existing qualifiers for the thing we are currently completing.
  #[derive(Debug, Default)]
  pub(crate) struct QualifierCtx {
@@ -407,38 +406,3 @@ Rustfmt size:  31005 bytes
          let display_target = krate.to_display_target(db);
          let ctx = CompletionContext {
              sema,
-     }
- }
- 
--const OP_TRAIT_LANG_NAMES: &[&str] = &[
--    "add_assign",
--    "add",
--    "bitand_assign",
--    "bitand",
--    "bitor_assign",
--    "bitor",
--    "bitxor_assign",
--    "bitxor",
--    "deref_mut",
--    "deref",
--    "div_assign",
--    "div",
--    "eq",
--    "fn_mut",
--    "fn_once",
--    "fn",
--    "index_mut",
--    "index",
--    "mul_assign",
--    "mul",
--    "neg",
--    "not",
--    "partial_ord",
--    "rem_assign",
--    "rem",
--    "shl_assign",
--    "shl",
--    "shr_assign",
--    "shr",
--    "sub",
--];

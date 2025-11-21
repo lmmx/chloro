@@ -612,6 +612,7 @@ where
     }
 }
 
+const TYPE_HINT_TRUNCATION: &str = "…";
 
 impl<'db, T: HirDisplay<'db>> HirDisplay<'db> for &T {
     fn hir_fmt(

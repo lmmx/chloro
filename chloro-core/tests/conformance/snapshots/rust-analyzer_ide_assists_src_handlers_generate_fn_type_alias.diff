@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11167 bytes
-Chloro size:   10510 bytes
+Chloro size:   10592 bytes
 Rustfmt size:  11167 bytes
 
 ✗ Outputs DIFFER
@@ -65,13 +65,6 @@ Rustfmt size:  11167 bytes
      Some(())
  }
  
- }
- 
- impl ParamStyle {
--    const ALL: &'static [ParamStyle] = &[ParamStyle::Named, ParamStyle::Unnamed];
- 
-     fn assist_id(&self) -> AssistId {
-         let s = match self {
              ParamStyle::Named => "generate_fn_type_alias_named",
              ParamStyle::Unnamed => "generate_fn_type_alias_unnamed",
          };

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9435 bytes
+Chloro size:   9530 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -80,6 +80,7 @@ Rustfmt size:  10040 bytes
  
  #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
 -const _: () = assert!(size_of::<TypeRef>() == 24);
++const () = assert!(size_of::<TypeRef>() == 24);
  
  pub type TypeRefId = Idx<TypeRef>;
  
@@ -87,6 +88,7 @@ Rustfmt size:  10040 bytes
  
  #[cfg(target_pointer_width = "64")]
 -const _: [(); 16] = [(); size_of::<TypeBound>()];
++const [(); 16] = [(); size_of::<TypeBound>()];
  
  #[derive(Clone, PartialEq, Eq, Hash, Debug)]
  pub enum UseArgRef {

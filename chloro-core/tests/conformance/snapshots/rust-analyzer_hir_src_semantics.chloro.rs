@@ -57,6 +57,7 @@ mod child_by_source;
 
 mod source_to_def;
 
+const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum PathResolution {

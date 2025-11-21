@@ -56,7 +56,9 @@ use crate::{
     visibility::{RawVisibility, Visibility},
 };
 
+const GLOB_RECURSION_LIMIT: usize = 100;
 
+const FIXED_POINT_LIMIT: usize = 8192;
 
 pub(super) fn collect_defs(
     db: &dyn DefDatabase,

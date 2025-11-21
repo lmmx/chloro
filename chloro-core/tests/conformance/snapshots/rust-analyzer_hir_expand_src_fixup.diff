@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27667 bytes
+Chloro size:   27737 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
@@ -35,21 +35,19 @@ Rustfmt size:  28368 bytes
      original: Option<Arc<Box<[TopSubtree]>>>,
  }
  
- impl SyntaxFixupUndoInfo {
--    pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
+     pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
  }
  
- // We mark spans with `FIXUP_DUMMY_AST_ID` to indicate that they are fake.
--const FIXUP_DUMMY_AST_ID: ErasedFileAstId = FIXUP_ERASED_FILE_AST_ID_MARKER;
--const FIXUP_DUMMY_RANGE: TextRange = TextRange::empty(TextSize::new(0));
+-// We mark spans with `FIXUP_DUMMY_AST_ID` to indicate that they are fake.
+ const FIXUP_DUMMY_AST_ID: ErasedFileAstId = FIXUP_ERASED_FILE_AST_ID_MARKER;
 +
+ const FIXUP_DUMMY_RANGE: TextRange = TextRange::empty(TextSize::new(0));
+-// If the fake span has this range end, that means that the range start is an index into the
+-// `original` list in `SyntaxFixupUndoInfo`.
 +
- // If the fake span has this range end, that means that the range start is an index into the
- // `original` list in `SyntaxFixupUndoInfo`.
--const FIXUP_DUMMY_RANGE_END: TextSize = TextSize::new(!0);
+ const FIXUP_DUMMY_RANGE_END: TextSize = TextSize::new(!0);
  
  pub(crate) fn fixup_syntax(
-     span_map: SpanMapRef<'_>,
          let span = span_map.span_for_range(range);
          Span {
              range: dummy_range,

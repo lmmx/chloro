@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53812 bytes
+Chloro size:   53902 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -339,7 +339,7 @@ Rustfmt size:  53876 bytes
  mod tests {
      use super::*;
 -
--    const TESTERS: [u128; 10] = [0, 1, 2, 3, 4, 255, 256, 257, u128::MAX - 1, u128::MAX];
+     const TESTERS: [u128; 10] = [0, 1, 2, 3, 4, 255, 256, 257, u128::MAX - 1, u128::MAX];
 -
      #[test]
      fn test_is_pwr2minus1() {

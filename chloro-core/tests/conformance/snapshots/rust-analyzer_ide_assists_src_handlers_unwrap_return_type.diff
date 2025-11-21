@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45712 bytes
-Chloro size:   45091 bytes
+Chloro size:   45182 bytes
 Rustfmt size:  45712 bytes
 
 ✗ Outputs DIFFER
@@ -65,13 +65,6 @@ Rustfmt size:  45712 bytes
      acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
          let mut editor = builder.make_editor(&parent);
          let make = SyntaxFactory::with_mappings();
- }
- 
- impl UnwrapperKind {
--    const ALL: &'static [UnwrapperKind] = &[UnwrapperKind::Option, UnwrapperKind::Result];
- 
-     fn assist_id(&self) -> AssistId {
-         let s = match self {
              UnwrapperKind::Option => "unwrap_option_return_type",
              UnwrapperKind::Result => "unwrap_result_return_type",
          };

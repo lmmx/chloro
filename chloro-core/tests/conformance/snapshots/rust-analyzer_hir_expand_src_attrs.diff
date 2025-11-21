@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16489 bytes
+Chloro size:   16586 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -45,13 +45,6 @@ Rustfmt size:  17571 bytes
      entries: Option<ThinArc<(), Attr>>,
  }
  
- }
- 
- impl RawAttrs {
--    pub const EMPTY: Self = Self { entries: None };
- 
-     pub fn new(
-         db: &dyn ExpandDatabase,
          span_map: SpanMapRef<'_>,
      ) -> Self {
          let entries: Vec<_> = Self::attrs_iter::<true>(db, owner, span_map).collect();
@@ -146,7 +139,7 @@ Rustfmt size:  17571 bytes
 -// FIXME: This only handles a single level of cfg_attr nesting
 -// that is `#[cfg_attr(all(), cfg_attr(all(), cfg(any())))]` breaks again
  impl AttrId {
--    const INNER_ATTR_SET_BIT: u32 = 1 << 31;
+     const INNER_ATTR_SET_BIT: u32 = 1 << 31;
  
 -    pub fn new(id: usize, is_inner: bool) -> Self {
 +    pub fn new(

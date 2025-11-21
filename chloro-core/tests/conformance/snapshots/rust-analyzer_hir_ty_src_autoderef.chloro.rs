@@ -24,6 +24,7 @@ use crate::{
     },
 };
 
+const AUTODEREF_RECURSION_LIMIT: usize = 20;
 
 /// Returns types that `ty` transitively dereferences to. This function is only meant to be used
 /// outside `hir-ty`.

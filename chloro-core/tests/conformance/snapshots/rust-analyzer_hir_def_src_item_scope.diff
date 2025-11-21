@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33374 bytes
-Chloro size:   33473 bytes
+Chloro size:   33561 bytes
 Rustfmt size:  33374 bytes
 
 ✗ Outputs DIFFER
@@ -68,22 +68,6 @@ Rustfmt size:  33374 bytes
      legacy_macros: FxHashMap<Name, SmallVec<[MacroId; 2]>>,
      /// The attribute macro invocations in this scope.
      attr_macros: FxHashMap<AstId<ast::Item>, MacroCallId>,
-     derive_call_ids: SmallVec<[Option<MacroCallId>; 4]>,
- }
- 
--pub(crate) static BUILTIN_SCOPE: LazyLock<FxIndexMap<Name, PerNs>> = LazyLock::new(|| {
-+{
-     BuiltinType::all_builtin_types()
-         .iter()
-         .map(|(name, ty)| (name.clone(), PerNs::types((*ty).into(), Visibility::Public, None)))
--        .collect()
--});
--
-+        .collect();
-+}
- /// Shadow mode for builtin type which can be shadowed by module.
- #[derive(Debug, Copy, Clone, PartialEq, Eq)]
- pub(crate) enum BuiltinShadowMode {
          self.values.iter().map(|(n, &i)| (n, i))
      }
  

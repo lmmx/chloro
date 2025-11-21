@@ -189,15 +189,17 @@ pub enum WherePredicate {
     },
 }
 
-{
+static EMPTY: LazyLock<Arc<GenericParams>> = LazyLock::new(|| {
     Arc::new(GenericParams {
         type_or_consts: Arena::default(),
         lifetimes: Arena::default(),
         where_predicates: Box::default(),
-    });
-}
+    })
+});
+
 impl GenericParams {
-/// The index of the self param in the generic of the non-parent definition.
+    /// The index of the self param in the generic of the non-parent definition.
+    pub(crate) const SELF_PARAM_ID_IN_SELF: la_arena::Idx<TypeOrConstParamData> = LocalTypeOrConstParamId::from_raw(RawIdx::from_u32(0));
 
     pub fn new(
         db: &dyn DefDatabase,

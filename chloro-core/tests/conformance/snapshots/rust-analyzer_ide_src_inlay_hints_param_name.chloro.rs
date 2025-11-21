@@ -107,7 +107,9 @@ fn get_callable<'db>(
     }
 }
 
+const INSIGNIFICANT_METHOD_NAMES: &[&str] = &["clone", "as_ref", "into"];
 
+const INSIGNIFICANT_PARAMETER_NAMES: &[&str] = &["predicate", "value", "pat", "rhs", "other", "msg", "op"];
 
 fn should_hide_param_name_hint(
     sema: &Semantics<'_, RootDatabase>,

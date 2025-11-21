@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   48942 bytes
+Chloro size:   49709 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
@@ -283,37 +283,24 @@ Rustfmt size:  50564 bytes
      number_of_test_submodules > 1
  }
  
-     pub snapbox: bool,
- }
- 
--static SNAPSHOT_TEST_MACROS: OnceLock<FxHashMap<&str, Vec<[Symbol; 2]>>> = OnceLock::new();
  
  impl UpdateTest {
--    const EXPECT_CRATE: &str = "expect_test";
--    const EXPECT_MACROS: &[&str] = &["expect", "expect_file"];
+     const EXPECT_CRATE: &str = "expect_test";
++
+     const EXPECT_MACROS: &[&str] = &["expect", "expect_file"];
  
--    const INSTA_CRATE: &str = "insta";
--    const INSTA_MACROS: &[&str] = &[
--        "assert_snapshot",
--        "assert_debug_snapshot",
--        "assert_display_snapshot",
--        "assert_json_snapshot",
--        "assert_yaml_snapshot",
--        "assert_ron_snapshot",
--        "assert_toml_snapshot",
--        "assert_csv_snapshot",
--        "assert_compact_json_snapshot",
--        "assert_compact_debug_snapshot",
--        "assert_binary_snapshot",
--    ];
+     const INSTA_CRATE: &str = "insta";
++
+     const INSTA_MACROS: &[&str] = &[
+         "assert_snapshot",
+         "assert_debug_snapshot",
+     ];
  
--    const SNAPBOX_CRATE: &str = "snapbox";
--    const SNAPBOX_MACROS: &[&str] = &["assert_data_eq", "file", "str"];
+     const SNAPBOX_CRATE: &str = "snapbox";
++
+     const SNAPBOX_MACROS: &[&str] = &["assert_data_eq", "file", "str"];
  
 -    fn find_snapshot_macro(sema: &Semantics<'_, RootDatabase>, file_range: hir::FileRange) -> Self {
-+
-+
-+
 +    fn find_snapshot_macro(
 +        sema: &Semantics<'_, RootDatabase>,
 +        file_range: hir::FileRange,

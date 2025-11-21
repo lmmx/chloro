@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31792 bytes
+Chloro size:   31830 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -41,13 +41,6 @@ Rustfmt size:  33429 bytes
  /// Total limit on the number of tokens produced by any macro invocation.
  ///
  /// If an invocation produces more tokens than this limit, it will not be stored in the database and
- /// an error will be emitted.
- ///
- /// Actual max for `analysis-stats .` at some point: 30672.
--const TOKEN_LIMIT: usize = 2_097_152;
- 
- #[derive(Debug, Clone, Eq, PartialEq)]
- pub enum TokenExpander {
  }
  
  #[query_group::query_group]

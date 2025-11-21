@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   38791 bytes
+Chloro size:   39257 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -272,6 +272,7 @@ Rustfmt size:  42083 bytes
 -        _ = db;
 -        None
 -    }
++const KIND: SymbolKind;
 +fn container_name(
 +    self,
 +    db: &RootDatabase,
@@ -288,10 +289,9 @@ Rustfmt size:  42083 bytes
      match t.container(db) {
          hir::ItemContainer::Trait(it) => Some(it.name(db).symbol().clone()),
          // FIXME: Handle owners of blocks correctly here
- }
  
  impl ToNavFromAst for hir::Function {
--    const KIND: SymbolKind = SymbolKind::Function;
+     const KIND: SymbolKind = SymbolKind::Function;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -303,7 +303,7 @@ Rustfmt size:  42083 bytes
  }
  
  impl ToNavFromAst for hir::Const {
--    const KIND: SymbolKind = SymbolKind::Const;
+     const KIND: SymbolKind = SymbolKind::Const;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -315,7 +315,7 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::Static {
--    const KIND: SymbolKind = SymbolKind::Static;
+     const KIND: SymbolKind = SymbolKind::Static;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -327,7 +327,7 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::Struct {
--    const KIND: SymbolKind = SymbolKind::Struct;
+     const KIND: SymbolKind = SymbolKind::Struct;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -339,7 +339,7 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::Enum {
--    const KIND: SymbolKind = SymbolKind::Enum;
+     const KIND: SymbolKind = SymbolKind::Enum;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -351,11 +351,11 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::Variant {
--    const KIND: SymbolKind = SymbolKind::Variant;
+     const KIND: SymbolKind = SymbolKind::Variant;
  }
 +
  impl ToNavFromAst for hir::Union {
--    const KIND: SymbolKind = SymbolKind::Union;
+     const KIND: SymbolKind = SymbolKind::Union;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -367,7 +367,7 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::TypeAlias {
--    const KIND: SymbolKind = SymbolKind::TypeAlias;
+     const KIND: SymbolKind = SymbolKind::TypeAlias;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(
@@ -379,7 +379,7 @@ Rustfmt size:  42083 bytes
  }
 +
  impl ToNavFromAst for hir::Trait {
--    const KIND: SymbolKind = SymbolKind::Trait;
+     const KIND: SymbolKind = SymbolKind::Trait;
 -    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
 +
 +    fn container_name(

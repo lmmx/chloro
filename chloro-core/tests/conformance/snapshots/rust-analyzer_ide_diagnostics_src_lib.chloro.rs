@@ -567,11 +567,13 @@ struct BuiltLint {
     groups: Vec<&'static str>,
 }
 
+static RUSTC_LINTS: LazyLock<FxHashMap<&str, BuiltLint>> = LazyLock::new(|| build_lints_map(DEFAULT_LINTS, DEFAULT_LINT_GROUPS, ""));
 
-{
-    build_lints_map(ide_db::generated::lints::CLIPPY_LINTS, CLIPPY_LINT_GROUPS, "clippy::");
-}
-// FIXME: Autogenerate this instead of enumerating by hand.
+static CLIPPY_LINTS: LazyLock<FxHashMap<&str, BuiltLint>> = LazyLock::new(|| {
+    build_lints_map(ide_db::generated::lints::CLIPPY_LINTS, CLIPPY_LINT_GROUPS, "clippy::")
+});
+
+static LINTS_TO_REPORT_IN_EXTERNAL_MACROS: LazyLock<FxHashSet<&str>> = LazyLock::new(|| FxHashSet::from_iter([]));
 
 fn build_lints_map(
     lints: &'static [Lint],

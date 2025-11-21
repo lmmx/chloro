@@ -40,6 +40,7 @@ pub enum PathKind {
 }
 
 impl PathKind {
+    pub const SELF: PathKind = PathKind::Super(0);
 }
 
 impl ModPath {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52385 bytes
+Chloro size:   52470 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -64,13 +64,6 @@ Rustfmt size:  53059 bytes
      Some(())
  }
  
- }
- 
- impl WrapperKind {
--    const ALL: &'static [WrapperKind] = &[WrapperKind::Option, WrapperKind::Result];
- 
-     fn assist_id(&self) -> AssistId {
-         let s = match self {
              WrapperKind::Option => "wrap_return_type_in_option",
              WrapperKind::Result => "wrap_return_type_in_result",
          };

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5844 bytes
-Chloro size:   5735 bytes
+Chloro size:   5786 bytes
 Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  5887 bytes
  };
  
  /// A value to use, when uncertain which limit to pick.
--pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
+ pub const DEFAULT_QUERY_SEARCH_LIMIT: usize = 100;
  
 -pub use import_map::AssocSearchMode;
 -

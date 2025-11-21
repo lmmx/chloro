@@ -362,6 +362,7 @@ enum Event {
     CheckEvent(Option<CargoCheckMessage>),
 }
 
+pub(crate) const SAVED_FILE_PLACEHOLDER: &str = "$saved_file";
 
 impl FlycheckActor {
     fn new(

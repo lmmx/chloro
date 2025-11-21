@@ -22,9 +22,11 @@ mod rustc_wrapper;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
+static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[cfg(all(feature = "jemalloc", not(target_env = "msvc")))]
 #[global_allocator]
+static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 fn main() -> anyhow::Result<ExitCode> {
     if std::env::var("RA_RUSTC_WRAPPER").is_ok() {
@@ -158,6 +160,7 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
     Ok(())
 }
 
+const STACK_SIZE: usize = 1024 * 1024 * 8;
 
 /// Parts of rust-analyzer can use a lot of stack space, and some operating systems only give us
 /// 1 MB by default (eg. Windows), so this spawns a new thread with hopefully sufficient stack

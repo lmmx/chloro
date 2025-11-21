@@ -50,10 +50,11 @@ pub struct Ty<'db> {
     kind_: InternedWrapperNoDebug<WithCachedTypeInfo<TyKind<'db>>>,
 }
 
-{
+const () = {
     const fn is_copy<T: Copy>() {}
     is_copy::<Ty<'static>>();
-}
+};
+
 impl<'db> Ty<'db> {
     pub fn new(
         interner: DbInterner<'db>,

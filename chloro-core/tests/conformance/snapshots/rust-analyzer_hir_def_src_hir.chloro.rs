@@ -340,8 +340,11 @@ pub enum InlineAsmKind {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AsmOptions(u16);
 impl AsmOptions {
+    pub const COUNT: usize = Self::all().bits().count_ones() as usize;
 
+    pub const GLOBAL_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW);
 
+    pub const NAKED_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW).union(Self::NORETURN);
 
     pub fn human_readable_names(&self) -> Vec<&'static str> {
         let mut options = vec![];

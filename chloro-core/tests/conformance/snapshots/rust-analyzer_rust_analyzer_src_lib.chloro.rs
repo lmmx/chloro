@@ -19,6 +19,13 @@ pub use crate::{
 use self::lsp::ext as lsp_ext;
 
 /// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
+pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version {
+    major: 1,
+    minor: 78,
+    patch: 0,
+    pre: semver::Prerelease::EMPTY,
+    build: semver::BuildMetadata::EMPTY,
+};
 
 pub mod cli;
 
@@ -90,5 +97,7 @@ macro_rules! try_default_ {
 
 #[cfg(feature = "dhat")]
 #[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
 
 #[cfg(feature = "dhat")]
+static DHAT_PROFILER: std::sync::Mutex<Option<dhat::Profiler>> = std::sync::Mutex::new(None);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12499 bytes
+Chloro size:   12616 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -130,17 +130,15 @@ Rustfmt size:  13004 bytes
          let Self {
              name: other_name,
              kind: other_kind,
- }
  
  impl CustomProcMacroExpander {
--    const MISSING_EXPANDER: u32 = !0;
--    const DISABLED_ID: u32 = !1;
--    const PROC_MACRO_ATTR_DISABLED: u32 = !2;
+     const MISSING_EXPANDER: u32 = !0;
 +
+     const DISABLED_ID: u32 = !1;
 +
+     const PROC_MACRO_ATTR_DISABLED: u32 = !2;
  
      pub fn new(proc_macro_id: u32) -> Self {
-         assert_ne!(proc_macro_id, Self::MISSING_EXPANDER);
  
      /// An expander that always errors due to the actual proc-macro expander missing.
      pub const fn missing_expander() -> Self {

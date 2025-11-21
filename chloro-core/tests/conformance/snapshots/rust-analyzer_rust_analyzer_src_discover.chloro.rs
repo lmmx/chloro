@@ -12,6 +12,7 @@ use tracing::{info_span, span::EnteredSpan};
 
 use crate::command::{CargoParser, CommandHandle};
 
+pub(crate) const ARG_PLACEHOLDER: &str = "{arg}";
 
 /// A command wrapper for getting a `rust-project.json`.
 ///

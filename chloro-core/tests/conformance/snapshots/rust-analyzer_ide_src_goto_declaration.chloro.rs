@@ -73,6 +73,7 @@ mod tests {
     use ide_db::{FileRange, MiniCore};
     use itertools::Itertools;
     use crate::{GotoDefinitionConfig, fixture};
+    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
         let navs = analysis

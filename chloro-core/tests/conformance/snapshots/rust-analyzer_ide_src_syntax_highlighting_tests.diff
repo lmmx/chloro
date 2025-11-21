@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   30828 bytes
+Chloro size:   31166 bytes
 Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
@@ -20,21 +20,8 @@ Rustfmt size:  31474 bytes
 -use crate::{fixture, FileRange, HighlightConfig, HlTag, TextRange};
 +use crate::{FileRange, HighlightConfig, HlTag, TextRange, fixture};
  
--const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
--    strings: true,
--    comments: true,
--    punctuation: true,
--    specialize_punctuation: true,
--    specialize_operator: true,
--    operator: true,
--    inject_doc_comment: true,
--    macro_bang: true,
--    syntactic_name_ref_highlighting: false,
--    minicore: MiniCore::default(),
--};
- 
- #[test]
- fn attributes() {
+ const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
+     strings: true,
      );
  }
  

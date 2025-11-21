@@ -540,6 +540,7 @@ impl Analysis {
         self.with_db(|db| typing::on_enter(db, position))
     }
 
+    pub const SUPPORTED_TRIGGER_CHARS: &[char] = typing::TRIGGER_CHARS;
 
     /// Returns an edit which should be applied after a character was typed.
     ///

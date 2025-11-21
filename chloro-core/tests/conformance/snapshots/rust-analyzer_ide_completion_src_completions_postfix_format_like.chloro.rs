@@ -11,6 +11,17 @@ use crate::{
 };
 
 /// Mapping ("postfix completion item" => "macro to use")
+static KINDS: &[(&str, &str)] = &[
+    ("format", "format!"),
+    ("panic", "panic!"),
+    ("println", "println!"),
+    ("eprintln", "eprintln!"),
+    ("logd", "log::debug!"),
+    ("logt", "log::trace!"),
+    ("logi", "log::info!"),
+    ("logw", "log::warn!"),
+    ("loge", "log::error!"),
+];
 
 pub(crate) fn add_format_like_completions(
     acc: &mut Completions,

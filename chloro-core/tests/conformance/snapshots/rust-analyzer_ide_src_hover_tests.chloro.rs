@@ -7,6 +7,25 @@ use crate::{
     HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
 };
 
+const HOVER_BASE_CONFIG: HoverConfig<'_> = HoverConfig {
+    links_in_hover: false,
+    memory_layout: Some(MemoryLayoutHoverConfig {
+        size: Some(MemoryLayoutHoverRenderKind::Both),
+        offset: Some(MemoryLayoutHoverRenderKind::Both),
+        alignment: Some(MemoryLayoutHoverRenderKind::Both),
+        padding: Some(MemoryLayoutHoverRenderKind::Both),
+        niches: true,
+    }),
+    documentation: true,
+    format: HoverDocFormat::Markdown,
+    keywords: true,
+    max_trait_assoc_items_count: None,
+    max_fields_count: Some(5),
+    max_enum_variants_count: Some(5),
+    max_subst_ty_len: super::SubstTyLen::Unlimited,
+    show_drop_glue: true,
+    minicore: MiniCore::default(),
+};
 
 fn check_hover_no_result(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     let (analysis, position) = fixture::position(ra_fixture);

@@ -62,3 +62,21 @@ const fn attr(
 }
 
 #[rustfmt::skip]
+const REPR_COMPLETIONS: &[ReprCompletion] = &[
+    ReprCompletion { label: "align($0)", snippet: Some("align($0)"), lookup: Some("align"), collides: &["transparent", "packed"] },
+    attr("packed", &["transparent", "align"]),
+    attr("transparent", &["C", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("C", &["transparent"]),
+    attr("u8",     &["transparent", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("u16",    &["transparent", "u8", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("u32",    &["transparent", "u8", "u16", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("u64",    &["transparent", "u8", "u16", "u32", "u128", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("u128",   &["transparent", "u8", "u16", "u32", "u64", "usize", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("usize",  &["transparent", "u8", "u16", "u32", "u64", "u128", "i8", "i16", "i32", "i64", "i128", "isize"]),
+    attr("i8",     &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i16", "i32", "i64", "i128", "isize"]),
+    attr("i16",    &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i32", "i64", "i128", "isize"]),
+    attr("i32",    &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i64", "i128", "isize"]),
+    attr("i64",    &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i128", "isize"]),
+    attr("i28",    &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "isize"]),
+    attr("isize",  &["transparent", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "i128"]),
+];

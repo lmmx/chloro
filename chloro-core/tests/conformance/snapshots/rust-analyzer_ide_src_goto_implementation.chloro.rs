@@ -134,6 +134,7 @@ mod tests {
     use ide_db::FileRange;
     use itertools::Itertools;
     use crate::{GotoImplementationConfig, fixture};
+    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig { filter_adjacent_derive_implementations: false };
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(TEST_CONFIG, ra_fixture);

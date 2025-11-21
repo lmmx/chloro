@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12531 bytes
-Chloro size:   10919 bytes
+Chloro size:   11306 bytes
 Rustfmt size:  12665 bytes
 
 ✗ Outputs DIFFER
@@ -158,17 +158,12 @@ Rustfmt size:  12665 bytes
 +    use span::{Edition, ROOT_ERASED_FILE_AST_ID, SpanAnchor, SyntaxContext};
      use syntax::{TextRange, TextSize};
 -
--    const DUMMY: tt::Span = tt::Span {
--        range: TextRange::empty(TextSize::new(0)),
--        anchor: SpanAnchor {
--            file_id: span::EditionedFileId::new(
--                span::FileId::from_raw(0xe4e4e),
--                span::Edition::CURRENT,
--            ),
--            ast_id: ROOT_ERASED_FILE_AST_ID,
--        },
--        ctx: SyntaxContext::root(Edition::CURRENT),
--    };
+     const DUMMY: tt::Span = tt::Span {
+         range: TextRange::empty(TextSize::new(0)),
+         anchor: SpanAnchor {
+         },
+         ctx: SyntaxContext::root(Edition::CURRENT),
+     };
 -
      #[test]
      fn test_quote_delimiters() {

@@ -244,6 +244,17 @@ mod tests {
     use ide_db::MiniCore;
     use crate::{Annotation, AnnotationConfig, fixture};
     use super::AnnotationLocation;
+    const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {
+        binary_target: true,
+        annotate_runnables: true,
+        annotate_impls: true,
+        annotate_references: true,
+        annotate_method_references: true,
+        annotate_enum_variant_references: true,
+        location: AnnotationLocation::AboveName,
+        minicore: MiniCore::default(),
+        filter_adjacent_derive_implementations: false,
+    };
     fn check_with_config(
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
         expect: Expect,

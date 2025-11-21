@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   12450 bytes
+Chloro size:   16227 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
@@ -194,149 +194,124 @@ Rustfmt size:  16896 bytes
  }
  
  macro_rules! attrs {
- }
- 
- #[rustfmt::skip]
--static KIND_TO_ATTRIBUTES: LazyLock<FxHashMap<SyntaxKind, &[&str]>> = LazyLock::new(|| {
-+{
-     use SyntaxKind::*;
-     [
-         (
-         (RECORD_PAT_FIELD, attrs!()),
-     ]
      .into_iter()
--    .collect()
--});
--const EXPR_ATTRIBUTES: &[&str] = attrs!();
-+    .collect();
-+}
+     .collect()
+ });
++
+ const EXPR_ATTRIBUTES: &[&str] = attrs!();
  
  /// <https://doc.rust-lang.org/reference/attributes.html#built-in-attributes-index>
- // Keep these sorted for the binary search!
--const ATTRIBUTES: &[AttrCompletion] = &[
--    attr("allow(…)", Some("allow"), Some("allow(${0:lint})")),
--    attr("automatically_derived", None, None),
--    attr("cfg(…)", Some("cfg"), Some("cfg(${0:predicate})")),
+-// Keep these sorted for the binary search!
+ const ATTRIBUTES: &[AttrCompletion] = &[
+     attr("allow(…)", Some("allow"), Some("allow(${0:lint})")),
+     attr("automatically_derived", None, None),
+     attr("cfg(…)", Some("cfg"), Some("cfg(${0:predicate})")),
 -    attr(
 -        "cfg_attr(…)",
 -        Some("cfg_attr"),
 -        Some("cfg_attr(${1:predicate}, ${0:attr})"),
 -    ),
--    attr("cold", None, None),
++    attr("cfg_attr(…)", Some("cfg_attr"), Some("cfg_attr(${1:predicate}, ${0:attr})")),
+     attr("cold", None, None),
 -    attr(
 -        r#"crate_name = """#,
 -        Some("crate_name"),
 -        Some(r#"crate_name = "${0:crate_name}""#),
 -    )
 -    .prefer_inner(),
--    attr("deny(…)", Some("deny"), Some("deny(${0:lint})")),
--    attr(r#"deprecated"#, Some("deprecated"), Some(r#"deprecated"#)),
--    attr("derive(…)", Some("derive"), Some(r#"derive(${0:Debug})"#)),
++    attr(r#"crate_name = """#, Some("crate_name"), Some(r#"crate_name = "${0:crate_name}""#))
++        .prefer_inner(),
+     attr("deny(…)", Some("deny"), Some("deny(${0:lint})")),
+     attr(r#"deprecated"#, Some("deprecated"), Some(r#"deprecated"#)),
+     attr("derive(…)", Some("derive"), Some(r#"derive(${0:Debug})"#)),
 -    attr(
 -        "do_not_recommend",
 -        Some("diagnostic::do_not_recommend"),
 -        None,
 -    )
 -    .qualifiers(&["diagnostic"]),
--    attr(
--        "on_unimplemented",
--        Some("diagnostic::on_unimplemented"),
--        Some(r#"on_unimplemented(${0:keys})"#),
--    )
--    .qualifiers(&["diagnostic"]),
--    attr(r#"doc = "…""#, Some("doc"), Some(r#"doc = "${0:docs}""#)),
++    attr("do_not_recommend", Some("diagnostic::do_not_recommend"), None)
++        .qualifiers(&["diagnostic"]),
+     attr(
+         "on_unimplemented",
+         Some("diagnostic::on_unimplemented"),
+     )
+     .qualifiers(&["diagnostic"]),
+     attr(r#"doc = "…""#, Some("doc"), Some(r#"doc = "${0:docs}""#)),
 -    attr(
 -        r#"doc(alias = "…")"#,
 -        Some("docalias"),
 -        Some(r#"doc(alias = "${0:docs}")"#),
 -    ),
--    attr(r#"doc(hidden)"#, Some("dochidden"), Some(r#"doc(hidden)"#)),
++    attr(r#"doc(alias = "…")"#, Some("docalias"), Some(r#"doc(alias = "${0:docs}")"#)),
+     attr(r#"doc(hidden)"#, Some("dochidden"), Some(r#"doc(hidden)"#)),
 -    attr(
 -        r#"doc = include_str!("…")"#,
 -        Some("docinclude"),
 -        Some(r#"doc = include_str!("$0")"#),
 -    ),
--    attr("expect(…)", Some("expect"), Some("expect(${0:lint})")),
--    attr(
--        r#"export_name = "…""#,
--        Some("export_name"),
--        Some(r#"export_name = "${0:exported_symbol_name}""#),
--    ),
--    attr("feature(…)", Some("feature"), Some("feature(${0:flag})")).prefer_inner(),
--    attr("forbid(…)", Some("forbid"), Some("forbid(${0:lint})")),
--    attr("global_allocator", None, None),
++    attr(r#"doc = include_str!("…")"#, Some("docinclude"), Some(r#"doc = include_str!("$0")"#)),
+     attr("expect(…)", Some("expect"), Some("expect(${0:lint})")),
+     attr(
+         r#"export_name = "…""#,
+     attr("feature(…)", Some("feature"), Some("feature(${0:flag})")).prefer_inner(),
+     attr("forbid(…)", Some("forbid"), Some("forbid(${0:lint})")),
+     attr("global_allocator", None, None),
 -    attr(
 -        r#"ignore = "…""#,
 -        Some("ignore"),
 -        Some(r#"ignore = "${0:reason}""#),
 -    ),
--    attr("inline", Some("inline"), Some("inline")),
--    attr("link", None, None),
++    attr(r#"ignore = "…""#, Some("ignore"), Some(r#"ignore = "${0:reason}""#)),
+     attr("inline", Some("inline"), Some("inline")),
+     attr("link", None, None),
 -    attr(
 -        r#"link_name = "…""#,
 -        Some("link_name"),
 -        Some(r#"link_name = "${0:symbol_name}""#),
 -    ),
--    attr(
--        r#"link_section = "…""#,
--        Some("link_section"),
--        Some(r#"link_section = "${0:section_name}""#),
--    ),
--    attr("macro_export", None, None),
--    attr("macro_use", None, None),
--    attr(r#"must_use"#, Some("must_use"), Some(r#"must_use"#)),
--    attr("no_implicit_prelude", None, None).prefer_inner(),
--    attr("no_link", None, None).prefer_inner(),
--    attr("no_main", None, None).prefer_inner(),
--    attr("no_mangle", None, None),
--    attr("no_std", None, None).prefer_inner(),
--    attr("non_exhaustive", None, None),
--    attr("panic_handler", None, None),
--    attr(r#"path = "…""#, Some("path"), Some(r#"path ="${0:path}""#)),
--    attr("proc_macro", None, None),
--    attr("proc_macro_attribute", None, None),
++    attr(r#"link_name = "…""#, Some("link_name"), Some(r#"link_name = "${0:symbol_name}""#)),
+     attr(
+         r#"link_section = "…""#,
+         Some("link_section"),
+     attr(r#"path = "…""#, Some("path"), Some(r#"path ="${0:path}""#)),
+     attr("proc_macro", None, None),
+     attr("proc_macro_attribute", None, None),
 -    attr(
 -        "proc_macro_derive(…)",
 -        Some("proc_macro_derive"),
 -        Some("proc_macro_derive(${0:Trait})"),
 -    ),
--    attr(
--        r#"recursion_limit = "…""#,
--        Some("recursion_limit"),
--        Some(r#"recursion_limit = "${0:128}""#),
--    )
--    .prefer_inner(),
--    attr("repr(…)", Some("repr"), Some("repr(${0:C})")),
++    attr("proc_macro_derive(…)", Some("proc_macro_derive"), Some("proc_macro_derive(${0:Trait})")),
+     attr(
+         r#"recursion_limit = "…""#,
+         Some("recursion_limit"),
+     )
+     .prefer_inner(),
+     attr("repr(…)", Some("repr"), Some("repr(${0:C})")),
 -    attr(
 -        "should_panic",
 -        Some("should_panic"),
 -        Some(r#"should_panic"#),
 -    ),
--    attr(
--        r#"target_feature(enable = "…")"#,
--        Some("target_feature"),
--        Some(r#"target_feature(enable = "${0:feature}")"#),
--    ),
--    attr("test", None, None),
--    attr("track_caller", None, None),
++    attr("should_panic", Some("should_panic"), Some(r#"should_panic"#)),
+     attr(
+         r#"target_feature(enable = "…")"#,
+         Some("target_feature"),
+     ),
+     attr("test", None, None),
+     attr("track_caller", None, None),
 -    attr(
 -        "type_length_limit = …",
 -        Some("type_length_limit"),
 -        Some("type_length_limit = ${0:128}"),
 -    )
 -    .prefer_inner(),
--    attr("used", None, None),
--    attr("warn(…)", Some("warn"), Some("warn(${0:lint})")),
--    attr(
--        r#"windows_subsystem = "…""#,
--        Some("windows_subsystem"),
--        Some(r#"windows_subsystem = "${0:subsystem}""#),
--    )
--    .prefer_inner(),
--];
- 
- fn parse_comma_sep_expr(input: ast::TokenTree) -> Option<Vec<ast::Expr>> {
-     let r_paren = input.r_paren_token()?;
++    attr("type_length_limit = …", Some("type_length_limit"), Some("type_length_limit = ${0:128}"))
++        .prefer_inner(),
+     attr("used", None, None),
+     attr("warn(…)", Some("warn"), Some("warn(${0:lint})")),
+     attr(
  fn attributes_are_sorted() {
      let mut attrs = ATTRIBUTES.iter().map(|attr| attr.key());
      let mut prev = attrs.next().unwrap();

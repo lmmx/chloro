@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35306 bytes
+Chloro size:   35294 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -76,11 +76,9 @@ Rustfmt size:  37277 bytes
  
  impl HygieneId {
 -    // The edition doesn't matter here, we only use this for comparisons and to lookup the macro.
--    pub const ROOT: Self = Self(span::SyntaxContext::root(Edition::Edition2015));
-+// The edition doesn't matter here, we only use this for comparisons and to lookup the macro.
+     pub const ROOT: Self = Self(span::SyntaxContext::root(Edition::Edition2015));
  
      pub fn new(mut ctx: span::SyntaxContext) -> Self {
-         // See `Name` for why we're doing that.
          Self(ctx)
      }
  

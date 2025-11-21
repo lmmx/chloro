@@ -317,6 +317,7 @@ impl<'db> ProjectionStore<'db> {
 }
 
 impl ProjectionId {
+    pub const EMPTY: ProjectionId = ProjectionId(0);
 
     pub fn is_empty(self) -> bool {
         self == ProjectionId::EMPTY

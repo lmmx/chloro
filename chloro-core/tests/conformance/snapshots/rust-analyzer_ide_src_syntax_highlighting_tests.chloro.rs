@@ -7,6 +7,18 @@ use test_utils::{AssertLinear, bench, bench_fixture, skip_slow_tests};
 
 use crate::{FileRange, HighlightConfig, HlTag, TextRange, fixture};
 
+const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
+    strings: true,
+    comments: true,
+    punctuation: true,
+    specialize_punctuation: true,
+    specialize_operator: true,
+    operator: true,
+    inject_doc_comment: true,
+    macro_bang: true,
+    syntactic_name_ref_highlighting: false,
+    minicore: MiniCore::default(),
+};
 
 #[test]
 fn attributes() {

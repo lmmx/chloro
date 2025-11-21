@@ -23,7 +23,9 @@ struct RatomlTest {
 }
 
 impl RatomlTest {
+    const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;
 
+    const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
 
     fn new(
         fixtures: Vec<&str>,

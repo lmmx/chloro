@@ -881,6 +881,47 @@ mod tests {
     use crate::inlay_hints::{AdjustmentHints, AdjustmentHintsMode};
     use crate::{LifetimeElisionHints, fixture, inlay_hints::InlayHintsConfig};
     use super::{ClosureReturnTypeHints, GenericParameterHints, InlayFieldsToResolve};
+    pub(super) const DISABLED_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
+        discriminant_hints: DiscriminantHints::Never,
+        render_colons: false,
+        type_hints: false,
+        parameter_hints: false,
+        sized_bound: false,
+        generic_parameter_hints: GenericParameterHints {
+            type_hints: false,
+            lifetime_hints: false,
+            const_hints: false,
+        },
+        chaining_hints: false,
+        lifetime_elision_hints: LifetimeElisionHints::Never,
+        closure_return_type_hints: ClosureReturnTypeHints::Never,
+        closure_capture_hints: false,
+        adjustment_hints: AdjustmentHints::Never,
+        adjustment_hints_disable_reborrows: false,
+        adjustment_hints_mode: AdjustmentHintsMode::Prefix,
+        adjustment_hints_hide_outside_unsafe: false,
+        binding_mode_hints: false,
+        hide_named_constructor_hints: false,
+        hide_closure_initialization_hints: false,
+        hide_closure_parameter_hints: false,
+        closure_style: ClosureStyle::ImplFn,
+        param_names_for_lifetime_elision_hints: false,
+        max_length: None,
+        closing_brace_hints_min_lines: None,
+        fields_to_resolve: InlayFieldsToResolve::empty(),
+        implicit_drop_hints: false,
+        range_exclusive_hints: false,
+        minicore: MiniCore::default(),
+    };
+    pub(super) const TEST_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
+        type_hints: true,
+        parameter_hints: true,
+        chaining_hints: true,
+        closure_return_type_hints: ClosureReturnTypeHints::WithBlock,
+        binding_mode_hints: true,
+        lifetime_elision_hints: LifetimeElisionHints::Always,
+        ..DISABLED_CONFIG
+    };
     #[track_caller]
     pub(super) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(TEST_CONFIG, ra_fixture);

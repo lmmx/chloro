@@ -1,4 +1,5 @@
 mod block;
+mod const_static;
 mod debug;
 mod doccomment;
 mod enumdef;
@@ -13,6 +14,7 @@ mod useitem;
 use ra_ap_syntax::{ast, AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
+pub use const_static::format_const_or_static;
 #[allow(unused_imports)]
 pub use debug::{debug_children_with_tokens, debug_node_siblings};
 pub use doccomment::format_preceding_docs_and_attrs;
@@ -150,6 +152,8 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::USE => format_use(node, buf, indent),
         SyntaxKind::MODULE => format_module(node, buf, indent),
         SyntaxKind::TYPE_ALIAS => format_type_alias(node, buf, indent),
+        SyntaxKind::CONST => format_const_or_static(node, buf, indent),
+        SyntaxKind::STATIC => format_const_or_static(node, buf, indent),
 
         SyntaxKind::BLOCK_EXPR => format_block(node, buf, indent),
         SyntaxKind::STMT_LIST => format_stmt_list(node, buf, indent),

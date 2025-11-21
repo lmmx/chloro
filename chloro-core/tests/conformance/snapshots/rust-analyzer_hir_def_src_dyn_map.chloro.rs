@@ -45,8 +45,38 @@ pub mod keys {
         dyn_map::{DynMap, Policy},
     };
     pub type Key<K, V> = crate::dyn_map::Key<AstPtr<K>, V, AstPtrPolicy<K, V>>;
-/* derive() */
-/* actual derive macros */
+    pub const BLOCK: Key<ast::BlockExpr, BlockId> = Key::new();
+    pub const FUNCTION: Key<ast::Fn, FunctionId> = Key::new();
+    pub const CONST: Key<ast::Const, ConstId> = Key::new();
+    pub const STATIC: Key<ast::Static, StaticId> = Key::new();
+    pub const TYPE_ALIAS: Key<ast::TypeAlias, TypeAliasId> = Key::new();
+    pub const IMPL: Key<ast::Impl, ImplId> = Key::new();
+    pub const EXTERN_BLOCK: Key<ast::ExternBlock, ExternBlockId> = Key::new();
+    pub const TRAIT: Key<ast::Trait, TraitId> = Key::new();
+    pub const STRUCT: Key<ast::Struct, StructId> = Key::new();
+    pub const UNION: Key<ast::Union, UnionId> = Key::new();
+    pub const ENUM: Key<ast::Enum, EnumId> = Key::new();
+    pub const EXTERN_CRATE: Key<ast::ExternCrate, ExternCrateId> = Key::new();
+    pub const USE: Key<ast::Use, UseId> = Key::new();
+    pub const ENUM_VARIANT: Key<ast::Variant, EnumVariantId> = Key::new();
+    pub const TUPLE_FIELD: Key<ast::TupleField, FieldId> = Key::new();
+    pub const RECORD_FIELD: Key<ast::RecordField, FieldId> = Key::new();
+    pub const TYPE_PARAM: Key<ast::TypeParam, TypeOrConstParamId> = Key::new();
+    pub const CONST_PARAM: Key<ast::ConstParam, TypeOrConstParamId> = Key::new();
+    pub const LIFETIME_PARAM: Key<ast::LifetimeParam, LifetimeParamId> = Key::new();
+    pub const MACRO_RULES: Key<ast::MacroRules, MacroRulesId> = Key::new();
+    pub const MACRO2: Key<ast::MacroDef, Macro2Id> = Key::new();
+    pub const PROC_MACRO: Key<ast::Fn, ProcMacroId> = Key::new();
+    pub const MACRO_CALL: Key<ast::MacroCall, MacroCallId> = Key::new();
+    pub const ATTR_MACRO_CALL: Key<ast::Item, MacroCallId> = Key::new();
+    pub const DERIVE_MACRO_CALL: Key<
+        ast::Attr,
+        (
+            AttrId,
+            /* derive() */ MacroCallId,
+            /* actual derive macros */ Box<[Option<MacroCallId>]>,
+        ),
+    > = Key::new();
     /// XXX: AST Nodes and SyntaxNodes have identity equality semantics: nodes are
     /// equal if they point to exactly the same object.
     ///

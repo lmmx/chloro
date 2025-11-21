@@ -1,7 +1,10 @@
 //! Helper tools for intra doc links.
 
+const TYPES: (&[&str], &[&str]) = (&["type", "struct", "enum", "mod", "trait", "union", "module", "prim", "primitive"], &[]);
 
+const VALUES: (&[&str], &[&str]) = (&["value", "function", "fn", "method", "const", "static", "mod", "module"], &["()"]);
 
+const MACROS: (&[&str], &[&str]) = (&["macro", "derive"], &["!"]);
 
 /// Extract the specified namespace from an intra-doc-link if one exists.
 ///

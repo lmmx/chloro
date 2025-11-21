@@ -7,7 +7,9 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
+static ASSIST_NAME: &str = "introduce_named_lifetime";
 
+static ASSIST_LABEL: &str = "Introduce named lifetime";
 
 pub(crate) fn introduce_named_lifetime(
     acc: &mut Assists,

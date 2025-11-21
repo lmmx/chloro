@@ -15,22 +15,27 @@ use syntax::{
 use crate::RootDatabase;
 
 /// Trait names, that will be ignored when in `impl Trait` and `dyn Trait`
+const USELESS_TRAITS: &[&str] = &["Send", "Sync", "Copy", "Clone", "Eq", "PartialEq"];
 
 /// Identifier names that won't be suggested, ever
 ///
 /// **NOTE**: they all must be snake lower case
+const USELESS_NAMES: &[&str] = &["new", "default", "option", "some", "none", "ok", "err", "str", "string", "from", "into"];
 
+const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
 
 /// Generic types replaced by their first argument
 ///
 /// # Examples
 /// `Option<Name>` -> `Name`
 /// `Result<User, Error>` -> `User`
+const WRAPPER_TYPES: &[&str] = &["Box", "Arc", "Rc", "Option", "Result"];
 
 /// Generic types replaced by a plural of their first argument.
 ///
 /// # Examples
 /// `Vec<Name>` -> "names"
+const SEQUENCE_TYPES: &[&str] = &["Vec", "VecDeque", "LinkedList"];
 
 /// Prefixes to strip from methods names
 ///
@@ -38,11 +43,32 @@ use crate::RootDatabase;
 /// `vec.as_slice()` -> `slice`
 /// `args.into_config()` -> `config`
 /// `bytes.to_vec()` -> `vec`
+const USELESS_METHOD_PREFIXES: &[&str] = &["into_", "as_", "to_"];
 
 /// Useless methods that are stripped from expression
 ///
 /// # Examples
 /// `var.name().to_string()` -> `var.name()`
+const USELESS_METHODS: &[&str] = &[
+    "to_string",
+    "as_str",
+    "to_owned",
+    "as_ref",
+    "clone",
+    "cloned",
+    "expect",
+    "expect_none",
+    "unwrap",
+    "unwrap_none",
+    "unwrap_or",
+    "unwrap_or_default",
+    "unwrap_or_else",
+    "unwrap_unchecked",
+    "iter",
+    "into_iter",
+    "iter_mut",
+    "into_future",
+];
 
 /// Generator for new names
 ///

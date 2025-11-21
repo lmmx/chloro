@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   10910 bytes
+Chloro size:   11054 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -30,19 +30,16 @@ Rustfmt size:  11497 bytes
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub enum Path {
      /// `BarePath` is used when the path has neither generics nor type anchor, since the vast majority of paths
+     LangItem(LangItemTarget, Option<Name>),
+ }
  
- // This type is being used a lot, make sure it doesn't grow unintentionally.
+-// This type is being used a lot, make sure it doesn't grow unintentionally.
  #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
 -const _: () = {
-+{
++const () = {
      assert!(size_of::<Path>() == 24);
      assert!(size_of::<Option<Path>>() == 24);
--};
--
-+}
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
- pub struct NormalPath {
-     pub generic_args: Box<[Option<GenericArgs>]>,
+ };
  
  impl Path {
      /// Converts a known mod path to `Path`.
@@ -103,6 +100,7 @@ Rustfmt size:  11497 bytes
 -        name: &Name::missing(),
 -        args_and_bindings: None,
 -    };
++    pub const MISSING: PathSegment<'static> = PathSegment { name: &Name::missing(), args_and_bindings: None };
  }
  
  #[derive(Debug, Clone, Copy)]
@@ -113,6 +111,7 @@ Rustfmt size:  11497 bytes
 -        segments: &[],
 -        generic_args: None,
 -    };
++    pub const EMPTY: PathSegments<'static> = PathSegments { segments: &[], generic_args: None };
 +
      pub fn is_empty(&self) -> bool {
          self.len() == 0

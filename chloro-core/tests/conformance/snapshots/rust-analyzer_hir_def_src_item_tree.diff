@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22132 bytes
+Chloro size:   22333 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -54,13 +54,13 @@ Rustfmt size:  23685 bytes
  pub(crate) struct RawVisibilityId(u32);
  
  impl RawVisibilityId {
--    const PUB: Self = RawVisibilityId(u32::MAX);
--    const PRIV_IMPLICIT: Self = RawVisibilityId(u32::MAX - 1);
--    const PRIV_EXPLICIT: Self = RawVisibilityId(u32::MAX - 2);
--    const PUB_CRATE: Self = RawVisibilityId(u32::MAX - 3);
+     const PUB: Self = RawVisibilityId(u32::MAX);
 +
+     const PRIV_IMPLICIT: Self = RawVisibilityId(u32::MAX - 1);
 +
+     const PRIV_EXPLICIT: Self = RawVisibilityId(u32::MAX - 2);
 +
+     const PUB_CRATE: Self = RawVisibilityId(u32::MAX - 3);
  }
  
  impl fmt::Debug for RawVisibilityId {
@@ -211,13 +211,19 @@ Rustfmt size:  23685 bytes
          attrs.shrink_to_fit();
          big_data.shrink_to_fit();
          small_data.shrink_to_fit();
- // small as possible which is why we split them in two, most common ones are 3 usize but some rarer
- // ones are 5.
+     Use(Use),
+ }
+ 
+-// `ModItem` is stored a bunch in `ItemTree`'s so we pay the max for each item. It should stay as
+-// small as possible which is why we split them in two, most common ones are 3 usize but some rarer
+-// ones are 5.
  #[cfg(target_pointer_width = "64")]
 -const _: [(); std::mem::size_of::<BigModItem>()] = [(); std::mem::size_of::<[usize; 5]>()];
++const [(); std::mem::size_of::<BigModItem>()] = [(); std::mem::size_of::<[usize; 5]>()];
 +
  #[cfg(target_pointer_width = "64")]
 -const _: [(); std::mem::size_of::<SmallModItem>()] = [(); std::mem::size_of::<[usize; 3]>()];
++const [(); std::mem::size_of::<SmallModItem>()] = [(); std::mem::size_of::<[usize; 3]>()];
  
  #[derive(Default, Debug, Eq, PartialEq)]
  pub struct ItemTreeDataStats {
