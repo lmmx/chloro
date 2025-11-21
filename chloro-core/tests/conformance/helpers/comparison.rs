@@ -13,7 +13,7 @@ impl ComparisonResult {
     pub fn write_comparison_files(&self, fixture_name: &str) {
         let output_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
-            .join("roundtrip")
+            .join("conformance")
             .join("output");
 
         fs::create_dir_all(&output_dir).unwrap();

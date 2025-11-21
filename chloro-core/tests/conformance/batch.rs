@@ -6,7 +6,7 @@ use std::path::PathBuf;
 fn compare_all_fixtures() {
     let fixtures_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
-        .join("roundtrip")
+        .join("conformance")
         .join("fixtures");
 
     if !fixtures_dir.exists() {
