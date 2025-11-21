@@ -31,31 +31,18 @@ use crate::{
 };
 
 mod closure_captures;
-
 mod coercion;
-
 mod diagnostics;
-
 mod display_source_code;
-
 mod incremental;
-
 mod macros;
-
 mod method_resolution;
-
 mod never_type;
-
 mod opaque_types;
-
 mod patterns;
-
 mod regression;
-
 mod simple;
-
 mod trait_aliases;
-
 mod traits;
 
 #[track_caller]

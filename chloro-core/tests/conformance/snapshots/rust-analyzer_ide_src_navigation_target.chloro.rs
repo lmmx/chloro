@@ -120,12 +120,10 @@ fn to_nav(
     &self,
     db: &RootDatabase,
 ) -> UpmappingResult<NavigationTarget>;
-
 fn try_to_nav(
     &self,
     sema: &Semantics<'_, RootDatabase>,
 ) -> Option<UpmappingResult<NavigationTarget>>;
-
 impl<T: TryToNav, U: TryToNav> TryToNav for Either<T, U> {
     fn try_to_nav(
         &self,
@@ -350,7 +348,6 @@ fn container_name(
     _ = db;
     None
 }
-
 fn container_name(
     db: &RootDatabase,
     t: impl HasContainer,

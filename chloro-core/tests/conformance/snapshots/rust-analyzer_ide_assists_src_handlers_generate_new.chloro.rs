@@ -740,7 +740,6 @@ impl<T> Source<T> {
         );
     }
 }
-
 #[cfg(test)]
 mod tuple_tests {
     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

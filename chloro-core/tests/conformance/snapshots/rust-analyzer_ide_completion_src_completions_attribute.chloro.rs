@@ -25,15 +25,10 @@ use crate::{
 pub(crate) use self::derive::complete_derive_path;
 
 mod cfg;
-
 mod derive;
-
 mod diagnostic;
-
 mod lint;
-
 mod macro_use;
-
 mod repr;
 
 /// Complete inputs to known builtin attributes as well as derive attributes

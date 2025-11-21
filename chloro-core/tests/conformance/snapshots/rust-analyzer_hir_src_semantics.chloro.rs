@@ -54,7 +54,6 @@ use crate::{
 };
 
 mod child_by_source;
-
 mod source_to_def;
 
 const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
@@ -2450,7 +2449,6 @@ fn to_def(
     sema: &SemanticsImpl<'_>,
     src: InFile<&Self>,
 ) -> Option<Self::Def>;
-
 macro_rules! to_def_impls {
     ($(($def:path, $ast:path, $meth:ident)),* ,) => {$(
         impl ToDef for $ast {

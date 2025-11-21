@@ -989,7 +989,6 @@ fn parent_arg(
     &mut self,
     param_id: GenericParamId,
 ) -> GenericArg<'db>;
-
 /// Returns true if there was an error.
 fn check_generic_args_len<'db>(
     args_and_bindings: Option<&HirGenericArgs>,

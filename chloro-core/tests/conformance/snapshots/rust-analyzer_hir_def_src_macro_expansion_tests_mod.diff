@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15554 bytes
-Chloro size:   15426 bytes
+Chloro size:   15423 bytes
 Rustfmt size:  15554 bytes
 
 ✗ Outputs DIFFER
@@ -23,11 +23,8 @@ Rustfmt size:  15554 bytes
  };
  
 +mod builtin_derive_macro;
-+
 +mod builtin_fn_macro;
-+
 +mod mbe;
-+
 +mod proc_macros;
 +
  #[track_caller]

@@ -8,13 +8,9 @@ use crate::{
 };
 
 mod globs;
-
 mod incremental;
-
 mod macros;
-
 mod mod_resolution;
-
 mod primitives;
 
 fn compute_crate_def_map(

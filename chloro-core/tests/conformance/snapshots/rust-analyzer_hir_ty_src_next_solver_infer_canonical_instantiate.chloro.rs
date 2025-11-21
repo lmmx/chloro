@@ -33,7 +33,6 @@ fn instantiate_projected<T>(
 ) -> T
 where
         T: TypeFoldable<DbInterner<'db>>;
-
 /// FIXME(-Znext-solver): This or public because it is shared with the
 /// new trait solver implementation. We should deduplicate canonicalization.
 impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {

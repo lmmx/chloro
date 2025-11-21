@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29592 bytes
+Chloro size:   29591 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -108,6 +108,7 @@ Rustfmt size:  29841 bytes
 -    // Do we preserve universe of variables.
 -    fn preserve_universes(&self) -> bool;
 -}
+-
 +fn canonicalize_free_region<'db>(
 +    &self,
 +    canonicalizer: &mut Canonicalizer<'_, 'db>,
@@ -115,9 +116,9 @@ Rustfmt size:  29841 bytes
 +) -> Region<'db>;
 +fn any(&self) -> bool;
 +fn preserve_universes(&self) -> bool;
- 
  struct CanonicalizeQueryResponse;
  
+ impl CanonicalizeMode for CanonicalizeQueryResponse {
          mut r: Region<'db>,
      ) -> Region<'db> {
          let infcx = canonicalizer.infcx;

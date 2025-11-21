@@ -63,9 +63,7 @@ use crate::{
 pub use self::path::hir_segment_to_ast_segment;
 
 mod asm;
-
 mod generics;
-
 mod path;
 
 pub(super) fn lower_body(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11785 bytes
+Chloro size:   11771 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
@@ -11,73 +11,48 @@ Rustfmt size:  11841 bytes
  //! This gives this test module and its submodules here the main purpose of giving the developer an
  //! overview of whats being completed where, not how.
  
--mod attribute;
--mod expression;
--mod flyimport;
--mod fn_param;
--mod item;
--mod item_list;
--mod pattern;
--mod predicate;
--mod proc_macros;
--mod raw_identifiers;
--mod record;
--mod special;
--mod type_pos;
--mod use_tree;
--mod visibility;
--
- use base_db::SourceDatabase;
- use expect_test::Expect;
- use hir::db::HirDatabase;
--use hir::{setup_tracing, PrefixKind};
++use base_db::SourceDatabase;
++use expect_test::Expect;
++use hir::db::HirDatabase;
 +use hir::{PrefixKind, setup_tracing};
- use ide_db::{
--    imports::insert_use::{ImportGranularity, InsertUseConfig},
-     FilePosition, MiniCore, RootDatabase, SnippetCap,
++use ide_db::{
++    FilePosition, MiniCore, RootDatabase, SnippetCap,
 +    imports::insert_use::{ImportGranularity, InsertUseConfig},
- };
- use itertools::Itertools;
- use stdx::{format_to, trim_indent};
- use test_utils::assert_eq_text;
- 
- use crate::{
--    resolve_completion_edits, CallableSnippets, CompletionConfig, CompletionFieldsToResolve,
--    CompletionItem, CompletionItemKind,
++};
++use itertools::Itertools;
++use stdx::{format_to, trim_indent};
++use test_fixture::ChangeFixture;
++use test_utils::assert_eq_text;
++
++use crate::{
 +    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
 +    CompletionItemKind, resolve_completion_edits,
- };
++};
++
+ mod attribute;
+ mod expression;
+ mod flyimport;
+ mod use_tree;
+ mod visibility;
  
-+mod attribute;
-+
-+mod expression;
-+
-+mod flyimport;
-+
-+mod fn_param;
-+
-+mod item;
-+
-+mod item_list;
-+
-+mod pattern;
-+
-+mod predicate;
-+
-+mod proc_macros;
-+
-+mod raw_identifiers;
-+
-+mod record;
-+
-+mod special;
-+
-+mod type_pos;
-+
-+mod use_tree;
-+
-+mod visibility;
-+
+-use base_db::SourceDatabase;
+-use expect_test::Expect;
+-use hir::db::HirDatabase;
+-use hir::{setup_tracing, PrefixKind};
+-use ide_db::{
+-    imports::insert_use::{ImportGranularity, InsertUseConfig},
+-    FilePosition, MiniCore, RootDatabase, SnippetCap,
+-};
+-use itertools::Itertools;
+-use stdx::{format_to, trim_indent};
+-use test_fixture::ChangeFixture;
+-use test_utils::assert_eq_text;
+-
+-use crate::{
+-    resolve_completion_edits, CallableSnippets, CompletionConfig, CompletionFieldsToResolve,
+-    CompletionItem, CompletionItemKind,
+-};
+-
  /// Lots of basic item definitions
  const BASE_ITEMS_FIXTURE: &str = r#"
  enum Enum { TupleV(u32), RecordV { field: u32 }, UnitV }

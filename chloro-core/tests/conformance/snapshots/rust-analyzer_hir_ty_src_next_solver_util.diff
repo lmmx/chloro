@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28843 bytes
+Chloro size:   28838 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -42,11 +42,6 @@ Rustfmt size:  28638 bytes
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
 -    fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db>;
 -    fn disr_incr<'db>(
--        &self,
--        interner: DbInterner<'db>,
--        val: Option<Discr<'db>>,
--    ) -> Option<Discr<'db>>;
--}
 +fn to_ty<'db>(
 +    &self,
 +    interner: DbInterner<'db>,
@@ -60,12 +55,16 @@ Rustfmt size:  28638 bytes
 +    interner: DbInterner<'db>,
 +    val: Option<Discr<'db>>,
 +) -> Option<Discr<'db>>;
- 
- impl IntegerTypeExt for IntegerType {
--    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db> {
++impl IntegerTypeExt for IntegerType {
 +    fn to_ty<'db>(
-+        &self,
-+        interner: DbInterner<'db>,
+         &self,
+         interner: DbInterner<'db>,
+-        val: Option<Discr<'db>>,
+-    ) -> Option<Discr<'db>>;
+-}
+-
+-impl IntegerTypeExt for IntegerType {
+-    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db> {
 +    ) -> Ty<'db> {
          match self {
              IntegerType::Pointer(true) => Ty::new(interner, TyKind::Int(IntTy::Isize)),
@@ -96,6 +95,7 @@ Rustfmt size:  28638 bytes
 -        max: i128,
 -    ) -> (Integer, bool);
 -}
+-
 +fn to_ty<'db>(
 +    &self,
 +    interner: DbInterner<'db>,
@@ -116,7 +116,6 @@ Rustfmt size:  28638 bytes
 +    min: i128,
 +    max: i128,
 +) -> (Integer, bool);
- 
  impl IntegerExt for Integer {
      #[inline]
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>, signed: bool) -> Ty<'db> {
@@ -179,12 +178,12 @@ Rustfmt size:  28638 bytes
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
 -    fn from_float_ty(fty: FloatTy) -> Self;
 -}
+-
 +fn to_ty<'db>(
 +    &self,
 +    interner: DbInterner<'db>,
 +) -> Ty<'db>;
 +fn from_float_ty(fty: FloatTy) -> Self;
- 
  impl FloatExt for Float {
      #[inline]
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db> {
@@ -202,6 +201,7 @@ Rustfmt size:  28638 bytes
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
 -    fn to_int_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
 -}
+-
 +fn to_ty<'db>(
 +    &self,
 +    interner: DbInterner<'db>,
@@ -210,7 +210,6 @@ Rustfmt size:  28638 bytes
 +    &self,
 +    interner: DbInterner<'db>,
 +) -> Ty<'db>;
- 
  impl PrimitiveExt for Primitive {
      #[inline]
 -    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db> {
@@ -238,11 +237,11 @@ Rustfmt size:  28638 bytes
 -pub trait CoroutineArgsExt<'db> {
 -    fn discr_ty(&self, interner: DbInterner<'db>) -> Ty<'db>;
 -}
+-
 +fn discr_ty(
 +    &self,
 +    interner: DbInterner<'db>,
 +) -> Ty<'db>;
- 
  impl<'db> CoroutineArgsExt<'db> for CoroutineArgs<DbInterner<'db>> {
      /// The type of the state discriminant used in the coroutine type.
      #[inline]

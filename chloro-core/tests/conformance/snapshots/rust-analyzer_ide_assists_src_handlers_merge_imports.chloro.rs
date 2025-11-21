@@ -110,7 +110,6 @@ fn try_merge(
     cfg: &InsertUseConfig,
 ) -> Option<Self>;
 fn into_either(self) -> Either<ast::Use, ast::UseTree>;
-
 impl Merge for ast::Use {
     fn try_merge(
         &self,

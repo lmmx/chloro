@@ -28,7 +28,6 @@ fn attrs(
 ) -> AttrsWithOwner;
 #[doc(hidden)]
 fn attr_id(self) -> AttrDefId;
-
 macro_rules! impl_has_attrs {
     ($(($def:ident, $def_id:ident),)*) => {$(
         impl HasAttrs for $def {

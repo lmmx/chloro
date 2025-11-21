@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30948 bytes
+Chloro size:   30947 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
@@ -46,7 +46,6 @@ Rustfmt size:  31005 bytes
  };
  
 +mod analysis;
-+
 +#[cfg(test)]
 +mod tests;
 +

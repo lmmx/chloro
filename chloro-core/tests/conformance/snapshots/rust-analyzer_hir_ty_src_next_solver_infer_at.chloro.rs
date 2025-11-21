@@ -98,7 +98,6 @@ fn to_trace(
     a: Self,
     b: Self,
 ) -> TypeTrace<'db>;
-
 impl<'a, 'db> At<'a, 'db> {
     /// Makes `actual <: expected`. For example, if type-checking a
     /// call like `foo(x)`, where `foo: fn(i32)`, you might have

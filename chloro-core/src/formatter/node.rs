@@ -38,7 +38,12 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
         return false;
     }
 
-    // Blank line between different top-level items
+    // Never add blank line between a module inline body and its previous doc/comments
+    if prev == SyntaxKind::MODULE && curr_kind == SyntaxKind::MODULE {
+        return false;
+    }
+
+    // Add blank line between different top-level items (but preserve trait items)
     matches!(
         prev,
         SyntaxKind::FN
@@ -49,7 +54,6 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
             | SyntaxKind::CONST
             | SyntaxKind::STATIC
             | SyntaxKind::TYPE_ALIAS
-            | SyntaxKind::TRAIT
             | SyntaxKind::MACRO_RULES
             | SyntaxKind::MACRO_DEF
     ) && matches!(
@@ -63,9 +67,9 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
             | SyntaxKind::STATIC
             | SyntaxKind::TYPE_ALIAS
             | SyntaxKind::USE
-            | SyntaxKind::TRAIT
             | SyntaxKind::MACRO_RULES
             | SyntaxKind::MACRO_DEF
+            | SyntaxKind::TRAIT
     )
 }
 

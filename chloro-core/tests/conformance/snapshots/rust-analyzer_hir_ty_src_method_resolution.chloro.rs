@@ -1166,7 +1166,6 @@ fn on_trait_method(
     item: AssocItemId,
     is_visible: bool,
 ) -> ControlFlow<()>;
-
 impl<F> MethodCandidateCallback for F
 where
     F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>, {

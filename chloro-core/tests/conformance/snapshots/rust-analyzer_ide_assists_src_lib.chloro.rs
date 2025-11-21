@@ -70,12 +70,9 @@ pub(crate) use crate::assist_context::{AssistContext, Assists};
 
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 mod assist_config;
-
 mod assist_context;
-
 #[cfg(test)]
 mod tests;
-
 pub mod utils;
 
 /// Return all the assists applicable at the given position.

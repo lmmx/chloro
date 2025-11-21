@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22333 bytes
+Chloro size:   22330 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -44,9 +44,7 @@ Rustfmt size:  23685 bytes
 +use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
 +
 +mod lower;
-+
 +mod pretty;
-+
 +#[cfg(test)]
 +mod tests;
  
@@ -233,10 +231,11 @@ Rustfmt size:  23685 bytes
 -pub(crate) trait ItemTreeNode: Clone {
 -    type Source: AstIdNode;
 -}
+-
 +type Source;
- 
  #[allow(type_alias_bounds)]
  pub(crate) type ItemTreeAstId<T: ItemTreeNode> = FileAstId<T::Source>;
+ 
  }
  
  impl TreeId {

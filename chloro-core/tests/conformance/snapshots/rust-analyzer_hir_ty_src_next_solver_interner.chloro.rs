@@ -2424,7 +2424,6 @@ mod tls_db {
         )
     }
 }
-
 mod tls_cache {
     use crate::db::HirDatabase;
     use super::DbInterner;

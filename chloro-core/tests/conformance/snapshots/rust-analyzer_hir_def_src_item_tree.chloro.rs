@@ -58,9 +58,7 @@ pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
 
 mod lower;
-
 mod pretty;
-
 #[cfg(test)]
 mod tests;
 
@@ -326,7 +324,6 @@ pub struct ItemTreeDataStats {
 
 /// Trait implemented by all nodes in the item tree.
 type Source;
-
 #[allow(type_alias_bounds)]
 pub(crate) type ItemTreeAstId<T: ItemTreeNode> = FileAstId<T::Source>;
 

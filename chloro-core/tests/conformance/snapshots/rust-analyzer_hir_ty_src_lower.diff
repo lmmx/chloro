@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   87117 bytes
+Chloro size:   87116 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,6 @@ Rustfmt size:  87058 bytes
  };
  
 +pub(crate) mod diagnostics;
-+
 +pub(crate) mod path;
 +
  pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

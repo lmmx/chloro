@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 544 bytes
-Chloro size:   546 bytes
+Chloro size:   544 bytes
 Rustfmt size:  544 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,3 @@ Rustfmt size:  544 bytes
  
  use crate::next_solver::DbInterner;
  
- mod generalize;
-+
- mod higher_ranked;
-+
- pub(crate) mod lattice;
- 
- pub type RelateResult<'db, T> = rustc_type_ir::relate::RelateResult<DbInterner<'db>, T>;

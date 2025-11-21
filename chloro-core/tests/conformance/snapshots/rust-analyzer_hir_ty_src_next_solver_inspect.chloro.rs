@@ -479,7 +479,6 @@ fn visit_goal(
     &mut self,
     goal: &InspectGoal<'_, 'db>,
 ) -> Self::Result;
-
 impl<'db> InferCtxt<'db> {
     pub(crate) fn visit_proof_tree<V: ProofTreeVisitor<'db>>(
         &self,

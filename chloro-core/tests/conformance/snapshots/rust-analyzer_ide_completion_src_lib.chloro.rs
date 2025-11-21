@@ -26,17 +26,11 @@ pub use crate::{
 };
 
 mod completions;
-
 mod config;
-
 mod context;
-
 mod item;
-
 mod render;
-
 mod snippet;
-
 #[cfg(test)]
 mod tests;
 

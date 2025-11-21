@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19661 bytes
+Chloro size:   19660 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -313,11 +313,11 @@ Rustfmt size:  20465 bytes
 -trait FileIdToSyntax: Copy {
 -    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode;
 -}
+-
 +fn file_syntax(
 +    self,
 +    db: &dyn db::ExpandDatabase,
 +) -> SyntaxNode;
- 
  impl FileIdToSyntax for EditionedFileId {
 -    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
 +    fn file_syntax(

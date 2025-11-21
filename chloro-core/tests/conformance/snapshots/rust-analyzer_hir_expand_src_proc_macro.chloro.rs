@@ -36,7 +36,6 @@ fn eq_dyn(
     &self,
     other: &dyn ProcMacroExpander,
 ) -> bool;
-
 impl PartialEq for dyn ProcMacroExpander {
     fn eq(
         &self,

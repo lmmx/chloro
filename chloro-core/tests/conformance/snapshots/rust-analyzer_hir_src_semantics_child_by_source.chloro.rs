@@ -38,7 +38,6 @@ fn child_by_source_to(
     map: &mut DynMap,
     file_id: HirFileId,
 );
-
 impl ChildBySource for TraitId {
     fn child_by_source_to(
         &self,

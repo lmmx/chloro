@@ -163,7 +163,6 @@ fn canonicalize_free_region<'db>(
 ) -> Region<'db>;
 fn any(&self) -> bool;
 fn preserve_universes(&self) -> bool;
-
 struct CanonicalizeQueryResponse;
 
 impl CanonicalizeMode for CanonicalizeQueryResponse {

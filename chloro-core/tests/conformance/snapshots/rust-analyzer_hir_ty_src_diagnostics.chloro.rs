@@ -12,9 +12,6 @@ pub use crate::diagnostics::{
 };
 
 mod decl_check;
-
 mod expr;
-
 mod match_check;
-
 mod unsafe_check;

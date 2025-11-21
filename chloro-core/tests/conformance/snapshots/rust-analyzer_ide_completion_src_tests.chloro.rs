@@ -27,33 +27,19 @@ use crate::{
 };
 
 mod attribute;
-
 mod expression;
-
 mod flyimport;
-
 mod fn_param;
-
 mod item;
-
 mod item_list;
-
 mod pattern;
-
 mod predicate;
-
 mod proc_macros;
-
 mod raw_identifiers;
-
 mod record;
-
 mod special;
-
 mod type_pos;
-
 mod use_tree;
-
 mod visibility;
 
 /// Lots of basic item definitions

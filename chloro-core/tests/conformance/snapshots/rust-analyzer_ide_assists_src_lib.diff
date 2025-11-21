@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18403 bytes
-Chloro size:   18345 bytes
+Chloro size:   18342 bytes
 Rustfmt size:  18467 bytes
 
 ✗ Outputs DIFFER
@@ -12,37 +12,34 @@ Rustfmt size:  18467 bytes
  //! <https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html>
  
 -#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
--
--mod assist_config;
--mod assist_context;
--#[cfg(test)]
--mod tests;
--pub mod utils;
--
 +pub use assist_config::AssistConfig;
- use hir::Semantics;
++use hir::Semantics;
 +pub use ide_db::assists::{
 +    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
 +};
- use ide_db::{EditionedFileId, RootDatabase};
- use syntax::{Edition, TextRange};
++use ide_db::{EditionedFileId, RootDatabase};
++use syntax::{Edition, TextRange};
  
- pub(crate) use crate::assist_context::{AssistContext, Assists};
++pub(crate) use crate::assist_context::{AssistContext, Assists};
++
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+ mod assist_config;
+ mod assist_context;
+ #[cfg(test)]
+ mod tests;
+ pub mod utils;
  
+-use hir::Semantics;
+-use ide_db::{EditionedFileId, RootDatabase};
+-use syntax::{Edition, TextRange};
+-
+-pub(crate) use crate::assist_context::{AssistContext, Assists};
+-
 -pub use assist_config::AssistConfig;
 -pub use ide_db::assists::{
 -    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, SingleResolve,
 -};
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-+mod assist_config;
-+
-+mod assist_context;
-+
-+#[cfg(test)]
-+mod tests;
-+
-+pub mod utils;
- 
+-
  /// Return all the assists applicable at the given position.
  ///
 -// NOTE: We don't have a `Feature: ` section for assists, they are special-cased

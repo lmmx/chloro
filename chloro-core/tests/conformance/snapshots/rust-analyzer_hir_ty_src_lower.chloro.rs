@@ -65,7 +65,6 @@ use crate::{
 };
 
 pub(crate) mod diagnostics;
-
 pub(crate) mod path;
 
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

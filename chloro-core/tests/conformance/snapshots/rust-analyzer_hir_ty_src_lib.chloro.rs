@@ -50,54 +50,30 @@ use crate::{
 
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 mod infer;
-
 mod inhabitedness;
-
 mod lower;
-
 pub mod next_solver;
-
 mod opaques;
-
 mod specialization;
-
 mod target_feature;
-
 mod utils;
-
 mod variance;
-
 pub mod autoderef;
-
 pub mod consteval;
-
 pub mod db;
-
 pub mod diagnostics;
-
 pub mod display;
-
 pub mod drop;
-
 pub mod dyn_compatibility;
-
 pub mod generics;
-
 pub mod lang_items;
-
 pub mod layout;
-
 pub mod method_resolution;
-
 pub mod mir;
-
 pub mod primitive;
-
 pub mod traits;
-
 #[cfg(test)]
 mod test_db;
-
 #[cfg(test)]
 mod tests;
 

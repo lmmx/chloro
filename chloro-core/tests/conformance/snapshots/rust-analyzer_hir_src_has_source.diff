@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11436 bytes
-Chloro size:   12107 bytes
+Chloro size:   12106 bytes
 Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
@@ -40,6 +40,7 @@ Rustfmt size:  11695 bytes
 -    /// by <https://github.com/rust-lang/rust-analyzer/issues/6913>
 -    fn source(self, db: &dyn HirDatabase) -> Option<InFile<Self::Ast>>;
 -}
+-
 +type Ast;
 +/// Fetches the definition's source node.
 +/// Using [`crate::Semantics::source`] is preferred when working with [`crate::Semantics`],
@@ -52,7 +53,6 @@ Rustfmt size:  11695 bytes
 +    self,
 +    db: &dyn HirDatabase,
 +) -> Option<InFile<Self::Ast>>;
- 
  /// NB: Module is !HasSource, because it has two source nodes at the same time:
  /// definition and declaration.
  impl Module {

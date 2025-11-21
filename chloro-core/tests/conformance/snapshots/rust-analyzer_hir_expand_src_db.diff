@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31830 bytes
+Chloro size:   31829 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -138,6 +138,7 @@ Rustfmt size:  33429 bytes
 -    #[salsa::transparent]
 -    fn syntax_context(&self, file: HirFileId, edition: Edition) -> SyntaxContext;
 -}
+-
 +/// The proc macros. Do not use this! Use `proc_macros_for_crate()` instead.
 +#[salsa::input]
 +fn proc_macros(&self) -> Arc<ProcMacros>;
@@ -256,7 +257,6 @@ Rustfmt size:  33429 bytes
 +    file: HirFileId,
 +    edition: Edition,
 +) -> SyntaxContext;
- 
  #[salsa_macros::interned(no_lifetime, id = span::SyntaxContext, revisions = usize::MAX)]
  pub struct SyntaxContextWrapper {
      pub data: SyntaxContext,

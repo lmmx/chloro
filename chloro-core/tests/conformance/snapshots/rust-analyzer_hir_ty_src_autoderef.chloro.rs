@@ -67,7 +67,6 @@ fn push(
     ty: Ty<'db>,
     kind: AutoderefKind,
 );
-
 impl<'db> TrackAutoderefSteps<'db> for usize {
     fn len(&self) -> usize {
         *self

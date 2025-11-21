@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12477 bytes
-Chloro size:   12773 bytes
+Chloro size:   12772 bytes
 Rustfmt size:  12826 bytes
 
 ✗ Outputs DIFFER
@@ -53,13 +53,13 @@ Rustfmt size:  12826 bytes
 +    self.child_by_source_to(db, &mut res, file_id);
 +    res
  }
+-
 +fn child_by_source_to(
 +    &self,
 +    db: &dyn DefDatabase,
 +    map: &mut DynMap,
 +    file_id: HirFileId,
 +);
- 
  impl ChildBySource for TraitId {
 -    fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
 +    fn child_by_source_to(

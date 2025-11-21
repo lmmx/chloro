@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65655 bytes
+Chloro size:   65654 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -377,6 +377,7 @@ Rustfmt size:  65944 bytes
 -        is_visible: bool,
 -    ) -> ControlFlow<()>;
 -}
+-
 +fn on_inherent_method(
 +    &mut self,
 +    adjustments: ReceiverAdjustments,
@@ -389,7 +390,6 @@ Rustfmt size:  65944 bytes
 +    item: AssocItemId,
 +    is_visible: bool,
 +) -> ControlFlow<()>;
- 
  impl<F> MethodCandidateCallback for F
  where
 -    F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,

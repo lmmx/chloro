@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55178 bytes
+Chloro size:   55177 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -305,6 +305,7 @@ Rustfmt size:  55742 bytes
 -
 -    fn parent_arg(&mut self, param_id: GenericParamId) -> GenericArg<'db>;
 -}
+-
 +fn report_elided_lifetimes_in_path(
 +    &mut self,
 +    def: GenericDefId,
@@ -357,9 +358,9 @@ Rustfmt size:  55742 bytes
 +    &mut self,
 +    param_id: GenericParamId,
 +) -> GenericArg<'db>;
- 
  /// Returns true if there was an error.
  fn check_generic_args_len<'db>(
+     args_and_bindings: Option<&HirGenericArgs>,
      ctx: &mut impl GenericArgsLowerer<'db>,
  ) -> bool {
      let mut had_error = false;

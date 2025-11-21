@@ -66,27 +66,16 @@ use crate::{
 };
 
 mod autoderef;
-
 pub(crate) mod cast;
-
 pub(crate) mod closure;
-
 mod coerce;
-
 pub(crate) mod diagnostics;
-
 mod expr;
-
 mod fallback;
-
 mod mutability;
-
 mod opaques;
-
 mod pat;
-
 mod path;
-
 pub(crate) mod unify;
 
 /// The entry point of type inference.

@@ -23,19 +23,12 @@ use crate::{
 };
 
 pub(crate) mod tags;
-
 mod highlights;
-
 mod escape;
-
 mod format;
-
 mod highlight;
-
 mod inject;
-
 mod html;
-
 #[cfg(test)]
 mod tests;
 

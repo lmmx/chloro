@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11761 bytes
+Chloro size:   11760 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -118,6 +118,7 @@ Rustfmt size:  13263 bytes
 -        target: &SyntaxNode,
 -    ) -> Option<()>;
 -}
+-
 +fn add_rewrite<T: AstNode>(
 +    &mut self,
 +    label: &str,
@@ -125,9 +126,9 @@ Rustfmt size:  13263 bytes
 +    new: Vec<T>,
 +    target: &SyntaxNode,
 +) -> Option<()>;
- 
  impl AddRewrite for Assists {
      fn add_rewrite<T: AstNode>(
+         &mut self,
          new: Vec<T>,
          target: &SyntaxNode,
      ) -> Option<()> {

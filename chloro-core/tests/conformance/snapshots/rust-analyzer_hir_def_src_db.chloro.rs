@@ -123,7 +123,6 @@ fn intern_block(
     &self,
     loc: BlockLoc,
 ) -> BlockId;
-
 #[query_group::query_group]
 /// Whether to expand procedural macros during name resolution.
 #[salsa::input]
@@ -345,7 +344,6 @@ fn include_macro_invoc(
     &self,
     crate_id: Crate,
 ) -> Arc<[(MacroCallId, EditionedFileId)]>;
-
 fn include_macro_invoc(
     db: &dyn DefDatabase,
     krate: Crate,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11526 bytes
+Chloro size:   11525 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -55,7 +55,6 @@ Rustfmt size:  12398 bytes
 +    ns: Option<hir::Namespace>,
 +    is_inner_doc: bool,
 +) -> Option<hir::DocLinkDef>;
-+
  /// A struct to map text ranges from [`Documentation`] back to TextRanges in the syntax tree.
  #[derive(Debug)]
  pub struct DocsRangeMap {

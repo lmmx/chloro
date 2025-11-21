@@ -10,9 +10,6 @@ pub use self::{
 
 #[macro_use]
 pub mod quote;
-
 mod attr_macro;
-
 mod derive_macro;
-
 mod fn_macro;

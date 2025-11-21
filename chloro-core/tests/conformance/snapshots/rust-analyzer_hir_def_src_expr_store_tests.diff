@@ -2,12 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26 bytes
-Chloro size:   27 bytes
+Chloro size:   26 bytes
 Rustfmt size:  26 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- mod body;
-+
- mod signatures;
+✓ Outputs are IDENTICAL

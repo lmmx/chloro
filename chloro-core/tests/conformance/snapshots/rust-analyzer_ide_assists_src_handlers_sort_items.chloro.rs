@@ -44,7 +44,6 @@ fn add_rewrite<T: AstNode>(
     new: Vec<T>,
     target: &SyntaxNode,
 ) -> Option<()>;
-
 impl AddRewrite for Assists {
     fn add_rewrite<T: AstNode>(
         &mut self,

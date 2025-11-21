@@ -58,7 +58,6 @@ use super::{
 };
 
 mod shim;
-
 #[cfg(test)]
 mod tests;
 

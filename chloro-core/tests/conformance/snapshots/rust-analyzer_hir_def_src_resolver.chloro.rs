@@ -1307,7 +1307,6 @@ fn resolver(
     self,
     db: &dyn DefDatabase,
 ) -> Resolver<'_>;
-
 impl HasResolver for ModuleId {
     fn resolver(
         self,

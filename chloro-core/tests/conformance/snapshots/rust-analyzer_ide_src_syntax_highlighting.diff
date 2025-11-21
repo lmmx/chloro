@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18569 bytes
+Chloro size:   18562 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -51,19 +51,12 @@ Rustfmt size:  25118 bytes
 -pub(crate) use html::highlight_as_html;
 -pub(crate) use html::highlight_as_html_with_config;
 +pub(crate) mod tags;
-+
 +mod highlights;
-+
 +mod escape;
-+
 +mod format;
-+
 +mod highlight;
-+
 +mod inject;
-+
 +mod html;
-+
 +#[cfg(test)]
 +mod tests;
  

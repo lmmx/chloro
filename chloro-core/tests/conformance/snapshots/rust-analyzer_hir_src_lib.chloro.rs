@@ -160,23 +160,14 @@ pub use crate::{
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 #![recursion_limit = "512"]
 mod attrs;
-
 mod from_id;
-
 mod has_source;
-
 mod semantics;
-
 mod source_analyzer;
-
 pub mod db;
-
 pub mod diagnostics;
-
 pub mod symbols;
-
 pub mod term_search;
-
 mod display;
 
 /// hir::Crate describes a single crate. It's the main interface with which
@@ -3825,7 +3816,6 @@ fn as_extern_assoc_item(
     self,
     db: &dyn HirDatabase,
 ) -> Option<ExternAssocItem>;
-
 impl AsExternAssocItem for Function {
     fn as_extern_assoc_item(
         self,
@@ -3872,7 +3862,6 @@ fn as_assoc_item(
     self,
     db: &dyn HirDatabase,
 ) -> Option<AssocItem>;
-
 impl AsAssocItem for Function {
     fn as_assoc_item(
         self,
@@ -7037,13 +7026,11 @@ fn is_visible_from(
     let vis = self.visibility(db);
     vis.is_visible_from(db, module.id)
 }
-
 /// Trait for obtaining the defining crate of an item.
 fn krate(
     &self,
     db: &dyn HirDatabase,
 ) -> Crate;
-
 impl<T: hir_def::HasModule> HasCrate for T {
     fn krate(
         &self,
@@ -7201,7 +7188,6 @@ fn container(
     &self,
     db: &dyn HirDatabase,
 ) -> ItemContainer;
-
 impl HasContainer for ExternCrateDecl {
     fn container(
         &self,
@@ -7355,7 +7341,6 @@ fn on_trait_method(
     &mut self,
     f: Function,
 ) -> ControlFlow<()>;
-
 impl<F> MethodCandidateCallback for F
 where
     F: FnMut(Function) -> ControlFlow<()>, {
@@ -7382,7 +7367,6 @@ fn on_trait_item(
     &mut self,
     item: AssocItem,
 ) -> ControlFlow<()>;
-
 impl<F> PathCandidateCallback for F
 where
     F: FnMut(AssocItem) -> ControlFlow<()>, {

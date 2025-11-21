@@ -29,7 +29,6 @@ fn source(
     self,
     db: &dyn HirDatabase,
 ) -> Option<InFile<Self::Ast>>;
-
 /// NB: Module is !HasSource, because it has two source nodes at the same time:
 /// definition and declaration.
 impl Module {

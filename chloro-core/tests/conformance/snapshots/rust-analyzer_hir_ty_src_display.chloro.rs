@@ -71,7 +71,6 @@ fn start_location_link(
 }
 fn end_location_link(&mut self) {
 }
-
 impl HirWrite for String {
 }
 
@@ -376,7 +375,6 @@ where
             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
         }
 }
-
 impl<'db> HirFormatter<'_, 'db> {
     pub fn krate(&self) -> Crate {
         self.display_target.krate
@@ -2137,7 +2135,6 @@ fn hir_fmt(
     f: &mut HirFormatter<'_, 'db>,
     store: &ExpressionStore,
 ) -> Result<(), HirDisplayError>;
-
 impl<'db, T: ?Sized + HirDisplayWithExpressionStore<'db>> HirDisplayWithExpressionStore<'db> for &'_ T {
     fn hir_fmt(
         &self,

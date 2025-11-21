@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12654 bytes
-Chloro size:   12616 bytes
+Chloro size:   12615 bytes
 Rustfmt size:  13004 bytes
 
 ✗ Outputs DIFFER
@@ -35,6 +35,7 @@ Rustfmt size:  13004 bytes
 -
 -    fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool;
 -}
+-
 +/// Run the expander with the given input subtree, optional attribute input subtree (for
 +/// [`ProcMacroKind::Attr`]), environment variables, and span information.
 +fn expand(
@@ -51,7 +52,6 @@ Rustfmt size:  13004 bytes
 +    &self,
 +    other: &dyn ProcMacroExpander,
 +) -> bool;
- 
  impl PartialEq for dyn ProcMacroExpander {
 -    fn eq(&self, other: &Self) -> bool {
 +    fn eq(

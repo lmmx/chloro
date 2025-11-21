@@ -94,7 +94,6 @@ fn disr_incr<'db>(
     interner: DbInterner<'db>,
     val: Option<Discr<'db>>,
 ) -> Option<Discr<'db>>;
-
 impl IntegerTypeExt for IntegerType {
     fn to_ty<'db>(
         &self,
@@ -149,7 +148,6 @@ fn repr_discr<'db>(
     min: i128,
     max: i128,
 ) -> (Integer, bool);
-
 impl IntegerExt for Integer {
     #[inline]
     fn to_ty<'db>(
@@ -252,7 +250,6 @@ fn to_ty<'db>(
     interner: DbInterner<'db>,
 ) -> Ty<'db>;
 fn from_float_ty(fty: FloatTy) -> Self;
-
 impl FloatExt for Float {
     #[inline]
     fn to_ty<'db>(
@@ -287,7 +284,6 @@ fn to_int_ty<'db>(
     &self,
     interner: DbInterner<'db>,
 ) -> Ty<'db>;
-
 impl PrimitiveExt for Primitive {
     #[inline]
     fn to_ty<'db>(
@@ -335,7 +331,6 @@ fn discr_ty(
     &self,
     interner: DbInterner<'db>,
 ) -> Ty<'db>;
-
 impl<'db> CoroutineArgsExt<'db> for CoroutineArgs<DbInterner<'db>> {
     /// The type of the state discriminant used in the coroutine type.
     #[inline]

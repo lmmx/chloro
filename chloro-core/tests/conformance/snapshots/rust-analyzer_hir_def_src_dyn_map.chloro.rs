@@ -150,7 +150,6 @@ fn get<'a>(
     key: &Self::K,
 ) -> Option<&'a Self::V>;
 fn is_empty(map: &DynMap) -> bool;
-
 impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
     type K = K;
 

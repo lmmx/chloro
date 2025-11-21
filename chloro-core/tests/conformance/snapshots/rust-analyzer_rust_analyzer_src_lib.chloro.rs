@@ -28,52 +28,33 @@ pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version
 };
 
 pub mod cli;
-
 mod command;
-
 mod diagnostics;
-
 mod discover;
-
 mod flycheck;
-
 mod line_index;
-
 mod main_loop;
-
 mod mem_docs;
-
 mod op_queue;
-
 mod reload;
-
 mod target_spec;
-
 mod task_pool;
-
 mod test_runner;
-
 mod version;
-
 mod handlers {
     pub(crate) mod dispatch;
     pub(crate) mod notification;
     pub(crate) mod request;
 }
-
 pub mod tracing {
     pub mod config;
     pub mod json;
     pub use config::Config;
     pub mod hprof;
 }
-
 pub mod config;
-
 mod global_state;
-
 pub mod lsp;
-
 #[cfg(test)]
 mod integrated_benchmarks;
 

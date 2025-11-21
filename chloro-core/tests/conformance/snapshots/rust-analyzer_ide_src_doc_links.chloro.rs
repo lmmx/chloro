@@ -31,7 +31,6 @@ use crate::{
 
 #[cfg(test)]
 mod tests;
-
 mod intra_doc_links;
 
 /// Web and local links to an item's documentation.

@@ -1255,7 +1255,6 @@ fn token_at_offset(
     &self,
     offset: TextSize,
 ) -> TokenAtOffset<SyntaxToken>;
-
 impl HasTokenAtOffset for SyntaxNode {
     fn token_at_offset(
         &self,

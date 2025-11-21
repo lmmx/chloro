@@ -27,7 +27,6 @@ use crate::{
 };
 
 mod analysis;
-
 #[cfg(test)]
 mod tests;
 

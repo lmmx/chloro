@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   6947 bytes
+Chloro size:   6946 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
@@ -15,15 +15,16 @@ Rustfmt size:  7231 bytes
 -    fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
 -    fn from_eof(&self) -> Option<T>;
 -}
+-
 +fn from_line(
 +    &self,
 +    line: &str,
 +    error: &mut String,
 +) -> Option<T>;
 +fn from_eof(&self) -> Option<T>;
- 
  struct CargoActor<T> {
      parser: Box<dyn CargoParser<T>>,
+     sender: Sender<T>,
          stderr: ChildStderr,
      ) -> Self {
          let parser = Box::new(parser);

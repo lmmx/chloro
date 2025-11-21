@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19839 bytes
-Chloro size:   19827 bytes
+Chloro size:   19826 bytes
 Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
@@ -260,13 +260,14 @@ Rustfmt size:  20426 bytes
 +fn config(&self) -> InspectConfig {
 +    InspectConfig { max_depth: 10 }
  }
+-
 +fn visit_goal(
 +    &mut self,
 +    goal: &InspectGoal<'_, 'db>,
 +) -> Self::Result;
- 
  impl<'db> InferCtxt<'db> {
      pub(crate) fn visit_proof_tree<V: ProofTreeVisitor<'db>>(
+         &self,
      ) -> V::Result {
          let (_, proof_tree) = <&SolverContext<'db>>::from(self)
              .evaluate_root_goal_for_proof_tree(goal, Span::dummy());

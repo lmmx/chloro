@@ -2,96 +2,89 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22186 bytes
+Chloro size:   22173 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
--mod closure_captures;
--mod coercion;
--mod diagnostics;
--mod display_source_code;
--mod incremental;
--mod macros;
--mod method_resolution;
--mod never_type;
--mod opaque_types;
--mod patterns;
--mod regression;
--mod simple;
--mod trait_aliases;
--mod traits;
--
- use base_db::{Crate, SourceDatabase};
- use expect_test::Expect;
- use hir_def::{
++use base_db::{Crate, SourceDatabase};
++use expect_test::Expect;
++use hir_def::{
 +    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
-     db::DefDatabase,
-     expr_store::{Body, BodySourceMap},
-     hir::{ExprId, Pat, PatId},
-     item_scope::ItemScope,
-     nameres::DefMap,
-     src::HasSource,
--    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
- };
--use hir_expand::{db::ExpandDatabase, FileRange, InFile};
++    db::DefDatabase,
++    expr_store::{Body, BodySourceMap},
++    hir::{ExprId, Pat, PatId},
++    item_scope::ItemScope,
++    nameres::DefMap,
++    src::HasSource,
++};
 +use hir_expand::{FileRange, InFile, db::ExpandDatabase};
- use itertools::Itertools;
- use rustc_hash::FxHashMap;
- use stdx::format_to;
- use syntax::{
--    ast::{self, AstNode, HasName},
-     SyntaxNode,
++use itertools::Itertools;
++use rustc_hash::FxHashMap;
++use stdx::format_to;
++use syntax::{
++    SyntaxNode,
 +    ast::{self, AstNode, HasName},
- };
- use test_fixture::WithFixture;
- use triomphe::Arc;
- 
- use crate::{
++};
++use test_fixture::WithFixture;
++use triomphe::Arc;
++
++use crate::{
 +    InferenceResult,
-     db::HirDatabase,
-     display::{DisplayTarget, HirDisplay},
-     infer::{Adjustment, TypeMismatch},
-     next_solver::Ty,
-     setup_tracing,
-     test_db::TestDB,
--    InferenceResult,
- };
++    db::HirDatabase,
++    display::{DisplayTarget, HirDisplay},
++    infer::{Adjustment, TypeMismatch},
++    next_solver::Ty,
++    setup_tracing,
++    test_db::TestDB,
++};
++
+ mod closure_captures;
+ mod coercion;
+ mod diagnostics;
+ mod trait_aliases;
+ mod traits;
  
+-use base_db::{Crate, SourceDatabase};
+-use expect_test::Expect;
+-use hir_def::{
+-    db::DefDatabase,
+-    expr_store::{Body, BodySourceMap},
+-    hir::{ExprId, Pat, PatId},
+-    item_scope::ItemScope,
+-    nameres::DefMap,
+-    src::HasSource,
+-    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
+-};
+-use hir_expand::{db::ExpandDatabase, FileRange, InFile};
+-use itertools::Itertools;
+-use rustc_hash::FxHashMap;
+-use stdx::format_to;
+-use syntax::{
+-    ast::{self, AstNode, HasName},
+-    SyntaxNode,
+-};
+-use test_fixture::WithFixture;
+-use triomphe::Arc;
+-
+-use crate::{
+-    db::HirDatabase,
+-    display::{DisplayTarget, HirDisplay},
+-    infer::{Adjustment, TypeMismatch},
+-    next_solver::Ty,
+-    setup_tracing,
+-    test_db::TestDB,
+-    InferenceResult,
+-};
+-
 -// These tests compare the inference results for all expressions in a file
 -// against snapshots of the expected results using expect. Use
 -// `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.
-+mod closure_captures;
-+
-+mod coercion;
-+
-+mod diagnostics;
-+
-+mod display_source_code;
-+
-+mod incremental;
-+
-+mod macros;
-+
-+mod method_resolution;
-+
-+mod never_type;
-+
-+mod opaque_types;
-+
-+mod patterns;
-+
-+mod regression;
-+
-+mod simple;
-+
-+mod trait_aliases;
-+
-+mod traits;
- 
+-
  #[track_caller]
  fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+     check_impl(ra_fixture, false, true, false)
  ) {
      let _tracing = setup_tracing();
      let (db, files) = TestDB::with_many_files(ra_fixture);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74102 bytes
+Chloro size:   74091 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -50,30 +50,20 @@ Rustfmt size:  74236 bytes
 -pub use coerce::could_coerce;
 -#[allow(unreachable_pub)]
 -pub use unify::{could_unify, could_unify_deeply};
-+mod autoderef;
- 
+-
 -use cast::{CastCheck, CastError};
 -pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
++mod autoderef;
 +pub(crate) mod cast;
-+
 +pub(crate) mod closure;
-+
 +mod coerce;
-+
 +pub(crate) mod diagnostics;
-+
 +mod expr;
-+
 +mod fallback;
-+
 +mod mutability;
-+
 +mod opaques;
-+
 +mod pat;
-+
 +mod path;
-+
 +pub(crate) mod unify;
  
  /// The entry point of type inference.

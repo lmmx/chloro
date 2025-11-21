@@ -31,7 +31,6 @@ use crate::{
 };
 
 mod render;
-
 #[cfg(test)]
 mod tests;
 

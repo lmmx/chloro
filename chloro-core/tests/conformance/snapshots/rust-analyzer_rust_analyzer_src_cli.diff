@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2201 bytes
-Chloro size:   2249 bytes
+Chloro size:   2236 bytes
 Rustfmt size:  2201 bytes
 
 ✗ Outputs DIFFER
@@ -11,58 +11,34 @@ Rustfmt size:  2201 bytes
  //! Various batch processing tasks, intended primarily for debugging.
  
 -#![allow(clippy::print_stdout, clippy::print_stderr)]
--
--mod analysis_stats;
--mod diagnostics;
--pub mod flags;
--mod highlight;
--mod lsif;
--mod parse;
--mod prime_caches;
--mod run_tests;
--mod rustc_tests;
--mod scip;
--mod ssr;
--mod symbols;
--mod unresolved_references;
--
--mod progress_report;
--
- use std::io::Read;
++use std::io::Read;
  
- use anyhow::Result;
- use itertools::Itertools;
- use vfs::Vfs;
- 
++use anyhow::Result;
++use hir::{Module, Name};
++use hir_ty::db::HirDatabase;
++use ide::{AnalysisHost, Edition};
++use itertools::Itertools;
++use vfs::Vfs;
++
 +#![allow(clippy::print_stdout, clippy::print_stderr)]
-+mod analysis_stats;
-+
-+mod diagnostics;
-+
-+pub mod flags;
-+
-+mod highlight;
-+
-+mod lsif;
-+
-+mod parse;
-+
-+mod prime_caches;
-+
-+mod run_tests;
-+
-+mod rustc_tests;
-+
-+mod scip;
-+
-+mod ssr;
-+
-+mod symbols;
-+
-+mod unresolved_references;
-+
-+mod progress_report;
-+
+ mod analysis_stats;
+ mod diagnostics;
+ pub mod flags;
+ mod ssr;
+ mod symbols;
+ mod unresolved_references;
+-
+ mod progress_report;
+ 
+-use std::io::Read;
+-
+-use anyhow::Result;
+-use hir::{Module, Name};
+-use hir_ty::db::HirDatabase;
+-use ide::{AnalysisHost, Edition};
+-use itertools::Itertools;
+-use vfs::Vfs;
+-
  #[derive(Clone, Copy)]
  pub enum Verbosity {
      Spammy,

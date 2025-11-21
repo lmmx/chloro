@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39257 bytes
+Chloro size:   39254 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -88,24 +88,25 @@ Rustfmt size:  42083 bytes
 -pub(crate) trait ToNav {
 -    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget>;
 -}
-+fn to_nav(
-+    &self,
-+    db: &RootDatabase,
-+) -> UpmappingResult<NavigationTarget>;
- 
+-
 -pub trait TryToNav {
 -    fn try_to_nav(
 -        &self,
 -        sema: &Semantics<'_, RootDatabase>,
 -    ) -> Option<UpmappingResult<NavigationTarget>>;
 -}
+-
++fn to_nav(
++    &self,
++    db: &RootDatabase,
++) -> UpmappingResult<NavigationTarget>;
 +fn try_to_nav(
 +    &self,
 +    sema: &Semantics<'_, RootDatabase>,
 +) -> Option<UpmappingResult<NavigationTarget>>;
- 
  impl<T: TryToNav, U: TryToNav> TryToNav for Either<T, U> {
      fn try_to_nav(
+         &self,
          db: &RootDatabase,
          module: hir::Module,
      ) -> UpmappingResult<NavigationTarget> {
@@ -280,7 +281,7 @@ Rustfmt size:  42083 bytes
 +    _ = db;
 +    None
  }
- 
+-
 -fn container_name(db: &RootDatabase, t: impl HasContainer) -> Option<Symbol> {
 +fn container_name(
 +    db: &RootDatabase,

@@ -22,7 +22,6 @@ fn ast_ptr(
     &self,
     db: &dyn DefDatabase,
 ) -> InFile<AstPtr<Self::Value>>;
-
 impl<T> HasSource for T
 where
     T: AstIdLoc, {
@@ -43,7 +42,6 @@ fn child_source(
     &self,
     db: &dyn DefDatabase,
 ) -> InFile<ArenaMap<ChildId, Self::Value>>;
-
 /// Maps a `UseTree` contained in this import back to its AST node.
 pub fn use_tree_to_ast(
     db: &dyn DefDatabase,

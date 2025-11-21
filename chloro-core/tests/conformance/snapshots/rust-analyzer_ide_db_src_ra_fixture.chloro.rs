@@ -278,9 +278,7 @@ fn upmap_from_ra_fixture(
     virtual_file_id: FileId,
     real_file_id: FileId,
 ) -> Result<Self, ()>;
-
 fn is_empty(&self) -> bool;
-
 impl<T> IsEmpty for Vec<T> {
     fn is_empty(&self) -> bool {
         self.is_empty()

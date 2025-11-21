@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8376 bytes
+Chloro size:   8375 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
@@ -204,7 +204,8 @@ Rustfmt size:  8636 bytes
 -pub trait AsName {
 -    fn as_name(&self) -> Name;
 -}
+-
 +fn as_name(&self) -> Name;
- 
  impl AsName for ast::NameRef {
      fn as_name(&self) -> Name {
+         match self.as_tuple_field() {

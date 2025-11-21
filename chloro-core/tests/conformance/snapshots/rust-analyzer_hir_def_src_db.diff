@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12502 bytes
+Chloro size:   12500 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -112,6 +112,7 @@ Rustfmt size:  13097 bytes
 -    #[salsa::interned]
 -    fn intern_block(&self, loc: BlockLoc) -> BlockId;
 -}
+-
 +#[salsa::interned]
 +fn intern_use(
 +    &self,
@@ -198,7 +199,6 @@ Rustfmt size:  13097 bytes
 +    &self,
 +    loc: BlockLoc,
 +) -> BlockId;
- 
  #[query_group::query_group]
 -pub trait DefDatabase: InternDatabase + ExpandDatabase + SourceDatabase {
 -    /// Whether to expand procedural macros during name resolution.
@@ -418,6 +418,8 @@ Rustfmt size:  13097 bytes
 +) -> Arc<TraitSignature> {
 +    self.trait_signature_with_source_map(trait_).0
  }
+-
+-// return: macro call id and include file id
 +#[salsa::tracked]
 +fn impl_signature(
 +    &self,
@@ -614,8 +616,6 @@ Rustfmt size:  13097 bytes
 +    &self,
 +    crate_id: Crate,
 +) -> Arc<[(MacroCallId, EditionedFileId)]>;
- 
--// return: macro call id and include file id
  fn include_macro_invoc(
      db: &dyn DefDatabase,
      krate: Crate,

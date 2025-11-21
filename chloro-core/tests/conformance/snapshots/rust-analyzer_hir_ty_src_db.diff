@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13362 bytes
-Chloro size:   12574 bytes
+Chloro size:   12573 bytes
 Rustfmt size:  13389 bytes
 
 ✗ Outputs DIFFER
@@ -583,10 +583,11 @@ Rustfmt size:  13389 bytes
      )]
 -    fn variances_of<'db>(&'db self, def: GenericDefId) -> VariancesOf<'db>;
 -}
+-
 +fn variances_of<'db>(
 +    &'db self,
 +    def: GenericDefId,
 +) -> VariancesOf<'db>;
- 
  #[test]
  fn hir_database_is_dyn_compatible() {
+     fn _assert_dyn_compatible(_: &dyn HirDatabase) {}

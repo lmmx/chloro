@@ -99,7 +99,6 @@ mod handlers {
     pub(crate) mod unlinked_file;
     pub(crate) mod useless_braces;
 }
-
 #[cfg(test)]
 mod tests;
 

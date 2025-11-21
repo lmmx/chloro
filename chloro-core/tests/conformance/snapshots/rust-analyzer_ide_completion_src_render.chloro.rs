@@ -24,19 +24,12 @@ use crate::{
 };
 
 pub(crate) mod const_;
-
 pub(crate) mod function;
-
 pub(crate) mod literal;
-
 pub(crate) mod macro_;
-
 pub(crate) mod pattern;
-
 pub(crate) mod type_alias;
-
 pub(crate) mod union_literal;
-
 pub(crate) mod variant;
 
 /// Interface for data and methods required for items rendering.

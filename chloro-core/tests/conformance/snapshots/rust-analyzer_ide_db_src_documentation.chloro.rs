@@ -48,7 +48,6 @@ fn resolve_doc_path(
     ns: Option<hir::Namespace>,
     is_inner_doc: bool,
 ) -> Option<hir::DocLinkDef>;
-
 /// A struct to map text ranges from [`Documentation`] back to TextRanges in the syntax tree.
 #[derive(Debug)]
 pub struct DocsRangeMap {

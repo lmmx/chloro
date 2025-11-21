@@ -11,31 +11,18 @@ use vfs::Vfs;
 
 #![allow(clippy::print_stdout, clippy::print_stderr)]
 mod analysis_stats;
-
 mod diagnostics;
-
 pub mod flags;
-
 mod highlight;
-
 mod lsif;
-
 mod parse;
-
 mod prime_caches;
-
 mod run_tests;
-
 mod rustc_tests;
-
 mod scip;
-
 mod ssr;
-
 mod symbols;
-
 mod unresolved_references;
-
 mod progress_report;
 
 #[derive(Clone, Copy)]

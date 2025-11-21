@@ -9,7 +9,6 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use crate::{ModuleDef, ScopeDef, Semantics, SemanticsScope, Type};
 
 mod expr;
-
 mod tactics;
 
 /// Key for lookup table to query new types reached.

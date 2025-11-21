@@ -26,7 +26,6 @@ use crate::{
 use self::pat_util::EnumerateAndAdjustIterator;
 
 mod pat_util;
-
 pub(crate) mod pat_analysis;
 
 #[derive(Clone, Debug)]

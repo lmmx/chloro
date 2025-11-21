@@ -27,7 +27,6 @@ fn replace_const(
     &mut self,
     bv: BoundConst,
 ) -> Const<'db>;
-
 /// A simple delegate taking 3 mutable functions. The used functions must
 /// always return the same result for each bound variable, no matter how
 /// frequently they are called.

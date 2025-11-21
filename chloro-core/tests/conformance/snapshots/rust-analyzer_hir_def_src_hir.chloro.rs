@@ -33,9 +33,7 @@ use crate::{
 };
 
 pub mod format_args;
-
 pub mod generics;
-
 pub mod type_ref;
 
 pub type BindingId = Idx<Binding>;

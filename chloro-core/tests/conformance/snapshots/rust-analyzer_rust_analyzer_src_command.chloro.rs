@@ -23,7 +23,6 @@ fn from_line(
     error: &mut String,
 ) -> Option<T>;
 fn from_eof(&self) -> Option<T>;
-
 struct CargoActor<T> {
     parser: Box<dyn CargoParser<T>>,
     sender: Sender<T>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   55217 bytes
+Chloro size:   55216 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -293,12 +293,12 @@ Rustfmt size:  54481 bytes
 -    /// Builds a resolver for type references inside this def.
 -    fn resolver(self, db: &dyn DefDatabase) -> Resolver<'_>;
 -}
+-
 +/// Builds a resolver for type references inside this def.
 +fn resolver(
 +    self,
 +    db: &dyn DefDatabase,
 +) -> Resolver<'_>;
- 
  impl HasResolver for ModuleId {
 -    fn resolver(self, db: &dyn DefDatabase) -> Resolver<'_> {
 +    fn resolver(

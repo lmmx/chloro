@@ -136,7 +136,6 @@ fn to_tokens(
     span: Span,
     builder: &mut TopSubtreeBuilder,
 );
-
 /// Wraps `TokenTreesView` with a delimiter (a subtree, but without allocating).
 pub struct WithDelimiter<'a> {
     pub delimiter: crate::tt::Delimiter,

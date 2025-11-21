@@ -255,7 +255,6 @@ impl fmt::Display for Display<'_> {
 }
 
 fn as_name(&self) -> Name;
-
 impl AsName for ast::NameRef {
     fn as_name(&self) -> Name {
         match self.as_tuple_field() {
