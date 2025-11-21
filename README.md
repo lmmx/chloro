@@ -27,7 +27,7 @@ with use cases of code diffing in mind.
 Add chloro to your `Cargo.toml`:
 ```toml
 [dependencies]
-chloro = "0.1"
+chloro = "0.5"
 ```
 
 ### Migration
