@@ -1,5 +1,5 @@
 use ra_ap_syntax::{
-    ast::{self, HasName, HasVisibility},
+    ast::{self, HasAttrs, HasName, HasVisibility},
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
@@ -12,8 +12,15 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format preceding doc comments and attributes
+    // Format preceding doc comments (/// style)
     format_preceding_docs_and_attrs(node, buf, indent);
+
+    // Also format attributes from the AST (like #[cfg(...)])
+    for attr in module.attrs() {
+        write_indent(buf, indent);
+        buf.push_str(&attr.syntax().text().to_string());
+        buf.push('\n');
+    }
 
     write_indent(buf, indent);
 
