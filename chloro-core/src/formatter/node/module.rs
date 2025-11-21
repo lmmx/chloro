@@ -1,9 +1,9 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasName, HasVisibility},
+    ast::{self, HasName, HasVisibility},
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
-use super::{format_attributes, format_node};
+use super::{format_node, format_preceding_docs_and_attrs};
 use crate::formatter::write_indent;
 
 pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -12,8 +12,8 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format attributes (including doc comments)
-    format_attributes(module.attrs(), buf, indent);
+    // Format preceding doc comments and attributes
+    format_preceding_docs_and_attrs(node, buf, indent);
 
     write_indent(buf, indent);
 
