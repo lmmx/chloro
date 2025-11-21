@@ -3151,8 +3151,7 @@ fn toml_pointer<'a>(
     })
 }
 
-type SchemaField =
-    (&'static str, &'static str, &'static [&'static str], String);
+type SchemaField = (&'static str, &'static str, &'static [&'static str], String);
 
 fn schema(fields: &[SchemaField]) -> serde_json::Value {
     let map = fields

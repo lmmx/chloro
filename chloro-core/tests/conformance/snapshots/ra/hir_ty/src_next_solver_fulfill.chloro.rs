@@ -24,8 +24,7 @@ use crate::next_solver::{
 
 mod errors;
 
-type PendingObligations<'db> =
-    Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
+type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
 
 /// A trait engine using the new trait solver.
 ///

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3353 bytes
-Chloro size:   3283 bytes
+Chloro size:   3279 bytes
 Rustfmt size:  3353 bytes
 
 ✗ Outputs DIFFER
@@ -21,11 +21,12 @@ Rustfmt size:  3353 bytes
  type PredefinedOpaque<'db> = (OpaqueTypeKey<'db>, Ty<'db>);
 -interned_vec_db!(PredefinedOpaques, PredefinedOpaque);
 -
- pub type ExternalConstraintsData<'db> =
-     rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
+-pub type ExternalConstraintsData<'db> =
+-    rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
 -
 -interned_vec_nolifetime_salsa!(SolverDefIds, SolverDefId);
 -
++pub type ExternalConstraintsData<'db> = rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
  #[salsa::interned(constructor = new_, debug)]
  pub struct ExternalConstraints<'db> {
      #[returns(ref)]

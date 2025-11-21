@@ -15,8 +15,7 @@ use crate::{global_state::GlobalStateSnapshot, lsp, lsp_ext, main_loop::Diagnost
 
 pub(crate) mod flycheck_to_proto;
 
-pub(crate) type CheckFixes =
-    Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
+pub(crate) type CheckFixes = Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
 
 #[derive(Debug, Default, Clone)]
 pub struct DiagnosticsMapConfig {

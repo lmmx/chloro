@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57958 bytes
+Chloro size:   57942 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -11,13 +11,10 @@ Rustfmt size:  58275 bytes
  
  impl IntoIterator for UsageSearchResult {
      type Item = (EditionedFileId, Vec<FileReference>);
--    type IntoIter = <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
 +
-+    type IntoIter =
-+        <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
+     type IntoIter = <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
  
      fn into_iter(self) -> Self::IntoIter {
-         self.references.into_iter()
              FileReferenceNode::FormatStringEntry(_, range) => *range,
          }
      }
@@ -151,13 +148,10 @@ Rustfmt size:  58275 bytes
  
  impl IntoIterator for SearchScope {
      type Item = (EditionedFileId, Option<TextRange>);
--    type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
 +
-+    type IntoIter =
-+        std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
+     type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
  
      fn into_iter(self) -> Self::IntoIter {
-         self.entries.into_iter()
  }
  
  impl Definition {

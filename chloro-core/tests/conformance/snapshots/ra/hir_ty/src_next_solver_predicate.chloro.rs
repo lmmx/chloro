@@ -341,8 +341,7 @@ impl<'db> rustc_type_ir::inherent::Clauses<DbInterner<'db>> for Clauses<'db> {
 impl<'db> rustc_type_ir::inherent::SliceLike for Clauses<'db> {
     type Item = Clause<'db>;
 
-    type IntoIter =
-        <smallvec::SmallVec<[Clause<'db>; 2]> as IntoIterator>::IntoIter;
+    type IntoIter = <smallvec::SmallVec<[Clause<'db>; 2]> as IntoIterator>::IntoIter;
 
     fn iter(self) -> Self::IntoIter {
         self.inner().0.clone().into_iter()

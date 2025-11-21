@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   150219 bytes
+Chloro size:   150215 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -2293,15 +2293,6 @@ Rustfmt size:  167117 bytes
      if pointer.is_empty() {
          return None;
      }
-     })
- }
- 
--type SchemaField = (&'static str, &'static str, &'static [&'static str], String);
-+type SchemaField =
-+    (&'static str, &'static str, &'static [&'static str], String);
- 
- fn schema(fields: &[SchemaField]) -> serde_json::Value {
-     let map = fields
      result
  }
  

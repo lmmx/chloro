@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21192 bytes
+Chloro size:   21184 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -43,17 +43,18 @@ Rustfmt size:  22047 bytes
  use super::{FieldPat, Pat, PatKind};
  
 -use Constructor::*;
--
++pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
+ 
 -// Re-export r-a-specific versions of all these types.
- pub(crate) type DeconstructedPat<'a, 'db> =
-     rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
+-pub(crate) type DeconstructedPat<'a, 'db> =
+-    rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
 -pub(crate) type MatchArm<'a, 'b, 'db> =
 -    rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
-+
+-pub(crate) type WitnessPat<'a, 'db> =
+-    rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
 +pub(crate) type MatchArm<'a, 'b, 'db> = rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
 +
- pub(crate) type WitnessPat<'a, 'db> =
-     rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
++pub(crate) type WitnessPat<'a, 'db> = rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
  
  /// [Constructor] uses this in unimplemented variants.
  /// It allows porting match expressions from upstream algorithm without losing semantics.

@@ -59,8 +59,7 @@ impl UsageSearchResult {
 impl IntoIterator for UsageSearchResult {
     type Item = (EditionedFileId, Vec<FileReference>);
 
-    type IntoIter =
-        <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
+    type IntoIter = <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.references.into_iter()
@@ -282,8 +281,7 @@ impl SearchScope {
 impl IntoIterator for SearchScope {
     type Item = (EditionedFileId, Option<TextRange>);
 
-    type IntoIter =
-        std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
+    type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.entries.into_iter()

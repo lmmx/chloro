@@ -168,11 +168,9 @@ pub(crate) const ALL_FLOAT_FPS: [TyFingerprint; 4] = [
     TyFingerprint::Float(FloatTy::F128),
 ];
 
-type TraitFpMap =
-    FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;
+type TraitFpMap = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;
 
-type TraitFpMapCollector =
-    FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Vec<ImplId>>>;
+type TraitFpMapCollector = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Vec<ImplId>>>;
 
 /// Trait impls defined or available in some crate.
 #[derive(Debug, Eq, PartialEq)]
