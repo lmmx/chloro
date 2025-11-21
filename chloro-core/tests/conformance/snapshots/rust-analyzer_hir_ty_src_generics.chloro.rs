@@ -23,7 +23,10 @@ use hir_def::{
 use itertools::chain;
 use triomphe::Arc;
 
-pub fn generics(db: &dyn DefDatabase, def: GenericDefId) -> Generics {
+pub fn generics(
+    db: &dyn DefDatabase,
+    def: GenericDefId,
+) -> Generics {
     let parent_generics = parent_generic_def(db, def).map(|def| Box::new(generics(db, def)));
     let (params, store) = db.generic_params_and_store(def);
     let has_trait_self_param = params.trait_self_param().is_some();
@@ -44,7 +47,10 @@ where
     GenericParams: ops::Index<T>, {
     type Output = <GenericParams as ops::Index<T>>::Output;
 
-    fn index(&self, index: T) -> &Self::Output {
+    fn index(
+        &self,
+        index: T,
+    ) -> &Self::Output {
         &self.params[index]
     }
 }
@@ -155,7 +161,10 @@ impl Generics {
         (parent_len, self_param, type_params, const_params, impl_trait_params, lifetime_params)
     }
 
-    pub(crate) fn type_or_const_param(&self, param: TypeOrConstParamId) -> Option<(usize, TypeOrConstParamData)> {
+    pub(crate) fn type_or_const_param(
+        &self,
+        param: TypeOrConstParamId,
+    ) -> Option<(usize, TypeOrConstParamData)> {
         let idx = self.find_type_or_const_param(param)?;
         self.iter().nth(idx).and_then(|p| {
             let data = match p.1 {
@@ -167,11 +176,17 @@ impl Generics {
         })
     }
 
-    pub fn type_or_const_param_idx(&self, param: TypeOrConstParamId) -> Option<usize> {
+    pub fn type_or_const_param_idx(
+        &self,
+        param: TypeOrConstParamId,
+    ) -> Option<usize> {
         self.find_type_or_const_param(param)
     }
 
-    fn find_type_or_const_param(&self, param: TypeOrConstParamId) -> Option<usize> {
+    fn find_type_or_const_param(
+        &self,
+        param: TypeOrConstParamId,
+    ) -> Option<usize> {
         if param.parent == self.def {
             let idx = param.local_id.into_raw().into_u32() as usize;
             debug_assert!(
@@ -190,11 +205,17 @@ impl Generics {
         }
     }
 
-    pub fn lifetime_idx(&self, lifetime: LifetimeParamId) -> Option<usize> {
+    pub fn lifetime_idx(
+        &self,
+        lifetime: LifetimeParamId,
+    ) -> Option<usize> {
         self.find_lifetime(lifetime)
     }
 
-    fn find_lifetime(&self, lifetime: LifetimeParamId) -> Option<usize> {
+    fn find_lifetime(
+        &self,
+        lifetime: LifetimeParamId,
+    ) -> Option<usize> {
         if lifetime.parent == self.def {
             let idx = lifetime.local_id.into_raw().into_u32() as usize;
             debug_assert!(idx <= self.params.len_lifetimes());
@@ -214,7 +235,10 @@ impl Generics {
     }
 }
 
-pub(crate) fn trait_self_param_idx(db: &dyn DefDatabase, def: GenericDefId) -> Option<usize> {
+pub(crate) fn trait_self_param_idx(
+    db: &dyn DefDatabase,
+    def: GenericDefId,
+) -> Option<usize> {
     match def {
         GenericDefId::TraitId(_) => {
             let params = db.generic_params(def);
@@ -230,7 +254,10 @@ pub(crate) fn trait_self_param_idx(db: &dyn DefDatabase, def: GenericDefId) -> O
     }
 }
 
-pub(crate) fn parent_generic_def(db: &dyn DefDatabase, def: GenericDefId) -> Option<GenericDefId> {
+pub(crate) fn parent_generic_def(
+    db: &dyn DefDatabase,
+    def: GenericDefId,
+) -> Option<GenericDefId> {
     let container = match def {
         GenericDefId::FunctionId(it) => it.lookup(db).container,
         GenericDefId::TypeAliasId(it) => it.lookup(db).container,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7167 bytes
-Chloro size:   6502 bytes
+Chloro size:   6524 bytes
 Rustfmt size:  7319 bytes
 
 ✗ Outputs DIFFER
@@ -35,7 +35,11 @@ Rustfmt size:  7319 bytes
 -//     a.unwrap_or_else(|| 2);
 -// }
 -// ```
- pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn replace_with_lazy_method(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let scope = ctx.sema.scope(call.syntax())?;
 -
@@ -99,7 +103,11 @@ Rustfmt size:  7319 bytes
 -//     a.unwrap_or(2);
 -// }
 -// ```
- pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn replace_with_eager_method(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let scope = ctx.sema.scope(call.syntax())?;
 -

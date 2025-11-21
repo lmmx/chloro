@@ -10,7 +10,13 @@ use syntax::{
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
 use super::label_of_ty;
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    display_target: DisplayTarget,
+    expr: &ast::Expr,
+) -> Option<()> {
     if !config.chaining_hints {
         return None;
     }
@@ -79,7 +85,11 @@ mod tests {
         check_with_config(InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG }, ra_fixture);
     }
     #[track_caller]
-    pub(super) fn check_expect_clear_loc(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    pub(super) fn check_expect_clear_loc(
+        config: InlayHintsConfig<'_>,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let mut inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
         inlay_hints.iter_mut().flat_map(|hint| &mut hint.label.parts).for_each(|hint| {

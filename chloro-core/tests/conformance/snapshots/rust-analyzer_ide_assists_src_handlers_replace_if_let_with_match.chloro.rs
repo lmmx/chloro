@@ -12,7 +12,10 @@ use crate::{
     utils::{does_pat_match_variant, does_pat_variant_nested_or_literal, unwrap_trivial_block},
 };
 
-pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_if_let_with_match(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let if_expr: ast::IfExpr = ctx.find_node_at_offset()?;
     let available_range = TextRange::new(
         if_expr.syntax().text_range().start(),
@@ -118,7 +121,12 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
     )
 }
 
-fn make_else_arm(ctx: &AssistContext<'_>, make: &SyntaxFactory, else_expr: Option<ast::Expr>, conditionals: &[(Option<ast::Pat>, Option<ast::Expr>, ast::BlockExpr)]) -> ast::MatchArm {
+fn make_else_arm(
+    ctx: &AssistContext<'_>,
+    make: &SyntaxFactory,
+    else_expr: Option<ast::Expr>,
+    conditionals: &[(Option<ast::Pat>, Option<ast::Expr>, ast::BlockExpr)],
+) -> ast::MatchArm {
     let (pattern, expr) = if let Some(else_expr) = else_expr {
         let pattern = match conditionals {
             [(None, Some(_), _)] => make.literal_pat("false").into(),
@@ -151,7 +159,10 @@ fn make_else_arm(ctx: &AssistContext<'_>, make: &SyntaxFactory, else_expr: Optio
     make.match_arm(pattern, None, expr)
 }
 
-pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_match_with_if_let(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let match_expr: ast::MatchExpr = ctx.find_node_at_offset()?;
     let match_arm_list = match_expr.match_arm_list()?;
     let available_range = TextRange::new(
@@ -250,7 +261,15 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
 }
 
 /// Pick the pattern for the if let condition and return the expressions for the `then` body and `else` body in that order.
-fn pick_pattern_and_expr_order(sema: &hir::Semantics<'_, RootDatabase>, pat: ast::Pat, pat2: ast::Pat, expr: ast::Expr, expr2: ast::Expr, guard: Option<ast::MatchGuard>, guard2: Option<ast::MatchGuard>) -> Option<(ast::Pat, Option<ast::MatchGuard>, ast::Expr, ast::Expr)> {
+fn pick_pattern_and_expr_order(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    pat: ast::Pat,
+    pat2: ast::Pat,
+    expr: ast::Expr,
+    expr2: ast::Expr,
+    guard: Option<ast::MatchGuard>,
+    guard2: Option<ast::MatchGuard>,
+) -> Option<(ast::Pat, Option<ast::MatchGuard>, ast::Expr, ast::Expr)> {
     if guard.is_some() && guard2.is_some() {
         return None;
     }
@@ -288,7 +307,10 @@ fn is_empty_expr(expr: &ast::Expr) -> bool {
     }
 }
 
-fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
+fn binds_name(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    pat: &ast::Pat,
+) -> bool {
     let binds_name_v = |pat| binds_name(sema, &pat);
     match pat {
         ast::Pat::IdentPat(pat) => !matches!(
@@ -310,7 +332,10 @@ fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
     }
 }
 
-fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
+fn is_sad_pat(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    pat: &ast::Pat,
+) -> bool {
     sema.type_of_pat(pat)
         .and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted()))
         .is_some_and(|it| does_pat_match_variant(pat, &it.sad_pattern()))

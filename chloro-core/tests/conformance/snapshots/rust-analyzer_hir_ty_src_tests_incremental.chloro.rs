@@ -682,7 +682,12 @@ fn main() {
     );
 }
 
-fn execute_assert_events(db: &TestDB, f: impl FnOnce(), required: &[(&str, usize)], expect: Expect) {
+fn execute_assert_events(
+    db: &TestDB,
+    f: impl FnOnce(),
+    required: &[(&str, usize)],
+    expect: Expect,
+) {
     crate::attach_db(db, || {
         let (executed, events) = db.log_executed(f);
         for (event, count) in required {

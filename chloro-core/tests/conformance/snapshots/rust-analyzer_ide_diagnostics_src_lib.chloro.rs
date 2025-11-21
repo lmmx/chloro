@@ -157,7 +157,11 @@ pub struct Diagnostic {
 }
 
 impl Diagnostic {
-    fn new(code: DiagnosticCode, message: impl Into<String>, range: impl Into<FileRange>) -> Diagnostic {
+    fn new(
+        code: DiagnosticCode,
+        message: impl Into<String>,
+        range: impl Into<FileRange>,
+    ) -> Diagnostic {
         let message = message.into();
         Diagnostic {
             code,
@@ -179,7 +183,12 @@ impl Diagnostic {
         }
     }
 
-    fn new_with_syntax_node_ptr(ctx: &DiagnosticsContext<'_>, code: DiagnosticCode, message: impl Into<String>, node: InFile<SyntaxNodePtr>) -> Diagnostic {
+    fn new_with_syntax_node_ptr(
+        ctx: &DiagnosticsContext<'_>,
+        code: DiagnosticCode,
+        message: impl Into<String>,
+        node: InFile<SyntaxNodePtr>,
+    ) -> Diagnostic {
         Diagnostic::new(code, message, ctx.sema.diagnostics_display_range(node))
             .with_main_node(node)
     }
@@ -189,17 +198,26 @@ impl Diagnostic {
         self
     }
 
-    fn with_main_node(mut self, main_node: InFile<SyntaxNodePtr>) -> Diagnostic {
+    fn with_main_node(
+        mut self,
+        main_node: InFile<SyntaxNodePtr>,
+    ) -> Diagnostic {
         self.main_node = Some(main_node);
         self
     }
 
-    fn with_fixes(mut self, fixes: Option<Vec<Assist>>) -> Diagnostic {
+    fn with_fixes(
+        mut self,
+        fixes: Option<Vec<Assist>>,
+    ) -> Diagnostic {
         self.fixes = fixes;
         self
     }
 
-    fn with_unused(mut self, unused: bool) -> Diagnostic {
+    fn with_unused(
+        mut self,
+        unused: bool,
+    ) -> Diagnostic {
         self.unused = unused;
         self
     }
@@ -263,7 +281,11 @@ struct DiagnosticsContext<'a> {
 }
 
 impl DiagnosticsContext<'_> {
-    fn resolve_precise_location(&self, node: &InFile<SyntaxNodePtr>, precise_location: Option<TextRange>) -> FileRange {
+    fn resolve_precise_location(
+        &self,
+        node: &InFile<SyntaxNodePtr>,
+        precise_location: Option<TextRange>,
+    ) -> FileRange {
         let sema = &self.sema;
         (|| {
             let precise_location = precise_location?;
@@ -284,7 +306,11 @@ impl DiagnosticsContext<'_> {
 }
 
 /// Request parser level diagnostics for the given [`FileId`].
-pub fn syntax_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, file_id: FileId) -> Vec<Diagnostic> {
+pub fn syntax_diagnostics(
+    db: &RootDatabase,
+    config: &DiagnosticsConfig,
+    file_id: FileId,
+) -> Vec<Diagnostic> {
     let _p = tracing::info_span!("syntax_diagnostics").entered();
     if config.disabled.contains("syntax-error") {
         return Vec::new();
@@ -311,7 +337,12 @@ pub fn syntax_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, file_id
 
 /// Request semantic diagnostics for the given [`FileId`]. The produced diagnostics may point to other files
 /// due to macros.
-pub fn semantic_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, resolve: &AssistResolveStrategy, file_id: FileId) -> Vec<Diagnostic> {
+pub fn semantic_diagnostics(
+    db: &RootDatabase,
+    config: &DiagnosticsConfig,
+    resolve: &AssistResolveStrategy,
+    file_id: FileId,
+) -> Vec<Diagnostic> {
     let _p = tracing::info_span!("semantic_diagnostics").entered();
     let sema = Semantics::new(db);
     let editioned_file_id = sema
@@ -485,7 +516,12 @@ pub fn semantic_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, resol
 }
 
 /// Request both syntax and semantic diagnostics for the given [`FileId`].
-pub fn full_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, resolve: &AssistResolveStrategy, file_id: FileId) -> Vec<Diagnostic> {
+pub fn full_diagnostics(
+    db: &RootDatabase,
+    config: &DiagnosticsConfig,
+    resolve: &AssistResolveStrategy,
+    file_id: FileId,
+) -> Vec<Diagnostic> {
     let mut res = syntax_diagnostics(db, config, file_id);
     let sema = semantic_diagnostics(db, config, resolve, file_id);
     res.extend(sema);
@@ -493,7 +529,11 @@ pub fn full_diagnostics(db: &RootDatabase, config: &DiagnosticsConfig, resolve: 
 }
 
 /// Returns whether to keep this diagnostic (or remove it).
-fn handle_diag_from_macros(sema: &Semantics<'_, RootDatabase>, diag: &mut Diagnostic, node: &InFile<SyntaxNode>) -> bool {
+fn handle_diag_from_macros(
+    sema: &Semantics<'_, RootDatabase>,
+    diag: &mut Diagnostic,
+    node: &InFile<SyntaxNode>,
+) -> bool {
     let Some(macro_file) = node.file_id.macro_file() else { return true };
     let span_map = sema.db.expansion_span_map(macro_file);
     let mut spans = span_map.spans_for_range(node.text_range());
@@ -533,7 +573,11 @@ struct BuiltLint {
 }
 // FIXME: Autogenerate this instead of enumerating by hand.
 
-fn build_lints_map(lints: &'static [Lint], lint_group: &'static [LintGroup], prefix: &'static str) -> FxHashMap<&'static str, BuiltLint> {
+fn build_lints_map(
+    lints: &'static [Lint],
+    lint_group: &'static [LintGroup],
+    prefix: &'static str,
+) -> FxHashMap<&'static str, BuiltLint> {
     let mut map_with_prefixes: FxHashMap<_, _> = lints
         .iter()
         .map(|lint| (lint.label, BuiltLint { lint, groups: vec![lint.label, "__RA_EVERY_LINT"] }))
@@ -554,7 +598,11 @@ fn build_lints_map(lints: &'static [Lint], lint_group: &'static [LintGroup], pre
     map_with_prefixes.into_iter().map(|(k, v)| (k.strip_prefix(prefix).unwrap(), v)).collect()
 }
 
-fn handle_lints(sema: &Semantics<'_, RootDatabase>, diagnostics: &mut [(InFile<SyntaxNode>, &mut Diagnostic)], edition: Edition) {
+fn handle_lints(
+    sema: &Semantics<'_, RootDatabase>,
+    diagnostics: &mut [(InFile<SyntaxNode>, &mut Diagnostic)],
+    edition: Edition,
+) {
     for (node, diag) in diagnostics {
         let lint = match diag.code {
             DiagnosticCode::RustcLint(lint) => RUSTC_LINTS[lint].lint,
@@ -581,7 +629,10 @@ fn handle_lints(sema: &Semantics<'_, RootDatabase>, diagnostics: &mut [(InFile<S
     }
 }
 
-fn default_lint_severity(lint: &Lint, edition: Edition) -> Severity {
+fn default_lint_severity(
+    lint: &Lint,
+    edition: Edition,
+) -> Severity {
     if lint.deny_since.is_some_and(|e| edition >= e) {
         Severity::Error
     } else if lint.warn_since.is_some_and(|e| edition >= e) {
@@ -591,7 +642,12 @@ fn default_lint_severity(lint: &Lint, edition: Edition) -> Severity {
     }
 }
 
-fn find_outline_mod_lint_severity(sema: &Semantics<'_, RootDatabase>, node: &InFile<SyntaxNode>, diag: &Diagnostic, edition: Edition) -> Option<Severity> {
+fn find_outline_mod_lint_severity(
+    sema: &Semantics<'_, RootDatabase>,
+    node: &InFile<SyntaxNode>,
+    diag: &Diagnostic,
+    edition: Edition,
+) -> Option<Severity> {
     let mod_node = node.value.ancestors().find_map(ast::Module::cast)?;
     if mod_node.item_list().is_some() {
         // Inline modules will be handled by `fill_lint_attrs()`.
@@ -614,7 +670,12 @@ fn find_outline_mod_lint_severity(sema: &Semantics<'_, RootDatabase>, node: &InF
     result
 }
 
-fn lint_severity_at(sema: &Semantics<'_, RootDatabase>, node: &InFile<SyntaxNode>, lint_groups: &LintGroups, edition: Edition) -> Option<Severity> {
+fn lint_severity_at(
+    sema: &Semantics<'_, RootDatabase>,
+    node: &InFile<SyntaxNode>,
+    lint_groups: &LintGroups,
+    edition: Edition,
+) -> Option<Severity> {
     node.value
         .ancestors()
         .filter_map(ast::AnyHasAttrs::cast)
@@ -627,7 +688,11 @@ fn lint_severity_at(sema: &Semantics<'_, RootDatabase>, node: &InFile<SyntaxNode
         })
 }
 
-fn lint_attrs<'a>(sema: &'a Semantics<'a, RootDatabase>, ancestor: ast::AnyHasAttrs, edition: Edition) -> impl Iterator<Item = (SmolStr, Severity)> + 'a {
+fn lint_attrs<'a>(
+    sema: &'a Semantics<'a, RootDatabase>,
+    ancestor: ast::AnyHasAttrs,
+    edition: Edition,
+) -> impl Iterator<Item = (SmolStr, Severity)> + 'a {
     ancestor
         .attrs_including_inner()
         .filter_map(|attr| {
@@ -657,7 +722,11 @@ fn lint_attrs<'a>(sema: &'a Semantics<'a, RootDatabase>, ancestor: ast::AnyHasAt
         })
 }
 
-fn cfg_attr_lint_attrs(sema: &Semantics<'_, RootDatabase>, value: &ast::TokenTree, lint_attrs: &mut Vec<(Severity, ast::TokenTree)>) {
+fn cfg_attr_lint_attrs(
+    sema: &Semantics<'_, RootDatabase>,
+    value: &ast::TokenTree,
+    lint_attrs: &mut Vec<(Severity, ast::TokenTree)>,
+) {
     let prev_len = lint_attrs.len();
     let mut iter = value.token_trees_and_tokens().filter(|it| match it {
         NodeOrToken::Node(_) => true,
@@ -708,12 +777,18 @@ struct LintGroups {
 }
 
 impl LintGroups {
-    fn contains(&self, group: &str) -> bool {
+    fn contains(
+        &self,
+        group: &str,
+    ) -> bool {
         self.groups.contains(&group) || (self.inside_warnings && group == "warnings")
     }
 }
 
-fn lint_groups(lint: &DiagnosticCode, edition: Edition) -> LintGroups {
+fn lint_groups(
+    lint: &DiagnosticCode,
+    edition: Edition,
+) -> LintGroups {
     let (groups, inside_warnings) = match lint {
         DiagnosticCode::RustcLint(name) => {
             let lint = &RUSTC_LINTS[name];
@@ -730,13 +805,22 @@ fn lint_groups(lint: &DiagnosticCode, edition: Edition) -> LintGroups {
     LintGroups { groups, inside_warnings }
 }
 
-fn fix(id: &'static str, label: &str, source_change: SourceChange, target: TextRange) -> Assist {
+fn fix(
+    id: &'static str,
+    label: &str,
+    source_change: SourceChange,
+    target: TextRange,
+) -> Assist {
     let mut res = unresolved_fix(id, label, target);
     res.source_change = Some(source_change);
     res
 }
 
-fn unresolved_fix(id: &'static str, label: &str, target: TextRange) -> Assist {
+fn unresolved_fix(
+    id: &'static str,
+    label: &str,
+    target: TextRange,
+) -> Assist {
     assert!(!id.contains(' '));
     Assist {
         id: AssistId::quick_fix(id),
@@ -748,7 +832,11 @@ fn unresolved_fix(id: &'static str, label: &str, target: TextRange) -> Assist {
     }
 }
 
-fn adjusted_display_range<N: AstNode>(ctx: &DiagnosticsContext<'_>, diag_ptr: InFile<AstPtr<N>>, adj: &dyn Fn(N) -> Option<TextRange>) -> FileRange {
+fn adjusted_display_range<N: AstNode>(
+    ctx: &DiagnosticsContext<'_>,
+    diag_ptr: InFile<AstPtr<N>>,
+    adj: &dyn Fn(N) -> Option<TextRange>,
+) -> FileRange {
     let source_file = ctx.sema.parse_or_expand(diag_ptr.file_id);
     let node = diag_ptr.value.to_node(&source_file);
     let hir::FileRange { file_id, range } = diag_ptr

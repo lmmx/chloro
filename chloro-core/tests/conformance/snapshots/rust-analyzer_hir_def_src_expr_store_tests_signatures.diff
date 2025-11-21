@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5818 bytes
-Chloro size:   5815 bytes
+Chloro size:   5826 bytes
 Rustfmt size:  5818 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,11 @@ Rustfmt size:  5818 bytes
 -
  use super::super::*;
  
- fn lower_and_print(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+-fn lower_and_print(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++fn lower_and_print(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
      let db = TestDB::with_files(ra_fixture);
 -
      let krate = db.fetch_test_crate();

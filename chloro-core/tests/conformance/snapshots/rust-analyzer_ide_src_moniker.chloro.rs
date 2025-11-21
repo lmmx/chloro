@@ -95,7 +95,10 @@ pub struct MonikerIdentifier {
 }
 
 impl fmt::Display for MonikerIdentifier {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.write_str(&self.crate_name)?;
         f.write_fmt(format_args!("::{}", self.description.iter().map(|x| &x.name).join("::")))
     }
@@ -119,7 +122,11 @@ pub enum MonikerResult {
 }
 
 impl MonikerResult {
-    pub fn from_def(db: &RootDatabase, def: Definition, from_crate: Crate) -> Option<Self> {
+    pub fn from_def(
+        db: &RootDatabase,
+        def: Definition,
+        from_crate: Crate,
+    ) -> Option<Self> {
         def_to_moniker(db, def, from_crate)
     }
 }
@@ -140,7 +147,10 @@ pub struct PackageInformation {
     pub version: Option<String>,
 }
 
-pub(crate) fn moniker(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition) -> Option<RangeInfo<Vec<MonikerResult>>> {
+pub(crate) fn moniker(
+    db: &RootDatabase,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<RangeInfo<Vec<MonikerResult>>> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
     let current_crate: hir::Crate = crates_for(db, file_id).pop()?.into();
@@ -176,7 +186,10 @@ pub(crate) fn moniker(db: &RootDatabase, FilePosition { file_id, offset }: FileP
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 
-pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformationKind {
+pub(crate) fn def_to_kind(
+    db: &RootDatabase,
+    def: Definition,
+) -> SymbolInformationKind {
     use SymbolInformationKind::*;
     match def {
         Definition::Macro(it) => match it.kind(db) {
@@ -245,7 +258,11 @@ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformati
 ///   `BuiltinLifetime`, `TupleField`, `ToolModule`, and `InlineAsmRegOrRegClass`. TODO: it might be
 ///   sensible to provide monikers that refer to some non-existent crate of compiler builtin
 ///   definitions.
-pub(crate) fn def_to_moniker(db: &RootDatabase, definition: Definition, from_crate: Crate) -> Option<MonikerResult> {
+pub(crate) fn def_to_moniker(
+    db: &RootDatabase,
+    definition: Definition,
+    from_crate: Crate,
+) -> Option<MonikerResult> {
     match definition {
         Definition::Local(_) | Definition::Label(_) | Definition::GenericParam(_) => {
             return Some(MonikerResult::Local {
@@ -257,7 +274,11 @@ pub(crate) fn def_to_moniker(db: &RootDatabase, definition: Definition, from_cra
     Some(MonikerResult::Moniker(def_to_non_local_moniker(db, definition, from_crate)?))
 }
 
-fn enclosing_def_to_moniker(db: &RootDatabase, mut def: Definition, from_crate: Crate) -> Option<Moniker> {
+fn enclosing_def_to_moniker(
+    db: &RootDatabase,
+    mut def: Definition,
+    from_crate: Crate,
+) -> Option<Moniker> {
     loop {
         let enclosing_def = def.enclosing_definition(db)?;
         if let Some(enclosing_moniker) = def_to_non_local_moniker(db, enclosing_def, from_crate) {
@@ -267,7 +288,11 @@ fn enclosing_def_to_moniker(db: &RootDatabase, mut def: Definition, from_crate: 
     }
 }
 
-fn def_to_non_local_moniker(db: &RootDatabase, definition: Definition, from_crate: Crate) -> Option<Moniker> {
+fn def_to_non_local_moniker(
+    db: &RootDatabase,
+    definition: Definition,
+    from_crate: Crate,
+) -> Option<Moniker> {
     let module = match definition {
         Definition::Module(module) if module.is_crate_root() => module,
         _ => definition.module(db)?,
@@ -367,7 +392,11 @@ fn def_to_non_local_moniker(db: &RootDatabase, definition: Definition, from_crat
     })
 }
 
-fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {
+fn display<'db, T: HirDisplay<'db>>(
+    db: &'db RootDatabase,
+    module: hir::Module,
+    it: T,
+) -> String {
     match it.display_source_code(db, module.into(), true) {
         Ok(result) => result,
         // Fallback on display variant that always succeeds
@@ -394,7 +423,12 @@ mod tests {
         }
     }
     #[track_caller]
-    fn check_local_moniker(#[rust_analyzer::rust_fixture] ra_fixture: &str, identifier: &str, package: &str, kind: MonikerKind) {
+    fn check_local_moniker(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        identifier: &str,
+        package: &str,
+        kind: MonikerKind,
+    ) {
         let (analysis, position) = fixture::position(ra_fixture);
         let x = analysis.moniker(position).unwrap().expect("no moniker found").info;
         assert_eq!(x.len(), 1);
@@ -413,7 +447,12 @@ mod tests {
         }
     }
     #[track_caller]
-    fn check_moniker(#[rust_analyzer::rust_fixture] ra_fixture: &str, identifier: &str, package: &str, kind: MonikerKind) {
+    fn check_moniker(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        identifier: &str,
+        package: &str,
+        kind: MonikerKind,
+    ) {
         let (analysis, position) = fixture::position(ra_fixture);
         let x = analysis.moniker(position).unwrap().expect("no moniker found").info;
         assert_eq!(x.len(), 1);

@@ -26,17 +26,33 @@ enum FuncKind<'ctx> {
     Method(&'ctx DotAccess<'ctx>, Option<SmolStr>),
 }
 
-pub(crate) fn render_fn(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: Option<hir::Name>, func: hir::Function) -> Builder {
+pub(crate) fn render_fn(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    local_name: Option<hir::Name>,
+    func: hir::Function,
+) -> Builder {
     let _p = tracing::info_span!("render_fn").entered();
     render(ctx, local_name, func, FuncKind::Function(path_ctx))
 }
 
-pub(crate) fn render_method(ctx: RenderContext<'_>, dot_access: &DotAccess<'_>, receiver: Option<SmolStr>, local_name: Option<hir::Name>, func: hir::Function) -> Builder {
+pub(crate) fn render_method(
+    ctx: RenderContext<'_>,
+    dot_access: &DotAccess<'_>,
+    receiver: Option<SmolStr>,
+    local_name: Option<hir::Name>,
+    func: hir::Function,
+) -> Builder {
     let _p = tracing::info_span!("render_method").entered();
     render(ctx, local_name, func, FuncKind::Method(dot_access, receiver))
 }
 
-fn render(ctx @ RenderContext { completion, .. }: RenderContext<'_>, local_name: Option<hir::Name>, func: hir::Function, func_kind: FuncKind<'_>) -> Builder {
+fn render(
+    ctx @ RenderContext { completion, .. }: RenderContext<'_>,
+    local_name: Option<hir::Name>,
+    func: hir::Function,
+    func_kind: FuncKind<'_>,
+) -> Builder {
     let db = completion.db;
     let name = local_name.unwrap_or_else(|| func.name(db));
     let (call, escaped_call) = match &func_kind {
@@ -153,7 +169,12 @@ fn render(ctx @ RenderContext { completion, .. }: RenderContext<'_>, local_name:
     item
 }
 
-fn compute_return_type_match(db: &dyn HirDatabase, ctx: &RenderContext<'_>, self_type: hir::Type<'_>, ret_type: &hir::Type<'_>) -> CompletionRelevanceReturnType {
+fn compute_return_type_match(
+    db: &dyn HirDatabase,
+    ctx: &RenderContext<'_>,
+    self_type: hir::Type<'_>,
+    ret_type: &hir::Type<'_>,
+) -> CompletionRelevanceReturnType {
     if match_types(ctx.completion, &self_type, ret_type).is_some() {
         // fn([..]) -> Self
         CompletionRelevanceReturnType::DirectConstructor
@@ -175,7 +196,16 @@ fn compute_return_type_match(db: &dyn HirDatabase, ctx: &RenderContext<'_>, self
     }
 }
 
-pub(super) fn add_call_parens<'b>(builder: &'b mut Builder, ctx: &CompletionContext<'_>, cap: SnippetCap, name: SmolStr, escaped_name: SmolStr, self_param: Option<hir::SelfParam>, params: Vec<hir::Param<'_>>, ret_type: &hir::Type<'_>) -> &'b mut Builder {
+pub(super) fn add_call_parens<'b>(
+    builder: &'b mut Builder,
+    ctx: &CompletionContext<'_>,
+    cap: SnippetCap,
+    name: SmolStr,
+    escaped_name: SmolStr,
+    self_param: Option<hir::SelfParam>,
+    params: Vec<hir::Param<'_>>,
+    ret_type: &hir::Type<'_>,
+) -> &'b mut Builder {
     cov_mark::hit!(inserts_parens_for_function_calls);
     let (mut snippet, label_suffix) = if self_param.is_none() && params.is_empty() {
         (format!("{escaped_name}()$0"), "()")
@@ -243,7 +273,11 @@ pub(super) fn add_call_parens<'b>(builder: &'b mut Builder, ctx: &CompletionCont
     builder.label(SmolStr::from_iter([&name, label_suffix])).insert_snippet(cap, snippet)
 }
 
-fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &'static str {
+fn ref_of_param(
+    ctx: &CompletionContext<'_>,
+    arg: &str,
+    ty: &hir::Type<'_>,
+) -> &'static str {
     if let Some(derefed_ty) = ty.remove_ref() {
         for (name, local) in ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()) {
             if name.as_str() == arg {
@@ -258,7 +292,10 @@ fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &
     ""
 }
 
-fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
+fn detail(
+    ctx: &CompletionContext<'_>,
+    func: hir::Function,
+) -> String {
     let mut ret_ty = func.ret_type(ctx.db);
     let mut detail = String::new();
     if func.is_const(ctx.db) {
@@ -282,7 +319,10 @@ fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     detail
 }
 
-fn detail_full(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
+fn detail_full(
+    ctx: &CompletionContext<'_>,
+    func: hir::Function,
+) -> String {
     let signature = format!("{}", func.display(ctx.db, ctx.display_target));
     let mut detail = String::with_capacity(signature.len());
     for segment in signature.split_whitespace() {
@@ -295,7 +335,11 @@ fn detail_full(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     detail
 }
 
-fn params_display(ctx: &CompletionContext<'_>, detail: &mut String, func: hir::Function) {
+fn params_display(
+    ctx: &CompletionContext<'_>,
+    detail: &mut String,
+    func: hir::Function,
+) {
     if let Some(self_param) = func.self_param(ctx.db) {
         format_to!(detail, "{}", self_param.display(ctx.db, ctx.display_target));
         let assoc_fn_params = func.assoc_fn_params(ctx.db);
@@ -319,7 +363,12 @@ fn params_display(ctx: &CompletionContext<'_>, detail: &mut String, func: hir::F
     }
 }
 
-fn params<'db>(ctx: &CompletionContext<'db>, func: hir::Function, func_kind: &FuncKind<'_>, has_dot_receiver: bool) -> Option<(Option<hir::SelfParam>, Vec<hir::Param<'db>>)> {
+fn params<'db>(
+    ctx: &CompletionContext<'db>,
+    func: hir::Function,
+    func_kind: &FuncKind<'_>,
+    has_dot_receiver: bool,
+) -> Option<(Option<hir::SelfParam>, Vec<hir::Param<'db>>)> {
     ctx.config.callable.as_ref()?;
     // Don't add parentheses if the expected type is a function reference with the same signature.
     if let Some(expected) = ctx.expected_type.as_ref().filter(|e| e.is_fn())

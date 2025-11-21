@@ -45,7 +45,10 @@ pub(crate) fn discover_test_roots(db: &RootDatabase) -> Vec<TestItem> {
         .collect()
 }
 
-fn find_crate_by_id(db: &RootDatabase, crate_id: &str) -> Option<base_db::Crate> {
+fn find_crate_by_id(
+    db: &RootDatabase,
+    crate_id: &str,
+) -> Option<base_db::Crate> {
     // here, we use display_name as the crate id. This is not super ideal, but it works since we
     // only show tests for the local crates.
     db.all_crates().iter().copied().find(|&id| {
@@ -54,7 +57,12 @@ fn find_crate_by_id(db: &RootDatabase, crate_id: &str) -> Option<base_db::Crate>
     })
 }
 
-fn discover_tests_in_module(db: &RootDatabase, module: Module, prefix_id: String, only_in_this_file: bool) -> Vec<TestItem> {
+fn discover_tests_in_module(
+    db: &RootDatabase,
+    module: Module,
+    prefix_id: String,
+    only_in_this_file: bool,
+) -> Vec<TestItem> {
     let sema = Semantics::new(db);
     let mut r = vec![];
     for c in module.children(db) {
@@ -103,14 +111,20 @@ fn discover_tests_in_module(db: &RootDatabase, module: Module, prefix_id: String
     r
 }
 
-pub(crate) fn discover_tests_in_crate_by_test_id(db: &RootDatabase, crate_test_id: &str) -> Vec<TestItem> {
+pub(crate) fn discover_tests_in_crate_by_test_id(
+    db: &RootDatabase,
+    crate_test_id: &str,
+) -> Vec<TestItem> {
     let Some(crate_id) = find_crate_by_id(db, crate_test_id) else {
         return vec![];
     };
     discover_tests_in_crate(db, crate_id)
 }
 
-pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<TestItem> {
+pub(crate) fn discover_tests_in_file(
+    db: &RootDatabase,
+    file_id: FileId,
+) -> Vec<TestItem> {
     let sema = Semantics::new(db);
     let Some(module) = sema.file_to_module_def(file_id) else { return vec![] };
     let Some((mut tests, id)) = find_module_id_and_test_parents(&sema, module) else {
@@ -120,7 +134,10 @@ pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<
     tests
 }
 
-fn find_module_id_and_test_parents(sema: &Semantics<'_, RootDatabase>, module: Module) -> Option<(Vec<TestItem>, String)> {
+fn find_module_id_and_test_parents(
+    sema: &Semantics<'_, RootDatabase>,
+    module: Module,
+) -> Option<(Vec<TestItem>, String)> {
     let Some(parent) = module.parent(sema.db) else {
         let name = module.krate().display_name(sema.db)?.to_string();
         return Some((
@@ -155,7 +172,10 @@ fn find_module_id_and_test_parents(sema: &Semantics<'_, RootDatabase>, module: M
     Some((r, id))
 }
 
-pub(crate) fn discover_tests_in_crate(db: &RootDatabase, crate_id: base_db::Crate) -> Vec<TestItem> {
+pub(crate) fn discover_tests_in_crate(
+    db: &RootDatabase,
+    crate_id: base_db::Crate,
+) -> Vec<TestItem> {
     if !crate_id.data(db).origin.is_local() {
         return vec![];
     }

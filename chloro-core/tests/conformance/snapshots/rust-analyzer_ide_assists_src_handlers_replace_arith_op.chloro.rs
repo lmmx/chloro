@@ -6,19 +6,32 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn replace_arith_with_checked(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_arith_with_checked(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     replace_arith(acc, ctx, ArithKind::Checked)
 }
 
-pub(crate) fn replace_arith_with_saturating(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_arith_with_saturating(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     replace_arith(acc, ctx, ArithKind::Saturating)
 }
 
-pub(crate) fn replace_arith_with_wrapping(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_arith_with_wrapping(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     replace_arith(acc, ctx, ArithKind::Wrapping)
 }
 
-fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
+fn replace_arith(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    kind: ArithKind,
+) -> Option<()> {
     let (lhs, op, rhs) = parse_binary_op(ctx)?;
     let op_expr = lhs.syntax().parent()?;
     if !is_primitive_int(ctx, &lhs) || !is_primitive_int(ctx, &rhs) {
@@ -47,7 +60,10 @@ fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) ->
     )
 }
 
-fn is_primitive_int(ctx: &AssistContext<'_>, expr: &ast::Expr) -> bool {
+fn is_primitive_int(
+    ctx: &AssistContext<'_>,
+    expr: &ast::Expr,
+) -> bool {
     match ctx.sema.type_of_expr(expr) {
         Some(ty) => ty.adjusted().is_int_or_uint(),
         _ => false,
@@ -96,7 +112,10 @@ impl ArithKind {
         }
     }
 
-    fn method_name(&self, op: ArithOp) -> String {
+    fn method_name(
+        &self,
+        op: ArithOp,
+    ) -> String {
         let prefix = match self {
             ArithKind::Checked => "checked_",
             ArithKind::Wrapping => "wrapping_",

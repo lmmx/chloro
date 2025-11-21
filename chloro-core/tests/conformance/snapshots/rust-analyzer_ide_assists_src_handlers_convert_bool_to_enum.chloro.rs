@@ -21,7 +21,10 @@ use crate::{
     utils,
 };
 
-pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_bool_to_enum(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
         find_bool_node(ctx)?;
     let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
@@ -136,7 +139,10 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
     }
 }
 
-fn replace_bool_expr(edit: &mut SourceChangeBuilder, expr: ast::Expr) {
+fn replace_bool_expr(
+    edit: &mut SourceChangeBuilder,
+    expr: ast::Expr,
+) {
     let expr_range = expr.syntax().text_range();
     let enum_expr = bool_expr_to_enum_expr(expr);
     edit.replace(expr_range, enum_expr.syntax().text())
@@ -163,7 +169,14 @@ fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
 }
 
 /// Replaces all usages of the target identifier, both when read and written to.
-fn replace_usages(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: UsageSearchResult, target_definition: Definition, target_module: &hir::Module, delayed_mutations: &mut Vec<(ImportScope, ast::Path)>) {
+fn replace_usages(
+    edit: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    usages: UsageSearchResult,
+    target_definition: Definition,
+    target_module: &hir::Module,
+    delayed_mutations: &mut Vec<(ImportScope, ast::Path)>,
+) {
     for (file_id, references) in usages {
         edit.edit_file(file_id.file_id(ctx.db()));
 
@@ -283,7 +296,11 @@ struct FileReferenceWithImport {
     import_data: Option<(ImportScope, ast::Path)>,
 }
 
-fn augment_references_with_imports(ctx: &AssistContext<'_>, references: Vec<FileReference>, target_module: &hir::Module) -> Vec<FileReferenceWithImport> {
+fn augment_references_with_imports(
+    ctx: &AssistContext<'_>,
+    references: Vec<FileReference>,
+    target_module: &hir::Module,
+) -> Vec<FileReferenceWithImport> {
     let mut visited_modules = FxHashSet::default();
     let edition = target_module.krate().edition(ctx.db());
     references
@@ -356,7 +373,11 @@ fn find_negated_usage(name: &ast::NameLike) -> Option<(ast::PrefixExpr, ast::Exp
     }
 }
 
-fn find_record_expr_usage(name: &ast::NameLike, got_field: hir::Field, target_definition: Definition) -> Option<(ast::RecordExprField, ast::Expr)> {
+fn find_record_expr_usage(
+    name: &ast::NameLike,
+    got_field: hir::Field,
+    target_definition: Definition,
+) -> Option<(ast::RecordExprField, ast::Expr)> {
     let name_ref = name.as_name_ref()?;
     let record_field = ast::RecordExprField::for_field_name(name_ref)?;
     let initializer = record_field.expr()?;
@@ -393,7 +414,13 @@ fn find_method_call_expr_usage(name: &ast::NameLike) -> Option<ast::Expr> {
 }
 
 /// Adds the definition of the new enum before the target node.
-fn add_enum_def(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: &UsageSearchResult, target_node: SyntaxNode, target_module: &hir::Module) -> Option<()> {
+fn add_enum_def(
+    edit: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    usages: &UsageSearchResult,
+    target_node: SyntaxNode,
+    target_module: &hir::Module,
+) -> Option<()> {
     let insert_before = node_to_insert_before(target_node);
     if ctx
         .sema

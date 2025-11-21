@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn unqualify_method_call(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
     let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
     let path = path_expr.path()?;
@@ -65,7 +68,11 @@ pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) 
     )
 }
 
-fn add_import(qualifier: ast::Path, ctx: &AssistContext<'_>, edit: &mut ide_db::source_change::SourceChangeBuilder) {
+fn add_import(
+    qualifier: ast::Path,
+    ctx: &AssistContext<'_>,
+    edit: &mut ide_db::source_change::SourceChangeBuilder,
+) {
     if let Some(path_segment) = qualifier.segment() {
         // for `<i32 as std::ops::Add>`
         let path_type = path_segment.qualifying_trait();

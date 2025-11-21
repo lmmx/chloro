@@ -20,7 +20,11 @@ use crate::{
     },
 };
 
-pub(crate) fn opaque_types_defined_by(db: &dyn HirDatabase, def_id: DefWithBodyId, result: &mut Vec<SolverDefId>) {
+pub(crate) fn opaque_types_defined_by(
+    db: &dyn HirDatabase,
+    def_id: DefWithBodyId,
+    result: &mut Vec<SolverDefId>,
+) {
     if let DefWithBodyId::FunctionId(func) = def_id {
         // A function may define its own RPITs.
         extend_with_opaques(
@@ -81,7 +85,10 @@ pub(crate) fn opaque_types_defined_by(db: &dyn HirDatabase, def_id: DefWithBodyI
 }
 
 #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
-pub(crate) fn rpit_hidden_types<'db>(db: &'db dyn HirDatabase, function: FunctionId) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
+pub(crate) fn rpit_hidden_types<'db>(
+    db: &'db dyn HirDatabase,
+    function: FunctionId,
+) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
     let infer = db.infer(function.into());
     let mut result = ArenaMap::new();
     for (opaque, hidden_type) in infer.return_position_impl_trait_types(db) {
@@ -92,7 +99,10 @@ pub(crate) fn rpit_hidden_types<'db>(db: &'db dyn HirDatabase, function: Functio
 }
 
 #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
-pub(crate) fn tait_hidden_types<'db>(db: &'db dyn HirDatabase, type_alias: TypeAliasId) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
+pub(crate) fn tait_hidden_types<'db>(
+    db: &'db dyn HirDatabase,
+    type_alias: TypeAliasId,
+) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
     let loc = type_alias.loc(db);
     let module = loc.module(db);
     let interner = DbInterner::new_with(db, Some(module.krate()), module.containing_block());
@@ -145,7 +155,10 @@ pub(crate) fn tait_hidden_types<'db>(db: &'db dyn HirDatabase, type_alias: TypeA
     result
 }
 
-fn tait_defining_bodies(db: &dyn HirDatabase, loc: &AssocItemLoc<ast::TypeAlias>) -> Vec<DefWithBodyId> {
+fn tait_defining_bodies(
+    db: &dyn HirDatabase,
+    loc: &AssocItemLoc<ast::TypeAlias>,
+) -> Vec<DefWithBodyId> {
     let from_assoc_items = |assoc_items: &[(Name, AssocItemId)]| {
         // Associated Type Position Impl Trait.
         assoc_items

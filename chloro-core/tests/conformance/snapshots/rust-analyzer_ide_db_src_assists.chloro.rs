@@ -52,7 +52,10 @@ pub enum AssistKind {
 }
 
 impl AssistKind {
-    pub fn contains(self, other: AssistKind) -> bool {
+    pub fn contains(
+        self,
+        other: AssistKind,
+    ) -> bool {
         if self == other {
             return true;
         }
@@ -152,7 +155,10 @@ pub struct SingleResolve {
 }
 
 impl AssistResolveStrategy {
-    pub fn should_resolve(&self, id: &AssistId) -> bool {
+    pub fn should_resolve(
+        &self,
+        id: &AssistId,
+    ) -> bool {
         match self {
             AssistResolveStrategy::None => false,
             AssistResolveStrategy::All => true,

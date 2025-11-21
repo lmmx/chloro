@@ -8,7 +8,12 @@ use syntax::ast::{self, AstNode};
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, path: Either<ast::PathType, ast::DynTraitType>) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    path: Either<ast::PathType, ast::DynTraitType>,
+) -> Option<()> {
     let parent = path.syntax().parent()?;
     let range = match path {
         Either::Left(path) => {

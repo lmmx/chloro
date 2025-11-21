@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn flip_trait_bound(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn flip_trait_bound(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // Only flip on the `+` token
     let plus = ctx.find_token_syntax_at_offset(T![+])?;
     // Make sure we're in a `TypeBoundList`

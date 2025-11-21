@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10661 bytes
-Chloro size:   10395 bytes
+Chloro size:   10417 bytes
 Rustfmt size:  10661 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,11 @@ Rustfmt size:  10661 bytes
 -//     field: Type,
 -// }
 -// ```
- pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn extract_type_alias(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      if ctx.has_empty_selection() {
          return None;
      }
@@ -43,17 +47,6 @@ Rustfmt size:  10661 bytes
      acc.add(
          AssistId::refactor_extract("extract_type_alias"),
          "Extract type as type alias",
-     )
- }
- 
--fn collect_used_generics<'gp>(
--    ty: &ast::Type,
--    known_generics: &'gp [ast::GenericParam],
--) -> Option<Vec<&'gp ast::GenericParam>> {
-+fn collect_used_generics<'gp>(ty: &ast::Type, known_generics: &'gp [ast::GenericParam]) -> Option<Vec<&'gp ast::GenericParam>> {
-     // can't use a closure -> closure here cause lifetime inference fails for that
-     fn find_lifetime(text: &str) -> impl Fn(&&ast::GenericParam) -> bool + '_ {
-         move |gp: &&ast::GenericParam| match gp {
              _ => false,
          }
      }

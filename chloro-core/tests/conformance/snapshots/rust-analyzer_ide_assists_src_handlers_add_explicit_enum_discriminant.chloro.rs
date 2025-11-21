@@ -4,7 +4,10 @@ use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn add_explicit_enum_discriminant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_explicit_enum_discriminant(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let enum_node = ctx.find_node_at_offset::<ast::Enum>()?;
     let enum_def = ctx.sema.to_def(&enum_node)?;
     let is_data_carrying = enum_def.is_data_carrying(ctx.db());
@@ -32,7 +35,11 @@ pub(crate) fn add_explicit_enum_discriminant(acc: &mut Assists, ctx: &AssistCont
     Some(())
 }
 
-fn add_variant_discriminant(sema: &Semantics<'_, RootDatabase>, builder: &mut SourceChangeBuilder, variant_node: &ast::Variant) {
+fn add_variant_discriminant(
+    sema: &Semantics<'_, RootDatabase>,
+    builder: &mut SourceChangeBuilder,
+    variant_node: &ast::Variant,
+) {
     if variant_node.expr().is_some() {
         return;
     }

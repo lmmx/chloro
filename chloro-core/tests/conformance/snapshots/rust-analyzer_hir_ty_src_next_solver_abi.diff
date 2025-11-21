@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1739 bytes
-Chloro size:   1677 bytes
+Chloro size:   1739 bytes
 Rustfmt size:  1801 bytes
 
 ✗ Outputs DIFFER
@@ -17,15 +17,8 @@ Rustfmt size:  1801 bytes
  use super::interner::DbInterner;
  
  #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
- }
- 
- impl<'db> Relate<DbInterner<'db>> for Safety {
--    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
--        _relation: &mut R,
--        a: Self,
--        b: Self,
--    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
-+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(_relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+         b: Self,
+     ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
          if a != b {
 -            Err(TypeError::SafetyMismatch(
 -                rustc_type_ir::error::ExpectedFound::new(a, b),
@@ -34,15 +27,6 @@ Rustfmt size:  1801 bytes
          } else {
              Ok(a)
          }
- }
- 
- impl<'db> Relate<DbInterner<'db>> for FnAbi {
--    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
--        _relation: &mut R,
--        a: Self,
--        b: Self,
--    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
-+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(_relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
          if a == b {
              Ok(a)
          } else {

@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_comment_block(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow comments which are alone on their line
     if let Some(prev) = comment.syntax().prev_token() {
@@ -18,7 +21,10 @@ pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) 
     }
 }
 
-fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
+fn block_to_line(
+    acc: &mut Assists,
+    comment: ast::Comment,
+) -> Option<()> {
     let target = comment.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("block_to_line"),
@@ -52,7 +58,10 @@ fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     )
 }
 
-fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
+fn line_to_block(
+    acc: &mut Assists,
+    comment: ast::Comment,
+) -> Option<()> {
     // Find all the comments we'll be collapsing into a block
     let comments = relevant_line_comments(&comment);
     // Establish the target of our edit based on the comments we found
@@ -125,7 +134,10 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     comments
 }
 
-pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
+pub(crate) fn line_comment_text(
+    indentation: IndentLevel,
+    comm: ast::Comment,
+) -> String {
     let text = comm.text();
     let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);
     let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);

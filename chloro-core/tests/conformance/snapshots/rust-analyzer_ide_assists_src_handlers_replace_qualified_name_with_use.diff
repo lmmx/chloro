@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10666 bytes
-Chloro size:   10198 bytes
+Chloro size:   10242 bytes
 Rustfmt size:  10666 bytes
 
 ✗ Outputs DIFFER
@@ -26,14 +26,9 @@ Rustfmt size:  10666 bytes
 -// # mod std { pub mod collections { pub struct HashMap<T, U>(T, U); } }
 -// fn process(map: HashMap<String, String>) {}
 -// ```
--pub(crate) fn replace_qualified_name_with_use(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn replace_qualified_name_with_use(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let mut original_path: ast::Path = ctx.find_node_at_offset()?;
-     // We don't want to mess with use statements
-     if original_path.syntax().ancestors().find_map(ast::UseTree::cast).is_some() {
+ pub(crate) fn replace_qualified_name_with_use(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
          cov_mark::hit!(not_applicable_in_use);
          return None;
      }
@@ -59,6 +54,25 @@ Rustfmt size:  10666 bytes
      let scope = ImportScope::find_insert_use_container(original_path.syntax(), &ctx.sema)?;
      let target = original_path.syntax().text_range();
      acc.add(
+ }
+ 
+ /// Mutates `node` to shorten `path` in all descendants of `node`.
+-fn shorten_paths(node: &SyntaxNode, path: &ast::Path) {
++fn shorten_paths(
++    node: &SyntaxNode,
++    path: &ast::Path,
++) {
+     for child in node.children() {
+         match_ast! {
+             match child {
+     }
+ }
+ 
+-fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
++fn maybe_replace_path(
++    path: ast::Path,
++    target: ast::Path,
++) -> Option<()> {
      if !path_eq_no_generics(path.clone(), target) {
          return None;
      }
@@ -73,6 +87,14 @@ Rustfmt size:  10666 bytes
      Some(())
  }
  
+-fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
++fn path_eq_no_generics(
++    lhs: ast::Path,
++    rhs: ast::Path,
++) -> bool {
+     let mut lhs_curr = lhs;
+     let mut rhs_curr = rhs;
+     loop {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

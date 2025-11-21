@@ -38,7 +38,10 @@ pub(crate) struct InspectGoal<'a, 'db> {
 }
 
 impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         f.debug_struct("InspectGoal")
             .field("depth", &self.depth)
             .field("orig_values", &self.orig_values)
@@ -52,7 +55,10 @@ impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {
 }
 
 impl<'a, 'db> std::fmt::Debug for InspectCandidate<'a, 'db> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         f.debug_struct("InspectCandidate")
             .field("kind", &self.kind)
             .field("steps", &self.steps)
@@ -82,7 +88,12 @@ impl<'db> NormalizesToTermHack<'db> {
     /// Relate the `term` with the new `unconstrained_term` created
     /// when computing the proof tree for this `NormalizesTo` goals.
     /// This handles nested obligations.
-    fn constrain_and(&self, infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, f: impl FnOnce(&mut ObligationCtxt<'_, 'db>)) -> Result<Certainty, NoSolution> {
+    fn constrain_and(
+        &self,
+        infcx: &InferCtxt<'db>,
+        param_env: ParamEnv<'db>,
+        f: impl FnOnce(&mut ObligationCtxt<'_, 'db>),
+    ) -> Result<Certainty, NoSolution> {
         let mut ocx = ObligationCtxt::new(infcx);
         ocx.eq(&ObligationCause::dummy(), param_env, self.term, self.unconstrained_term)?;
         f(&mut ocx);
@@ -134,7 +145,10 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
     /// Visit all nested goals of this candidate without rolling
     /// back their inference constraints. This function modifies
     /// the state of the `infcx`.
-    pub(crate) fn visit_nested_no_probe<V: ProofTreeVisitor<'db>>(&self, visitor: &mut V) -> V::Result {
+    pub(crate) fn visit_nested_no_probe<V: ProofTreeVisitor<'db>>(
+        &self,
+        visitor: &mut V,
+    ) -> V::Result {
         for goal in self.instantiate_nested_goals() {
             try_visit!(goal.visit_with(visitor));
         }
@@ -228,7 +242,11 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         panic!("expected impl args probe step for `instantiate_impl_args`");
     }
 
-    pub(crate) fn instantiate_proof_tree_for_nested_goal(&self, source: GoalSource, goal: Goal<'db, Predicate<'db>>) -> InspectGoal<'a, 'db> {
+    pub(crate) fn instantiate_proof_tree_for_nested_goal(
+        &self,
+        source: GoalSource,
+        goal: Goal<'db, Predicate<'db>>,
+    ) -> InspectGoal<'a, 'db> {
         let infcx = self.goal.infcx;
         match goal.predicate.kind().no_bound_vars() {
             Some(PredicateKind::NormalizesTo(NormalizesTo { alias, term })) => {
@@ -291,7 +309,10 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
     /// Visit all nested goals of this candidate, rolling back
     /// all inference constraints.
     #[expect(dead_code, reason = "used in rustc")]
-    pub(crate) fn visit_nested_in_probe<V: ProofTreeVisitor<'db>>(&self, visitor: &mut V) -> V::Result {
+    pub(crate) fn visit_nested_in_probe<V: ProofTreeVisitor<'db>>(
+        &self,
+        visitor: &mut V,
+    ) -> V::Result {
         self.goal.infcx.probe(|_| self.visit_nested_no_probe(visitor))
     }
 }
@@ -317,7 +338,12 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         self.depth
     }
 
-    fn candidates_recur(&'a self, candidates: &mut Vec<InspectCandidate<'a, 'db>>, steps: &mut Vec<&'a inspect::ProbeStep<DbInterner<'db>>>, probe: &'a inspect::Probe<DbInterner<'db>>) {
+    fn candidates_recur(
+        &'a self,
+        candidates: &mut Vec<InspectCandidate<'a, 'db>>,
+        steps: &mut Vec<&'a inspect::ProbeStep<DbInterner<'db>>>,
+        probe: &'a inspect::Probe<DbInterner<'db>>,
+    ) {
         let mut shallow_certainty = None;
         for step in &probe.steps {
             match *step {
@@ -401,10 +427,16 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         candidates.pop().filter(|_| candidates.is_empty())
     }
 
-    fn new(infcx: &'a InferCtxt<'db>, depth: usize, root: inspect::GoalEvaluation<DbInterner<'db>>, term_hack_and_nested_certainty: Option<(
+    fn new(
+        infcx: &'a InferCtxt<'db>,
+        depth: usize,
+        root: inspect::GoalEvaluation<DbInterner<'db>>,
+        term_hack_and_nested_certainty: Option<(
             NormalizesToTermHack<'db>,
             Result<Certainty, NoSolution>,
-        )>, source: GoalSource) -> Self {
+        )>,
+        source: GoalSource,
+    ) -> Self {
         let infcx = <&SolverContext<'db>>::from(infcx);
         let inspect::GoalEvaluation { uncanonicalized_goal, orig_values, final_revision, result } =
             root;
@@ -427,7 +459,10 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         }
     }
 
-    pub(crate) fn visit_with<V: ProofTreeVisitor<'db>>(&self, visitor: &mut V) -> V::Result {
+    pub(crate) fn visit_with<V: ProofTreeVisitor<'db>>(
+        &self,
+        visitor: &mut V,
+    ) -> V::Result {
         if self.depth < visitor.config().max_depth {
             try_visit!(visitor.visit_goal(self));
         }
@@ -440,14 +475,26 @@ type Result;
 fn config(&self) -> InspectConfig {
     InspectConfig { max_depth: 10 }
 }
-fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result;
+fn visit_goal(
+    &mut self,
+    goal: &InspectGoal<'_, 'db>,
+) -> Self::Result;
 
 impl<'db> InferCtxt<'db> {
-    pub(crate) fn visit_proof_tree<V: ProofTreeVisitor<'db>>(&self, goal: Goal<'db, Predicate<'db>>, visitor: &mut V) -> V::Result {
+    pub(crate) fn visit_proof_tree<V: ProofTreeVisitor<'db>>(
+        &self,
+        goal: Goal<'db, Predicate<'db>>,
+        visitor: &mut V,
+    ) -> V::Result {
         self.visit_proof_tree_at_depth(goal, 0, visitor)
     }
 
-    pub(crate) fn visit_proof_tree_at_depth<V: ProofTreeVisitor<'db>>(&self, goal: Goal<'db, Predicate<'db>>, depth: usize, visitor: &mut V) -> V::Result {
+    pub(crate) fn visit_proof_tree_at_depth<V: ProofTreeVisitor<'db>>(
+        &self,
+        goal: Goal<'db, Predicate<'db>>,
+        depth: usize,
+        visitor: &mut V,
+    ) -> V::Result {
         let (_, proof_tree) = <&SolverContext<'db>>::from(self)
             .evaluate_root_goal_for_proof_tree(goal, Span::dummy());
         visitor.visit_goal(&InspectGoal::new(self, depth, proof_tree, None, GoalSource::Misc))

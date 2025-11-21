@@ -2,7 +2,10 @@ use syntax::{AstToken, ast, ast::Radix};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
-pub(crate) fn convert_integer_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_integer_literal(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if !ctx.has_empty_selection() {
         return None;
     }

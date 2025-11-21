@@ -117,7 +117,10 @@ impl Tester {
         })
     }
 
-    fn test(&mut self, p: PathBuf) {
+    fn test(
+        &mut self,
+        p: PathBuf,
+    ) {
         println!("{}", p.display());
         if p.parent().unwrap().file_name().unwrap() == "auxiliary" {
             // These are not tests

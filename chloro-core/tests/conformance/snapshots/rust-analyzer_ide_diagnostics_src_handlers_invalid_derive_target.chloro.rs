@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn invalid_derive_target(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidDeriveTarget) -> Diagnostic {
+pub(crate) fn invalid_derive_target(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::InvalidDeriveTarget,
+) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.node);
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0774"),

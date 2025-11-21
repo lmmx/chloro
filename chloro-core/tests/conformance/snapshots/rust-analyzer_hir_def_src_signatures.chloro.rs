@@ -58,7 +58,10 @@ pub struct StructSignature {
 /// Indicates whether this struct is `UnsafeCell`.
 /// Indicates whether this struct is `UnsafePinned`.
 impl StructSignature {
-    pub fn query(db: &dyn DefDatabase, id: StructId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: StructId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let InFile { file_id, value: source } = loc.source(db);
         let attrs = db.attrs(id.into());
@@ -122,7 +125,10 @@ pub struct UnionSignature {
 }
 
 impl UnionSignature {
-    pub fn query(db: &dyn DefDatabase, id: UnionId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: UnionId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let attrs = db.attrs(id.into());
         let mut flags = StructFlags::empty();
@@ -164,7 +170,10 @@ pub struct EnumSignature {
 }
 
 impl EnumSignature {
-    pub fn query(db: &dyn DefDatabase, id: EnumId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: EnumId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let attrs = db.attrs(id.into());
         let mut flags = EnumFlags::empty();
@@ -209,7 +218,10 @@ pub struct ConstSignature {
 }
 
 impl ConstSignature {
-    pub fn query(db: &dyn DefDatabase, id: ConstId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: ConstId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let module = loc.container.module(db);
         let attrs = db.attrs(id.into());
@@ -247,7 +259,10 @@ pub struct StaticSignature {
 }
 
 impl StaticSignature {
-    pub fn query(db: &dyn DefDatabase, id: StaticId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: StaticId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let module = loc.container.module(db);
         let attrs = db.attrs(id.into());
@@ -294,7 +309,10 @@ pub struct ImplSignature {
 }
 
 impl ImplSignature {
-    pub fn query(db: &dyn DefDatabase, id: ImplId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: ImplId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let mut flags = ImplFlags::empty();
         let src = loc.source(db);
@@ -340,7 +358,10 @@ pub struct TraitSignature {
 }
 
 impl TraitSignature {
-    pub fn query(db: &dyn DefDatabase, id: TraitId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: TraitId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let mut flags = TraitFlags::empty();
         let attrs = db.attrs(id.into());
@@ -408,7 +429,10 @@ pub struct FunctionSignature {
 }
 
 impl FunctionSignature {
-    pub fn query(db: &dyn DefDatabase, id: FunctionId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: FunctionId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let module = loc.container.module(db);
         let mut flags = FnFlags::empty();
@@ -515,7 +539,10 @@ impl FunctionSignature {
         self.flags.contains(FnFlags::HAS_TARGET_FEATURE)
     }
 
-    pub fn is_intrinsic(db: &dyn DefDatabase, id: FunctionId) -> bool {
+    pub fn is_intrinsic(
+        db: &dyn DefDatabase,
+        id: FunctionId,
+    ) -> bool {
         let data = db.function_signature(id);
         data.flags.contains(FnFlags::RUSTC_INTRINSIC)
             // Keep this around for a bit until extern "rustc-intrinsic" abis are no longer used
@@ -541,7 +568,10 @@ pub struct TypeAliasSignature {
 }
 
 impl TypeAliasSignature {
-    pub fn query(db: &dyn DefDatabase, id: TypeAliasId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub fn query(
+        db: &dyn DefDatabase,
+        id: TypeAliasId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let mut flags = TypeAliasFlags::empty();
         let attrs = db.attrs(id.into());
@@ -615,7 +645,10 @@ pub struct VariantFields {
 
 impl VariantFields {
     #[salsa::tracked(returns(clone))]
-    pub(crate) fn query(db: &dyn DefDatabase, id: VariantId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
+    pub(crate) fn query(
+        db: &dyn DefDatabase,
+        id: VariantId,
+    ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let (shape, result) = match id {
             VariantId::EnumVariantId(id) => {
                 let loc = id.lookup(db);
@@ -664,7 +697,10 @@ impl VariantFields {
     }
 
     #[salsa::tracked(returns(deref))]
-    pub(crate) fn firewall(db: &dyn DefDatabase, id: VariantId) -> Arc<Self> {
+    pub(crate) fn firewall(
+        db: &dyn DefDatabase,
+        id: VariantId,
+    ) -> Arc<Self> {
         Self::query(db, id).0
     }
 }
@@ -678,12 +714,20 @@ impl VariantFields {
         &self.fields
     }
 
-    pub fn field(&self, name: &Name) -> Option<LocalFieldId> {
+    pub fn field(
+        &self,
+        name: &Name,
+    ) -> Option<LocalFieldId> {
         self.fields().iter().find_map(|(id, data)| if &data.name == name { Some(id) } else { None })
     }
 }
 
-fn lower_field_list(db: &dyn DefDatabase, module: ModuleId, fields: InFile<Option<ast::FieldList>>, override_visibility: Option<Option<ast::Visibility>>) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
+fn lower_field_list(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    fields: InFile<Option<ast::FieldList>>,
+    override_visibility: Option<Option<ast::Visibility>>,
+) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
     let file_id = fields.file_id;
     match fields.value? {
         ast::FieldList::RecordFieldList(fields) => lower_fields(
@@ -703,7 +747,13 @@ fn lower_field_list(db: &dyn DefDatabase, module: ModuleId, fields: InFile<Optio
     }
 }
 
-fn lower_fields<Field: ast::HasAttrs + ast::HasVisibility>(db: &dyn DefDatabase, module: ModuleId, fields: InFile<impl Iterator<Item = (Option<ast::Type>, Field)>>, mut field_name: impl FnMut(usize, &Field) -> Name, override_visibility: Option<Option<ast::Visibility>>) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
+fn lower_fields<Field: ast::HasAttrs + ast::HasVisibility>(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    fields: InFile<impl Iterator<Item = (Option<ast::Type>, Field)>>,
+    mut field_name: impl FnMut(usize, &Field) -> Name,
+    override_visibility: Option<Option<ast::Visibility>>,
+) -> Option<(Arena<FieldData>, ExpressionStore, ExpressionStoreSourceMap)> {
     let cfg_options = module.krate.cfg_options(db);
     let mut col = ExprCollector::new(db, module, fields.file_id);
     let override_visibility = override_visibility.map(|vis| {
@@ -771,7 +821,10 @@ pub struct EnumVariants {
 
 impl EnumVariants {
     #[salsa::tracked(returns(ref))]
-    pub(crate) fn of(db: &dyn DefDatabase, e: EnumId) -> (EnumVariants, Option<ThinVec<InactiveEnumVariantCode>>) {
+    pub(crate) fn of(
+        db: &dyn DefDatabase,
+        e: EnumId,
+    ) -> (EnumVariants, Option<ThinVec<InactiveEnumVariantCode>>) {
         let loc = e.lookup(db);
         let source = loc.source(db);
         let ast_id_map = db.ast_id_map(source.file_id);
@@ -812,17 +865,26 @@ impl EnumVariants {
 }
 
 impl EnumVariants {
-    pub fn variant(&self, name: &Name) -> Option<EnumVariantId> {
+    pub fn variant(
+        &self,
+        name: &Name,
+    ) -> Option<EnumVariantId> {
         self.variants.iter().find_map(|(v, n, _)| if n == name { Some(*v) } else { None })
     }
 
-    pub fn variant_name_by_id(&self, variant_id: EnumVariantId) -> Option<Name> {
+    pub fn variant_name_by_id(
+        &self,
+        variant_id: EnumVariantId,
+    ) -> Option<Name> {
         self.variants
             .iter()
             .find_map(|(id, name, _)| if *id == variant_id { Some(name.clone()) } else { None })
     }
 
-    pub fn is_payload_free(&self, db: &dyn DefDatabase) -> bool {
+    pub fn is_payload_free(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> bool {
         self.variants.iter().all(|&(v, _, _)| {
             // The condition check order is slightly modified from rustc
             // to improve performance by early returning with relatively fast checks
@@ -843,7 +905,10 @@ impl EnumVariants {
     }
 }
 
-pub(crate) fn extern_block_abi(db: &dyn DefDatabase, extern_block: ExternBlockId) -> Option<Symbol> {
+pub(crate) fn extern_block_abi(
+    db: &dyn DefDatabase,
+    extern_block: ExternBlockId,
+) -> Option<Symbol> {
     let source = extern_block.lookup(db).source(db);
     source.value.abi().map(|abi| {
         match abi.abi_string() {

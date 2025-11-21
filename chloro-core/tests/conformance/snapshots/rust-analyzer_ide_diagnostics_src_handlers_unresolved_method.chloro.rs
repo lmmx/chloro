@@ -13,7 +13,10 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
-pub(crate) fn unresolved_method(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Diagnostic {
+pub(crate) fn unresolved_method(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedMethodCall<'_>,
+) -> Diagnostic {
     let suffix = if d.field_with_same_name.is_some() {
         ", but a field with a similar name exists"
     } else if d.assoc_func_with_same_name.is_some() {
@@ -43,7 +46,10 @@ pub(crate) fn unresolved_method(ctx: &DiagnosticsContext<'_>, d: &hir::Unresolve
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedMethodCall<'_>,
+) -> Option<Vec<Assist>> {
     let field_fix = if let Some(ty) = &d.field_with_same_name {
         field_fix(ctx, d, ty)
     } else {
@@ -61,7 +67,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Opt
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 
-fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>, ty: &hir::Type<'_>) -> Option<Assist> {
+fn field_fix(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedMethodCall<'_>,
+    ty: &hir::Type<'_>,
+) -> Option<Assist> {
     if !ty.impls_fnonce(ctx.sema.db) {
         return None;
     }
@@ -94,7 +104,10 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>, ty
     })
 }
 
-fn assoc_func_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Option<Assist> {
+fn assoc_func_fix(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedMethodCall<'_>,
+) -> Option<Assist> {
     if let Some(f) = d.assoc_func_with_same_name {
         let db = ctx.sema.db;
 

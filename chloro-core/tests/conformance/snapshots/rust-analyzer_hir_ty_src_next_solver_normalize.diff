@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9628 bytes
+Chloro size:   9822 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -37,7 +37,11 @@ Rustfmt size:  9886 bytes
  
  /// Deeply normalize all aliases in `value`. This does not handle inference and expects
  /// its input to be already fully resolved.
- pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>
+-pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>
++pub fn deeply_normalize<'db, T>(
++    at: At<'_, 'db>,
++    value: T,
++) -> Result<T, Vec<NextSolverError<'db>>>
  where
 -    T: TypeFoldable<DbInterner<'db>>,
 -{
@@ -45,15 +49,8 @@ Rustfmt size:  9886 bytes
      assert!(!value.has_escaping_bound_vars());
      deeply_normalize_with_skipped_universes(at, value, vec![])
  }
- /// Additionally takes a list of universes which represents the binders which have been
- /// entered before passing `value` to the function. This is currently needed for
- /// `normalize_erasing_regions`, which skips binders as it walks through a type.
--pub fn deeply_normalize_with_skipped_universes<'db, T>(
--    at: At<'_, 'db>,
--    value: T,
--    universes: Vec<Option<UniverseIndex>>,
--) -> Result<T, Vec<NextSolverError<'db>>>
-+pub fn deeply_normalize_with_skipped_universes<'db, T>(at: At<'_, 'db>, value: T, universes: Vec<Option<UniverseIndex>>) -> Result<T, Vec<NextSolverError<'db>>>
+     universes: Vec<Option<UniverseIndex>>,
+ ) -> Result<T, Vec<NextSolverError<'db>>>
  where
 -    T: TypeFoldable<DbInterner<'db>>,
 -{
@@ -67,15 +64,8 @@ Rustfmt size:  9886 bytes
      Ok(value)
  }
  
- ///
- /// This returns a set of stalled obligations involving coroutines if the typing mode of
- /// the underlying infcx has any stalled coroutine def ids.
--pub fn deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals<'db, T>(
--    at: At<'_, 'db>,
--    value: T,
--    universes: Vec<Option<UniverseIndex>>,
--) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
-+pub fn deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals<'db, T>(at: At<'_, 'db>, value: T, universes: Vec<Option<UniverseIndex>>) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
+     universes: Vec<Option<UniverseIndex>>,
+ ) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
  where
 -    T: TypeFoldable<DbInterner<'db>>,
 -{
@@ -99,14 +89,6 @@ Rustfmt size:  9886 bytes
  }
  
  struct NormalizationFolder<'me, 'db> {
- }
- 
- impl<'db> NormalizationFolder<'_, 'db> {
--    fn normalize_alias_term(
--        &mut self,
--        alias_term: Term<'db>,
--    ) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
-+    fn normalize_alias_term(&mut self, alias_term: Term<'db>) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
          let infcx = self.at.infcx;
          let interner = infcx.interner;
          let recursion_limit = interner.recursion_limit();
@@ -162,17 +144,16 @@ Rustfmt size:  9886 bytes
          Ok(())
      }
  }
-         self.at.infcx.interner
+         Ok(t)
      }
  
--    fn try_fold_binder<T: TypeFoldable<DbInterner<'db>>>(
--        &mut self,
--        t: Binder<'db, T>,
--    ) -> Result<Binder<'db, T>, Self::Error> {
-+    fn try_fold_binder<T: TypeFoldable<DbInterner<'db>>>(&mut self, t: Binder<'db, T>) -> Result<Binder<'db, T>, Self::Error> {
-         self.universes.push(None);
-         let t = t.try_super_fold_with(self)?;
-         self.universes.pop();
+-    fn try_fold_ty(&mut self, ty: Ty<'db>) -> Result<Ty<'db>, Self::Error> {
++    fn try_fold_ty(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Result<Ty<'db>, Self::Error> {
+         let infcx = self.at.infcx;
+         debug_assert_eq!(ty, infcx.shallow_resolve(ty));
          if !ty.has_aliases() {
              return Ok(ty);
          }
@@ -185,6 +166,16 @@ Rustfmt size:  9886 bytes
          if ty.has_escaping_bound_vars() {
              let (ty, mapped_regions, mapped_types, mapped_consts) =
                  BoundVarReplacer::replace_bound_vars(infcx, &mut self.universes, ty);
+         }
+     }
+ 
+-    fn try_fold_const(&mut self, ct: Const<'db>) -> Result<Const<'db>, Self::Error> {
++    fn try_fold_const(
++        &mut self,
++        ct: Const<'db>,
++    ) -> Result<Const<'db>, Self::Error> {
+         let infcx = self.at.infcx;
+         debug_assert_eq!(ct, infcx.shallow_resolve_const(ct));
          if !ct.has_aliases() {
              return Ok(ct);
          }
@@ -201,12 +192,28 @@ Rustfmt size:  9886 bytes
  }
  
 -// Deeply normalize a value and return it
--pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
--    infcx: &InferCtxt<'db>,
--    param_env: ParamEnv<'db>,
--    t: T,
--) -> T {
-+pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, t: T) -> T {
-     t.fold_with(&mut DeeplyNormalizeForDiagnosticsFolder {
-         at: infcx.at(&ObligationCause::dummy(), param_env),
-     })
+ pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
+     infcx: &InferCtxt<'db>,
+     param_env: ParamEnv<'db>,
+         self.at.infcx.interner
+     }
+ 
+-    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
++    fn fold_ty(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         let infcx = self.at.infcx;
+         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
+             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
+         }
+     }
+ 
+-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
++    fn fold_const(
++        &mut self,
++        ct: Const<'db>,
++    ) -> Const<'db> {
+         let infcx = self.at.infcx;
+         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
+             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(

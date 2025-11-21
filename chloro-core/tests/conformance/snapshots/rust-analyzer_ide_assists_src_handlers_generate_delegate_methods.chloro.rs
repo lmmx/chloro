@@ -14,7 +14,10 @@ use crate::{
     utils::{convert_param_list_to_arg_list, find_struct_impl},
 };
 
-pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_delegate_methods(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;
     }

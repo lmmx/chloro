@@ -20,7 +20,10 @@ mod overly_long_real_world_cases;
 ///  * the first diagnostic fix trigger range touches the input cursor position
 ///  * that the contents of the file containing the cursor match `after` after the diagnostic fix is applied
 #[track_caller]
-pub(crate) fn check_fix(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_fix(
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     check_nth_fix(0, ra_fixture_before, ra_fixture_after);
 }
 
@@ -29,21 +32,32 @@ pub(crate) fn check_fix(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, 
 ///  * a diagnostic is produced
 ///  * every diagnostic fixes trigger range touches the input cursor position
 ///  * that the contents of the file containing the cursor match `after` after each diagnostic fix is applied
-pub(crate) fn check_fixes(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, ra_fixtures_after: Vec<&str>) {
+pub(crate) fn check_fixes(
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    ra_fixtures_after: Vec<&str>,
+) {
     for (i, ra_fixture_after) in ra_fixtures_after.iter().enumerate() {
         check_nth_fix(i, ra_fixture_before, ra_fixture_after)
     }
 }
 
 #[track_caller]
-fn check_nth_fix(nth: usize, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+fn check_nth_fix(
+    nth: usize,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let mut config = DiagnosticsConfig::test_sample();
     config.expr_fill_default = ExprFillDefaultMode::Default;
     check_nth_fix_with_config(config, nth, ra_fixture_before, ra_fixture_after)
 }
 
 #[track_caller]
-pub(crate) fn check_fix_with_disabled(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str, disabled: impl Iterator<Item = String>) {
+pub(crate) fn check_fix_with_disabled(
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    disabled: impl Iterator<Item = String>,
+) {
     let mut config = DiagnosticsConfig::test_sample();
     config.expr_fill_default = ExprFillDefaultMode::Default;
     config.disabled.extend(disabled);
@@ -51,7 +65,12 @@ pub(crate) fn check_fix_with_disabled(#[rust_analyzer::rust_fixture] ra_fixture_
 }
 
 #[track_caller]
-fn check_nth_fix_with_config(config: DiagnosticsConfig, nth: usize, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+fn check_nth_fix_with_config(
+    config: DiagnosticsConfig,
+    nth: usize,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let after = trim_indent(ra_fixture_after);
     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
     let diagnostic = hir::attach_db(&db, || {
@@ -89,14 +108,20 @@ fn check_nth_fix_with_config(config: DiagnosticsConfig, nth: usize, #[rust_analy
     assert_eq_text!(&after, &actual);
 }
 
-pub(crate) fn check_fixes_unordered(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, ra_fixtures_after: Vec<&str>) {
+pub(crate) fn check_fixes_unordered(
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    ra_fixtures_after: Vec<&str>,
+) {
     for ra_fixture_after in ra_fixtures_after.iter() {
         check_has_fix(ra_fixture_before, ra_fixture_after)
     }
 }
 
 #[track_caller]
-pub(crate) fn check_has_fix(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_has_fix(
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let after = trim_indent(ra_fixture_after);
     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
     let mut conf = DiagnosticsConfig::test_sample();
@@ -163,14 +188,20 @@ pub(crate) fn check_diagnostics(#[rust_analyzer::rust_fixture] ra_fixture: &str)
 }
 
 #[track_caller]
-pub(crate) fn check_diagnostics_with_disabled(#[rust_analyzer::rust_fixture] ra_fixture: &str, disabled: &[&str]) {
+pub(crate) fn check_diagnostics_with_disabled(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    disabled: &[&str],
+) {
     let mut config = DiagnosticsConfig::test_sample();
     config.disabled.extend(disabled.iter().map(|&s| s.to_owned()));
     check_diagnostics_with_config(config, ra_fixture)
 }
 
 #[track_caller]
-pub(crate) fn check_diagnostics_with_config(config: DiagnosticsConfig, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+pub(crate) fn check_diagnostics_with_config(
+    config: DiagnosticsConfig,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) {
     let _tracing = setup_tracing();
     let (db, files) = RootDatabase::with_many_files(ra_fixture);
     let mut annotations = files

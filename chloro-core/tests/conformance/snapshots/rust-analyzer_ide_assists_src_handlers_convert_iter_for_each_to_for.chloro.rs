@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn convert_iter_for_each_to_for(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_iter_for_each_to_for(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let method = ctx.find_node_at_offset::<ast::MethodCallExpr>()?;
     let closure = match method.arg_list()?.args().next()? {
         ast::Expr::ClosureExpr(expr) => expr,
@@ -41,7 +44,10 @@ pub(crate) fn convert_iter_for_each_to_for(acc: &mut Assists, ctx: &AssistContex
     )
 }
 
-pub(crate) fn convert_for_loop_with_for_each(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_for_loop_with_for_each(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let for_loop = ctx.find_node_at_offset::<ast::ForExpr>()?;
     let iterable = for_loop.iterable()?;
     let pat = for_loop.pat()?;
@@ -88,7 +94,10 @@ pub(crate) fn convert_for_loop_with_for_each(acc: &mut Assists, ctx: &AssistCont
 /// If iterable is a reference where the expression behind the reference implements a method
 /// returning an Iterator called iter or iter_mut (depending on the type of reference) then return
 /// the expression behind the reference and the method name
-fn is_ref_and_impls_iter_method(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> Option<(ast::Expr, hir::Name, hir::Crate)> {
+fn is_ref_and_impls_iter_method(
+    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
+    iterable: &ast::Expr,
+) -> Option<(ast::Expr, hir::Name, hir::Crate)> {
     let ref_expr = match iterable {
         ast::Expr::RefExpr(r) => r,
         _ => return None,
@@ -118,7 +127,10 @@ fn is_ref_and_impls_iter_method(sema: &hir::Semantics<'_, ide_db::RootDatabase>,
 }
 
 /// Whether iterable implements core::Iterator
-fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
+fn impls_core_iter(
+    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
+    iterable: &ast::Expr,
+) -> bool {
     (|| {
         let it_typ = sema.type_of_expr(iterable)?.adjusted();
 
@@ -132,7 +144,10 @@ fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &a
     .unwrap_or(false)
 }
 
-fn validate_method_call_expr(ctx: &AssistContext<'_>, expr: ast::MethodCallExpr) -> Option<(ast::Expr, ast::Expr)> {
+fn validate_method_call_expr(
+    ctx: &AssistContext<'_>,
+    expr: ast::MethodCallExpr,
+) -> Option<(ast::Expr, ast::Expr)> {
     let name_ref = expr.name_ref()?;
     if !name_ref.syntax().text_range().contains_range(ctx.selection_trimmed()) {
         cov_mark::hit!(test_for_each_not_applicable_invalid_cursor_pos);

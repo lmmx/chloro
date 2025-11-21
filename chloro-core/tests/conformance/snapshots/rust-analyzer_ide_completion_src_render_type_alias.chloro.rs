@@ -6,17 +6,27 @@ use syntax::{SmolStr, ToSmolStr};
 
 use crate::{item::CompletionItem, render::RenderContext};
 
-pub(crate) fn render_type_alias(ctx: RenderContext<'_>, type_alias: hir::TypeAlias) -> Option<CompletionItem> {
+pub(crate) fn render_type_alias(
+    ctx: RenderContext<'_>,
+    type_alias: hir::TypeAlias,
+) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_type_alias").entered();
     render(ctx, type_alias, false)
 }
 
-pub(crate) fn render_type_alias_with_eq(ctx: RenderContext<'_>, type_alias: hir::TypeAlias) -> Option<CompletionItem> {
+pub(crate) fn render_type_alias_with_eq(
+    ctx: RenderContext<'_>,
+    type_alias: hir::TypeAlias,
+) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_type_alias_with_eq").entered();
     render(ctx, type_alias, true)
 }
 
-fn render(ctx: RenderContext<'_>, type_alias: hir::TypeAlias, with_eq: bool) -> Option<CompletionItem> {
+fn render(
+    ctx: RenderContext<'_>,
+    type_alias: hir::TypeAlias,
+    with_eq: bool,
+) -> Option<CompletionItem> {
     let db = ctx.db();
     let name = type_alias.name(db);
     let (name, escaped_name) = if with_eq {

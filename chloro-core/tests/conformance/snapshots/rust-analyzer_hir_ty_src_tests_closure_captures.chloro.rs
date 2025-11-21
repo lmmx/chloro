@@ -14,7 +14,10 @@ use crate::{
 };
 use super::{setup_tracing, visit_module};
 
-fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn check_closure_captures(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(ra_fixture);
     crate::attach_db(&db, || {

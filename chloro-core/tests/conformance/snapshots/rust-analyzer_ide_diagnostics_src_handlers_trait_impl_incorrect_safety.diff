@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3077 bytes
-Chloro size:   2957 bytes
+Chloro size:   2968 bytes
 Rustfmt size:  3122 bytes
 
 ✗ Outputs DIFFER
@@ -17,14 +17,9 @@ Rustfmt size:  3122 bytes
 -// Diagnostic: trait-impl-incorrect-safety
 -//
 -// Diagnoses incorrect safety annotations of trait impls.
--pub(crate) fn trait_impl_incorrect_safety(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TraitImplIncorrectSafety,
--) -> Diagnostic {
-+pub(crate) fn trait_impl_incorrect_safety(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplIncorrectSafety) -> Diagnostic {
-     Diagnostic::new(
-         DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
-         if d.should_be_safe {
+ pub(crate) fn trait_impl_incorrect_safety(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::TraitImplIncorrectSafety,
          },
          adjusted_display_range::<ast::Impl>(
              ctx,

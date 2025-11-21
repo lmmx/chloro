@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::get_methods};
 
-pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn sort_items(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if ctx.has_empty_selection() {
         cov_mark::hit!(not_applicable_if_no_selection);
         return None;
@@ -34,10 +37,22 @@ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     }
 }
 
-fn add_rewrite<T: AstNode>(&mut self, label: &str, old: Vec<T>, new: Vec<T>, target: &SyntaxNode) -> Option<()>;
+fn add_rewrite<T: AstNode>(
+    &mut self,
+    label: &str,
+    old: Vec<T>,
+    new: Vec<T>,
+    target: &SyntaxNode,
+) -> Option<()>;
 
 impl AddRewrite for Assists {
-    fn add_rewrite<T: AstNode>(&mut self, label: &str, old: Vec<T>, new: Vec<T>, target: &SyntaxNode) -> Option<()> {
+    fn add_rewrite<T: AstNode>(
+        &mut self,
+        label: &str,
+        old: Vec<T>,
+        new: Vec<T>,
+        target: &SyntaxNode,
+    ) -> Option<()> {
         self.add(AssistId::refactor_rewrite("sort_items"), label, target.text_range(), |builder| {
             let mut editor = builder.make_editor(target);
 
@@ -50,7 +65,10 @@ impl AddRewrite for Assists {
     }
 }
 
-fn add_sort_field_list_assist(acc: &mut Assists, field_list: Option<ast::FieldList>) -> Option<()> {
+fn add_sort_field_list_assist(
+    acc: &mut Assists,
+    field_list: Option<ast::FieldList>,
+) -> Option<()> {
     match field_list {
         Some(ast::FieldList::RecordFieldList(it)) => add_sort_fields_assist(acc, it),
         _ => {
@@ -60,7 +78,11 @@ fn add_sort_field_list_assist(acc: &mut Assists, field_list: Option<ast::FieldLi
     }
 }
 
-fn add_sort_methods_assist(acc: &mut Assists, ctx: &AssistContext<'_>, item_list: ast::AssocItemList) -> Option<()> {
+fn add_sort_methods_assist(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    item_list: ast::AssocItemList,
+) -> Option<()> {
     let selection = ctx.selection_trimmed();
     // ignore assist if the selection intersects with an associated item.
     if item_list.assoc_items().any(|item| item.syntax().text_range().intersect(selection).is_some())
@@ -76,7 +98,10 @@ fn add_sort_methods_assist(acc: &mut Assists, ctx: &AssistContext<'_>, item_list
     acc.add_rewrite("Sort methods alphabetically", methods, sorted, item_list.syntax())
 }
 
-fn add_sort_fields_assist(acc: &mut Assists, record_field_list: ast::RecordFieldList) -> Option<()> {
+fn add_sort_fields_assist(
+    acc: &mut Assists,
+    record_field_list: ast::RecordFieldList,
+) -> Option<()> {
     let fields: Vec<_> = record_field_list.fields().collect();
     let sorted = sort_by_name(&fields);
     if fields == sorted {
@@ -86,7 +111,10 @@ fn add_sort_fields_assist(acc: &mut Assists, record_field_list: ast::RecordField
     acc.add_rewrite("Sort fields alphabetically", fields, sorted, record_field_list.syntax())
 }
 
-fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
+fn add_sort_variants_assist(
+    acc: &mut Assists,
+    variant_list: ast::VariantList,
+) -> Option<()> {
     let variants: Vec<_> = variant_list.variants().collect();
     let sorted = sort_by_name(&variants);
     if variants == sorted {

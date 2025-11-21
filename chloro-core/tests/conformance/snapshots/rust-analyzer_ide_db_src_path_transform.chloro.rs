@@ -63,7 +63,12 @@ pub struct PathTransform<'a> {
 }
 
 impl<'a> PathTransform<'a> {
-    pub fn trait_impl(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, trait_: hir::Trait, impl_: ast::Impl) -> PathTransform<'a> {
+    pub fn trait_impl(
+        target_scope: &'a SemanticsScope<'a>,
+        source_scope: &'a SemanticsScope<'a>,
+        trait_: hir::Trait,
+        impl_: ast::Impl,
+    ) -> PathTransform<'a> {
         PathTransform {
             source_scope,
             target_scope,
@@ -72,7 +77,12 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    pub fn function_call(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, function: hir::Function, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+    pub fn function_call(
+        target_scope: &'a SemanticsScope<'a>,
+        source_scope: &'a SemanticsScope<'a>,
+        function: hir::Function,
+        generic_arg_list: ast::GenericArgList,
+    ) -> PathTransform<'a> {
         PathTransform {
             source_scope,
             target_scope,
@@ -81,7 +91,12 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    pub fn impl_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, impl_: hir::Impl, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+    pub fn impl_transformation(
+        target_scope: &'a SemanticsScope<'a>,
+        source_scope: &'a SemanticsScope<'a>,
+        impl_: hir::Impl,
+        generic_arg_list: ast::GenericArgList,
+    ) -> PathTransform<'a> {
         PathTransform {
             source_scope,
             target_scope,
@@ -90,7 +105,12 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    pub fn adt_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, adt: hir::Adt, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+    pub fn adt_transformation(
+        target_scope: &'a SemanticsScope<'a>,
+        source_scope: &'a SemanticsScope<'a>,
+        adt: hir::Adt,
+        generic_arg_list: ast::GenericArgList,
+    ) -> PathTransform<'a> {
         PathTransform {
             source_scope,
             target_scope,
@@ -99,7 +119,10 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    pub fn generic_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>) -> PathTransform<'a> {
+    pub fn generic_transformation(
+        target_scope: &'a SemanticsScope<'a>,
+        source_scope: &'a SemanticsScope<'a>,
+    ) -> PathTransform<'a> {
         PathTransform {
             source_scope,
             target_scope,
@@ -109,17 +132,26 @@ impl<'a> PathTransform<'a> {
     }
 
     #[must_use]
-    pub fn apply(&self, syntax: &SyntaxNode) -> SyntaxNode {
+    pub fn apply(
+        &self,
+        syntax: &SyntaxNode,
+    ) -> SyntaxNode {
         self.build_ctx().apply(syntax)
     }
 
     #[must_use]
-    pub fn apply_all<'b>(&self, nodes: impl IntoIterator<Item = &'b SyntaxNode>) -> Vec<SyntaxNode> {
+    pub fn apply_all<'b>(
+        &self,
+        nodes: impl IntoIterator<Item = &'b SyntaxNode>,
+    ) -> Vec<SyntaxNode> {
         let ctx = self.build_ctx();
         nodes.into_iter().map(|node| ctx.apply(&node.clone())).collect()
     }
 
-    fn prettify_target_node(&self, node: SyntaxNode) -> SyntaxNode {
+    fn prettify_target_node(
+        &self,
+        node: SyntaxNode,
+    ) -> SyntaxNode {
         match self.target_scope.file_id() {
             HirFileId::FileId(_) => node,
             HirFileId::MacroFile(file_id) => {
@@ -134,7 +166,10 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    fn prettify_target_ast<N: AstNode>(&self, node: N) -> N {
+    fn prettify_target_ast<N: AstNode>(
+        &self,
+        node: N,
+    ) -> N {
         N::cast(self.prettify_target_node(node.syntax().clone())).unwrap()
     }
 
@@ -250,7 +285,10 @@ fn preorder_rev(item: &SyntaxNode) -> impl Iterator<Item = SyntaxNode> {
 }
 
 impl Ctx<'_> {
-    fn apply(&self, item: &SyntaxNode) -> SyntaxNode {
+    fn apply(
+        &self,
+        item: &SyntaxNode,
+    ) -> SyntaxNode {
         // `transform_path` may update a node's parent and that would break the
         // tree traversal. Thus all paths in the tree are collected into a vec
         // so that such operation is safe.
@@ -265,7 +303,10 @@ impl Ctx<'_> {
         editor.finish().new_root().clone()
     }
 
-    fn transform_default_values(&mut self, defaulted_params: Vec<DefaultedParam>) {
+    fn transform_default_values(
+        &mut self,
+        defaulted_params: Vec<DefaultedParam>,
+    ) {
         // By now the default values are simply copied from where they are declared
         // and should be transformed. As any value is allowed to refer to previous
         // generic (both type and const) parameters, they should be all iterated left-to-right.
@@ -289,7 +330,10 @@ impl Ctx<'_> {
         }
     }
 
-    fn transform_path(&self, path: &SyntaxNode) -> SyntaxNode {
+    fn transform_path(
+        &self,
+        path: &SyntaxNode,
+    ) -> SyntaxNode {
         fn find_child_paths_and_ident_pats(
             root_path: &SyntaxNode,
         ) -> Vec<Either<ast::Path, ast::IdentPat>> {
@@ -321,14 +365,22 @@ impl Ctx<'_> {
         editor.finish().new_root().clone()
     }
 
-    fn transform_path_or_ident_pat(&self, editor: &mut SyntaxEditor, item: &Either<ast::Path, ast::IdentPat>) -> Option<()> {
+    fn transform_path_or_ident_pat(
+        &self,
+        editor: &mut SyntaxEditor,
+        item: &Either<ast::Path, ast::IdentPat>,
+    ) -> Option<()> {
         match item {
             Either::Left(path) => self.transform_path_(editor, path),
             Either::Right(ident_pat) => self.transform_ident_pat(editor, ident_pat),
         }
     }
 
-    fn transform_path_(&self, editor: &mut SyntaxEditor, path: &ast::Path) -> Option<()> {
+    fn transform_path_(
+        &self,
+        editor: &mut SyntaxEditor,
+        path: &ast::Path,
+    ) -> Option<()> {
         if path.qualifier().is_some() {
             return None;
         }
@@ -501,7 +553,11 @@ impl Ctx<'_> {
         Some(())
     }
 
-    fn transform_ident_pat(&self, editor: &mut SyntaxEditor, ident_pat: &ast::IdentPat) -> Option<()> {
+    fn transform_ident_pat(
+        &self,
+        editor: &mut SyntaxEditor,
+        ident_pat: &ast::IdentPat,
+    ) -> Option<()> {
         let name = ident_pat.name()?;
         let temp_path = make::path_from_text(&name.text());
         let resolution = self.source_scope.speculative_resolve(&temp_path)?;
@@ -552,7 +608,11 @@ fn get_type_args_from_arg_list(generic_arg_list: ast::GenericArgList) -> Option<
     Some(result)
 }
 
-fn find_trait_for_assoc_item(scope: &SemanticsScope<'_>, type_param: hir::TypeParam, assoc_item: ast::NameRef) -> Option<hir::Trait> {
+fn find_trait_for_assoc_item(
+    scope: &SemanticsScope<'_>,
+    type_param: hir::TypeParam,
+    assoc_item: ast::NameRef,
+) -> Option<hir::Trait> {
     let db = scope.db;
     let trait_bounds = type_param.trait_bounds(db);
     let assoc_item_name = assoc_item.text();

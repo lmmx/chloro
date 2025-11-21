@@ -16,7 +16,11 @@ use crate::{
 };
 
 /// Completes lifetimes.
-pub(crate) fn complete_lifetime(acc: &mut Completions, ctx: &CompletionContext<'_>, lifetime_ctx: &LifetimeContext) {
+pub(crate) fn complete_lifetime(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    lifetime_ctx: &LifetimeContext,
+) {
     let &LifetimeContext { kind: LifetimeKind::Lifetime { in_lifetime_param_bound, def }, .. } =
         lifetime_ctx
     else {
@@ -38,7 +42,11 @@ pub(crate) fn complete_lifetime(acc: &mut Completions, ctx: &CompletionContext<'
 }
 
 /// Completes labels.
-pub(crate) fn complete_label(acc: &mut Completions, ctx: &CompletionContext<'_>, lifetime_ctx: &LifetimeContext) {
+pub(crate) fn complete_label(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    lifetime_ctx: &LifetimeContext,
+) {
     if !matches!(lifetime_ctx, LifetimeContext { kind: LifetimeKind::LabelRef, .. }) {
         return;
     }

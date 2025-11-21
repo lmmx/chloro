@@ -49,7 +49,11 @@ pub enum LineFormat {
     Indentation,
 }
 
-fn item_name<Id, Loc>(db: &dyn DefDatabase, id: Id, default: &str) -> String
+fn item_name<Id, Loc>(
+    db: &dyn DefDatabase,
+    id: Id,
+    default: &str,
+) -> String
 where
     Id: Lookup<Database = dyn DefDatabase, Data = Loc>,
     Loc: HasSource,
@@ -59,7 +63,12 @@ where
     source.value.name().map_or_else(|| default.to_owned(), |name| name.to_string())
 }
 
-pub fn print_body_hir(db: &dyn DefDatabase, body: &Body, owner: DefWithBodyId, edition: Edition) -> String {
+pub fn print_body_hir(
+    db: &dyn DefDatabase,
+    body: &Body,
+    owner: DefWithBodyId,
+    edition: Edition,
+) -> String {
     let header = match owner {
         DefWithBodyId::FunctionId(it) => format!("fn {}", item_name(db, it, "<missing>")),
         DefWithBodyId::StaticId(it) => format!("static {} = ", item_name(db, it, "<missing>")),
@@ -102,7 +111,11 @@ pub fn print_body_hir(db: &dyn DefDatabase, body: &Body, owner: DefWithBodyId, e
     p.buf
 }
 
-pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: Edition) -> String {
+pub fn print_variant_body_hir(
+    db: &dyn DefDatabase,
+    owner: VariantId,
+    edition: Edition,
+) -> String {
     let header = match owner {
         VariantId::StructId(it) => format!("struct {}", item_name(db, it, "<missing>")),
         VariantId::EnumVariantId(it) => format!(
@@ -150,7 +163,11 @@ pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: E
     p.buf
 }
 
-pub fn print_signature(db: &dyn DefDatabase, owner: GenericDefId, edition: Edition) -> String {
+pub fn print_signature(
+    db: &dyn DefDatabase,
+    owner: GenericDefId,
+    edition: Edition,
+) -> String {
     match owner {
         GenericDefId::AdtId(id) => match id {
             AdtId::StructId(id) => {
@@ -176,7 +193,12 @@ pub fn print_signature(db: &dyn DefDatabase, owner: GenericDefId, edition: Editi
     }
 }
 
-pub fn print_path(db: &dyn DefDatabase, store: &ExpressionStore, path: &Path, edition: Edition) -> String {
+pub fn print_path(
+    db: &dyn DefDatabase,
+    store: &ExpressionStore,
+    path: &Path,
+    edition: Edition,
+) -> String {
     let mut p = Printer {
         db,
         store,
@@ -189,7 +211,11 @@ pub fn print_path(db: &dyn DefDatabase, store: &ExpressionStore, path: &Path, ed
     p.buf
 }
 
-pub fn print_struct(db: &dyn DefDatabase, StructSignature { name, generic_params, store, flags, shape, repr }: &StructSignature, edition: Edition) -> String {
+pub fn print_struct(
+    db: &dyn DefDatabase,
+    StructSignature { name, generic_params, store, flags, shape, repr }: &StructSignature,
+    edition: Edition,
+) -> String {
     let mut p = Printer {
         db,
         store,
@@ -229,7 +255,9 @@ pub fn print_struct(db: &dyn DefDatabase, StructSignature { name, generic_params
     p.buf
 }
 
-pub fn print_function(db: &dyn DefDatabase, FunctionSignature {
+pub fn print_function(
+    db: &dyn DefDatabase,
+    FunctionSignature {
         name,
         generic_params,
         store,
@@ -238,7 +266,9 @@ pub fn print_function(db: &dyn DefDatabase, FunctionSignature {
         abi,
         flags,
         legacy_const_generics_indices,
-    }: &FunctionSignature, edition: Edition) -> String {
+    }: &FunctionSignature,
+    edition: Edition,
+) -> String {
     let mut p = Printer {
         db,
         store,
@@ -285,7 +315,11 @@ pub fn print_function(db: &dyn DefDatabase, FunctionSignature {
     p.buf
 }
 
-fn print_where_clauses(db: &dyn DefDatabase, generic_params: &GenericParams, p: &mut Printer<'_>) {
+fn print_where_clauses(
+    db: &dyn DefDatabase,
+    generic_params: &GenericParams,
+    p: &mut Printer<'_>,
+) {
     if !generic_params.where_predicates.is_empty() {
         w!(p, "\nwhere\n");
         p.indented(|p| {
@@ -324,7 +358,11 @@ fn print_where_clauses(db: &dyn DefDatabase, generic_params: &GenericParams, p: 
     }
 }
 
-fn print_generic_params(db: &dyn DefDatabase, generic_params: &GenericParams, p: &mut Printer<'_>) {
+fn print_generic_params(
+    db: &dyn DefDatabase,
+    generic_params: &GenericParams,
+    p: &mut Printer<'_>,
+) {
     if !generic_params.is_empty() {
         w!(p, "<");
         let mut first = true;
@@ -363,7 +401,13 @@ fn print_generic_params(db: &dyn DefDatabase, generic_params: &GenericParams, p:
     }
 }
 
-pub fn print_expr_hir(db: &dyn DefDatabase, store: &ExpressionStore, _owner: DefWithBodyId, expr: ExprId, edition: Edition) -> String {
+pub fn print_expr_hir(
+    db: &dyn DefDatabase,
+    store: &ExpressionStore,
+    _owner: DefWithBodyId,
+    expr: ExprId,
+    edition: Edition,
+) -> String {
     let mut p = Printer {
         db,
         store,
@@ -376,7 +420,14 @@ pub fn print_expr_hir(db: &dyn DefDatabase, store: &ExpressionStore, _owner: Def
     p.buf
 }
 
-pub fn print_pat_hir(db: &dyn DefDatabase, store: &ExpressionStore, _owner: DefWithBodyId, pat: PatId, oneline: bool, edition: Edition) -> String {
+pub fn print_pat_hir(
+    db: &dyn DefDatabase,
+    store: &ExpressionStore,
+    _owner: DefWithBodyId,
+    pat: PatId,
+    oneline: bool,
+    edition: Edition,
+) -> String {
     let mut p = Printer {
         db,
         store,
@@ -399,7 +450,10 @@ struct Printer<'a> {
 }
 
 impl Write for Printer<'_> {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
+    fn write_str(
+        &mut self,
+        s: &str,
+    ) -> fmt::Result {
         for line in s.split_inclusive('\n') {
             if matches!(self.line_format, LineFormat::Indentation) {
                 match self.buf.chars().rev().find(|ch| *ch != ' ') {
@@ -424,7 +478,10 @@ impl Write for Printer<'_> {
 }
 
 impl Printer<'_> {
-    fn indented(&mut self, f: impl FnOnce(&mut Self)) {
+    fn indented(
+        &mut self,
+        f: impl FnOnce(&mut Self),
+    ) {
         self.indent_level += 1;
         wln!(self);
         f(self);
@@ -460,7 +517,10 @@ impl Printer<'_> {
         }
     }
 
-    fn print_expr(&mut self, expr: ExprId) {
+    fn print_expr(
+        &mut self,
+        expr: ExprId,
+    ) {
         let expr = &self.store[expr];
         match expr {
             Expr::Missing => w!(self, "�"),
@@ -781,7 +841,12 @@ impl Printer<'_> {
         }
     }
 
-    fn print_block(&mut self, label: Option<&str>, statements: &[Statement], tail: &Option<la_arena::Idx<Expr>>) {
+    fn print_block(
+        &mut self,
+        label: Option<&str>,
+        statements: &[Statement],
+        tail: &Option<la_arena::Idx<Expr>>,
+    ) {
         self.whitespace();
         if let Some(lbl) = label {
             w!(self, "{}", lbl);
@@ -801,7 +866,10 @@ impl Printer<'_> {
         w!(self, "}}");
     }
 
-    fn print_pat(&mut self, pat: PatId) {
+    fn print_pat(
+        &mut self,
+        pat: PatId,
+    ) {
         let pat = &self.store[pat];
         match pat {
             Pat::Missing => w!(self, "�"),
@@ -945,7 +1013,10 @@ impl Printer<'_> {
         }
     }
 
-    fn print_stmt(&mut self, stmt: &Statement) {
+    fn print_stmt(
+        &mut self,
+        stmt: &Statement,
+    ) {
         match stmt {
             Statement::Let { pat, type_ref, initializer, else_branch } => {
                 w!(self, "let ");
@@ -975,7 +1046,10 @@ impl Printer<'_> {
         }
     }
 
-    fn print_literal(&mut self, literal: &Literal) {
+    fn print_literal(
+        &mut self,
+        literal: &Literal,
+    ) {
         match literal {
             Literal::String(it) => w!(self, "{:?}", it),
             Literal::ByteString(it) => w!(self, "\"{}\"", it.escape_ascii()),
@@ -1003,7 +1077,10 @@ impl Printer<'_> {
         }
     }
 
-    fn print_binding(&mut self, id: BindingId) {
+    fn print_binding(
+        &mut self,
+        id: BindingId,
+    ) {
         let Binding { name, mode, .. } = &self.store.assert_expr_only().bindings[id];
         let mode = match mode {
             BindingAnnotation::Unannotated => "",
@@ -1014,7 +1091,10 @@ impl Printer<'_> {
         w!(self, "{}{}", mode, name.display(self.db, self.edition));
     }
 
-    fn print_path(&mut self, path: &Path) {
+    fn print_path(
+        &mut self,
+        path: &Path,
+    ) {
         if let Path::LangItem(it, s) = path {
             w!(self, "builtin#lang(");
             macro_rules! write_name {
@@ -1086,7 +1166,10 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_generic_args(&mut self, generics: &GenericArgs) {
+    pub(crate) fn print_generic_args(
+        &mut self,
+        generics: &GenericArgs,
+    ) {
         let mut first = true;
         let args = if generics.has_self_type {
             let (self_ty, args) = generics.args.split_first().unwrap();
@@ -1121,7 +1204,10 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_generic_arg(&mut self, arg: &GenericArg) {
+    pub(crate) fn print_generic_arg(
+        &mut self,
+        arg: &GenericArg,
+    ) {
         match arg {
             GenericArg::Type(ty) => self.print_type_ref(*ty),
             GenericArg::Const(ConstRef { expr }) => self.print_expr(*expr),
@@ -1129,7 +1215,10 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_type_param(&mut self, param: TypeParamId) {
+    pub(crate) fn print_type_param(
+        &mut self,
+        param: TypeParamId,
+    ) {
         let generic_params = self.db.generic_params(param.parent());
         match generic_params[param.local_id()].name() {
             Some(name) => w!(self, "{}", name.display(self.db, self.edition)),
@@ -1137,12 +1226,18 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_lifetime_param(&mut self, param: LifetimeParamId) {
+    pub(crate) fn print_lifetime_param(
+        &mut self,
+        param: LifetimeParamId,
+    ) {
         let generic_params = self.db.generic_params(param.parent);
         w!(self, "{}", generic_params[param.local_id].name.display(self.db, self.edition))
     }
 
-    pub(crate) fn print_lifetime_ref(&mut self, lt_ref: LifetimeRefId) {
+    pub(crate) fn print_lifetime_ref(
+        &mut self,
+        lt_ref: LifetimeRefId,
+    ) {
         match &self.store[lt_ref] {
             LifetimeRef::Static => w!(self, "'static"),
             LifetimeRef::Named(lt) => {
@@ -1154,7 +1249,10 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_type_ref(&mut self, type_ref: TypeRefId) {
+    pub(crate) fn print_type_ref(
+        &mut self,
+        type_ref: TypeRefId,
+    ) {
         // FIXME: deduplicate with `HirDisplay` impl
         match &self.store[type_ref] {
             TypeRef::Never => w!(self, "!"),
@@ -1243,7 +1341,10 @@ impl Printer<'_> {
         }
     }
 
-    pub(crate) fn print_type_bounds(&mut self, bounds: &[TypeBound]) {
+    pub(crate) fn print_type_bounds(
+        &mut self,
+        bounds: &[TypeBound],
+    ) {
         for (i, bound) in bounds.iter().enumerate() {
             if i != 0 {
                 w!(self, " + ");

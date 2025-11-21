@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   3929 bytes
+Chloro size:   4100 bytes
 Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
@@ -34,15 +34,17 @@ Rustfmt size:  4556 bytes
  #[derive(Debug, Default, Clone)]
  pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
  
+ impl<'db> Diagnostics<'db> {
+-    pub(super) fn push(&self, diagnostic: InferenceDiagnostic<'db>) {
++    pub(super) fn push(
++        &self,
++        diagnostic: InferenceDiagnostic<'db>,
++    ) {
          self.0.borrow_mut().push(diagnostic);
      }
  
--    fn push_ty_diagnostics(
--        &self,
--        source: InferenceTyDiagnosticSource,
--        diagnostics: Vec<TyLoweringDiagnostic>,
--    ) {
-+    fn push_ty_diagnostics(&self, source: InferenceTyDiagnosticSource, diagnostics: Vec<TyLoweringDiagnostic>) {
+         diagnostics: Vec<TyLoweringDiagnostic>,
+     ) {
          self.0.borrow_mut().extend(
 -            diagnostics
 -                .into_iter()
@@ -51,31 +53,8 @@ Rustfmt size:  4556 bytes
          );
      }
  
- 
- impl<'db, 'a> InferenceTyLoweringContext<'db, 'a> {
-     #[inline]
--    pub(super) fn new(
--        db: &'db dyn HirDatabase,
--        resolver: &'a Resolver<'db>,
--        store: &'a ExpressionStore,
--        diagnostics: &'a Diagnostics<'db>,
--        source: InferenceTyDiagnosticSource,
--        generic_def: GenericDefId,
--        lifetime_elision: LifetimeElisionKind<'db>,
--    ) -> Self {
-+    pub(super) fn new(db: &'db dyn HirDatabase, resolver: &'a Resolver<'db>, store: &'a ExpressionStore, diagnostics: &'a Diagnostics<'db>, source: InferenceTyDiagnosticSource, generic_def: GenericDefId, lifetime_elision: LifetimeElisionKind<'db>) -> Self {
-         Self {
-             ctx: TyLoweringContext::new(db, resolver, store, generic_def, lifetime_elision),
-             diagnostics,
-     }
- 
-     #[inline]
--    pub(super) fn at_path<'b>(
--        &'b mut self,
--        path: &'b Path,
--        node: ExprOrPatId,
--    ) -> PathLoweringContext<'b, 'a, 'db> {
-+    pub(super) fn at_path<'b>(&'b mut self, path: &'b Path, node: ExprOrPatId) -> PathLoweringContext<'b, 'a, 'db> {
+         node: ExprOrPatId,
+     ) -> PathLoweringContext<'b, 'a, 'db> {
          let on_diagnostic = PathDiagnosticCallback {
 -            data: Either::Right(PathDiagnosticCallbackData {
 -                diagnostics: self.diagnostics,
@@ -93,14 +72,3 @@ Rustfmt size:  4556 bytes
              },
          };
          PathLoweringContext::new(&mut self.ctx, on_diagnostic, path)
-     }
- 
-     #[inline]
--    pub(super) fn at_path_forget_diagnostics<'b>(
--        &'b mut self,
--        path: &'b Path,
--    ) -> PathLoweringContext<'b, 'a, 'db> {
-+    pub(super) fn at_path_forget_diagnostics<'b>(&'b mut self, path: &'b Path) -> PathLoweringContext<'b, 'a, 'db> {
-         let on_diagnostic = PathDiagnosticCallback {
-             data: Either::Right(PathDiagnosticCallbackData {
-                 diagnostics: self.diagnostics,

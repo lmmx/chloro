@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27673 bytes
-Chloro size:   27361 bytes
+Chloro size:   27478 bytes
 Rustfmt size:  28292 bytes
 
 ✗ Outputs DIFFER
@@ -35,7 +35,11 @@ Rustfmt size:  28292 bytes
 -//
 -// This diagnostic is triggered when the type of an expression or pattern does not match
 -// the expected type.
- pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Diagnostic {
+-pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Diagnostic {
++pub(crate) fn type_mismatch(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::TypeMismatch<'_>,
++) -> Diagnostic {
      let display_range = adjusted_display_range(ctx, d.expr_or_pat, &|node| {
 -        let Either::Left(expr) = node else {
 -            return None;
@@ -44,8 +48,14 @@ Rustfmt size:  28292 bytes
          let salient_token_range = match expr {
              ast::Expr::IfExpr(it) => it.if_token()?.text_range(),
              ast::Expr::LoopExpr(it) => it.loop_token()?.text_range(),
+     .with_fixes(fixes(ctx, d))
+ }
  
- fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
+-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
++fn fixes(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::TypeMismatch<'_>,
++) -> Option<Vec<Assist>> {
      let mut fixes = Vec::new();
 -
      if let Some(expr_ptr) = d.expr_or_pat.value.cast::<ast::Expr>() {
@@ -69,17 +79,14 @@ Rustfmt size:  28292 bytes
 +    if fixes.is_empty() { None } else { Some(fixes) }
  }
  
--fn add_reference(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TypeMismatch<'_>,
--    expr_ptr: &InFile<AstPtr<ast::Expr>>,
--    acc: &mut Vec<Assist>,
--) -> Option<()> {
+ fn add_reference(
+     expr_ptr: &InFile<AstPtr<ast::Expr>>,
+     acc: &mut Vec<Assist>,
+ ) -> Option<()> {
 -    let range = ctx
 -        .sema
 -        .diagnostics_display_range((*expr_ptr).map(|it| it.into()));
 -
-+fn add_reference(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
 +    let range = ctx.sema.diagnostics_display_range((*expr_ptr).map(|it| it.into()));
      let (_, mutability) = d.expected.as_reference()?;
      let actual_with_ref = d.actual.add_reference(mutability);
@@ -101,14 +108,6 @@ Rustfmt size:  28292 bytes
      Some(())
  }
  
--fn add_missing_ok_or_some(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TypeMismatch<'_>,
--    expr_ptr: &InFile<AstPtr<ast::Expr>>,
--    acc: &mut Vec<Assist>,
--) -> Option<()> {
-+fn add_missing_ok_or_some(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
-     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
      let expr = expr_ptr.value.to_node(&root);
      let expr_range = expr.syntax().text_range();
      let scope = ctx.sema.scope(expr.syntax())?;
@@ -190,17 +189,6 @@ Rustfmt size:  28292 bytes
          builder.finish(),
      );
      let name = format!("Wrap in {variant_name}");
-     Some(())
- }
- 
--fn remove_unnecessary_wrapper(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TypeMismatch<'_>,
--    expr_ptr: &InFile<AstPtr<ast::Expr>>,
--    acc: &mut Vec<Assist>,
--) -> Option<()> {
-+fn remove_unnecessary_wrapper(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
-     let db = ctx.sema.db;
      let root = db.parse_or_expand(expr_ptr.file_id);
      let expr = expr_ptr.value.to_node(&root);
      let expr = ctx.sema.original_ast_node(expr)?;
@@ -242,19 +230,6 @@ Rustfmt size:  28292 bytes
      builder.add_file_edits(file_id.file_id(ctx.sema.db), editor);
      let name = format!("Remove unnecessary {}() wrapper", variant.name(db).as_str());
      acc.push(fix(
-     Some(())
- }
- 
--fn remove_semicolon(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TypeMismatch<'_>,
--    expr_ptr: &InFile<AstPtr<ast::Expr>>,
--    acc: &mut Vec<Assist>,
--) -> Option<()> {
-+fn remove_semicolon(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
-     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
-     let expr = expr_ptr.value.to_node(&root);
-     if !d.actual.is_unit() {
          return None;
      }
      let block = BlockExpr::cast(expr.syntax().clone())?;
@@ -290,16 +265,6 @@ Rustfmt size:  28292 bytes
      Some(())
  }
  
--fn str_ref_to_owned(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TypeMismatch<'_>,
--    expr_ptr: &InFile<AstPtr<ast::Expr>>,
--    acc: &mut Vec<Assist>,
--) -> Option<()> {
-+fn str_ref_to_owned(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
-     let expected = d.expected.display(ctx.sema.db, ctx.display_target);
-     // FIXME do this properly
-     let is_applicable = d.actual.strip_reference().is_str() && expected.to_string() == "String";
      if !is_applicable {
          return None;
      }

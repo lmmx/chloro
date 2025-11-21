@@ -7,7 +7,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::string_suffix};
 
-pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_string_with_char(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(STRING).and_then(ast::String::cast)?;
     let value = token.value().ok()?;
     let target = token.syntax().text_range();
@@ -32,7 +35,10 @@ pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_
     )
 }
 
-pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_char_with_string(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(CHAR)?;
     let target = token.text_range();
     acc.add(

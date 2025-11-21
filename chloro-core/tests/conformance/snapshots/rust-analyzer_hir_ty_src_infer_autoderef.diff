@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1595 bytes
+Chloro size:   1618 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
@@ -23,6 +23,14 @@ Rustfmt size:  1772 bytes
  };
  
  impl<'db> InferenceTable<'db> {
+-    pub(crate) fn autoderef(&mut self, base_ty: Ty<'db>) -> Autoderef<'_, 'db> {
++    pub(crate) fn autoderef(
++        &mut self,
++        base_ty: Ty<'db>,
++    ) -> Autoderef<'_, 'db> {
+         Autoderef::new(self, base_ty)
+     }
+ }
      pub(crate) fn adjust_steps_as_infer_ok(&mut self) -> InferOk<'db, Vec<Adjustment<'db>>> {
          let steps = self.steps();
          if steps.is_empty() {

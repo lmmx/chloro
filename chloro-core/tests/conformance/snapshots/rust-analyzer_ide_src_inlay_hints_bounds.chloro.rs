@@ -10,7 +10,12 @@ use crate::{
     TryToNav,
 };
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, params: ast::GenericParamList) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    params: ast::GenericParamList,
+) -> Option<()> {
     if !config.sized_bound {
         return None;
     }

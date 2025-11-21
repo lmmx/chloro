@@ -9,7 +9,10 @@ use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilde
 
 
 
-pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn introduce_named_lifetime(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
     // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo
     let lifetime =
@@ -25,7 +28,12 @@ pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_
 }
 
 /// Generate the assist for the fn def case
-fn generate_fn_def_assist(acc: &mut Assists, fn_def: ast::Fn, lifetime_loc: TextRange, lifetime: ast::Lifetime) -> Option<()> {
+fn generate_fn_def_assist(
+    acc: &mut Assists,
+    fn_def: ast::Fn,
+    lifetime_loc: TextRange,
+    lifetime: ast::Lifetime,
+) -> Option<()> {
     let param_list: ast::ParamList = fn_def.param_list()?;
     let new_lifetime_param = generate_unique_lifetime_param_name(fn_def.generic_param_list())?;
     let self_param =
@@ -70,7 +78,12 @@ fn generate_fn_def_assist(acc: &mut Assists, fn_def: ast::Fn, lifetime_loc: Text
 }
 
 /// Generate the assist for the impl def case
-fn generate_impl_def_assist(acc: &mut Assists, impl_def: ast::Impl, lifetime_loc: TextRange, lifetime: ast::Lifetime) -> Option<()> {
+fn generate_impl_def_assist(
+    acc: &mut Assists,
+    impl_def: ast::Impl,
+    lifetime_loc: TextRange,
+    lifetime: ast::Lifetime,
+) -> Option<()> {
     let new_lifetime_param = generate_unique_lifetime_param_name(impl_def.generic_param_list())?;
     acc.add(AssistId::refactor(ASSIST_NAME), ASSIST_LABEL, lifetime_loc, |builder| {
         let impl_def = builder.make_mut(impl_def);
@@ -85,7 +98,9 @@ fn generate_impl_def_assist(acc: &mut Assists, impl_def: ast::Impl, lifetime_loc
 
 /// Given a type parameter list, generate a unique lifetime parameter name
 /// which is not in the list
-fn generate_unique_lifetime_param_name(existing_type_param_list: Option<ast::GenericParamList>) -> Option<ast::Lifetime> {
+fn generate_unique_lifetime_param_name(
+    existing_type_param_list: Option<ast::GenericParamList>,
+) -> Option<ast::Lifetime> {
     match existing_type_param_list {
         Some(type_params) => {
             let used_lifetime_params: FxHashSet<_> =
@@ -103,7 +118,10 @@ enum NeedsLifetime {
 }
 
 impl NeedsLifetime {
-    fn make_mut(self, builder: &mut SourceChangeBuilder) -> Self {
+    fn make_mut(
+        self,
+        builder: &mut SourceChangeBuilder,
+    ) -> Self {
         match self {
             Self::SelfParam(it) => Self::SelfParam(builder.make_mut(it)),
             Self::RefType(it) => Self::RefType(builder.make_mut(it)),

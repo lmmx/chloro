@@ -19,7 +19,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};
 
-pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn apply_demorgan(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let mut bin_expr = if let Some(not) = ctx.find_token_syntax_at_offset(T![!])
         && let Some(NodeOrToken::Node(next)) = not.next_sibling_or_token()
         && let Some(paren) = ast::ParenExpr::cast(next)
@@ -134,7 +137,10 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     )
 }
 
-pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn apply_demorgan_iterator(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let (name, arg_expr) = validate_method_call_expr(ctx, &method_call)?;
     let ast::Expr::ClosureExpr(closure_expr) = arg_expr else { return None };
@@ -189,7 +195,10 @@ pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>
 }
 
 /// Ensures that the method call is to `Iterator::all` or `Iterator::any`.
-fn validate_method_call_expr(ctx: &AssistContext<'_>, method_call: &ast::MethodCallExpr) -> Option<(ast::NameRef, ast::Expr)> {
+fn validate_method_call_expr(
+    ctx: &AssistContext<'_>,
+    method_call: &ast::MethodCallExpr,
+) -> Option<(ast::NameRef, ast::Expr)> {
     let name_ref = method_call.name_ref()?;
     if name_ref.text() != "all" && name_ref.text() != "any" {
         return None;
@@ -204,7 +213,11 @@ fn validate_method_call_expr(ctx: &AssistContext<'_>, method_call: &ast::MethodC
     it_type.impls_trait(sema.db, iter_trait, &[]).then_some((name_ref, arg_expr))
 }
 
-fn tail_cb_impl(editor: &mut SyntaxEditor, make: &SyntaxFactory, e: &ast::Expr) {
+fn tail_cb_impl(
+    editor: &mut SyntaxEditor,
+    make: &SyntaxFactory,
+    e: &ast::Expr,
+) {
     match e {
         ast::Expr::BreakExpr(break_expr) => {
             if let Some(break_expr_arg) = break_expr.expr() {
@@ -222,7 +235,10 @@ fn tail_cb_impl(editor: &mut SyntaxEditor, make: &SyntaxFactory, e: &ast::Expr) 
 }
 
 /// Add bang and parentheses to the expression.
-fn add_bang_paren(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
+fn add_bang_paren(
+    make: &SyntaxFactory,
+    expr: ast::Expr,
+) -> ast::Expr {
     make.expr_prefix(T![!], make.expr_paren(expr).into()).into()
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   12370 bytes
+Chloro size:   12450 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
@@ -32,18 +32,16 @@ Rustfmt size:  16896 bytes
      item::CompletionItem,
 -    Completions,
  };
--
--mod cfg;
++pub(crate) use self::derive::complete_derive_path;
+ 
+ mod cfg;
 -mod derive;
 -mod diagnostic;
 -mod lint;
 -mod macro_use;
 -mod repr;
--
- pub(crate) use self::derive::complete_derive_path;
  
-+mod cfg;
-+
+-pub(crate) use self::derive::complete_derive_path;
 +mod derive;
 +
 +mod diagnostic;
@@ -53,16 +51,10 @@ Rustfmt size:  16896 bytes
 +mod macro_use;
 +
 +mod repr;
-+
+ 
  /// Complete inputs to known builtin attributes as well as derive attributes
--pub(crate) fn complete_known_attribute_input(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    &colon_prefix: &bool,
--    fake_attribute_under_caret: &ast::Attr,
--    extern_crate: Option<&ast::ExternCrate>,
--) -> Option<()> {
-+pub(crate) fn complete_known_attribute_input(acc: &mut Completions, ctx: &CompletionContext<'_>, &colon_prefix: &bool, fake_attribute_under_caret: &ast::Attr, extern_crate: Option<&ast::ExternCrate>) -> Option<()> {
+ pub(crate) fn complete_known_attribute_input(
+ ) -> Option<()> {
      let attribute = fake_attribute_under_caret;
      let path = attribute.path()?;
 -    let segments = path
@@ -77,20 +69,16 @@ Rustfmt size:  16896 bytes
      match segments.as_slice() {
          ["repr"] => repr::complete_repr(acc, ctx, tt),
          ["feature"] => lint::complete_lint(
-     Some(())
- }
- 
--pub(crate) fn complete_attribute_path(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+     acc: &mut Completions,
+     ctx: &CompletionContext<'_>,
+     path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
 -    &AttrCtx {
 -        kind,
 -        annotated_item_kind,
 -        ref derive_helpers,
 -    }: &AttrCtx,
--) {
-+pub(crate) fn complete_attribute_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx) {
++    &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx,
+ ) {
      let is_inner = kind == AttrKind::Inner;
 -
      for (derive_helper, derive_name) in derive_helpers {
@@ -172,6 +160,15 @@ Rustfmt size:  16896 bytes
      }
  }
  
+         self.lookup.unwrap_or(self.label)
+     }
+ 
+-    const fn qualifiers(self, qualifiers: &'static [&'static str]) -> AttrCompletion {
++    const fn qualifiers(
++        self,
++        qualifiers: &'static [&'static str],
++    ) -> AttrCompletion {
+         AttrCompletion { qualifiers, ..self }
      }
  
      const fn prefer_inner(self) -> AttrCompletion {
@@ -183,11 +180,9 @@ Rustfmt size:  16896 bytes
      }
  }
  
--const fn attr(
--    label: &'static str,
--    lookup: Option<&'static str>,
--    snippet: Option<&'static str>,
--) -> AttrCompletion {
+     lookup: Option<&'static str>,
+     snippet: Option<&'static str>,
+ ) -> AttrCompletion {
 -    AttrCompletion {
 -        label,
 -        lookup,
@@ -195,7 +190,6 @@ Rustfmt size:  16896 bytes
 -        qualifiers: &[],
 -        prefer_inner: false,
 -    }
-+const fn attr(label: &'static str, lookup: Option<&'static str>, snippet: Option<&'static str>) -> AttrCompletion {
 +    AttrCompletion { label, lookup, snippet, qualifiers: &[], prefer_inner: false }
  }
  

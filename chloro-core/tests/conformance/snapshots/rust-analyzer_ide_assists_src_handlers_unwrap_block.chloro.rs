@@ -9,7 +9,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn unwrap_block(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let assist_id = AssistId::refactor_rewrite("unwrap_block");
     let assist_label = "Unwrap block";
     let l_curly_token = ctx.find_token_syntax_at_offset(T!['{'])?;
@@ -108,7 +111,10 @@ fn update_expr_string_without_newline(expr_string: String) -> String {
     update_expr_string_with_pat(expr_string, &[' '])
 }
 
-fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> String {
+fn update_expr_string_with_pat(
+    expr_str: String,
+    whitespace_pat: &[char],
+) -> String {
     // Remove leading whitespace, index to remove the leading '{',
     // then continue to remove leading whitespace.
     // We cannot assume the `{` is the first character because there are block modifiers

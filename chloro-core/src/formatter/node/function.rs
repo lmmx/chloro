@@ -59,26 +59,50 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     // Parameters
     if let Some(params) = func.param_list() {
+        let params_vec: Vec<_> = params
+            .params()
+            .map(|p| p.syntax().text().to_string())
+            .collect();
+
+        let has_self = params.self_param().is_some();
+        let is_single_line = params_vec.len() + if has_self { 1 } else { 0 } <= 1
+            && params.syntax().text().len() <= 60.into();
+
         buf.push('(');
 
-        let mut param_count = 0;
-
-        // Handle self parameter first
-        if let Some(self_param) = params.self_param() {
-            buf.push_str(&self_param.syntax().text().to_string());
-            param_count += 1;
-        }
-
-        // Then handle regular parameters
-        for param in params.params() {
-            if param_count > 0 {
-                buf.push_str(", ");
+        if is_single_line {
+            if let Some(self_param) = params.self_param() {
+                buf.push_str(&self_param.syntax().text().to_string());
+                if !params_vec.is_empty() {
+                    buf.push_str(", ");
+                }
             }
-            buf.push_str(&param.syntax().text().to_string());
-            param_count += 1;
-        }
+            for (i, p) in params_vec.iter().enumerate() {
+                if i > 0 {
+                    buf.push_str(", ");
+                }
+                buf.push_str(p);
+            }
+            buf.push(')');
+        } else {
+            buf.push('\n');
+            let inner_indent = indent + 4;
 
-        buf.push(')');
+            if let Some(self_param) = params.self_param() {
+                write_indent(buf, inner_indent);
+                buf.push_str(&self_param.syntax().text().to_string());
+                buf.push_str(",\n");
+            }
+
+            for p in params_vec {
+                write_indent(buf, inner_indent);
+                buf.push_str(&p);
+                buf.push_str(",\n");
+            }
+
+            write_indent(buf, indent);
+            buf.push(')');
+        }
     } else {
         buf.push_str("()");
     }

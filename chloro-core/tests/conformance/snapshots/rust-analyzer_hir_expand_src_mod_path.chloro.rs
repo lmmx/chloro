@@ -43,15 +43,25 @@ impl PathKind {
 }
 
 impl ModPath {
-    pub fn from_src(db: &dyn ExpandDatabase, path: ast::Path, span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext) -> Option<ModPath> {
+    pub fn from_src(
+        db: &dyn ExpandDatabase,
+        path: ast::Path,
+        span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
+    ) -> Option<ModPath> {
         convert_path(db, path, span_for_range)
     }
 
-    pub fn from_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
+    pub fn from_tt(
+        db: &dyn ExpandDatabase,
+        tt: tt::TokenTreesView<'_>,
+    ) -> Option<ModPath> {
         convert_path_tt(db, tt)
     }
 
-    pub fn from_segments(kind: PathKind, segments: impl IntoIterator<Item = Name>) -> ModPath {
+    pub fn from_segments(
+        kind: PathKind,
+        segments: impl IntoIterator<Item = Name>,
+    ) -> ModPath {
         let mut segments: SmallVec<_> = segments.into_iter().collect();
         segments.shrink_to_fit();
         ModPath { kind, segments }
@@ -66,7 +76,10 @@ impl ModPath {
         &self.segments
     }
 
-    pub fn push_segment(&mut self, segment: Name) {
+    pub fn push_segment(
+        &mut self,
+        segment: Name,
+    ) {
         self.segments.push(segment);
     }
 
@@ -123,17 +136,27 @@ impl ModPath {
         }
     }
 
-    pub fn display_verbatim<'a>(&'a self, db: &'a dyn crate::db::ExpandDatabase) -> impl fmt::Display + 'a {
+    pub fn display_verbatim<'a>(
+        &'a self,
+        db: &'a dyn crate::db::ExpandDatabase,
+    ) -> impl fmt::Display + 'a {
         Display { db, path: self, edition: None }
     }
 
-    pub fn display<'a>(&'a self, db: &'a dyn crate::db::ExpandDatabase, edition: Edition) -> impl fmt::Display + 'a {
+    pub fn display<'a>(
+        &'a self,
+        db: &'a dyn crate::db::ExpandDatabase,
+        edition: Edition,
+    ) -> impl fmt::Display + 'a {
         Display { db, path: self, edition: Some(edition) }
     }
 }
 
 impl Extend<Name> for ModPath {
-    fn extend<T: IntoIterator<Item = Name>>(&mut self, iter: T) {
+    fn extend<T: IntoIterator<Item = Name>>(
+        &mut self,
+        iter: T,
+    ) {
         self.segments.extend(iter);
     }
 }
@@ -145,7 +168,10 @@ struct Display<'a> {
 }
 
 impl fmt::Display for Display<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         display_fmt_path(self.db, self.path, f, self.edition)
     }
 }
@@ -156,7 +182,12 @@ impl From<Name> for ModPath {
     }
 }
 
-fn display_fmt_path(db: &dyn ExpandDatabase, path: &ModPath, f: &mut fmt::Formatter<'_>, edition: Option<Edition>) -> fmt::Result {
+fn display_fmt_path(
+    db: &dyn ExpandDatabase,
+    path: &ModPath,
+    f: &mut fmt::Formatter<'_>,
+    edition: Option<Edition>,
+) -> fmt::Result {
     let mut first_segment = true;
     let mut add_segment = |s| -> fmt::Result {
         if !first_segment {
@@ -191,7 +222,11 @@ fn display_fmt_path(db: &dyn ExpandDatabase, path: &ModPath, f: &mut fmt::Format
     Ok(())
 }
 
-fn convert_path(db: &dyn ExpandDatabase, path: ast::Path, span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext) -> Option<ModPath> {
+fn convert_path(
+    db: &dyn ExpandDatabase,
+    path: ast::Path,
+    span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
+) -> Option<ModPath> {
     let mut segments = path.segments();
     let segment = &segments.next()?;
     let handle_super_kw = &mut |init_deg| {
@@ -268,7 +303,10 @@ fn convert_path(db: &dyn ExpandDatabase, path: ast::Path, span_for_range: &mut d
     Some(mod_path)
 }
 
-fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
+fn convert_path_tt(
+    db: &dyn ExpandDatabase,
+    tt: tt::TokenTreesView<'_>,
+) -> Option<ModPath> {
     let mut leaves = tt.iter().filter_map(|tt| match tt {
         tt::TtElement::Leaf(leaf) => Some(leaf),
         tt::TtElement::Subtree(..) => None,
@@ -310,7 +348,10 @@ fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Optio
     Some(ModPath { kind, segments })
 }
 
-pub fn resolve_crate_root(db: &dyn ExpandDatabase, mut ctxt: SyntaxContext) -> Option<Crate> {
+pub fn resolve_crate_root(
+    db: &dyn ExpandDatabase,
+    mut ctxt: SyntaxContext,
+) -> Option<Crate> {
     // When resolving `$crate` from a `macro_rules!` invoked in a `macro`,
     // we don't want to pretend that the `macro_rules!` definition is in the `macro`
     // as described in `SyntaxContextId::apply_mark`, so we ignore prepended opaque marks.

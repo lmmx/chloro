@@ -15,7 +15,11 @@ use crate::{
 };
 
 /// Complete dot accesses, i.e. fields or methods.
-pub(crate) fn complete_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) {
+pub(crate) fn complete_dot(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    dot_access: &DotAccess<'_>,
+) {
     let receiver_ty = match dot_access {
         DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
         _ => return,
@@ -115,7 +119,12 @@ pub(crate) fn complete_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, d
     }
 }
 
-pub(crate) fn complete_undotted_self(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, expr_ctx: &PathExprCtx<'_>) {
+pub(crate) fn complete_undotted_self(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    expr_ctx: &PathExprCtx<'_>,
+) {
     if !ctx.config.enable_self_on_the_fly {
         return;
     }
@@ -176,7 +185,14 @@ pub(crate) fn complete_undotted_self(acc: &mut Completions, ctx: &CompletionCont
     });
 }
 
-fn complete_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, receiver: &hir::Type<'_>, mut named_field: impl FnMut(&mut Completions, hir::Field, hir::Type<'_>), mut tuple_index: impl FnMut(&mut Completions, usize, hir::Type<'_>), has_parens: bool) {
+fn complete_fields(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    receiver: &hir::Type<'_>,
+    mut named_field: impl FnMut(&mut Completions, hir::Field, hir::Type<'_>),
+    mut tuple_index: impl FnMut(&mut Completions, usize, hir::Type<'_>),
+    has_parens: bool,
+) {
     let mut seen_names = FxHashSet::default();
     for receiver in receiver.autoderef(ctx.db) {
         for (field, ty) in receiver.fields(ctx.db) {
@@ -199,7 +215,12 @@ fn complete_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, receiver:
     }
 }
 
-fn complete_methods(ctx: &CompletionContext<'_>, receiver: &hir::Type<'_>, traits_in_scope: &FxHashSet<hir::TraitId>, f: impl FnMut(hir::Function)) {
+fn complete_methods(
+    ctx: &CompletionContext<'_>,
+    receiver: &hir::Type<'_>,
+    traits_in_scope: &FxHashSet<hir::TraitId>,
+    f: impl FnMut(hir::Function),
+) {
     struct Callback<'a, F> {
         ctx: &'a CompletionContext<'a>,
         f: F,

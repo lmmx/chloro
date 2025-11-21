@@ -30,7 +30,10 @@ pub struct MissingUnsafeResult {
     pub deprecated_safe_calls: Vec<ExprId>,
 }
 
-pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafeResult {
+pub fn missing_unsafe(
+    db: &dyn HirDatabase,
+    def: DefWithBodyId,
+) -> MissingUnsafeResult {
     let _p = tracing::info_span!("missing_unsafe").entered();
     let is_unsafe = match def {
         DefWithBodyId::FunctionId(it) => db.function_signature(it).is_unsafe(),
@@ -96,7 +99,13 @@ enum UnsafeDiagnostic {
     },
 }
 
-pub fn unsafe_operations_for_body<'db>(db: &'db dyn HirDatabase, infer: &InferenceResult<'db>, def: DefWithBodyId, body: &Body, callback: &mut dyn FnMut(ExprOrPatId)) {
+pub fn unsafe_operations_for_body<'db>(
+    db: &'db dyn HirDatabase,
+    infer: &InferenceResult<'db>,
+    def: DefWithBodyId,
+    body: &Body,
+    callback: &mut dyn FnMut(ExprOrPatId),
+) {
     let mut visitor_callback = |diag| {
         if let UnsafeDiagnostic::UnsafeOperation { node, .. } = diag {
             callback(node);
@@ -109,7 +118,14 @@ pub fn unsafe_operations_for_body<'db>(db: &'db dyn HirDatabase, infer: &Inferen
     }
 }
 
-pub fn unsafe_operations<'db>(db: &'db dyn HirDatabase, infer: &InferenceResult<'db>, def: DefWithBodyId, body: &Body, current: ExprId, callback: &mut dyn FnMut(ExprOrPatId, InsideUnsafeBlock)) {
+pub fn unsafe_operations<'db>(
+    db: &'db dyn HirDatabase,
+    infer: &InferenceResult<'db>,
+    def: DefWithBodyId,
+    body: &Body,
+    current: ExprId,
+    callback: &mut dyn FnMut(ExprOrPatId, InsideUnsafeBlock),
+) {
     let mut visitor_callback = |diag| {
         if let UnsafeDiagnostic::UnsafeOperation { inside_unsafe_block, node, .. } = diag {
             callback(node, inside_unsafe_block);
@@ -138,7 +154,13 @@ struct UnsafeVisitor<'db> {
 }
 
 impl<'db> UnsafeVisitor<'db> {
-    fn new(db: &'db dyn HirDatabase, infer: &'db InferenceResult<'db>, body: &'db Body, def: DefWithBodyId, unsafe_expr_cb: &'db mut dyn FnMut(UnsafeDiagnostic)) -> Self {
+    fn new(
+        db: &'db dyn HirDatabase,
+        infer: &'db InferenceResult<'db>,
+        body: &'db Body,
+        def: DefWithBodyId,
+        unsafe_expr_cb: &'db mut dyn FnMut(UnsafeDiagnostic),
+    ) -> Self {
         let resolver = def.resolver(db);
         let def_target_features = match def {
             DefWithBodyId::FunctionId(func) => TargetFeatures::from_attrs(&db.attrs(func.into())),
@@ -166,7 +188,11 @@ impl<'db> UnsafeVisitor<'db> {
         }
     }
 
-    fn on_unsafe_op(&mut self, node: ExprOrPatId, reason: UnsafetyReason) {
+    fn on_unsafe_op(
+        &mut self,
+        node: ExprOrPatId,
+        reason: UnsafetyReason,
+    ) {
         (self.callback)(UnsafeDiagnostic::UnsafeOperation {
             node,
             inside_unsafe_block: self.inside_unsafe_block,
@@ -174,7 +200,11 @@ impl<'db> UnsafeVisitor<'db> {
         });
     }
 
-    fn check_call(&mut self, node: ExprId, func: FunctionId) {
+    fn check_call(
+        &mut self,
+        node: ExprId,
+        func: FunctionId,
+    ) {
         let unsafety = is_fn_unsafe_to_call(
             self.db,
             func,
@@ -196,20 +226,31 @@ impl<'db> UnsafeVisitor<'db> {
         }
     }
 
-    fn with_inside_unsafe_block<R>(&mut self, inside_unsafe_block: InsideUnsafeBlock, f: impl FnOnce(&mut Self) -> R) -> R {
+    fn with_inside_unsafe_block<R>(
+        &mut self,
+        inside_unsafe_block: InsideUnsafeBlock,
+        f: impl FnOnce(&mut Self) -> R,
+    ) -> R {
         let old = mem::replace(&mut self.inside_unsafe_block, inside_unsafe_block);
         let result = f(self);
         self.inside_unsafe_block = old;
         result
     }
 
-    fn walk_pats_top(&mut self, pats: impl Iterator<Item = PatId>, parent_expr: ExprId) {
+    fn walk_pats_top(
+        &mut self,
+        pats: impl Iterator<Item = PatId>,
+        parent_expr: ExprId,
+    ) {
         let guard = self.resolver.update_to_inner_scope(self.db, self.def, parent_expr);
         pats.for_each(|pat| self.walk_pat(pat));
         self.resolver.reset_to_guard(guard);
     }
 
-    fn walk_pat(&mut self, current: PatId) {
+    fn walk_pat(
+        &mut self,
+        current: PatId,
+    ) {
         let pat = &self.body[current];
         if self.inside_union_destructure {
             match pat {
@@ -253,7 +294,10 @@ impl<'db> UnsafeVisitor<'db> {
         self.body.walk_pats_shallow(current, |pat| self.walk_pat(pat));
     }
 
-    fn walk_expr(&mut self, current: ExprId) {
+    fn walk_expr(
+        &mut self,
+        current: ExprId,
+    ) {
         let expr = &self.body[current];
         let inside_assignment = mem::replace(&mut self.inside_assignment, false);
         match expr {
@@ -398,7 +442,11 @@ impl<'db> UnsafeVisitor<'db> {
         self.body.walk_child_exprs_without_pats(current, |child| self.walk_expr(child));
     }
 
-    fn mark_unsafe_path(&mut self, node: ExprOrPatId, path: &Path) {
+    fn mark_unsafe_path(
+        &mut self,
+        node: ExprOrPatId,
+        path: &Path,
+    ) {
         let hygiene = self.body.expr_or_pat_path_hygiene(node);
         let value_or_partial = self.resolver.resolve_path_in_value_ns(self.db, path, hygiene);
         if let Some(ResolveValueResult::ValueNs(ValueNs::StaticId(id), _)) = value_or_partial {

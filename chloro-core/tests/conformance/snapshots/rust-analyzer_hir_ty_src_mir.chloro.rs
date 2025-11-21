@@ -114,7 +114,11 @@ pub enum OperandKind<'db> {
 }
 
 impl<'db> Operand<'db> {
-    fn from_concrete_const(data: Box<[u8]>, memory_map: MemoryMap<'db>, ty: Ty<'db>) -> Self {
+    fn from_concrete_const(
+        data: Box<[u8]>,
+        memory_map: MemoryMap<'db>,
+        ty: Ty<'db>,
+    ) -> Self {
         let interner = DbInterner::conjure();
         Operand {
             kind: OperandKind::Constant {
@@ -125,7 +129,10 @@ impl<'db> Operand<'db> {
         }
     }
 
-    fn from_bytes(data: Box<[u8]>, ty: Ty<'db>) -> Self {
+    fn from_bytes(
+        data: Box<[u8]>,
+        ty: Ty<'db>,
+    ) -> Self {
         Operand::from_concrete_const(data, MemoryMap::default(), ty)
     }
 
@@ -133,7 +140,11 @@ impl<'db> Operand<'db> {
         Self::from_bytes(Box::default(), ty)
     }
 
-    fn from_fn(db: &'db dyn HirDatabase, func_id: hir_def::FunctionId, generic_args: GenericArgs<'db>) -> Operand<'db> {
+    fn from_fn(
+        db: &'db dyn HirDatabase,
+        func_id: hir_def::FunctionId,
+        generic_args: GenericArgs<'db>,
+    ) -> Operand<'db> {
         let interner = DbInterner::new_with(db, None, None);
         let ty = Ty::new_fn_def(interner, CallableDefId::FunctionId(func_id).into(), generic_args);
         Operand::from_bytes(Box::default(), ty)
@@ -158,7 +169,13 @@ pub enum ProjectionElem<V, T> {
 }
 
 impl<V, T> ProjectionElem<V, T> {
-    pub fn projected_ty<'db>(&self, infcx: &InferCtxt<'db>, mut base: Ty<'db>, closure_field: impl FnOnce(InternedClosureId, GenericArgs<'db>, usize) -> Ty<'db>, krate: Crate) -> Ty<'db> {
+    pub fn projected_ty<'db>(
+        &self,
+        infcx: &InferCtxt<'db>,
+        mut base: Ty<'db>,
+        closure_field: impl FnOnce(InternedClosureId, GenericArgs<'db>, usize) -> Ty<'db>,
+        krate: Crate,
+    ) -> Ty<'db> {
         let interner = infcx.interner;
         let db = interner.db;
         // we only bail on mir building when there are type mismatches
@@ -275,11 +292,17 @@ impl<'db> ProjectionStore<'db> {
         self.proj_to_id.shrink_to_fit();
     }
 
-    pub fn intern_if_exist(&self, projection: &[PlaceElem<'db>]) -> Option<ProjectionId> {
+    pub fn intern_if_exist(
+        &self,
+        projection: &[PlaceElem<'db>],
+    ) -> Option<ProjectionId> {
         self.proj_to_id.get(projection).copied()
     }
 
-    pub fn intern(&mut self, projection: Box<[PlaceElem<'db>]>) -> ProjectionId {
+    pub fn intern(
+        &mut self,
+        projection: Box<[PlaceElem<'db>]>,
+    ) -> ProjectionId {
         let new_id = ProjectionId(self.proj_to_id.len() as u32);
         match self.proj_to_id.entry(projection) {
             Entry::Occupied(id) => *id.get(),
@@ -299,11 +322,18 @@ impl ProjectionId {
         self == ProjectionId::EMPTY
     }
 
-    pub fn lookup<'a, 'db>(self, store: &'a ProjectionStore<'db>) -> &'a [PlaceElem<'db>] {
+    pub fn lookup<'a, 'db>(
+        self,
+        store: &'a ProjectionStore<'db>,
+    ) -> &'a [PlaceElem<'db>] {
         store.id_to_proj.get(&self).unwrap()
     }
 
-    pub fn project<'db>(self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> ProjectionId {
+    pub fn project<'db>(
+        self,
+        projection: PlaceElem<'db>,
+        store: &mut ProjectionStore<'db>,
+    ) -> ProjectionId {
         let mut current = self.lookup(store).to_vec();
         current.push(projection);
         store.intern(current.into())
@@ -317,20 +347,31 @@ pub struct Place<'db> {
 }
 
 impl<'db> Place<'db> {
-    fn is_parent(&self, child: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
+    fn is_parent(
+        &self,
+        child: &Place<'db>,
+        store: &ProjectionStore<'db>,
+    ) -> bool {
         self.local == child.local
             && child.projection.lookup(store).starts_with(self.projection.lookup(store))
     }
 
     /// The place itself is not included
-    fn iterate_over_parents<'a>(&'a self, store: &'a ProjectionStore<'db>) -> impl Iterator<Item = Place<'db>> + 'a {
+    fn iterate_over_parents<'a>(
+        &'a self,
+        store: &'a ProjectionStore<'db>,
+    ) -> impl Iterator<Item = Place<'db>> + 'a {
         let projection = self.projection.lookup(store);
         (0..projection.len()).map(|x| &projection[0..x]).filter_map(move |x| {
             Some(Place { local: self.local, projection: store.intern_if_exist(x)? })
         })
     }
 
-    fn project(&self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> Place<'db> {
+    fn project(
+        &self,
+        projection: PlaceElem<'db>,
+        store: &mut ProjectionStore<'db>,
+    ) -> Place<'db> {
         Place { local: self.local, projection: self.projection.project(projection, store) }
     }
 }
@@ -368,7 +409,10 @@ impl<'db> SwitchTargets<'db> {
     ///
     /// The iterator may be empty, in which case the `SwitchInt` instruction is equivalent to
     /// `goto otherwise;`.
-    pub fn new(targets: impl Iterator<Item = (u128, BasicBlockId<'db>)>, otherwise: BasicBlockId<'db>) -> Self {
+    pub fn new(
+        targets: impl Iterator<Item = (u128, BasicBlockId<'db>)>,
+        otherwise: BasicBlockId<'db>,
+    ) -> Self {
         let (values, mut targets): (SmallVec<_>, SmallVec<_>) = targets.unzip();
         targets.push(otherwise);
         Self { values, targets }
@@ -376,7 +420,11 @@ impl<'db> SwitchTargets<'db> {
 
     /// Builds a switch targets definition that jumps to `then` if the tested value equals `value`,
     /// and to `else_` if not.
-    pub fn static_if(value: u128, then: BasicBlockId<'db>, else_: BasicBlockId<'db>) -> Self {
+    pub fn static_if(
+        value: u128,
+        then: BasicBlockId<'db>,
+        else_: BasicBlockId<'db>,
+    ) -> Self {
         Self { values: smallvec![value], targets: smallvec![then, else_] }
     }
 
@@ -403,7 +451,10 @@ impl<'db> SwitchTargets<'db> {
     /// Finds the `BasicBlock` to which this `SwitchInt` will branch given the
     /// specific value. This cannot fail, as it'll return the `otherwise`
     /// branch if there's not a specific match for the value.
-    pub fn target_for_value(&self, value: u128) -> BasicBlockId<'db> {
+    pub fn target_for_value(
+        &self,
+        value: u128,
+    ) -> BasicBlockId<'db> {
         self.iter().find_map(|(v, t)| (v == value).then_some(t)).unwrap_or_else(|| self.otherwise())
     }
 }
@@ -738,7 +789,11 @@ pub enum BinOp {
 }
 
 impl BinOp {
-    fn run_compare<T: PartialEq + PartialOrd>(&self, l: T, r: T) -> bool {
+    fn run_compare<T: PartialEq + PartialOrd>(
+        &self,
+        l: T,
+        r: T,
+    ) -> bool {
         match self {
             BinOp::Ge => l >= r,
             BinOp::Gt => l > r,
@@ -752,7 +807,10 @@ impl BinOp {
 }
 
 impl Display for BinOp {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         f.write_str(match self {
             BinOp::Add => "+",
             BinOp::Sub => "-",
@@ -969,7 +1027,10 @@ pub enum StatementKind<'db> {
 }
 
 impl<'db> StatementKind<'db> {
-    fn with_span(self, span: MirSpan) -> Statement<'db> {
+    fn with_span(
+        self,
+        span: MirSpan,
+    ) -> Statement<'db> {
         Statement { kind: self, span }
     }
 }
@@ -1019,7 +1080,10 @@ impl<'db> MirBody<'db> {
         self.binding_locals.iter().map(|(it, y)| (*y, it)).collect()
     }
 
-    fn walk_places(&mut self, mut f: impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>)) {
+    fn walk_places(
+        &mut self,
+        mut f: impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>),
+    ) {
         fn for_operand<'db>(
             op: &mut Operand<'db>,
             f: &mut impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>),
@@ -1144,7 +1208,10 @@ pub enum MirSpan {
 }
 
 impl MirSpan {
-    pub fn is_ref_span(&self, body: &Body) -> bool {
+    pub fn is_ref_span(
+        &self,
+        body: &Body,
+    ) -> bool {
         match *self {
             MirSpan::ExprId(expr) => matches!(body[expr], Expr::Ref { .. }),
             // FIXME: Figure out if this is correct wrt. match ergonomics.

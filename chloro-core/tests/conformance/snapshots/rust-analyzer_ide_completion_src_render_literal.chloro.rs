@@ -19,21 +19,39 @@ use crate::{
     },
 };
 
-pub(crate) fn render_variant_lit(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: Option<hir::Name>, variant: hir::Variant, path: Option<hir::ModPath>) -> Option<Builder> {
+pub(crate) fn render_variant_lit(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    local_name: Option<hir::Name>,
+    variant: hir::Variant,
+    path: Option<hir::ModPath>,
+) -> Option<Builder> {
     let _p = tracing::info_span!("render_variant_lit").entered();
     let db = ctx.db();
     let name = local_name.unwrap_or_else(|| variant.name(db));
     render(ctx, path_ctx, Variant::EnumVariant(variant), name, path)
 }
 
-pub(crate) fn render_struct_literal(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, strukt: hir::Struct, path: Option<hir::ModPath>, local_name: Option<hir::Name>) -> Option<Builder> {
+pub(crate) fn render_struct_literal(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    strukt: hir::Struct,
+    path: Option<hir::ModPath>,
+    local_name: Option<hir::Name>,
+) -> Option<Builder> {
     let _p = tracing::info_span!("render_struct_literal").entered();
     let db = ctx.db();
     let name = local_name.unwrap_or_else(|| strukt.name(db));
     render(ctx, path_ctx, Variant::Struct(strukt), name, path)
 }
 
-fn render(ctx @ RenderContext { completion, .. }: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, thing: Variant, name: hir::Name, path: Option<hir::ModPath>) -> Option<Builder> {
+fn render(
+    ctx @ RenderContext { completion, .. }: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    thing: Variant,
+    name: hir::Name,
+    path: Option<hir::ModPath>,
+) -> Option<Builder> {
     let db = completion.db;
     let mut kind = thing.kind(db);
     let should_add_parens = !matches!(
@@ -123,7 +141,10 @@ enum Variant {
 }
 
 impl Variant {
-    fn fields(self, ctx: &CompletionContext<'_>) -> Option<Vec<hir::Field>> {
+    fn fields(
+        self,
+        ctx: &CompletionContext<'_>,
+    ) -> Option<Vec<hir::Field>> {
         let fields = match self {
             Variant::Struct(it) => it.fields(ctx.db),
             Variant::EnumVariant(it) => it.fields(ctx.db),
@@ -135,7 +156,10 @@ impl Variant {
         if !fields_omitted { Some(visible_fields) } else { None }
     }
 
-    fn kind(self, db: &dyn HirDatabase) -> StructKind {
+    fn kind(
+        self,
+        db: &dyn HirDatabase,
+    ) -> StructKind {
         match self {
             Variant::Struct(it) => it.kind(db),
             Variant::EnumVariant(it) => it.kind(db),
@@ -149,21 +173,30 @@ impl Variant {
         }
     }
 
-    fn docs(self, db: &dyn HirDatabase) -> Option<Documentation> {
+    fn docs(
+        self,
+        db: &dyn HirDatabase,
+    ) -> Option<Documentation> {
         match self {
             Variant::Struct(it) => it.docs(db),
             Variant::EnumVariant(it) => it.docs(db),
         }
     }
 
-    fn is_deprecated(self, ctx: &RenderContext<'_>) -> bool {
+    fn is_deprecated(
+        self,
+        ctx: &RenderContext<'_>,
+    ) -> bool {
         match self {
             Variant::Struct(it) => ctx.is_deprecated(it),
             Variant::EnumVariant(it) => ctx.is_deprecated(it),
         }
     }
 
-    fn ty(self, db: &dyn HirDatabase) -> hir::Type<'_> {
+    fn ty(
+        self,
+        db: &dyn HirDatabase,
+    ) -> hir::Type<'_> {
         match self {
             Variant::Struct(it) => it.ty(db),
             Variant::EnumVariant(it) => it.parent_enum(db).ty(db),

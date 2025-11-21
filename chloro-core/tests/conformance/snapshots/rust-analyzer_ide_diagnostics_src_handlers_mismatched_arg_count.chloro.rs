@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
-pub(crate) fn mismatched_tuple_struct_pat_arg_count(ctx: &DiagnosticsContext<'_>, d: &hir::MismatchedTupleStructPatArgCount) -> Diagnostic {
+pub(crate) fn mismatched_tuple_struct_pat_arg_count(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MismatchedTupleStructPatArgCount,
+) -> Diagnostic {
     let s = if d.found == 1 { "" } else { "s" };
     let s2 = if d.expected == 1 { "" } else { "s" };
     let message = format!(
@@ -23,7 +26,10 @@ pub(crate) fn mismatched_tuple_struct_pat_arg_count(ctx: &DiagnosticsContext<'_>
     .stable()
 }
 
-pub(crate) fn mismatched_arg_count(ctx: &DiagnosticsContext<'_>, d: &hir::MismatchedArgCount) -> Diagnostic {
+pub(crate) fn mismatched_arg_count(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MismatchedArgCount,
+) -> Diagnostic {
     let s = if d.expected == 1 { "" } else { "s" };
     let message = format!("expected {} argument{s}, found {}", d.expected, d.found);
     Diagnostic::new(
@@ -34,7 +40,12 @@ pub(crate) fn mismatched_arg_count(ctx: &DiagnosticsContext<'_>, d: &hir::Mismat
     .stable()
 }
 
-fn invalid_args_range(ctx: &DiagnosticsContext<'_>, source: InFile<AstPtr<Either<ast::Expr, ast::Pat>>>, expected: usize, found: usize) -> FileRange {
+fn invalid_args_range(
+    ctx: &DiagnosticsContext<'_>,
+    source: InFile<AstPtr<Either<ast::Expr, ast::Pat>>>,
+    expected: usize,
+    found: usize,
+) -> FileRange {
     adjusted_display_range(ctx, source, &|expr| {
         let (text_range, r_paren_token, expected_arg) = match expr {
             Either::Left(ast::Expr::CallExpr(call)) => {

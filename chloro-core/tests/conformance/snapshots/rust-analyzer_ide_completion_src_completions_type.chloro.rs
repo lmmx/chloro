@@ -9,7 +9,12 @@ use crate::{
     render::render_type_inference,
 };
 
-pub(crate) fn complete_type_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, location: &TypeLocation) {
+pub(crate) fn complete_type_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+    location: &TypeLocation,
+) {
     let _p = tracing::info_span!("complete_type_path").entered();
     let scope_def_applicable = |def| {
         use hir::{GenericParam::*, ModuleDef::*};
@@ -207,7 +212,12 @@ pub(crate) fn complete_type_path(acc: &mut Completions, ctx: &CompletionContext<
     }
 }
 
-pub(crate) fn complete_ascribed_type(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, ascription: &TypeAscriptionTarget) -> Option<()> {
+pub(crate) fn complete_ascribed_type(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    ascription: &TypeAscriptionTarget,
+) -> Option<()> {
     if !path_ctx.is_trivial_path() {
         return None;
     }

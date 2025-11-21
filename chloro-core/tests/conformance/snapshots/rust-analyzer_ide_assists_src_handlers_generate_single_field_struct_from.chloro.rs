@@ -16,7 +16,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn generate_single_field_struct_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_single_field_struct_from(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let strukt_name = ctx.find_node_at_offset::<ast::Name>()?;
     let adt = ast::Adt::cast(strukt_name.syntax().parent()?)?;
     let ast::Adt::Struct(strukt) = adt else {
@@ -118,7 +121,11 @@ pub(crate) fn generate_single_field_struct_from(acc: &mut Assists, ctx: &AssistC
     )
 }
 
-fn make_adt_constructor(names: Option<&[ast::Name]>, constructors: Vec<Option<ast::Expr>>, main_field_name: &TokenText<'_>) -> ast::Expr {
+fn make_adt_constructor(
+    names: Option<&[ast::Name]>,
+    constructors: Vec<Option<ast::Expr>>,
+    main_field_name: &TokenText<'_>,
+) -> ast::Expr {
     if let Some(names) = names {
         let fields = make::record_expr_field_list(names.iter().zip(constructors).map(
             |(name, initializer)| {
@@ -134,7 +141,11 @@ fn make_adt_constructor(names: Option<&[ast::Name]>, constructors: Vec<Option<as
     }
 }
 
-fn make_constructors(ctx: &AssistContext<'_>, module: hir::Module, types: &[ast::Type]) -> Vec<Option<ast::Expr>> {
+fn make_constructors(
+    ctx: &AssistContext<'_>,
+    module: hir::Module,
+    types: &[ast::Type],
+) -> Vec<Option<ast::Expr>> {
     let (db, sema) = (ctx.db(), &ctx.sema);
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
     types
@@ -169,7 +180,11 @@ fn get_fields(strukt: &ast::Struct) -> Option<(Option<Vec<ast::Name>>, Vec<ast::
 }
 
 #[tracing::instrument(ret)]
-fn from_impl_exists(strukt: &ast::Struct, main_field_i: usize, sema: &Semantics<'_, RootDatabase>) -> Option<()> {
+fn from_impl_exists(
+    strukt: &ast::Struct,
+    main_field_i: usize,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<()> {
     let db = sema.db;
     let strukt = sema.to_def(strukt)?;
     let krate = strukt.krate(db);

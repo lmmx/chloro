@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15808 bytes
-Chloro size:   15507 bytes
+Chloro size:   15556 bytes
 Rustfmt size:  15808 bytes
 
 ✗ Outputs DIFFER
@@ -15,15 +15,9 @@ Rustfmt size:  15808 bytes
 -//
 -// This diagnostic is shown for files that are not included in any crate, or files that are part of
 -// crates rust-analyzer failed to discover. The file will not have IDE features available.
--pub(crate) fn unlinked_file(
--    ctx: &DiagnosticsContext<'_>,
--    acc: &mut Vec<Diagnostic>,
--    file_id: FileId,
--) {
-+pub(crate) fn unlinked_file(ctx: &DiagnosticsContext<'_>, acc: &mut Vec<Diagnostic>, file_id: FileId) {
-     let mut range = TextRange::up_to(ctx.sema.db.line_index(file_id).len());
-     let fixes = fixes(ctx, file_id, range);
-     // FIXME: This is a hack for the vscode extension to notice whether there is an autofix or not before having to resolve diagnostics.
+ pub(crate) fn unlinked_file(
+     ctx: &DiagnosticsContext<'_>,
+     acc: &mut Vec<Diagnostic>,
      } else {
          "This file is not included anywhere in the module tree, so rust-analyzer can't offer IDE services."
      };
@@ -44,15 +38,7 @@ Rustfmt size:  15808 bytes
      acc.push(
          Diagnostic::new(
              DiagnosticCode::Ra("unlinked-file", Severity::WeakWarning),
-     );
- }
- 
--fn fixes(
--    ctx: &DiagnosticsContext<'_>,
--    file_id: FileId,
--    trigger_range: TextRange,
--) -> Option<Vec<Assist>> {
-+fn fixes(ctx: &DiagnosticsContext<'_>, file_id: FileId, trigger_range: TextRange) -> Option<Vec<Assist>> {
+ ) -> Option<Vec<Assist>> {
      // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
      // suggest that as a fix.
 -
@@ -87,13 +73,6 @@ Rustfmt size:  15808 bytes
      None
  }
  
--fn make_fixes(
--    parent_file_id: FileId,
--    source: ModuleSource,
--    new_mod_name: &str,
--    trigger_range: TextRange,
--) -> Option<Vec<Assist>> {
-+fn make_fixes(parent_file_id: FileId, source: ModuleSource, new_mod_name: &str, trigger_range: TextRange) -> Option<Vec<Assist>> {
      fn is_outline_mod(item: &ast::Item) -> bool {
          matches!(item, ast::Item::Module(m) if m.item_list().is_none())
      }

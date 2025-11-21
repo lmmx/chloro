@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5433 bytes
+Chloro size:   5595 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -21,6 +21,29 @@ Rustfmt size:  5891 bytes
  
  #[derive(Default, Debug, Clone)]
  pub(crate) struct OpaqueTypeStorage<'db> {
+ }
+ 
+ impl rustc_type_ir::inherent::OpaqueTypeStorageEntries for OpaqueTypeStorageEntries {
+-    fn needs_reevaluation(self, canonicalized: usize) -> bool {
++    fn needs_reevaluation(
++        self,
++        canonicalized: usize,
++    ) -> bool {
+         self.opaque_types != canonicalized
+     }
+ }
+ 
+ impl<'db> OpaqueTypeStorage<'db> {
+     #[instrument(level = "debug")]
+-    pub(crate) fn remove(&mut self, key: OpaqueTypeKey<'db>, prev: Option<OpaqueHiddenType<'db>>) {
++    pub(crate) fn remove(
++        &mut self,
++        key: OpaqueTypeKey<'db>,
++        prev: Option<OpaqueHiddenType<'db>>,
++    ) {
+         if let Some(prev) = prev {
+             *self.opaque_types.get_mut(&key).unwrap() = prev;
+         } else {
      }
  
      pub(crate) fn is_empty(&self) -> bool {
@@ -48,15 +71,6 @@ Rustfmt size:  5891 bytes
      }
  
      pub(crate) fn num_entries(&self) -> OpaqueTypeStorageEntries {
-         }
-     }
- 
--    pub(crate) fn opaque_types_added_since(
--        &self,
--        prev_entries: OpaqueTypeStorageEntries,
--    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-+    pub(crate) fn opaque_types_added_since(&self, prev_entries: OpaqueTypeStorageEntries) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
-         self.opaque_types
              .iter()
              .skip(prev_entries.opaque_types)
              .map(|(k, v)| (*k, *v))
@@ -107,15 +121,13 @@ Rustfmt size:  5891 bytes
      }
  
      #[inline]
--    pub(crate) fn with_log<'a>(
--        &'a mut self,
--        undo_log: &'a mut InferCtxtUndoLogs<'db>,
--    ) -> OpaqueTypeTable<'a, 'db> {
+         &'a mut self,
+         undo_log: &'a mut InferCtxtUndoLogs<'db>,
+     ) -> OpaqueTypeTable<'a, 'db> {
 -        OpaqueTypeTable {
 -            storage: self,
 -            undo_log,
 -        }
-+    pub(crate) fn with_log<'a>(&'a mut self, undo_log: &'a mut InferCtxtUndoLogs<'db>) -> OpaqueTypeTable<'a, 'db> {
 +        OpaqueTypeTable { storage: self, undo_log }
      }
  }
@@ -131,28 +143,4 @@ Rustfmt size:  5891 bytes
 +
      fn deref(&self) -> &Self::Target {
          self.storage
-     }
- 
- impl<'a, 'db> OpaqueTypeTable<'a, 'db> {
-     #[instrument(skip(self), level = "debug")]
--    pub(crate) fn register(
--        &mut self,
--        key: OpaqueTypeKey<'db>,
--        hidden_type: OpaqueHiddenType<'db>,
--    ) -> Option<Ty<'db>> {
-+    pub(crate) fn register(&mut self, key: OpaqueTypeKey<'db>, hidden_type: OpaqueHiddenType<'db>) -> Option<Ty<'db>> {
-         if let Some(entry) = self.storage.opaque_types.get_mut(&key) {
-             let prev = std::mem::replace(entry, hidden_type);
-             self.undo_log.push(UndoLog::OpaqueTypes(key, Some(prev)));
-         None
-     }
- 
--    pub(crate) fn add_duplicate(
--        &mut self,
--        key: OpaqueTypeKey<'db>,
--        hidden_type: OpaqueHiddenType<'db>,
--    ) {
-+    pub(crate) fn add_duplicate(&mut self, key: OpaqueTypeKey<'db>, hidden_type: OpaqueHiddenType<'db>) {
-         self.storage.duplicate_entries.push((key, hidden_type));
-         self.undo_log.push(UndoLog::DuplicateOpaqueType);
      }

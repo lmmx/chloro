@@ -18,7 +18,12 @@ use crate::{
 /// A value to use, when uncertain which limit to pick.
 
 /// Searches for importable items with the given name in the crate and its dependencies.
-pub fn items_with_name(db: &RootDatabase, krate: Crate, name: NameToImport, assoc_item_search: AssocSearchMode) -> impl Iterator<Item = (ItemInNs, Complete)> {
+pub fn items_with_name(
+    db: &RootDatabase,
+    krate: Crate,
+    name: NameToImport,
+    assoc_item_search: AssocSearchMode,
+) -> impl Iterator<Item = (ItemInNs, Complete)> {
     let _p = tracing::info_span!("items_with_name", name = name.text(), assoc_item_search = ?assoc_item_search, crate = ?krate.display_name(db).map(|name| name.to_string()))
         .entered();
     let prefix = matches!(name, NameToImport::Prefix(..));
@@ -63,7 +68,13 @@ pub fn items_with_name(db: &RootDatabase, krate: Crate, name: NameToImport, asso
 }
 
 /// Searches for importable items with the given name in the crate and its dependencies.
-pub fn items_with_name_in_module<T>(db: &RootDatabase, module: Module, name: NameToImport, assoc_item_search: AssocSearchMode, mut cb: impl FnMut(ItemInNs) -> ControlFlow<T>) -> Option<T> {
+pub fn items_with_name_in_module<T>(
+    db: &RootDatabase,
+    module: Module,
+    name: NameToImport,
+    assoc_item_search: AssocSearchMode,
+    mut cb: impl FnMut(ItemInNs) -> ControlFlow<T>,
+) -> Option<T> {
     let _p = tracing::info_span!("items_with_name_in", name = name.text(), assoc_item_search = ?assoc_item_search, ?module)
         .entered();
     let prefix = matches!(name, NameToImport::Prefix(..));
@@ -102,7 +113,12 @@ pub fn items_with_name_in_module<T>(db: &RootDatabase, module: Module, name: Nam
     })
 }
 
-fn find_items(db: &RootDatabase, krate: Crate, local_query: symbol_index::Query, external_query: import_map::Query) -> impl Iterator<Item = (ItemInNs, Complete)> {
+fn find_items(
+    db: &RootDatabase,
+    krate: Crate,
+    local_query: symbol_index::Query,
+    external_query: import_map::Query,
+) -> impl Iterator<Item = (ItemInNs, Complete)> {
     let _p = tracing::info_span!("find_items").entered();
     // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
     // filter on our own.

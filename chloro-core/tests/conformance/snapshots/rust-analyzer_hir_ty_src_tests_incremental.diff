@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20373 bytes
-Chloro size:   20266 bytes
+Chloro size:   20285 bytes
 Rustfmt size:  20373 bytes
 
 ✗ Outputs DIFFER
@@ -141,16 +141,3 @@ Rustfmt size:  20373 bytes
      execute_assert_events(
          &db,
          || {
-     );
- }
- 
--fn execute_assert_events(
--    db: &TestDB,
--    f: impl FnOnce(),
--    required: &[(&str, usize)],
--    expect: Expect,
--) {
-+fn execute_assert_events(db: &TestDB, f: impl FnOnce(), required: &[(&str, usize)], expect: Expect) {
-     crate::attach_db(db, || {
-         let (executed, events) = db.log_executed(f);
-         for (event, count) in required {

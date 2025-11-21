@@ -10,7 +10,12 @@ use syntax::ast::{self, AstNode, BinaryOp, CmpOp, HasName, LogicOp, edit::AstNod
 /// Returns `Option` so that we can use `?` rather than `if let Some`. Returning
 /// `None` means that generating a custom trait body failed, and the body will remain
 /// as `todo!` instead.
-pub(crate) fn gen_trait_fn_body(func: &ast::Fn, trait_path: &ast::Path, adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
+pub(crate) fn gen_trait_fn_body(
+    func: &ast::Fn,
+    trait_path: &ast::Path,
+    adt: &ast::Adt,
+    trait_ref: Option<TraitRef<'_>>,
+) -> Option<ast::BlockExpr> {
     let _ = func.body()?;
     match trait_path.segment()?.name_ref()?.text().as_str() {
         "Clone" => {
@@ -401,7 +406,10 @@ fn gen_hash_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
 }
 
 /// Generate a `PartialEq` impl based on the fields and members of the target type.
-fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
+fn gen_partial_eq(
+    adt: &ast::Adt,
+    trait_ref: Option<TraitRef<'_>>,
+) -> Option<ast::BlockExpr> {
     fn gen_eq_chain(expr: Option<ast::Expr>, cmp: ast::Expr) -> Option<ast::Expr> {
         match expr {
             Some(expr) => Some(make::expr_bin_op(expr, BinaryOp::LogicOp(LogicOp::And), cmp)),
@@ -586,7 +594,10 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
     Some(body)
 }
 
-fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
+fn gen_partial_ord(
+    adt: &ast::Adt,
+    trait_ref: Option<TraitRef<'_>>,
+) -> Option<ast::BlockExpr> {
     fn gen_partial_eq_match(match_target: ast::Expr) -> Option<ast::Stmt> {
         let mut arms = vec![];
 

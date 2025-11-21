@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4757 bytes
-Chloro size:   4694 bytes
+Chloro size:   4770 bytes
 Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
@@ -20,16 +20,7 @@ Rustfmt size:  4729 bytes
 -    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
  };
  
--pub(crate) fn complete_expr_snippet(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx: &PathCompletionCtx<'_>,
--    &PathExprCtx { in_block_expr, .. }: &PathExprCtx<'_>,
--) {
-+pub(crate) fn complete_expr_snippet(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, &PathExprCtx { in_block_expr, .. }: &PathExprCtx<'_>) {
-     if !matches!(path_ctx.qualified, Qualified::No) {
-         return;
-     }
+ pub(crate) fn complete_expr_snippet(
      if !ctx.qualifier_ctx.none() {
          return;
      }
@@ -46,19 +37,6 @@ Rustfmt size:  4729 bytes
      if in_block_expr {
          snippet(ctx, cap, "pd", "eprintln!(\"$0 = {:?}\", $0);").add_to(acc, ctx.db);
          snippet(ctx, cap, "ppd", "eprintln!(\"$0 = {:#?}\", $0);").add_to(acc, ctx.db);
-     }
- }
- 
--pub(crate) fn complete_item_snippet(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx: &PathCompletionCtx<'_>,
--    kind: &ItemListKind,
--) {
-+pub(crate) fn complete_item_snippet(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, kind: &ItemListKind) {
-     if !matches!(path_ctx.qualified, Qualified::No) {
-         return;
-     }
          Some(it) => it,
          None => return,
      };
@@ -70,28 +48,29 @@ Rustfmt size:  4729 bytes
      // Test-related snippets shouldn't be shown in blocks.
      if let ItemListKind::SourceFile | ItemListKind::Module = kind {
          let mut item = snippet(
+     }
  }
  
- fn snippet(ctx: &CompletionContext<'_>, cap: SnippetCap, label: &str, snippet: &str) -> Builder {
+-fn snippet(ctx: &CompletionContext<'_>, cap: SnippetCap, label: &str, snippet: &str) -> Builder {
 -    let mut item = CompletionItem::new(
 -        CompletionItemKind::Snippet,
 -        ctx.source_range(),
 -        label,
 -        ctx.edition,
 -    );
++fn snippet(
++    ctx: &CompletionContext<'_>,
++    cap: SnippetCap,
++    label: &str,
++    snippet: &str,
++) -> Builder {
 +    let mut item =
 +        CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
      item.insert_snippet(cap, snippet);
      item
  }
- 
--fn add_custom_completions(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    cap: SnippetCap,
--    scope: SnippetScope,
--) -> Option<()> {
-+fn add_custom_completions(acc: &mut Completions, ctx: &CompletionContext<'_>, cap: SnippetCap, scope: SnippetScope) -> Option<()> {
+     scope: SnippetScope,
+ ) -> Option<()> {
      ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
 -    ctx.config
 -        .prefix_snippets()

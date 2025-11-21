@@ -2,24 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14005 bytes
-Chloro size:   13955 bytes
+Chloro size:   13970 bytes
 Rustfmt size:  14005 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Completes `where` and `for` keywords.
- 
- use syntax::ast::{self, Item};
- 
- use crate::{CompletionContext, Completions};
- 
--pub(crate) fn complete_for_and_where(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    keyword_item: &ast::Item,
--) {
-+pub(crate) fn complete_for_and_where(acc: &mut Completions, ctx: &CompletionContext<'_>, keyword_item: &ast::Item) {
+     keyword_item: &ast::Item,
+ ) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
 -
      match keyword_item {

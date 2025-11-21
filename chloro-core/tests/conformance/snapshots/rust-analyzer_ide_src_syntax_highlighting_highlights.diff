@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2643 bytes
-Chloro size:   2640 bytes
+Chloro size:   2709 bytes
 Rustfmt size:  2800 bytes
 
 ✗ Outputs DIFFER
@@ -25,6 +25,14 @@ Rustfmt size:  2800 bytes
          }
      }
  
+-    pub(super) fn add(&mut self, hl_range: HlRange) {
++    pub(super) fn add(
++        &mut self,
++        hl_range: HlRange,
++    ) {
+         self.root.add(hl_range);
+     }
+ 
  
  impl Node {
      fn new(hl_range: HlRange) -> Node {
@@ -35,7 +43,11 @@ Rustfmt size:  2800 bytes
 +        Node { hl_range, nested: Vec::new() }
      }
  
-     fn add(&mut self, hl_range: HlRange) {
+-    fn add(&mut self, hl_range: HlRange) {
++    fn add(
++        &mut self,
++        hl_range: HlRange,
++    ) {
          assert!(self.hl_range.range.contains_range(hl_range.range));
 -
          // Fast path
@@ -64,3 +76,14 @@ Rustfmt size:  2800 bytes
          let nested = self
              .nested
              .splice(overlapping.clone(), iter::once(Node::new(hl_range)))
+         self.nested[overlapping.start].nested = nested;
+     }
+ 
+-    fn flatten(&self, acc: &mut Vec<HlRange>) {
++    fn flatten(
++        &self,
++        acc: &mut Vec<HlRange>,
++    ) {
+         let mut start = self.hl_range.range.start();
+         let mut nested = self.nested.iter();
+         loop {

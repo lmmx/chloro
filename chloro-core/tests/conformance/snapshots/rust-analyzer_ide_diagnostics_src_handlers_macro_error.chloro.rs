@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
-pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> Diagnostic {
+pub(crate) fn macro_error(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MacroError,
+) -> Diagnostic {
     // Use more accurate position if available.
     let display_range = ctx.resolve_precise_location(&d.node, d.precise_location);
     Diagnostic::new(
@@ -11,7 +14,10 @@ pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> 
     .stable()
 }
 
-pub(crate) fn macro_def_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroDefError) -> Diagnostic {
+pub(crate) fn macro_def_error(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MacroDefError,
+) -> Diagnostic {
     // Use more accurate position if available.
     let display_range =
         ctx.resolve_precise_location(&d.node.map(|it| it.syntax_node_ptr()), d.name);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3239 bytes
-Chloro size:   3077 bytes
+Chloro size:   3088 bytes
 Rustfmt size:  3239 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,9 @@ Rustfmt size:  3239 bytes
 -//
 -// This diagnostic is triggered if the referenced associated item is not visible from the current
 -// module.
--pub(crate) fn private_assoc_item(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::PrivateAssocItem,
--) -> Diagnostic {
-+pub(crate) fn private_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateAssocItem) -> Diagnostic {
-     // FIXME: add quickfix
-     let name = d
-         .item
+ pub(crate) fn private_assoc_item(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::PrivateAssocItem,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

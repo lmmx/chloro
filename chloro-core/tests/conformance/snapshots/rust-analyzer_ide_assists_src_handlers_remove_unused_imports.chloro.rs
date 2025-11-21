@@ -17,7 +17,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn remove_unused_imports(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // First, grab the uses that intersect with the current selection.
     let selected_el = match ctx.covering_element() {
         syntax::NodeOrToken::Node(n) => n,
@@ -111,7 +114,12 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
     }
 }
 
-fn is_path_per_ns_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, path: &PathResolutionPerNs) -> bool {
+fn is_path_per_ns_unused_in_scope(
+    ctx: &AssistContext<'_>,
+    u: &ast::UseTree,
+    scope: &mut Vec<SearchScope>,
+    path: &PathResolutionPerNs,
+) -> bool {
     if let Some(PathResolution::Def(ModuleDef::Trait(ref t))) = path.type_ns {
         if is_trait_unused_in_scope(ctx, u, scope, t) {
             let path = [path.value_ns, path.macro_ns];
@@ -125,7 +133,12 @@ fn is_path_per_ns_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, sco
     }
 }
 
-fn is_path_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, path: &[Option<PathResolution>]) -> bool {
+fn is_path_unused_in_scope(
+    ctx: &AssistContext<'_>,
+    u: &ast::UseTree,
+    scope: &mut Vec<SearchScope>,
+    path: &[Option<PathResolution>],
+) -> bool {
     !path
         .iter()
         .filter_map(|path| *path)
@@ -136,13 +149,23 @@ fn is_path_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mu
         .any(|def| used_once_in_scope(ctx, def, u.rename(), scope))
 }
 
-fn is_trait_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, t: &hir::Trait) -> bool {
+fn is_trait_unused_in_scope(
+    ctx: &AssistContext<'_>,
+    u: &ast::UseTree,
+    scope: &mut Vec<SearchScope>,
+    t: &hir::Trait,
+) -> bool {
     !std::iter::once((Definition::Trait(*t), u.rename()))
         .chain(t.items(ctx.db()).into_iter().map(|item| (item.into(), None)))
         .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
 }
 
-fn used_once_in_scope(ctx: &AssistContext<'_>, def: Definition, rename: Option<Rename>, scopes: &Vec<SearchScope>) -> bool {
+fn used_once_in_scope(
+    ctx: &AssistContext<'_>,
+    def: Definition,
+    rename: Option<Rename>,
+    scopes: &Vec<SearchScope>,
+) -> bool {
     let mut found = false;
     for scope in scopes {
         let mut search_non_import = |_, r: FileReference| {
@@ -166,7 +189,10 @@ fn used_once_in_scope(ctx: &AssistContext<'_>, def: Definition, rename: Option<R
 }
 
 /// Build a search scope spanning the given module but none of its submodules.
-fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
+fn module_search_scope(
+    db: &RootDatabase,
+    module: hir::Module,
+) -> Vec<SearchScope> {
     let (file_id, range) = {
         let InFile { file_id, value } = module.definition_source(db);
         if let Some(InRealFile { file_id, value: call_source }) = file_id.original_call_node(db) {

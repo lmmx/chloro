@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10188 bytes
-Chloro size:   8830 bytes
+Chloro size:   8863 bytes
 Rustfmt size:  10188 bytes
 
 ✗ Outputs DIFFER
@@ -75,7 +75,11 @@ Rustfmt size:  10188 bytes
 -//     const_maker! {i32, 7}
 -// }
 -// ```
- pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_trait_from_impl(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      // Get AST Node
      let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
 -
@@ -110,6 +114,26 @@ Rustfmt size:  10188 bytes
      Some(())
  }
  
+ /// `E0449` Trait items always share the visibility of their trait
+-fn remove_items_visibility(editor: &mut SyntaxEditor, item: &ast::AssocItem) {
++fn remove_items_visibility(
++    editor: &mut SyntaxEditor,
++    item: &ast::AssocItem,
++) {
+     if let Some(has_vis) = ast::AnyHasVisibility::cast(item.syntax().clone()) {
+         if let Some(vis) = has_vis.visibility()
+             && let Some(token) = vis.syntax().next_sibling_or_token()
+     }
+ }
+ 
+-fn strip_body(editor: &mut SyntaxEditor, item: &ast::AssocItem) {
++fn strip_body(
++    editor: &mut SyntaxEditor,
++    item: &ast::AssocItem,
++) {
+     if let ast::AssocItem::Fn(f) = item
+         && let Some(body) = f.body()
+     {
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};

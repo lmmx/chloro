@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35716 bytes
+Chloro size:   35796 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
- 
- /// Complete dot accesses, i.e. fields or methods.
--pub(crate) fn complete_dot(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    dot_access: &DotAccess<'_>,
--) {
-+pub(crate) fn complete_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) {
-     let receiver_ty = match dot_access {
          DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
          _ => return,
      };
@@ -42,19 +32,6 @@ Rustfmt size:  35861 bytes
      if ctx.config.enable_auto_iter && !receiver_ty.strip_references().impls_iterator(ctx.db) {
          // FIXME:
          // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
-     }
- }
- 
--pub(crate) fn complete_undotted_self(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx: &PathCompletionCtx<'_>,
--    expr_ctx: &PathExprCtx<'_>,
--) {
-+pub(crate) fn complete_undotted_self(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, expr_ctx: &PathExprCtx<'_>) {
-     if !ctx.config.enable_self_on_the_fly {
-         return;
-     }
          PathExprCtx { self_param: Some(self_param), .. } => self_param,
          _ => return,
      };
@@ -62,34 +39,6 @@ Rustfmt size:  35861 bytes
      let ty = self_param.ty(ctx.db);
      complete_fields(
          acc,
-     });
- }
- 
--fn complete_fields(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    receiver: &hir::Type<'_>,
--    mut named_field: impl FnMut(&mut Completions, hir::Field, hir::Type<'_>),
--    mut tuple_index: impl FnMut(&mut Completions, usize, hir::Type<'_>),
--    has_parens: bool,
--) {
-+fn complete_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, receiver: &hir::Type<'_>, mut named_field: impl FnMut(&mut Completions, hir::Field, hir::Type<'_>), mut tuple_index: impl FnMut(&mut Completions, usize, hir::Type<'_>), has_parens: bool) {
-     let mut seen_names = FxHashSet::default();
-     for receiver in receiver.autoderef(ctx.db) {
-         for (field, ty) in receiver.fields(ctx.db) {
-     }
- }
- 
--fn complete_methods(
--    ctx: &CompletionContext<'_>,
--    receiver: &hir::Type<'_>,
--    traits_in_scope: &FxHashSet<hir::TraitId>,
--    f: impl FnMut(hir::Function),
--) {
-+fn complete_methods(ctx: &CompletionContext<'_>, receiver: &hir::Type<'_>, traits_in_scope: &FxHashSet<hir::TraitId>, f: impl FnMut(hir::Function)) {
-     struct Callback<'a, F> {
-         ctx: &'a CompletionContext<'a>,
-         f: F,
          // is also an inherent method, especially considering that it may be private, and filtered later).
          seen_methods: FxHashSet<Function>,
      }

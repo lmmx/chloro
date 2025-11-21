@@ -58,7 +58,11 @@ pub(crate) enum Target {
 }
 
 impl CargoOptions {
-    pub(crate) fn apply_on_command(&self, cmd: &mut Command, ws_target_dir: Option<&Utf8Path>) {
+    pub(crate) fn apply_on_command(
+        &self,
+        cmd: &mut Command,
+        ws_target_dir: Option<&Utf8Path>,
+    ) {
         for target in &self.target_tuples {
             cmd.args(["--target", target.as_str()]);
         }
@@ -115,7 +119,10 @@ impl FlycheckConfig {
 }
 
 impl fmt::Display for FlycheckConfig {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             FlycheckConfig::CargoCommand { command, .. } => write!(f, "cargo {command}"),
             FlycheckConfig::CustomCommand { command, args, .. } => {
@@ -149,7 +156,16 @@ pub(crate) struct FlycheckHandle {
 }
 
 impl FlycheckHandle {
-    pub(crate) fn spawn(id: usize, generation: DiagnosticsGeneration, sender: Sender<FlycheckMessage>, config: FlycheckConfig, sysroot_root: Option<AbsPathBuf>, workspace_root: AbsPathBuf, manifest_path: Option<AbsPathBuf>, ws_target_dir: Option<Utf8PathBuf>) -> FlycheckHandle {
+    pub(crate) fn spawn(
+        id: usize,
+        generation: DiagnosticsGeneration,
+        sender: Sender<FlycheckMessage>,
+        config: FlycheckConfig,
+        sysroot_root: Option<AbsPathBuf>,
+        workspace_root: AbsPathBuf,
+        manifest_path: Option<AbsPathBuf>,
+        ws_target_dir: Option<Utf8PathBuf>,
+    ) -> FlycheckHandle {
         let actor = FlycheckActor::new(
             id,
             generation,
@@ -169,7 +185,10 @@ impl FlycheckHandle {
     }
 
     /// Schedule a re-start of the cargo check worker to do a workspace wide check.
-    pub(crate) fn restart_workspace(&self, saved_file: Option<AbsPathBuf>) {
+    pub(crate) fn restart_workspace(
+        &self,
+        saved_file: Option<AbsPathBuf>,
+    ) {
         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
         self.sender
             .send(StateChange::Restart {
@@ -182,7 +201,12 @@ impl FlycheckHandle {
     }
 
     /// Schedule a re-start of the cargo check worker to do a package wide check.
-    pub(crate) fn restart_for_package(&self, package: Arc<PackageId>, target: Option<Target>, workspace_deps: Option<FxHashSet<Arc<PackageId>>>) {
+    pub(crate) fn restart_for_package(
+        &self,
+        package: Arc<PackageId>,
+        target: Option<Target>,
+        workspace_deps: Option<FxHashSet<Arc<PackageId>>>,
+    ) {
         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
         self.sender
             .send(StateChange::Restart {
@@ -243,7 +267,10 @@ pub(crate) enum FlycheckMessage {
 }
 
 impl fmt::Debug for FlycheckMessage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             FlycheckMessage::AddDiagnostic {
                 id,
@@ -337,7 +364,16 @@ enum Event {
 
 
 impl FlycheckActor {
-    fn new(id: usize, generation: DiagnosticsGeneration, sender: Sender<FlycheckMessage>, config: FlycheckConfig, sysroot_root: Option<AbsPathBuf>, workspace_root: AbsPathBuf, manifest_path: Option<AbsPathBuf>, ws_target_dir: Option<Utf8PathBuf>) -> FlycheckActor {
+    fn new(
+        id: usize,
+        generation: DiagnosticsGeneration,
+        sender: Sender<FlycheckMessage>,
+        config: FlycheckConfig,
+        sysroot_root: Option<AbsPathBuf>,
+        workspace_root: AbsPathBuf,
+        manifest_path: Option<AbsPathBuf>,
+        ws_target_dir: Option<Utf8PathBuf>,
+    ) -> FlycheckActor {
         tracing::info!(%id, ?workspace_root, "Spawning flycheck");
         FlycheckActor {
             id,
@@ -356,11 +392,17 @@ impl FlycheckActor {
         }
     }
 
-    fn report_progress(&self, progress: Progress) {
+    fn report_progress(
+        &self,
+        progress: Progress,
+    ) {
         self.send(FlycheckMessage::Progress { id: self.id, progress });
     }
 
-    fn next_event(&self, inbox: &Receiver<StateChange>) -> Option<Event> {
+    fn next_event(
+        &self,
+        inbox: &Receiver<StateChange>,
+    ) -> Option<Event> {
         let Some(command_receiver) = &self.command_receiver else {
             return inbox.recv().ok().map(Event::RequestStateChange);
         };
@@ -371,7 +413,10 @@ impl FlycheckActor {
         }
     }
 
-    fn run(mut self, inbox: Receiver<StateChange>) {
+    fn run(
+        mut self,
+        inbox: Receiver<StateChange>,
+    ) {
         'event: while let Some(event) = self.next_event(&inbox) {
             match event {
                 Event::RequestStateChange(StateChange::Cancel) => {
@@ -621,7 +666,12 @@ impl FlycheckActor {
     /// Construct a `Command` object for checking the user's code. If the user
     /// has specified a custom command with placeholders that we cannot fill,
     /// return None.
-    fn check_command(&self, scope: &FlycheckScope, saved_file: Option<&AbsPath>, target: Option<Target>) -> Option<Command> {
+    fn check_command(
+        &self,
+        scope: &FlycheckScope,
+        saved_file: Option<&AbsPath>,
+        target: Option<Target>,
+    ) -> Option<Command> {
         match &self.config {
             FlycheckConfig::CargoCommand { command, options, ansi_color_output } => {
                 let mut cmd =
@@ -711,7 +761,10 @@ impl FlycheckActor {
     }
 
     #[track_caller]
-    fn send(&self, check_task: FlycheckMessage) {
+    fn send(
+        &self,
+        check_task: FlycheckMessage,
+    ) {
         self.sender.send(check_task).unwrap();
     }
 }
@@ -728,7 +781,11 @@ enum CargoCheckMessage {
 struct CargoCheckParser;
 
 impl CargoParser<CargoCheckMessage> for CargoCheckParser {
-    fn from_line(&self, line: &str, error: &mut String) -> Option<CargoCheckMessage> {
+    fn from_line(
+        &self,
+        line: &str,
+        error: &mut String,
+    ) -> Option<CargoCheckMessage> {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
         if let Ok(message) = JsonMessage::deserialize(&mut deserializer) {

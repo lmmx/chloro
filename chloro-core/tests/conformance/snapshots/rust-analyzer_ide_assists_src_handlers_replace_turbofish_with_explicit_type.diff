@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8930 bytes
-Chloro size:   8603 bytes
+Chloro size:   8614 bytes
 Rustfmt size:  8981 bytes
 
 ✗ Outputs DIFFER
@@ -38,11 +38,10 @@ Rustfmt size:  8981 bytes
 -//     let a: i32 = make();
 -// }
 -// ```
--pub(crate) fn replace_turbofish_with_explicit_type(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn replace_turbofish_with_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn replace_turbofish_with_explicit_type(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let let_stmt = ctx.find_node_at_offset::<LetStmt>()?;
 -
      let initializer = let_stmt.initializer()?;

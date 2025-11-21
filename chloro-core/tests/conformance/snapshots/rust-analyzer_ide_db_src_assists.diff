@@ -2,12 +2,20 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5963 bytes
-Chloro size:   5931 bytes
+Chloro size:   5977 bytes
 Rustfmt size:  5963 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
+ }
+ 
+ impl AssistKind {
+-    pub fn contains(self, other: AssistKind) -> bool {
++    pub fn contains(
++        self,
++        other: AssistKind,
++    ) -> bool {
          if self == other {
              return true;
          }
@@ -22,3 +30,14 @@ Rustfmt size:  5963 bytes
      pub assist_kind: AssistKind,
      /// Subtype of the assist. When many assists have the same id, it differentiates among them.
      pub assist_subtype: Option<usize>,
+ }
+ 
+ impl AssistResolveStrategy {
+-    pub fn should_resolve(&self, id: &AssistId) -> bool {
++    pub fn should_resolve(
++        &self,
++        id: &AssistId,
++    ) -> bool {
+         match self {
+             AssistResolveStrategy::None => false,
+             AssistResolveStrategy::All => true,

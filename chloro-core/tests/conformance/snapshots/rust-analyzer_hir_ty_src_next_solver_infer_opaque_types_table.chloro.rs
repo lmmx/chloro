@@ -28,14 +28,21 @@ pub struct OpaqueTypeStorageEntries {
 }
 
 impl rustc_type_ir::inherent::OpaqueTypeStorageEntries for OpaqueTypeStorageEntries {
-    fn needs_reevaluation(self, canonicalized: usize) -> bool {
+    fn needs_reevaluation(
+        self,
+        canonicalized: usize,
+    ) -> bool {
         self.opaque_types != canonicalized
     }
 }
 
 impl<'db> OpaqueTypeStorage<'db> {
     #[instrument(level = "debug")]
-    pub(crate) fn remove(&mut self, key: OpaqueTypeKey<'db>, prev: Option<OpaqueHiddenType<'db>>) {
+    pub(crate) fn remove(
+        &mut self,
+        key: OpaqueTypeKey<'db>,
+        prev: Option<OpaqueHiddenType<'db>>,
+    ) {
         if let Some(prev) = prev {
             *self.opaque_types.get_mut(&key).unwrap() = prev;
         } else {
@@ -71,7 +78,10 @@ impl<'db> OpaqueTypeStorage<'db> {
         }
     }
 
-    pub(crate) fn opaque_types_added_since(&self, prev_entries: OpaqueTypeStorageEntries) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+    pub(crate) fn opaque_types_added_since(
+        &self,
+        prev_entries: OpaqueTypeStorageEntries,
+    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
         self.opaque_types
             .iter()
             .skip(prev_entries.opaque_types)
@@ -103,7 +113,10 @@ impl<'db> OpaqueTypeStorage<'db> {
     }
 
     #[inline]
-    pub(crate) fn with_log<'a>(&'a mut self, undo_log: &'a mut InferCtxtUndoLogs<'db>) -> OpaqueTypeTable<'a, 'db> {
+    pub(crate) fn with_log<'a>(
+        &'a mut self,
+        undo_log: &'a mut InferCtxtUndoLogs<'db>,
+    ) -> OpaqueTypeTable<'a, 'db> {
         OpaqueTypeTable { storage: self, undo_log }
     }
 }
@@ -123,7 +136,11 @@ impl<'db> Deref for OpaqueTypeTable<'_, 'db> {
 
 impl<'a, 'db> OpaqueTypeTable<'a, 'db> {
     #[instrument(skip(self), level = "debug")]
-    pub(crate) fn register(&mut self, key: OpaqueTypeKey<'db>, hidden_type: OpaqueHiddenType<'db>) -> Option<Ty<'db>> {
+    pub(crate) fn register(
+        &mut self,
+        key: OpaqueTypeKey<'db>,
+        hidden_type: OpaqueHiddenType<'db>,
+    ) -> Option<Ty<'db>> {
         if let Some(entry) = self.storage.opaque_types.get_mut(&key) {
             let prev = std::mem::replace(entry, hidden_type);
             self.undo_log.push(UndoLog::OpaqueTypes(key, Some(prev)));
@@ -134,7 +151,11 @@ impl<'a, 'db> OpaqueTypeTable<'a, 'db> {
         None
     }
 
-    pub(crate) fn add_duplicate(&mut self, key: OpaqueTypeKey<'db>, hidden_type: OpaqueHiddenType<'db>) {
+    pub(crate) fn add_duplicate(
+        &mut self,
+        key: OpaqueTypeKey<'db>,
+        hidden_type: OpaqueHiddenType<'db>,
+    ) {
         self.storage.duplicate_entries.push((key, hidden_type));
         self.undo_log.push(UndoLog::DuplicateOpaqueType);
     }

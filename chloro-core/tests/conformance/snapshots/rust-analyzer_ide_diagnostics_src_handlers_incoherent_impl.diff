@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2085 bytes
-Chloro size:   1961 bytes
+Chloro size:   1972 bytes
 Rustfmt size:  2085 bytes
 
 ✗ Outputs DIFFER
@@ -17,9 +17,14 @@ Rustfmt size:  2085 bytes
 -// Diagnostic: incoherent-impl
 -//
 -// This diagnostic is triggered if the targe type of an impl is from a foreign crate.
- pub(crate) fn incoherent_impl(ctx: &DiagnosticsContext<'_>, d: &hir::IncoherentImpl) -> Diagnostic {
+-pub(crate) fn incoherent_impl(ctx: &DiagnosticsContext<'_>, d: &hir::IncoherentImpl) -> Diagnostic {
++pub(crate) fn incoherent_impl(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::IncoherentImpl,
++) -> Diagnostic {
      let display_range = adjusted_display_range(ctx, InFile::new(d.file_id, d.impl_), &|node| {
          Some(TextRange::new(
+             node.syntax().text_range().start(),
              node.self_ty()?.syntax().text_range().end(),
          ))
      });

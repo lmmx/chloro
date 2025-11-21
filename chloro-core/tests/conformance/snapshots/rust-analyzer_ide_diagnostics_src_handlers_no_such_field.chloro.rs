@@ -12,7 +12,10 @@ use crate::{
     handlers::private_field::field_is_private_fixes,
 };
 
-pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
+pub(crate) fn no_such_field(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::NoSuchField,
+) -> Diagnostic {
     let (code, message) = if d.private.is_some() {
         ("E0451", "field is private")
     } else if let VariantId::EnumVariantId(_) = d.variant {
@@ -26,7 +29,10 @@ pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) 
         .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::NoSuchField,
+) -> Option<Vec<Assist>> {
     // FIXME: quickfix for pattern
     let root = ctx.sema.db.parse_or_expand(d.field.file_id);
     match &d.field.value.to_node(&root) {
@@ -50,7 +56,11 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assis
     }
 }
 
-fn missing_record_expr_field_fixes(sema: &Semantics<'_, RootDatabase>, usage_file_id: EditionedFileId, record_expr_field: &ast::RecordExprField) -> Option<Vec<Assist>> {
+fn missing_record_expr_field_fixes(
+    sema: &Semantics<'_, RootDatabase>,
+    usage_file_id: EditionedFileId,
+    record_expr_field: &ast::RecordExprField,
+) -> Option<Vec<Assist>> {
     let record_lit = ast::RecordExpr::cast(record_expr_field.syntax().parent()?.parent()?)?;
     let def_id = sema.resolve_variant(record_lit)?;
     let module;

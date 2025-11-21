@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6837 bytes
-Chloro size:   6715 bytes
+Chloro size:   6856 bytes
 Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
@@ -18,28 +18,17 @@ Rustfmt size:  6998 bytes
  };
  
  use crate::RootDatabase;
-     }
  
+ impl<'db> ActiveParameter<'db> {
      /// Returns information about the call argument this token is part of.
--    pub fn at_arg(
--        sema: &'db Semantics<'db, RootDatabase>,
--        list: ast::ArgList,
--        at: TextSize,
--    ) -> Option<Self> {
-+    pub fn at_arg(sema: &'db Semantics<'db, RootDatabase>, list: ast::ArgList, at: TextSize) -> Option<Self> {
-         let (signature, active_parameter) = callable_for_arg_list(sema, list, at)?;
+-    pub fn at_token(sema: &Semantics<'db, RootDatabase>, token: SyntaxToken) -> Option<Self> {
++    pub fn at_token(
++        sema: &Semantics<'db, RootDatabase>,
++        token: SyntaxToken,
++    ) -> Option<Self> {
+         let (signature, active_parameter) = callable_for_token(sema, token)?;
          Self::from_signature_and_active_parameter(sema, signature, active_parameter)
      }
- 
--    fn from_signature_and_active_parameter(
--        sema: &Semantics<'db, RootDatabase>,
--        signature: hir::Callable<'db>,
--        active_parameter: Option<usize>,
--    ) -> Option<Self> {
-+    fn from_signature_and_active_parameter(sema: &Semantics<'db, RootDatabase>, signature: hir::Callable<'db>, active_parameter: Option<usize>) -> Option<Self> {
-         let idx = active_parameter?;
-         let mut params = signature.params();
-         if idx >= params.len() {
              return None;
          }
          let param = params.swap_remove(idx);
@@ -71,15 +60,6 @@ Rustfmt size:  6998 bytes
      }
  }
  
- /// Returns a [`hir::Callable`] this token is a part of and its argument index of said callable.
--pub fn callable_for_token<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    token: SyntaxToken,
--) -> Option<(hir::Callable<'db>, Option<usize>)> {
-+pub fn callable_for_token<'db>(sema: &Semantics<'db, RootDatabase>, token: SyntaxToken) -> Option<(hir::Callable<'db>, Option<usize>)> {
-     let offset = token.text_range().start();
-     // Find the calling expression and its NameRef
-     let parent = token.parent()?;
      let calling_node = parent
          .ancestors()
          .filter_map(ast::CallableExpr::cast)
@@ -92,13 +72,8 @@ Rustfmt size:  6998 bytes
      callable_for_node(sema, &calling_node, offset)
  }
  
- /// Returns a [`hir::Callable`] this token is a part of and its argument index of said callable.
--pub fn callable_for_arg_list<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    arg_list: ast::ArgList,
--    at: TextSize,
--) -> Option<(hir::Callable<'db>, Option<usize>)> {
-+pub fn callable_for_arg_list<'db>(sema: &Semantics<'db, RootDatabase>, arg_list: ast::ArgList, at: TextSize) -> Option<(hir::Callable<'db>, Option<usize>)> {
+     at: TextSize,
+ ) -> Option<(hir::Callable<'db>, Option<usize>)> {
      debug_assert!(arg_list.syntax().text_range().contains(at));
 -    let callable = arg_list
 -        .syntax()
@@ -108,27 +83,6 @@ Rustfmt size:  6998 bytes
      callable_for_node(sema, &callable, at)
  }
  
--pub fn callable_for_node<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    calling_node: &ast::CallableExpr,
--    offset: TextSize,
--) -> Option<(hir::Callable<'db>, Option<usize>)> {
-+pub fn callable_for_node<'db>(sema: &Semantics<'db, RootDatabase>, calling_node: &ast::CallableExpr, offset: TextSize) -> Option<(hir::Callable<'db>, Option<usize>)> {
-     let callable = match calling_node {
-         ast::CallableExpr::Call(call) => sema.resolve_expr_as_callable(&call.expr()?),
-         ast::CallableExpr::MethodCall(call) => sema.resolve_method_call_as_callable(call),
-     Some((callable, active_param))
- }
- 
--pub fn generic_def_for_node(
--    sema: &Semantics<'_, RootDatabase>,
--    generic_arg_list: &ast::GenericArgList,
--    token: &SyntaxToken,
--) -> Option<(hir::GenericDef, usize, bool, Option<hir::Variant>)> {
-+pub fn generic_def_for_node(sema: &Semantics<'_, RootDatabase>, generic_arg_list: &ast::GenericArgList, token: &SyntaxToken) -> Option<(hir::GenericDef, usize, bool, Option<hir::Variant>)> {
-     let parent = generic_arg_list.syntax().parent()?;
-     let mut variant = None;
-     let def = match_ast! {
              _ => return None,
          }
      };

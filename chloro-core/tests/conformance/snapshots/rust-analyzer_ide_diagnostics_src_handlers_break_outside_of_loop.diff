@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2954 bytes
-Chloro size:   2813 bytes
+Chloro size:   2824 bytes
 Rustfmt size:  2954 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,9 @@ Rustfmt size:  2954 bytes
 -// Diagnostic: break-outside-of-loop
 -//
 -// This diagnostic is triggered if the `break` keyword is used outside of a loop.
--pub(crate) fn break_outside_of_loop(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::BreakOutsideOfLoop,
--) -> Diagnostic {
-+pub(crate) fn break_outside_of_loop(ctx: &DiagnosticsContext<'_>, d: &hir::BreakOutsideOfLoop) -> Diagnostic {
-     let message = if d.bad_value_break {
-         "can't break with a value in this position".to_owned()
-     } else {
+ pub(crate) fn break_outside_of_loop(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::BreakOutsideOfLoop,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

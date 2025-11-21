@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   1772 bytes
+Chloro size:   1787 bytes
 Rustfmt size:  2157 bytes
 
 ✗ Outputs DIFFER
@@ -18,15 +18,7 @@ Rustfmt size:  2157 bytes
 +use crate::{CompletionItem, Completions, context::CompletionContext};
  use super::AttrCompletion;
  
--pub(super) fn complete_on_unimplemented(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    input: ast::TokenTree,
--) {
-+pub(super) fn complete_on_unimplemented(acc: &mut Completions, ctx: &CompletionContext<'_>, input: ast::TokenTree) {
-     if let Some(existing_keys) = super::parse_comma_sep_expr(input) {
-         for attr in ATTRIBUTE_ARGS {
-             let already_annotated = existing_keys
+ pub(super) fn complete_on_unimplemented(
      }
  }
  

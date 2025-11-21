@@ -5,7 +5,13 @@ use syntax::ast;
 
 use crate::{Completions, context::CompletionContext, item::CompletionItem};
 
-pub(super) fn complete_lint(acc: &mut Completions, ctx: &CompletionContext<'_>, is_qualified: bool, existing_lints: &[ast::Path], lints_completions: &[Lint]) {
+pub(super) fn complete_lint(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    is_qualified: bool,
+    existing_lints: &[ast::Path],
+    lints_completions: &[Lint],
+) {
     for &Lint { label, description, .. } in lints_completions {
         let (qual, name) = {
             // FIXME: change `Lint`'s label to not store a path in it but split the prefix off instead?

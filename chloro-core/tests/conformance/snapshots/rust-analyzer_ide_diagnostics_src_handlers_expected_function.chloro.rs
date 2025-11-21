@@ -2,7 +2,10 @@ use hir::HirDisplay;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn expected_function(ctx: &DiagnosticsContext<'_>, d: &hir::ExpectedFunction<'_>) -> Diagnostic {
+pub(crate) fn expected_function(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::ExpectedFunction<'_>,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0618"),

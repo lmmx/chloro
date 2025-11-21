@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5391 bytes
-Chloro size:   5157 bytes
+Chloro size:   5168 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,10 @@ Rustfmt size:  5418 bytes
 -// ```
 -// fn foo<$0B: Bar>(bar: B) {}
 -// ```
--pub(crate) fn introduce_named_type_parameter(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn introduce_named_type_parameter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn introduce_named_type_parameter(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let impl_trait_type = ctx.find_node_at_offset::<ast::ImplTraitType>()?;
 -    let param = impl_trait_type
 -        .syntax()

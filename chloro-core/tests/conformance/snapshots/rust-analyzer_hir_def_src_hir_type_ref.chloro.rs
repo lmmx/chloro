@@ -191,7 +191,11 @@ impl TypeRef {
         TypeRef::Tuple(ThinVec::new())
     }
 
-    pub fn walk(this: TypeRefId, map: &ExpressionStore, f: &mut impl FnMut(&TypeRef)) {
+    pub fn walk(
+        this: TypeRefId,
+        map: &ExpressionStore,
+        f: &mut impl FnMut(&TypeRef),
+    ) {
         go(this, f, map);
         fn go(type_ref: TypeRefId, f: &mut impl FnMut(&TypeRef), map: &ExpressionStore) {
             let type_ref = &map[type_ref];
@@ -252,7 +256,10 @@ impl TypeRef {
 }
 
 impl TypeBound {
-    pub fn as_path<'a>(&self, map: &'a ExpressionStore) -> Option<(&'a Path, TraitBoundModifier)> {
+    pub fn as_path<'a>(
+        &self,
+        map: &'a ExpressionStore,
+    ) -> Option<(&'a Path, TraitBoundModifier)> {
         match self {
             &TypeBound::Path(p, m) => Some((&map[p], m)),
             &TypeBound::ForLifetime(_, p) => Some((&map[p], TraitBoundModifier::None)),
@@ -303,7 +310,10 @@ impl From<Literal> for LiteralConstRef {
 }
 
 impl std::fmt::Display for LiteralConstRef {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> Result<(), std::fmt::Error> {
         match self {
             LiteralConstRef::Int(num) => num.fmt(f),
             LiteralConstRef::UInt(num) => num.fmt(f),

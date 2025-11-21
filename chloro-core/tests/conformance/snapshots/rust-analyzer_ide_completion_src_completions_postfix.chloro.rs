@@ -26,7 +26,11 @@ use crate::{
 
 mod format_like;
 
-pub(crate) fn complete_postfix(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) {
+pub(crate) fn complete_postfix(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    dot_access: &DotAccess<'_>,
+) {
     if !ctx.config.enable_postfix_completions {
         return;
     }
@@ -281,7 +285,11 @@ pub(crate) fn complete_postfix(acc: &mut Completions, ctx: &CompletionContext<'_
     }
 }
 
-fn get_receiver_text(sema: &Semantics<'_, RootDatabase>, receiver: &ast::Expr, receiver_is_ambiguous_float_literal: bool) -> String {
+fn get_receiver_text(
+    sema: &Semantics<'_, RootDatabase>,
+    receiver: &ast::Expr,
+    receiver_is_ambiguous_float_literal: bool,
+) -> String {
     // Do not just call `receiver.to_string()`, as that will mess up whitespaces inside macros.
     let Some(mut range) = sema.original_range_opt(receiver.syntax()) else {
         return receiver.to_string();
@@ -344,7 +352,11 @@ fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
     (resulting_element, prefix)
 }
 
-fn build_postfix_snippet_builder<'ctx>(ctx: &'ctx CompletionContext<'_>, cap: SnippetCap, receiver: &'ctx ast::Expr) -> Option<impl Fn(&str, &str, &str) -> Builder + 'ctx> {
+fn build_postfix_snippet_builder<'ctx>(
+    ctx: &'ctx CompletionContext<'_>,
+    cap: SnippetCap,
+    receiver: &'ctx ast::Expr,
+) -> Option<impl Fn(&str, &str, &str) -> Builder + 'ctx> {
     let receiver_range = ctx.sema.original_range_opt(receiver.syntax())?.range;
     if ctx.source_range().end() < receiver_range.start() {
         // This shouldn't happen, yet it does. I assume this might be due to an incorrect token
@@ -384,7 +396,12 @@ fn build_postfix_snippet_builder<'ctx>(ctx: &'ctx CompletionContext<'_>, cap: Sn
     Some(build(ctx, cap, delete_range))
 }
 
-fn add_custom_postfix_completions(acc: &mut Completions, ctx: &CompletionContext<'_>, postfix_snippet: impl Fn(&str, &str, &str) -> Builder, receiver_text: &str) -> Option<()> {
+fn add_custom_postfix_completions(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    postfix_snippet: impl Fn(&str, &str, &str) -> Builder,
+    receiver_text: &str,
+) -> Option<()> {
     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
     ctx.config.postfix_snippets().filter(|(_, snip)| snip.scope == SnippetScope::Expr).for_each(
         |(trigger, snippet)| {

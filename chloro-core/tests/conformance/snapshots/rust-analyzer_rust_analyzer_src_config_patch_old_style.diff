@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7242 bytes
-Chloro size:   7235 bytes
+Chloro size:   7246 bytes
 Rustfmt size:  7242 bytes
 
 ✗ Outputs DIFFER
@@ -65,3 +65,14 @@ Rustfmt size:  7242 bytes
      // We need to do this due to the checkOnSave_enable -> checkOnSave change, as that key now can either be an object or a bool
      // checkOnSave_* -> check_*
      if let Some(Value::Object(obj)) = copy.pointer("/checkOnSave") {
+     }
+ }
+ 
+-fn merge(dst: &mut Value, src: Value) {
++fn merge(
++    dst: &mut Value,
++    src: Value,
++) {
+     match (dst, src) {
+         (Value::Object(dst), Value::Object(src)) => {
+             for (k, v) in src {

@@ -5,7 +5,10 @@ use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn convert_two_arm_bool_match_to_matches_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     use ArmBodyExpression::*;
     let match_expr = ctx.find_node_at_offset::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;
@@ -72,7 +75,10 @@ enum ArmBodyExpression {
     Expression(ast::Expr),
 }
 
-fn is_bool_literal_expr(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> Option<ArmBodyExpression> {
+fn is_bool_literal_expr(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &ast::Expr,
+) -> Option<ArmBodyExpression> {
     if let ast::Expr::Literal(lit) = expr
         && let ast::LiteralKind::Bool(b) = lit.kind()
     {

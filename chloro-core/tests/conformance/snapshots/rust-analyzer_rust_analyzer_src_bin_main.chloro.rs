@@ -162,7 +162,11 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
 /// Parts of rust-analyzer can use a lot of stack space, and some operating systems only give us
 /// 1 MB by default (eg. Windows), so this spawns a new thread with hopefully sufficient stack
 /// space.
-fn with_extra_thread(thread_name: impl Into<String>, thread_intent: stdx::thread::ThreadIntent, f: impl FnOnce() -> anyhow::Result<()> + Send + 'static) -> anyhow::Result<()> {
+fn with_extra_thread(
+    thread_name: impl Into<String>,
+    thread_intent: stdx::thread::ThreadIntent,
+    f: impl FnOnce() -> anyhow::Result<()> + Send + 'static,
+) -> anyhow::Result<()> {
     let handle =
         stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
     handle.join()?;

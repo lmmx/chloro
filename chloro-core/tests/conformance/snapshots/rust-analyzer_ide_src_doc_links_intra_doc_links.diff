@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2489 bytes
-Chloro size:   2164 bytes
+Chloro size:   2187 bytes
 Rustfmt size:  2723 bytes
 
 ✗ Outputs DIFFER
@@ -78,7 +78,11 @@ Rustfmt size:  2723 bytes
 +    use expect_test::{Expect, expect};
      use super::*;
 -
-     fn check(link: &str, expected: Expect) {
+-    fn check(link: &str, expected: Expect) {
++    fn check(
++        link: &str,
++        expected: Expect,
++    ) {
          let (l, a) = parse_intra_doc_link(link);
          let a = a.map_or_else(String::new, |a| format!(" ({a:?})"));
          expected.assert_eq(&format!("{l}{a}"));

@@ -46,19 +46,32 @@ impl SignatureHelp {
         &self.parameters
     }
 
-    fn push_call_param(&mut self, param: &str) {
+    fn push_call_param(
+        &mut self,
+        param: &str,
+    ) {
         self.push_param("(", param);
     }
 
-    fn push_generic_param(&mut self, param: &str) {
+    fn push_generic_param(
+        &mut self,
+        param: &str,
+    ) {
         self.push_param("<", param);
     }
 
-    fn push_record_field(&mut self, param: &str) {
+    fn push_record_field(
+        &mut self,
+        param: &str,
+    ) {
         self.push_param("{ ", param);
     }
 
-    fn push_param(&mut self, opening_delim: &str, param: &str) {
+    fn push_param(
+        &mut self,
+        opening_delim: &str,
+        param: &str,
+    ) {
         if !self.signature.ends_with(opening_delim) {
             self.signature.push_str(", ");
         }
@@ -70,7 +83,10 @@ impl SignatureHelp {
 }
 
 /// Computes parameter information for the given position.
-pub(crate) fn signature_help(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition) -> Option<SignatureHelp> {
+pub(crate) fn signature_help(
+    db: &RootDatabase,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<SignatureHelp> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(file_id);
     let file = file.syntax();
@@ -152,7 +168,13 @@ pub(crate) fn signature_help(db: &RootDatabase, FilePosition { file_id, offset }
     None
 }
 
-fn signature_help_for_call(sema: &Semantics<'_, RootDatabase>, arg_list: ast::ArgList, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_call(
+    sema: &Semantics<'_, RootDatabase>,
+    arg_list: ast::ArgList,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let (callable, active_parameter) =
         callable_for_arg_list(sema, arg_list, token.text_range().start())?;
     let mut res =
@@ -286,7 +308,13 @@ fn signature_help_for_call(sema: &Semantics<'_, RootDatabase>, arg_list: ast::Ar
     Some(res)
 }
 
-fn signature_help_for_generics(sema: &Semantics<'_, RootDatabase>, arg_list: ast::GenericArgList, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_generics(
+    sema: &Semantics<'_, RootDatabase>,
+    arg_list: ast::GenericArgList,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let (generics_def, mut active_parameter, first_arg_is_non_lifetime, variant) =
         generic_def_for_node(sema, &arg_list, &token)?;
     let mut res = SignatureHelp {
@@ -374,7 +402,13 @@ fn signature_help_for_generics(sema: &Semantics<'_, RootDatabase>, arg_list: ast
     Some(res)
 }
 
-fn add_assoc_type_bindings(db: &RootDatabase, res: &mut SignatureHelp, tr: Trait, args: ast::GenericArgList, edition: Edition) {
+fn add_assoc_type_bindings(
+    db: &RootDatabase,
+    res: &mut SignatureHelp,
+    tr: Trait,
+    args: ast::GenericArgList,
+    edition: Edition,
+) {
     if args.syntax().ancestors().find_map(ast::TypeBound::cast).is_none() {
         // Assoc type bindings are only valid in type bound position.
         return;
@@ -404,7 +438,13 @@ fn add_assoc_type_bindings(db: &RootDatabase, res: &mut SignatureHelp, tr: Trait
     }
 }
 
-fn signature_help_for_record_lit(sema: &Semantics<'_, RootDatabase>, record: ast::RecordExpr, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_record_lit(
+    sema: &Semantics<'_, RootDatabase>,
+    record: ast::RecordExpr,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
         record.record_expr_field_list()?.syntax().children_with_tokens(),
@@ -420,7 +460,13 @@ fn signature_help_for_record_lit(sema: &Semantics<'_, RootDatabase>, record: ast
     )
 }
 
-fn signature_help_for_record_pat(sema: &Semantics<'_, RootDatabase>, record: ast::RecordPat, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_record_pat(
+    sema: &Semantics<'_, RootDatabase>,
+    record: ast::RecordPat,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     signature_help_for_record_(
         sema,
         record.record_pat_field_list()?.syntax().children_with_tokens(),
@@ -435,7 +481,13 @@ fn signature_help_for_record_pat(sema: &Semantics<'_, RootDatabase>, record: ast
     )
 }
 
-fn signature_help_for_tuple_struct_pat(sema: &Semantics<'_, RootDatabase>, pat: ast::TupleStructPat, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_tuple_struct_pat(
+    sema: &Semantics<'_, RootDatabase>,
+    pat: ast::TupleStructPat,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let path = pat.path()?;
     let path_res = sema.resolve_path(&path)?;
     let mut res = SignatureHelp {
@@ -483,7 +535,12 @@ fn signature_help_for_tuple_struct_pat(sema: &Semantics<'_, RootDatabase>, pat: 
     ))
 }
 
-fn signature_help_for_tuple_pat(sema: &Semantics<'_, RootDatabase>, pat: ast::TuplePat, token: SyntaxToken, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_tuple_pat(
+    sema: &Semantics<'_, RootDatabase>,
+    pat: ast::TuplePat,
+    token: SyntaxToken,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let db = sema.db;
     let field_pats = pat.fields();
     let pat = pat.into();
@@ -505,7 +562,12 @@ fn signature_help_for_tuple_pat(sema: &Semantics<'_, RootDatabase>, pat: ast::Tu
     ))
 }
 
-fn signature_help_for_tuple_expr(sema: &Semantics<'_, RootDatabase>, expr: ast::TupleExpr, token: SyntaxToken, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_tuple_expr(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: ast::TupleExpr,
+    token: SyntaxToken,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let active_parameter = Some(
         expr.syntax()
             .children_with_tokens()
@@ -533,7 +595,15 @@ fn signature_help_for_tuple_expr(sema: &Semantics<'_, RootDatabase>, expr: ast::
     Some(res)
 }
 
-fn signature_help_for_record_<'db>(sema: &Semantics<'db, RootDatabase>, field_list_children: SyntaxElementChildren, path: &ast::Path, fields2: impl Iterator<Item = (hir::Field, hir::Type<'db>)>, token: SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<SignatureHelp> {
+fn signature_help_for_record_<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    field_list_children: SyntaxElementChildren,
+    path: &ast::Path,
+    fields2: impl Iterator<Item = (hir::Field, hir::Type<'db>)>,
+    token: SyntaxToken,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<SignatureHelp> {
     let active_parameter = field_list_children
         .filter_map(NodeOrToken::into_token)
         .filter(|t| t.kind() == T![,])
@@ -613,7 +683,15 @@ fn signature_help_for_record_<'db>(sema: &Semantics<'db, RootDatabase>, field_li
     Some(res)
 }
 
-fn signature_help_for_tuple_pat_ish<'db>(db: &'db RootDatabase, mut res: SignatureHelp, pat: &SyntaxNode, token: SyntaxToken, mut field_pats: AstChildren<ast::Pat>, fields: impl ExactSizeIterator<Item = hir::Type<'db>>, display_target: DisplayTarget) -> SignatureHelp {
+fn signature_help_for_tuple_pat_ish<'db>(
+    db: &'db RootDatabase,
+    mut res: SignatureHelp,
+    pat: &SyntaxNode,
+    token: SyntaxToken,
+    mut field_pats: AstChildren<ast::Pat>,
+    fields: impl ExactSizeIterator<Item = hir::Type<'db>>,
+    display_target: DisplayTarget,
+) -> SignatureHelp {
     let rest_pat = field_pats.find(|it| matches!(it, ast::Pat::RestPat(_)));
     let is_left_of_rest_pat =
         rest_pat.is_none_or(|it| token.text_range().start() < it.syntax().text_range().end());
@@ -652,7 +730,9 @@ mod tests {
     use test_fixture::ChangeFixture;
     use crate::RootDatabase;
     /// Creates analysis from a multi-file fixture, returns positions marked with $0.
-    pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (RootDatabase, FilePosition) {
+    pub(crate) fn position(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) -> (RootDatabase, FilePosition) {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
@@ -663,7 +743,10 @@ mod tests {
         (database, position)
     }
     #[track_caller]
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (db, position) = position(ra_fixture);
         let sig_help = hir::attach_db(&db, || crate::signature_help::signature_help(&db, position));
         let actual = match sig_help {

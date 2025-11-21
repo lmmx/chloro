@@ -18,7 +18,10 @@ use crate::{
     utils::{invert_boolean_expression, unwrap_trivial_block},
 };
 
-pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_if_to_bool_then(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // FIXME applies to match as well
     let expr = ctx.find_node_at_offset::<ast::IfExpr>()?;
     if !expr.if_token()?.text_range().contains_inclusive(ctx.offset()) {
@@ -114,7 +117,10 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
     )
 }
 
-pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_bool_then_to_if(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let name_ref = ctx.find_node_at_offset::<ast::NameRef>()?;
     let mcall = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
     let receiver = mcall.receiver()?;
@@ -190,7 +196,10 @@ pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>
     )
 }
 
-fn option_variants(sema: &Semantics<'_, RootDatabase>, expr: &SyntaxNode) -> Option<(hir::Variant, hir::Variant)> {
+fn option_variants(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &SyntaxNode,
+) -> Option<(hir::Variant, hir::Variant)> {
     let fam = FamousDefs(sema, sema.scope(expr)?.krate());
     let option_variants = fam.core_option_Option()?.variants(sema.db);
     match &*option_variants {
@@ -205,7 +214,11 @@ fn option_variants(sema: &Semantics<'_, RootDatabase>, expr: &SyntaxNode) -> Opt
 
 /// Traverses the expression checking if it contains `return` or `?` expressions or if any tail is not a `Some(expr)` expression.
 /// If any of these conditions are met it is impossible to rewrite this as a `bool::then` call.
-fn is_invalid_body(sema: &Semantics<'_, RootDatabase>, some_variant: hir::Variant, expr: &ast::Expr) -> bool {
+fn is_invalid_body(
+    sema: &Semantics<'_, RootDatabase>,
+    some_variant: hir::Variant,
+    expr: &ast::Expr,
+) -> bool {
     let mut invalid = false;
     preorder_expr(expr, &mut |e| {
         invalid |=
@@ -236,7 +249,11 @@ fn is_invalid_body(sema: &Semantics<'_, RootDatabase>, some_variant: hir::Varian
     invalid
 }
 
-fn block_is_none_variant(sema: &Semantics<'_, RootDatabase>, block: &ast::BlockExpr, none_variant: hir::Variant) -> bool {
+fn block_is_none_variant(
+    sema: &Semantics<'_, RootDatabase>,
+    block: &ast::BlockExpr,
+    none_variant: hir::Variant,
+) -> bool {
     block_as_lone_tail(block).and_then(|e| match e {
         ast::Expr::PathExpr(pat) => match sema.resolve_path(&pat.path()?)? {
             hir::PathResolution::Def(hir::ModuleDef::Variant(v)) => Some(v),

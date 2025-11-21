@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21223 bytes
-Chloro size:   19957 bytes
+Chloro size:   19979 bytes
 Rustfmt size:  21223 bytes
 
 ✗ Outputs DIFFER
@@ -38,9 +38,14 @@ Rustfmt size:  21223 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn move_guard_to_arm_body(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let match_arm = ctx.find_node_at_offset::<MatchArm>()?;
      let guard = match_arm.guard()?;
+     if ctx.offset() > guard.syntax().text_range().end() {
      }
      let space_before_guard = guard.syntax().prev_sibling_or_token();
      let space_after_arrow = match_arm.fat_arrow_token()?.next_sibling_or_token();
@@ -81,11 +86,9 @@ Rustfmt size:  21223 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn move_arm_cond_to_match_guard(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn move_arm_cond_to_match_guard(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn move_arm_cond_to_match_guard(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
      let match_arm: MatchArm = ctx.find_node_at_offset::<MatchArm>()?;
      let match_pat = match_arm.pat()?;
      let arm_body = match_arm.expr()?;

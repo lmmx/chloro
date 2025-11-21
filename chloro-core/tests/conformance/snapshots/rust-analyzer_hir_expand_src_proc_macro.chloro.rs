@@ -22,11 +22,26 @@ pub enum ProcMacroKind {
 /// A proc-macro expander implementation.
 /// Run the expander with the given input subtree, optional attribute input subtree (for
 /// [`ProcMacroKind::Attr`]), environment variables, and span information.
-fn expand(&self, subtree: &tt::TopSubtree, attrs: Option<&tt::TopSubtree>, env: &Env, def_site: Span, call_site: Span, mixed_site: Span, current_dir: String) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
-fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool;
+fn expand(
+    &self,
+    subtree: &tt::TopSubtree,
+    attrs: Option<&tt::TopSubtree>,
+    env: &Env,
+    def_site: Span,
+    call_site: Span,
+    mixed_site: Span,
+    current_dir: String,
+) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
+fn eq_dyn(
+    &self,
+    other: &dyn ProcMacroExpander,
+) -> bool;
 
 impl PartialEq for dyn ProcMacroExpander {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         self.eq_dyn(other)
     }
 }
@@ -50,7 +65,11 @@ type StoredProcMacroLoadResult = Result<Box<[ProcMacro]>, ProcMacroLoadingError>
 pub struct ProcMacrosBuilder(FxHashMap<CrateBuilderId, Arc<CrateProcMacros>>);
 
 impl ProcMacrosBuilder {
-    pub fn insert(&mut self, proc_macros_crate: CrateBuilderId, mut proc_macro: ProcMacroLoadResult) {
+    pub fn insert(
+        &mut self,
+        proc_macros_crate: CrateBuilderId,
+        mut proc_macro: ProcMacroLoadResult,
+    ) {
         if let Ok(proc_macros) = &mut proc_macro {
             // Sort proc macros to improve incrementality when only their order has changed (ideally the build system
             // will not change their order, but just to be sure).
@@ -68,7 +87,10 @@ impl ProcMacrosBuilder {
         );
     }
 
-    pub(crate) fn build(self, crates_id_map: &CratesIdMap) -> ProcMacros {
+    pub(crate) fn build(
+        self,
+        crates_id_map: &CratesIdMap,
+    ) -> ProcMacros {
         let mut map = self
             .0
             .into_iter()
@@ -96,13 +118,20 @@ pub struct CrateProcMacros(StoredProcMacroLoadResult);
 pub struct ProcMacros(FxHashMap<Crate, Arc<CrateProcMacros>>);
 
 impl ProcMacros {
-    fn get(&self, krate: Crate) -> Option<Arc<CrateProcMacros>> {
+    fn get(
+        &self,
+        krate: Crate,
+    ) -> Option<Arc<CrateProcMacros>> {
         self.0.get(&krate).cloned()
     }
 }
 
 impl CrateProcMacros {
-    fn get(&self, idx: u32, err_span: Span) -> Result<&ProcMacro, ExpandError> {
+    fn get(
+        &self,
+        idx: u32,
+        err_span: Span,
+    ) -> Result<&ProcMacro, ExpandError> {
         let proc_macros = match &self.0 {
             Ok(proc_macros) => proc_macros,
             Err(_) => {
@@ -129,7 +158,10 @@ impl CrateProcMacros {
     }
 
     /// Fetch the [`CustomProcMacroExpander`]s and their corresponding names for the given crate.
-    pub fn list(&self, def_site_ctx: span::SyntaxContext) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
+    pub fn list(
+        &self,
+        def_site_ctx: span::SyntaxContext,
+    ) -> Option<Box<[(crate::name::Name, CustomProcMacroExpander, bool)]>> {
         match &self.0 {
             Ok(proc_macros) => Some(
                 proc_macros
@@ -160,7 +192,10 @@ pub struct ProcMacro {
 }
 
 impl PartialEq for ProcMacro {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         let Self { name, kind, expander, disabled } = self;
         let Self {
             name: other_name,
@@ -223,7 +258,10 @@ impl CustomProcMacroExpander {
         self.proc_macro_id == Self::PROC_MACRO_ATTR_DISABLED
     }
 
-    pub fn as_expand_error(&self, def_crate: Crate) -> Option<ExpandErrorKind> {
+    pub fn as_expand_error(
+        &self,
+        def_crate: Crate,
+    ) -> Option<ExpandErrorKind> {
         match self.proc_macro_id {
             Self::PROC_MACRO_ATTR_DISABLED => Some(ExpandErrorKind::ProcMacroAttrExpansionDisabled),
             Self::DISABLED_ID => Some(ExpandErrorKind::MacroDisabled),
@@ -232,7 +270,17 @@ impl CustomProcMacroExpander {
         }
     }
 
-    pub fn expand(self, db: &dyn ExpandDatabase, def_crate: Crate, calling_crate: Crate, tt: &tt::TopSubtree, attr_arg: Option<&tt::TopSubtree>, def_site: Span, call_site: Span, mixed_site: Span) -> ExpandResult<tt::TopSubtree> {
+    pub fn expand(
+        self,
+        db: &dyn ExpandDatabase,
+        def_crate: Crate,
+        calling_crate: Crate,
+        tt: &tt::TopSubtree,
+        attr_arg: Option<&tt::TopSubtree>,
+        def_site: Span,
+        call_site: Span,
+        mixed_site: Span,
+    ) -> ExpandResult<tt::TopSubtree> {
         match self.proc_macro_id {
             Self::PROC_MACRO_ATTR_DISABLED => ExpandResult::new(
                 tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
@@ -318,6 +366,9 @@ impl CustomProcMacroExpander {
     }
 }
 
-pub(crate) fn proc_macros_for_crate(db: &dyn ExpandDatabase, krate: Crate) -> Option<Arc<CrateProcMacros>> {
+pub(crate) fn proc_macros_for_crate(
+    db: &dyn ExpandDatabase,
+    krate: Crate,
+) -> Option<Arc<CrateProcMacros>> {
     db.proc_macros().get(krate)
 }

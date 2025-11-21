@@ -268,7 +268,11 @@ impl flags::Scip {
 
 // FIXME: Known buggy cases are described here.
 
-fn compute_symbol_info(symbol: String, enclosing_symbol: Option<String>, token: &TokenStaticData) -> SymbolInformation {
+fn compute_symbol_info(
+    symbol: String,
+    enclosing_symbol: Option<String>,
+    token: &TokenStaticData,
+) -> SymbolInformation {
     let documentation = match &token.documentation {
         Some(doc) => vec![doc.as_str().to_owned()],
         None => vec![],
@@ -293,11 +297,18 @@ fn compute_symbol_info(symbol: String, enclosing_symbol: Option<String>, token: 
     }
 }
 
-fn get_relative_filepath(vfs: &vfs::Vfs, rootpath: &vfs::AbsPathBuf, file_id: ide::FileId) -> Option<String> {
+fn get_relative_filepath(
+    vfs: &vfs::Vfs,
+    rootpath: &vfs::AbsPathBuf,
+    file_id: ide::FileId,
+) -> Option<String> {
     Some(vfs.file_path(file_id).as_path()?.strip_prefix(rootpath)?.as_str().to_owned())
 }
 
-fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
+fn get_line_index(
+    db: &RootDatabase,
+    file_id: FileId,
+) -> LineIndex {
     LineIndex {
         index: db.line_index(file_id),
         encoding: PositionEncoding::Utf8,
@@ -305,7 +316,10 @@ fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
     }
 }
 
-fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
+fn text_range_to_scip_range(
+    line_index: &LineIndex,
+    range: TextRange,
+) -> Vec<i32> {
     let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
     let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
     if start_line == end_line {
@@ -315,13 +329,20 @@ fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32
     }
 }
 
-fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
+fn text_range_to_string(
+    relative_path: &str,
+    line_index: &LineIndex,
+    range: TextRange,
+) -> String {
     let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
     let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
     format!("{relative_path}:{start_line}:{start_col}-{end_line}:{end_col}")
 }
 
-fn new_descriptor_str(name: &str, suffix: scip_types::descriptor::Suffix) -> scip_types::Descriptor {
+fn new_descriptor_str(
+    name: &str,
+    suffix: scip_types::descriptor::Suffix,
+) -> scip_types::Descriptor {
     scip_types::Descriptor {
         name: name.to_owned(),
         disambiguator: "".to_owned(),
@@ -379,7 +400,11 @@ impl SymbolGenerator {
         self.local_count = 0;
     }
 
-    fn token_symbols(&mut self, id: TokenId, token: &TokenStaticData) -> Option<TokenSymbols> {
+    fn token_symbols(
+        &mut self,
+        id: TokenId,
+        token: &TokenStaticData,
+    ) -> Option<TokenSymbols> {
         let mut local_count = self.local_count;
         let token_symbols = self
             .token_to_symbols
@@ -474,7 +499,10 @@ mod test {
     }
     /// If expected == "", then assert that there are no symbols (this is basically local symbol)
     #[track_caller]
-    fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
+    fn check_symbol(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expected: &str,
+    ) {
         let (host, position) = position(ra_fixture);
         let analysis = host.analysis();
         let si = StaticIndex::compute(

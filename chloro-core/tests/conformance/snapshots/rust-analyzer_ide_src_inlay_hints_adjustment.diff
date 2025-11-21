@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23763 bytes
+Chloro size:   23808 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -24,17 +24,6 @@ Rustfmt size:  23884 bytes
  use ide_db::text_edit::TextEditBuilder;
  use syntax::ast::{self, AstNode, prec::ExprPrecedence};
  
-     InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip,
- };
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    display_target: DisplayTarget,
--    expr: &ast::Expr,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
      if config.adjustment_hints_hide_outside_unsafe && !sema.is_inside_unsafe(expr) {
          return None;
      }
@@ -110,19 +99,24 @@ Rustfmt size:  23884 bytes
      let mut pre = pre.label.parts.is_empty().not().then_some(pre);
      let mut post = post.label.parts.is_empty().not().then_some(post);
      if pre.is_none() && post.is_none() {
- 
- /// Returns whatever the hint should be postfix and if we need to add parentheses on the inside and/or outside of `expr`,
- /// if we are going to add (`postfix`) adjustments hints to it.
--fn mode_and_needs_parens_for_adjustment_hints(
--    expr: &ast::Expr,
--    mode: AdjustmentHintsMode,
--) -> (bool, bool, bool) {
-+fn mode_and_needs_parens_for_adjustment_hints(expr: &ast::Expr, mode: AdjustmentHintsMode) -> (bool, bool, bool) {
+     mode: AdjustmentHintsMode,
+ ) -> (bool, bool, bool) {
      use {AdjustmentHintsMode::*, std::cmp::Ordering::*};
 -
      match mode {
          Prefix | Postfix => {
              let postfix = matches!(mode, Postfix);
+ 
+ /// Returns whatever we need to add parentheses on the inside and/or outside of `expr`,
+ /// if we are going to add (`postfix`) adjustments hints to it.
+-fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, bool) {
++fn needs_parens_for_adjustment_hints(
++    expr: &ast::Expr,
++    postfix: bool,
++) -> (bool, bool) {
+     let prec = expr.precedence();
+     if postfix {
+         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);
          AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
          inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
      };

@@ -7,11 +7,17 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn fix_visibility(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     add_vis_to_referenced_module_def(acc, ctx)
 }
 
-fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn add_vis_to_referenced_module_def(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let qualifier = path.qualifier()?;
     let name_ref = path.segment()?.name_ref()?;
@@ -58,7 +64,10 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
     })
 }
 
-fn target_data_for_def(db: &dyn HirDatabase, def: hir::ModuleDef) -> Option<(ast::AnyHasVisibility, TextRange, FileId, Option<hir::Name>)> {
+fn target_data_for_def(
+    db: &dyn HirDatabase,
+    def: hir::ModuleDef,
+) -> Option<(ast::AnyHasVisibility, TextRange, FileId, Option<hir::Name>)> {
     fn offset_target_and_file_id<S, Ast>(
         db: &dyn HirDatabase,
         x: S,

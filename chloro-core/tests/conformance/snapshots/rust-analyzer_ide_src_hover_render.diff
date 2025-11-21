@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53334 bytes
+Chloro size:   53812 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -13,46 +13,6 @@ Rustfmt size:  53876 bytes
  use std::{env, mem, ops::Not};
  
  use either::Either;
-     interpret::render_const_eval_error,
- };
- 
--pub(super) fn type_info_of(
--    sema: &Semantics<'_, RootDatabase>,
--    _config: &HoverConfig<'_>,
--    expr_or_pat: &Either<ast::Expr, ast::Pat>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn type_info_of(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, expr_or_pat: &Either<ast::Expr, ast::Pat>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     let ty_info = match expr_or_pat {
-         Either::Left(expr) => sema.type_of_expr(expr)?,
-         Either::Right(pat) => sema.type_of_pat(pat)?,
-     type_info(sema, _config, ty_info, edition, display_target)
- }
- 
--pub(super) fn closure_expr(
--    sema: &Semantics<'_, RootDatabase>,
--    config: &HoverConfig<'_>,
--    c: ast::ClosureExpr,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn closure_expr(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, c: ast::ClosureExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     let TypeInfo { original, .. } = sema.type_of_expr(&c.into())?;
-     closure_ty(sema, config, &TypeInfo { original, adjusted: None }, edition, display_target)
- }
- 
--pub(super) fn try_expr(
--    sema: &Semantics<'_, RootDatabase>,
--    _config: &HoverConfig<'_>,
--    try_expr: &ast::TryExpr,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn try_expr(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, try_expr: &ast::TryExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     let inner_ty = sema.type_of_expr(&try_expr.expr()?)?.original;
-     let mut ancestors = try_expr.syntax().ancestors();
-     let mut body_ty = loop {
              }
          };
      };
@@ -92,17 +52,6 @@ Rustfmt size:  53876 bytes
      res.markup = format!(
          "```text\n{} Type: {:>pad0$}\nPropagated as: {:>pad1$}\n```\n",
          s,
-     Some(res)
- }
- 
--pub(super) fn deref_expr(
--    sema: &Semantics<'_, RootDatabase>,
--    _config: &HoverConfig<'_>,
--    deref_expr: &ast::PrefixExpr,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn deref_expr(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, deref_expr: &ast::PrefixExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
      let inner_ty = sema.type_of_expr(&deref_expr.expr()?)?.original;
      let TypeInfo { original, adjusted } =
          sema.type_of_expr(&ast::Expr::from(deref_expr.clone()))?;
@@ -124,17 +73,6 @@ Rustfmt size:  53876 bytes
      Some(res)
  }
  
--pub(super) fn underscore(
--    sema: &Semantics<'_, RootDatabase>,
--    config: &HoverConfig<'_>,
--    token: &SyntaxToken,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn underscore(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, token: &SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     if token.kind() != T![_] {
-         return None;
-     }
      //         ast::Param(_it) => (),
      //         ast::RetType(_it) => (),
      //         ast::TypeArg(_it) => (),
@@ -149,18 +87,6 @@ Rustfmt size:  53876 bytes
      // FIXME: https://github.com/rust-lang/rust-analyzer/issues/11762, this currently always returns Unknown
      // type_info(sema, config, sema.resolve_type(&ast::Type::InferType(it))?, None)
      None
- }
- 
--pub(super) fn keyword(
--    sema: &Semantics<'_, RootDatabase>,
--    config: &HoverConfig<'_>,
--    token: &SyntaxToken,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+pub(super) fn keyword(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, token: &SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     if !token.kind().is_keyword(edition) || !config.documentation || !config.keywords {
-         return None;
      }
      let parent = token.parent()?;
      let famous_defs = FamousDefs(sema, sema.scope(&parent)?.krate());
@@ -171,17 +97,8 @@ Rustfmt size:  53876 bytes
      let doc_owner = find_std_module(&famous_defs, &keyword_mod, edition)?;
      let (docs, range_map) = doc_owner.docs_with_rangemap(sema.db)?;
      let (markup, range_map) =
- /// Returns missing types in a record pattern.
- /// Only makes sense when there's a rest pattern in the record pattern.
- /// i.e. `let S {a, ..} = S {a: 1, b: 2}`
--pub(super) fn struct_rest_pat(
--    sema: &Semantics<'_, RootDatabase>,
--    _config: &HoverConfig<'_>,
--    pattern: &ast::RecordPat,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> HoverResult {
-+pub(super) fn struct_rest_pat(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, pattern: &ast::RecordPat, edition: Edition, display_target: DisplayTarget) -> HoverResult {
+     display_target: DisplayTarget,
+ ) -> HoverResult {
      let missing_fields = sema.record_pattern_missing_fields(pattern);
 -
      // if there are no missing fields, the end result is a hover that shows ".."
@@ -198,6 +115,17 @@ Rustfmt size:  53876 bytes
      res.markup = {
          let mut s = String::from(".., ");
          for (f, _) in &missing_fields {
+     res
+ }
+ 
+-pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<HoverResult> {
++pub(super) fn try_for_lint(
++    attr: &ast::Attr,
++    token: &SyntaxToken,
++) -> Option<HoverResult> {
+     let (path, tt) = attr.as_simple_call()?;
+     if !tt.syntax().text_range().contains(token.text_range().start()) {
+         return None;
          }
          _ => return None,
      };
@@ -212,52 +140,18 @@ Rustfmt size:  53876 bytes
      let lint =
          lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
      Some(HoverResult {
-     })
+     Markup::from(markup)
  }
  
--pub(super) fn process_markup(
--    db: &RootDatabase,
--    def: Definition,
--    markup: &Markup,
--    markup_range_map: Option<DocsRangeMap>,
--    config: &HoverConfig<'_>,
--) -> Markup {
-+pub(super) fn process_markup(db: &RootDatabase, def: Definition, markup: &Markup, markup_range_map: Option<DocsRangeMap>, config: &HoverConfig<'_>) -> Markup {
-     let markup = markup.as_str();
-     let markup = if config.links_in_hover {
-         rewrite_links(db, markup, def, markup_range_map)
-     .map(|name| name.display(db, edition).to_string())
- }
- 
--pub(super) fn path(
--    db: &RootDatabase,
--    module: hir::Module,
--    item_name: Option<String>,
--    edition: Edition,
--) -> String {
-+pub(super) fn path(db: &RootDatabase, module: hir::Module, item_name: Option<String>, edition: Edition) -> String {
-     let crate_name = module.krate().display_name(db).as_ref().map(|it| it.to_string());
-     let module_path = module
-         .path_to_root(db)
-     crate_name.into_iter().chain(module_path).chain(item_name).join("::")
- }
- 
--pub(super) fn definition(
--    db: &RootDatabase,
--    def: Definition,
--    famous_defs: Option<&FamousDefs<'_, '_>>,
--    notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)],
--    macro_arm: Option<u32>,
--    render_extras: bool,
--    subst_types: Option<&Vec<(Symbol, Type<'_>)>>,
--    config: &HoverConfig<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> (Markup, Option<DocsRangeMap>) {
-+pub(super) fn definition(db: &RootDatabase, def: Definition, famous_defs: Option<&FamousDefs<'_, '_>>, notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)], macro_arm: Option<u32>, render_extras: bool, subst_types: Option<&Vec<(Symbol, Type<'_>)>>, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> (Markup, Option<DocsRangeMap>) {
-     let mod_path = definition_path(db, &def, edition);
-     let label = match def {
-         Definition::Trait(trait_) => trait_
+-fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -> Option<String> {
++fn definition_owner_name(
++    db: &RootDatabase,
++    def: Definition,
++    edition: Edition,
++) -> Option<String> {
+     match def {
+         Definition::Field(f) => {
+             let parent = f.parent_def(db);
          }
          _ => None,
      };
@@ -305,18 +199,6 @@ Rustfmt size:  53876 bytes
      markup(
          docs.map(Into::into),
          range_map,
-     has_dtor: Option<bool>,
- }
- 
--pub(super) fn literal(
--    sema: &Semantics<'_, RootDatabase>,
--    token: SyntaxToken,
--    display_target: DisplayTarget,
--) -> Option<Markup> {
-+pub(super) fn literal(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, display_target: DisplayTarget) -> Option<Markup> {
-     let lit = token.parent().and_then(ast::Literal::cast)?;
-     let ty = if let Some(p) = lit.syntax().parent().and_then(ast::Pat::cast) {
-         sema.type_of_pat(&p)?
          sema.type_of_expr(&ast::Expr::Literal(lit))?
      }
      .original;
@@ -331,33 +213,6 @@ Rustfmt size:  53876 bytes
      let mut s = format!("```rust\n{ty}\n```\n---\n\n");
      match value {
          Ok(value) => {
-     Some(s.into())
- }
- 
--fn render_notable_trait(
--    db: &RootDatabase,
--    notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)],
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<String> {
-+fn render_notable_trait(db: &RootDatabase, notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)], edition: Edition, display_target: DisplayTarget) -> Option<String> {
-     let mut desc = String::new();
-     let mut needs_impl_header = true;
-     for (trait_, assoc_types) in notable_traits {
-     }
- }
- 
--fn type_info(
--    sema: &Semantics<'_, RootDatabase>,
--    config: &HoverConfig<'_>,
--    ty: TypeInfo<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+fn type_info(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, ty: TypeInfo<'_>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     if let Some(res) = closure_ty(sema, config, &ty, edition, display_target) {
-         return Some(res);
-     };
          }
      };
      walk_and_push_ty(db, &original, &mut push_new_def);
@@ -365,20 +220,6 @@ Rustfmt size:  53876 bytes
      res.markup = if let Some(adjusted_ty) = adjusted {
          walk_and_push_ty(db, &adjusted_ty, &mut push_new_def);
  
-     Some(res)
- }
- 
--fn closure_ty(
--    sema: &Semantics<'_, RootDatabase>,
--    config: &HoverConfig<'_>,
--    TypeInfo { original, adjusted }: &TypeInfo<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<HoverResult> {
-+fn closure_ty(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, TypeInfo { original, adjusted }: &TypeInfo<'_>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
-     let c = original.as_closure()?;
-     let mut captures_rendered = c.captured_items(sema.db)
-         .into_iter()
      c.capture_types(sema.db).into_iter().for_each(|ty| {
          walk_and_push_ty(sema.db, &ty, &mut push_new_def);
      });
@@ -400,18 +241,20 @@ Rustfmt size:  53876 bytes
      let mut res = HoverResult::default();
      if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
          res.actions.push(actions);
-     def.module(db).map(|module| path(db, module, rendered_parent, edition))
+     Some(res)
  }
  
--fn markup(
--    docs: Option<String>,
--    range_map: Option<DocsRangeMap>,
--    rust: String,
--    extra: Option<String>,
--    mod_path: Option<String>,
--    subst_types: String,
--) -> (Markup, Option<DocsRangeMap>) {
-+fn markup(docs: Option<String>, range_map: Option<DocsRangeMap>, rust: String, extra: Option<String>, mod_path: Option<String>, subst_types: String) -> (Markup, Option<DocsRangeMap>) {
+-fn definition_path(db: &RootDatabase, &def: &Definition, edition: Edition) -> Option<String> {
++fn definition_path(
++    db: &RootDatabase,
++    &def: &Definition,
++    edition: Edition,
++) -> Option<String> {
+     if matches!(
+         def,
+         Definition::TupleField(_)
+     subst_types: String,
+ ) -> (Markup, Option<DocsRangeMap>) {
      let mut buf = String::new();
 -
      if let Some(mod_path) = mod_path
@@ -432,17 +275,7 @@ Rustfmt size:  53876 bytes
      if let Some(doc) = docs {
          format_to!(buf, "\n___\n\n");
          let offset = TextSize::new(buf.len() as u32);
-     }
- }
- 
--fn render_memory_layout(
--    config: Option<MemoryLayoutHoverConfig>,
--    layout: impl FnOnce() -> Result<Layout, LayoutError>,
--    offset: impl FnOnce(&Layout) -> Option<u64>,
--    padding: impl FnOnce(&Layout) -> Option<(&str, u64)>,
--    tag: impl FnOnce(&Layout) -> Option<usize>,
--) -> Option<String> {
-+fn render_memory_layout(config: Option<MemoryLayoutHoverConfig>, layout: impl FnOnce() -> Result<Layout, LayoutError>, offset: impl FnOnce(&Layout) -> Option<u64>, padding: impl FnOnce(&Layout) -> Option<(&str, u64)>, tag: impl FnOnce(&Layout) -> Option<usize>) -> Option<String> {
+ ) -> Option<String> {
      let config = config?;
      let layout = layout().ok()?;
 -
@@ -491,32 +324,17 @@ Rustfmt size:  53876 bytes
      Some(label)
  }
  
-     }
  }
  
--fn keyword_hints(
--    sema: &Semantics<'_, RootDatabase>,
--    token: &SyntaxToken,
--    parent: syntax::SyntaxNode,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> KeywordHint {
-+fn keyword_hints(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken, parent: syntax::SyntaxNode, edition: Edition, display_target: DisplayTarget) -> KeywordHint {
-     match token.kind() {
-         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
-             let keyword_mod = format!("{}_keyword", token.text());
+ impl KeywordHint {
+-    fn new(description: String, keyword_mod: String) -> Self {
++    fn new(
++        description: String,
++        keyword_mod: String,
++    ) -> Self {
+         Self { description, keyword_mod, actions: Vec::default() }
      }
  }
- 
--fn render_dyn_compatibility(
--    db: &RootDatabase,
--    buf: &mut String,
--    safety: Option<DynCompatibilityViolation>,
--) {
-+fn render_dyn_compatibility(db: &RootDatabase, buf: &mut String, safety: Option<DynCompatibilityViolation>) {
-     let Some(osv) = safety else {
-         buf.push_str("Is dyn-compatible");
-         return;
  #[cfg(test)]
  mod tests {
      use super::*;

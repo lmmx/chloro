@@ -7,7 +7,10 @@ use syntax::{AstNode, ast};
 use crate::{RootDatabase, defs::Definition};
 
 /// Given the `impl` block, attempts to find the trait this `impl` corresponds to.
-pub fn resolve_target_trait(sema: &Semantics<'_, RootDatabase>, impl_def: &ast::Impl) -> Option<hir::Trait> {
+pub fn resolve_target_trait(
+    sema: &Semantics<'_, RootDatabase>,
+    impl_def: &ast::Impl,
+) -> Option<hir::Trait> {
     let ast_path =
         impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
     match sema.resolve_path(&ast_path) {
@@ -18,7 +21,10 @@ pub fn resolve_target_trait(sema: &Semantics<'_, RootDatabase>, impl_def: &ast::
 
 /// Given the `impl` block, returns the list of associated items (e.g. functions or types) that are
 /// missing in this `impl` block.
-pub fn get_missing_assoc_items(sema: &Semantics<'_, RootDatabase>, impl_def: &ast::Impl) -> Vec<hir::AssocItem> {
+pub fn get_missing_assoc_items(
+    sema: &Semantics<'_, RootDatabase>,
+    impl_def: &ast::Impl,
+) -> Vec<hir::AssocItem> {
     let imp = match sema.to_def(impl_def) {
         Some(it) => it,
         None => return vec![],
@@ -63,7 +69,10 @@ pub fn get_missing_assoc_items(sema: &Semantics<'_, RootDatabase>, impl_def: &as
 }
 
 /// Converts associated trait impl items to their trait definition counterpart
-pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> Definition {
+pub(crate) fn convert_to_def_in_trait(
+    db: &dyn HirDatabase,
+    def: Definition,
+) -> Definition {
     (|| {
         let assoc = def.as_assoc_item(db)?;
         let trait_ = assoc.implemented_trait(db)?;
@@ -73,7 +82,10 @@ pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> 
 }
 
 /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.
-pub(crate) fn as_trait_assoc_def(db: &dyn HirDatabase, def: Definition) -> Option<Definition> {
+pub(crate) fn as_trait_assoc_def(
+    db: &dyn HirDatabase,
+    def: Definition,
+) -> Option<Definition> {
     let assoc = def.as_assoc_item(db)?;
     let trait_ = match assoc.container(db) {
         hir::AssocItemContainer::Trait(_) => return Some(def),
@@ -82,7 +94,11 @@ pub(crate) fn as_trait_assoc_def(db: &dyn HirDatabase, def: Definition) -> Optio
     assoc_item_of_trait(db, assoc, trait_)
 }
 
-fn assoc_item_of_trait(db: &dyn HirDatabase, assoc: hir::AssocItem, trait_: hir::Trait) -> Option<Definition> {
+fn assoc_item_of_trait(
+    db: &dyn HirDatabase,
+    assoc: hir::AssocItem,
+    trait_: hir::Trait,
+) -> Option<Definition> {
     use hir::AssocItem::*;
     let name = match assoc {
         Function(it) => it.name(db),
@@ -108,7 +124,9 @@ mod tests {
     use test_fixture::ChangeFixture;
     use crate::RootDatabase;
     /// Creates analysis from a multi-file fixture, returns positions marked with $0.
-    pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (RootDatabase, FilePosition) {
+    pub(crate) fn position(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) -> (RootDatabase, FilePosition) {
         let mut database = RootDatabase::default();
         let change_fixture = ChangeFixture::parse(&database, ra_fixture);
         database.apply_change(change_fixture.change);
@@ -117,7 +135,10 @@ mod tests {
         let offset = range_or_offset.expect_offset();
         (database, FilePosition { file_id, offset })
     }
-    fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_trait(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
         let file = sema.parse(position.file_id);
@@ -130,7 +151,10 @@ mod tests {
         };
         expect.assert_eq(&actual);
     }
-    fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_missing_assoc(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
         let file = sema.parse(position.file_id);

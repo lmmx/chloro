@@ -4,7 +4,10 @@ use syntax::{AstNode, SyntaxKind::*, SyntaxToken, T, ast, match_ast};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
 
-pub(crate) fn goto_type_definition(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition) -> Option<RangeInfo<Vec<NavigationTarget>>> {
+pub(crate) fn goto_type_definition(
+    db: &RootDatabase,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = hir::Semantics::new(db);
     let file: ast::SourceFile = sema.parse_guess_edition(file_id);
     let token: SyntaxToken =

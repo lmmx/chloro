@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23657 bytes
+Chloro size:   23711 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,7 @@ Rustfmt size:  23725 bytes
 -
  use super::label_of_ty;
  
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    display_target: DisplayTarget,
--    expr: &ast::Expr,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
+ pub(super) fn hints(
      if !config.chaining_hints {
          return None;
      }
@@ -65,15 +58,8 @@ Rustfmt size:  23725 bytes
      }
 -
      #[track_caller]
--    pub(super) fn check_expect_clear_loc(
--        config: InlayHintsConfig<'_>,
--        #[rust_analyzer::rust_fixture] ra_fixture: &str,
--        expect: Expect,
--    ) {
-+    pub(super) fn check_expect_clear_loc(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-         let (analysis, file_id) = fixture::file(ra_fixture);
-         let mut inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
-         inlay_hints.iter_mut().flat_map(|hint| &mut hint.label.parts).for_each(|hint| {
+     pub(super) fn check_expect_clear_loc(
+         config: InlayHintsConfig<'_>,
              inlay_hints.into_iter().map(|hint| (hint.range, hint.label)).collect::<Vec<_>>();
          expect.assert_debug_eq(&filtered)
      }

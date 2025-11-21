@@ -60,10 +60,14 @@ enum IsTraitAssocItem {
     No,
 }
 
-type ImportMapIndex = FxIndexMap<ItemInNs, (SmallVec<[ImportInfo; 1]>, IsTraitAssocItem)>;
+type ImportMapIndex =
+    FxIndexMap<ItemInNs, (SmallVec<[ImportInfo; 1]>, IsTraitAssocItem)>;
 
 impl ImportMap {
-    pub fn dump(&self, db: &dyn DefDatabase) -> String {
+    pub fn dump(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> String {
         let mut out = String::new();
         for (k, v) in self.item_to_info_map.iter() {
             format_to!(out, "{:?} ({:?}) -> ", k, v.1);
@@ -75,7 +79,10 @@ impl ImportMap {
         out
     }
 
-    pub(crate) fn import_map_query(db: &dyn DefDatabase, krate: Crate) -> Arc<Self> {
+    pub(crate) fn import_map_query(
+        db: &dyn DefDatabase,
+        krate: Crate,
+    ) -> Arc<Self> {
         let _p = tracing::info_span!("import_map_query").entered();
         let map = Self::collect_import_map(db, krate);
         let mut importables: Vec<_> = map
@@ -116,11 +123,17 @@ impl ImportMap {
         Arc::new(ImportMap { item_to_info_map: map, fst: builder.into_map(), importables })
     }
 
-    pub fn import_info_for(&self, item: ItemInNs) -> Option<&[ImportInfo]> {
+    pub fn import_info_for(
+        &self,
+        item: ItemInNs,
+    ) -> Option<&[ImportInfo]> {
         self.item_to_info_map.get(&item).map(|(info, _)| &**info)
     }
 
-    fn collect_import_map(db: &dyn DefDatabase, krate: Crate) -> ImportMapIndex {
+    fn collect_import_map(
+        db: &dyn DefDatabase,
+        krate: Crate,
+    ) -> ImportMapIndex {
         let _p = tracing::info_span!("collect_import_map").entered();
         let def_map = crate_def_map(db, krate);
         let mut map = FxIndexMap::default();
@@ -204,7 +217,13 @@ impl ImportMap {
         map
     }
 
-    fn collect_trait_assoc_items(db: &dyn DefDatabase, map: &mut ImportMapIndex, tr: TraitId, is_type_in_ns: bool, trait_import_info: &ImportInfo) {
+    fn collect_trait_assoc_items(
+        db: &dyn DefDatabase,
+        map: &mut ImportMapIndex,
+        tr: TraitId,
+        is_type_in_ns: bool,
+        trait_import_info: &ImportInfo,
+    ) {
         let _p = tracing::info_span!("collect_trait_assoc_items").entered();
         for &(ref assoc_item_name, item) in &TraitItems::query(db, tr).items {
             let module_def_id = match item {
@@ -248,14 +267,20 @@ impl Eq for ImportMap {
 }
 
 impl PartialEq for ImportMap {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         // `fst` and `importables` are built from `map`, so we don't need to compare them.
         self.item_to_info_map == other.item_to_info_map
     }
 }
 
 impl fmt::Debug for ImportMap {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         let mut importable_names: Vec<_> = self
             .item_to_info_map
             .iter()
@@ -286,7 +311,12 @@ pub enum SearchMode {
 }
 
 impl SearchMode {
-    pub fn check(self, query: &str, case_sensitive: bool, candidate: &str) -> bool {
+    pub fn check(
+        self,
+        query: &str,
+        case_sensitive: bool,
+        candidate: &str,
+    ) -> bool {
         match self {
             SearchMode::Exact if case_sensitive => candidate == query,
             SearchMode::Exact => candidate.eq_ignore_ascii_case(query),
@@ -367,7 +397,10 @@ impl Query {
     }
 
     /// Specifies whether we want to include associated items in the result.
-    pub fn assoc_search_mode(self, assoc_mode: AssocSearchMode) -> Self {
+    pub fn assoc_search_mode(
+        self,
+        assoc_mode: AssocSearchMode,
+    ) -> Self {
         Self { assoc_mode, ..self }
     }
 
@@ -376,7 +409,10 @@ impl Query {
         Self { case_sensitive: true, ..self }
     }
 
-    fn matches_assoc_mode(&self, is_trait_assoc_item: IsTraitAssocItem) -> bool {
+    fn matches_assoc_mode(
+        &self,
+        is_trait_assoc_item: IsTraitAssocItem,
+    ) -> bool {
         !matches!(
             (is_trait_assoc_item, self.assoc_mode),
             (IsTraitAssocItem::Yes, AssocSearchMode::Exclude)
@@ -388,7 +424,11 @@ impl Query {
 /// Searches dependencies of `krate` for an importable name matching `query`.
 ///
 /// This returns a list of items that could be imported from dependencies of `krate`.
-pub fn search_dependencies(db: &dyn DefDatabase, krate: Crate, query: &Query) -> FxHashSet<(ItemInNs, Complete)> {
+pub fn search_dependencies(
+    db: &dyn DefDatabase,
+    krate: Crate,
+    query: &Query,
+) -> FxHashSet<(ItemInNs, Complete)> {
     let _p = tracing::info_span!("search_dependencies", ?query).entered();
     let import_maps: Vec<_> =
         krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
@@ -421,7 +461,12 @@ pub fn search_dependencies(db: &dyn DefDatabase, krate: Crate, query: &Query) ->
     }
 }
 
-fn search_maps(_db: &dyn DefDatabase, import_maps: &[Arc<ImportMap>], mut stream: fst::map::Union<'_>, query: &Query) -> FxHashSet<(ItemInNs, Complete)> {
+fn search_maps(
+    _db: &dyn DefDatabase,
+    import_maps: &[Arc<ImportMap>],
+    mut stream: fst::map::Union<'_>,
+    query: &Query,
+) -> FxHashSet<(ItemInNs, Complete)> {
     let mut res = FxHashSet::default();
     while let Some((_, indexed_values)) = stream.next() {
         for &IndexedValue { index: import_map_idx, value } in indexed_values {
@@ -457,7 +502,10 @@ mod tests {
     use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
     use super::*;
     impl ImportMap {
-        fn fmt_for_test(&self, db: &dyn DefDatabase) -> String {
+        fn fmt_for_test(
+            &self,
+            db: &dyn DefDatabase,
+        ) -> String {
             let mut importable_paths: Vec<_> = self
                 .item_to_info_map
                 .iter()
@@ -476,7 +524,12 @@ mod tests {
             importable_paths.join("\n")
         }
     }
-    fn check_search(#[rust_analyzer::rust_fixture] ra_fixture: &str, crate_name: &str, query: Query, expect: Expect) {
+    fn check_search(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        crate_name: &str,
+        query: Query,
+        expect: Expect,
+    ) {
         let db = TestDB::with_files(ra_fixture);
         let all_crates = db.all_crates();
         let krate = all_crates
@@ -523,7 +576,11 @@ mod tests {
             .collect::<String>();
         expect.assert_eq(&actual)
     }
-    fn assoc_item_path(db: &dyn DefDatabase, dependency_imports: &ImportMap, dependency: ItemInNs) -> Option<String> {
+    fn assoc_item_path(
+        db: &dyn DefDatabase,
+        dependency_imports: &ImportMap,
+        dependency: ItemInNs,
+    ) -> Option<String> {
         let (dependency_assoc_item_id, container) = match dependency.as_module_def_id()? {
             ModuleDefId::FunctionId(id) => (AssocItemId::from(id), id.lookup(db).container),
             ModuleDefId::ConstId(id) => (AssocItemId::from(id), id.lookup(db).container),
@@ -546,7 +603,10 @@ mod tests {
             assoc_item_name.display(db, Edition::CURRENT)
         ))
     }
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let db = TestDB::with_files(ra_fixture);
         let all_crates = db.all_crates();
         let actual = all_crates
@@ -564,7 +624,10 @@ mod tests {
             .collect::<String>();
         expect.assert_eq(&actual)
     }
-    fn render_path(db: &dyn DefDatabase, info: &ImportInfo) -> String {
+    fn render_path(
+        db: &dyn DefDatabase,
+        info: &ImportInfo,
+    ) -> String {
         let mut module = info.container;
         let mut segments = vec![&info.name];
         let def_map = module.def_map(db);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4202 bytes
-Chloro size:   3857 bytes
+Chloro size:   3883 bytes
 Rustfmt size:  4224 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,10 @@ Rustfmt size:  4224 bytes
 -//     Quux = 43,
 -// }
 -// ```
--pub(crate) fn add_explicit_enum_discriminant(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn add_explicit_enum_discriminant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn add_explicit_enum_discriminant(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let enum_node = ctx.find_node_at_offset::<ast::Enum>()?;
      let enum_def = ctx.sema.to_def(&enum_node)?;
 -
@@ -75,12 +74,6 @@ Rustfmt size:  4224 bytes
      Some(())
  }
  
--fn add_variant_discriminant(
--    sema: &Semantics<'_, RootDatabase>,
--    builder: &mut SourceChangeBuilder,
--    variant_node: &ast::Variant,
--) {
-+fn add_variant_discriminant(sema: &Semantics<'_, RootDatabase>, builder: &mut SourceChangeBuilder, variant_node: &ast::Variant) {
      if variant_node.expr().is_some() {
          return;
      }

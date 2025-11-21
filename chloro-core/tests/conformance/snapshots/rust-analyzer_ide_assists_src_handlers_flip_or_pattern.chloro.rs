@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn flip_or_pattern(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn flip_or_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // Only flip on the `|` token
     let pipe = ctx.find_token_syntax_at_offset(T![|])?;
     let parent = ast::OrPat::cast(pipe.parent()?)?;

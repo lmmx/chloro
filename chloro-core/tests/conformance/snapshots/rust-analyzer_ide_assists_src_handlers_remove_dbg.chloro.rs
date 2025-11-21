@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn remove_dbg(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let macro_calls = if ctx.has_empty_selection() {
         vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]
     } else {
@@ -213,7 +216,10 @@ fn replace_nested_dbgs(expanded: ast::Expr) -> ast::Expr {
 mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
     use super::*;
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    ) {
         check_assist(
             remove_dbg,
             &format!("fn main() {{\n{ra_fixture_before}\n}}"),

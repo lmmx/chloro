@@ -80,7 +80,10 @@ impl ModifierSet {
 }
 
 impl ops::BitOrAssign<SemanticTokenModifier> for ModifierSet {
-    fn bitor_assign(&mut self, rhs: SemanticTokenModifier) {
+    fn bitor_assign(
+        &mut self,
+        rhs: SemanticTokenModifier,
+    ) {
         let idx = SUPPORTED_MODIFIERS.iter().position(|it| it == &rhs).unwrap();
         self.0 |= 1 << idx;
     }
@@ -102,7 +105,12 @@ impl SemanticTokensBuilder {
     }
 
     /// Push a new token onto the builder
-    pub(crate) fn push(&mut self, range: Range, token_index: u32, modifier_bitset: u32) {
+    pub(crate) fn push(
+        &mut self,
+        range: Range,
+        token_index: u32,
+        modifier_bitset: u32,
+    ) {
         let mut push_line = range.start.line;
         let mut push_char = range.start.character;
         if !self.data.is_empty() {
@@ -130,7 +138,10 @@ impl SemanticTokensBuilder {
     }
 }
 
-pub(crate) fn diff_tokens(old: &[SemanticToken], new: &[SemanticToken]) -> Vec<SemanticTokensEdit> {
+pub(crate) fn diff_tokens(
+    old: &[SemanticToken],
+    new: &[SemanticToken],
+) -> Vec<SemanticTokensEdit> {
     let offset = new.iter().zip(old.iter()).take_while(|&(n, p)| n == p).count();
     let (_, old) = old.split_at(offset);
     let (_, new) = new.split_at(offset);

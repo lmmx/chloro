@@ -9,7 +9,12 @@ use crate::{db::ExpandDatabase, span_map::ExpansionSpanMap};
 
 /// Inserts whitespace and replaces `$crate` in macro expansions.
 #[expect(deprecated)]
-pub fn prettify_macro_expansion(db: &dyn ExpandDatabase, syn: SyntaxNode, span_map: &ExpansionSpanMap, target_crate_id: Crate) -> SyntaxNode {
+pub fn prettify_macro_expansion(
+    db: &dyn ExpandDatabase,
+    syn: SyntaxNode,
+    span_map: &ExpansionSpanMap,
+    target_crate_id: Crate,
+) -> SyntaxNode {
     // Because `syntax_bridge::prettify_macro_expansion::prettify_macro_expansion()` clones subtree for `syn`,
     // that means it will be offsetted to the beginning.
     let span_offset = syn.text_range().start();

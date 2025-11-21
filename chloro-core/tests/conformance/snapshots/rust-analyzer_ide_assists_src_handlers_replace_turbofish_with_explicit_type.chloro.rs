@@ -9,7 +9,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn replace_turbofish_with_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_turbofish_with_explicit_type(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let let_stmt = ctx.find_node_at_offset::<LetStmt>()?;
     let initializer = let_stmt.initializer()?;
     let generic_args = generic_arg_list(&initializer)?;

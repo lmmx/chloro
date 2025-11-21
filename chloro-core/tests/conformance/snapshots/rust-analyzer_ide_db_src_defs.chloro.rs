@@ -54,11 +54,17 @@ pub enum Definition {
 }
 
 impl Definition {
-    pub fn canonical_module_path(&self, db: &RootDatabase) -> Option<impl Iterator<Item = Module>> {
+    pub fn canonical_module_path(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<impl Iterator<Item = Module>> {
         self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
     }
 
-    pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
+    pub fn krate(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<Crate> {
         Some(match self {
             Definition::Module(m) => m.krate(),
             &Definition::Crate(it) => it,
@@ -69,7 +75,10 @@ impl Definition {
     /// Returns the module this definition resides in.
     ///
     /// As such, for modules themselves this will return the parent module.
-    pub fn module(&self, db: &RootDatabase) -> Option<Module> {
+    pub fn module(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<Module> {
         let module = match self {
             Definition::Macro(it) => it.module(db),
             Definition::Module(it) => it.parent(db)?,
@@ -99,7 +108,10 @@ impl Definition {
         Some(module)
     }
 
-    pub fn enclosing_definition(&self, db: &RootDatabase) -> Option<Definition> {
+    pub fn enclosing_definition(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<Definition> {
         fn container_to_definition(container: ItemContainer) -> Option<Definition> {
             match container {
                 ItemContainer::Trait(it) => Some(it.into()),
@@ -136,7 +148,10 @@ impl Definition {
         }
     }
 
-    pub fn visibility(&self, db: &RootDatabase) -> Option<Visibility> {
+    pub fn visibility(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<Visibility> {
         let vis = match self {
             Definition::Field(sf) => sf.visibility(db),
             Definition::Module(it) => it.visibility(db),
@@ -165,7 +180,10 @@ impl Definition {
         Some(vis)
     }
 
-    pub fn name(&self, db: &RootDatabase) -> Option<Name> {
+    pub fn name(
+        &self,
+        db: &RootDatabase,
+    ) -> Option<Name> {
         let name = match self {
             Definition::Macro(it) => it.name(db),
             Definition::Field(it) => it.name(db),
@@ -197,11 +215,21 @@ impl Definition {
         Some(name)
     }
 
-    pub fn docs(&self, db: &RootDatabase, famous_defs: Option<&FamousDefs<'_, '_>>, display_target: DisplayTarget) -> Option<Documentation> {
+    pub fn docs(
+        &self,
+        db: &RootDatabase,
+        famous_defs: Option<&FamousDefs<'_, '_>>,
+        display_target: DisplayTarget,
+    ) -> Option<Documentation> {
         self.docs_with_rangemap(db, famous_defs, display_target).map(|(docs, _)| docs)
     }
 
-    pub fn docs_with_rangemap(&self, db: &RootDatabase, famous_defs: Option<&FamousDefs<'_, '_>>, display_target: DisplayTarget) -> Option<(Documentation, Option<DocsRangeMap>)> {
+    pub fn docs_with_rangemap(
+        &self,
+        db: &RootDatabase,
+        famous_defs: Option<&FamousDefs<'_, '_>>,
+        display_target: DisplayTarget,
+    ) -> Option<(Documentation, Option<DocsRangeMap>)> {
         let docs = match self {
             Definition::Macro(it) => it.docs_with_rangemap(db),
             Definition::Field(it) => it.docs_with_rangemap(db),
@@ -289,7 +317,11 @@ impl Definition {
         .map(|(docs, range_map)| (docs, Some(range_map)))
     }
 
-    pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
+    pub fn label(
+        &self,
+        db: &RootDatabase,
+        display_target: DisplayTarget,
+    ) -> String {
         match *self {
             Definition::Macro(it) => it.display(db, display_target).to_string(),
             Definition::Field(it) => it.display(db, display_target).to_string(),
@@ -350,7 +382,11 @@ impl Definition {
     }
 }
 
-pub fn find_std_module(famous_defs: &FamousDefs<'_, '_>, name: &str, edition: Edition) -> Option<hir::Module> {
+pub fn find_std_module(
+    famous_defs: &FamousDefs<'_, '_>,
+    name: &str,
+    edition: Edition,
+) -> Option<hir::Module> {
     let db = famous_defs.0.db;
     let std_crate = famous_defs.std()?;
     let std_root_module = std_crate.root_module();
@@ -367,7 +403,10 @@ pub enum IdentClass<'db> {
 }
 
 impl<'db> IdentClass<'db> {
-    pub fn classify_node(sema: &Semantics<'db, RootDatabase>, node: &SyntaxNode) -> Option<IdentClass<'db>> {
+    pub fn classify_node(
+        sema: &Semantics<'db, RootDatabase>,
+        node: &SyntaxNode,
+    ) -> Option<IdentClass<'db>> {
         match_ast! {
             match node {
                 ast::Name(name) => NameClass::classify(sema, &name).map(IdentClass::NameClass),
@@ -389,12 +428,18 @@ impl<'db> IdentClass<'db> {
         }
     }
 
-    pub fn classify_token(sema: &Semantics<'db, RootDatabase>, token: &SyntaxToken) -> Option<IdentClass<'db>> {
+    pub fn classify_token(
+        sema: &Semantics<'db, RootDatabase>,
+        token: &SyntaxToken,
+    ) -> Option<IdentClass<'db>> {
         let parent = token.parent()?;
         Self::classify_node(sema, &parent)
     }
 
-    pub fn classify_lifetime(sema: &Semantics<'db, RootDatabase>, lifetime: &ast::Lifetime) -> Option<IdentClass<'db>> {
+    pub fn classify_lifetime(
+        sema: &Semantics<'db, RootDatabase>,
+        lifetime: &ast::Lifetime,
+    ) -> Option<IdentClass<'db>> {
         NameRefClass::classify_lifetime(sema, lifetime)
             .map(IdentClass::NameRefClass)
             .or_else(|| NameClass::classify_lifetime(sema, lifetime).map(IdentClass::NameClass))
@@ -511,7 +556,10 @@ impl<'db> NameClass<'db> {
         Some(res)
     }
 
-    pub fn classify(sema: &Semantics<'db, RootDatabase>, name: &ast::Name) -> Option<NameClass<'db>> {
+    pub fn classify(
+        sema: &Semantics<'db, RootDatabase>,
+        name: &ast::Name,
+    ) -> Option<NameClass<'db>> {
         let _p = tracing::info_span!("NameClass::classify").entered();
         let parent = name.syntax().parent()?;
         let definition = match_ast! {
@@ -596,7 +644,10 @@ impl<'db> NameClass<'db> {
         }
     }
 
-    pub fn classify_lifetime(sema: &Semantics<'db, RootDatabase>, lifetime: &ast::Lifetime) -> Option<NameClass<'db>> {
+    pub fn classify_lifetime(
+        sema: &Semantics<'db, RootDatabase>,
+        lifetime: &ast::Lifetime,
+    ) -> Option<NameClass<'db>> {
         let _p = tracing::info_span!("NameClass::classify_lifetime", ?lifetime).entered();
         let parent = lifetime.syntax().parent()?;
         if let Some(it) = ast::LifetimeParam::cast(parent.clone()) {
@@ -621,31 +672,52 @@ pub enum OperatorClass {
 }
 
 impl OperatorClass {
-    pub fn classify_range_pat(sema: &Semantics<'_, RootDatabase>, range_pat: &ast::RangePat) -> Option<OperatorClass> {
+    pub fn classify_range_pat(
+        sema: &Semantics<'_, RootDatabase>,
+        range_pat: &ast::RangePat,
+    ) -> Option<OperatorClass> {
         sema.resolve_range_pat(range_pat).map(OperatorClass::Range)
     }
 
-    pub fn classify_range_expr(sema: &Semantics<'_, RootDatabase>, range_expr: &ast::RangeExpr) -> Option<OperatorClass> {
+    pub fn classify_range_expr(
+        sema: &Semantics<'_, RootDatabase>,
+        range_expr: &ast::RangeExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_range_expr(range_expr).map(OperatorClass::Range)
     }
 
-    pub fn classify_await(sema: &Semantics<'_, RootDatabase>, await_expr: &ast::AwaitExpr) -> Option<OperatorClass> {
+    pub fn classify_await(
+        sema: &Semantics<'_, RootDatabase>,
+        await_expr: &ast::AwaitExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_await_to_poll(await_expr).map(OperatorClass::Await)
     }
 
-    pub fn classify_prefix(sema: &Semantics<'_, RootDatabase>, prefix_expr: &ast::PrefixExpr) -> Option<OperatorClass> {
+    pub fn classify_prefix(
+        sema: &Semantics<'_, RootDatabase>,
+        prefix_expr: &ast::PrefixExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_prefix_expr(prefix_expr).map(OperatorClass::Prefix)
     }
 
-    pub fn classify_try(sema: &Semantics<'_, RootDatabase>, try_expr: &ast::TryExpr) -> Option<OperatorClass> {
+    pub fn classify_try(
+        sema: &Semantics<'_, RootDatabase>,
+        try_expr: &ast::TryExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_try_expr(try_expr).map(OperatorClass::Try)
     }
 
-    pub fn classify_index(sema: &Semantics<'_, RootDatabase>, index_expr: &ast::IndexExpr) -> Option<OperatorClass> {
+    pub fn classify_index(
+        sema: &Semantics<'_, RootDatabase>,
+        index_expr: &ast::IndexExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_index_expr(index_expr).map(OperatorClass::Index)
     }
 
-    pub fn classify_bin(sema: &Semantics<'_, RootDatabase>, bin_expr: &ast::BinExpr) -> Option<OperatorClass> {
+    pub fn classify_bin(
+        sema: &Semantics<'_, RootDatabase>,
+        bin_expr: &ast::BinExpr,
+    ) -> Option<OperatorClass> {
         sema.resolve_bin_expr(bin_expr).map(OperatorClass::Bin)
     }
 }
@@ -676,7 +748,10 @@ pub enum NameRefClass<'db> {
 }
 
 impl<'db> NameRefClass<'db> {
-    pub fn classify(sema: &Semantics<'db, RootDatabase>, name_ref: &ast::NameRef) -> Option<NameRefClass<'db>> {
+    pub fn classify(
+        sema: &Semantics<'db, RootDatabase>,
+        name_ref: &ast::NameRef,
+    ) -> Option<NameRefClass<'db>> {
         let _p = tracing::info_span!("NameRefClass::classify", ?name_ref).entered();
         let parent = name_ref.syntax().parent()?;
         if let Some(record_field) = ast::RecordExprField::for_field_name(name_ref)
@@ -786,7 +861,10 @@ impl<'db> NameRefClass<'db> {
         }
     }
 
-    pub fn classify_lifetime(sema: &Semantics<'db, RootDatabase>, lifetime: &ast::Lifetime) -> Option<NameRefClass<'db>> {
+    pub fn classify_lifetime(
+        sema: &Semantics<'db, RootDatabase>,
+        lifetime: &ast::Lifetime,
+    ) -> Option<NameRefClass<'db>> {
         let _p = tracing::info_span!("NameRefClass::classify_lifetime", ?lifetime).entered();
         if lifetime.text() == "'static" {
             return Some(NameRefClass::Definition(
@@ -833,7 +911,10 @@ impl From<Either<PathResolution, InlineAsmOperand>> for Definition {
 }
 
 impl AsAssocItem for Definition {
-    fn as_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<AssocItem> {
+    fn as_assoc_item(
+        self,
+        db: &dyn hir::db::HirDatabase,
+    ) -> Option<AssocItem> {
         match self {
             Definition::Function(it) => it.as_assoc_item(db),
             Definition::Const(it) => it.as_assoc_item(db),
@@ -844,7 +925,10 @@ impl AsAssocItem for Definition {
 }
 
 impl AsExternAssocItem for Definition {
-    fn as_extern_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<ExternAssocItem> {
+    fn as_extern_assoc_item(
+        self,
+        db: &dyn hir::db::HirDatabase,
+    ) -> Option<ExternAssocItem> {
         match self {
             Definition::Function(it) => it.as_extern_assoc_item(db),
             Definition::Static(it) => it.as_extern_assoc_item(db),

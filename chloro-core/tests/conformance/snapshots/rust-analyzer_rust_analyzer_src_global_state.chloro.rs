@@ -70,7 +70,11 @@ pub(crate) struct Handle<H, C> {
     pub(crate) receiver: C,
 }
 
-pub(crate) type ReqHandler = fn(&mut GlobalState, lsp_server::Response);
+pub(crate) type ReqHandler =
+    fn(
+        &mut GlobalState,
+        lsp_server::Response,
+    );
 
 type ReqQueue = lsp_server::ReqQueue<(String, Instant), ReqHandler>;
 
@@ -193,7 +197,10 @@ impl std::panic::UnwindSafe for GlobalStateSnapshot {
 }
 
 impl GlobalState {
-    pub(crate) fn new(sender: Sender<lsp_server::Message>, config: Config) -> GlobalState {
+    pub(crate) fn new(
+        sender: Sender<lsp_server::Message>,
+        config: Config,
+    ) -> GlobalState {
         let loader = {
             let (sender, receiver) = unbounded::<vfs::loader::Message>();
             let handle: vfs_notify::NotifyHandle = vfs::loader::Handle::spawn(sender);
@@ -536,12 +543,19 @@ impl GlobalState {
         }
     }
 
-    pub(crate) fn send_request<R: lsp_types::request::Request>(&mut self, params: R::Params, handler: ReqHandler) {
+    pub(crate) fn send_request<R: lsp_types::request::Request>(
+        &mut self,
+        params: R::Params,
+        handler: ReqHandler,
+    ) {
         let request = self.req_queue.outgoing.register(R::METHOD.to_owned(), params, handler);
         self.send(request.into());
     }
 
-    pub(crate) fn complete_request(&mut self, response: lsp_server::Response) {
+    pub(crate) fn complete_request(
+        &mut self,
+        response: lsp_server::Response,
+    ) {
         let handler = self
             .req_queue
             .outgoing
@@ -550,18 +564,28 @@ impl GlobalState {
         handler(self, response)
     }
 
-    pub(crate) fn send_notification<N: lsp_types::notification::Notification>(&self, params: N::Params) {
+    pub(crate) fn send_notification<N: lsp_types::notification::Notification>(
+        &self,
+        params: N::Params,
+    ) {
         let not = lsp_server::Notification::new(N::METHOD.to_owned(), params);
         self.send(not.into());
     }
 
-    pub(crate) fn register_request(&mut self, request: &lsp_server::Request, request_received: Instant) {
+    pub(crate) fn register_request(
+        &mut self,
+        request: &lsp_server::Request,
+        request_received: Instant,
+    ) {
         self.req_queue
             .incoming
             .register(request.id.clone(), (request.method.clone(), request_received));
     }
 
-    pub(crate) fn respond(&mut self, response: lsp_server::Response) {
+    pub(crate) fn respond(
+        &mut self,
+        response: lsp_server::Response,
+    ) {
         if let Some((method, start)) = self.req_queue.incoming.complete(&response.id) {
             if let Some(err) = &response.error
                 && err.message.starts_with("server panicked")
@@ -575,22 +599,36 @@ impl GlobalState {
         }
     }
 
-    pub(crate) fn cancel(&mut self, request_id: lsp_server::RequestId) {
+    pub(crate) fn cancel(
+        &mut self,
+        request_id: lsp_server::RequestId,
+    ) {
         if let Some(response) = self.req_queue.incoming.cancel(request_id) {
             self.send(response.into());
         }
     }
 
-    pub(crate) fn is_completed(&self, request: &lsp_server::Request) -> bool {
+    pub(crate) fn is_completed(
+        &self,
+        request: &lsp_server::Request,
+    ) -> bool {
         self.req_queue.incoming.is_completed(&request.id)
     }
 
     #[track_caller]
-    fn send(&self, message: lsp_server::Message) {
+    fn send(
+        &self,
+        message: lsp_server::Message,
+    ) {
         self.sender.send(message).unwrap();
     }
 
-    pub(crate) fn publish_diagnostics(&mut self, uri: Url, version: Option<i32>, mut diagnostics: Vec<lsp_types::Diagnostic>) {
+    pub(crate) fn publish_diagnostics(
+        &mut self,
+        uri: Url,
+        version: Option<i32>,
+        mut diagnostics: Vec<lsp_types::Diagnostic>,
+    ) {
         // We put this on a separate thread to avoid blocking the main thread with serialization work
         self.task_pool.handle.spawn_with_sender(stdx::thread::ThreadIntent::Worker, {
             let sender = self.sender.clone();
@@ -647,7 +685,11 @@ impl GlobalState {
         })
     }
 
-    fn enqueue_workspace_fetch(&mut self, path: AbsPathBuf, force_crate_graph_reload: bool) {
+    fn enqueue_workspace_fetch(
+        &mut self,
+        path: AbsPathBuf,
+        force_crate_graph_reload: bool,
+    ) {
         let already_requested = self.fetch_workspaces_queue.op_requested()
             && !self.fetch_workspaces_queue.op_in_progress();
         if self.fetch_ws_receiver.is_none() && already_requested {
@@ -683,36 +725,57 @@ impl GlobalStateSnapshot {
     }
 
     /// Returns `None` if the file was excluded.
-    pub(crate) fn url_to_file_id(&self, url: &Url) -> anyhow::Result<Option<FileId>> {
+    pub(crate) fn url_to_file_id(
+        &self,
+        url: &Url,
+    ) -> anyhow::Result<Option<FileId>> {
         url_to_file_id(&self.vfs_read(), url)
     }
 
-    pub(crate) fn file_id_to_url(&self, id: FileId) -> Url {
+    pub(crate) fn file_id_to_url(
+        &self,
+        id: FileId,
+    ) -> Url {
         file_id_to_url(&self.vfs_read(), id)
     }
 
     /// Returns `None` if the file was excluded.
-    pub(crate) fn vfs_path_to_file_id(&self, vfs_path: &VfsPath) -> anyhow::Result<Option<FileId>> {
+    pub(crate) fn vfs_path_to_file_id(
+        &self,
+        vfs_path: &VfsPath,
+    ) -> anyhow::Result<Option<FileId>> {
         vfs_path_to_file_id(&self.vfs_read(), vfs_path)
     }
 
-    pub(crate) fn file_line_index(&self, file_id: FileId) -> Cancellable<LineIndex> {
+    pub(crate) fn file_line_index(
+        &self,
+        file_id: FileId,
+    ) -> Cancellable<LineIndex> {
         let endings = self.vfs.read().1[&file_id];
         let index = self.analysis.file_line_index(file_id)?;
         let res = LineIndex { index, endings, encoding: self.config.caps().negotiated_encoding() };
         Ok(res)
     }
 
-    pub(crate) fn file_version(&self, file_id: FileId) -> Option<i32> {
+    pub(crate) fn file_version(
+        &self,
+        file_id: FileId,
+    ) -> Option<i32> {
         Some(self.mem_docs.get(self.vfs_read().file_path(file_id))?.version)
     }
 
-    pub(crate) fn url_file_version(&self, url: &Url) -> Option<i32> {
+    pub(crate) fn url_file_version(
+        &self,
+        url: &Url,
+    ) -> Option<i32> {
         let path = from_proto::vfs_path(url).ok()?;
         Some(self.mem_docs.get(&path)?.version)
     }
 
-    pub(crate) fn anchored_path(&self, path: &AnchoredPathBuf) -> Url {
+    pub(crate) fn anchored_path(
+        &self,
+        path: &AnchoredPathBuf,
+    ) -> Url {
         let mut base = self.vfs_read().file_path(path.anchor).clone();
         base.pop();
         let path = base.join(&path.path).unwrap();
@@ -720,11 +783,17 @@ impl GlobalStateSnapshot {
         url_from_abs_path(path)
     }
 
-    pub(crate) fn file_id_to_file_path(&self, file_id: FileId) -> vfs::VfsPath {
+    pub(crate) fn file_id_to_file_path(
+        &self,
+        file_id: FileId,
+    ) -> vfs::VfsPath {
         self.vfs_read().file_path(file_id).clone()
     }
 
-    pub(crate) fn target_spec_for_crate(&self, crate_id: Crate) -> Option<TargetSpec> {
+    pub(crate) fn target_spec_for_crate(
+        &self,
+        crate_id: Crate,
+    ) -> Option<TargetSpec> {
         let file_id = self.analysis.crate_root(crate_id).ok()?;
         let path = self.vfs_read().file_path(file_id).clone();
         let path = path.as_path()?;
@@ -772,7 +841,10 @@ impl GlobalStateSnapshot {
         None
     }
 
-    pub(crate) fn all_workspace_dependencies_for_package(&self, package: &Arc<PackageId>) -> Option<FxHashSet<Arc<PackageId>>> {
+    pub(crate) fn all_workspace_dependencies_for_package(
+        &self,
+        package: &Arc<PackageId>,
+    ) -> Option<FxHashSet<Arc<PackageId>>> {
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
@@ -790,7 +862,10 @@ impl GlobalStateSnapshot {
         None
     }
 
-    pub(crate) fn file_exists(&self, file_id: FileId) -> bool {
+    pub(crate) fn file_exists(
+        &self,
+        file_id: FileId,
+    ) -> bool {
         self.vfs.read().0.exists(file_id)
     }
 
@@ -803,20 +878,29 @@ impl GlobalStateSnapshot {
     }
 }
 
-pub(crate) fn file_id_to_url(vfs: &vfs::Vfs, id: FileId) -> Url {
+pub(crate) fn file_id_to_url(
+    vfs: &vfs::Vfs,
+    id: FileId,
+) -> Url {
     let path = vfs.file_path(id);
     let path = path.as_path().unwrap();
     url_from_abs_path(path)
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn url_to_file_id(vfs: &vfs::Vfs, url: &Url) -> anyhow::Result<Option<FileId>> {
+pub(crate) fn url_to_file_id(
+    vfs: &vfs::Vfs,
+    url: &Url,
+) -> anyhow::Result<Option<FileId>> {
     let path = from_proto::vfs_path(url)?;
     vfs_path_to_file_id(vfs, &path)
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn vfs_path_to_file_id(vfs: &vfs::Vfs, vfs_path: &VfsPath) -> anyhow::Result<Option<FileId>> {
+pub(crate) fn vfs_path_to_file_id(
+    vfs: &vfs::Vfs,
+    vfs_path: &VfsPath,
+) -> anyhow::Result<Option<FileId>> {
     let (file_id, excluded) =
         vfs.file_id(vfs_path).ok_or_else(|| anyhow::format_err!("file not found: {vfs_path}"))?;
     match excluded {

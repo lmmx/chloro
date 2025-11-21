@@ -94,15 +94,31 @@ pub(crate) enum BodyOrSig<'db> {
 }
 
 impl<'db> SourceAnalyzer<'db> {
-    pub(crate) fn new_for_body(db: &'db dyn HirDatabase, def: DefWithBodyId, node: InFile<&SyntaxNode>, offset: Option<TextSize>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_for_body(
+        db: &'db dyn HirDatabase,
+        def: DefWithBodyId,
+        node: InFile<&SyntaxNode>,
+        offset: Option<TextSize>,
+    ) -> SourceAnalyzer<'db> {
         Self::new_for_body_(db, def, node, offset, Some(db.infer(def)))
     }
 
-    pub(crate) fn new_for_body_no_infer(db: &'db dyn HirDatabase, def: DefWithBodyId, node: InFile<&SyntaxNode>, offset: Option<TextSize>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_for_body_no_infer(
+        db: &'db dyn HirDatabase,
+        def: DefWithBodyId,
+        node: InFile<&SyntaxNode>,
+        offset: Option<TextSize>,
+    ) -> SourceAnalyzer<'db> {
         Self::new_for_body_(db, def, node, offset, None)
     }
 
-    pub(crate) fn new_for_body_(db: &'db dyn HirDatabase, def: DefWithBodyId, node @ InFile { file_id, .. }: InFile<&SyntaxNode>, offset: Option<TextSize>, infer: Option<Arc<InferenceResult<'db>>>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_for_body_(
+        db: &'db dyn HirDatabase,
+        def: DefWithBodyId,
+        node @ InFile { file_id, .. }: InFile<&SyntaxNode>,
+        offset: Option<TextSize>,
+        infer: Option<Arc<InferenceResult<'db>>>,
+    ) -> SourceAnalyzer<'db> {
         let (body, source_map) = db.body_with_source_map(def);
         let scopes = db.expr_scopes(def);
         let scope = match offset {
@@ -125,7 +141,12 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn new_generic_def(db: &'db dyn HirDatabase, def: GenericDefId, InFile { file_id, .. }: InFile<&SyntaxNode>, _offset: Option<TextSize>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_generic_def(
+        db: &'db dyn HirDatabase,
+        def: GenericDefId,
+        InFile { file_id, .. }: InFile<&SyntaxNode>,
+        _offset: Option<TextSize>,
+    ) -> SourceAnalyzer<'db> {
         let (_params, store, source_map) = db.generic_params_and_store_and_source_map(def);
         let resolver = def.resolver(db);
         SourceAnalyzer {
@@ -135,7 +156,12 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn new_variant_body(db: &'db dyn HirDatabase, def: VariantId, InFile { file_id, .. }: InFile<&SyntaxNode>, _offset: Option<TextSize>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_variant_body(
+        db: &'db dyn HirDatabase,
+        def: VariantId,
+        InFile { file_id, .. }: InFile<&SyntaxNode>,
+        _offset: Option<TextSize>,
+    ) -> SourceAnalyzer<'db> {
         let (fields, source_map) = def.fields_with_source_map(db);
         let resolver = def.resolver(db);
         SourceAnalyzer {
@@ -149,7 +175,10 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn new_for_resolver(resolver: Resolver<'db>, node: InFile<&SyntaxNode>) -> SourceAnalyzer<'db> {
+    pub(crate) fn new_for_resolver(
+        resolver: Resolver<'db>,
+        node: InFile<&SyntaxNode>,
+    ) -> SourceAnalyzer<'db> {
         SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
     }
 
@@ -194,34 +223,52 @@ impl<'db> SourceAnalyzer<'db> {
         })
     }
 
-    fn trait_environment(&self, db: &'db dyn HirDatabase) -> Arc<TraitEnvironment<'db>> {
+    fn trait_environment(
+        &self,
+        db: &'db dyn HirDatabase,
+    ) -> Arc<TraitEnvironment<'db>> {
         self.body_().map(|(def, ..)| def).map_or_else(
             || TraitEnvironment::empty(self.resolver.krate()),
             |def| db.trait_environment_for_body(def),
         )
     }
 
-    fn expr_id(&self, expr: ast::Expr) -> Option<ExprOrPatId> {
+    fn expr_id(
+        &self,
+        expr: ast::Expr,
+    ) -> Option<ExprOrPatId> {
         let src = InFile { file_id: self.file_id, value: expr };
         self.store_sm()?.node_expr(src.as_ref())
     }
 
-    fn pat_id(&self, pat: &ast::Pat) -> Option<ExprOrPatId> {
+    fn pat_id(
+        &self,
+        pat: &ast::Pat,
+    ) -> Option<ExprOrPatId> {
         let src = InFile { file_id: self.file_id, value: pat };
         self.store_sm()?.node_pat(src)
     }
 
-    fn type_id(&self, pat: &ast::Type) -> Option<TypeRefId> {
+    fn type_id(
+        &self,
+        pat: &ast::Type,
+    ) -> Option<TypeRefId> {
         let src = InFile { file_id: self.file_id, value: pat };
         self.store_sm()?.node_type(src)
     }
 
-    fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
+    fn binding_id_of_pat(
+        &self,
+        pat: &ast::IdentPat,
+    ) -> Option<BindingId> {
         let pat_id = self.pat_id(&pat.clone().into())?;
         if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] { Some(id) } else { None }
     }
 
-    pub(crate) fn expr_adjustments(&self, expr: &ast::Expr) -> Option<&[Adjustment<'db>]> {
+    pub(crate) fn expr_adjustments(
+        &self,
+        expr: &ast::Expr,
+    ) -> Option<&[Adjustment<'db>]> {
         // It is safe to omit destructuring assignments here because they have no adjustments (neither
         // expressions nor patterns).
         let expr_id = self.expr_id(expr.clone())?.as_expr()?;
@@ -229,7 +276,11 @@ impl<'db> SourceAnalyzer<'db> {
         infer.expr_adjustment(expr_id)
     }
 
-    pub(crate) fn type_of_type(&self, db: &'db dyn HirDatabase, ty: &ast::Type) -> Option<Type<'db>> {
+    pub(crate) fn type_of_type(
+        &self,
+        db: &'db dyn HirDatabase,
+        ty: &ast::Type,
+    ) -> Option<Type<'db>> {
         let type_ref = self.type_id(ty)?;
         let ty = TyLoweringContext::new(
             db,
@@ -245,7 +296,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(Type::new_with_resolver(db, &self.resolver, ty))
     }
 
-    pub(crate) fn type_of_expr(&self, db: &'db dyn HirDatabase, expr: &ast::Expr) -> Option<(Type<'db>, Option<Type<'db>>)> {
+    pub(crate) fn type_of_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        expr: &ast::Expr,
+    ) -> Option<(Type<'db>, Option<Type<'db>>)> {
         let expr_id = self.expr_id(expr.clone())?;
         let infer = self.infer()?;
         let coerced = expr_id
@@ -257,7 +312,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some((mk_ty(ty), coerced.map(mk_ty)))
     }
 
-    pub(crate) fn type_of_pat(&self, db: &'db dyn HirDatabase, pat: &ast::Pat) -> Option<(Type<'db>, Option<Type<'db>>)> {
+    pub(crate) fn type_of_pat(
+        &self,
+        db: &'db dyn HirDatabase,
+        pat: &ast::Pat,
+    ) -> Option<(Type<'db>, Option<Type<'db>>)> {
         let expr_or_pat_id = self.pat_id(pat)?;
         let infer = self.infer()?;
         let coerced = match expr_or_pat_id {
@@ -274,7 +333,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some((mk_ty(ty), coerced.map(mk_ty)))
     }
 
-    pub(crate) fn type_of_binding_in_pat(&self, db: &'db dyn HirDatabase, pat: &ast::IdentPat) -> Option<Type<'db>> {
+    pub(crate) fn type_of_binding_in_pat(
+        &self,
+        db: &'db dyn HirDatabase,
+        pat: &ast::IdentPat,
+    ) -> Option<Type<'db>> {
         let binding_id = self.binding_id_of_pat(pat)?;
         let infer = self.infer()?;
         let ty = infer[binding_id];
@@ -282,13 +345,21 @@ impl<'db> SourceAnalyzer<'db> {
         Some(mk_ty(ty))
     }
 
-    pub(crate) fn type_of_self(&self, db: &'db dyn HirDatabase, _param: &ast::SelfParam) -> Option<Type<'db>> {
+    pub(crate) fn type_of_self(
+        &self,
+        db: &'db dyn HirDatabase,
+        _param: &ast::SelfParam,
+    ) -> Option<Type<'db>> {
         let binding = self.body()?.self_param?;
         let ty = self.infer()?[binding];
         Some(Type::new_with_resolver(db, &self.resolver, ty))
     }
 
-    pub(crate) fn binding_mode_of_pat(&self, _db: &'db dyn HirDatabase, pat: &ast::IdentPat) -> Option<BindingMode> {
+    pub(crate) fn binding_mode_of_pat(
+        &self,
+        _db: &'db dyn HirDatabase,
+        pat: &ast::IdentPat,
+    ) -> Option<BindingMode> {
         let id = self.pat_id(&pat.clone().into())?;
         let infer = self.infer()?;
         infer.binding_mode(id.as_pat()?).map(|bm| match bm {
@@ -302,7 +373,11 @@ impl<'db> SourceAnalyzer<'db> {
         })
     }
 
-    pub(crate) fn pattern_adjustments(&self, db: &'db dyn HirDatabase, pat: &ast::Pat) -> Option<SmallVec<[Type<'db>; 1]>> {
+    pub(crate) fn pattern_adjustments(
+        &self,
+        db: &'db dyn HirDatabase,
+        pat: &ast::Pat,
+    ) -> Option<SmallVec<[Type<'db>; 1]>> {
         let pat_id = self.pat_id(pat)?;
         let infer = self.infer()?;
         Some(
@@ -314,7 +389,11 @@ impl<'db> SourceAnalyzer<'db> {
         )
     }
 
-    pub(crate) fn resolve_method_call_as_callable(&self, db: &'db dyn HirDatabase, call: &ast::MethodCallExpr) -> Option<Callable<'db>> {
+    pub(crate) fn resolve_method_call_as_callable(
+        &self,
+        db: &'db dyn HirDatabase,
+        call: &ast::MethodCallExpr,
+    ) -> Option<Callable<'db>> {
         let expr_id = self.expr_id(call.clone().into())?.as_expr()?;
         let (func, args) = self.infer()?.method_resolution(expr_id)?;
         let interner = DbInterner::new_with(db, None, None);
@@ -325,13 +404,21 @@ impl<'db> SourceAnalyzer<'db> {
         Some(res)
     }
 
-    pub(crate) fn resolve_method_call(&self, db: &'db dyn HirDatabase, call: &ast::MethodCallExpr) -> Option<Function> {
+    pub(crate) fn resolve_method_call(
+        &self,
+        db: &'db dyn HirDatabase,
+        call: &ast::MethodCallExpr,
+    ) -> Option<Function> {
         let expr_id = self.expr_id(call.clone().into())?.as_expr()?;
         let (f_in_trait, substs) = self.infer()?.method_resolution(expr_id)?;
         Some(self.resolve_impl_method_or_trait_def(db, f_in_trait, substs).into())
     }
 
-    pub(crate) fn resolve_method_call_fallback(&self, db: &'db dyn HirDatabase, call: &ast::MethodCallExpr) -> Option<(Either<Function, Field>, Option<GenericSubstitution<'db>>)> {
+    pub(crate) fn resolve_method_call_fallback(
+        &self,
+        db: &'db dyn HirDatabase,
+        call: &ast::MethodCallExpr,
+    ) -> Option<(Either<Function, Field>, Option<GenericSubstitution<'db>>)> {
         let expr_id = self.expr_id(call.clone().into())?.as_expr()?;
         let inference_result = self.infer()?;
         match inference_result.method_resolution(expr_id) {
@@ -351,12 +438,19 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn resolve_expr_as_callable(&self, db: &'db dyn HirDatabase, call: &ast::Expr) -> Option<Callable<'db>> {
+    pub(crate) fn resolve_expr_as_callable(
+        &self,
+        db: &'db dyn HirDatabase,
+        call: &ast::Expr,
+    ) -> Option<Callable<'db>> {
         let (orig, adjusted) = self.type_of_expr(db, &call.clone())?;
         adjusted.unwrap_or(orig).as_callable(db)
     }
 
-    pub(crate) fn resolve_field(&self, field: &ast::FieldExpr) -> Option<Either<Field, TupleField>> {
+    pub(crate) fn resolve_field(
+        &self,
+        field: &ast::FieldExpr,
+    ) -> Option<Either<Field, TupleField>> {
         let (def, ..) = self.body_()?;
         let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
         self.infer()?.field_resolution(expr_id).map(|it| {
@@ -364,7 +458,12 @@ impl<'db> SourceAnalyzer<'db> {
         })
     }
 
-    fn field_subst(&self, field_expr: ExprId, infer: &InferenceResult<'db>, db: &'db dyn HirDatabase) -> Option<GenericSubstitution<'db>> {
+    fn field_subst(
+        &self,
+        field_expr: ExprId,
+        infer: &InferenceResult<'db>,
+        db: &'db dyn HirDatabase,
+    ) -> Option<GenericSubstitution<'db>> {
         let body = self.store()?;
         if let Expr::Field { expr: object_expr, name: _ } = body[field_expr] {
             let (adt, subst) = infer.type_of_expr_with_adjust(object_expr)?.as_adt()?;
@@ -373,7 +472,11 @@ impl<'db> SourceAnalyzer<'db> {
         None
     }
 
-    pub(crate) fn resolve_field_fallback(&self, db: &'db dyn HirDatabase, field: &ast::FieldExpr) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)> {
+    pub(crate) fn resolve_field_fallback(
+        &self,
+        db: &'db dyn HirDatabase,
+        field: &ast::FieldExpr,
+    ) -> Option<(Either<Either<Field, TupleField>, Function>, Option<GenericSubstitution<'db>>)> {
         let (def, ..) = self.body_()?;
         let expr_id = self.expr_id(field.clone().into())?.as_expr()?;
         let inference_result = self.infer()?;
@@ -402,7 +505,11 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn resolve_range_pat(&self, db: &'db dyn HirDatabase, range_pat: &ast::RangePat) -> Option<StructId> {
+    pub(crate) fn resolve_range_pat(
+        &self,
+        db: &'db dyn HirDatabase,
+        range_pat: &ast::RangePat,
+    ) -> Option<StructId> {
         let path: ModPath = match (range_pat.op_kind()?, range_pat.start(), range_pat.end()) {
             (RangeOp::Exclusive, None, Some(_)) => path![core::ops::RangeTo],
             (RangeOp::Exclusive, Some(_), None) => path![core::ops::RangeFrom],
@@ -417,7 +524,11 @@ impl<'db> SourceAnalyzer<'db> {
         self.resolver.resolve_known_struct(db, &path)
     }
 
-    pub(crate) fn resolve_range_expr(&self, db: &'db dyn HirDatabase, range_expr: &ast::RangeExpr) -> Option<StructId> {
+    pub(crate) fn resolve_range_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        range_expr: &ast::RangeExpr,
+    ) -> Option<StructId> {
         let path: ModPath = match (range_expr.op_kind()?, range_expr.start(), range_expr.end()) {
             (RangeOp::Exclusive, None, None) => path![core::ops::RangeFull],
             (RangeOp::Exclusive, None, Some(_)) => path![core::ops::RangeTo],
@@ -433,7 +544,11 @@ impl<'db> SourceAnalyzer<'db> {
         self.resolver.resolve_known_struct(db, &path)
     }
 
-    pub(crate) fn resolve_await_to_poll(&self, db: &'db dyn HirDatabase, await_expr: &ast::AwaitExpr) -> Option<FunctionId> {
+    pub(crate) fn resolve_await_to_poll(
+        &self,
+        db: &'db dyn HirDatabase,
+        await_expr: &ast::AwaitExpr,
+    ) -> Option<FunctionId> {
         let mut ty = self.ty_of_expr(await_expr.expr()?)?;
         let into_future_trait = self
             .resolver
@@ -463,7 +578,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(self.resolve_impl_method_or_trait_def(db, poll_fn, substs))
     }
 
-    pub(crate) fn resolve_prefix_expr(&self, db: &'db dyn HirDatabase, prefix_expr: &ast::PrefixExpr) -> Option<FunctionId> {
+    pub(crate) fn resolve_prefix_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        prefix_expr: &ast::PrefixExpr,
+    ) -> Option<FunctionId> {
         let (_op_trait, op_fn) = match prefix_expr.op_kind()? {
             ast::UnaryOp::Deref => {
                 // This can be either `Deref::deref` or `DerefMut::deref_mut`.
@@ -499,7 +618,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
-    pub(crate) fn resolve_index_expr(&self, db: &'db dyn HirDatabase, index_expr: &ast::IndexExpr) -> Option<FunctionId> {
+    pub(crate) fn resolve_index_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        index_expr: &ast::IndexExpr,
+    ) -> Option<FunctionId> {
         let base_ty = self.ty_of_expr(index_expr.base()?)?;
         let index_ty = self.ty_of_expr(index_expr.index()?)?;
         let (_index_trait, index_fn) =
@@ -524,7 +647,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
-    pub(crate) fn resolve_bin_expr(&self, db: &'db dyn HirDatabase, binop_expr: &ast::BinExpr) -> Option<FunctionId> {
+    pub(crate) fn resolve_bin_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        binop_expr: &ast::BinExpr,
+    ) -> Option<FunctionId> {
         let op = binop_expr.op_kind()?;
         let lhs = self.ty_of_expr(binop_expr.lhs()?)?;
         let rhs = self.ty_of_expr(binop_expr.rhs()?)?;
@@ -537,7 +664,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
-    pub(crate) fn resolve_try_expr(&self, db: &'db dyn HirDatabase, try_expr: &ast::TryExpr) -> Option<FunctionId> {
+    pub(crate) fn resolve_try_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        try_expr: &ast::TryExpr,
+    ) -> Option<FunctionId> {
         let ty = self.ty_of_expr(try_expr.expr()?)?;
         let op_fn = LangItem::TryTraitBranch.resolve_function(db, self.resolver.krate())?;
         // HACK: subst for `branch()` coincides with that for `Try` because `branch()` itself
@@ -547,7 +678,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
-    pub(crate) fn resolve_record_field(&self, db: &'db dyn HirDatabase, field: &ast::RecordExprField) -> Option<(Field, Option<Local>, Type<'db>, GenericSubstitution<'db>)> {
+    pub(crate) fn resolve_record_field(
+        &self,
+        db: &'db dyn HirDatabase,
+        field: &ast::RecordExprField,
+    ) -> Option<(Field, Option<Local>, Type<'db>, GenericSubstitution<'db>)> {
         let record_expr = ast::RecordExpr::cast(field.syntax().parent().and_then(|p| p.parent())?)?;
         let expr = ast::Expr::from(record_expr);
         let expr_id = self.store_sm()?.node_expr(InFile::new(self.file_id, &expr))?;
@@ -586,7 +721,11 @@ impl<'db> SourceAnalyzer<'db> {
         ))
     }
 
-    pub(crate) fn resolve_record_pat_field(&self, db: &'db dyn HirDatabase, field: &ast::RecordPatField) -> Option<(Field, Type<'db>, GenericSubstitution<'db>)> {
+    pub(crate) fn resolve_record_pat_field(
+        &self,
+        db: &'db dyn HirDatabase,
+        field: &ast::RecordPatField,
+    ) -> Option<(Field, Type<'db>, GenericSubstitution<'db>)> {
         let interner = DbInterner::new_with(db, None, None);
         let field_name = field.field_name()?.as_name();
         let record_pat = ast::RecordPat::cast(field.syntax().parent().and_then(|p| p.parent())?)?;
@@ -603,7 +742,11 @@ impl<'db> SourceAnalyzer<'db> {
         ))
     }
 
-    pub(crate) fn resolve_bind_pat_to_const(&self, db: &'db dyn HirDatabase, pat: &ast::IdentPat) -> Option<ModuleDef> {
+    pub(crate) fn resolve_bind_pat_to_const(
+        &self,
+        db: &'db dyn HirDatabase,
+        pat: &ast::IdentPat,
+    ) -> Option<ModuleDef> {
         let expr_or_pat_id = self.pat_id(&pat.clone().into())?;
         let store = self.store()?;
         let path = match expr_or_pat_id {
@@ -624,7 +767,10 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn resolve_use_type_arg(&self, name: &ast::NameRef) -> Option<crate::TypeParam> {
+    pub(crate) fn resolve_use_type_arg(
+        &self,
+        name: &ast::NameRef,
+    ) -> Option<crate::TypeParam> {
         let name = name.as_name();
         self.resolver
             .all_generic_params()
@@ -632,7 +778,11 @@ impl<'db> SourceAnalyzer<'db> {
             .map(crate::TypeParam::from)
     }
 
-    pub(crate) fn resolve_offset_of_field(&self, db: &'db dyn HirDatabase, name_ref: &ast::NameRef) -> Option<(Either<crate::Variant, crate::Field>, GenericSubstitution<'db>)> {
+    pub(crate) fn resolve_offset_of_field(
+        &self,
+        db: &'db dyn HirDatabase,
+        name_ref: &ast::NameRef,
+    ) -> Option<(Either<crate::Variant, crate::Field>, GenericSubstitution<'db>)> {
         let offset_of_expr = ast::OffsetOfExpr::cast(name_ref.syntax().parent()?)?;
         let container = offset_of_expr.ty()?;
         let container = self.type_of_type(db, &container)?;
@@ -694,7 +844,11 @@ impl<'db> SourceAnalyzer<'db> {
         None
     }
 
-    pub(crate) fn resolve_path(&self, db: &'db dyn HirDatabase, path: &ast::Path) -> Option<(PathResolution, Option<GenericSubstitution<'db>>)> {
+    pub(crate) fn resolve_path(
+        &self,
+        db: &'db dyn HirDatabase,
+        path: &ast::Path,
+    ) -> Option<(PathResolution, Option<GenericSubstitution<'db>>)> {
         let parent = path.syntax().parent();
         let parent = || parent.clone();
         let mut prefer_value_ns = false;
@@ -1024,7 +1178,11 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn resolve_hir_path_per_ns(&self, db: &dyn HirDatabase, path: &ast::Path) -> Option<PathResolutionPerNs> {
+    pub(crate) fn resolve_hir_path_per_ns(
+        &self,
+        db: &dyn HirDatabase,
+        path: &ast::Path,
+    ) -> Option<PathResolutionPerNs> {
         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
         let hir_path =
             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
@@ -1040,7 +1198,11 @@ impl<'db> SourceAnalyzer<'db> {
         ))
     }
 
-    pub(crate) fn record_literal_missing_fields(&self, db: &'db dyn HirDatabase, literal: &ast::RecordExpr) -> Option<Vec<(Field, Type<'db>)>> {
+    pub(crate) fn record_literal_missing_fields(
+        &self,
+        db: &'db dyn HirDatabase,
+        literal: &ast::RecordExpr,
+    ) -> Option<Vec<(Field, Type<'db>)>> {
         let body = self.store()?;
         let infer = self.infer()?;
         let expr_id = self.expr_id(literal.clone().into())?;
@@ -1057,7 +1219,11 @@ impl<'db> SourceAnalyzer<'db> {
         Some(res)
     }
 
-    pub(crate) fn record_pattern_missing_fields(&self, db: &'db dyn HirDatabase, pattern: &ast::RecordPat) -> Option<Vec<(Field, Type<'db>)>> {
+    pub(crate) fn record_pattern_missing_fields(
+        &self,
+        db: &'db dyn HirDatabase,
+        pattern: &ast::RecordPat,
+    ) -> Option<Vec<(Field, Type<'db>)>> {
         let body = self.store()?;
         let infer = self.infer()?;
         let pat_id = self.pat_id(&pattern.clone().into())?.as_pat()?;
@@ -1068,7 +1234,13 @@ impl<'db> SourceAnalyzer<'db> {
         Some(res)
     }
 
-    fn missing_fields(&self, db: &'db dyn HirDatabase, substs: GenericArgs<'db>, variant: VariantId, missing_fields: Vec<LocalFieldId>) -> Vec<(Field, Type<'db>)> {
+    fn missing_fields(
+        &self,
+        db: &'db dyn HirDatabase,
+        substs: GenericArgs<'db>,
+        variant: VariantId,
+        missing_fields: Vec<LocalFieldId>,
+    ) -> Vec<(Field, Type<'db>)> {
         let interner = DbInterner::new_with(db, None, None);
         let field_types = db.field_types(variant);
         missing_fields
@@ -1081,13 +1253,20 @@ impl<'db> SourceAnalyzer<'db> {
             .collect()
     }
 
-    pub(crate) fn resolve_variant(&self, record_lit: ast::RecordExpr) -> Option<VariantId> {
+    pub(crate) fn resolve_variant(
+        &self,
+        record_lit: ast::RecordExpr,
+    ) -> Option<VariantId> {
         let infer = self.infer()?;
         let expr_id = self.expr_id(record_lit.into())?;
         infer.variant_resolution_for_expr_or_pat(expr_id)
     }
 
-    pub(crate) fn is_unsafe_macro_call_expr(&self, db: &'db dyn HirDatabase, macro_expr: InFile<&ast::MacroExpr>) -> bool {
+    pub(crate) fn is_unsafe_macro_call_expr(
+        &self,
+        db: &'db dyn HirDatabase,
+        macro_expr: InFile<&ast::MacroExpr>,
+    ) -> bool {
         if let Some((def, body, sm, Some(infer))) = self.body_()
             && let Some(expanded_expr) = sm.macro_expansion_expr(macro_expr)
         {
@@ -1109,7 +1288,12 @@ impl<'db> SourceAnalyzer<'db> {
     }
 
     /// Returns the range of the implicit template argument and its resolution at the given `offset`
-    pub(crate) fn resolve_offset_in_format_args(&self, db: &'db dyn HirDatabase, format_args: InFile<&ast::FormatArgsExpr>, offset: TextSize) -> Option<(TextRange, Option<PathResolution>)> {
+    pub(crate) fn resolve_offset_in_format_args(
+        &self,
+        db: &'db dyn HirDatabase,
+        format_args: InFile<&ast::FormatArgsExpr>,
+        offset: TextSize,
+    ) -> Option<(TextRange, Option<PathResolution>)> {
         let (hygiene, implicits) = self.store_sm()?.implicit_format_args(format_args)?;
         implicits.iter().find(|(range, _)| range.contains_inclusive(offset)).map(|(range, name)| {
             (
@@ -1128,7 +1312,12 @@ impl<'db> SourceAnalyzer<'db> {
         })
     }
 
-    pub(crate) fn resolve_offset_in_asm_template(&self, asm: InFile<&ast::AsmExpr>, line: usize, offset: TextSize) -> Option<(DefWithBodyId, (ExprId, TextRange, usize))> {
+    pub(crate) fn resolve_offset_in_asm_template(
+        &self,
+        asm: InFile<&ast::AsmExpr>,
+        line: usize,
+        offset: TextSize,
+    ) -> Option<(DefWithBodyId, (ExprId, TextRange, usize))> {
         let (def, _, body_source_map, _) = self.body_()?;
         let (expr, args) = body_source_map.asm_template_args(asm)?;
         Some(def).zip(
@@ -1139,7 +1328,11 @@ impl<'db> SourceAnalyzer<'db> {
         )
     }
 
-    pub(crate) fn as_format_args_parts<'a>(&'a self, db: &'a dyn HirDatabase, format_args: InFile<&ast::FormatArgsExpr>) -> Option<impl Iterator<Item = (TextRange, Option<PathResolution>)> + 'a> {
+    pub(crate) fn as_format_args_parts<'a>(
+        &'a self,
+        db: &'a dyn HirDatabase,
+        format_args: InFile<&ast::FormatArgsExpr>,
+    ) -> Option<impl Iterator<Item = (TextRange, Option<PathResolution>)> + 'a> {
         let (hygiene, names) = self.store_sm()?.implicit_format_args(format_args)?;
         Some(names.iter().map(move |(range, name)| {
             (
@@ -1158,16 +1351,29 @@ impl<'db> SourceAnalyzer<'db> {
         }))
     }
 
-    pub(crate) fn as_asm_parts(&self, asm: InFile<&ast::AsmExpr>) -> Option<(DefWithBodyId, (ExprId, &[Vec<(TextRange, usize)>]))> {
+    pub(crate) fn as_asm_parts(
+        &self,
+        asm: InFile<&ast::AsmExpr>,
+    ) -> Option<(DefWithBodyId, (ExprId, &[Vec<(TextRange, usize)>]))> {
         let (def, _, body_source_map, _) = self.body_()?;
         Some(def).zip(body_source_map.asm_template_args(asm))
     }
 
-    fn resolve_impl_method_or_trait_def(&self, db: &'db dyn HirDatabase, func: FunctionId, substs: GenericArgs<'db>) -> FunctionId {
+    fn resolve_impl_method_or_trait_def(
+        &self,
+        db: &'db dyn HirDatabase,
+        func: FunctionId,
+        substs: GenericArgs<'db>,
+    ) -> FunctionId {
         self.resolve_impl_method_or_trait_def_with_subst(db, func, substs).0
     }
 
-    fn resolve_impl_method_or_trait_def_with_subst(&self, db: &'db dyn HirDatabase, func: FunctionId, substs: GenericArgs<'db>) -> (FunctionId, GenericArgs<'db>) {
+    fn resolve_impl_method_or_trait_def_with_subst(
+        &self,
+        db: &'db dyn HirDatabase,
+        func: FunctionId,
+        substs: GenericArgs<'db>,
+    ) -> (FunctionId, GenericArgs<'db>) {
         let owner = match self.resolver.body_owner() {
             Some(it) => it,
             None => return (func, substs),
@@ -1176,7 +1382,12 @@ impl<'db> SourceAnalyzer<'db> {
         db.lookup_impl_method(env, func, substs)
     }
 
-    fn resolve_impl_const_or_trait_def_with_subst(&self, db: &'db dyn HirDatabase, const_id: ConstId, subs: GenericArgs<'db>) -> (ConstId, GenericArgs<'db>) {
+    fn resolve_impl_const_or_trait_def_with_subst(
+        &self,
+        db: &'db dyn HirDatabase,
+        const_id: ConstId,
+        subs: GenericArgs<'db>,
+    ) -> (ConstId, GenericArgs<'db>) {
         let owner = match self.resolver.body_owner() {
             Some(it) => it,
             None => return (const_id, subs),
@@ -1187,18 +1398,31 @@ impl<'db> SourceAnalyzer<'db> {
         method_resolution::lookup_impl_const(&infcx, env, const_id, subs)
     }
 
-    fn lang_trait_fn(&self, db: &'db dyn HirDatabase, lang_trait: LangItem, method_name: &Name) -> Option<(TraitId, FunctionId)> {
+    fn lang_trait_fn(
+        &self,
+        db: &'db dyn HirDatabase,
+        lang_trait: LangItem,
+        method_name: &Name,
+    ) -> Option<(TraitId, FunctionId)> {
         let trait_id = lang_trait.resolve_trait(db, self.resolver.krate())?;
         let fn_id = trait_id.trait_items(db).method_by_name(method_name)?;
         Some((trait_id, fn_id))
     }
 
-    fn ty_of_expr(&self, expr: ast::Expr) -> Option<Ty<'db>> {
+    fn ty_of_expr(
+        &self,
+        expr: ast::Expr,
+    ) -> Option<Ty<'db>> {
         self.infer()?.type_of_expr_or_pat(self.expr_id(expr)?)
     }
 }
 
-fn scope_for(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &BodySourceMap, node: InFile<&SyntaxNode>) -> Option<ScopeId> {
+fn scope_for(
+    db: &dyn HirDatabase,
+    scopes: &ExprScopes,
+    source_map: &BodySourceMap,
+    node: InFile<&SyntaxNode>,
+) -> Option<ScopeId> {
     node.ancestors_with_macros(db)
         .take_while(|it| {
             let kind = it.kind();
@@ -1212,7 +1436,13 @@ fn scope_for(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &BodySourceM
         .find_map(|it| scopes.scope_for(it))
 }
 
-fn scope_for_offset(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &BodySourceMap, from_file: HirFileId, offset: TextSize) -> Option<ScopeId> {
+fn scope_for_offset(
+    db: &dyn HirDatabase,
+    scopes: &ExprScopes,
+    source_map: &BodySourceMap,
+    from_file: HirFileId,
+    offset: TextSize,
+) -> Option<ScopeId> {
     scopes
         .scope_by_expr()
         .iter()
@@ -1238,7 +1468,14 @@ fn scope_for_offset(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &Body
         })
 }
 
-fn adjust(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &BodySourceMap, expr_range: TextRange, from_file: HirFileId, offset: TextSize) -> Option<ScopeId> {
+fn adjust(
+    db: &dyn HirDatabase,
+    scopes: &ExprScopes,
+    source_map: &BodySourceMap,
+    expr_range: TextRange,
+    from_file: HirFileId,
+    offset: TextSize,
+) -> Option<ScopeId> {
     let child_scopes = scopes
         .scope_by_expr()
         .iter()
@@ -1269,19 +1506,37 @@ fn adjust(db: &dyn HirDatabase, scopes: &ExprScopes, source_map: &BodySourceMap,
 }
 
 #[inline]
-pub(crate) fn resolve_hir_path(db: &dyn HirDatabase, resolver: &Resolver<'_>, path: &Path, hygiene: HygieneId, store: Option<&ExpressionStore>) -> Option<PathResolution> {
+pub(crate) fn resolve_hir_path(
+    db: &dyn HirDatabase,
+    resolver: &Resolver<'_>,
+    path: &Path,
+    hygiene: HygieneId,
+    store: Option<&ExpressionStore>,
+) -> Option<PathResolution> {
     resolve_hir_path_(db, resolver, path, false, hygiene, store, false).any()
 }
 
 #[inline]
-pub(crate) fn resolve_hir_path_as_attr_macro(db: &dyn HirDatabase, resolver: &Resolver<'_>, path: &Path) -> Option<Macro> {
+pub(crate) fn resolve_hir_path_as_attr_macro(
+    db: &dyn HirDatabase,
+    resolver: &Resolver<'_>,
+    path: &Path,
+) -> Option<Macro> {
     resolver
         .resolve_path_as_macro(db, path.mod_path()?, Some(MacroSubNs::Attr))
         .map(|(it, _)| it)
         .map(Into::into)
 }
 
-fn resolve_hir_path_(db: &dyn HirDatabase, resolver: &Resolver<'_>, path: &Path, prefer_value_ns: bool, hygiene: HygieneId, store: Option<&ExpressionStore>, resolve_per_ns: bool) -> PathResolutionPerNs {
+fn resolve_hir_path_(
+    db: &dyn HirDatabase,
+    resolver: &Resolver<'_>,
+    path: &Path,
+    prefer_value_ns: bool,
+    hygiene: HygieneId,
+    store: Option<&ExpressionStore>,
+    resolve_per_ns: bool,
+) -> PathResolutionPerNs {
     let types = || {
         let (ty, unresolved) = match path.type_anchor() {
             Some(type_ref) => resolver.generic_def().and_then(|def| {
@@ -1383,7 +1638,13 @@ fn resolve_hir_path_(db: &dyn HirDatabase, resolver: &Resolver<'_>, path: &Path,
     }
 }
 
-fn resolve_hir_value_path(db: &dyn HirDatabase, resolver: &Resolver<'_>, body_owner: Option<DefWithBodyId>, path: &Path, hygiene: HygieneId) -> Option<PathResolution> {
+fn resolve_hir_value_path(
+    db: &dyn HirDatabase,
+    resolver: &Resolver<'_>,
+    body_owner: Option<DefWithBodyId>,
+    path: &Path,
+    hygiene: HygieneId,
+) -> Option<PathResolution> {
     resolver.resolve_path_in_value_ns_fully(db, path, hygiene).and_then(|val| {
         let res = match val {
             ValueNs::LocalBinding(binding_id) => {
@@ -1415,7 +1676,12 @@ fn resolve_hir_value_path(db: &dyn HirDatabase, resolver: &Resolver<'_>, body_ow
 /// }
 /// ```
 /// then we know that `foo` in `my::foo::Bar` refers to the module, not the function.
-fn resolve_hir_path_qualifier(db: &dyn HirDatabase, resolver: &Resolver<'_>, path: &Path, store: &ExpressionStore) -> Option<PathResolution> {
+fn resolve_hir_path_qualifier(
+    db: &dyn HirDatabase,
+    resolver: &Resolver<'_>,
+    path: &Path,
+    store: &ExpressionStore,
+) -> Option<PathResolution> {
     (|| {
         let (ty, unresolved) = match path.type_anchor() {
             Some(type_ref) => resolver.generic_def().and_then(|def| {
@@ -1485,7 +1751,10 @@ fn resolve_hir_path_qualifier(db: &dyn HirDatabase, resolver: &Resolver<'_>, pat
     })
 }
 
-pub(crate) fn name_hygiene(db: &dyn HirDatabase, name: InFile<&SyntaxNode>) -> HygieneId {
+pub(crate) fn name_hygiene(
+    db: &dyn HirDatabase,
+    name: InFile<&SyntaxNode>,
+) -> HygieneId {
     let Some(macro_file) = name.file_id.macro_file() else {
         return HygieneId::ROOT;
     };

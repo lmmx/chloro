@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 693 bytes
-Chloro size:   446 bytes
+Chloro size:   457 bytes
 Rustfmt size:  767 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,11 @@ Rustfmt size:  767 bytes
 -// | VS Code | **rust-analyzer: View Hir**
 -//
 -// ![View Hir](https://user-images.githubusercontent.com/48062697/113065588-068bdb80-91b1-11eb-9a78-0b4ef1e972fb.gif)
- pub(crate) fn view_hir(db: &RootDatabase, position: FilePosition) -> String {
+-pub(crate) fn view_hir(db: &RootDatabase, position: FilePosition) -> String {
++pub(crate) fn view_hir(
++    db: &RootDatabase,
++    position: FilePosition,
++) -> String {
      (|| {
          let sema = Semantics::new(db);
          let source_file = sema.parse_guess_edition(position.file_id);

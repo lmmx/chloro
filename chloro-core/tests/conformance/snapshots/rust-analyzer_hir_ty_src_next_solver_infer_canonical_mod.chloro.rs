@@ -48,7 +48,10 @@ impl<'db> InferCtxt<'db> {
     /// At the end of processing, the instantiation S (once
     /// canonicalized) then represents the values that you computed
     /// for each of the canonical inputs to your query.
-    pub fn instantiate_canonical<T>(&self, canonical: &Canonical<'db, T>) -> (T, CanonicalVarValues<'db>)
+    pub fn instantiate_canonical<T>(
+        &self,
+        canonical: &Canonical<'db, T>,
+    ) -> (T, CanonicalVarValues<'db>)
     where
         T: TypeFoldable<DbInterner<'db>>, {
         // For each universe that is referred to in the incoming
@@ -80,7 +83,12 @@ impl<'db> InferCtxt<'db> {
     /// FIXME(-Znext-solver): This is public because it's used by the
     /// new trait solver which has a different canonicalization routine.
     /// We should somehow deduplicate all of this.
-    pub fn instantiate_canonical_var(&self, cv_info: CanonicalVarKind<DbInterner<'db>>, previous_var_values: &[GenericArg<'db>], universe_map: impl Fn(UniverseIndex) -> UniverseIndex) -> GenericArg<'db> {
+    pub fn instantiate_canonical_var(
+        &self,
+        cv_info: CanonicalVarKind<DbInterner<'db>>,
+        previous_var_values: &[GenericArg<'db>],
+        universe_map: impl Fn(UniverseIndex) -> UniverseIndex,
+    ) -> GenericArg<'db> {
         match cv_info {
             CanonicalVarKind::Ty { ui, sub_root } => {
                 let vid = self.next_ty_var_id_in_universe(universe_map(ui));

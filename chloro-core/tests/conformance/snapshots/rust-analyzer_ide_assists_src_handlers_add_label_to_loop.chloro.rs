@@ -13,7 +13,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_label_to_loop(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let loop_kw = ctx.find_token_syntax_at_offset(T![loop])?;
     let loop_expr = loop_kw.parent().and_then(ast::LoopExpr::cast)?;
     if loop_expr.label().is_some() {
@@ -58,7 +61,13 @@ pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     )
 }
 
-fn insert_label_after_token(editor: &mut SyntaxEditor, make: &SyntaxFactory, token: &SyntaxToken, ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder) {
+fn insert_label_after_token(
+    editor: &mut SyntaxEditor,
+    make: &SyntaxFactory,
+    token: &SyntaxToken,
+    ctx: &AssistContext<'_>,
+    builder: &mut SourceChangeBuilder,
+) {
     let label = make.lifetime("'l");
     let elements = vec![tokens::single_space().into(), label.syntax().clone().into()];
     editor.insert_all(Position::after(token), elements);

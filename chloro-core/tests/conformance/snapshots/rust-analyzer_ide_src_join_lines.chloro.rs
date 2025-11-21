@@ -16,7 +16,11 @@ pub struct JoinLinesConfig {
     pub join_assignments: bool,
 }
 
-pub(crate) fn join_lines(config: &JoinLinesConfig, file: &SourceFile, range: TextRange) -> TextEdit {
+pub(crate) fn join_lines(
+    config: &JoinLinesConfig,
+    file: &SourceFile,
+    range: TextRange,
+) -> TextEdit {
     let range = if range.is_empty() {
         let syntax = file.syntax();
         let text = syntax.text().slice(range.start()..);
@@ -40,7 +44,12 @@ pub(crate) fn join_lines(config: &JoinLinesConfig, file: &SourceFile, range: Tex
     edit.finish()
 }
 
-fn remove_newlines(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: &SyntaxToken, range: TextRange) {
+fn remove_newlines(
+    config: &JoinLinesConfig,
+    edit: &mut TextEditBuilder,
+    token: &SyntaxToken,
+    range: TextRange,
+) {
     let intersection = match range.intersect(token.text_range()) {
         Some(range) => range,
         None => return,
@@ -56,7 +65,12 @@ fn remove_newlines(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: 
     }
 }
 
-fn remove_newline(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: &SyntaxToken, offset: TextSize) {
+fn remove_newline(
+    config: &JoinLinesConfig,
+    edit: &mut TextEditBuilder,
+    token: &SyntaxToken,
+    offset: TextSize,
+) {
     if token.kind() != WHITESPACE || token.text().bytes().filter(|&b| b == b'\n').count() != 1 {
         let n_spaces_after_line_break = {
             let suff = &token.text()[TextRange::new(
@@ -167,7 +181,10 @@ fn remove_newline(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: &
     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
 }
 
-fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
+fn join_single_expr_block(
+    edit: &mut TextEditBuilder,
+    token: &SyntaxToken,
+) -> Option<()> {
     let block_expr = ast::BlockExpr::cast(token.parent_ancestors().nth(1)?)?;
     if !block_expr.is_standalone() {
         return None;
@@ -185,14 +202,21 @@ fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Op
     Some(())
 }
 
-fn join_single_use_tree(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
+fn join_single_use_tree(
+    edit: &mut TextEditBuilder,
+    token: &SyntaxToken,
+) -> Option<()> {
     let use_tree_list = ast::UseTreeList::cast(token.parent()?)?;
     let (tree,) = use_tree_list.use_trees().collect_tuple()?;
     edit.replace(use_tree_list.syntax().text_range(), tree.syntax().text().to_string());
     Some(())
 }
 
-fn join_assignments(edit: &mut TextEditBuilder, prev: &SyntaxElement, next: &SyntaxElement) -> Option<()> {
+fn join_assignments(
+    edit: &mut TextEditBuilder,
+    prev: &SyntaxElement,
+    next: &SyntaxElement,
+) -> Option<()> {
     let let_stmt = ast::LetStmt::cast(prev.as_node()?.clone())?;
     if let_stmt.eq_token().is_some() {
         cov_mark::hit!(join_assignments_already_initialized);
@@ -228,7 +252,10 @@ fn as_if_expr(element: &SyntaxElement) -> Option<ast::IfExpr> {
     ast::IfExpr::cast(node)
 }
 
-fn compute_ws(left: SyntaxKind, right: SyntaxKind) -> &'static str {
+fn compute_ws(
+    left: SyntaxKind,
+    right: SyntaxKind,
+) -> &'static str {
     match left {
         T!['('] | T!['['] => return "",
         T!['{'] => {
@@ -255,7 +282,10 @@ fn compute_ws(left: SyntaxKind, right: SyntaxKind) -> &'static str {
 mod tests {
     use test_utils::{add_cursor, assert_eq_text, extract_offset, extract_range};
     use super::*;
-    fn check_join_lines(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+    fn check_join_lines(
+        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    ) {
         let config = JoinLinesConfig {
             join_else_if: true,
             remove_trailing_comma: true,
@@ -277,7 +307,10 @@ mod tests {
         let actual = add_cursor(&actual, actual_cursor_pos);
         assert_eq_text!(ra_fixture_after, &actual);
     }
-    fn check_join_lines_sel(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+    fn check_join_lines_sel(
+        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    ) {
         let config = JoinLinesConfig {
             join_else_if: true,
             remove_trailing_comma: true,

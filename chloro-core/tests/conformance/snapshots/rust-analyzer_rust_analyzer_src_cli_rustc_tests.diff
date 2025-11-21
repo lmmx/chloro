@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12430 bytes
-Chloro size:   10907 bytes
+Chloro size:   10930 bytes
 Rustfmt size:  12430 bytes
 
 ✗ Outputs DIFFER
@@ -43,6 +43,17 @@ Rustfmt size:  12430 bytes
          let workspace = ProjectWorkspace {
              kind: ProjectWorkspaceKind::DetachedFile {
                  file: ManifestPath::try_from(tmp_file).unwrap(),
+         })
+     }
+ 
+-    fn test(&mut self, p: PathBuf) {
++    fn test(
++        &mut self,
++        p: PathBuf,
++    ) {
+         println!("{}", p.display());
+         if p.parent().unwrap().file_name().unwrap() == "auxiliary" {
+             // These are not tests
          change.change_file(self.root_file, Some(text));
          self.host.apply_change(change);
          let diagnostic_config = DiagnosticsConfig::test_sample();

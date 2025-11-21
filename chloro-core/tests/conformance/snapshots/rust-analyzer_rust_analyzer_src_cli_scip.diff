@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   29952 bytes
+Chloro size:   30084 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -163,7 +163,7 @@ Rustfmt size:  31747 bytes
 -Encountered duplicate scip symbols, indicating an internal rust-analyzer bug. These duplicates are
 -included in the output, but this causes information lookup to be ambiguous and so information about
 -these symbols presented by downstream tools may be incorrect.
- 
+-
 -Known rust-analyzer bugs that can cause this:
 -
 -  * Definitions in crate example binaries which have the same symbol as definitions in the library
@@ -174,14 +174,9 @@ Rustfmt size:  31747 bytes
 -
 -Duplicate symbols encountered:
 -";
--
--fn compute_symbol_info(
--    symbol: String,
--    enclosing_symbol: Option<String>,
--    token: &TokenStaticData,
--) -> SymbolInformation {
-+fn compute_symbol_info(symbol: String, enclosing_symbol: Option<String>, token: &TokenStaticData) -> SymbolInformation {
-     let documentation = match &token.documentation {
+ 
+ fn compute_symbol_info(
+     symbol: String,
          Some(doc) => vec![doc.as_str().to_owned()],
          None => vec![],
      };
@@ -189,14 +184,9 @@ Rustfmt size:  31747 bytes
      let position_encoding = scip_types::PositionEncoding::UTF8CodeUnitOffsetFromLineStart.into();
      let signature_documentation = token.signature.clone().map(|text| scip_types::Document {
          relative_path: "".to_owned(),
-     }
- }
- 
--fn get_relative_filepath(
--    vfs: &vfs::Vfs,
--    rootpath: &vfs::AbsPathBuf,
--    file_id: ide::FileId,
--) -> Option<String> {
+     rootpath: &vfs::AbsPathBuf,
+     file_id: ide::FileId,
+ ) -> Option<String> {
 -    Some(
 -        vfs.file_path(file_id)
 -            .as_path()?
@@ -204,11 +194,17 @@ Rustfmt size:  31747 bytes
 -            .as_str()
 -            .to_owned(),
 -    )
-+fn get_relative_filepath(vfs: &vfs::Vfs, rootpath: &vfs::AbsPathBuf, file_id: ide::FileId) -> Option<String> {
 +    Some(vfs.file_path(file_id).as_path()?.strip_prefix(rootpath)?.as_str().to_owned())
  }
  
- fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
+-fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
++fn get_line_index(
++    db: &RootDatabase,
++    file_id: FileId,
++) -> LineIndex {
+     LineIndex {
+         index: db.line_index(file_id),
+         encoding: PositionEncoding::Utf8,
      }
  }
  
@@ -216,7 +212,7 @@ Rustfmt size:  31747 bytes
 -// only encode as a vector of [start_line, start_col, end_col].
 -//
 -// This transforms a line index into the optimized SCIP Range.
- fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
+-fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
 -    let LineCol {
 -        line: start_line,
 -        col: start_col,
@@ -226,6 +222,10 @@ Rustfmt size:  31747 bytes
 -        col: end_col,
 -    } = line_index.index.line_col(range.end());
 -
++fn text_range_to_scip_range(
++    line_index: &LineIndex,
++    range: TextRange,
++) -> Vec<i32> {
 +    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
 +    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
      if start_line == end_line {
@@ -241,7 +241,7 @@ Rustfmt size:  31747 bytes
      }
  }
  
- fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
+-fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
 -    let LineCol {
 -        line: start_line,
 -        col: start_col,
@@ -251,19 +251,28 @@ Rustfmt size:  31747 bytes
 -        col: end_col,
 -    } = line_index.index.line_col(range.end());
 -
++fn text_range_to_string(
++    relative_path: &str,
++    line_index: &LineIndex,
++    range: TextRange,
++) -> String {
 +    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
 +    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
      format!("{relative_path}:{start_line}:{start_col}-{end_line}:{end_col}")
  }
  
--fn new_descriptor_str(
--    name: &str,
--    suffix: scip_types::descriptor::Suffix,
--) -> scip_types::Descriptor {
-+fn new_descriptor_str(name: &str, suffix: scip_types::descriptor::Suffix) -> scip_types::Descriptor {
-     scip_types::Descriptor {
-         name: name.to_owned(),
-         disambiguator: "".to_owned(),
+         self.local_count = 0;
+     }
+ 
+-    fn token_symbols(&mut self, id: TokenId, token: &TokenStaticData) -> Option<TokenSymbols> {
++    fn token_symbols(
++        &mut self,
++        id: TokenId,
++        token: &TokenStaticData,
++    ) -> Option<TokenSymbols> {
+         let mut local_count = self.local_count;
+         let token_symbols = self
+             .token_to_symbols
          package: Some(scip_types::Package {
              manager: "cargo".to_owned(),
              name: moniker.package_information.name.clone(),
@@ -296,7 +305,11 @@ Rustfmt size:  31747 bytes
 -
      /// If expected == "", then assert that there are no symbols (this is basically local symbol)
      #[track_caller]
-     fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
+-    fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
++    fn check_symbol(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expected: &str,
++    ) {
          let (host, position) = position(ra_fixture);
 -
          let analysis = host.analysis();

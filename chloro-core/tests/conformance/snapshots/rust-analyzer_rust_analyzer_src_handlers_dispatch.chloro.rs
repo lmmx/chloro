@@ -43,7 +43,10 @@ impl RequestDispatcher<'_> {
     /// Dispatches the request onto the current thread, given full access to
     /// mutable global state. Unlike all other methods here, this one isn't
     /// guarded by `catch_unwind`, so, please, don't make bugs :-)
-    pub(crate) fn on_sync_mut<R>(&mut self, f: fn(&mut GlobalState, R::Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on_sync_mut<R>(
+        &mut self,
+        f: fn(&mut GlobalState, R::Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned + panic::UnwindSafe + fmt::Debug,
@@ -66,7 +69,10 @@ impl RequestDispatcher<'_> {
     }
 
     /// Dispatches the request onto the current thread.
-    pub(crate) fn on_sync<R>(&mut self, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on_sync<R>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned + panic::UnwindSafe + fmt::Debug,
@@ -91,7 +97,10 @@ impl RequestDispatcher<'_> {
 
     /// Dispatches a non-latency-sensitive request onto the thread pool. When the VFS is marked not
     /// ready this will return a default constructed [`R::Result`].
-    pub(crate) fn on<const ALLOW_RETRYING: bool, R>(&mut self, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on<const ALLOW_RETRYING: bool, R>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request<
                 Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
@@ -114,7 +123,12 @@ impl RequestDispatcher<'_> {
 
     /// Dispatches a non-latency-sensitive request onto the thread pool. When the VFS is marked not
     /// ready this will return a `default` constructed [`R::Result`].
-    pub(crate) fn on_with_vfs_default<R>(&mut self, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>, default: impl FnOnce() -> R::Result, on_cancelled: fn() -> ResponseError) -> &mut Self
+    pub(crate) fn on_with_vfs_default<R>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+        default: impl FnOnce() -> R::Result,
+        on_cancelled: fn() -> ResponseError,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request<
                 Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
@@ -133,7 +147,10 @@ impl RequestDispatcher<'_> {
 
     /// Dispatches a non-latency-sensitive request onto the thread pool. When the VFS is marked not
     /// ready this will return the parameter as is.
-    pub(crate) fn on_identity<const ALLOW_RETRYING: bool, R, Params>(&mut self, f: fn(GlobalStateSnapshot, Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on_identity<const ALLOW_RETRYING: bool, R, Params>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request<Params = Params, Result = Params> + 'static,
         Params: Serialize + DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug, {
@@ -152,7 +169,10 @@ impl RequestDispatcher<'_> {
 
     /// Dispatches a latency-sensitive request onto the thread pool. When the VFS is marked not
     /// ready this will return a default constructed [`R::Result`].
-    pub(crate) fn on_latency_sensitive<const ALLOW_RETRYING: bool, R>(&mut self, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on_latency_sensitive<const ALLOW_RETRYING: bool, R>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request<
                 Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
@@ -176,7 +196,10 @@ impl RequestDispatcher<'_> {
     /// Formatting requests should never block on waiting a for task thread to open up, editors will wait
     /// on the response and a late formatting update might mess with the document and user.
     /// We can't run this on the main thread though as we invoke rustfmt which may take arbitrary time to complete!
-    pub(crate) fn on_fmt_thread<R>(&mut self, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>) -> &mut Self
+    pub(crate) fn on_fmt_thread<R>(
+        &mut self,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request + 'static,
         R::Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
@@ -200,7 +223,12 @@ impl RequestDispatcher<'_> {
         }
     }
 
-    fn on_with_thread_intent<const RUSTFMT: bool, const ALLOW_RETRYING: bool, R>(&mut self, intent: ThreadIntent, f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>, on_cancelled: fn() -> ResponseError) -> &mut Self
+    fn on_with_thread_intent<const RUSTFMT: bool, const ALLOW_RETRYING: bool, R>(
+        &mut self,
+        intent: ThreadIntent,
+        f: fn(GlobalStateSnapshot, R::Params) -> anyhow::Result<R::Result>,
+        on_cancelled: fn() -> ResponseError,
+    ) -> &mut Self
     where
         R: lsp_types::request::Request + 'static,
         R::Params: DeserializeOwned + panic::UnwindSafe + Send + fmt::Debug,
@@ -282,12 +310,18 @@ impl std::error::Error for HandlerCancelledError {
 }
 
 impl fmt::Display for HandlerCancelledError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "Cancelled")
     }
 }
 
-fn thread_result_to_response<R>(id: lsp_server::RequestId, result: thread::Result<anyhow::Result<R::Result>>) -> Result<lsp_server::Response, HandlerCancelledError>
+fn thread_result_to_response<R>(
+    id: lsp_server::RequestId,
+    result: thread::Result<anyhow::Result<R::Result>>,
+) -> Result<lsp_server::Response, HandlerCancelledError>
 where
     R: lsp_types::request::Request,
     R::Params: DeserializeOwned,
@@ -318,7 +352,10 @@ where
     }
 }
 
-fn result_to_response<R>(id: lsp_server::RequestId, result: anyhow::Result<R::Result>) -> Result<lsp_server::Response, HandlerCancelledError>
+fn result_to_response<R>(
+    id: lsp_server::RequestId,
+    result: anyhow::Result<R::Result>,
+) -> Result<lsp_server::Response, HandlerCancelledError>
 where
     R: lsp_types::request::Request,
     R::Params: DeserializeOwned,
@@ -346,7 +383,10 @@ pub(crate) struct NotificationDispatcher<'a> {
 }
 
 impl NotificationDispatcher<'_> {
-    pub(crate) fn on_sync_mut<N>(&mut self, f: fn(&mut GlobalState, N::Params) -> anyhow::Result<()>) -> &mut Self
+    pub(crate) fn on_sync_mut<N>(
+        &mut self,
+        f: fn(&mut GlobalState, N::Params) -> anyhow::Result<()>,
+    ) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned + Send + Debug, {

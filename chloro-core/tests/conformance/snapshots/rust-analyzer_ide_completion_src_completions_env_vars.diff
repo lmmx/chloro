@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5700 bytes
-Chloro size:   3172 bytes
+Chloro size:   3191 bytes
 Rustfmt size:  5802 bytes
 
 ✗ Outputs DIFFER
@@ -58,16 +58,8 @@ Rustfmt size:  5802 bytes
 -    ),
 -];
  
--pub(crate) fn complete_cargo_env_vars(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    original: &ast::String,
--    expanded: &ast::String,
--) -> Option<()> {
-+pub(crate) fn complete_cargo_env_vars(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) -> Option<()> {
-     let is_in_env_expansion = ctx
-         .sema
-         .hir_file_for(&expanded.syntax().parent()?)
+ pub(crate) fn complete_cargo_env_vars(
+     acc: &mut Completions,
          }
      }
      let range = original.text_range_between_quotes()?;

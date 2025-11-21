@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn convert_comment_from_or_to_doc(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_comment_from_or_to_doc(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     match comment.kind().doc {
         Some(_) => doc_to_comment(acc, comment),
@@ -14,7 +17,10 @@ pub(crate) fn convert_comment_from_or_to_doc(acc: &mut Assists, ctx: &AssistCont
     }
 }
 
-fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
+fn doc_to_comment(
+    acc: &mut Assists,
+    comment: ast::Comment,
+) -> Option<()> {
     let target = if comment.kind().shape.is_line() {
         line_comments_text_range(&comment)?
     } else {
@@ -60,7 +66,11 @@ fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     )
 }
 
-fn comment_to_doc(acc: &mut Assists, comment: ast::Comment, style: CommentPlacement) -> Option<()> {
+fn comment_to_doc(
+    acc: &mut Assists,
+    comment: ast::Comment,
+    style: CommentPlacement,
+) -> Option<()> {
     let target = if comment.kind().shape.is_line() {
         line_comments_text_range(&comment)?
     } else {

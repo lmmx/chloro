@@ -62,7 +62,11 @@ pub struct BorrowckResult<'db> {
     pub borrow_regions: Vec<BorrowRegion<'db>>,
 }
 
-fn all_mir_bodies<'db>(db: &'db dyn HirDatabase, def: DefWithBodyId, mut cb: impl FnMut(Arc<MirBody<'db>>)) -> Result<(), MirLowerError<'db>> {
+fn all_mir_bodies<'db>(
+    db: &'db dyn HirDatabase,
+    def: DefWithBodyId,
+    mut cb: impl FnMut(Arc<MirBody<'db>>),
+) -> Result<(), MirLowerError<'db>> {
     fn for_closure<'db>(
         db: &'db dyn HirDatabase,
         c: InternedClosureId,
@@ -85,7 +89,10 @@ fn all_mir_bodies<'db>(db: &'db dyn HirDatabase, def: DefWithBodyId, mut cb: imp
     }
 }
 
-pub fn borrowck_query<'db>(db: &'db dyn HirDatabase, def: DefWithBodyId) -> Result<Arc<[BorrowckResult<'db>]>, MirLowerError<'db>> {
+pub fn borrowck_query<'db>(
+    db: &'db dyn HirDatabase,
+    def: DefWithBodyId,
+) -> Result<Arc<[BorrowckResult<'db>]>, MirLowerError<'db>> {
     let _p = tracing::info_span!("borrowck_query").entered();
     let module = def.module(db);
     let interner = DbInterner::new_with(db, Some(module.krate()), module.containing_block());
@@ -118,7 +125,11 @@ fn make_fetch_closure_field<'db>(db: &'db dyn HirDatabase) -> impl FnOnce(Intern
     }
 }
 
-fn moved_out_of_ref<'db>(infcx: &InferCtxt<'db>, env: &TraitEnvironment<'db>, body: &MirBody<'db>) -> Vec<MovedOutOfRef<'db>> {
+fn moved_out_of_ref<'db>(
+    infcx: &InferCtxt<'db>,
+    env: &TraitEnvironment<'db>,
+    body: &MirBody<'db>,
+) -> Vec<MovedOutOfRef<'db>> {
     let db = infcx.interner.db;
     let mut result = vec![];
     let mut for_operand = |op: &Operand<'db>, span: MirSpan| match op.kind {
@@ -214,7 +225,11 @@ fn moved_out_of_ref<'db>(infcx: &InferCtxt<'db>, env: &TraitEnvironment<'db>, bo
     result
 }
 
-fn partially_moved<'db>(infcx: &InferCtxt<'db>, env: &TraitEnvironment<'db>, body: &MirBody<'db>) -> Vec<PartiallyMoved<'db>> {
+fn partially_moved<'db>(
+    infcx: &InferCtxt<'db>,
+    env: &TraitEnvironment<'db>,
+    body: &MirBody<'db>,
+) -> Vec<PartiallyMoved<'db>> {
     let db = infcx.interner.db;
     let mut result = vec![];
     let mut for_operand = |op: &Operand<'db>, span: MirSpan| match op.kind {
@@ -303,7 +318,10 @@ fn partially_moved<'db>(infcx: &InferCtxt<'db>, env: &TraitEnvironment<'db>, bod
     result
 }
 
-fn borrow_regions<'db>(db: &'db dyn HirDatabase, body: &MirBody<'db>) -> Vec<BorrowRegion<'db>> {
+fn borrow_regions<'db>(
+    db: &'db dyn HirDatabase,
+    body: &MirBody<'db>,
+) -> Vec<BorrowRegion<'db>> {
     let mut borrows = FxHashMap::default();
     for (_, block) in body.basic_blocks.iter() {
         db.unwind_if_revision_cancelled();
@@ -352,7 +370,11 @@ enum ProjectionCase {
     Indirect,
 }
 
-fn place_case<'db>(infcx: &InferCtxt<'db>, body: &MirBody<'db>, lvalue: &Place<'db>) -> ProjectionCase {
+fn place_case<'db>(
+    infcx: &InferCtxt<'db>,
+    body: &MirBody<'db>,
+    lvalue: &Place<'db>,
+) -> ProjectionCase {
     let db = infcx.interner.db;
     let mut is_part_of = false;
     let mut ty = body.locals[lvalue.local].ty;
@@ -382,7 +404,10 @@ fn place_case<'db>(infcx: &InferCtxt<'db>, body: &MirBody<'db>, lvalue: &Place<'
 /// Returns a map from basic blocks to the set of locals that might be ever initialized before
 /// the start of the block. Only `StorageDead` can remove something from this map, and we ignore
 /// `Uninit` and `drop` and similar after initialization.
-fn ever_initialized_map<'db>(db: &'db dyn HirDatabase, body: &MirBody<'db>) -> ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> {
+fn ever_initialized_map<'db>(
+    db: &'db dyn HirDatabase,
+    body: &MirBody<'db>,
+) -> ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> {
     let mut result: ArenaMap<BasicBlockId<'db>, ArenaMap<LocalId<'db>, bool>> =
         body.basic_blocks.iter().map(|it| (it.0, ArenaMap::default())).collect();
     fn dfs<'db>(
@@ -478,7 +503,11 @@ fn ever_initialized_map<'db>(db: &'db dyn HirDatabase, body: &MirBody<'db>) -> A
     result
 }
 
-fn push_mut_span<'db>(local: LocalId<'db>, span: MirSpan, result: &mut ArenaMap<LocalId<'db>, MutabilityReason>) {
+fn push_mut_span<'db>(
+    local: LocalId<'db>,
+    span: MirSpan,
+    result: &mut ArenaMap<LocalId<'db>, MutabilityReason>,
+) {
     match &mut result[local] {
         MutabilityReason::Mut { spans } => spans.push(span),
         it @ (MutabilityReason::Not | MutabilityReason::Unused) => {
@@ -487,19 +516,28 @@ fn push_mut_span<'db>(local: LocalId<'db>, span: MirSpan, result: &mut ArenaMap<
     };
 }
 
-fn record_usage<'db>(local: LocalId<'db>, result: &mut ArenaMap<LocalId<'db>, MutabilityReason>) {
+fn record_usage<'db>(
+    local: LocalId<'db>,
+    result: &mut ArenaMap<LocalId<'db>, MutabilityReason>,
+) {
     if let it @ MutabilityReason::Unused = &mut result[local] {
         *it = MutabilityReason::Not;
     };
 }
 
-fn record_usage_for_operand<'db>(arg: &Operand<'db>, result: &mut ArenaMap<LocalId<'db>, MutabilityReason>) {
+fn record_usage_for_operand<'db>(
+    arg: &Operand<'db>,
+    result: &mut ArenaMap<LocalId<'db>, MutabilityReason>,
+) {
     if let OperandKind::Copy(p) | OperandKind::Move(p) = arg.kind {
         record_usage(p.local, result);
     }
 }
 
-fn mutability_of_locals<'db>(infcx: &InferCtxt<'db>, body: &MirBody<'db>) -> ArenaMap<LocalId<'db>, MutabilityReason> {
+fn mutability_of_locals<'db>(
+    infcx: &InferCtxt<'db>,
+    body: &MirBody<'db>,
+) -> ArenaMap<LocalId<'db>, MutabilityReason> {
     let db = infcx.interner.db;
     let mut result: ArenaMap<LocalId<'db>, MutabilityReason> =
         body.locals.iter().map(|it| (it.0, MutabilityReason::Unused)).collect();

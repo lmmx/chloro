@@ -31,7 +31,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn inline_into_callers(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let def_file = ctx.file_id();
     let vfs_def_file = ctx.vfs_file_id();
     let name = ctx.find_node_at_offset::<ast::Name>()?;
@@ -111,7 +114,11 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     )
 }
 
-pub(super) fn split_refs_and_uses<T: ast::AstNode>(builder: &mut SourceChangeBuilder, iter: impl IntoIterator<Item = FileReference>, mut map_ref: impl FnMut(ast::NameRef) -> Option<T>) -> (Vec<T>, Vec<ast::Path>) {
+pub(super) fn split_refs_and_uses<T: ast::AstNode>(
+    builder: &mut SourceChangeBuilder,
+    iter: impl IntoIterator<Item = FileReference>,
+    mut map_ref: impl FnMut(ast::NameRef) -> Option<T>,
+) -> (Vec<T>, Vec<ast::Path>) {
     iter.into_iter()
         .filter_map(|file_ref| match file_ref.name {
             FileReferenceNode::NameRef(name_ref) => Some(name_ref),
@@ -124,7 +131,10 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(builder: &mut SourceChangeBui
         .partition_map(|either| either)
 }
 
-pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn inline_call(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
     let call_info = CallInfo::from_name_ref(
         name_ref.clone(),
@@ -182,7 +192,10 @@ struct CallInfo {
 }
 
 impl CallInfo {
-    fn from_name_ref(name_ref: ast::NameRef, krate: Crate) -> Option<CallInfo> {
+    fn from_name_ref(
+        name_ref: ast::NameRef,
+        krate: Crate,
+    ) -> Option<CallInfo> {
         let parent = name_ref.syntax().parent()?;
         if let Some(call) = ast::MethodCallExpr::cast(parent.clone()) {
             let receiver = call.receiver()?;
@@ -211,7 +224,11 @@ impl CallInfo {
     }
 }
 
-fn get_fn_params<'db>(db: &'db dyn HirDatabase, function: hir::Function, param_list: &ast::ParamList) -> Option<Vec<(ast::Pat, Option<ast::Type>, hir::Param<'db>)>> {
+fn get_fn_params<'db>(
+    db: &'db dyn HirDatabase,
+    function: hir::Function,
+    param_list: &ast::ParamList,
+) -> Option<Vec<(ast::Pat, Option<ast::Type>, hir::Param<'db>)>> {
     let mut assoc_fn_params = function.assoc_fn_params(db).into_iter();
     let mut params = Vec::new();
     if let Some(self_param) = param_list.self_param() {
@@ -233,7 +250,14 @@ fn get_fn_params<'db>(db: &'db dyn HirDatabase, function: hir::Function, param_l
     Some(params)
 }
 
-fn inline(sema: &Semantics<'_, RootDatabase>, function_def_file_id: EditionedFileId, function: hir::Function, fn_body: &ast::BlockExpr, params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)], CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo) -> ast::Expr {
+fn inline(
+    sema: &Semantics<'_, RootDatabase>,
+    function_def_file_id: EditionedFileId,
+    function: hir::Function,
+    fn_body: &ast::BlockExpr,
+    params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)],
+    CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo,
+) -> ast::Expr {
     let file_id = sema.hir_file_for(fn_body.syntax());
     let mut body = if let Some(macro_file) = file_id.macro_file() {
         cov_mark::hit!(inline_call_defined_in_macro);

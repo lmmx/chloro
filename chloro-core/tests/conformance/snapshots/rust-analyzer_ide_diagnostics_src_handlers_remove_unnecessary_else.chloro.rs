@@ -14,7 +14,10 @@ use crate::{
     Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
 };
 
-pub(crate) fn remove_unnecessary_else(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Diagnostic> {
+pub(crate) fn remove_unnecessary_else(
+    ctx: &DiagnosticsContext<'_>,
+    d: &RemoveUnnecessaryElse,
+) -> Option<Diagnostic> {
     if d.if_expr.file_id.macro_file().is_some() {
         // FIXME: Our infra can't handle allow from within macro expansions rn
         return None;
@@ -32,7 +35,10 @@ pub(crate) fn remove_unnecessary_else(ctx: &DiagnosticsContext<'_>, d: &RemoveUn
     )
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &RemoveUnnecessaryElse,
+) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
     let if_expr = d.if_expr.value.to_node(&root);
     let if_expr = ctx.sema.original_ast_node(if_expr)?;

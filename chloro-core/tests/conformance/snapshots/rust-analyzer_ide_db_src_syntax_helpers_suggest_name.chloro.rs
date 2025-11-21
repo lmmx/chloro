@@ -91,7 +91,10 @@ impl NameGenerator {
 
     /// Suggest a name without conflicts. If the name conflicts with existing names,
     /// it will try to resolve the conflict by adding a numeric suffix.
-    pub fn suggest_name(&mut self, name: &str) -> SmolStr {
+    pub fn suggest_name(
+        &mut self,
+        name: &str,
+    ) -> SmolStr {
         let (prefix, suffix) = Self::split_numeric_suffix(name);
         let prefix = SmolStr::new(prefix);
         let suffix = suffix.unwrap_or(0);
@@ -122,7 +125,12 @@ impl NameGenerator {
     /// - If `ty` is an `impl Trait`, it will suggest the name of the first trait.
     ///
     /// If the suggested name conflicts with reserved keywords, it will return `None`.
-    pub fn for_type<'db>(&mut self, ty: &hir::Type<'db>, db: &'db RootDatabase, edition: Edition) -> Option<SmolStr> {
+    pub fn for_type<'db>(
+        &mut self,
+        ty: &hir::Type<'db>,
+        db: &'db RootDatabase,
+        edition: Edition,
+    ) -> Option<SmolStr> {
         let name = name_of_type(ty, db, edition)?;
         Some(self.suggest_name(&name))
     }
@@ -136,7 +144,10 @@ impl NameGenerator {
     ///
     /// If the name conflicts with existing generic parameters, it will try to
     /// resolve the conflict with `for_unique_generic_name`.
-    pub fn for_impl_trait_as_generic(&mut self, ty: &ast::ImplTraitType) -> SmolStr {
+    pub fn for_impl_trait_as_generic(
+        &mut self,
+        ty: &ast::ImplTraitType,
+    ) -> SmolStr {
         let c = ty
             .type_bound_list()
             .and_then(|bounds| bounds.syntax().text().char_at(0.into()))
@@ -157,7 +168,11 @@ impl NameGenerator {
     /// It also applies heuristics to filter out less informative names
     ///
     /// Currently it sticks to the first name found.
-    pub fn for_variable(&mut self, expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> SmolStr {
+    pub fn for_variable(
+        &mut self,
+        expr: &ast::Expr,
+        sema: &Semantics<'_, RootDatabase>,
+    ) -> SmolStr {
         // `from_param` does not benefit from stripping it need the largest
         // context possible so we check firstmost
         if let Some(name) = from_param(expr, sema) {
@@ -192,7 +207,10 @@ impl NameGenerator {
     }
 
     /// Insert a name into the pool
-    fn insert(&mut self, name: &str) {
+    fn insert(
+        &mut self,
+        name: &str,
+    ) {
         let (prefix, suffix) = Self::split_numeric_suffix(name);
         let prefix = SmolStr::new(prefix);
         let suffix = suffix.unwrap_or(0);
@@ -284,7 +302,10 @@ fn from_method_call(expr: &ast::Expr) -> Option<SmolStr> {
     normalize(name)
 }
 
-fn from_param(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<SmolStr> {
+fn from_param(
+    expr: &ast::Expr,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<SmolStr> {
     let arg_list = expr.syntax().parent().and_then(ast::ArgList::cast)?;
     let args_parent = arg_list.syntax().parent()?;
     let func = match_ast! {
@@ -314,14 +335,21 @@ fn var_name_from_pat(pat: &ast::Pat) -> Option<ast::Name> {
     }
 }
 
-fn from_type(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<SmolStr> {
+fn from_type(
+    expr: &ast::Expr,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<SmolStr> {
     let ty = sema.type_of_expr(expr)?.adjusted();
     let ty = ty.remove_ref().unwrap_or(ty);
     let edition = sema.scope(expr.syntax())?.krate().edition(sema.db);
     name_of_type(&ty, sema.db, edition)
 }
 
-fn name_of_type<'db>(ty: &hir::Type<'db>, db: &'db RootDatabase, edition: Edition) -> Option<SmolStr> {
+fn name_of_type<'db>(
+    ty: &hir::Type<'db>,
+    db: &'db RootDatabase,
+    edition: Edition,
+) -> Option<SmolStr> {
     let name = if let Some(adt) = ty.as_adt() {
         let name = adt.name(db).display(db, edition).to_string();
 
@@ -355,7 +383,11 @@ fn name_of_type<'db>(ty: &hir::Type<'db>, db: &'db RootDatabase, edition: Editio
     normalize(&name)
 }
 
-fn sequence_name<'db>(inner_ty: Option<&hir::Type<'db>>, db: &'db RootDatabase, edition: Edition) -> SmolStr {
+fn sequence_name<'db>(
+    inner_ty: Option<&hir::Type<'db>>,
+    db: &'db RootDatabase,
+    edition: Edition,
+) -> SmolStr {
     let items_str = SmolStr::new_static("items");
     let Some(inner_ty) = inner_ty else {
         return items_str;
@@ -372,7 +404,11 @@ fn sequence_name<'db>(inner_ty: Option<&hir::Type<'db>>, db: &'db RootDatabase, 
     }
 }
 
-fn trait_name(trait_: &hir::Trait, db: &RootDatabase, edition: Edition) -> Option<String> {
+fn trait_name(
+    trait_: &hir::Trait,
+    db: &RootDatabase,
+    edition: Edition,
+) -> Option<String> {
     let name = trait_.name(db).display(db, edition).to_string();
     if USELESS_TRAITS.contains(&name.as_str()) {
         return None;
@@ -395,7 +431,10 @@ mod tests {
     use test_fixture::WithFixture;
     use super::*;
     #[track_caller]
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expected: &str,
+    ) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
         let frange = FileRange { file_id, range: range_or_offset.into() };
         let sema = Semantics::new(&db);

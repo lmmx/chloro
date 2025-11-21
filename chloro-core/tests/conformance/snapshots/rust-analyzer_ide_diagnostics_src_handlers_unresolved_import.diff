@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2169 bytes
-Chloro size:   2015 bytes
+Chloro size:   2026 bytes
 Rustfmt size:  2169 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,9 @@ Rustfmt size:  2169 bytes
 -//
 -// This diagnostic is triggered if rust-analyzer is unable to resolve a path in
 -// a `use` declaration.
--pub(crate) fn unresolved_import(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnresolvedImport,
--) -> Diagnostic {
-+pub(crate) fn unresolved_import(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedImport) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("E0432"),
+ pub(crate) fn unresolved_import(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnresolvedImport,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

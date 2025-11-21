@@ -8,7 +8,12 @@ use syntax::{AstNode, SyntaxNode, ast, match_ast};
 
 use crate::{Diagnostic, DiagnosticCode, fix};
 
-pub(crate) fn field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, node: &SyntaxNode) {
+pub(crate) fn field_shorthand(
+    db: &RootDatabase,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    node: &SyntaxNode,
+) {
     match_ast! {
         match node {
             ast::RecordExpr(it) => check_expr_field_shorthand(db, acc, file_id, it),
@@ -18,7 +23,12 @@ pub(crate) fn field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file
     };
 }
 
-fn check_expr_field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, record_expr: ast::RecordExpr) {
+fn check_expr_field_shorthand(
+    db: &RootDatabase,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    record_expr: ast::RecordExpr,
+) {
     let record_field_list = match record_expr.record_expr_field_list() {
         Some(it) => it,
         None => return,
@@ -59,7 +69,12 @@ fn check_expr_field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file
     }
 }
 
-fn check_pat_field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, record_pat: ast::RecordPat) {
+fn check_pat_field_shorthand(
+    db: &RootDatabase,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    record_pat: ast::RecordPat,
+) {
     let record_pat_field_list = match record_pat.record_pat_field_list() {
         Some(it) => it,
         None => return,

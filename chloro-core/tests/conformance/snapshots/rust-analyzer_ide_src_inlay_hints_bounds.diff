@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4954 bytes
-Chloro size:   4925 bytes
+Chloro size:   4944 bytes
 Rustfmt size:  5099 bytes
 
 ✗ Outputs DIFFER
@@ -17,16 +17,6 @@ Rustfmt size:  5099 bytes
  use syntax::ast::{self, AstNode, HasTypeBounds};
  
  use crate::{
-     TryToNav,
- };
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    params: ast::GenericParamList,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, params: ast::GenericParamList) -> Option<()> {
      if !config.sized_bound {
          return None;
      }

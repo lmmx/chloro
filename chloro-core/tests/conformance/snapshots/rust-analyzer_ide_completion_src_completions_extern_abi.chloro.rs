@@ -11,7 +11,11 @@ use crate::{
 
 // Most of these are feature gated, we should filter/add feature gate completions once we have them.
 
-pub(crate) fn complete_extern_abi(acc: &mut Completions, ctx: &CompletionContext<'_>, expanded: &ast::String) -> Option<()> {
+pub(crate) fn complete_extern_abi(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    expanded: &ast::String,
+) -> Option<()> {
     if !expanded.syntax().parent().is_some_and(|it| ast::Abi::can_cast(it.kind())) {
         return None;
     }

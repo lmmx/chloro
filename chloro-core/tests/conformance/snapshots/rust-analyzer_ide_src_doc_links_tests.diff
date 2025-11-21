@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19519 bytes
-Chloro size:   19468 bytes
+Chloro size:   19524 bytes
 Rustfmt size:  20051 bytes
 
 ✗ Outputs DIFFER
@@ -30,14 +30,9 @@ Rustfmt size:  20051 bytes
 +    fixture,
  };
  
--fn check_external_docs(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    target_dir: Option<&str>,
--    expect_web_url: Option<Expect>,
--    expect_local_url: Option<Expect>,
--    sysroot: Option<&str>,
--) {
-+fn check_external_docs(#[rust_analyzer::rust_fixture] ra_fixture: &str, target_dir: Option<&str>, expect_web_url: Option<Expect>, expect_local_url: Option<Expect>, sysroot: Option<&str>) {
+ fn check_external_docs(
+     sysroot: Option<&str>,
+ ) {
      let (analysis, position) = fixture::position(ra_fixture);
 -    let links = analysis
 -        .external_docs(position, target_dir, sysroot)
@@ -56,6 +51,14 @@ Rustfmt size:  20051 bytes
      match (expect_local_url, local_url) {
          (Some(expect), Some(url)) => expect.assert_eq(&url),
          (None, None) => (),
+     }
+ }
+ 
+-fn check_rewrite(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++fn check_rewrite(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
      let (analysis, position) = fixture::position(ra_fixture);
      let sema = &Semantics::new(&analysis.db);
      let (cursor_def, docs, range) = def_under_cursor(sema, &position);
@@ -100,28 +103,6 @@ Rustfmt size:  20051 bytes
              (range, link)
          })
          .sorted_by_key(key_fn)
-     assert_eq!(expected, actual);
- }
- 
--fn def_under_cursor(
--    sema: &Semantics<'_, RootDatabase>,
--    position: &FilePosition,
--) -> (Definition, Documentation, DocsRangeMap) {
-+fn def_under_cursor(sema: &Semantics<'_, RootDatabase>, position: &FilePosition) -> (Definition, Documentation, DocsRangeMap) {
-     let (docs, def) = sema
-         .parse_guess_edition(position.file_id)
-         .syntax()
-     (def, docs, range)
- }
- 
--fn node_to_def(
--    sema: &Semantics<'_, RootDatabase>,
--    node: &SyntaxNode,
--) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
-+fn node_to_def(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
-     Some(match_ast! {
-         match node {
-             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
  let x: u3$02 = 0;
  "#,
          Some("/home/user/project"),

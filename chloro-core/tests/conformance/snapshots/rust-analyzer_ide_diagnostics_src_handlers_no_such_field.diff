@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   10997 bytes
+Chloro size:   11034 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -30,9 +30,14 @@ Rustfmt size:  11215 bytes
 -// Diagnostic: no-such-field
 -//
 -// This diagnostic is triggered if created structure does not have field provided in record.
- pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
+-pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
++pub(crate) fn no_such_field(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::NoSuchField,
++) -> Diagnostic {
      let (code, message) = if d.private.is_some() {
          ("E0451", "field is private")
+     } else if let VariantId::EnumVariantId(_) = d.variant {
      } else {
          ("E0560", "no such field")
      };
@@ -40,18 +45,17 @@ Rustfmt size:  11215 bytes
      let node = d.field.map(Into::into);
      Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError(code), message, node)
          .stable()
-     }
+         .with_fixes(fixes(ctx, d))
  }
  
--fn missing_record_expr_field_fixes(
--    sema: &Semantics<'_, RootDatabase>,
--    usage_file_id: EditionedFileId,
--    record_expr_field: &ast::RecordExprField,
--) -> Option<Vec<Assist>> {
-+fn missing_record_expr_field_fixes(sema: &Semantics<'_, RootDatabase>, usage_file_id: EditionedFileId, record_expr_field: &ast::RecordExprField) -> Option<Vec<Assist>> {
-     let record_lit = ast::RecordExpr::cast(record_expr_field.syntax().parent()?.parent()?)?;
-     let def_id = sema.resolve_variant(record_lit)?;
-     let module;
+-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {
++fn fixes(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::NoSuchField,
++) -> Option<Vec<Assist>> {
+     // FIXME: quickfix for pattern
+     let root = ctx.sema.db.parse_or_expand(d.field.file_id);
+     match &d.field.value.to_node(&root) {
          }
      };
      let def_file_id = def_file_id.original_file(sema.db);

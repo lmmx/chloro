@@ -80,7 +80,12 @@ pub mod utils;
 
 /// Return all the assists applicable at the given position.
 ///
-pub fn assists(db: &RootDatabase, config: &AssistConfig, resolve: AssistResolveStrategy, range: ide_db::FileRange) -> Vec<Assist> {
+pub fn assists(
+    db: &RootDatabase,
+    config: &AssistConfig,
+    resolve: AssistResolveStrategy,
+    range: ide_db::FileRange,
+) -> Vec<Assist> {
     let sema = Semantics::new(db);
     let file_id = sema
         .attach_first_edition(range.file_id)
@@ -95,7 +100,11 @@ pub fn assists(db: &RootDatabase, config: &AssistConfig, resolve: AssistResolveS
 
 mod handlers {
     use crate::{AssistContext, Assists};
-    pub(crate) type Handler = fn(&mut Assists, &AssistContext<'_>) -> Option<()>;
+    pub(crate) type Handler =
+        fn(
+            &mut Assists,
+            &AssistContext<'_>,
+        ) -> Option<()>;
     mod add_braces;
     mod add_explicit_enum_discriminant;
     mod add_explicit_type;

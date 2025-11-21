@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3407 bytes
-Chloro size:   2983 bytes
+Chloro size:   2994 bytes
 Rustfmt size:  3410 bytes
 
 ✗ Outputs DIFFER
@@ -41,7 +41,11 @@ Rustfmt size:  3410 bytes
 -//
 -// fn compute() -> Option<i32> { None }
 -// ```
- pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn replace_let_with_if_let(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
      let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
      let init = let_stmt.initializer()?;

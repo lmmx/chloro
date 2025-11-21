@@ -2,11 +2,17 @@ use hir::{DefWithBody, Semantics};
 use ide_db::{FilePosition, RootDatabase};
 use syntax::{AstNode, algo::ancestors_at_offset, ast};
 
-pub(crate) fn view_mir(db: &RootDatabase, position: FilePosition) -> String {
+pub(crate) fn view_mir(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> String {
     body_mir(db, position).unwrap_or_else(|| "Not inside a function body".to_owned())
 }
 
-fn body_mir(db: &RootDatabase, position: FilePosition) -> Option<String> {
+fn body_mir(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> Option<String> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
     let item = ancestors_at_offset(source_file.syntax(), position.offset)

@@ -53,7 +53,10 @@ pub(crate) struct RegionUnificationError;
 impl<'db> UnifyValue for RegionVariableValue<'db> {
     type Error = RegionUnificationError;
 
-    fn unify_values(value1: &Self, value2: &Self) -> Result<Self, Self::Error> {
+    fn unify_values(
+        value1: &Self,
+        value2: &Self,
+    ) -> Result<Self, Self::Error> {
         match (value1, value2) {
             (RegionVariableValue::Known { .. }, RegionVariableValue::Known { .. }) => {
                 Err(RegionUnificationError)
@@ -150,7 +153,12 @@ impl<'db> UnifyKey for ConstVidKey<'db> {
         "ConstVidKey"
     }
 
-    fn order_roots(a: Self, _: &Self::Value, b: Self, _: &Self::Value) -> Option<(Self, Self)> {
+    fn order_roots(
+        a: Self,
+        _: &Self::Value,
+        b: Self,
+        _: &Self::Value,
+    ) -> Option<(Self, Self)> {
         if a.vid.as_u32() < b.vid.as_u32() { Some((a, b)) } else { Some((b, a)) }
     }
 }
@@ -158,7 +166,10 @@ impl<'db> UnifyKey for ConstVidKey<'db> {
 impl<'db> UnifyValue for ConstVariableValue<'db> {
     type Error = NoError;
 
-    fn unify_values(value1: &Self, value2: &Self) -> Result<Self, Self::Error> {
+    fn unify_values(
+        value1: &Self,
+        value2: &Self,
+    ) -> Result<Self, Self::Error> {
         match (value1, value2) {
             (ConstVariableValue::Known { .. }, ConstVariableValue::Known { .. }) => {
                 panic!("equating two const variables, both of which have known values")

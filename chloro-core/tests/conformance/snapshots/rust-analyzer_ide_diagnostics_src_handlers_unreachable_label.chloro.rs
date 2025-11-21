@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn unreachable_label(ctx: &DiagnosticsContext<'_>, d: &hir::UnreachableLabel) -> Diagnostic {
+pub(crate) fn unreachable_label(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnreachableLabel,
+) -> Diagnostic {
     let name = &d.name;
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

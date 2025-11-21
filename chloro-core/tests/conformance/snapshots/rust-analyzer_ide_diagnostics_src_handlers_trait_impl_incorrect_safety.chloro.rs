@@ -3,7 +3,10 @@ use syntax::ast;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range};
 
-pub(crate) fn trait_impl_incorrect_safety(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplIncorrectSafety) -> Diagnostic {
+pub(crate) fn trait_impl_incorrect_safety(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TraitImplIncorrectSafety,
+) -> Diagnostic {
     Diagnostic::new(
         DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
         if d.should_be_safe {

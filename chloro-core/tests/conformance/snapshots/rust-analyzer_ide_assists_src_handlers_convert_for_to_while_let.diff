@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10170 bytes
-Chloro size:   9727 bytes
+Chloro size:   9760 bytes
 Rustfmt size:  10229 bytes
 
 ✗ Outputs DIFFER
@@ -46,14 +46,9 @@ Rustfmt size:  10229 bytes
 -//     };
 -// }
 -// ```
--pub(crate) fn convert_for_loop_to_while_let(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn convert_for_loop_to_while_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let for_loop = ctx.find_node_at_offset::<ast::ForExpr>()?;
-     let iterable = for_loop.iterable()?;
-     let pat = for_loop.pat()?;
+ pub(crate) fn convert_for_loop_to_while_let(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
          cov_mark::hit!(not_available_in_body);
          return None;
      }
@@ -72,17 +67,6 @@ Rustfmt size:  10229 bytes
              } else {
                  (iterable, Some(make.name_ref("into_iter")))
              };
- /// If iterable is a reference where the expression behind the reference implements a method
- /// returning an Iterator called iter or iter_mut (depending on the type of reference) then return
- /// the expression behind the reference and the method name
--fn is_ref_and_impls_iter_method(
--    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
--    iterable: &ast::Expr,
--) -> Option<(ast::Expr, hir::Name)> {
-+fn is_ref_and_impls_iter_method(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> Option<(ast::Expr, hir::Name)> {
-     let ref_expr = match iterable {
-         ast::Expr::RefExpr(r) => r,
-         _ => return None,
      let scope = sema.scope(iterable.syntax())?;
      let krate = scope.krate();
      let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
@@ -96,6 +80,15 @@ Rustfmt size:  10229 bytes
 -
      Some((expr_behind_ref, wanted_method))
  }
+ 
+ /// Whether iterable implements core::Iterator
+-fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
++fn impls_core_iter(
++    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
++    iterable: &ast::Expr,
++) -> bool {
+     (|| {
+         let it_typ = sema.type_of_expr(iterable)?.adjusted();
  
  #[cfg(test)]
  mod tests {

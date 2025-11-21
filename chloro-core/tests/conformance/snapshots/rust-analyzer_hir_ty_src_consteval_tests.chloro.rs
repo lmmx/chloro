@@ -36,7 +36,10 @@ fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
 }
 
 #[track_caller]
-fn check_fail(#[rust_analyzer::rust_fixture] ra_fixture: &str, error: impl FnOnce(ConstEvalError<'_>) -> bool) {
+fn check_fail(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    error: impl FnOnce(ConstEvalError<'_>) -> bool,
+) {
     let (db, file_id) = TestDB::with_single_file(ra_fixture);
     crate::attach_db(&db, || match eval_goal(&db, file_id) {
         Ok(_) => panic!("Expected fail, but it succeeded"),
@@ -47,7 +50,10 @@ fn check_fail(#[rust_analyzer::rust_fixture] ra_fixture: &str, error: impl FnOnc
 }
 
 #[track_caller]
-fn check_number(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: i128) {
+fn check_number(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    answer: i128,
+) {
     check_answer(ra_fixture, |b, _| {
         assert_eq!(
             b,
@@ -59,7 +65,10 @@ fn check_number(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: i128) {
 }
 
 #[track_caller]
-fn check_str(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: &str) {
+fn check_str(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    answer: &str,
+) {
     check_answer(ra_fixture, |b, mm| {
         let addr = usize::from_le_bytes(b[0..b.len() / 2].try_into().unwrap());
         let size = usize::from_le_bytes(b[b.len() / 2..].try_into().unwrap());
@@ -76,7 +85,10 @@ fn check_str(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: &str) {
 }
 
 #[track_caller]
-fn check_answer(#[rust_analyzer::rust_fixture] ra_fixture: &str, check: impl FnOnce(&[u8], &MemoryMap<'_>)) {
+fn check_answer(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    check: impl FnOnce(&[u8], &MemoryMap<'_>),
+) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
         let file_id = *file_ids.last().unwrap();
@@ -97,7 +109,10 @@ fn check_answer(#[rust_analyzer::rust_fixture] ra_fixture: &str, check: impl FnO
     });
 }
 
-fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
+fn pretty_print_err(
+    e: ConstEvalError<'_>,
+    db: &TestDB,
+) -> String {
     let mut err = String::new();
     let span_formatter = |file, range| format!("{file:?} {range:?}");
     let display_target =
@@ -114,7 +129,10 @@ fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
     err
 }
 
-fn eval_goal(db: &TestDB, file_id: EditionedFileId) -> Result<Const<'_>, ConstEvalError<'_>> {
+fn eval_goal(
+    db: &TestDB,
+    file_id: EditionedFileId,
+) -> Result<Const<'_>, ConstEvalError<'_>> {
     let _tracing = setup_tracing();
     let interner = DbInterner::new_with(db, None, None);
     let module_id = db.module_for_file(file_id.file_id(db));

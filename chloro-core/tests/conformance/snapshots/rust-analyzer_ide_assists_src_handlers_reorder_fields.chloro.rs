@@ -5,7 +5,10 @@ use syntax::{AstNode, SmolStr, SyntaxElement, ToSmolStr, ast, syntax_editor::Syn
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn reorder_fields(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let path = ctx.find_node_at_offset::<ast::Path>()?;
     let record =
         path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
@@ -69,13 +72,20 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     )
 }
 
-fn replace<T: AstNode + PartialEq>(editor: &mut SyntaxEditor, fields: impl Iterator<Item = T>, sorted_fields: impl IntoIterator<Item = T>) {
+fn replace<T: AstNode + PartialEq>(
+    editor: &mut SyntaxEditor,
+    fields: impl Iterator<Item = T>,
+    sorted_fields: impl IntoIterator<Item = T>,
+) {
     fields
         .zip(sorted_fields)
         .for_each(|(field, sorted_field)| editor.replace(field.syntax(), sorted_field.syntax()));
 }
 
-fn compute_fields_ranks(path: &ast::Path, ctx: &AssistContext<'_>) -> Option<FxHashMap<String, usize>> {
+fn compute_fields_ranks(
+    path: &ast::Path,
+    ctx: &AssistContext<'_>,
+) -> Option<FxHashMap<String, usize>> {
     let strukt = match ctx.sema.resolve_path(path) {
         Some(hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Struct(it)))) => it,
         _ => return None,

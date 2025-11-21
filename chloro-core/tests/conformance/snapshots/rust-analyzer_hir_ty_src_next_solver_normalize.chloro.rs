@@ -19,7 +19,10 @@ use crate::next_solver::{
 
 /// Deeply normalize all aliases in `value`. This does not handle inference and expects
 /// its input to be already fully resolved.
-pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>
+pub fn deeply_normalize<'db, T>(
+    at: At<'_, 'db>,
+    value: T,
+) -> Result<T, Vec<NextSolverError<'db>>>
 where
     T: TypeFoldable<DbInterner<'db>>, {
     assert!(!value.has_escaping_bound_vars());
@@ -32,7 +35,11 @@ where
 /// Additionally takes a list of universes which represents the binders which have been
 /// entered before passing `value` to the function. This is currently needed for
 /// `normalize_erasing_regions`, which skips binders as it walks through a type.
-pub fn deeply_normalize_with_skipped_universes<'db, T>(at: At<'_, 'db>, value: T, universes: Vec<Option<UniverseIndex>>) -> Result<T, Vec<NextSolverError<'db>>>
+pub fn deeply_normalize_with_skipped_universes<'db, T>(
+    at: At<'_, 'db>,
+    value: T,
+    universes: Vec<Option<UniverseIndex>>,
+) -> Result<T, Vec<NextSolverError<'db>>>
 where
     T: TypeFoldable<DbInterner<'db>>, {
     let (value, coroutine_goals) =
@@ -52,7 +59,11 @@ where
 ///
 /// This returns a set of stalled obligations involving coroutines if the typing mode of
 /// the underlying infcx has any stalled coroutine def ids.
-pub fn deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals<'db, T>(at: At<'_, 'db>, value: T, universes: Vec<Option<UniverseIndex>>) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
+pub fn deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals<'db, T>(
+    at: At<'_, 'db>,
+    value: T,
+    universes: Vec<Option<UniverseIndex>>,
+) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
 where
     T: TypeFoldable<DbInterner<'db>>, {
     let fulfill_cx = FulfillmentCtxt::new(at.infcx);
@@ -77,7 +88,10 @@ struct NormalizationFolder<'me, 'db> {
 }
 
 impl<'db> NormalizationFolder<'_, 'db> {
-    fn normalize_alias_term(&mut self, alias_term: Term<'db>) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
+    fn normalize_alias_term(
+        &mut self,
+        alias_term: Term<'db>,
+    ) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
         let infcx = self.at.infcx;
         let interner = infcx.interner;
         let recursion_limit = interner.recursion_limit();
@@ -140,14 +154,20 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         self.at.infcx.interner
     }
 
-    fn try_fold_binder<T: TypeFoldable<DbInterner<'db>>>(&mut self, t: Binder<'db, T>) -> Result<Binder<'db, T>, Self::Error> {
+    fn try_fold_binder<T: TypeFoldable<DbInterner<'db>>>(
+        &mut self,
+        t: Binder<'db, T>,
+    ) -> Result<Binder<'db, T>, Self::Error> {
         self.universes.push(None);
         let t = t.try_super_fold_with(self)?;
         self.universes.pop();
         Ok(t)
     }
 
-    fn try_fold_ty(&mut self, ty: Ty<'db>) -> Result<Ty<'db>, Self::Error> {
+    fn try_fold_ty(
+        &mut self,
+        ty: Ty<'db>,
+    ) -> Result<Ty<'db>, Self::Error> {
         let infcx = self.at.infcx;
         debug_assert_eq!(ty, infcx.shallow_resolve(ty));
         if !ty.has_aliases() {
@@ -171,7 +191,10 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         }
     }
 
-    fn try_fold_const(&mut self, ct: Const<'db>) -> Result<Const<'db>, Self::Error> {
+    fn try_fold_const(
+        &mut self,
+        ct: Const<'db>,
+    ) -> Result<Const<'db>, Self::Error> {
         let infcx = self.at.infcx;
         debug_assert_eq!(ct, infcx.shallow_resolve_const(ct));
         if !ct.has_aliases() {
@@ -196,7 +219,11 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
     }
 }
 
-pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, t: T) -> T {
+pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
+    infcx: &InferCtxt<'db>,
+    param_env: ParamEnv<'db>,
+    t: T,
+) -> T {
     t.fold_with(&mut DeeplyNormalizeForDiagnosticsFolder {
         at: infcx.at(&ObligationCause::dummy(), param_env),
     })
@@ -211,7 +238,10 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
         self.at.infcx.interner
     }
 
-    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        ty: Ty<'db>,
+    ) -> Ty<'db> {
         let infcx = self.at.infcx;
         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
@@ -226,7 +256,10 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
         }
     }
 
-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        ct: Const<'db>,
+    ) -> Const<'db> {
         let infcx = self.at.infcx;
         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(

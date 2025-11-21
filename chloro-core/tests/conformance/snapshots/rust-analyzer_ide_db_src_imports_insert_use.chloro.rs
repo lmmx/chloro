@@ -72,7 +72,10 @@ pub enum ImportScopeKind {
 impl ImportScope {
     /// Determines the containing syntax node in which to insert a `use` statement affecting `position`.
     /// Returns the original source node inside attributes.
-    pub fn find_insert_use_container(position: &SyntaxNode, sema: &Semantics<'_, RootDatabase>) -> Option<Self> {
+    pub fn find_insert_use_container(
+        position: &SyntaxNode,
+        sema: &Semantics<'_, RootDatabase>,
+    ) -> Option<Self> {
         // The closest block expression ancestor
         let mut block = None;
         let mut required_cfgs = Vec::new();
@@ -139,11 +142,19 @@ impl ImportScope {
 }
 
 /// Insert an import path into the given file/node. A `merge` value of none indicates that no import merging is allowed to occur.
-pub fn insert_use(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
+pub fn insert_use(
+    scope: &ImportScope,
+    path: ast::Path,
+    cfg: &InsertUseConfig,
+) {
     insert_use_with_alias_option(scope, path, cfg, None);
 }
 
-pub fn insert_use_as_alias(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
+pub fn insert_use_as_alias(
+    scope: &ImportScope,
+    path: ast::Path,
+    cfg: &InsertUseConfig,
+) {
     let text: &str = "use foo as _";
     let parse = syntax::SourceFile::parse(text, span::Edition::CURRENT_FIXME);
     let node = parse
@@ -156,7 +167,12 @@ pub fn insert_use_as_alias(scope: &ImportScope, path: ast::Path, cfg: &InsertUse
     insert_use_with_alias_option(scope, path, cfg, alias);
 }
 
-fn insert_use_with_alias_option(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig, alias: Option<ast::Rename>) {
+fn insert_use_with_alias_option(
+    scope: &ImportScope,
+    path: ast::Path,
+    cfg: &InsertUseConfig,
+    alias: Option<ast::Rename>,
+) {
     let _p = tracing::info_span!("insert_use_with_alias_option").entered();
     let mut mb = match cfg.granularity {
         ImportGranularity::Crate => Some(MergeBehavior::Crate),
@@ -364,7 +380,11 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
     }
 }
 
-fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
+fn insert_use_(
+    scope: &ImportScope,
+    use_item: ast::Use,
+    group_imports: bool,
+) {
     let scope_syntax = scope.as_syntax_node();
     let insert_use_tree =
         use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");

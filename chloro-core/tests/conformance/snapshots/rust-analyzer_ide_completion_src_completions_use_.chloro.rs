@@ -10,7 +10,12 @@ use crate::{
     item::Builder,
 };
 
-pub(crate) fn complete_use_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, use_tree_parent, .. }: &PathCompletionCtx<'_>, name_ref: &Option<ast::NameRef>) {
+pub(crate) fn complete_use_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, use_tree_parent, .. }: &PathCompletionCtx<'_>,
+    name_ref: &Option<ast::NameRef>,
+) {
     match qualified {
         Qualified::With { path, resolution: Some(resolution), super_chain_len } => {
             acc.add_super_keyword(ctx, *super_chain_len);

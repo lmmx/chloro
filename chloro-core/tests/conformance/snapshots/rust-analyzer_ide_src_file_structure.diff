@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34173 bytes
+Chloro size:   34249 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -34,17 +34,24 @@ Rustfmt size:  34938 bytes
 -// | VS Code | <kbd>Ctrl+Shift+O</kbd> |
 -//
 -// ![File Structure](https://user-images.githubusercontent.com/48062697/113020654-b42fc800-917a-11eb-8388-e7dc4d92b02e.gif)
--pub(crate) fn file_structure(
--    file: &SourceFile,
--    config: &FileStructureConfig,
--) -> Vec<StructureNode> {
-+pub(crate) fn file_structure(file: &SourceFile, config: &FileStructureConfig) -> Vec<StructureNode> {
+ pub(crate) fn file_structure(
+     file: &SourceFile,
+     config: &FileStructureConfig,
+ ) -> Vec<StructureNode> {
      let mut res = Vec::new();
      let mut stack = Vec::new();
 -
      for event in file.syntax().preorder_with_tokens() {
          match event {
              WalkEvent::Enter(NodeOrToken::Node(node)) => {
+     res
+ }
+ 
+-fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<StructureNode> {
++fn structure_node(
++    node: &SyntaxNode,
++    config: &FileStructureConfig,
++) -> Option<StructureNode> {
      fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
          decl_with_detail(&node, None, kind)
      }
@@ -110,19 +117,22 @@ Rustfmt size:  34938 bytes
 -        exclude_locals: true,
 -    };
 -
-     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
          check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
      }
 -
--    fn check_with_config(
--        #[rust_analyzer::rust_fixture] ra_fixture: &str,
--        config: &FileStructureConfig,
--        expect: Expect,
--    ) {
+     fn check_with_config(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         config: &FileStructureConfig,
+         expect: Expect,
+     ) {
 -        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT)
 -            .ok()
 -            .unwrap();
-+    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: &FileStructureConfig, expect: Expect) {
 +        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT).ok().unwrap();
          let structure = file_structure(&file, config);
          expect.assert_debug_eq(&structure)

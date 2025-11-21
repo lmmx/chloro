@@ -12,7 +12,10 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn convert_range_for_to_while(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_range_for_to_while(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let for_kw = ctx.find_token_syntax_at_offset(T![for])?;
     let for_ = ast::ForExpr::cast(for_kw.parent()?)?;
     let ast::Pat::IdentPat(pat) = for_.pat()? else { return None };

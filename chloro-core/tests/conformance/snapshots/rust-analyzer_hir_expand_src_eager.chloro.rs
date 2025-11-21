@@ -33,12 +33,22 @@ use crate::{
     mod_path::ModPath,
 };
 
-pub type EagerCallBackFn<'a> = &'a mut dyn FnMut(
+pub type EagerCallBackFn<'a> =
+    &'a mut dyn FnMut(
     InFile<(syntax::AstPtr<ast::MacroCall>, span::FileAstId<ast::MacroCall>)>,
     MacroCallId,
 );
 
-pub fn expand_eager_macro_input(db: &dyn ExpandDatabase, krate: Crate, macro_call: &ast::MacroCall, ast_id: AstId<ast::MacroCall>, def: MacroDefId, call_site: SyntaxContext, resolver: &dyn Fn(&ModPath) -> Option<MacroDefId>, eager_callback: EagerCallBackFn<'_>) -> ExpandResult<Option<MacroCallId>> {
+pub fn expand_eager_macro_input(
+    db: &dyn ExpandDatabase,
+    krate: Crate,
+    macro_call: &ast::MacroCall,
+    ast_id: AstId<ast::MacroCall>,
+    def: MacroDefId,
+    call_site: SyntaxContext,
+    resolver: &dyn Fn(&ModPath) -> Option<MacroDefId>,
+    eager_callback: EagerCallBackFn<'_>,
+) -> ExpandResult<Option<MacroCallId>> {
     let expand_to = ExpandTo::from_call_site(macro_call);
     // Note:
     // When `lazy_expand` is called, its *parent* file must already exist.
@@ -101,7 +111,15 @@ pub fn expand_eager_macro_input(db: &dyn ExpandDatabase, krate: Crate, macro_cal
     ExpandResult { value: Some(db.intern_macro_call(loc)), err }
 }
 
-fn lazy_expand(db: &dyn ExpandDatabase, def: &MacroDefId, macro_call: &ast::MacroCall, ast_id: AstId<ast::MacroCall>, krate: Crate, call_site: SyntaxContext, eager_callback: EagerCallBackFn<'_>) -> ExpandResult<(InFile<Parse<SyntaxNode>>, Arc<ExpansionSpanMap>)> {
+fn lazy_expand(
+    db: &dyn ExpandDatabase,
+    def: &MacroDefId,
+    macro_call: &ast::MacroCall,
+    ast_id: AstId<ast::MacroCall>,
+    krate: Crate,
+    call_site: SyntaxContext,
+    eager_callback: EagerCallBackFn<'_>,
+) -> ExpandResult<(InFile<Parse<SyntaxNode>>, Arc<ExpansionSpanMap>)> {
     let expand_to = ExpandTo::from_call_site(macro_call);
     let id = def.make_call(
         db,
@@ -113,7 +131,17 @@ fn lazy_expand(db: &dyn ExpandDatabase, def: &MacroDefId, macro_call: &ast::Macr
     db.parse_macro_expansion(id).map(|parse| (InFile::new(id.into(), parse.0), parse.1))
 }
 
-fn eager_macro_recur(db: &dyn ExpandDatabase, span_map: &ExpansionSpanMap, expanded_map: &mut ExpansionSpanMap, mut offset: TextSize, curr: InFile<SyntaxNode>, krate: Crate, call_site: SyntaxContext, macro_resolver: &dyn Fn(&ModPath) -> Option<MacroDefId>, eager_callback: EagerCallBackFn<'_>) -> ExpandResult<Option<(SyntaxNode, TextSize)>> {
+fn eager_macro_recur(
+    db: &dyn ExpandDatabase,
+    span_map: &ExpansionSpanMap,
+    expanded_map: &mut ExpansionSpanMap,
+    mut offset: TextSize,
+    curr: InFile<SyntaxNode>,
+    krate: Crate,
+    call_site: SyntaxContext,
+    macro_resolver: &dyn Fn(&ModPath) -> Option<MacroDefId>,
+    eager_callback: EagerCallBackFn<'_>,
+) -> ExpandResult<Option<(SyntaxNode, TextSize)>> {
     let original = curr.value.clone_for_update();
     let mut replacements = Vec::new();
     // FIXME: We only report a single error inside of eager expansions

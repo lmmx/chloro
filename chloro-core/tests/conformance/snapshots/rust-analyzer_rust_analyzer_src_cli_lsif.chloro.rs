@@ -45,7 +45,12 @@ impl From<Id> for lsp_types::NumberOrString {
 }
 
 impl LsifManager<'_, '_> {
-    fn new<'a, 'w>(analysis: &'a Analysis, db: &'a RootDatabase, vfs: &'a Vfs, out: &'w mut dyn std::io::Write) -> LsifManager<'a, 'w> {
+    fn new<'a, 'w>(
+        analysis: &'a Analysis,
+        db: &'a RootDatabase,
+        vfs: &'a Vfs,
+        out: &'w mut dyn std::io::Write,
+    ) -> LsifManager<'a, 'w> {
         LsifManager {
             count: 0,
             token_map: FxHashMap::default(),
@@ -59,26 +64,41 @@ impl LsifManager<'_, '_> {
         }
     }
 
-    fn add(&mut self, data: lsif::Element) -> Id {
+    fn add(
+        &mut self,
+        data: lsif::Element,
+    ) -> Id {
         let id = Id(self.count);
         self.emit(&serde_json::to_string(&lsif::Entry { id: id.into(), data }).unwrap());
         self.count += 1;
         id
     }
 
-    fn add_vertex(&mut self, vertex: lsif::Vertex) -> Id {
+    fn add_vertex(
+        &mut self,
+        vertex: lsif::Vertex,
+    ) -> Id {
         self.add(lsif::Element::Vertex(vertex))
     }
 
-    fn add_edge(&mut self, edge: lsif::Edge) -> Id {
+    fn add_edge(
+        &mut self,
+        edge: lsif::Edge,
+    ) -> Id {
         self.add(lsif::Element::Edge(edge))
     }
 
-    fn emit(&mut self, data: &str) {
+    fn emit(
+        &mut self,
+        data: &str,
+    ) {
         format_to!(self.out, "{data}\n");
     }
 
-    fn get_token_id(&mut self, id: TokenId) -> Id {
+    fn get_token_id(
+        &mut self,
+        id: TokenId,
+    ) -> Id {
         if let Some(it) = self.token_map.get(&id) {
             return *it;
         }
@@ -87,7 +107,10 @@ impl LsifManager<'_, '_> {
         result_set_id
     }
 
-    fn get_package_id(&mut self, package_information: PackageInformation) -> Id {
+    fn get_package_id(
+        &mut self,
+        package_information: PackageInformation,
+    ) -> Id {
         if let Some(it) = self.package_map.get(&package_information) {
             return *it;
         }
@@ -109,7 +132,10 @@ impl LsifManager<'_, '_> {
         result_set_id
     }
 
-    fn get_range_id(&mut self, id: FileRange) -> Id {
+    fn get_range_id(
+        &mut self,
+        id: FileRange,
+    ) -> Id {
         if let Some(it) = self.range_map.get(&id) {
             return *it;
         }
@@ -132,7 +158,10 @@ impl LsifManager<'_, '_> {
         range_id
     }
 
-    fn get_file_id(&mut self, id: FileId) -> Id {
+    fn get_file_id(
+        &mut self,
+        id: FileId,
+    ) -> Id {
         if let Some(it) = self.file_map.get(&id) {
             return *it;
         }
@@ -146,7 +175,11 @@ impl LsifManager<'_, '_> {
         doc_id
     }
 
-    fn add_token(&mut self, id: TokenId, token: TokenStaticData) {
+    fn add_token(
+        &mut self,
+        id: TokenId,
+        token: TokenStaticData,
+    ) {
         let result_set_id = self.get_token_id(id);
         if let Some(hover) = token.hover {
             let hover_id = self.add_vertex(lsif::Vertex::HoverResult {
@@ -232,7 +265,10 @@ impl LsifManager<'_, '_> {
         }
     }
 
-    fn add_file(&mut self, file: StaticIndexedFile) {
+    fn add_file(
+        &mut self,
+        file: StaticIndexedFile,
+    ) {
         let StaticIndexedFile { file_id, tokens, folds, .. } = file;
         let doc_id = self.get_file_id(file_id);
         let text = self.analysis.file_text(file_id).unwrap();
@@ -275,7 +311,11 @@ impl LsifManager<'_, '_> {
 }
 
 impl flags::Lsif {
-    pub fn run(self, out: &mut dyn std::io::Write, sysroot: Option<RustLibSource>) -> anyhow::Result<()> {
+    pub fn run(
+        self,
+        out: &mut dyn std::io::Write,
+        sysroot: Option<RustLibSource>,
+    ) -> anyhow::Result<()> {
         let now = Instant::now();
         let cargo_config =
             &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };

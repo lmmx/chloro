@@ -51,15 +51,28 @@ impl PerNs {
         PerNs { types: None, values: None, macros: None }
     }
 
-    pub fn values(def: ModuleDefId, vis: Visibility, import: Option<ImportOrGlob>) -> PerNs {
+    pub fn values(
+        def: ModuleDefId,
+        vis: Visibility,
+        import: Option<ImportOrGlob>,
+    ) -> PerNs {
         PerNs { types: None, values: Some(Item { def, vis, import }), macros: None }
     }
 
-    pub fn types(def: ModuleDefId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
+    pub fn types(
+        def: ModuleDefId,
+        vis: Visibility,
+        import: Option<ImportOrExternCrate>,
+    ) -> PerNs {
         PerNs { types: Some(Item { def, vis, import }), values: None, macros: None }
     }
 
-    pub fn both(types: ModuleDefId, values: ModuleDefId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
+    pub fn both(
+        types: ModuleDefId,
+        values: ModuleDefId,
+        vis: Visibility,
+        import: Option<ImportOrExternCrate>,
+    ) -> PerNs {
         PerNs {
             types: Some(Item { def: types, vis, import }),
             values: Some(Item {
@@ -71,7 +84,11 @@ impl PerNs {
         }
     }
 
-    pub fn macros(def: MacroId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
+    pub fn macros(
+        def: MacroId,
+        vis: Visibility,
+        import: Option<ImportOrExternCrate>,
+    ) -> PerNs {
         PerNs { types: None, values: None, macros: Some(Item { def, vis, import }) }
     }
 
@@ -107,7 +124,10 @@ impl PerNs {
         self.macros.map(|it| (it.def, it.import))
     }
 
-    pub fn filter_visibility(self, mut f: impl FnMut(Visibility) -> bool) -> PerNs {
+    pub fn filter_visibility(
+        self,
+        mut f: impl FnMut(Visibility) -> bool,
+    ) -> PerNs {
         let _p = tracing::info_span!("PerNs::filter_visibility").entered();
         PerNs {
             types: self.types.filter(|def| f(def.vis)),
@@ -116,7 +136,10 @@ impl PerNs {
         }
     }
 
-    pub fn with_visibility(self, vis: Visibility) -> PerNs {
+    pub fn with_visibility(
+        self,
+        vis: Visibility,
+    ) -> PerNs {
         PerNs {
             types: self.types.map(|def| Item { vis, ..def }),
             values: self.values.map(|def| Item { vis, ..def }),
@@ -124,7 +147,10 @@ impl PerNs {
         }
     }
 
-    pub fn or(self, other: PerNs) -> PerNs {
+    pub fn or(
+        self,
+        other: PerNs,
+    ) -> PerNs {
         PerNs {
             types: self.types.or(other.types),
             values: self.values.or(other.values),
@@ -132,7 +158,10 @@ impl PerNs {
         }
     }
 
-    pub fn or_else(self, f: impl FnOnce() -> PerNs) -> PerNs {
+    pub fn or_else(
+        self,
+        f: impl FnOnce() -> PerNs,
+    ) -> PerNs {
         if self.is_full() { self } else { self.or(f()) }
     }
 

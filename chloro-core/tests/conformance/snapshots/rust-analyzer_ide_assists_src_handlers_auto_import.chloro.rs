@@ -14,7 +14,10 @@ use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
-pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn auto_import(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let cfg = ctx.config.import_path_config();
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let mut proposed_imports: Vec<_> = import_assets
@@ -156,7 +159,12 @@ fn group_label(import_candidate: &ImportCandidate<'_>) -> GroupLabel {
 
 /// Determine how relevant a given import is in the current context. Higher scores are more
 /// relevant.
-pub(crate) fn relevance_score(ctx: &AssistContext<'_>, import: &LocatedImport, expected: Option<&Type<'_>>, current_module: Option<&Module>) -> i32 {
+pub(crate) fn relevance_score(
+    ctx: &AssistContext<'_>,
+    import: &LocatedImport,
+    expected: Option<&Type<'_>>,
+    current_module: Option<&Module>,
+) -> i32 {
     let mut score = 0;
     let db = ctx.db();
     let item_module = match import.item_to_import {
@@ -205,7 +213,11 @@ pub(crate) fn relevance_score(ctx: &AssistContext<'_>, import: &LocatedImport, e
 }
 
 /// A heuristic that gives a higher score to modules that are more separated.
-fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Module) -> usize {
+fn module_distance_heuristic(
+    db: &dyn HirDatabase,
+    current: &Module,
+    item: &Module,
+) -> usize {
     // get the path starting from the item to the respective crate roots
     let mut current_path = current.path_to_root(db);
     let mut item_path = item.path_to_root(db);
@@ -239,7 +251,10 @@ mod tests {
         TEST_CONFIG, check_assist, check_assist_by_label, check_assist_not_applicable,
         check_assist_target,
     };
-    fn check_auto_import_order(before: &str, order: &[&str]) {
+    fn check_auto_import_order(
+        before: &str,
+        order: &[&str],
+    ) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
         let frange = FileRange { file_id, range: range_or_offset.into() };
         let sema = Semantics::new(&db);

@@ -23,7 +23,12 @@ mod generated;
 
 
 
-fn assists(db: &RootDatabase, config: &AssistConfig, resolve: AssistResolveStrategy, range: ide_db::FileRange) -> Vec<Assist> {
+fn assists(
+    db: &RootDatabase,
+    config: &AssistConfig,
+    resolve: AssistResolveStrategy,
+    range: ide_db::FileRange,
+) -> Vec<Assist> {
     hir::attach_db(db, || {
         HirDatabase::zalsa_register_downcaster(db);
         crate::assists(db, config, resolve, range)
@@ -35,13 +40,22 @@ pub(crate) fn with_single_file(text: &str) -> (RootDatabase, EditionedFileId) {
 }
 
 #[track_caller]
-pub(crate) fn check_assist(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_assist(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     check(assist, ra_fixture_before, ExpectedResult::After(&ra_fixture_after), None);
 }
 
 #[track_caller]
-pub(crate) fn check_assist_with_config(assist: Handler, config: AssistConfig, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_assist_with_config(
+    assist: Handler,
+    config: AssistConfig,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     check_with_config(
         config,
@@ -53,7 +67,11 @@ pub(crate) fn check_assist_with_config(assist: Handler, config: AssistConfig, #[
 }
 
 #[track_caller]
-pub(crate) fn check_assist_no_snippet_cap(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_assist_no_snippet_cap(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     check_with_config(
         TEST_CONFIG_NO_SNIPPET_CAP,
@@ -65,7 +83,11 @@ pub(crate) fn check_assist_no_snippet_cap(assist: Handler, #[rust_analyzer::rust
 }
 
 #[track_caller]
-pub(crate) fn check_assist_import_one(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_assist_import_one(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     check_with_config(
         TEST_CONFIG_IMPORT_ONE,
@@ -77,28 +99,47 @@ pub(crate) fn check_assist_import_one(assist: Handler, #[rust_analyzer::rust_fix
 }
 
 #[track_caller]
-pub(crate) fn check_assist_by_label(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str, label: &str) {
+pub(crate) fn check_assist_by_label(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    label: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     check(assist, ra_fixture_before, ExpectedResult::After(&ra_fixture_after), Some(label));
 }
 
 #[track_caller]
-pub(crate) fn check_assist_target(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str, target: &str) {
+pub(crate) fn check_assist_target(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    target: &str,
+) {
     check(assist, ra_fixture, ExpectedResult::Target(target), None);
 }
 
 #[track_caller]
-pub(crate) fn check_assist_not_applicable(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+pub(crate) fn check_assist_not_applicable(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) {
     check(assist, ra_fixture, ExpectedResult::NotApplicable, None);
 }
 
 #[track_caller]
-pub(crate) fn check_assist_not_applicable_by_label(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str, label: &str) {
+pub(crate) fn check_assist_not_applicable_by_label(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    label: &str,
+) {
     check(assist, ra_fixture, ExpectedResult::NotApplicable, Some(label));
 }
 
 #[track_caller]
-pub(crate) fn check_assist_not_applicable_for_import_one(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+pub(crate) fn check_assist_not_applicable_for_import_one(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) {
     check_with_config(
         TEST_CONFIG_IMPORT_ONE,
         assist,
@@ -109,7 +150,10 @@ pub(crate) fn check_assist_not_applicable_for_import_one(assist: Handler, #[rust
 }
 
 #[track_caller]
-pub(crate) fn check_assist_not_applicable_no_grouping(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+pub(crate) fn check_assist_not_applicable_no_grouping(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) {
     check_with_config(
         TEST_CONFIG_NO_GROUPING,
         assist,
@@ -121,12 +165,19 @@ pub(crate) fn check_assist_not_applicable_no_grouping(assist: Handler, #[rust_an
 
 /// Check assist in unresolved state. Useful to check assists for lazy computation.
 #[track_caller]
-pub(crate) fn check_assist_unresolved(assist: Handler, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+pub(crate) fn check_assist_unresolved(
+    assist: Handler,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) {
     check(assist, ra_fixture, ExpectedResult::Unresolved, None);
 }
 
 #[track_caller]
-fn check_doc_test(assist_id: &str, before: &str, after: &str) {
+fn check_doc_test(
+    assist_id: &str,
+    before: &str,
+    after: &str,
+) {
     let after = trim_indent(after);
     let (db, file_id, selection) = RootDatabase::with_range_or_offset(before);
     let before = db.file_text(file_id.file_id(&db)).text(&db).to_string();
@@ -172,12 +223,23 @@ enum ExpectedResult<'a> {
 }
 
 #[track_caller]
-fn check(handler: Handler, before: &str, expected: ExpectedResult<'_>, assist_label: Option<&str>) {
+fn check(
+    handler: Handler,
+    before: &str,
+    expected: ExpectedResult<'_>,
+    assist_label: Option<&str>,
+) {
     check_with_config(TEST_CONFIG, handler, before, expected, assist_label);
 }
 
 #[track_caller]
-fn check_with_config(config: AssistConfig, handler: Handler, before: &str, expected: ExpectedResult<'_>, assist_label: Option<&str>) {
+fn check_with_config(
+    config: AssistConfig,
+    handler: Handler,
+    before: &str,
+    expected: ExpectedResult<'_>,
+    assist_label: Option<&str>,
+) {
     let _tracing = setup_tracing();
     let (mut db, file_with_caret_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
     db.enable_proc_attr_macros();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34589 bytes
+Chloro size:   34858 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -70,15 +70,9 @@ Rustfmt size:  36650 bytes
 -//
 -// ![On Typing Assists](https://user-images.githubusercontent.com/48062697/113166163-69758500-923a-11eb-81ee-eb33ec380399.gif)
 -// ![On Typing Assists](https://user-images.githubusercontent.com/48062697/113171066-105c2000-923f-11eb-87ab-f4a263346567.gif)
--pub(crate) fn on_char_typed(
--    db: &RootDatabase,
--    position: FilePosition,
--    char_typed: char,
--) -> Option<SourceChange> {
-+pub(crate) fn on_char_typed(db: &RootDatabase, position: FilePosition, char_typed: char) -> Option<SourceChange> {
-     if !TRIGGER_CHARS.contains(&char_typed) {
-         return None;
-     }
+ pub(crate) fn on_char_typed(
+     db: &RootDatabase,
+     position: FilePosition,
      if !stdx::always!(char_matches_position) {
          return None;
      }
@@ -90,18 +84,6 @@ Rustfmt size:  36650 bytes
      Some(sc)
  }
  
--fn on_char_typed_(
--    file: &Parse<SourceFile>,
--    offset: TextSize,
--    char_typed: char,
--    edition: Edition,
--) -> Option<ExtendedTextEdit> {
-+fn on_char_typed_(file: &Parse<SourceFile>, offset: TextSize, char_typed: char, edition: Edition) -> Option<ExtendedTextEdit> {
-     match char_typed {
-         '.' => on_dot_typed(&file.tree(), offset),
-         '=' => on_eq_typed(&file.tree(), offset),
- }
- 
  fn conv(edit: TextEdit) -> ExtendedTextEdit {
 -    ExtendedTextEdit {
 -        edit,
@@ -111,14 +93,7 @@ Rustfmt size:  36650 bytes
  }
  
  /// Inserts a closing delimiter when the user types an opening bracket, wrapping an existing expression in a
- /// block, or a part of a `use` item (for `{`).
--fn on_opening_delimiter_typed(
--    file: &Parse<SourceFile>,
--    offset: TextSize,
--    opening_bracket: char,
--    edition: Edition,
--) -> Option<TextEdit> {
-+fn on_opening_delimiter_typed(file: &Parse<SourceFile>, offset: TextSize, opening_bracket: char, edition: Edition) -> Option<TextEdit> {
+ ) -> Option<TextEdit> {
      type FilterFn = fn(SyntaxKind) -> bool;
      let (closing_bracket, expected_ast_bracket, allowed_kinds) = match opening_bracket {
 -        '{' => (
@@ -180,6 +155,15 @@ Rustfmt size:  36650 bytes
      match opening_bracket {
          '{' => on_left_brace_typed(&reparsed, offset),
          '<' => on_left_angle_typed(&file.tree(), &reparsed, offset),
+     }
+ }
+ 
+-fn on_left_brace_typed(reparsed: &SourceFile, offset: TextSize) -> Option<TextEdit> {
++fn on_left_brace_typed(
++    reparsed: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
+     let segment: ast::PathSegment = find_node_at_offset(reparsed.syntax(), offset)?;
      if segment.syntax().text_range().start() != offset {
          return None;
      }
@@ -193,17 +177,7 @@ Rustfmt size:  36650 bytes
 +    Some(TextEdit::insert(tree.syntax().text_range().end() + TextSize::of("{"), "}".to_owned()))
  }
  
--fn on_delimited_node_typed(
--    reparsed: &SourceFile,
--    offset: TextSize,
--    opening_bracket: char,
--    closing_bracket: char,
--    kinds: &[fn(SyntaxKind) -> bool],
--) -> Option<TextEdit> {
-+fn on_delimited_node_typed(reparsed: &SourceFile, offset: TextSize, opening_bracket: char, closing_bracket: char, kinds: &[fn(SyntaxKind) -> bool]) -> Option<TextEdit> {
-     let t = reparsed.syntax().token_at_offset(offset).right_biased()?;
-     if t.prev_token().is_some_and(|t| t.kind().is_any_identifier()) {
-         return None;
+ fn on_delimited_node_typed(
      let (filter, node) = t
          .parent_ancestors()
          .take_while(|n| n.text_range().start() == offset)
@@ -236,9 +210,14 @@ Rustfmt size:  36650 bytes
  /// Returns an edit which should be applied after `=` was typed. Primarily,
  /// this works when adding `let =`.
 -// FIXME: use a snippet completion instead of this hack here.
- fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
+-fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
++fn on_eq_typed(
++    file: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
      let text = file.syntax().text();
      let has_newline = iter::successors(Some(offset), |&offset| Some(offset + TextSize::new(1)))
+         .filter_map(|offset| text.char_at(offset))
      if has_newline {
          return None;
      }
@@ -319,15 +298,20 @@ Rustfmt size:  36650 bytes
              return None;
          }
          let offset = let_stmt.syntax().text_range().end();
+ }
  
  /// Returns an edit which should be applied when a dot ('.') is typed on a blank line, indenting the line appropriately.
- fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
+-fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 -    let whitespace = file
 -        .syntax()
 -        .token_at_offset(offset)
 -        .left_biased()
 -        .and_then(ast::Whitespace::cast)?;
 -
++fn on_dot_typed(
++    file: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
 +    let whitespace =
 +        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
      // if prior is fn call over multiple lines dont indent
@@ -363,12 +347,8 @@ Rustfmt size:  36650 bytes
  }
  
  /// Add closing `>` for generic arguments/parameters.
--fn on_left_angle_typed(
--    file: &SourceFile,
--    reparsed: &SourceFile,
--    offset: TextSize,
--) -> Option<TextEdit> {
-+fn on_left_angle_typed(file: &SourceFile, reparsed: &SourceFile, offset: TextSize) -> Option<TextEdit> {
+     offset: TextSize,
+ ) -> Option<TextEdit> {
      let file_text = reparsed.syntax().text();
 -
      // Find the next non-whitespace char in the line, check if its a `>`
@@ -392,6 +372,14 @@ Rustfmt size:  36650 bytes
      } else {
          None
      }
+ }
+ 
+-fn on_pipe_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
++fn on_pipe_typed(
++    file: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
+     let pipe_token = file.syntax().token_at_offset(offset).right_biased()?;
      if pipe_token.kind() != SyntaxKind::PIPE {
          return None;
      }
@@ -405,6 +393,17 @@ Rustfmt size:  36650 bytes
          return None;
      }
      let after_lpipe = offset + TextSize::of('|');
+     Some(TextEdit::insert(after_lpipe, "|".to_owned()))
+ }
+ 
+-fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
++fn on_plus_typed(
++    file: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
+     let plus_token = file.syntax().token_at_offset(offset).right_biased()?;
+     if plus_token.kind() != SyntaxKind::PLUS {
+         return None;
      }
      let mut ancestors = plus_token.parent_ancestors();
      ancestors.next().and_then(ast::TypeBoundList::cast)?;
@@ -418,6 +417,17 @@ Rustfmt size:  36650 bytes
      if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
      {
          let mut builder = TextEdit::builder();
+ }
+ 
+ /// Adds a space after an arrow when `fn foo() { ... }` is turned into `fn foo() -> { ... }`
+-fn on_right_angle_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
++fn on_right_angle_typed(
++    file: &SourceFile,
++    offset: TextSize,
++) -> Option<TextEdit> {
+     let file_text = file.syntax().text();
+     let after_arrow = offset + TextSize::of('>');
+     if file_text.char_at(after_arrow) != Some('{') {
          return None;
      }
      find_node_at_offset::<ast::RetType>(file.syntax(), offset)?;
@@ -432,31 +442,42 @@ Rustfmt size:  36650 bytes
      use super::*;
 -
      impl ExtendedTextEdit {
-         fn apply(&self, text: &mut String) {
+-        fn apply(&self, text: &mut String) {
++        fn apply(
++            &self,
++            text: &mut String,
++        ) {
              self.edit.apply(text);
          }
      }
 -
-     fn do_type_char(char_typed: char, before: &str) -> Option<String> {
+-    fn do_type_char(char_typed: char, before: &str) -> Option<String> {
++    fn do_type_char(
++        char_typed: char,
++        before: &str,
++    ) -> Option<String> {
          let (offset, mut before) = extract_offset(before);
          let edit = TextEdit::insert(offset, char_typed.to_string());
+         edit.apply(&mut before);
              before.to_string()
          })
      }
 -
--    fn type_char(
--        char_typed: char,
--        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
--        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
--    ) {
-+    fn type_char(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+     fn type_char(
+         char_typed: char,
+         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+     ) {
          let actual = do_type_char(char_typed, ra_fixture_before)
              .unwrap_or_else(|| panic!("typing `{char_typed}` did nothing"));
 -
          assert_eq_text!(ra_fixture_after, &actual);
      }
 -
-     fn type_char_noop(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str) {
+-    fn type_char_noop(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str) {
++    fn type_char_noop(
++        char_typed: char,
++        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
++    ) {
          let file_change = do_type_char(char_typed, ra_fixture_before);
          assert_eq!(file_change, None)
      }

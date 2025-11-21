@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22391 bytes
-Chloro size:   21980 bytes
+Chloro size:   22032 bytes
 Rustfmt size:  22391 bytes
 
 ✗ Outputs DIFFER
@@ -33,21 +33,14 @@ Rustfmt size:  22391 bytes
 -//     bar();
 -// }
 -// ```
- pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_to_guarded_return(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
          Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
-     }
- }
- 
--fn if_expr_to_guarded_return(
--    if_expr: ast::IfExpr,
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+fn if_expr_to_guarded_return(if_expr: ast::IfExpr, acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let else_block = match if_expr.else_branch() {
-         Some(ast::ElseBranch::Block(block_expr)) if is_never_block(&ctx.sema, &block_expr) => {
-             Some(block_expr)
+         Either::Right(if_expr) => if_expr_to_guarded_return(if_expr, acc, ctx),
          Some(_) => return None,
          _ => None,
      };
@@ -103,15 +96,7 @@ Rustfmt size:  22391 bytes
      let target = if_expr.syntax().text_range();
      acc.add(
          AssistId::refactor_rewrite("convert_to_guarded_return"),
-     )
- }
- 
--fn let_stmt_to_guarded_return(
--    let_stmt: ast::LetStmt,
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+fn let_stmt_to_guarded_return(let_stmt: ast::LetStmt, acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ ) -> Option<()> {
      let pat = let_stmt.pat()?;
      let expr = let_stmt.initializer()?;
 -
@@ -140,17 +125,6 @@ Rustfmt size:  22391 bytes
      acc.add(
          AssistId::refactor_rewrite("convert_to_guarded_return"),
          "Convert to guarded return",
-     )
- }
- 
--fn early_expression(
--    parent_container: SyntaxNode,
--    sema: &Semantics<'_, RootDatabase>,
--) -> Option<ast::Expr> {
-+fn early_expression(parent_container: SyntaxNode, sema: &Semantics<'_, RootDatabase>) -> Option<ast::Expr> {
-     let return_none_expr = || {
-         let none_expr = make::expr_path(make::ext::ident_path("None"));
-         make::expr_return(Some(none_expr))
      {
          return Some(return_none_expr());
      }

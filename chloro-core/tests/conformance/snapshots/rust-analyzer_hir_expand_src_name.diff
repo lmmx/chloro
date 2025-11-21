@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8069 bytes
+Chloro size:   8376 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
@@ -25,13 +25,77 @@ Rustfmt size:  8636 bytes
      ctx: (),
  }
  
+ impl fmt::Debug for Name {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         f.debug_struct("Name")
+             .field("symbol", &self.symbol.as_str())
+             .field("ctx", &self.ctx)
+ }
+ 
+ impl Ord for Name {
+-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
++    fn cmp(
++        &self,
++        other: &Self,
++    ) -> std::cmp::Ordering {
+         self.symbol.as_str().cmp(other.symbol.as_str())
+     }
+ }
+ 
+ impl PartialOrd for Name {
+-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
++    fn partial_cmp(
++        &self,
++        other: &Self,
++    ) -> Option<std::cmp::Ordering> {
+         Some(self.cmp(other))
      }
  }
  
 -// No need to strip `r#`, all comparisons are done against well-known symbols.
  impl PartialEq<Symbol> for Name {
-     fn eq(&self, sym: &Symbol) -> bool {
+-    fn eq(&self, sym: &Symbol) -> bool {
++    fn eq(
++        &self,
++        sym: &Symbol,
++    ) -> bool {
          self.symbol == *sym
+     }
+ }
+ 
+ impl PartialEq<&Symbol> for Name {
+-    fn eq(&self, &sym: &&Symbol) -> bool {
++    fn eq(
++        &self,
++        &sym: &&Symbol,
++    ) -> bool {
+         self.symbol == *sym
+     }
+ }
+ 
+ impl PartialEq<Name> for Symbol {
+-    fn eq(&self, name: &Name) -> bool {
++    fn eq(
++        &self,
++        name: &Name,
++    ) -> bool {
+         *self == name.symbol
+     }
+ }
+ 
+ impl PartialEq<Name> for &Symbol {
+-    fn eq(&self, name: &Name) -> bool {
++    fn eq(
++        &self,
++        name: &Name,
++    ) -> bool {
+         **self == name.symbol
+     }
+ }
  
  impl Name {
      fn new_text(text: &str) -> Name {
@@ -42,7 +106,24 @@ Rustfmt size:  8636 bytes
 +        Name { symbol: Symbol::intern(text), ctx: () }
      }
  
-     pub fn new(text: &str, mut ctx: SyntaxContext) -> Name {
+-    pub fn new(text: &str, mut ctx: SyntaxContext) -> Name {
++    pub fn new(
++        text: &str,
++        mut ctx: SyntaxContext,
++    ) -> Name {
+         // For comparisons etc. we remove the edition, because sometimes we search for some `Name`
+         // and we don't know which edition it came from.
+         // Can't do that for all `SyntaxContextId`s because it breaks Salsa.
+         }
+     }
+ 
+-    pub fn new_symbol(symbol: Symbol, ctx: SyntaxContext) -> Self {
++    pub fn new_symbol(
++        symbol: Symbol,
++        ctx: SyntaxContext,
++    ) -> Self {
+         debug_assert!(!symbol.as_str().starts_with("r#"));
+         _ = ctx;
          Self { symbol, ctx: () }
      }
  
@@ -61,6 +142,17 @@ Rustfmt size:  8636 bytes
      }
  
      /// Returns true if this is a fake name for things missing in the source code. See
+     }
+ 
+     /// Whether this name needs to be escaped in the given edition via `r#`.
+-    pub fn needs_escape(&self, edition: Edition) -> bool {
++    pub fn needs_escape(
++        &self,
++        edition: Edition,
++    ) -> bool {
+         is_raw_identifier(self.symbol.as_str(), edition)
+     }
+ 
      /// Returns the text this name represents if it isn't a tuple field.
      ///
      /// Do not use this for user-facing text, use `display` instead to handle editions properly.
@@ -68,30 +160,32 @@ Rustfmt size:  8636 bytes
      pub fn as_str(&self) -> &str {
          self.symbol.as_str()
      }
- 
--    pub fn display<'a>(
--        &'a self,
--        db: &dyn crate::db::ExpandDatabase,
--        edition: Edition,
--    ) -> impl fmt::Display + 'a {
-+    pub fn display<'a>(&'a self, db: &dyn crate::db::ExpandDatabase, edition: Edition) -> impl fmt::Display + 'a {
-         _ = db;
          self.display_no_db(edition)
      }
  
 -    // FIXME: Remove this in favor of `display`, see fixme on `as_str`
      #[doc(hidden)]
-     pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
+-    pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
 -        Display {
 -            name: self,
 -            edition,
 -        }
++    pub fn display_no_db(
++        &self,
++        edition: Edition,
++    ) -> impl fmt::Display + '_ {
 +        Display { name: self, edition }
      }
  
      pub fn symbol(&self) -> &Symbol {
+ }
+ 
  impl fmt::Display for Display<'_> {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
          let mut symbol = self.name.symbol.as_str();
 -
          if symbol == "'static" {

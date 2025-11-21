@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5844 bytes
-Chloro size:   5674 bytes
+Chloro size:   5735 bytes
 Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
@@ -34,13 +34,9 @@ Rustfmt size:  5887 bytes
 -
 -// FIXME: Do callbacks instead to avoid allocations.
  /// Searches for importable items with the given name in the crate and its dependencies.
--pub fn items_with_name(
--    db: &RootDatabase,
--    krate: Crate,
--    name: NameToImport,
--    assoc_item_search: AssocSearchMode,
--) -> impl Iterator<Item = (ItemInNs, Complete)> {
-+pub fn items_with_name(db: &RootDatabase, krate: Crate, name: NameToImport, assoc_item_search: AssocSearchMode) -> impl Iterator<Item = (ItemInNs, Complete)> {
+ pub fn items_with_name(
+     db: &RootDatabase,
+ ) -> impl Iterator<Item = (ItemInNs, Complete)> {
      let _p = tracing::info_span!("items_with_name", name = name.text(), assoc_item_search = ?assoc_item_search, crate = ?krate.display_name(db).map(|name| name.to_string()))
          .entered();
 -
@@ -54,15 +50,7 @@ Rustfmt size:  5887 bytes
      find_items(db, krate, local_query, external_query)
  }
  
- /// Searches for importable items with the given name in the crate and its dependencies.
--pub fn items_with_name_in_module<T>(
--    db: &RootDatabase,
--    module: Module,
--    name: NameToImport,
--    assoc_item_search: AssocSearchMode,
--    mut cb: impl FnMut(ItemInNs) -> ControlFlow<T>,
--) -> Option<T> {
-+pub fn items_with_name_in_module<T>(db: &RootDatabase, module: Module, name: NameToImport, assoc_item_search: AssocSearchMode, mut cb: impl FnMut(ItemInNs) -> ControlFlow<T>) -> Option<T> {
+ ) -> Option<T> {
      let _p = tracing::info_span!("items_with_name_in", name = name.text(), assoc_item_search = ?assoc_item_search, ?module)
          .entered();
 -
@@ -89,13 +77,9 @@ Rustfmt size:  5887 bytes
 +    })
  }
  
--fn find_items(
--    db: &RootDatabase,
--    krate: Crate,
--    local_query: symbol_index::Query,
--    external_query: import_map::Query,
--) -> impl Iterator<Item = (ItemInNs, Complete)> {
-+fn find_items(db: &RootDatabase, krate: Crate, local_query: symbol_index::Query, external_query: import_map::Query) -> impl Iterator<Item = (ItemInNs, Complete)> {
+ fn find_items(
+     external_query: import_map::Query,
+ ) -> impl Iterator<Item = (ItemInNs, Complete)> {
      let _p = tracing::info_span!("find_items").entered();
 -
      // NOTE: `external_query` includes `assoc_item_search`, so we don't need to

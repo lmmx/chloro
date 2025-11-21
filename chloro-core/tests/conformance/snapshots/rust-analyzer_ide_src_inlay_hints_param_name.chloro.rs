@@ -14,7 +14,13 @@ use syntax::ast::{self, AstNode, HasArgList, HasName, UnaryOp};
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, krate): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, file_id: EditionedFileId, expr: ast::Expr) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, krate): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    file_id: EditionedFileId,
+    expr: ast::Expr,
+) -> Option<()> {
     if !config.parameter_hints {
         return None;
     }
@@ -82,7 +88,10 @@ pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, krate): &FamousDe
     Some(())
 }
 
-fn get_callable<'db>(sema: &Semantics<'db, RootDatabase>, expr: &ast::Expr) -> Option<(hir::Callable<'db>, ast::ArgList)> {
+fn get_callable<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    expr: &ast::Expr,
+) -> Option<(hir::Callable<'db>, ast::ArgList)> {
     match expr {
         ast::Expr::CallExpr(expr) => {
             let descended = sema.descend_node_into_attributes(expr.clone()).pop();
@@ -100,7 +109,13 @@ fn get_callable<'db>(sema: &Semantics<'db, RootDatabase>, expr: &ast::Expr) -> O
 
 
 
-fn should_hide_param_name_hint(sema: &Semantics<'_, RootDatabase>, unary_function: bool, function_name: Option<&str>, param_name: &str, argument: &ast::Expr) -> bool {
+fn should_hide_param_name_hint(
+    sema: &Semantics<'_, RootDatabase>,
+    unary_function: bool,
+    function_name: Option<&str>,
+    param_name: &str,
+    argument: &ast::Expr,
+) -> bool {
     // These are to be tested in the `parameter_hint_heuristics` test
     // hide when:
     // - the parameter name is a suffix of the function's name
@@ -133,7 +148,10 @@ fn should_hide_param_name_hint(sema: &Semantics<'_, RootDatabase>, unary_functio
 ///
 /// `fn strip_suffix(suffix)` will be hidden.
 /// `fn stripsuffix(suffix)` will not be hidden.
-fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
+fn is_param_name_suffix_of_fn_name(
+    param_name: &str,
+    fn_name: &str,
+) -> bool {
     fn_name == param_name
         || fn_name
             .len()
@@ -144,7 +162,11 @@ fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
             })
 }
 
-fn is_argument_expr_similar_to_param_name(sema: &Semantics<'_, RootDatabase>, argument: &ast::Expr, param_name: &str) -> bool {
+fn is_argument_expr_similar_to_param_name(
+    sema: &Semantics<'_, RootDatabase>,
+    argument: &ast::Expr,
+    param_name: &str,
+) -> bool {
     match get_segment_representation(argument) {
         Some(Either::Left(argument)) => is_argument_similar_to_param_name(&argument, param_name),
         Some(Either::Right(path)) => {
@@ -159,7 +181,10 @@ fn is_argument_expr_similar_to_param_name(sema: &Semantics<'_, RootDatabase>, ar
 
 /// Check whether param_name and argument are the same or
 /// whether param_name is a prefix/suffix of argument(split at `_`).
-pub(super) fn is_argument_similar_to_param_name(argument: &[ast::NameRef], param_name: &str) -> bool {
+pub(super) fn is_argument_similar_to_param_name(
+    argument: &[ast::NameRef],
+    param_name: &str,
+) -> bool {
     debug_assert!(!argument.is_empty());
     debug_assert!(!param_name.is_empty());
     let param_name = param_name.split('_');
@@ -233,7 +258,11 @@ fn is_obvious_param(param_name: &str) -> bool {
     param_name.len() == 1 || INSIGNIFICANT_PARAMETER_NAMES.contains(&param_name)
 }
 
-fn is_adt_constructor_similar_to_param_name(sema: &Semantics<'_, RootDatabase>, path: &ast::Path, param_name: &str) -> bool {
+fn is_adt_constructor_similar_to_param_name(
+    sema: &Semantics<'_, RootDatabase>,
+    path: &ast::Path,
+    param_name: &str,
+) -> bool {
     (|| match sema.resolve_path(path)? {
         hir::PathResolution::Def(hir::ModuleDef::Adt(_)) => {
             Some(to_lower_snake_case(&path.segment()?.name_ref()?.text()) == param_name)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10179 bytes
-Chloro size:   9939 bytes
+Chloro size:   9961 bytes
 Rustfmt size:  10254 bytes
 
 ✗ Outputs DIFFER
@@ -30,12 +30,9 @@ Rustfmt size:  10254 bytes
 -//
 -// This diagnostic is triggered when there is an `else` block for an `if` expression whose
 -// then branch diverges (e.g. ends with a `return`, `continue`, `break` e.t.c).
--pub(crate) fn remove_unnecessary_else(
--    ctx: &DiagnosticsContext<'_>,
--    d: &RemoveUnnecessaryElse,
--) -> Option<Diagnostic> {
-+pub(crate) fn remove_unnecessary_else(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Diagnostic> {
-     if d.if_expr.file_id.macro_file().is_some() {
+ pub(crate) fn remove_unnecessary_else(
+     ctx: &DiagnosticsContext<'_>,
+     d: &RemoveUnnecessaryElse,
          // FIXME: Our infra can't handle allow from within macro expansions rn
          return None;
      }
@@ -43,6 +40,14 @@ Rustfmt size:  10254 bytes
      let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
          if_expr.else_token().as_ref().map(SyntaxToken::text_range)
      });
+     )
+ }
+ 
+-fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<Assist>> {
++fn fixes(
++    ctx: &DiagnosticsContext<'_>,
++    d: &RemoveUnnecessaryElse,
++) -> Option<Vec<Assist>> {
      let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
      let if_expr = d.if_expr.value.to_node(&root);
      let if_expr = ctx.sema.original_ast_node(if_expr)?;

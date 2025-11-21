@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29220 bytes
+Chloro size:   29442 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -33,6 +33,17 @@ Rustfmt size:  29385 bytes
  
  pub type Result<T, E = RenameError> = std::result::Result<T, E>;
  
+ pub struct RenameError(pub String);
+ 
+ impl fmt::Display for RenameError {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(&self.0, f)
+     }
+ }
      ($fmt:expr) => { RenameError(format!($fmt)) };
      ($fmt:expr, $($arg:tt)+) => { RenameError(format!($fmt, $($arg)+)) }
  }
@@ -46,19 +57,6 @@ Rustfmt size:  29385 bytes
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum RenameDefinition {
- }
- 
- impl Definition {
--    pub fn rename(
--        &self,
--        sema: &Semantics<'_, RootDatabase>,
--        new_name: &str,
--        rename_definition: RenameDefinition,
--    ) -> Result<SourceChange> {
-+    pub fn rename(&self, sema: &Semantics<'_, RootDatabase>, new_name: &str, rename_definition: RenameDefinition) -> Result<SourceChange> {
-         // self.krate() returns None if
-         // self is a built-in attr, built-in type or tool module.
-         // it is not allowed for these defs to be renamed.
          } else {
              Edition::LATEST
          };
@@ -66,6 +64,17 @@ Rustfmt size:  29385 bytes
          match *self {
              Definition::Module(module) => rename_mod(sema, module, new_name),
              Definition::ToolModule(_) => {
+     /// `Definition`. Note that builtin types can't be
+     /// renamed and extern crate names will report its range, though a rename will introduce
+     /// an alias instead.
+-    pub fn range_for_rename(self, sema: &Semantics<'_, RootDatabase>) -> Option<FileRange> {
++    pub fn range_for_rename(
++        self,
++        sema: &Semantics<'_, RootDatabase>,
++    ) -> Option<FileRange> {
+         let syn_ctx_is_root = |(range, ctx): (_, SyntaxContext)| ctx.is_root().then_some(range);
+         let res = match self {
+             Definition::Macro(mac) => {
              Definition::DeriveHelper(_) => return None,
          };
          return res;
@@ -73,15 +82,8 @@ Rustfmt size:  29385 bytes
          fn name_range<D>(
              def: D,
              sema: &Semantics<'_, RootDatabase>,
-     }
- }
- 
--fn rename_mod(
--    sema: &Semantics<'_, RootDatabase>,
--    module: hir::Module,
--    new_name: &str,
--) -> Result<SourceChange> {
-+fn rename_mod(sema: &Semantics<'_, RootDatabase>, module: hir::Module, new_name: &str) -> Result<SourceChange> {
+     new_name: &str,
+ ) -> Result<SourceChange> {
      let mut source_change = SourceChange::default();
 -
      if module.is_crate_root() {
@@ -112,14 +114,8 @@ Rustfmt size:  29385 bytes
      Ok(source_change)
  }
  
--fn rename_reference(
--    sema: &Semantics<'_, RootDatabase>,
--    def: Definition,
--    new_name: &str,
--    rename_definition: RenameDefinition,
--    edition: Edition,
--) -> Result<SourceChange> {
-+fn rename_reference(sema: &Semantics<'_, RootDatabase>, def: Definition, new_name: &str, rename_definition: RenameDefinition, edition: Edition) -> Result<SourceChange> {
+     edition: Edition,
+ ) -> Result<SourceChange> {
      let (mut new_name, ident_kind) = IdentifierKind::classify(edition, new_name)?;
 -
      if matches!(
@@ -135,20 +131,6 @@ Rustfmt size:  29385 bytes
      if !usages.is_empty() && ident_kind == IdentifierKind::Underscore {
          cov_mark::hit!(rename_underscore_multiple);
          bail!("Cannot rename reference to `_` as it is being referenced multiple times");
-     Ok(source_change)
- }
- 
--pub fn source_edit_from_references(
--    db: &RootDatabase,
--    references: &[FileReference],
--    def: Definition,
--    new_name: &Name,
--    edition: Edition,
--) -> TextEdit {
-+pub fn source_edit_from_references(db: &RootDatabase, references: &[FileReference], def: Definition, new_name: &Name, edition: Edition) -> TextEdit {
-     let name_display = new_name.display(db, edition);
-     let mut edit = TextEdit::builder();
-     // macros can cause multiple refs to occur for the same text range, so keep track of what we have edited so far
              edited_ranges.push(range.start());
          }
      }
@@ -156,15 +138,6 @@ Rustfmt size:  29385 bytes
      edit.finish()
  }
  
--fn source_edit_from_name(
--    edit: &mut TextEditBuilder,
--    name: &ast::Name,
--    new_name: &dyn Display,
--) -> bool {
-+fn source_edit_from_name(edit: &mut TextEditBuilder, name: &ast::Name, new_name: &dyn Display) -> bool {
-     if ast::RecordPatField::for_field_name(name).is_some()
-         && let Some(ident_pat) = name.syntax().parent().and_then(ast::IdentPat::cast)
-     {
          edit.insert(ident_pat.syntax().text_range().start(), format!("{new_name}: "));
          return true;
      }
@@ -172,13 +145,6 @@ Rustfmt size:  29385 bytes
      false
  }
  
--fn source_edit_from_name_ref(
--    edit: &mut TextEditBuilder,
--    name_ref: &ast::NameRef,
--    new_name: &dyn Display,
--    def: Definition,
--) -> bool {
-+fn source_edit_from_name_ref(edit: &mut TextEditBuilder, name_ref: &ast::NameRef, new_name: &dyn Display, def: Definition) -> bool {
      if name_ref.super_token().is_some() {
          return true;
      }
@@ -186,16 +152,14 @@ Rustfmt size:  29385 bytes
      if let Some(record_field) = ast::RecordExprField::for_name_ref(name_ref) {
          let rcf_name_ref = record_field.name_ref();
          let rcf_expr = record_field.expr();
-     false
  }
  
--fn source_edit_from_def(
--    sema: &Semantics<'_, RootDatabase>,
--    def: Definition,
--    new_name: &Name,
--    source_change: &mut SourceChange,
--) -> Result<(FileId, TextEdit)> {
-+fn source_edit_from_def(sema: &Semantics<'_, RootDatabase>, def: Definition, new_name: &Name, source_change: &mut SourceChange) -> Result<(FileId, TextEdit)> {
-     let mut edit = TextEdit::builder();
-     if let Definition::Local(local) = def {
-         let mut file_id = None;
+ impl IdentifierKind {
+-    pub fn classify(edition: Edition, new_name: &str) -> Result<(Name, IdentifierKind)> {
++    pub fn classify(
++        edition: Edition,
++        new_name: &str,
++    ) -> Result<(Name, IdentifierKind)> {
+         match parser::LexedStr::single_token(edition, new_name) {
+             Some(res) => match res {
+                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),

@@ -5,7 +5,12 @@ use syntax::{AstNode, SyntaxToken, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
 
-pub(super) fn extern_block_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, extern_block: ast::ExternBlock) -> Option<()> {
+pub(super) fn extern_block_hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    extern_block: ast::ExternBlock,
+) -> Option<()> {
     if extern_block.unsafe_token().is_some() {
         return None;
     }
@@ -26,7 +31,13 @@ pub(super) fn extern_block_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): 
     Some(())
 }
 
-pub(super) fn fn_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, fn_: &ast::Fn, extern_block: &ast::ExternBlock) -> Option<()> {
+pub(super) fn fn_hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    fn_: &ast::Fn,
+    extern_block: &ast::ExternBlock,
+) -> Option<()> {
     let implicit_unsafe = fn_.safe_token().is_none() && fn_.unsafe_token().is_none();
     if !implicit_unsafe {
         return None;
@@ -38,7 +49,13 @@ pub(super) fn fn_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDef
     Some(())
 }
 
-pub(super) fn static_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, static_: &ast::Static, extern_block: &ast::ExternBlock) -> Option<()> {
+pub(super) fn static_hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    static_: &ast::Static,
+    extern_block: &ast::ExternBlock,
+) -> Option<()> {
     let implicit_unsafe = static_.safe_token().is_none() && static_.unsafe_token().is_none();
     if !implicit_unsafe {
         return None;
@@ -50,7 +67,11 @@ pub(super) fn static_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &Famou
     Some(())
 }
 
-fn item_hint(config: &InlayHintsConfig<'_>, extern_block: &ast::ExternBlock, token: SyntaxToken) -> InlayHint {
+fn item_hint(
+    config: &InlayHintsConfig<'_>,
+    extern_block: &ast::ExternBlock,
+    token: SyntaxToken,
+) -> InlayHint {
     InlayHint {
         range: token.text_range(),
         position: crate::InlayHintPosition::Before,

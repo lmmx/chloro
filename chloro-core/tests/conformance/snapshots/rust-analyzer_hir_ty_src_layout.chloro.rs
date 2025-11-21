@@ -70,7 +70,8 @@ pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;
 
 pub type TagEncoding = hir_def::layout::TagEncoding<RustcEnumVariantIdx>;
 
-pub type Variants = hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx>;
+pub type Variants =
+    hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx>;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum LayoutError {
@@ -90,7 +91,10 @@ impl std::error::Error for LayoutError {
 }
 
 impl fmt::Display for LayoutError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             LayoutError::BadCalc(err) => err.fallback_fmt(f),
             LayoutError::HasErrorConst => write!(f, "type contains an unevaluatable const"),
@@ -126,7 +130,14 @@ impl<'a> LayoutCx<'a> {
     }
 }
 
-fn layout_of_simd_ty<'db>(db: &'db dyn HirDatabase, id: StructId, repr_packed: bool, args: &GenericArgs<'db>, env: Arc<TraitEnvironment<'db>>, dl: &TargetDataLayout) -> Result<Arc<Layout>, LayoutError> {
+fn layout_of_simd_ty<'db>(
+    db: &'db dyn HirDatabase,
+    id: StructId,
+    repr_packed: bool,
+    args: &GenericArgs<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+    dl: &TargetDataLayout,
+) -> Result<Arc<Layout>, LayoutError> {
     // Supported SIMD vectors are homogeneous ADTs with exactly one array field:
     //
     // * #[repr(simd)] struct S([T; 4])
@@ -147,7 +158,11 @@ fn layout_of_simd_ty<'db>(db: &'db dyn HirDatabase, id: StructId, repr_packed: b
     Ok(Arc::new(cx.calc.simd_type(e_ly, e_len, repr_packed)?))
 }
 
-pub fn layout_of_ty_query<'db>(db: &'db dyn HirDatabase, ty: Ty<'db>, trait_env: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+pub fn layout_of_ty_query<'db>(
+    db: &'db dyn HirDatabase,
+    ty: Ty<'db>,
+    trait_env: Arc<TraitEnvironment<'db>>,
+) -> Result<Arc<Layout>, LayoutError> {
     let krate = trait_env.krate;
     let interner = DbInterner::new_with(db, Some(krate), trait_env.block);
     let Ok(target) = db.target_data_layout(krate) else {
@@ -347,11 +362,18 @@ pub fn layout_of_ty_query<'db>(db: &'db dyn HirDatabase, ty: Ty<'db>, trait_env:
     Ok(Arc::new(result))
 }
 
-pub(crate) fn layout_of_ty_cycle_result<'db>(_: &dyn HirDatabase, _: Ty<'db>, _: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+pub(crate) fn layout_of_ty_cycle_result<'db>(
+    _: &dyn HirDatabase,
+    _: Ty<'db>,
+    _: Arc<TraitEnvironment<'db>>,
+) -> Result<Arc<Layout>, LayoutError> {
     Err(LayoutError::RecursiveTypeWithoutIndirection)
 }
 
-fn struct_tail_erasing_lifetimes<'a>(db: &'a dyn HirDatabase, pointee: Ty<'a>) -> Ty<'a> {
+fn struct_tail_erasing_lifetimes<'a>(
+    db: &'a dyn HirDatabase,
+    pointee: Ty<'a>,
+) -> Ty<'a> {
     match pointee.kind() {
         TyKind::Adt(def, args) => {
             let struct_id = match def.inner().id {
@@ -379,11 +401,19 @@ fn struct_tail_erasing_lifetimes<'a>(db: &'a dyn HirDatabase, pointee: Ty<'a>) -
     }
 }
 
-fn field_ty<'a>(db: &'a dyn HirDatabase, def: hir_def::VariantId, fd: LocalFieldId, args: &GenericArgs<'a>) -> Ty<'a> {
+fn field_ty<'a>(
+    db: &'a dyn HirDatabase,
+    def: hir_def::VariantId,
+    fd: LocalFieldId,
+    args: &GenericArgs<'a>,
+) -> Ty<'a> {
     db.field_types(def)[fd].instantiate(DbInterner::new_with(db, None, None), args)
 }
 
-fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
+fn scalar_unit(
+    dl: &TargetDataLayout,
+    value: Primitive,
+) -> Scalar {
     Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
 }
 

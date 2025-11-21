@@ -54,7 +54,10 @@ pub type Result<T, E = RenameError> = std::result::Result<T, E>;
 pub struct RenameError(pub String);
 
 impl fmt::Display for RenameError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
     }
 }
@@ -77,7 +80,12 @@ pub enum RenameDefinition {
 }
 
 impl Definition {
-    pub fn rename(&self, sema: &Semantics<'_, RootDatabase>, new_name: &str, rename_definition: RenameDefinition) -> Result<SourceChange> {
+    pub fn rename(
+        &self,
+        sema: &Semantics<'_, RootDatabase>,
+        new_name: &str,
+        rename_definition: RenameDefinition,
+    ) -> Result<SourceChange> {
         // self.krate() returns None if
         // self is a built-in attr, built-in type or tool module.
         // it is not allowed for these defs to be renamed.
@@ -115,7 +123,10 @@ impl Definition {
     /// `Definition`. Note that builtin types can't be
     /// renamed and extern crate names will report its range, though a rename will introduce
     /// an alias instead.
-    pub fn range_for_rename(self, sema: &Semantics<'_, RootDatabase>) -> Option<FileRange> {
+    pub fn range_for_rename(
+        self,
+        sema: &Semantics<'_, RootDatabase>,
+    ) -> Option<FileRange> {
         let syn_ctx_is_root = |(range, ctx): (_, SyntaxContext)| ctx.is_root().then_some(range);
         let res = match self {
             Definition::Macro(mac) => {
@@ -233,7 +244,11 @@ impl Definition {
     }
 }
 
-fn rename_mod(sema: &Semantics<'_, RootDatabase>, module: hir::Module, new_name: &str) -> Result<SourceChange> {
+fn rename_mod(
+    sema: &Semantics<'_, RootDatabase>,
+    module: hir::Module,
+    new_name: &str,
+) -> Result<SourceChange> {
     let mut source_change = SourceChange::default();
     if module.is_crate_root() {
         return Ok(source_change);
@@ -317,7 +332,13 @@ fn rename_mod(sema: &Semantics<'_, RootDatabase>, module: hir::Module, new_name:
     Ok(source_change)
 }
 
-fn rename_reference(sema: &Semantics<'_, RootDatabase>, def: Definition, new_name: &str, rename_definition: RenameDefinition, edition: Edition) -> Result<SourceChange> {
+fn rename_reference(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+    new_name: &str,
+    rename_definition: RenameDefinition,
+    edition: Edition,
+) -> Result<SourceChange> {
     let (mut new_name, ident_kind) = IdentifierKind::classify(edition, new_name)?;
     if matches!(
         def,
@@ -378,7 +399,13 @@ fn rename_reference(sema: &Semantics<'_, RootDatabase>, def: Definition, new_nam
     Ok(source_change)
 }
 
-pub fn source_edit_from_references(db: &RootDatabase, references: &[FileReference], def: Definition, new_name: &Name, edition: Edition) -> TextEdit {
+pub fn source_edit_from_references(
+    db: &RootDatabase,
+    references: &[FileReference],
+    def: Definition,
+    new_name: &Name,
+    edition: Edition,
+) -> TextEdit {
     let name_display = new_name.display(db, edition);
     let mut edit = TextEdit::builder();
     // macros can cause multiple refs to occur for the same text range, so keep track of what we have edited so far
@@ -405,7 +432,11 @@ pub fn source_edit_from_references(db: &RootDatabase, references: &[FileReferenc
     edit.finish()
 }
 
-fn source_edit_from_name(edit: &mut TextEditBuilder, name: &ast::Name, new_name: &dyn Display) -> bool {
+fn source_edit_from_name(
+    edit: &mut TextEditBuilder,
+    name: &ast::Name,
+    new_name: &dyn Display,
+) -> bool {
     if ast::RecordPatField::for_field_name(name).is_some()
         && let Some(ident_pat) = name.syntax().parent().and_then(ast::IdentPat::cast)
     {
@@ -421,7 +452,12 @@ fn source_edit_from_name(edit: &mut TextEditBuilder, name: &ast::Name, new_name:
     false
 }
 
-fn source_edit_from_name_ref(edit: &mut TextEditBuilder, name_ref: &ast::NameRef, new_name: &dyn Display, def: Definition) -> bool {
+fn source_edit_from_name_ref(
+    edit: &mut TextEditBuilder,
+    name_ref: &ast::NameRef,
+    new_name: &dyn Display,
+    def: Definition,
+) -> bool {
     if name_ref.super_token().is_some() {
         return true;
     }
@@ -510,7 +546,12 @@ fn source_edit_from_name_ref(edit: &mut TextEditBuilder, name_ref: &ast::NameRef
     false
 }
 
-fn source_edit_from_def(sema: &Semantics<'_, RootDatabase>, def: Definition, new_name: &Name, source_change: &mut SourceChange) -> Result<(FileId, TextEdit)> {
+fn source_edit_from_def(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+    new_name: &Name,
+    source_change: &mut SourceChange,
+) -> Result<(FileId, TextEdit)> {
     let mut edit = TextEdit::builder();
     if let Definition::Local(local) = def {
         let mut file_id = None;
@@ -638,7 +679,10 @@ pub enum IdentifierKind {
 }
 
 impl IdentifierKind {
-    pub fn classify(edition: Edition, new_name: &str) -> Result<(Name, IdentifierKind)> {
+    pub fn classify(
+        edition: Edition,
+        new_name: &str,
+    ) -> Result<(Name, IdentifierKind)> {
         match parser::LexedStr::single_token(edition, new_name) {
             Some(res) => match res {
                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),

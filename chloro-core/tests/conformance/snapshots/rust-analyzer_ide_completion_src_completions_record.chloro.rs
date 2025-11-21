@@ -12,7 +12,11 @@ use crate::{
     context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
 };
 
-pub(crate) fn complete_record_pattern_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) {
+pub(crate) fn complete_record_pattern_fields(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    pattern_ctx: &PatternContext,
+) {
     if let PatternContext { record_pat: Some(record_pat), .. } = pattern_ctx {
         let ty = ctx.sema.type_of_pat(&ast::Pat::RecordPat(record_pat.clone()));
         let missing_fields = match ty.as_ref().and_then(|t| t.original.as_adt()) {
@@ -39,7 +43,12 @@ pub(crate) fn complete_record_pattern_fields(acc: &mut Completions, ctx: &Comple
     }
 }
 
-pub(crate) fn complete_record_expr_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, record_expr: &ast::RecordExpr, &dot_prefix: &bool) {
+pub(crate) fn complete_record_expr_fields(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    record_expr: &ast::RecordExpr,
+    &dot_prefix: &bool,
+) {
     let ty = ctx.sema.type_of_expr(&Expr::RecordExpr(record_expr.clone()));
     let missing_fields = match ty.as_ref().and_then(|t| t.original.as_adt()) {
         Some(hir::Adt::Union(un)) => {
@@ -84,7 +93,11 @@ pub(crate) fn complete_record_expr_fields(acc: &mut Completions, ctx: &Completio
     complete_fields(acc, ctx, missing_fields);
 }
 
-pub(crate) fn add_default_update(acc: &mut Completions, ctx: &CompletionContext<'_>, ty: Option<hir::TypeInfo<'_>>) {
+pub(crate) fn add_default_update(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    ty: Option<hir::TypeInfo<'_>>,
+) {
     let default_trait = ctx.famous_defs().core_default_Default();
     let impls_default_trait = default_trait
         .zip(ty.as_ref())
@@ -109,7 +122,11 @@ pub(crate) fn add_default_update(acc: &mut Completions, ctx: &CompletionContext<
     }
 }
 
-fn complete_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, missing_fields: Vec<(hir::Field, hir::Type<'_>)>) {
+fn complete_fields(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    missing_fields: Vec<(hir::Field, hir::Type<'_>)>,
+) {
     for (field, ty) in missing_fields {
         // This should call something else, we shouldn't be synthesizing a DotAccess here
         acc.add_field(

@@ -12,7 +12,11 @@ use syntax::{AstNode, SyntaxKind, ast};
 use crate::{CompletionItem, Completions, context::CompletionContext};
 
 /// Complete mod declaration, i.e. `mod $0;`
-pub(crate) fn complete_mod(acc: &mut Completions, ctx: &CompletionContext<'_>, mod_under_caret: &ast::Module) -> Option<()> {
+pub(crate) fn complete_mod(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    mod_under_caret: &ast::Module,
+) -> Option<()> {
     if mod_under_caret.item_list().is_some() {
         return None;
     }
@@ -98,7 +102,11 @@ pub(crate) fn complete_mod(acc: &mut Completions, ctx: &CompletionContext<'_>, m
     Some(())
 }
 
-fn directory_to_look_for_submodules(module: Module, db: &RootDatabase, module_file_path: &VfsPath) -> Option<VfsPath> {
+fn directory_to_look_for_submodules(
+    module: Module,
+    db: &RootDatabase,
+    module_file_path: &VfsPath,
+) -> Option<VfsPath> {
     let directory_with_module_path = module_file_path.parent()?;
     let (name, ext) = module_file_path.name_and_extension()?;
     if ext != Some("rs") {
@@ -130,7 +138,10 @@ fn directory_to_look_for_submodules(module: Module, db: &RootDatabase, module_fi
         .try_fold(base_directory, |path, name| path.join(name.as_str()))
 }
 
-fn module_chain_to_containing_module_file(current_module: Module, db: &RootDatabase) -> Vec<Module> {
+fn module_chain_to_containing_module_file(
+    current_module: Module,
+    db: &RootDatabase,
+) -> Vec<Module> {
     let mut path =
         iter::successors(Some(current_module), |current_module| current_module.parent(db))
             .take_while(|current_module| current_module.is_inline(db))

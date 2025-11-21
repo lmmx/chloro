@@ -47,7 +47,12 @@ pub struct DocumentationLinks {
 
 
 /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
-pub(crate) fn rewrite_links(db: &RootDatabase, markdown: &str, definition: Definition, range_map: Option<DocsRangeMap>) -> String {
+pub(crate) fn rewrite_links(
+    db: &RootDatabase,
+    markdown: &str,
+    definition: Definition,
+    range_map: Option<DocsRangeMap>,
+) -> String {
     let mut cb = broken_link_clone_cb;
     let doc = Parser::new_with_broken_link_callback(markdown, MARKDOWN_OPTIONS, Some(&mut cb))
         .into_offset_iter();
@@ -124,7 +129,12 @@ pub(crate) fn remove_links(markdown: &str) -> String {
     out
 }
 
-pub(crate) fn external_docs(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition, target_dir: Option<&str>, sysroot: Option<&str>) -> Option<DocumentationLinks> {
+pub(crate) fn external_docs(
+    db: &RootDatabase,
+    FilePosition { file_id, offset }: FilePosition,
+    target_dir: Option<&str>,
+    sysroot: Option<&str>,
+) -> Option<DocumentationLinks> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
     let token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
@@ -179,7 +189,13 @@ pub(crate) fn extract_definitions_from_docs(docs: &Documentation) -> Vec<(TextRa
     .collect()
 }
 
-pub(crate) fn resolve_doc_path_for_def(db: &dyn HirDatabase, def: Definition, link: &str, ns: Option<hir::Namespace>, is_inner_doc: bool) -> Option<Definition> {
+pub(crate) fn resolve_doc_path_for_def(
+    db: &dyn HirDatabase,
+    def: Definition,
+    link: &str,
+    ns: Option<hir::Namespace>,
+    is_inner_doc: bool,
+) -> Option<Definition> {
     match def {
         Definition::Module(it) => it.resolve_doc_path(db, link, ns, is_inner_doc),
         Definition::Crate(it) => it.resolve_doc_path(db, link, ns, is_inner_doc),
@@ -209,7 +225,10 @@ pub(crate) fn resolve_doc_path_for_def(db: &dyn HirDatabase, def: Definition, li
     .map(Definition::from)
 }
 
-pub(crate) fn doc_attributes(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode) -> Option<(hir::AttrsWithOwner, Definition)> {
+pub(crate) fn doc_attributes(
+    sema: &Semantics<'_, RootDatabase>,
+    node: &SyntaxNode,
+) -> Option<(hir::AttrsWithOwner, Definition)> {
     match_ast! {
         match node {
             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.attrs(sema.db), Definition::from(def))),
@@ -256,7 +275,12 @@ pub(crate) fn token_as_doc_comment(doc_token: &SyntaxToken) -> Option<DocComment
 }
 
 impl DocCommentToken {
-    pub(crate) fn get_definition_with_descend_at<T>(self, sema: &Semantics<'_, RootDatabase>, offset: TextSize, mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>) -> Option<T> {
+    pub(crate) fn get_definition_with_descend_at<T>(
+        self,
+        sema: &Semantics<'_, RootDatabase>,
+        offset: TextSize,
+        mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>,
+    ) -> Option<T> {
         let DocCommentToken { prefix_len, doc_token } = self;
         // offset relative to the comments contents
         let original_start = doc_token.text_range().start();
@@ -302,7 +326,11 @@ impl DocCommentToken {
     ///    //! [`S$0`]
     /// }
     /// ```
-    fn doc_attributes(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode, is_inner_doc: bool) -> Option<(AttrsWithOwner, Definition)> {
+    fn doc_attributes(
+        sema: &Semantics<'_, RootDatabase>,
+        node: &SyntaxNode,
+        is_inner_doc: bool,
+    ) -> Option<(AttrsWithOwner, Definition)> {
         if is_inner_doc && node.kind() != SOURCE_FILE {
             let parent = node.parent()?;
             doc_attributes(sema, &parent).or(doc_attributes(sema, &parent.parent()?))
@@ -316,7 +344,12 @@ fn broken_link_clone_cb(link: BrokenLink<'_>) -> Option<(CowStr<'_>, CowStr<'_>)
     Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
 }
 
-fn get_doc_links(db: &RootDatabase, def: Definition, target_dir: Option<&str>, sysroot: Option<&str>) -> DocumentationLinks {
+fn get_doc_links(
+    db: &RootDatabase,
+    def: Definition,
+    target_dir: Option<&str>,
+    sysroot: Option<&str>,
+) -> DocumentationLinks {
     let join_url = |base_url: Option<Url>, path: &str| -> Option<Url> {
         base_url.and_then(|url| url.join(path).ok())
     };
@@ -343,7 +376,14 @@ fn get_doc_links(db: &RootDatabase, def: Definition, target_dir: Option<&str>, s
     }
 }
 
-fn rewrite_intra_doc_link(db: &RootDatabase, def: Definition, target: &str, title: &str, is_inner_doc: bool, link_type: LinkType) -> Option<(String, String)> {
+fn rewrite_intra_doc_link(
+    db: &RootDatabase,
+    def: Definition,
+    target: &str,
+    title: &str,
+    is_inner_doc: bool,
+    link_type: LinkType,
+) -> Option<(String, String)> {
     let (link, ns) = parse_intra_doc_link(target);
     let (link, anchor) = match link.split_once('#') {
         Some((new_link, anchor)) => (new_link, Some(anchor)),
@@ -375,7 +415,11 @@ fn rewrite_intra_doc_link(db: &RootDatabase, def: Definition, target: &str, titl
 }
 
 /// Try to resolve path to local documentation via path-based links (i.e. `../gateway/struct.Shard.html`).
-fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<String> {
+fn rewrite_url_link(
+    db: &RootDatabase,
+    def: Definition,
+    target: &str,
+) -> Option<String> {
     if !(target.contains('#') || target.contains(".html")) {
         return None;
     }
@@ -389,7 +433,10 @@ fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<
     url.join(target).ok().map(Into::into)
 }
 
-fn mod_path_of_def(db: &RootDatabase, def: Definition) -> Option<String> {
+fn mod_path_of_def(
+    db: &RootDatabase,
+    def: Definition,
+) -> Option<String> {
     def.canonical_module_path(db).map(|it| {
         let mut path = String::new();
         it.flat_map(|it| it.name(db)).for_each(|name| format_to!(path, "{}/", name.as_str()));
@@ -398,7 +445,10 @@ fn mod_path_of_def(db: &RootDatabase, def: Definition) -> Option<String> {
 }
 
 /// Rewrites a markdown document, applying 'callback' to each link.
-fn map_links<'e>(events: impl Iterator<Item = (Event<'e>, Range<usize>)>, callback: impl Fn(&str, &str, Range<usize>, LinkType) -> (Option<LinkType>, String, String)) -> impl Iterator<Item = Event<'e>> {
+fn map_links<'e>(
+    events: impl Iterator<Item = (Event<'e>, Range<usize>)>,
+    callback: impl Fn(&str, &str, Range<usize>, LinkType) -> (Option<LinkType>, String, String),
+) -> impl Iterator<Item = Event<'e>> {
     let mut in_link = false;
     // holds the origin link target on start event and the rewritten one on end event
     let mut end_link_target: Option<CowStr<'_>> = None;
@@ -451,7 +501,12 @@ fn map_links<'e>(events: impl Iterator<Item = (Event<'e>, Range<usize>)>, callba
 /// file:///project/root/target/doc/std/iter/trait.Iterator.html#tymethod.next
 /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 /// ```
-fn get_doc_base_urls(db: &RootDatabase, def: Definition, target_dir: Option<&str>, sysroot: Option<&str>) -> (Option<Url>, Option<Url>) {
+fn get_doc_base_urls(
+    db: &RootDatabase,
+    def: Definition,
+    target_dir: Option<&str>,
+    sysroot: Option<&str>,
+) -> (Option<Url>, Option<Url>) {
     let local_doc = target_dir
         .and_then(|path| Url::parse(&format!("file:///{path}/")).ok())
         .and_then(|it| it.join("doc/").ok());
@@ -537,7 +592,10 @@ fn get_doc_base_urls(db: &RootDatabase, def: Definition, target_dir: Option<&str
 /// https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
 ///                                    ^^^^^^^^^^^^^^^^^^^
 /// ```
-fn filename_and_frag_for_def(db: &dyn HirDatabase, def: Definition) -> Option<(Definition, String, Option<String>)> {
+fn filename_and_frag_for_def(
+    db: &dyn HirDatabase,
+    def: Definition,
+) -> Option<(Definition, String, Option<String>)> {
     if let Some(assoc_item) = def.as_assoc_item(db) {
         let def = match assoc_item.container(db) {
             AssocItemContainer::Trait(t) => t.into(),
@@ -642,7 +700,10 @@ fn filename_and_frag_for_def(db: &dyn HirDatabase, def: Definition) -> Option<(D
 /// https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
 ///                                                       ^^^^^^^^^^^^^^
 /// ```
-fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
+fn get_assoc_item_fragment(
+    db: &dyn HirDatabase,
+    assoc_item: hir::AssocItem,
+) -> Option<String> {
     Some(match assoc_item {
         AssocItem::Function(function) => {
             let is_trait_method =

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1224 bytes
-Chloro size:   1075 bytes
+Chloro size:   1086 bytes
 Rustfmt size:  1224 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,9 @@ Rustfmt size:  1224 bytes
 -// Diagnostic: unresolved-extern-crate
 -//
 -// This diagnostic is triggered if rust-analyzer is unable to discover referred extern crate.
--pub(crate) fn unresolved_extern_crate(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnresolvedExternCrate,
--) -> Diagnostic {
-+pub(crate) fn unresolved_extern_crate(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedExternCrate) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("unresolved-extern-crate"),
+ pub(crate) fn unresolved_extern_crate(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnresolvedExternCrate,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

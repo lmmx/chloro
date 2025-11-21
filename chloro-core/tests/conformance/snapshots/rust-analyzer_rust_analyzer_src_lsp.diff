@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5113 bytes
-Chloro size:   5106 bytes
+Chloro size:   5163 bytes
 Rustfmt size:  5253 bytes
 
 ✗ Outputs DIFFER
@@ -21,14 +21,29 @@ Rustfmt size:  5253 bytes
  pub(crate) mod utils;
  
  #[derive(Debug)]
+ }
+ 
+ impl LspError {
+-    pub(crate) fn new(code: i32, message: String) -> LspError {
++    pub(crate) fn new(
++        code: i32,
++        message: String,
++    ) -> LspError {
+         LspError { code, message }
+     }
+ }
  
  impl fmt::Display for LspError {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 -        write!(
 -            f,
 -            "Language Server request failed with {}. ({})",
 -            self.code, self.message
 -        )
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
 +        write!(f, "Language Server request failed with {}. ({})", self.code, self.message)
      }
  }
@@ -37,8 +52,14 @@ Rustfmt size:  5253 bytes
 +impl std::error::Error for LspError {
 +}
  
- pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: bool) -> [u8; 20] {
+-pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: bool) -> [u8; 20] {
++pub(crate) fn completion_item_hash(
++    item: &CompletionItem,
++    is_ref_completion: bool,
++) -> [u8; 20] {
      fn hash_completion_relevance(hasher: &mut TentHash, relevance: &CompletionRelevance) {
+         use ide_completion::{
+             CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,
  
          hasher.update([u8::from(relevance.trait_.is_some())]);
          if let Some(trait_) = &relevance.trait_ {

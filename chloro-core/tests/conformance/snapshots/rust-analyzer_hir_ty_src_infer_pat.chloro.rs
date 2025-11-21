@@ -27,7 +27,16 @@ impl<'db> InferenceContext<'_, 'db> {
     /// Infers type for tuple struct pattern or its corresponding assignee expression.
     ///
     /// Ellipses found in the original pattern or expression must be filtered out.
-    pub(super) fn infer_tuple_struct_pat_like(&mut self, path: Option<&Path>, expected: Ty<'db>, default_bm: BindingMode, id: PatId, ellipsis: Option<u32>, subs: &[PatId], decl: Option<DeclContext>) -> Ty<'db> {
+    pub(super) fn infer_tuple_struct_pat_like(
+        &mut self,
+        path: Option<&Path>,
+        expected: Ty<'db>,
+        default_bm: BindingMode,
+        id: PatId,
+        ellipsis: Option<u32>,
+        subs: &[PatId],
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let (ty, def) = self.resolve_variant(id.into(), path, true);
         let var_data = def.map(|it| it.fields(self.db));
         if let Some(variant) = def {
@@ -97,7 +106,15 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// Infers type for record pattern or its corresponding assignee expression.
-    pub(super) fn infer_record_pat_like(&mut self, path: Option<&Path>, expected: Ty<'db>, default_bm: BindingMode, id: PatId, subs: impl ExactSizeIterator<Item = (Name, PatId)>, decl: Option<DeclContext>) -> Ty<'db> {
+    pub(super) fn infer_record_pat_like(
+        &mut self,
+        path: Option<&Path>,
+        expected: Ty<'db>,
+        default_bm: BindingMode,
+        id: PatId,
+        subs: impl ExactSizeIterator<Item = (Name, PatId)>,
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let (ty, def) = self.resolve_variant(id.into(), path, false);
         if let Some(variant) = def {
             self.write_variant_resolution(id.into(), variant);
@@ -159,7 +176,14 @@ impl<'db> InferenceContext<'_, 'db> {
     /// Infers type for tuple pattern or its corresponding assignee expression.
     ///
     /// Ellipses found in the original pattern or expression must be filtered out.
-    pub(super) fn infer_tuple_pat_like(&mut self, expected: Ty<'db>, default_bm: BindingMode, ellipsis: Option<u32>, subs: &[PatId], decl: Option<DeclContext>) -> Ty<'db> {
+    pub(super) fn infer_tuple_pat_like(
+        &mut self,
+        expected: Ty<'db>,
+        default_bm: BindingMode,
+        ellipsis: Option<u32>,
+        subs: &[PatId],
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let expected = self.table.structurally_resolve_type(expected);
         let expectations = match expected.kind() {
             TyKind::Tuple(parameters) => parameters,
@@ -188,11 +212,22 @@ impl<'db> InferenceContext<'_, 'db> {
 
     /// The resolver needs to be updated to the surrounding expression when inside assignment
     /// (because there, `Pat::Path` can refer to a variable).
-    pub(super) fn infer_top_pat(&mut self, pat: PatId, expected: Ty<'db>, decl: Option<DeclContext>) {
+    pub(super) fn infer_top_pat(
+        &mut self,
+        pat: PatId,
+        expected: Ty<'db>,
+        decl: Option<DeclContext>,
+    ) {
         self.infer_pat(pat, expected, BindingMode::default(), decl);
     }
 
-    fn infer_pat(&mut self, pat: PatId, expected: Ty<'db>, mut default_bm: BindingMode, decl: Option<DeclContext>) -> Ty<'db> {
+    fn infer_pat(
+        &mut self,
+        pat: PatId,
+        expected: Ty<'db>,
+        mut default_bm: BindingMode,
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let mut expected = self.table.structurally_resolve_type(expected);
         if matches!(&self.body[pat], Pat::Ref { .. }) || self.inside_assignment {
             cov_mark::hit!(match_ergonomics_ref);
@@ -361,7 +396,10 @@ impl<'db> InferenceContext<'_, 'db> {
         self.pat_ty_after_adjustment(pat)
     }
 
-    fn pat_ty_after_adjustment(&self, pat: PatId) -> Ty<'db> {
+    fn pat_ty_after_adjustment(
+        &self,
+        pat: PatId,
+    ) -> Ty<'db> {
         *self
             .result
             .pat_adjustments
@@ -370,7 +408,14 @@ impl<'db> InferenceContext<'_, 'db> {
             .unwrap_or(&self.result.type_of_pat[pat])
     }
 
-    fn infer_ref_pat(&mut self, inner_pat: PatId, mutability: Mutability, expected: Ty<'db>, default_bm: BindingMode, decl: Option<DeclContext>) -> Ty<'db> {
+    fn infer_ref_pat(
+        &mut self,
+        inner_pat: PatId,
+        mutability: Mutability,
+        expected: Ty<'db>,
+        default_bm: BindingMode,
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let (expectation_type, expectation_lt) = match expected.kind() {
             TyKind::Ref(lifetime, inner_ty, _exp_mut) => (inner_ty, lifetime),
             _ => {
@@ -386,7 +431,15 @@ impl<'db> InferenceContext<'_, 'db> {
         Ty::new_ref(self.interner(), expectation_lt, subty, mutability)
     }
 
-    fn infer_bind_pat(&mut self, pat: PatId, binding: BindingId, default_bm: BindingMode, subpat: Option<PatId>, expected: Ty<'db>, decl: Option<DeclContext>) -> Ty<'db> {
+    fn infer_bind_pat(
+        &mut self,
+        pat: PatId,
+        binding: BindingId,
+        default_bm: BindingMode,
+        subpat: Option<PatId>,
+        expected: Ty<'db>,
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let Binding { mode, .. } = self.body[binding];
         let mode = if mode == BindingAnnotation::Unannotated {
             default_bm
@@ -411,7 +464,15 @@ impl<'db> InferenceContext<'_, 'db> {
         inner_ty
     }
 
-    fn infer_slice_pat(&mut self, expected: Ty<'db>, prefix: &[PatId], slice: Option<PatId>, suffix: &[PatId], default_bm: BindingMode, decl: Option<DeclContext>) -> Ty<'db> {
+    fn infer_slice_pat(
+        &mut self,
+        expected: Ty<'db>,
+        prefix: &[PatId],
+        slice: Option<PatId>,
+        suffix: &[PatId],
+        default_bm: BindingMode,
+        decl: Option<DeclContext>,
+    ) -> Ty<'db> {
         let expected = self.table.structurally_resolve_type(expected);
         // If `expected` is an infer ty, we try to equate it to an array if the given pattern
         // allows it. See issue #16609
@@ -454,7 +515,11 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn infer_lit_pat(&mut self, expr: ExprId, expected: Ty<'db>) -> Ty<'db> {
+    fn infer_lit_pat(
+        &mut self,
+        expr: ExprId,
+        expected: Ty<'db>,
+    ) -> Ty<'db> {
         // Like slice patterns, byte string patterns can denote both `&[u8; N]` and `&[u8]`.
         if let Expr::Literal(Literal::ByteString(_)) = self.body[expr]
             && let TyKind::Ref(_, inner, _) = expected.kind()
@@ -472,7 +537,11 @@ impl<'db> InferenceContext<'_, 'db> {
         self.infer_expr(expr, &Expectation::has_type(expected), ExprIsRead::Yes)
     }
 
-    fn is_non_ref_pat(&mut self, body: &hir_def::expr_store::Body, pat: PatId) -> bool {
+    fn is_non_ref_pat(
+        &mut self,
+        body: &hir_def::expr_store::Body,
+        pat: PatId,
+    ) -> bool {
         match &body[pat] {
             Pat::Tuple { .. }
             | Pat::TupleStruct { .. }
@@ -499,7 +568,12 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn try_resolve_slice_ty_to_array_ty(&mut self, before: &[PatId], suffix: &[PatId], slice: Option<PatId>) -> Option<Ty<'db>> {
+    fn try_resolve_slice_ty_to_array_ty(
+        &mut self,
+        before: &[PatId],
+        suffix: &[PatId],
+        slice: Option<PatId>,
+    ) -> Option<Ty<'db>> {
         if slice.is_some() {
             return None;
         }
@@ -540,12 +614,18 @@ impl<'db> InferenceContext<'_, 'db> {
     ///
     /// If we're in an irrefutable pattern we prefer the array impl candidate given that
     /// the slice impl candidate would be rejected anyway (if no ambiguity existed).
-    fn pat_is_irrefutable(&self, decl_ctxt: Option<DeclContext>) -> bool {
+    fn pat_is_irrefutable(
+        &self,
+        decl_ctxt: Option<DeclContext>,
+    ) -> bool {
         matches!(decl_ctxt, Some(DeclContext { origin: DeclOrigin::LocalDecl { has_else: false } }))
     }
 }
 
-pub(super) fn contains_explicit_ref_binding(body: &Body, pat_id: PatId) -> bool {
+pub(super) fn contains_explicit_ref_binding(
+    body: &Body,
+    pat_id: PatId,
+) -> bool {
     let mut res = false;
     body.walk_pats(pat_id, &mut |pat| {
         res |= matches!(body[pat], Pat::Bind { id, .. } if body[id].mode == BindingAnnotation::Ref);

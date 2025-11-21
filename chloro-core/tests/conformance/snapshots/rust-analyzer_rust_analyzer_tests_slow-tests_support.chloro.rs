@@ -56,12 +56,18 @@ impl Project<'_> {
         }
     }
 
-    pub(crate) fn tmp_dir(mut self, tmp_dir: TestDir) -> Self {
+    pub(crate) fn tmp_dir(
+        mut self,
+        tmp_dir: TestDir,
+    ) -> Self {
         self.tmp_dir = Some(tmp_dir);
         self
     }
 
-    pub(crate) fn root(mut self, path: &str) -> Self {
+    pub(crate) fn root(
+        mut self,
+        path: &str,
+    ) -> Self {
         self.roots.push(path.into());
         self
     }
@@ -71,7 +77,10 @@ impl Project<'_> {
         self
     }
 
-    pub(crate) fn with_config(mut self, config: serde_json::Value) -> Self {
+    pub(crate) fn with_config(
+        mut self,
+        config: serde_json::Value,
+    ) -> Self {
         fn merge(dst: &mut serde_json::Value, src: serde_json::Value) {
             match (dst, src) {
                 (Value::Object(dst), Value::Object(src)) => {
@@ -134,7 +143,10 @@ impl Project<'_> {
     /// if there is a path to config dir in the test fixture. However, in certain cases we create a
     /// file in the config dir after server is run, something where our naive approach comes short.
     /// Using a `prelock` allows us to force a lock when we know we need it.
-    pub(crate) fn server_with_lock(self, config_lock: bool) -> Server {
+    pub(crate) fn server_with_lock(
+        self,
+        config_lock: bool,
+    ) -> Server {
         static CONFIG_DIR_LOCK: Mutex<()> = Mutex::new(());
         let config_dir_guard = if config_lock {
             Some({
@@ -279,7 +291,11 @@ pub(crate) struct Server {
 }
 
 impl Server {
-    fn new(config_dir_guard: Option<(MutexGuard<'static, ()>, TestDir)>, dir: TestDir, config: Config) -> Server {
+    fn new(
+        config_dir_guard: Option<(MutexGuard<'static, ()>, TestDir)>,
+        dir: TestDir,
+        config: Config,
+    ) -> Server {
         let (connection, client) = Connection::memory();
         let _thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "test server")
             .spawn(move || main_loop(config, connection).unwrap())
@@ -294,12 +310,18 @@ impl Server {
         }
     }
 
-    pub(crate) fn doc_id(&self, rel_path: &str) -> TextDocumentIdentifier {
+    pub(crate) fn doc_id(
+        &self,
+        rel_path: &str,
+    ) -> TextDocumentIdentifier {
         let path = self.dir.path().join(rel_path);
         TextDocumentIdentifier { uri: Url::from_file_path(path).unwrap() }
     }
 
-    pub(crate) fn notification<N>(&self, params: N::Params)
+    pub(crate) fn notification<N>(
+        &self,
+        params: N::Params,
+    )
     where
         N: lsp_types::notification::Notification,
         N::Params: Serialize, {
@@ -308,7 +330,11 @@ impl Server {
     }
 
     #[track_caller]
-    pub(crate) fn request<R>(&self, params: R::Params, expected_resp: Value)
+    pub(crate) fn request<R>(
+        &self,
+        params: R::Params,
+        expected_resp: Value,
+    )
     where
         R: lsp_types::request::Request,
         R::Params: Serialize, {
@@ -325,7 +351,10 @@ impl Server {
     }
 
     #[track_caller]
-    pub(crate) fn send_request<R>(&self, params: R::Params) -> Value
+    pub(crate) fn send_request<R>(
+        &self,
+        params: R::Params,
+    ) -> Value
     where
         R: lsp_types::request::Request,
         R::Params: Serialize, {
@@ -336,7 +365,10 @@ impl Server {
     }
 
     #[track_caller]
-    fn send_request_(&self, r: Request) -> Value {
+    fn send_request_(
+        &self,
+        r: Request,
+    ) -> Value {
         let id = r.id.clone();
         self.client.sender.send(r.clone().into()).unwrap();
         while let Some(msg) = self.recv().unwrap_or_else(|Timeout| panic!("timeout: {r:?}")) {
@@ -384,7 +416,11 @@ impl Server {
         self
     }
 
-    fn wait_for_message_cond(&self, n: usize, cond: &dyn Fn(&Message) -> bool) -> Result<(), Timeout> {
+    fn wait_for_message_cond(
+        &self,
+        n: usize,
+        cond: &dyn Fn(&Message) -> bool,
+    ) -> Result<(), Timeout> {
         let mut total = 0;
         for msg in self.messages.borrow().iter() {
             if cond(msg) {
@@ -408,7 +444,10 @@ impl Server {
         Ok(msg)
     }
 
-    fn send_notification(&self, not: Notification) {
+    fn send_notification(
+        &self,
+        not: Notification,
+    ) {
         self.client.sender.send(Message::Notification(not)).unwrap();
     }
 
@@ -416,7 +455,11 @@ impl Server {
         self.dir.path()
     }
 
-    pub(crate) fn write_file_and_save(&self, path: &str, text: String) {
+    pub(crate) fn write_file_and_save(
+        &self,
+        path: &str,
+        text: String,
+    ) {
         fs::write(self.dir.path().join(path), &text).unwrap();
         self.notification::<lsp_types::notification::DidSaveTextDocument>(
             lsp_types::DidSaveTextDocumentParams {
@@ -449,7 +492,10 @@ fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout
 /// You can use `[..]` wildcard in strings (useful for OS dependent things such
 /// as paths). You can use a `"{...}"` string literal as a wildcard for
 /// arbitrary nested JSON. Arrays are sorted before comparison.
-fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Value, &'a Value)> {
+fn find_mismatch<'a>(
+    expected: &'a Value,
+    actual: &'a Value,
+) -> Option<(&'a Value, &'a Value)> {
     match (expected, actual) {
         (Value::Number(l), Value::Number(r)) if l == r => None,
         (Value::Bool(l), Value::Bool(r)) if l == r => None,
@@ -505,7 +551,10 @@ fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Valu
 /// Compare a line with an expected pattern.
 /// - Use `[..]` as a wildcard to match 0 or more characters on the same line
 ///   (similar to `.*` in a regex).
-fn lines_match(expected: &str, actual: &str) -> bool {
+fn lines_match(
+    expected: &str,
+    actual: &str,
+) -> bool {
     // Let's not deal with / vs \ (windows...)
     // First replace backslash-escaped backslashes with forward slashes
     // which can occur in, for example, JSON output

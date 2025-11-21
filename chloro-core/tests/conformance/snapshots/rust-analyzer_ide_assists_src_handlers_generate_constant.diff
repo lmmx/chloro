@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7346 bytes
+Chloro size:   7391 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -44,7 +44,11 @@ Rustfmt size:  8317 bytes
 -// ```
 +use crate::assist_context::{AssistContext, Assists};
  
- pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_constant(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let constant_token = ctx.find_node_at_offset::<ast::NameRef>()?;
 -    if constant_token
 -        .to_string()
@@ -131,13 +135,9 @@ Rustfmt size:  8317 bytes
 +    })
  }
  
--fn get_text_for_generate_constant(
--    mut not_exist_name_ref: Vec<NameRef>,
--    indent: IndentLevel,
--    outer_exists: bool,
--    type_name: String,
--) -> Option<String> {
-+fn get_text_for_generate_constant(mut not_exist_name_ref: Vec<NameRef>, indent: IndentLevel, outer_exists: bool, type_name: String) -> Option<String> {
+ fn get_text_for_generate_constant(
+     type_name: String,
+ ) -> Option<String> {
      let constant_token = not_exist_name_ref.pop()?;
 -    let vis = if not_exist_name_ref.is_empty() && !outer_exists {
 -        ""
@@ -156,18 +156,6 @@ Rustfmt size:  8317 bytes
          text = text.replace('\n', "\n    ");
          text = format!("{vis}mod {name_ref} {{{text}\n}}");
      }
-     Some(text.replace('\n', &format!("\n{indent}")))
- }
- 
--fn target_data_for_generate_constant(
--    ctx: &AssistContext<'_>,
--    current_module: Module,
--    constant_module: Module,
--) -> Option<(TextSize, IndentLevel, Option<FileId>, String)> {
-+fn target_data_for_generate_constant(ctx: &AssistContext<'_>, current_module: Module, constant_module: Module) -> Option<(TextSize, IndentLevel, Option<FileId>, String)> {
-     if current_module == constant_module {
-         // insert in current file
-         return None;
              let siblings_has_newline = l_curly_token
                  .siblings_with_tokens(Direction::Next)
                  .any(|it| it.kind() == SyntaxKind::WHITESPACE && it.to_string().contains('\n'));

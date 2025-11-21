@@ -17,7 +17,10 @@ use crate::{
     },
 };
 
-pub(crate) fn replace_derive_with_manual_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_derive_with_manual_impl(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let attr = ctx.find_node_at_offset_with_descend::<ast::Attr>()?;
     let path = attr.path()?;
     let macro_file = ctx.sema.hir_file_for(attr.syntax()).macro_file()?;
@@ -81,7 +84,17 @@ pub(crate) fn replace_derive_with_manual_impl(acc: &mut Assists, ctx: &AssistCon
     Some(())
 }
 
-fn add_assist(acc: &mut Assists, ctx: &AssistContext<'_>, attr: &ast::Attr, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, replace_trait_path: &ast::Path, trait_: Option<hir::Trait>, adt: &ast::Adt) -> Option<()> {
+fn add_assist(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    attr: &ast::Attr,
+    old_derives: &[ast::Path],
+    old_tree: &ast::TokenTree,
+    old_trait_path: &ast::Path,
+    replace_trait_path: &ast::Path,
+    trait_: Option<hir::Trait>,
+    adt: &ast::Adt,
+) -> Option<()> {
     let target = attr.syntax().text_range();
     let annotated_name = adt.name()?;
     let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
@@ -139,7 +152,15 @@ fn add_assist(acc: &mut Assists, ctx: &AssistContext<'_>, attr: &ast::Attr, old_
     })
 }
 
-fn impl_def_from_trait(sema: &hir::Semantics<'_, ide_db::RootDatabase>, config: &AssistConfig, adt: &ast::Adt, annotated_name: &ast::Name, trait_: Option<hir::Trait>, trait_path: &ast::Path, impl_is_unsafe: bool) -> Option<ast::Impl> {
+fn impl_def_from_trait(
+    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
+    config: &AssistConfig,
+    adt: &ast::Adt,
+    annotated_name: &ast::Name,
+    trait_: Option<hir::Trait>,
+    trait_path: &ast::Path,
+    impl_is_unsafe: bool,
+) -> Option<ast::Impl> {
     let trait_ = trait_?;
     let target_scope = sema.scope(annotated_name.syntax())?;
     // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
@@ -182,7 +203,13 @@ fn impl_def_from_trait(sema: &hir::Semantics<'_, ide_db::RootDatabase>, config: 
     Some(impl_def)
 }
 
-fn update_attribute(editor: &mut SyntaxEditor, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, attr: &ast::Attr) {
+fn update_attribute(
+    editor: &mut SyntaxEditor,
+    old_derives: &[ast::Path],
+    old_tree: &ast::TokenTree,
+    old_trait_path: &ast::Path,
+    attr: &ast::Attr,
+) {
     let new_derives = old_derives
         .iter()
         .filter(|t| t.to_string() != old_trait_path.to_string())

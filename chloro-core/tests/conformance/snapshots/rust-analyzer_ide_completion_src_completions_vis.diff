@@ -2,22 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1436 bytes
-Chloro size:   1417 bytes
+Chloro size:   1436 bytes
 Rustfmt size:  1436 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
-     context::{CompletionContext, PathCompletionCtx, Qualified},
- };
- 
--pub(crate) fn complete_vis_path(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
--    &has_in_token: &bool,
--) {
-+pub(crate) fn complete_vis_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, &has_in_token: &bool) {
-     match qualified {
-         Qualified::With {
-             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
+✓ Outputs are IDENTICAL

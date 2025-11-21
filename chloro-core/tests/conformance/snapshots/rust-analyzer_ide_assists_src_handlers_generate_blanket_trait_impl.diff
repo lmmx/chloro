@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31919 bytes
-Chloro size:   31205 bytes
+Chloro size:   31293 bytes
 Rustfmt size:  31919 bytes
 
 ✗ Outputs DIFFER
@@ -56,16 +56,15 @@ Rustfmt size:  31919 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_blanket_trait_impl(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
 +use crate::{
 +    AssistConfig,
 +    assist_context::{AssistContext, Assists},
 +};
 +
-+pub(crate) fn generate_blanket_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn generate_blanket_trait_impl(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let name = ctx.find_node_at_offset::<ast::Name>()?;
      let traitd = ast::Trait::cast(name.syntax().parent()?)?;
 -
@@ -84,13 +83,50 @@ Rustfmt size:  31919 bytes
      Some(())
  }
  
- fn super_traits_has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<bool> {
+-fn existing_any_impl(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Impl> {
++fn existing_any_impl(
++    traitd: &ast::Trait,
++    sema: &Semantics<'_, RootDatabase>,
++) -> Option<hir::Impl> {
+     let db = sema.db;
+     let traitd = sema.to_def(traitd)?;
+     traitd
+         .find(|impl_| impl_.trait_(db).is_some_and(|it| it == traitd))
+ }
+ 
+-fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
++fn has_sized(
++    traitd: &ast::Trait,
++    sema: &Semantics<'_, RootDatabase>,
++) -> bool {
+     if let Some(sized) = find_bound("Sized", traitd.type_bound_list()) {
+         sized.question_mark_token().is_none()
+     } else if let Some(is_sized) = where_clause_sized(traitd.where_clause()) {
+     }
+ }
+ 
+-fn super_traits_has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<bool> {
++fn super_traits_has_sized(
++    traitd: &ast::Trait,
++    sema: &Semantics<'_, RootDatabase>,
++) -> Option<bool> {
      let traitd = sema.to_def(traitd)?;
      let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
 -
      Some(traitd.all_supertraits(sema.db).contains(&sized))
  }
  
+     })
+ }
+ 
+-fn apply_sized(has_sized: bool, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBoundList> {
++fn apply_sized(
++    has_sized: bool,
++    bounds: Option<ast::TypeBoundList>,
++) -> Option<ast::TypeBoundList> {
+     if has_sized {
+         return bounds;
+     }
  
  fn this_name(traitd: &ast::Trait) -> ast::Name {
      let has_iter = find_bound("Iterator", traitd.type_bound_list()).is_some();
@@ -108,6 +144,33 @@ Rustfmt size:  31919 bytes
      make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
  }
  
+-fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {
++fn find_bound(
++    s: &str,
++    bounds: Option<ast::TypeBoundList>,
++) -> Option<ast::TypeBound> {
+     bounds.into_iter().flat_map(|bounds| bounds.bounds()).find(|bound| ty_bound_is(bound, s))
+ }
+ 
+-fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
++fn ty_bound_is(
++    bound: &ast::TypeBound,
++    s: &str,
++) -> bool {
+     matches!(bound.ty(),
+         Some(ast::Type::PathType(ty)) if ty.path()
+             .and_then(|path| path.segment())
+             .is_some_and(|name| name.text() == s))
+ }
+ 
+-fn todo_fn(f: &ast::Fn, config: &AssistConfig) -> ast::Fn {
++fn todo_fn(
++    f: &ast::Fn,
++    config: &AssistConfig,
++) -> ast::Fn {
+     let params = f.param_list().unwrap_or_else(|| make::param_list(None, None));
+     make::fn_(
+         cfg_attrs(f),
  
  #[cfg(test)]
  mod test {

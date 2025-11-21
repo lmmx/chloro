@@ -131,7 +131,10 @@ pub(super) fn patch_json_for_outdated_configs(json: &mut Value) {
     }
 }
 
-fn merge(dst: &mut Value, src: Value) {
+fn merge(
+    dst: &mut Value,
+    src: Value,
+) {
     match (dst, src) {
         (Value::Object(dst), Value::Object(src)) => {
             for (k, v) in src {

@@ -13,7 +13,10 @@ use crate::AssistContext;
 
 /// Decides whether the new path expression needs to be dereferenced and/or wrapped in parens.
 /// Returns the relevant parent expression to replace and the [RefData].
-pub(crate) fn determine_ref_and_parens(ctx: &AssistContext<'_>, field_expr: &FieldExpr) -> (ast::Expr, RefData) {
+pub(crate) fn determine_ref_and_parens(
+    ctx: &AssistContext<'_>,
+    field_expr: &FieldExpr,
+) -> (ast::Expr, RefData) {
     let s = field_expr.syntax();
     let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
     let mut target_node = field_expr.clone().into();
@@ -114,7 +117,10 @@ pub(crate) struct RefData {
 
 impl RefData {
     /// Derefs `expr` and wraps it in parens if necessary
-    pub(crate) fn wrap_expr(&self, mut expr: ast::Expr) -> ast::Expr {
+    pub(crate) fn wrap_expr(
+        &self,
+        mut expr: ast::Expr,
+    ) -> ast::Expr {
         if self.needs_deref {
             expr = make::expr_prefix(T![*], expr).into();
         }

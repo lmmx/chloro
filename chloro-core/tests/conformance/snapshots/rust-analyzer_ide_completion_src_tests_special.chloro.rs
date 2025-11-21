@@ -1330,7 +1330,12 @@ struct Foo<T: PartialOrd
     );
 }
 
-fn check_signatures(src: &str, kind: CompletionItemKind, reduced: Expect, full: Expect) {
+fn check_signatures(
+    src: &str,
+    kind: CompletionItemKind,
+    reduced: Expect,
+    full: Expect,
+) {
     const FULL_SIGNATURES_CONFIG: crate::CompletionConfig<'_> = {
         let mut x = TEST_CONFIG;
         x.full_function_signatures = true;

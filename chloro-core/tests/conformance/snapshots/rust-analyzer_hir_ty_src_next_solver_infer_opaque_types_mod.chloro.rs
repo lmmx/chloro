@@ -17,7 +17,11 @@ impl<'db> InferCtxt<'db> {
     /// it hasn't previously been defined. This does not emit any
     /// constraints and it's the responsibility of the caller to make
     /// sure that the item bounds of the opaque are checked.
-    pub fn register_hidden_type_in_storage(&self, opaque_type_key: OpaqueTypeKey<'db>, hidden_ty: OpaqueHiddenType<'db>) -> Option<Ty<'db>> {
+    pub fn register_hidden_type_in_storage(
+        &self,
+        opaque_type_key: OpaqueTypeKey<'db>,
+        hidden_ty: OpaqueHiddenType<'db>,
+    ) -> Option<Ty<'db>> {
         self.inner.borrow_mut().opaque_types().register(opaque_type_key, hidden_ty)
     }
 }

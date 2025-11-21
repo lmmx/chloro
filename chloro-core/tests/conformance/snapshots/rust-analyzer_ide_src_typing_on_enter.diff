@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12984 bytes
-Chloro size:   11575 bytes
+Chloro size:   11657 bytes
 Rustfmt size:  13116 bytes
 
 ✗ Outputs DIFFER
@@ -62,7 +62,11 @@ Rustfmt size:  13116 bytes
 -// ````
 -//
 -// ![On Enter](https://user-images.githubusercontent.com/48062697/113065578-04c21800-91b1-11eb-82b8-22b8c481e645.gif)
- pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
+-pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
++pub(crate) fn on_enter(
++    db: &RootDatabase,
++    position: FilePosition,
++) -> Option<TextEdit> {
      let editioned_file_id_wrapper =
          ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
      let parse = db.parse(editioned_file_id_wrapper);
@@ -87,12 +91,6 @@ Rustfmt size:  13116 bytes
      None
  }
  
--fn on_enter_in_comment(
--    comment: &ast::Comment,
--    file: &ast::SourceFile,
--    offset: TextSize,
--) -> Option<TextEdit> {
-+fn on_enter_in_comment(comment: &ast::Comment, file: &ast::SourceFile, offset: TextSize) -> Option<TextEdit> {
      if comment.kind().shape.is_block() {
          return None;
      }
@@ -113,8 +111,14 @@ Rustfmt size:  13116 bytes
      let indent = node_indent(file, comment.syntax())?;
      let inserted = format!("\n{indent}{prefix} $0");
      let delete = if remove_trailing_whitespace {
+     Some(edit)
+ }
  
- fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
+-fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
++fn on_enter_in_block(
++    block: ast::BlockExpr,
++    position: FilePosition,
++) -> Option<TextEdit> {
      let contents = block_contents(&block)?;
 -
      if block.syntax().text().contains_char('\n') {
@@ -132,6 +136,11 @@ Rustfmt size:  13116 bytes
      Some(edit)
  }
  
+-fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> Option<TextEdit> {
++fn on_enter_in_use_tree_list(
++    list: ast::UseTreeList,
++    position: FilePosition,
++) -> Option<TextEdit> {
      if list.syntax().text().contains_char('\n') {
          return None;
      }
@@ -181,7 +190,14 @@ Rustfmt size:  13116 bytes
 +    ws.syntax().next_token().and_then(ast::Comment::cast).is_some()
  }
  
- fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
+-fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
++fn node_indent(
++    file: &SourceFile,
++    token: &SyntaxToken,
++) -> Option<SmolStr> {
+     let ws = match file.syntax().token_at_offset(token.text_range().start()) {
+         TokenAtOffset::Between(l, r) => {
+             assert!(r == *token);
  mod tests {
      use stdx::trim_indent;
      use test_utils::assert_eq_text;
@@ -197,12 +213,9 @@ Rustfmt size:  13116 bytes
          Some(actual)
      }
 -
--    fn do_check(
--        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
--        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
--    ) {
-+    fn do_check(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
-         let ra_fixture_after = &trim_indent(ra_fixture_after);
+     fn do_check(
+         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+         #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
          let actual = apply_on_enter(ra_fixture_before).unwrap();
          assert_eq_text!(ra_fixture_after, &actual);
      }

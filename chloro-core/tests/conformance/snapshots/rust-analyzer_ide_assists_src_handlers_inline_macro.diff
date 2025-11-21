@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8217 bytes
-Chloro size:   7597 bytes
+Chloro size:   7608 bytes
 Rustfmt size:  8483 bytes
 
 ✗ Outputs DIFFER
@@ -45,7 +45,11 @@ Rustfmt size:  8483 bytes
 -//     println!("{number}");
 -// }
 -// ```
- pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn inline_macro(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
      let macro_call = ctx.sema.to_def(&unexpanded)?;
 -    let target_crate_id = ctx

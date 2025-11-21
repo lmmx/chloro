@@ -47,7 +47,12 @@ impl SyntaxFixupUndoInfo {
 // If the fake span has this range end, that means that the range start is an index into the
 // `original` list in `SyntaxFixupUndoInfo`.
 
-pub(crate) fn fixup_syntax(span_map: SpanMapRef<'_>, node: &SyntaxNode, call_site: Span, mode: DocCommentDesugarMode) -> SyntaxFixups {
+pub(crate) fn fixup_syntax(
+    span_map: SpanMapRef<'_>,
+    node: &SyntaxNode,
+    call_site: Span,
+    mode: DocCommentDesugarMode,
+) -> SyntaxFixups {
     let mut append = FxHashMap::<SyntaxElement, _>::default();
     let mut remove = FxHashSet::<SyntaxElement>::default();
     let mut preorder = node.preorder();
@@ -332,7 +337,10 @@ fn has_error_to_handle(node: &SyntaxNode) -> bool {
     has_error(node) || node.children().any(|c| !can_handle_error(&c) && has_error_to_handle(&c))
 }
 
-pub(crate) fn reverse_fixups(tt: &mut TopSubtree, undo_info: &SyntaxFixupUndoInfo) {
+pub(crate) fn reverse_fixups(
+    tt: &mut TopSubtree,
+    undo_info: &SyntaxFixupUndoInfo,
+) {
     let Some(undo_info) = undo_info.original.as_deref() else { return };
     let undo_info = &**undo_info;
     let delimiter = tt.top_subtree_delimiter_mut();
@@ -367,7 +375,10 @@ impl TransformTtAction<'_> {
 /// This function takes a token tree, and calls `callback` with each token tree in it.
 /// Then it does what the callback says: keeps the tt or replaces it with a (possibly empty)
 /// tts view.
-fn transform_tt<'a, 'b>(tt: &'a mut Vec<tt::TokenTree>, mut callback: impl FnMut(&mut tt::TokenTree) -> TransformTtAction<'b>) {
+fn transform_tt<'a, 'b>(
+    tt: &'a mut Vec<tt::TokenTree>,
+    mut callback: impl FnMut(&mut tt::TokenTree) -> TransformTtAction<'b>,
+) {
     // We need to keep a stack of the currently open subtrees, because we need to update
     // them if we change the number of items in them.
     let mut subtrees_stack = Vec::new();
@@ -416,7 +427,10 @@ fn transform_tt<'a, 'b>(tt: &'a mut Vec<tt::TokenTree>, mut callback: impl FnMut
     }
 }
 
-fn reverse_fixups_(tt: &mut TopSubtree, undo_info: &[TopSubtree]) {
+fn reverse_fixups_(
+    tt: &mut TopSubtree,
+    undo_info: &[TopSubtree],
+) {
     let mut tts = std::mem::take(&mut tt.0).into_vec();
     transform_tt(&mut tts, |tt| match tt {
         tt::TokenTree::Leaf(leaf) => {
@@ -463,7 +477,10 @@ mod tests {
         span_map::{RealSpanMap, SpanMap},
         tt,
     };
-    fn check_leaf_eq(a: &tt::Leaf, b: &tt::Leaf) -> bool {
+    fn check_leaf_eq(
+        a: &tt::Leaf,
+        b: &tt::Leaf,
+    ) -> bool {
         match (a, b) {
             (tt::Leaf::Literal(a), tt::Leaf::Literal(b)) => a.symbol == b.symbol,
             (tt::Leaf::Punct(a), tt::Leaf::Punct(b)) => a.char == b.char,
@@ -471,12 +488,18 @@ mod tests {
             _ => false,
         }
     }
-    fn check_subtree_eq(a: &tt::TopSubtree, b: &tt::TopSubtree) -> bool {
+    fn check_subtree_eq(
+        a: &tt::TopSubtree,
+        b: &tt::TopSubtree,
+    ) -> bool {
         let a = a.view().as_token_trees().flat_tokens();
         let b = b.view().as_token_trees().flat_tokens();
         a.len() == b.len() && std::iter::zip(a, b).all(|(a, b)| check_tt_eq(a, b))
     }
-    fn check_tt_eq(a: &tt::TokenTree, b: &tt::TokenTree) -> bool {
+    fn check_tt_eq(
+        a: &tt::TokenTree,
+        b: &tt::TokenTree,
+    ) -> bool {
         match (a, b) {
             (tt::TokenTree::Leaf(a), tt::TokenTree::Leaf(b)) => check_leaf_eq(a, b),
             (tt::TokenTree::Subtree(a), tt::TokenTree::Subtree(b)) => {
@@ -486,7 +509,10 @@ mod tests {
         }
     }
     #[track_caller]
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, mut expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        mut expect: Expect,
+    ) {
         let parsed = syntax::SourceFile::parse(ra_fixture, span::Edition::CURRENT);
         let span_map = SpanMap::RealSpanMap(Arc::new(RealSpanMap::absolute(EditionedFileId::new(
             FileId::from_raw(0),

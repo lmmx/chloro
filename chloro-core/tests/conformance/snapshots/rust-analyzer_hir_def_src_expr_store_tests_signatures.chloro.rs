@@ -9,7 +9,10 @@ use crate::{
 };
 use super::super::*;
 
-fn lower_and_print(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn lower_and_print(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let db = TestDB::with_files(ra_fixture);
     let krate = db.fetch_test_crate();
     let def_map = crate_def_map(&db, krate);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   31729 bytes
+Chloro size:   33955 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -245,6 +245,17 @@ Rustfmt size:  33868 bytes
  
  pub type Cancellable<T> = Result<T, Cancelled>;
  
+ }
+ 
+ impl<T> RangeInfo<T> {
+-    pub fn new(range: TextRange, info: T) -> RangeInfo<T> {
++    pub fn new(
++        range: TextRange,
++        info: T,
++    ) -> RangeInfo<T> {
+         RangeInfo { range, info }
+     }
+ }
  
  impl AnalysisHost {
      pub fn new(lru_capacity: Option<u16>) -> AnalysisHost {
@@ -255,6 +266,25 @@ Rustfmt size:  33868 bytes
      }
  
      pub fn with_database(db: RootDatabase) -> AnalysisHost {
+         AnalysisHost { db }
+     }
+ 
+-    pub fn update_lru_capacity(&mut self, lru_capacity: Option<u16>) {
++    pub fn update_lru_capacity(
++        &mut self,
++        lru_capacity: Option<u16>,
++    ) {
+         self.db.update_base_query_lru_capacities(lru_capacity);
+     }
+ 
+-    pub fn update_lru_capacities(&mut self, lru_capacities: &FxHashMap<Box<str>, u16>) {
++    pub fn update_lru_capacities(
++        &mut self,
++        lru_capacities: &FxHashMap<Box<str>, u16>,
++    ) {
+         self.db.update_lru_capacities(lru_capacities);
+     }
+ 
      /// Returns a snapshot of the current state, which you can query for
      /// semantic information.
      pub fn analysis(&self) -> Analysis {
@@ -265,6 +295,15 @@ Rustfmt size:  33868 bytes
      }
  
      /// Applies changes to the current state of the world. If there are
+     /// outstanding snapshots, they will be canceled.
+-    pub fn apply_change(&mut self, change: ChangeWithProcMacros) {
++    pub fn apply_change(
++        &mut self,
++        change: ChangeWithProcMacros,
++    ) {
+         self.db.apply_change(change);
+     }
+ 
      pub fn per_query_memory_usage(&mut self) -> Vec<(String, profile::Bytes, usize)> {
          self.db.per_query_memory_usage()
      }
@@ -328,26 +367,7 @@ Rustfmt size:  33868 bytes
          host.apply_change(change);
          (host.analysis(), file_id)
      }
- 
--    pub(crate) fn from_ra_fixture(
--        sema: &Semantics<'_, RootDatabase>,
--        literal: ast::String,
--        expanded: &ast::String,
--        minicore: MiniCore<'_>,
--    ) -> Option<(Analysis, RaFixtureAnalysis)> {
-+    pub(crate) fn from_ra_fixture(sema: &Semantics<'_, RootDatabase>, literal: ast::String, expanded: &ast::String, minicore: MiniCore<'_>) -> Option<(Analysis, RaFixtureAnalysis)> {
-         Self::from_ra_fixture_with_on_cursor(sema, literal, expanded, minicore, &mut |_| {})
-     }
- 
-     /// Like [`Analysis::from_ra_fixture()`], but also calls `on_cursor` with the cursor position.
--    pub(crate) fn from_ra_fixture_with_on_cursor(
--        sema: &Semantics<'_, RootDatabase>,
--        literal: ast::String,
--        expanded: &ast::String,
--        minicore: MiniCore<'_>,
--        on_cursor: &mut dyn FnMut(TextRange),
--    ) -> Option<(Analysis, RaFixtureAnalysis)> {
-+    pub(crate) fn from_ra_fixture_with_on_cursor(sema: &Semantics<'_, RootDatabase>, literal: ast::String, expanded: &ast::String, minicore: MiniCore<'_>, on_cursor: &mut dyn FnMut(TextRange)) -> Option<(Analysis, RaFixtureAnalysis)> {
+     ) -> Option<(Analysis, RaFixtureAnalysis)> {
          let analysis =
              RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
 -        Some((
@@ -360,8 +380,39 @@ Rustfmt size:  33868 bytes
      }
  
      /// Debug info about the current state of the analysis.
+-    pub fn status(&self, file_id: Option<FileId>) -> Cancellable<String> {
++    pub fn status(
++        &self,
++        file_id: Option<FileId>,
++    ) -> Cancellable<String> {
+         self.with_db(|db| status::status(db, file_id))
+     }
  
-     pub fn parallel_prime_caches<F>(&self, num_worker_threads: usize, cb: F) -> Cancellable<()>
+-    pub fn source_root_id(&self, file_id: FileId) -> Cancellable<SourceRootId> {
++    pub fn source_root_id(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<SourceRootId> {
+         self.with_db(|db| db.file_source_root(file_id).source_root_id(db))
+     }
+ 
+-    pub fn is_local_source_root(&self, source_root_id: SourceRootId) -> Cancellable<bool> {
++    pub fn is_local_source_root(
++        &self,
++        source_root_id: SourceRootId,
++    ) -> Cancellable<bool> {
+         self.with_db(|db| {
+             let sr = db.source_root(source_root_id).source_root(db);
+             !sr.is_library
+         })
+     }
+ 
+-    pub fn parallel_prime_caches<F>(&self, num_worker_threads: usize, cb: F) -> Cancellable<()>
++    pub fn parallel_prime_caches<F>(
++        &self,
++        num_worker_threads: usize,
++        cb: F,
++    ) -> Cancellable<()>
      where
 -        F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe,
 -    {
@@ -369,6 +420,174 @@ Rustfmt size:  33868 bytes
          self.with_db(move |db| prime_caches::parallel_prime_caches(db, num_worker_threads, &cb))
      }
  
+     /// Gets the text of the source file.
+-    pub fn file_text(&self, file_id: FileId) -> Cancellable<Arc<str>> {
++    pub fn file_text(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Arc<str>> {
+         self.with_db(|db| SourceDatabase::file_text(db, file_id).text(db).clone())
+     }
+ 
+     /// Gets the syntax tree of the file.
+-    pub fn parse(&self, file_id: FileId) -> Cancellable<SourceFile> {
++    pub fn parse(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<SourceFile> {
+         // FIXME edition
+         self.with_db(|db| {
+             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
+     }
+ 
+     /// Returns true if this file belongs to an immutable library.
+-    pub fn is_library_file(&self, file_id: FileId) -> Cancellable<bool> {
++    pub fn is_library_file(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<bool> {
+         self.with_db(|db| {
+             let source_root = db.file_source_root(file_id).source_root_id(db);
+             db.source_root(source_root).source_root(db).is_library
+ 
+     /// Gets the file's `LineIndex`: data structure to convert between absolute
+     /// offsets and line/column representation.
+-    pub fn file_line_index(&self, file_id: FileId) -> Cancellable<Arc<LineIndex>> {
++    pub fn file_line_index(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Arc<LineIndex>> {
+         self.with_db(|db| db.line_index(file_id))
+     }
+ 
+     /// Selects the next syntactic nodes encompassing the range.
+-    pub fn extend_selection(&self, frange: FileRange) -> Cancellable<TextRange> {
++    pub fn extend_selection(
++        &self,
++        frange: FileRange,
++    ) -> Cancellable<TextRange> {
+         self.with_db(|db| extend_selection::extend_selection(db, frange))
+     }
+ 
+     /// Returns position of the matching brace (all types of braces are
+     /// supported).
+-    pub fn matching_brace(&self, position: FilePosition) -> Cancellable<Option<TextSize>> {
++    pub fn matching_brace(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Option<TextSize>> {
+         self.with_db(|db| {
+             let file_id = EditionedFileId::current_edition(&self.db, position.file_id);
+             let parse = db.parse(file_id);
+         })
+     }
+ 
+-    pub fn view_syntax_tree(&self, file_id: FileId) -> Cancellable<String> {
++    pub fn view_syntax_tree(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<String> {
+         self.with_db(|db| view_syntax_tree::view_syntax_tree(db, file_id))
+     }
+ 
+-    pub fn view_hir(&self, position: FilePosition) -> Cancellable<String> {
++    pub fn view_hir(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<String> {
+         self.with_db(|db| view_hir::view_hir(db, position))
+     }
+ 
+-    pub fn view_mir(&self, position: FilePosition) -> Cancellable<String> {
++    pub fn view_mir(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<String> {
+         self.with_db(|db| view_mir::view_mir(db, position))
+     }
+ 
+-    pub fn interpret_function(&self, position: FilePosition) -> Cancellable<String> {
++    pub fn interpret_function(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<String> {
+         self.with_db(|db| interpret::interpret(db, position))
+     }
+ 
+-    pub fn view_item_tree(&self, file_id: FileId) -> Cancellable<String> {
++    pub fn view_item_tree(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<String> {
+         self.with_db(|db| view_item_tree::view_item_tree(db, file_id))
+     }
+ 
+         self.with_db(test_explorer::discover_test_roots)
+     }
+ 
+-    pub fn discover_tests_in_crate_by_test_id(&self, crate_id: &str) -> Cancellable<Vec<TestItem>> {
++    pub fn discover_tests_in_crate_by_test_id(
++        &self,
++        crate_id: &str,
++    ) -> Cancellable<Vec<TestItem>> {
+         self.with_db(|db| test_explorer::discover_tests_in_crate_by_test_id(db, crate_id))
+     }
+ 
+-    pub fn discover_tests_in_crate(&self, crate_id: Crate) -> Cancellable<Vec<TestItem>> {
++    pub fn discover_tests_in_crate(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<Vec<TestItem>> {
+         self.with_db(|db| test_explorer::discover_tests_in_crate(db, crate_id))
+     }
+ 
+-    pub fn discover_tests_in_file(&self, file_id: FileId) -> Cancellable<Vec<TestItem>> {
++    pub fn discover_tests_in_file(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Vec<TestItem>> {
+         self.with_db(|db| test_explorer::discover_tests_in_file(db, file_id))
+     }
+ 
+     /// Renders the crate graph to GraphViz "dot" syntax.
+-    pub fn view_crate_graph(&self, full: bool) -> Cancellable<Result<String, String>> {
++    pub fn view_crate_graph(
++        &self,
++        full: bool,
++    ) -> Cancellable<Result<String, String>> {
+         self.with_db(|db| view_crate_graph::view_crate_graph(db, full))
+     }
+ 
+         self.with_db(fetch_crates::fetch_crates)
+     }
+ 
+-    pub fn expand_macro(&self, position: FilePosition) -> Cancellable<Option<ExpandedMacro>> {
++    pub fn expand_macro(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Option<ExpandedMacro>> {
+         self.with_db(|db| expand_macro::expand_macro(db, position))
+     }
+ 
+     /// Returns an edit to remove all newlines in the range, cleaning up minor
+     /// stuff like trailing commas.
+-    pub fn join_lines(&self, config: &JoinLinesConfig, frange: FileRange) -> Cancellable<TextEdit> {
++    pub fn join_lines(
++        &self,
++        config: &JoinLinesConfig,
++        frange: FileRange,
++    ) -> Cancellable<TextEdit> {
+         self.with_db(|db| {
+             let editioned_file_id_wrapper =
+                 EditionedFileId::current_edition(&self.db, frange.file_id);
+     /// Returns an edit which should be applied when opening a new line, fixing
+     /// up minor stuff like continuing the comment.
+     /// The edit will be a snippet (with `$0`).
+-    pub fn on_enter(&self, position: FilePosition) -> Cancellable<Option<TextEdit>> {
++    pub fn on_enter(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Option<TextEdit>> {
          self.with_db(|db| typing::on_enter(db, position))
      }
  
@@ -376,15 +595,6 @@ Rustfmt size:  33868 bytes
  
      /// Returns an edit which should be applied after a character was typed.
      ///
-     /// This is useful for some on-the-fly fixups, like adding `;` to `let =`
-     /// automatically.
--    pub fn on_char_typed(
--        &self,
--        position: FilePosition,
--        char_typed: char,
--    ) -> Cancellable<Option<SourceChange>> {
-+    pub fn on_char_typed(&self, position: FilePosition, char_typed: char) -> Cancellable<Option<SourceChange>> {
-         // Fast path to not even parse the file.
          if !typing::TRIGGER_CHARS.contains(&char_typed) {
              return Ok(None);
          }
@@ -392,284 +602,151 @@ Rustfmt size:  33868 bytes
          self.with_db(|db| typing::on_char_typed(db, position, char_typed))
      }
  
-     /// Returns a tree representation of symbols in the file. Useful to draw a
-     /// file outline.
--    pub fn file_structure(
--        &self,
--        config: &FileStructureConfig,
--        file_id: FileId,
--    ) -> Cancellable<Vec<StructureNode>> {
-+    pub fn file_structure(&self, config: &FileStructureConfig, file_id: FileId) -> Cancellable<Vec<StructureNode>> {
-         // FIXME: Edition
-         self.with_db(|db| {
-             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
-     }
- 
-     /// Returns a list of the places in the file where type hints can be displayed.
--    pub fn inlay_hints(
--        &self,
--        config: &InlayHintsConfig<'_>,
--        file_id: FileId,
--        range: Option<TextRange>,
--    ) -> Cancellable<Vec<InlayHint>> {
-+    pub fn inlay_hints(&self, config: &InlayHintsConfig<'_>, file_id: FileId, range: Option<TextRange>) -> Cancellable<Vec<InlayHint>> {
+     ) -> Cancellable<Vec<InlayHint>> {
          self.with_db(|db| inlay_hints::inlay_hints(db, file_id, range, config))
      }
--    pub fn inlay_hints_resolve(
--        &self,
--        config: &InlayHintsConfig<'_>,
--        file_id: FileId,
--        resolve_range: TextRange,
--        hash: u64,
--        hasher: impl Fn(&InlayHint) -> u64 + Send + UnwindSafe,
--    ) -> Cancellable<Option<InlayHint>> {
 +
-+    pub fn inlay_hints_resolve(&self, config: &InlayHintsConfig<'_>, file_id: FileId, resolve_range: TextRange, hash: u64, hasher: impl Fn(&InlayHint) -> u64 + Send + UnwindSafe) -> Cancellable<Option<InlayHint>> {
+     pub fn inlay_hints_resolve(
+         &self,
+         config: &InlayHintsConfig<'_>,
+     }
+ 
+     /// Returns the set of folding ranges.
+-    pub fn folding_ranges(&self, file_id: FileId) -> Cancellable<Vec<Fold>> {
++    pub fn folding_ranges(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Vec<Fold>> {
          self.with_db(|db| {
-             inlay_hints::inlay_hints_resolve(db, file_id, resolve_range, hash, config, hasher)
-         })
+             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
+ 
      }
  
-     /// Returns the definitions from the symbol at `position`.
--    pub fn goto_definition(
--        &self,
--        position: FilePosition,
--        config: &GotoDefinitionConfig<'_>,
--    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-+    pub fn goto_definition(&self, position: FilePosition, config: &GotoDefinitionConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-         self.with_db(|db| goto_definition::goto_definition(db, position, config))
+     /// Fuzzy searches for a symbol.
+-    pub fn symbol_search(&self, query: Query, limit: usize) -> Cancellable<Vec<NavigationTarget>> {
++    pub fn symbol_search(
++        &self,
++        query: Query,
++        limit: usize,
++    ) -> Cancellable<Vec<NavigationTarget>> {
+         // `world_symbols` currently clones the database to run stuff in parallel, which will make any query panic
+         // if we were to attach it here.
+         Cancelled::catch(|| {
      }
  
-     /// Returns the declaration from the symbol at `position`.
--    pub fn goto_declaration(
--        &self,
--        position: FilePosition,
--        config: &GotoDefinitionConfig<'_>,
--    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-+    pub fn goto_declaration(&self, position: FilePosition, config: &GotoDefinitionConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-         self.with_db(|db| goto_declaration::goto_declaration(db, position, config))
-     }
- 
-     /// Returns the impls from the symbol at `position`.
--    pub fn goto_implementation(
--        &self,
--        config: &GotoImplementationConfig,
--        position: FilePosition,
--    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-+    pub fn goto_implementation(&self, config: &GotoImplementationConfig, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-         self.with_db(|db| goto_implementation::goto_implementation(db, config, position))
-     }
- 
-     /// Returns the type definitions for the symbol at `position`.
--    pub fn goto_type_definition(
--        &self,
--        position: FilePosition,
--    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-+    pub fn goto_type_definition(&self, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-         self.with_db(|db| goto_type_definition::goto_type_definition(db, position))
-     }
- 
--    pub fn find_all_refs(
--        &self,
--        position: FilePosition,
--        config: &FindAllRefsConfig<'_>,
--    ) -> Cancellable<Option<Vec<ReferenceSearchResult>>> {
-+    pub fn find_all_refs(&self, position: FilePosition, config: &FindAllRefsConfig<'_>) -> Cancellable<Option<Vec<ReferenceSearchResult>>> {
-         let config = AssertUnwindSafe(config);
-         self.with_db(|db| references::find_all_refs(&Semantics::new(db), position, &config))
-     }
- 
-     /// Returns a short text describing element at position.
--    pub fn hover(
--        &self,
--        config: &HoverConfig<'_>,
--        range: FileRange,
--    ) -> Cancellable<Option<RangeInfo<HoverResult>>> {
-+    pub fn hover(&self, config: &HoverConfig<'_>, range: FileRange) -> Cancellable<Option<RangeInfo<HoverResult>>> {
-         self.with_db(|db| hover::hover(db, range, config))
-     }
- 
-     /// Returns moniker of symbol at position.
--    pub fn moniker(
--        &self,
--        position: FilePosition,
--    ) -> Cancellable<Option<RangeInfo<Vec<moniker::MonikerResult>>>> {
-+    pub fn moniker(&self, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<moniker::MonikerResult>>>> {
-         self.with_db(|db| moniker::moniker(db, position))
-     }
- 
-     /// # Arguments
-     /// * `position` - Position in the file.
-     /// * `target_dir` - Directory where the build output is stored.
--    pub fn external_docs(
--        &self,
--        position: FilePosition,
--        target_dir: Option<&str>,
--        sysroot: Option<&str>,
--    ) -> Cancellable<doc_links::DocumentationLinks> {
-+    pub fn external_docs(&self, position: FilePosition, target_dir: Option<&str>, sysroot: Option<&str>) -> Cancellable<doc_links::DocumentationLinks> {
-         self.with_db(|db| {
-             doc_links::external_docs(db, position, target_dir, sysroot).unwrap_or_default()
-         })
-     }
- 
-     /// Computes call hierarchy candidates for the given file position.
--    pub fn call_hierarchy(
--        &self,
--        position: FilePosition,
--        config: &CallHierarchyConfig<'_>,
--    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-+    pub fn call_hierarchy(&self, position: FilePosition, config: &CallHierarchyConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
-         self.with_db(|db| call_hierarchy::call_hierarchy(db, position, config))
-     }
- 
-     /// Computes incoming calls for the given file position.
--    pub fn incoming_calls(
--        &self,
--        config: &CallHierarchyConfig<'_>,
--        position: FilePosition,
--    ) -> Cancellable<Option<Vec<CallItem>>> {
-+    pub fn incoming_calls(&self, config: &CallHierarchyConfig<'_>, position: FilePosition) -> Cancellable<Option<Vec<CallItem>>> {
-         self.with_db(|db| call_hierarchy::incoming_calls(db, config, position))
-     }
- 
-     /// Computes outgoing calls for the given file position.
--    pub fn outgoing_calls(
--        &self,
--        config: &CallHierarchyConfig<'_>,
--        position: FilePosition,
--    ) -> Cancellable<Option<Vec<CallItem>>> {
-+    pub fn outgoing_calls(&self, config: &CallHierarchyConfig<'_>, position: FilePosition) -> Cancellable<Option<Vec<CallItem>>> {
-         self.with_db(|db| call_hierarchy::outgoing_calls(db, config, position))
+     /// Computes parameter information at the given position.
+-    pub fn signature_help(&self, position: FilePosition) -> Cancellable<Option<SignatureHelp>> {
++    pub fn signature_help(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Option<SignatureHelp>> {
+         self.with_db(|db| signature_help::signature_help(db, position))
      }
  
      }
  
-     /// Returns the set of tests for the given file position.
--    pub fn related_tests(
--        &self,
--        position: FilePosition,
--        search_scope: Option<SearchScope>,
--    ) -> Cancellable<Vec<Runnable>> {
-+    pub fn related_tests(&self, position: FilePosition, search_scope: Option<SearchScope>) -> Cancellable<Vec<Runnable>> {
-         let search_scope = AssertUnwindSafe(search_scope);
-         self.with_db(|db| {
-             let _ = &search_scope;
+     /// Returns a `mod name;` declaration which created the current module.
+-    pub fn parent_module(&self, position: FilePosition) -> Cancellable<Vec<NavigationTarget>> {
++    pub fn parent_module(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Vec<NavigationTarget>> {
+         self.with_db(|db| parent_module::parent_module(db, position))
      }
  
-     /// Computes all ranges to highlight for a given item in a file.
--    pub fn highlight_related(
--        &self,
--        config: HighlightRelatedConfig,
--        position: FilePosition,
--    ) -> Cancellable<Option<Vec<HighlightedRange>>> {
-+    pub fn highlight_related(&self, config: HighlightRelatedConfig, position: FilePosition) -> Cancellable<Option<Vec<HighlightedRange>>> {
-         self.with_db(|db| {
-             highlight_related::highlight_related(&Semantics::new(db), config, position)
-         })
+     /// Returns vec of `mod name;` declaration which are created by the current module.
+-    pub fn child_modules(&self, position: FilePosition) -> Cancellable<Vec<NavigationTarget>> {
++    pub fn child_modules(
++        &self,
++        position: FilePosition,
++    ) -> Cancellable<Vec<NavigationTarget>> {
+         self.with_db(|db| child_modules::child_modules(db, position))
      }
  
-     /// Computes syntax highlighting for the given file
--    pub fn highlight(
--        &self,
--        highlight_config: HighlightConfig<'_>,
--        file_id: FileId,
--    ) -> Cancellable<Vec<HlRange>> {
-+    pub fn highlight(&self, highlight_config: HighlightConfig<'_>, file_id: FileId) -> Cancellable<Vec<HlRange>> {
-         self.with_db(|db| syntax_highlighting::highlight(db, &highlight_config, file_id, None))
+     /// Returns crates that this file belongs to.
+-    pub fn crates_for(&self, file_id: FileId) -> Cancellable<Vec<Crate>> {
++    pub fn crates_for(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Vec<Crate>> {
+         self.with_db(|db| parent_module::crates_for(db, file_id))
      }
  
-     /// Computes syntax highlighting for the given file range.
--    pub fn highlight_range(
--        &self,
--        highlight_config: HighlightConfig<'_>,
--        frange: FileRange,
--    ) -> Cancellable<Vec<HlRange>> {
-+    pub fn highlight_range(&self, highlight_config: HighlightConfig<'_>, frange: FileRange) -> Cancellable<Vec<HlRange>> {
-         self.with_db(|db| {
-             syntax_highlighting::highlight(
-                 db,
+     /// Returns crates that this file belongs to.
+-    pub fn transitive_rev_deps(&self, crate_id: Crate) -> Cancellable<Vec<Crate>> {
++    pub fn transitive_rev_deps(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<Vec<Crate>> {
+         self.with_db(|db| Vec::from_iter(db.transitive_rev_deps(crate_id)))
+     }
+ 
+     /// Returns crates that this file *might* belong to.
+-    pub fn relevant_crates_for(&self, file_id: FileId) -> Cancellable<Vec<Crate>> {
++    pub fn relevant_crates_for(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Vec<Crate>> {
+         self.with_db(|db| db.relevant_crates(file_id).iter().copied().collect())
+     }
+ 
+     /// Returns the edition of the given crate.
+-    pub fn crate_edition(&self, crate_id: Crate) -> Cancellable<Edition> {
++    pub fn crate_edition(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<Edition> {
+         self.with_db(|db| crate_id.data(db).edition)
+     }
+ 
+     /// Returns whether the given crate is a proc macro.
+-    pub fn is_proc_macro_crate(&self, crate_id: Crate) -> Cancellable<bool> {
++    pub fn is_proc_macro_crate(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<bool> {
+         self.with_db(|db| crate_id.data(db).is_proc_macro)
+     }
+ 
+     /// Returns true if this crate has `no_std` or `no_core` specified.
+-    pub fn is_crate_no_std(&self, crate_id: Crate) -> Cancellable<bool> {
++    pub fn is_crate_no_std(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<bool> {
+         self.with_db(|db| crate_def_map(db, crate_id).is_no_std())
+     }
+ 
+     /// Returns the root file of the given crate.
+-    pub fn crate_root(&self, crate_id: Crate) -> Cancellable<FileId> {
++    pub fn crate_root(
++        &self,
++        crate_id: Crate,
++    ) -> Cancellable<FileId> {
+         self.with_db(|db| crate_id.data(db).root_file_id)
+     }
+ 
+     /// Returns the set of possible targets to run for the current file.
+-    pub fn runnables(&self, file_id: FileId) -> Cancellable<Vec<Runnable>> {
++    pub fn runnables(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<Vec<Runnable>> {
+         self.with_db(|db| runnables::runnables(db, file_id))
+     }
+ 
      }
  
      /// Computes syntax highlighting for the given file.
--    pub fn highlight_as_html_with_config(
--        &self,
--        config: HighlightConfig<'_>,
--        file_id: FileId,
--        rainbow: bool,
--    ) -> Cancellable<String> {
-+    pub fn highlight_as_html_with_config(&self, config: HighlightConfig<'_>, file_id: FileId, rainbow: bool) -> Cancellable<String> {
-         self.with_db(|db| {
-             syntax_highlighting::highlight_as_html_with_config(db, &config, file_id, rainbow)
-         })
+-    pub fn highlight_as_html(&self, file_id: FileId, rainbow: bool) -> Cancellable<String> {
++    pub fn highlight_as_html(
++        &self,
++        file_id: FileId,
++        rainbow: bool,
++    ) -> Cancellable<String> {
+         self.with_db(|db| syntax_highlighting::highlight_as_html(db, file_id, rainbow))
      }
  
-     /// Computes completions at the given position.
--    pub fn completions(
--        &self,
--        config: &CompletionConfig<'_>,
--        position: FilePosition,
--        trigger_character: Option<char>,
--    ) -> Cancellable<Option<Vec<CompletionItem>>> {
-+    pub fn completions(&self, config: &CompletionConfig<'_>, position: FilePosition, trigger_character: Option<char>) -> Cancellable<Option<Vec<CompletionItem>>> {
-         self.with_db(|db| ide_completion::completions(db, config, position, trigger_character))
-     }
- 
-     /// Resolves additional completion data at the position given.
--    pub fn resolve_completion_edits(
--        &self,
--        config: &CompletionConfig<'_>,
--        position: FilePosition,
--        imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
--    ) -> Cancellable<Vec<TextEdit>> {
-+    pub fn resolve_completion_edits(&self, config: &CompletionConfig<'_>, position: FilePosition, imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe) -> Cancellable<Vec<TextEdit>> {
-         Ok(self
-             .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
-             .unwrap_or_default())
-     }
- 
-     /// Computes the set of parser level diagnostics for the given file.
--    pub fn syntax_diagnostics(
--        &self,
--        config: &DiagnosticsConfig,
--        file_id: FileId,
--    ) -> Cancellable<Vec<Diagnostic>> {
-+    pub fn syntax_diagnostics(&self, config: &DiagnosticsConfig, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
-         self.with_db(|db| ide_diagnostics::syntax_diagnostics(db, config, file_id))
-     }
- 
-     /// Computes the set of semantic diagnostics for the given file.
--    pub fn semantic_diagnostics(
--        &self,
--        config: &DiagnosticsConfig,
--        resolve: AssistResolveStrategy,
--        file_id: FileId,
--    ) -> Cancellable<Vec<Diagnostic>> {
-+    pub fn semantic_diagnostics(&self, config: &DiagnosticsConfig, resolve: AssistResolveStrategy, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
-         self.with_db(|db| ide_diagnostics::semantic_diagnostics(db, config, &resolve, file_id))
-     }
- 
-     /// Computes the set of both syntax and semantic diagnostics for the given file.
--    pub fn full_diagnostics(
--        &self,
--        config: &DiagnosticsConfig,
--        resolve: AssistResolveStrategy,
--        file_id: FileId,
--    ) -> Cancellable<Vec<Diagnostic>> {
-+    pub fn full_diagnostics(&self, config: &DiagnosticsConfig, resolve: AssistResolveStrategy, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
-         self.with_db(|db| ide_diagnostics::full_diagnostics(db, config, &resolve, file_id))
-     }
- 
-     /// Convenience function to return assists + quick fixes for diagnostics
--    pub fn assists_with_fixes(
--        &self,
--        assist_config: &AssistConfig,
--        diagnostics_config: &DiagnosticsConfig,
--        resolve: AssistResolveStrategy,
--        frange: FileRange,
--    ) -> Cancellable<Vec<Assist>> {
-+    pub fn assists_with_fixes(&self, assist_config: &AssistConfig, diagnostics_config: &DiagnosticsConfig, resolve: AssistResolveStrategy, frange: FileRange) -> Cancellable<Vec<Assist>> {
-         let include_fixes = match &assist_config.allowed {
              Some(it) => it.contains(&AssistKind::QuickFix),
              None => true,
          };
@@ -677,46 +754,6 @@ Rustfmt size:  33868 bytes
          self.with_db(|db| {
              let diagnostic_assists = if diagnostics_config.enabled && include_fixes {
                  ide_diagnostics::full_diagnostics(db, diagnostics_config, &resolve, frange.file_id)
- 
-     /// Returns the edit required to rename reference at the position to the new
-     /// name.
--    pub fn rename(
--        &self,
--        position: FilePosition,
--        new_name: &str,
--        config: &RenameConfig,
--    ) -> Cancellable<Result<SourceChange, RenameError>> {
-+    pub fn rename(&self, position: FilePosition, new_name: &str, config: &RenameConfig) -> Cancellable<Result<SourceChange, RenameError>> {
-         self.with_db(|db| rename::rename(db, position, new_name, config))
-     }
- 
--    pub fn prepare_rename(
--        &self,
--        position: FilePosition,
--    ) -> Cancellable<Result<RangeInfo<()>, RenameError>> {
-+    pub fn prepare_rename(&self, position: FilePosition) -> Cancellable<Result<RangeInfo<()>, RenameError>> {
-         self.with_db(|db| rename::prepare_rename(db, position))
-     }
- 
--    pub fn will_rename_file(
--        &self,
--        file_id: FileId,
--        new_name_stem: &str,
--    ) -> Cancellable<Option<SourceChange>> {
-+    pub fn will_rename_file(&self, file_id: FileId, new_name_stem: &str) -> Cancellable<Option<SourceChange>> {
-         self.with_db(|db| rename::will_rename_file(db, file_id, new_name_stem))
-     }
- 
--    pub fn structural_search_replace(
--        &self,
--        query: &str,
--        parse_only: bool,
--        resolve_context: FilePosition,
--        selections: Vec<FileRange>,
--    ) -> Cancellable<Result<SourceChange, SsrError>> {
-+    pub fn structural_search_replace(&self, query: &str, parse_only: bool, resolve_context: FilePosition, selections: Vec<FileRange>) -> Cancellable<Result<SourceChange, SsrError>> {
-         self.with_db(|db| {
-             let rule: ide_ssr::SsrRule = query.parse()?;
              let mut match_finder =
                  ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
              match_finder.add_rule(rule)?;
@@ -729,44 +766,25 @@ Rustfmt size:  33868 bytes
              Ok(SourceChange::from_iter(edits))
          })
      }
- 
--    pub fn annotations(
--        &self,
--        config: &AnnotationConfig<'_>,
--        file_id: FileId,
--    ) -> Cancellable<Vec<Annotation>> {
-+    pub fn annotations(&self, config: &AnnotationConfig<'_>, file_id: FileId) -> Cancellable<Vec<Annotation>> {
-         self.with_db(|db| annotations::annotations(db, config, file_id))
-     }
- 
--    pub fn resolve_annotation(
--        &self,
--        config: &AnnotationConfig<'_>,
--        annotation: Annotation,
--    ) -> Cancellable<Annotation> {
-+    pub fn resolve_annotation(&self, config: &AnnotationConfig<'_>, annotation: Annotation) -> Cancellable<Annotation> {
-         self.with_db(|db| annotations::resolve_annotation(db, config, annotation))
-     }
- 
--    pub fn move_item(
--        &self,
--        range: FileRange,
--        direction: Direction,
--    ) -> Cancellable<Option<TextEdit>> {
-+    pub fn move_item(&self, range: FileRange, direction: Direction) -> Cancellable<Option<TextEdit>> {
-         self.with_db(|db| move_item::move_item(db, range, direction))
-     }
- 
--    pub fn get_recursive_memory_layout(
--        &self,
--        position: FilePosition,
--    ) -> Cancellable<Option<RecursiveMemoryLayout>> {
-+    pub fn get_recursive_memory_layout(&self, position: FilePosition) -> Cancellable<Option<RecursiveMemoryLayout>> {
          self.with_db(|db| view_memory_layout(db, position))
      }
  
+-    pub fn editioned_file_id_to_vfs(&self, file_id: hir::EditionedFileId) -> FileId {
++    pub fn editioned_file_id_to_vfs(
++        &self,
++        file_id: hir::EditionedFileId,
++    ) -> FileId {
+         file_id.file_id(&self.db)
+     }
+ 
+     ///
+     /// Salsa implements cancellation by unwinding with a special value and
      /// catching it on the API boundary.
-     fn with_db<F, T>(&self, f: F) -> Cancellable<T>
+-    fn with_db<F, T>(&self, f: F) -> Cancellable<T>
++    fn with_db<F, T>(
++        &self,
++        f: F,
++    ) -> Cancellable<T>
      where
 -        F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe,
 -    {

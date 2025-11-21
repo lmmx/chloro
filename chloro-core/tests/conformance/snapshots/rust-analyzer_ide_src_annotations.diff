@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36305 bytes
+Chloro size:   36400 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
@@ -36,15 +36,8 @@ Rustfmt size:  37056 bytes
  }
  
  pub struct AnnotationConfig<'a> {
-     AboveWholeItem,
- }
- 
--pub(crate) fn annotations(
--    db: &RootDatabase,
--    config: &AnnotationConfig<'_>,
--    file_id: FileId,
--) -> Vec<Annotation> {
-+pub(crate) fn annotations(db: &RootDatabase, config: &AnnotationConfig<'_>, file_id: FileId) -> Vec<Annotation> {
+     file_id: FileId,
+ ) -> Vec<Annotation> {
      let mut annotations = FxIndexSet::default();
 -
      if config.annotate_runnables {
@@ -78,18 +71,6 @@ Rustfmt size:  37056 bytes
      annotations
          .into_iter()
          .sorted_by_key(|a| {
-         .collect()
- }
- 
--pub(crate) fn resolve_annotation(
--    db: &RootDatabase,
--    config: &AnnotationConfig<'_>,
--    mut annotation: Annotation,
--) -> Annotation {
-+pub(crate) fn resolve_annotation(db: &RootDatabase, config: &AnnotationConfig<'_>, mut annotation: Annotation) -> Annotation {
-     match annotation.kind {
-         AnnotationKind::HasImpls { pos, ref mut data } => {
-             let goto_implementation_config = GotoImplementationConfig {
          }
          _ => {}
      };
@@ -97,6 +78,14 @@ Rustfmt size:  37056 bytes
      annotation
  }
  
+-fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
++fn should_skip_runnable(
++    kind: &RunnableKind,
++    binary_target: bool,
++) -> bool {
+     match kind {
+         RunnableKind::Bin => !binary_target,
+         _ => false,
  mod tests {
      use expect_test::{Expect, expect};
      use ide_db::MiniCore;
@@ -117,12 +106,11 @@ Rustfmt size:  37056 bytes
 -        filter_adjacent_derive_implementations: false,
 -    };
 -
--    fn check_with_config(
--        #[rust_analyzer::rust_fixture] ra_fixture: &str,
--        expect: Expect,
--        config: &AnnotationConfig<'_>,
--    ) {
-+    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect, config: &AnnotationConfig<'_>) {
+     fn check_with_config(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         expect: Expect,
+         config: &AnnotationConfig<'_>,
+     ) {
          let (analysis, file_id) = fixture::file(ra_fixture);
 -
          let annotations: Vec<Annotation> = analysis
@@ -135,7 +123,11 @@ Rustfmt size:  37056 bytes
          expect.assert_debug_eq(&annotations);
      }
 -
-     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
          check_with_config(ra_fixture, expect, &DEFAULT_CONFIG);
      }
 -

@@ -20,7 +20,10 @@ use crate::{
     handlers::auto_import::find_importable_node,
 };
 
-pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn qualify_path(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();
     let mut proposed_imports: Vec<_> =
@@ -99,7 +102,13 @@ pub(crate) enum QualifyCandidate<'db> {
 }
 
 impl QualifyCandidate<'_> {
-    pub(crate) fn qualify(&self, mut replacer: impl FnMut(String), import: &hir::ModPath, item: hir::ItemInNs, edition: Edition) {
+    pub(crate) fn qualify(
+        &self,
+        mut replacer: impl FnMut(String),
+        import: &hir::ModPath,
+        item: hir::ItemInNs,
+        edition: Edition,
+    ) {
         let import = mod_path_to_ast(import, edition);
         match self {
             QualifyCandidate::QualifierStart(segment, generics) => {
@@ -122,7 +131,13 @@ impl QualifyCandidate<'_> {
         }
     }
 
-    fn qualify_fn_call(db: &RootDatabase, mcall_expr: &ast::MethodCallExpr, mut replacer: impl FnMut(String), import: ast::Path, hir_fn: &hir::Function) -> Option<()> {
+    fn qualify_fn_call(
+        db: &RootDatabase,
+        mcall_expr: &ast::MethodCallExpr,
+        mut replacer: impl FnMut(String),
+        import: ast::Path,
+        hir_fn: &hir::Function,
+    ) -> Option<()> {
         let receiver = mcall_expr.receiver()?;
         let method_name = mcall_expr.name_ref()?;
         let generics =
@@ -143,7 +158,13 @@ impl QualifyCandidate<'_> {
         Some(())
     }
 
-    fn qualify_trait_method(db: &RootDatabase, mcall_expr: &ast::MethodCallExpr, replacer: impl FnMut(String), import: ast::Path, item: hir::ItemInNs) -> Option<()> {
+    fn qualify_trait_method(
+        db: &RootDatabase,
+        mcall_expr: &ast::MethodCallExpr,
+        replacer: impl FnMut(String),
+        import: ast::Path,
+        item: hir::ItemInNs,
+    ) -> Option<()> {
         let trait_method_name = mcall_expr.name_ref()?;
         let trait_ = item_as_trait(db, item)?;
         let method = find_trait_method(db, trait_, &trait_method_name)?;
@@ -151,7 +172,11 @@ impl QualifyCandidate<'_> {
     }
 }
 
-fn find_trait_method(db: &RootDatabase, trait_: hir::Trait, trait_method_name: &ast::NameRef) -> Option<hir::Function> {
+fn find_trait_method(
+    db: &RootDatabase,
+    trait_: hir::Trait,
+    trait_method_name: &ast::NameRef,
+) -> Option<hir::Function> {
     if let Some(hir::AssocItem::Function(method)) =
         trait_.items(db).into_iter().find(|item: &hir::AssocItem| {
             item.name(db)
@@ -165,7 +190,10 @@ fn find_trait_method(db: &RootDatabase, trait_: hir::Trait, trait_method_name: &
     }
 }
 
-fn item_as_trait(db: &RootDatabase, item: hir::ItemInNs) -> Option<hir::Trait> {
+fn item_as_trait(
+    db: &RootDatabase,
+    item: hir::ItemInNs,
+) -> Option<hir::Trait> {
     match item.into_module_def() {
         hir::ModuleDef::Trait(trait_) => Some(trait_),
         item_module_def => item_module_def.as_assoc_item(db)?.container_trait(db),
@@ -183,7 +211,12 @@ fn group_label(candidate: &ImportCandidate<'_>) -> GroupLabel {
     GroupLabel(format!("Qualify {name}"))
 }
 
-fn label(db: &RootDatabase, candidate: &ImportCandidate<'_>, import: &LocatedImport, edition: Edition) -> String {
+fn label(
+    db: &RootDatabase,
+    candidate: &ImportCandidate<'_>,
+    import: &LocatedImport,
+    edition: Edition,
+) -> String {
     let import_path = &import.import_path;
     match candidate {
         ImportCandidate::Path(candidate) if candidate.qualifier.is_empty() => {

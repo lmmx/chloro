@@ -10,7 +10,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, TextRange};
 
-pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn merge_match_arms(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let current_arm = ctx.find_node_at_trimmed_offset::<ast::MatchArm>()?;
     // Don't try to handle arms with guards for now - can add support for this later
     if current_arm.guard().is_some() {
@@ -78,7 +81,11 @@ fn contains_placeholder(a: &ast::MatchArm) -> bool {
     matches!(a.pat(), Some(ast::Pat::WildcardPat(..)))
 }
 
-fn are_same_types(current_arm_types: &FxHashMap<String, Option<Type<'_>>>, arm: &ast::MatchArm, ctx: &AssistContext<'_>) -> bool {
+fn are_same_types(
+    current_arm_types: &FxHashMap<String, Option<Type<'_>>>,
+    arm: &ast::MatchArm,
+    ctx: &AssistContext<'_>,
+) -> bool {
     let arm_types = get_arm_types(ctx, arm);
     for (other_arm_type_name, other_arm_type) in arm_types {
         match (current_arm_types.get(&other_arm_type_name), other_arm_type) {
@@ -90,7 +97,10 @@ fn are_same_types(current_arm_types: &FxHashMap<String, Option<Type<'_>>>, arm: 
     true
 }
 
-fn get_arm_types<'db>(context: &AssistContext<'db>, arm: &ast::MatchArm) -> FxHashMap<String, Option<Type<'db>>> {
+fn get_arm_types<'db>(
+    context: &AssistContext<'db>,
+    arm: &ast::MatchArm,
+) -> FxHashMap<String, Option<Type<'db>>> {
     let mut mapping: FxHashMap<String, Option<Type<'db>>> = FxHashMap::default();
     fn recurse<'db>(
         map: &mut FxHashMap<String, Option<Type<'db>>>,

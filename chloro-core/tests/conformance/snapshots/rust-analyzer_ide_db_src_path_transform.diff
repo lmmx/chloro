@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25340 bytes
+Chloro size:   25788 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
@@ -35,80 +35,50 @@ Rustfmt size:  25826 bytes
  type DefaultedParam = Either<hir::TypeParam, hir::ConstParam>;
  
  /// `PathTransform` substitutes path in SyntaxNodes in bulk.
- }
- 
- impl<'a> PathTransform<'a> {
--    pub fn trait_impl(
--        target_scope: &'a SemanticsScope<'a>,
--        source_scope: &'a SemanticsScope<'a>,
--        trait_: hir::Trait,
--        impl_: ast::Impl,
--    ) -> PathTransform<'a> {
-+    pub fn trait_impl(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, trait_: hir::Trait, impl_: ast::Impl) -> PathTransform<'a> {
-         PathTransform {
-             source_scope,
-             target_scope,
-         }
-     }
- 
--    pub fn function_call(
--        target_scope: &'a SemanticsScope<'a>,
--        source_scope: &'a SemanticsScope<'a>,
--        function: hir::Function,
--        generic_arg_list: ast::GenericArgList,
--    ) -> PathTransform<'a> {
-+    pub fn function_call(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, function: hir::Function, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
-         PathTransform {
-             source_scope,
-             target_scope,
-         }
-     }
- 
--    pub fn impl_transformation(
--        target_scope: &'a SemanticsScope<'a>,
--        source_scope: &'a SemanticsScope<'a>,
--        impl_: hir::Impl,
--        generic_arg_list: ast::GenericArgList,
--    ) -> PathTransform<'a> {
-+    pub fn impl_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, impl_: hir::Impl, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
-         PathTransform {
-             source_scope,
-             target_scope,
-         }
-     }
- 
--    pub fn adt_transformation(
--        target_scope: &'a SemanticsScope<'a>,
--        source_scope: &'a SemanticsScope<'a>,
--        adt: hir::Adt,
--        generic_arg_list: ast::GenericArgList,
--    ) -> PathTransform<'a> {
-+    pub fn adt_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, adt: hir::Adt, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
-         PathTransform {
-             source_scope,
-             target_scope,
-         }
-     }
- 
--    pub fn generic_transformation(
--        target_scope: &'a SemanticsScope<'a>,
--        source_scope: &'a SemanticsScope<'a>,
--    ) -> PathTransform<'a> {
-+    pub fn generic_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>) -> PathTransform<'a> {
-         PathTransform {
-             source_scope,
-             target_scope,
      }
  
      #[must_use]
--    pub fn apply_all<'b>(
--        &self,
--        nodes: impl IntoIterator<Item = &'b SyntaxNode>,
--    ) -> Vec<SyntaxNode> {
-+    pub fn apply_all<'b>(&self, nodes: impl IntoIterator<Item = &'b SyntaxNode>) -> Vec<SyntaxNode> {
-         let ctx = self.build_ctx();
+-    pub fn apply(&self, syntax: &SyntaxNode) -> SyntaxNode {
++    pub fn apply(
++        &self,
++        syntax: &SyntaxNode,
++    ) -> SyntaxNode {
+         self.build_ctx().apply(syntax)
+     }
+ 
          nodes.into_iter().map(|node| ctx.apply(&node.clone())).collect()
      }
+ 
+-    fn prettify_target_node(&self, node: SyntaxNode) -> SyntaxNode {
++    fn prettify_target_node(
++        &self,
++        node: SyntaxNode,
++    ) -> SyntaxNode {
+         match self.target_scope.file_id() {
+             HirFileId::FileId(_) => node,
+             HirFileId::MacroFile(file_id) => {
+         }
+     }
+ 
+-    fn prettify_target_ast<N: AstNode>(&self, node: N) -> N {
++    fn prettify_target_ast<N: AstNode>(
++        &self,
++        node: N,
++    ) -> N {
+         N::cast(self.prettify_target_node(node.syntax().clone())).unwrap()
+     }
+ 
+ }
+ 
+ impl Ctx<'_> {
+-    fn apply(&self, item: &SyntaxNode) -> SyntaxNode {
++    fn apply(
++        &self,
++        item: &SyntaxNode,
++    ) -> SyntaxNode {
+         // `transform_path` may update a node's parent and that would break the
+         // tree traversal. Thus all paths in the tree are collected into a vec
+         // so that such operation is safe.
                      .replace(lifetime.syntax(), subst.clone_subtree().clone_for_update().syntax());
              }
          });
@@ -116,6 +86,25 @@ Rustfmt size:  25826 bytes
          editor.finish().new_root().clone()
      }
  
+-    fn transform_default_values(&mut self, defaulted_params: Vec<DefaultedParam>) {
++    fn transform_default_values(
++        &mut self,
++        defaulted_params: Vec<DefaultedParam>,
++    ) {
+         // By now the default values are simply copied from where they are declared
+         // and should be transformed. As any value is allowed to refer to previous
+         // generic (both type and const) parameters, they should be all iterated left-to-right.
+         }
+     }
+ 
+-    fn transform_path(&self, path: &SyntaxNode) -> SyntaxNode {
++    fn transform_path(
++        &self,
++        path: &SyntaxNode,
++    ) -> SyntaxNode {
+         fn find_child_paths_and_ident_pats(
+             root_path: &SyntaxNode,
+         ) -> Vec<Either<ast::Path, ast::IdentPat>> {
              }
              result
          }
@@ -135,16 +124,22 @@ Rustfmt size:  25826 bytes
          }
          editor.finish().new_root().clone()
      }
--    fn transform_path_or_ident_pat(
--        &self,
--        editor: &mut SyntaxEditor,
--        item: &Either<ast::Path, ast::IdentPat>,
--    ) -> Option<()> {
 +
-+    fn transform_path_or_ident_pat(&self, editor: &mut SyntaxEditor, item: &Either<ast::Path, ast::IdentPat>) -> Option<()> {
-         match item {
-             Either::Left(path) => self.transform_path_(editor, path),
-             Either::Right(ident_pat) => self.transform_ident_pat(editor, ident_pat),
+     fn transform_path_or_ident_pat(
+         &self,
+         editor: &mut SyntaxEditor,
+         }
+     }
+ 
+-    fn transform_path_(&self, editor: &mut SyntaxEditor, path: &ast::Path) -> Option<()> {
++    fn transform_path_(
++        &self,
++        editor: &mut SyntaxEditor,
++        path: &ast::Path,
++    ) -> Option<()> {
+         if path.qualifier().is_some() {
+             return None;
+         }
              return None;
          }
          let resolution = self.source_scope.speculative_resolve(path)?;
@@ -152,15 +147,8 @@ Rustfmt size:  25826 bytes
          match resolution {
              hir::PathResolution::TypeParam(tp) => {
                  if let Some(subst) = self.type_substs.get(&tp) {
-         Some(())
-     }
- 
--    fn transform_ident_pat(
--        &self,
--        editor: &mut SyntaxEditor,
--        ident_pat: &ast::IdentPat,
--    ) -> Option<()> {
-+    fn transform_ident_pat(&self, editor: &mut SyntaxEditor, ident_pat: &ast::IdentPat) -> Option<()> {
+         ident_pat: &ast::IdentPat,
+     ) -> Option<()> {
          let name = ident_pat.name()?;
 -
          let temp_path = make::path_from_text(&name.text());
@@ -192,12 +180,7 @@ Rustfmt size:  25826 bytes
      Some(result)
  }
  
--fn find_trait_for_assoc_item(
--    scope: &SemanticsScope<'_>,
--    type_param: hir::TypeParam,
--    assoc_item: ast::NameRef,
--) -> Option<hir::Trait> {
-+fn find_trait_for_assoc_item(scope: &SemanticsScope<'_>, type_param: hir::TypeParam, assoc_item: ast::NameRef) -> Option<hir::Trait> {
+ ) -> Option<hir::Trait> {
      let db = scope.db;
      let trait_bounds = type_param.trait_bounds(db);
 -

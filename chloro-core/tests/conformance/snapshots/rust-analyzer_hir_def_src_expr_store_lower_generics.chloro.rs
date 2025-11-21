@@ -46,13 +46,22 @@ impl GenericParamsCollector {
         }
     }
 
-    pub(crate) fn with_self_param(ec: &mut ExprCollector<'_>, parent: GenericDefId, bounds: Option<ast::TypeBoundList>) -> Self {
+    pub(crate) fn with_self_param(
+        ec: &mut ExprCollector<'_>,
+        parent: GenericDefId,
+        bounds: Option<ast::TypeBoundList>,
+    ) -> Self {
         let mut this = Self::new(parent);
         this.fill_self_param(ec, bounds);
         this
     }
 
-    pub(crate) fn lower(&mut self, ec: &mut ExprCollector<'_>, generic_param_list: Option<ast::GenericParamList>, where_clause: Option<ast::WhereClause>) {
+    pub(crate) fn lower(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        generic_param_list: Option<ast::GenericParamList>,
+        where_clause: Option<ast::WhereClause>,
+    ) {
         if let Some(params) = generic_param_list {
             self.lower_param_list(ec, params)
         }
@@ -61,7 +70,11 @@ impl GenericParamsCollector {
         }
     }
 
-    pub(crate) fn collect_impl_trait<R>(&mut self, ec: &mut ExprCollector<'_>, cb: impl FnOnce(&mut ExprCollector<'_>, ImplTraitLowerFn<'_>) -> R) -> R {
+    pub(crate) fn collect_impl_trait<R>(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        cb: impl FnOnce(&mut ExprCollector<'_>, ImplTraitLowerFn<'_>) -> R,
+    ) -> R {
         cb(
             ec,
             &mut Self::lower_argument_impl_trait(
@@ -94,7 +107,11 @@ impl GenericParamsCollector {
         })
     }
 
-    fn lower_param_list(&mut self, ec: &mut ExprCollector<'_>, params: ast::GenericParamList) {
+    fn lower_param_list(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        params: ast::GenericParamList,
+    ) {
         for generic_param in params.generic_params() {
             let enabled = ec.check_cfg(&generic_param);
             if !enabled {
@@ -150,7 +167,11 @@ impl GenericParamsCollector {
         }
     }
 
-    fn lower_where_predicates(&mut self, ec: &mut ExprCollector<'_>, where_clause: ast::WhereClause) {
+    fn lower_where_predicates(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        where_clause: ast::WhereClause,
+    ) {
         for pred in where_clause.predicates() {
             let target = if let Some(type_ref) = pred.ty() {
                 Either::Left(
@@ -180,13 +201,24 @@ impl GenericParamsCollector {
         }
     }
 
-    fn lower_bounds(&mut self, ec: &mut ExprCollector<'_>, type_bounds: Option<ast::TypeBoundList>, target: Either<TypeRefId, LifetimeRefId>) {
+    fn lower_bounds(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        type_bounds: Option<ast::TypeBoundList>,
+        target: Either<TypeRefId, LifetimeRefId>,
+    ) {
         for bound in type_bounds.iter().flat_map(|type_bound_list| type_bound_list.bounds()) {
             self.lower_type_bound_as_predicate(ec, bound, None, target);
         }
     }
 
-    fn lower_type_bound_as_predicate(&mut self, ec: &mut ExprCollector<'_>, bound: ast::TypeBound, hrtb_lifetimes: Option<&[Name]>, target: Either<TypeRefId, LifetimeRefId>) {
+    fn lower_type_bound_as_predicate(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        bound: ast::TypeBound,
+        hrtb_lifetimes: Option<&[Name]>,
+        target: Either<TypeRefId, LifetimeRefId>,
+    ) {
         let bound = ec.lower_type_bound(
             bound,
             &mut Self::lower_argument_impl_trait(
@@ -213,7 +245,11 @@ impl GenericParamsCollector {
         self.where_predicates.push(predicate);
     }
 
-    fn lower_argument_impl_trait(type_or_consts: &mut Arena<TypeOrConstParamData>, where_predicates: &mut Vec<WherePredicate>, parent: GenericDefId) -> impl for<'ec, 'db> FnMut(&'ec mut ExprCollector<'db>, TypePtr, ThinVec<TypeBound>) -> TypeRefId {
+    fn lower_argument_impl_trait(
+        type_or_consts: &mut Arena<TypeOrConstParamData>,
+        where_predicates: &mut Vec<WherePredicate>,
+        parent: GenericDefId,
+    ) -> impl for<'ec, 'db> FnMut(&'ec mut ExprCollector<'db>, TypePtr, ThinVec<TypeBound>) -> TypeRefId {
         move |ec, ptr, impl_trait_bounds| {
             let param = TypeParamData {
                 name: None,
@@ -233,7 +269,11 @@ impl GenericParamsCollector {
         }
     }
 
-    fn fill_self_param(&mut self, ec: &mut ExprCollector<'_>, bounds: Option<ast::TypeBoundList>) {
+    fn fill_self_param(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        bounds: Option<ast::TypeBoundList>,
+    ) {
         let self_ = Name::new_symbol_root(sym::Self_);
         let idx = self.type_or_consts.alloc(
             TypeParamData {

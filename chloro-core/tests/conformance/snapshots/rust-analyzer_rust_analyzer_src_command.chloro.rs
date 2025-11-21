@@ -17,7 +17,11 @@ use stdx::process::streaming_output;
 
 /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
 /// cargo output into a Rust data type
-fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
+fn from_line(
+    &self,
+    line: &str,
+    error: &mut String,
+) -> Option<T>;
 fn from_eof(&self) -> Option<T>;
 
 struct CargoActor<T> {
@@ -28,14 +32,22 @@ struct CargoActor<T> {
 }
 
 impl<T: Sized + Send + 'static> CargoActor<T> {
-    fn new(parser: impl CargoParser<T>, sender: Sender<T>, stdout: ChildStdout, stderr: ChildStderr) -> Self {
+    fn new(
+        parser: impl CargoParser<T>,
+        sender: Sender<T>,
+        stdout: ChildStdout,
+        stderr: ChildStderr,
+    ) -> Self {
         let parser = Box::new(parser);
         CargoActor { parser, sender, stdout, stderr }
     }
 }
 
 impl<T: Sized + Send + 'static> CargoActor<T> {
-    fn run(self, outfile: Option<Utf8PathBuf>) -> io::Result<(bool, String)> {
+    fn run(
+        self,
+        outfile: Option<Utf8PathBuf>,
+    ) -> io::Result<(bool, String)> {
         // We manually read a line at a time, instead of using serde's
         // stream deserializers, because the deserializer cannot recover
         // from an error, resulting in it getting stuck, because we try to
@@ -125,7 +137,10 @@ pub(crate) struct CommandHandle<T> {
 }
 
 impl<T> fmt::Debug for CommandHandle<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("CommandHandle")
             .field("program", &self.program)
             .field("arguments", &self.arguments)
@@ -135,7 +150,12 @@ impl<T> fmt::Debug for CommandHandle<T> {
 }
 
 impl<T: Sized + Send + 'static> CommandHandle<T> {
-    pub(crate) fn spawn(mut command: Command, parser: impl CargoParser<T>, sender: Sender<T>, out_file: Option<Utf8PathBuf>) -> std::io::Result<Self> {
+    pub(crate) fn spawn(
+        mut command: Command,
+        parser: impl CargoParser<T>,
+        sender: Sender<T>,
+        out_file: Option<Utf8PathBuf>,
+    ) -> std::io::Result<Self> {
         command.stdout(Stdio::piped()).stderr(Stdio::piped()).stdin(Stdio::null());
         let program = command.get_program().into();
         let arguments = command.get_args().map(|arg| arg.into()).collect::<Vec<OsString>>();

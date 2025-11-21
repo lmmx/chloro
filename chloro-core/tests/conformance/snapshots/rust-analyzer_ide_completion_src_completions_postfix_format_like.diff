@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   2630 bytes
+Chloro size:   2653 bytes
 Rustfmt size:  3554 bytes
 
 ✗ Outputs DIFFER
@@ -54,15 +54,8 @@ Rustfmt size:  3554 bytes
 -    ("loge", "log::error!"),
 -];
  
--pub(crate) fn add_format_like_completions(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    dot_receiver: &ast::Expr,
--    cap: SnippetCap,
--    receiver_text: &ast::String,
--) {
-+pub(crate) fn add_format_like_completions(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_receiver: &ast::Expr, cap: SnippetCap, receiver_text: &ast::String) {
-     let postfix_snippet = match build_postfix_snippet_builder(ctx, cap, dot_receiver) {
+ pub(crate) fn add_format_like_completions(
+     acc: &mut Completions,
          Some(it) => it,
          None => return,
      };

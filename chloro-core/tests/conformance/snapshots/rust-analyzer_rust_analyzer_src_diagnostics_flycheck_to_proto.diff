@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77677 bytes
+Chloro size:   77875 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -27,41 +27,15 @@ Rustfmt size:  77855 bytes
  use super::{DiagnosticsMapConfig, Fix};
  
  /// Determines the LSP severity from a diagnostic
--fn diagnostic_severity(
--    config: &DiagnosticsMapConfig,
--    level: crate::flycheck::DiagnosticLevel,
--    code: Option<&crate::flycheck::DiagnosticCode>,
--) -> Option<lsp_types::DiagnosticSeverity> {
-+fn diagnostic_severity(config: &DiagnosticsMapConfig, level: crate::flycheck::DiagnosticLevel, code: Option<&crate::flycheck::DiagnosticCode>) -> Option<lsp_types::DiagnosticSeverity> {
-     let res = match level {
-         DiagnosticLevel::Ice => lsp_types::DiagnosticSeverity::ERROR,
-         DiagnosticLevel::Error => lsp_types::DiagnosticSeverity::ERROR,
- }
- 
- /// Converts a Rust span to a LSP location
--fn location(
--    config: &DiagnosticsMapConfig,
--    workspace_root: &AbsPath,
--    span: &DiagnosticSpan,
--    snap: &GlobalStateSnapshot,
--) -> lsp_types::Location {
-+fn location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: &DiagnosticSpan, snap: &GlobalStateSnapshot) -> lsp_types::Location {
+ ) -> lsp_types::Location {
      let file_name = resolve_path(config, workspace_root, &span.file_name);
      let uri = url_from_abs_path(&file_name);
 -
      let range = {
          let position_encoding = snap.config.negotiated_encoding();
          lsp_types::Range::new(
-     lsp_types::Location::new(uri, range)
- }
- 
--fn position(
--    position_encoding: &PositionEncoding,
--    span: &DiagnosticSpan,
--    line_number: usize,
--    column_offset_utf32: usize,
--) -> lsp_types::Position {
-+fn position(position_encoding: &PositionEncoding, span: &DiagnosticSpan, line_number: usize, column_offset_utf32: usize) -> lsp_types::Position {
+     column_offset_utf32: usize,
+ ) -> lsp_types::Position {
      let line_index = line_number - span.line_start;
 -
      let column_offset_encoded = match span.text.get(line_index) {
@@ -74,19 +48,6 @@ Rustfmt size:  77855 bytes
      lsp_types::Position {
          line: (line_number as u32).saturating_sub(1),
          character: column_offset_encoded as u32,
- ///
- /// This takes locations pointing into the standard library, or generally outside the current
- /// workspace into account and tries to avoid those, in case macros are involved.
--fn primary_location(
--    config: &DiagnosticsMapConfig,
--    workspace_root: &AbsPath,
--    span: &DiagnosticSpan,
--    snap: &GlobalStateSnapshot,
--) -> lsp_types::Location {
-+fn primary_location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: &DiagnosticSpan, snap: &GlobalStateSnapshot) -> lsp_types::Location {
-     let span_stack = std::iter::successors(Some(span), |span| Some(&span.expansion.as_ref()?.span));
-     for span in span_stack.clone() {
-         let abs_path = resolve_path(config, workspace_root, &span.file_name);
              return location(config, workspace_root, span, snap);
          }
      }
@@ -94,44 +55,6 @@ Rustfmt size:  77855 bytes
      // Fall back to the outermost macro invocation if no suitable span comes up.
      let last_span = span_stack.last().unwrap();
      location(config, workspace_root, last_span, snap)
- /// Converts a secondary Rust span to a LSP related information
- ///
- /// If the span is unlabelled this will return `None`.
--fn diagnostic_related_information(
--    config: &DiagnosticsMapConfig,
--    workspace_root: &AbsPath,
--    span: DiagnosticSpan,
--    snap: &GlobalStateSnapshot,
--) -> Option<lsp_types::DiagnosticRelatedInformation> {
-+fn diagnostic_related_information(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: DiagnosticSpan, snap: &GlobalStateSnapshot) -> Option<lsp_types::DiagnosticRelatedInformation> {
-     let location = location(config, workspace_root, &span, snap);
-     let message = span.label?;
-     Some(lsp_types::DiagnosticRelatedInformation { location, message })
- 
- /// Resolves paths applying any matching path prefix remappings, and then
- /// joining the path to the workspace root.
--fn resolve_path(
--    config: &DiagnosticsMapConfig,
--    workspace_root: &AbsPath,
--    file_name: &str,
--) -> AbsPathBuf {
-+fn resolve_path(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, file_name: &str) -> AbsPathBuf {
-     match config
-         .remap_prefix
-         .iter()
-     MessageLine(String),
- }
- 
--fn map_rust_child_diagnostic(
--    config: &DiagnosticsMapConfig,
--    workspace_root: &AbsPath,
--    rd: &crate::flycheck::Diagnostic,
--    snap: &GlobalStateSnapshot,
--) -> MappedRustChildDiagnostic {
-+fn map_rust_child_diagnostic(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, rd: &crate::flycheck::Diagnostic, snap: &GlobalStateSnapshot) -> MappedRustChildDiagnostic {
-     let spans: SmallVec<[&DiagnosticSpan; 1]> = rd.spans.iter().filter(|s| s.is_primary).collect();
-     if spans.is_empty() {
-         // `rustc` uses these spanless children as a way to print multi-line
          // messages
          return MappedRustChildDiagnostic::MessageLine(rd.message.clone());
      }
@@ -153,27 +76,6 @@ Rustfmt size:  77855 bytes
      let suggested_fix = if edit_map.is_empty() {
          None
      } else {
- ///    `relatedInformation` or additional message lines.
- ///
- /// If the diagnostic has no primary span this will return `None`
--pub(crate) fn map_rust_diagnostic_to_lsp(
--    config: &DiagnosticsMapConfig,
--    crate::flycheck::Diagnostic {
-+pub(crate) fn map_rust_diagnostic_to_lsp(config: &DiagnosticsMapConfig, crate::flycheck::Diagnostic {
-         mut message,
-         code: diagnostic_code,
-         level,
-         children,
-         rendered,
-         ..
--    }: crate::flycheck::Diagnostic,
--    workspace_root: &AbsPath,
--    snap: &GlobalStateSnapshot,
--) -> Vec<MappedRustDiagnostic> {
-+    }: crate::flycheck::Diagnostic, workspace_root: &AbsPath, snap: &GlobalStateSnapshot) -> Vec<MappedRustDiagnostic> {
-     let (primary_spans, secondary_spans): (
-         SmallVec<[DiagnosticSpan; 1]>,
-         SmallVec<[DiagnosticSpan; 1]>,
      if primary_spans.is_empty() {
          return Vec::new();
      }
@@ -239,13 +141,23 @@ Rustfmt size:  77855 bytes
      use lsp_types::ClientCapabilities;
      use paths::Utf8Path;
 -
-     fn check(diagnostics_json: &str, expect: ExpectFile) {
+-    fn check(diagnostics_json: &str, expect: ExpectFile) {
++    fn check(
++        diagnostics_json: &str,
++        expect: ExpectFile,
++    ) {
          check_with_config(DiagnosticsMapConfig::default(), diagnostics_json, expect)
      }
 -
-     fn check_with_config(config: DiagnosticsMapConfig, diagnostics_json: &str, expect: ExpectFile) {
+-    fn check_with_config(config: DiagnosticsMapConfig, diagnostics_json: &str, expect: ExpectFile) {
++    fn check_with_config(
++        config: DiagnosticsMapConfig,
++        diagnostics_json: &str,
++        expect: ExpectFile,
++    ) {
          let diagnostic: crate::flycheck::Diagnostic =
              serde_json::from_str(diagnostics_json).unwrap();
+         let workspace_root: &AbsPath = Utf8Path::new("/test/").try_into().unwrap();
          actual.iter_mut().for_each(|diag| diag.diagnostic.data = None);
          expect.assert_debug_eq(&actual)
      }

@@ -18,10 +18,19 @@ use crate::next_solver::{
     DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
 };
 
-fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
+fn instantiate(
+    &self,
+    tcx: DbInterner<'db>,
+    var_values: &CanonicalVarValues<'db>,
+) -> V
 where
         V: TypeFoldable<DbInterner<'db>>;
-fn instantiate_projected<T>(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>, projection_fn: impl FnOnce(&V) -> T) -> T
+fn instantiate_projected<T>(
+    &self,
+    tcx: DbInterner<'db>,
+    var_values: &CanonicalVarValues<'db>,
+    projection_fn: impl FnOnce(&V) -> T,
+) -> T
 where
         T: TypeFoldable<DbInterner<'db>>;
 
@@ -30,7 +39,11 @@ where
 impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
     /// Instantiate the wrapped value, replacing each canonical value
     /// with the value given in `var_values`.
-    fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
+    fn instantiate(
+        &self,
+        tcx: DbInterner<'db>,
+        var_values: &CanonicalVarValues<'db>,
+    ) -> V
     where
         V: TypeFoldable<DbInterner<'db>>, {
         self.instantiate_projected(tcx, var_values, |value| value.clone())
@@ -42,7 +55,12 @@ impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
     /// variables bound in `self` (usually this extracts from subset
     /// of `self`). Apply the instantiation `var_values` to this value
     /// V, replacing each of the canonical variables.
-    fn instantiate_projected<T>(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>, projection_fn: impl FnOnce(&V) -> T) -> T
+    fn instantiate_projected<T>(
+        &self,
+        tcx: DbInterner<'db>,
+        var_values: &CanonicalVarValues<'db>,
+        projection_fn: impl FnOnce(&V) -> T,
+    ) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         assert_eq!(self.variables.len(), var_values.len());
@@ -54,7 +72,11 @@ impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
 /// Instantiate the values from `var_values` into `value`. `var_values`
 /// must be values for the set of canonical variables that appear in
 /// `value`.
-pub(super) fn instantiate_value<'db, T>(tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>, value: T) -> T
+pub(super) fn instantiate_value<'db, T>(
+    tcx: DbInterner<'db>,
+    var_values: &CanonicalVarValues<'db>,
+    value: T,
+) -> T
 where
     T: TypeFoldable<DbInterner<'db>>, {
     if var_values.var_values.is_empty() {
@@ -96,7 +118,10 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         self.tcx
     }
 
-    fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        t: Ty<'db>,
+    ) -> Ty<'db> {
         match t.kind() {
             TyKind::Bound(BoundVarIndexKind::Canonical, bound_ty) => {
                 self.var_values[bound_ty.var.as_usize()].expect_ty()
@@ -115,7 +140,10 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         }
     }
 
-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
+    fn fold_region(
+        &mut self,
+        r: Region<'db>,
+    ) -> Region<'db> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Canonical, br) => {
                 self.var_values[br.var.as_usize()].expect_region()
@@ -124,7 +152,10 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         }
     }
 
-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        ct: Const<'db>,
+    ) -> Const<'db> {
         match ct.kind() {
             ConstKind::Bound(BoundVarIndexKind::Canonical, bound_const) => {
                 self.var_values[bound_const.var.as_usize()].expect_const()
@@ -133,11 +164,17 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         }
     }
 
-    fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {
+    fn fold_predicate(
+        &mut self,
+        p: Predicate<'db>,
+    ) -> Predicate<'db> {
         if p.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) { p.super_fold_with(self) } else { p }
     }
 
-    fn fold_clauses(&mut self, c: Clauses<'db>) -> Clauses<'db> {
+    fn fold_clauses(
+        &mut self,
+        c: Clauses<'db>,
+    ) -> Clauses<'db> {
         if !c.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
             return c;
         }

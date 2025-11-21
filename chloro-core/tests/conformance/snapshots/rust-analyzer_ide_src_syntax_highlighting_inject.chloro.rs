@@ -19,7 +19,13 @@ use crate::{
     syntax_highlighting::{HighlightConfig, highlights::Highlights},
 };
 
-pub(super) fn ra_fixture(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &HighlightConfig<'_>, literal: &ast::String, expanded: &ast::String) -> Option<()> {
+pub(super) fn ra_fixture(
+    hl: &mut Highlights,
+    sema: &Semantics<'_, RootDatabase>,
+    config: &HighlightConfig<'_>,
+    literal: &ast::String,
+    expanded: &ast::String,
+) -> Option<()> {
     let (analysis, fixture_analysis) = Analysis::from_ra_fixture_with_on_cursor(
         sema,
         literal.clone(),
@@ -73,7 +79,13 @@ pub(super) fn ra_fixture(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>
 
 
 /// Injection of syntax highlighting of doctests and intra doc links.
-pub(super) fn doc_comment(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &HighlightConfig<'_>, src_file_id: EditionedFileId, node: &SyntaxNode) {
+pub(super) fn doc_comment(
+    hl: &mut Highlights,
+    sema: &Semantics<'_, RootDatabase>,
+    config: &HighlightConfig<'_>,
+    src_file_id: EditionedFileId,
+    node: &SyntaxNode,
+) {
     let (attributes, def) = match doc_attributes(sema, node) {
         Some(it) => it,
         None => return,
@@ -221,7 +233,10 @@ pub(super) fn doc_comment(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase
     }
 }
 
-fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::String> {
+fn find_doc_string_in_attr(
+    attr: &hir::Attr,
+    it: &ast::Attr,
+) -> Option<ast::String> {
     match it.expr() {
         // #[doc = lit]
         Some(ast::Expr::Literal(lit)) => match lit.kind() {

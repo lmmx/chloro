@@ -13,7 +13,12 @@ use syntax::{
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints};
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(_sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, statik_or_const: Either<ast::Static, ast::Const>) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(_sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    statik_or_const: Either<ast::Static, ast::Const>,
+) -> Option<()> {
     if config.lifetime_elision_hints != LifetimeElisionHints::Always {
         return None;
     }

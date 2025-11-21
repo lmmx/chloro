@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14963 bytes
-Chloro size:   14868 bytes
+Chloro size:   14933 bytes
 Rustfmt size:  15195 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,11 @@ Rustfmt size:  15195 bytes
  }
  
  impl TreeDiff {
-     pub fn into_text_edit(&self, builder: &mut TextEditBuilder) {
+-    pub fn into_text_edit(&self, builder: &mut TextEditBuilder) {
++    pub fn into_text_edit(
++        &self,
++        builder: &mut TextEditBuilder,
++    ) {
          let _p = tracing::info_span!("into_text_edit").entered();
 -
          for (anchor, to) in &self.insertions {
@@ -40,8 +44,14 @@ Rustfmt size:  15195 bytes
          }
          for (from, to) in &self.replacements {
              builder.replace(from.text_range(), to.to_string());
+ /// such that applying this map on `from` will result in `to`.
+ ///
  /// This function tries to find a fine-grained diff.
- pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
+-pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
++pub fn diff(
++    from: &SyntaxNode,
++    to: &SyntaxNode,
++) -> TreeDiff {
      let _p = tracing::info_span!("diff").entered();
 -
      let mut diff = TreeDiff {
@@ -154,7 +164,7 @@ Rustfmt size:  15195 bytes
          )
      }
 -
-     fn check_diff(from: &str, to: &str, expected_diff: Expect) {
+-    fn check_diff(from: &str, to: &str, expected_diff: Expect) {
 -        let from_node = SourceFile::parse(from, Edition::CURRENT)
 -            .tree()
 -            .syntax()
@@ -163,6 +173,11 @@ Rustfmt size:  15195 bytes
 -            .tree()
 -            .syntax()
 -            .clone();
++    fn check_diff(
++        from: &str,
++        to: &str,
++        expected_diff: Expect,
++    ) {
 +        let from_node = SourceFile::parse(from, Edition::CURRENT).tree().syntax().clone();
 +        let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
          let diff = super::diff(&from_node, &to_node);

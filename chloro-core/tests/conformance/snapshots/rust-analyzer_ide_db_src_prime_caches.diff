@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   12090 bytes
+Chloro size:   12116 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -28,15 +28,8 @@ Rustfmt size:  12243 bytes
  };
  
  /// We're indexing many crates.
-     pub work_type: &'static str,
- }
- 
--pub fn parallel_prime_caches(
--    db: &RootDatabase,
--    num_worker_threads: usize,
--    cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync),
--) {
-+pub fn parallel_prime_caches(db: &RootDatabase, num_worker_threads: usize, cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync)) {
+     cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync),
+ ) {
      let _p = tracing::info_span!("parallel_prime_caches").entered();
 -
      enum ParallelPrimeCacheWorkerProgress {
@@ -118,3 +111,14 @@ Rustfmt size:  12243 bytes
                  crates_currently_indexing.insert(crate_id, crate_name);
              }
              ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
+     }
+ }
+ 
+-fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
++fn crate_name(
++    db: &RootDatabase,
++    krate: Crate,
++) -> Symbol {
+     krate
+         .extra_data(db)
+         .display_name

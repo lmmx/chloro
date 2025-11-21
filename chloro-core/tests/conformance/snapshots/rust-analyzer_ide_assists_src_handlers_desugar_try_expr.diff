@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8787 bytes
-Chloro size:   8113 bytes
+Chloro size:   8124 bytes
 Rustfmt size:  8787 bytes
 
 ✗ Outputs DIFFER
@@ -49,7 +49,11 @@ Rustfmt size:  8787 bytes
 -//     };
 -// }
 -// ```
- pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn desugar_try_expr(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let question_tok = ctx.find_token_syntax_at_offset(T![?])?;
      let try_expr = question_tok.parent().and_then(ast::TryExpr::cast)?;
 -

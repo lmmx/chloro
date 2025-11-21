@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10358 bytes
-Chloro size:   10228 bytes
+Chloro size:   10251 bytes
 Rustfmt size:  10358 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,17 @@ Rustfmt size:  10358 bytes
  };
  
  impl RootDatabase {
+         self.synthetic_write(Durability::LOW);
+     }
+ 
+-    pub fn apply_change(&mut self, change: ChangeWithProcMacros) {
++    pub fn apply_change(
++        &mut self,
++        change: ChangeWithProcMacros,
++    ) {
+         let _p = tracing::info_span!("RootDatabase::apply_change").entered();
+         self.request_cancellation();
+         tracing::trace!("apply_change {:?}", change);
          }
          change.apply(self);
      }

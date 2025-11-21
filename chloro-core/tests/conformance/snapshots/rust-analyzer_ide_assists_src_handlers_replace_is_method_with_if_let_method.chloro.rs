@@ -4,7 +4,10 @@ use syntax::ast::{self, AstNode, syntax_factory::SyntaxFactory};
 
 use crate::{AssistContext, AssistId, Assists, utils::cover_let_chain};
 
-pub(crate) fn replace_is_method_with_if_let_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_is_method_with_if_let_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let has_cond = ctx.find_node_at_offset::<Either<ast::IfExpr, ast::WhileExpr>>()?;
     let cond = either::for_both!(&has_cond, it => it.condition())?;
     let cond = cover_let_chain(cond, ctx.selection_trimmed())?;

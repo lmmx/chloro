@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10817 bytes
-Chloro size:   9850 bytes
+Chloro size:   10034 bytes
 Rustfmt size:  10923 bytes
 
 ✗ Outputs DIFFER
@@ -41,6 +41,16 @@ Rustfmt size:  10923 bytes
      /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
      Unsafe,
  }
+ }
+ 
+ impl fmt::Display for HlTag {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(self.as_str(), f)
+     }
  }
  
  impl HlMod {
@@ -83,6 +93,26 @@ Rustfmt size:  10923 bytes
      }
  }
  
+ impl fmt::Display for HlMod {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(self.as_str(), f)
+     }
+ }
+ 
+ impl fmt::Display for Highlight {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         self.tag.fmt(f)?;
+         for modifier in self.mods.iter() {
+             f.write_char('.')?;
+ 
  impl Highlight {
      pub(crate) fn new(tag: HlTag) -> Highlight {
 -        Highlight {
@@ -95,6 +125,57 @@ Rustfmt size:  10923 bytes
      pub fn is_empty(&self) -> bool {
          self.tag == HlTag::None && self.mods.is_empty()
      }
+ impl ops::BitOr<HlMod> for HlTag {
+     type Output = Highlight;
+ 
+-    fn bitor(self, rhs: HlMod) -> Highlight {
++    fn bitor(
++        self,
++        rhs: HlMod,
++    ) -> Highlight {
+         Highlight::new(self) | rhs
+     }
+ }
+ 
+ impl ops::BitOrAssign<HlMod> for HlMods {
+-    fn bitor_assign(&mut self, rhs: HlMod) {
++    fn bitor_assign(
++        &mut self,
++        rhs: HlMod,
++    ) {
+         self.0 |= rhs.mask();
+     }
+ }
+ 
+ impl ops::BitOrAssign<HlMod> for Highlight {
+-    fn bitor_assign(&mut self, rhs: HlMod) {
++    fn bitor_assign(
++        &mut self,
++        rhs: HlMod,
++    ) {
+         self.mods |= rhs;
+     }
+ }
+ impl ops::BitOr<HlMod> for Highlight {
+     type Output = Highlight;
+ 
+-    fn bitor(mut self, rhs: HlMod) -> Highlight {
++    fn bitor(
++        mut self,
++        rhs: HlMod,
++    ) -> Highlight {
+         self |= rhs;
+         self
+     }
+         self.0 == 0
+     }
+ 
+-    pub fn contains(self, m: HlMod) -> bool {
++    pub fn contains(
++        self,
++        m: HlMod,
++    ) -> bool {
+         self.0 & m.mask() == m.mask()
      }
  
      pub fn iter(self) -> impl Iterator<Item = HlMod> {

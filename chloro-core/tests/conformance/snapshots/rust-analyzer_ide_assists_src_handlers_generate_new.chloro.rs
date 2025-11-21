@@ -12,7 +12,10 @@ use crate::{
     utils::{find_struct_impl, generate_impl_with_item},
 };
 
-pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_new(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field_list = match strukt.kind() {
         StructKind::Record(named) => {

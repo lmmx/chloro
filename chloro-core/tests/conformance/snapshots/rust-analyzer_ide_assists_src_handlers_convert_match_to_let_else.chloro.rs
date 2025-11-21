@@ -10,7 +10,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_match_to_let_else(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let let_stmt: ast::LetStmt = ctx.find_node_at_offset()?;
     let pat = let_stmt.pat()?;
     if ctx.offset() > pat.syntax().text_range().end() {
@@ -46,7 +49,10 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
     )
 }
 
-fn find_arms(ctx: &AssistContext<'_>, match_expr: &ast::MatchExpr) -> Option<(ast::MatchArm, ast::MatchArm)> {
+fn find_arms(
+    ctx: &AssistContext<'_>,
+    match_expr: &ast::MatchExpr,
+) -> Option<(ast::MatchArm, ast::MatchArm)> {
     let arms = match_expr.match_arm_list()?.arms().collect::<Vec<_>>();
     if arms.len() != 2 {
         return None;
@@ -69,7 +75,10 @@ fn find_arms(ctx: &AssistContext<'_>, match_expr: &ast::MatchExpr) -> Option<(as
     }
 }
 
-fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Option<Vec<Name>> {
+fn find_extracted_variable(
+    ctx: &AssistContext<'_>,
+    arm: &ast::MatchArm,
+) -> Option<Vec<Name>> {
     match arm.expr()? {
         ast::Expr::PathExpr(path) => {
             let name_ref = path.syntax().descendants().find_map(ast::NameRef::cast)?;
@@ -89,7 +98,11 @@ fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Opti
     }
 }
 
-fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> SyntaxNode {
+fn rename_variable(
+    pat: &ast::Pat,
+    extracted: &[Name],
+    binding: ast::Pat,
+) -> SyntaxNode {
     let syntax = pat.syntax().clone_subtree();
     let mut editor = SyntaxEditor::new(syntax.clone());
     let make = SyntaxFactory::with_mappings();

@@ -12,7 +12,10 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn unnecessary_async(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let function: ast::Fn = ctx.find_node_at_offset()?;
     // Do nothing if the cursor isn't on the async token.
     let async_token = function.async_token()?;
@@ -71,7 +74,10 @@ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     )
 }
 
-fn find_all_references(ctx: &AssistContext<'_>, def: &Definition) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
+fn find_all_references(
+    ctx: &AssistContext<'_>,
+    def: &Definition,
+) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
     def.usages(&ctx.sema).all().into_iter().flat_map(|(file_id, references)| {
         references.into_iter().map(move |reference| (file_id, reference))
     })
@@ -79,7 +85,10 @@ fn find_all_references(ctx: &AssistContext<'_>, def: &Definition) -> impl Iterat
 
 /// Finds the await expression for the given `NameRef`.
 /// If no await expression is found, returns None.
-fn find_await_expression(ctx: &AssistContext<'_>, nameref: &NameRef) -> Option<ast::AwaitExpr> {
+fn find_await_expression(
+    ctx: &AssistContext<'_>,
+    nameref: &NameRef,
+) -> Option<ast::AwaitExpr> {
     // From the nameref, walk up the tree to the await expression.
     let await_expr = if let Some(path) = full_path_of_name_ref(nameref) {
         // Function calls.

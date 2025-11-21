@@ -25,7 +25,10 @@ use syntax::{
 use crate::{AssistContext, Assists};
 use super::remove_unused_param::range_to_remove;
 
-pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn extract_module(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;
     }
@@ -148,7 +151,10 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     )
 }
 
-fn generate_module_def(parent_impl: &Option<ast::Impl>, Module { name, body_items, use_items }: &Module) -> ast::Module {
+fn generate_module_def(
+    parent_impl: &Option<ast::Impl>,
+    Module { name, body_items, use_items }: &Module,
+) -> ast::Module {
     let items: Vec<_> = if let Some(impl_) = parent_impl.as_ref()
         && let Some(self_ty) = impl_.self_ty()
     {
@@ -208,7 +214,10 @@ fn extract_single_target(node: &ast::Item) -> Module {
     Module { name, body_items, use_items }
 }
 
-fn extract_child_target(node: &SyntaxNode, selection_range: TextRange) -> Option<(Module, RangeInclusive<SyntaxNode>)> {
+fn extract_child_target(
+    node: &SyntaxNode,
+    selection_range: TextRange,
+) -> Option<(Module, RangeInclusive<SyntaxNode>)> {
     let selected_nodes = node
         .children()
         .filter(|node| selection_range.contains_range(node.text_range()))
@@ -222,7 +231,11 @@ fn extract_child_target(node: &SyntaxNode, selection_range: TextRange) -> Option
 }
 
 impl Module {
-    fn get_usages_and_record_fields(&self, ctx: &AssistContext<'_>, replace_range: TextRange) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>) {
+    fn get_usages_and_record_fields(
+        &self,
+        ctx: &AssistContext<'_>,
+        replace_range: TextRange,
+    ) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>) {
         let mut adt_fields = Vec::new();
         let mut refs: FxHashMap<FileId, Vec<(TextRange, String)>> = FxHashMap::default();
         // use `TextSize` as key to avoid repeated use stmts
@@ -303,7 +316,14 @@ impl Module {
         (refs, adt_fields, use_stmts_to_be_inserted)
     }
 
-    fn expand_and_group_usages_file_wise(&self, ctx: &AssistContext<'_>, replace_range: TextRange, node_def: Definition, refs_in_files: &mut FxHashMap<FileId, Vec<(TextRange, String)>>, use_stmts_to_be_inserted: &mut FxHashMap<TextSize, ast::Use>) {
+    fn expand_and_group_usages_file_wise(
+        &self,
+        ctx: &AssistContext<'_>,
+        replace_range: TextRange,
+        node_def: Definition,
+        refs_in_files: &mut FxHashMap<FileId, Vec<(TextRange, String)>>,
+        use_stmts_to_be_inserted: &mut FxHashMap<TextSize, ast::Use>,
+    ) {
         let mod_name = self.name;
         let covering_node = match ctx.covering_element() {
             syntax::NodeOrToken::Node(node) => node,
@@ -348,7 +368,10 @@ impl Module {
         }
     }
 
-    fn change_visibility(&mut self, record_fields: Vec<SyntaxNode>) {
+    fn change_visibility(
+        &mut self,
+        record_fields: Vec<SyntaxNode>,
+    ) {
         let (mut replacements, record_field_parents, impls) =
             get_replacements_for_visibility_change(&mut self.body_items, false);
         let mut impl_items = impls
@@ -382,7 +405,11 @@ impl Module {
         }
     }
 
-    fn resolve_imports(&mut self, module: Option<ast::Module>, ctx: &AssistContext<'_>) -> Vec<TextRange> {
+    fn resolve_imports(
+        &mut self,
+        module: Option<ast::Module>,
+        ctx: &AssistContext<'_>,
+    ) -> Vec<TextRange> {
         let mut imports_to_remove = vec![];
         let mut node_set = FxHashSet::default();
         for item in self.body_items.clone() {
@@ -416,7 +443,13 @@ impl Module {
         imports_to_remove
     }
 
-    fn process_def_in_sel(&mut self, def: Definition, use_node: &SyntaxNode, curr_parent_module: &Option<ast::Module>, ctx: &AssistContext<'_>) -> Option<TextRange> {
+    fn process_def_in_sel(
+        &mut self,
+        def: Definition,
+        use_node: &SyntaxNode,
+        curr_parent_module: &Option<ast::Module>,
+        ctx: &AssistContext<'_>,
+    ) -> Option<TextRange> {
         //We only need to find in the current file
         let selection_range = ctx.selection_trimmed();
         let file_id = ctx.file_id();
@@ -552,7 +585,11 @@ impl Module {
         import_path_to_be_removed
     }
 
-    fn process_use_stmt_for_import_resolve(&self, use_stmt: Option<ast::Use>, node_syntax: &SyntaxNode) -> Option<(Vec<ast::Path>, Option<TextRange>)> {
+    fn process_use_stmt_for_import_resolve(
+        &self,
+        use_stmt: Option<ast::Use>,
+        node_syntax: &SyntaxNode,
+    ) -> Option<(Vec<ast::Path>, Option<TextRange>)> {
         let use_stmt = use_stmt?;
         for path_seg in use_stmt.syntax().descendants().filter_map(ast::PathSegment::cast) {
             if path_seg.syntax().to_string() == node_syntax.to_string() {
@@ -576,7 +613,10 @@ impl Module {
     }
 }
 
-fn check_intersection_and_push(import_paths_to_be_removed: &mut Vec<TextRange>, mut import_path: TextRange) {
+fn check_intersection_and_push(
+    import_paths_to_be_removed: &mut Vec<TextRange>,
+    mut import_path: TextRange,
+) {
     // Text ranges received here for imports are extended to the
     // next/previous comma which can cause intersections among them
     // and later deletion of these can cause panics similar
@@ -594,7 +634,13 @@ fn check_intersection_and_push(import_paths_to_be_removed: &mut Vec<TextRange>, 
     import_paths_to_be_removed.push(import_path);
 }
 
-fn check_def_in_mod_and_out_sel(def: Definition, ctx: &AssistContext<'_>, curr_parent_module: &Option<ast::Module>, selection_range: TextRange, curr_file_id: FileId) -> (bool, bool) {
+fn check_def_in_mod_and_out_sel(
+    def: Definition,
+    ctx: &AssistContext<'_>,
+    curr_parent_module: &Option<ast::Module>,
+    selection_range: TextRange,
+    curr_file_id: FileId,
+) -> (bool, bool) {
     macro_rules! check_item {
         ($x:ident) => {
             if let Some(source) = $x.source(ctx.db()) {
@@ -638,7 +684,10 @@ fn check_def_in_mod_and_out_sel(def: Definition, ctx: &AssistContext<'_>, curr_p
     (false, false)
 }
 
-fn get_replacements_for_visibility_change(items: &mut [ast::Item], is_clone_for_updated: bool) -> (
+fn get_replacements_for_visibility_change(
+    items: &mut [ast::Item],
+    is_clone_for_updated: bool,
+) -> (
     Vec<(Option<ast::Visibility>, SyntaxNode)>,
     Vec<(Option<ast::Visibility>, SyntaxNode)>,
     Vec<ast::Impl>,
@@ -683,7 +732,10 @@ fn get_replacements_for_visibility_change(items: &mut [ast::Item], is_clone_for_
     (replacements, record_field_parents, impls)
 }
 
-fn get_use_tree_paths_from_path(path: ast::Path, use_tree_str: &mut Vec<ast::Path>) -> Option<&mut Vec<ast::Path>> {
+fn get_use_tree_paths_from_path(
+    path: ast::Path,
+    use_tree_str: &mut Vec<ast::Path>,
+) -> Option<&mut Vec<ast::Path>> {
     path.syntax()
         .ancestors()
         .filter(|x| x.to_string() != path.to_string())
@@ -701,7 +753,10 @@ fn get_use_tree_paths_from_path(path: ast::Path, use_tree_str: &mut Vec<ast::Pat
     Some(use_tree_str)
 }
 
-fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
+fn add_change_vis(
+    vis: Option<ast::Visibility>,
+    node_or_token_opt: Option<syntax::SyntaxElement>,
+) {
     if vis.is_none()
         && let Some(node_or_token) = node_or_token_opt
     {

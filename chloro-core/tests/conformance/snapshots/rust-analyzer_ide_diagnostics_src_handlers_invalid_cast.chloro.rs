@@ -15,7 +15,10 @@ macro_rules! format_ty {
     }}
 }
 
-pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_>) -> Diagnostic {
+pub(crate) fn invalid_cast(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::InvalidCast<'_>,
+) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     let (code, message) = match d.error {
         CastError::CastToBool => (
@@ -100,7 +103,10 @@ pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_
     Diagnostic::new(code, message, display_range).stable()
 }
 
-pub(crate) fn cast_to_unsized(ctx: &DiagnosticsContext<'_>, d: &hir::CastToUnsized<'_>) -> Diagnostic {
+pub(crate) fn cast_to_unsized(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::CastToUnsized<'_>,
+) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0620"),

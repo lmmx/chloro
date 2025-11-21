@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15380 bytes
-Chloro size:   11968 bytes
+Chloro size:   12131 bytes
 Rustfmt size:  15488 bytes
 
 ✗ Outputs DIFFER
@@ -122,15 +122,9 @@ Rustfmt size:  15488 bytes
 -// The feature can be forcefully turned off in the settings with the `rust-analyzer.completion.autoimport.enable` flag.
 -// Note that having this flag set to `true` does not guarantee that the feature is enabled: your client needs to have the corresponding
 -// capability enabled.
--pub(crate) fn import_on_the_fly_path(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx: &PathCompletionCtx<'_>,
--) -> Option<()> {
-+pub(crate) fn import_on_the_fly_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>) -> Option<()> {
-     if !ctx.config.enable_imports_on_the_fly {
-         return None;
-     }
+ pub(crate) fn import_on_the_fly_path(
+     acc: &mut Completions,
+     ctx: &CompletionContext<'_>,
          _ => None,
      };
      let import_assets = import_assets_for_path(ctx, &potential_import_name, qualifier.clone())?;
@@ -147,13 +141,6 @@ Rustfmt size:  15488 bytes
          potential_import_name,
      )
  }
- 
--pub(crate) fn import_on_the_fly_pat(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    pattern_ctx: &PatternContext,
--) -> Option<()> {
-+pub(crate) fn import_on_the_fly_pat(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) -> Option<()> {
      if !ctx.config.enable_imports_on_the_fly {
          return None;
      }
@@ -172,18 +159,6 @@ Rustfmt size:  15488 bytes
      import_on_the_fly_pat_(
          acc,
          ctx,
-     )
- }
- 
--pub(crate) fn import_on_the_fly_dot(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    dot_access: &DotAccess<'_>,
--) -> Option<()> {
-+pub(crate) fn import_on_the_fly_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) -> Option<()> {
-     if !ctx.config.enable_imports_on_the_fly {
-         return None;
-     }
          potential_import_name.clone(),
          receiver.syntax().clone(),
      )?;
@@ -191,18 +166,8 @@ Rustfmt size:  15488 bytes
      import_on_the_fly_method(
          acc,
          ctx,
-     )
- }
- 
--fn import_on_the_fly(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx @ PathCompletionCtx { kind, .. }: &PathCompletionCtx<'_>,
--    import_assets: ImportAssets<'_>,
--    position: SyntaxNode,
--    potential_import_name: String,
--) -> Option<()> {
-+fn import_on_the_fly(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { kind, .. }: &PathCompletionCtx<'_>, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+     potential_import_name: String,
+ ) -> Option<()> {
      let _p = tracing::info_span!("import_on_the_fly", ?potential_import_name).entered();
 -
      ImportScope::find_insert_use_container(&position, &ctx.sema)?;
@@ -219,18 +184,8 @@ Rustfmt size:  15488 bytes
      import_assets
          .search_for_imports(&ctx.sema, import_cfg, ctx.config.insert_use.prefix_kind)
          .filter(ns_filter)
-     Some(())
- }
- 
--fn import_on_the_fly_pat_(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    pattern_ctx: &PatternContext,
--    import_assets: ImportAssets<'_>,
--    position: SyntaxNode,
--    potential_import_name: String,
--) -> Option<()> {
-+fn import_on_the_fly_pat_(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+     potential_import_name: String,
+ ) -> Option<()> {
      let _p = tracing::info_span!("import_on_the_fly_pat_", ?potential_import_name).entered();
 -
      ImportScope::find_insert_use_container(&position, &ctx.sema)?;
@@ -245,18 +200,8 @@ Rustfmt size:  15488 bytes
      import_assets
          .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
          .filter(ns_filter)
-     Some(())
- }
- 
--fn import_on_the_fly_method(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    dot_access: &DotAccess<'_>,
--    import_assets: ImportAssets<'_>,
--    position: SyntaxNode,
--    potential_import_name: String,
--) -> Option<()> {
-+fn import_on_the_fly_method(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+     potential_import_name: String,
+ ) -> Option<()> {
      let _p = tracing::info_span!("import_on_the_fly_method", ?potential_import_name).entered();
 -
      ImportScope::find_insert_use_container(&position, &ctx.sema)?;
@@ -268,7 +213,14 @@ Rustfmt size:  15488 bytes
      import_assets
          .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
          .filter(|import| {
- fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
+     Some(())
+ }
+ 
+-fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
++fn filter_excluded_flyimport(
++    ctx: &CompletionContext<'_>,
++    import: &LocatedImport,
++) -> bool {
      let def = import.item_to_import.into_module_def();
      let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
 -
@@ -297,26 +249,11 @@ Rustfmt size:  15488 bytes
 +    if token_kind.is_any_identifier() { ctx.token.to_string() } else { String::new() }
  }
  
--fn import_assets_for_path<'db>(
--    ctx: &CompletionContext<'db>,
--    potential_import_name: &str,
--    qualifier: Option<ast::Path>,
--) -> Option<ImportAssets<'db>> {
-+fn import_assets_for_path<'db>(ctx: &CompletionContext<'db>, potential_import_name: &str, qualifier: Option<ast::Path>) -> Option<ImportAssets<'db>> {
+ fn import_assets_for_path<'db>(
+ ) -> Option<ImportAssets<'db>> {
      let _p =
          tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
 -
      let fuzzy_name_length = potential_import_name.len();
      let mut assets_for_path = ImportAssets::for_fuzzy_path(
          ctx.module,
-     Some(assets_for_path)
- }
- 
--fn compute_fuzzy_completion_order_key(
--    proposed_mod_path: &hir::ModPath,
--    user_input_lowercased: &str,
--) -> usize {
-+fn compute_fuzzy_completion_order_key(proposed_mod_path: &hir::ModPath, user_input_lowercased: &str) -> usize {
-     cov_mark::hit!(certain_fuzzy_order_test);
-     let import_name = match proposed_mod_path.segments().last() {
-         // FIXME: nasty alloc, this is a hot path!

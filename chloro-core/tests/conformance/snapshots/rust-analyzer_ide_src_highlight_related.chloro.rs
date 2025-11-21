@@ -39,7 +39,11 @@ pub struct HighlightRelatedConfig {
 
 type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
 
-pub(crate) fn highlight_related(sema: &Semantics<'_, RootDatabase>, config: HighlightRelatedConfig, ide_db::FilePosition { offset, file_id }: ide_db::FilePosition) -> Option<Vec<HighlightedRange>> {
+pub(crate) fn highlight_related(
+    sema: &Semantics<'_, RootDatabase>,
+    config: HighlightRelatedConfig,
+    ide_db::FilePosition { offset, file_id }: ide_db::FilePosition,
+) -> Option<Vec<HighlightedRange>> {
     let _p = tracing::info_span!("highlight_related").entered();
     let file_id = sema
         .attach_first_edition(file_id)
@@ -85,7 +89,11 @@ pub(crate) fn highlight_related(sema: &Semantics<'_, RootDatabase>, config: High
     }
 }
 
-fn highlight_closure_captures(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, file_id: EditionedFileId) -> Option<Vec<HighlightedRange>> {
+fn highlight_closure_captures(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+    file_id: EditionedFileId,
+) -> Option<Vec<HighlightedRange>> {
     let closure = token.parent_ancestors().take(2).find_map(ast::ClosureExpr::cast)?;
     let search_range = closure.body()?.syntax().text_range();
     let ty = &sema.type_of_expr(&closure.into())?.original;
@@ -126,7 +134,11 @@ fn highlight_closure_captures(sema: &Semantics<'_, RootDatabase>, token: SyntaxT
     )
 }
 
-fn highlight_references(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, FilePosition { file_id, offset }: FilePosition) -> Option<Vec<HighlightedRange>> {
+fn highlight_references(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<Vec<HighlightedRange>> {
     let defs = if let Some((range, _, _, resolution)) =
         sema.check_for_format_args_template(token.clone(), offset)
     {
@@ -277,7 +289,10 @@ fn highlight_references(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, 
     if res.is_empty() { None } else { Some(res.into_iter().collect()) }
 }
 
-pub(crate) fn highlight_branch_exit_points(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+pub(crate) fn highlight_branch_exit_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     let mut highlights: HighlightMap = FxHashMap::default();
     let push_to_highlights = |file_id, range, highlights: &mut HighlightMap| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
@@ -352,7 +367,11 @@ pub(crate) fn highlight_branch_exit_points(sema: &Semantics<'_, RootDatabase>, t
         .collect()
 }
 
-fn hl_exit_points(sema: &Semantics<'_, RootDatabase>, def_token: Option<SyntaxToken>, body: ast::Expr) -> Option<HighlightMap> {
+fn hl_exit_points(
+    sema: &Semantics<'_, RootDatabase>,
+    def_token: Option<SyntaxToken>,
+    body: ast::Expr,
+) -> Option<HighlightMap> {
     let mut highlights: FxHashMap<EditionedFileId, FxHashSet<_>> = FxHashMap::default();
     let mut push_to_highlights = |file_id, range| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
@@ -413,7 +432,10 @@ fn hl_exit_points(sema: &Semantics<'_, RootDatabase>, def_token: Option<SyntaxTo
     Some(highlights)
 }
 
-pub(crate) fn highlight_exit_points(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+pub(crate) fn highlight_exit_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     let mut res = FxHashMap::default();
     for def in goto_definition::find_fn_or_blocks(sema, &token) {
         let new_map = match_ast! {
@@ -438,7 +460,10 @@ pub(crate) fn highlight_exit_points(sema: &Semantics<'_, RootDatabase>, token: S
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
-pub(crate) fn highlight_break_points(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+pub(crate) fn highlight_break_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     pub(crate) fn hl(
         sema: &Semantics<'_, RootDatabase>,
         cursor_token_kind: SyntaxKind,
@@ -527,7 +552,10 @@ pub(crate) fn highlight_break_points(sema: &Semantics<'_, RootDatabase>, token: 
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
-pub(crate) fn highlight_yield_points(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+pub(crate) fn highlight_yield_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     fn hl(
         sema: &Semantics<'_, RootDatabase>,
         async_token: Option<SyntaxToken>,
@@ -598,7 +626,10 @@ pub(crate) fn highlight_yield_points(sema: &Semantics<'_, RootDatabase>, token: 
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
-fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange> {
+fn cover_range(
+    r0: Option<TextRange>,
+    r1: Option<TextRange>,
+) -> Option<TextRange> {
     match (r0, r1) {
         (Some(r0), Some(r1)) => Some(r0.cover(r1)),
         (Some(range), None) => Some(range),
@@ -607,7 +638,10 @@ fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange
     }
 }
 
-fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
+fn find_defs(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashSet<Definition> {
     sema.descend_into_macros_exact(token)
         .into_iter()
         .filter_map(|token| IdentClass::classify_token(sema, &token))
@@ -615,11 +649,18 @@ fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSe
         .collect()
 }
 
-fn original_frange(db: &dyn db::ExpandDatabase, file_id: HirFileId, text_range: Option<TextRange>) -> Option<FileRange> {
+fn original_frange(
+    db: &dyn db::ExpandDatabase,
+    file_id: HirFileId,
+    text_range: Option<TextRange>,
+) -> Option<FileRange> {
     InFile::new(file_id, text_range?).original_node_file_range_opt(db).map(|(frange, _)| frange)
 }
 
-fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
+fn merge_map(
+    res: &mut HighlightMap,
+    new: Option<HighlightMap>,
+) {
     let Some(new) = new else {
         return;
     };
@@ -642,11 +683,18 @@ impl<'a> WalkExpandedExprCtx<'a> {
         Self { sema, depth: 0, check_ctx: &is_closure_or_blk_with_modif }
     }
 
-    fn with_check_ctx(&self, check_ctx: &'static dyn Fn(&ast::Expr) -> bool) -> Self {
+    fn with_check_ctx(
+        &self,
+        check_ctx: &'static dyn Fn(&ast::Expr) -> bool,
+    ) -> Self {
         Self { check_ctx, ..*self }
     }
 
-    fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
+    fn walk(
+        &mut self,
+        expr: &ast::Expr,
+        cb: &mut dyn FnMut(usize, ast::Expr),
+    ) {
         preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
             match ev {
                 syntax::WalkEvent::Enter(expr) => {
@@ -682,7 +730,11 @@ impl<'a> WalkExpandedExprCtx<'a> {
         })
     }
 
-    fn handle_expanded(&mut self, expanded: ast::MacroStmts, cb: &mut dyn FnMut(usize, ast::Expr)) {
+    fn handle_expanded(
+        &mut self,
+        expanded: ast::MacroStmts,
+        cb: &mut dyn FnMut(usize, ast::Expr),
+    ) {
         if let Some(expr) = expanded.expr() {
             self.walk(&expr, cb);
         }
@@ -715,7 +767,10 @@ impl<'a> WalkExpandedExprCtx<'a> {
     }
 }
 
-pub(crate) fn highlight_unsafe_points(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+pub(crate) fn highlight_unsafe_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     fn hl(
         sema: &Semantics<'_, RootDatabase>,
         unsafe_token: &SyntaxToken,
@@ -757,7 +812,10 @@ mod tests {
         check_with_config(ra_fixture, ENABLED_CONFIG);
     }
     #[track_caller]
-    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: HighlightRelatedConfig) {
+    fn check_with_config(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        config: HighlightRelatedConfig,
+    ) {
         let (analysis, pos, annotations) = fixture::annotations(ra_fixture);
         let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
         let mut expected =

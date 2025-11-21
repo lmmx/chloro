@@ -25,7 +25,11 @@ struct RatomlTest {
 impl RatomlTest {
 
 
-    fn new(fixtures: Vec<&str>, roots: Vec<&str>, client_config: Option<serde_json::Value>) -> Self {
+    fn new(
+        fixtures: Vec<&str>,
+        roots: Vec<&str>,
+        client_config: Option<serde_json::Value>,
+    ) -> Self {
         let tmp_dir = TestDir::new();
         let tmp_path = tmp_dir.path().to_owned();
         let full_fixture = fixtures.join("\n");
@@ -43,7 +47,10 @@ impl RatomlTest {
         case
     }
 
-    fn fixture_path(&self, fixture: &str) -> Url {
+    fn fixture_path(
+        &self,
+        fixture: &str,
+    ) -> Url {
         let mut lines = fixture.trim().split('\n');
         let mut path =
             lines.next().expect("All files in a fixture are expected to have at least one line.");
@@ -71,7 +78,11 @@ impl RatomlTest {
         .unwrap()
     }
 
-    fn create(&mut self, fixture_path: &str, text: String) {
+    fn create(
+        &mut self,
+        fixture_path: &str,
+        text: String,
+    ) {
         let url = self.fixture_path(fixture_path);
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
@@ -91,7 +102,10 @@ impl RatomlTest {
         });
     }
 
-    fn delete(&mut self, file_idx: usize) {
+    fn delete(
+        &mut self,
+        file_idx: usize,
+    ) {
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),
@@ -107,7 +121,11 @@ impl RatomlTest {
         });
     }
 
-    fn edit(&mut self, file_idx: usize, text: String) {
+    fn edit(
+        &mut self,
+        file_idx: usize,
+        text: String,
+    ) {
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),
@@ -129,7 +147,12 @@ impl RatomlTest {
         });
     }
 
-    fn query(&self, query: InternalTestingFetchConfigOption, source_file_idx: usize, expected: InternalTestingFetchConfigResponse) {
+    fn query(
+        &self,
+        query: InternalTestingFetchConfigOption,
+        source_file_idx: usize,
+        expected: InternalTestingFetchConfigResponse,
+    ) {
         let res = self.server.send_request::<InternalTestingFetchConfig>(
             InternalTestingFetchConfigParams {
                 text_document: Some(TextDocumentIdentifier {

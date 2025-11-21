@@ -65,17 +65,26 @@ impl TokenId {
 pub struct TokenStore(Vec<TokenStaticData>);
 
 impl TokenStore {
-    pub fn insert(&mut self, data: TokenStaticData) -> TokenId {
+    pub fn insert(
+        &mut self,
+        data: TokenStaticData,
+    ) -> TokenId {
         let id = TokenId(self.0.len());
         self.0.push(data);
         id
     }
 
-    pub fn get_mut(&mut self, id: TokenId) -> Option<&mut TokenStaticData> {
+    pub fn get_mut(
+        &mut self,
+        id: TokenId,
+    ) -> Option<&mut TokenStaticData> {
         self.0.get_mut(id.0)
     }
 
-    pub fn get(&self, id: TokenId) -> Option<&TokenStaticData> {
+    pub fn get(
+        &self,
+        id: TokenId,
+    ) -> Option<&TokenStaticData> {
         self.0.get(id.0)
     }
 
@@ -103,7 +112,11 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
     modules
 }
 
-fn documentation_for_definition(sema: &Semantics<'_, RootDatabase>, def: Definition, scope_node: &SyntaxNode) -> Option<Documentation> {
+fn documentation_for_definition(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+    scope_node: &SyntaxNode,
+) -> Option<Documentation> {
     let famous_defs = match &def {
         Definition::BuiltinType(_) => Some(FamousDefs(sema, sema.scope(scope_node)?.krate())),
         _ => None,
@@ -119,7 +132,10 @@ fn documentation_for_definition(sema: &Semantics<'_, RootDatabase>, def: Definit
     )
 }
 
-fn get_definitions(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> Option<ArrayVec<Definition, 2>> {
+fn get_definitions(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> Option<ArrayVec<Definition, 2>> {
     for token in sema.descend_into_macros_exact(token) {
         let def = IdentClass::classify_token(sema, &token).map(IdentClass::definitions_no_ops);
         if let Some(defs) = def
@@ -139,7 +155,10 @@ pub enum VendoredLibrariesConfig<'a> {
 }
 
 impl StaticIndex<'_> {
-    fn add_file(&mut self, file_id: FileId) {
+    fn add_file(
+        &mut self,
+        file_id: FileId,
+    ) {
         let current_crate = crates_for(self.db, file_id).pop().map(Into::into);
         let folds = self.analysis.folding_ranges(file_id).unwrap();
         let inlay_hints = self
@@ -278,7 +297,10 @@ impl StaticIndex<'_> {
         self.files.push(result);
     }
 
-    pub fn compute<'a>(analysis: &'a Analysis, vendored_libs_config: VendoredLibrariesConfig<'_>) -> StaticIndex<'a> {
+    pub fn compute<'a>(
+        analysis: &'a Analysis,
+        vendored_libs_config: VendoredLibrariesConfig<'_>,
+    ) -> StaticIndex<'a> {
         let db = &analysis.db;
         hir::attach_db(db, || {
             let work = all_modules(db).into_iter().filter(|module| {
@@ -323,7 +345,10 @@ mod tests {
     use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
     use syntax::TextSize;
     use super::VendoredLibrariesConfig;
-    fn check_all_ranges(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+    fn check_all_ranges(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        vendored_libs_config: VendoredLibrariesConfig<'_>,
+    ) {
         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
         let s = StaticIndex::compute(&analysis, vendored_libs_config);
         let mut range_set: FxHashSet<_> = ranges.iter().map(|it| it.0).collect();
@@ -345,7 +370,10 @@ mod tests {
         }
     }
     #[track_caller]
-    fn check_definitions(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+    fn check_definitions(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        vendored_libs_config: VendoredLibrariesConfig<'_>,
+    ) {
         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
         let s = StaticIndex::compute(&analysis, vendored_libs_config);
         let mut range_set: FxHashSet<_> = ranges.iter().map(|it| it.0).collect();
@@ -366,7 +394,10 @@ mod tests {
         }
     }
     #[track_caller]
-    fn check_references(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+    fn check_references(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        vendored_libs_config: VendoredLibrariesConfig<'_>,
+    ) {
         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
         let s = StaticIndex::compute(&analysis, vendored_libs_config);
         let mut range_set: FxHashMap<_, i32> = ranges.iter().map(|it| (it.0, 0)).collect();

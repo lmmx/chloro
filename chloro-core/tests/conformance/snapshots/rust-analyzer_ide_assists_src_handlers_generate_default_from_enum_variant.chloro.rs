@@ -3,7 +3,10 @@ use syntax::ast::{self, AstNode, HasName};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn generate_default_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_default_from_enum_variant(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let variant_name = variant.name()?;
     let enum_name = variant.parent_enum().name()?;
@@ -39,7 +42,10 @@ impl Default for {enum_name} {{
     )
 }
 
-fn existing_default_impl(sema: &'_ hir::Semantics<'_, RootDatabase>, variant: &ast::Variant) -> Option<()> {
+fn existing_default_impl(
+    sema: &'_ hir::Semantics<'_, RootDatabase>,
+    variant: &ast::Variant,
+) -> Option<()> {
     let variant = sema.to_def(variant)?;
     let enum_ = variant.parent_enum(sema.db);
     let krate = enum_.module(sema.db).krate();

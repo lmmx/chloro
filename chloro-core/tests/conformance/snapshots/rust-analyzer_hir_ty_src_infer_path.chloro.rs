@@ -23,7 +23,11 @@ use crate::{
 use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};
 
 impl<'db> InferenceContext<'_, 'db> {
-    pub(super) fn infer_path(&mut self, path: &Path, id: ExprOrPatId) -> Option<Ty<'db>> {
+    pub(super) fn infer_path(
+        &mut self,
+        path: &Path,
+        id: ExprOrPatId,
+    ) -> Option<Ty<'db>> {
         let (value_def, generic_def, substs) = match self.resolve_value_path(path, id)? {
             ValuePathResolution::GenericDef(value_def, generic_def, substs) => {
                 (value_def, generic_def, substs)
@@ -37,7 +41,11 @@ impl<'db> InferenceContext<'_, 'db> {
         Some(ty)
     }
 
-    fn resolve_value_path(&mut self, path: &Path, id: ExprOrPatId) -> Option<ValuePathResolution<'db>> {
+    fn resolve_value_path(
+        &mut self,
+        path: &Path,
+        id: ExprOrPatId,
+    ) -> Option<ValuePathResolution<'db>> {
         let (value, self_subst) = self.resolve_value_path_inner(path, id, false)?;
         let value_def: ValueTyDefId = match value {
             ValueNs::FunctionId(it) => it.into(),
@@ -112,7 +120,12 @@ impl<'db> InferenceContext<'_, 'db> {
         Some(ValuePathResolution::GenericDef(value_def, generic_def, substs))
     }
 
-    pub(super) fn resolve_value_path_inner(&mut self, path: &Path, id: ExprOrPatId, no_diagnostics: bool) -> Option<(ValueNs, Option<GenericArgs<'db>>)> {
+    pub(super) fn resolve_value_path_inner(
+        &mut self,
+        path: &Path,
+        id: ExprOrPatId,
+        no_diagnostics: bool,
+    ) -> Option<(ValueNs, Option<GenericArgs<'db>>)> {
         // Don't use `self.make_ty()` here as we need `orig_ns`.
         let mut ctx = TyLoweringContext::new(
             self.db,
@@ -198,7 +211,11 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn add_required_obligations_for_value_path(&mut self, def: GenericDefId, subst: GenericArgs<'db>) {
+    fn add_required_obligations_for_value_path(
+        &mut self,
+        def: GenericDefId,
+        subst: GenericArgs<'db>,
+    ) {
         let predicates = self.db.generic_predicates(def);
         let interner = self.interner();
         let param_env = self.table.trait_env.env;
@@ -229,7 +246,12 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn resolve_trait_assoc_item(&mut self, trait_ref: TraitRef<'db>, segment: PathSegment<'_>, id: ExprOrPatId) -> Option<(ValueNs, GenericArgs<'db>)> {
+    fn resolve_trait_assoc_item(
+        &mut self,
+        trait_ref: TraitRef<'db>,
+        segment: PathSegment<'_>,
+        id: ExprOrPatId,
+    ) -> Option<(ValueNs, GenericArgs<'db>)> {
         let trait_ = trait_ref.def_id.0;
         let item =
             trait_.trait_items(self.db).items.iter().map(|(_name, id)| *id).find_map(|item| {
@@ -261,7 +283,12 @@ impl<'db> InferenceContext<'_, 'db> {
         Some((def, trait_ref.args))
     }
 
-    fn resolve_ty_assoc_item(&mut self, ty: Ty<'db>, name: &Name, id: ExprOrPatId) -> Option<(ValueNs, GenericArgs<'db>)> {
+    fn resolve_ty_assoc_item(
+        &mut self,
+        ty: Ty<'db>,
+        name: &Name,
+        id: ExprOrPatId,
+    ) -> Option<(ValueNs, GenericArgs<'db>)> {
         if ty.is_ty_error() {
             return None;
         }
@@ -337,7 +364,12 @@ impl<'db> InferenceContext<'_, 'db> {
         Some((def, substs))
     }
 
-    fn resolve_enum_variant_on_ty(&mut self, ty: Ty<'db>, name: &Name, id: ExprOrPatId) -> Option<(ValueNs, GenericArgs<'db>)> {
+    fn resolve_enum_variant_on_ty(
+        &mut self,
+        ty: Ty<'db>,
+        name: &Name,
+        id: ExprOrPatId,
+    ) -> Option<(ValueNs, GenericArgs<'db>)> {
         let ty = self.table.try_structurally_resolve_type(ty);
         let (enum_id, subst) = match ty.as_adt() {
             Some((AdtId::EnumId(e), subst)) => (e, subst),

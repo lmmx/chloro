@@ -8,7 +8,12 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-fn expand_record_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, record_pat: ast::RecordPat, rest_pat: ast::RestPat) -> Option<()> {
+fn expand_record_rest_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    record_pat: ast::RecordPat,
+    rest_pat: ast::RestPat,
+) -> Option<()> {
     let missing_fields = ctx.sema.record_pattern_missing_fields(&record_pat);
     if missing_fields.is_empty() {
         cov_mark::hit!(no_missing_fields);
@@ -47,7 +52,12 @@ fn expand_record_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, record
     )
 }
 
-fn expand_tuple_struct_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, pat: ast::TupleStructPat, rest_pat: ast::RestPat) -> Option<()> {
+fn expand_tuple_struct_rest_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    pat: ast::TupleStructPat,
+    rest_pat: ast::RestPat,
+) -> Option<()> {
     let path = pat.path()?;
     let fields = match ctx.sema.type_of_pat(&pat.clone().into())?.original.as_adt()? {
         hir::Adt::Struct(s) if s.kind(ctx.sema.db) == StructKind::Tuple => s.fields(ctx.sema.db),
@@ -104,7 +114,12 @@ fn expand_tuple_struct_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, 
     )
 }
 
-fn expand_tuple_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, pat: ast::TuplePat, rest_pat: ast::RestPat) -> Option<()> {
+fn expand_tuple_rest_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    pat: ast::TuplePat,
+    rest_pat: ast::RestPat,
+) -> Option<()> {
     let fields = ctx.sema.type_of_pat(&pat.clone().into())?.original.tuple_fields(ctx.db());
     let len = fields.len();
     let rest_pat = rest_pat.into();
@@ -145,7 +160,12 @@ fn expand_tuple_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, pat: as
     )
 }
 
-fn expand_slice_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, pat: ast::SlicePat, rest_pat: ast::RestPat) -> Option<()> {
+fn expand_slice_rest_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    pat: ast::SlicePat,
+    rest_pat: ast::RestPat,
+) -> Option<()> {
     let (ty, len) = ctx.sema.type_of_pat(&pat.clone().into())?.original.as_array(ctx.db())?;
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.pats())?;
@@ -184,7 +204,10 @@ fn expand_slice_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, pat: as
     )
 }
 
-pub(crate) fn expand_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn expand_rest_pattern(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let rest_pat = ctx.find_node_at_offset::<ast::RestPat>()?;
     let parent = rest_pat.syntax().parent()?;
     match_ast! {
@@ -198,7 +221,13 @@ pub(crate) fn expand_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     }
 }
 
-fn gen_unnamed_pat(ctx: &AssistContext<'_>, make: &SyntaxFactory, name_gen: &mut NameGenerator, ty: &hir::Type<'_>, index: usize) -> ast::Pat {
+fn gen_unnamed_pat(
+    ctx: &AssistContext<'_>,
+    make: &SyntaxFactory,
+    name_gen: &mut NameGenerator,
+    ty: &hir::Type<'_>,
+    index: usize,
+) -> ast::Pat {
     make.ident_pat(
         false,
         false,
@@ -210,7 +239,10 @@ fn gen_unnamed_pat(ctx: &AssistContext<'_>, make: &SyntaxFactory, name_gen: &mut
     .into()
 }
 
-fn calculate_counts(rest_pat: &ast::Pat, mut pats: ast::AstChildren<ast::Pat>) -> Option<(usize, usize)> {
+fn calculate_counts(
+    rest_pat: &ast::Pat,
+    mut pats: ast::AstChildren<ast::Pat>,
+) -> Option<(usize, usize)> {
     let prefix_count = pats.by_ref().position(|p| p == *rest_pat)?;
     let suffix_count = pats.count();
     Some((prefix_count, suffix_count))

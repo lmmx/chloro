@@ -7,7 +7,10 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn sugar_impl_future_into_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn sugar_impl_future_into_async(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let ret_type: ast::RetType = ctx.find_node_at_offset()?;
     let function = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
     if function.async_token().is_some() || function.const_token().is_some() {
@@ -71,7 +74,10 @@ pub(crate) fn sugar_impl_future_into_async(acc: &mut Assists, ctx: &AssistContex
     )
 }
 
-pub(crate) fn desugar_async_into_impl_future(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn desugar_async_into_impl_future(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let async_token = ctx.find_token_syntax_at_offset(SyntaxKind::ASYNC_KW)?;
     let function = async_token.parent().and_then(ast::Fn::cast)?;
     let rparen = function.param_list()?.r_paren_token()?;

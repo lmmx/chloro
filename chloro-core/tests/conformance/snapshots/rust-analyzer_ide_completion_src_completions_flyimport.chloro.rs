@@ -18,7 +18,11 @@ use crate::{
     render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
 };
 
-pub(crate) fn import_on_the_fly_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>) -> Option<()> {
+pub(crate) fn import_on_the_fly_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+) -> Option<()> {
     if !ctx.config.enable_imports_on_the_fly {
         return None;
     }
@@ -52,7 +56,11 @@ pub(crate) fn import_on_the_fly_path(acc: &mut Completions, ctx: &CompletionCont
     )
 }
 
-pub(crate) fn import_on_the_fly_pat(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) -> Option<()> {
+pub(crate) fn import_on_the_fly_pat(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    pattern_ctx: &PatternContext,
+) -> Option<()> {
     if !ctx.config.enable_imports_on_the_fly {
         return None;
     }
@@ -71,7 +79,11 @@ pub(crate) fn import_on_the_fly_pat(acc: &mut Completions, ctx: &CompletionConte
     )
 }
 
-pub(crate) fn import_on_the_fly_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) -> Option<()> {
+pub(crate) fn import_on_the_fly_dot(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    dot_access: &DotAccess<'_>,
+) -> Option<()> {
     if !ctx.config.enable_imports_on_the_fly {
         return None;
     }
@@ -94,7 +106,14 @@ pub(crate) fn import_on_the_fly_dot(acc: &mut Completions, ctx: &CompletionConte
     )
 }
 
-fn import_on_the_fly(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { kind, .. }: &PathCompletionCtx<'_>, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+fn import_on_the_fly(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { kind, .. }: &PathCompletionCtx<'_>,
+    import_assets: ImportAssets<'_>,
+    position: SyntaxNode,
+    potential_import_name: String,
+) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly", ?potential_import_name).entered();
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
     let ns_filter = |import: &LocatedImport| {
@@ -169,7 +188,14 @@ fn import_on_the_fly(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ct
     Some(())
 }
 
-fn import_on_the_fly_pat_(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+fn import_on_the_fly_pat_(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    pattern_ctx: &PatternContext,
+    import_assets: ImportAssets<'_>,
+    position: SyntaxNode,
+    potential_import_name: String,
+) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly_pat_", ?potential_import_name).entered();
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
     let ns_filter = |import: &LocatedImport| match import.original_item {
@@ -205,7 +231,14 @@ fn import_on_the_fly_pat_(acc: &mut Completions, ctx: &CompletionContext<'_>, pa
     Some(())
 }
 
-fn import_on_the_fly_method(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>, import_assets: ImportAssets<'_>, position: SyntaxNode, potential_import_name: String) -> Option<()> {
+fn import_on_the_fly_method(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    dot_access: &DotAccess<'_>,
+    import_assets: ImportAssets<'_>,
+    position: SyntaxNode,
+    potential_import_name: String,
+) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly_method", ?potential_import_name).entered();
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
     let user_input_lowercased = potential_import_name.to_lowercase();
@@ -234,7 +267,10 @@ fn import_on_the_fly_method(acc: &mut Completions, ctx: &CompletionContext<'_>, 
     Some(())
 }
 
-fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
+fn filter_excluded_flyimport(
+    ctx: &CompletionContext<'_>,
+    import: &LocatedImport,
+) -> bool {
     let def = import.item_to_import.into_module_def();
     let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
     if matches!(is_exclude_flyimport, Some(AutoImportExclusionType::Always))
@@ -260,7 +296,11 @@ fn import_name(ctx: &CompletionContext<'_>) -> String {
     if token_kind.is_any_identifier() { ctx.token.to_string() } else { String::new() }
 }
 
-fn import_assets_for_path<'db>(ctx: &CompletionContext<'db>, potential_import_name: &str, qualifier: Option<ast::Path>) -> Option<ImportAssets<'db>> {
+fn import_assets_for_path<'db>(
+    ctx: &CompletionContext<'db>,
+    potential_import_name: &str,
+    qualifier: Option<ast::Path>,
+) -> Option<ImportAssets<'db>> {
     let _p =
         tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
     let fuzzy_name_length = potential_import_name.len();
@@ -281,7 +321,10 @@ fn import_assets_for_path<'db>(ctx: &CompletionContext<'db>, potential_import_na
     Some(assets_for_path)
 }
 
-fn compute_fuzzy_completion_order_key(proposed_mod_path: &hir::ModPath, user_input_lowercased: &str) -> usize {
+fn compute_fuzzy_completion_order_key(
+    proposed_mod_path: &hir::ModPath,
+    user_input_lowercased: &str,
+) -> usize {
     cov_mark::hit!(certain_fuzzy_order_test);
     let import_name = match proposed_mod_path.segments().last() {
         // FIXME: nasty alloc, this is a hot path!

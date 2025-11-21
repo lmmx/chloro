@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12388 bytes
+Chloro size:   12429 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -52,7 +52,11 @@ Rustfmt size:  13024 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_default_from_new(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
      let fn_name = fn_node.name()?;
 -
@@ -82,13 +86,11 @@ Rustfmt size:  13024 bytes
  }
  
 -// FIXME: based on from utils::generate_impl_text_inner
--fn generate_trait_impl_text_from_impl(
--    impl_: &ast::Impl,
--    self_ty: ast::Type,
--    trait_text: &str,
--    code: &str,
--) -> String {
-+fn generate_trait_impl_text_from_impl(impl_: &ast::Impl, self_ty: ast::Type, trait_text: &str, code: &str) -> String {
+ fn generate_trait_impl_text_from_impl(
+     impl_: &ast::Impl,
+     self_ty: ast::Type,
+     code: &str,
+ ) -> String {
      let generic_params = impl_.generic_param_list().map(|generic_params| {
 -        let lifetime_params = generic_params
 -            .lifetime_params()
@@ -122,6 +124,14 @@ Rustfmt size:  13024 bytes
      buf
  }
  
+-fn is_default_implemented(ctx: &AssistContext<'_>, impl_: &Impl) -> bool {
++fn is_default_implemented(
++    ctx: &AssistContext<'_>,
++    impl_: &Impl,
++) -> bool {
+     let db = ctx.sema.db;
+     let impl_ = ctx.sema.to_def(impl_);
+     let impl_def = match impl_ {
          Some(value) => value,
          None => return false,
      };

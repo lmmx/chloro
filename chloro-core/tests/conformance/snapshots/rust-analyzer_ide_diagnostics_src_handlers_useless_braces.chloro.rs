@@ -7,7 +7,12 @@ use syntax::{AstNode, SyntaxNode, SyntaxNodePtr, ast};
 
 use crate::{Diagnostic, DiagnosticCode, fix};
 
-pub(crate) fn useless_braces(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, node: &SyntaxNode) -> Option<()> {
+pub(crate) fn useless_braces(
+    db: &RootDatabase,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    node: &SyntaxNode,
+) -> Option<()> {
     let use_tree_list = ast::UseTreeList::cast(node.clone())?;
     if let Some((single_use_tree,)) = use_tree_list.use_trees().collect_tuple() {
         // If there is a `self` inside the bracketed `use`, don't show diagnostic.

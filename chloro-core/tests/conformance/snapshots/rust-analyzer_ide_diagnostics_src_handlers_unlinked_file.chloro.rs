@@ -17,7 +17,11 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
 
-pub(crate) fn unlinked_file(ctx: &DiagnosticsContext<'_>, acc: &mut Vec<Diagnostic>, file_id: FileId) {
+pub(crate) fn unlinked_file(
+    ctx: &DiagnosticsContext<'_>,
+    acc: &mut Vec<Diagnostic>,
+    file_id: FileId,
+) {
     let mut range = TextRange::up_to(ctx.sema.db.line_index(file_id).len());
     let fixes = fixes(ctx, file_id, range);
     // FIXME: This is a hack for the vscode extension to notice whether there is an autofix or not before having to resolve diagnostics.
@@ -62,7 +66,11 @@ pub(crate) fn unlinked_file(ctx: &DiagnosticsContext<'_>, acc: &mut Vec<Diagnost
     );
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, file_id: FileId, trigger_range: TextRange) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    file_id: FileId,
+    trigger_range: TextRange,
+) -> Option<Vec<Assist>> {
     // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
     // suggest that as a fix.
     let db = ctx.sema.db;
@@ -181,7 +189,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, file_id: FileId, trigger_range: TextRange
     None
 }
 
-fn make_fixes(parent_file_id: FileId, source: ModuleSource, new_mod_name: &str, trigger_range: TextRange) -> Option<Vec<Assist>> {
+fn make_fixes(
+    parent_file_id: FileId,
+    source: ModuleSource,
+    new_mod_name: &str,
+    trigger_range: TextRange,
+) -> Option<Vec<Assist>> {
     fn is_outline_mod(item: &ast::Item) -> bool {
         matches!(item, ast::Item::Module(m) if m.item_list().is_none())
     }

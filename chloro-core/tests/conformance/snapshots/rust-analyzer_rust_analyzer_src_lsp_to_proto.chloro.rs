@@ -40,7 +40,10 @@ use crate::{
     target_spec::{CargoTargetSpec, TargetSpec},
 };
 
-pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::Position {
+pub(crate) fn position(
+    line_index: &LineIndex,
+    offset: TextSize,
+) -> lsp_types::Position {
     let line_col = line_index.index.line_col(offset);
     match line_index.encoding {
         PositionEncoding::Utf8 => lsp_types::Position::new(line_col.line, line_col.col),
@@ -51,7 +54,10 @@ pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::P
     }
 }
 
-pub(crate) fn range(line_index: &LineIndex, range: TextRange) -> lsp_types::Range {
+pub(crate) fn range(
+    line_index: &LineIndex,
+    range: TextRange,
+) -> lsp_types::Range {
     let start = position(line_index, range.start());
     let end = position(line_index, range.end());
     lsp_types::Range::new(start, end)
@@ -167,7 +173,10 @@ pub(crate) fn completion_item_kind(completion_item_kind: CompletionItemKind) -> 
     }
 }
 
-pub(crate) fn text_edit(line_index: &LineIndex, indel: Indel) -> lsp_types::TextEdit {
+pub(crate) fn text_edit(
+    line_index: &LineIndex,
+    indel: Indel,
+) -> lsp_types::TextEdit {
     let range = range(line_index, indel.delete);
     let new_text = match line_index.endings {
         LineEndings::Unix => indel.insert,
@@ -176,7 +185,11 @@ pub(crate) fn text_edit(line_index: &LineIndex, indel: Indel) -> lsp_types::Text
     lsp_types::TextEdit { range, new_text }
 }
 
-pub(crate) fn completion_text_edit(line_index: &LineIndex, insert_replace_support: Option<lsp_types::Position>, indel: Indel) -> lsp_types::CompletionTextEdit {
+pub(crate) fn completion_text_edit(
+    line_index: &LineIndex,
+    insert_replace_support: Option<lsp_types::Position>,
+    indel: Indel,
+) -> lsp_types::CompletionTextEdit {
     let text_edit = text_edit(line_index, indel);
     match insert_replace_support {
         Some(cursor_pos) => lsp_types::InsertReplaceEdit {
@@ -189,7 +202,13 @@ pub(crate) fn completion_text_edit(line_index: &LineIndex, insert_replace_suppor
     }
 }
 
-pub(crate) fn snippet_text_edit(line_index: &LineIndex, is_snippet: bool, indel: Indel, annotation: Option<ChangeAnnotationId>, client_supports_annotations: bool) -> lsp_ext::SnippetTextEdit {
+pub(crate) fn snippet_text_edit(
+    line_index: &LineIndex,
+    is_snippet: bool,
+    indel: Indel,
+    annotation: Option<ChangeAnnotationId>,
+    client_supports_annotations: bool,
+) -> lsp_ext::SnippetTextEdit {
     let annotation_id = annotation.filter(|_| client_supports_annotations).map(|it| it.to_string());
     let text_edit = text_edit(line_index, indel);
     let insert_text_format =
@@ -202,11 +221,19 @@ pub(crate) fn snippet_text_edit(line_index: &LineIndex, is_snippet: bool, indel:
     }
 }
 
-pub(crate) fn text_edit_vec(line_index: &LineIndex, text_edit: TextEdit) -> Vec<lsp_types::TextEdit> {
+pub(crate) fn text_edit_vec(
+    line_index: &LineIndex,
+    text_edit: TextEdit,
+) -> Vec<lsp_types::TextEdit> {
     text_edit.into_iter().map(|indel| self::text_edit(line_index, indel)).collect()
 }
 
-pub(crate) fn snippet_text_edit_vec(line_index: &LineIndex, is_snippet: bool, text_edit: TextEdit, clients_support_annotations: bool) -> Vec<lsp_ext::SnippetTextEdit> {
+pub(crate) fn snippet_text_edit_vec(
+    line_index: &LineIndex,
+    is_snippet: bool,
+    text_edit: TextEdit,
+    clients_support_annotations: bool,
+) -> Vec<lsp_ext::SnippetTextEdit> {
     let annotation = text_edit.change_annotation();
     text_edit
         .into_iter()
@@ -222,7 +249,15 @@ pub(crate) fn snippet_text_edit_vec(line_index: &LineIndex, is_snippet: bool, te
         .collect()
 }
 
-pub(crate) fn completion_items(config: &Config, fields_to_resolve: &CompletionFieldsToResolve, line_index: &LineIndex, version: Option<i32>, tdpp: lsp_types::TextDocumentPositionParams, completion_trigger_character: Option<char>, mut items: Vec<CompletionItem>) -> Vec<lsp_types::CompletionItem> {
+pub(crate) fn completion_items(
+    config: &Config,
+    fields_to_resolve: &CompletionFieldsToResolve,
+    line_index: &LineIndex,
+    version: Option<i32>,
+    tdpp: lsp_types::TextDocumentPositionParams,
+    completion_trigger_character: Option<char>,
+    mut items: Vec<CompletionItem>,
+) -> Vec<lsp_types::CompletionItem> {
     if config.completion_hide_deprecated() {
         items.retain(|item| !item.deprecated);
     }
@@ -250,7 +285,18 @@ pub(crate) fn completion_items(config: &Config, fields_to_resolve: &CompletionFi
     res
 }
 
-fn completion_item(acc: &mut Vec<lsp_types::CompletionItem>, config: &Config, client_commands: &ClientCommandsConfig, fields_to_resolve: &CompletionFieldsToResolve, line_index: &LineIndex, version: Option<i32>, tdpp: &lsp_types::TextDocumentPositionParams, max_relevance: u32, completion_trigger_character: Option<char>, item: CompletionItem) {
+fn completion_item(
+    acc: &mut Vec<lsp_types::CompletionItem>,
+    config: &Config,
+    client_commands: &ClientCommandsConfig,
+    fields_to_resolve: &CompletionFieldsToResolve,
+    line_index: &LineIndex,
+    version: Option<i32>,
+    tdpp: &lsp_types::TextDocumentPositionParams,
+    max_relevance: u32,
+    completion_trigger_character: Option<char>,
+    item: CompletionItem,
+) {
     let insert_replace_support = config.insert_replace_support().then_some(tdpp.position);
     let ref_match = item.ref_match();
     let mut additional_text_edits = Vec::new();
@@ -420,7 +466,11 @@ fn completion_item(acc: &mut Vec<lsp_types::CompletionItem>, config: &Config, cl
     }
 }
 
-pub(crate) fn signature_help(call_info: SignatureHelp, config: CallInfoConfig, label_offsets: bool) -> lsp_types::SignatureHelp {
+pub(crate) fn signature_help(
+    call_info: SignatureHelp,
+    config: CallInfoConfig,
+    label_offsets: bool,
+) -> lsp_types::SignatureHelp {
     let (label, parameters) = match (config.params_only, label_offsets) {
         (concise, false) => {
             let params = call_info
@@ -498,7 +548,13 @@ pub(crate) fn signature_help(call_info: SignatureHelp, config: CallInfoConfig, l
     }
 }
 
-pub(crate) fn inlay_hint(snap: &GlobalStateSnapshot, fields_to_resolve: &InlayFieldsToResolve, line_index: &LineIndex, file_id: FileId, mut inlay_hint: InlayHint) -> Cancellable<lsp_types::InlayHint> {
+pub(crate) fn inlay_hint(
+    snap: &GlobalStateSnapshot,
+    fields_to_resolve: &InlayFieldsToResolve,
+    line_index: &LineIndex,
+    file_id: FileId,
+    mut inlay_hint: InlayHint,
+) -> Cancellable<lsp_types::InlayHint> {
     let hint_needs_resolve = |hint: &InlayHint| -> Option<TextRange> {
         hint.resolve_parent.filter(|_| {
             hint.text_edit.as_ref().is_some_and(LazyProperty::is_lazy)
@@ -573,7 +629,13 @@ pub(crate) fn inlay_hint(snap: &GlobalStateSnapshot, fields_to_resolve: &InlayFi
     })
 }
 
-fn inlay_hint_label(snap: &GlobalStateSnapshot, fields_to_resolve: &InlayFieldsToResolve, something_to_resolve: &mut bool, needs_resolve: bool, mut label: InlayHintLabel) -> Cancellable<(lsp_types::InlayHintLabel, Option<lsp_types::InlayHintTooltip>)> {
+fn inlay_hint_label(
+    snap: &GlobalStateSnapshot,
+    fields_to_resolve: &InlayFieldsToResolve,
+    something_to_resolve: &mut bool,
+    needs_resolve: bool,
+    mut label: InlayHintLabel,
+) -> Cancellable<(lsp_types::InlayHintLabel, Option<lsp_types::InlayHintTooltip>)> {
     let (label, tooltip) = match &*label.parts {
         [InlayHintLabelPart { linked_location: None, .. }] => {
             let InlayHintLabelPart { text, tooltip, .. } = label.parts.pop().unwrap();
@@ -649,7 +711,13 @@ fn inlay_hint_label(snap: &GlobalStateSnapshot, fields_to_resolve: &InlayFieldsT
 }
 
 
-pub(crate) fn semantic_tokens(text: &str, line_index: &LineIndex, highlights: Vec<HlRange>, semantics_tokens_augments_syntax_tokens: bool, non_standard_tokens: bool) -> lsp_types::SemanticTokens {
+pub(crate) fn semantic_tokens(
+    text: &str,
+    line_index: &LineIndex,
+    highlights: Vec<HlRange>,
+    semantics_tokens_augments_syntax_tokens: bool,
+    non_standard_tokens: bool,
+) -> lsp_types::SemanticTokens {
     let id = TOKEN_RESULT_COUNTER.fetch_add(1, Ordering::SeqCst).to_string();
     let mut builder = semantic_tokens::SemanticTokensBuilder::new(id);
     for highlight_range in highlights {
@@ -701,7 +769,10 @@ pub(crate) fn semantic_tokens(text: &str, line_index: &LineIndex, highlights: Ve
     builder.build()
 }
 
-pub(crate) fn semantic_token_delta(previous: &lsp_types::SemanticTokens, current: &lsp_types::SemanticTokens) -> lsp_types::SemanticTokensDelta {
+pub(crate) fn semantic_token_delta(
+    previous: &lsp_types::SemanticTokens,
+    current: &lsp_types::SemanticTokens,
+) -> lsp_types::SemanticTokensDelta {
     let result_id = current.result_id.clone();
     let edits = semantic_tokens::diff_tokens(&previous.data, &current.data);
     lsp_types::SemanticTokensDelta { result_id, edits }
@@ -806,7 +877,12 @@ fn semantic_token_type_and_modifiers(highlight: Highlight) -> (lsp_types::Semant
     (ty, mods)
 }
 
-pub(crate) fn folding_range(text: &str, line_index: &LineIndex, line_folding_only: bool, fold: Fold) -> lsp_types::FoldingRange {
+pub(crate) fn folding_range(
+    text: &str,
+    line_index: &LineIndex,
+    line_folding_only: bool,
+    fold: Fold,
+) -> lsp_types::FoldingRange {
     let kind = match fold.kind {
         FoldKind::Comment => Some(lsp_types::FoldingRangeKind::Comment),
         FoldKind::Imports => Some(lsp_types::FoldingRangeKind::Imports),
@@ -861,7 +937,10 @@ pub(crate) fn folding_range(text: &str, line_index: &LineIndex, line_folding_onl
     }
 }
 
-pub(crate) fn url(snap: &GlobalStateSnapshot, file_id: FileId) -> lsp_types::Url {
+pub(crate) fn url(
+    snap: &GlobalStateSnapshot,
+    file_id: FileId,
+) -> lsp_types::Url {
     snap.file_id_to_url(file_id)
 }
 
@@ -895,13 +974,19 @@ pub(crate) fn url_from_abs_path(path: &AbsPath) -> lsp_types::Url {
     lsp_types::Url::parse(&url).unwrap()
 }
 
-pub(crate) fn optional_versioned_text_document_identifier(snap: &GlobalStateSnapshot, file_id: FileId) -> lsp_types::OptionalVersionedTextDocumentIdentifier {
+pub(crate) fn optional_versioned_text_document_identifier(
+    snap: &GlobalStateSnapshot,
+    file_id: FileId,
+) -> lsp_types::OptionalVersionedTextDocumentIdentifier {
     let url = url(snap, file_id);
     let version = snap.url_file_version(&url);
     lsp_types::OptionalVersionedTextDocumentIdentifier { uri: url, version }
 }
 
-pub(crate) fn location(snap: &GlobalStateSnapshot, frange: FileRange) -> Cancellable<lsp_types::Location> {
+pub(crate) fn location(
+    snap: &GlobalStateSnapshot,
+    frange: FileRange,
+) -> Cancellable<lsp_types::Location> {
     let url = url(snap, frange.file_id);
     let line_index = snap.file_line_index(frange.file_id)?;
     let range = range(&line_index, frange.range);
@@ -910,7 +995,10 @@ pub(crate) fn location(snap: &GlobalStateSnapshot, frange: FileRange) -> Cancell
 }
 
 /// Prefer using `location_link`, if the client has the cap.
-pub(crate) fn location_from_nav(snap: &GlobalStateSnapshot, nav: NavigationTarget) -> Cancellable<lsp_types::Location> {
+pub(crate) fn location_from_nav(
+    snap: &GlobalStateSnapshot,
+    nav: NavigationTarget,
+) -> Cancellable<lsp_types::Location> {
     let url = url(snap, nav.file_id);
     let line_index = snap.file_line_index(nav.file_id)?;
     let range = range(&line_index, nav.focus_or_full_range());
@@ -918,7 +1006,11 @@ pub(crate) fn location_from_nav(snap: &GlobalStateSnapshot, nav: NavigationTarge
     Ok(loc)
 }
 
-pub(crate) fn location_link(snap: &GlobalStateSnapshot, src: Option<FileRange>, target: NavigationTarget) -> Cancellable<lsp_types::LocationLink> {
+pub(crate) fn location_link(
+    snap: &GlobalStateSnapshot,
+    src: Option<FileRange>,
+    target: NavigationTarget,
+) -> Cancellable<lsp_types::LocationLink> {
     let origin_selection_range = match src {
         Some(src) => {
             let line_index = snap.file_line_index(src.file_id)?;
@@ -937,7 +1029,10 @@ pub(crate) fn location_link(snap: &GlobalStateSnapshot, src: Option<FileRange>, 
     Ok(res)
 }
 
-fn location_info(snap: &GlobalStateSnapshot, target: NavigationTarget) -> Cancellable<(lsp_types::Url, lsp_types::Range, lsp_types::Range)> {
+fn location_info(
+    snap: &GlobalStateSnapshot,
+    target: NavigationTarget,
+) -> Cancellable<(lsp_types::Url, lsp_types::Range, lsp_types::Range)> {
     let line_index = snap.file_line_index(target.file_id)?;
     let target_uri = url(snap, target.file_id);
     let target_range = range(&line_index, target.full_range);
@@ -946,7 +1041,11 @@ fn location_info(snap: &GlobalStateSnapshot, target: NavigationTarget) -> Cancel
     Ok((target_uri, target_range, target_selection_range))
 }
 
-pub(crate) fn goto_definition_response(snap: &GlobalStateSnapshot, src: Option<FileRange>, targets: Vec<NavigationTarget>) -> Cancellable<lsp_types::GotoDefinitionResponse> {
+pub(crate) fn goto_definition_response(
+    snap: &GlobalStateSnapshot,
+    src: Option<FileRange>,
+    targets: Vec<NavigationTarget>,
+) -> Cancellable<lsp_types::GotoDefinitionResponse> {
     if snap.config.location_link() {
         let links = targets
             .into_iter()
@@ -969,7 +1068,12 @@ fn outside_workspace_annotation_id() -> String {
     String::from("OutsideWorkspace")
 }
 
-fn merge_text_and_snippet_edits(line_index: &LineIndex, edit: TextEdit, snippet_edit: SnippetEdit, client_supports_annotations: bool) -> Vec<SnippetTextEdit> {
+fn merge_text_and_snippet_edits(
+    line_index: &LineIndex,
+    edit: TextEdit,
+    snippet_edit: SnippetEdit,
+    client_supports_annotations: bool,
+) -> Vec<SnippetTextEdit> {
     let mut edits: Vec<SnippetTextEdit> = vec![];
     let mut snippets = snippet_edit.into_edit_ranges().into_iter().peekable();
     let annotation = edit.change_annotation();
@@ -1121,7 +1225,13 @@ fn merge_text_and_snippet_edits(line_index: &LineIndex, edit: TextEdit, snippet_
     edits
 }
 
-pub(crate) fn snippet_text_document_edit(snap: &GlobalStateSnapshot, is_snippet: bool, file_id: FileId, edit: TextEdit, snippet_edit: Option<SnippetEdit>) -> Cancellable<lsp_ext::SnippetTextDocumentEdit> {
+pub(crate) fn snippet_text_document_edit(
+    snap: &GlobalStateSnapshot,
+    is_snippet: bool,
+    file_id: FileId,
+    edit: TextEdit,
+    snippet_edit: Option<SnippetEdit>,
+) -> Cancellable<lsp_ext::SnippetTextDocumentEdit> {
     let text_document = optional_versioned_text_document_identifier(snap, file_id);
     let line_index = snap.file_line_index(file_id)?;
     let client_supports_annotations = snap.config.change_annotation_support();
@@ -1149,7 +1259,10 @@ pub(crate) fn snippet_text_document_edit(snap: &GlobalStateSnapshot, is_snippet:
     Ok(lsp_ext::SnippetTextDocumentEdit { text_document, edits })
 }
 
-pub(crate) fn snippet_text_document_ops(snap: &GlobalStateSnapshot, file_system_edit: FileSystemEdit) -> Cancellable<Vec<lsp_ext::SnippetDocumentChangeOperation>> {
+pub(crate) fn snippet_text_document_ops(
+    snap: &GlobalStateSnapshot,
+    file_system_edit: FileSystemEdit,
+) -> Cancellable<Vec<lsp_ext::SnippetDocumentChangeOperation>> {
     let mut ops = Vec::new();
     match file_system_edit {
         FileSystemEdit::CreateFile { dst, initial_contents } => {
@@ -1206,7 +1319,10 @@ pub(crate) fn snippet_text_document_ops(snap: &GlobalStateSnapshot, file_system_
     Ok(ops)
 }
 
-pub(crate) fn snippet_workspace_edit(snap: &GlobalStateSnapshot, mut source_change: SourceChange) -> Cancellable<lsp_ext::SnippetWorkspaceEdit> {
+pub(crate) fn snippet_workspace_edit(
+    snap: &GlobalStateSnapshot,
+    mut source_change: SourceChange,
+) -> Cancellable<lsp_ext::SnippetWorkspaceEdit> {
     let mut document_changes: Vec<lsp_ext::SnippetDocumentChangeOperation> = Vec::new();
     for op in &mut source_change.file_system_edits {
         if let FileSystemEdit::CreateFile { dst, initial_contents } = op {
@@ -1268,7 +1384,10 @@ pub(crate) fn snippet_workspace_edit(snap: &GlobalStateSnapshot, mut source_chan
     Ok(workspace_edit)
 }
 
-pub(crate) fn workspace_edit(snap: &GlobalStateSnapshot, source_change: SourceChange) -> Cancellable<lsp_types::WorkspaceEdit> {
+pub(crate) fn workspace_edit(
+    snap: &GlobalStateSnapshot,
+    source_change: SourceChange,
+) -> Cancellable<lsp_types::WorkspaceEdit> {
     assert!(!source_change.is_snippet);
     snippet_workspace_edit(snap, source_change).map(|it| it.into())
 }
@@ -1303,7 +1422,9 @@ impl From<lsp_ext::SnippetWorkspaceEdit> for lsp_types::WorkspaceEdit {
 }
 
 impl From<lsp_ext::SnippetTextEdit> for lsp_types::OneOf<lsp_types::TextEdit, lsp_types::AnnotatedTextEdit> {
-    fn from(lsp_ext::SnippetTextEdit { annotation_id, insert_text_format:_, new_text, range }: lsp_ext::SnippetTextEdit) -> Self {
+    fn from(
+        lsp_ext::SnippetTextEdit { annotation_id, insert_text_format:_, new_text, range }: lsp_ext::SnippetTextEdit,
+    ) -> Self {
         match annotation_id {
             Some(annotation_id) => lsp_types::OneOf::Right(lsp_types::AnnotatedTextEdit {
                 text_edit: lsp_types::TextEdit { range, new_text },
@@ -1314,7 +1435,10 @@ impl From<lsp_ext::SnippetTextEdit> for lsp_types::OneOf<lsp_types::TextEdit, ls
     }
 }
 
-pub(crate) fn call_hierarchy_item(snap: &GlobalStateSnapshot, target: NavigationTarget) -> Cancellable<lsp_types::CallHierarchyItem> {
+pub(crate) fn call_hierarchy_item(
+    snap: &GlobalStateSnapshot,
+    target: NavigationTarget,
+) -> Cancellable<lsp_types::CallHierarchyItem> {
     let name = target.name.to_string();
     let detail = target.description.clone();
     let kind = target.kind.map(symbol_kind).unwrap_or(lsp_types::SymbolKind::FUNCTION);
@@ -1342,7 +1466,12 @@ pub(crate) fn code_action_kind(kind: AssistKind) -> lsp_types::CodeActionKind {
     }
 }
 
-pub(crate) fn code_action(snap: &GlobalStateSnapshot, commands: &ClientCommandsConfig, assist: Assist, resolve_data: Option<(usize, lsp_types::CodeActionParams, Option<i32>)>) -> Cancellable<lsp_ext::CodeAction> {
+pub(crate) fn code_action(
+    snap: &GlobalStateSnapshot,
+    commands: &ClientCommandsConfig,
+    assist: Assist,
+    resolve_data: Option<(usize, lsp_types::CodeActionParams, Option<i32>)>,
+) -> Cancellable<lsp_ext::CodeAction> {
     let mut res = lsp_ext::CodeAction {
         title: assist.label.to_string(),
         group: assist.group.filter(|_| snap.config.code_action_group()).map(|gr| gr.0),
@@ -1380,7 +1509,10 @@ pub(crate) fn code_action(snap: &GlobalStateSnapshot, commands: &ClientCommandsC
     Ok(res)
 }
 
-pub(crate) fn runnable(snap: &GlobalStateSnapshot, runnable: Runnable) -> Cancellable<Option<lsp_ext::Runnable>> {
+pub(crate) fn runnable(
+    snap: &GlobalStateSnapshot,
+    runnable: Runnable,
+) -> Cancellable<Option<lsp_ext::Runnable>> {
     let target_spec = TargetSpec::for_file(snap, runnable.nav.file_id)?;
     let source_root = snap.analysis.source_root_id(runnable.nav.file_id).ok();
     let config = snap.config.runnables(source_root);
@@ -1472,7 +1604,11 @@ pub(crate) fn runnable(snap: &GlobalStateSnapshot, runnable: Runnable) -> Cancel
     }
 }
 
-pub(crate) fn code_lens(acc: &mut Vec<lsp_types::CodeLens>, snap: &GlobalStateSnapshot, annotation: Annotation) -> Cancellable<()> {
+pub(crate) fn code_lens(
+    acc: &mut Vec<lsp_types::CodeLens>,
+    snap: &GlobalStateSnapshot,
+    annotation: Annotation,
+) -> Cancellable<()> {
     let client_commands_config = snap.config.client_commands();
     match annotation.kind {
         AnnotationKind::Runnable(run) => {
@@ -1631,7 +1767,11 @@ pub(crate) fn code_lens(acc: &mut Vec<lsp_types::CodeLens>, snap: &GlobalStateSn
     Ok(())
 }
 
-pub(crate) fn test_item(snap: &GlobalStateSnapshot, test_item: ide::TestItem, line_index: Option<&LineIndex>) -> Option<lsp_ext::TestItem> {
+pub(crate) fn test_item(
+    snap: &GlobalStateSnapshot,
+    test_item: ide::TestItem,
+    line_index: Option<&LineIndex>,
+) -> Option<lsp_ext::TestItem> {
     Some(lsp_ext::TestItem {
         id: test_item.id,
         label: test_item.label,
@@ -1673,7 +1813,12 @@ pub(crate) mod command {
         lsp::to_proto::{location, location_link},
         lsp_ext,
     };
-    pub(crate) fn show_references(title: String, uri: &lsp_types::Url, position: lsp_types::Position, locations: Vec<lsp_types::Location>) -> lsp_types::Command {
+    pub(crate) fn show_references(
+        title: String,
+        uri: &lsp_types::Url,
+        position: lsp_types::Position,
+        locations: Vec<lsp_types::Location>,
+    ) -> lsp_types::Command {
         // We cannot use the 'editor.action.showReferences' command directly
         // because that command requires vscode types which we convert in the handler
         // on the client side.
@@ -1687,7 +1832,10 @@ pub(crate) mod command {
             ]),
         }
     }
-    pub(crate) fn run_single(runnable: &lsp_ext::Runnable, title: &str) -> lsp_types::Command {
+    pub(crate) fn run_single(
+        runnable: &lsp_ext::Runnable,
+        title: &str,
+    ) -> lsp_types::Command {
         lsp_types::Command {
             title: title.to_owned(),
             command: "rust-analyzer.runSingle".into(),
@@ -1709,7 +1857,10 @@ pub(crate) mod command {
             arguments: Some(vec![]),
         }
     }
-    pub(crate) fn goto_location(snap: &GlobalStateSnapshot, nav: &NavigationTarget) -> Option<lsp_types::Command> {
+    pub(crate) fn goto_location(
+        snap: &GlobalStateSnapshot,
+        nav: &NavigationTarget,
+    ) -> Option<lsp_types::Command> {
         let value = if snap.config.location_link() {
             let link = location_link(snap, None, nav.clone()).ok()?;
             to_value(link).ok()?
@@ -1740,7 +1891,10 @@ pub(crate) mod command {
     }
 }
 
-pub(crate) fn make_update_runnable(runnable: &lsp_ext::Runnable, update_test: UpdateTest) -> Option<lsp_ext::Runnable> {
+pub(crate) fn make_update_runnable(
+    runnable: &lsp_ext::Runnable,
+    update_test: UpdateTest,
+) -> Option<lsp_ext::Runnable> {
     let label = update_test.label()?;
     let mut runnable = runnable.clone();
     runnable.label = format!("{} + {}", runnable.label, label);
@@ -1762,7 +1916,10 @@ pub(crate) fn reference_title(count: usize) -> String {
     if count == 1 { "1 reference".into() } else { format!("{count} references") }
 }
 
-pub(crate) fn markup_content(markup: Markup, kind: ide::HoverDocFormat) -> lsp_types::MarkupContent {
+pub(crate) fn markup_content(
+    markup: Markup,
+    kind: ide::HoverDocFormat,
+) -> lsp_types::MarkupContent {
     let kind = match kind {
         ide::HoverDocFormat::Markdown => lsp_types::MarkupKind::Markdown,
         ide::HoverDocFormat::PlainText => lsp_types::MarkupKind::PlainText,
@@ -1844,7 +2001,11 @@ fn bar(_: usize) {}
         assert!(!docs.contains("use crate::bar"));
     }
     #[track_caller]
-    fn check_rendered_snippets(edit: TextEdit, snippets: SnippetEdit, expect: Expect) {
+    fn check_rendered_snippets(
+        edit: TextEdit,
+        snippets: SnippetEdit,
+        expect: Expect,
+    ) {
         check_rendered_snippets_in_source(
             r"/* place to put all ranges in */",
             edit,
@@ -1853,7 +2014,12 @@ fn bar(_: usize) {}
         );
     }
     #[track_caller]
-    fn check_rendered_snippets_in_source(#[rust_analyzer::rust_fixture] ra_fixture: &str, edit: TextEdit, snippets: SnippetEdit, expect: Expect) {
+    fn check_rendered_snippets_in_source(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        edit: TextEdit,
+        snippets: SnippetEdit,
+        expect: Expect,
+    ) {
         let source = stdx::trim_indent(ra_fixture);
         let endings = if source.contains('\r') { LineEndings::Dos } else { LineEndings::Unix };
         let line_index = LineIndex {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8388 bytes
-Chloro size:   8175 bytes
+Chloro size:   8186 bytes
 Rustfmt size:  8479 bytes
 
 ✗ Outputs DIFFER
@@ -26,9 +26,14 @@ Rustfmt size:  8479 bytes
 -//     let x: i32 = 92;
 -// }
 -// ```
- pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_explicit_type(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let syntax_node = ctx.find_node_at_offset::<Either<LetStmt, Param>>()?;
      let (ascribed_ty, expr, pat) = if let Either::Left(let_stmt) = syntax_node {
+         let cursor_in_range = {
  
          (let_stmt.ty(), let_stmt.initializer(), let_stmt.pat()?)
      } else if let Either::Right(param) = syntax_node {

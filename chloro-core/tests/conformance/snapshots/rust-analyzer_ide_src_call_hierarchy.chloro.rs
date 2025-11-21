@@ -28,7 +28,11 @@ pub struct CallHierarchyConfig<'a> {
     pub minicore: MiniCore<'a>,
 }
 
-pub(crate) fn call_hierarchy(db: &RootDatabase, position: FilePosition, config: &CallHierarchyConfig<'_>) -> Option<RangeInfo<Vec<NavigationTarget>>> {
+pub(crate) fn call_hierarchy(
+    db: &RootDatabase,
+    position: FilePosition,
+    config: &CallHierarchyConfig<'_>,
+) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     goto_definition::goto_definition(
         db,
         position,
@@ -36,7 +40,11 @@ pub(crate) fn call_hierarchy(db: &RootDatabase, position: FilePosition, config: 
     )
 }
 
-pub(crate) fn incoming_calls(db: &RootDatabase, config: &CallHierarchyConfig<'_>, FilePosition { file_id, offset }: FilePosition) -> Option<Vec<CallItem>> {
+pub(crate) fn incoming_calls(
+    db: &RootDatabase,
+    config: &CallHierarchyConfig<'_>,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<Vec<CallItem>> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id);
     let file = file.syntax();
@@ -83,7 +91,11 @@ pub(crate) fn incoming_calls(db: &RootDatabase, config: &CallHierarchyConfig<'_>
     Some(calls.into_items())
 }
 
-pub(crate) fn outgoing_calls(db: &RootDatabase, config: &CallHierarchyConfig<'_>, FilePosition { file_id, offset }: FilePosition) -> Option<Vec<CallItem>> {
+pub(crate) fn outgoing_calls(
+    db: &RootDatabase,
+    config: &CallHierarchyConfig<'_>,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<Vec<CallItem>> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(file_id);
     let file = file.syntax();
@@ -144,7 +156,11 @@ struct CallLocations {
 }
 
 impl CallLocations {
-    fn add(&mut self, target: NavigationTarget, range: FileRange) {
+    fn add(
+        &mut self,
+        target: NavigationTarget,
+        range: FileRange,
+    ) {
         self.funcs.entry(target).or_default().push(range);
     }
 
@@ -159,7 +175,13 @@ mod tests {
     use ide_db::{FilePosition, MiniCore};
     use itertools::Itertools;
     use crate::fixture;
-    fn check_hierarchy(exclude_tests: bool, #[rust_analyzer::rust_fixture] ra_fixture: &str, expected_nav: Expect, expected_incoming: Expect, expected_outgoing: Expect) {
+    fn check_hierarchy(
+        exclude_tests: bool,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expected_nav: Expect,
+        expected_incoming: Expect,
+        expected_outgoing: Expect,
+    ) {
         fn debug_render(item: crate::CallItem) -> String {
             format!(
                 "{} : {}",

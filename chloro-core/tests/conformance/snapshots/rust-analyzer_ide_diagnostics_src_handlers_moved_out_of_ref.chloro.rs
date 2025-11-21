@@ -2,7 +2,10 @@ use hir::HirDisplay;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn moved_out_of_ref(ctx: &DiagnosticsContext<'_>, d: &hir::MovedOutOfRef<'_>) -> Diagnostic {
+pub(crate) fn moved_out_of_ref(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MovedOutOfRef<'_>,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0507"),

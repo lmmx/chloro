@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5772 bytes
-Chloro size:   5188 bytes
+Chloro size:   5214 bytes
 Rustfmt size:  5772 bytes
 
 ✗ Outputs DIFFER
@@ -52,7 +52,11 @@ Rustfmt size:  5772 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_is_empty_from_len(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
      let fn_name = fn_node.name()?;
 -
@@ -84,15 +88,7 @@ Rustfmt size:  5772 bytes
      acc.add(
          AssistId::generate("generate_is_empty_from_len"),
          "Generate a is_empty impl from a len function",
-     )
- }
- 
--fn get_impl_method(
--    ctx: &AssistContext<'_>,
--    impl_: &ast::Impl,
--    fn_name: &Name,
--) -> Option<hir::Function> {
-+fn get_impl_method(ctx: &AssistContext<'_>, impl_: &ast::Impl, fn_name: &Name) -> Option<hir::Function> {
+ ) -> Option<hir::Function> {
      let db = ctx.sema.db;
      let impl_def: hir::Impl = ctx.sema.to_def(impl_)?;
 -

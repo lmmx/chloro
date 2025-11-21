@@ -26,7 +26,10 @@ pub struct RecursiveMemoryLayout {
 }
 
 impl fmt::Display for RecursiveMemoryLayout {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        fmt: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         fn process(
             fmt: &mut fmt::Formatter<'_>,
             nodes: &Vec<MemoryLayoutNode>,
@@ -60,7 +63,10 @@ enum FieldOrTupleIdx {
 }
 
 impl FieldOrTupleIdx {
-    fn name(&self, db: &RootDatabase) -> String {
+    fn name(
+        &self,
+        db: &RootDatabase,
+    ) -> String {
         match *self {
             FieldOrTupleIdx::Field(f) => f.name(db).as_str().to_owned(),
             FieldOrTupleIdx::TupleIdx(i) => format!(".{i}"),
@@ -68,7 +74,10 @@ impl FieldOrTupleIdx {
     }
 }
 
-pub(crate) fn view_memory_layout(db: &RootDatabase, position: FilePosition) -> Option<RecursiveMemoryLayout> {
+pub(crate) fn view_memory_layout(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> Option<RecursiveMemoryLayout> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(position.file_id);
     let display_target = sema.first_crate(position.file_id)?.to_display_target(db);
@@ -196,7 +205,9 @@ mod tests {
     use super::*;
     use crate::fixture;
     use expect_test::expect;
-    fn make_memory_layout(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> Option<RecursiveMemoryLayout> {
+    fn make_memory_layout(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) -> Option<RecursiveMemoryLayout> {
         let (analysis, position, _) = fixture::annotations(ra_fixture);
         hir::attach_db(&analysis.db, || view_memory_layout(&analysis.db, position))
     }

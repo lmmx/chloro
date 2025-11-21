@@ -16,7 +16,10 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 
-pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Diagnostic {
+pub(crate) fn type_mismatch(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+) -> Diagnostic {
     let display_range = adjusted_display_range(ctx, d.expr_or_pat, &|node| {
         let Either::Left(expr) = node else { return None };
         let salient_token_range = match expr {
@@ -51,7 +54,10 @@ pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
     if let Some(expr_ptr) = d.expr_or_pat.value.cast::<ast::Expr>() {
         let expr_ptr = &InFile { file_id: d.expr_or_pat.file_id, value: expr_ptr };
@@ -64,7 +70,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 
-fn add_reference(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
+fn add_reference(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+    expr_ptr: &InFile<AstPtr<ast::Expr>>,
+    acc: &mut Vec<Assist>,
+) -> Option<()> {
     let range = ctx.sema.diagnostics_display_range((*expr_ptr).map(|it| it.into()));
     let (_, mutability) = d.expected.as_reference()?;
     let actual_with_ref = d.actual.add_reference(mutability);
@@ -78,7 +89,12 @@ fn add_reference(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_p
     Some(())
 }
 
-fn add_missing_ok_or_some(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
+fn add_missing_ok_or_some(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+    expr_ptr: &InFile<AstPtr<ast::Expr>>,
+    acc: &mut Vec<Assist>,
+) -> Option<()> {
     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     let expr_range = expr.syntax().text_range();
@@ -155,7 +171,12 @@ fn add_missing_ok_or_some(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_
     Some(())
 }
 
-fn remove_unnecessary_wrapper(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
+fn remove_unnecessary_wrapper(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+    expr_ptr: &InFile<AstPtr<ast::Expr>>,
+    acc: &mut Vec<Assist>,
+) -> Option<()> {
     let db = ctx.sema.db;
     let root = db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
@@ -226,7 +247,12 @@ fn remove_unnecessary_wrapper(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatc
     Some(())
 }
 
-fn remove_semicolon(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
+fn remove_semicolon(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+    expr_ptr: &InFile<AstPtr<ast::Expr>>,
+    acc: &mut Vec<Assist>,
+) -> Option<()> {
     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     if !d.actual.is_unit() {
@@ -249,7 +275,12 @@ fn remove_semicolon(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, exp
     Some(())
 }
 
-fn str_ref_to_owned(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>, expr_ptr: &InFile<AstPtr<ast::Expr>>, acc: &mut Vec<Assist>) -> Option<()> {
+fn str_ref_to_owned(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TypeMismatch<'_>,
+    expr_ptr: &InFile<AstPtr<ast::Expr>>,
+    acc: &mut Vec<Assist>,
+) -> Option<()> {
     let expected = d.expected.display(ctx.sema.db, ctx.display_target);
     // FIXME do this properly
     let is_applicable = d.actual.strip_reference().is_str() && expected.to_string() == "String";

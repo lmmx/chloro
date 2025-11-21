@@ -15,7 +15,11 @@ use crate::{
 };
 
 impl ExprCollector<'_> {
-    pub(super) fn lower_inline_asm(&mut self, asm: ast::AsmExpr, syntax_ptr: AstPtr<ast::Expr>) -> ExprId {
+    pub(super) fn lower_inline_asm(
+        &mut self,
+        asm: ast::AsmExpr,
+        syntax_ptr: AstPtr<ast::Expr>,
+    ) -> ExprId {
         let mut clobber_abis = FxIndexSet::default();
         let mut operands = vec![];
         let mut options = AsmOptions::empty();

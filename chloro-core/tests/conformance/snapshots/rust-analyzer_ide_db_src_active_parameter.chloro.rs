@@ -20,18 +20,29 @@ pub struct ActiveParameter<'db> {
 
 impl<'db> ActiveParameter<'db> {
     /// Returns information about the call argument this token is part of.
-    pub fn at_token(sema: &Semantics<'db, RootDatabase>, token: SyntaxToken) -> Option<Self> {
+    pub fn at_token(
+        sema: &Semantics<'db, RootDatabase>,
+        token: SyntaxToken,
+    ) -> Option<Self> {
         let (signature, active_parameter) = callable_for_token(sema, token)?;
         Self::from_signature_and_active_parameter(sema, signature, active_parameter)
     }
 
     /// Returns information about the call argument this token is part of.
-    pub fn at_arg(sema: &'db Semantics<'db, RootDatabase>, list: ast::ArgList, at: TextSize) -> Option<Self> {
+    pub fn at_arg(
+        sema: &'db Semantics<'db, RootDatabase>,
+        list: ast::ArgList,
+        at: TextSize,
+    ) -> Option<Self> {
         let (signature, active_parameter) = callable_for_arg_list(sema, list, at)?;
         Self::from_signature_and_active_parameter(sema, signature, active_parameter)
     }
 
-    fn from_signature_and_active_parameter(sema: &Semantics<'db, RootDatabase>, signature: hir::Callable<'db>, active_parameter: Option<usize>) -> Option<Self> {
+    fn from_signature_and_active_parameter(
+        sema: &Semantics<'db, RootDatabase>,
+        signature: hir::Callable<'db>,
+        active_parameter: Option<usize>,
+    ) -> Option<Self> {
         let idx = active_parameter?;
         let mut params = signature.params();
         if idx >= params.len() {
@@ -55,7 +66,10 @@ impl<'db> ActiveParameter<'db> {
 }
 
 /// Returns a [`hir::Callable`] this token is a part of and its argument index of said callable.
-pub fn callable_for_token<'db>(sema: &Semantics<'db, RootDatabase>, token: SyntaxToken) -> Option<(hir::Callable<'db>, Option<usize>)> {
+pub fn callable_for_token<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    token: SyntaxToken,
+) -> Option<(hir::Callable<'db>, Option<usize>)> {
     let offset = token.text_range().start();
     // Find the calling expression and its NameRef
     let parent = token.parent()?;
@@ -67,13 +81,21 @@ pub fn callable_for_token<'db>(sema: &Semantics<'db, RootDatabase>, token: Synta
 }
 
 /// Returns a [`hir::Callable`] this token is a part of and its argument index of said callable.
-pub fn callable_for_arg_list<'db>(sema: &Semantics<'db, RootDatabase>, arg_list: ast::ArgList, at: TextSize) -> Option<(hir::Callable<'db>, Option<usize>)> {
+pub fn callable_for_arg_list<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    arg_list: ast::ArgList,
+    at: TextSize,
+) -> Option<(hir::Callable<'db>, Option<usize>)> {
     debug_assert!(arg_list.syntax().text_range().contains(at));
     let callable = arg_list.syntax().parent().and_then(ast::CallableExpr::cast)?;
     callable_for_node(sema, &callable, at)
 }
 
-pub fn callable_for_node<'db>(sema: &Semantics<'db, RootDatabase>, calling_node: &ast::CallableExpr, offset: TextSize) -> Option<(hir::Callable<'db>, Option<usize>)> {
+pub fn callable_for_node<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    calling_node: &ast::CallableExpr,
+    offset: TextSize,
+) -> Option<(hir::Callable<'db>, Option<usize>)> {
     let callable = match calling_node {
         ast::CallableExpr::Call(call) => sema.resolve_expr_as_callable(&call.expr()?),
         ast::CallableExpr::MethodCall(call) => sema.resolve_method_call_as_callable(call),
@@ -90,7 +112,11 @@ pub fn callable_for_node<'db>(sema: &Semantics<'db, RootDatabase>, calling_node:
     Some((callable, active_param))
 }
 
-pub fn generic_def_for_node(sema: &Semantics<'_, RootDatabase>, generic_arg_list: &ast::GenericArgList, token: &SyntaxToken) -> Option<(hir::GenericDef, usize, bool, Option<hir::Variant>)> {
+pub fn generic_def_for_node(
+    sema: &Semantics<'_, RootDatabase>,
+    generic_arg_list: &ast::GenericArgList,
+    token: &SyntaxToken,
+) -> Option<(hir::GenericDef, usize, bool, Option<hir::Variant>)> {
     let parent = generic_arg_list.syntax().parent()?;
     let mut variant = None;
     let def = match_ast! {

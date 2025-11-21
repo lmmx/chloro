@@ -23,7 +23,10 @@ impl Highlights {
         }
     }
 
-    pub(super) fn add(&mut self, hl_range: HlRange) {
+    pub(super) fn add(
+        &mut self,
+        hl_range: HlRange,
+    ) {
         self.root.add(hl_range);
     }
 
@@ -39,7 +42,10 @@ impl Node {
         Node { hl_range, nested: Vec::new() }
     }
 
-    fn add(&mut self, hl_range: HlRange) {
+    fn add(
+        &mut self,
+        hl_range: HlRange,
+    ) {
         assert!(self.hl_range.range.contains_range(hl_range.range));
         // Fast path
         if let Some(last) = self.nested.last_mut() {
@@ -64,7 +70,10 @@ impl Node {
         self.nested[overlapping.start].nested = nested;
     }
 
-    fn flatten(&self, acc: &mut Vec<HlRange>) {
+    fn flatten(
+        &self,
+        acc: &mut Vec<HlRange>,
+    ) {
         let mut start = self.hl_range.range.start();
         let mut nested = self.nested.iter();
         loop {

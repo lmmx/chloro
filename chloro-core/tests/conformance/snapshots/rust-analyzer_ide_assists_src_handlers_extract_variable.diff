@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51035 bytes
+Chloro size:   51111 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -61,9 +61,14 @@ Rustfmt size:  52351 bytes
 -//     VAR_NAME * 4;
 -// }
 -// ```
- pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn extract_variable(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let node = if ctx.has_empty_selection() {
          if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
+             t.parent().and_then(ast::ExprStmt::cast)?.syntax().clone()
              NodeOrToken::Token(it) => it.parent()?,
          }
      };
@@ -106,18 +111,6 @@ Rustfmt size:  52351 bytes
          AssistId::refactor_extract(s)
      }
  
-         }
-     }
- 
--    fn get_name_and_expr(
--        &self,
--        ctx: &AssistContext<'_>,
--        to_extract: &ast::Expr,
--    ) -> (String, SyntaxNode) {
-+    fn get_name_and_expr(&self, ctx: &AssistContext<'_>, to_extract: &ast::Expr) -> (String, SyntaxNode) {
-         // We only do this sort of extraction for fields because they should have lowercase names
-         if let ExtractionKind::Variable = self {
-             let field_shorthand = to_extract
                  return (field.to_string(), field.syntax().clone());
              }
          }
@@ -137,6 +130,12 @@ Rustfmt size:  52351 bytes
          (var_name, to_extract.syntax().clone())
      }
  }
+ 
+-fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String> {
++fn get_literal_name(
++    ctx: &AssistContext<'_>,
++    expr: &ast::Expr,
++) -> Option<String> {
      let ast::Expr::Literal(literal) = expr else {
          return None;
      };
@@ -156,6 +155,17 @@ Rustfmt size:  52351 bytes
      match LexedStr::single_token(ctx.edition(), &inner) {
          Some((SyntaxKind::IDENT, None)) => Some(inner),
          _ => None,
+ }
+ 
+ impl Anchor {
+-    fn from(to_extract: &ast::Expr, kind: &ExtractionKind) -> Option<Anchor> {
++    fn from(
++        to_extract: &ast::Expr,
++        kind: &ExtractionKind,
++    ) -> Option<Anchor> {
+         let result = to_extract
+             .syntax()
+             .ancestors()
                  }
                  None
              });

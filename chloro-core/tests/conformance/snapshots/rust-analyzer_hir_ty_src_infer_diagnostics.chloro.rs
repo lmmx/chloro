@@ -23,11 +23,18 @@ use crate::{
 pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
 
 impl<'db> Diagnostics<'db> {
-    pub(super) fn push(&self, diagnostic: InferenceDiagnostic<'db>) {
+    pub(super) fn push(
+        &self,
+        diagnostic: InferenceDiagnostic<'db>,
+    ) {
         self.0.borrow_mut().push(diagnostic);
     }
 
-    fn push_ty_diagnostics(&self, source: InferenceTyDiagnosticSource, diagnostics: Vec<TyLoweringDiagnostic>) {
+    fn push_ty_diagnostics(
+        &self,
+        source: InferenceTyDiagnosticSource,
+        diagnostics: Vec<TyLoweringDiagnostic>,
+    ) {
         self.0.borrow_mut().extend(
             diagnostics.into_iter().map(|diag| InferenceDiagnostic::TyDiagnostic { source, diag }),
         );
@@ -51,7 +58,15 @@ pub(super) struct InferenceTyLoweringContext<'db, 'a> {
 
 impl<'db, 'a> InferenceTyLoweringContext<'db, 'a> {
     #[inline]
-    pub(super) fn new(db: &'db dyn HirDatabase, resolver: &'a Resolver<'db>, store: &'a ExpressionStore, diagnostics: &'a Diagnostics<'db>, source: InferenceTyDiagnosticSource, generic_def: GenericDefId, lifetime_elision: LifetimeElisionKind<'db>) -> Self {
+    pub(super) fn new(
+        db: &'db dyn HirDatabase,
+        resolver: &'a Resolver<'db>,
+        store: &'a ExpressionStore,
+        diagnostics: &'a Diagnostics<'db>,
+        source: InferenceTyDiagnosticSource,
+        generic_def: GenericDefId,
+        lifetime_elision: LifetimeElisionKind<'db>,
+    ) -> Self {
         Self {
             ctx: TyLoweringContext::new(db, resolver, store, generic_def, lifetime_elision),
             diagnostics,
@@ -60,7 +75,11 @@ impl<'db, 'a> InferenceTyLoweringContext<'db, 'a> {
     }
 
     #[inline]
-    pub(super) fn at_path<'b>(&'b mut self, path: &'b Path, node: ExprOrPatId) -> PathLoweringContext<'b, 'a, 'db> {
+    pub(super) fn at_path<'b>(
+        &'b mut self,
+        path: &'b Path,
+        node: ExprOrPatId,
+    ) -> PathLoweringContext<'b, 'a, 'db> {
         let on_diagnostic = PathDiagnosticCallback {
             data: Either::Right(PathDiagnosticCallbackData { diagnostics: self.diagnostics, node }),
             callback: |data, _, diag| {
@@ -73,7 +92,10 @@ impl<'db, 'a> InferenceTyLoweringContext<'db, 'a> {
     }
 
     #[inline]
-    pub(super) fn at_path_forget_diagnostics<'b>(&'b mut self, path: &'b Path) -> PathLoweringContext<'b, 'a, 'db> {
+    pub(super) fn at_path_forget_diagnostics<'b>(
+        &'b mut self,
+        path: &'b Path,
+    ) -> PathLoweringContext<'b, 'a, 'db> {
         let on_diagnostic = PathDiagnosticCallback {
             data: Either::Right(PathDiagnosticCallbackData {
                 diagnostics: self.diagnostics,

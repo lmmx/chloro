@@ -39,7 +39,11 @@ pub struct FulfillmentError<'db> {
 }
 
 impl<'db> FulfillmentError<'db> {
-    pub fn new(obligation: PredicateObligation<'db>, code: FulfillmentErrorCode<'db>, root_obligation: PredicateObligation<'db>) -> FulfillmentError<'db> {
+    pub fn new(
+        obligation: PredicateObligation<'db>,
+        code: FulfillmentErrorCode<'db>,
+        root_obligation: PredicateObligation<'db>,
+    ) -> FulfillmentError<'db> {
         FulfillmentError { obligation, code, root_obligation }
     }
 
@@ -78,7 +82,10 @@ pub struct MismatchedProjectionTypes<'db> {
     pub err: TypeError<'db>,
 }
 
-pub(super) fn fulfillment_error_for_no_solution<'db>(infcx: &InferCtxt<'db>, root_obligation: PredicateObligation<'db>) -> FulfillmentError<'db> {
+pub(super) fn fulfillment_error_for_no_solution<'db>(
+    infcx: &InferCtxt<'db>,
+    root_obligation: PredicateObligation<'db>,
+) -> FulfillmentError<'db> {
     let obligation = find_best_leaf_obligation(infcx, &root_obligation, false);
     let code = match obligation.predicate.kind().skip_binder() {
         PredicateKind::Clause(ClauseKind::Projection(_)) => {
@@ -134,7 +141,10 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(infcx: &InferCtxt<'db>, roo
     FulfillmentError { obligation, code, root_obligation }
 }
 
-pub(super) fn fulfillment_error_for_stalled<'db>(infcx: &InferCtxt<'db>, root_obligation: PredicateObligation<'db>) -> FulfillmentError<'db> {
+pub(super) fn fulfillment_error_for_stalled<'db>(
+    infcx: &InferCtxt<'db>,
+    root_obligation: PredicateObligation<'db>,
+) -> FulfillmentError<'db> {
     let (code, refine_obligation) = infcx.probe(|_| {
         match <&SolverContext<'db>>::from(infcx).evaluate_root_goal(
             root_obligation.as_goal(),
@@ -188,7 +198,10 @@ pub(super) fn fulfillment_error_for_stalled<'db>(infcx: &InferCtxt<'db>, root_ob
     }
 }
 
-pub(super) fn fulfillment_error_for_overflow<'db>(infcx: &InferCtxt<'db>, root_obligation: PredicateObligation<'db>) -> FulfillmentError<'db> {
+pub(super) fn fulfillment_error_for_overflow<'db>(
+    infcx: &InferCtxt<'db>,
+    root_obligation: PredicateObligation<'db>,
+) -> FulfillmentError<'db> {
     FulfillmentError {
         obligation: find_best_leaf_obligation(infcx, &root_obligation, true),
         code: FulfillmentErrorCode::Ambiguity { overflow: Some(true) },
@@ -197,7 +210,11 @@ pub(super) fn fulfillment_error_for_overflow<'db>(infcx: &InferCtxt<'db>, root_o
 }
 
 #[instrument(level = "debug", skip(infcx), ret)]
-fn find_best_leaf_obligation<'db>(infcx: &InferCtxt<'db>, obligation: &PredicateObligation<'db>, consider_ambiguities: bool) -> PredicateObligation<'db> {
+fn find_best_leaf_obligation<'db>(
+    infcx: &InferCtxt<'db>,
+    obligation: &PredicateObligation<'db>,
+    consider_ambiguities: bool,
+) -> PredicateObligation<'db> {
     let obligation = infcx.resolve_vars_if_possible(obligation.clone());
     // FIXME: we use a probe here as the `BestObligation` visitor does not
     // check whether it uses candidates which get shadowed by where-bounds.
@@ -224,7 +241,11 @@ struct BestObligation<'db> {
 }
 
 impl<'db> BestObligation<'db> {
-    fn with_derived_obligation(&mut self, derived_obligation: PredicateObligation<'db>, and_then: impl FnOnce(&mut Self) -> <Self as ProofTreeVisitor<'db>>::Result) -> <Self as ProofTreeVisitor<'db>>::Result {
+    fn with_derived_obligation(
+        &mut self,
+        derived_obligation: PredicateObligation<'db>,
+        and_then: impl FnOnce(&mut Self) -> <Self as ProofTreeVisitor<'db>>::Result,
+    ) -> <Self as ProofTreeVisitor<'db>>::Result {
         let old_obligation = std::mem::replace(&mut self.obligation, derived_obligation);
         let res = and_then(self);
         self.obligation = old_obligation;
@@ -235,7 +256,10 @@ impl<'db> BestObligation<'db> {
     /// purposes of reporting errors. For ambiguities, we only consider
     /// candidates that may hold. For errors, we only consider candidates that
     /// *don't* hold and which have impl-where clauses that also don't hold.
-    fn non_trivial_candidates<'a>(&self, goal: &'a inspect::InspectGoal<'a, 'db>) -> Vec<inspect::InspectCandidate<'a, 'db>> {
+    fn non_trivial_candidates<'a>(
+        &self,
+        goal: &'a inspect::InspectGoal<'a, 'db>,
+    ) -> Vec<inspect::InspectCandidate<'a, 'db>> {
         let mut candidates = goal.candidates();
         match self.consider_ambiguities {
             true => {
@@ -274,7 +298,11 @@ impl<'db> BestObligation<'db> {
     /// HACK: We walk the nested obligations for a well-formed arg manually,
     /// since there's nontrivial logic in `wf.rs` to set up an obligation cause.
     /// Ideally we'd be able to track this better.
-    fn visit_well_formed_goal(&mut self, candidate: &inspect::InspectCandidate<'_, 'db>, term: Term<'db>) -> ControlFlow<PredicateObligation<'db>> {
+    fn visit_well_formed_goal(
+        &mut self,
+        candidate: &inspect::InspectCandidate<'_, 'db>,
+        term: Term<'db>,
+    ) -> ControlFlow<PredicateObligation<'db>> {
         let infcx = candidate.goal().infcx();
         let param_env = candidate.goal().goal().param_env;
         for obligation in wf::unnormalized_obligations(infcx, param_env, term).into_iter().flatten()
@@ -296,7 +324,11 @@ impl<'db> BestObligation<'db> {
     /// If a normalization of an associated item or a trait goal fails without trying any
     /// candidates it's likely that normalizing its self type failed. We manually detect
     /// such cases here.
-    fn detect_error_in_self_ty_normalization(&mut self, goal: &inspect::InspectGoal<'_, 'db>, self_ty: Ty<'db>) -> ControlFlow<PredicateObligation<'db>> {
+    fn detect_error_in_self_ty_normalization(
+        &mut self,
+        goal: &inspect::InspectGoal<'_, 'db>,
+        self_ty: Ty<'db>,
+    ) -> ControlFlow<PredicateObligation<'db>> {
         assert!(!self.consider_ambiguities);
         let interner = goal.infcx().interner;
         if let TyKind::Alias(..) = self_ty.kind() {
@@ -331,7 +363,10 @@ impl<'db> BestObligation<'db> {
     /// `NormalizesTo` goal, so we don't fall back to the rigid projection check
     /// that should catch when a projection goal fails due to an unsatisfied trait
     /// goal.
-    fn detect_trait_error_in_higher_ranked_projection(&mut self, goal: &inspect::InspectGoal<'_, 'db>) -> ControlFlow<PredicateObligation<'db>> {
+    fn detect_trait_error_in_higher_ranked_projection(
+        &mut self,
+        goal: &inspect::InspectGoal<'_, 'db>,
+    ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         if let Some(projection_clause) = goal.goal().predicate.as_projection_clause()
             && !projection_clause.bound_vars().is_empty()
@@ -361,7 +396,11 @@ impl<'db> BestObligation<'db> {
     /// As we only enter `RigidAlias` candidates if the trait bound of the associated type
     /// holds, we discard these candidates in `non_trivial_candidates` and always manually
     /// check this here.
-    fn detect_non_well_formed_assoc_item(&mut self, goal: &inspect::InspectGoal<'_, 'db>, alias: AliasTerm<'db>) -> ControlFlow<PredicateObligation<'db>> {
+    fn detect_non_well_formed_assoc_item(
+        &mut self,
+        goal: &inspect::InspectGoal<'_, 'db>,
+        alias: AliasTerm<'db>,
+    ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         let obligation = Obligation::new(
             interner,
@@ -380,7 +419,10 @@ impl<'db> BestObligation<'db> {
 
     /// If we have no candidates, then it's likely that there is a
     /// non-well-formed alias in the goal.
-    fn detect_error_from_empty_candidates(&mut self, goal: &inspect::InspectGoal<'_, 'db>) -> ControlFlow<PredicateObligation<'db>> {
+    fn detect_error_from_empty_candidates(
+        &mut self,
+        goal: &inspect::InspectGoal<'_, 'db>,
+    ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         let pred_kind = goal.goal().predicate.kind();
         match pred_kind.no_bound_vars() {
@@ -405,7 +447,10 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
     type Result = ControlFlow<PredicateObligation<'db>>;
 
     #[instrument(level = "trace", skip(self, goal), fields(goal = ?goal.goal()))]
-    fn visit_goal(&mut self, goal: &inspect::InspectGoal<'_, 'db>) -> Self::Result {
+    fn visit_goal(
+        &mut self,
+        goal: &inspect::InspectGoal<'_, 'db>,
+    ) -> Self::Result {
         let interner = goal.infcx().interner;
         // Skip goals that aren't the *reason* for our goal's failure.
         match (self.consider_ambiguities, goal.result()) {
@@ -535,7 +580,10 @@ enum ChildMode<'db> {
 }
 
 impl<'db> NextSolverError<'db> {
-    pub fn to_debuggable_error(&self, infcx: &InferCtxt<'db>) -> FulfillmentError<'db> {
+    pub fn to_debuggable_error(
+        &self,
+        infcx: &InferCtxt<'db>,
+    ) -> FulfillmentError<'db> {
         match self {
             NextSolverError::TrueError(obligation) => {
                 fulfillment_error_for_no_solution(infcx, obligation.clone())
@@ -571,7 +619,11 @@ mod wf {
     ///
     /// This is only intended to be used in the new solver, since it does not
     /// take into account recursion depth or proper error-reporting spans.
-    pub(crate) fn unnormalized_obligations<'db>(infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, term: Term<'db>) -> Option<PredicateObligations<'db>> {
+    pub(crate) fn unnormalized_obligations<'db>(
+        infcx: &InferCtxt<'db>,
+        param_env: ParamEnv<'db>,
+        term: Term<'db>,
+    ) -> Option<PredicateObligations<'db>> {
         debug_assert_eq!(term, infcx.resolve_vars_if_possible(term));
         // However, if `arg` IS an unresolved inference variable, returns `None`,
         // because we are not able to make any progress at all. This is to prevent
@@ -595,7 +647,10 @@ mod wf {
             self.infcx.interner
         }
 
-        fn require_sized(&mut self, subty: Ty<'db>) {
+        fn require_sized(
+            &mut self,
+            subty: Ty<'db>,
+        ) {
             if !subty.has_escaping_bound_vars() {
                 let cause = ObligationCause::new();
                 let trait_ref = TraitRef::new(
@@ -615,13 +670,20 @@ mod wf {
 
         /// Pushes all the predicates needed to validate that `term` is WF into `out`.
         #[instrument(level = "debug", skip(self))]
-        fn add_wf_preds_for_term(&mut self, term: Term<'db>) {
+        fn add_wf_preds_for_term(
+            &mut self,
+            term: Term<'db>,
+        ) {
             term.visit_with(self);
             debug!(?self.out);
         }
 
         #[instrument(level = "debug", skip(self))]
-        fn nominal_obligations(&mut self, def_id: SolverDefId, args: GenericArgs<'db>) -> PredicateObligations<'db> {
+        fn nominal_obligations(
+            &mut self,
+            def_id: SolverDefId,
+            args: GenericArgs<'db>,
+        ) -> PredicateObligations<'db> {
             // PERF: `Sized`'s predicates include `MetaSized`, but both are compiler implemented marker
             // traits, so `MetaSized` will always be WF if `Sized` is WF and vice-versa. Determining
             // the nominal obligations of `Sized` would in-effect just elaborate `MetaSized` and make
@@ -648,7 +710,12 @@ mod wf {
                 .collect()
         }
 
-        fn add_wf_preds_for_dyn_ty(&mut self, _ty: Ty<'db>, data: &[Binder<'db, ExistentialPredicate<'db>>], region: Region<'db>) {
+        fn add_wf_preds_for_dyn_ty(
+            &mut self,
+            _ty: Ty<'db>,
+            data: &[Binder<'db, ExistentialPredicate<'db>>],
+            region: Region<'db>,
+        ) {
             // Imagine a type like this:
             //
             //     trait Foo { }
@@ -713,7 +780,10 @@ mod wf {
     impl<'a, 'db> TypeVisitor<DbInterner<'db>> for WfPredicates<'a, 'db> {
         type Result = ();
 
-        fn visit_ty(&mut self, t: Ty<'db>) -> Self::Result {
+        fn visit_ty(
+            &mut self,
+            t: Ty<'db>,
+        ) -> Self::Result {
             debug!("wf bounds for t={:?} t.kind={:#?}", t, t.kind());
             let tcx = self.interner();
             match t.kind() {
@@ -944,7 +1014,10 @@ mod wf {
             t.super_visit_with(self)
         }
 
-        fn visit_const(&mut self, c: Const<'db>) -> Self::Result {
+        fn visit_const(
+            &mut self,
+            c: Const<'db>,
+        ) -> Self::Result {
             let tcx = self.interner();
             match c.kind() {
                 ConstKind::Unevaluated(uv) => {
@@ -1016,7 +1089,10 @@ mod wf {
             c.super_visit_with(self)
         }
 
-        fn visit_predicate(&mut self, _p: Predicate<'db>) -> Self::Result {
+        fn visit_predicate(
+            &mut self,
+            _p: Predicate<'db>,
+        ) -> Self::Result {
             panic!("predicate should not be checked for well-formedness");
         }
     }
@@ -1034,7 +1110,10 @@ mod wf {
     ///
     /// Requires that trait definitions have been processed so that we can
     /// elaborate predicates and walk supertraits.
-    pub(crate) fn object_region_bounds<'db>(interner: DbInterner<'db>, existential_predicates: &[Binder<'db, ExistentialPredicate<'db>>]) -> Vec<Region<'db>> {
+    pub(crate) fn object_region_bounds<'db>(
+        interner: DbInterner<'db>,
+        existential_predicates: &[Binder<'db, ExistentialPredicate<'db>>],
+    ) -> Vec<Region<'db>> {
         let erased_self_ty = Ty::new_unit(interner);
         let predicates = existential_predicates
             .iter()

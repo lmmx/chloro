@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   53103 bytes
+Chloro size:   53657 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -47,18 +47,6 @@ Rustfmt size:  56860 bytes
  };
  
  macro_rules! register_builtin {
- }
- 
- impl BuiltinDeriveExpander {
--    pub fn expand(
--        &self,
--        db: &dyn ExpandDatabase,
--        id: MacroCallId,
--        tt: &tt::TopSubtree,
--        span: Span,
--    ) -> ExpandResult<tt::TopSubtree> {
-+    pub fn expand(&self, db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
-         let span = span_with_def_site_ctxt(db, span, id.into(), Edition::CURRENT);
          self.expander()(db, span, tt)
      }
  }
@@ -79,31 +67,53 @@ Rustfmt size:  56860 bytes
  pub fn find_builtin_derive(ident: &name::Name) -> Option<BuiltinDeriveExpander> {
      BuiltinDeriveExpander::find_by_name(ident)
  }
-         }
+     Unit,
+ }
+ 
+-fn tuple_field_iterator(span: Span, n: usize) -> impl Iterator<Item = tt::Ident> {
++fn tuple_field_iterator(
++    span: Span,
++    n: usize,
++) -> impl Iterator<Item = tt::Ident> {
+     (0..n).map(move |it| tt::Ident::new(&format!("f{it}"), span))
+ }
+ 
+ impl VariantShape {
+-    fn as_pattern(&self, path: tt::TopSubtree, span: Span) -> tt::TopSubtree {
++    fn as_pattern(
++        &self,
++        path: tt::TopSubtree,
++        span: Span,
++    ) -> tt::TopSubtree {
+         self.as_pattern_map(path, span, |it| quote!(span => #it))
      }
  
--    fn as_pattern_map(
--        &self,
--        path: tt::TopSubtree,
--        span: Span,
--        field_map: impl Fn(&tt::Ident) -> tt::TopSubtree,
--    ) -> tt::TopSubtree {
-+    fn as_pattern_map(&self, path: tt::TopSubtree, span: Span, field_map: impl Fn(&tt::Ident) -> tt::TopSubtree) -> tt::TopSubtree {
+-    fn field_names(&self, span: Span) -> Vec<tt::Ident> {
++    fn field_names(
++        &self,
++        span: Span,
++    ) -> Vec<tt::Ident> {
          match self {
-             VariantShape::Struct(fields) => {
-                 let fields = fields.iter().map(|it| {
-         }
+             VariantShape::Struct(s) => s.clone(),
+             VariantShape::Tuple(n) => tuple_field_iterator(span, *n).collect(),
+ }
+ 
+ impl AdtShape {
+-    fn as_pattern(&self, span: Span, name: &tt::Ident) -> Vec<tt::TopSubtree> {
++    fn as_pattern(
++        &self,
++        span: Span,
++        name: &tt::Ident,
++    ) -> Vec<tt::TopSubtree> {
+         self.as_pattern_map(name, |it| quote!(span =>#it), span)
      }
  
--    fn from(
--        call_site: Span,
--        tm: &ExpansionSpanMap,
--        value: Option<FieldList>,
--    ) -> Result<Self, ExpandError> {
-+    fn from(call_site: Span, tm: &ExpansionSpanMap, value: Option<FieldList>) -> Result<Self, ExpandError> {
-         let r = match value {
-             None => VariantShape::Unit,
-             Some(FieldList::RecordFieldList(it)) => VariantShape::Struct(
+-    fn field_names(&self, span: Span) -> Vec<Vec<tt::Ident>> {
++    fn field_names(
++        &self,
++        span: Span,
++    ) -> Vec<Vec<tt::Ident>> {
+         match self {
              AdtShape::Struct(s) => {
                  vec![s.field_names(span)]
              }
@@ -117,42 +127,13 @@ Rustfmt size:  56860 bytes
              AdtShape::Union => {
                  never!("using fields of union in derive is always wrong");
                  vec![]
-         }
-     }
- 
--    fn as_pattern_map(
--        &self,
--        name: &tt::Ident,
--        field_map: impl Fn(&tt::Ident) -> tt::TopSubtree,
--        span: Span,
--    ) -> Vec<tt::TopSubtree> {
-+    fn as_pattern_map(&self, name: &tt::Ident, field_map: impl Fn(&tt::Ident) -> tt::TopSubtree, span: Span) -> Vec<tt::TopSubtree> {
-         match self {
-             AdtShape::Struct(s) => {
-                 vec![s.as_pattern_map(quote! {span => #name }, span, field_map)]
      bounds: Option<tt::TopSubtree>,
  }
  
 -// FIXME: This whole thing needs a refactor. Each derive requires its special values, and the result is a mess.
--fn parse_adt(
--    db: &dyn ExpandDatabase,
--    tt: &tt::TopSubtree,
--    call_site: Span,
--) -> Result<BasicAdtInfo, ExpandError> {
-+fn parse_adt(db: &dyn ExpandDatabase, tt: &tt::TopSubtree, call_site: Span) -> Result<BasicAdtInfo, ExpandError> {
-     let (adt, tm) = to_adt_syntax(db, tt, call_site)?;
-     parse_adt_from_syntax(&adt, &tm, call_site)
- }
- 
--fn parse_adt_from_syntax(
--    adt: &ast::Adt,
--    tm: &span::SpanMap<SyntaxContext>,
--    call_site: Span,
--) -> Result<BasicAdtInfo, ExpandError> {
-+fn parse_adt_from_syntax(adt: &ast::Adt, tm: &span::SpanMap<SyntaxContext>, call_site: Span) -> Result<BasicAdtInfo, ExpandError> {
-     let (name, generic_param_list, where_clause, shape) = match &adt {
-         ast::Adt::Struct(it) => (
-             it.name(),
+ fn parse_adt(
+     db: &dyn ExpandDatabase,
+     tt: &tt::TopSubtree,
                  .variant_list()
                  .into_iter()
                  .flat_map(|it| it.variants())
@@ -246,15 +227,7 @@ Rustfmt size:  56860 bytes
 +    Ok(BasicAdtInfo { name: name_token, shape, param_types, where_clause, associated_types })
  }
  
--fn to_adt_syntax(
--    db: &dyn ExpandDatabase,
--    tt: &tt::TopSubtree,
--    call_site: Span,
--) -> Result<(ast::Adt, span::SpanMap<SyntaxContext>), ExpandError> {
-+fn to_adt_syntax(db: &dyn ExpandDatabase, tt: &tt::TopSubtree, call_site: Span) -> Result<(ast::Adt, span::SpanMap<SyntaxContext>), ExpandError> {
-     let (parsed, tm) = crate::db::token_tree_to_syntax_node(
-         db,
-         tt,
+ fn to_adt_syntax(
      );
      let macro_items = ast::MacroItems::cast(parsed.syntax_node())
          .ok_or_else(|| ExpandError::other(call_site, "invalid item definition"))?;
@@ -267,16 +240,6 @@ Rustfmt size:  56860 bytes
      let adt = ast::Adt::cast(item.syntax().clone())
          .ok_or_else(|| ExpandError::other(call_site, "expected struct, enum or union"))?;
      Ok((adt, tm))
- }
- 
--fn name_to_token(
--    call_site: Span,
--    token_map: &ExpansionSpanMap,
--    name: Option<ast::Name>,
--) -> Result<tt::Ident, ExpandError> {
-+fn name_to_token(call_site: Span, token_map: &ExpansionSpanMap, name: Option<ast::Name>) -> Result<tt::Ident, ExpandError> {
-     let name = name.ok_or_else(|| {
-         debug!("parsed item has no name");
          ExpandError::other(call_site, "missing name")
      })?;
      let span = token_map.span_at(name.syntax().text_range().start());
@@ -284,19 +247,6 @@ Rustfmt size:  56860 bytes
      let name_token = tt::Ident::new(name.text().as_ref(), span);
      Ok(name_token)
  }
- ///
- /// where B1, ..., BN are the bounds given by `bounds_paths`. Z is a phantom type, and
- /// therefore does not get bound by the derived trait.
--fn expand_simple_derive(
--    db: &dyn ExpandDatabase,
--    invoc_span: Span,
--    tt: &tt::TopSubtree,
--    trait_path: tt::TopSubtree,
--    allow_unions: bool,
--    make_trait_body: impl FnOnce(&BasicAdtInfo) -> tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn expand_simple_derive(db: &dyn ExpandDatabase, invoc_span: Span, tt: &tt::TopSubtree, trait_path: tt::TopSubtree, allow_unions: bool, make_trait_body: impl FnOnce(&BasicAdtInfo) -> tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-     let info = match parse_adt(db, tt, invoc_span) {
          Ok(info) => info,
          Err(e) => {
              return ExpandResult::new(
@@ -308,18 +258,8 @@ Rustfmt size:  56860 bytes
                  e,
              );
          }
-     ))
- }
- 
--fn expand_simple_derive_with_parsed(
--    invoc_span: Span,
--    info: BasicAdtInfo,
--    trait_path: tt::TopSubtree,
--    make_trait_body: impl FnOnce(&BasicAdtInfo) -> tt::TopSubtree,
--    constrain_to_trait: bool,
--    extra_impl_params: tt::TopSubtree,
--) -> tt::TopSubtree {
-+fn expand_simple_derive_with_parsed(invoc_span: Span, info: BasicAdtInfo, trait_path: tt::TopSubtree, make_trait_body: impl FnOnce(&BasicAdtInfo) -> tt::TopSubtree, constrain_to_trait: bool, extra_impl_params: tt::TopSubtree) -> tt::TopSubtree {
+     extra_impl_params: tt::TopSubtree,
+ ) -> tt::TopSubtree {
      let trait_body = make_trait_body(&info);
 -    let mut where_block: Vec<_> = info
 -        .where_clause
@@ -356,27 +296,8 @@ Rustfmt size:  56860 bytes
      let name = info.name;
      quote! {invoc_span =>
          impl < # #params #extra_impl_params > #trait_path for #name < # #args > where # #where_block { #trait_body }
-     }
- }
- 
--fn copy_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn copy_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-     let krate = dollar_crate(span);
-     expand_simple_derive(
-         db,
-     )
- }
- 
--fn clone_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn clone_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
      let krate = dollar_crate(span);
 -    expand_simple_derive(
 -        db,
@@ -486,14 +407,6 @@ Rustfmt size:  56860 bytes
      quote! {span => #and& }
  }
  
--fn default_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn default_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-     let krate = &dollar_crate(span);
-     let adt = match parse_adt(db, tt, span) {
          Ok(info) => info,
          Err(e) => {
              return ExpandResult::new(
@@ -516,15 +429,8 @@ Rustfmt size:  56860 bytes
              if let Some(d) = default_variant {
                  let (name, fields) = &variants[*d];
                  let adt_name = &adt.name;
-     ))
- }
- 
--fn debug_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn debug_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
      let krate = &dollar_crate(span);
 -    expand_simple_derive(
 -        db,
@@ -660,12 +566,9 @@ Rustfmt size:  56860 bytes
 +    })
  }
  
--fn hash_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn hash_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
+ fn hash_expand(
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
      let krate = &dollar_crate(span);
 -    expand_simple_derive(
 -        db,
@@ -748,24 +651,9 @@ Rustfmt size:  56860 bytes
 +    })
  }
  
--fn eq_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn eq_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-     let krate = dollar_crate(span);
-     expand_simple_derive(
-         db,
-     )
- }
- 
--fn partial_eq_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn partial_eq_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
+ fn eq_expand(
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
      let krate = dollar_crate(span);
 -    expand_simple_derive(
 -        db,
@@ -853,24 +741,9 @@ Rustfmt size:  56860 bytes
 +    })
  }
  
--fn self_and_other_patterns(
--    adt: &BasicAdtInfo,
--    name: &tt::Ident,
--    span: Span,
--) -> (Vec<tt::TopSubtree>, Vec<tt::TopSubtree>) {
-+fn self_and_other_patterns(adt: &BasicAdtInfo, name: &tt::Ident, span: Span) -> (Vec<tt::TopSubtree>, Vec<tt::TopSubtree>) {
-     let self_patterns = adt.shape.as_pattern_map(
-         name,
-         |it| {
-     (self_patterns, other_patterns)
- }
- 
--fn ord_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn ord_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
+ fn self_and_other_patterns(
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
      let krate = &dollar_crate(span);
 -    expand_simple_derive(
 -        db,
@@ -935,47 +808,15 @@ Rustfmt size:  56860 bytes
              quote! {span =>
 -                fn cmp(&self, other: &Self) -> #krate::cmp::Ordering {
 -                    #body
--                }
--            }
--        },
--    )
--}
--
--fn partial_ord_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
--    let krate = &dollar_crate(span);
--    expand_simple_derive(
--        db,
--        span,
--        tt,
--        quote! {span => #krate::cmp::PartialOrd },
--        false,
--        |adt| {
--            fn compare(
--                krate: &tt::Ident,
--                left: tt::TopSubtree,
--                right: tt::TopSubtree,
--                rest: tt::TopSubtree,
--                span: Span,
--            ) -> tt::TopSubtree {
--                let fat_arrow1 = fat_arrow(span);
--                let fat_arrow2 = fat_arrow(span);
--                quote! {span =>
--                    match #left.partial_cmp(&#right) {
--                        #krate::option::Option::Some(#krate::cmp::Ordering::Equal) #fat_arrow1 {
--                            #rest
--                        }
--                        c #fat_arrow2 return c,
 +                match #left.cmp(&#right) {
 +                    #krate::cmp::Ordering::Equal #fat_arrow1 {
 +                        #rest
-                     }
++                    }
 +                    c #fat_arrow2 return c,
                  }
              }
+-        },
+-    )
 +        }
 +        let (self_patterns, other_patterns) = self_and_other_patterns(adt, &adt.name, span);
 +        let arms = izip!(self_patterns, other_patterns, adt.shape.field_names(span)).map(
@@ -998,8 +839,49 @@ Rustfmt size:  56860 bytes
 +            }
 +        };
 +        if matches!(&adt.shape, AdtShape::Enum { .. }) {
-             let left = quote!(span =>#krate::intrinsics::discriminant_value(self));
-             let right = quote!(span =>#krate::intrinsics::discriminant_value(other));
++            let left = quote!(span =>#krate::intrinsics::discriminant_value(self));
++            let right = quote!(span =>#krate::intrinsics::discriminant_value(other));
++            body = compare(krate, left, right, body, span);
++        }
++        quote! {span =>
++            fn cmp(&self, other: &Self) -> #krate::cmp::Ordering {
++                #body
++            }
++        }
++    })
+ }
+ 
+ fn partial_ord_expand(
+     tt: &tt::TopSubtree,
+ ) -> ExpandResult<tt::TopSubtree> {
+     let krate = &dollar_crate(span);
+-    expand_simple_derive(
+-        db,
+-        span,
+-        tt,
+-        quote! {span => #krate::cmp::PartialOrd },
+-        false,
+-        |adt| {
+-            fn compare(
+-                krate: &tt::Ident,
+-                left: tt::TopSubtree,
+-                right: tt::TopSubtree,
+-                rest: tt::TopSubtree,
+-                span: Span,
+-            ) -> tt::TopSubtree {
+-                let fat_arrow1 = fat_arrow(span);
+-                let fat_arrow2 = fat_arrow(span);
+-                quote! {span =>
+-                    match #left.partial_cmp(&#right) {
+-                        #krate::option::Option::Some(#krate::cmp::Ordering::Equal) #fat_arrow1 {
+-                            #rest
+-                        }
+-                        c #fat_arrow2 return c,
+-                    }
+-                }
+-            }
+-            let left = quote!(span =>#krate::intrinsics::discriminant_value(self));
+-            let right = quote!(span =>#krate::intrinsics::discriminant_value(other));
 -
 -            let (self_patterns, other_patterns) = self_and_other_patterns(adt, &adt.name, span);
 -            let arms = izip!(self_patterns, other_patterns, adt.shape.field_names(span)).map(
@@ -1028,29 +910,6 @@ Rustfmt size:  56860 bytes
 -                },
 -                span,
 -            );
--            quote! {span =>
--                fn partial_cmp(&self, other: &Self) -> #krate::option::Option<#krate::cmp::Ordering> {
--                    #body
--                }
-+            body = compare(krate, left, right, body, span);
-+        }
-+        quote! {span =>
-+            fn cmp(&self, other: &Self) -> #krate::cmp::Ordering {
-+                #body
-             }
--        },
--    )
-+        }
-+    })
- }
- 
--fn coerce_pointee_expand(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    tt: &tt::TopSubtree,
--) -> ExpandResult<tt::TopSubtree> {
-+fn partial_ord_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-+    let krate = &dollar_crate(span);
 +    expand_simple_derive(db, span, tt, quote! {span => #krate::cmp::PartialOrd }, false, |adt| {
 +        fn compare(
 +            krate: &tt::Ident,
@@ -1061,14 +920,18 @@ Rustfmt size:  56860 bytes
 +        ) -> tt::TopSubtree {
 +            let fat_arrow1 = fat_arrow(span);
 +            let fat_arrow2 = fat_arrow(span);
-+            quote! {span =>
+             quote! {span =>
+-                fn partial_cmp(&self, other: &Self) -> #krate::option::Option<#krate::cmp::Ordering> {
+-                    #body
 +                match #left.partial_cmp(&#right) {
 +                    #krate::option::Option::Some(#krate::cmp::Ordering::Equal) #fat_arrow1 {
 +                        #rest
 +                    }
 +                    c #fat_arrow2 return c,
-+                }
-+            }
+                 }
+             }
+-        },
+-    )
 +        }
 +        let left = quote!(span =>#krate::intrinsics::discriminant_value(self));
 +        let right = quote!(span =>#krate::intrinsics::discriminant_value(other));
@@ -1106,12 +969,9 @@ Rustfmt size:  56860 bytes
 +            }
 +        }
 +    })
-+}
-+
-+fn coerce_pointee_expand(db: &dyn ExpandDatabase, span: Span, tt: &tt::TopSubtree) -> ExpandResult<tt::TopSubtree> {
-     let (adt, _span_map) = match to_adt_syntax(db, tt, span) {
-         Ok(it) => it,
-         Err(err) => {
+ }
+ 
+ fn coerce_pointee_expand(
          // Regardless of the only type param being designed as `#[pointee]` or not, we can just use it as such.
          (type_params[0].clone(), 0)
      } else {

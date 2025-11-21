@@ -98,7 +98,12 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
     modules
 }
 
-fn find_unresolved_references(db: &RootDatabase, sema: &Semantics<'_, RootDatabase>, file_id: FileId, module: &Module) -> Vec<TextRange> {
+fn find_unresolved_references(
+    db: &RootDatabase,
+    sema: &Semantics<'_, RootDatabase>,
+    file_id: FileId,
+    module: &Module,
+) -> Vec<TextRange> {
     let mut unresolved_references = all_unresolved_references(sema, file_id);
     // remove unresolved references which are within inactive code
     let mut diagnostics = Vec::new();
@@ -120,7 +125,10 @@ fn find_unresolved_references(db: &RootDatabase, sema: &Semantics<'_, RootDataba
     unresolved_references
 }
 
-fn all_unresolved_references(sema: &Semantics<'_, RootDatabase>, file_id: FileId) -> Vec<TextRange> {
+fn all_unresolved_references(
+    sema: &Semantics<'_, RootDatabase>,
+    file_id: FileId,
+) -> Vec<TextRange> {
     let file_id = sema
         .attach_first_edition(file_id)
         .unwrap_or_else(|| EditionedFileId::current_edition(sema.db, file_id));

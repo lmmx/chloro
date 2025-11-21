@@ -38,7 +38,10 @@ impl AssistConfig {
         }
     }
 
-    pub fn find_path_config(&self, allow_unstable: bool) -> FindPathConfig {
+    pub fn find_path_config(
+        &self,
+        allow_unstable: bool,
+    ) -> FindPathConfig {
         FindPathConfig {
             prefer_no_std: self.prefer_no_std,
             prefer_prelude: self.prefer_prelude,

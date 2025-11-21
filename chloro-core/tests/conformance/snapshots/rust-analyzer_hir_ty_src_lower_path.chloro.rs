@@ -44,7 +44,8 @@ use super::{
     const_param_ty_query, ty_query,
 };
 
-type CallbackData<'a, 'db> = Either<
+type CallbackData<'a, 'db> =
+    Either<
     PathDiagnosticCallbackData,
     crate::infer::diagnostics::PathDiagnosticCallbackData<'a, 'db>,
 >;
@@ -66,7 +67,11 @@ pub(crate) struct PathLoweringContext<'a, 'b, 'db> {
 
 impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     #[inline]
-    pub(crate) fn new(ctx: &'a mut TyLoweringContext<'db, 'b>, on_diagnostic: PathDiagnosticCallback<'a, 'db>, path: &'a Path) -> Self {
+    pub(crate) fn new(
+        ctx: &'a mut TyLoweringContext<'db, 'b>,
+        on_diagnostic: PathDiagnosticCallback<'a, 'db>,
+        path: &'a Path,
+    ) -> Self {
         let segments = path.segments();
         let first_segment = segments.first().unwrap_or(PathSegment::MISSING);
         Self {
@@ -81,7 +86,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     #[inline]
     #[cold]
-    fn on_diagnostic(&mut self, diag: PathLoweringDiagnostic) {
+    fn on_diagnostic(
+        &mut self,
+        diag: PathLoweringDiagnostic,
+    ) {
         (self.on_diagnostic.callback)(&self.on_diagnostic.data, self.ctx, diag);
     }
 
@@ -117,7 +125,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     }
 
     #[inline]
-    pub(crate) fn set_current_segment(&mut self, segment: usize) {
+    pub(crate) fn set_current_segment(
+        &mut self,
+        segment: usize,
+    ) {
         self.current_segment_idx = segment;
         self.current_or_prev_segment = self
             .segments
@@ -126,7 +137,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     }
 
     #[inline]
-    fn with_lifetime_elision<T>(&mut self, lifetime_elision: LifetimeElisionKind<'db>, f: impl FnOnce(&mut PathLoweringContext<'_, '_, 'db>) -> T) -> T {
+    fn with_lifetime_elision<T>(
+        &mut self,
+        lifetime_elision: LifetimeElisionKind<'db>,
+        f: impl FnOnce(&mut PathLoweringContext<'_, '_, 'db>) -> T,
+    ) -> T {
         let old_lifetime_elision =
             std::mem::replace(&mut self.ctx.lifetime_elision, lifetime_elision);
         let result = f(self);
@@ -134,7 +149,12 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         result
     }
 
-    pub(crate) fn lower_ty_relative_path(&mut self, ty: Ty<'db>, res: Option<TypeNs>, infer_args: bool) -> (Ty<'db>, Option<TypeNs>) {
+    pub(crate) fn lower_ty_relative_path(
+        &mut self,
+        ty: Ty<'db>,
+        res: Option<TypeNs>,
+        infer_args: bool,
+    ) -> (Ty<'db>, Option<TypeNs>) {
         let remaining_segments = self.segments.len() - self.current_segment_idx;
         match remaining_segments {
             0 => (ty, res),
@@ -149,7 +169,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         }
     }
 
-    pub(crate) fn lower_partly_resolved_path(&mut self, resolution: TypeNs, infer_args: bool) -> (Ty<'db>, Option<TypeNs>) {
+    pub(crate) fn lower_partly_resolved_path(
+        &mut self,
+        resolution: TypeNs,
+        infer_args: bool,
+    ) -> (Ty<'db>, Option<TypeNs>) {
         let remaining_segments = self.segments.skip(self.current_segment_idx + 1);
         tracing::debug!(?remaining_segments);
         let rem_seg_len = remaining_segments.len();
@@ -255,7 +279,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     /// This returns whether to keep the resolution (`true`) of throw it (`false`).
     #[must_use]
-    fn handle_type_ns_resolution(&mut self, resolution: &TypeNs) -> bool {
+    fn handle_type_ns_resolution(
+        &mut self,
+        resolution: &TypeNs,
+    ) -> bool {
         let mut prohibit_generics_on_resolved = |reason| {
             if self.current_or_prev_segment.args_and_bindings.is_some() {
                 let segment = self.current_segment_u32();
@@ -345,7 +372,10 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         Some((resolution, remaining_index))
     }
 
-    pub(crate) fn resolve_path_in_value_ns(&mut self, hygiene_id: HygieneId) -> Option<ResolveValueResult> {
+    pub(crate) fn resolve_path_in_value_ns(
+        &mut self,
+        hygiene_id: HygieneId,
+    ) -> Option<ResolveValueResult> {
         let (res, prefix_info) = self.ctx.resolver.resolve_path_in_value_ns_with_prefix_info(
             self.ctx.db,
             self.path,
@@ -436,7 +466,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     }
 
     #[tracing::instrument(skip(self), ret)]
-    fn select_associated_type(&mut self, res: Option<TypeNs>, infer_args: bool) -> Ty<'db> {
+    fn select_associated_type(
+        &mut self,
+        res: Option<TypeNs>,
+        infer_args: bool,
+    ) -> Ty<'db> {
         let interner = self.ctx.interner;
         let Some(res) = res else {
             return Ty::new_error(self.ctx.interner, ErrorGuaranteed);
@@ -477,7 +511,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
     }
 
-    fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {
+    fn lower_path_inner(
+        &mut self,
+        typeable: TyDefId,
+        infer_args: bool,
+    ) -> Ty<'db> {
         let generic_def = match typeable {
             TyDefId::BuiltinType(builtinty) => {
                 return Ty::from_builtin_type(self.ctx.interner, builtinty);
@@ -492,7 +530,12 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     /// Collect generic arguments from a path into a `Substs`. See also
     /// `create_substs_for_ast_path` and `def_to_ty` in rustc.
-    pub(crate) fn substs_from_path(&mut self, resolved: ValueTyDefId, infer_args: bool, lowering_assoc_type_generics: bool) -> GenericArgs<'db> {
+    pub(crate) fn substs_from_path(
+        &mut self,
+        resolved: ValueTyDefId,
+        infer_args: bool,
+        lowering_assoc_type_generics: bool,
+    ) -> GenericArgs<'db> {
         let interner = self.ctx.interner;
         let prev_current_segment_idx = self.current_segment_idx;
         let prev_current_segment = self.current_or_prev_segment;
@@ -540,7 +583,13 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         result
     }
 
-    pub(crate) fn substs_from_path_segment(&mut self, def: GenericDefId, infer_args: bool, explicit_self_ty: Option<Ty<'db>>, lowering_assoc_type_generics: bool) -> GenericArgs<'db> {
+    pub(crate) fn substs_from_path_segment(
+        &mut self,
+        def: GenericDefId,
+        infer_args: bool,
+        explicit_self_ty: Option<Ty<'db>>,
+        lowering_assoc_type_generics: bool,
+    ) -> GenericArgs<'db> {
         let old_lifetime_elision = self.ctx.lifetime_elision.clone();
         if let Some(args) = self.current_or_prev_segment.args_and_bindings
             && args.parenthesized != GenericArgsParentheses::No
@@ -586,7 +635,16 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         result
     }
 
-    pub(super) fn substs_from_args_and_bindings(&mut self, args_and_bindings: Option<&HirGenericArgs>, def: GenericDefId, infer_args: bool, explicit_self_ty: Option<Ty<'db>>, generics_source: PathGenericsSource, lowering_assoc_type_generics: bool, lifetime_elision: LifetimeElisionKind<'db>) -> GenericArgs<'db> {
+    pub(super) fn substs_from_args_and_bindings(
+        &mut self,
+        args_and_bindings: Option<&HirGenericArgs>,
+        def: GenericDefId,
+        infer_args: bool,
+        explicit_self_ty: Option<Ty<'db>>,
+        generics_source: PathGenericsSource,
+        lowering_assoc_type_generics: bool,
+        lifetime_elision: LifetimeElisionKind<'db>,
+    ) -> GenericArgs<'db> {
         struct LowererCtx<'a, 'b, 'c, 'db> {
             ctx: &'a mut PathLoweringContext<'b, 'c, 'db>,
             generics_source: PathGenericsSource,
@@ -761,16 +819,29 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         )
     }
 
-    pub(crate) fn lower_trait_ref_from_resolved_path(&mut self, resolved: TraitId, explicit_self_ty: Ty<'db>, infer_args: bool) -> TraitRef<'db> {
+    pub(crate) fn lower_trait_ref_from_resolved_path(
+        &mut self,
+        resolved: TraitId,
+        explicit_self_ty: Ty<'db>,
+        infer_args: bool,
+    ) -> TraitRef<'db> {
         let args = self.trait_ref_substs_from_path(resolved, explicit_self_ty, infer_args);
         TraitRef::new_from_args(self.ctx.interner, resolved.into(), args)
     }
 
-    fn trait_ref_substs_from_path(&mut self, resolved: TraitId, explicit_self_ty: Ty<'db>, infer_args: bool) -> GenericArgs<'db> {
+    fn trait_ref_substs_from_path(
+        &mut self,
+        resolved: TraitId,
+        explicit_self_ty: Ty<'db>,
+        infer_args: bool,
+    ) -> GenericArgs<'db> {
         self.substs_from_path_segment(resolved.into(), infer_args, Some(explicit_self_ty), false)
     }
 
-    pub(super) fn assoc_type_bindings_from_type_bound<'c>(mut self, trait_ref: TraitRef<'db>) -> Option<impl Iterator<Item = Clause<'db>> + use<'a, 'b, 'c, 'db>> {
+    pub(super) fn assoc_type_bindings_from_type_bound<'c>(
+        mut self,
+        trait_ref: TraitRef<'db>,
+    ) -> Option<impl Iterator<Item = Clause<'db>> + use<'a, 'b, 'c, 'db>> {
         let interner = self.ctx.interner;
         self.current_or_prev_segment.args_and_bindings.map(|args_and_bindings| {
             args_and_bindings.bindings.iter().enumerate().flat_map(move |(binding_idx, binding)| {
@@ -866,18 +937,69 @@ pub(crate) enum TypeLikeConst<'a> {
     Path(&'a Path),
 }
 
-fn report_elided_lifetimes_in_path(&mut self, def: GenericDefId, expected_count: u32, hard_error: bool);
-fn report_elision_failure(&mut self, def: GenericDefId, expected_count: u32);
-fn report_missing_lifetime(&mut self, def: GenericDefId, expected_count: u32);
-fn report_len_mismatch(&mut self, def: GenericDefId, provided_count: u32, expected_count: u32, kind: IncorrectGenericsLenKind);
-fn report_arg_mismatch(&mut self, param_id: GenericParamId, arg_idx: u32, has_self_arg: bool);
-fn provided_kind(&mut self, param_id: GenericParamId, param: GenericParamDataRef<'_>, arg: &HirGenericArg) -> GenericArg<'db>;
-fn provided_type_like_const(&mut self, const_ty: Ty<'db>, arg: TypeLikeConst<'_>) -> Const<'db>;
-fn inferred_kind(&mut self, def: GenericDefId, param_id: GenericParamId, param: GenericParamDataRef<'_>, infer_args: bool, preceding_args: &[GenericArg<'db>]) -> GenericArg<'db>;
-fn parent_arg(&mut self, param_id: GenericParamId) -> GenericArg<'db>;
+fn report_elided_lifetimes_in_path(
+    &mut self,
+    def: GenericDefId,
+    expected_count: u32,
+    hard_error: bool,
+);
+fn report_elision_failure(
+    &mut self,
+    def: GenericDefId,
+    expected_count: u32,
+);
+fn report_missing_lifetime(
+    &mut self,
+    def: GenericDefId,
+    expected_count: u32,
+);
+fn report_len_mismatch(
+    &mut self,
+    def: GenericDefId,
+    provided_count: u32,
+    expected_count: u32,
+    kind: IncorrectGenericsLenKind,
+);
+fn report_arg_mismatch(
+    &mut self,
+    param_id: GenericParamId,
+    arg_idx: u32,
+    has_self_arg: bool,
+);
+fn provided_kind(
+    &mut self,
+    param_id: GenericParamId,
+    param: GenericParamDataRef<'_>,
+    arg: &HirGenericArg,
+) -> GenericArg<'db>;
+fn provided_type_like_const(
+    &mut self,
+    const_ty: Ty<'db>,
+    arg: TypeLikeConst<'_>,
+) -> Const<'db>;
+fn inferred_kind(
+    &mut self,
+    def: GenericDefId,
+    param_id: GenericParamId,
+    param: GenericParamDataRef<'_>,
+    infer_args: bool,
+    preceding_args: &[GenericArg<'db>],
+) -> GenericArg<'db>;
+fn parent_arg(
+    &mut self,
+    param_id: GenericParamId,
+) -> GenericArg<'db>;
 
 /// Returns true if there was an error.
-fn check_generic_args_len<'db>(args_and_bindings: Option<&HirGenericArgs>, def: GenericDefId, def_generics: &Generics, infer_args: bool, lifetime_elision: &LifetimeElisionKind<'db>, lowering_assoc_type_generics: bool, ctx: &mut impl GenericArgsLowerer<'db>) -> bool {
+fn check_generic_args_len<'db>(
+    args_and_bindings: Option<&HirGenericArgs>,
+    def: GenericDefId,
+    def_generics: &Generics,
+    infer_args: bool,
+    lifetime_elision: &LifetimeElisionKind<'db>,
+    lowering_assoc_type_generics: bool,
+    ctx: &mut impl GenericArgsLowerer<'db>,
+) -> bool {
     let mut had_error = false;
     let (mut provided_lifetimes_count, mut provided_types_and_consts_count) = (0usize, 0usize);
     if let Some(args_and_bindings) = args_and_bindings {
@@ -958,7 +1080,17 @@ fn check_generic_args_len<'db>(args_and_bindings: Option<&HirGenericArgs>, def: 
     had_error
 }
 
-pub(crate) fn substs_from_args_and_bindings<'db>(db: &'db dyn HirDatabase, store: &ExpressionStore, args_and_bindings: Option<&HirGenericArgs>, def: GenericDefId, mut infer_args: bool, lifetime_elision: LifetimeElisionKind<'db>, lowering_assoc_type_generics: bool, explicit_self_ty: Option<Ty<'db>>, ctx: &mut impl GenericArgsLowerer<'db>) -> GenericArgs<'db> {
+pub(crate) fn substs_from_args_and_bindings<'db>(
+    db: &'db dyn HirDatabase,
+    store: &ExpressionStore,
+    args_and_bindings: Option<&HirGenericArgs>,
+    def: GenericDefId,
+    mut infer_args: bool,
+    lifetime_elision: LifetimeElisionKind<'db>,
+    lowering_assoc_type_generics: bool,
+    explicit_self_ty: Option<Ty<'db>>,
+    ctx: &mut impl GenericArgsLowerer<'db>,
+) -> GenericArgs<'db> {
     let interner = DbInterner::new_with(db, None, None);
     tracing::debug!(?args_and_bindings);
     // Order is
@@ -1134,7 +1266,10 @@ pub(crate) fn substs_from_args_and_bindings<'db>(db: &'db dyn HirDatabase, store
     GenericArgs::new_from_iter(interner, substs)
 }
 
-fn type_looks_like_const(store: &ExpressionStore, type_ref: TypeRefId) -> Option<TypeLikeConst<'_>> {
+fn type_looks_like_const(
+    store: &ExpressionStore,
+    type_ref: TypeRefId,
+) -> Option<TypeLikeConst<'_>> {
     // A path/`_` const will be parsed as a type, instead of a const, because when parsing/lowering
     // in hir-def we don't yet know the expected argument kind. rustc does this a bit differently,
     // when lowering to HIR it resolves the path, and if it doesn't resolve to the type namespace
@@ -1148,7 +1283,10 @@ fn type_looks_like_const(store: &ExpressionStore, type_ref: TypeRefId) -> Option
     }
 }
 
-fn unknown_subst<'db>(interner: DbInterner<'db>, def: impl Into<GenericDefId>) -> GenericArgs<'db> {
+fn unknown_subst<'db>(
+    interner: DbInterner<'db>,
+    def: impl Into<GenericDefId>,
+) -> GenericArgs<'db> {
     let params = generics(interner.db(), def.into());
     GenericArgs::new_from_iter(
         interner,

@@ -15,9 +15,18 @@ use super::{
 /// Any implementation must make sure that each bound variable always
 /// gets mapped to the same result. `BoundVarReplacer` caches by using
 /// a `DelayedMap` which does not cache the first few types it encounters.
-fn replace_region(&mut self, br: BoundRegion) -> Region<'db>;
-fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db>;
-fn replace_const(&mut self, bv: BoundConst) -> Const<'db>;
+fn replace_region(
+    &mut self,
+    br: BoundRegion,
+) -> Region<'db>;
+fn replace_ty(
+    &mut self,
+    bt: BoundTy,
+) -> Ty<'db>;
+fn replace_const(
+    &mut self,
+    bv: BoundConst,
+) -> Const<'db>;
 
 /// A simple delegate taking 3 mutable functions. The used functions must
 /// always return the same result for each bound variable, no matter how
@@ -29,15 +38,24 @@ pub struct FnMutDelegate<'db, 'a> {
 }
 
 impl<'db, 'a> BoundVarReplacerDelegate<'db> for FnMutDelegate<'db, 'a> {
-    fn replace_region(&mut self, br: BoundRegion) -> Region<'db> {
+    fn replace_region(
+        &mut self,
+        br: BoundRegion,
+    ) -> Region<'db> {
         (self.regions)(br)
     }
 
-    fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db> {
+    fn replace_ty(
+        &mut self,
+        bt: BoundTy,
+    ) -> Ty<'db> {
         (self.types)(bt)
     }
 
-    fn replace_const(&mut self, bv: BoundConst) -> Const<'db> {
+    fn replace_const(
+        &mut self,
+        bv: BoundConst,
+    ) -> Const<'db> {
         (self.consts)(bv)
     }
 }
@@ -52,7 +70,10 @@ pub(crate) struct BoundVarReplacer<'db, D> {
 }
 
 impl<'db, D: BoundVarReplacerDelegate<'db>> BoundVarReplacer<'db, D> {
-    pub(crate) fn new(tcx: DbInterner<'db>, delegate: D) -> Self {
+    pub(crate) fn new(
+        tcx: DbInterner<'db>,
+        delegate: D,
+    ) -> Self {
         BoundVarReplacer { interner: tcx, current_index: DebruijnIndex::ZERO, delegate }
     }
 }
@@ -64,14 +85,20 @@ where
         self.interner
     }
 
-    fn fold_binder<T: TypeFoldable<DbInterner<'db>>>(&mut self, t: Binder<'db, T>) -> Binder<'db, T> {
+    fn fold_binder<T: TypeFoldable<DbInterner<'db>>>(
+        &mut self,
+        t: Binder<'db, T>,
+    ) -> Binder<'db, T> {
         self.current_index.shift_in(1);
         let t = t.super_fold_with(self);
         self.current_index.shift_out(1);
         t
     }
 
-    fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        t: Ty<'db>,
+    ) -> Ty<'db> {
         match t.kind() {
             TyKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_ty)
                 if debruijn == self.current_index =>
@@ -90,7 +117,10 @@ where
         }
     }
 
-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
+    fn fold_region(
+        &mut self,
+        r: Region<'db>,
+    ) -> Region<'db> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn), br)
                 if debruijn == self.current_index =>
@@ -112,7 +142,10 @@ where
         }
     }
 
-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        ct: Const<'db>,
+    ) -> Const<'db> {
         match ct.kind() {
             ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_const)
                 if debruijn == self.current_index =>
@@ -125,12 +158,19 @@ where
         }
     }
 
-    fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {
+    fn fold_predicate(
+        &mut self,
+        p: Predicate<'db>,
+    ) -> Predicate<'db> {
         if p.has_vars_bound_at_or_above(self.current_index) { p.super_fold_with(self) } else { p }
     }
 }
 
-pub fn fold_tys<'db, T: TypeFoldable<DbInterner<'db>>>(interner: DbInterner<'db>, t: T, callback: impl FnMut(Ty<'db>) -> Ty<'db>) -> T {
+pub fn fold_tys<'db, T: TypeFoldable<DbInterner<'db>>>(
+    interner: DbInterner<'db>,
+    t: T,
+    callback: impl FnMut(Ty<'db>) -> Ty<'db>,
+) -> T {
     struct Folder<'db, F> {
         interner: DbInterner<'db>,
         callback: F,

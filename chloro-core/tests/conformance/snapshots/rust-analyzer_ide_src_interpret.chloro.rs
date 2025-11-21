@@ -5,7 +5,10 @@ use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatab
 use stdx::format_to;
 use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
 
-pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
+pub(crate) fn interpret(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> String {
     match find_and_interpret(db, position) {
         Some((duration, mut result)) => {
             result.push('\n');
@@ -17,7 +20,10 @@ pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
     }
 }
 
-fn find_and_interpret(db: &RootDatabase, position: FilePosition) -> Option<(Duration, String)> {
+fn find_and_interpret(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> Option<(Duration, String)> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
     let item = ancestors_at_offset(source_file.syntax(), position.offset)
@@ -53,7 +59,11 @@ fn find_and_interpret(db: &RootDatabase, position: FilePosition) -> Option<(Dura
     Some((duration, res))
 }
 
-pub(crate) fn render_const_eval_error(db: &RootDatabase, e: ConstEvalError<'_>, display_target: DisplayTarget) -> String {
+pub(crate) fn render_const_eval_error(
+    db: &RootDatabase,
+    e: ConstEvalError<'_>,
+    display_target: DisplayTarget,
+) -> String {
     let span_formatter = |file_id, text_range: TextRange| {
         let source_root = db.file_source_root(file_id).source_root_id(db);
         let source_root = db.source_root(source_root).source_root(db);

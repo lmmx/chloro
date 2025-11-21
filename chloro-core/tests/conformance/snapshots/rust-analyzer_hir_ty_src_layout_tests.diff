@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15972 bytes
-Chloro size:   15900 bytes
+Chloro size:   15971 bytes
 Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
@@ -16,17 +16,6 @@ Rustfmt size:  15995 bytes
  use rustc_hash::FxHashMap;
  use rustc_type_ir::inherent::GenericArgs as _;
  use syntax::ToSmolStr;
-     .unwrap()
- }
- 
--fn eval_goal(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    minicore: &str,
--) -> Result<Arc<Layout>, LayoutError> {
-+fn eval_goal(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) -> Result<Arc<Layout>, LayoutError> {
-     let _tracing = setup_tracing();
-     let target_data = current_machine_target_data();
-     let target_data_layout = target_data.data_layout;
      let ra_fixture = format!(
          "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\n{ra_fixture}",
      );
@@ -34,17 +23,6 @@ Rustfmt size:  15995 bytes
      let (db, file_ids) = TestDB::with_many_files(&ra_fixture);
      let adt_or_type_alias_id = file_ids
          .into_iter()
- }
- 
- /// A version of `eval_goal` for types that can not be expressed in ADTs, like closures and `impl Trait`
--fn eval_expr(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    minicore: &str,
--) -> Result<Arc<Layout>, LayoutError> {
-+fn eval_expr(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) -> Result<Arc<Layout>, LayoutError> {
-     let _tracing = setup_tracing();
-     let target_data = current_machine_target_data();
-     let target_data_layout = target_data.data_layout;
      let ra_fixture = format!(
          "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\nfn main(){{let goal = {{{ra_fixture}}};}}",
      );
@@ -55,29 +33,14 @@ Rustfmt size:  15995 bytes
  }
  
  #[track_caller]
--fn check_size_and_align(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    minicore: &str,
--    size: u64,
--    align: u64,
--) {
-+fn check_size_and_align(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str, size: u64, align: u64) {
-     let l = eval_goal(ra_fixture, minicore).unwrap();
-     assert_eq!(l.size.bytes(), size, "size mismatch");
-     assert_eq!(l.align.bytes(), align, "align mismatch");
+-fn check_fail(#[rust_analyzer::rust_fixture] ra_fixture: &str, e: LayoutError) {
++fn check_fail(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    e: LayoutError,
++) {
+     let r = eval_goal(ra_fixture, "");
+     assert_eq!(r, Err(e));
  }
- 
- #[track_caller]
--fn check_size_and_align_expr(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    minicore: &str,
--    size: u64,
--    align: u64,
--) {
-+fn check_size_and_align_expr(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str, size: u64, align: u64) {
-     let l = eval_expr(ra_fixture, minicore).unwrap();
-     assert_eq!(l.size.bytes(), size, "size mismatch");
-     assert_eq!(l.align.bytes(), align, "align mismatch");
          struct BoxLike<T: ?Sized>(*mut T);
          struct Goal(BoxLike<Goal>);
      }

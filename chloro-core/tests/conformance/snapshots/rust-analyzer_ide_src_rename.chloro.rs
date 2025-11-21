@@ -66,7 +66,10 @@ fn ok_if_any<T, E>(iter: impl Iterator<Item = Result<T, E>>) -> Result<Vec<T>, E
 
 /// Prepares a rename. The sole job of this function is to return the TextRange of the thing that is
 /// being targeted for a rename.
-pub(crate) fn prepare_rename(db: &RootDatabase, position: FilePosition) -> RenameResult<RangeInfo<()>> {
+pub(crate) fn prepare_rename(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> RenameResult<RangeInfo<()>> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
     let syntax = source_file.syntax();
@@ -98,7 +101,12 @@ pub(crate) fn prepare_rename(db: &RootDatabase, position: FilePosition) -> Renam
     }
 }
 
-pub(crate) fn rename(db: &RootDatabase, position: FilePosition, new_name: &str, config: &RenameConfig) -> RenameResult<SourceChange> {
+pub(crate) fn rename(
+    db: &RootDatabase,
+    position: FilePosition,
+    new_name: &str,
+    config: &RenameConfig,
+) -> RenameResult<SourceChange> {
     let sema = Semantics::new(db);
     let file_id = sema
         .attach_first_edition(position.file_id)
@@ -177,7 +185,11 @@ pub(crate) fn rename(db: &RootDatabase, position: FilePosition, new_name: &str, 
 }
 
 /// Called by the client when it is about to rename a file.
-pub(crate) fn will_rename_file(db: &RootDatabase, file_id: FileId, new_name_stem: &str) -> Option<SourceChange> {
+pub(crate) fn will_rename_file(
+    db: &RootDatabase,
+    file_id: FileId,
+    new_name_stem: &str,
+) -> Option<SourceChange> {
     let sema = Semantics::new(db);
     let module = sema.file_to_module_def(file_id)?;
     let def = Definition::Module(module);
@@ -186,7 +198,11 @@ pub(crate) fn will_rename_file(db: &RootDatabase, file_id: FileId, new_name_stem
     Some(change)
 }
 
-fn alias_fallback(syntax: &SyntaxNode, FilePosition { file_id, offset }: FilePosition, new_name: &str) -> Option<SourceChange> {
+fn alias_fallback(
+    syntax: &SyntaxNode,
+    FilePosition { file_id, offset }: FilePosition,
+    new_name: &str,
+) -> Option<SourceChange> {
     let use_tree = syntax
         .token_at_offset(offset)
         .flat_map(|syntax| syntax.parent_ancestors())
@@ -209,7 +225,12 @@ fn alias_fallback(syntax: &SyntaxNode, FilePosition { file_id, offset }: FilePos
     Some(builder.finish())
 }
 
-fn find_definitions(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, FilePosition { file_id, offset }: FilePosition, new_name: &Name) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>> {
+fn find_definitions(
+    sema: &Semantics<'_, RootDatabase>,
+    syntax: &SyntaxNode,
+    FilePosition { file_id, offset }: FilePosition,
+    new_name: &Name,
+) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>> {
     let maybe_format_args =
         syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
     if let Some((range, _, _, Some(resolution))) =
@@ -333,7 +354,11 @@ fn find_definitions(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, Fil
     }
 }
 
-fn transform_assoc_fn_into_method_call(sema: &Semantics<'_, RootDatabase>, source_change: &mut SourceChange, f: hir::Function) {
+fn transform_assoc_fn_into_method_call(
+    sema: &Semantics<'_, RootDatabase>,
+    source_change: &mut SourceChange,
+    f: hir::Function,
+) {
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
@@ -414,7 +439,10 @@ fn transform_assoc_fn_into_method_call(sema: &Semantics<'_, RootDatabase>, sourc
     }
 }
 
-fn rename_to_self(sema: &Semantics<'_, RootDatabase>, local: hir::Local) -> RenameResult<SourceChange> {
+fn rename_to_self(
+    sema: &Semantics<'_, RootDatabase>,
+    local: hir::Local,
+) -> RenameResult<SourceChange> {
     if never!(local.is_self(sema.db)) {
         bail!("rename_to_self invoked on self");
     }
@@ -493,7 +521,10 @@ enum CallReceiverAdjust {
     None,
 }
 
-fn method_to_assoc_fn_call_self_adjust(sema: &Semantics<'_, RootDatabase>, self_arg: &ast::Expr) -> CallReceiverAdjust {
+fn method_to_assoc_fn_call_self_adjust(
+    sema: &Semantics<'_, RootDatabase>,
+    self_arg: &ast::Expr,
+) -> CallReceiverAdjust {
     let mut result = CallReceiverAdjust::None;
     let self_adjust = sema.expr_adjustments(self_arg);
     if let Some(self_adjust) = self_adjust {
@@ -532,7 +563,12 @@ fn method_to_assoc_fn_call_self_adjust(sema: &Semantics<'_, RootDatabase>, self_
     result
 }
 
-fn transform_method_call_into_assoc_fn(sema: &Semantics<'_, RootDatabase>, source_change: &mut SourceChange, f: hir::Function, find_path_config: FindPathConfig) {
+fn transform_method_call_into_assoc_fn(
+    sema: &Semantics<'_, RootDatabase>,
+    source_change: &mut SourceChange,
+    f: hir::Function,
+    find_path_config: FindPathConfig,
+) {
     let calls = Definition::Function(f).usages(sema).all();
     for (_file_id, calls) in calls {
         for call in calls {
@@ -653,7 +689,14 @@ fn transform_method_call_into_assoc_fn(sema: &Semantics<'_, RootDatabase>, sourc
     }
 }
 
-fn rename_self_to_param(sema: &Semantics<'_, RootDatabase>, local: hir::Local, self_param: hir::SelfParam, new_name: &Name, identifier_kind: IdentifierKind, find_path_config: FindPathConfig) -> RenameResult<SourceChange> {
+fn rename_self_to_param(
+    sema: &Semantics<'_, RootDatabase>,
+    local: hir::Local,
+    self_param: hir::SelfParam,
+    new_name: &Name,
+    identifier_kind: IdentifierKind,
+    find_path_config: FindPathConfig,
+) -> RenameResult<SourceChange> {
     if identifier_kind == IdentifierKind::LowercaseSelf {
         // Let's do nothing rather than complain.
         cov_mark::hit!(rename_self_to_self);
@@ -693,7 +736,10 @@ fn rename_self_to_param(sema: &Semantics<'_, RootDatabase>, local: hir::Local, s
     Ok(source_change)
 }
 
-fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> Option<TextEdit> {
+fn text_edit_from_self_param(
+    self_param: &ast::SelfParam,
+    new_name: String,
+) -> Option<TextEdit> {
     let mut replacement_text = new_name;
     replacement_text.push_str(": ");
     if self_param.amp_token().is_some() {
@@ -720,7 +766,11 @@ mod tests {
     use crate::fixture;
     use super::{RangeInfo, RenameConfig, RenameError};
     #[track_caller]
-    fn check(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+    fn check(
+        new_name: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    ) {
         let ra_fixture_after = &trim_indent(ra_fixture_after);
         let (analysis, position) = fixture::position(ra_fixture_before);
         if !ra_fixture_after.starts_with("error: ")
@@ -758,7 +808,10 @@ mod tests {
         };
     }
     #[track_caller]
-    fn check_conflicts(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+    fn check_conflicts(
+        new_name: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) {
         let (analysis, position, conflicts) = fixture::annotations(ra_fixture);
         let source_change = analysis.rename(position, new_name, &TEST_CONFIG).unwrap().unwrap();
         let expected_conflicts = conflicts
@@ -780,7 +833,11 @@ mod tests {
             "rename conflicts mismatch: {source_change:#?}"
         );
     }
-    fn check_expect(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_expect(
+        new_name: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, position) = fixture::position(ra_fixture);
         let source_change = analysis
             .rename(position, new_name, &TEST_CONFIG)
@@ -788,7 +845,11 @@ mod tests {
             .expect("Expect returned a RenameError");
         expect.assert_eq(&filter_expect(source_change))
     }
-    fn check_expect_will_rename_file(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_expect_will_rename_file(
+        new_name: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, position) = fixture::position(ra_fixture);
         let source_change = analysis
             .will_rename_file(position.file_id, new_name)
@@ -796,7 +857,10 @@ mod tests {
             .expect("Expect returned a RenameError");
         expect.assert_eq(&filter_expect(source_change))
     }
-    fn check_prepare(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_prepare(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, position) = fixture::position(ra_fixture);
         let result = analysis
             .prepare_rename(position)

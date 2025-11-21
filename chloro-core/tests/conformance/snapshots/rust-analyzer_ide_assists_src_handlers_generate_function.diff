@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   73759 bytes
+Chloro size:   74492 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -36,9 +36,22 @@ Rustfmt size:  75023 bytes
 -// }
 -//
 -// ```
- pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_function(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
  }
+ 
+-fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++fn gen_fn(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let path_expr: ast::PathExpr = ctx.find_node_at_offset()?;
+     let call = path_expr.syntax().parent().and_then(ast::CallExpr::cast)?;
+     let path = path_expr.path()?;
          // The function call already resolves, no need to add a function
          return None;
      }
@@ -56,30 +69,15 @@ Rustfmt size:  75023 bytes
      let function_builder =
          FunctionBuilder::from_call(ctx, &call, fn_name, target_module, target, &adt_info)?;
      let text_range = call.syntax().text_range();
- }
- 
- impl TargetInfo {
--    fn new(
--        target_module: Option<Module>,
--        adt_info: Option<AdtInfo>,
--        target: GeneratedFunctionTarget,
--        file: FileId,
--    ) -> Self {
-+    fn new(target_module: Option<Module>, adt_info: Option<AdtInfo>, target: GeneratedFunctionTarget, file: FileId) -> Self {
-         Self { target_module, adt_info, target, file }
      }
  }
  
--fn fn_target_info(
--    ctx: &AssistContext<'_>,
--    path: ast::Path,
--    call: &CallExpr,
--    fn_name: &str,
--) -> Option<TargetInfo> {
-+fn fn_target_info(ctx: &AssistContext<'_>, path: ast::Path, call: &CallExpr, fn_name: &str) -> Option<TargetInfo> {
-     match path.qualifier() {
-         Some(qualifier) => match ctx.sema.resolve_path(&qualifier) {
-             Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))) => {
+-fn gen_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++fn gen_method(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      if ctx.sema.resolve_method_call(&call).is_some() {
          return None;
      }
@@ -99,48 +97,13 @@ Rustfmt size:  75023 bytes
      let function_builder = FunctionBuilder::from_method_call(
          ctx,
          &call,
-     add_func_to_accumulator(acc, ctx, text_range, function_builder, file, Some(adt_info), label)
- }
- 
--fn add_func_to_accumulator(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--    text_range: TextRange,
--    function_builder: FunctionBuilder,
--    file: FileId,
--    adt_info: Option<AdtInfo>,
--    label: String,
--) -> Option<()> {
-+fn add_func_to_accumulator(acc: &mut Assists, ctx: &AssistContext<'_>, text_range: TextRange, function_builder: FunctionBuilder, file: FileId, adt_info: Option<AdtInfo>, label: String) -> Option<()> {
-     acc.add(AssistId::generate("generate_function"), label, text_range, |edit| {
-         edit.edit_file(file);
- 
-     })
- }
- 
--fn get_adt_source(
--    ctx: &AssistContext<'_>,
--    adt: &hir::Adt,
--    fn_name: &str,
--) -> Option<(Option<ast::Impl>, FileId)> {
-+fn get_adt_source(ctx: &AssistContext<'_>, adt: &hir::Adt, fn_name: &str) -> Option<(Option<ast::Impl>, FileId)> {
+     fn_name: &str,
+ ) -> Option<(Option<ast::Impl>, FileId)> {
      let range = adt.source(ctx.sema.db)?.syntax().original_file_range_rooted(ctx.sema.db);
 -
      let file = ctx.sema.parse(range.file_id);
      let adt_source =
          ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
- impl FunctionBuilder {
-     /// Prepares a generated function that matches `call`.
-     /// The function is generated in `target_module` or next to `call`
--    fn from_call(
--        ctx: &AssistContext<'_>,
--        call: &ast::CallExpr,
--        fn_name: &str,
--        target_module: Option<Module>,
--        target: GeneratedFunctionTarget,
--        adt_info: &Option<AdtInfo>,
--    ) -> Option<Self> {
-+    fn from_call(ctx: &AssistContext<'_>, call: &ast::CallExpr, fn_name: &str, target_module: Option<Module>, target: GeneratedFunctionTarget, adt_info: &Option<AdtInfo>) -> Option<Self> {
          let target_module =
              target_module.or_else(|| ctx.sema.scope(target.syntax()).map(|it| it.module()))?;
          let target_edition = target_module.krate().edition(ctx.db());
@@ -172,18 +135,8 @@ Rustfmt size:  75023 bytes
          Some(Self {
              target,
              fn_name,
-         })
-     }
- 
--    fn from_method_call(
--        ctx: &AssistContext<'_>,
--        call: &ast::MethodCallExpr,
--        name: &ast::NameRef,
--        receiver_ty: Type<'_>,
--        target_module: Module,
--        target: GeneratedFunctionTarget,
--    ) -> Option<Self> {
-+    fn from_method_call(ctx: &AssistContext<'_>, call: &ast::MethodCallExpr, name: &ast::NameRef, receiver_ty: Type<'_>, target_module: Module, target: GeneratedFunctionTarget) -> Option<Self> {
+         target: GeneratedFunctionTarget,
+     ) -> Option<Self> {
          let target_edition = target_module.krate().edition(ctx.db());
 -
          let current_module = ctx.sema.scope(call.syntax())?.module();
@@ -216,6 +169,18 @@ Rustfmt size:  75023 bytes
          Some(Self {
              target,
              fn_name,
+         })
+     }
+ 
+-    fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
++    fn render(
++        self,
++        cap: Option<SnippetCap>,
++        edit: &mut SourceChangeBuilder,
++    ) -> ast::Fn {
+         let visibility = match self.visibility {
+             Visibility::None => None,
+             Visibility::Crate => Some(make::visibility_pub_crate()),
              false,
          )
          .clone_for_update();
@@ -237,30 +202,6 @@ Rustfmt size:  75023 bytes
          fn_def
      }
  }
- ///   the correct return type).
- /// * If we could infer the return type, don't focus it (and thus focus the function body) so the
- ///   user can change the `todo!` function body.
--fn make_return_type(
--    ctx: &AssistContext<'_>,
--    expr: &ast::Expr,
--    target_module: Module,
--    necessary_generic_params: &mut FxHashSet<hir::GenericParam>,
--) -> (Option<ast::RetType>, bool) {
-+fn make_return_type(ctx: &AssistContext<'_>, expr: &ast::Expr, target_module: Module, necessary_generic_params: &mut FxHashSet<hir::GenericParam>) -> (Option<ast::RetType>, bool) {
-     let (ret_ty, should_focus_return_type) = {
-         match ctx.sema.type_of_expr(expr).map(TypeInfo::original) {
-             Some(ty) if ty.is_unknown() => (Some(make::ty_placeholder()), true),
-     (ret_type, should_focus_return_type)
- }
- 
--fn make_fn_body_as_new_function(
--    ctx: &AssistContext<'_>,
--    fn_name: &str,
--    adt_info: &Option<AdtInfo>,
--    edition: Edition,
--) -> Option<ast::BlockExpr> {
-+fn make_fn_body_as_new_function(ctx: &AssistContext<'_>, fn_name: &str, adt_info: &Option<AdtInfo>, edition: Edition) -> Option<ast::BlockExpr> {
-     if fn_name != "new" {
          return None;
      };
      let adt_info = adt_info.as_ref()?;
@@ -275,64 +216,41 @@ Rustfmt size:  75023 bytes
      let fn_body = make::block_expr(vec![], Some(tail_expr));
      Some(fn_body)
  }
+         }
+     }
  
--fn get_fn_target_info(
--    ctx: &AssistContext<'_>,
--    target_module: Option<Module>,
--    call: CallExpr,
--) -> Option<TargetInfo> {
-+fn get_fn_target_info(ctx: &AssistContext<'_>, target_module: Option<Module>, call: CallExpr) -> Option<TargetInfo> {
-     let (target, file) = get_fn_target(ctx, target_module, call)?;
-     Some(TargetInfo::new(target_module, None, target, file))
+-    fn insert_impl_at(&self, edit: &mut SourceChangeBuilder, impl_: ast::Impl) {
++    fn insert_impl_at(
++        &self,
++        edit: &mut SourceChangeBuilder,
++        impl_: ast::Impl,
++    ) {
+         match self {
+             GeneratedFunctionTarget::AfterItem(item) => {
+                 let item = edit.make_syntax_mut(item.clone());
+         }
+     }
+ 
+-    fn insert_fn_at(&self, edit: &mut SourceChangeBuilder, func: ast::Fn) {
++    fn insert_fn_at(
++        &self,
++        edit: &mut SourceChangeBuilder,
++        func: ast::Fn,
++    ) {
+         match self {
+             GeneratedFunctionTarget::AfterItem(item) => {
+                 let item = edit.make_syntax_mut(item.clone());
  }
  
--fn get_fn_target(
--    ctx: &AssistContext<'_>,
--    target_module: Option<Module>,
--    call: CallExpr,
--) -> Option<(GeneratedFunctionTarget, FileId)> {
-+fn get_fn_target(ctx: &AssistContext<'_>, target_module: Option<Module>, call: CallExpr) -> Option<(GeneratedFunctionTarget, FileId)> {
-     let mut file = ctx.vfs_file_id();
-     let target = match target_module {
-         Some(target_module) => {
-     Some((target, file))
+ impl AdtInfo {
+-    fn new(adt: Adt, impl_exists: bool) -> Self {
++    fn new(
++        adt: Adt,
++        impl_exists: bool,
++    ) -> Self {
+         Self { adt, impl_exists }
+     }
  }
- 
--fn get_method_target(
--    ctx: &AssistContext<'_>,
--    impl_: &Option<ast::Impl>,
--    adt: &Adt,
--) -> Option<GeneratedFunctionTarget> {
-+fn get_method_target(ctx: &AssistContext<'_>, impl_: &Option<ast::Impl>, adt: &Adt) -> Option<GeneratedFunctionTarget> {
-     let target = match impl_ {
-         Some(impl_) => GeneratedFunctionTarget::InImpl(impl_.clone()),
-         None => GeneratedFunctionTarget::AfterItem(adt.source(ctx.sema.db)?.syntax().value.clone()),
-     Some(target)
- }
- 
--fn assoc_fn_target_info(
--    ctx: &AssistContext<'_>,
--    call: &CallExpr,
--    adt: hir::Adt,
--    fn_name: &str,
--) -> Option<TargetInfo> {
-+fn assoc_fn_target_info(ctx: &AssistContext<'_>, call: &CallExpr, adt: hir::Adt, fn_name: &str) -> Option<TargetInfo> {
-     let current_module = ctx.sema.scope(call.syntax())?.module();
-     let module = adt.module(ctx.sema.db);
-     let target_module = if current_module == module { None } else { Some(module) };
- }
- 
- /// Computes parameter list for the generated function.
--fn fn_args(
--    ctx: &AssistContext<'_>,
--    target_module: Module,
--    call: ast::CallableExpr,
--    necessary_generic_params: &mut FxHashSet<hir::GenericParam>,
--) -> Option<ast::ParamList> {
-+fn fn_args(ctx: &AssistContext<'_>, target_module: Module, call: ast::CallableExpr, necessary_generic_params: &mut FxHashSet<hir::GenericParam>) -> Option<ast::ParamList> {
-     let mut arg_names = Vec::new();
-     let mut arg_types = Vec::new();
-     for arg in call.arg_list()?.args() {
      let params = arg_names.into_iter().zip(arg_types).map(|(name, ty)| {
          make::param(make::ext::simple_ident_pat(make::name(&name)).into(), make::ty(&ty))
      });
@@ -340,16 +258,6 @@ Rustfmt size:  75023 bytes
      Some(make::param_list(
          match call {
              ast::CallableExpr::Call(_) => None,
- /// NOTE: Generic parameters returned from this function may cause name clash at `target`. We don't
- /// currently do anything about it because it's actually easy to resolve it after the assist: just
- /// use the Rename functionality.
--fn fn_generic_params(
--    ctx: &AssistContext<'_>,
--    necessary_params: FxHashSet<hir::GenericParam>,
--    target: &GeneratedFunctionTarget,
--) -> Option<(Option<ast::GenericParamList>, Option<ast::WhereClause>)> {
-+fn fn_generic_params(ctx: &AssistContext<'_>, necessary_params: FxHashSet<hir::GenericParam>, target: &GeneratedFunctionTarget) -> Option<(Option<ast::GenericParamList>, Option<ast::WhereClause>)> {
-     if necessary_params.is_empty() {
          // Not really needed but fast path.
          return Some((None, None));
      }
@@ -415,14 +323,7 @@ Rustfmt size:  75023 bytes
      (generic_params, where_clauses)
  }
  
-     Some(def)
- }
- 
--fn get_bounds_in_scope<D>(
--    ctx: &AssistContext<'_>,
--    def: D,
--) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
-+fn get_bounds_in_scope<D>(ctx: &AssistContext<'_>, def: D) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
+ ) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
  where
      D: HasSource,
 -    D::Ast: HasGenericParams,
@@ -431,25 +332,7 @@ Rustfmt size:  75023 bytes
      // This function should be only called with `Impl`, `Trait`, or `Function`, for which it's
      // infallible to get source ast.
      let node = ctx.sema.source(def).expect("definition's source couldn't be found").value;
-     other_params: FxHashSet<hir::GenericParam>,
- }
- 
--fn compute_contained_params_in_generic_param(
--    ctx: &AssistContext<'_>,
--    node: ast::GenericParam,
--) -> Option<ParamBoundWithParams> {
-+fn compute_contained_params_in_generic_param(ctx: &AssistContext<'_>, node: ast::GenericParam) -> Option<ParamBoundWithParams> {
-     match &node {
-         ast::GenericParam::TypeParam(ty) => {
-             let self_ty_param = ctx.sema.to_def(ty)?.into();
-     }
- }
- 
--fn compute_contained_params_in_where_pred(
--    ctx: &AssistContext<'_>,
--    node: ast::WherePred,
--) -> Option<WherePredWithParams> {
-+fn compute_contained_params_in_where_pred(ctx: &AssistContext<'_>, node: ast::WherePred) -> Option<WherePredWithParams> {
+ ) -> Option<WherePredWithParams> {
      let self_ty = node.ty()?;
      let bound_list = node.type_bound_list()?;
 -
@@ -468,18 +351,14 @@ Rustfmt size:  75023 bytes
      Some(WherePredWithParams { node, self_ty_params, other_params })
  }
  
- /// nodes that represent params in `necessary_params` by usual and boring DFS.
- ///
- /// The time complexity is O(|generic_params| + |where_preds| + |necessary_params|).
--fn filter_unnecessary_bounds(
--    generic_params: &mut Vec<ParamBoundWithParams>,
--    where_preds: &mut Vec<WherePredWithParams>,
--    necessary_params: FxHashSet<hir::GenericParam>,
--) {
-+fn filter_unnecessary_bounds(generic_params: &mut Vec<ParamBoundWithParams>, where_preds: &mut Vec<WherePredWithParams>, necessary_params: FxHashSet<hir::GenericParam>) {
-     // All `self_ty_param` should be unique as they were collected from `ast::GenericParamList`s.
-     let param_map: FxHashMap<hir::GenericParam, usize> =
-         generic_params.iter().map(|it| it.self_ty_param).zip(0..).collect();
+-fn filter_generic_params(ctx: &AssistContext<'_>, node: SyntaxNode) -> Option<hir::GenericParam> {
++fn filter_generic_params(
++    ctx: &AssistContext<'_>,
++    node: SyntaxNode,
++) -> Option<hir::GenericParam> {
+     let path = ast::Path::cast(node)?;
+     match ctx.sema.resolve_path(&path)? {
+         PathResolution::TypeParam(it) => Some(it.into()),
      let param_count = param_map.len();
      let generic_params_upper_bound = param_count + generic_params.len();
      let node_count = generic_params_upper_bound + where_preds.len();
@@ -497,19 +376,6 @@ Rustfmt size:  75023 bytes
      // Not pretty, but effective. If only there were `Vec::retain_index()`...
      let mut idx = param_count;
      generic_params.retain(|_| {
- 
- /// Filters out bounds from impl if we're generating the function into the same impl we're
- /// generating from.
--fn filter_bounds_in_scope(
--    generic_params: &mut Vec<ParamBoundWithParams>,
--    where_preds: &mut Vec<WherePredWithParams>,
--    ctx: &AssistContext<'_>,
--    target: &GeneratedFunctionTarget,
--) -> Option<()> {
-+fn filter_bounds_in_scope(generic_params: &mut Vec<ParamBoundWithParams>, where_preds: &mut Vec<WherePredWithParams>, ctx: &AssistContext<'_>, target: &GeneratedFunctionTarget) -> Option<()> {
-     let target_impl = target.parent().ancestors().find_map(ast::Impl::cast)?;
-     let target_impl = ctx.sema.to_def(&target_impl)?;
-     // It's sufficient to test only the first element of `generic_params` because of the order of
      if def != hir::GenericDef::Impl(target_impl) {
          return None;
      }
@@ -534,16 +400,14 @@ Rustfmt size:  75023 bytes
      }
  }
  
--fn fn_arg_type(
--    ctx: &AssistContext<'_>,
--    target_module: Module,
--    fn_arg: &ast::Expr,
--    generic_params: &mut FxHashSet<hir::GenericParam>,
--) -> String {
-+fn fn_arg_type(ctx: &AssistContext<'_>, target_module: Module, fn_arg: &ast::Expr, generic_params: &mut FxHashSet<hir::GenericParam>) -> String {
-     fn maybe_displayed_type(
-         ctx: &AssistContext<'_>,
-         target_module: Module,
+-fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> String {
++fn fn_arg_name(
++    sema: &Semantics<'_, RootDatabase>,
++    arg_expr: &ast::Expr,
++) -> String {
+     let name = (|| match arg_expr {
+         ast::Expr::CastExpr(cast_expr) => Some(fn_arg_name(sema, &cast_expr.expr()?)),
+         expr => {
              ty.display_source_code(ctx.db(), target_module.into(), true).ok()
          }
      }
@@ -551,17 +415,6 @@ Rustfmt size:  75023 bytes
      maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
          .unwrap_or_else(|| String::from("_"))
  }
-     last_ancestor.map(GeneratedFunctionTarget::AfterItem)
- }
- 
--fn next_space_for_fn_in_module(
--    db: &dyn hir::db::HirDatabase,
--    target_module: hir::Module,
--) -> (FileId, GeneratedFunctionTarget) {
-+fn next_space_for_fn_in_module(db: &dyn hir::db::HirDatabase, target_module: hir::Module) -> (FileId, GeneratedFunctionTarget) {
-     let module_source = target_module.definition_source(db);
-     let file = module_source.file_id.original_file(db);
-     let assist_item = match &module_source.value {
              }
          }
      };
@@ -569,15 +422,6 @@ Rustfmt size:  75023 bytes
      (file.file_id(db), assist_item)
  }
  
-     Pub,
- }
- 
--fn calculate_necessary_visibility(
--    current_module: Module,
--    target_module: Module,
--    ctx: &AssistContext<'_>,
--) -> Visibility {
-+fn calculate_necessary_visibility(current_module: Module, target_module: Module, ctx: &AssistContext<'_>) -> Visibility {
      let db = ctx.db();
      let current_module = current_module.nearest_non_block_module(db);
      let target_module = target_module.nearest_non_block_module(db);
@@ -593,17 +437,26 @@ Rustfmt size:  75023 bytes
  /// Minimally implemented directed graph structure represented by adjacency list.
  struct Graph {
      edges: Vec<Vec<usize>>,
-         self.edges.len()
+         Self { edges: vec![Vec::new(); node_count] }
      }
  
--    fn compute_reachable_nodes(
--        &self,
--        starting_nodes: impl IntoIterator<Item = usize>,
--    ) -> Vec<bool> {
-+    fn compute_reachable_nodes(&self, starting_nodes: impl IntoIterator<Item = usize>) -> Vec<bool> {
-         let mut visitor = Visitor::new(self);
-         for idx in starting_nodes {
-             visitor.mark_reachable(idx);
+-    fn add_edge(&mut self, from: usize, to: usize) {
++    fn add_edge(
++        &mut self,
++        from: usize,
++        to: usize,
++    ) {
+         self.edges[from].push(to);
+     }
+ 
+-    fn edges_for(&self, node_idx: usize) -> &[usize] {
++    fn edges_for(
++        &self,
++        node_idx: usize,
++    ) -> &[usize] {
+         &self.edges[node_idx]
+     }
+ 
  struct Visitor<'g> {
      graph: &'g Graph,
      visited: Vec<bool>,
@@ -611,7 +464,14 @@ Rustfmt size:  75023 bytes
      stack: Vec<usize>,
  }
  
-     fn mark_reachable(&mut self, start_idx: usize) {
+         Self { graph, visited, stack: Vec::new() }
+     }
+ 
+-    fn mark_reachable(&mut self, start_idx: usize) {
++    fn mark_reachable(
++        &mut self,
++        start_idx: usize,
++    ) {
          // non-recursive DFS
          stdx::always!(self.stack.is_empty());
 -

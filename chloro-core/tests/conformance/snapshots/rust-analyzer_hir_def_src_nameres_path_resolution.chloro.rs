@@ -69,13 +69,22 @@ impl ResolvePathResult {
         )
     }
 
-    fn new(resolved_def: PerNs, reached_fixedpoint: ReachedFixedPoint, segment_index: Option<usize>, prefix_info: ResolvePathResultPrefixInfo) -> ResolvePathResult {
+    fn new(
+        resolved_def: PerNs,
+        reached_fixedpoint: ReachedFixedPoint,
+        segment_index: Option<usize>,
+        prefix_info: ResolvePathResultPrefixInfo,
+    ) -> ResolvePathResult {
         ResolvePathResult { resolved_def, segment_index, reached_fixedpoint, prefix_info }
     }
 }
 
 impl PerNs {
-    pub(super) fn filter_macro(mut self, db: &dyn DefDatabase, expected: Option<MacroSubNs>) -> Self {
+    pub(super) fn filter_macro(
+        mut self,
+        db: &dyn DefDatabase,
+        expected: Option<MacroSubNs>,
+    ) -> Self {
         self.macros = self.macros.filter(|def| {
             let this = MacroSubNs::from_id(db, def.def);
             sub_namespace_match(Some(this), expected)
@@ -85,7 +94,14 @@ impl PerNs {
 }
 
 impl DefMap {
-    pub(crate) fn resolve_visibility(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, original_module: LocalModuleId, visibility: &RawVisibility, within_impl: bool) -> Option<Visibility> {
+    pub(crate) fn resolve_visibility(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        original_module: LocalModuleId,
+        visibility: &RawVisibility,
+        within_impl: bool,
+    ) -> Option<Visibility> {
         let vis = match visibility {
             RawVisibility::Module(path, explicitness) => {
                 let (result, remaining) = self.resolve_path(
@@ -133,7 +149,16 @@ impl DefMap {
         Some(vis)
     }
 
-    pub(super) fn resolve_path_fp_with_macro(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, mode: ResolveMode, mut original_module: LocalModuleId, path: &ModPath, shadow: BuiltinShadowMode, expected_macro_subns: Option<MacroSubNs>) -> ResolvePathResult {
+    pub(super) fn resolve_path_fp_with_macro(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        mode: ResolveMode,
+        mut original_module: LocalModuleId,
+        path: &ModPath,
+        shadow: BuiltinShadowMode,
+        expected_macro_subns: Option<MacroSubNs>,
+    ) -> ResolvePathResult {
         let mut result = self.resolve_path_fp_with_macro_single(
             local_def_map,
             db,
@@ -205,7 +230,16 @@ impl DefMap {
         }
     }
 
-    pub(super) fn resolve_path_fp_with_macro_single(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, mode: ResolveMode, original_module: LocalModuleId, path: &ModPath, shadow: BuiltinShadowMode, expected_macro_subns: Option<MacroSubNs>) -> ResolvePathResult {
+    pub(super) fn resolve_path_fp_with_macro_single(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        mode: ResolveMode,
+        original_module: LocalModuleId,
+        path: &ModPath,
+        shadow: BuiltinShadowMode,
+        expected_macro_subns: Option<MacroSubNs>,
+    ) -> ResolvePathResult {
         let mut segments = path.segments().iter().enumerate();
         let curr_per_ns = match path.kind {
             PathKind::DollarCrate(krate) => {
@@ -335,7 +369,15 @@ impl DefMap {
     }
 
     /// Resolves a path only in the preludes, without accounting for item scopes.
-    pub(super) fn resolve_path_fp_in_all_preludes(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, mode: ResolveMode, original_module: LocalModuleId, path: &ModPath, shadow: BuiltinShadowMode) -> ResolvePathResult {
+    pub(super) fn resolve_path_fp_in_all_preludes(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        mode: ResolveMode,
+        original_module: LocalModuleId,
+        path: &ModPath,
+        shadow: BuiltinShadowMode,
+    ) -> ResolvePathResult {
         let mut segments = path.segments().iter().enumerate();
         let curr_per_ns = match path.kind {
             // plain import or absolute path in 2015: crate-relative with
@@ -383,7 +425,12 @@ impl DefMap {
     }
 
     /// 2018-style absolute path -- only extern prelude
-    fn resolve_path_abs<'a>(&self, local_def_map: &LocalDefMap, segments: &mut impl Iterator<Item = (usize, &'a Name)>, path: &ModPath) -> Either<PerNs, ReachedFixedPoint> {
+    fn resolve_path_abs<'a>(
+        &self,
+        local_def_map: &LocalDefMap,
+        segments: &mut impl Iterator<Item = (usize, &'a Name)>,
+        path: &ModPath,
+    ) -> Either<PerNs, ReachedFixedPoint> {
         let segment = match segments.next() {
             Some((_, segment)) => segment,
             None => return Either::Right(ReachedFixedPoint::Yes),
@@ -400,7 +447,16 @@ impl DefMap {
         }
     }
 
-    fn resolve_remaining_segments<'a>(&self, db: &dyn DefDatabase, mode: ResolveMode, mut segments: impl Iterator<Item = (usize, &'a Name)>, mut curr_per_ns: PerNs, path: &ModPath, shadow: BuiltinShadowMode, original_module: LocalModuleId) -> ResolvePathResult {
+    fn resolve_remaining_segments<'a>(
+        &self,
+        db: &dyn DefDatabase,
+        mode: ResolveMode,
+        mut segments: impl Iterator<Item = (usize, &'a Name)>,
+        mut curr_per_ns: PerNs,
+        path: &ModPath,
+        shadow: BuiltinShadowMode,
+        original_module: LocalModuleId,
+    ) -> ResolvePathResult {
         while let Some((i, segment)) = segments.next() {
             let curr = match curr_per_ns.take_types_full() {
                 Some(r) => r,
@@ -576,7 +632,15 @@ impl DefMap {
         )
     }
 
-    fn resolve_name_in_module(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, module: LocalModuleId, name: &Name, shadow: BuiltinShadowMode, expected_macro_subns: Option<MacroSubNs>) -> PerNs {
+    fn resolve_name_in_module(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        module: LocalModuleId,
+        name: &Name,
+        shadow: BuiltinShadowMode,
+        expected_macro_subns: Option<MacroSubNs>,
+    ) -> PerNs {
         // Resolve in:
         //  - legacy scope of macro
         //  - current module / scope
@@ -629,7 +693,12 @@ impl DefMap {
             .or_else(prelude)
     }
 
-    fn resolve_name_in_all_preludes(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, name: &Name) -> PerNs {
+    fn resolve_name_in_all_preludes(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        name: &Name,
+    ) -> PerNs {
         // Resolve in:
         //  - extern prelude / macro_use prelude
         //  - std prelude
@@ -639,7 +708,11 @@ impl DefMap {
         extern_prelude.or_else(macro_use_prelude).or_else(prelude)
     }
 
-    fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
+    fn resolve_name_in_extern_prelude(
+        &self,
+        local_def_map: &LocalDefMap,
+        name: &Name,
+    ) -> PerNs {
         local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::types(
                 it.into(),
@@ -649,7 +722,10 @@ impl DefMap {
         })
     }
 
-    fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
+    fn resolve_in_macro_use_prelude(
+        &self,
+        name: &Name,
+    ) -> PerNs {
         self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::macros(
                 it,
@@ -659,7 +735,13 @@ impl DefMap {
         })
     }
 
-    fn resolve_name_in_crate_root_or_extern_prelude(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, module: LocalModuleId, name: &Name) -> PerNs {
+    fn resolve_name_in_crate_root_or_extern_prelude(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        module: LocalModuleId,
+        name: &Name,
+    ) -> PerNs {
         let from_crate_root = match self.block {
             Some(_) => {
                 let def_map = self.crate_root().def_map(db);
@@ -677,7 +759,11 @@ impl DefMap {
         from_crate_root.or_else(from_extern_prelude)
     }
 
-    fn resolve_in_prelude(&self, db: &dyn DefDatabase, name: &Name) -> PerNs {
+    fn resolve_in_prelude(
+        &self,
+        db: &dyn DefDatabase,
+        name: &Name,
+    ) -> PerNs {
         if let Some((prelude, _use)) = self.prelude {
             let keep;
             let def_map = if prelude.krate == self.krate {
@@ -695,7 +781,11 @@ impl DefMap {
 }
 
 /// Given a block module, returns its nearest non-block module and the `DefMap` it belongs to.
-fn adjust_to_nearest_non_block_module<'db>(db: &'db dyn DefDatabase, def_map: &'db DefMap, mut local_id: LocalModuleId) -> (&'db DefMap, LocalModuleId) {
+fn adjust_to_nearest_non_block_module<'db>(
+    db: &'db dyn DefDatabase,
+    def_map: &'db DefMap,
+    mut local_id: LocalModuleId,
+) -> (&'db DefMap, LocalModuleId) {
     // INVARIANT: `local_id` in `def_map` must be a block module.
     stdx::always!(def_map.module_id(local_id).is_block_module());
     // This needs to be a local variable due to our mighty lifetime.

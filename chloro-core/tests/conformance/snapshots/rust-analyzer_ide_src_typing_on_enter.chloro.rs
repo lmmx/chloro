@@ -12,7 +12,10 @@ use syntax::{
     ast::{self, AstToken, edit::IndentLevel},
 };
 
-pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
+pub(crate) fn on_enter(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> Option<TextEdit> {
     let editioned_file_id_wrapper =
         ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
     let parse = db.parse(editioned_file_id_wrapper);
@@ -41,7 +44,11 @@ pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<Text
     None
 }
 
-fn on_enter_in_comment(comment: &ast::Comment, file: &ast::SourceFile, offset: TextSize) -> Option<TextEdit> {
+fn on_enter_in_comment(
+    comment: &ast::Comment,
+    file: &ast::SourceFile,
+    offset: TextSize,
+) -> Option<TextEdit> {
     if comment.kind().shape.is_block() {
         return None;
     }
@@ -73,7 +80,10 @@ fn on_enter_in_comment(comment: &ast::Comment, file: &ast::SourceFile, offset: T
     Some(edit)
 }
 
-fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
+fn on_enter_in_block(
+    block: ast::BlockExpr,
+    position: FilePosition,
+) -> Option<TextEdit> {
     let contents = block_contents(&block)?;
     if block.syntax().text().contains_char('\n') {
         return None;
@@ -84,7 +94,10 @@ fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<Te
     Some(edit)
 }
 
-fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> Option<TextEdit> {
+fn on_enter_in_use_tree_list(
+    list: ast::UseTreeList,
+    position: FilePosition,
+) -> Option<TextEdit> {
     if list.syntax().text().contains_char('\n') {
         return None;
     }
@@ -119,7 +132,10 @@ fn followed_by_comment(comment: &ast::Comment) -> bool {
     ws.syntax().next_token().and_then(ast::Comment::cast).is_some()
 }
 
-fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
+fn node_indent(
+    file: &SourceFile,
+    token: &SyntaxToken,
+) -> Option<SmolStr> {
     let ws = match file.syntax().token_at_offset(token.text_range().start()) {
         TokenAtOffset::Between(l, r) => {
             assert!(r == *token);
@@ -151,7 +167,10 @@ mod tests {
         result.apply(&mut actual);
         Some(actual)
     }
-    fn do_check(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+    fn do_check(
+        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+    ) {
         let ra_fixture_after = &trim_indent(ra_fixture_after);
         let actual = apply_on_enter(ra_fixture_before).unwrap();
         assert_eq_text!(ra_fixture_after, &actual);

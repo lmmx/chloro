@@ -8,7 +8,12 @@ use syntax::{AstToken, TextRange, TextSize, ToSmolStr, ast};
 use crate::{CompletionItem, CompletionItemKind, Completions, context::CompletionContext};
 
 /// Complete identifiers in format strings.
-pub(crate) fn format_string(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) {
+pub(crate) fn format_string(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    original: &ast::String,
+    expanded: &ast::String,
+) {
     if !is_format_string(expanded) {
         return;
     }

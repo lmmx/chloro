@@ -25,13 +25,19 @@ pub(crate) struct LspError {
 }
 
 impl LspError {
-    pub(crate) fn new(code: i32, message: String) -> LspError {
+    pub(crate) fn new(
+        code: i32,
+        message: String,
+    ) -> LspError {
         LspError { code, message }
     }
 }
 
 impl fmt::Display for LspError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "Language Server request failed with {}. ({})", self.code, self.message)
     }
 }
@@ -39,7 +45,10 @@ impl fmt::Display for LspError {
 impl std::error::Error for LspError {
 }
 
-pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: bool) -> [u8; 20] {
+pub(crate) fn completion_item_hash(
+    item: &CompletionItem,
+    is_ref_completion: bool,
+) -> [u8; 20] {
     fn hash_completion_relevance(hasher: &mut TentHash, relevance: &CompletionRelevance) {
         use ide_completion::{
             CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,

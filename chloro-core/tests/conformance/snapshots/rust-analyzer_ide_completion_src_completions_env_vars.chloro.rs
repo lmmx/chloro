@@ -12,7 +12,12 @@ use crate::{
 };
 
 
-pub(crate) fn complete_cargo_env_vars(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) -> Option<()> {
+pub(crate) fn complete_cargo_env_vars(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    original: &ast::String,
+    expanded: &ast::String,
+) -> Option<()> {
     let is_in_env_expansion = ctx
         .sema
         .hir_file_for(&expanded.syntax().parent()?)

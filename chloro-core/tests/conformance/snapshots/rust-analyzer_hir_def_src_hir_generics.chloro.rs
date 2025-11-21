@@ -149,7 +149,10 @@ pub struct GenericParams {
 impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
     type Output = TypeOrConstParamData;
 
-    fn index(&self, index: LocalTypeOrConstParamId) -> &TypeOrConstParamData {
+    fn index(
+        &self,
+        index: LocalTypeOrConstParamId,
+    ) -> &TypeOrConstParamData {
         &self.type_or_consts[index]
     }
 }
@@ -157,7 +160,10 @@ impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
 impl ops::Index<LocalLifetimeParamId> for GenericParams {
     type Output = LifetimeParamData;
 
-    fn index(&self, index: LocalLifetimeParamId) -> &LifetimeParamData {
+    fn index(
+        &self,
+        index: LocalLifetimeParamId,
+    ) -> &LifetimeParamData {
         &self.lifetimes[index]
     }
 }
@@ -193,7 +199,10 @@ pub enum WherePredicate {
 impl GenericParams {
 /// The index of the self param in the generic of the non-parent definition.
 
-    pub fn new(db: &dyn DefDatabase, def: GenericDefId) -> Arc<GenericParams> {
+    pub fn new(
+        db: &dyn DefDatabase,
+        def: GenericDefId,
+    ) -> Arc<GenericParams> {
         match def {
             GenericDefId::AdtId(AdtId::EnumId(it)) => db.enum_signature(it).generic_params.clone(),
             GenericDefId::AdtId(AdtId::StructId(it)) => {
@@ -215,7 +224,10 @@ impl GenericParams {
         }
     }
 
-    pub fn generic_params_and_store(db: &dyn DefDatabase, def: GenericDefId) -> (Arc<GenericParams>, Arc<ExpressionStore>) {
+    pub fn generic_params_and_store(
+        db: &dyn DefDatabase,
+        def: GenericDefId,
+    ) -> (Arc<GenericParams>, Arc<ExpressionStore>) {
         match def {
             GenericDefId::AdtId(AdtId::EnumId(id)) => {
                 let sig = db.enum_signature(id);
@@ -256,7 +268,10 @@ impl GenericParams {
         }
     }
 
-    pub fn generic_params_and_store_and_source_map(db: &dyn DefDatabase, def: GenericDefId) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>) {
+    pub fn generic_params_and_store_and_source_map(
+        db: &dyn DefDatabase,
+        def: GenericDefId,
+    ) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>) {
         match def {
             GenericDefId::AdtId(AdtId::EnumId(id)) => {
                 let (sig, sm) = db.enum_signature_with_source_map(id);
@@ -340,7 +355,11 @@ impl GenericParams {
         self.lifetimes.iter()
     }
 
-    pub fn find_type_by_name(&self, name: &Name, parent: GenericDefId) -> Option<TypeParamId> {
+    pub fn find_type_by_name(
+        &self,
+        name: &Name,
+        parent: GenericDefId,
+    ) -> Option<TypeParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.type_param().is_some() {
                 Some(TypeParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))
@@ -350,7 +369,11 @@ impl GenericParams {
         })
     }
 
-    pub fn find_const_by_name(&self, name: &Name, parent: GenericDefId) -> Option<ConstParamId> {
+    pub fn find_const_by_name(
+        &self,
+        name: &Name,
+        parent: GenericDefId,
+    ) -> Option<ConstParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.const_param().is_some() {
                 Some(ConstParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))
@@ -375,7 +398,11 @@ impl GenericParams {
         .then(|| Self::SELF_PARAM_ID_IN_SELF)
     }
 
-    pub fn find_lifetime_by_name(&self, name: &Name, parent: GenericDefId) -> Option<LifetimeParamId> {
+    pub fn find_lifetime_by_name(
+        &self,
+        name: &Name,
+        parent: GenericDefId,
+    ) -> Option<LifetimeParamId> {
         self.lifetimes.iter().find_map(|(id, p)| {
             if &p.name == name { Some(LifetimeParamId { local_id: id, parent }) } else { None }
         })

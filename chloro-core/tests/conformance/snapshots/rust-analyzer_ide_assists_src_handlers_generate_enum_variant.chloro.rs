@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_enum_variant(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let parent = PathParent::new(&path)?;
     if ctx.sema.resolve_path(&path).is_some() {
@@ -72,7 +75,11 @@ impl PathParent {
         }
     }
 
-    fn make_field_list(&self, ctx: &AssistContext<'_>, make: &SyntaxFactory) -> Option<ast::FieldList> {
+    fn make_field_list(
+        &self,
+        ctx: &AssistContext<'_>,
+        make: &SyntaxFactory,
+    ) -> Option<ast::FieldList> {
         let scope = ctx.sema.scope(self.syntax())?;
         match self {
             PathParent::PathExpr(it) => {
@@ -104,7 +111,10 @@ impl PathParent {
     }
 }
 
-fn name_from_field(make: &SyntaxFactory, field: &ast::RecordExprField) -> ast::Name {
+fn name_from_field(
+    make: &SyntaxFactory,
+    field: &ast::RecordExprField,
+) -> ast::Name {
     let text = match field.name_ref() {
         Some(it) => it.to_string(),
         None => name_from_field_shorthand(field).unwrap_or("unknown".to_owned()),
@@ -120,7 +130,12 @@ fn name_from_field_shorthand(field: &ast::RecordExprField) -> Option<String> {
     Some(path.as_single_name_ref()?.to_string())
 }
 
-fn expr_ty(ctx: &AssistContext<'_>, make: &SyntaxFactory, arg: ast::Expr, scope: &hir::SemanticsScope<'_>) -> Option<ast::Type> {
+fn expr_ty(
+    ctx: &AssistContext<'_>,
+    make: &SyntaxFactory,
+    arg: ast::Expr,
+    scope: &hir::SemanticsScope<'_>,
+) -> Option<ast::Type> {
     let ty = ctx.sema.type_of_expr(&arg).map(|it| it.adjusted())?;
     let text = ty.display_source_code(ctx.db(), scope.module().into(), false).ok()?;
     Some(make.ty(&text))

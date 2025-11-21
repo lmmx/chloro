@@ -11,7 +11,12 @@ use crate::{
     InlayHint, InlayHintLabel, InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, closure: ast::ClosureExpr) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    closure: ast::ClosureExpr,
+) -> Option<()> {
     if !config.closure_capture_hints {
         return None;
     }

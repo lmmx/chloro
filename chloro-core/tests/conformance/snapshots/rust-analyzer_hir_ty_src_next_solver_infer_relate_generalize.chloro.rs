@@ -39,7 +39,14 @@ impl<'db> InferCtxt<'db> {
     /// `TypeRelation`. Do not use this, and instead please use `At::eq`, for all
     /// other usecases (i.e. setting the value of a type var).
     #[instrument(level = "debug", skip(self, relation))]
-    pub fn instantiate_ty_var<R: PredicateEmittingRelation<InferCtxt<'db>>>(&self, relation: &mut R, target_is_expected: bool, target_vid: TyVid, instantiation_variance: Variance, source_ty: Ty<'db>) -> RelateResult<'db, ()> {
+    pub fn instantiate_ty_var<R: PredicateEmittingRelation<InferCtxt<'db>>>(
+        &self,
+        relation: &mut R,
+        target_is_expected: bool,
+        target_vid: TyVid,
+        instantiation_variance: Variance,
+        source_ty: Ty<'db>,
+    ) -> RelateResult<'db, ()> {
         debug_assert!(self.inner.borrow_mut().type_variables().probe(target_vid).is_unknown());
         // Generalize `source_ty` depending on the current variance. As an example, assume
         // `?target <: &'x ?1`, where `'x` is some free region and `?1` is an inference
@@ -156,7 +163,13 @@ impl<'db> InferCtxt<'db> {
     ///
     /// See `tests/ui/const-generics/occurs-check/` for more examples where this is relevant.
     #[instrument(level = "debug", skip(self, relation))]
-    pub(crate) fn instantiate_const_var<R: PredicateEmittingRelation<InferCtxt<'db>>>(&self, relation: &mut R, target_is_expected: bool, target_vid: ConstVid, source_ct: Const<'db>) -> RelateResult<'db, ()> {
+    pub(crate) fn instantiate_const_var<R: PredicateEmittingRelation<InferCtxt<'db>>>(
+        &self,
+        relation: &mut R,
+        target_is_expected: bool,
+        target_vid: ConstVid,
+        source_ct: Const<'db>,
+    ) -> RelateResult<'db, ()> {
         // FIXME(generic_const_exprs): Occurs check failures for unevaluated
         // constants and generic expressions are not yet handled correctly.
         let Generalization { value_may_be_infer: generalized_ct, has_unconstrained_ty_var } = self
@@ -196,7 +209,13 @@ impl<'db> InferCtxt<'db> {
 
     /// Attempts to generalize `source_term` for the type variable `target_vid`.
     /// This checks for cycles -- that is, whether `source_term` references `target_vid`.
-    fn generalize<T: Into<Term<'db>> + Relate<DbInterner<'db>>>(&self, structurally_relate_aliases: StructurallyRelateAliases, target_vid: impl Into<TermVid>, ambient_variance: Variance, source_term: T) -> RelateResult<'db, Generalization<T>> {
+    fn generalize<T: Into<Term<'db>> + Relate<DbInterner<'db>>>(
+        &self,
+        structurally_relate_aliases: StructurallyRelateAliases,
+        target_vid: impl Into<TermVid>,
+        ambient_variance: Variance,
+        source_term: T,
+    ) -> RelateResult<'db, Generalization<T>> {
         assert!(!source_term.clone().has_escaping_bound_vars());
         let (for_universe, root_vid) = match target_vid.into() {
             TermVid::Ty(ty_vid) => {
@@ -301,7 +320,10 @@ impl<'db> Generalizer<'_, 'db> {
     ///   continue generalizing the alias. This ends up pulling down the universe of the
     ///   inference variable and is incomplete in case the alias would normalize to a type
     ///   which does not mention that inference variable.
-    fn generalize_alias_ty(&mut self, alias: AliasTy<'db>) -> Result<Ty<'db>, TypeError<DbInterner<'db>>> {
+    fn generalize_alias_ty(
+        &mut self,
+        alias: AliasTy<'db>,
+    ) -> Result<Ty<'db>, TypeError<DbInterner<'db>>> {
         // We do not eagerly replace aliases with inference variables if they have
         // escaping bound vars, see the method comment for details. However, when we
         // are inside of an alias with escaping bound vars replacing nested aliases
@@ -342,7 +364,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         self.infcx.interner
     }
 
-    fn relate_item_args(&mut self, item_def_id: SolverDefId, a_arg: GenericArgs<'db>, b_arg: GenericArgs<'db>) -> RelateResult<'db, GenericArgs<'db>> {
+    fn relate_item_args(
+        &mut self,
+        item_def_id: SolverDefId,
+        a_arg: GenericArgs<'db>,
+        b_arg: GenericArgs<'db>,
+    ) -> RelateResult<'db, GenericArgs<'db>> {
         if self.ambient_variance == Variance::Invariant {
             // Avoid fetching the variance if we are in an invariant
             // context; no need, and it can induce dependency cycles
@@ -363,7 +390,13 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     }
 
     #[instrument(level = "debug", skip(self, variance, b), ret)]
-    fn relate_with_variance<T: Relate<DbInterner<'db>>>(&mut self, variance: Variance, _info: VarianceDiagInfo<DbInterner<'db>>, a: T, b: T) -> RelateResult<'db, T> {
+    fn relate_with_variance<T: Relate<DbInterner<'db>>>(
+        &mut self,
+        variance: Variance,
+        _info: VarianceDiagInfo<DbInterner<'db>>,
+        a: T,
+        b: T,
+    ) -> RelateResult<'db, T> {
         let old_ambient_variance = self.ambient_variance;
         self.ambient_variance = self.ambient_variance.xform(variance);
         debug!(?self.ambient_variance, "new ambient variance");
@@ -375,7 +408,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     }
 
     #[instrument(level = "debug", skip(self, t2), ret)]
-    fn tys(&mut self, t: Ty<'db>, t2: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
+    fn tys(
+        &mut self,
+        t: Ty<'db>,
+        t2: Ty<'db>,
+    ) -> RelateResult<'db, Ty<'db>> {
         assert_eq!(t, t2);
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         if let Some(result) = self.cache.get(&(t, self.ambient_variance, self.in_alias)) {
@@ -492,7 +529,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     }
 
     #[instrument(level = "debug", skip(self, r2), ret)]
-    fn regions(&mut self, r: Region<'db>, r2: Region<'db>) -> RelateResult<'db, Region<'db>> {
+    fn regions(
+        &mut self,
+        r: Region<'db>,
+        r2: Region<'db>,
+    ) -> RelateResult<'db, Region<'db>> {
         assert_eq!(r, r2);
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match r.kind() {
@@ -529,7 +570,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     }
 
     #[instrument(level = "debug", skip(self, c2), ret)]
-    fn consts(&mut self, c: Const<'db>, c2: Const<'db>) -> RelateResult<'db, Const<'db>> {
+    fn consts(
+        &mut self,
+        c: Const<'db>,
+        c2: Const<'db>,
+    ) -> RelateResult<'db, Const<'db>> {
         assert_eq!(c, c2);
         // we are misusing TypeRelation here; both LHS and RHS ought to be ==
         match c.kind() {
@@ -608,7 +653,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    fn binders<T>(&mut self, a: Binder<'db, T>, _: Binder<'db, T>) -> RelateResult<'db, Binder<'db, T>>
+    fn binders<T>(
+        &mut self,
+        a: Binder<'db, T>,
+        _: Binder<'db, T>,
+    ) -> RelateResult<'db, Binder<'db, T>>
     where
         T: Relate<DbInterner<'db>>, {
         let result = self.relate(a.skip_binder(), a.skip_binder())?;

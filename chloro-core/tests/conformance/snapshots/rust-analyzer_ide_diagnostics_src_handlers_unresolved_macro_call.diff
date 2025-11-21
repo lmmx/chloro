@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2243 bytes
-Chloro size:   2070 bytes
+Chloro size:   2081 bytes
 Rustfmt size:  2277 bytes
 
 ✗ Outputs DIFFER
@@ -14,13 +14,9 @@ Rustfmt size:  2277 bytes
 -//
 -// This diagnostic is triggered if rust-analyzer is unable to resolve the path
 -// to a macro in a macro invocation.
--pub(crate) fn unresolved_macro_call(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnresolvedMacroCall,
--) -> Diagnostic {
-+pub(crate) fn unresolved_macro_call(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMacroCall) -> Diagnostic {
-     // Use more accurate position if available.
-     let display_range = ctx.resolve_precise_location(&d.macro_call, d.precise_location);
+ pub(crate) fn unresolved_macro_call(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnresolvedMacroCall,
      let bang = if d.is_bang { "!" } else { "" };
      Diagnostic::new(
          DiagnosticCode::RustcHardError("unresolved-macro-call"),

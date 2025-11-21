@@ -14,7 +14,10 @@ use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
 
 use crate::{AssistContext, AssistId, Assists, utils};
 
-pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_missing_match_arms(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;
     let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
@@ -296,7 +299,11 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
     )
 }
 
-fn cursor_at_trivial_match_arm_list(ctx: &AssistContext<'_>, match_expr: &MatchExpr, match_arm_list: &MatchArmList) -> Option<()> {
+fn cursor_at_trivial_match_arm_list(
+    ctx: &AssistContext<'_>,
+    match_expr: &MatchExpr,
+    match_arm_list: &MatchArmList,
+) -> Option<()> {
     // match x { $0 }
     if match_arm_list.arms().next().is_none() {
         cov_mark::hit!(add_missing_match_arms_empty_body);
@@ -325,11 +332,17 @@ fn cursor_at_trivial_match_arm_list(ctx: &AssistContext<'_>, match_expr: &MatchE
     None
 }
 
-fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
+fn is_variant_missing(
+    existing_pats: &[Pat],
+    var: &Pat,
+) -> bool {
     !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
 }
 
-fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
+fn does_pat_match_variant(
+    pat: &Pat,
+    var: &Pat,
+) -> bool {
     match (pat, var) {
         (Pat::WildcardPat(_), _) => true,
         (Pat::SlicePat(spat), Pat::SlicePat(svar)) => {
@@ -363,7 +376,11 @@ enum ExtendedVariant {
 }
 
 impl ExtendedVariant {
-    fn should_be_hidden(self, db: &RootDatabase, krate: Crate) -> bool {
+    fn should_be_hidden(
+        self,
+        db: &RootDatabase,
+        krate: Crate,
+    ) -> bool {
         match self {
             ExtendedVariant::Variant { variant: var, .. } => {
                 var.attrs(db).has_doc_hidden() && var.module(db).krate() != krate
@@ -374,14 +391,23 @@ impl ExtendedVariant {
 }
 
 impl ExtendedEnum {
-    fn enum_(db: &RootDatabase, enum_: hir::Enum, enum_ty: &hir::Type<'_>, self_ty: Option<&hir::Type<'_>>) -> Self {
+    fn enum_(
+        db: &RootDatabase,
+        enum_: hir::Enum,
+        enum_ty: &hir::Type<'_>,
+        self_ty: Option<&hir::Type<'_>>,
+    ) -> Self {
         ExtendedEnum::Enum {
             enum_,
             use_self: self_ty.is_some_and(|self_ty| self_ty.could_unify_with_deeply(db, enum_ty)),
         }
     }
 
-    fn is_non_exhaustive(&self, db: &RootDatabase, krate: Crate) -> bool {
+    fn is_non_exhaustive(
+        &self,
+        db: &RootDatabase,
+        krate: Crate,
+    ) -> bool {
         match self {
             ExtendedEnum::Enum { enum_: e, .. } => {
                 e.attrs(db).by_key(sym::non_exhaustive).exists() && e.module(db).krate() != krate
@@ -390,7 +416,10 @@ impl ExtendedEnum {
         }
     }
 
-    fn variants(&self, db: &RootDatabase) -> Vec<ExtendedVariant> {
+    fn variants(
+        &self,
+        db: &RootDatabase,
+    ) -> Vec<ExtendedVariant> {
         match *self {
             ExtendedEnum::Enum { enum_: e, use_self } => e
                 .variants(db)
@@ -404,14 +433,22 @@ impl ExtendedEnum {
     }
 }
 
-fn resolve_enum_def(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr, self_ty: Option<&hir::Type<'_>>) -> Option<ExtendedEnum> {
+fn resolve_enum_def(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &ast::Expr,
+    self_ty: Option<&hir::Type<'_>>,
+) -> Option<ExtendedEnum> {
     sema.type_of_expr(expr)?.adjusted().autoderef(sema.db).find_map(|ty| match ty.as_adt() {
         Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
         _ => ty.is_bool().then_some(ExtendedEnum::Bool),
     })
 }
 
-fn resolve_tuple_of_enum_def(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr, self_ty: Option<&hir::Type<'_>>) -> Option<Vec<ExtendedEnum>> {
+fn resolve_tuple_of_enum_def(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &ast::Expr,
+    self_ty: Option<&hir::Type<'_>>,
+) -> Option<Vec<ExtendedEnum>> {
     sema.type_of_expr(expr)?
         .adjusted()
         .tuple_fields(sema.db)
@@ -431,7 +468,11 @@ fn resolve_tuple_of_enum_def(sema: &Semantics<'_, RootDatabase>, expr: &ast::Exp
         .and_then(|list| if list.is_empty() { None } else { Some(list) })
 }
 
-fn resolve_array_of_enum_def(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr, self_ty: Option<&hir::Type<'_>>) -> Option<(ExtendedEnum, usize)> {
+fn resolve_array_of_enum_def(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &ast::Expr,
+    self_ty: Option<&hir::Type<'_>>,
+) -> Option<(ExtendedEnum, usize)> {
     sema.type_of_expr(expr)?.adjusted().as_array(sema.db).and_then(|(ty, len)| {
         ty.autoderef(sema.db).find_map(|ty| match ty.as_adt() {
             Some(Adt::Enum(e)) => Some((ExtendedEnum::enum_(sema.db, e, &ty, self_ty), len)),
@@ -440,7 +481,13 @@ fn resolve_array_of_enum_def(sema: &Semantics<'_, RootDatabase>, expr: &ast::Exp
     })
 }
 
-fn build_pat(ctx: &AssistContext<'_>, make: &SyntaxFactory, module: hir::Module, var: ExtendedVariant, cfg: FindPathConfig) -> Option<ast::Pat> {
+fn build_pat(
+    ctx: &AssistContext<'_>,
+    make: &SyntaxFactory,
+    module: hir::Module,
+    var: ExtendedVariant,
+    cfg: FindPathConfig,
+) -> Option<ast::Pat> {
     let db = ctx.db();
     match var {
         ExtendedVariant::Variant { variant: var, use_self } => {

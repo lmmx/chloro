@@ -26,7 +26,10 @@ use crate::{
     utils::convert_param_list_to_arg_list,
 };
 
-pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_delegate_trait(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;
     }
@@ -54,7 +57,10 @@ struct Field {
 }
 
 impl Field {
-    pub(crate) fn new(ctx: &AssistContext<'_>, f: Either<ast::RecordField, (ast::TupleField, ast::TupleFieldList)>) -> Option<Field> {
+    pub(crate) fn new(
+        ctx: &AssistContext<'_>,
+        f: Either<ast::RecordField, (ast::TupleField, ast::TupleFieldList)>,
+    ) -> Option<Field> {
         let db = ctx.sema.db;
         let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;
         let edition = module.krate().edition(ctx.db());
@@ -97,7 +103,11 @@ enum Delegee {
 }
 
 impl Delegee {
-    fn signature(&self, db: &dyn HirDatabase, edition: Edition) -> String {
+    fn signature(
+        &self,
+        db: &dyn HirDatabase,
+        edition: Edition,
+    ) -> String {
         let mut s = String::new();
         let (Delegee::Bound(it) | Delegee::Impls(it, _)) = self;
         for m in it.module(db).path_to_root(db).iter().rev() {
@@ -122,7 +132,12 @@ impl Struct {
         Some(Struct { name, strukt: s })
     }
 
-    pub(crate) fn delegate(&self, field: Field, acc: &mut Assists, ctx: &AssistContext<'_>) {
+    pub(crate) fn delegate(
+        &self,
+        field: Field,
+        acc: &mut Assists,
+        ctx: &AssistContext<'_>,
+    ) {
         let db = ctx.db();
         for (index, delegee) in field.impls.iter().enumerate() {
             let trait_ = match delegee {
@@ -170,7 +185,14 @@ impl Struct {
     }
 }
 
-fn generate_impl(ctx: &AssistContext<'_>, strukt: &Struct, field_ty: &ast::Type, field_name: &str, delegee: &Delegee, edition: Edition) -> Option<ast::Impl> {
+fn generate_impl(
+    ctx: &AssistContext<'_>,
+    strukt: &Struct,
+    field_ty: &ast::Type,
+    field_name: &str,
+    delegee: &Delegee,
+    edition: Edition,
+) -> Option<ast::Impl> {
     let db = ctx.db();
     let ast_strukt = &strukt.strukt;
     let strukt_ty = make::ty_path(make::ext::ident_path(&strukt.name.to_string()));
@@ -336,7 +358,13 @@ fn generate_impl(ctx: &AssistContext<'_>, strukt: &Struct, field_ty: &ast::Type,
     }
 }
 
-fn transform_impl<N: ast::AstNode>(ctx: &AssistContext<'_>, strukt: &ast::Struct, old_impl: &ast::Impl, args: &Option<GenericArgList>, syntax: N) -> Option<N> {
+fn transform_impl<N: ast::AstNode>(
+    ctx: &AssistContext<'_>,
+    strukt: &ast::Struct,
+    old_impl: &ast::Impl,
+    args: &Option<GenericArgList>,
+    syntax: N,
+) -> Option<N> {
     let source_scope = ctx.sema.scope(old_impl.self_ty()?.syntax())?;
     let target_scope = ctx.sema.scope(strukt.syntax())?;
     let hir_old_impl = ctx.sema.to_impl_def(old_impl)?;
@@ -354,7 +382,11 @@ fn transform_impl<N: ast::AstNode>(ctx: &AssistContext<'_>, strukt: &ast::Struct
     N::cast(transform.apply(syntax.syntax()))
 }
 
-fn remove_instantiated_params(self_ty: &ast::Type, old_impl_params: Option<GenericParamList>, old_trait_args: &FxHashSet<String>) -> Option<GenericParamList> {
+fn remove_instantiated_params(
+    self_ty: &ast::Type,
+    old_impl_params: Option<GenericParamList>,
+    old_trait_args: &FxHashSet<String>,
+) -> Option<GenericParamList> {
     match self_ty {
         ast::Type::PathType(path_type) => {
             old_impl_params.and_then(|gpl| {
@@ -378,7 +410,11 @@ fn remove_instantiated_params(self_ty: &ast::Type, old_impl_params: Option<Gener
     }
 }
 
-fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: ast::WhereClause) {
+fn remove_useless_where_clauses(
+    trait_ty: &ast::Type,
+    self_ty: &ast::Type,
+    wc: ast::WhereClause,
+) {
     let live_generics = [trait_ty, self_ty]
         .into_iter()
         .flat_map(|ty| ty.generic_arg_list())
@@ -416,7 +452,13 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
     }
 }
 
-fn generate_args_for_impl(old_impl_gpl: Option<GenericParamList>, self_ty: &ast::Type, field_ty: &ast::Type, trait_params: &Option<GenericParamList>, old_trait_args: &FxHashSet<String>) -> Option<ast::GenericArgList> {
+fn generate_args_for_impl(
+    old_impl_gpl: Option<GenericParamList>,
+    self_ty: &ast::Type,
+    field_ty: &ast::Type,
+    trait_params: &Option<GenericParamList>,
+    old_trait_args: &FxHashSet<String>,
+) -> Option<ast::GenericArgList> {
     let old_impl_args = old_impl_gpl.map(|gpl| gpl.to_generic_args().generic_args())?;
     // Create pairs of the args of `self_ty` and corresponding `field_ty` to
     // form the substitution list
@@ -447,7 +489,12 @@ fn generate_args_for_impl(old_impl_gpl: Option<GenericParamList>, self_ty: &ast:
     args.is_empty().not().then(|| make::generic_arg_list(args))
 }
 
-fn rename_strukt_args<N>(ctx: &AssistContext<'_>, strukt: &ast::Struct, item: &N, args: &GenericArgList) -> Option<N>
+fn rename_strukt_args<N>(
+    ctx: &AssistContext<'_>,
+    strukt: &ast::Struct,
+    item: &N,
+    args: &GenericArgList,
+) -> Option<N>
 where
     N: ast::AstNode, {
     let hir_strukt = ctx.sema.to_struct_def(strukt)?;
@@ -458,7 +505,10 @@ where
     N::cast(transform.apply(item.syntax()))
 }
 
-fn has_self_type(trait_: hir::Trait, ctx: &AssistContext<'_>) -> Option<()> {
+fn has_self_type(
+    trait_: hir::Trait,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let trait_source = ctx.sema.source(trait_)?.value;
     trait_source
         .syntax()
@@ -468,7 +518,10 @@ fn has_self_type(trait_: hir::Trait, ctx: &AssistContext<'_>) -> Option<()> {
         .map(|_| ())
 }
 
-fn resolve_name_conflicts(strukt_params: Option<ast::GenericParamList>, old_impl_params: &Option<ast::GenericParamList>) -> Option<ast::GenericParamList> {
+fn resolve_name_conflicts(
+    strukt_params: Option<ast::GenericParamList>,
+    old_impl_params: &Option<ast::GenericParamList>,
+) -> Option<ast::GenericParamList> {
     match (strukt_params, old_impl_params) {
         (Some(old_strukt_params), Some(old_impl_params)) => {
             let params = make::generic_param_list(std::iter::empty()).clone_for_update();
@@ -525,7 +578,11 @@ fn resolve_name_conflicts(strukt_params: Option<ast::GenericParamList>, old_impl
     }
 }
 
-fn process_assoc_item(item: syntax::ast::AssocItem, qual_path_ty: ast::Path, base_name: &str) -> Option<ast::AssocItem> {
+fn process_assoc_item(
+    item: syntax::ast::AssocItem,
+    qual_path_ty: ast::Path,
+    base_name: &str,
+) -> Option<ast::AssocItem> {
     match item {
         AssocItem::Const(c) => const_assoc_item(c, qual_path_ty),
         AssocItem::Fn(f) => func_assoc_item(f, qual_path_ty, base_name),
@@ -538,7 +595,10 @@ fn process_assoc_item(item: syntax::ast::AssocItem, qual_path_ty: ast::Path, bas
     }
 }
 
-fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option<AssocItem> {
+fn const_assoc_item(
+    item: syntax::ast::Const,
+    qual_path_ty: ast::Path,
+) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     // We want rhs of the const assignment to be a qualified path
     // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
@@ -558,7 +618,11 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
     Some(AssocItem::Const(inner))
 }
 
-fn func_assoc_item(item: syntax::ast::Fn, qual_path_ty: Path, base_name: &str) -> Option<AssocItem> {
+fn func_assoc_item(
+    item: syntax::ast::Fn,
+    qual_path_ty: Path,
+    base_name: &str,
+) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let call = match item.param_list() {
@@ -627,7 +691,10 @@ fn func_assoc_item(item: syntax::ast::Fn, qual_path_ty: Path, base_name: &str) -
     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
 }
 
-fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<AssocItem> {
+fn ty_assoc_item(
+    item: syntax::ast::TypeAlias,
+    qual_path_ty: Path,
+) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let ty = make::ty_path(qualified_path);
@@ -644,7 +711,10 @@ fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<Ass
     Some(AssocItem::TypeAlias(alias))
 }
 
-fn qualified_path(qual_path_ty: ast::Path, path_expr_seg: ast::Path) -> ast::Path {
+fn qualified_path(
+    qual_path_ty: ast::Path,
+    path_expr_seg: ast::Path,
+) -> ast::Path {
     make::path_from_text(&format!("{qual_path_ty}::{path_expr_seg}"))
 }
 

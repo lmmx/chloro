@@ -16,7 +16,13 @@ use crate::{
     fixture,
 };
 
-fn check_external_docs(#[rust_analyzer::rust_fixture] ra_fixture: &str, target_dir: Option<&str>, expect_web_url: Option<Expect>, expect_local_url: Option<Expect>, sysroot: Option<&str>) {
+fn check_external_docs(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    target_dir: Option<&str>,
+    expect_web_url: Option<Expect>,
+    expect_local_url: Option<Expect>,
+    sysroot: Option<&str>,
+) {
     let (analysis, position) = fixture::position(ra_fixture);
     let links = analysis.external_docs(position, target_dir, sysroot).unwrap();
     let web_url = links.web_url;
@@ -33,7 +39,10 @@ fn check_external_docs(#[rust_analyzer::rust_fixture] ra_fixture: &str, target_d
     }
 }
 
-fn check_rewrite(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn check_rewrite(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let (analysis, position) = fixture::position(ra_fixture);
     let sema = &Semantics::new(&analysis.db);
     let (cursor_def, docs, range) = def_under_cursor(sema, &position);
@@ -70,7 +79,10 @@ fn check_doc_links(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     assert_eq!(expected, actual);
 }
 
-fn def_under_cursor(sema: &Semantics<'_, RootDatabase>, position: &FilePosition) -> (Definition, Documentation, DocsRangeMap) {
+fn def_under_cursor(
+    sema: &Semantics<'_, RootDatabase>,
+    position: &FilePosition,
+) -> (Definition, Documentation, DocsRangeMap) {
     let (docs, def) = sema
         .parse_guess_edition(position.file_id)
         .syntax()
@@ -85,7 +97,10 @@ fn def_under_cursor(sema: &Semantics<'_, RootDatabase>, position: &FilePosition)
     (def, docs, range)
 }
 
-fn node_to_def(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
+fn node_to_def(
+    sema: &Semantics<'_, RootDatabase>,
+    node: &SyntaxNode,
+) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
     Some(match_ast! {
         match node {
             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),

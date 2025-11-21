@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3698 bytes
-Chloro size:   3529 bytes
+Chloro size:   3540 bytes
 Rustfmt size:  3698 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,9 @@ Rustfmt size:  3698 bytes
 -//
 -// This diagnostic is triggered if a `let` statement without an `else` branch has a non-exhaustive
 -// pattern.
--pub(crate) fn non_exhaustive_let(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::NonExhaustiveLet,
--) -> Diagnostic {
-+pub(crate) fn non_exhaustive_let(ctx: &DiagnosticsContext<'_>, d: &hir::NonExhaustiveLet) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("E0005"),
+ pub(crate) fn non_exhaustive_let(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::NonExhaustiveLet,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

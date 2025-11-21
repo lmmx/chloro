@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn non_exhaustive_let(ctx: &DiagnosticsContext<'_>, d: &hir::NonExhaustiveLet) -> Diagnostic {
+pub(crate) fn non_exhaustive_let(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::NonExhaustiveLet,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0005"),

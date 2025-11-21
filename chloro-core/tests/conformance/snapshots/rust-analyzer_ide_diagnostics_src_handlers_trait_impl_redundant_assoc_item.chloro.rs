@@ -9,7 +9,10 @@ use syntax::ToSmolStr;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn trait_impl_redundant_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplRedundantAssocItems) -> Diagnostic {
+pub(crate) fn trait_impl_redundant_assoc_item(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TraitImplRedundantAssocItems,
+) -> Diagnostic {
     let db = ctx.sema.db;
     let name = d.assoc_item.0.clone();
     let redundant_assoc_item_name = name.display(db, ctx.edition);
@@ -62,7 +65,12 @@ pub(crate) fn trait_impl_redundant_assoc_item(ctx: &DiagnosticsContext<'_>, d: &
 }
 
 /// add assoc item into the trait def body
-fn quickfix_for_redundant_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplRedundantAssocItems, redundant_item_def: String, range: TextRange) -> Option<Vec<Assist>> {
+fn quickfix_for_redundant_assoc_item(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::TraitImplRedundantAssocItems,
+    redundant_item_def: String,
+    range: TextRange,
+) -> Option<Vec<Assist>> {
     let file_id = d.file_id.file_id()?;
     let add_assoc_item_def = |builder: &mut SourceChangeBuilder| -> Option<()> {
         let db = ctx.sema.db;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11637 bytes
+Chloro size:   11659 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,11 @@ Rustfmt size:  12025 bytes
 -// ```
 -// fn foo() -> i32 { 42i32 }
 -// ```
- pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_return_type(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
      let module = ctx.sema.scope(tail_expr.syntax())?.module();
 -    let ty = ctx
@@ -42,17 +46,6 @@ Rustfmt size:  12025 bytes
      acc.add(
          AssistId::refactor_rewrite("add_return_type"),
          match fn_type {
- 
- /// Check the potentially already specified return type and reject it or turn it into a builder command
- /// if allowed.
--fn ret_ty_to_action(
--    ret_ty: Option<ast::RetType>,
--    insert_after: SyntaxToken,
--) -> Option<InsertOrReplace> {
-+fn ret_ty_to_action(ret_ty: Option<ast::RetType>, insert_after: SyntaxToken) -> Option<InsertOrReplace> {
-     match ret_ty {
-         Some(ret_ty) => match ret_ty.ty() {
-             Some(ast::Type::InferType(_)) | None => {
  
  enum FnType {
      Function,

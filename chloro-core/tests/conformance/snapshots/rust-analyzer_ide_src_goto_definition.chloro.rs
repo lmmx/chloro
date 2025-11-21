@@ -33,7 +33,11 @@ pub struct GotoDefinitionConfig<'a> {
     pub minicore: MiniCore<'a>,
 }
 
-pub(crate) fn goto_definition(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition, config: &GotoDefinitionConfig<'_>) -> Option<RangeInfo<Vec<NavigationTarget>>> {
+pub(crate) fn goto_definition(
+    db: &RootDatabase,
+    FilePosition { file_id, offset }: FilePosition,
+    config: &GotoDefinitionConfig<'_>,
+) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = &Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
     let edition =
@@ -135,7 +139,10 @@ pub(crate) fn goto_definition(db: &RootDatabase, FilePosition { file_id, offset 
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 
-fn find_definition_for_known_blanket_dual_impls(sema: &Semantics<'_, RootDatabase>, original_token: &SyntaxToken) -> Option<Vec<NavigationTarget>> {
+fn find_definition_for_known_blanket_dual_impls(
+    sema: &Semantics<'_, RootDatabase>,
+    original_token: &SyntaxToken,
+) -> Option<Vec<NavigationTarget>> {
     let method_call = ast::MethodCallExpr::cast(original_token.parent()?.parent()?)?;
     let callable = sema.resolve_method_call_as_callable(&method_call)?;
     let CallableKind::Function(f) = callable.kind() else { return None };
@@ -199,7 +206,11 @@ fn find_definition_for_known_blanket_dual_impls(sema: &Semantics<'_, RootDatabas
     Some(def_to_nav(sema, def))
 }
 
-fn try_lookup_include_path(sema: &Semantics<'_, RootDatabase>, token: InFile<ast::String>, file_id: FileId) -> Option<NavigationTarget> {
+fn try_lookup_include_path(
+    sema: &Semantics<'_, RootDatabase>,
+    token: InFile<ast::String>,
+    file_id: FileId,
+) -> Option<NavigationTarget> {
     let file = token.file_id.macro_file()?;
     // Check that we are in the eager argument expansion of an include macro
     // that is we are the string input of it
@@ -224,7 +235,10 @@ fn try_lookup_include_path(sema: &Semantics<'_, RootDatabase>, token: InFile<ast
     })
 }
 
-fn try_lookup_macro_def_in_macro_use(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> Option<NavigationTarget> {
+fn try_lookup_macro_def_in_macro_use(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+) -> Option<NavigationTarget> {
     let extern_crate = token.parent()?.ancestors().find_map(ast::ExternCrate::cast)?;
     let extern_crate = sema.to_def(&extern_crate)?;
     let krate = extern_crate.resolved_crate(sema.db)?;
@@ -246,7 +260,10 @@ fn try_lookup_macro_def_in_macro_use(sema: &Semantics<'_, RootDatabase>, token: 
 /// struct S;
 /// impl A for S { type a = i32; } // <-- on this associate type, will get the location of a in the trait
 /// ```
-fn try_filter_trait_item_definition(sema: &Semantics<'_, RootDatabase>, def: &Definition) -> Option<Vec<NavigationTarget>> {
+fn try_filter_trait_item_definition(
+    sema: &Semantics<'_, RootDatabase>,
+    def: &Definition,
+) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
     let assoc = def.as_assoc_item(db)?;
     match assoc {
@@ -265,7 +282,10 @@ fn try_filter_trait_item_definition(sema: &Semantics<'_, RootDatabase>, def: &De
     }
 }
 
-fn handle_control_flow_keywords(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Option<Vec<NavigationTarget>> {
+fn handle_control_flow_keywords(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Option<Vec<NavigationTarget>> {
     match token.kind() {
         // For `fn` / `loop` / `while` / `for` / `async` / `match`, return the keyword it self,
         // so that VSCode will find the references when using `ctrl + click`
@@ -279,7 +299,10 @@ fn handle_control_flow_keywords(sema: &Semantics<'_, RootDatabase>, token: &Synt
     }
 }
 
-pub(crate) fn find_fn_or_blocks(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Vec<SyntaxNode> {
+pub(crate) fn find_fn_or_blocks(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Vec<SyntaxNode> {
     let find_ancestors = |token: SyntaxToken| {
         let token_kind = token.kind();
 
@@ -306,7 +329,10 @@ pub(crate) fn find_fn_or_blocks(sema: &Semantics<'_, RootDatabase>, token: &Synt
     sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec()
 }
 
-fn nav_for_exit_points(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Option<Vec<NavigationTarget>> {
+fn nav_for_exit_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
     let token_kind = token.kind();
     let navs = find_fn_or_blocks(sema, token)
@@ -375,7 +401,10 @@ fn nav_for_exit_points(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) 
     Some(navs)
 }
 
-pub(crate) fn find_branch_root(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Vec<SyntaxNode> {
+pub(crate) fn find_branch_root(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Vec<SyntaxNode> {
     let find_nodes = |node_filter: fn(SyntaxNode) -> Option<SyntaxNode>| {
         sema.descend_into_macros(token.clone())
             .into_iter()
@@ -404,7 +433,10 @@ pub(crate) fn find_branch_root(sema: &Semantics<'_, RootDatabase>, token: &Synta
     }
 }
 
-fn nav_for_branch_exit_points(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Option<Vec<NavigationTarget>> {
+fn nav_for_branch_exit_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
     let navs = match token.kind() {
         T![match] => find_branch_root(sema, token)
@@ -451,7 +483,10 @@ fn nav_for_branch_exit_points(sema: &Semantics<'_, RootDatabase>, token: &Syntax
     Some(navs)
 }
 
-pub(crate) fn find_loops(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Option<Vec<ast::Expr>> {
+pub(crate) fn find_loops(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Option<Vec<ast::Expr>> {
     let parent = token.parent()?;
     let lbl = match_ast! {
         match parent {
@@ -491,7 +526,10 @@ pub(crate) fn find_loops(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken
         .into()
 }
 
-fn nav_for_break_points(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken) -> Option<Vec<NavigationTarget>> {
+fn nav_for_break_points(
+    sema: &Semantics<'_, RootDatabase>,
+    token: &SyntaxToken,
+) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
     let navs = find_loops(sema, token)?
         .into_iter()
@@ -514,11 +552,18 @@ fn nav_for_break_points(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken)
     Some(navs)
 }
 
-fn def_to_nav(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Vec<NavigationTarget> {
+fn def_to_nav(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+) -> Vec<NavigationTarget> {
     def.try_to_nav(sema).map(|it| it.collect()).unwrap_or_default()
 }
 
-fn expr_to_nav(db: &RootDatabase, InFile { file_id, value }: InFile<ast::Expr>, focus_range: Option<TextRange>) -> UpmappingResult<NavigationTarget> {
+fn expr_to_nav(
+    db: &RootDatabase,
+    InFile { file_id, value }: InFile<ast::Expr>,
+    focus_range: Option<TextRange>,
+) -> UpmappingResult<NavigationTarget> {
     let kind = SymbolKind::Label;
     let value_range = value.syntax().text_range();
     let navs = navigation_target::orig_range_with_focus_r(db, file_id, value_range, focus_range);
@@ -568,7 +613,10 @@ mod tests {
             .info;
         assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
     }
-    fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+    fn check_name(
+        expected_name: &str,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) {
         let (analysis, position, _) = fixture::annotations(ra_fixture);
         let navs = analysis
             .goto_definition(position, &TEST_CONFIG)

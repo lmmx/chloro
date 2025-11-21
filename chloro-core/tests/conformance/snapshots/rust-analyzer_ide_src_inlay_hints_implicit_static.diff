@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2153 bytes
-Chloro size:   2131 bytes
+Chloro size:   2150 bytes
 Rustfmt size:  2153 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,6 @@ Rustfmt size:  2153 bytes
  use either::Either;
  use ide_db::famous_defs::FamousDefs;
  use ide_db::text_edit::TextEdit;
- 
- use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints};
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    FamousDefs(_sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    statik_or_const: Either<ast::Static, ast::Const>,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(_sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, statik_or_const: Either<ast::Static, ast::Const>) -> Option<()> {
      if config.lifetime_elision_hints != LifetimeElisionHints::Always {
          return None;
      }

@@ -34,7 +34,10 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for OpportunisticVarResolver<'a, 'db> 
     }
 
     #[inline]
-    fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        t: Ty<'db>,
+    ) -> Ty<'db> {
         if !t.has_non_region_infer() {
             t // micro-optimize -- if there is nothing in this type that this fold affects...
         } else if let Some(ty) = self.cache.get(&t) {
@@ -47,7 +50,10 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for OpportunisticVarResolver<'a, 'db> 
         }
     }
 
-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        ct: Const<'db>,
+    ) -> Const<'db> {
         if !ct.has_non_region_infer() {
             ct // micro-optimize -- if there is nothing in this const that this fold affects...
         } else {
@@ -73,7 +79,10 @@ impl<'db> TypeFolder<DbInterner<'db>> for ReplaceInferWithError<'db> {
         self.interner
     }
 
-    fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        t: Ty<'db>,
+    ) -> Ty<'db> {
         if !t.has_infer() {
             return t;
         }
@@ -84,7 +93,10 @@ impl<'db> TypeFolder<DbInterner<'db>> for ReplaceInferWithError<'db> {
         }
     }
 
-    fn fold_const(&mut self, c: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        c: Const<'db>,
+    ) -> Const<'db> {
         if !c.has_infer() {
             return c;
         }
@@ -95,7 +107,10 @@ impl<'db> TypeFolder<DbInterner<'db>> for ReplaceInferWithError<'db> {
         }
     }
 
-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
+    fn fold_region(
+        &mut self,
+        r: Region<'db>,
+    ) -> Region<'db> {
         if r.is_var() { Region::error(self.interner) } else { r }
     }
 }

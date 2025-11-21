@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25435 bytes
-Chloro size:   24799 bytes
+Chloro size:   25028 bytes
 Rustfmt size:  25435 bytes
 
 ✗ Outputs DIFFER
@@ -27,18 +27,6 @@ Rustfmt size:  25435 bytes
  #[derive(Clone, Debug)]
  pub struct HoverConfig<'a> {
      pub links_in_hover: bool,
- }
- 
- impl HoverAction {
--    fn goto_type_from_targets(
--        sema: &Semantics<'_, RootDatabase>,
--        targets: Vec<hir::ModuleDef>,
--        edition: Edition,
--    ) -> Option<Self> {
-+    fn goto_type_from_targets(sema: &Semantics<'_, RootDatabase>, targets: Vec<hir::ModuleDef>, edition: Edition) -> Option<Self> {
-         let db = sema.db;
-         let targets = targets
-             .into_iter()
      pub actions: Vec<HoverAction>,
  }
  
@@ -48,15 +36,9 @@ Rustfmt size:  25435 bytes
 -// Focusing is usually hovering with a mouse, but can also be triggered with a shortcut.
 -//
 -// ![Hover](https://user-images.githubusercontent.com/48062697/113020658-b5f98b80-917a-11eb-9f88-3dbc27320c95.gif)
--pub(crate) fn hover(
--    db: &RootDatabase,
--    frange @ FileRange { file_id, range }: FileRange,
--    config: &HoverConfig<'_>,
--) -> Option<RangeInfo<HoverResult>> {
-+pub(crate) fn hover(db: &RootDatabase, frange @ FileRange { file_id, range }: FileRange, config: &HoverConfig<'_>) -> Option<RangeInfo<HoverResult>> {
-     let sema = &hir::Semantics::new(db);
-     let file = sema.parse_guess_edition(file_id).syntax().clone();
-     let edition =
+ pub(crate) fn hover(
+     db: &RootDatabase,
+     frange @ FileRange { file_id, range }: FileRange,
      } else {
          hover_ranged(sema, frange, file, config, edition, display_target)
      }?;
@@ -64,21 +46,6 @@ Rustfmt size:  25435 bytes
      if let HoverDocFormat::PlainText = config.format {
          res.info.markup = remove_markdown(res.info.markup.as_str()).into();
      }
- }
- 
- #[allow(clippy::field_reassign_with_default)]
--fn hover_offset(
--    sema: &Semantics<'_, RootDatabase>,
--    FilePosition { file_id, offset }: FilePosition,
--    file: SyntaxNode,
--    config: &HoverConfig<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<RangeInfo<HoverResult>> {
-+fn hover_offset(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offset }: FilePosition, file: SyntaxNode, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> Option<RangeInfo<HoverResult>> {
-     let original_token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
-         IDENT
-         | INT_NUMBER
          kind if kind.is_trivia() => 0,
          _ => 1,
      })?;
@@ -122,39 +89,13 @@ Rustfmt size:  25435 bytes
      res.into_iter()
          .unique()
          .reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
-         })
- }
- 
--fn hover_ranged(
--    sema: &Semantics<'_, RootDatabase>,
--    FileRange { file_id, range }: FileRange,
--    file: SyntaxNode,
--    config: &HoverConfig<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> Option<RangeInfo<HoverResult>> {
-+fn hover_ranged(sema: &Semantics<'_, RootDatabase>, FileRange { file_id, range }: FileRange, file: SyntaxNode, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> Option<RangeInfo<HoverResult>> {
-     // FIXME: make this work in attributes
-     let expr_or_pat = file
-         .covering_element(range)
      })
  }
  
 -// FIXME: Why is this pub(crate)?
--pub(crate) fn hover_for_definition(
--    sema: &Semantics<'_, RootDatabase>,
--    file_id: FileId,
--    def: Definition,
--    subst: Option<GenericSubstitution<'_>>,
--    scope_node: &SyntaxNode,
--    macro_arm: Option<u32>,
--    render_extras: bool,
--    config: &HoverConfig<'_>,
--    edition: Edition,
--    display_target: DisplayTarget,
--) -> HoverResult {
-+pub(crate) fn hover_for_definition(sema: &Semantics<'_, RootDatabase>, file_id: FileId, def: Definition, subst: Option<GenericSubstitution<'_>>, scope_node: &SyntaxNode, macro_arm: Option<u32>, render_extras: bool, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> HoverResult {
-     let famous_defs = match &def {
+ pub(crate) fn hover_for_definition(
+     sema: &Semantics<'_, RootDatabase>,
+     file_id: FileId,
          Definition::BuiltinType(_) => sema.scope(scope_node).map(|it| FamousDefs(sema, it.krate())),
          _ => None,
      };
@@ -169,16 +110,6 @@ Rustfmt size:  25435 bytes
      let (markup, range_map) = render::definition(
          sema.db,
          def,
-     }
- }
- 
--fn notable_traits<'db>(
--    db: &'db RootDatabase,
--    ty: &hir::Type<'db>,
--) -> Vec<(hir::Trait, Vec<(Option<hir::Type<'db>>, hir::Name)>)> {
-+fn notable_traits<'db>(db: &'db RootDatabase, ty: &hir::Type<'db>) -> Vec<(hir::Trait, Vec<(Option<hir::Type<'db>>, hir::Name)>)> {
-     if ty.is_unknown() {
-         // The trait solver returns "yes" to the question whether the error type
          // impls any trait, and we don't want to show it as having any notable trait.
          return Vec::new();
      }
@@ -186,17 +117,6 @@ Rustfmt size:  25435 bytes
      db.notable_traits_in_deps(ty.krate(db).into())
          .iter()
          .flat_map(|it| &**it)
-         .collect::<Vec<_>>()
- }
- 
--fn show_implementations_action(
--    sema: &Semantics<'_, RootDatabase>,
--    def: Definition,
--) -> Option<HoverAction> {
-+fn show_implementations_action(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<HoverAction> {
-     fn to_action(nav_target: NavigationTarget) -> HoverAction {
-         HoverAction::Implementation(FilePosition {
-             file_id: nav_target.file_id,
              offset: nav_target.focus_or_full_range().start(),
          })
      }
@@ -204,43 +124,6 @@ Rustfmt size:  25435 bytes
      let adt = match def {
          Definition::Trait(it) => {
              return it.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action);
-     adt.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action)
- }
- 
--fn show_fn_references_action(
--    sema: &Semantics<'_, RootDatabase>,
--    def: Definition,
--) -> Option<HoverAction> {
-+fn show_fn_references_action(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<HoverAction> {
-     match def {
-         Definition::Function(it) => {
-             it.try_to_nav(sema).map(UpmappingResult::call_site).map(|nav_target| {
-     }
- }
- 
--fn runnable_action(
--    sema: &hir::Semantics<'_, RootDatabase>,
--    def: Definition,
--    file_id: FileId,
--) -> Option<HoverAction> {
-+fn runnable_action(sema: &hir::Semantics<'_, RootDatabase>, def: Definition, file_id: FileId) -> Option<HoverAction> {
-     match def {
-         Definition::Module(it) => runnable_mod(sema, it).map(HoverAction::Runnable),
-         Definition::Function(func) => {
-     }
- }
- 
--fn goto_type_action_for_def(
--    sema: &Semantics<'_, RootDatabase>,
--    def: Definition,
--    notable_traits: &[(hir::Trait, Vec<(Option<hir::Type<'_>>, hir::Name)>)],
--    subst_types: Option<Vec<(hir::Symbol, hir::Type<'_>)>>,
--    edition: Edition,
--) -> Option<HoverAction> {
-+fn goto_type_action_for_def(sema: &Semantics<'_, RootDatabase>, def: Definition, notable_traits: &[(hir::Trait, Vec<(Option<hir::Type<'_>>, hir::Name)>)], subst_types: Option<Vec<(hir::Symbol, hir::Type<'_>)>>, edition: Edition) -> Option<HoverAction> {
-     let db = sema.db;
-     let mut targets: Vec<hir::ModuleDef> = Vec::new();
-     let mut push_new_def = |item: hir::ModuleDef| {
              targets.push(item);
          }
      };
@@ -274,15 +157,6 @@ Rustfmt size:  25435 bytes
      HoverAction::goto_type_from_targets(sema, targets, edition)
  }
  
--fn walk_and_push_ty(
--    db: &RootDatabase,
--    ty: &hir::Type<'_>,
--    push_new_def: &mut dyn FnMut(hir::ModuleDef),
--) {
-+fn walk_and_push_ty(db: &RootDatabase, ty: &hir::Type<'_>, push_new_def: &mut dyn FnMut(hir::ModuleDef)) {
-     ty.walk(db, |t| {
-         if let Some(adt) = t.as_adt() {
-             push_new_def(adt.into());
  fn dedupe_or_merge_hover_actions(actions: Vec<HoverAction>) -> Vec<HoverAction> {
      let mut deduped_actions = Vec::with_capacity(actions.len());
      let mut go_to_type_targets = FxIndexSet::default();

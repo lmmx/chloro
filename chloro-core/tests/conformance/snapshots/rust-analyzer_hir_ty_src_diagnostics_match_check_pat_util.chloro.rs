@@ -26,12 +26,20 @@ where
     }
 }
 
-fn enumerate_and_adjust(self, expected_len: usize, gap_pos: Option<usize>) -> EnumerateAndAdjust<Self>
+fn enumerate_and_adjust(
+    self,
+    expected_len: usize,
+    gap_pos: Option<usize>,
+) -> EnumerateAndAdjust<Self>
 where
         Self: Sized;
 
 impl<T: ExactSizeIterator> EnumerateAndAdjustIterator for T {
-    fn enumerate_and_adjust(self, expected_len: usize, gap_pos: Option<usize>) -> EnumerateAndAdjust<Self>
+    fn enumerate_and_adjust(
+        self,
+        expected_len: usize,
+        gap_pos: Option<usize>,
+    ) -> EnumerateAndAdjust<Self>
     where
         Self: Sized, {
         let actual_len = self.len();

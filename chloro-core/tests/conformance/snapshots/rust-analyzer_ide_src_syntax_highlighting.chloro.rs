@@ -69,7 +69,12 @@ pub struct HighlightConfig<'a> {
     pub minicore: MiniCore<'a>,
 }
 
-pub(crate) fn highlight(db: &RootDatabase, config: &HighlightConfig<'_>, file_id: FileId, range_to_highlight: Option<TextRange>) -> Vec<HlRange> {
+pub(crate) fn highlight(
+    db: &RootDatabase,
+    config: &HighlightConfig<'_>,
+    file_id: FileId,
+    range_to_highlight: Option<TextRange>,
+) -> Vec<HlRange> {
     let _p = tracing::info_span!("highlight").entered();
     let sema = Semantics::new(db);
     let file_id = sema
@@ -96,7 +101,14 @@ pub(crate) fn highlight(db: &RootDatabase, config: &HighlightConfig<'_>, file_id
     hl.to_vec()
 }
 
-fn traverse(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &HighlightConfig<'_>, InRealFile { file_id, value: root }: InRealFile<&SyntaxNode>, krate: Option<hir::Crate>, range_to_highlight: TextRange) {
+fn traverse(
+    hl: &mut Highlights,
+    sema: &Semantics<'_, RootDatabase>,
+    config: &HighlightConfig<'_>,
+    InRealFile { file_id, value: root }: InRealFile<&SyntaxNode>,
+    krate: Option<hir::Crate>,
+    range_to_highlight: TextRange,
+) {
     let is_unlinked = sema.file_to_module_def(file_id.file_id(sema.db)).is_none();
     enum AttrOrDerive {
         Attr(ast::Item),
@@ -347,7 +359,15 @@ fn traverse(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &Hi
     }
 }
 
-fn string_injections(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &HighlightConfig<'_>, file_id: EditionedFileId, krate: Option<hir::Crate>, token: SyntaxToken, descended_token: &SyntaxToken) -> ControlFlow<()> {
+fn string_injections(
+    hl: &mut Highlights,
+    sema: &Semantics<'_, RootDatabase>,
+    config: &HighlightConfig<'_>,
+    file_id: EditionedFileId,
+    krate: Option<hir::Crate>,
+    token: SyntaxToken,
+    descended_token: &SyntaxToken,
+) -> ControlFlow<()> {
     if !matches!(token.kind(), STRING | BYTE_STRING | BYTE | CHAR | C_STRING) {
         return ControlFlow::Continue(());
     }
@@ -387,7 +407,10 @@ fn string_injections(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, co
     ControlFlow::Continue(())
 }
 
-fn descend_token(sema: &Semantics<'_, RootDatabase>, token: InRealFile<SyntaxToken>) -> InFile<NodeOrToken<ast::NameLike, SyntaxToken>> {
+fn descend_token(
+    sema: &Semantics<'_, RootDatabase>,
+    token: InRealFile<SyntaxToken>,
+) -> InFile<NodeOrToken<ast::NameLike, SyntaxToken>> {
     if token.value.kind() == COMMENT {
         return token.map(NodeOrToken::Token).into();
     }
@@ -434,7 +457,10 @@ fn descend_token(sema: &Semantics<'_, RootDatabase>, token: InRealFile<SyntaxTok
     })
 }
 
-fn filter_by_config(highlight: &mut Highlight, config: &HighlightConfig<'_>) -> bool {
+fn filter_by_config(
+    highlight: &mut Highlight,
+    config: &HighlightConfig<'_>,
+) -> bool {
     match &mut highlight.tag {
         HlTag::StringLiteral if !config.strings => return false,
         HlTag::Comment if !config.comments => return false,

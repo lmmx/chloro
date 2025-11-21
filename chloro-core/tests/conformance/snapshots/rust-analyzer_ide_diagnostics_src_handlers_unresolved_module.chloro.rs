@@ -5,7 +5,10 @@ use syntax::AstNode;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn unresolved_module(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Diagnostic {
+pub(crate) fn unresolved_module(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedModule,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0583"),
@@ -26,7 +29,10 @@ pub(crate) fn unresolved_module(ctx: &DiagnosticsContext<'_>, d: &hir::Unresolve
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedModule,
+) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.decl.file_id);
     let unresolved_module = d.decl.value.to_node(&root);
     Some(

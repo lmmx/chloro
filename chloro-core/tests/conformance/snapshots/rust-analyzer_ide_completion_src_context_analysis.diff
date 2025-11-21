@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 89146 bytes
-Chloro size:   88867 bytes
+Chloro size:   89139 bytes
 Rustfmt size:  89146 bytes
 
 ✗ Outputs DIFFER
@@ -13,20 +13,6 @@ Rustfmt size:  89146 bytes
  use std::iter;
  
  use hir::{ExpandResult, InFile, Semantics, Type, TypeInfo, Variant};
-     pub(super) original_offset: TextSize,
- }
- 
--pub(super) fn expand_and_analyze<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    original_file: InFile<SyntaxNode>,
--    speculative_file: SyntaxNode,
--    offset: TextSize,
--    original_token: &SyntaxToken,
--) -> Option<AnalysisResult<'db>> {
-+pub(super) fn expand_and_analyze<'db>(sema: &Semantics<'db, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, offset: TextSize, original_token: &SyntaxToken) -> Option<AnalysisResult<'db>> {
-     // as we insert after the offset, right biased will *always* pick the identifier no matter
-     // if there is an ident already typed or not
-     let fake_ident_token = speculative_file.token_at_offset(offset).right_biased()?;
          fake_ident_token,
          derive_ctx: None,
      });
@@ -38,21 +24,17 @@ Rustfmt size:  89146 bytes
      hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
          |(analysis, expected, qualifier_ctx)| AnalysisResult {
              analysis,
- /// that we check, we subtract `COMPLETION_MARKER.len()`. This may not be accurate because proc macros
- /// can insert the text of the completion marker in other places while removing the span, but this is
- /// the best we can do.
--fn expand_maybe_stop(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: InFile<SyntaxNode>,
--    speculative_file: SyntaxNode,
--    original_offset: TextSize,
--    fake_ident_token: SyntaxToken,
--    relative_offset: TextSize,
--) -> Option<ExpansionResult> {
-+fn expand_maybe_stop(sema: &Semantics<'_, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, original_offset: TextSize, fake_ident_token: SyntaxToken, relative_offset: TextSize) -> Option<ExpansionResult> {
-     if let result @ Some(_) = expand(
-         sema,
-         original_file.clone(),
+     )
+ }
+ 
+-fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
++fn token_at_offset_ignore_whitespace(
++    file: &SyntaxNode,
++    offset: TextSize,
++) -> Option<SyntaxToken> {
+     let token = file.token_at_offset(offset).left_biased()?;
+     algo::skip_whitespace_token(token, Direction::Prev)
+ }
      ) {
          return result;
      }
@@ -60,18 +42,8 @@ Rustfmt size:  89146 bytes
      // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
      // But hopefully checking just the real one should be enough.
      if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
-     }
- }
- 
--fn expand(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: InFile<SyntaxNode>,
--    speculative_file: SyntaxNode,
--    original_offset: TextSize,
--    fake_ident_token: SyntaxToken,
--    relative_offset: TextSize,
--) -> Option<ExpansionResult> {
-+fn expand(sema: &Semantics<'_, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, original_offset: TextSize, fake_ident_token: SyntaxToken, relative_offset: TextSize) -> Option<ExpansionResult> {
+     relative_offset: TextSize,
+ ) -> Option<ExpansionResult> {
      let _p = tracing::info_span!("CompletionContext::expand").entered();
 -
      let parent_item =
@@ -125,17 +97,12 @@ Rustfmt size:  89146 bytes
      match (
          sema.expand_macro_call(&actual_macro_call),
          sema.speculative_expand_macro_call(&actual_macro_call, &speculative_args, fake_ident_token),
- 
- /// Fill the completion context, this is what does semantic reasoning about the surrounding context
- /// of the completion location.
--fn analyze<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    expansion_result: ExpansionResult,
--    original_token: &SyntaxToken,
--    self_token: &SyntaxToken,
+     expansion_result: ExpansionResult,
+     original_token: &SyntaxToken,
+     self_token: &SyntaxToken,
 -) -> Option<(CompletionAnalysis<'db>, (Option<Type<'db>>, Option<ast::NameOrNameRef>), QualifierCtx)>
 -{
-+fn analyze<'db>(sema: &Semantics<'db, RootDatabase>, expansion_result: ExpansionResult, original_token: &SyntaxToken, self_token: &SyntaxToken) -> Option<(CompletionAnalysis<'db>, (Option<Type<'db>>, Option<ast::NameOrNameRef>), QualifierCtx)> {
++) -> Option<(CompletionAnalysis<'db>, (Option<Type<'db>>, Option<ast::NameOrNameRef>), QualifierCtx)> {
      let _p = tracing::info_span!("CompletionContext::analyze").entered();
      let ExpansionResult {
          original_file,
@@ -167,17 +134,6 @@ Rustfmt size:  89146 bytes
      let expected = expected_type_and_name(sema, self_token, &name_like);
      let mut qual_ctx = QualifierCtx::default();
      let analysis = match name_like {
- }
- 
- /// Calculate the expected type and name of the cursor position.
--fn expected_type_and_name<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    self_token: &SyntaxToken,
--    name_like: &ast::NameLike,
--) -> (Option<Type<'db>>, Option<NameOrNameRef>) {
-+fn expected_type_and_name<'db>(sema: &Semantics<'db, RootDatabase>, self_token: &SyntaxToken, name_like: &ast::NameLike) -> (Option<Type<'db>>, Option<NameOrNameRef>) {
-     let token = prev_special_biased_token_at_trivia(self_token.clone());
-     let mut node = match token.parent() {
          Some(it) => it,
          None => return (None, None),
      };
@@ -192,16 +148,6 @@ Rustfmt size:  89146 bytes
      let (ty, name) = loop {
          break match_ast! {
              match node {
-     (ty.map(strip_refs), name)
- }
- 
--fn classify_lifetime(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: &SyntaxNode,
--    lifetime: ast::Lifetime,
--) -> Option<LifetimeContext> {
-+fn classify_lifetime(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, lifetime: ast::Lifetime) -> Option<LifetimeContext> {
-     let parent = lifetime.syntax().parent()?;
      if parent.kind() == SyntaxKind::ERROR {
          return None;
      }
@@ -216,26 +162,8 @@ Rustfmt size:  89146 bytes
      Some(LifetimeContext { kind })
  }
  
--fn classify_name(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: &SyntaxNode,
--    name: ast::Name,
--) -> Option<NameContext> {
-+fn classify_name(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, name: ast::Name) -> Option<NameContext> {
-     let parent = name.syntax().parent()?;
-     let kind = match_ast! {
-         match parent {
-     Some(NameContext { name, kind })
- }
- 
--fn classify_name_ref<'db>(
--    sema: &Semantics<'db, RootDatabase>,
--    original_file: &SyntaxNode,
--    name_ref: ast::NameRef,
--    original_offset: TextSize,
--    parent: SyntaxNode,
--) -> Option<(NameRefContext<'db>, QualifierCtx)> {
-+fn classify_name_ref<'db>(sema: &Semantics<'db, RootDatabase>, original_file: &SyntaxNode, name_ref: ast::NameRef, original_offset: TextSize, parent: SyntaxNode) -> Option<(NameRefContext<'db>, QualifierCtx)> {
+     parent: SyntaxNode,
+ ) -> Option<(NameRefContext<'db>, QualifierCtx)> {
      let nameref = find_node_at_offset(original_file, original_offset);
 -
      let make_res = |kind| (NameRefContext { nameref: nameref.clone(), kind }, Default::default());
@@ -340,15 +268,8 @@ Rustfmt size:  89146 bytes
      let mut qualifier_ctx = QualifierCtx::default();
      if path_ctx.is_trivial_path() {
          // fetch the full expression that may have qualifiers attached to it
-         .all(|whitespace| !whitespace.text().contains('\n'))
- }
- 
--fn pattern_context_for(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: &SyntaxNode,
--    pat: ast::Pat,
--) -> PatternContext {
-+fn pattern_context_for(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, pat: ast::Pat) -> PatternContext {
+     pat: ast::Pat,
+ ) -> PatternContext {
      let mut param_ctx = None;
 -
      let mut missing_variants = vec![];
@@ -370,15 +291,6 @@ Rustfmt size:  89146 bytes
      PatternContext {
          refutability,
          param_ctx,
-     }
- }
- 
--fn fetch_immediate_impl_or_trait(
--    sema: &Semantics<'_, RootDatabase>,
--    original_file: &SyntaxNode,
--    node: &SyntaxNode,
--) -> Option<Either<ast::Impl, ast::Trait>> {
-+fn fetch_immediate_impl_or_trait(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, node: &SyntaxNode) -> Option<Either<ast::Impl, ast::Trait>> {
      let mut ancestors = ancestors_in_file_compensated(sema, original_file, node)?
          .filter_map(ast::Item::cast)
          .filter(|it| !matches!(it, ast::Item::MacroCall(_)));
@@ -386,36 +298,24 @@ Rustfmt size:  89146 bytes
      match ancestors.next()? {
          ast::Item::Const(_) | ast::Item::Fn(_) | ast::Item::TypeAlias(_) => (),
          ast::Item::Impl(it) => return Some(Either::Left(it)),
- /// Attempts to find `node` inside `syntax` via `node`'s text range while compensating
- /// for the offset introduced by the fake ident.
- /// This is wrong if `node` comes before the insertion point! Use `find_node_in_file` instead.
--fn find_node_in_file_compensated<N: AstNode>(
--    sema: &Semantics<'_, RootDatabase>,
--    in_file: &SyntaxNode,
--    node: &N,
--) -> Option<N> {
-+fn find_node_in_file_compensated<N: AstNode>(sema: &Semantics<'_, RootDatabase>, in_file: &SyntaxNode, node: &N) -> Option<N> {
-     ancestors_in_file_compensated(sema, in_file, node.syntax())?.find_map(N::cast)
+ 
+ /// Attempts to find `node` inside `syntax` via `node`'s text range.
+ /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
+-fn find_opt_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: Option<N>) -> Option<N> {
++fn find_opt_node_in_file<N: AstNode>(
++    syntax: &SyntaxNode,
++    node: Option<N>,
++) -> Option<N> {
+     find_node_in_file(syntax, &node?)
  }
  
--fn ancestors_in_file_compensated<'sema>(
--    sema: &'sema Semantics<'_, RootDatabase>,
--    in_file: &SyntaxNode,
--    node: &SyntaxNode,
--) -> Option<impl Iterator<Item = SyntaxNode> + 'sema> {
-+fn ancestors_in_file_compensated<'sema>(sema: &'sema Semantics<'_, RootDatabase>, in_file: &SyntaxNode, node: &SyntaxNode) -> Option<impl Iterator<Item = SyntaxNode> + 'sema> {
-     let syntax_range = in_file.text_range();
-     let range = node.text_range();
-     let end = range.end().checked_sub(TextSize::try_from(COMPLETION_MARKER.len()).ok()?)?;
- /// Attempts to find `node` inside `syntax` via `node`'s text range while compensating
- /// for the offset introduced by the fake ident..
- /// This is wrong if `node` comes before the insertion point! Use `find_node_in_file` instead.
--fn find_opt_node_in_file_compensated<N: AstNode>(
--    sema: &Semantics<'_, RootDatabase>,
--    syntax: &SyntaxNode,
--    node: Option<N>,
--) -> Option<N> {
-+fn find_opt_node_in_file_compensated<N: AstNode>(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, node: Option<N>) -> Option<N> {
-     find_node_in_file_compensated(sema, syntax, &node?)
- }
- 
+ /// Attempts to find `node` inside `syntax` via `node`'s text range.
+ /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
+-fn find_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: &N) -> Option<N> {
++fn find_node_in_file<N: AstNode>(
++    syntax: &SyntaxNode,
++    node: &N,
++) -> Option<N> {
+     let syntax_range = syntax.text_range();
+     let range = node.syntax().text_range();
+     let intersection = range.intersect(syntax_range)?;

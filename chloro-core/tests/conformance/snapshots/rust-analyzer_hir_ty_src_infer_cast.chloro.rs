@@ -34,7 +34,10 @@ pub(crate) enum CastTy<'db> {
 }
 
 impl<'db> CastTy<'db> {
-    pub(crate) fn from_ty(db: &dyn HirDatabase, t: Ty<'db>) -> Option<Self> {
+    pub(crate) fn from_ty(
+        db: &dyn HirDatabase,
+        t: Ty<'db>,
+    ) -> Option<Self> {
         match t.kind() {
             TyKind::Bool => Some(Self::Int(Int::Bool)),
             TyKind::Char => Some(Self::Int(Int::Char)),
@@ -74,7 +77,12 @@ pub enum CastError {
 }
 
 impl CastError {
-    fn into_diagnostic<'db>(self, expr: ExprId, expr_ty: Ty<'db>, cast_ty: Ty<'db>) -> InferenceDiagnostic<'db> {
+    fn into_diagnostic<'db>(
+        self,
+        expr: ExprId,
+        expr_ty: Ty<'db>,
+        cast_ty: Ty<'db>,
+    ) -> InferenceDiagnostic<'db> {
         InferenceDiagnostic::InvalidCast { expr, error: self, expr_ty, cast_ty }
     }
 }
@@ -88,11 +96,19 @@ pub(super) struct CastCheck<'db> {
 }
 
 impl<'db> CastCheck<'db> {
-    pub(super) fn new(expr: ExprId, source_expr: ExprId, expr_ty: Ty<'db>, cast_ty: Ty<'db>) -> Self {
+    pub(super) fn new(
+        expr: ExprId,
+        source_expr: ExprId,
+        expr_ty: Ty<'db>,
+        cast_ty: Ty<'db>,
+    ) -> Self {
         Self { expr, source_expr, expr_ty, cast_ty }
     }
 
-    pub(super) fn check(&mut self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), InferenceDiagnostic<'db>> {
+    pub(super) fn check(
+        &mut self,
+        ctx: &mut InferenceContext<'_, 'db>,
+    ) -> Result<(), InferenceDiagnostic<'db>> {
         self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
         self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
         // This should always come first so that we apply the coercion, which impacts infer vars.
@@ -129,7 +145,10 @@ impl<'db> CastCheck<'db> {
         self.do_check(ctx).map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
     }
 
-    fn do_check(&self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), CastError> {
+    fn do_check(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+    ) -> Result<(), CastError> {
         let (t_from, t_cast) =
             match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
                 (Some(t_from), Some(t_cast)) => (t_from, t_cast),
@@ -204,7 +223,14 @@ impl<'db> CastCheck<'db> {
         }
     }
 
-    fn check_ref_cast(&self, ctx: &mut InferenceContext<'_, 'db>, t_expr: Ty<'db>, m_expr: Mutability, t_cast: Ty<'db>, m_cast: Mutability) -> Result<(), CastError> {
+    fn check_ref_cast(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+        t_expr: Ty<'db>,
+        m_expr: Mutability,
+        t_cast: Ty<'db>,
+        m_cast: Mutability,
+    ) -> Result<(), CastError> {
         // Mutability order is opposite to rustc. `Mut < Not`
         if m_expr <= m_cast
             && let TyKind::Array(ety, _) = t_expr.kind()
@@ -241,7 +267,12 @@ impl<'db> CastCheck<'db> {
         Err(CastError::IllegalCast)
     }
 
-    fn check_ptr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, src: Ty<'db>, dst: Ty<'db>) -> Result<(), CastError> {
+    fn check_ptr_ptr_cast(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+        src: Ty<'db>,
+        dst: Ty<'db>,
+    ) -> Result<(), CastError> {
         let src_kind = pointer_kind(src, ctx).map_err(|_| CastError::Unknown)?;
         let dst_kind = pointer_kind(dst, ctx).map_err(|_| CastError::Unknown)?;
         match (src_kind, dst_kind) {
@@ -275,7 +306,11 @@ impl<'db> CastCheck<'db> {
         }
     }
 
-    fn check_ptr_addr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, expr_ty: Ty<'db>) -> Result<(), CastError> {
+    fn check_ptr_addr_cast(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+        expr_ty: Ty<'db>,
+    ) -> Result<(), CastError> {
         match pointer_kind(expr_ty, ctx).map_err(|_| CastError::Unknown)? {
             // None => Err(CastError::UnknownExprPtrKind),
             None => Ok(()),
@@ -285,7 +320,11 @@ impl<'db> CastCheck<'db> {
         }
     }
 
-    fn check_addr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, cast_ty: Ty<'db>) -> Result<(), CastError> {
+    fn check_addr_ptr_cast(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+        cast_ty: Ty<'db>,
+    ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
             // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
@@ -297,7 +336,11 @@ impl<'db> CastCheck<'db> {
         }
     }
 
-    fn check_fptr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, cast_ty: Ty<'db>) -> Result<(), CastError> {
+    fn check_fptr_ptr_cast(
+        &self,
+        ctx: &mut InferenceContext<'_, 'db>,
+        cast_ty: Ty<'db>,
+    ) -> Result<(), CastError> {
         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
             // None => Err(CastError::UnknownCastPtrKind),
             None => Ok(()),
@@ -318,7 +361,10 @@ enum PointerKind<'db> {
     Error,
 }
 
-fn pointer_kind<'db>(ty: Ty<'db>, ctx: &mut InferenceContext<'_, 'db>) -> Result<Option<PointerKind<'db>>, ()> {
+fn pointer_kind<'db>(
+    ty: Ty<'db>,
+    ctx: &mut InferenceContext<'_, 'db>,
+) -> Result<Option<PointerKind<'db>>, ()> {
     let ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(ty);
     if ctx.table.is_sized(ty) {
         return Ok(Some(PointerKind::Thin));

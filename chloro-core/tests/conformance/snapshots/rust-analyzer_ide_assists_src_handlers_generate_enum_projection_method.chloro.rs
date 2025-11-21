@@ -11,7 +11,10 @@ use crate::{
     utils::{add_method_to_adt, find_struct_impl},
 };
 
-pub(crate) fn generate_enum_try_into_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_enum_try_into_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     generate_enum_projection_method(
         acc,
         ctx,
@@ -28,7 +31,10 @@ pub(crate) fn generate_enum_try_into_method(acc: &mut Assists, ctx: &AssistConte
     )
 }
 
-pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_enum_as_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     generate_enum_projection_method(
         acc,
         ctx,
@@ -54,7 +60,13 @@ struct ProjectionProps {
     sad_case: &'static str,
 }
 
-fn generate_enum_projection_method(acc: &mut Assists, ctx: &AssistContext<'_>, assist_id: &'static str, assist_description: &str, props: ProjectionProps) -> Option<()> {
+fn generate_enum_projection_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    assist_id: &'static str,
+    assist_description: &str,
+    props: ProjectionProps,
+) -> Option<()> {
     let ProjectionProps {
         fn_name_prefix,
         self_param,

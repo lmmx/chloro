@@ -7,7 +7,12 @@ use crate::{
 
 pub(crate) mod trait_impl;
 
-pub(crate) fn complete_item_list_in_expr(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, expr_ctx: &PathExprCtx<'_>) {
+pub(crate) fn complete_item_list_in_expr(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    expr_ctx: &PathExprCtx<'_>,
+) {
     if !expr_ctx.in_block_expr {
         return;
     }
@@ -17,7 +22,12 @@ pub(crate) fn complete_item_list_in_expr(acc: &mut Completions, ctx: &Completion
     add_keywords(acc, ctx, None);
 }
 
-pub(crate) fn complete_item_list(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, kind: &ItemListKind) {
+pub(crate) fn complete_item_list(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+    kind: &ItemListKind,
+) {
     let _p = tracing::info_span!("complete_item_list").entered();
     // We handle completions for trait-impls in [`item_list::trait_impl`]
     if path_ctx.is_trivial_path() && !matches!(kind, ItemListKind::TraitImpl(_)) {
@@ -60,7 +70,11 @@ pub(crate) fn complete_item_list(acc: &mut Completions, ctx: &CompletionContext<
     }
 }
 
-fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
+fn add_keywords(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    kind: Option<&ItemListKind>,
+) {
     let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
     let in_item_list = matches!(kind, Some(ItemListKind::SourceFile | ItemListKind::Module) | None);
     let in_assoc_non_trait_impl = matches!(kind, Some(ItemListKind::Impl | ItemListKind::Trait));

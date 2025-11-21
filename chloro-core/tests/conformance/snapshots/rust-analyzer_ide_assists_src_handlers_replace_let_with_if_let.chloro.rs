@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_let_with_if_let(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
     let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
     let init = let_stmt.initializer()?;

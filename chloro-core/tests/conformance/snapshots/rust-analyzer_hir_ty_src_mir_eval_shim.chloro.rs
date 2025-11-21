@@ -40,7 +40,15 @@ macro_rules! not_supported {
 }
 
 impl<'db> Evaluator<'db> {
-    pub(super) fn detect_and_exec_special_function(&mut self, def: FunctionId, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, bool> {
+    pub(super) fn detect_and_exec_special_function(
+        &mut self,
+        def: FunctionId,
+        args: &[IntervalAndTy<'db>],
+        generic_args: GenericArgs<'db>,
+        locals: &Locals<'db>,
+        destination: Interval,
+        span: MirSpan,
+    ) -> Result<'db, bool> {
         if self.not_special_fn_cache.borrow().contains(&def) {
             return Ok(false);
         }
@@ -116,7 +124,10 @@ impl<'db> Evaluator<'db> {
         Ok(false)
     }
 
-    pub(super) fn detect_and_redirect_special_function(&mut self, def: FunctionId) -> Result<'db, Option<FunctionId>> {
+    pub(super) fn detect_and_redirect_special_function(
+        &mut self,
+        def: FunctionId,
+    ) -> Result<'db, Option<FunctionId>> {
         // `PanicFmt` is redirected to `ConstPanicFmt`
         if let Some(LangItem::PanicFmt) = self.db.lang_attr(def.into()) {
             let resolver = CrateRootModuleId::from(self.crate_id).resolver(self.db);
@@ -132,7 +143,15 @@ impl<'db> Evaluator<'db> {
     }
 
     /// Clone has special impls for tuples and function pointers
-    fn exec_clone(&mut self, def: FunctionId, args: &[IntervalAndTy<'db>], self_ty: Ty<'db>, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, ()> {
+    fn exec_clone(
+        &mut self,
+        def: FunctionId,
+        args: &[IntervalAndTy<'db>],
+        self_ty: Ty<'db>,
+        locals: &Locals<'db>,
+        destination: Interval,
+        span: MirSpan,
+    ) -> Result<'db, ()> {
         match self_ty.kind() {
             TyKind::FnPtr(..) => {
                 let [arg] = args else {
@@ -186,7 +205,16 @@ impl<'db> Evaluator<'db> {
         Ok(())
     }
 
-    fn exec_clone_for_fields(&mut self, ty_iter: impl Iterator<Item = Ty<'db>>, layout: Arc<Layout>, addr: Address, def: FunctionId, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, ()> {
+    fn exec_clone_for_fields(
+        &mut self,
+        ty_iter: impl Iterator<Item = Ty<'db>>,
+        layout: Arc<Layout>,
+        addr: Address,
+        def: FunctionId,
+        locals: &Locals<'db>,
+        destination: Interval,
+        span: MirSpan,
+    ) -> Result<'db, ()> {
         for (i, ty) in ty_iter.enumerate() {
             let size = self.layout(ty)?.size.bytes_usize();
             let tmp = self.heap_allocate(self.ptr_size(), self.ptr_size())?;
@@ -213,7 +241,12 @@ impl<'db> Evaluator<'db> {
         Ok(())
     }
 
-    fn exec_alloc_fn(&mut self, alloc_fn: &Symbol, args: &[IntervalAndTy<'db>], destination: Interval) -> Result<'db, ()> {
+    fn exec_alloc_fn(
+        &mut self,
+        alloc_fn: &Symbol,
+        args: &[IntervalAndTy<'db>],
+        destination: Interval,
+    ) -> Result<'db, ()> {
         match alloc_fn {
             _ if *alloc_fn == sym::rustc_allocator_zeroed || *alloc_fn == sym::rustc_allocator => {
                 let [size, align] = args else {
@@ -251,7 +284,10 @@ impl<'db> Evaluator<'db> {
         Ok(())
     }
 
-    fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
+    fn detect_lang_function(
+        &self,
+        def: FunctionId,
+    ) -> Option<LangItem> {
         use LangItem::*;
         let attrs = self.db.attrs(def.into());
         if attrs.by_key(sym::rustc_const_panic_str).exists() {
@@ -267,7 +303,14 @@ impl<'db> Evaluator<'db> {
         None
     }
 
-    fn exec_lang_item(&mut self, it: LangItem, generic_args: GenericArgs<'db>, args: &[IntervalAndTy<'db>], locals: &Locals<'db>, span: MirSpan) -> Result<'db, Vec<u8>> {
+    fn exec_lang_item(
+        &mut self,
+        it: LangItem,
+        generic_args: GenericArgs<'db>,
+        args: &[IntervalAndTy<'db>],
+        locals: &Locals<'db>,
+        span: MirSpan,
+    ) -> Result<'db, Vec<u8>> {
         use LangItem::*;
         let mut args = args.iter();
         match it {
@@ -333,7 +376,14 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn exec_syscall(&mut self, id: i64, args: &[IntervalAndTy<'db>], destination: Interval, _locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+    fn exec_syscall(
+        &mut self,
+        id: i64,
+        args: &[IntervalAndTy<'db>],
+        destination: Interval,
+        _locals: &Locals<'db>,
+        _span: MirSpan,
+    ) -> Result<'db, ()> {
         match id {
             318 => {
                 // SYS_getrandom
@@ -356,7 +406,15 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn exec_extern_c(&mut self, as_str: &str, args: &[IntervalAndTy<'db>], _generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, span: MirSpan) -> Result<'db, ()> {
+    fn exec_extern_c(
+        &mut self,
+        as_str: &str,
+        args: &[IntervalAndTy<'db>],
+        _generic_args: GenericArgs<'db>,
+        destination: Interval,
+        locals: &Locals<'db>,
+        span: MirSpan,
+    ) -> Result<'db, ()> {
         match as_str {
             "memcmp" => {
                 let [ptr1, ptr2, size] = args else {
@@ -514,7 +572,16 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn exec_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, span: MirSpan, needs_override: bool) -> Result<'db, bool> {
+    fn exec_intrinsic(
+        &mut self,
+        name: &str,
+        args: &[IntervalAndTy<'db>],
+        generic_args: GenericArgs<'db>,
+        destination: Interval,
+        locals: &Locals<'db>,
+        span: MirSpan,
+        needs_override: bool,
+    ) -> Result<'db, bool> {
         if let Some(name) = name.strip_prefix("atomic_") {
             return self
                 .exec_atomic_intrinsic(name, args, generic_args, destination, locals, span)
@@ -1289,7 +1356,12 @@ impl<'db> Evaluator<'db> {
         .map(|()| true)
     }
 
-    fn size_align_of_unsized(&mut self, ty: Ty<'db>, metadata: Interval, locals: &Locals<'db>) -> Result<'db, (usize, usize)> {
+    fn size_align_of_unsized(
+        &mut self,
+        ty: Ty<'db>,
+        metadata: Interval,
+        locals: &Locals<'db>,
+    ) -> Result<'db, (usize, usize)> {
         Ok(match ty.kind() {
             TyKind::Str => (from_bytes!(usize, metadata.get(self)?), 1),
             TyKind::Slice(inner) => {
@@ -1336,7 +1408,15 @@ impl<'db> Evaluator<'db> {
         })
     }
 
-    fn exec_atomic_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+    fn exec_atomic_intrinsic(
+        &mut self,
+        name: &str,
+        args: &[IntervalAndTy<'db>],
+        generic_args: GenericArgs<'db>,
+        destination: Interval,
+        locals: &Locals<'db>,
+        _span: MirSpan,
+    ) -> Result<'db, ()> {
         // We are a single threaded runtime with no UB checking and no optimization, so
         // we can implement atomic intrinsics as normal functions.
         if name.starts_with("singlethreadfence_") || name.starts_with("fence_") {

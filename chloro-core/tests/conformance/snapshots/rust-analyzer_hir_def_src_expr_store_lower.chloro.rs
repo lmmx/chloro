@@ -68,7 +68,15 @@ mod generics;
 
 mod path;
 
-pub(super) fn lower_body(db: &dyn DefDatabase, owner: DefWithBodyId, current_file_id: HirFileId, module: ModuleId, parameters: Option<ast::ParamList>, body: Option<ast::Expr>, is_async_fn: bool) -> (Body, BodySourceMap) {
+pub(super) fn lower_body(
+    db: &dyn DefDatabase,
+    owner: DefWithBodyId,
+    current_file_id: HirFileId,
+    module: ModuleId,
+    parameters: Option<ast::ParamList>,
+    body: Option<ast::Expr>,
+    is_async_fn: bool,
+) -> (Body, BodySourceMap) {
     // We cannot leave the root span map empty and let any identifier from it be treated as root,
     // because when inside nested macros `SyntaxContextId`s from the outer macro will be interleaved
     // with the inner macro, and that will cause confusion because they won't be the same as `ROOT`
@@ -162,7 +170,11 @@ pub(super) fn lower_body(db: &dyn DefDatabase, owner: DefWithBodyId, current_fil
     )
 }
 
-pub(crate) fn lower_type_ref(db: &dyn DefDatabase, module: ModuleId, type_ref: InFile<Option<ast::Type>>) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId) {
+pub(crate) fn lower_type_ref(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    type_ref: InFile<Option<ast::Type>>,
+) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId) {
     let mut expr_collector = ExprCollector::new(db, module, type_ref.file_id);
     let type_ref =
         expr_collector.lower_type_ref_opt(type_ref.value, &mut ExprCollector::impl_trait_allocator);
@@ -170,7 +182,14 @@ pub(crate) fn lower_type_ref(db: &dyn DefDatabase, module: ModuleId, type_ref: I
     (store, source_map, type_ref)
 }
 
-pub(crate) fn lower_generic_params(db: &dyn DefDatabase, module: ModuleId, def: GenericDefId, file_id: HirFileId, param_list: Option<ast::GenericParamList>, where_clause: Option<ast::WhereClause>) -> (Arc<ExpressionStore>, Arc<GenericParams>, ExpressionStoreSourceMap) {
+pub(crate) fn lower_generic_params(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    def: GenericDefId,
+    file_id: HirFileId,
+    param_list: Option<ast::GenericParamList>,
+    where_clause: Option<ast::WhereClause>,
+) -> (Arc<ExpressionStore>, Arc<GenericParams>, ExpressionStoreSourceMap) {
     let mut expr_collector = ExprCollector::new(db, module, file_id);
     let mut collector = generics::GenericParamsCollector::new(def);
     collector.lower(&mut expr_collector, param_list, where_clause);
@@ -179,7 +198,12 @@ pub(crate) fn lower_generic_params(db: &dyn DefDatabase, module: ModuleId, def: 
     (Arc::new(store), params, source_map)
 }
 
-pub(crate) fn lower_impl(db: &dyn DefDatabase, module: ModuleId, impl_syntax: InFile<ast::Impl>, impl_id: ImplId) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId, Option<TraitRef>, Arc<GenericParams>) {
+pub(crate) fn lower_impl(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    impl_syntax: InFile<ast::Impl>,
+    impl_id: ImplId,
+) -> (ExpressionStore, ExpressionStoreSourceMap, TypeRefId, Option<TraitRef>, Arc<GenericParams>) {
     let mut expr_collector = ExprCollector::new(db, module, impl_syntax.file_id);
     let self_ty =
         expr_collector.lower_type_ref_opt_disallow_impl_trait(impl_syntax.value.self_ty());
@@ -202,7 +226,12 @@ pub(crate) fn lower_impl(db: &dyn DefDatabase, module: ModuleId, impl_syntax: In
     (store, source_map, self_ty, trait_, params)
 }
 
-pub(crate) fn lower_trait(db: &dyn DefDatabase, module: ModuleId, trait_syntax: InFile<ast::Trait>, trait_id: TraitId) -> (ExpressionStore, ExpressionStoreSourceMap, Arc<GenericParams>) {
+pub(crate) fn lower_trait(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    trait_syntax: InFile<ast::Trait>,
+    trait_id: TraitId,
+) -> (ExpressionStore, ExpressionStoreSourceMap, Arc<GenericParams>) {
     let mut expr_collector = ExprCollector::new(db, module, trait_syntax.file_id);
     let mut collector = generics::GenericParamsCollector::with_self_param(
         &mut expr_collector,
@@ -219,7 +248,12 @@ pub(crate) fn lower_trait(db: &dyn DefDatabase, module: ModuleId, trait_syntax: 
     (store, source_map, params)
 }
 
-pub(crate) fn lower_type_alias(db: &dyn DefDatabase, module: ModuleId, alias: InFile<ast::TypeAlias>, type_alias_id: TypeAliasId) -> (
+pub(crate) fn lower_type_alias(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    alias: InFile<ast::TypeAlias>,
+    type_alias_id: TypeAliasId,
+) -> (
     ExpressionStore,
     ExpressionStoreSourceMap,
     Arc<GenericParams>,
@@ -254,7 +288,12 @@ pub(crate) fn lower_type_alias(db: &dyn DefDatabase, module: ModuleId, alias: In
     (store, source_map, params, bounds, type_ref)
 }
 
-pub(crate) fn lower_function(db: &dyn DefDatabase, module: ModuleId, fn_: InFile<ast::Fn>, function_id: FunctionId) -> (
+pub(crate) fn lower_function(
+    db: &dyn DefDatabase,
+    module: ModuleId,
+    fn_: InFile<ast::Fn>,
+    function_id: FunctionId,
+) -> (
     ExpressionStore,
     ExpressionStoreSourceMap,
     Arc<GenericParams>,
@@ -427,7 +466,13 @@ struct BindingList {
 }
 
 impl BindingList {
-    fn find(&mut self, ec: &mut ExprCollector<'_>, name: Name, hygiene: HygieneId, mode: BindingAnnotation) -> BindingId {
+    fn find(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        name: Name,
+        hygiene: HygieneId,
+        mode: BindingAnnotation,
+    ) -> BindingId {
         let id = *self
             .map
             .entry((name, hygiene))
@@ -439,7 +484,11 @@ impl BindingList {
         id
     }
 
-    fn check_is_used(&mut self, ec: &mut ExprCollector<'_>, id: BindingId) {
+    fn check_is_used(
+        &mut self,
+        ec: &mut ExprCollector<'_>,
+        id: BindingId,
+    ) {
         match self.is_used.get(&id) {
             None => {
                 if self.reject_new {
@@ -456,7 +505,11 @@ impl BindingList {
 }
 
 impl ExprCollector<'_> {
-    pub fn new(db: &dyn DefDatabase, module: ModuleId, current_file_id: HirFileId) -> ExprCollector<'_> {
+    pub fn new(
+        db: &dyn DefDatabase,
+        module: ModuleId,
+        current_file_id: HirFileId,
+    ) -> ExprCollector<'_> {
         let (def_map, local_def_map) = module.local_def_map(db);
         let expander = Expander::new(db, current_file_id, def_map);
         ExprCollector {
@@ -482,7 +535,10 @@ impl ExprCollector<'_> {
         self.expander.span_map()
     }
 
-    pub fn lower_lifetime_ref(&mut self, lifetime: ast::Lifetime) -> LifetimeRefId {
+    pub fn lower_lifetime_ref(
+        &mut self,
+        lifetime: ast::Lifetime,
+    ) -> LifetimeRefId {
         // FIXME: Keyword check?
         let lifetime_ref = match &*lifetime.text() {
             "" | "'" => LifetimeRef::Error,
@@ -493,7 +549,10 @@ impl ExprCollector<'_> {
         self.alloc_lifetime_ref(lifetime_ref, AstPtr::new(&lifetime))
     }
 
-    pub fn lower_lifetime_ref_opt(&mut self, lifetime: Option<ast::Lifetime>) -> LifetimeRefId {
+    pub fn lower_lifetime_ref_opt(
+        &mut self,
+        lifetime: Option<ast::Lifetime>,
+    ) -> LifetimeRefId {
         match lifetime {
             Some(lifetime) => self.lower_lifetime_ref(lifetime),
             None => self.alloc_lifetime_ref_desugared(LifetimeRef::Placeholder),
@@ -501,7 +560,11 @@ impl ExprCollector<'_> {
     }
 
     /// Converts an `ast::TypeRef` to a `hir::TypeRef`.
-    pub fn lower_type_ref(&mut self, node: ast::Type, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> TypeRefId {
+    pub fn lower_type_ref(
+        &mut self,
+        node: ast::Type,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> TypeRefId {
         let ty = match &node {
             ast::Type::ParenType(inner) => {
                 return self.lower_type_ref_opt(inner.ty(), impl_trait_lower_fn);
@@ -616,22 +679,36 @@ impl ExprCollector<'_> {
         self.alloc_type_ref(ty, AstPtr::new(&node))
     }
 
-    pub(crate) fn lower_type_ref_disallow_impl_trait(&mut self, node: ast::Type) -> TypeRefId {
+    pub(crate) fn lower_type_ref_disallow_impl_trait(
+        &mut self,
+        node: ast::Type,
+    ) -> TypeRefId {
         self.lower_type_ref(node, &mut Self::impl_trait_error_allocator)
     }
 
-    pub(crate) fn lower_type_ref_opt(&mut self, node: Option<ast::Type>, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> TypeRefId {
+    pub(crate) fn lower_type_ref_opt(
+        &mut self,
+        node: Option<ast::Type>,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> TypeRefId {
         match node {
             Some(node) => self.lower_type_ref(node, impl_trait_lower_fn),
             None => self.alloc_error_type(),
         }
     }
 
-    pub(crate) fn lower_type_ref_opt_disallow_impl_trait(&mut self, node: Option<ast::Type>) -> TypeRefId {
+    pub(crate) fn lower_type_ref_opt_disallow_impl_trait(
+        &mut self,
+        node: Option<ast::Type>,
+    ) -> TypeRefId {
         self.lower_type_ref_opt(node, &mut Self::impl_trait_error_allocator)
     }
 
-    fn alloc_type_ref(&mut self, type_ref: TypeRef, node: TypePtr) -> TypeRefId {
+    fn alloc_type_ref(
+        &mut self,
+        type_ref: TypeRef,
+        node: TypePtr,
+    ) -> TypeRefId {
         let id = self.store.types.alloc(type_ref);
         let ptr = self.expander.in_file(node);
         self.store.types_map_back.insert(id, ptr);
@@ -639,7 +716,11 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_lifetime_ref(&mut self, lifetime_ref: LifetimeRef, node: LifetimePtr) -> LifetimeRefId {
+    fn alloc_lifetime_ref(
+        &mut self,
+        lifetime_ref: LifetimeRef,
+        node: LifetimePtr,
+    ) -> LifetimeRefId {
         let id = self.store.lifetimes.alloc(lifetime_ref);
         let ptr = self.expander.in_file(node);
         self.store.lifetime_map_back.insert(id, ptr);
@@ -647,11 +728,17 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_type_ref_desugared(&mut self, type_ref: TypeRef) -> TypeRefId {
+    fn alloc_type_ref_desugared(
+        &mut self,
+        type_ref: TypeRef,
+    ) -> TypeRefId {
         self.store.types.alloc(type_ref)
     }
 
-    fn alloc_lifetime_ref_desugared(&mut self, lifetime_ref: LifetimeRef) -> LifetimeRefId {
+    fn alloc_lifetime_ref_desugared(
+        &mut self,
+        lifetime_ref: LifetimeRef,
+    ) -> LifetimeRefId {
         self.store.lifetimes.alloc(lifetime_ref)
     }
 
@@ -659,32 +746,57 @@ impl ExprCollector<'_> {
         self.store.types.alloc(TypeRef::Error)
     }
 
-    pub fn lower_path(&mut self, ast: ast::Path, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> Option<Path> {
+    pub fn lower_path(
+        &mut self,
+        ast: ast::Path,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> Option<Path> {
         super::lower::path::lower_path(self, ast, impl_trait_lower_fn)
     }
 
-    fn with_outer_impl_trait_scope<R>(&mut self, impl_trait: bool, f: impl FnOnce(&mut Self) -> R) -> R {
+    fn with_outer_impl_trait_scope<R>(
+        &mut self,
+        impl_trait: bool,
+        f: impl FnOnce(&mut Self) -> R,
+    ) -> R {
         let old = mem::replace(&mut self.outer_impl_trait, impl_trait);
         let result = f(self);
         self.outer_impl_trait = old;
         result
     }
 
-    pub fn impl_trait_error_allocator(ec: &mut ExprCollector<'_>, ptr: TypePtr, _: ThinVec<TypeBound>) -> TypeRefId {
+    pub fn impl_trait_error_allocator(
+        ec: &mut ExprCollector<'_>,
+        ptr: TypePtr,
+        _: ThinVec<TypeBound>,
+    ) -> TypeRefId {
         ec.alloc_type_ref(TypeRef::Error, ptr)
     }
 
-    fn impl_trait_allocator(ec: &mut ExprCollector<'_>, ptr: TypePtr, bounds: ThinVec<TypeBound>) -> TypeRefId {
+    fn impl_trait_allocator(
+        ec: &mut ExprCollector<'_>,
+        ptr: TypePtr,
+        bounds: ThinVec<TypeBound>,
+    ) -> TypeRefId {
         ec.alloc_type_ref(TypeRef::ImplTrait(bounds), ptr)
     }
 
-    fn alloc_path(&mut self, path: Path, node: TypePtr) -> PathId {
+    fn alloc_path(
+        &mut self,
+        path: Path,
+        node: TypePtr,
+    ) -> PathId {
         PathId::from_type_ref_unchecked(self.alloc_type_ref(TypeRef::Path(path), node))
     }
 
     /// Collect `GenericArgs` from the parts of a fn-like path, i.e. `Fn(X, Y)
     /// -> Z` (which desugars to `Fn<(X, Y), Output=Z>`).
-    pub fn lower_generic_args_from_fn_path(&mut self, args: Option<ast::ParenthesizedArgList>, ret_type: Option<ast::RetType>, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> Option<GenericArgs> {
+    pub fn lower_generic_args_from_fn_path(
+        &mut self,
+        args: Option<ast::ParenthesizedArgList>,
+        ret_type: Option<ast::RetType>,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> Option<GenericArgs> {
         let params = args?;
         let mut param_types = Vec::new();
         for param in params.type_args() {
@@ -720,7 +832,11 @@ impl ExprCollector<'_> {
         })
     }
 
-    pub(super) fn lower_generic_args(&mut self, node: ast::GenericArgList, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> Option<GenericArgs> {
+    pub(super) fn lower_generic_args(
+        &mut self,
+        node: ast::GenericArgList,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> Option<GenericArgs> {
         // This needs to be kept in sync with `hir_generic_arg_to_ast()`.
         let mut args = Vec::new();
         let mut bindings = Vec::new();
@@ -785,7 +901,11 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn collect(&mut self, expr: Option<ast::Expr>, awaitable: Awaitable) -> ExprId {
+    fn collect(
+        &mut self,
+        expr: Option<ast::Expr>,
+        awaitable: Awaitable,
+    ) -> ExprId {
         self.awaitable_context.replace(awaitable);
         self.with_label_rib(RibKind::Closure, |this| {
             if awaitable == Awaitable::Yes {
@@ -806,7 +926,11 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn type_bounds_from_ast(&mut self, type_bounds_opt: Option<ast::TypeBoundList>, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> ThinVec<TypeBound> {
+    fn type_bounds_from_ast(
+        &mut self,
+        type_bounds_opt: Option<ast::TypeBoundList>,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> ThinVec<TypeBound> {
         if let Some(type_bounds) = type_bounds_opt {
             ThinVec::from_iter(Vec::from_iter(
                 type_bounds.bounds().map(|it| self.lower_type_bound(it, impl_trait_lower_fn)),
@@ -816,12 +940,20 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn lower_path_type(&mut self, path_type: &ast::PathType, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> Option<Path> {
+    fn lower_path_type(
+        &mut self,
+        path_type: &ast::PathType,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> Option<Path> {
         let path = self.lower_path(path_type.path()?, impl_trait_lower_fn)?;
         Some(path)
     }
 
-    fn lower_type_bound(&mut self, node: ast::TypeBound, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> TypeBound {
+    fn lower_type_bound(
+        &mut self,
+        node: ast::TypeBound,
+        impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+    ) -> TypeBound {
         match node.kind() {
             ast::TypeBoundKind::PathType(binder, path_type) => {
                 let binder = match binder.and_then(|it| it.generic_param_list()) {
@@ -862,20 +994,32 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn lower_const_arg_opt(&mut self, arg: Option<ast::ConstArg>) -> ConstRef {
+    fn lower_const_arg_opt(
+        &mut self,
+        arg: Option<ast::ConstArg>,
+    ) -> ConstRef {
         ConstRef { expr: self.collect_expr_opt(arg.and_then(|it| it.expr())) }
     }
 
-    fn lower_const_arg(&mut self, arg: ast::ConstArg) -> ConstRef {
+    fn lower_const_arg(
+        &mut self,
+        arg: ast::ConstArg,
+    ) -> ConstRef {
         ConstRef { expr: self.collect_expr_opt(arg.expr()) }
     }
 
-    fn collect_expr(&mut self, expr: ast::Expr) -> ExprId {
+    fn collect_expr(
+        &mut self,
+        expr: ast::Expr,
+    ) -> ExprId {
         self.maybe_collect_expr(expr).unwrap_or_else(|| self.missing_expr())
     }
 
     /// Returns `None` if and only if the expression is `#[cfg]`d out.
-    fn maybe_collect_expr(&mut self, expr: ast::Expr) -> Option<ExprId> {
+    fn maybe_collect_expr(
+        &mut self,
+        expr: ast::Expr,
+    ) -> Option<ExprId> {
         let syntax_ptr = AstPtr::new(&expr);
         if !self.check_cfg(&expr) {
             return None;
@@ -1307,7 +1451,10 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn collect_expr_path(&mut self, e: ast::PathExpr) -> Option<(Path, HygieneId)> {
+    fn collect_expr_path(
+        &mut self,
+        e: ast::PathExpr,
+    ) -> Option<(Path, HygieneId)> {
         e.path().and_then(|path| {
             let path = self.lower_path(path, &mut Self::impl_trait_error_allocator)?;
             // Need to enable `mod_path.len() < 1` for `self`.
@@ -1321,14 +1468,20 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn collect_expr_as_pat_opt(&mut self, expr: Option<ast::Expr>) -> PatId {
+    fn collect_expr_as_pat_opt(
+        &mut self,
+        expr: Option<ast::Expr>,
+    ) -> PatId {
         match expr {
             Some(expr) => self.collect_expr_as_pat(expr),
             _ => self.missing_pat(),
         }
     }
 
-    fn collect_expr_as_pat(&mut self, expr: ast::Expr) -> PatId {
+    fn collect_expr_as_pat(
+        &mut self,
+        expr: ast::Expr,
+    ) -> PatId {
         self.maybe_collect_expr_as_pat(&expr).unwrap_or_else(|| {
             let src = self.expander.in_file(AstPtr::new(&expr).wrap_left());
             let expr = self.collect_expr(expr);
@@ -1339,7 +1492,10 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn maybe_collect_expr_as_pat(&mut self, expr: &ast::Expr) -> Option<PatId> {
+    fn maybe_collect_expr_as_pat(
+        &mut self,
+        expr: &ast::Expr,
+    ) -> Option<PatId> {
         if !self.check_cfg(expr) {
             return None;
         }
@@ -1503,7 +1659,10 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn initialize_binding_owner(&mut self, syntax_ptr: AstPtr<ast::Expr>) -> (ExprId, Option<ExprId>) {
+    fn initialize_binding_owner(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+    ) -> (ExprId, Option<ExprId>) {
         let result_expr_id = self.alloc_expr(Expr::Missing, syntax_ptr);
         let prev_binding_owner = self.current_binding_owner.take();
         self.current_binding_owner = Some(result_expr_id);
@@ -1514,7 +1673,11 @@ impl ExprCollector<'_> {
     /// it is used only for const blocks and repeat expressions, which are also hacky and ideally should have
     /// their own body. Don't add more usage for this function so that we can remove this function after
     /// separating those bodies.
-    fn collect_as_a_binding_owner_bad(&mut self, job: impl FnOnce(&mut ExprCollector<'_>) -> ExprId, syntax_ptr: AstPtr<ast::Expr>) -> ExprId {
+    fn collect_as_a_binding_owner_bad(
+        &mut self,
+        job: impl FnOnce(&mut ExprCollector<'_>) -> ExprId,
+        syntax_ptr: AstPtr<ast::Expr>,
+    ) -> ExprId {
         let (id, prev_owner) = self.initialize_binding_owner(syntax_ptr);
         let tmp = job(self);
         self.store.exprs[id] = mem::replace(&mut self.store.exprs[tmp], Expr::Missing);
@@ -1525,7 +1688,10 @@ impl ExprCollector<'_> {
     /// Desugar `try { <stmts>; <expr> }` into `'<new_label>: { <stmts>; ::std::ops::Try::from_output(<expr>) }`,
     /// `try { <stmts>; }` into `'<new_label>: { <stmts>; ::std::ops::Try::from_output(()) }`
     /// and save the `<new_label>` to use it as a break target for desugaring of the `?` operator.
-    fn desugar_try_block(&mut self, e: BlockExpr) -> ExprId {
+    fn desugar_try_block(
+        &mut self,
+        e: BlockExpr,
+    ) -> ExprId {
         let try_from_output = self.lang_path(LangItem::TryTraitFromOutput);
         let label = self.alloc_label_desugared(Label {
             name: Name::generate_new_name(self.store.labels.len()),
@@ -1575,7 +1741,11 @@ impl ExprCollector<'_> {
     /// ```
     /// FIXME: Rustc wraps the condition in a construct equivalent to `{ let _t = <cond>; _t }`
     /// to preserve drop semantics. We should probably do the same in future.
-    fn collect_while_loop(&mut self, syntax_ptr: AstPtr<ast::Expr>, e: ast::WhileExpr) -> ExprId {
+    fn collect_while_loop(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+        e: ast::WhileExpr,
+    ) -> ExprId {
         let label = e.label().map(|label| {
             (self.hygiene_id_for(label.syntax().text_range()), self.collect_label(label))
         });
@@ -1620,7 +1790,11 @@ impl ExprCollector<'_> {
     ///     }
     /// }
     /// ```
-    fn collect_for_loop(&mut self, syntax_ptr: AstPtr<ast::Expr>, e: ast::ForExpr) -> ExprId {
+    fn collect_for_loop(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+        e: ast::ForExpr,
+    ) -> ExprId {
         let into_iter_fn = self.lang_path(LangItem::IntoIterIntoIter);
         let iter_next_fn = self.lang_path(LangItem::IteratorNext);
         let option_some = self.lang_path(LangItem::OptionSome);
@@ -1703,7 +1877,11 @@ impl ExprCollector<'_> {
     ///         return Try::from_residual(residual),
     /// }
     /// ```
-    fn collect_try_operator(&mut self, syntax_ptr: AstPtr<ast::Expr>, e: ast::TryExpr) -> ExprId {
+    fn collect_try_operator(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+        e: ast::TryExpr,
+    ) -> ExprId {
         let try_branch = self.lang_path(LangItem::TryTraitBranch);
         let cf_continue = self.lang_path(LangItem::ControlFlowContinue);
         let cf_break = self.lang_path(LangItem::ControlFlowBreak);
@@ -1761,7 +1939,13 @@ impl ExprCollector<'_> {
         self.alloc_expr(Expr::Match { expr, arms }, syntax_ptr)
     }
 
-    fn collect_macro_call<T, U>(&mut self, mcall: ast::MacroCall, syntax_ptr: AstPtr<ast::MacroCall>, record_diagnostics: bool, collector: impl FnOnce(&mut Self, Option<T>) -> U) -> U
+    fn collect_macro_call<T, U>(
+        &mut self,
+        mcall: ast::MacroCall,
+        syntax_ptr: AstPtr<ast::MacroCall>,
+        record_diagnostics: bool,
+        collector: impl FnOnce(&mut Self, Option<T>) -> U,
+    ) -> U
     where
         T: ast::AstNode, {
         let macro_call_ptr = self.expander.in_file(syntax_ptr);
@@ -1826,14 +2010,21 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn collect_expr_opt(&mut self, expr: Option<ast::Expr>) -> ExprId {
+    fn collect_expr_opt(
+        &mut self,
+        expr: Option<ast::Expr>,
+    ) -> ExprId {
         match expr {
             Some(expr) => self.collect_expr(expr),
             None => self.missing_expr(),
         }
     }
 
-    fn collect_macro_as_stmt(&mut self, statements: &mut Vec<Statement>, mac: ast::MacroExpr) -> Option<ExprId> {
+    fn collect_macro_as_stmt(
+        &mut self,
+        statements: &mut Vec<Statement>,
+        mac: ast::MacroExpr,
+    ) -> Option<ExprId> {
         let mac_call = mac.macro_call()?;
         let syntax_ptr = AstPtr::new(&ast::Expr::from(mac));
         let macro_ptr = AstPtr::new(&mac_call);
@@ -1860,7 +2051,11 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn collect_stmt(&mut self, statements: &mut Vec<Statement>, s: ast::Stmt) {
+    fn collect_stmt(
+        &mut self,
+        statements: &mut Vec<Statement>,
+        s: ast::Stmt,
+    ) {
         match s {
             ast::Stmt::LetStmt(stmt) => {
                 if !self.check_cfg(&stmt) {
@@ -1927,7 +2122,11 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn collect_macro_def(&mut self, statements: &mut Vec<Statement>, macro_id: Option<MacroId>) {
+    fn collect_macro_def(
+        &mut self,
+        statements: &mut Vec<Statement>,
+        macro_id: Option<MacroId>,
+    ) {
         let Some(macro_id) = macro_id else {
             never!("def map should have macro definition, but it doesn't");
             statements.push(Statement::Item(Item::Other));
@@ -1938,7 +2137,10 @@ impl ExprCollector<'_> {
         self.label_ribs.push(LabelRib::new(RibKind::MacroDef(Box::new(macro_id))));
     }
 
-    fn collect_block(&mut self, block: ast::BlockExpr) -> ExprId {
+    fn collect_block(
+        &mut self,
+        block: ast::BlockExpr,
+    ) -> ExprId {
         self.collect_block_(block, |id, statements, tail| Expr::Block {
             id,
             statements,
@@ -1947,7 +2149,11 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn collect_block_(&mut self, block: ast::BlockExpr, mk_block: impl FnOnce(Option<BlockId>, Box<[Statement]>, Option<ExprId>) -> Expr) -> ExprId {
+    fn collect_block_(
+        &mut self,
+        block: ast::BlockExpr,
+        mk_block: impl FnOnce(Option<BlockId>, Box<[Statement]>, Option<ExprId>) -> Expr,
+    ) -> ExprId {
         let block_id = self.expander.ast_id_map().ast_id_for_block(&block).map(|file_local_id| {
             let ast_id = self.expander.in_file(file_local_id);
             self.db.intern_block(BlockLoc { ast_id, module: self.module })
@@ -1986,14 +2192,21 @@ impl ExprCollector<'_> {
         expr_id
     }
 
-    fn collect_block_opt(&mut self, expr: Option<ast::BlockExpr>) -> ExprId {
+    fn collect_block_opt(
+        &mut self,
+        expr: Option<ast::BlockExpr>,
+    ) -> ExprId {
         match expr {
             Some(block) => self.collect_block(block),
             None => self.missing_expr(),
         }
     }
 
-    fn collect_labelled_block_opt(&mut self, label: Option<(HygieneId, LabelId)>, expr: Option<ast::BlockExpr>) -> ExprId {
+    fn collect_labelled_block_opt(
+        &mut self,
+        label: Option<(HygieneId, LabelId)>,
+        expr: Option<ast::BlockExpr>,
+    ) -> ExprId {
         match label {
             Some((hygiene, label)) => {
                 self.with_labeled_rib(label, hygiene, |this| this.collect_block_opt(expr))
@@ -2003,14 +2216,21 @@ impl ExprCollector<'_> {
     }
     // region: patterns
 
-    fn collect_pat_top(&mut self, pat: Option<ast::Pat>) -> PatId {
+    fn collect_pat_top(
+        &mut self,
+        pat: Option<ast::Pat>,
+    ) -> PatId {
         match pat {
             Some(pat) => self.collect_pat(pat, &mut BindingList::default()),
             None => self.missing_pat(),
         }
     }
 
-    fn collect_pat(&mut self, pat: ast::Pat, binding_list: &mut BindingList) -> PatId {
+    fn collect_pat(
+        &mut self,
+        pat: ast::Pat,
+        binding_list: &mut BindingList,
+    ) -> PatId {
         let pattern = match &pat {
             ast::Pat::IdentPat(bp) => {
                 let name = bp.name().map(|nr| nr.as_name()).unwrap_or_else(Name::missing);
@@ -2257,14 +2477,23 @@ impl ExprCollector<'_> {
         self.alloc_pat(pattern, ptr)
     }
 
-    fn collect_pat_opt(&mut self, pat: Option<ast::Pat>, binding_list: &mut BindingList) -> PatId {
+    fn collect_pat_opt(
+        &mut self,
+        pat: Option<ast::Pat>,
+        binding_list: &mut BindingList,
+    ) -> PatId {
         match pat {
             Some(pat) => self.collect_pat(pat, binding_list),
             None => self.missing_pat(),
         }
     }
 
-    fn collect_tuple_pat(&mut self, args: AstChildren<ast::Pat>, has_leading_comma: bool, binding_list: &mut BindingList) -> (Box<[PatId]>, Option<u32>) {
+    fn collect_tuple_pat(
+        &mut self,
+        args: AstChildren<ast::Pat>,
+        has_leading_comma: bool,
+        binding_list: &mut BindingList,
+    ) -> (Box<[PatId]>, Option<u32>) {
         let args: Vec<_> = args.map(|p| self.collect_pat_possibly_rest(p, binding_list)).collect();
         // Find the location of the `..`, if there is one. Note that we do not
         // consider the possibility of there being multiple `..` here.
@@ -2279,7 +2508,11 @@ impl ExprCollector<'_> {
         (args.into_boxed_slice(), ellipsis)
     }
 
-    fn collect_pat_possibly_rest(&mut self, pat: ast::Pat, binding_list: &mut BindingList) -> Either<PatId, ()> {
+    fn collect_pat_possibly_rest(
+        &mut self,
+        pat: ast::Pat,
+        binding_list: &mut BindingList,
+    ) -> Either<PatId, ()> {
         match &pat {
             ast::Pat::RestPat(_) => Either::Right(()),
             ast::Pat::MacroPat(mac) => match mac.macro_call() {
@@ -2311,7 +2544,10 @@ impl ExprCollector<'_> {
 
     /// Returns `None` (and emits diagnostics) when `owner` if `#[cfg]`d out, and `Some(())` when
     /// not.
-    fn check_cfg(&mut self, owner: &dyn ast::HasAttrs) -> bool {
+    fn check_cfg(
+        &mut self,
+        owner: &dyn ast::HasAttrs,
+    ) -> bool {
         let enabled = self.expander.is_cfg_enabled(self.db, owner, self.cfg_options);
         match enabled {
             Ok(()) => true,
@@ -2326,12 +2562,19 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn add_definition_to_binding(&mut self, binding_id: BindingId, pat_id: PatId) {
+    fn add_definition_to_binding(
+        &mut self,
+        binding_id: BindingId,
+        pat_id: PatId,
+    ) {
         self.store.binding_definitions.entry(binding_id).or_default().push(pat_id);
     }
     // region: labels
 
-    fn collect_label(&mut self, ast_label: ast::Label) -> LabelId {
+    fn collect_label(
+        &mut self,
+        ast_label: ast::Label,
+    ) -> LabelId {
         let label = Label {
             name: ast_label
                 .lifetime()
@@ -2341,7 +2584,10 @@ impl ExprCollector<'_> {
         self.alloc_label(label, AstPtr::new(&ast_label))
     }
 
-    fn resolve_label(&self, lifetime: Option<ast::Lifetime>) -> Result<Option<LabelId>, ExpressionStoreDiagnostics> {
+    fn resolve_label(
+        &self,
+        lifetime: Option<ast::Lifetime>,
+    ) -> Result<Option<LabelId>, ExpressionStoreDiagnostics> {
         let Some(lifetime) = lifetime else { return Ok(None) };
         let mut hygiene_id =
             self.expander.hygiene_for_range(self.db, lifetime.syntax().text_range());
@@ -2392,7 +2638,10 @@ impl ExprCollector<'_> {
         })
     }
 
-    fn is_label_valid_from_rib(&self, rib_index: usize) -> bool {
+    fn is_label_valid_from_rib(
+        &self,
+        rib_index: usize,
+    ) -> bool {
         !self.label_ribs[rib_index + 1..].iter().any(|rib| rib.kind.is_label_barrier())
     }
 
@@ -2403,14 +2652,23 @@ impl ExprCollector<'_> {
         }
     }
 
-    fn with_label_rib<T>(&mut self, kind: RibKind, f: impl FnOnce(&mut Self) -> T) -> T {
+    fn with_label_rib<T>(
+        &mut self,
+        kind: RibKind,
+        f: impl FnOnce(&mut Self) -> T,
+    ) -> T {
         self.label_ribs.push(LabelRib::new(kind));
         let res = f(self);
         self.pop_label_rib();
         res
     }
 
-    fn with_labeled_rib<T>(&mut self, label: LabelId, hygiene: HygieneId, f: impl FnOnce(&mut Self) -> T) -> T {
+    fn with_labeled_rib<T>(
+        &mut self,
+        label: LabelId,
+        hygiene: HygieneId,
+        f: impl FnOnce(&mut Self) -> T,
+    ) -> T {
         self.label_ribs.push(LabelRib::new(RibKind::Normal(
             self.store.labels[label].name.clone(),
             label,
@@ -2421,7 +2679,11 @@ impl ExprCollector<'_> {
         res
     }
 
-    fn with_opt_labeled_rib<T>(&mut self, label: Option<(HygieneId, LabelId)>, f: impl FnOnce(&mut Self) -> T) -> T {
+    fn with_opt_labeled_rib<T>(
+        &mut self,
+        label: Option<(HygieneId, LabelId)>,
+        f: impl FnOnce(&mut Self) -> T,
+    ) -> T {
         match label {
             None => f(self),
             Some((hygiene, label)) => self.with_labeled_rib(label, hygiene, f),
@@ -2429,7 +2691,10 @@ impl ExprCollector<'_> {
     }
     // endregion: labels
 
-    fn expand_macros_to_string(&mut self, expr: ast::Expr) -> Option<(ast::String, bool)> {
+    fn expand_macros_to_string(
+        &mut self,
+        expr: ast::Expr,
+    ) -> Option<(ast::String, bool)> {
         let m = match expr {
             ast::Expr::MacroExpr(m) => m,
             ast::Expr::Literal(l) => {
@@ -2448,7 +2713,11 @@ impl ExprCollector<'_> {
         Some((exp, false))
     }
 
-    fn collect_format_args(&mut self, f: ast::FormatArgsExpr, syntax_ptr: AstPtr<ast::Expr>) -> ExprId {
+    fn collect_format_args(
+        &mut self,
+        f: ast::FormatArgsExpr,
+        syntax_ptr: AstPtr<ast::Expr>,
+    ) -> ExprId {
         let mut args = FormatArgumentsCollector::default();
         f.args().for_each(|arg| {
             args.add(FormatArgument {
@@ -2598,7 +2867,14 @@ impl ExprCollector<'_> {
     }
 
     /// `format_args!` expansion implementation for rustc versions < `1.89.0`
-    fn collect_format_args_before_1_89_0_impl(&mut self, syntax_ptr: AstPtr<ast::Expr>, fmt: FormatArgs, argmap: FxIndexSet<(usize, ArgumentType)>, lit_pieces: ExprId, format_options: ExprId) -> ExprId {
+    fn collect_format_args_before_1_89_0_impl(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+        fmt: FormatArgs,
+        argmap: FxIndexSet<(usize, ArgumentType)>,
+        lit_pieces: ExprId,
+        format_options: ExprId,
+    ) -> ExprId {
         let arguments = &*fmt.arguments.arguments;
         let args = if arguments.is_empty() {
             let expr = self
@@ -2692,7 +2968,14 @@ impl ExprCollector<'_> {
 
     /// `format_args!` expansion implementation for rustc versions >= `1.89.0`,
     /// especially since [this PR](https://github.com/rust-lang/rust/pull/140748)
-    fn collect_format_args_impl(&mut self, syntax_ptr: AstPtr<ast::Expr>, fmt: FormatArgs, argmap: FxIndexSet<(usize, ArgumentType)>, lit_pieces: ExprId, format_options: ExprId) -> ExprId {
+    fn collect_format_args_impl(
+        &mut self,
+        syntax_ptr: AstPtr<ast::Expr>,
+        fmt: FormatArgs,
+        argmap: FxIndexSet<(usize, ArgumentType)>,
+        lit_pieces: ExprId,
+        format_options: ExprId,
+    ) -> ExprId {
         let arguments = &*fmt.arguments.arguments;
         let (let_stmts, args) = if arguments.is_empty() {
             (
@@ -2869,7 +3152,11 @@ impl ExprCollector<'_> {
     ///         <core::fmt::rt::Count::…>, // precision
     ///     )
     /// ```
-    fn make_format_spec(&mut self, placeholder: &FormatPlaceholder, argmap: &mut FxIndexSet<(usize, ArgumentType)>) -> ExprId {
+    fn make_format_spec(
+        &mut self,
+        placeholder: &FormatPlaceholder,
+        argmap: &mut FxIndexSet<(usize, ArgumentType)>,
+    ) -> ExprId {
         let position = match placeholder.argument.index {
             Ok(arg_index) => {
                 let (i, _) =
@@ -2998,7 +3285,11 @@ impl ExprCollector<'_> {
     /// ```text
     ///     <core::fmt::rt::Count>::Implied
     /// ```
-    fn make_count(&mut self, count: &Option<FormatCount>, argmap: &mut FxIndexSet<(usize, ArgumentType)>) -> ExprId {
+    fn make_count(
+        &mut self,
+        count: &Option<FormatCount>,
+        argmap: &mut FxIndexSet<(usize, ArgumentType)>,
+    ) -> ExprId {
         match count {
             Some(FormatCount::Literal(n)) => {
                 let args = self.alloc_expr_desugared(Expr::Literal(Literal::Uint(
@@ -3060,7 +3351,11 @@ impl ExprCollector<'_> {
     /// ```text
     ///     <core::fmt::Argument>::new_…(arg)
     /// ```
-    fn make_argument(&mut self, arg: ExprId, ty: ArgumentType) -> ExprId {
+    fn make_argument(
+        &mut self,
+        arg: ExprId,
+        ty: ArgumentType,
+    ) -> ExprId {
         use ArgumentType::*;
         use FormatTrait::*;
         let new_fn = match LangItem::FormatArgument.ty_rel_path(
@@ -3086,7 +3381,10 @@ impl ExprCollector<'_> {
     }
     // endregion: format
 
-    fn lang_path(&self, lang: LangItem) -> Option<Path> {
+    fn lang_path(
+        &self,
+        lang: LangItem,
+    ) -> Option<Path> {
         lang.path(self.db, self.module.krate())
     }
 }
@@ -3101,7 +3399,11 @@ fn pat_literal_to_hir(lit: &ast::LiteralPat) -> Option<(Literal, ast::Literal)> 
 }
 
 impl ExprCollector<'_> {
-    fn alloc_expr(&mut self, expr: Expr, ptr: ExprPtr) -> ExprId {
+    fn alloc_expr(
+        &mut self,
+        expr: Expr,
+        ptr: ExprPtr,
+    ) -> ExprId {
         let src = self.expander.in_file(ptr);
         let id = self.store.exprs.alloc(expr);
         self.store.expr_map_back.insert(id, src.map(AstPtr::wrap_left));
@@ -3109,11 +3411,18 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_expr_desugared(&mut self, expr: Expr) -> ExprId {
+    fn alloc_expr_desugared(
+        &mut self,
+        expr: Expr,
+    ) -> ExprId {
         self.store.exprs.alloc(expr)
     }
 
-    fn alloc_expr_desugared_with_ptr(&mut self, expr: Expr, ptr: ExprPtr) -> ExprId {
+    fn alloc_expr_desugared_with_ptr(
+        &mut self,
+        expr: Expr,
+        ptr: ExprPtr,
+    ) -> ExprId {
         let src = self.expander.in_file(ptr);
         let id = self.store.exprs.alloc(expr);
         self.store.expr_map_back.insert(id, src.map(AstPtr::wrap_left));
@@ -3126,7 +3435,12 @@ impl ExprCollector<'_> {
         self.alloc_expr_desugared(Expr::Missing)
     }
 
-    fn alloc_binding(&mut self, name: Name, mode: BindingAnnotation, hygiene: HygieneId) -> BindingId {
+    fn alloc_binding(
+        &mut self,
+        name: Name,
+        mode: BindingAnnotation,
+        hygiene: HygieneId,
+    ) -> BindingId {
         let binding = self.store.bindings.alloc(Binding { name, mode, problems: None, hygiene });
         if let Some(owner) = self.current_binding_owner {
             self.store.binding_owners.insert(binding, owner);
@@ -3134,7 +3448,11 @@ impl ExprCollector<'_> {
         binding
     }
 
-    fn alloc_pat_from_expr(&mut self, pat: Pat, ptr: ExprPtr) -> PatId {
+    fn alloc_pat_from_expr(
+        &mut self,
+        pat: Pat,
+        ptr: ExprPtr,
+    ) -> PatId {
         let src = self.expander.in_file(ptr);
         let id = self.store.pats.alloc(pat);
         self.store.expr_map.insert(src, id.into());
@@ -3142,7 +3460,11 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_expr_from_pat(&mut self, expr: Expr, ptr: PatPtr) -> ExprId {
+    fn alloc_expr_from_pat(
+        &mut self,
+        expr: Expr,
+        ptr: PatPtr,
+    ) -> ExprId {
         let src = self.expander.in_file(ptr);
         let id = self.store.exprs.alloc(expr);
         self.store.pat_map.insert(src, id.into());
@@ -3150,7 +3472,11 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_pat(&mut self, pat: Pat, ptr: PatPtr) -> PatId {
+    fn alloc_pat(
+        &mut self,
+        pat: Pat,
+        ptr: PatPtr,
+    ) -> PatId {
         let src = self.expander.in_file(ptr);
         let id = self.store.pats.alloc(pat);
         self.store.pat_map_back.insert(id, src.map(AstPtr::wrap_right));
@@ -3158,7 +3484,10 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_pat_desugared(&mut self, pat: Pat) -> PatId {
+    fn alloc_pat_desugared(
+        &mut self,
+        pat: Pat,
+    ) -> PatId {
         self.store.pats.alloc(pat)
     }
 
@@ -3166,7 +3495,11 @@ impl ExprCollector<'_> {
         self.store.pats.alloc(Pat::Missing)
     }
 
-    fn alloc_label(&mut self, label: Label, ptr: LabelPtr) -> LabelId {
+    fn alloc_label(
+        &mut self,
+        label: Label,
+        ptr: LabelPtr,
+    ) -> LabelId {
         let src = self.expander.in_file(ptr);
         let id = self.store.labels.alloc(label);
         self.store.label_map_back.insert(id, src);
@@ -3174,7 +3507,10 @@ impl ExprCollector<'_> {
         id
     }
 
-    fn alloc_label_desugared(&mut self, label: Label) -> LabelId {
+    fn alloc_label_desugared(
+        &mut self,
+        label: Label,
+    ) -> LabelId {
         self.store.labels.alloc(label)
     }
 
@@ -3182,14 +3518,21 @@ impl ExprCollector<'_> {
         self.awaitable_context.as_ref().unwrap_or(&Awaitable::No("unknown"))
     }
 
-    fn with_awaitable_block<T>(&mut self, awaitable: Awaitable, f: impl FnOnce(&mut Self) -> T) -> T {
+    fn with_awaitable_block<T>(
+        &mut self,
+        awaitable: Awaitable,
+        f: impl FnOnce(&mut Self) -> T,
+    ) -> T {
         let orig = self.awaitable_context.replace(awaitable);
         let res = f(self);
         self.awaitable_context = orig;
         res
     }
 
-    fn hygiene_id_for(&self, range: TextRange) -> HygieneId {
+    fn hygiene_id_for(
+        &self,
+        range: TextRange,
+    ) -> HygieneId {
         self.expander.hygiene_for_range(self.db, range)
     }
 }
@@ -3206,7 +3549,10 @@ enum ArgumentType {
 }
 
 /// This function find the AST fragment that corresponds to an `AssociatedTypeBinding` in the HIR.
-pub fn hir_assoc_type_binding_to_ast(segment_args: &ast::GenericArgList, binding_idx: u32) -> Option<ast::AssocTypeArg> {
+pub fn hir_assoc_type_binding_to_ast(
+    segment_args: &ast::GenericArgList,
+    binding_idx: u32,
+) -> Option<ast::AssocTypeArg> {
     segment_args
         .generic_args()
         .filter_map(|arg| match arg {
@@ -3218,7 +3564,11 @@ pub fn hir_assoc_type_binding_to_ast(segment_args: &ast::GenericArgList, binding
 }
 
 /// This function find the AST generic argument from the one in the HIR. Does not support the `Self` argument.
-pub fn hir_generic_arg_to_ast(args: &ast::GenericArgList, arg_idx: u32, has_self_arg: bool) -> Option<ast::GenericArg> {
+pub fn hir_generic_arg_to_ast(
+    args: &ast::GenericArgList,
+    arg_idx: u32,
+    has_self_arg: bool,
+) -> Option<ast::GenericArg> {
     args.generic_args()
         .filter(|arg| match arg {
             ast::GenericArg::AssocTypeArg(_) => false,

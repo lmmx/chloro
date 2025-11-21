@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2773 bytes
-Chloro size:   2611 bytes
+Chloro size:   2630 bytes
 Rustfmt size:  2828 bytes
 
 ✗ Outputs DIFFER
@@ -17,16 +17,7 @@ Rustfmt size:  2828 bytes
 +    context::CompletionContext, item::CompletionItemLabel,
  };
  
--pub(crate) fn complete_ra_fixture(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    original: &ast::String,
--    expanded: &ast::String,
--) -> Option<()> {
-+pub(crate) fn complete_ra_fixture(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) -> Option<()> {
-     let analysis = RaFixtureAnalysis::analyze_ra_fixture(
-         &ctx.sema,
-         original.clone(),
+ pub(crate) fn complete_ra_fixture(
          crate::completions(
              &analysis.db,
              ctx.config,

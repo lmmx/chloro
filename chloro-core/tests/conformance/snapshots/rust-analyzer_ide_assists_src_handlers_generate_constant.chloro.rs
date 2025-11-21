@@ -11,7 +11,10 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_constant(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let constant_token = ctx.find_node_at_offset::<ast::NameRef>()?;
     if constant_token.to_string().chars().any(|it| !(it.is_uppercase() || it == '_')) {
         cov_mark::hit!(not_constant_name);
@@ -73,7 +76,12 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     })
 }
 
-fn get_text_for_generate_constant(mut not_exist_name_ref: Vec<NameRef>, indent: IndentLevel, outer_exists: bool, type_name: String) -> Option<String> {
+fn get_text_for_generate_constant(
+    mut not_exist_name_ref: Vec<NameRef>,
+    indent: IndentLevel,
+    outer_exists: bool,
+    type_name: String,
+) -> Option<String> {
     let constant_token = not_exist_name_ref.pop()?;
     let vis = if not_exist_name_ref.is_empty() && !outer_exists { "" } else { "\npub " };
     let mut text = format!("{vis}const {constant_token}: {type_name} = $0;");
@@ -85,7 +93,11 @@ fn get_text_for_generate_constant(mut not_exist_name_ref: Vec<NameRef>, indent: 
     Some(text.replace('\n', &format!("\n{indent}")))
 }
 
-fn target_data_for_generate_constant(ctx: &AssistContext<'_>, current_module: Module, constant_module: Module) -> Option<(TextSize, IndentLevel, Option<FileId>, String)> {
+fn target_data_for_generate_constant(
+    ctx: &AssistContext<'_>,
+    current_module: Module,
+    constant_module: Module,
+) -> Option<(TextSize, IndentLevel, Option<FileId>, String)> {
     if current_module == constant_module {
         // insert in current file
         return None;

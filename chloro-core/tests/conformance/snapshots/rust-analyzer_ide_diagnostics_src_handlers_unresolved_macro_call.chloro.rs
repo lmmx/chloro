@@ -1,6 +1,9 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn unresolved_macro_call(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMacroCall) -> Diagnostic {
+pub(crate) fn unresolved_macro_call(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedMacroCall,
+) -> Diagnostic {
     // Use more accurate position if available.
     let display_range = ctx.resolve_precise_location(&d.macro_call, d.precise_location);
     let bang = if d.is_bang { "!" } else { "" };

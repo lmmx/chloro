@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35486 bytes
+Chloro size:   35584 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -43,9 +43,14 @@ Rustfmt size:  36442 bytes
 -//     closure("abc", &mut s);
 -// }
 -// ```
- pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_closure_to_fn(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
      if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
+         // Not inside the parameter list.
      let closure_ty = ctx.sema.type_of_expr(&closure.clone().into())?;
      let callable = closure_ty.original.as_callable(ctx.db())?;
      let closure_ty = closure_ty.original.as_closure()?;
@@ -70,15 +75,6 @@ Rustfmt size:  36442 bytes
      acc.add(
          AssistId::refactor_rewrite("convert_closure_to_fn"),
          "Convert closure to fn",
-     Some(())
- }
- 
--fn compute_closure_type_params(
--    ctx: &AssistContext<'_>,
--    mentioned_generic_params: FxHashSet<hir::GenericParam>,
--    closure: &ast::ClosureExpr,
--) -> (Option<ast::GenericParamList>, Option<ast::WhereClause>) {
-+fn compute_closure_type_params(ctx: &AssistContext<'_>, mentioned_generic_params: FxHashSet<hir::GenericParam>, closure: &ast::ClosureExpr) -> (Option<ast::GenericParamList>, Option<ast::WhereClause>) {
      if mentioned_generic_params.is_empty() {
          return (None, None);
      }
@@ -120,18 +116,6 @@ Rustfmt size:  36442 bytes
      // FIXME: Consider generic parameters that do not appear in params/return type/captures but
      // written explicitly inside the closure.
      (Some(make::generic_param_list(include_params)), where_clause)
- }
- 
--fn wrap_capture_in_deref_if_needed(
--    expr: &ast::Expr,
--    capture_name: &ast::Name,
--    capture_kind: CaptureKind,
--    is_ref: bool,
--) -> ast::Expr {
-+fn wrap_capture_in_deref_if_needed(expr: &ast::Expr, capture_name: &ast::Name, capture_kind: CaptureKind, is_ref: bool) -> ast::Expr {
-     fn peel_parens(mut expr: ast::Expr) -> ast::Expr {
-         loop {
-             if ast::ParenExpr::can_cast(expr.syntax().kind()) {
          }
          expr
      }
@@ -139,17 +123,17 @@ Rustfmt size:  36442 bytes
      let capture_name = make::expr_path(make::path_from_text(&capture_name.text()));
      if capture_kind == CaptureKind::Move || is_ref {
          return capture_name;
-     make::expr_ref(place, needs_mut)
+     make::expr_prefix(T![*], capture_name).into()
  }
  
--fn handle_calls(
--    builder: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    closure_name: Option<&ast::IdentPat>,
--    captures_as_args: &[ast::Expr],
--    closure: &ast::ClosureExpr,
--) {
-+fn handle_calls(builder: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, closure_name: Option<&ast::IdentPat>, captures_as_args: &[ast::Expr], closure: &ast::ClosureExpr) {
+-fn capture_as_arg(ctx: &AssistContext<'_>, capture: &ClosureCapture<'_>) -> ast::Expr {
++fn capture_as_arg(
++    ctx: &AssistContext<'_>,
++    capture: &ClosureCapture<'_>,
++) -> ast::Expr {
+     let place = parse_expr_from_str(&capture.display_place_source_code(ctx.db()), ctx.edition())
+         .expect("`display_place_source_code()` produced an invalid expr");
+     let needs_mut = match capture.kind() {
      if captures_as_args.is_empty() {
          return;
      }
@@ -157,19 +141,6 @@ Rustfmt size:  36442 bytes
      match closure_name {
          Some(closure_name) => {
              let Some(closure_def) = ctx.sema.to_def(closure_name) else { return };
-     }
- }
- 
--fn handle_call(
--    builder: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    closure_ref: ast::Expr,
--    captures_as_args: &[ast::Expr],
--) -> Option<()> {
-+fn handle_call(builder: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, closure_ref: ast::Expr, captures_as_args: &[ast::Expr]) -> Option<()> {
-     let call =
-         ast::CallExpr::cast(peel_blocks_and_refs_and_parens(closure_ref).syntax().parent()?)?;
-     let args = call.arg_list()?;
          skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
      });
      let has_existing_args = args.args().next().is_some();

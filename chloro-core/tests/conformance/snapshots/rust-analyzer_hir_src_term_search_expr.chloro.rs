@@ -15,14 +15,23 @@ use crate::{
 };
 
 /// Helper function to get path to `ModuleDef`
-fn mod_item_path(sema_scope: &SemanticsScope<'_>, def: &ModuleDef, cfg: FindPathConfig) -> Option<ModPath> {
+fn mod_item_path(
+    sema_scope: &SemanticsScope<'_>,
+    def: &ModuleDef,
+    cfg: FindPathConfig,
+) -> Option<ModPath> {
     let db = sema_scope.db;
     let m = sema_scope.module();
     m.find_path(db, *def, cfg)
 }
 
 /// Helper function to get path to `ModuleDef` as string
-fn mod_item_path_str(sema_scope: &SemanticsScope<'_>, def: &ModuleDef, cfg: FindPathConfig, edition: Edition) -> Result<String, DisplaySourceCodeError> {
+fn mod_item_path_str(
+    sema_scope: &SemanticsScope<'_>,
+    def: &ModuleDef,
+    cfg: FindPathConfig,
+    edition: Edition,
+) -> Result<String, DisplaySourceCodeError> {
     let path = mod_item_path(sema_scope, def, cfg);
     path.map(|it| it.display(sema_scope.db, edition).to_string())
         .ok_or(DisplaySourceCodeError::PathNotFound)
@@ -111,7 +120,13 @@ impl<'db> Expr<'db> {
     /// Note that trait imports are not added to generated code.
     /// To make sure that the code is valid, callee has to also ensure that all the traits listed
     /// by `traits_used` method are also imported.
-    pub fn gen_source_code(&self, sema_scope: &SemanticsScope<'db>, many_formatter: &mut dyn FnMut(&Type<'db>) -> String, cfg: FindPathConfig, display_target: DisplayTarget) -> Result<String, DisplaySourceCodeError> {
+    pub fn gen_source_code(
+        &self,
+        sema_scope: &SemanticsScope<'db>,
+        many_formatter: &mut dyn FnMut(&Type<'db>) -> String,
+        cfg: FindPathConfig,
+        display_target: DisplayTarget,
+    ) -> Result<String, DisplaySourceCodeError> {
         let db = sema_scope.db;
         let edition = display_target.edition;
         let mod_item_path_str = |s, def| mod_item_path_str(s, def, cfg, edition);
@@ -309,7 +324,10 @@ impl<'db> Expr<'db> {
     /// Get type of the type tree.
     ///
     /// Same as getting the type of root node
-    pub fn ty(&self, db: &'db dyn HirDatabase) -> Type<'db> {
+    pub fn ty(
+        &self,
+        db: &'db dyn HirDatabase,
+    ) -> Type<'db> {
         match self {
             Expr::Const(it) => it.ty(db),
             Expr::Static(it) => it.ty(db),
@@ -337,7 +355,10 @@ impl<'db> Expr<'db> {
     }
 
     /// List the traits used in type tree
-    pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
+    pub fn traits_used(
+        &self,
+        db: &dyn HirDatabase,
+    ) -> Vec<Trait> {
         let mut res = Vec::new();
         if let Expr::Method { func, params, .. } = self {
             res.extend(params.iter().flat_map(|it| it.traits_used(db)));
@@ -359,7 +380,10 @@ impl<'db> Expr<'db> {
     /// macro!().bar()
     /// &macro!()
     /// ```
-    fn contains_many_in_illegal_pos(&self, db: &dyn HirDatabase) -> bool {
+    fn contains_many_in_illegal_pos(
+        &self,
+        db: &dyn HirDatabase,
+    ) -> bool {
         match self {
             Expr::Method { target, func, .. } => {
                 match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {
@@ -381,7 +405,13 @@ impl<'db> Expr<'db> {
 }
 
 /// Helper function to find name of container
-fn container_name(container: AssocItemContainer, sema_scope: &SemanticsScope<'_>, cfg: FindPathConfig, edition: Edition, display_target: DisplayTarget) -> Result<String, DisplaySourceCodeError> {
+fn container_name(
+    container: AssocItemContainer,
+    sema_scope: &SemanticsScope<'_>,
+    cfg: FindPathConfig,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Result<String, DisplaySourceCodeError> {
     let container_name = match container {
         crate::AssocItemContainer::Trait(trait_) => {
             mod_item_path_str(sema_scope, &ModuleDef::Trait(trait_), cfg, edition)?

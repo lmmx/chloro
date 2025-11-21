@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30915 bytes
-Chloro size:   30252 bytes
+Chloro size:   30356 bytes
 Rustfmt size:  30915 bytes
 
 ✗ Outputs DIFFER
@@ -33,14 +33,9 @@ Rustfmt size:  30915 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn replace_derive_with_manual_impl(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn replace_derive_with_manual_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let attr = ctx.find_node_at_offset_with_descend::<ast::Attr>()?;
-     let path = attr.path()?;
-     let macro_file = ctx.sema.hir_file_for(attr.syntax()).macro_file()?;
+ pub(crate) fn replace_derive_with_manual_impl(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
      if !macro_file.is_derive_attr_pseudo_expansion(ctx.db()) {
          return None;
      }
@@ -71,21 +66,6 @@ Rustfmt size:  30915 bytes
      let mut no_traits_found = true;
      for (replace_trait_path, trait_) in found_traits.inspect(|_| no_traits_found = false) {
          add_assist(
-     Some(())
- }
- 
--fn add_assist(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--    attr: &ast::Attr,
--    old_derives: &[ast::Path],
--    old_tree: &ast::TokenTree,
--    old_trait_path: &ast::Path,
--    replace_trait_path: &ast::Path,
--    trait_: Option<hir::Trait>,
--    adt: &ast::Adt,
--) -> Option<()> {
-+fn add_assist(acc: &mut Assists, ctx: &AssistContext<'_>, attr: &ast::Attr, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, replace_trait_path: &ast::Path, trait_: Option<hir::Trait>, adt: &ast::Adt) -> Option<()> {
      let target = attr.syntax().text_range();
      let annotated_name = adt.name()?;
      let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
@@ -93,19 +73,7 @@ Rustfmt size:  30915 bytes
      acc.add(AssistId::refactor("replace_derive_with_manual_impl"), label, target, |builder| {
          let insert_after = Position::after(adt.syntax());
          let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
-     })
- }
- 
--fn impl_def_from_trait(
--    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
--    config: &AssistConfig,
--    adt: &ast::Adt,
--    annotated_name: &ast::Name,
--    trait_: Option<hir::Trait>,
--    trait_path: &ast::Path,
--    impl_is_unsafe: bool,
--) -> Option<ast::Impl> {
-+fn impl_def_from_trait(sema: &hir::Semantics<'_, ide_db::RootDatabase>, config: &AssistConfig, adt: &ast::Adt, annotated_name: &ast::Name, trait_: Option<hir::Trait>, trait_path: &ast::Path, impl_is_unsafe: bool) -> Option<ast::Impl> {
+ ) -> Option<ast::Impl> {
      let trait_ = trait_?;
      let target_scope = sema.scope(annotated_name.syntax())?;
 -
@@ -134,19 +102,6 @@ Rustfmt size:  30915 bytes
      let impl_def = impl_def.clone_subtree();
      let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
      editor.replace(impl_def.assoc_item_list()?.syntax(), assoc_item_list.syntax());
-     Some(impl_def)
- }
- 
--fn update_attribute(
--    editor: &mut SyntaxEditor,
--    old_derives: &[ast::Path],
--    old_tree: &ast::TokenTree,
--    old_trait_path: &ast::Path,
--    attr: &ast::Attr,
--) {
-+fn update_attribute(editor: &mut SyntaxEditor, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, attr: &ast::Attr) {
-     let new_derives = old_derives
-         .iter()
          .filter(|t| t.to_string() != old_trait_path.to_string())
          .collect::<Vec<_>>();
      let has_more_derives = !new_derives.is_empty();

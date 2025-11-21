@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1043 bytes
-Chloro size:   1044 bytes
+Chloro size:   1136 bytes
 Rustfmt size:  1043 bytes
 
 ✗ Outputs DIFFER
@@ -13,3 +13,45 @@ Rustfmt size:  1043 bytes
  use std::fmt;
  
  use stdx::always;
+ pub struct Label(String);
+ 
+ impl PartialEq<str> for Label {
+-    fn eq(&self, other: &str) -> bool {
++    fn eq(
++        &self,
++        other: &str,
++    ) -> bool {
+         self.0 == other
+     }
+ }
+ 
+ impl PartialEq<&'_ str> for Label {
+-    fn eq(&self, other: &&str) -> bool {
++    fn eq(
++        &self,
++        other: &&str,
++    ) -> bool {
+         self == *other
+     }
+ }
+ }
+ 
+ impl fmt::Display for Label {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(&self.0, f)
+     }
+ }
+ 
+ impl fmt::Debug for Label {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Debug::fmt(&self.0, f)
+     }
+ }

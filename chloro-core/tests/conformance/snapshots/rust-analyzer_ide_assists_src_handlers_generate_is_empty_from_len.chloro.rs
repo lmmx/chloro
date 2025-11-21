@@ -9,7 +9,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_is_empty_from_len(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
     if fn_name.text() != "len" {
@@ -49,7 +52,11 @@ pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<
     )
 }
 
-fn get_impl_method(ctx: &AssistContext<'_>, impl_: &ast::Impl, fn_name: &Name) -> Option<hir::Function> {
+fn get_impl_method(
+    ctx: &AssistContext<'_>,
+    impl_: &ast::Impl,
+    fn_name: &Name,
+) -> Option<hir::Function> {
     let db = ctx.sema.db;
     let impl_def: hir::Impl = ctx.sema.to_def(impl_)?;
     let scope = ctx.sema.scope(impl_.syntax())?;

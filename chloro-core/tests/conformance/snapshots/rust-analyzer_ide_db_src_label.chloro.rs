@@ -14,13 +14,19 @@ use stdx::always;
 pub struct Label(String);
 
 impl PartialEq<str> for Label {
-    fn eq(&self, other: &str) -> bool {
+    fn eq(
+        &self,
+        other: &str,
+    ) -> bool {
         self.0 == other
     }
 }
 
 impl PartialEq<&'_ str> for Label {
-    fn eq(&self, other: &&str) -> bool {
+    fn eq(
+        &self,
+        other: &&str,
+    ) -> bool {
         self == *other
     }
 }
@@ -39,13 +45,19 @@ impl Label {
 }
 
 impl fmt::Display for Label {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
     }
 }
 
 impl fmt::Debug for Label {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         fmt::Debug::fmt(&self.0, f)
     }
 }

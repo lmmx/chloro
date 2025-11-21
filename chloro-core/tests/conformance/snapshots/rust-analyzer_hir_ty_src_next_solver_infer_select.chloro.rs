@@ -218,7 +218,10 @@ impl<'db, N> ImplSource<'db, N> {
         }
     }
 
-    pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
+    pub(crate) fn map<M, F>(
+        self,
+        f: F,
+    ) -> ImplSource<'db, M>
     where
         F: FnMut(N) -> M, {
         match self {
@@ -257,7 +260,10 @@ pub(crate) struct ImplSourceUserDefinedData<'db, N> {
 pub(crate) type Selection<'db> = ImplSource<'db, PredicateObligation<'db>>;
 
 impl<'db> InferCtxt<'db> {
-    pub(crate) fn select(&self, obligation: &TraitObligation<'db>) -> SelectionResult<'db, Selection<'db>> {
+    pub(crate) fn select(
+        &self,
+        obligation: &TraitObligation<'db>,
+    ) -> SelectionResult<'db, Selection<'db>> {
         self.visit_proof_tree(
             Goal::new(self.interner, obligation.param_env, obligation.predicate),
             &mut Select {},
@@ -273,7 +279,10 @@ struct Select {
 impl<'db> ProofTreeVisitor<'db> for Select {
     type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
 
-    fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
+    fn visit_goal(
+        &mut self,
+        goal: &InspectGoal<'_, 'db>,
+    ) -> Self::Result {
         let mut candidates = goal.candidates();
         candidates.retain(|cand| cand.result().is_ok());
         // No candidates -- not implemented.
@@ -311,7 +320,10 @@ impl<'db> ProofTreeVisitor<'db> for Select {
 /// This is a lot more limited than the old solver's equivalent method. This may lead to more `Ok(None)`
 /// results when selecting traits in polymorphic contexts, but we should never rely on the lack of ambiguity,
 /// and should always just gracefully fail here. We shouldn't rely on this incompleteness.
-fn candidate_should_be_dropped_in_favor_of<'db>(victim: &InspectCandidate<'_, 'db>, other: &InspectCandidate<'_, 'db>) -> bool {
+fn candidate_should_be_dropped_in_favor_of<'db>(
+    victim: &InspectCandidate<'_, 'db>,
+    other: &InspectCandidate<'_, 'db>,
+) -> bool {
     // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
     // codegen, and only on the good path.
     if matches!(other.result().unwrap(), Certainty::Maybe { .. }) {

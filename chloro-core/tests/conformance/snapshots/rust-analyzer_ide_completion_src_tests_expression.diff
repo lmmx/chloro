@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75833 bytes
-Chloro size:   75803 bytes
+Chloro size:   75818 bytes
 Rustfmt size:  76019 bytes
 
 ✗ Outputs DIFFER
@@ -25,15 +25,7 @@ Rustfmt size:  76019 bytes
 -    CompletionConfig,
  };
  
--fn check_with_config(
--    config: CompletionConfig<'_>,
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    expect: Expect,
--) {
-+fn check_with_config(config: CompletionConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-     let actual = completion_list_with_config(
-         config,
-         &format!("{BASE_ITEMS_FIXTURE}{ra_fixture}"),
+ fn check_with_config(
              sn ppd
          "#]],
      );

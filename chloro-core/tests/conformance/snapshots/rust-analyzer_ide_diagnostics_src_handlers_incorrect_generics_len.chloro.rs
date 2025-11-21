@@ -2,7 +2,10 @@ use hir::IncorrectGenericsLenKind;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn incorrect_generics_len(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectGenericsLen) -> Diagnostic {
+pub(crate) fn incorrect_generics_len(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::IncorrectGenericsLen,
+) -> Diagnostic {
     let owner_description = d.def.description();
     let expected = d.expected;
     let provided = d.provided;

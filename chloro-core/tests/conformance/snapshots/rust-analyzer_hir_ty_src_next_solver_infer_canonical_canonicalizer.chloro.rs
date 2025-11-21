@@ -62,7 +62,11 @@ impl<'db> InferCtxt<'db> {
     /// out the [chapter in the rustc dev guide][c].
     ///
     /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query
-    pub fn canonicalize_query<V>(&self, value: ParamEnvAnd<'db, V>, query_state: &mut OriginalQueryValues<'db>) -> CanonicalQueryInput<DbInterner<'db>, ParamEnvAnd<'db, V>>
+    pub fn canonicalize_query<V>(
+        &self,
+        value: ParamEnvAnd<'db, V>,
+        query_state: &mut OriginalQueryValues<'db>,
+    ) -> CanonicalQueryInput<DbInterner<'db>, ParamEnvAnd<'db, V>>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let (param_env, value) = value.into_parts();
@@ -112,7 +116,10 @@ impl<'db> InferCtxt<'db> {
     /// out the [chapter in the rustc dev guide][c].
     ///
     /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query-result
-    pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
+    pub fn canonicalize_response<V>(
+        &self,
+        value: V,
+    ) -> Canonical<'db, V>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let mut query_state = OriginalQueryValues::default();
@@ -125,7 +132,10 @@ impl<'db> InferCtxt<'db> {
         )
     }
 
-    pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
+    pub fn canonicalize_user_type_annotation<V>(
+        &self,
+        value: V,
+    ) -> Canonical<'db, V>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let mut query_state = OriginalQueryValues::default();
@@ -146,14 +156,22 @@ impl<'db> InferCtxt<'db> {
 /// maximally general query. But if we are canonicalizing a *query
 /// response*, then we don't typically replace free regions, as they
 /// must have been introduced from other parts of the system.
-fn canonicalize_free_region<'db>(&self, canonicalizer: &mut Canonicalizer<'_, 'db>, r: Region<'db>) -> Region<'db>;
+fn canonicalize_free_region<'db>(
+    &self,
+    canonicalizer: &mut Canonicalizer<'_, 'db>,
+    r: Region<'db>,
+) -> Region<'db>;
 fn any(&self) -> bool;
 fn preserve_universes(&self) -> bool;
 
 struct CanonicalizeQueryResponse;
 
 impl CanonicalizeMode for CanonicalizeQueryResponse {
-    fn canonicalize_free_region<'db>(&self, canonicalizer: &mut Canonicalizer<'_, 'db>, mut r: Region<'db>) -> Region<'db> {
+    fn canonicalize_free_region<'db>(
+        &self,
+        canonicalizer: &mut Canonicalizer<'_, 'db>,
+        mut r: Region<'db>,
+    ) -> Region<'db> {
         let infcx = canonicalizer.infcx;
         if let RegionKind::ReVar(vid) = r.kind() {
             r = infcx
@@ -212,7 +230,11 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
 struct CanonicalizeUserTypeAnnotation;
 
 impl CanonicalizeMode for CanonicalizeUserTypeAnnotation {
-    fn canonicalize_free_region<'db>(&self, canonicalizer: &mut Canonicalizer<'_, 'db>, r: Region<'db>) -> Region<'db> {
+    fn canonicalize_free_region<'db>(
+        &self,
+        canonicalizer: &mut Canonicalizer<'_, 'db>,
+        r: Region<'db>,
+    ) -> Region<'db> {
         match r.kind() {
             RegionKind::ReEarlyParam(_)
             | RegionKind::ReLateParam(_)
@@ -239,7 +261,11 @@ impl CanonicalizeMode for CanonicalizeUserTypeAnnotation {
 struct CanonicalizeAllFreeRegions;
 
 impl CanonicalizeMode for CanonicalizeAllFreeRegions {
-    fn canonicalize_free_region<'db>(&self, canonicalizer: &mut Canonicalizer<'_, 'db>, r: Region<'db>) -> Region<'db> {
+    fn canonicalize_free_region<'db>(
+        &self,
+        canonicalizer: &mut Canonicalizer<'_, 'db>,
+        r: Region<'db>,
+    ) -> Region<'db> {
         canonicalizer.canonical_var_for_region_in_root_universe(r)
     }
 
@@ -255,7 +281,11 @@ impl CanonicalizeMode for CanonicalizeAllFreeRegions {
 struct CanonicalizeFreeRegionsOtherThanStatic;
 
 impl CanonicalizeMode for CanonicalizeFreeRegionsOtherThanStatic {
-    fn canonicalize_free_region<'db>(&self, canonicalizer: &mut Canonicalizer<'_, 'db>, r: Region<'db>) -> Region<'db> {
+    fn canonicalize_free_region<'db>(
+        &self,
+        canonicalizer: &mut Canonicalizer<'_, 'db>,
+        r: Region<'db>,
+    ) -> Region<'db> {
         if r.is_static() { r } else { canonicalizer.canonical_var_for_region_in_root_universe(r) }
     }
 
@@ -292,7 +322,10 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         self.tcx
     }
 
-    fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
+    fn fold_binder<T>(
+        &mut self,
+        t: Binder<'db, T>,
+    ) -> Binder<'db, T>
     where
         T: TypeFoldable<DbInterner<'db>>, {
         self.binder_index.shift_in(1);
@@ -301,7 +334,10 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         t
     }
 
-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
+    fn fold_region(
+        &mut self,
+        r: Region<'db>,
+    ) -> Region<'db> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Bound(..), ..) => r,
             RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
@@ -318,7 +354,10 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn fold_ty(&mut self, mut t: Ty<'db>) -> Ty<'db> {
+    fn fold_ty(
+        &mut self,
+        mut t: Ty<'db>,
+    ) -> Ty<'db> {
         match t.kind() {
             TyKind::Infer(TyVar(mut vid)) => {
                 // We need to canonicalize the *root* of our ty var.
@@ -422,7 +461,10 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn fold_const(&mut self, mut ct: Const<'db>) -> Const<'db> {
+    fn fold_const(
+        &mut self,
+        mut ct: Const<'db>,
+    ) -> Const<'db> {
         match ct.kind() {
             ConstKind::Infer(InferConst::Var(mut vid)) => {
                 // We need to canonicalize the *root* of our const var.
@@ -478,7 +520,13 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
 impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// The main `canonicalize` method, shared impl of
     /// `canonicalize_query` and `canonicalize_response`.
-    fn canonicalize<V>(value: V, infcx: &InferCtxt<'db>, tcx: DbInterner<'db>, canonicalize_region_mode: &dyn CanonicalizeMode, query_state: &mut OriginalQueryValues<'db>) -> Canonical<'db, V>
+    fn canonicalize<V>(
+        value: V,
+        infcx: &InferCtxt<'db>,
+        tcx: DbInterner<'db>,
+        canonicalize_region_mode: &dyn CanonicalizeMode,
+        query_state: &mut OriginalQueryValues<'db>,
+    ) -> Canonical<'db, V>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let base = Canonical {
@@ -497,7 +545,14 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         .unchecked_map(|((), val)| val)
     }
 
-    fn canonicalize_with_base<U, V>(base: Canonical<'db, U>, value: V, infcx: &InferCtxt<'db>, tcx: DbInterner<'db>, canonicalize_region_mode: &dyn CanonicalizeMode, query_state: &mut OriginalQueryValues<'db>) -> Canonical<'db, (U, V)>
+    fn canonicalize_with_base<U, V>(
+        base: Canonical<'db, U>,
+        value: V,
+        infcx: &InferCtxt<'db>,
+        tcx: DbInterner<'db>,
+        canonicalize_region_mode: &dyn CanonicalizeMode,
+        query_state: &mut OriginalQueryValues<'db>,
+    ) -> Canonical<'db, (U, V)>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let needs_canonical_flags = if canonicalize_region_mode.any() {
@@ -548,7 +603,11 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// or returns an existing variable if `kind` has already been
     /// seen. `kind` is expected to be an unbound variable (or
     /// potentially a free region).
-    fn canonical_var(&mut self, info: CanonicalVarKind<'db>, kind: GenericArg<'db>) -> BoundVar {
+    fn canonical_var(
+        &mut self,
+        info: CanonicalVarKind<'db>,
+        kind: GenericArg<'db>,
+    ) -> BoundVar {
         let Canonicalizer { variables, query_state, indices, .. } = self;
         let var_values = &mut query_state.var_values;
         let universe = info.universe();
@@ -605,7 +664,10 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
+    fn get_or_insert_sub_root(
+        &mut self,
+        vid: TyVid,
+    ) -> BoundVar {
         let root_vid = self.infcx.sub_unification_table_root_var(vid);
         let idx =
             *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
@@ -670,13 +732,20 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     ///
     /// (This works because unification never fails -- and hence trait
     /// selection is never affected -- due to a universe mismatch.)
-    fn canonical_var_for_region_in_root_universe(&mut self, r: Region<'db>) -> Region<'db> {
+    fn canonical_var_for_region_in_root_universe(
+        &mut self,
+        r: Region<'db>,
+    ) -> Region<'db> {
         self.canonical_var_for_region(CanonicalVarKind::Region(UniverseIndex::ROOT), r)
     }
 
     /// Creates a canonical variable (with the given `info`)
     /// representing the region `r`; return a region referencing it.
-    fn canonical_var_for_region(&mut self, info: CanonicalVarKind<'db>, r: Region<'db>) -> Region<'db> {
+    fn canonical_var_for_region(
+        &mut self,
+        info: CanonicalVarKind<'db>,
+        r: Region<'db>,
+    ) -> Region<'db> {
         let var = self.canonical_var(info, r.into());
         Region::new_canonical_bound(self.cx(), var)
     }
@@ -685,7 +754,11 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// if `ty_var` is bound to anything; if so, canonicalize
     /// *that*. Otherwise, create a new canonical variable for
     /// `ty_var`.
-    fn canonicalize_ty_var(&mut self, info: CanonicalVarKind<'db>, ty_var: Ty<'db>) -> Ty<'db> {
+    fn canonicalize_ty_var(
+        &mut self,
+        info: CanonicalVarKind<'db>,
+        ty_var: Ty<'db>,
+    ) -> Ty<'db> {
         debug_assert_eq!(ty_var, self.infcx.shallow_resolve(ty_var));
         let var = self.canonical_var(info, ty_var.into());
         Ty::new_canonical_bound(self.cx(), var)
@@ -695,7 +768,11 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// if `const_var` is bound to anything; if so, canonicalize
     /// *that*. Otherwise, create a new canonical variable for
     /// `const_var`.
-    fn canonicalize_const_var(&mut self, info: CanonicalVarKind<'db>, const_var: Const<'db>) -> Const<'db> {
+    fn canonicalize_const_var(
+        &mut self,
+        info: CanonicalVarKind<'db>,
+        const_var: Const<'db>,
+    ) -> Const<'db> {
         debug_assert_eq!(const_var, self.infcx.shallow_resolve_const(const_var));
         let var = self.canonical_var(info, const_var.into());
         Const::new_canonical_bound(self.cx(), var)

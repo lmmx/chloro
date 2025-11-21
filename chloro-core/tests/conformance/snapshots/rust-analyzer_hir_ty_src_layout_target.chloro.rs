@@ -7,7 +7,10 @@ use triomphe::Arc;
 
 use crate::db::HirDatabase;
 
-pub fn target_data_layout_query(db: &dyn HirDatabase, krate: Crate) -> Result<Arc<TargetDataLayout>, TargetLoadError> {
+pub fn target_data_layout_query(
+    db: &dyn HirDatabase,
+    krate: Crate,
+) -> Result<Arc<TargetDataLayout>, TargetLoadError> {
     match &krate.workspace_data(db).target {
         Ok(target) => match TargetDataLayout::parse_from_llvm_datalayout_string(&target.data_layout, AddressSpace::ZERO) {
             Ok(it) => Ok(Arc::new(it)),

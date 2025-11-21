@@ -18,7 +18,10 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
 
-pub(crate) fn unresolved_field(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Diagnostic {
+pub(crate) fn unresolved_field(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedField<'_>,
+) -> Diagnostic {
     let method_suffix = if d.method_with_same_name_exists {
         ", but a method with a similar name exists"
     } else {
@@ -46,7 +49,10 @@ pub(crate) fn unresolved_field(ctx: &DiagnosticsContext<'_>, d: &hir::Unresolved
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedField<'_>,
+) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
     if d.method_with_same_name_exists {
         fixes.extend(method_fix(ctx, &d.expr));
@@ -55,7 +61,10 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<V
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 
-fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
+fn field_fix(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnresolvedField<'_>,
+) -> Option<Assist> {
     // Get the FileRange of the invalid field access
     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
     let expr = d.expr.value.to_node(&root).left()?;
@@ -89,7 +98,13 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Opti
     }
 }
 
-fn add_variant_to_union(ctx: &DiagnosticsContext<'_>, adt_union: Union, field_name: &str, suggested_type: Type, error_range: FileRange) -> Option<Assist> {
+fn add_variant_to_union(
+    ctx: &DiagnosticsContext<'_>,
+    adt_union: Union,
+    field_name: &str,
+    suggested_type: Type,
+    error_range: FileRange,
+) -> Option<Assist> {
     let adt_source = adt_union.source(ctx.sema.db)?;
     let adt_syntax = adt_source.syntax();
     let field_list = adt_source.value.record_field_list()?;
@@ -109,7 +124,13 @@ fn add_variant_to_union(ctx: &DiagnosticsContext<'_>, adt_union: Union, field_na
     })
 }
 
-fn add_field_to_struct_fix(ctx: &DiagnosticsContext<'_>, adt_struct: Struct, field_name: &str, suggested_type: Type, error_range: FileRange) -> Option<Assist> {
+fn add_field_to_struct_fix(
+    ctx: &DiagnosticsContext<'_>,
+    adt_struct: Struct,
+    field_name: &str,
+    suggested_type: Type,
+    error_range: FileRange,
+) -> Option<Assist> {
     let struct_source = adt_struct.source(ctx.sema.db)?;
     let struct_syntax = struct_source.syntax();
     let struct_range = struct_syntax.original_file_range_rooted(ctx.sema.db);
@@ -199,7 +220,13 @@ fn add_field_to_struct_fix(ctx: &DiagnosticsContext<'_>, adt_struct: Struct, fie
 }
 
 /// Used to determine the layout of the record field in the struct.
-fn record_field_layout(visibility: Option<Visibility>, name: Name, suggested_type: Type, field_list: ast::RecordFieldList, struct_syntax: &SyntaxNode) -> Option<(TextSize, String)> {
+fn record_field_layout(
+    visibility: Option<Visibility>,
+    name: Name,
+    suggested_type: Type,
+    field_list: ast::RecordFieldList,
+    struct_syntax: &SyntaxNode,
+) -> Option<(TextSize, String)> {
     let (offset, needs_comma, indent) = match field_list.fields().last() {
         Some(record_field) => {
             let syntax = algo::skip_trivia_token(field_list.r_curly_token()?, Direction::Prev)?;
@@ -229,7 +256,10 @@ fn record_field_layout(visibility: Option<Visibility>, name: Name, suggested_typ
     Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
 }
 
-fn method_fix(ctx: &DiagnosticsContext<'_>, expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>) -> Option<Assist> {
+fn method_fix(
+    ctx: &DiagnosticsContext<'_>,
+    expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>,
+) -> Option<Assist> {
     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     let FileRange { range, file_id } = ctx.sema.original_range_opt(expr.syntax())?;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3138 bytes
-Chloro size:   3003 bytes
+Chloro size:   3014 bytes
 Rustfmt size:  3138 bytes
 
 ✗ Outputs DIFFER
@@ -15,14 +15,9 @@ Rustfmt size:  3138 bytes
 -// Diagnostic: trait-impl-orphan
 -//
 -// Only traits defined in the current crate can be implemented for arbitrary types
--pub(crate) fn trait_impl_orphan(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::TraitImplOrphan,
--) -> Diagnostic {
-+pub(crate) fn trait_impl_orphan(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplOrphan) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("E0117"),
+ pub(crate) fn trait_impl_orphan(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::TraitImplOrphan,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

@@ -13,11 +13,17 @@ use crate::{
     utils::generate_trait_impl_text_intransitive,
 };
 
-pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_deref(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     generate_record_deref(acc, ctx).or_else(|| generate_tuple_deref(acc, ctx))
 }
 
-fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn generate_record_deref(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
     let deref_type_to_generate = match existing_deref_impl(&ctx.sema, &strukt) {
@@ -54,7 +60,10 @@ fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     )
 }
 
-fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn generate_tuple_deref(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::TupleField>()?;
     let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
@@ -92,7 +101,16 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
     )
 }
 
-fn generate_edit(db: &RootDatabase, edit: &mut SourceChangeBuilder, strukt: ast::Struct, field_type_syntax: &SyntaxNode, field_name: impl Display, deref_type: DerefType, trait_path: ModPath, edition: Edition) {
+fn generate_edit(
+    db: &RootDatabase,
+    edit: &mut SourceChangeBuilder,
+    strukt: ast::Struct,
+    field_type_syntax: &SyntaxNode,
+    field_name: impl Display,
+    deref_type: DerefType,
+    trait_path: ModPath,
+    edition: Edition,
+) {
     let start_offset = strukt.syntax().text_range().end();
     let impl_code = match deref_type {
         DerefType::Deref => format!(
@@ -117,7 +135,10 @@ fn generate_edit(db: &RootDatabase, edit: &mut SourceChangeBuilder, strukt: ast:
     edit.insert(start_offset, deref_impl);
 }
 
-fn existing_deref_impl(sema: &hir::Semantics<'_, RootDatabase>, strukt: &ast::Struct) -> Option<DerefType> {
+fn existing_deref_impl(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    strukt: &ast::Struct,
+) -> Option<DerefType> {
     let strukt = sema.to_def(strukt)?;
     let krate = strukt.module(sema.db).krate();
     let deref_trait = FamousDefs(sema, krate).core_ops_Deref()?;
@@ -141,7 +162,11 @@ enum DerefType {
 }
 
 impl DerefType {
-    fn to_trait(&self, sema: &hir::Semantics<'_, RootDatabase>, krate: hir::Crate) -> Option<hir::Trait> {
+    fn to_trait(
+        &self,
+        sema: &hir::Semantics<'_, RootDatabase>,
+        krate: hir::Crate,
+    ) -> Option<hir::Trait> {
         match self {
             DerefType::Deref => FamousDefs(sema, krate).core_ops_Deref(),
             DerefType::DerefMut => FamousDefs(sema, krate).core_ops_DerefMut(),

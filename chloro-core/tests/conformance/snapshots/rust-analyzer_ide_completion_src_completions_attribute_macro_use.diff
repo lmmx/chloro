@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1223 bytes
-Chloro size:   1204 bytes
+Chloro size:   1223 bytes
 Rustfmt size:  1262 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,13 @@ Rustfmt size:  1262 bytes
  use syntax::ast;
  
 -use crate::{context::CompletionContext, item::CompletionItem, Completions};
--
--pub(super) fn complete_macro_use(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    extern_crate: Option<&ast::ExternCrate>,
--    existing_imports: &[ast::Path],
--) {
++use crate::{Completions, context::CompletionContext, item::CompletionItem};
+ 
+ pub(super) fn complete_macro_use(
+     acc: &mut Completions,
+     extern_crate: Option<&ast::ExternCrate>,
+     existing_imports: &[ast::Path],
+ ) {
 -    let Some(extern_crate) = extern_crate else {
 -        return;
 -    };
@@ -31,9 +31,7 @@ Rustfmt size:  1262 bytes
 -    let Some(krate) = extern_crate.resolved_crate(ctx.db) else {
 -        return;
 -    };
-+use crate::{Completions, context::CompletionContext, item::CompletionItem};
- 
-+pub(super) fn complete_macro_use(acc: &mut Completions, ctx: &CompletionContext<'_>, extern_crate: Option<&ast::ExternCrate>, existing_imports: &[ast::Path]) {
+-
 +    let Some(extern_crate) = extern_crate else { return };
 +    let Some(extern_crate) = ctx.sema.to_def(extern_crate) else { return };
 +    let Some(krate) = extern_crate.resolved_crate(ctx.db) else { return };

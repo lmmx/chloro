@@ -42,7 +42,11 @@ impl ops::Deref for RawAttrs {
 
 impl RawAttrs {
 
-    pub fn new(db: &dyn ExpandDatabase, owner: &dyn ast::HasAttrs, span_map: SpanMapRef<'_>) -> Self {
+    pub fn new(
+        db: &dyn ExpandDatabase,
+        owner: &dyn ast::HasAttrs,
+        span_map: SpanMapRef<'_>,
+    ) -> Self {
         let entries: Vec<_> = Self::attrs_iter::<true>(db, owner, span_map).collect();
         let entries = if entries.is_empty() {
             None
@@ -53,7 +57,12 @@ impl RawAttrs {
     }
 
     /// A [`RawAttrs`] that has its `#[cfg_attr(...)]` attributes expanded.
-    pub fn new_expanded(db: &dyn ExpandDatabase, owner: &dyn ast::HasAttrs, span_map: SpanMapRef<'_>, cfg_options: &CfgOptions) -> Self {
+    pub fn new_expanded(
+        db: &dyn ExpandDatabase,
+        owner: &dyn ast::HasAttrs,
+        span_map: SpanMapRef<'_>,
+        cfg_options: &CfgOptions,
+    ) -> Self {
         let entries: Vec<_> =
             Self::attrs_iter_expanded::<true>(db, owner, span_map, cfg_options).collect();
         let entries = if entries.is_empty() {
@@ -64,7 +73,11 @@ impl RawAttrs {
         RawAttrs { entries }
     }
 
-    pub fn attrs_iter<const DESUGAR_COMMENTS: bool>(db: &dyn ExpandDatabase, owner: &dyn ast::HasAttrs, span_map: SpanMapRef<'_>) -> impl Iterator<Item = Attr> {
+    pub fn attrs_iter<const DESUGAR_COMMENTS: bool>(
+        db: &dyn ExpandDatabase,
+        owner: &dyn ast::HasAttrs,
+        span_map: SpanMapRef<'_>,
+    ) -> impl Iterator<Item = Attr> {
         collect_attrs(owner).filter_map(move |(id, attr)| match attr {
             Either::Left(attr) => {
                 attr.meta().and_then(|meta| Attr::from_src(db, meta, span_map, id))
@@ -88,12 +101,20 @@ impl RawAttrs {
         })
     }
 
-    pub fn attrs_iter_expanded<const DESUGAR_COMMENTS: bool>(db: &dyn ExpandDatabase, owner: &dyn ast::HasAttrs, span_map: SpanMapRef<'_>, cfg_options: &CfgOptions) -> impl Iterator<Item = Attr> {
+    pub fn attrs_iter_expanded<const DESUGAR_COMMENTS: bool>(
+        db: &dyn ExpandDatabase,
+        owner: &dyn ast::HasAttrs,
+        span_map: SpanMapRef<'_>,
+        cfg_options: &CfgOptions,
+    ) -> impl Iterator<Item = Attr> {
         Self::attrs_iter::<DESUGAR_COMMENTS>(db, owner, span_map)
             .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
     }
 
-    pub fn merge(&self, other: Self) -> Self {
+    pub fn merge(
+        &self,
+        other: Self,
+    ) -> Self {
         match (&self.entries, other.entries) {
             (None, None) => Self::EMPTY,
             (None, entries @ Some(_)) => Self { entries },
@@ -117,7 +138,11 @@ impl RawAttrs {
     }
 
     /// Processes `cfg_attr`s
-    pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
+    pub fn expand_cfg_attr(
+        self,
+        db: &dyn ExpandDatabase,
+        krate: Crate,
+    ) -> RawAttrs {
         let has_cfg_attrs =
             self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
         if !has_cfg_attrs {
@@ -149,7 +174,10 @@ pub struct AttrId {
 
 impl AttrId {
 
-    pub fn new(id: usize, is_inner: bool) -> Self {
+    pub fn new(
+        id: usize,
+        is_inner: bool,
+    ) -> Self {
         assert!(id <= !Self::INNER_ATTR_SET_BIT as usize);
         let id = id as u32;
         Self { id: if is_inner { id | Self::INNER_ATTR_SET_BIT } else { id } }
@@ -181,7 +209,10 @@ pub enum AttrInput {
 }
 
 impl fmt::Display for AttrInput {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             AttrInput::Literal(lit) => write!(f, " = {lit}"),
             AttrInput::TokenTree(tt) => tt.fmt(f),
@@ -190,7 +221,12 @@ impl fmt::Display for AttrInput {
 }
 
 impl Attr {
-    fn from_src(db: &dyn ExpandDatabase, ast: ast::Meta, span_map: SpanMapRef<'_>, id: AttrId) -> Option<Attr> {
+    fn from_src(
+        db: &dyn ExpandDatabase,
+        ast: ast::Meta,
+        span_map: SpanMapRef<'_>,
+        id: AttrId,
+    ) -> Option<Attr> {
         let path = ast.path()?;
         let range = path.syntax().text_range();
         let path = Interned::new(ModPath::from_src(db, path, &mut |range| {
@@ -214,7 +250,11 @@ impl Attr {
         Some(Attr { id, path, input, ctxt: span.ctx })
     }
 
-    fn from_tt(db: &dyn ExpandDatabase, mut tt: tt::TokenTreesView<'_>, id: AttrId) -> Option<Attr> {
+    fn from_tt(
+        db: &dyn ExpandDatabase,
+        mut tt: tt::TokenTreesView<'_>,
+        id: AttrId,
+    ) -> Option<Attr> {
         if matches!(tt.flat_tokens(),
             [tt::TokenTree::Leaf(tt::Leaf::Ident(tt::Ident { sym, .. })), ..]
             if *sym == sym::unsafe_
@@ -269,7 +309,11 @@ impl Attr {
         &self.path
     }
 
-    pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, cfg_options: &CfgOptions) -> impl IntoIterator<Item = Self> {
+    pub fn expand_cfg_attr(
+        self,
+        db: &dyn ExpandDatabase,
+        cfg_options: &CfgOptions,
+    ) -> impl IntoIterator<Item = Self> {
         let is_cfg_attr = self.path.as_ident().is_some_and(|name| *name == sym::cfg_attr);
         if !is_cfg_attr {
             return smallvec![self];
@@ -354,7 +398,10 @@ impl Attr {
     }
 
     /// Parses this attribute as a token tree consisting of comma separated paths.
-    pub fn parse_path_comma_token_tree<'a>(&'a self, db: &'a dyn ExpandDatabase) -> Option<impl Iterator<Item = (ModPath, Span)> + 'a> {
+    pub fn parse_path_comma_token_tree<'a>(
+        &'a self,
+        db: &'a dyn ExpandDatabase,
+    ) -> Option<impl Iterator<Item = (ModPath, Span)> + 'a> {
         let args = self.token_tree_value()?;
         if args.top_subtree().delimiter.kind != DelimiterKind::Parenthesis {
             return None;

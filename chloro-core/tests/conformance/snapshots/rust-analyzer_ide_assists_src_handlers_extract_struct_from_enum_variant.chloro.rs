@@ -25,7 +25,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
-pub(crate) fn extract_struct_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn extract_struct_from_enum_variant(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let field_list = extract_field_list_if_applicable(&variant)?;
     let variant_name = variant.name()?;
@@ -143,7 +146,11 @@ fn extract_field_list_if_applicable(variant: &ast::Variant) -> Option<Either<ast
     }
 }
 
-fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Variant) -> bool {
+fn existing_definition(
+    db: &RootDatabase,
+    variant_name: &ast::Name,
+    variant: &Variant,
+) -> bool {
     variant
         .parent_enum(db)
         .module(db)
@@ -165,7 +172,10 @@ fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Va
         .any(|(name, _)| name.as_str() == variant_name.text().trim_start_matches("r#"))
 }
 
-fn extract_generic_params(known_generics: &ast::GenericParamList, field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>) -> Option<ast::GenericParamList> {
+fn extract_generic_params(
+    known_generics: &ast::GenericParamList,
+    field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
+) -> Option<ast::GenericParamList> {
     let mut generics = known_generics.generic_params().map(|param| (param, false)).collect_vec();
     let tagged_one = match field_list {
         Either::Left(field_list) => field_list
@@ -181,7 +191,10 @@ fn extract_generic_params(known_generics: &ast::GenericParamList, field_list: &E
     tagged_one.then(|| make::generic_param_list(generics))
 }
 
-fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
+fn tag_generics_in_variant(
+    ty: &ast::Type,
+    generics: &mut [(ast::GenericParam, bool)],
+) -> bool {
     let mut tagged_one = false;
     for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
@@ -224,7 +237,13 @@ fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, b
     tagged_one
 }
 
-fn create_struct_def(name: ast::Name, variant: &ast::Variant, field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>, generics: Option<ast::GenericParamList>, enum_: &ast::Enum) -> ast::Struct {
+fn create_struct_def(
+    name: ast::Name,
+    variant: &ast::Variant,
+    field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
+    generics: Option<ast::GenericParamList>,
+    enum_: &ast::Enum,
+) -> ast::Struct {
     let enum_vis = enum_.visibility();
     let insert_vis = |node: &'_ SyntaxNode, vis: &'_ SyntaxNode| {
         let vis = vis.clone_for_update();
@@ -275,7 +294,10 @@ fn create_struct_def(name: ast::Name, variant: &ast::Variant, field_list: &Eithe
     strukt
 }
 
-fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList>) -> Option<()> {
+fn update_variant(
+    variant: &ast::Variant,
+    generics: Option<ast::GenericParamList>,
+) -> Option<()> {
     let name = variant.name()?;
     let generic_args = generics
         .filter(|generics| generics.generic_params().count() > 0)
@@ -322,7 +344,13 @@ fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
         .collect()
 }
 
-fn apply_references(insert_use_cfg: InsertUseConfig, segment: ast::PathSegment, node: SyntaxNode, import: Option<(ImportScope, hir::ModPath)>, edition: Edition) {
+fn apply_references(
+    insert_use_cfg: InsertUseConfig,
+    segment: ast::PathSegment,
+    node: SyntaxNode,
+    import: Option<(ImportScope, hir::ModPath)>,
+    edition: Edition,
+) {
     if let Some((scope, path)) = import {
         insert_use(&scope, mod_path_to_ast(&path, edition), &insert_use_cfg);
     }
@@ -333,7 +361,14 @@ fn apply_references(insert_use_cfg: InsertUseConfig, segment: ast::PathSegment, 
     ted::insert_raw(ted::Position::after(&node), make::token(T![')']));
 }
 
-fn process_references(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, visited_modules: &mut FxHashSet<Module>, enum_module_def: &ModuleDef, variant_hir_name: &Name, refs: Vec<FileReference>) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
+fn process_references(
+    ctx: &AssistContext<'_>,
+    builder: &mut SourceChangeBuilder,
+    visited_modules: &mut FxHashSet<Module>,
+    enum_module_def: &ModuleDef,
+    variant_hir_name: &Name,
+    refs: Vec<FileReference>,
+) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
     // and corresponding nodes up front
     refs.into_iter()
@@ -362,7 +397,10 @@ fn process_references(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder
         .collect()
 }
 
-fn reference_to_node(sema: &hir::Semantics<'_, RootDatabase>, reference: FileReference) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
+fn reference_to_node(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    reference: FileReference,
+) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
     let segment =
         reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
     // filter out the reference in marco

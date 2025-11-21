@@ -61,7 +61,12 @@ pub(crate) struct LatticeOp<'infcx, 'db> {
 }
 
 impl<'infcx, 'db> LatticeOp<'infcx, 'db> {
-    pub(crate) fn new(infcx: &'infcx InferCtxt<'db>, trace: TypeTrace<'db>, param_env: ParamEnv<'db>, kind: LatticeOpKind) -> LatticeOp<'infcx, 'db> {
+    pub(crate) fn new(
+        infcx: &'infcx InferCtxt<'db>,
+        trace: TypeTrace<'db>,
+        param_env: ParamEnv<'db>,
+        kind: LatticeOpKind,
+    ) -> LatticeOp<'infcx, 'db> {
         LatticeOp { infcx, trace, param_env, kind, obligations: PredicateObligations::new() }
     }
 
@@ -75,7 +80,13 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         self.infcx.interner
     }
 
-    fn relate_with_variance<T: Relate<DbInterner<'db>>>(&mut self, variance: Variance, _info: VarianceDiagInfo<DbInterner<'db>>, a: T, b: T) -> RelateResult<'db, T> {
+    fn relate_with_variance<T: Relate<DbInterner<'db>>>(
+        &mut self,
+        variance: Variance,
+        _info: VarianceDiagInfo<DbInterner<'db>>,
+        a: T,
+        b: T,
+    ) -> RelateResult<'db, T> {
         match variance {
             Variance::Invariant => {
                 self.obligations.extend(
@@ -96,7 +107,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
     }
 
     /// Relates two types using a given lattice.
-    fn tys(&mut self, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
+    fn tys(
+        &mut self,
+        a: Ty<'db>,
+        b: Ty<'db>,
+    ) -> RelateResult<'db, Ty<'db>> {
         if a == b {
             return Ok(a);
         }
@@ -142,7 +157,11 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         }
     }
 
-    fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
+    fn regions(
+        &mut self,
+        a: Region<'db>,
+        b: Region<'db>,
+    ) -> RelateResult<'db, Region<'db>> {
         let mut inner = self.infcx.inner.borrow_mut();
         let mut constraints = inner.unwrap_region_constraints();
         Ok(match self.kind {
@@ -154,11 +173,19 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         })
     }
 
-    fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {
+    fn consts(
+        &mut self,
+        a: Const<'db>,
+        b: Const<'db>,
+    ) -> RelateResult<'db, Const<'db>> {
         super_combine_consts(self.infcx, self, a, b)
     }
 
-    fn binders<T>(&mut self, a: Binder<'db, T>, b: Binder<'db, T>) -> RelateResult<'db, Binder<'db, T>>
+    fn binders<T>(
+        &mut self,
+        a: Binder<'db, T>,
+        b: Binder<'db, T>,
+    ) -> RelateResult<'db, Binder<'db, T>>
     where
         T: Relate<DbInterner<'db>>, {
         // GLB/LUB of a binder and itself is just itself
@@ -178,7 +205,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
 }
 
 impl<'infcx, 'db> LatticeOp<'infcx, 'db> {
-    fn relate_bound(&mut self, v: Ty<'db>, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, ()> {
+    fn relate_bound(
+        &mut self,
+        v: Ty<'db>,
+        a: Ty<'db>,
+        b: Ty<'db>,
+    ) -> RelateResult<'db, ()> {
         let at = self.infcx.at(&self.trace.cause, self.param_env);
         match self.kind {
             LatticeOpKind::Glb => {
@@ -207,13 +239,19 @@ impl<'db> PredicateEmittingRelation<InferCtxt<'db>> for LatticeOp<'_, 'db> {
         self.param_env
     }
 
-    fn register_predicates(&mut self, preds: impl IntoIterator<Item: Upcast<DbInterner<'db>, Predicate<'db>>>) {
+    fn register_predicates(
+        &mut self,
+        preds: impl IntoIterator<Item: Upcast<DbInterner<'db>, Predicate<'db>>>,
+    ) {
         self.obligations.extend(preds.into_iter().map(|pred| {
             Obligation::new(self.infcx.interner, self.trace.cause.clone(), self.param_env, pred)
         }))
     }
 
-    fn register_goals(&mut self, goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>) {
+    fn register_goals(
+        &mut self,
+        goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>,
+    ) {
         self.obligations.extend(goals.into_iter().map(|goal| {
             Obligation::new(
                 self.infcx.interner,
@@ -224,7 +262,11 @@ impl<'db> PredicateEmittingRelation<InferCtxt<'db>> for LatticeOp<'_, 'db> {
         }))
     }
 
-    fn register_alias_relate_predicate(&mut self, a: Ty<'db>, b: Ty<'db>) {
+    fn register_alias_relate_predicate(
+        &mut self,
+        a: Ty<'db>,
+        b: Ty<'db>,
+    ) {
         self.register_predicates([Binder::dummy(PredicateKind::AliasRelate(
             a.into(),
             b.into(),

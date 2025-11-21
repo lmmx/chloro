@@ -11,7 +11,10 @@ use crate::{
     utils::{convert_reference_type, find_struct_impl, generate_impl},
 };
 
-pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_setter(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // This if condition denotes two modes this assist can work in:
     // - First is acting upon selection of record fields
     // - Next is acting upon a single record field
@@ -43,11 +46,17 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     Some(())
 }
 
-pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_getter(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     generate_getter_impl(acc, ctx, false)
 }
 
-pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_getter_mut(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     generate_getter_impl(acc, ctx, true)
 }
 
@@ -71,7 +80,11 @@ enum AssistType {
     Set,
 }
 
-pub(crate) fn generate_getter_impl(acc: &mut Assists, ctx: &AssistContext<'_>, mutable: bool) -> Option<()> {
+pub(crate) fn generate_getter_impl(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    mutable: bool,
+) -> Option<()> {
     let (strukt, info_of_record_fields, fn_names) =
         extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
     // No record fields to do work on :(
@@ -103,7 +116,11 @@ pub(crate) fn generate_getter_impl(acc: &mut Assists, ctx: &AssistContext<'_>, m
     )
 }
 
-fn generate_getter_from_info(ctx: &AssistContext<'_>, info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
+fn generate_getter_from_info(
+    ctx: &AssistContext<'_>,
+    info: &AssistInfo,
+    record_field_info: &RecordFieldInfo,
+) -> ast::Fn {
     let (ty, body) = if matches!(info.assist_type, AssistType::MutGet) {
         (
             make::ty_ref(record_field_info.field_ty.clone(), true),
@@ -163,7 +180,10 @@ fn generate_getter_from_info(ctx: &AssistContext<'_>, info: &AssistInfo, record_
     )
 }
 
-fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
+fn generate_setter_from_info(
+    info: &AssistInfo,
+    record_field_info: &RecordFieldInfo,
+) -> ast::Fn {
     let strukt = &info.strukt;
     let field_name = &record_field_info.fn_name;
     let fn_name = make::name(&format!("set_{field_name}"));
@@ -197,7 +217,10 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     )
 }
 
-fn extract_and_parse(ctx: &AssistContext<'_>, assist_type: AssistType) -> Option<(ast::Struct, Vec<RecordFieldInfo>, Vec<String>)> {
+fn extract_and_parse(
+    ctx: &AssistContext<'_>,
+    assist_type: AssistType,
+) -> Option<(ast::Struct, Vec<RecordFieldInfo>, Vec<String>)> {
     // This if condition denotes two modes assists can work in:
     // - First is acting upon selection of record fields
     // - Next is acting upon a single record field
@@ -225,7 +248,11 @@ fn extract_and_parse(ctx: &AssistContext<'_>, assist_type: AssistType) -> Option
     Some((strukt, vec![record_field_info], vec![fn_name]))
 }
 
-fn extract_and_parse_record_fields(node: &ast::Struct, selection_range: TextRange, assist_type: &AssistType) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
+fn extract_and_parse_record_fields(
+    node: &ast::Struct,
+    selection_range: TextRange,
+    assist_type: &AssistType,
+) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
     let mut field_names: Vec<String> = vec![];
     let field_list = node.field_list()?;
     match field_list {
@@ -253,7 +280,10 @@ fn extract_and_parse_record_fields(node: &ast::Struct, selection_range: TextRang
     }
 }
 
-fn parse_record_field(record_field: ast::RecordField, assist_type: &AssistType) -> Option<RecordFieldInfo> {
+fn parse_record_field(
+    record_field: ast::RecordField,
+    assist_type: &AssistType,
+) -> Option<RecordFieldInfo> {
     let field_name = record_field.name()?;
     let field_ty = record_field.ty()?;
     let mut fn_name = to_lower_snake_case(&field_name.to_string());
@@ -264,7 +294,12 @@ fn parse_record_field(record_field: ast::RecordField, assist_type: &AssistType) 
     Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
 }
 
-fn build_source_change(builder: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, info_of_record_fields: Vec<RecordFieldInfo>, assist_info: AssistInfo) {
+fn build_source_change(
+    builder: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    info_of_record_fields: Vec<RecordFieldInfo>,
+    assist_info: AssistInfo,
+) {
     let record_fields_count = info_of_record_fields.len();
     let impl_def = if let Some(impl_def) = &assist_info.impl_def {
         // We have an existing impl to add to

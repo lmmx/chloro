@@ -66,7 +66,13 @@ macro_rules! register_builtin {
 }
 
 impl BuiltinFnLikeExpander {
-    pub fn expand(&self, db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+    pub fn expand(
+        &self,
+        db: &dyn ExpandDatabase,
+        id: MacroCallId,
+        tt: &tt::TopSubtree,
+        span: Span,
+    ) -> ExpandResult<tt::TopSubtree> {
         let span = span_with_def_site_ctxt(db, span, id.into(), Edition::CURRENT);
         self.expander()(db, id, tt, span)
     }
@@ -77,7 +83,13 @@ impl BuiltinFnLikeExpander {
 }
 
 impl EagerExpander {
-    pub fn expand(&self, db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+    pub fn expand(
+        &self,
+        db: &dyn ExpandDatabase,
+        id: MacroCallId,
+        tt: &tt::TopSubtree,
+        span: Span,
+    ) -> ExpandResult<tt::TopSubtree> {
         let span = span_with_def_site_ctxt(db, span, id.into(), Edition::CURRENT);
         self.expander()(db, id, tt, span)
     }
@@ -105,14 +117,24 @@ fn mk_pound(span: Span) -> tt::Leaf {
     crate::tt::Leaf::Punct(crate::tt::Punct { char: '#', spacing: crate::tt::Spacing::Alone, span })
 }
 
-fn module_path_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn module_path_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     // Just return a dummy result.
     ExpandResult::ok(quote! {span =>
          "module::path"
     })
 }
 
-fn line_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn line_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     // dummy implementation for type-checking purposes
     // Note that `line!` and `column!` will never be implemented properly, as they are by definition
     // not incremental
@@ -127,15 +149,30 @@ fn line_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree,
     ))
 }
 
-fn log_syntax_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn log_syntax_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::ok(quote! {span =>})
 }
 
-fn trace_macros_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn trace_macros_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::ok(quote! {span =>})
 }
 
-fn stringify_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn stringify_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let pretty = ::tt::pretty(tt.token_trees().flat_tokens());
     let expanded = quote! {span =>
         #pretty
@@ -143,7 +180,12 @@ fn stringify_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubt
     ExpandResult::ok(expanded)
 }
 
-fn assert_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn assert_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
     let mut iter = tt.iter();
     let cond = expect_fragment(
@@ -173,7 +215,12 @@ fn assert_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, 
     }
 }
 
-fn file_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn file_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     // FIXME: RA purposefully lacks knowledge of absolute file names
     // so just return "".
     let file_name = "file";
@@ -183,7 +230,12 @@ fn file_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, _tt: &tt::TopSubtree,
     ExpandResult::ok(expanded)
 }
 
-fn format_args_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn format_args_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let pound = mk_pound(span);
     let mut tt = tt.clone();
     tt.top_subtree_delimiter_mut().kind = tt::DelimiterKind::Parenthesis;
@@ -192,7 +244,12 @@ fn format_args_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSu
     })
 }
 
-fn format_args_nl_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn format_args_nl_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let pound = mk_pound(span);
     let mut tt = tt.clone();
     tt.top_subtree_delimiter_mut().kind = tt::DelimiterKind::Parenthesis;
@@ -209,7 +266,12 @@ fn format_args_nl_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::To
     })
 }
 
-fn asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn asm_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mut tt = tt.clone();
     tt.top_subtree_delimiter_mut().kind = tt::DelimiterKind::Parenthesis;
     let pound = mk_pound(span);
@@ -219,7 +281,12 @@ fn asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, s
     ExpandResult::ok(expanded)
 }
 
-fn global_asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn global_asm_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mut tt = tt.clone();
     tt.top_subtree_delimiter_mut().kind = tt::DelimiterKind::Parenthesis;
     let pound = mk_pound(span);
@@ -229,7 +296,12 @@ fn global_asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSub
     ExpandResult::ok(expanded)
 }
 
-fn naked_asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn naked_asm_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mut tt = tt.clone();
     tt.top_subtree_delimiter_mut().kind = tt::DelimiterKind::Parenthesis;
     let pound = mk_pound(span);
@@ -239,7 +311,12 @@ fn naked_asm_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubt
     ExpandResult::ok(expanded)
 }
 
-fn cfg_select_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn cfg_select_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let loc = db.lookup_intern_macro_call(id);
     let cfg_options = loc.krate.cfg_options(db);
     let mut iter = tt.iter();
@@ -298,7 +375,12 @@ fn cfg_select_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtr
     }
 }
 
-fn cfg_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn cfg_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let loc = db.lookup_intern_macro_call(id);
     let expr = CfgExpr::parse(tt);
     let enabled = loc.krate.cfg_options(db).check(&expr) != Some(false);
@@ -306,7 +388,12 @@ fn cfg_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, spa
     ExpandResult::ok(expanded)
 }
 
-fn panic_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn panic_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let dollar_crate = dollar_crate(span);
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
     let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
@@ -324,7 +411,12 @@ fn panic_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, s
     ExpandResult::ok(call)
 }
 
-fn unreachable_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn unreachable_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let dollar_crate = dollar_crate(span);
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
     let mac = if use_panic_2021(db, call_site_span) {
@@ -345,7 +437,10 @@ fn unreachable_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubt
 }
 
 #[allow(clippy::never_loop)]
-fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
+fn use_panic_2021(
+    db: &dyn ExpandDatabase,
+    span: Span,
+) -> bool {
     // To determine the edition, we check the first span up the expansion
     // stack that does not have #[allow_internal_unstable(edition_panic)].
     // (To avoid using the edition of e.g. the assert!() or debug_assert!() definition.)
@@ -366,7 +461,12 @@ fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
     }
 }
 
-fn compile_error_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn compile_error_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let err = match &*tt.0 {
         [
             _,
@@ -382,7 +482,12 @@ fn compile_error_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::Top
     ExpandResult { value: quote! {span =>}, err: Some(err) }
 }
 
-fn concat_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, tt: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
+fn concat_expand(
+    _db: &dyn ExpandDatabase,
+    _arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    call_site: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mut err = None;
     let mut text = String::new();
     let mut span: Option<Span> = None;
@@ -483,7 +588,12 @@ fn concat_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, tt: &tt::TopSub
     ExpandResult { value: quote!(span =>#text), err }
 }
 
-fn concat_bytes_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, tt: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
+fn concat_bytes_expand(
+    _db: &dyn ExpandDatabase,
+    _arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    call_site: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mut bytes = String::new();
     let mut err = None;
     let mut span: Option<Span> = None;
@@ -553,7 +663,12 @@ fn concat_bytes_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, tt: &tt::
     }
 }
 
-fn concat_bytes_expand_subtree(tree_iter: TtIter<'_>, bytes: &mut String, mut record_span: impl FnMut(Span), err_span: Span) -> Result<(), ExpandError> {
+fn concat_bytes_expand_subtree(
+    tree_iter: TtIter<'_>,
+    bytes: &mut String,
+    mut record_span: impl FnMut(Span),
+    err_span: Span,
+) -> Result<(), ExpandError> {
     for (ti, tt) in tree_iter.enumerate() {
         match tt {
             TtElement::Leaf(tt::Leaf::Literal(tt::Literal {
@@ -587,7 +702,13 @@ fn concat_bytes_expand_subtree(tree_iter: TtIter<'_>, bytes: &mut String, mut re
     Ok(())
 }
 
-fn relative_file(db: &dyn ExpandDatabase, call_id: MacroCallId, path_str: &str, allow_recursion: bool, err_span: Span) -> Result<EditionedFileId, ExpandError> {
+fn relative_file(
+    db: &dyn ExpandDatabase,
+    call_id: MacroCallId,
+    path_str: &str,
+    allow_recursion: bool,
+    err_span: Span,
+) -> Result<EditionedFileId, ExpandError> {
     let lookup = db.lookup_intern_macro_call(call_id);
     let call_site = lookup.kind.file_id().original_file_respecting_includes(db).file_id(db);
     let path = AnchoredPath { anchor: call_site, path: path_str };
@@ -635,7 +756,12 @@ fn parse_string(tt: &tt::TopSubtree) -> Result<(Symbol, Span), ExpandError> {
     .map_err(|span| ExpandError::other(span, "expected string literal"))
 }
 
-fn include_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn include_expand(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let editioned_file_id = match include_input_to_file_id(db, arg_id, tt) {
         Ok(editioned_file_id) => editioned_file_id,
         Err(e) => {
@@ -655,12 +781,21 @@ fn include_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubt
     ))
 }
 
-pub fn include_input_to_file_id(db: &dyn ExpandDatabase, arg_id: MacroCallId, arg: &tt::TopSubtree) -> Result<EditionedFileId, ExpandError> {
+pub fn include_input_to_file_id(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    arg: &tt::TopSubtree,
+) -> Result<EditionedFileId, ExpandError> {
     let (s, span) = parse_string(arg)?;
     relative_file(db, arg_id, s.as_str(), false, span)
 }
 
-fn include_bytes_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn include_bytes_expand(
+    _db: &dyn ExpandDatabase,
+    _arg_id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     // FIXME: actually read the file here if the user asked for macro expansion
     let res = tt::TopSubtree::invisible_from_leaves(
         span,
@@ -674,7 +809,12 @@ fn include_bytes_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, _tt: &tt
     ExpandResult::ok(res)
 }
 
-fn include_str_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
+fn include_str_expand(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    call_site: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let (path, input_span) = match parse_string(tt) {
         Ok(it) => it,
         Err(e) => {
@@ -699,12 +839,21 @@ fn include_str_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::Top
     ExpandResult::ok(quote!(call_site =>#text))
 }
 
-fn get_env_inner(db: &dyn ExpandDatabase, arg_id: MacroCallId, key: &Symbol) -> Option<String> {
+fn get_env_inner(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    key: &Symbol,
+) -> Option<String> {
     let krate = db.lookup_intern_macro_call(arg_id).krate;
     krate.env(db).get(key.as_str())
 }
 
-fn env_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn env_expand(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let (key, span) = match parse_string(tt) {
         Ok(it) => it,
         Err(e) => {
@@ -735,7 +884,12 @@ fn env_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubtree,
     ExpandResult { value: expanded, err }
 }
 
-fn option_env_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
+fn option_env_expand(
+    db: &dyn ExpandDatabase,
+    arg_id: MacroCallId,
+    tt: &tt::TopSubtree,
+    call_site: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let (key, span) = match parse_string(tt) {
         Ok(it) => it,
         Err(e) => {
@@ -756,7 +910,12 @@ fn option_env_expand(db: &dyn ExpandDatabase, arg_id: MacroCallId, tt: &tt::TopS
     ExpandResult::ok(expanded)
 }
 
-fn quote_expand(_db: &dyn ExpandDatabase, _arg_id: MacroCallId, _tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn quote_expand(
+    _db: &dyn ExpandDatabase,
+    _arg_id: MacroCallId,
+    _tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::new(
         tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }),
         ExpandError::other(span, "quote! is not implemented"),

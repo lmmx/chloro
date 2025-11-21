@@ -29,7 +29,14 @@ pub struct Snippet {
 }
 
 impl Snippet {
-    pub fn new(prefix_triggers: &[String], postfix_triggers: &[String], snippet: &[String], description: &str, requires: &[String], scope: SnippetScope) -> Option<Self> {
+    pub fn new(
+        prefix_triggers: &[String],
+        postfix_triggers: &[String],
+        snippet: &[String],
+        description: &str,
+        requires: &[String],
+        scope: SnippetScope,
+    ) -> Option<Self> {
         if prefix_triggers.is_empty() && postfix_triggers.is_empty() {
             return None;
         }
@@ -45,7 +52,10 @@ impl Snippet {
     }
 
     /// Returns [`None`] if the required items do not resolve.
-    pub(crate) fn imports(&self, ctx: &CompletionContext<'_>) -> Option<Vec<LocatedImport>> {
+    pub(crate) fn imports(
+        &self,
+        ctx: &CompletionContext<'_>,
+    ) -> Option<Vec<LocatedImport>> {
         import_edits(ctx, &self.requires)
     }
 
@@ -53,12 +63,18 @@ impl Snippet {
         self.snippet.replace("${receiver}", "$0")
     }
 
-    pub fn postfix_snippet(&self, receiver: &str) -> String {
+    pub fn postfix_snippet(
+        &self,
+        receiver: &str,
+    ) -> String {
         self.snippet.replace("${receiver}", receiver)
     }
 }
 
-fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
+fn import_edits(
+    ctx: &CompletionContext<'_>,
+    requires: &[ModPath],
+) -> Option<Vec<LocatedImport>> {
     let import_cfg = ctx.config.find_path_config(ctx.is_nightly);
     let resolve = |import| {
         let item = ctx.scope.resolve_mod_path(import).next()?;
@@ -80,7 +96,11 @@ fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec
     Some(res)
 }
 
-fn validate_snippet(snippet: &[String], description: &str, requires: &[String]) -> Option<(Box<[ModPath]>, String, Option<Box<str>>)> {
+fn validate_snippet(
+    snippet: &[String],
+    description: &str,
+    requires: &[String],
+) -> Option<(Box<[ModPath]>, String, Option<Box<str>>)> {
     let mut imports = Vec::with_capacity(requires.len());
     for path in requires.iter() {
         let use_path = ModPath::from_segments(

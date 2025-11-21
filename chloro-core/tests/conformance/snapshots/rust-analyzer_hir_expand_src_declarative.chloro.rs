@@ -25,7 +25,13 @@ pub struct DeclarativeMacroExpander {
 }
 
 impl DeclarativeMacroExpander {
-    pub fn expand(&self, db: &dyn ExpandDatabase, tt: tt::TopSubtree, call_id: MacroCallId, span: Span) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
+    pub fn expand(
+        &self,
+        db: &dyn ExpandDatabase,
+        tt: tt::TopSubtree,
+        call_id: MacroCallId,
+        span: Span,
+    ) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
         let loc = db.lookup_intern_macro_call(call_id);
         match self.mac.err() {
             Some(_) => ExpandResult::new(
@@ -47,7 +53,12 @@ impl DeclarativeMacroExpander {
         }
     }
 
-    pub fn expand_unhygienic(&self, tt: tt::TopSubtree, call_site: Span, def_site_edition: Edition) -> ExpandResult<tt::TopSubtree> {
+    pub fn expand_unhygienic(
+        &self,
+        tt: tt::TopSubtree,
+        call_site: Span,
+        def_site_edition: Edition,
+    ) -> ExpandResult<tt::TopSubtree> {
         match self.mac.err() {
             Some(_) => ExpandResult::new(
                 tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
@@ -61,7 +72,11 @@ impl DeclarativeMacroExpander {
         }
     }
 
-    pub(crate) fn expander(db: &dyn ExpandDatabase, def_crate: Crate, id: AstId<ast::Macro>) -> Arc<DeclarativeMacroExpander> {
+    pub(crate) fn expander(
+        db: &dyn ExpandDatabase,
+        def_crate: Crate,
+        id: AstId<ast::Macro>,
+    ) -> Arc<DeclarativeMacroExpander> {
         let (root, map) = crate::db::parse_with_map(db, id.file_id);
         let root = root.syntax_node();
         let transparency = |node| {

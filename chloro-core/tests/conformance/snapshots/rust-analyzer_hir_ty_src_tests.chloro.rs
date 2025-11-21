@@ -79,7 +79,12 @@ fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
 }
 
 #[track_caller]
-fn check_impl(#[rust_analyzer::rust_fixture] ra_fixture: &str, allow_none: bool, only_types: bool, display_source: bool) {
+fn check_impl(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    allow_none: bool,
+    only_types: bool,
+    display_source: bool,
+) {
     let _tracing = setup_tracing();
     let (db, files) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
@@ -250,7 +255,11 @@ fn check_impl(#[rust_analyzer::rust_fixture] ra_fixture: &str, allow_none: bool,
     });
 }
 
-fn expr_node(body_source_map: &BodySourceMap, expr: ExprId, db: &TestDB) -> Option<InFile<SyntaxNode>> {
+fn expr_node(
+    body_source_map: &BodySourceMap,
+    expr: ExprId,
+    db: &TestDB,
+) -> Option<InFile<SyntaxNode>> {
     Some(match body_source_map.expr_syntax(expr) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
@@ -260,7 +269,11 @@ fn expr_node(body_source_map: &BodySourceMap, expr: ExprId, db: &TestDB) -> Opti
     })
 }
 
-fn pat_node(body_source_map: &BodySourceMap, pat: PatId, db: &TestDB) -> Option<InFile<SyntaxNode>> {
+fn pat_node(
+    body_source_map: &BodySourceMap,
+    pat: PatId,
+    db: &TestDB,
+) -> Option<InFile<SyntaxNode>> {
     Some(match body_source_map.pat_syntax(pat) {
         Ok(sp) => {
             let root = db.parse_or_expand(sp.file_id);
@@ -274,7 +287,10 @@ fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
     infer_with_mismatches(ra_fixture, false)
 }
 
-fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
+fn infer_with_mismatches(
+    content: &str,
+    include_mismatches: bool,
+) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
     crate::attach_db(&db, || {
@@ -413,7 +429,12 @@ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     })
 }
 
-pub(crate) fn visit_module(db: &TestDB, crate_def_map: &DefMap, module_id: LocalModuleId, cb: &mut dyn FnMut(ModuleDefId)) {
+pub(crate) fn visit_module(
+    db: &TestDB,
+    crate_def_map: &DefMap,
+    module_id: LocalModuleId,
+    cb: &mut dyn FnMut(ModuleDefId),
+) {
     visit_scope(db, crate_def_map, &crate_def_map[module_id].scope, cb);
     for impl_id in crate_def_map[module_id].scope.impls() {
         let impl_data = impl_id.impl_items(db);
@@ -487,7 +508,10 @@ pub(crate) fn visit_module(db: &TestDB, crate_def_map: &DefMap, module_id: Local
     }
 }
 
-fn ellipsize(mut text: String, max_len: usize) -> String {
+fn ellipsize(
+    mut text: String,
+    max_len: usize,
+) -> String {
     if text.len() <= max_len {
         return text;
     }
@@ -505,13 +529,19 @@ fn ellipsize(mut text: String, max_len: usize) -> String {
     text
 }
 
-fn check_infer(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn check_infer(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let mut actual = infer(ra_fixture);
     actual.push('\n');
     expect.assert_eq(&actual);
 }
 
-fn check_infer_with_mismatches(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn check_infer_with_mismatches(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let mut actual = infer_with_mismatches(ra_fixture, true);
     actual.push('\n');
     expect.assert_eq(&actual);

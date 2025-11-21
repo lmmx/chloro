@@ -24,7 +24,11 @@ impl ModDir {
         ModDir { dir_path: DirPath::empty(), root_non_dir_owner: false, depth: 0 }
     }
 
-    pub(super) fn descend_into_definition(&self, name: &Name, attr_path: Option<&str>) -> Option<ModDir> {
+    pub(super) fn descend_into_definition(
+        &self,
+        name: &Name,
+        attr_path: Option<&str>,
+    ) -> Option<ModDir> {
         let path = match attr_path {
             None => {
                 let mut path = self.dir_path.clone();
@@ -42,7 +46,11 @@ impl ModDir {
         self.child(path, false)
     }
 
-    fn child(&self, dir_path: DirPath, root_non_dir_owner: bool) -> Option<ModDir> {
+    fn child(
+        &self,
+        dir_path: DirPath,
+        root_non_dir_owner: bool,
+    ) -> Option<ModDir> {
         let depth = self.depth + 1;
         if depth as usize > MOD_DEPTH_LIMIT {
             tracing::error!("MOD_DEPTH_LIMIT exceeded");
@@ -52,7 +60,13 @@ impl ModDir {
         Some(ModDir { dir_path, root_non_dir_owner, depth })
     }
 
-    pub(super) fn resolve_declaration(&self, db: &dyn DefDatabase, file_id: HirFileId, name: &Name, attr_path: Option<&str>) -> Result<(EditionedFileId, bool, ModDir), Box<[String]>> {
+    pub(super) fn resolve_declaration(
+        &self,
+        db: &dyn DefDatabase,
+        file_id: HirFileId,
+        name: &Name,
+        attr_path: Option<&str>,
+    ) -> Result<(EditionedFileId, bool, ModDir), Box<[String]>> {
         let name = name.as_str();
         let mut candidate_files = ArrayVec::<_, 2>::new();
         match attr_path {
@@ -108,7 +122,10 @@ impl DirPath {
         DirPath::new(String::new())
     }
 
-    fn push(&mut self, name: &str) {
+    fn push(
+        &mut self,
+        name: &str,
+    ) {
         self.0.push_str(name);
         self.0.push('/');
         self.assert_invariant();
@@ -136,7 +153,11 @@ impl DirPath {
     /// Here, we need to join logical dir path to a string path from an
     /// attribute. Ideally, we should somehow losslessly communicate the whole
     /// construction to `FileLoader`.
-    fn join_attr(&self, mut attr: &str, relative_to_parent: bool) -> String {
+    fn join_attr(
+        &self,
+        mut attr: &str,
+        relative_to_parent: bool,
+    ) -> String {
         let base = if relative_to_parent { self.parent().unwrap() } else { &self.0 };
         if attr.starts_with("./") {
             attr = &attr["./".len()..];

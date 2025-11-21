@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_with_lazy_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;
     let last_arg = call.arg_list()?.args().next()?;
@@ -59,7 +62,10 @@ fn into_closure(param: &Expr) -> Expr {
     .unwrap_or_else(|| make::expr_closure(None, param.clone()).into())
 }
 
-pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_with_eager_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;
     let last_arg = call.arg_list()?.args().next()?;

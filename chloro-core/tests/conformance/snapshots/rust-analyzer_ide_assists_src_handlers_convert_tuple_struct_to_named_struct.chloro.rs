@@ -14,7 +14,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
-pub(crate) fn convert_tuple_struct_to_named_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_tuple_struct_to_named_struct(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let strukt_or_variant = ctx
         .find_node_at_offset::<ast::Struct>()
         .map(Either::Left)
@@ -49,7 +52,12 @@ pub(crate) fn convert_tuple_struct_to_named_struct(acc: &mut Assists, ctx: &Assi
     )
 }
 
-fn edit_struct_def(editor: &mut SyntaxEditor, strukt: &Either<ast::Struct, ast::Variant>, tuple_fields: ast::TupleFieldList, names: Vec<ast::Name>) {
+fn edit_struct_def(
+    editor: &mut SyntaxEditor,
+    strukt: &Either<ast::Struct, ast::Variant>,
+    tuple_fields: ast::TupleFieldList,
+    names: Vec<ast::Name>,
+) {
     let record_fields = tuple_fields.fields().zip(names).filter_map(|(f, name)| {
         let field = ast::make::record_field(f.visibility(), name, f.ty()?);
         let mut field_editor = SyntaxEditor::new(field.syntax().clone());
@@ -85,7 +93,12 @@ fn edit_struct_def(editor: &mut SyntaxEditor, strukt: &Either<ast::Struct, ast::
     editor.replace(tuple_fields.syntax(), record_fields.syntax());
 }
 
-fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: Either<hir::Struct, hir::Variant>, names: &[ast::Name]) {
+fn edit_struct_references(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    strukt: Either<hir::Struct, hir::Variant>,
+    names: &[ast::Name],
+) {
     let strukt_def = match strukt {
         Either::Left(s) => Definition::Adt(hir::Adt::Struct(s)),
         Either::Right(v) => Definition::Variant(v),
@@ -180,7 +193,12 @@ fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilde
     }
 }
 
-fn edit_field_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, fields: impl Iterator<Item = ast::TupleField>, names: &[ast::Name]) {
+fn edit_field_references(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    fields: impl Iterator<Item = ast::TupleField>,
+    names: &[ast::Name],
+) {
     for (field, name) in fields.zip(names) {
         let field = match ctx.sema.to_def(&field) {
             Some(it) => it,
@@ -215,7 +233,10 @@ fn generate_names(fields: impl Iterator<Item = ast::TupleField>) -> Vec<ast::Nam
         .collect()
 }
 
-fn generate_record_pat_list(pat: &ast::TupleStructPat, names: &[ast::Name]) -> ast::RecordPatFieldList {
+fn generate_record_pat_list(
+    pat: &ast::TupleStructPat,
+    names: &[ast::Name],
+) -> ast::RecordPatFieldList {
     let pure_fields = pat.fields().filter(|p| !matches!(p, ast::Pat::RestPat(_)));
     let rest_len = names.len().saturating_sub(pure_fields.clone().count());
     let rest_pat = pat.fields().find_map(|p| ast::RestPat::cast(p.syntax().clone()));

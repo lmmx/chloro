@@ -85,7 +85,10 @@ pub struct CompletionItemLabel {
 }
 
 impl fmt::Debug for CompletionItem {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         let mut s = f.debug_struct("CompletionItem");
         s.field("label", &self.label.primary)
             .field("detail_left", &self.label.detail_left)
@@ -401,7 +404,12 @@ pub enum CompletionItemRefMode {
 }
 
 impl CompletionItem {
-    pub(crate) fn new(kind: impl Into<CompletionItemKind>, source_range: TextRange, label: impl Into<SmolStr>, edition: Edition) -> Builder {
+    pub(crate) fn new(
+        kind: impl Into<CompletionItemKind>,
+        source_range: TextRange,
+        label: impl Into<SmolStr>,
+        edition: Edition,
+    ) -> Builder {
         let label = label.into();
         Builder {
             source_range,
@@ -471,7 +479,12 @@ pub(crate) struct Builder {
 }
 
 impl Builder {
-    pub(crate) fn from_resolution(ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: hir::Name, resolution: hir::ScopeDef) -> Self {
+    pub(crate) fn from_resolution(
+        ctx: &CompletionContext<'_>,
+        path_ctx: &PathCompletionCtx<'_>,
+        local_name: hir::Name,
+        resolution: hir::ScopeDef,
+    ) -> Self {
         let doc_aliases = ctx.doc_aliases_in_scope(resolution);
         render_path_resolution(
             RenderContext::new(ctx).doc_aliases(doc_aliases),
@@ -481,7 +494,10 @@ impl Builder {
         )
     }
 
-    pub(crate) fn build(self, db: &RootDatabase) -> CompletionItem {
+    pub(crate) fn build(
+        self,
+        db: &RootDatabase,
+    ) -> CompletionItem {
         let _p = tracing::info_span!("item::Builder::build").entered();
         let label = self.label;
         let mut lookup = self.lookup.unwrap_or_else(|| label.clone());
@@ -556,52 +572,84 @@ impl Builder {
         }
     }
 
-    pub(crate) fn lookup_by(&mut self, lookup: impl Into<SmolStr>) -> &mut Builder {
+    pub(crate) fn lookup_by(
+        &mut self,
+        lookup: impl Into<SmolStr>,
+    ) -> &mut Builder {
         self.lookup = Some(lookup.into());
         self
     }
 
-    pub(crate) fn label(&mut self, label: impl Into<SmolStr>) -> &mut Builder {
+    pub(crate) fn label(
+        &mut self,
+        label: impl Into<SmolStr>,
+    ) -> &mut Builder {
         self.label = label.into();
         self
     }
 
-    pub(crate) fn trait_name(&mut self, trait_name: SmolStr) -> &mut Builder {
+    pub(crate) fn trait_name(
+        &mut self,
+        trait_name: SmolStr,
+    ) -> &mut Builder {
         self.trait_name = Some(trait_name);
         self
     }
 
-    pub(crate) fn doc_aliases(&mut self, doc_aliases: Vec<SmolStr>) -> &mut Builder {
+    pub(crate) fn doc_aliases(
+        &mut self,
+        doc_aliases: Vec<SmolStr>,
+    ) -> &mut Builder {
         self.doc_aliases = doc_aliases;
         self
     }
 
-    pub(crate) fn insert_text(&mut self, insert_text: impl Into<String>) -> &mut Builder {
+    pub(crate) fn insert_text(
+        &mut self,
+        insert_text: impl Into<String>,
+    ) -> &mut Builder {
         self.insert_text = Some(insert_text.into());
         self
     }
 
-    pub(crate) fn insert_snippet(&mut self, cap: SnippetCap, snippet: impl Into<String>) -> &mut Builder {
+    pub(crate) fn insert_snippet(
+        &mut self,
+        cap: SnippetCap,
+        snippet: impl Into<String>,
+    ) -> &mut Builder {
         let _ = cap;
         self.is_snippet = true;
         self.insert_text(snippet)
     }
 
-    pub(crate) fn text_edit(&mut self, edit: TextEdit) -> &mut Builder {
+    pub(crate) fn text_edit(
+        &mut self,
+        edit: TextEdit,
+    ) -> &mut Builder {
         self.text_edit = Some(edit);
         self
     }
 
-    pub(crate) fn snippet_edit(&mut self, _cap: SnippetCap, edit: TextEdit) -> &mut Builder {
+    pub(crate) fn snippet_edit(
+        &mut self,
+        _cap: SnippetCap,
+        edit: TextEdit,
+    ) -> &mut Builder {
         self.is_snippet = true;
         self.text_edit(edit)
     }
 
-    pub(crate) fn detail(&mut self, detail: impl Into<String>) -> &mut Builder {
+    pub(crate) fn detail(
+        &mut self,
+        detail: impl Into<String>,
+    ) -> &mut Builder {
         self.set_detail(Some(detail))
     }
 
-    pub(crate) fn set_detail(&mut self, detail: Option<impl Into<String>>) -> &mut Builder {
+    pub(crate) fn set_detail(
+        &mut self,
+        detail: Option<impl Into<String>>,
+    ) -> &mut Builder {
         self.detail = detail.map(Into::into);
         if let Some(detail) = &self.detail
             && never!(detail.contains('\n'), "multiline detail:\n{}", detail)
@@ -612,26 +660,41 @@ impl Builder {
     }
 
     #[allow(unused)]
-    pub(crate) fn documentation(&mut self, docs: Documentation) -> &mut Builder {
+    pub(crate) fn documentation(
+        &mut self,
+        docs: Documentation,
+    ) -> &mut Builder {
         self.set_documentation(Some(docs))
     }
 
-    pub(crate) fn set_documentation(&mut self, docs: Option<Documentation>) -> &mut Builder {
+    pub(crate) fn set_documentation(
+        &mut self,
+        docs: Option<Documentation>,
+    ) -> &mut Builder {
         self.documentation = docs;
         self
     }
 
-    pub(crate) fn set_deprecated(&mut self, deprecated: bool) -> &mut Builder {
+    pub(crate) fn set_deprecated(
+        &mut self,
+        deprecated: bool,
+    ) -> &mut Builder {
         self.deprecated = deprecated;
         self
     }
 
-    pub(crate) fn set_relevance(&mut self, relevance: CompletionRelevance) -> &mut Builder {
+    pub(crate) fn set_relevance(
+        &mut self,
+        relevance: CompletionRelevance,
+    ) -> &mut Builder {
         self.relevance = relevance;
         self
     }
 
-    pub(crate) fn with_relevance(&mut self, relevance: impl FnOnce(CompletionRelevance) -> CompletionRelevance) -> &mut Builder {
+    pub(crate) fn with_relevance(
+        &mut self,
+        relevance: impl FnOnce(CompletionRelevance) -> CompletionRelevance,
+    ) -> &mut Builder {
         self.relevance = relevance(mem::take(&mut self.relevance));
         self
     }
@@ -641,12 +704,19 @@ impl Builder {
         self
     }
 
-    pub(crate) fn add_import(&mut self, import_to_add: LocatedImport) -> &mut Builder {
+    pub(crate) fn add_import(
+        &mut self,
+        import_to_add: LocatedImport,
+    ) -> &mut Builder {
         self.imports_to_add.push(import_to_add);
         self
     }
 
-    pub(crate) fn ref_match(&mut self, ref_mode: CompletionItemRefMode, offset: TextSize) -> &mut Builder {
+    pub(crate) fn ref_match(
+        &mut self,
+        ref_mode: CompletionItemRefMode,
+        offset: TextSize,
+    ) -> &mut Builder {
         self.ref_match = Some((ref_mode, offset));
         self
     }

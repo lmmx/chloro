@@ -15,7 +15,10 @@ pub struct ExpandedMacro {
     pub expansion: String,
 }
 
-pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
+pub(crate) fn expand_macro(
+    db: &RootDatabase,
+    position: FilePosition,
+) -> Option<ExpandedMacro> {
     let sema = Semantics::new(db);
     let file_id = sema.attach_first_edition(position.file_id)?;
     let file = sema.parse(file_id);
@@ -124,7 +127,13 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     None
 }
 
-fn expand_macro_recur(sema: &Semantics<'_, RootDatabase>, macro_call: &ast::Item, error: &mut String, result_span_map: &mut SpanMap<SyntaxContext>, offset_in_original_node: TextSize) -> Option<SyntaxNode> {
+fn expand_macro_recur(
+    sema: &Semantics<'_, RootDatabase>,
+    macro_call: &ast::Item,
+    error: &mut String,
+    result_span_map: &mut SpanMap<SyntaxContext>,
+    offset_in_original_node: TextSize,
+) -> Option<SyntaxNode> {
     let ExpandResult { value: expanded, err } = match macro_call {
         item @ ast::Item::MacroCall(macro_call) => sema
             .expand_attr_macro(item)
@@ -147,7 +156,13 @@ fn expand_macro_recur(sema: &Semantics<'_, RootDatabase>, macro_call: &ast::Item
     Some(expand(sema, expanded, error, result_span_map, u32::from(offset_in_original_node) as i32))
 }
 
-fn expand(sema: &Semantics<'_, RootDatabase>, expanded: SyntaxNode, error: &mut String, result_span_map: &mut SpanMap<SyntaxContext>, mut offset_in_original_node: i32) -> SyntaxNode {
+fn expand(
+    sema: &Semantics<'_, RootDatabase>,
+    expanded: SyntaxNode,
+    error: &mut String,
+    result_span_map: &mut SpanMap<SyntaxContext>,
+    mut offset_in_original_node: i32,
+) -> SyntaxNode {
     let children = expanded.descendants().filter_map(ast::Item::cast);
     let mut replacements = Vec::new();
     for child in children {
@@ -175,20 +190,37 @@ fn expand(sema: &Semantics<'_, RootDatabase>, expanded: SyntaxNode, error: &mut 
     expanded
 }
 
-fn format(db: &RootDatabase, kind: SyntaxKind, file_id: FileId, expanded: SyntaxNode, span_map: &SpanMap<SyntaxContext>, krate: Crate) -> String {
+fn format(
+    db: &RootDatabase,
+    kind: SyntaxKind,
+    file_id: FileId,
+    expanded: SyntaxNode,
+    span_map: &SpanMap<SyntaxContext>,
+    krate: Crate,
+) -> String {
     let expansion = prettify_macro_expansion(db, expanded, span_map, krate).to_string();
     _format(db, kind, file_id, &expansion).unwrap_or(expansion)
 }
 
 #[cfg(any(test, target_arch = "wasm32", target_os = "emscripten"))]
-fn _format(_db: &RootDatabase, _kind: SyntaxKind, _file_id: FileId, expansion: &str) -> Option<String> {
+fn _format(
+    _db: &RootDatabase,
+    _kind: SyntaxKind,
+    _file_id: FileId,
+    expansion: &str,
+) -> Option<String> {
     // remove trailing spaces for test
     use itertools::Itertools;
     Some(expansion.lines().map(|x| x.trim_end()).join("\n"))
 }
 
 #[cfg(not(any(test, target_arch = "wasm32", target_os = "emscripten")))]
-fn _format(db: &RootDatabase, kind: SyntaxKind, file_id: FileId, expansion: &str) -> Option<String> {
+fn _format(
+    db: &RootDatabase,
+    kind: SyntaxKind,
+    file_id: FileId,
+    expansion: &str,
+) -> Option<String> {
     use ide_db::base_db::RootQueryDb;
     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
@@ -241,7 +273,10 @@ mod tests {
     use expect_test::{Expect, expect};
     use crate::fixture;
     #[track_caller]
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, pos) = fixture::position(ra_fixture);
         let expansion = analysis.expand_macro(pos).unwrap().unwrap();
         let actual = format!("{}\n{}", expansion.name, expansion.expansion);

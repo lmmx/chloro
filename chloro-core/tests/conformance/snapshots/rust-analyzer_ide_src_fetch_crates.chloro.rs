@@ -20,7 +20,10 @@ pub(crate) fn fetch_crates(db: &RootDatabase) -> FxIndexSet<CrateInfo> {
         .collect()
 }
 
-fn crate_info(data: &ide_db::base_db::BuiltCrateData, extra_data: &ide_db::base_db::ExtraCrateData) -> CrateInfo {
+fn crate_info(
+    data: &ide_db::base_db::BuiltCrateData,
+    extra_data: &ide_db::base_db::ExtraCrateData,
+) -> CrateInfo {
     let crate_name = crate_name(extra_data);
     let version = extra_data.version.clone();
     CrateInfo { name: crate_name, version, root_file_id: data.root_file_id }

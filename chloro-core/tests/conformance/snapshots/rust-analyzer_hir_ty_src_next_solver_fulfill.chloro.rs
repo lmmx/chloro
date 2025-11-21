@@ -24,7 +24,8 @@ use crate::next_solver::{
 
 mod errors;
 
-type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
+type PendingObligations<'db> =
+    Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
 
 /// A trait engine using the new trait solver.
 ///
@@ -60,7 +61,11 @@ struct ObligationStorage<'db> {
 }
 
 impl<'db> ObligationStorage<'db> {
-    fn register(&mut self, obligation: PredicateObligation<'db>, stalled_on: Option<GoalStalledOn<DbInterner<'db>>>) {
+    fn register(
+        &mut self,
+        obligation: PredicateObligation<'db>,
+        stalled_on: Option<GoalStalledOn<DbInterner<'db>>>,
+    ) {
         self.pending.push((obligation, stalled_on));
     }
 
@@ -71,14 +76,20 @@ impl<'db> ObligationStorage<'db> {
         obligations
     }
 
-    fn drain_pending(&mut self, cond: impl Fn(&PredicateObligation<'db>) -> bool) -> PendingObligations<'db> {
+    fn drain_pending(
+        &mut self,
+        cond: impl Fn(&PredicateObligation<'db>) -> bool,
+    ) -> PendingObligations<'db> {
         let (not_stalled, pending) =
             mem::take(&mut self.pending).into_iter().partition(|(o, _)| cond(o));
         self.pending = pending;
         not_stalled
     }
 
-    fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
+    fn on_fulfillment_overflow(
+        &mut self,
+        infcx: &InferCtxt<'db>,
+    ) {
         infcx.probe(|_| {
             // IMPORTANT: we must not use solve any inference variables in the obligations
             // as this is all happening inside of a probe. We use a probe to make sure
@@ -114,19 +125,30 @@ impl<'db> FulfillmentCtxt<'db> {
 
 impl<'db> FulfillmentCtxt<'db> {
     #[tracing::instrument(level = "trace", skip(self, _infcx))]
-    pub(crate) fn register_predicate_obligation(&mut self, _infcx: &InferCtxt<'db>, obligation: PredicateObligation<'db>) {
+    pub(crate) fn register_predicate_obligation(
+        &mut self,
+        _infcx: &InferCtxt<'db>,
+        obligation: PredicateObligation<'db>,
+    ) {
         // FIXME: See the comment in `try_evaluate_obligations()`.
         // assert_eq!(self.usable_in_snapshot, infcx.num_open_snapshots());
         self.obligations.register(obligation, None);
     }
 
-    pub(crate) fn register_predicate_obligations(&mut self, _infcx: &InferCtxt<'db>, obligations: impl IntoIterator<Item = PredicateObligation<'db>>) {
+    pub(crate) fn register_predicate_obligations(
+        &mut self,
+        _infcx: &InferCtxt<'db>,
+        obligations: impl IntoIterator<Item = PredicateObligation<'db>>,
+    ) {
         // FIXME: See the comment in `try_evaluate_obligations()`.
         // assert_eq!(self.usable_in_snapshot, infcx.num_open_snapshots());
         obligations.into_iter().for_each(|obligation| self.obligations.register(obligation, None));
     }
 
-    pub(crate) fn collect_remaining_errors(&mut self, _infcx: &InferCtxt<'db>) -> Vec<NextSolverError<'db>> {
+    pub(crate) fn collect_remaining_errors(
+        &mut self,
+        _infcx: &InferCtxt<'db>,
+    ) -> Vec<NextSolverError<'db>> {
         self.obligations
             .pending
             .drain(..)
@@ -135,7 +157,10 @@ impl<'db> FulfillmentCtxt<'db> {
             .collect()
     }
 
-    pub(crate) fn try_evaluate_obligations(&mut self, infcx: &InferCtxt<'db>) -> Vec<NextSolverError<'db>> {
+    pub(crate) fn try_evaluate_obligations(
+        &mut self,
+        infcx: &InferCtxt<'db>,
+    ) -> Vec<NextSolverError<'db>> {
         // FIXME(next-solver): We should bring this assertion back. Currently it panics because
         // there are places which use `InferenceTable` and open a snapshot and register obligations
         // and select. They should use a different `ObligationCtxt` instead. Then we'll be also able
@@ -196,7 +221,10 @@ impl<'db> FulfillmentCtxt<'db> {
         errors
     }
 
-    pub(crate) fn evaluate_obligations_error_on_ambiguity(&mut self, infcx: &InferCtxt<'db>) -> Vec<NextSolverError<'db>> {
+    pub(crate) fn evaluate_obligations_error_on_ambiguity(
+        &mut self,
+        infcx: &InferCtxt<'db>,
+    ) -> Vec<NextSolverError<'db>> {
         let errors = self.try_evaluate_obligations(infcx);
         if !errors.is_empty() {
             return errors;
@@ -208,7 +236,10 @@ impl<'db> FulfillmentCtxt<'db> {
         self.obligations.clone_pending()
     }
 
-    pub(crate) fn drain_stalled_obligations_for_coroutines(&mut self, infcx: &InferCtxt<'db>) -> PredicateObligations<'db> {
+    pub(crate) fn drain_stalled_obligations_for_coroutines(
+        &mut self,
+        infcx: &InferCtxt<'db>,
+    ) -> PredicateObligations<'db> {
         let stalled_coroutines = match infcx.typing_mode() {
             TypingMode::Analysis { defining_opaque_types_and_generators } => {
                 defining_opaque_types_and_generators
@@ -258,7 +289,10 @@ pub struct StalledOnCoroutines<'a, 'db> {
 impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
     type Result = ControlFlow<()>;
 
-    fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
+    fn visit_goal(
+        &mut self,
+        inspect_goal: &super::inspect::InspectGoal<'_, 'db>,
+    ) -> Self::Result {
         inspect_goal.goal().predicate.visit_with(self)?;
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
@@ -271,7 +305,10 @@ impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
 impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
     type Result = ControlFlow<()>;
 
-    fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
+    fn visit_ty(
+        &mut self,
+        ty: Ty<'db>,
+    ) -> Self::Result {
         if !self.cache.insert(ty) {
             return ControlFlow::Continue(());
         }

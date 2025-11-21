@@ -8,7 +8,12 @@ use crate::{
     item::Builder,
 };
 
-pub(crate) fn complete_expr_snippet(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, &PathExprCtx { in_block_expr, .. }: &PathExprCtx<'_>) {
+pub(crate) fn complete_expr_snippet(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    &PathExprCtx { in_block_expr, .. }: &PathExprCtx<'_>,
+) {
     if !matches!(path_ctx.qualified, Qualified::No) {
         return;
     }
@@ -40,7 +45,12 @@ macro_rules! $1 {
     }
 }
 
-pub(crate) fn complete_item_snippet(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, kind: &ItemListKind) {
+pub(crate) fn complete_item_snippet(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    kind: &ItemListKind,
+) {
     if !matches!(path_ctx.qualified, Qualified::No) {
         return;
     }
@@ -102,14 +112,24 @@ macro_rules! $1 {
     }
 }
 
-fn snippet(ctx: &CompletionContext<'_>, cap: SnippetCap, label: &str, snippet: &str) -> Builder {
+fn snippet(
+    ctx: &CompletionContext<'_>,
+    cap: SnippetCap,
+    label: &str,
+    snippet: &str,
+) -> Builder {
     let mut item =
         CompletionItem::new(CompletionItemKind::Snippet, ctx.source_range(), label, ctx.edition);
     item.insert_snippet(cap, snippet);
     item
 }
 
-fn add_custom_completions(acc: &mut Completions, ctx: &CompletionContext<'_>, cap: SnippetCap, scope: SnippetScope) -> Option<()> {
+fn add_custom_completions(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    cap: SnippetCap,
+    scope: SnippetScope,
+) -> Option<()> {
     ImportScope::find_insert_use_container(&ctx.token.parent()?, &ctx.sema)?;
     ctx.config.prefix_snippets().filter(|(_, snip)| snip.scope == scope).for_each(
         |(trigger, snip)| {

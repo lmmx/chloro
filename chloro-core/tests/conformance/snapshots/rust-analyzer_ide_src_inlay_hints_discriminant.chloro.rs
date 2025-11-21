@@ -15,7 +15,12 @@ use crate::{
     InlayTooltip,
 };
 
-pub(super) fn enum_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, enum_: ast::Enum) -> Option<()> {
+pub(super) fn enum_hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    enum_: ast::Enum,
+) -> Option<()> {
     if let DiscriminantHints::Never = config.discriminant_hints {
         return None;
     }
@@ -34,7 +39,13 @@ pub(super) fn enum_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousD
     Some(())
 }
 
-fn variant_hints(acc: &mut Vec<InlayHint>, config: &InlayHintsConfig<'_>, sema: &Semantics<'_, RootDatabase>, enum_: &ast::Enum, variant: &ast::Variant) -> Option<()> {
+fn variant_hints(
+    acc: &mut Vec<InlayHint>,
+    config: &InlayHintsConfig<'_>,
+    sema: &Semantics<'_, RootDatabase>,
+    enum_: &ast::Enum,
+    variant: &ast::Variant,
+) -> Option<()> {
     if variant.expr().is_some() {
         return None;
     }

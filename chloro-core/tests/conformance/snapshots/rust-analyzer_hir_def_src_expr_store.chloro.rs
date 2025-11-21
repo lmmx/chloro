@@ -153,7 +153,10 @@ struct ExpressionOnlySourceMap {
 }
 
 impl PartialEq for ExpressionOnlySourceMap {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         // we only need to compare one of the two mappings
         // as the other is a reverse mapping and thus will compare
         // the same as normal mapping
@@ -197,7 +200,10 @@ pub struct ExpressionStoreSourceMap {
 }
 
 impl PartialEq for ExpressionStoreSourceMap {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         // we only need to compare one of the two mappings
         // as the other is a reverse mapping and thus will compare
         // the same as normal mapping
@@ -404,7 +410,10 @@ impl ExpressionStore {
     }
 
     /// Returns an iterator over all block expressions in this store that define inner items.
-    pub fn blocks<'a>(&'a self, db: &'a dyn DefDatabase) -> impl Iterator<Item = (BlockId, &'a DefMap)> + 'a {
+    pub fn blocks<'a>(
+        &'a self,
+        db: &'a dyn DefDatabase,
+    ) -> impl Iterator<Item = (BlockId, &'a DefMap)> + 'a {
         self.expr_only
             .as_ref()
             .map(|it| &*it.block_scopes)
@@ -413,7 +422,11 @@ impl ExpressionStore {
             .map(move |&block| (block, block_def_map(db, block)))
     }
 
-    pub fn walk_bindings_in_pat(&self, pat_id: PatId, mut f: impl FnMut(BindingId)) {
+    pub fn walk_bindings_in_pat(
+        &self,
+        pat_id: PatId,
+        mut f: impl FnMut(BindingId),
+    ) {
         self.walk_pats(pat_id, &mut |pat| {
             if let Pat::Bind { id, .. } = &self[pat] {
                 f(*id);
@@ -421,7 +434,11 @@ impl ExpressionStore {
         });
     }
 
-    pub fn walk_pats_shallow(&self, pat_id: PatId, mut f: impl FnMut(PatId)) {
+    pub fn walk_pats_shallow(
+        &self,
+        pat_id: PatId,
+        mut f: impl FnMut(PatId),
+    ) {
         let pat = &self[pat_id];
         match pat {
             Pat::Range { .. }
@@ -451,12 +468,20 @@ impl ExpressionStore {
         }
     }
 
-    pub fn walk_pats(&self, pat_id: PatId, f: &mut impl FnMut(PatId)) {
+    pub fn walk_pats(
+        &self,
+        pat_id: PatId,
+        f: &mut impl FnMut(PatId),
+    ) {
         f(pat_id);
         self.walk_pats_shallow(pat_id, |p| self.walk_pats(p, f));
     }
 
-    pub fn is_binding_upvar(&self, binding: BindingId, relative_to: ExprId) -> bool {
+    pub fn is_binding_upvar(
+        &self,
+        binding: BindingId,
+        relative_to: ExprId,
+    ) -> bool {
         let Some(expr_only) = &self.expr_only else { return false };
         match expr_only.binding_owners.get(&binding) {
             Some(it) => {
@@ -469,14 +494,21 @@ impl ExpressionStore {
     }
 
     #[inline]
-    pub fn binding_owner(&self, id: BindingId) -> Option<ExprId> {
+    pub fn binding_owner(
+        &self,
+        id: BindingId,
+    ) -> Option<ExprId> {
         self.expr_only.as_ref()?.binding_owners.get(&id).copied()
     }
 
     /// Walks the immediate children expressions and calls `f` for each child expression.
     ///
     /// Note that this does not walk const blocks.
-    pub fn walk_child_exprs(&self, expr_id: ExprId, mut f: impl FnMut(ExprId)) {
+    pub fn walk_child_exprs(
+        &self,
+        expr_id: ExprId,
+        mut f: impl FnMut(ExprId),
+    ) {
         let expr = &self[expr_id];
         match expr {
             Expr::Continue { .. }
@@ -612,7 +644,11 @@ impl ExpressionStore {
     /// not walk expressions within patterns.
     ///
     /// Note that this does not walk const blocks.
-    pub fn walk_child_exprs_without_pats(&self, expr_id: ExprId, mut f: impl FnMut(ExprId)) {
+    pub fn walk_child_exprs_without_pats(
+        &self,
+        expr_id: ExprId,
+        mut f: impl FnMut(ExprId),
+    ) {
         let expr = &self[expr_id];
         match expr {
             Expr::Continue { .. }
@@ -736,7 +772,11 @@ impl ExpressionStore {
         }
     }
 
-    pub fn walk_exprs_in_pat(&self, pat_id: PatId, f: &mut impl FnMut(ExprId)) {
+    pub fn walk_exprs_in_pat(
+        &self,
+        pat_id: PatId,
+        f: &mut impl FnMut(ExprId),
+    ) {
         self.walk_pats(pat_id, &mut |pat| {
             if let Pat::Expr(expr) | Pat::ConstBlock(expr) = self[pat] {
                 f(expr);
@@ -750,19 +790,31 @@ impl ExpressionStore {
         self.expr_only.as_ref().expect("should have `ExpressionStore::expr_only`")
     }
 
-    fn binding_hygiene(&self, binding: BindingId) -> HygieneId {
+    fn binding_hygiene(
+        &self,
+        binding: BindingId,
+    ) -> HygieneId {
         self.assert_expr_only().bindings[binding].hygiene
     }
 
-    pub fn expr_path_hygiene(&self, expr: ExprId) -> HygieneId {
+    pub fn expr_path_hygiene(
+        &self,
+        expr: ExprId,
+    ) -> HygieneId {
         self.assert_expr_only().ident_hygiene.get(&expr.into()).copied().unwrap_or(HygieneId::ROOT)
     }
 
-    pub fn pat_path_hygiene(&self, pat: PatId) -> HygieneId {
+    pub fn pat_path_hygiene(
+        &self,
+        pat: PatId,
+    ) -> HygieneId {
         self.assert_expr_only().ident_hygiene.get(&pat.into()).copied().unwrap_or(HygieneId::ROOT)
     }
 
-    pub fn expr_or_pat_path_hygiene(&self, id: ExprOrPatId) -> HygieneId {
+    pub fn expr_or_pat_path_hygiene(
+        &self,
+        id: ExprOrPatId,
+    ) -> HygieneId {
         match id {
             ExprOrPatId::ExprId(id) => self.expr_path_hygiene(id),
             ExprOrPatId::PatId(id) => self.pat_path_hygiene(id),
@@ -798,7 +850,10 @@ impl Index<ExprId> for ExpressionStore {
     type Output = Expr;
 
     #[inline]
-    fn index(&self, expr: ExprId) -> &Expr {
+    fn index(
+        &self,
+        expr: ExprId,
+    ) -> &Expr {
         &self.assert_expr_only().exprs[expr]
     }
 }
@@ -807,7 +862,10 @@ impl Index<PatId> for ExpressionStore {
     type Output = Pat;
 
     #[inline]
-    fn index(&self, pat: PatId) -> &Pat {
+    fn index(
+        &self,
+        pat: PatId,
+    ) -> &Pat {
         &self.assert_expr_only().pats[pat]
     }
 }
@@ -816,7 +874,10 @@ impl Index<LabelId> for ExpressionStore {
     type Output = Label;
 
     #[inline]
-    fn index(&self, label: LabelId) -> &Label {
+    fn index(
+        &self,
+        label: LabelId,
+    ) -> &Label {
         &self.assert_expr_only().labels[label]
     }
 }
@@ -825,7 +886,10 @@ impl Index<BindingId> for ExpressionStore {
     type Output = Binding;
 
     #[inline]
-    fn index(&self, b: BindingId) -> &Binding {
+    fn index(
+        &self,
+        b: BindingId,
+    ) -> &Binding {
         &self.assert_expr_only().bindings[b]
     }
 }
@@ -834,7 +898,10 @@ impl Index<TypeRefId> for ExpressionStore {
     type Output = TypeRef;
 
     #[inline]
-    fn index(&self, b: TypeRefId) -> &TypeRef {
+    fn index(
+        &self,
+        b: TypeRefId,
+    ) -> &TypeRef {
         &self.types[b]
     }
 }
@@ -843,7 +910,10 @@ impl Index<LifetimeRefId> for ExpressionStore {
     type Output = LifetimeRef;
 
     #[inline]
-    fn index(&self, b: LifetimeRefId) -> &LifetimeRef {
+    fn index(
+        &self,
+        b: LifetimeRefId,
+    ) -> &LifetimeRef {
         &self.lifetimes[b]
     }
 }
@@ -852,7 +922,10 @@ impl Index<PathId> for ExpressionStore {
     type Output = Path;
 
     #[inline]
-    fn index(&self, index: PathId) -> &Self::Output {
+    fn index(
+        &self,
+        index: PathId,
+    ) -> &Self::Output {
         let TypeRef::Path(path) = &self[index.type_ref()] else {
             unreachable!("`PathId` always points to `TypeRef::Path`");
         };
@@ -861,7 +934,10 @@ impl Index<PathId> for ExpressionStore {
 }
 
 impl ExpressionStoreSourceMap {
-    pub fn expr_or_pat_syntax(&self, id: ExprOrPatId) -> Result<ExprOrPatSource, SyntheticSyntax> {
+    pub fn expr_or_pat_syntax(
+        &self,
+        id: ExprOrPatId,
+    ) -> Result<ExprOrPatSource, SyntheticSyntax> {
         match id {
             ExprOrPatId::ExprId(id) => self.expr_syntax(id),
             ExprOrPatId::PatId(id) => self.pat_syntax(id),
@@ -884,16 +960,25 @@ impl ExpressionStoreSourceMap {
         self.expr_only.as_ref().expect("should have `ExpressionStoreSourceMap::expr_only`")
     }
 
-    pub fn expr_syntax(&self, expr: ExprId) -> Result<ExprOrPatSource, SyntheticSyntax> {
+    pub fn expr_syntax(
+        &self,
+        expr: ExprId,
+    ) -> Result<ExprOrPatSource, SyntheticSyntax> {
         self.expr_or_synthetic()?.expr_map_back.get(expr).cloned().ok_or(SyntheticSyntax)
     }
 
-    pub fn node_expr(&self, node: InFile<&ast::Expr>) -> Option<ExprOrPatId> {
+    pub fn node_expr(
+        &self,
+        node: InFile<&ast::Expr>,
+    ) -> Option<ExprOrPatId> {
         let src = node.map(AstPtr::new);
         self.expr_only()?.expr_map.get(&src).cloned()
     }
 
-    pub fn node_macro_file(&self, node: InFile<&ast::MacroCall>) -> Option<MacroCallId> {
+    pub fn node_macro_file(
+        &self,
+        node: InFile<&ast::MacroCall>,
+    ) -> Option<MacroCallId> {
         let src = node.map(AstPtr::new);
         self.expr_only()?.expansions.get(&src).cloned()
     }
@@ -902,44 +987,74 @@ impl ExpressionStoreSourceMap {
         self.expr_only().into_iter().flat_map(|it| it.expansions.iter().map(|(&a, &b)| (a, b)))
     }
 
-    pub fn pat_syntax(&self, pat: PatId) -> Result<ExprOrPatSource, SyntheticSyntax> {
+    pub fn pat_syntax(
+        &self,
+        pat: PatId,
+    ) -> Result<ExprOrPatSource, SyntheticSyntax> {
         self.expr_or_synthetic()?.pat_map_back.get(pat).cloned().ok_or(SyntheticSyntax)
     }
 
-    pub fn node_pat(&self, node: InFile<&ast::Pat>) -> Option<ExprOrPatId> {
+    pub fn node_pat(
+        &self,
+        node: InFile<&ast::Pat>,
+    ) -> Option<ExprOrPatId> {
         self.expr_only()?.pat_map.get(&node.map(AstPtr::new)).cloned()
     }
 
-    pub fn type_syntax(&self, id: TypeRefId) -> Result<TypeSource, SyntheticSyntax> {
+    pub fn type_syntax(
+        &self,
+        id: TypeRefId,
+    ) -> Result<TypeSource, SyntheticSyntax> {
         self.types_map_back.get(id).cloned().ok_or(SyntheticSyntax)
     }
 
-    pub fn node_type(&self, node: InFile<&ast::Type>) -> Option<TypeRefId> {
+    pub fn node_type(
+        &self,
+        node: InFile<&ast::Type>,
+    ) -> Option<TypeRefId> {
         self.types_map.get(&node.map(AstPtr::new)).cloned()
     }
 
-    pub fn label_syntax(&self, label: LabelId) -> LabelSource {
+    pub fn label_syntax(
+        &self,
+        label: LabelId,
+    ) -> LabelSource {
         self.assert_expr_only().label_map_back[label]
     }
 
-    pub fn patterns_for_binding(&self, binding: BindingId) -> &[PatId] {
+    pub fn patterns_for_binding(
+        &self,
+        binding: BindingId,
+    ) -> &[PatId] {
         self.assert_expr_only().binding_definitions.get(binding).map_or(&[], Deref::deref)
     }
 
-    pub fn node_label(&self, node: InFile<&ast::Label>) -> Option<LabelId> {
+    pub fn node_label(
+        &self,
+        node: InFile<&ast::Label>,
+    ) -> Option<LabelId> {
         let src = node.map(AstPtr::new);
         self.expr_only()?.label_map.get(&src).cloned()
     }
 
-    pub fn field_syntax(&self, expr: ExprId) -> FieldSource {
+    pub fn field_syntax(
+        &self,
+        expr: ExprId,
+    ) -> FieldSource {
         self.assert_expr_only().field_map_back[&expr]
     }
 
-    pub fn pat_field_syntax(&self, pat: PatId) -> PatFieldSource {
+    pub fn pat_field_syntax(
+        &self,
+        pat: PatId,
+    ) -> PatFieldSource {
         self.assert_expr_only().pat_field_map_back[&pat]
     }
 
-    pub fn macro_expansion_expr(&self, node: InFile<&ast::MacroExpr>) -> Option<ExprOrPatId> {
+    pub fn macro_expansion_expr(
+        &self,
+        node: InFile<&ast::MacroExpr>,
+    ) -> Option<ExprOrPatId> {
         let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::MacroExpr>).map(AstPtr::upcast);
         self.expr_only()?.expr_map.get(&src).copied()
     }
@@ -948,11 +1063,17 @@ impl ExpressionStoreSourceMap {
         self.expr_only().into_iter().flat_map(|it| it.expansions.iter())
     }
 
-    pub fn expansion(&self, node: InFile<&ast::MacroCall>) -> Option<MacroCallId> {
+    pub fn expansion(
+        &self,
+        node: InFile<&ast::MacroCall>,
+    ) -> Option<MacroCallId> {
         self.expr_only()?.expansions.get(&node.map(AstPtr::new)).copied()
     }
 
-    pub fn implicit_format_args(&self, node: InFile<&ast::FormatArgsExpr>) -> Option<(HygieneId, &[(syntax::TextRange, Name)])> {
+    pub fn implicit_format_args(
+        &self,
+        node: InFile<&ast::FormatArgsExpr>,
+    ) -> Option<(HygieneId, &[(syntax::TextRange, Name)])> {
         let expr_only = self.expr_only()?;
         let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::Expr>);
         let (hygiene, names) = expr_only
@@ -963,7 +1084,10 @@ impl ExpressionStoreSourceMap {
         Some((*hygiene, &**names))
     }
 
-    pub fn format_args_implicit_capture(&self, capture_expr: ExprId) -> Option<InFile<(ExprPtr, TextRange)>> {
+    pub fn format_args_implicit_capture(
+        &self,
+        capture_expr: ExprId,
+    ) -> Option<InFile<(ExprPtr, TextRange)>> {
         self.expr_only()?
             .template_map
             .as_ref()?
@@ -972,7 +1096,10 @@ impl ExpressionStoreSourceMap {
             .copied()
     }
 
-    pub fn asm_template_args(&self, node: InFile<&ast::AsmExpr>) -> Option<(ExprId, &[Vec<(syntax::TextRange, usize)>])> {
+    pub fn asm_template_args(
+        &self,
+        node: InFile<&ast::AsmExpr>,
+    ) -> Option<(ExprId, &[Vec<(syntax::TextRange, usize)>])> {
         let expr_only = self.expr_only()?;
         let src = node.map(AstPtr::new).map(AstPtr::upcast::<ast::Expr>);
         let expr = expr_only.expr_map.get(&src)?.as_expr()?;

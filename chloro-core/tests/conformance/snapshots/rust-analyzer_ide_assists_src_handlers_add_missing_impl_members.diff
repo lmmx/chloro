@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45986 bytes
-Chloro size:   44846 bytes
+Chloro size:   44918 bytes
 Rustfmt size:  45986 bytes
 
 ✗ Outputs DIFFER
@@ -42,9 +42,14 @@ Rustfmt size:  45986 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_missing_impl_members(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      add_missing_impl_members_inner(
          acc,
+         ctx,
      )
  }
  
@@ -79,26 +84,9 @@ Rustfmt size:  45986 bytes
 -//     $0fn bar(&self) {}
 -// }
 -// ```
--pub(crate) fn add_missing_default_members(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn add_missing_default_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     add_missing_impl_members_inner(
-         acc,
-         ctx,
-     )
- }
- 
--fn add_missing_impl_members_inner(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--    mode: DefaultMethods,
--    ignore_items: IgnoreAssocItems,
--    assist_id: &'static str,
--    label: &'static str,
--) -> Option<()> {
-+fn add_missing_impl_members_inner(acc: &mut Assists, ctx: &AssistContext<'_>, mode: DefaultMethods, ignore_items: IgnoreAssocItems, assist_id: &'static str, label: &'static str) -> Option<()> {
+ pub(crate) fn add_missing_default_members(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
      let _p = tracing::info_span!("add_missing_impl_members_inner").entered();
      let impl_def = ctx.find_node_at_offset::<ast::Impl>()?;
      let impl_ = ctx.sema.to_def(&impl_def)?;
@@ -137,20 +125,6 @@ Rustfmt size:  45986 bytes
      let target = impl_def.syntax().text_range();
      acc.add(AssistId::quick_fix(assist_id), label, target, |edit| {
          let new_item = add_trait_assoc_items_to_impl(
-     })
- }
- 
--fn try_gen_trait_body(
--    ctx: &AssistContext<'_>,
--    func: &ast::Fn,
--    trait_ref: hir::TraitRef<'_>,
--    impl_def: &ast::Impl,
--    edition: Edition,
--) -> Option<ast::BlockExpr> {
-+fn try_gen_trait_body(ctx: &AssistContext<'_>, func: &ast::Fn, trait_ref: hir::TraitRef<'_>, impl_def: &ast::Impl, edition: Edition) -> Option<ast::BlockExpr> {
-     let trait_path = make::ext::ident_path(
-         &trait_ref.trait_().name(ctx.db()).display(ctx.db(), edition).to_string(),
-     );
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

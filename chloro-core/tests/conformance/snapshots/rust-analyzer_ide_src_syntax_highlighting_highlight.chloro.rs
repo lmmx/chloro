@@ -22,7 +22,13 @@ use crate::{
     syntax_highlighting::tags::{HlOperator, HlPunct},
 };
 
-pub(super) fn token(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, edition: Edition, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool, in_tt: bool) -> Option<Highlight> {
+pub(super) fn token(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+    edition: Edition,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+    in_tt: bool,
+) -> Option<Highlight> {
     if let Some(comment) = ast::Comment::cast(token.clone()) {
         let h = HlTag::Comment;
         return Some(match comment.kind().doc {
@@ -54,7 +60,15 @@ pub(super) fn token(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, edit
     Some(h)
 }
 
-pub(super) fn name_like(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool, syntactic_name_ref_highlighting: bool, name_like: ast::NameLike, edition: Edition) -> Option<(Highlight, Option<u64>)> {
+pub(super) fn name_like(
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+    syntactic_name_ref_highlighting: bool,
+    name_like: ast::NameLike,
+    edition: Edition,
+) -> Option<(Highlight, Option<u64>)> {
     let mut binding_hash = None;
     let highlight = match name_like {
         ast::NameLike::NameRef(name_ref) => highlight_name_ref(
@@ -90,7 +104,12 @@ pub(super) fn name_like(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::C
     Some((highlight, binding_hash))
 }
 
-fn punctuation(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, kind: SyntaxKind, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool) -> Highlight {
+fn punctuation(
+    sema: &Semantics<'_, RootDatabase>,
+    token: SyntaxToken,
+    kind: SyntaxKind,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+) -> Highlight {
     let operator_parent = token.parent();
     let parent_kind = operator_parent.as_ref().map_or(EOF, SyntaxNode::kind);
     match (kind, parent_kind) {
@@ -223,7 +242,10 @@ fn punctuation(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, kind: Syn
     }
 }
 
-fn keyword(token: SyntaxToken, kind: SyntaxKind) -> Highlight {
+fn keyword(
+    token: SyntaxToken,
+    kind: SyntaxKind,
+) -> Highlight {
     let h = Highlight::new(HlTag::Keyword);
     match kind {
         T![await] => h | HlMod::Async | HlMod::ControlFlow,
@@ -249,7 +271,16 @@ fn keyword(token: SyntaxToken, kind: SyntaxKind) -> Highlight {
     }
 }
 
-fn highlight_name_ref(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>, binding_hash: &mut Option<u64>, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool, syntactic_name_ref_highlighting: bool, name_ref: ast::NameRef, edition: Edition) -> Highlight {
+fn highlight_name_ref(
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>,
+    binding_hash: &mut Option<u64>,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+    syntactic_name_ref_highlighting: bool,
+    name_ref: ast::NameRef,
+    edition: Edition,
+) -> Highlight {
     let db = sema.db;
     if let Some(res) = highlight_method_call_by_name_ref(sema, krate, &name_ref, is_unsafe_node) {
         return res;
@@ -395,7 +426,15 @@ fn highlight_name_ref(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Cra
     h
 }
 
-fn highlight_name(sema: &Semantics<'_, RootDatabase>, bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>, binding_hash: &mut Option<u64>, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool, krate: Option<hir::Crate>, name: ast::Name, edition: Edition) -> Highlight {
+fn highlight_name(
+    sema: &Semantics<'_, RootDatabase>,
+    bindings_shadow_count: Option<&mut FxHashMap<hir::Name, u32>>,
+    binding_hash: &mut Option<u64>,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+    krate: Option<hir::Crate>,
+    name: ast::Name,
+    edition: Edition,
+) -> Highlight {
     let name_kind = NameClass::classify(sema, &name);
     if let Some(NameClass::Definition(Definition::Local(local))) = &name_kind
         && let Some(bindings_shadow_count) = bindings_shadow_count
@@ -431,11 +470,20 @@ fn highlight_name(sema: &Semantics<'_, RootDatabase>, bindings_shadow_count: Opt
     }
 }
 
-fn calc_binding_hash(name: &hir::Name, shadow_count: u32) -> u64 {
+fn calc_binding_hash(
+    name: &hir::Name,
+    shadow_count: u32,
+) -> u64 {
     hash_once::<ide_db::FxHasher>((name.as_str(), shadow_count))
 }
 
-pub(super) fn highlight_def(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, def: Definition, edition: Edition, is_ref: bool) -> Highlight {
+pub(super) fn highlight_def(
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    def: Definition,
+    edition: Edition,
+    is_ref: bool,
+) -> Highlight {
     let db = sema.db;
     let mut h = match def {
         Definition::Macro(m) => Highlight::new(HlTag::Symbol(m.kind(sema.db).into())),
@@ -630,12 +678,22 @@ pub(super) fn highlight_def(sema: &Semantics<'_, RootDatabase>, krate: Option<hi
     h
 }
 
-fn highlight_method_call_by_name_ref(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, name_ref: &ast::NameRef, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool) -> Option<Highlight> {
+fn highlight_method_call_by_name_ref(
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    name_ref: &ast::NameRef,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+) -> Option<Highlight> {
     let mc = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
     highlight_method_call(sema, krate, &mc, is_unsafe_node)
 }
 
-fn highlight_method_call(sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, method_call: &ast::MethodCallExpr, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool) -> Option<Highlight> {
+fn highlight_method_call(
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    method_call: &ast::MethodCallExpr,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+) -> Option<Highlight> {
     let func = sema.resolve_method_call(method_call)?;
     let mut h = SymbolKind::Method.into();
     let is_unsafe = is_unsafe_node(AstPtr::new(method_call).upcast::<ast::Expr>().wrap_left());
@@ -718,7 +776,12 @@ fn highlight_name_by_syntax(name: ast::Name) -> Highlight {
     tag.into()
 }
 
-fn highlight_name_ref_by_syntax(name: ast::NameRef, sema: &Semantics<'_, RootDatabase>, krate: Option<hir::Crate>, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool) -> Highlight {
+fn highlight_name_ref_by_syntax(
+    name: ast::NameRef,
+    sema: &Semantics<'_, RootDatabase>,
+    krate: Option<hir::Crate>,
+    is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
+) -> Highlight {
     let default = HlTag::UnresolvedReference;
     let parent = match name.syntax().parent() {
         Some(it) => it,
@@ -780,14 +843,21 @@ fn highlight_name_ref_by_syntax(name: ast::NameRef, sema: &Semantics<'_, RootDat
     }
 }
 
-fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
+fn is_consumed_lvalue(
+    node: &SyntaxNode,
+    local: &hir::Local,
+    db: &RootDatabase,
+) -> bool {
     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
     parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
         && !local.ty(db).is_copy(db)
 }
 
 /// Returns true if the parent nodes of `node` all match the `SyntaxKind`s in `kinds` exactly.
-fn parents_match(mut node: NodeOrToken<SyntaxNode, SyntaxToken>, mut kinds: &[SyntaxKind]) -> bool {
+fn parents_match(
+    mut node: NodeOrToken<SyntaxNode, SyntaxToken>,
+    mut kinds: &[SyntaxKind],
+) -> bool {
     while let (Some(parent), [kind, rest @ ..]) = (node.parent(), kinds) {
         if parent.kind() != *kind {
             return false;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4320 bytes
-Chloro size:   4185 bytes
+Chloro size:   4196 bytes
 Rustfmt size:  4354 bytes
 
 ✗ Outputs DIFFER
@@ -14,13 +14,11 @@ Rustfmt size:  4354 bytes
 -// Diagnostic: moved-out-of-ref
 -//
 -// This diagnostic is triggered on moving non copy things out of references.
--pub(crate) fn moved_out_of_ref(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::MovedOutOfRef<'_>,
--) -> Diagnostic {
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 +
-+pub(crate) fn moved_out_of_ref(ctx: &DiagnosticsContext<'_>, d: &hir::MovedOutOfRef<'_>) -> Diagnostic {
+ pub(crate) fn moved_out_of_ref(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MovedOutOfRef<'_>,
      Diagnostic::new_with_syntax_node_ptr(
          ctx,
          DiagnosticCode::RustcHardError("E0507"),

@@ -69,7 +69,11 @@ pub enum BodyValidationDiagnostic {
 }
 
 impl BodyValidationDiagnostic {
-    pub fn collect(db: &dyn HirDatabase, owner: DefWithBodyId, validate_lints: bool) -> Vec<BodyValidationDiagnostic> {
+    pub fn collect(
+        db: &dyn HirDatabase,
+        owner: DefWithBodyId,
+        validate_lints: bool,
+    ) -> Vec<BodyValidationDiagnostic> {
         let _p = tracing::info_span!("BodyValidationDiagnostic::collect").entered();
         let infer = db.infer(owner);
         let body = db.body(owner);
@@ -158,7 +162,12 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn validate_call(&mut self, call_id: ExprId, expr: &Expr, filter_map_next_checker: &mut Option<FilterMapNextChecker<'db>>) {
+    fn validate_call(
+        &mut self,
+        call_id: ExprId,
+        expr: &Expr,
+        filter_map_next_checker: &mut Option<FilterMapNextChecker<'db>>,
+    ) {
         if !self.validate_lints {
             return;
         }
@@ -188,7 +197,12 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn validate_match(&mut self, match_expr: ExprId, scrutinee_expr: ExprId, arms: &[MatchArm]) {
+    fn validate_match(
+        &mut self,
+        match_expr: ExprId,
+        scrutinee_expr: ExprId,
+        arms: &[MatchArm],
+    ) {
         let Some(scrut_ty) = self.infer.type_of_expr_with_adjust(scrutinee_expr) else {
             return;
         };
@@ -267,7 +281,10 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn is_known_valid_scrutinee(&self, scrutinee_expr: ExprId) -> bool {
+    fn is_known_valid_scrutinee(
+        &self,
+        scrutinee_expr: ExprId,
+    ) -> bool {
         let db = self.db();
         if self
             .infer
@@ -298,7 +315,10 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn validate_block(&mut self, expr: &Expr) {
+    fn validate_block(
+        &mut self,
+        expr: &Expr,
+    ) {
         let (Expr::Block { statements, .. }
         | Expr::Async { statements, .. }
         | Expr::Unsafe { statements, .. }) = expr
@@ -356,7 +376,12 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn lower_pattern<'a>(&self, cx: &MatchCheckCtx<'a, 'db>, pat: PatId, have_errors: &mut bool) -> DeconstructedPat<'a, 'db> {
+    fn lower_pattern<'a>(
+        &self,
+        cx: &MatchCheckCtx<'a, 'db>,
+        pat: PatId,
+        have_errors: &mut bool,
+    ) -> DeconstructedPat<'a, 'db> {
         let mut patcx = match_check::PatCtxt::new(self.db(), &self.infer, &self.body);
         let pattern = patcx.lower_pattern(pat);
         let pattern = cx.lower_pat(&pattern);
@@ -366,7 +391,11 @@ impl<'db> ExprValidator<'db> {
         pattern
     }
 
-    fn check_for_trailing_return(&mut self, body_expr: ExprId, body: &Body) {
+    fn check_for_trailing_return(
+        &mut self,
+        body_expr: ExprId,
+        body: &Body,
+    ) {
         if !self.validate_lints {
             return;
         }
@@ -401,7 +430,11 @@ impl<'db> ExprValidator<'db> {
         }
     }
 
-    fn check_for_unnecessary_else(&mut self, id: ExprId, expr: &Expr) {
+    fn check_for_unnecessary_else(
+        &mut self,
+        id: ExprId,
+        expr: &Expr,
+    ) {
         if !self.validate_lints {
             return;
         }
@@ -466,7 +499,10 @@ struct FilterMapNextChecker<'db> {
 }
 
 impl<'db> FilterMapNextChecker<'db> {
-    fn new(resolver: &hir_def::resolver::Resolver<'db>, db: &'db dyn HirDatabase) -> Self {
+    fn new(
+        resolver: &hir_def::resolver::Resolver<'db>,
+        db: &'db dyn HirDatabase,
+    ) -> Self {
         // Find and store the FunctionIds for Iterator::filter_map and Iterator::next
         let (next_function_id, filter_map_function_id) = match LangItem::IteratorNext
             .resolve_function(db, resolver.krate())
@@ -494,7 +530,12 @@ impl<'db> FilterMapNextChecker<'db> {
         }
     }
 
-    fn check(&mut self, current_expr_id: ExprId, receiver_expr_id: &ExprId, function_id: &hir_def::FunctionId) -> Option<()> {
+    fn check(
+        &mut self,
+        current_expr_id: ExprId,
+        receiver_expr_id: &ExprId,
+        function_id: &hir_def::FunctionId,
+    ) -> Option<()> {
         if *function_id == self.filter_map_function_id? {
             self.prev_filter_map_expr_id = Some(current_expr_id);
             return None;
@@ -515,7 +556,12 @@ impl<'db> FilterMapNextChecker<'db> {
     }
 }
 
-pub fn record_literal_missing_fields(db: &dyn HirDatabase, infer: &InferenceResult<'_>, id: ExprId, expr: &Expr) -> Option<(VariantId, Vec<LocalFieldId>, /*exhaustive*/ bool)> {
+pub fn record_literal_missing_fields(
+    db: &dyn HirDatabase,
+    infer: &InferenceResult<'_>,
+    id: ExprId,
+    expr: &Expr,
+) -> Option<(VariantId, Vec<LocalFieldId>, /*exhaustive*/ bool)> {
     let (fields, exhaustive) = match expr {
         Expr::RecordLit { fields, spread, .. } => (fields, spread.is_none()),
         _ => return None,
@@ -537,7 +583,12 @@ pub fn record_literal_missing_fields(db: &dyn HirDatabase, infer: &InferenceResu
     Some((variant_def, missed_fields, exhaustive))
 }
 
-pub fn record_pattern_missing_fields(db: &dyn HirDatabase, infer: &InferenceResult<'_>, id: PatId, pat: &Pat) -> Option<(VariantId, Vec<LocalFieldId>, /*exhaustive*/ bool)> {
+pub fn record_pattern_missing_fields(
+    db: &dyn HirDatabase,
+    infer: &InferenceResult<'_>,
+    id: PatId,
+    pat: &Pat,
+) -> Option<(VariantId, Vec<LocalFieldId>, /*exhaustive*/ bool)> {
     let (fields, exhaustive) = match pat {
         Pat::Record { path: _, args, ellipsis } => (args, !ellipsis),
         _ => return None,
@@ -559,7 +610,11 @@ pub fn record_pattern_missing_fields(db: &dyn HirDatabase, infer: &InferenceResu
     Some((variant_def, missed_fields, exhaustive))
 }
 
-fn types_of_subpatterns_do_match(pat: PatId, body: &Body, infer: &InferenceResult<'_>) -> bool {
+fn types_of_subpatterns_do_match(
+    pat: PatId,
+    body: &Body,
+    infer: &InferenceResult<'_>,
+) -> bool {
     fn walk(pat: PatId, body: &Body, infer: &InferenceResult<'_>, has_type_mismatches: &mut bool) {
         match infer.type_mismatch_for_pat(pat) {
             Some(_) => *has_type_mismatches = true,
@@ -581,7 +636,13 @@ fn types_of_subpatterns_do_match(pat: PatId, body: &Body, infer: &InferenceResul
     !has_type_mismatches
 }
 
-fn missing_match_arms<'a, 'db>(cx: &MatchCheckCtx<'a, 'db>, scrut_ty: Ty<'a>, witnesses: Vec<WitnessPat<'a, 'db>>, arms_is_empty: bool, krate: Crate) -> String {
+fn missing_match_arms<'a, 'db>(
+    cx: &MatchCheckCtx<'a, 'db>,
+    scrut_ty: Ty<'a>,
+    witnesses: Vec<WitnessPat<'a, 'db>>,
+    arms_is_empty: bool,
+    krate: Crate,
+) -> String {
     struct DisplayWitness<'a, 'b, 'db>(
         &'a WitnessPat<'b, 'db>,
         &'a MatchCheckCtx<'b, 'db>,

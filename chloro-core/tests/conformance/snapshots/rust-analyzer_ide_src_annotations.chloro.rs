@@ -53,7 +53,11 @@ pub enum AnnotationLocation {
     AboveWholeItem,
 }
 
-pub(crate) fn annotations(db: &RootDatabase, config: &AnnotationConfig<'_>, file_id: FileId) -> Vec<Annotation> {
+pub(crate) fn annotations(
+    db: &RootDatabase,
+    config: &AnnotationConfig<'_>,
+    file_id: FileId,
+) -> Vec<Annotation> {
     let mut annotations = FxIndexSet::default();
     if config.annotate_runnables {
         for runnable in runnables(db, file_id) {
@@ -189,7 +193,11 @@ pub(crate) fn annotations(db: &RootDatabase, config: &AnnotationConfig<'_>, file
         .collect()
 }
 
-pub(crate) fn resolve_annotation(db: &RootDatabase, config: &AnnotationConfig<'_>, mut annotation: Annotation) -> Annotation {
+pub(crate) fn resolve_annotation(
+    db: &RootDatabase,
+    config: &AnnotationConfig<'_>,
+    mut annotation: Annotation,
+) -> Annotation {
     match annotation.kind {
         AnnotationKind::HasImpls { pos, ref mut data } => {
             let goto_implementation_config = GotoImplementationConfig {
@@ -220,7 +228,10 @@ pub(crate) fn resolve_annotation(db: &RootDatabase, config: &AnnotationConfig<'_
     annotation
 }
 
-fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
+fn should_skip_runnable(
+    kind: &RunnableKind,
+    binary_target: bool,
+) -> bool {
     match kind {
         RunnableKind::Bin => !binary_target,
         _ => false,
@@ -233,7 +244,11 @@ mod tests {
     use ide_db::MiniCore;
     use crate::{Annotation, AnnotationConfig, fixture};
     use super::AnnotationLocation;
-    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect, config: &AnnotationConfig<'_>) {
+    fn check_with_config(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+        config: &AnnotationConfig<'_>,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let annotations: Vec<Annotation> = analysis
             .annotations(config, file_id)
@@ -243,7 +258,10 @@ mod tests {
             .collect();
         expect.assert_debug_eq(&annotations);
     }
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         check_with_config(ra_fixture, expect, &DEFAULT_CONFIG);
     }
     #[test]

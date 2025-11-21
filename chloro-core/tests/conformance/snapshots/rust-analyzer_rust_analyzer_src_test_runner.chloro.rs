@@ -57,7 +57,11 @@ impl CargoTestOutputParser {
 }
 
 impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
-    fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
+    fn from_line(
+        &self,
+        line: &str,
+        _error: &mut String,
+    ) -> Option<CargoTestMessage> {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
         Some(CargoTestMessage {
@@ -88,7 +92,14 @@ pub(crate) struct TestTarget {
 }
 
 impl CargoTestHandle {
-    pub(crate) fn new(path: Option<&str>, options: CargoOptions, root: &AbsPath, ws_target_dir: Option<&Utf8Path>, test_target: TestTarget, sender: Sender<CargoTestMessage>) -> std::io::Result<Self> {
+    pub(crate) fn new(
+        path: Option<&str>,
+        options: CargoOptions,
+        root: &AbsPath,
+        ws_target_dir: Option<&Utf8Path>,
+        test_target: TestTarget,
+        sender: Sender<CargoTestMessage>,
+    ) -> std::io::Result<Self> {
         let mut cmd = toolchain::command(Tool::Cargo.path(), root, &options.extra_env);
         cmd.env("RUSTC_BOOTSTRAP", "1");
         cmd.arg("--color=always");

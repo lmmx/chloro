@@ -17,7 +17,10 @@ use crate::{
     },
 };
 
-fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {
+fn has_destructor(
+    db: &dyn HirDatabase,
+    adt: AdtId,
+) -> bool {
     let module = match adt {
         AdtId::EnumId(id) => db.lookup_intern_enum(id).container,
         AdtId::StructId(id) => db.lookup_intern_struct(id).container,
@@ -46,11 +49,20 @@ pub enum DropGlue {
     HasDropGlue,
 }
 
-pub fn has_drop_glue<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, env: Arc<TraitEnvironment<'db>>) -> DropGlue {
+pub fn has_drop_glue<'db>(
+    infcx: &InferCtxt<'db>,
+    ty: Ty<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+) -> DropGlue {
     has_drop_glue_impl(infcx, ty, env, &mut FxHashSet::default())
 }
 
-fn has_drop_glue_impl<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, env: Arc<TraitEnvironment<'db>>, visited: &mut FxHashSet<Ty<'db>>) -> DropGlue {
+fn has_drop_glue_impl<'db>(
+    infcx: &InferCtxt<'db>,
+    ty: Ty<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+    visited: &mut FxHashSet<Ty<'db>>,
+) -> DropGlue {
     let mut ocx = ObligationCtxt::new(infcx);
     let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
     if !visited.insert(ty) {

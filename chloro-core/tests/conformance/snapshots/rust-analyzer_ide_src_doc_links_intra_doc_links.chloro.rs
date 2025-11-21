@@ -51,7 +51,10 @@ pub(super) fn strip_prefixes_suffixes(s: &str) -> &str {
 mod tests {
     use expect_test::{Expect, expect};
     use super::*;
-    fn check(link: &str, expected: Expect) {
+    fn check(
+        link: &str,
+        expected: Expect,
+    ) {
         let (l, a) = parse_intra_doc_link(link);
         let a = a.map_or_else(String::new, |a| format!(" ({a:?})"));
         expected.assert_eq(&format!("{l}{a}"));

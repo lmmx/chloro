@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6668 bytes
-Chloro size:   6306 bytes
+Chloro size:   6317 bytes
 Rustfmt size:  6668 bytes
 
 ✗ Outputs DIFFER
@@ -31,11 +31,10 @@ Rustfmt size:  6668 bytes
 -//     if let Some(${0:x1}) = x {}
 -// }
 -// ```
--pub(crate) fn replace_is_method_with_if_let_method(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn replace_is_method_with_if_let_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn replace_is_method_with_if_let_method(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let has_cond = ctx.find_node_at_offset::<Either<ast::IfExpr, ast::WhileExpr>>()?;
 -
      let cond = either::for_both!(&has_cond, it => it.condition())?;

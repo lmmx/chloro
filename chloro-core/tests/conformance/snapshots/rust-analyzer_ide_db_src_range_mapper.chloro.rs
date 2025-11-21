@@ -12,17 +12,28 @@ pub struct RangeMapper {
 }
 
 impl RangeMapper {
-    pub fn add(&mut self, text: &str, source_range: TextRange) {
+    pub fn add(
+        &mut self,
+        text: &str,
+        source_range: TextRange,
+    ) {
         let len = TextSize::of(text);
         assert_eq!(len, source_range.len());
         self.add_impl(text, Some(source_range.start()));
     }
 
-    pub fn add_unmapped(&mut self, text: &str) {
+    pub fn add_unmapped(
+        &mut self,
+        text: &str,
+    ) {
         self.add_impl(text, None);
     }
 
-    fn add_impl(&mut self, text: &str, source: Option<TextSize>) {
+    fn add_impl(
+        &mut self,
+        text: &str,
+        source: Option<TextSize>,
+    ) {
         let len = TextSize::of(text);
         let target_range = TextRange::at(TextSize::of(&self.buf), len);
         self.ranges.push((target_range, source.map(|it| TextRange::at(it, len))));
@@ -33,7 +44,10 @@ impl RangeMapper {
         std::mem::take(&mut self.buf)
     }
 
-    pub fn map_range_up(&self, range: TextRange) -> impl Iterator<Item = TextRange> + '_ {
+    pub fn map_range_up(
+        &self,
+        range: TextRange,
+    ) -> impl Iterator<Item = TextRange> + '_ {
         equal_range_by(&self.ranges, |&(r, _)| {
             if range.is_empty() && r.contains(range.start()) {
                 Ordering::Equal
@@ -49,7 +63,10 @@ impl RangeMapper {
         })
     }
 
-    pub fn map_offset_down(&self, offset: TextSize) -> Option<TextSize> {
+    pub fn map_offset_down(
+        &self,
+        offset: TextSize,
+    ) -> Option<TextSize> {
         // Using a binary search here is a bit complicated because of the `None` entries.
         // But the number of lines in fixtures is usually low.
         let (target_range, source_range) =

@@ -5,7 +5,12 @@ use crate::{
     context::{CompletionContext, PathCompletionCtx, Qualified},
 };
 
-pub(crate) fn complete_vis_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, &has_in_token: &bool) {
+pub(crate) fn complete_vis_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+    &has_in_token: &bool,
+) {
     match qualified {
         Qualified::With {
             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),

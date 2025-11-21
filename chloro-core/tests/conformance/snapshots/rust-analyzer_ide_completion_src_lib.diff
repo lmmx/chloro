@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   9305 bytes
+Chloro size:   9343 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -115,16 +115,7 @@ Rustfmt size:  11494 bytes
  /// Main entry point for completion. We run completion as a two-phase process.
  ///
  /// First, we look at the position and collect a so-called `CompletionContext`.
- /// existing node. Asking for, eg, type of this `CodeFragment` node works
- /// correctly, as the underlying infrastructure makes use of contexts to do
- /// analysis.
--pub fn completions(
--    db: &RootDatabase,
--    config: &CompletionConfig<'_>,
--    position: FilePosition,
--    trigger_character: Option<char>,
--) -> Option<Vec<CompletionItem>> {
-+pub fn completions(db: &RootDatabase, config: &CompletionConfig<'_>, position: FilePosition, trigger_character: Option<char>) -> Option<Vec<CompletionItem>> {
+ ) -> Option<Vec<CompletionItem>> {
      let (ctx, analysis) = &CompletionContext::new(db, position, config, trigger_character)?;
      let mut completions = Completions::default();
 -
@@ -152,15 +143,7 @@ Rustfmt size:  11494 bytes
      Some(completions.into())
  }
  
- /// Resolves additional completion data at the position given.
- /// This is used for import insertion done via completions like flyimport and custom user snippets.
--pub fn resolve_completion_edits(
--    db: &RootDatabase,
--    config: &CompletionConfig<'_>,
--    FilePosition { file_id, offset }: FilePosition,
--    imports: impl IntoIterator<Item = String>,
--) -> Option<Vec<TextEdit>> {
-+pub fn resolve_completion_edits(db: &RootDatabase, config: &CompletionConfig<'_>, FilePosition { file_id, offset }: FilePosition, imports: impl IntoIterator<Item = String>) -> Option<Vec<TextEdit>> {
+ ) -> Option<Vec<TextEdit>> {
      let _p = tracing::info_span!("resolve_completion_edits").entered();
      let sema = hir::Semantics::new(db);
 -

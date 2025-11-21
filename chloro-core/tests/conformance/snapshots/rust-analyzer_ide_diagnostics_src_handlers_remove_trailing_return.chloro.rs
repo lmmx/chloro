@@ -5,7 +5,10 @@ use syntax::{AstNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 
-pub(crate) fn remove_trailing_return(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Diagnostic> {
+pub(crate) fn remove_trailing_return(
+    ctx: &DiagnosticsContext<'_>,
+    d: &RemoveTrailingReturn,
+) -> Option<Diagnostic> {
     if d.return_expr.file_id.macro_file().is_some() {
         // FIXME: Our infra can't handle allow from within macro expansions rn
         return None;
@@ -28,7 +31,10 @@ pub(crate) fn remove_trailing_return(ctx: &DiagnosticsContext<'_>, d: &RemoveTra
     )
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &RemoveTrailingReturn,
+) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.return_expr.file_id);
     let return_expr = d.return_expr.value.to_node(&root);
     let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);

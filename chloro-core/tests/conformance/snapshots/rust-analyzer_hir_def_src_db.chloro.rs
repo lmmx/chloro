@@ -38,40 +38,91 @@ use crate::{
 
 #[query_group::query_group(InternDatabaseStorage)]
 #[salsa::interned]
-fn intern_use(&self, loc: UseLoc) -> UseId;
+fn intern_use(
+    &self,
+    loc: UseLoc,
+) -> UseId;
 #[salsa::interned]
-fn intern_extern_crate(&self, loc: ExternCrateLoc) -> ExternCrateId;
+fn intern_extern_crate(
+    &self,
+    loc: ExternCrateLoc,
+) -> ExternCrateId;
 #[salsa::interned]
-fn intern_function(&self, loc: FunctionLoc) -> FunctionId;
+fn intern_function(
+    &self,
+    loc: FunctionLoc,
+) -> FunctionId;
 #[salsa::interned]
-fn intern_struct(&self, loc: StructLoc) -> StructId;
+fn intern_struct(
+    &self,
+    loc: StructLoc,
+) -> StructId;
 #[salsa::interned]
-fn intern_union(&self, loc: UnionLoc) -> UnionId;
+fn intern_union(
+    &self,
+    loc: UnionLoc,
+) -> UnionId;
 #[salsa::interned]
-fn intern_enum(&self, loc: EnumLoc) -> EnumId;
+fn intern_enum(
+    &self,
+    loc: EnumLoc,
+) -> EnumId;
 #[salsa::interned]
-fn intern_enum_variant(&self, loc: EnumVariantLoc) -> EnumVariantId;
+fn intern_enum_variant(
+    &self,
+    loc: EnumVariantLoc,
+) -> EnumVariantId;
 #[salsa::interned]
-fn intern_const(&self, loc: ConstLoc) -> ConstId;
+fn intern_const(
+    &self,
+    loc: ConstLoc,
+) -> ConstId;
 #[salsa::interned]
-fn intern_static(&self, loc: StaticLoc) -> StaticId;
+fn intern_static(
+    &self,
+    loc: StaticLoc,
+) -> StaticId;
 #[salsa::interned]
-fn intern_trait(&self, loc: TraitLoc) -> TraitId;
+fn intern_trait(
+    &self,
+    loc: TraitLoc,
+) -> TraitId;
 #[salsa::interned]
-fn intern_type_alias(&self, loc: TypeAliasLoc) -> TypeAliasId;
+fn intern_type_alias(
+    &self,
+    loc: TypeAliasLoc,
+) -> TypeAliasId;
 #[salsa::interned]
-fn intern_impl(&self, loc: ImplLoc) -> ImplId;
+fn intern_impl(
+    &self,
+    loc: ImplLoc,
+) -> ImplId;
 #[salsa::interned]
-fn intern_extern_block(&self, loc: ExternBlockLoc) -> ExternBlockId;
+fn intern_extern_block(
+    &self,
+    loc: ExternBlockLoc,
+) -> ExternBlockId;
 #[salsa::interned]
-fn intern_macro2(&self, loc: Macro2Loc) -> Macro2Id;
+fn intern_macro2(
+    &self,
+    loc: Macro2Loc,
+) -> Macro2Id;
 #[salsa::interned]
-fn intern_proc_macro(&self, loc: ProcMacroLoc) -> ProcMacroId;
+fn intern_proc_macro(
+    &self,
+    loc: ProcMacroLoc,
+) -> ProcMacroId;
 #[salsa::interned]
-fn intern_macro_rules(&self, loc: MacroRulesLoc) -> MacroRulesId;
+fn intern_macro_rules(
+    &self,
+    loc: MacroRulesLoc,
+) -> MacroRulesId;
 // endregion: items
 #[salsa::interned]
-fn intern_block(&self, loc: BlockLoc) -> BlockId;
+fn intern_block(
+    &self,
+    loc: BlockLoc,
+) -> BlockId;
 
 #[query_group::query_group]
 /// Whether to expand procedural macros during name resolution.
@@ -80,111 +131,225 @@ fn expand_proc_attr_macros(&self) -> bool;
 /// Computes an [`ItemTree`] for the given file or macro expansion.
 #[salsa::invoke(file_item_tree_query)]
 #[salsa::transparent]
-fn file_item_tree(&self, file_id: HirFileId) -> &ItemTree;
+fn file_item_tree(
+    &self,
+    file_id: HirFileId,
+) -> &ItemTree;
 /// Turns a MacroId into a MacroDefId, describing the macro's definition post name resolution.
 #[salsa::invoke(macro_def)]
-fn macro_def(&self, m: MacroId) -> MacroDefId;
+fn macro_def(
+    &self,
+    m: MacroId,
+) -> MacroDefId;
 // region:data
 #[salsa::tracked]
-fn trait_signature(&self, trait_: TraitId) -> Arc<TraitSignature> {
+fn trait_signature(
+    &self,
+    trait_: TraitId,
+) -> Arc<TraitSignature> {
     self.trait_signature_with_source_map(trait_).0
 }
 #[salsa::tracked]
-fn impl_signature(&self, impl_: ImplId) -> Arc<ImplSignature> {
+fn impl_signature(
+    &self,
+    impl_: ImplId,
+) -> Arc<ImplSignature> {
     self.impl_signature_with_source_map(impl_).0
 }
 #[salsa::tracked]
-fn struct_signature(&self, struct_: StructId) -> Arc<StructSignature> {
+fn struct_signature(
+    &self,
+    struct_: StructId,
+) -> Arc<StructSignature> {
     self.struct_signature_with_source_map(struct_).0
 }
 #[salsa::tracked]
-fn union_signature(&self, union_: UnionId) -> Arc<UnionSignature> {
+fn union_signature(
+    &self,
+    union_: UnionId,
+) -> Arc<UnionSignature> {
     self.union_signature_with_source_map(union_).0
 }
 #[salsa::tracked]
-fn enum_signature(&self, e: EnumId) -> Arc<EnumSignature> {
+fn enum_signature(
+    &self,
+    e: EnumId,
+) -> Arc<EnumSignature> {
     self.enum_signature_with_source_map(e).0
 }
 #[salsa::tracked]
-fn const_signature(&self, e: ConstId) -> Arc<ConstSignature> {
+fn const_signature(
+    &self,
+    e: ConstId,
+) -> Arc<ConstSignature> {
     self.const_signature_with_source_map(e).0
 }
 #[salsa::tracked]
-fn static_signature(&self, e: StaticId) -> Arc<StaticSignature> {
+fn static_signature(
+    &self,
+    e: StaticId,
+) -> Arc<StaticSignature> {
     self.static_signature_with_source_map(e).0
 }
 #[salsa::tracked]
-fn function_signature(&self, e: FunctionId) -> Arc<FunctionSignature> {
+fn function_signature(
+    &self,
+    e: FunctionId,
+) -> Arc<FunctionSignature> {
     self.function_signature_with_source_map(e).0
 }
 #[salsa::tracked]
-fn type_alias_signature(&self, e: TypeAliasId) -> Arc<TypeAliasSignature> {
+fn type_alias_signature(
+    &self,
+    e: TypeAliasId,
+) -> Arc<TypeAliasSignature> {
     self.type_alias_signature_with_source_map(e).0
 }
 #[salsa::invoke(TraitSignature::query)]
-fn trait_signature_with_source_map(&self, trait_: TraitId) -> (Arc<TraitSignature>, Arc<ExpressionStoreSourceMap>);
+fn trait_signature_with_source_map(
+    &self,
+    trait_: TraitId,
+) -> (Arc<TraitSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(ImplSignature::query)]
-fn impl_signature_with_source_map(&self, impl_: ImplId) -> (Arc<ImplSignature>, Arc<ExpressionStoreSourceMap>);
+fn impl_signature_with_source_map(
+    &self,
+    impl_: ImplId,
+) -> (Arc<ImplSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(StructSignature::query)]
-fn struct_signature_with_source_map(&self, struct_: StructId) -> (Arc<StructSignature>, Arc<ExpressionStoreSourceMap>);
+fn struct_signature_with_source_map(
+    &self,
+    struct_: StructId,
+) -> (Arc<StructSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(UnionSignature::query)]
-fn union_signature_with_source_map(&self, union_: UnionId) -> (Arc<UnionSignature>, Arc<ExpressionStoreSourceMap>);
+fn union_signature_with_source_map(
+    &self,
+    union_: UnionId,
+) -> (Arc<UnionSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(EnumSignature::query)]
-fn enum_signature_with_source_map(&self, e: EnumId) -> (Arc<EnumSignature>, Arc<ExpressionStoreSourceMap>);
+fn enum_signature_with_source_map(
+    &self,
+    e: EnumId,
+) -> (Arc<EnumSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(ConstSignature::query)]
-fn const_signature_with_source_map(&self, e: ConstId) -> (Arc<ConstSignature>, Arc<ExpressionStoreSourceMap>);
+fn const_signature_with_source_map(
+    &self,
+    e: ConstId,
+) -> (Arc<ConstSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(StaticSignature::query)]
-fn static_signature_with_source_map(&self, e: StaticId) -> (Arc<StaticSignature>, Arc<ExpressionStoreSourceMap>);
+fn static_signature_with_source_map(
+    &self,
+    e: StaticId,
+) -> (Arc<StaticSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(FunctionSignature::query)]
-fn function_signature_with_source_map(&self, e: FunctionId) -> (Arc<FunctionSignature>, Arc<ExpressionStoreSourceMap>);
+fn function_signature_with_source_map(
+    &self,
+    e: FunctionId,
+) -> (Arc<FunctionSignature>, Arc<ExpressionStoreSourceMap>);
 #[salsa::invoke(TypeAliasSignature::query)]
-fn type_alias_signature_with_source_map(&self, e: TypeAliasId) -> (Arc<TypeAliasSignature>, Arc<ExpressionStoreSourceMap>);
+fn type_alias_signature_with_source_map(
+    &self,
+    e: TypeAliasId,
+) -> (Arc<TypeAliasSignature>, Arc<ExpressionStoreSourceMap>);
 // endregion:data
 #[salsa::invoke(Body::body_with_source_map_query)]
 #[salsa::lru(512)]
-fn body_with_source_map(&self, def: DefWithBodyId) -> (Arc<Body>, Arc<BodySourceMap>);
+fn body_with_source_map(
+    &self,
+    def: DefWithBodyId,
+) -> (Arc<Body>, Arc<BodySourceMap>);
 #[salsa::invoke(Body::body_query)]
-fn body(&self, def: DefWithBodyId) -> Arc<Body>;
+fn body(
+    &self,
+    def: DefWithBodyId,
+) -> Arc<Body>;
 #[salsa::invoke(ExprScopes::expr_scopes_query)]
-fn expr_scopes(&self, def: DefWithBodyId) -> Arc<ExprScopes>;
+fn expr_scopes(
+    &self,
+    def: DefWithBodyId,
+) -> Arc<ExprScopes>;
 #[salsa::transparent]
 #[salsa::invoke(GenericParams::new)]
-fn generic_params(&self, def: GenericDefId) -> Arc<GenericParams>;
+fn generic_params(
+    &self,
+    def: GenericDefId,
+) -> Arc<GenericParams>;
 #[salsa::transparent]
 #[salsa::invoke(GenericParams::generic_params_and_store)]
-fn generic_params_and_store(&self, def: GenericDefId) -> (Arc<GenericParams>, Arc<ExpressionStore>);
+fn generic_params_and_store(
+    &self,
+    def: GenericDefId,
+) -> (Arc<GenericParams>, Arc<ExpressionStore>);
 #[salsa::transparent]
 #[salsa::invoke(GenericParams::generic_params_and_store_and_source_map)]
-fn generic_params_and_store_and_source_map(&self, def: GenericDefId) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>);
+fn generic_params_and_store_and_source_map(
+    &self,
+    def: GenericDefId,
+) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>);
 // region:attrs
 #[salsa::invoke(Attrs::fields_attrs_query)]
-fn fields_attrs(&self, def: VariantId) -> Arc<ArenaMap<LocalFieldId, Attrs>>;
+fn fields_attrs(
+    &self,
+    def: VariantId,
+) -> Arc<ArenaMap<LocalFieldId, Attrs>>;
 #[salsa::invoke(crate::attr::fields_attrs_source_map)]
-fn fields_attrs_source_map(&self, def: VariantId) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>>;
+fn fields_attrs_source_map(
+    &self,
+    def: VariantId,
+) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>>;
 #[salsa::invoke_interned(AttrsWithOwner::attrs_query)]
-fn attrs(&self, def: AttrDefId) -> Attrs;
+fn attrs(
+    &self,
+    def: AttrDefId,
+) -> Attrs;
 #[salsa::transparent]
 #[salsa::invoke(lang_item::lang_attr)]
-fn lang_attr(&self, def: AttrDefId) -> Option<LangItem>;
+fn lang_attr(
+    &self,
+    def: AttrDefId,
+) -> Option<LangItem>;
 // endregion:attrs
 #[salsa::invoke(ImportMap::import_map_query)]
-fn import_map(&self, krate: Crate) -> Arc<ImportMap>;
+fn import_map(
+    &self,
+    krate: Crate,
+) -> Arc<ImportMap>;
 // region:visibilities
 #[salsa::invoke(visibility::field_visibilities_query)]
-fn field_visibilities(&self, var: VariantId) -> Arc<ArenaMap<LocalFieldId, Visibility>>;
+fn field_visibilities(
+    &self,
+    var: VariantId,
+) -> Arc<ArenaMap<LocalFieldId, Visibility>>;
 #[salsa::invoke(visibility::assoc_visibility_query)]
-fn assoc_visibility(&self, def: AssocItemId) -> Visibility;
+fn assoc_visibility(
+    &self,
+    def: AssocItemId,
+) -> Visibility;
 // endregion:visibilities
 #[salsa::invoke(crate::lang_item::notable_traits_in_deps)]
-fn notable_traits_in_deps(&self, krate: Crate) -> Arc<[Arc<[TraitId]>]>;
+fn notable_traits_in_deps(
+    &self,
+    krate: Crate,
+) -> Arc<[Arc<[TraitId]>]>;
 #[salsa::invoke(crate::lang_item::crate_notable_traits)]
-fn crate_notable_traits(&self, krate: Crate) -> Option<Arc<[TraitId]>>;
+fn crate_notable_traits(
+    &self,
+    krate: Crate,
+) -> Option<Arc<[TraitId]>>;
 #[salsa::invoke(crate_supports_no_std)]
-fn crate_supports_no_std(&self, crate_id: Crate) -> bool;
+fn crate_supports_no_std(
+    &self,
+    crate_id: Crate,
+) -> bool;
 #[salsa::invoke(include_macro_invoc)]
-fn include_macro_invoc(&self, crate_id: Crate) -> Arc<[(MacroCallId, EditionedFileId)]>;
+fn include_macro_invoc(
+    &self,
+    crate_id: Crate,
+) -> Arc<[(MacroCallId, EditionedFileId)]>;
 
-fn include_macro_invoc(db: &dyn DefDatabase, krate: Crate) -> Arc<[(MacroCallId, EditionedFileId)]> {
+fn include_macro_invoc(
+    db: &dyn DefDatabase,
+    krate: Crate,
+) -> Arc<[(MacroCallId, EditionedFileId)]> {
     crate_def_map(db, krate)
         .modules
         .values()
@@ -197,7 +362,10 @@ fn include_macro_invoc(db: &dyn DefDatabase, krate: Crate) -> Arc<[(MacroCallId,
         .collect()
 }
 
-fn crate_supports_no_std(db: &dyn DefDatabase, crate_id: Crate) -> bool {
+fn crate_supports_no_std(
+    db: &dyn DefDatabase,
+    crate_id: Crate,
+) -> bool {
     let file = crate_id.data(db).root_file_id(db);
     let item_tree = db.file_item_tree(file.into());
     let attrs = item_tree.top_level_raw_attrs();
@@ -229,7 +397,10 @@ fn crate_supports_no_std(db: &dyn DefDatabase, crate_id: Crate) -> bool {
     false
 }
 
-fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
+fn macro_def(
+    db: &dyn DefDatabase,
+    id: MacroId,
+) -> MacroDefId {
     let kind = |expander, file_id, m| {
         let in_file = InFile::new(file_id, m);
         match expander {

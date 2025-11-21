@@ -38,7 +38,10 @@ use crate::{
     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
 };
 
-pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
+pub fn main_loop(
+    config: Config,
+    connection: Connection,
+) -> anyhow::Result<()> {
     tracing::info!("initial config: {:#?}", config);
     // Windows scheduler implements priority boosts: if thread waits for an
     // event (like a condvar), and event fires, priority of the thread is
@@ -80,7 +83,10 @@ enum Event {
 }
 
 impl fmt::Display for Event {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             Event::Lsp(_) => write!(f, "Event::Lsp"),
             Event::Task(_) => write!(f, "Event::Task"),
@@ -136,7 +142,10 @@ pub(crate) enum PrimeCachesProgress {
 }
 
 impl fmt::Debug for Event {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         let debug_non_verbose = |not: &Notification, f: &mut fmt::Formatter<'_>| {
             f.debug_struct("Notification").field("method", &not.method).finish()
         };
@@ -171,7 +180,10 @@ impl fmt::Debug for Event {
 }
 
 impl GlobalState {
-    fn run(mut self, inbox: Receiver<lsp_server::Message>) -> anyhow::Result<()> {
+    fn run(
+        mut self,
+        inbox: Receiver<lsp_server::Message>,
+    ) -> anyhow::Result<()> {
         self.update_status_or_notify();
         if self.config.did_save_text_document_dynamic_registration() {
             let additional_patterns = self
@@ -210,7 +222,10 @@ impl GlobalState {
         Err(anyhow::anyhow!("A receiver has been dropped, something panicked!"))
     }
 
-    fn register_did_save_capability(&mut self, additional_patterns: impl Iterator<Item = String>) {
+    fn register_did_save_capability(
+        &mut self,
+        additional_patterns: impl Iterator<Item = String>,
+    ) {
         let additional_filters = additional_patterns.map(|pattern| lsp_types::DocumentFilter {
             language: None,
             scheme: None,
@@ -251,7 +266,10 @@ impl GlobalState {
         );
     }
 
-    fn next_event(&mut self, inbox: &Receiver<lsp_server::Message>) -> Result<Option<Event>, crossbeam_channel::RecvError> {
+    fn next_event(
+        &mut self,
+        inbox: &Receiver<lsp_server::Message>,
+    ) -> Result<Option<Event>, crossbeam_channel::RecvError> {
         // Make sure we reply to formatting requests ASAP so the editor doesn't block
         if let Ok(task) = self.fmt_pool.receiver.try_recv() {
             return Ok(Some(Event::Task(task)));
@@ -288,7 +306,10 @@ impl GlobalState {
         .map(Some)
     }
 
-    fn handle_event(&mut self, event: Event) {
+    fn handle_event(
+        &mut self,
+        event: Event,
+    ) {
         let loop_start = Instant::now();
         let _p = tracing::info_span!("GlobalState::handle_event", event = %event).entered();
         let event_dbg_msg = format!("{event:?}");
@@ -520,7 +541,10 @@ impl GlobalState {
         }
     }
 
-    fn prime_caches(&mut self, cause: String) {
+    fn prime_caches(
+        &mut self,
+        cause: String,
+    ) {
         tracing::debug!(%cause, "will prime caches");
         let num_worker_threads = self.config.prime_caches_num_threads();
         self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, {
@@ -703,7 +727,11 @@ impl GlobalState {
         }
     }
 
-    fn handle_task(&mut self, prime_caches_progress: &mut Vec<PrimeCachesProgress>, task: Task) {
+    fn handle_task(
+        &mut self,
+        prime_caches_progress: &mut Vec<PrimeCachesProgress>,
+        task: Task,
+    ) {
         match task {
             Task::Response(response) => self.respond(response),
             // Only retry requests that haven't been cancelled. Otherwise we do unnecessary work.
@@ -819,7 +847,10 @@ impl GlobalState {
         }
     }
 
-    fn handle_vfs_msg(&mut self, message: vfs::loader::Message) {
+    fn handle_vfs_msg(
+        &mut self,
+        message: vfs::loader::Message,
+    ) {
         let _p = tracing::info_span!("GlobalState::handle_vfs_msg").entered();
         let is_changed = matches!(message, vfs::loader::Message::Changed { .. });
         match message {
@@ -887,7 +918,10 @@ impl GlobalState {
         }
     }
 
-    fn handle_queued_task(&mut self, task: QueuedTask) {
+    fn handle_queued_task(
+        &mut self,
+        task: QueuedTask,
+    ) {
         match task {
             QueuedTask::CheckIfIndexed(uri) => {
                 let snap = self.snapshot();
@@ -934,7 +968,10 @@ impl GlobalState {
         }
     }
 
-    fn handle_discover_msg(&mut self, message: DiscoverProjectMessage) {
+    fn handle_discover_msg(
+        &mut self,
+        message: DiscoverProjectMessage,
+    ) {
         let title = self
             .config
             .discover_workspace_config()
@@ -963,7 +1000,10 @@ impl GlobalState {
         }
     }
 
-    fn handle_cargo_test_msg(&mut self, message: CargoTestMessage) {
+    fn handle_cargo_test_msg(
+        &mut self,
+        message: CargoTestMessage,
+    ) {
         match message.output {
             CargoTestOutput::Test { name, state } => {
                 let state = match state {
@@ -994,7 +1034,10 @@ impl GlobalState {
         }
     }
 
-    fn handle_flycheck_msg(&mut self, message: FlycheckMessage) {
+    fn handle_flycheck_msg(
+        &mut self,
+        message: FlycheckMessage,
+    ) {
         match message {
             FlycheckMessage::AddDiagnostic {
                 id,
@@ -1085,7 +1128,11 @@ impl GlobalState {
     }
 
     /// Registers and handles a request. This should only be called once per incoming request.
-    fn on_new_request(&mut self, request_received: Instant, req: Request) {
+    fn on_new_request(
+        &mut self,
+        request_received: Instant,
+        req: Request,
+    ) {
         let _p =
             span!(Level::INFO, "GlobalState::on_new_request", req.method = ?req.method).entered();
         self.register_request(&req, request_received);
@@ -1093,7 +1140,10 @@ impl GlobalState {
     }
 
     /// Handles a request.
-    fn on_request(&mut self, req: Request) {
+    fn on_request(
+        &mut self,
+        req: Request,
+    ) {
         let mut dispatcher = RequestDispatcher { req: Some(req), global_state: self };
         dispatcher.on_sync_mut::<lsp_types::request::Shutdown>(|s, ()| {
             s.shutdown_requested = true;
@@ -1205,7 +1255,10 @@ impl GlobalState {
     }
 
     /// Handles an incoming notification.
-    fn on_notification(&mut self, not: Notification) {
+    fn on_notification(
+        &mut self,
+        not: Notification,
+    ) {
         let _p =
             span!(Level::INFO, "GlobalState::on_notification", not.method = ?not.method).entered();
         use crate::handlers::notification as handlers;

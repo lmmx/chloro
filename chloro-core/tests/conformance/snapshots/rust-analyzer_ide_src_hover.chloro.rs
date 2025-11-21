@@ -88,7 +88,11 @@ pub enum HoverAction {
 }
 
 impl HoverAction {
-    fn goto_type_from_targets(sema: &Semantics<'_, RootDatabase>, targets: Vec<hir::ModuleDef>, edition: Edition) -> Option<Self> {
+    fn goto_type_from_targets(
+        sema: &Semantics<'_, RootDatabase>,
+        targets: Vec<hir::ModuleDef>,
+        edition: Edition,
+    ) -> Option<Self> {
         let db = sema.db;
         let targets = targets
             .into_iter()
@@ -121,7 +125,11 @@ pub struct HoverResult {
     pub actions: Vec<HoverAction>,
 }
 
-pub(crate) fn hover(db: &RootDatabase, frange @ FileRange { file_id, range }: FileRange, config: &HoverConfig<'_>) -> Option<RangeInfo<HoverResult>> {
+pub(crate) fn hover(
+    db: &RootDatabase,
+    frange @ FileRange { file_id, range }: FileRange,
+    config: &HoverConfig<'_>,
+) -> Option<RangeInfo<HoverResult>> {
     let sema = &hir::Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
     let edition =
@@ -146,7 +154,14 @@ pub(crate) fn hover(db: &RootDatabase, frange @ FileRange { file_id, range }: Fi
 }
 
 #[allow(clippy::field_reassign_with_default)]
-fn hover_offset(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offset }: FilePosition, file: SyntaxNode, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> Option<RangeInfo<HoverResult>> {
+fn hover_offset(
+    sema: &Semantics<'_, RootDatabase>,
+    FilePosition { file_id, offset }: FilePosition,
+    file: SyntaxNode,
+    config: &HoverConfig<'_>,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<RangeInfo<HoverResult>> {
     let original_token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
         IDENT
         | INT_NUMBER
@@ -370,7 +385,14 @@ fn hover_offset(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offs
         })
 }
 
-fn hover_ranged(sema: &Semantics<'_, RootDatabase>, FileRange { file_id, range }: FileRange, file: SyntaxNode, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> Option<RangeInfo<HoverResult>> {
+fn hover_ranged(
+    sema: &Semantics<'_, RootDatabase>,
+    FileRange { file_id, range }: FileRange,
+    file: SyntaxNode,
+    config: &HoverConfig<'_>,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> Option<RangeInfo<HoverResult>> {
     // FIXME: make this work in attributes
     let expr_or_pat = file
         .covering_element(range)
@@ -413,7 +435,18 @@ fn hover_ranged(sema: &Semantics<'_, RootDatabase>, FileRange { file_id, range }
     })
 }
 
-pub(crate) fn hover_for_definition(sema: &Semantics<'_, RootDatabase>, file_id: FileId, def: Definition, subst: Option<GenericSubstitution<'_>>, scope_node: &SyntaxNode, macro_arm: Option<u32>, render_extras: bool, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> HoverResult {
+pub(crate) fn hover_for_definition(
+    sema: &Semantics<'_, RootDatabase>,
+    file_id: FileId,
+    def: Definition,
+    subst: Option<GenericSubstitution<'_>>,
+    scope_node: &SyntaxNode,
+    macro_arm: Option<u32>,
+    render_extras: bool,
+    config: &HoverConfig<'_>,
+    edition: Edition,
+    display_target: DisplayTarget,
+) -> HoverResult {
     let famous_defs = match &def {
         Definition::BuiltinType(_) => sema.scope(scope_node).map(|it| FamousDefs(sema, it.krate())),
         _ => None,
@@ -461,7 +494,10 @@ pub(crate) fn hover_for_definition(sema: &Semantics<'_, RootDatabase>, file_id: 
     }
 }
 
-fn notable_traits<'db>(db: &'db RootDatabase, ty: &hir::Type<'db>) -> Vec<(hir::Trait, Vec<(Option<hir::Type<'db>>, hir::Name)>)> {
+fn notable_traits<'db>(
+    db: &'db RootDatabase,
+    ty: &hir::Type<'db>,
+) -> Vec<(hir::Trait, Vec<(Option<hir::Type<'db>>, hir::Name)>)> {
     if ty.is_unknown() {
         // The trait solver returns "yes" to the question whether the error type
         // impls any trait, and we don't want to show it as having any notable trait.
@@ -490,7 +526,10 @@ fn notable_traits<'db>(db: &'db RootDatabase, ty: &hir::Type<'db>) -> Vec<(hir::
         .collect::<Vec<_>>()
 }
 
-fn show_implementations_action(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<HoverAction> {
+fn show_implementations_action(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+) -> Option<HoverAction> {
     fn to_action(nav_target: NavigationTarget) -> HoverAction {
         HoverAction::Implementation(FilePosition {
             file_id: nav_target.file_id,
@@ -508,7 +547,10 @@ fn show_implementations_action(sema: &Semantics<'_, RootDatabase>, def: Definiti
     adt.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action)
 }
 
-fn show_fn_references_action(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<HoverAction> {
+fn show_fn_references_action(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+) -> Option<HoverAction> {
     match def {
         Definition::Function(it) => {
             it.try_to_nav(sema).map(UpmappingResult::call_site).map(|nav_target| {
@@ -522,7 +564,11 @@ fn show_fn_references_action(sema: &Semantics<'_, RootDatabase>, def: Definition
     }
 }
 
-fn runnable_action(sema: &hir::Semantics<'_, RootDatabase>, def: Definition, file_id: FileId) -> Option<HoverAction> {
+fn runnable_action(
+    sema: &hir::Semantics<'_, RootDatabase>,
+    def: Definition,
+    file_id: FileId,
+) -> Option<HoverAction> {
     match def {
         Definition::Module(it) => runnable_mod(sema, it).map(HoverAction::Runnable),
         Definition::Function(func) => {
@@ -539,7 +585,13 @@ fn runnable_action(sema: &hir::Semantics<'_, RootDatabase>, def: Definition, fil
     }
 }
 
-fn goto_type_action_for_def(sema: &Semantics<'_, RootDatabase>, def: Definition, notable_traits: &[(hir::Trait, Vec<(Option<hir::Type<'_>>, hir::Name)>)], subst_types: Option<Vec<(hir::Symbol, hir::Type<'_>)>>, edition: Edition) -> Option<HoverAction> {
+fn goto_type_action_for_def(
+    sema: &Semantics<'_, RootDatabase>,
+    def: Definition,
+    notable_traits: &[(hir::Trait, Vec<(Option<hir::Type<'_>>, hir::Name)>)],
+    subst_types: Option<Vec<(hir::Symbol, hir::Type<'_>)>>,
+    edition: Edition,
+) -> Option<HoverAction> {
     let db = sema.db;
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
     let mut push_new_def = |item: hir::ModuleDef| {
@@ -585,7 +637,11 @@ fn goto_type_action_for_def(sema: &Semantics<'_, RootDatabase>, def: Definition,
     HoverAction::goto_type_from_targets(sema, targets, edition)
 }
 
-fn walk_and_push_ty(db: &RootDatabase, ty: &hir::Type<'_>, push_new_def: &mut dyn FnMut(hir::ModuleDef)) {
+fn walk_and_push_ty(
+    db: &RootDatabase,
+    ty: &hir::Type<'_>,
+    push_new_def: &mut dyn FnMut(hir::ModuleDef),
+) {
     ty.walk(db, |t| {
         if let Some(adt) = t.as_adt() {
             push_new_def(adt.into());

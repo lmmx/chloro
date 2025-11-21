@@ -20,7 +20,13 @@ use crate::{
     InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip,
 };
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    display_target: DisplayTarget,
+    expr: &ast::Expr,
+) -> Option<()> {
     if config.adjustment_hints_hide_outside_unsafe && !sema.is_inside_unsafe(expr) {
         return None;
     }
@@ -260,7 +266,10 @@ pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'
 
 /// Returns whatever the hint should be postfix and if we need to add parentheses on the inside and/or outside of `expr`,
 /// if we are going to add (`postfix`) adjustments hints to it.
-fn mode_and_needs_parens_for_adjustment_hints(expr: &ast::Expr, mode: AdjustmentHintsMode) -> (bool, bool, bool) {
+fn mode_and_needs_parens_for_adjustment_hints(
+    expr: &ast::Expr,
+    mode: AdjustmentHintsMode,
+) -> (bool, bool, bool) {
     use {AdjustmentHintsMode::*, std::cmp::Ordering::*};
     match mode {
         Prefix | Postfix => {
@@ -291,7 +300,10 @@ fn mode_and_needs_parens_for_adjustment_hints(expr: &ast::Expr, mode: Adjustment
 
 /// Returns whatever we need to add parentheses on the inside and/or outside of `expr`,
 /// if we are going to add (`postfix`) adjustments hints to it.
-fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, bool) {
+fn needs_parens_for_adjustment_hints(
+    expr: &ast::Expr,
+    postfix: bool,
+) -> (bool, bool) {
     let prec = expr.precedence();
     if postfix {
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);

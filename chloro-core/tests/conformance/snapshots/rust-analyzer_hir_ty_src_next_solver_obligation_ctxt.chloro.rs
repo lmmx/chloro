@@ -25,15 +25,24 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
 }
 
 impl<'a, 'db> ObligationCtxt<'a, 'db> {
-    pub fn register_obligation(&mut self, obligation: PredicateObligation<'db>) {
+    pub fn register_obligation(
+        &mut self,
+        obligation: PredicateObligation<'db>,
+    ) {
         self.engine.register_predicate_obligation(self.infcx, obligation);
     }
 
-    pub fn register_obligations(&mut self, obligations: impl IntoIterator<Item = PredicateObligation<'db>>) {
+    pub fn register_obligations(
+        &mut self,
+        obligations: impl IntoIterator<Item = PredicateObligation<'db>>,
+    ) {
         self.engine.register_predicate_obligations(self.infcx, obligations);
     }
 
-    pub fn register_infer_ok_obligations<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
+    pub fn register_infer_ok_obligations<T>(
+        &mut self,
+        infer_ok: InferOk<'db, T>,
+    ) -> T {
         let InferOk { value, obligations } = infer_ok;
         self.register_obligations(obligations);
         value
@@ -42,7 +51,13 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
     /// Requires that `ty` must implement the trait with `def_id` in
     /// the given environment. This trait must not have any type
     /// parameters (except for `Self`).
-    pub fn register_bound(&mut self, cause: ObligationCause, param_env: ParamEnv<'db>, ty: Ty<'db>, def_id: TraitId) {
+    pub fn register_bound(
+        &mut self,
+        cause: ObligationCause,
+        param_env: ParamEnv<'db>,
+        ty: Ty<'db>,
+        def_id: TraitId,
+    ) {
         let trait_ref = TraitRef::new(self.infcx.interner, def_id.into(), [ty]);
         self.register_obligation(Obligation {
             cause,
@@ -52,7 +67,13 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         });
     }
 
-    pub fn eq<T: ToTrace<'db>>(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, expected: T, actual: T) -> Result<(), TypeError<'db>> {
+    pub fn eq<T: ToTrace<'db>>(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        expected: T,
+        actual: T,
+    ) -> Result<(), TypeError<'db>> {
         self.infcx
             .at(cause, param_env)
             .eq(expected, actual)
@@ -60,14 +81,27 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
     }
 
     /// Checks whether `expected` is a subtype of `actual`: `expected <: actual`.
-    pub fn sub<T: ToTrace<'db>>(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, expected: T, actual: T) -> Result<(), TypeError<'db>> {
+    pub fn sub<T: ToTrace<'db>>(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        expected: T,
+        actual: T,
+    ) -> Result<(), TypeError<'db>> {
         self.infcx
             .at(cause, param_env)
             .sub(expected, actual)
             .map(|infer_ok| self.register_infer_ok_obligations(infer_ok))
     }
 
-    pub fn relate<T: ToTrace<'db>>(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, variance: Variance, expected: T, actual: T) -> Result<(), TypeError<'db>> {
+    pub fn relate<T: ToTrace<'db>>(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        variance: Variance,
+        expected: T,
+        actual: T,
+    ) -> Result<(), TypeError<'db>> {
         self.infcx
             .at(cause, param_env)
             .relate(expected, variance, actual)
@@ -75,7 +109,13 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
     }
 
     /// Checks whether `expected` is a supertype of `actual`: `expected :> actual`.
-    pub fn sup<T: ToTrace<'db>>(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, expected: T, actual: T) -> Result<(), TypeError<'db>> {
+    pub fn sup<T: ToTrace<'db>>(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        expected: T,
+        actual: T,
+    ) -> Result<(), TypeError<'db>> {
         self.infcx
             .at(cause, param_env)
             .sup(expected, actual)
@@ -83,7 +123,13 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
     }
 
     /// Computes the least-upper-bound, or mutual supertype, of two values.
-    pub fn lub<T: ToTrace<'db>>(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, expected: T, actual: T) -> Result<T, TypeError<'db>> {
+    pub fn lub<T: ToTrace<'db>>(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        expected: T,
+        actual: T,
+    ) -> Result<T, TypeError<'db>> {
         self.infcx
             .at(cause, param_env)
             .lub(expected, actual)
@@ -112,19 +158,39 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         self.engine.pending_obligations()
     }
 
-    pub fn deeply_normalize<T: TypeFoldable<DbInterner<'db>>>(&self, cause: &ObligationCause, param_env: ParamEnv<'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>> {
+    pub fn deeply_normalize<T: TypeFoldable<DbInterner<'db>>>(
+        &self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        value: T,
+    ) -> Result<T, Vec<NextSolverError<'db>>> {
         self.infcx.at(cause, param_env).deeply_normalize(value)
     }
 
-    pub fn structurally_normalize_ty(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, value: Ty<'db>) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
+    pub fn structurally_normalize_ty(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        value: Ty<'db>,
+    ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
         self.infcx.at(cause, param_env).structurally_normalize_ty(value, &mut self.engine)
     }
 
-    pub fn structurally_normalize_const(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, value: Const<'db>) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
+    pub fn structurally_normalize_const(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        value: Const<'db>,
+    ) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
         self.infcx.at(cause, param_env).structurally_normalize_const(value, &mut self.engine)
     }
 
-    pub fn structurally_normalize_term(&mut self, cause: &ObligationCause, param_env: ParamEnv<'db>, value: Term<'db>) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
+    pub fn structurally_normalize_term(
+        &mut self,
+        cause: &ObligationCause,
+        param_env: ParamEnv<'db>,
+        value: Term<'db>,
+    ) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
         self.infcx.at(cause, param_env).structurally_normalize_term(value, &mut self.engine)
     }
 }

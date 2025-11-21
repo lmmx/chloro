@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4655 bytes
-Chloro size:   4375 bytes
+Chloro size:   4501 bytes
 Rustfmt size:  4904 bytes
 
 ✗ Outputs DIFFER
@@ -23,44 +23,11 @@ Rustfmt size:  4904 bytes
  
 -pub use span::Transparency;
 -
--pub fn span_with_def_site_ctxt(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    expn_id: MacroCallId,
--    edition: Edition,
--) -> Span {
-+pub fn span_with_def_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
-     span_with_ctxt_from_mark(db, span, expn_id, Transparency::Opaque, edition)
- }
- 
--pub fn span_with_call_site_ctxt(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    expn_id: MacroCallId,
--    edition: Edition,
--) -> Span {
-+pub fn span_with_call_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
-     span_with_ctxt_from_mark(db, span, expn_id, Transparency::Transparent, edition)
- }
- 
--pub fn span_with_mixed_site_ctxt(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    expn_id: MacroCallId,
--    edition: Edition,
--) -> Span {
-+pub fn span_with_mixed_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
-     span_with_ctxt_from_mark(db, span, expn_id, Transparency::SemiTransparent, edition)
- }
- 
--fn span_with_ctxt_from_mark(
--    db: &dyn ExpandDatabase,
--    span: Span,
--    expn_id: MacroCallId,
--    transparency: Transparency,
--    edition: Edition,
--) -> Span {
-+fn span_with_ctxt_from_mark(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, transparency: Transparency, edition: Edition) -> Span {
+ pub fn span_with_def_site_ctxt(
+     db: &dyn ExpandDatabase,
+     span: Span,
+     edition: Edition,
+ ) -> Span {
      Span {
 -        ctx: apply_mark(
 -            db,
@@ -73,15 +40,6 @@ Rustfmt size:  4904 bytes
          ..span
      }
  }
- 
--pub(super) fn apply_mark(
--    db: &dyn ExpandDatabase,
--    ctxt: span::SyntaxContext,
--    call_id: span::MacroCallId,
--    transparency: Transparency,
--    edition: Edition,
--) -> SyntaxContext {
-+pub(super) fn apply_mark(db: &dyn ExpandDatabase, ctxt: span::SyntaxContext, call_id: span::MacroCallId, transparency: Transparency, edition: Edition) -> SyntaxContext {
      if transparency == Transparency::Opaque {
          return apply_mark_internal(db, ctxt, call_id, transparency, edition);
      }
@@ -100,17 +58,8 @@ Rustfmt size:  4904 bytes
      // Otherwise, `expn_id` is a macros 1.0 definition and the call site is in a
      // macros 2.0 expansion, i.e., a macros 1.0 invocation is in a macros 2.0 definition.
      //
-     apply_mark_internal(db, call_site_ctxt, call_id, transparency, edition)
- }
- 
--fn apply_mark_internal(
--    db: &dyn ExpandDatabase,
--    ctxt: SyntaxContext,
--    call_id: MacroCallId,
--    transparency: Transparency,
--    edition: Edition,
--) -> SyntaxContext {
-+fn apply_mark_internal(db: &dyn ExpandDatabase, ctxt: SyntaxContext, call_id: MacroCallId, transparency: Transparency, edition: Edition) -> SyntaxContext {
+     edition: Edition,
+ ) -> SyntaxContext {
      let call_id = Some(call_id);
 -
      let mut opaque = ctxt.opaque(db);

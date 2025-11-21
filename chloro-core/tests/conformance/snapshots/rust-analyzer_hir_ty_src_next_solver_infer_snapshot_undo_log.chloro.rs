@@ -46,7 +46,10 @@ macro_rules! impl_from {
 // Upcast from a single kind of "undoable action" to the general enum
 /// The Rollback trait defines how to rollback a particular action.
 impl<'db> Rollback<UndoLog<'db>> for InferCtxtInner<'db> {
-    fn reverse(&mut self, undo: UndoLog<'db>) {
+    fn reverse(
+        &mut self,
+        undo: UndoLog<'db>,
+    ) {
         match undo {
             UndoLog::DuplicateOpaqueType => self.opaque_type_storage.pop_duplicate_entry(),
             UndoLog::OpaqueTypes(key, idx) => self.opaque_type_storage.remove(key, idx),
@@ -86,7 +89,10 @@ where
     }
 
     #[inline]
-    fn push(&mut self, undo: T) {
+    fn push(
+        &mut self,
+        undo: T,
+    ) {
         if self.in_snapshot() {
             self.logs.push(undo.into())
         }
@@ -97,7 +103,10 @@ where
         self.num_open_snapshots = 0;
     }
 
-    fn extend<J>(&mut self, undos: J)
+    fn extend<J>(
+        &mut self,
+        undos: J,
+    )
     where
         Self: Sized,
         J: IntoIterator<Item = T>, {
@@ -108,7 +117,10 @@ where
 }
 
 impl<'db> InferCtxtInner<'db> {
-    pub fn rollback_to(&mut self, snapshot: Snapshot) {
+    pub fn rollback_to(
+        &mut self,
+        snapshot: Snapshot,
+    ) {
         debug!("rollback_to({})", snapshot.undo_len);
         self.undo_log.assert_open_snapshot(&snapshot);
         while self.undo_log.logs.len() > snapshot.undo_len {
@@ -124,7 +136,10 @@ impl<'db> InferCtxtInner<'db> {
         self.undo_log.num_open_snapshots -= 1;
     }
 
-    pub fn commit(&mut self, snapshot: Snapshot) {
+    pub fn commit(
+        &mut self,
+        snapshot: Snapshot,
+    ) {
         debug!("commit({})", snapshot.undo_len);
         if self.undo_log.num_open_snapshots == 1 {
             // The root snapshot. It's safe to clear the undo log because
@@ -143,18 +158,27 @@ impl<'db> InferCtxtUndoLogs<'db> {
         Snapshot { undo_len: self.logs.len() }
     }
 
-    pub(crate) fn region_constraints_in_snapshot(&self, s: &Snapshot) -> impl Iterator<Item = &'_ region_constraints::UndoLog<'db>> + Clone {
+    pub(crate) fn region_constraints_in_snapshot(
+        &self,
+        s: &Snapshot,
+    ) -> impl Iterator<Item = &'_ region_constraints::UndoLog<'db>> + Clone {
         self.logs[s.undo_len..].iter().filter_map(|log| match log {
             UndoLog::RegionConstraintCollector(log) => Some(log),
             _ => None,
         })
     }
 
-    pub(crate) fn opaque_types_in_snapshot(&self, s: &Snapshot) -> bool {
+    pub(crate) fn opaque_types_in_snapshot(
+        &self,
+        s: &Snapshot,
+    ) -> bool {
         self.logs[s.undo_len..].iter().any(|log| matches!(log, UndoLog::OpaqueTypes(..)))
     }
 
-    fn assert_open_snapshot(&self, snapshot: &Snapshot) {
+    fn assert_open_snapshot(
+        &self,
+        snapshot: &Snapshot,
+    ) {
         // Failures here may indicate a failure to follow a stack discipline.
         assert!(self.logs.len() >= snapshot.undo_len);
         assert!(self.num_open_snapshots > 0);
@@ -164,13 +188,19 @@ impl<'db> InferCtxtUndoLogs<'db> {
 impl<'db> std::ops::Index<usize> for InferCtxtUndoLogs<'db> {
     type Output = UndoLog<'db>;
 
-    fn index(&self, key: usize) -> &Self::Output {
+    fn index(
+        &self,
+        key: usize,
+    ) -> &Self::Output {
         &self.logs[key]
     }
 }
 
 impl<'db> std::ops::IndexMut<usize> for InferCtxtUndoLogs<'db> {
-    fn index_mut(&mut self, key: usize) -> &mut Self::Output {
+    fn index_mut(
+        &mut self,
+        key: usize,
+    ) -> &mut Self::Output {
         &mut self.logs[key]
     }
 }

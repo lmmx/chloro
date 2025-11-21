@@ -53,7 +53,13 @@ pub(super) struct AnalysisResult<'db> {
     pub(super) original_offset: TextSize,
 }
 
-pub(super) fn expand_and_analyze<'db>(sema: &Semantics<'db, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, offset: TextSize, original_token: &SyntaxToken) -> Option<AnalysisResult<'db>> {
+pub(super) fn expand_and_analyze<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    original_file: InFile<SyntaxNode>,
+    speculative_file: SyntaxNode,
+    offset: TextSize,
+    original_token: &SyntaxToken,
+) -> Option<AnalysisResult<'db>> {
     // as we insert after the offset, right biased will *always* pick the identifier no matter
     // if there is an ident already typed or not
     let fake_ident_token = speculative_file.token_at_offset(offset).right_biased()?;
@@ -92,7 +98,10 @@ pub(super) fn expand_and_analyze<'db>(sema: &Semantics<'db, RootDatabase>, origi
     )
 }
 
-fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
+fn token_at_offset_ignore_whitespace(
+    file: &SyntaxNode,
+    offset: TextSize,
+) -> Option<SyntaxToken> {
     let token = file.token_at_offset(offset).left_biased()?;
     algo::skip_whitespace_token(token, Direction::Prev)
 }
@@ -126,7 +135,14 @@ fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Opt
 /// that we check, we subtract `COMPLETION_MARKER.len()`. This may not be accurate because proc macros
 /// can insert the text of the completion marker in other places while removing the span, but this is
 /// the best we can do.
-fn expand_maybe_stop(sema: &Semantics<'_, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, original_offset: TextSize, fake_ident_token: SyntaxToken, relative_offset: TextSize) -> Option<ExpansionResult> {
+fn expand_maybe_stop(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: InFile<SyntaxNode>,
+    speculative_file: SyntaxNode,
+    original_offset: TextSize,
+    fake_ident_token: SyntaxToken,
+    relative_offset: TextSize,
+) -> Option<ExpansionResult> {
     if let result @ Some(_) = expand(
         sema,
         original_file.clone(),
@@ -158,7 +174,14 @@ fn expand_maybe_stop(sema: &Semantics<'_, RootDatabase>, original_file: InFile<S
     }
 }
 
-fn expand(sema: &Semantics<'_, RootDatabase>, original_file: InFile<SyntaxNode>, speculative_file: SyntaxNode, original_offset: TextSize, fake_ident_token: SyntaxToken, relative_offset: TextSize) -> Option<ExpansionResult> {
+fn expand(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: InFile<SyntaxNode>,
+    speculative_file: SyntaxNode,
+    original_offset: TextSize,
+    fake_ident_token: SyntaxToken,
+    relative_offset: TextSize,
+) -> Option<ExpansionResult> {
     let _p = tracing::info_span!("CompletionContext::expand").entered();
     let parent_item =
         |item: &ast::Item| item.syntax().ancestors().skip(1).find_map(ast::Item::cast);
@@ -410,7 +433,12 @@ fn expand(sema: &Semantics<'_, RootDatabase>, original_file: InFile<SyntaxNode>,
 
 /// Fill the completion context, this is what does semantic reasoning about the surrounding context
 /// of the completion location.
-fn analyze<'db>(sema: &Semantics<'db, RootDatabase>, expansion_result: ExpansionResult, original_token: &SyntaxToken, self_token: &SyntaxToken) -> Option<(CompletionAnalysis<'db>, (Option<Type<'db>>, Option<ast::NameOrNameRef>), QualifierCtx)> {
+fn analyze<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    expansion_result: ExpansionResult,
+    original_token: &SyntaxToken,
+    self_token: &SyntaxToken,
+) -> Option<(CompletionAnalysis<'db>, (Option<Type<'db>>, Option<ast::NameOrNameRef>), QualifierCtx)> {
     let _p = tracing::info_span!("CompletionContext::analyze").entered();
     let ExpansionResult {
         original_file,
@@ -523,7 +551,11 @@ fn analyze<'db>(sema: &Semantics<'db, RootDatabase>, expansion_result: Expansion
 }
 
 /// Calculate the expected type and name of the cursor position.
-fn expected_type_and_name<'db>(sema: &Semantics<'db, RootDatabase>, self_token: &SyntaxToken, name_like: &ast::NameLike) -> (Option<Type<'db>>, Option<NameOrNameRef>) {
+fn expected_type_and_name<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    self_token: &SyntaxToken,
+    name_like: &ast::NameLike,
+) -> (Option<Type<'db>>, Option<NameOrNameRef>) {
     let token = prev_special_biased_token_at_trivia(self_token.clone());
     let mut node = match token.parent() {
         Some(it) => it,
@@ -738,7 +770,11 @@ fn expected_type_and_name<'db>(sema: &Semantics<'db, RootDatabase>, self_token: 
     (ty.map(strip_refs), name)
 }
 
-fn classify_lifetime(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, lifetime: ast::Lifetime) -> Option<LifetimeContext> {
+fn classify_lifetime(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: &SyntaxNode,
+    lifetime: ast::Lifetime,
+) -> Option<LifetimeContext> {
     let parent = lifetime.syntax().parent()?;
     if parent.kind() == SyntaxKind::ERROR {
         return None;
@@ -760,7 +796,11 @@ fn classify_lifetime(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxN
     Some(LifetimeContext { kind })
 }
 
-fn classify_name(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, name: ast::Name) -> Option<NameContext> {
+fn classify_name(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: &SyntaxNode,
+    name: ast::Name,
+) -> Option<NameContext> {
     let parent = name.syntax().parent()?;
     let kind = match_ast! {
         match parent {
@@ -796,7 +836,13 @@ fn classify_name(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode,
     Some(NameContext { name, kind })
 }
 
-fn classify_name_ref<'db>(sema: &Semantics<'db, RootDatabase>, original_file: &SyntaxNode, name_ref: ast::NameRef, original_offset: TextSize, parent: SyntaxNode) -> Option<(NameRefContext<'db>, QualifierCtx)> {
+fn classify_name_ref<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    original_file: &SyntaxNode,
+    name_ref: ast::NameRef,
+    original_offset: TextSize,
+    parent: SyntaxNode,
+) -> Option<(NameRefContext<'db>, QualifierCtx)> {
     let nameref = find_node_at_offset(original_file, original_offset);
     let make_res = |kind| (NameRefContext { nameref: nameref.clone(), kind }, Default::default());
     if let Some(record_field) = ast::RecordExprField::for_field_name(&name_ref) {
@@ -1592,7 +1638,11 @@ fn has_parens(node: &dyn HasArgList) -> bool {
         .all(|whitespace| !whitespace.text().contains('\n'))
 }
 
-fn pattern_context_for(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, pat: ast::Pat) -> PatternContext {
+fn pattern_context_for(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: &SyntaxNode,
+    pat: ast::Pat,
+) -> PatternContext {
     let mut param_ctx = None;
     let mut missing_variants = vec![];
     let (refutability, has_type_ascription) =
@@ -1701,7 +1751,11 @@ fn pattern_context_for(sema: &Semantics<'_, RootDatabase>, original_file: &Synta
     }
 }
 
-fn fetch_immediate_impl_or_trait(sema: &Semantics<'_, RootDatabase>, original_file: &SyntaxNode, node: &SyntaxNode) -> Option<Either<ast::Impl, ast::Trait>> {
+fn fetch_immediate_impl_or_trait(
+    sema: &Semantics<'_, RootDatabase>,
+    original_file: &SyntaxNode,
+    node: &SyntaxNode,
+) -> Option<Either<ast::Impl, ast::Trait>> {
     let mut ancestors = ancestors_in_file_compensated(sema, original_file, node)?
         .filter_map(ast::Item::cast)
         .filter(|it| !matches!(it, ast::Item::MacroCall(_)));
@@ -1720,13 +1774,19 @@ fn fetch_immediate_impl_or_trait(sema: &Semantics<'_, RootDatabase>, original_fi
 
 /// Attempts to find `node` inside `syntax` via `node`'s text range.
 /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
-fn find_opt_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: Option<N>) -> Option<N> {
+fn find_opt_node_in_file<N: AstNode>(
+    syntax: &SyntaxNode,
+    node: Option<N>,
+) -> Option<N> {
     find_node_in_file(syntax, &node?)
 }
 
 /// Attempts to find `node` inside `syntax` via `node`'s text range.
 /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
-fn find_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: &N) -> Option<N> {
+fn find_node_in_file<N: AstNode>(
+    syntax: &SyntaxNode,
+    node: &N,
+) -> Option<N> {
     let syntax_range = syntax.text_range();
     let range = node.syntax().text_range();
     let intersection = range.intersect(syntax_range)?;
@@ -1736,11 +1796,19 @@ fn find_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: &N) -> Option<N> {
 /// Attempts to find `node` inside `syntax` via `node`'s text range while compensating
 /// for the offset introduced by the fake ident.
 /// This is wrong if `node` comes before the insertion point! Use `find_node_in_file` instead.
-fn find_node_in_file_compensated<N: AstNode>(sema: &Semantics<'_, RootDatabase>, in_file: &SyntaxNode, node: &N) -> Option<N> {
+fn find_node_in_file_compensated<N: AstNode>(
+    sema: &Semantics<'_, RootDatabase>,
+    in_file: &SyntaxNode,
+    node: &N,
+) -> Option<N> {
     ancestors_in_file_compensated(sema, in_file, node.syntax())?.find_map(N::cast)
 }
 
-fn ancestors_in_file_compensated<'sema>(sema: &'sema Semantics<'_, RootDatabase>, in_file: &SyntaxNode, node: &SyntaxNode) -> Option<impl Iterator<Item = SyntaxNode> + 'sema> {
+fn ancestors_in_file_compensated<'sema>(
+    sema: &'sema Semantics<'_, RootDatabase>,
+    in_file: &SyntaxNode,
+    node: &SyntaxNode,
+) -> Option<impl Iterator<Item = SyntaxNode> + 'sema> {
     let syntax_range = in_file.text_range();
     let range = node.text_range();
     let end = range.end().checked_sub(TextSize::try_from(COMPLETION_MARKER.len()).ok()?)?;
@@ -1760,7 +1828,11 @@ fn ancestors_in_file_compensated<'sema>(sema: &'sema Semantics<'_, RootDatabase>
 /// Attempts to find `node` inside `syntax` via `node`'s text range while compensating
 /// for the offset introduced by the fake ident..
 /// This is wrong if `node` comes before the insertion point! Use `find_node_in_file` instead.
-fn find_opt_node_in_file_compensated<N: AstNode>(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, node: Option<N>) -> Option<N> {
+fn find_opt_node_in_file_compensated<N: AstNode>(
+    sema: &Semantics<'_, RootDatabase>,
+    syntax: &SyntaxNode,
+    node: Option<N>,
+) -> Option<N> {
     find_node_in_file_compensated(sema, syntax, &node?)
 }
 

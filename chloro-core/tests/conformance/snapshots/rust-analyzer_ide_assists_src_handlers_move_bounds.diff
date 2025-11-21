@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4748 bytes
-Chloro size:   4446 bytes
+Chloro size:   4457 bytes
 Rustfmt size:  4748 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,10 @@ Rustfmt size:  4748 bytes
 -//     f(x)
 -// }
 -// ```
--pub(crate) fn move_bounds_to_where_clause(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn move_bounds_to_where_clause(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn move_bounds_to_where_clause(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let type_param_list = ctx.find_node_at_offset::<ast::GenericParamList>()?;
 -
      let mut type_params = type_param_list.generic_params();

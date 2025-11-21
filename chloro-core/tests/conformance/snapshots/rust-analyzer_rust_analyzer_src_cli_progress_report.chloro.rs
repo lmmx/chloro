@@ -23,20 +23,29 @@ impl<'a> ProgressReport<'a> {
         ProgressReport { curr: 0.0, text: String::new(), hidden: true, len: 0, pos: 0, msg: None }
     }
 
-    pub(crate) fn set_message(&mut self, msg: impl Fn() -> String + 'a) {
+    pub(crate) fn set_message(
+        &mut self,
+        msg: impl Fn() -> String + 'a,
+    ) {
         if !self.hidden {
             self.msg = Some(Box::new(msg));
         }
         self.tick();
     }
 
-    pub(crate) fn println<I: Into<String>>(&mut self, msg: I) {
+    pub(crate) fn println<I: Into<String>>(
+        &mut self,
+        msg: I,
+    ) {
         self.clear();
         println!("{}", msg.into());
         self.tick();
     }
 
-    pub(crate) fn inc(&mut self, delta: u64) {
+    pub(crate) fn inc(
+        &mut self,
+        delta: u64,
+    ) {
         self.pos += delta;
         if self.len == 0 {
             self.set_value(0.0)
@@ -64,7 +73,10 @@ impl<'a> ProgressReport<'a> {
         self.update_text(&text);
     }
 
-    fn update_text(&mut self, text: &str) {
+    fn update_text(
+        &mut self,
+        text: &str,
+    ) {
         // Get length of common portion
         let mut common_prefix_length = 0;
         let common_length = usize::min(self.text.len(), text.len());
@@ -91,7 +103,10 @@ impl<'a> ProgressReport<'a> {
         text.clone_into(&mut self.text);
     }
 
-    fn set_value(&mut self, value: f32) {
+    fn set_value(
+        &mut self,
+        value: f32,
+    ) {
         self.curr = value.clamp(0.0, 1.0);
     }
 

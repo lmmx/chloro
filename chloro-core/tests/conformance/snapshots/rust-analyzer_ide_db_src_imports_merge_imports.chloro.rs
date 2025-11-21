@@ -28,7 +28,10 @@ pub enum MergeBehavior {
 }
 
 impl MergeBehavior {
-    fn is_tree_allowed(&self, tree: &ast::UseTree) -> bool {
+    fn is_tree_allowed(
+        &self,
+        tree: &ast::UseTree,
+    ) -> bool {
         match self {
             MergeBehavior::Crate | MergeBehavior::One => true,
             // only simple single segment paths are allowed
@@ -41,7 +44,11 @@ impl MergeBehavior {
 
 /// Merge `rhs` into `lhs` keeping both intact.
 /// Returned AST is mutable.
-pub fn try_merge_imports(lhs: &ast::Use, rhs: &ast::Use, merge_behavior: MergeBehavior) -> Option<ast::Use> {
+pub fn try_merge_imports(
+    lhs: &ast::Use,
+    rhs: &ast::Use,
+    merge_behavior: MergeBehavior,
+) -> Option<ast::Use> {
     // don't merge imports with different visibilities
     if !eq_visibility(lhs.visibility(), rhs.visibility()) {
         return None;
@@ -61,7 +68,11 @@ pub fn try_merge_imports(lhs: &ast::Use, rhs: &ast::Use, merge_behavior: MergeBe
 
 /// Merge `rhs` into `lhs` keeping both intact.
 /// Returned AST is mutable.
-pub fn try_merge_trees(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior) -> Option<ast::UseTree> {
+pub fn try_merge_trees(
+    lhs: &ast::UseTree,
+    rhs: &ast::UseTree,
+    merge: MergeBehavior,
+) -> Option<ast::UseTree> {
     let lhs = lhs.clone_subtree().clone_for_update();
     let rhs = rhs.clone_subtree().clone_for_update();
     try_merge_trees_mut(&lhs, &rhs, merge)?;
@@ -70,7 +81,11 @@ pub fn try_merge_trees(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehav
     Some(lhs)
 }
 
-fn try_merge_trees_mut(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior) -> Option<()> {
+fn try_merge_trees_mut(
+    lhs: &ast::UseTree,
+    rhs: &ast::UseTree,
+    merge: MergeBehavior,
+) -> Option<()> {
     if merge == MergeBehavior::One {
         lhs.wrap_in_tree_list();
         rhs.wrap_in_tree_list();
@@ -105,7 +120,11 @@ fn try_merge_trees_mut(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehav
 
 /// Recursively merges rhs to lhs
 #[must_use]
-fn recursive_merge(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior) -> Option<()> {
+fn recursive_merge(
+    lhs: &ast::UseTree,
+    rhs: &ast::UseTree,
+    merge: MergeBehavior,
+) -> Option<()> {
     let mut use_trees: Vec<ast::UseTree> = lhs
         .use_tree_list()
         .into_iter()
@@ -238,20 +257,29 @@ impl From<MergeBehavior> for NormalizationStyle {
 /// - `foo::{bar::Qux, bar::{self}}` -> `{foo::bar::{self, Qux}}`
 /// - `foo::bar::{self}` -> `{foo::bar}`
 /// - `foo::bar` -> `{foo::bar}`
-pub fn try_normalize_import(use_item: &ast::Use, style: NormalizationStyle) -> Option<ast::Use> {
+pub fn try_normalize_import(
+    use_item: &ast::Use,
+    style: NormalizationStyle,
+) -> Option<ast::Use> {
     let use_item = use_item.clone_subtree().clone_for_update();
     try_normalize_use_tree_mut(&use_item.use_tree()?, style)?;
     Some(use_item)
 }
 
 /// Normalizes a use tree (see [`try_normalize_import`] doc).
-pub fn try_normalize_use_tree(use_tree: &ast::UseTree, style: NormalizationStyle) -> Option<ast::UseTree> {
+pub fn try_normalize_use_tree(
+    use_tree: &ast::UseTree,
+    style: NormalizationStyle,
+) -> Option<ast::UseTree> {
     let use_tree = use_tree.clone_subtree().clone_for_update();
     try_normalize_use_tree_mut(&use_tree, style)?;
     Some(use_tree)
 }
 
-pub fn try_normalize_use_tree_mut(use_tree: &ast::UseTree, style: NormalizationStyle) -> Option<()> {
+pub fn try_normalize_use_tree_mut(
+    use_tree: &ast::UseTree,
+    style: NormalizationStyle,
+) -> Option<()> {
     if style == NormalizationStyle::One {
         let mut modified = false;
         modified |= use_tree.wrap_in_tree_list().is_some();
@@ -267,7 +295,10 @@ pub fn try_normalize_use_tree_mut(use_tree: &ast::UseTree, style: NormalizationS
 }
 
 /// Recursively normalizes a use tree and its subtrees (if any).
-fn recursive_normalize(use_tree: &ast::UseTree, style: NormalizationStyle) -> Option<()> {
+fn recursive_normalize(
+    use_tree: &ast::UseTree,
+    style: NormalizationStyle,
+) -> Option<()> {
     let use_tree_list = use_tree.use_tree_list()?;
     let merge_subtree_into_parent_tree = |single_subtree: &ast::UseTree| {
         let subtree_is_only_self = single_subtree.path().as_ref().is_some_and(path_is_self);
@@ -483,7 +514,10 @@ fn recursive_normalize(use_tree: &ast::UseTree, style: NormalizationStyle) -> Op
 }
 
 /// Traverses both paths until they differ, returning the common prefix of both.
-pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast::Path)> {
+pub fn common_prefix(
+    lhs: &ast::Path,
+    rhs: &ast::Path,
+) -> Option<(ast::Path, ast::Path)> {
     let mut res = None;
     let mut lhs_curr = lhs.first_qualifier_or_self();
     let mut rhs_curr = rhs.first_qualifier_or_self();
@@ -505,7 +539,10 @@ pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast
 }
 
 /// Use tree comparison func for binary searching for merging.
-fn use_tree_cmp_bin_search(lhs: &ast::UseTree, rhs: &ast::UseTree) -> Ordering {
+fn use_tree_cmp_bin_search(
+    lhs: &ast::UseTree,
+    rhs: &ast::UseTree,
+) -> Ordering {
     let lhs_is_simple_path = lhs.is_simple_path() && lhs.rename().is_none();
     let rhs_is_simple_path = rhs.is_simple_path() && rhs.rename().is_none();
     match (
@@ -533,7 +570,10 @@ fn use_tree_cmp_bin_search(lhs: &ast::UseTree, rhs: &ast::UseTree) -> Ordering {
 /// Ref:
 ///   - <https://doc.rust-lang.org/style-guide/index.html#sorting>
 ///   - <https://doc.rust-lang.org/edition-guide/rust-2024/rustfmt.html>
-pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
+pub(super) fn use_tree_cmp(
+    a: &ast::UseTree,
+    b: &ast::UseTree,
+) -> Ordering {
     let a_is_simple_path = a.is_simple_path() && a.rename().is_none();
     let b_is_simple_path = b.is_simple_path() && b.rename().is_none();
     match (a.path(), b.path()) {
@@ -570,7 +610,10 @@ pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
     }
 }
 
-fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
+fn path_segment_cmp(
+    a: &ast::PathSegment,
+    b: &ast::PathSegment,
+) -> Ordering {
     match (a.kind(), b.kind()) {
         (None, None) => Ordering::Equal,
         (Some(_), None) => Ordering::Greater,
@@ -613,7 +656,11 @@ fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
 /// or tree list equality is confirmed, otherwise (i.e. if either `strict` is false or at least
 /// one of the trees does *not* have tree list), this potentially recursive step is skipped,
 /// and only the presence of a glob pattern or an alias is used to determine the ordering.
-fn use_tree_cmp_by_tree_list_glob_or_alias(a: &ast::UseTree, b: &ast::UseTree, strict: bool) -> Ordering {
+fn use_tree_cmp_by_tree_list_glob_or_alias(
+    a: &ast::UseTree,
+    b: &ast::UseTree,
+    strict: bool,
+) -> Ordering {
     let cmp_by_glob_or_alias = || match (a.star_token().is_some(), b.star_token().is_some()) {
         (true, false) => Ordering::Greater,
         (false, true) => Ordering::Less,
@@ -656,7 +703,10 @@ fn use_tree_cmp_by_tree_list_glob_or_alias(a: &ast::UseTree, b: &ast::UseTree, s
     }
 }
 
-pub fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility>) -> bool {
+pub fn eq_visibility(
+    vis0: Option<ast::Visibility>,
+    vis1: Option<ast::Visibility>,
+) -> bool {
     match (vis0, vis1) {
         (None, None) => true,
         (Some(vis0), Some(vis1)) => vis_eq(&vis0, &vis1),
@@ -664,7 +714,10 @@ pub fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility
     }
 }
 
-pub fn eq_attrs(attrs0: impl Iterator<Item = ast::Attr>, attrs1: impl Iterator<Item = ast::Attr>) -> bool {
+pub fn eq_attrs(
+    attrs0: impl Iterator<Item = ast::Attr>,
+    attrs1: impl Iterator<Item = ast::Attr>,
+) -> bool {
     // FIXME order of attributes should not matter
     let attrs0 = attrs0
         .flat_map(|attr| attr.syntax().descendants_with_tokens())
@@ -715,7 +768,10 @@ mod version_sort {
             Self { ident, start: 0 }
         }
 
-        fn parse_numeric_chunk(&mut self, mut chars: std::str::CharIndices<'a>) -> Option<VersionChunk<'a>> {
+        fn parse_numeric_chunk(
+            &mut self,
+            mut chars: std::str::CharIndices<'a>,
+        ) -> Option<VersionChunk<'a>> {
             let mut end = self.start;
             let mut is_end_of_chunk = false;
             while let Some((idx, c)) = chars.next() {
@@ -742,7 +798,10 @@ mod version_sort {
             Some(VersionChunk::Number { value, zeros, source })
         }
 
-        fn parse_str_chunk(&mut self, mut chars: std::str::CharIndices<'a>) -> Option<VersionChunk<'a>> {
+        fn parse_str_chunk(
+            &mut self,
+            mut chars: std::str::CharIndices<'a>,
+        ) -> Option<VersionChunk<'a>> {
             let mut end = self.start;
             let mut is_end_of_chunk = false;
             while let Some((idx, c)) = chars.next() {
@@ -809,7 +868,10 @@ mod version_sort {
         Right,
         Equal,
     }
-    pub(super) fn version_sort(a: &str, b: &str) -> Ordering {
+    pub(super) fn version_sort(
+        a: &str,
+        b: &str,
+    ) -> Ordering {
         let iter_a = VersionChunkIter::new(a);
         let iter_b = VersionChunkIter::new(b);
         let mut more_leading_zeros = MoreLeadingZeros::Equal;

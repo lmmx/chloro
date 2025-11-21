@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6951 bytes
-Chloro size:   6921 bytes
+Chloro size:   6944 bytes
 Rustfmt size:  6951 bytes
 
 ✗ Outputs DIFFER
@@ -17,17 +17,8 @@ Rustfmt size:  6951 bytes
  use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
  use ide_db::{FileRange, RootDatabase};
  use syntax::{
-     inlay_hints::LazyProperty,
- };
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    sema: &Semantics<'_, RootDatabase>,
--    config: &InlayHintsConfig<'_>,
--    display_target: DisplayTarget,
--    InRealFile { file_id, value: node }: InRealFile<SyntaxNode>,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, sema: &Semantics<'_, RootDatabase>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, InRealFile { file_id, value: node }: InRealFile<SyntaxNode>) -> Option<()> {
+     InRealFile { file_id, value: node }: InRealFile<SyntaxNode>,
+ ) -> Option<()> {
      let min_lines = config.closing_brace_hints_min_lines?;
 -
      let name = |it: ast::Name| it.syntax().text_range();

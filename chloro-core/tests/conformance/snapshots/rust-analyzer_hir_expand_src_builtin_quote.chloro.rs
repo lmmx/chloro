@@ -131,7 +131,11 @@ macro_rules! quote {
     }
 }
 
-fn to_tokens(self, span: Span, builder: &mut TopSubtreeBuilder);
+fn to_tokens(
+    self,
+    span: Span,
+    builder: &mut TopSubtreeBuilder,
+);
 
 /// Wraps `TokenTreesView` with a delimiter (a subtree, but without allocating).
 pub struct WithDelimiter<'a> {
@@ -140,7 +144,11 @@ pub struct WithDelimiter<'a> {
 }
 
 impl ToTokenTree for WithDelimiter<'_> {
-    fn to_tokens(self, span: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        span: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         builder.open(self.delimiter.kind, self.delimiter.open);
         self.token_trees.to_tokens(span, builder);
         builder.close(self.delimiter.close);
@@ -148,25 +156,41 @@ impl ToTokenTree for WithDelimiter<'_> {
 }
 
 impl ToTokenTree for crate::tt::TokenTreesView<'_> {
-    fn to_tokens(self, _: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        _: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         builder.extend_with_tt(self);
     }
 }
 
 impl ToTokenTree for crate::tt::SubtreeView<'_> {
-    fn to_tokens(self, _: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        _: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         builder.extend_with_tt(self.as_token_trees());
     }
 }
 
 impl ToTokenTree for crate::tt::TopSubtree {
-    fn to_tokens(self, _: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        _: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         builder.extend_tt_dangerous(self.0);
     }
 }
 
 impl ToTokenTree for crate::tt::TtElement<'_> {
-    fn to_tokens(self, _: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        _: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         match self {
             crate::tt::TtElement::Leaf(leaf) => builder.push(leaf.clone()),
             crate::tt::TtElement::Subtree(subtree, subtree_iter) => {
@@ -193,7 +217,11 @@ macro_rules! impl_to_to_tokentrees {
 }
 
 impl<T: ToTokenTree + Clone> ToTokenTree for &T {
-    fn to_tokens(self, span: Span, builder: &mut TopSubtreeBuilder) {
+    fn to_tokens(
+        self,
+        span: Span,
+        builder: &mut TopSubtreeBuilder,
+    ) {
         self.clone().to_tokens(span, builder);
     }
 }

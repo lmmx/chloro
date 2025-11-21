@@ -28,7 +28,10 @@ fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
 }
 
 #[track_caller]
-fn check_hir_to_ast(path: &str, ignore_segments: &[&str]) {
+fn check_hir_to_ast(
+    path: &str,
+    ignore_segments: &[&str],
+) {
     let path = make::path_from_text(path);
     SEGMENT_LOWERING_MAP.with_borrow_mut(|map| map.clear());
     let _ = lower_path(path.clone()).2.expect("failed to lower path");
@@ -114,7 +117,10 @@ fn keywords_in_middle_fail_lowering3() {
 }
 
 #[track_caller]
-fn check_path_lowering(path: &str, expected: Expect) {
+fn check_path_lowering(
+    path: &str,
+    expected: Expect,
+) {
     let (db, store, lowered_path) = lower_path(make::path_from_text(path));
     let lowered_path = lowered_path.expect("failed to lower path");
     let buf = pretty::print_path(&db, &store, &lowered_path, Edition::CURRENT);

@@ -10,7 +10,11 @@ use crate::{
 };
 
 /// Completes constants and paths in unqualified patterns.
-pub(crate) fn complete_pattern(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) {
+pub(crate) fn complete_pattern(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    pattern_ctx: &PatternContext,
+) {
     let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
     match pattern_ctx.parent_pat.as_ref() {
         Some(Pat::RangePat(_) | Pat::BoxPat(_)) => (),
@@ -114,7 +118,11 @@ pub(crate) fn complete_pattern(acc: &mut Completions, ctx: &CompletionContext<'_
     });
 }
 
-pub(crate) fn complete_pattern_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>) {
+pub(crate) fn complete_pattern_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+) {
     match qualified {
         Qualified::With { resolution: Some(resolution), super_chain_len, .. } => {
             acc.add_super_keyword(ctx, *super_chain_len);

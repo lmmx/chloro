@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 573 bytes
-Chloro size:   422 bytes
+Chloro size:   433 bytes
 Rustfmt size:  573 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,6 @@ Rustfmt size:  573 bytes
 -// Diagnostic: unimplemented-builtin-macro
 -//
 -// This diagnostic is shown for builtin macros which are not yet implemented by rust-analyzer
--pub(crate) fn unimplemented_builtin_macro(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnimplementedBuiltinMacro,
--) -> Diagnostic {
-+pub(crate) fn unimplemented_builtin_macro(ctx: &DiagnosticsContext<'_>, d: &hir::UnimplementedBuiltinMacro) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::Ra("unimplemented-builtin-macro", Severity::WeakWarning),
+ pub(crate) fn unimplemented_builtin_macro(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnimplementedBuiltinMacro,

@@ -19,7 +19,11 @@ use crate::{
 /// `spam: &mut Spam` insert text/label will be suggested.
 ///
 /// Also complete parameters for closure or local functions from the surrounding defined locals.
-pub(crate) fn complete_fn_param(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) -> Option<()> {
+pub(crate) fn complete_fn_param(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    pattern_ctx: &PatternContext,
+) -> Option<()> {
     let (ParamContext { param_list, kind, .. }, impl_or_trait) = match pattern_ctx {
         PatternContext { param_ctx: Some(kind), impl_or_trait, .. } => (kind, impl_or_trait),
         _ => return None,
@@ -51,7 +55,13 @@ pub(crate) fn complete_fn_param(acc: &mut Completions, ctx: &CompletionContext<'
     Some(())
 }
 
-fn fill_fn_params(ctx: &CompletionContext<'_>, function: &ast::Fn, param_list: &ast::ParamList, impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>, mut add_new_item_to_acc: impl FnMut(&str)) {
+fn fill_fn_params(
+    ctx: &CompletionContext<'_>,
+    function: &ast::Fn,
+    param_list: &ast::ParamList,
+    impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>,
+    mut add_new_item_to_acc: impl FnMut(&str),
+) {
     let mut file_params = FxHashMap::default();
     let mut extract_params = |f: ast::Fn| {
         f.param_list().into_iter().flat_map(|it| it.params()).for_each(|param| {
@@ -97,7 +107,11 @@ fn fill_fn_params(ctx: &CompletionContext<'_>, function: &ast::Fn, param_list: &
     file_params.keys().for_each(|whole_param| add_new_item_to_acc(whole_param));
 }
 
-fn params_from_stmt_list_scope(ctx: &CompletionContext<'_>, stmt_list: ast::StmtList, mut cb: impl FnMut(hir::Name, String)) {
+fn params_from_stmt_list_scope(
+    ctx: &CompletionContext<'_>,
+    stmt_list: ast::StmtList,
+    mut cb: impl FnMut(hir::Name, String),
+) {
     let syntax_node = match stmt_list.syntax().last_child() {
         Some(it) => it,
         None => return,
@@ -116,7 +130,10 @@ fn params_from_stmt_list_scope(ctx: &CompletionContext<'_>, stmt_list: ast::Stmt
     }
 }
 
-fn remove_duplicated(file_params: &mut FxHashMap<String, String>, fn_params: ast::AstChildren<ast::Param>) {
+fn remove_duplicated(
+    file_params: &mut FxHashMap<String, String>,
+    fn_params: ast::AstChildren<ast::Param>,
+) {
     fn_params.for_each(|param| {
         let whole_param = param.syntax().text().to_string();
         file_params.remove(&whole_param);
@@ -134,7 +151,11 @@ fn remove_duplicated(file_params: &mut FxHashMap<String, String>, fn_params: ast
     })
 }
 
-fn should_add_self_completions(cursor: TextSize, param_list: &ast::ParamList, impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>) -> bool {
+fn should_add_self_completions(
+    cursor: TextSize,
+    param_list: &ast::ParamList,
+    impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>,
+) -> bool {
     if impl_or_trait.is_none() || param_list.self_param().is_some() {
         return false;
     }

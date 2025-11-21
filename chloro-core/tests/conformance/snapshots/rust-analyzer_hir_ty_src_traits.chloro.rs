@@ -48,15 +48,26 @@ impl<'db> TraitEnvironment<'db> {
         })
     }
 
-    pub fn new(krate: Crate, block: Option<BlockId>, traits_from_clauses: Box<[(Ty<'db>, TraitId)]>, env: ParamEnv<'db>) -> Arc<Self> {
+    pub fn new(
+        krate: Crate,
+        block: Option<BlockId>,
+        traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
+        env: ParamEnv<'db>,
+    ) -> Arc<Self> {
         Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
     }
 
-    pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
+    pub fn with_block(
+        this: &mut Arc<Self>,
+        block: BlockId,
+    ) {
         Arc::make_mut(this).block = Some(block);
     }
 
-    pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
+    pub fn traits_in_scope_from_clauses(
+        &self,
+        ty: Ty<'db>,
+    ) -> impl Iterator<Item = TraitId> + '_ {
         self.traits_from_clauses
             .iter()
             .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
@@ -64,7 +75,11 @@ impl<'db> TraitEnvironment<'db> {
 }
 
 /// This should be used in `hir` only.
-pub fn structurally_normalize_ty<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, env: Arc<TraitEnvironment<'db>>) -> Ty<'db> {
+pub fn structurally_normalize_ty<'db>(
+    infcx: &InferCtxt<'db>,
+    ty: Ty<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+) -> Ty<'db> {
     let TyKind::Alias(..) = ty.kind() else { return ty };
     let mut ocx = ObligationCtxt::new(infcx);
     let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
@@ -92,7 +107,10 @@ impl NextTraitSolveResult {
     }
 }
 
-pub fn next_trait_solve_canonical_in_ctxt<'db>(infer_ctxt: &InferCtxt<'db>, goal: Canonical<'db, Goal<'db, Predicate<'db>>>) -> NextTraitSolveResult {
+pub fn next_trait_solve_canonical_in_ctxt<'db>(
+    infer_ctxt: &InferCtxt<'db>,
+    goal: Canonical<'db, Goal<'db, Predicate<'db>>>,
+) -> NextTraitSolveResult {
     infer_ctxt.probe(|_| {
         let context = <&SolverContext<'db>>::from(infer_ctxt);
 
@@ -116,7 +134,10 @@ pub fn next_trait_solve_canonical_in_ctxt<'db>(infer_ctxt: &InferCtxt<'db>, goal
 }
 
 /// Solve a trait goal using next trait solver.
-pub fn next_trait_solve_in_ctxt<'db, 'a>(infer_ctxt: &'a InferCtxt<'db>, goal: Goal<'db, Predicate<'db>>) -> Result<(HasChanged, Certainty), rustc_type_ir::solve::NoSolution> {
+pub fn next_trait_solve_in_ctxt<'db, 'a>(
+    infer_ctxt: &'a InferCtxt<'db>,
+    goal: Goal<'db, Predicate<'db>>,
+) -> Result<(HasChanged, Certainty), rustc_type_ir::solve::NoSolution> {
     tracing::info!(?goal);
     let context = <&SolverContext<'db>>::from(infer_ctxt);
     let res = context.evaluate_root_goal(goal, Span::dummy(), None);
@@ -136,7 +157,10 @@ pub enum FnTrait {
 }
 
 impl fmt::Display for FnTrait {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             FnTrait::FnOnce => write!(f, "FnOnce"),
             FnTrait::FnMut => write!(f, "FnMut"),
@@ -194,24 +218,43 @@ impl FnTrait {
         }
     }
 
-    pub fn get_id(self, db: &dyn HirDatabase, krate: Crate) -> Option<TraitId> {
+    pub fn get_id(
+        self,
+        db: &dyn HirDatabase,
+        krate: Crate,
+    ) -> Option<TraitId> {
         self.lang_item().resolve_trait(db, krate)
     }
 }
 
 /// This should not be used in `hir-ty`, only in `hir`.
-pub fn implements_trait_unique<'db>(ty: Ty<'db>, db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, trait_: TraitId) -> bool {
+pub fn implements_trait_unique<'db>(
+    ty: Ty<'db>,
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    trait_: TraitId,
+) -> bool {
     implements_trait_unique_impl(db, env, trait_, &mut |infcx| {
         infcx.fill_rest_fresh_args(trait_.into(), [ty.into()])
     })
 }
 
 /// This should not be used in `hir-ty`, only in `hir`.
-pub fn implements_trait_unique_with_args<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, trait_: TraitId, args: GenericArgs<'db>) -> bool {
+pub fn implements_trait_unique_with_args<'db>(
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    trait_: TraitId,
+    args: GenericArgs<'db>,
+) -> bool {
     implements_trait_unique_impl(db, env, trait_, &mut |_| args)
 }
 
-fn implements_trait_unique_impl<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, trait_: TraitId, create_args: &mut dyn FnMut(&InferCtxt<'db>) -> GenericArgs<'db>) -> bool {
+fn implements_trait_unique_impl<'db>(
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    trait_: TraitId,
+    create_args: &mut dyn FnMut(&InferCtxt<'db>) -> GenericArgs<'db>,
+) -> bool {
     let interner = DbInterner::new_with(db, Some(env.krate), env.block);
     // FIXME(next-solver): I believe this should be `PostAnalysis`.
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());

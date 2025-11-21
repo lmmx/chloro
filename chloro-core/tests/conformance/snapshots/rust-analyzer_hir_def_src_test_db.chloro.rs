@@ -70,7 +70,10 @@ impl salsa::Database for TestDB {
 }
 
 impl fmt::Debug for TestDB {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("TestDB").finish()
     }
 }
@@ -79,35 +82,63 @@ impl panic::RefUnwindSafe for TestDB {
 }
 
 impl SourceDatabase for TestDB {
-    fn file_text(&self, file_id: base_db::FileId) -> FileText {
+    fn file_text(
+        &self,
+        file_id: base_db::FileId,
+    ) -> FileText {
         self.files.file_text(file_id)
     }
 
-    fn set_file_text(&mut self, file_id: base_db::FileId, text: &str) {
+    fn set_file_text(
+        &mut self,
+        file_id: base_db::FileId,
+        text: &str,
+    ) {
         let files = Arc::clone(&self.files);
         files.set_file_text(self, file_id, text);
     }
 
-    fn set_file_text_with_durability(&mut self, file_id: base_db::FileId, text: &str, durability: Durability) {
+    fn set_file_text_with_durability(
+        &mut self,
+        file_id: base_db::FileId,
+        text: &str,
+        durability: Durability,
+    ) {
         let files = Arc::clone(&self.files);
         files.set_file_text_with_durability(self, file_id, text, durability);
     }
 
     /// Source root of the file.
-    fn source_root(&self, source_root_id: SourceRootId) -> SourceRootInput {
+    fn source_root(
+        &self,
+        source_root_id: SourceRootId,
+    ) -> SourceRootInput {
         self.files.source_root(source_root_id)
     }
 
-    fn set_source_root_with_durability(&mut self, source_root_id: SourceRootId, source_root: Arc<SourceRoot>, durability: Durability) {
+    fn set_source_root_with_durability(
+        &mut self,
+        source_root_id: SourceRootId,
+        source_root: Arc<SourceRoot>,
+        durability: Durability,
+    ) {
         let files = Arc::clone(&self.files);
         files.set_source_root_with_durability(self, source_root_id, source_root, durability);
     }
 
-    fn file_source_root(&self, id: base_db::FileId) -> FileSourceRootInput {
+    fn file_source_root(
+        &self,
+        id: base_db::FileId,
+    ) -> FileSourceRootInput {
         self.files.file_source_root(id)
     }
 
-    fn set_file_source_root_with_durability(&mut self, id: base_db::FileId, source_root_id: SourceRootId, durability: Durability) {
+    fn set_file_source_root_with_durability(
+        &mut self,
+        id: base_db::FileId,
+        source_root_id: SourceRootId,
+        durability: Durability,
+    ) {
         let files = Arc::clone(&self.files);
         files.set_file_source_root_with_durability(self, id, source_root_id, durability);
     }
@@ -134,7 +165,10 @@ impl TestDB {
             .unwrap_or(*all_crates.last().unwrap())
     }
 
-    pub(crate) fn module_for_file(&self, file_id: FileId) -> ModuleId {
+    pub(crate) fn module_for_file(
+        &self,
+        file_id: FileId,
+    ) -> ModuleId {
         for &krate in self.relevant_crates(file_id).iter() {
             let crate_def_map = crate_def_map(self, krate);
             for (local_id, data) in crate_def_map.modules() {
@@ -146,7 +180,10 @@ impl TestDB {
         panic!("Can't find module for file")
     }
 
-    pub(crate) fn module_at_position(&self, position: FilePosition) -> ModuleId {
+    pub(crate) fn module_at_position(
+        &self,
+        position: FilePosition,
+    ) -> ModuleId {
         let file_module = self.module_for_file(position.file_id.file_id(self));
         let mut def_map = file_module.def_map(self);
         let module = self.mod_at_position(def_map, position);
@@ -169,7 +206,11 @@ impl TestDB {
     }
 
     /// Finds the smallest/innermost module in `def_map` containing `position`.
-    fn mod_at_position(&self, def_map: &DefMap, position: FilePosition) -> LocalModuleId {
+    fn mod_at_position(
+        &self,
+        def_map: &DefMap,
+        position: FilePosition,
+    ) -> LocalModuleId {
         let mut size = None;
         let mut res = DefMap::ROOT;
         for (module, data) in def_map.modules() {
@@ -207,7 +248,11 @@ impl TestDB {
         res
     }
 
-    fn block_at_position(&self, def_map: &DefMap, position: FilePosition) -> Option<&DefMap> {
+    fn block_at_position(
+        &self,
+        def_map: &DefMap,
+        position: FilePosition,
+    ) -> Option<&DefMap> {
         // Find the smallest (innermost) function in `def_map` containing the cursor.
         let mut size = None;
         let mut fn_def = None;
@@ -268,13 +313,19 @@ impl TestDB {
         None
     }
 
-    pub(crate) fn log(&self, f: impl FnOnce()) -> Vec<salsa::Event> {
+    pub(crate) fn log(
+        &self,
+        f: impl FnOnce(),
+    ) -> Vec<salsa::Event> {
         *self.events.lock().unwrap() = Some(Vec::new());
         f();
         self.events.lock().unwrap().take().unwrap()
     }
 
-    pub(crate) fn log_executed(&self, f: impl FnOnce()) -> Vec<String> {
+    pub(crate) fn log_executed(
+        &self,
+        f: impl FnOnce(),
+    ) -> Vec<String> {
         let events = self.log(f);
         events
             .into_iter()

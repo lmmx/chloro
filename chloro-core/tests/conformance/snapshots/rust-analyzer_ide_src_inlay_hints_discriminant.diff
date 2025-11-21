@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5687 bytes
-Chloro size:   5635 bytes
+Chloro size:   5677 bytes
 Rustfmt size:  5814 bytes
 
 ✗ Outputs DIFFER
@@ -22,16 +22,6 @@ Rustfmt size:  5814 bytes
  use syntax::ast::{self, AstNode, HasName};
  
  use crate::{
-     InlayTooltip,
- };
- 
--pub(super) fn enum_hints(
--    acc: &mut Vec<InlayHint>,
--    FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    enum_: ast::Enum,
--) -> Option<()> {
-+pub(super) fn enum_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, enum_: ast::Enum) -> Option<()> {
      if let DiscriminantHints::Never = config.discriminant_hints {
          return None;
      }
@@ -39,17 +29,6 @@ Rustfmt size:  5814 bytes
      let def = sema.to_def(&enum_)?;
      let data_carrying = def.is_data_carrying(sema.db);
      if matches!(config.discriminant_hints, DiscriminantHints::Fieldless) && data_carrying {
-     Some(())
- }
- 
--fn variant_hints(
--    acc: &mut Vec<InlayHint>,
--    config: &InlayHintsConfig<'_>,
--    sema: &Semantics<'_, RootDatabase>,
--    enum_: &ast::Enum,
--    variant: &ast::Variant,
--) -> Option<()> {
-+fn variant_hints(acc: &mut Vec<InlayHint>, config: &InlayHintsConfig<'_>, sema: &Semantics<'_, RootDatabase>, enum_: &ast::Enum, variant: &ast::Variant) -> Option<()> {
      if variant.expr().is_some() {
          return None;
      }

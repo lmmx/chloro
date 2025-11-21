@@ -7,7 +7,10 @@ use syntax::ast::{self, AstNode, HasName, LetStmt, Pat};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_let_else_to_match(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // Should focus on the `else` token to trigger
     let let_stmt = ctx
         .find_token_syntax_at_offset(T![else])
@@ -100,7 +103,11 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
     )
 }
 
-fn remove_mut_and_collect_idents(make: &SyntaxFactory, pat: &ast::Pat, acc: &mut Vec<ast::IdentPat>) -> Option<ast::Pat> {
+fn remove_mut_and_collect_idents(
+    make: &SyntaxFactory,
+    pat: &ast::Pat,
+    acc: &mut Vec<ast::IdentPat>,
+) -> Option<ast::Pat> {
     Some(match pat {
         ast::Pat::IdentPat(p) => {
             acc.push(p.clone());

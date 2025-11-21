@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4526 bytes
-Chloro size:   4133 bytes
+Chloro size:   4155 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -39,14 +39,9 @@ Rustfmt size:  4581 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_default_from_enum_variant(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn generate_default_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
-     let variant_name = variant.name()?;
-     let enum_name = variant.parent_enum().name()?;
+ pub(crate) fn generate_default_from_enum_variant(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
          cov_mark::hit!(test_gen_default_on_non_unit_variant_not_implemented);
          return None;
      }
@@ -67,14 +62,6 @@ Rustfmt size:  4581 bytes
      let target = variant.syntax().text_range();
      acc.add(
          AssistId::generate("generate_default_from_enum_variant"),
-     )
- }
- 
--fn existing_default_impl(
--    sema: &'_ hir::Semantics<'_, RootDatabase>,
--    variant: &ast::Variant,
--) -> Option<()> {
-+fn existing_default_impl(sema: &'_ hir::Semantics<'_, RootDatabase>, variant: &ast::Variant) -> Option<()> {
      let variant = sema.to_def(variant)?;
      let enum_ = variant.parent_enum(sema.db);
      let krate = enum_.module(sema.db).krate();

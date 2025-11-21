@@ -179,7 +179,10 @@ fn fold_kind(kind: SyntaxKind) -> Option<FoldKind> {
     }
 }
 
-fn contiguous_range_for_item_group<N>(first: N, visited: &mut FxHashSet<SyntaxNode>) -> Option<TextRange>
+fn contiguous_range_for_item_group<N>(
+    first: N,
+    visited: &mut FxHashSet<SyntaxNode>,
+) -> Option<TextRange>
 where
     N: ast::HasVisibility + Clone + Hash + Eq, {
     if !visited.insert(first.syntax().clone()) {
@@ -222,7 +225,10 @@ where
     }
 }
 
-fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility>) -> bool {
+fn eq_visibility(
+    vis0: Option<ast::Visibility>,
+    vis1: Option<ast::Visibility>,
+) -> bool {
     match (vis0, vis1) {
         (None, None) => true,
         (Some(vis0), Some(vis1)) => vis_eq(&vis0, &vis1),
@@ -230,7 +236,10 @@ fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility>) -
     }
 }
 
-fn contiguous_range_for_comment(first: ast::Comment, visited: &mut FxHashSet<ast::Comment>) -> Option<TextRange> {
+fn contiguous_range_for_comment(
+    first: ast::Comment,
+    visited: &mut FxHashSet<ast::Comment>,
+) -> Option<TextRange> {
     visited.insert(first.clone());
     // Only fold comments of the same flavor
     let group_kind = first.kind();

@@ -6,7 +6,12 @@ use syntax::ast;
 
 use crate::{Completions, context::CompletionContext, item::CompletionItem};
 
-pub(super) fn complete_macro_use(acc: &mut Completions, ctx: &CompletionContext<'_>, extern_crate: Option<&ast::ExternCrate>, existing_imports: &[ast::Path]) {
+pub(super) fn complete_macro_use(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    extern_crate: Option<&ast::ExternCrate>,
+    existing_imports: &[ast::Path],
+) {
     let Some(extern_crate) = extern_crate else { return };
     let Some(extern_crate) = ctx.sema.to_def(extern_crate) else { return };
     let Some(krate) = extern_crate.resolved_crate(ctx.db) else { return };

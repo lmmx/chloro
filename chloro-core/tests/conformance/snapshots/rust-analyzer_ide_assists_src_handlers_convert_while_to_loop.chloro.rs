@@ -17,7 +17,10 @@ use crate::{
     utils::invert_boolean_expression_legacy,
 };
 
-pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_while_to_loop(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let while_kw = ctx.find_token_syntax_at_offset(T![while])?;
     let while_expr = while_kw.parent().and_then(ast::WhileExpr::cast)?;
     let while_body = while_expr.loop_body()?;

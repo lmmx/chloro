@@ -106,7 +106,10 @@ impl FloatTypeWrapper {
 }
 
 impl fmt::Display for FloatTypeWrapper {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.write_str(self.0.as_str())
     }
 }
@@ -374,7 +377,10 @@ impl AsmOptions {
 }
 
 impl std::fmt::Debug for AsmOptions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         bitflags::parser::to_writer(self, f)
     }
 }
@@ -514,7 +520,10 @@ pub enum BindingAnnotation {
 }
 
 impl BindingAnnotation {
-    pub fn new(is_mutable: bool, is_ref: bool) -> Self {
+    pub fn new(
+        is_mutable: bool,
+        is_ref: bool,
+    ) -> Self {
         match (is_mutable, is_ref) {
             (true, true) => BindingAnnotation::RefMut,
             (false, true) => BindingAnnotation::Ref,
@@ -601,7 +610,10 @@ pub enum Pat {
 }
 
 impl Pat {
-    pub fn walk_child_pats(&self, mut f: impl FnMut(PatId)) {
+    pub fn walk_child_pats(
+        &self,
+        mut f: impl FnMut(PatId),
+    ) {
         match self {
             Pat::Range { .. }
             | Pat::Lit(..)

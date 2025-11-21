@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6466 bytes
-Chloro size:   6206 bytes
+Chloro size:   6217 bytes
 Rustfmt size:  6466 bytes
 
 ✗ Outputs DIFFER
@@ -29,7 +29,11 @@ Rustfmt size:  6466 bytes
 -//     y: u32,
 -// }
 -// ```
- pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_lifetime_to_type(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let ref_type_focused = ctx.find_node_at_offset::<ast::RefType>()?;
      if ref_type_focused.lifetime().is_some() {
          return None;

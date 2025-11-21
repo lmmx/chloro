@@ -55,7 +55,11 @@ pub(crate) struct AssistContext<'a> {
 }
 
 impl<'a> AssistContext<'a> {
-    pub(crate) fn new(sema: Semantics<'a, RootDatabase>, config: &'a AssistConfig, frange: FileRange) -> AssistContext<'a> {
+    pub(crate) fn new(
+        sema: Semantics<'a, RootDatabase>,
+        config: &'a AssistConfig,
+        frange: FileRange,
+    ) -> AssistContext<'a> {
         let source_file = sema.parse(frange.file_id);
         let start = frange.range.start();
         let end = frange.range.end();
@@ -123,7 +127,10 @@ impl<'a> AssistContext<'a> {
         self.token_at_offset.clone()
     }
 
-    pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
+    pub(crate) fn find_token_syntax_at_offset(
+        &self,
+        kind: SyntaxKind,
+    ) -> Option<SyntaxToken> {
         self.token_at_offset().find(|it| it.kind() == kind)
     }
 
@@ -161,7 +168,10 @@ pub(crate) struct Assists {
 }
 
 impl Assists {
-    pub(crate) fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
+    pub(crate) fn new(
+        ctx: &AssistContext<'_>,
+        resolve: AssistResolveStrategy,
+    ) -> Assists {
         Assists {
             resolve,
             file: ctx.frange.file_id.file_id(ctx.db()),
@@ -175,17 +185,37 @@ impl Assists {
         self.buf
     }
 
-    pub(crate) fn add(&mut self, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+    pub(crate) fn add(
+        &mut self,
+        id: AssistId,
+        label: impl Into<String>,
+        target: TextRange,
+        f: impl FnOnce(&mut SourceChangeBuilder),
+    ) -> Option<()> {
         let mut f = Some(f);
         self.add_impl(None, id, label.into(), target, &mut |it| f.take().unwrap()(it))
     }
 
-    pub(crate) fn add_group(&mut self, group: &GroupLabel, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+    pub(crate) fn add_group(
+        &mut self,
+        group: &GroupLabel,
+        id: AssistId,
+        label: impl Into<String>,
+        target: TextRange,
+        f: impl FnOnce(&mut SourceChangeBuilder),
+    ) -> Option<()> {
         let mut f = Some(f);
         self.add_impl(Some(group), id, label.into(), target, &mut |it| f.take().unwrap()(it))
     }
 
-    fn add_impl(&mut self, group: Option<&GroupLabel>, id: AssistId, label: String, target: TextRange, f: &mut dyn FnMut(&mut SourceChangeBuilder)) -> Option<()> {
+    fn add_impl(
+        &mut self,
+        group: Option<&GroupLabel>,
+        id: AssistId,
+        label: String,
+        target: TextRange,
+        f: &mut dyn FnMut(&mut SourceChangeBuilder),
+    ) -> Option<()> {
         if !self.is_allowed(&id) {
             return None;
         }
@@ -204,7 +234,10 @@ impl Assists {
         Some(())
     }
 
-    fn is_allowed(&self, id: &AssistId) -> bool {
+    fn is_allowed(
+        &self,
+        id: &AssistId,
+    ) -> bool {
         match &self.allowed {
             Some(allowed) => allowed.iter().any(|kind| kind.contains(id.1)),
             None => true,

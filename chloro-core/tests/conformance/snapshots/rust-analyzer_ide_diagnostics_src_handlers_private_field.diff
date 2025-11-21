@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5466 bytes
-Chloro size:   5312 bytes
+Chloro size:   5342 bytes
 Rustfmt size:  5636 bytes
 
 ✗ Outputs DIFFER
@@ -20,9 +20,14 @@ Rustfmt size:  5636 bytes
 -// Diagnostic: private-field
 -//
 -// This diagnostic is triggered if the accessed field is not visible from the current module.
- pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
+-pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
++pub(crate) fn private_field(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::PrivateField,
++) -> Diagnostic {
      // FIXME: add quickfix
      Diagnostic::new_with_syntax_node_ptr(
+         ctx,
          format!(
              "field `{}` of `{}` is private",
              d.field.name(ctx.sema.db).display(ctx.sema.db, ctx.edition),
@@ -44,13 +49,8 @@ Rustfmt size:  5636 bytes
      ))
  }
  
--pub(crate) fn field_is_private_fixes(
--    sema: &Semantics<'_, RootDatabase>,
--    usage_file_id: EditionedFileId,
--    private_field: hir::Field,
--    fix_range: TextRange,
--) -> Option<Vec<Assist>> {
-+pub(crate) fn field_is_private_fixes(sema: &Semantics<'_, RootDatabase>, usage_file_id: EditionedFileId, private_field: hir::Field, fix_range: TextRange) -> Option<Vec<Assist>> {
+     fix_range: TextRange,
+ ) -> Option<Vec<Assist>> {
      let def_crate = private_field.krate(sema.db);
 -    let usage_crate = sema
 -        .file_to_module_def(usage_file_id.file_id(sema.db))?

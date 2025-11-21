@@ -24,7 +24,10 @@ pub enum GenericArg<'db> {
 }
 
 impl<'db> std::fmt::Debug for GenericArg<'db> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::Ty(t) => std::fmt::Debug::fmt(t, f),
             Self::Lifetime(r) => std::fmt::Debug::fmt(r, f),
@@ -70,7 +73,10 @@ impl<'db> GenericArg<'db> {
         }
     }
 
-    pub fn error_from_id(interner: DbInterner<'db>, id: GenericParamId) -> GenericArg<'db> {
+    pub fn error_from_id(
+        interner: DbInterner<'db>,
+        id: GenericParamId,
+    ) -> GenericArg<'db> {
         match id {
             GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
             GenericParamId::ConstParamId(_) => Const::error(interner).into(),
@@ -95,7 +101,10 @@ pub enum Term<'db> {
 }
 
 impl<'db> std::fmt::Debug for Term<'db> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         match self {
             Self::Ty(t) => std::fmt::Debug::fmt(t, f),
             Self::Const(c) => std::fmt::Debug::fmt(c, f),
@@ -108,7 +117,10 @@ impl<'db> Term<'db> {
         self.as_type().expect("expected a type, but found a const")
     }
 
-    pub fn is_trivially_wf(&self, tcx: DbInterner<'db>) -> bool {
+    pub fn is_trivially_wf(
+        &self,
+        tcx: DbInterner<'db>,
+    ) -> bool {
         match self.kind() {
             TermKind::Ty(ty) => ty.is_trivially_wf(tcx),
             TermKind::Const(ct) => ct.is_trivially_wf(),
@@ -147,7 +159,11 @@ impl<'db> IntoKind for GenericArg<'db> {
 }
 
 impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {
-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+        relation: &mut R,
+        a: Self,
+        b: Self,
+    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         match (a.kind(), b.kind()) {
             (GenericArgKind::Lifetime(a_lt), GenericArgKind::Lifetime(b_lt)) => {
                 Ok(relation.relate(a_lt, b_lt)?.into())
@@ -179,7 +195,11 @@ impl<'db> GenericArgs<'db> {
     /// The closures get to observe the `GenericArgs` as they're
     /// being built, which can be used to correctly
     /// replace defaults of generic parameters.
-    pub fn for_item<F>(interner: DbInterner<'db>, def_id: SolverDefId, mut mk_kind: F) -> GenericArgs<'db>
+    pub fn for_item<F>(
+        interner: DbInterner<'db>,
+        def_id: SolverDefId,
+        mut mk_kind: F,
+    ) -> GenericArgs<'db>
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         let defs = interner.generics_of(def_id);
@@ -190,12 +210,19 @@ impl<'db> GenericArgs<'db> {
     }
 
     /// Creates an all-error `GenericArgs`.
-    pub fn error_for_item(interner: DbInterner<'db>, def_id: SolverDefId) -> GenericArgs<'db> {
+    pub fn error_for_item(
+        interner: DbInterner<'db>,
+        def_id: SolverDefId,
+    ) -> GenericArgs<'db> {
         GenericArgs::for_item(interner, def_id, |_, id, _| GenericArg::error_from_id(interner, id))
     }
 
     /// Like `for_item`, but prefers the default of a parameter if it has any.
-    pub fn for_item_with_defaults<F>(interner: DbInterner<'db>, def_id: GenericDefId, mut fallback: F) -> GenericArgs<'db>
+    pub fn for_item_with_defaults<F>(
+        interner: DbInterner<'db>,
+        def_id: GenericDefId,
+        mut fallback: F,
+    ) -> GenericArgs<'db>
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         let defaults = interner.db.generic_defaults(def_id);
@@ -206,7 +233,12 @@ impl<'db> GenericArgs<'db> {
     }
 
     /// Like `for_item()`, but calls first uses the args from `first`.
-    pub fn fill_rest<F>(interner: DbInterner<'db>, def_id: SolverDefId, first: impl IntoIterator<Item = GenericArg<'db>>, mut fallback: F) -> GenericArgs<'db>
+    pub fn fill_rest<F>(
+        interner: DbInterner<'db>,
+        def_id: SolverDefId,
+        first: impl IntoIterator<Item = GenericArg<'db>>,
+        mut fallback: F,
+    ) -> GenericArgs<'db>
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         let mut iter = first.into_iter();
@@ -216,7 +248,12 @@ impl<'db> GenericArgs<'db> {
     }
 
     /// Appends default param values to `first` if needed. Params without default will call `fallback()`.
-    pub fn fill_with_defaults<F>(interner: DbInterner<'db>, def_id: GenericDefId, first: impl IntoIterator<Item = GenericArg<'db>>, mut fallback: F) -> GenericArgs<'db>
+    pub fn fill_with_defaults<F>(
+        interner: DbInterner<'db>,
+        def_id: GenericDefId,
+        first: impl IntoIterator<Item = GenericArg<'db>>,
+        mut fallback: F,
+    ) -> GenericArgs<'db>
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         let defaults = interner.db.generic_defaults(def_id);
@@ -228,7 +265,12 @@ impl<'db> GenericArgs<'db> {
         })
     }
 
-    fn fill_item<F>(args: &mut SmallVec<[GenericArg<'db>; 8]>, interner: DbInterner<'_>, defs: Generics, mk_kind: &mut F)
+    fn fill_item<F>(
+        args: &mut SmallVec<[GenericArg<'db>; 8]>,
+        interner: DbInterner<'_>,
+        defs: Generics,
+        mk_kind: &mut F,
+    )
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         if let Some(def_id) = defs.parent {
@@ -238,7 +280,11 @@ impl<'db> GenericArgs<'db> {
         Self::fill_single(args, &defs, mk_kind);
     }
 
-    fn fill_single<F>(args: &mut SmallVec<[GenericArg<'db>; 8]>, defs: &Generics, mk_kind: &mut F)
+    fn fill_single<F>(
+        args: &mut SmallVec<[GenericArg<'db>; 8]>,
+        defs: &Generics,
+        mk_kind: &mut F,
+    )
     where
         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
         args.reserve(defs.own_params.len());
@@ -290,7 +336,11 @@ impl<'db> GenericArgs<'db> {
 }
 
 impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for GenericArgs<'db> {
-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+        relation: &mut R,
+        a: Self,
+        b: Self,
+    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         let interner = relation.cx();
         CollectAndApply::collect_and_apply(
             std::iter::zip(a.iter(), b.iter()).map(|(a, b)| {
@@ -319,16 +369,28 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         CoroutineClosureArgs { args: self }
     }
 
-    fn rebase_onto(self, interner: DbInterner<'db>, source_def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId, target: <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
+    fn rebase_onto(
+        self,
+        interner: DbInterner<'db>,
+        source_def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId,
+        target: <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs,
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
         let defs = interner.generics_of(source_def_id);
         interner.mk_args_from_iter(target.iter().chain(self.iter().skip(defs.count())))
     }
 
-    fn identity_for_item(interner: DbInterner<'db>, def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
+    fn identity_for_item(
+        interner: DbInterner<'db>,
+        def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId,
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
         Self::for_item(interner, def_id, |index, kind, _| mk_param(interner, index, kind))
     }
 
-    fn extend_with_error(interner: DbInterner<'db>, def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId, original_args: &[<DbInterner<'db> as rustc_type_ir::Interner>::GenericArg]) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
+    fn extend_with_error(
+        interner: DbInterner<'db>,
+        def_id: <DbInterner<'db> as rustc_type_ir::Interner>::DefId,
+        original_args: &[<DbInterner<'db> as rustc_type_ir::Interner>::GenericArg],
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::GenericArgs {
         Self::for_item(interner, def_id, |index, kind, _| {
             if let Some(arg) = original_args.get(index as usize) {
                 *arg
@@ -338,21 +400,30 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         })
     }
 
-    fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
+    fn type_at(
+        self,
+        i: usize,
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
         self.inner()
             .get(i)
             .and_then(|g| g.as_type())
             .unwrap_or_else(|| Ty::new_error(DbInterner::conjure(), ErrorGuaranteed))
     }
 
-    fn region_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
+    fn region_at(
+        self,
+        i: usize,
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
         self.inner()
             .get(i)
             .and_then(|g| g.as_region())
             .unwrap_or_else(|| Region::error(DbInterner::conjure()))
     }
 
-    fn const_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
+    fn const_at(
+        self,
+        i: usize,
+    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
         self.inner()
             .get(i)
             .and_then(|g| g.as_const())
@@ -437,7 +508,11 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
     }
 }
 
-pub fn mk_param<'db>(interner: DbInterner<'db>, index: u32, id: GenericParamId) -> GenericArg<'db> {
+pub fn mk_param<'db>(
+    interner: DbInterner<'db>,
+    index: u32,
+    id: GenericParamId,
+) -> GenericArg<'db> {
     match id {
         GenericParamId::LifetimeParamId(id) => {
             Region::new_early_param(interner, EarlyParamRegion { index, id }).into()
@@ -449,7 +524,10 @@ pub fn mk_param<'db>(interner: DbInterner<'db>, index: u32, id: GenericParamId) 
     }
 }
 
-pub fn error_for_param_kind<'db>(id: GenericParamId, interner: DbInterner<'db>) -> GenericArg<'db> {
+pub fn error_for_param_kind<'db>(
+    id: GenericParamId,
+    interner: DbInterner<'db>,
+) -> GenericArg<'db> {
     match id {
         GenericParamId::LifetimeParamId(_) => Region::error(interner).into(),
         GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
@@ -481,7 +559,11 @@ impl<'db> From<Const<'db>> for Term<'db> {
 }
 
 impl<'db> Relate<DbInterner<'db>> for Term<'db> {
-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+        relation: &mut R,
+        a: Self,
+        b: Self,
+    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         match (a.kind(), b.kind()) {
             (TermKind::Ty(a_ty), TermKind::Ty(b_ty)) => Ok(relation.relate(a_ty, b_ty)?.into()),
             (TermKind::Const(a_ct), TermKind::Const(b_ct)) => {
@@ -519,11 +601,17 @@ impl From<ConstVid> for TermVid {
 }
 
 impl<'db> DbInterner<'db> {
-    pub(super) fn mk_args(self, args: &[GenericArg<'db>]) -> GenericArgs<'db> {
+    pub(super) fn mk_args(
+        self,
+        args: &[GenericArg<'db>],
+    ) -> GenericArgs<'db> {
         GenericArgs::new_from_iter(self, args.iter().cloned())
     }
 
-    pub(super) fn mk_args_from_iter<I, T>(self, iter: I) -> T::Output
+    pub(super) fn mk_args_from_iter<I, T>(
+        self,
+        iter: I,
+    ) -> T::Output
     where
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>, {

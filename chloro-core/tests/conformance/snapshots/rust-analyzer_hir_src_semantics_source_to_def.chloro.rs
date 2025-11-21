@@ -125,13 +125,21 @@ pub(super) struct SourceToDefCache {
 }
 
 impl SourceToDefCache {
-    pub(super) fn cache(root_to_file_cache: &mut FxHashMap<SyntaxNode, HirFileId>, root_node: SyntaxNode, file_id: HirFileId) {
+    pub(super) fn cache(
+        root_to_file_cache: &mut FxHashMap<SyntaxNode, HirFileId>,
+        root_node: SyntaxNode,
+        file_id: HirFileId,
+    ) {
         assert!(root_node.parent().is_none());
         let prev = root_to_file_cache.insert(root_node, file_id);
         assert!(prev.is_none() || prev == Some(file_id));
     }
 
-    pub(super) fn get_or_insert_include_for(&mut self, db: &dyn HirDatabase, file: EditionedFileId) -> Option<MacroCallId> {
+    pub(super) fn get_or_insert_include_for(
+        &mut self,
+        db: &dyn HirDatabase,
+        file: EditionedFileId,
+    ) -> Option<MacroCallId> {
         if let Some(&m) = self.included_file_cache.get(&file) {
             return m;
         }
@@ -144,7 +152,11 @@ impl SourceToDefCache {
         self.included_file_cache.get(&file).copied().flatten()
     }
 
-    pub(super) fn get_or_insert_expansion(&mut self, db: &dyn HirDatabase, macro_file: MacroCallId) -> &ExpansionInfo {
+    pub(super) fn get_or_insert_expansion(
+        &mut self,
+        db: &dyn HirDatabase,
+        macro_file: MacroCallId,
+    ) -> &ExpansionInfo {
         self.expansion_info_cache.entry(macro_file).or_insert_with(|| {
             let exp_info = macro_file.expansion_info(db);
 
@@ -162,7 +174,10 @@ pub(super) struct SourceToDefCtx<'db, 'cache> {
 }
 
 impl SourceToDefCtx<'_, '_> {
-    pub(super) fn file_to_def(&mut self, file: FileId) -> &SmallVec<[ModuleId; 1]> {
+    pub(super) fn file_to_def(
+        &mut self,
+        file: FileId,
+    ) -> &SmallVec<[ModuleId; 1]> {
         let _p = tracing::info_span!("SourceToDefCtx::file_to_def").entered();
         self.cache.file_to_def_cache.entry(file).or_insert_with(|| {
             let mut mods = SmallVec::new();
@@ -204,7 +219,10 @@ impl SourceToDefCtx<'_, '_> {
         })
     }
 
-    pub(super) fn module_to_def(&mut self, src: InFile<&ast::Module>) -> Option<ModuleId> {
+    pub(super) fn module_to_def(
+        &mut self,
+        src: InFile<&ast::Module>,
+    ) -> Option<ModuleId> {
         let _p = tracing::info_span!("module_to_def").entered();
         let parent_declaration = self
             .parent_ancestors_with_macros(src.syntax_ref(), |_, ancestor, _| {
@@ -229,78 +247,132 @@ impl SourceToDefCtx<'_, '_> {
         Some(def_map.module_id(child_id))
     }
 
-    pub(super) fn source_file_to_def(&mut self, src: InFile<&ast::SourceFile>) -> Option<ModuleId> {
+    pub(super) fn source_file_to_def(
+        &mut self,
+        src: InFile<&ast::SourceFile>,
+    ) -> Option<ModuleId> {
         let _p = tracing::info_span!("source_file_to_def").entered();
         let file_id = src.file_id.original_file(self.db);
         self.file_to_def(file_id.file_id(self.db)).first().copied()
     }
 
-    pub(super) fn trait_to_def(&mut self, src: InFile<&ast::Trait>) -> Option<TraitId> {
+    pub(super) fn trait_to_def(
+        &mut self,
+        src: InFile<&ast::Trait>,
+    ) -> Option<TraitId> {
         self.to_def(src, keys::TRAIT)
     }
 
-    pub(super) fn impl_to_def(&mut self, src: InFile<&ast::Impl>) -> Option<ImplId> {
+    pub(super) fn impl_to_def(
+        &mut self,
+        src: InFile<&ast::Impl>,
+    ) -> Option<ImplId> {
         self.to_def(src, keys::IMPL)
     }
 
-    pub(super) fn fn_to_def(&mut self, src: InFile<&ast::Fn>) -> Option<FunctionId> {
+    pub(super) fn fn_to_def(
+        &mut self,
+        src: InFile<&ast::Fn>,
+    ) -> Option<FunctionId> {
         self.to_def(src, keys::FUNCTION)
     }
 
-    pub(super) fn struct_to_def(&mut self, src: InFile<&ast::Struct>) -> Option<StructId> {
+    pub(super) fn struct_to_def(
+        &mut self,
+        src: InFile<&ast::Struct>,
+    ) -> Option<StructId> {
         self.to_def(src, keys::STRUCT)
     }
 
-    pub(super) fn enum_to_def(&mut self, src: InFile<&ast::Enum>) -> Option<EnumId> {
+    pub(super) fn enum_to_def(
+        &mut self,
+        src: InFile<&ast::Enum>,
+    ) -> Option<EnumId> {
         self.to_def(src, keys::ENUM)
     }
 
-    pub(super) fn union_to_def(&mut self, src: InFile<&ast::Union>) -> Option<UnionId> {
+    pub(super) fn union_to_def(
+        &mut self,
+        src: InFile<&ast::Union>,
+    ) -> Option<UnionId> {
         self.to_def(src, keys::UNION)
     }
 
-    pub(super) fn static_to_def(&mut self, src: InFile<&ast::Static>) -> Option<StaticId> {
+    pub(super) fn static_to_def(
+        &mut self,
+        src: InFile<&ast::Static>,
+    ) -> Option<StaticId> {
         self.to_def(src, keys::STATIC)
     }
 
-    pub(super) fn const_to_def(&mut self, src: InFile<&ast::Const>) -> Option<ConstId> {
+    pub(super) fn const_to_def(
+        &mut self,
+        src: InFile<&ast::Const>,
+    ) -> Option<ConstId> {
         self.to_def(src, keys::CONST)
     }
 
-    pub(super) fn type_alias_to_def(&mut self, src: InFile<&ast::TypeAlias>) -> Option<TypeAliasId> {
+    pub(super) fn type_alias_to_def(
+        &mut self,
+        src: InFile<&ast::TypeAlias>,
+    ) -> Option<TypeAliasId> {
         self.to_def(src, keys::TYPE_ALIAS)
     }
 
-    pub(super) fn record_field_to_def(&mut self, src: InFile<&ast::RecordField>) -> Option<FieldId> {
+    pub(super) fn record_field_to_def(
+        &mut self,
+        src: InFile<&ast::RecordField>,
+    ) -> Option<FieldId> {
         self.to_def(src, keys::RECORD_FIELD)
     }
 
-    pub(super) fn tuple_field_to_def(&mut self, src: InFile<&ast::TupleField>) -> Option<FieldId> {
+    pub(super) fn tuple_field_to_def(
+        &mut self,
+        src: InFile<&ast::TupleField>,
+    ) -> Option<FieldId> {
         self.to_def(src, keys::TUPLE_FIELD)
     }
 
-    pub(super) fn block_to_def(&mut self, src: InFile<&ast::BlockExpr>) -> Option<BlockId> {
+    pub(super) fn block_to_def(
+        &mut self,
+        src: InFile<&ast::BlockExpr>,
+    ) -> Option<BlockId> {
         self.to_def(src, keys::BLOCK)
     }
 
-    pub(super) fn enum_variant_to_def(&mut self, src: InFile<&ast::Variant>) -> Option<EnumVariantId> {
+    pub(super) fn enum_variant_to_def(
+        &mut self,
+        src: InFile<&ast::Variant>,
+    ) -> Option<EnumVariantId> {
         self.to_def(src, keys::ENUM_VARIANT)
     }
 
-    pub(super) fn extern_crate_to_def(&mut self, src: InFile<&ast::ExternCrate>) -> Option<ExternCrateId> {
+    pub(super) fn extern_crate_to_def(
+        &mut self,
+        src: InFile<&ast::ExternCrate>,
+    ) -> Option<ExternCrateId> {
         self.to_def(src, keys::EXTERN_CRATE)
     }
 
-    pub(super) fn extern_block_to_def(&mut self, src: InFile<&ast::ExternBlock>) -> Option<ExternBlockId> {
+    pub(super) fn extern_block_to_def(
+        &mut self,
+        src: InFile<&ast::ExternBlock>,
+    ) -> Option<ExternBlockId> {
         self.to_def(src, keys::EXTERN_BLOCK)
     }
 
     #[allow(dead_code)]
-    pub(super) fn use_to_def(&mut self, src: InFile<&ast::Use>) -> Option<UseId> {
+    pub(super) fn use_to_def(
+        &mut self,
+        src: InFile<&ast::Use>,
+    ) -> Option<UseId> {
         self.to_def(src, keys::USE)
     }
 
-    pub(super) fn adt_to_def(&mut self, InFile { file_id, value }: InFile<&ast::Adt>) -> Option<AdtId> {
+    pub(super) fn adt_to_def(
+        &mut self,
+        InFile { file_id, value }: InFile<&ast::Adt>,
+    ) -> Option<AdtId> {
         match value {
             ast::Adt::Enum(it) => self.enum_to_def(InFile::new(file_id, it)).map(AdtId::EnumId),
             ast::Adt::Struct(it) => {
@@ -310,7 +382,10 @@ impl SourceToDefCtx<'_, '_> {
         }
     }
 
-    pub(super) fn asm_operand_to_def(&mut self, src: InFile<&ast::AsmOperandNamed>) -> Option<InlineAsmOperand> {
+    pub(super) fn asm_operand_to_def(
+        &mut self,
+        src: InFile<&ast::AsmOperandNamed>,
+    ) -> Option<InlineAsmOperand> {
         let asm = src.value.syntax().parent().and_then(ast::AsmExpr::cast)?;
         let index = asm
             .asm_pieces()
@@ -325,7 +400,10 @@ impl SourceToDefCtx<'_, '_> {
         Some(InlineAsmOperand { owner: container, expr, index })
     }
 
-    pub(super) fn bind_pat_to_def(&mut self, src: InFile<&ast::IdentPat>) -> Option<(DefWithBodyId, BindingId)> {
+    pub(super) fn bind_pat_to_def(
+        &mut self,
+        src: InFile<&ast::IdentPat>,
+    ) -> Option<(DefWithBodyId, BindingId)> {
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let (body, source_map) = self.db.body_with_source_map(container);
         let src = src.cloned().map(ast::Pat::from);
@@ -338,20 +416,29 @@ impl SourceToDefCtx<'_, '_> {
         }
     }
 
-    pub(super) fn self_param_to_def(&mut self, src: InFile<&ast::SelfParam>) -> Option<(DefWithBodyId, BindingId)> {
+    pub(super) fn self_param_to_def(
+        &mut self,
+        src: InFile<&ast::SelfParam>,
+    ) -> Option<(DefWithBodyId, BindingId)> {
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let body = self.db.body(container);
         Some((container, body.self_param?))
     }
 
-    pub(super) fn label_to_def(&mut self, src: InFile<&ast::Label>) -> Option<(DefWithBodyId, LabelId)> {
+    pub(super) fn label_to_def(
+        &mut self,
+        src: InFile<&ast::Label>,
+    ) -> Option<(DefWithBodyId, LabelId)> {
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let source_map = self.db.body_with_source_map(container).1;
         let label_id = source_map.node_label(src)?;
         Some((container, label_id))
     }
 
-    pub(super) fn label_ref_to_def(&mut self, src: InFile<&ast::Lifetime>) -> Option<(DefWithBodyId, LabelId)> {
+    pub(super) fn label_ref_to_def(
+        &mut self,
+        src: InFile<&ast::Lifetime>,
+    ) -> Option<(DefWithBodyId, LabelId)> {
         let break_or_continue = ast::Expr::cast(src.value.syntax().parent()?)?;
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let (body, source_map) = self.db.body_with_source_map(container);
@@ -364,18 +451,28 @@ impl SourceToDefCtx<'_, '_> {
     }
 
     /// (AttrId, derive attribute call id, derive call ids)
-    pub(super) fn attr_to_derive_macro_call(&mut self, item: InFile<&ast::Adt>, src: InFile<ast::Attr>) -> Option<(AttrId, MacroCallId, &[Option<MacroCallId>])> {
+    pub(super) fn attr_to_derive_macro_call(
+        &mut self,
+        item: InFile<&ast::Adt>,
+        src: InFile<ast::Attr>,
+    ) -> Option<(AttrId, MacroCallId, &[Option<MacroCallId>])> {
         let map = self.dyn_map(item)?;
         map[keys::DERIVE_MACRO_CALL]
             .get(&AstPtr::new(&src.value))
             .map(|&(attr_id, call_id, ref ids)| (attr_id, call_id, &**ids))
     }
 
-    pub(super) fn file_of_adt_has_derives(&mut self, adt: InFile<&ast::Adt>) -> bool {
+    pub(super) fn file_of_adt_has_derives(
+        &mut self,
+        adt: InFile<&ast::Adt>,
+    ) -> bool {
         self.dyn_map(adt).as_ref().is_some_and(|map| !map[keys::DERIVE_MACRO_CALL].is_empty())
     }
 
-    pub(super) fn derive_macro_calls<'slf>(&'slf mut self, adt: InFile<&ast::Adt>) -> Option<impl Iterator<Item = (AttrId, MacroCallId, &'slf [Option<MacroCallId>])> + use<'slf>> {
+    pub(super) fn derive_macro_calls<'slf>(
+        &'slf mut self,
+        adt: InFile<&ast::Adt>,
+    ) -> Option<impl Iterator<Item = (AttrId, MacroCallId, &'slf [Option<MacroCallId>])> + use<'slf>> {
         self.dyn_map(adt).as_ref().map(|&map| {
             let dyn_map = &map[keys::DERIVE_MACRO_CALL];
             adt.value
@@ -385,16 +482,27 @@ impl SourceToDefCtx<'_, '_> {
         })
     }
 
-    fn to_def<Ast: AstNode + 'static, ID: Copy + 'static>(&mut self, src: InFile<&Ast>, key: Key<Ast, ID>) -> Option<ID> {
+    fn to_def<Ast: AstNode + 'static, ID: Copy + 'static>(
+        &mut self,
+        src: InFile<&Ast>,
+        key: Key<Ast, ID>,
+    ) -> Option<ID> {
         self.dyn_map(src)?[key].get(&AstPtr::new(src.value)).copied()
     }
 
-    fn dyn_map<Ast: AstNode + 'static>(&mut self, src: InFile<&Ast>) -> Option<&DynMap> {
+    fn dyn_map<Ast: AstNode + 'static>(
+        &mut self,
+        src: InFile<&Ast>,
+    ) -> Option<&DynMap> {
         let container = self.find_container(src.map(|it| it.syntax()))?;
         Some(self.cache_for(container, src.file_id))
     }
 
-    fn cache_for(&mut self, container: ChildContainer, file_id: HirFileId) -> &DynMap {
+    fn cache_for(
+        &mut self,
+        container: ChildContainer,
+        file_id: HirFileId,
+    ) -> &DynMap {
         let db = self.db;
         self.cache
             .dynmap_cache
@@ -402,15 +510,24 @@ impl SourceToDefCtx<'_, '_> {
             .or_insert_with(|| container.child_by_source(db, file_id))
     }
 
-    pub(super) fn item_to_macro_call(&mut self, src: InFile<&ast::Item>) -> Option<MacroCallId> {
+    pub(super) fn item_to_macro_call(
+        &mut self,
+        src: InFile<&ast::Item>,
+    ) -> Option<MacroCallId> {
         self.to_def(src, keys::ATTR_MACRO_CALL)
     }
 
-    pub(super) fn macro_call_to_macro_call(&mut self, src: InFile<&ast::MacroCall>) -> Option<MacroCallId> {
+    pub(super) fn macro_call_to_macro_call(
+        &mut self,
+        src: InFile<&ast::MacroCall>,
+    ) -> Option<MacroCallId> {
         self.to_def(src, keys::MACRO_CALL)
     }
 
-    pub(super) fn type_param_to_def(&mut self, src: InFile<&ast::TypeParam>) -> Option<TypeParamId> {
+    pub(super) fn type_param_to_def(
+        &mut self,
+        src: InFile<&ast::TypeParam>,
+    ) -> Option<TypeParamId> {
         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
         let dyn_map = self.cache_for(container, src.file_id);
         dyn_map[keys::TYPE_PARAM]
@@ -419,13 +536,19 @@ impl SourceToDefCtx<'_, '_> {
             .map(TypeParamId::from_unchecked)
     }
 
-    pub(super) fn lifetime_param_to_def(&mut self, src: InFile<&ast::LifetimeParam>) -> Option<LifetimeParamId> {
+    pub(super) fn lifetime_param_to_def(
+        &mut self,
+        src: InFile<&ast::LifetimeParam>,
+    ) -> Option<LifetimeParamId> {
         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
         let dyn_map = self.cache_for(container, src.file_id);
         dyn_map[keys::LIFETIME_PARAM].get(&AstPtr::new(src.value)).copied()
     }
 
-    pub(super) fn const_param_to_def(&mut self, src: InFile<&ast::ConstParam>) -> Option<ConstParamId> {
+    pub(super) fn const_param_to_def(
+        &mut self,
+        src: InFile<&ast::ConstParam>,
+    ) -> Option<ConstParamId> {
         let container: ChildContainer = self.find_generic_param_container(src.syntax_ref())?.into();
         let dyn_map = self.cache_for(container, src.file_id);
         dyn_map[keys::CONST_PARAM]
@@ -434,7 +557,10 @@ impl SourceToDefCtx<'_, '_> {
             .map(ConstParamId::from_unchecked)
     }
 
-    pub(super) fn generic_param_to_def(&mut self, InFile { file_id, value }: InFile<&ast::GenericParam>) -> Option<GenericParamId> {
+    pub(super) fn generic_param_to_def(
+        &mut self,
+        InFile { file_id, value }: InFile<&ast::GenericParam>,
+    ) -> Option<GenericParamId> {
         match value {
             ast::GenericParam::ConstParam(it) => {
                 self.const_param_to_def(InFile::new(file_id, it)).map(GenericParamId::ConstParamId)
@@ -448,7 +574,10 @@ impl SourceToDefCtx<'_, '_> {
         }
     }
 
-    pub(super) fn macro_to_def(&mut self, src: InFile<&ast::Macro>) -> Option<MacroId> {
+    pub(super) fn macro_to_def(
+        &mut self,
+        src: InFile<&ast::Macro>,
+    ) -> Option<MacroId> {
         self.dyn_map(src).and_then(|it| match src.value {
             ast::Macro::MacroRules(value) => {
                 it[keys::MACRO_RULES].get(&AstPtr::new(value)).copied().map(MacroId::from)
@@ -459,13 +588,19 @@ impl SourceToDefCtx<'_, '_> {
         })
     }
 
-    pub(super) fn proc_macro_to_def(&mut self, src: InFile<&ast::Fn>) -> Option<MacroId> {
+    pub(super) fn proc_macro_to_def(
+        &mut self,
+        src: InFile<&ast::Fn>,
+    ) -> Option<MacroId> {
         self.dyn_map(src).and_then(|it| {
             it[keys::PROC_MACRO].get(&AstPtr::new(src.value)).copied().map(MacroId::from)
         })
     }
 
-    pub(super) fn find_container(&mut self, src: InFile<&SyntaxNode>) -> Option<ChildContainer> {
+    pub(super) fn find_container(
+        &mut self,
+        src: InFile<&SyntaxNode>,
+    ) -> Option<ChildContainer> {
         let _p = tracing::info_span!("find_container").entered();
         let def = self.parent_ancestors_with_macros(src, |this, container, child| {
             this.container_to_def(container, child)
@@ -480,7 +615,10 @@ impl SourceToDefCtx<'_, '_> {
         Some(def.into())
     }
 
-    fn find_generic_param_container(&mut self, src: InFile<&SyntaxNode>) -> Option<GenericDefId> {
+    fn find_generic_param_container(
+        &mut self,
+        src: InFile<&SyntaxNode>,
+    ) -> Option<GenericDefId> {
         self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
             let item = ast::Item::cast(value)?;
             match &item {
@@ -499,7 +637,10 @@ impl SourceToDefCtx<'_, '_> {
         })
     }
 
-    fn find_pat_or_label_container(&mut self, src: InFile<&SyntaxNode>) -> Option<DefWithBodyId> {
+    fn find_pat_or_label_container(
+        &mut self,
+        src: InFile<&SyntaxNode>,
+    ) -> Option<DefWithBodyId> {
         self.parent_ancestors_with_macros(src, |this, InFile { file_id, value }, _| {
             let item = match ast::Item::cast(value.clone()) {
                 Some(it) => it,
@@ -522,11 +663,15 @@ impl SourceToDefCtx<'_, '_> {
     }
 
     /// Skips the attributed item that caused the macro invocation we are climbing up
-    fn parent_ancestors_with_macros<T>(&mut self, node: InFile<&SyntaxNode>, mut cb: impl FnMut(
+    fn parent_ancestors_with_macros<T>(
+        &mut self,
+        node: InFile<&SyntaxNode>,
+        mut cb: impl FnMut(
             &mut Self,
             /*parent: */ InFile<SyntaxNode>,
             /*child: */ &SyntaxNode,
-        ) -> Option<T>) -> Option<T> {
+        ) -> Option<T>,
+    ) -> Option<T> {
         let parent = |this: &mut Self, node: InFile<&SyntaxNode>| match node.value.parent() {
             Some(parent) => Some(node.with_value(parent)),
             None => {
@@ -549,7 +694,11 @@ impl SourceToDefCtx<'_, '_> {
         None
     }
 
-    fn container_to_def(&mut self, container: InFile<SyntaxNode>, child: &SyntaxNode) -> Option<ChildContainer> {
+    fn container_to_def(
+        &mut self,
+        container: InFile<SyntaxNode>,
+        child: &SyntaxNode,
+    ) -> Option<ChildContainer> {
         let cont = if let Some(item) = ast::Item::cast(container.value.clone()) {
             match &item {
                 ast::Item::Module(it) => self.module_to_def(container.with_value(it))?.into(),
@@ -666,7 +815,11 @@ pub(crate) enum ChildContainer {
     GenericDefId(GenericDefId),
 }
 impl ChildContainer {
-    fn child_by_source(self, db: &dyn HirDatabase, file_id: HirFileId) -> DynMap {
+    fn child_by_source(
+        self,
+        db: &dyn HirDatabase,
+        file_id: HirFileId,
+    ) -> DynMap {
         let _p = tracing::info_span!("ChildContainer::child_by_source").entered();
         match self {
             ChildContainer::DefWithBodyId(it) => it.child_by_source(db, file_id),

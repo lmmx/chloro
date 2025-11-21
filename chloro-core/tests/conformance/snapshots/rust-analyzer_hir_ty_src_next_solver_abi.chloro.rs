@@ -12,7 +12,11 @@ pub enum Safety {
 }
 
 impl<'db> Relate<DbInterner<'db>> for Safety {
-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(_relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+        _relation: &mut R,
+        a: Self,
+        b: Self,
+    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         if a != b {
             Err(TypeError::SafetyMismatch(rustc_type_ir::error::ExpectedFound::new(a, b)))
         } else {
@@ -39,7 +43,11 @@ impl<'db> rustc_type_ir::inherent::Safety<DbInterner<'db>> for Safety {
 }
 
 impl<'db> Relate<DbInterner<'db>> for FnAbi {
-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(_relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+        _relation: &mut R,
+        a: Self,
+        b: Self,
+    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         if a == b {
             Ok(a)
         } else {

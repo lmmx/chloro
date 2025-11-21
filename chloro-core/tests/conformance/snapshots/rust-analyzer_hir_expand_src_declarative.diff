@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6477 bytes
+Chloro size:   6594 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
@@ -30,17 +30,6 @@ Rustfmt size:  6864 bytes
  };
  
  /// Old-style `macro_rules` or the new macros 2.0
- }
- 
- impl DeclarativeMacroExpander {
--    pub fn expand(
--        &self,
--        db: &dyn ExpandDatabase,
--        tt: tt::TopSubtree,
--        call_id: MacroCallId,
--        span: Span,
--    ) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
-+    pub fn expand(&self, db: &dyn ExpandDatabase, tt: tt::TopSubtree, call_id: MacroCallId, span: Span) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
          let loc = db.lookup_intern_macro_call(call_id);
          match self.mac.err() {
              Some(_) => ExpandResult::new(
@@ -55,16 +44,7 @@ Rustfmt size:  6864 bytes
                  ExpandError::new(span, ExpandErrorKind::MacroDefinition),
              ),
              None => self
-         }
-     }
- 
--    pub fn expand_unhygienic(
--        &self,
--        tt: tt::TopSubtree,
--        call_site: Span,
--        def_site_edition: Edition,
--    ) -> ExpandResult<tt::TopSubtree> {
-+    pub fn expand_unhygienic(&self, tt: tt::TopSubtree, call_site: Span, def_site_edition: Edition) -> ExpandResult<tt::TopSubtree> {
+     ) -> ExpandResult<tt::TopSubtree> {
          match self.mac.err() {
              Some(_) => ExpandResult::new(
 -                tt::TopSubtree::empty(tt::DelimSpan {
@@ -75,15 +55,7 @@ Rustfmt size:  6864 bytes
                  ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
              ),
              None => self
-         }
-     }
- 
--    pub(crate) fn expander(
--        db: &dyn ExpandDatabase,
--        def_crate: Crate,
--        id: AstId<ast::Macro>,
--    ) -> Arc<DeclarativeMacroExpander> {
-+    pub(crate) fn expander(db: &dyn ExpandDatabase, def_crate: Crate, id: AstId<ast::Macro>) -> Arc<DeclarativeMacroExpander> {
+     ) -> Arc<DeclarativeMacroExpander> {
          let (root, map) = crate::db::parse_with_map(db, id.file_id);
          let root = root.syntax_node();
 -

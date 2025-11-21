@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   20830 bytes
+Chloro size:   20853 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -543,6 +543,17 @@ Rustfmt size:  24042 bytes
  }
  
  #[derive(Deserialize, Serialize, PartialEq, Eq, Clone)]
+ }
+ 
+ impl ops::BitOrAssign for Health {
+-    fn bitor_assign(&mut self, rhs: Self) {
++    fn bitor_assign(
++        &mut self,
++        rhs: Self,
++    ) {
+         *self = match (*self, rhs) {
+             (Health::Error, _) | (_, Health::Error) => Health::Error,
+             (Health::Warning, _) | (_, Health::Warning) => Health::Warning,
      }
  }
  

@@ -49,7 +49,16 @@ struct ClosureSignatures<'db> {
 }
 
 impl<'db> InferenceContext<'_, 'db> {
-    pub(super) fn infer_closure(&mut self, body: ExprId, args: &[PatId], ret_type: Option<TypeRefId>, arg_types: &[Option<TypeRefId>], closure_kind: ClosureKind, tgt_expr: ExprId, expected: &Expectation<'db>) -> Ty<'db> {
+    pub(super) fn infer_closure(
+        &mut self,
+        body: ExprId,
+        args: &[PatId],
+        ret_type: Option<TypeRefId>,
+        arg_types: &[Option<TypeRefId>],
+        closure_kind: ClosureKind,
+        tgt_expr: ExprId,
+        expected: &Expectation<'db>,
+    ) -> Ty<'db> {
         assert_eq!(args.len(), arg_types.len());
         let interner = self.interner();
         let (expected_sig, expected_kind) = match expected.to_option(&mut self.table) {
@@ -202,7 +211,10 @@ impl<'db> InferenceContext<'_, 'db> {
         ty
     }
 
-    fn fn_trait_kind_from_def_id(&self, trait_id: TraitId) -> Option<rustc_type_ir::ClosureKind> {
+    fn fn_trait_kind_from_def_id(
+        &self,
+        trait_id: TraitId,
+    ) -> Option<rustc_type_ir::ClosureKind> {
         let lang_item = self.db.lang_attr(trait_id.into())?;
         match lang_item {
             LangItem::Fn => Some(rustc_type_ir::ClosureKind::Fn),
@@ -212,7 +224,10 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn async_fn_trait_kind_from_def_id(&self, trait_id: TraitId) -> Option<rustc_type_ir::ClosureKind> {
+    fn async_fn_trait_kind_from_def_id(
+        &self,
+        trait_id: TraitId,
+    ) -> Option<rustc_type_ir::ClosureKind> {
         let lang_item = self.db.lang_attr(trait_id.into())?;
         match lang_item {
             LangItem::AsyncFn => Some(rustc_type_ir::ClosureKind::Fn),
@@ -224,7 +239,11 @@ impl<'db> InferenceContext<'_, 'db> {
 
     /// Given the expected type, figures out what it can about this closure we
     /// are about to type check:
-    fn deduce_closure_signature(&mut self, expected_ty: Ty<'db>, closure_kind: ClosureKind) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
+    fn deduce_closure_signature(
+        &mut self,
+        expected_ty: Ty<'db>,
+        closure_kind: ClosureKind,
+    ) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
         match expected_ty.kind() {
             TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id, args, .. }) => self
                 .deduce_closure_signature_from_predicates(
@@ -261,7 +280,12 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn deduce_closure_signature_from_predicates(&mut self, expected_ty: Ty<'db>, closure_kind: ClosureKind, predicates: impl DoubleEndedIterator<Item = Predicate<'db>>) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
+    fn deduce_closure_signature_from_predicates(
+        &mut self,
+        expected_ty: Ty<'db>,
+        closure_kind: ClosureKind,
+        predicates: impl DoubleEndedIterator<Item = Predicate<'db>>,
+    ) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
         let mut expected_sig = None;
         let mut expected_kind = None;
         for pred in rustc_type_ir::elaborate::elaborate(
@@ -394,7 +418,11 @@ impl<'db> InferenceContext<'_, 'db> {
     /// The `cause_span` should be the span that caused us to
     /// have this expected signature, or `None` if we can't readily
     /// know that.
-    fn deduce_sig_from_projection(&mut self, closure_kind: ClosureKind, projection: PolyProjectionPredicate<'db>) -> Option<PolyFnSig<'db>> {
+    fn deduce_sig_from_projection(
+        &mut self,
+        closure_kind: ClosureKind,
+        projection: PolyProjectionPredicate<'db>,
+    ) -> Option<PolyFnSig<'db>> {
         let SolverDefId::TypeAliasId(def_id) = projection.item_def_id() else { unreachable!() };
         let lang_item = self.db.lang_attr(def_id.into());
         // For now, we only do signature deduction based off of the `Fn` and `AsyncFn` traits,
@@ -418,7 +446,10 @@ impl<'db> InferenceContext<'_, 'db> {
 
     /// Given an `FnOnce::Output` or `AsyncFn::Output` projection, extract the args
     /// and return type to infer a [`ty::PolyFnSig`] for the closure.
-    fn extract_sig_from_projection(&self, projection: PolyProjectionPredicate<'db>) -> Option<PolyFnSig<'db>> {
+    fn extract_sig_from_projection(
+        &self,
+        projection: PolyProjectionPredicate<'db>,
+    ) -> Option<PolyFnSig<'db>> {
         let projection = self.table.infer_ctxt.resolve_vars_if_possible(projection);
         let arg_param_ty = projection.skip_binder().projection_term.args.type_at(1);
         debug!(?arg_param_ty);
@@ -460,7 +491,10 @@ impl<'db> InferenceContext<'_, 'db> {
     /// This function is actually best-effort with the return type; if we don't find a
     /// `Future` projection, we still will return arguments that we extracted from the `FnOnce`
     /// projection, and the output will be an unconstrained type variable instead.
-    fn extract_sig_from_projection_and_future_bound(&mut self, projection: PolyProjectionPredicate<'db>) -> Option<PolyFnSig<'db>> {
+    fn extract_sig_from_projection_and_future_bound(
+        &mut self,
+        projection: PolyProjectionPredicate<'db>,
+    ) -> Option<PolyFnSig<'db>> {
         let projection = self.table.infer_ctxt.resolve_vars_if_possible(projection);
         let arg_param_ty = projection.skip_binder().projection_term.args.type_at(1);
         debug!(?arg_param_ty);
@@ -516,7 +550,12 @@ impl<'db> InferenceContext<'_, 'db> {
         Some(sig)
     }
 
-    fn sig_of_closure(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>, expected_sig: Option<PolyFnSig<'db>>) -> ClosureSignatures<'db> {
+    fn sig_of_closure(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+        expected_sig: Option<PolyFnSig<'db>>,
+    ) -> ClosureSignatures<'db> {
         if let Some(e) = expected_sig {
             self.sig_of_closure_with_expectation(decl_inputs, decl_output, e)
         } else {
@@ -526,7 +565,11 @@ impl<'db> InferenceContext<'_, 'db> {
 
     /// If there is no expected signature, then we will convert the
     /// types that the user gave into a signature.
-    fn sig_of_closure_no_expectation(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>) -> ClosureSignatures<'db> {
+    fn sig_of_closure_no_expectation(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+    ) -> ClosureSignatures<'db> {
         let bound_sig = self.supplied_sig_of_closure(decl_inputs, decl_output);
         self.closure_sigs(bound_sig)
     }
@@ -578,7 +621,12 @@ impl<'db> InferenceContext<'_, 'db> {
     /// - `expected_sig`: the expected signature (if any). Note that
     ///   this is missing a binder: that is, there may be late-bound
     ///   regions with depth 1, which are bound then by the closure.
-    fn sig_of_closure_with_expectation(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>, expected_sig: PolyFnSig<'db>) -> ClosureSignatures<'db> {
+    fn sig_of_closure_with_expectation(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+        expected_sig: PolyFnSig<'db>,
+    ) -> ClosureSignatures<'db> {
         // Watch out for some surprises and just ignore the
         // expectation if things don't see to match up with what we
         // expect.
@@ -617,7 +665,11 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn sig_of_closure_with_mismatched_number_of_arguments(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>) -> ClosureSignatures<'db> {
+    fn sig_of_closure_with_mismatched_number_of_arguments(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+    ) -> ClosureSignatures<'db> {
         let error_sig = self.error_sig_of_closure(decl_inputs, decl_output);
         self.closure_sigs(error_sig)
     }
@@ -625,7 +677,12 @@ impl<'db> InferenceContext<'_, 'db> {
     /// Enforce the user's types against the expectation. See
     /// `sig_of_closure_with_expectation` for details on the overall
     /// strategy.
-    fn merge_supplied_sig_with_expectation(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>, mut expected_sigs: ClosureSignatures<'db>) -> InferResult<'db, ClosureSignatures<'db>> {
+    fn merge_supplied_sig_with_expectation(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+        mut expected_sigs: ClosureSignatures<'db>,
+    ) -> InferResult<'db, ClosureSignatures<'db>> {
         // Get the signature S that the user gave.
         //
         // (See comment on `sig_of_closure_with_expectation` for the
@@ -696,7 +753,11 @@ impl<'db> InferenceContext<'_, 'db> {
     /// types that the user gave into a signature.
     ///
     /// Also, record this closure signature for later.
-    fn supplied_sig_of_closure(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>) -> PolyFnSig<'db> {
+    fn supplied_sig_of_closure(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+    ) -> PolyFnSig<'db> {
         let interner = self.interner();
         let supplied_return = match decl_output {
             Some(output) => {
@@ -725,7 +786,11 @@ impl<'db> InferenceContext<'_, 'db> {
     /// Converts the types that the user supplied, in case that doing
     /// so should yield an error, but returns back a signature where
     /// all parameters are of type `ty::Error`.
-    fn error_sig_of_closure(&mut self, decl_inputs: &[Option<TypeRefId>], decl_output: Option<TypeRefId>) -> PolyFnSig<'db> {
+    fn error_sig_of_closure(
+        &mut self,
+        decl_inputs: &[Option<TypeRefId>],
+        decl_output: Option<TypeRefId>,
+    ) -> PolyFnSig<'db> {
         let interner = self.interner();
         let err_ty = Ty::new_error(interner, ErrorGuaranteed);
         if let Some(output) = decl_output {
@@ -749,7 +814,10 @@ impl<'db> InferenceContext<'_, 'db> {
         result
     }
 
-    fn closure_sigs(&self, bound_sig: PolyFnSig<'db>) -> ClosureSignatures<'db> {
+    fn closure_sigs(
+        &self,
+        bound_sig: PolyFnSig<'db>,
+    ) -> ClosureSignatures<'db> {
         let liberated_sig = bound_sig.skip_binder();
         // FIXME: When we lower HRTB we'll need to actually liberate regions here.
         ClosureSignatures { bound_sig, liberated_sig }

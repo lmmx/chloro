@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5655 bytes
-Chloro size:   5534 bytes
+Chloro size:   5630 bytes
 Rustfmt size:  5830 bytes
 
 ✗ Outputs DIFFER
@@ -30,7 +30,11 @@ Rustfmt size:  5830 bytes
 +    Buildfile(AbsPathBuf),
  }
  
- fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
+-fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
++fn serialize_abs_pathbuf<S>(
++    path: &AbsPathBuf,
++    se: S,
++) -> Result<S::Ok, S::Error>
  where
 -    S: serde::Serializer,
 -{
@@ -38,15 +42,18 @@ Rustfmt size:  5830 bytes
      let path: &Utf8Path = path.as_ref();
      se.serialize_str(path.as_str())
  }
+ 
+ impl DiscoverCommand {
+     /// Create a new [DiscoverCommand].
+-    pub(crate) fn new(sender: Sender<DiscoverProjectMessage>, command: Vec<String>) -> Self {
++    pub(crate) fn new(
++        sender: Sender<DiscoverProjectMessage>,
++        command: Vec<String>,
++    ) -> Self {
+         Self { sender, command }
      }
  
-     /// Spawn the command inside [Discover] and report progress, if any.
--    pub(crate) fn spawn(
--        &self,
--        discover_arg: DiscoverArgument,
--        current_dir: &Path,
--    ) -> io::Result<DiscoverHandle> {
-+    pub(crate) fn spawn(&self, discover_arg: DiscoverArgument, current_dir: &Path) -> io::Result<DiscoverHandle> {
+     ) -> io::Result<DiscoverHandle> {
          let command = &self.command[0];
          let args = &self.command[1..];
 -
@@ -82,6 +89,18 @@ Rustfmt size:  5830 bytes
                  let buildfile = buildfile.try_into().expect("Unable to make path absolute");
                  DiscoverProjectMessage::Finished { project, buildfile }
              }
+ struct DiscoverProjectParser;
+ 
+ impl CargoParser<DiscoverProjectMessage> for DiscoverProjectParser {
+-    fn from_line(&self, line: &str, _error: &mut String) -> Option<DiscoverProjectMessage> {
++    fn from_line(
++        &self,
++        line: &str,
++        _error: &mut String,
++    ) -> Option<DiscoverProjectMessage> {
+         match serde_json::from_str::<DiscoverProjectData>(line) {
+             Ok(data) => {
+                 let msg = DiscoverProjectMessage::new(data);
                  Some(msg)
              }
              Err(err) => {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4228 bytes
-Chloro size:   4206 bytes
+Chloro size:   4225 bytes
 Rustfmt size:  4344 bytes
 
 ✗ Outputs DIFFER
@@ -19,19 +19,6 @@ Rustfmt size:  4344 bytes
  use syntax::ast::{self, AstNode};
  
  use crate::{
-     InlayHint, InlayHintLabel, InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind,
- };
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    closure: ast::ClosureExpr,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, closure: ast::ClosureExpr) -> Option<()> {
-     if !config.closure_capture_hints {
-         return None;
-     }
      let ty = &sema.type_of_expr(&closure.clone().into())?.original;
      let c = ty.as_closure()?;
      let captures = c.captured_items(sema.db);

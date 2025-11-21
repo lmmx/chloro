@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2009 bytes
-Chloro size:   1888 bytes
+Chloro size:   1899 bytes
 Rustfmt size:  2009 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,9 @@ Rustfmt size:  2009 bytes
 -// Diagnostic: missing-lifetime
 -//
 -// This diagnostic is triggered when a lifetime argument is missing.
--pub(crate) fn missing_lifetime(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::MissingLifetime,
--) -> Diagnostic {
-+pub(crate) fn missing_lifetime(ctx: &DiagnosticsContext<'_>, d: &hir::MissingLifetime) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("E0106"),
+ pub(crate) fn missing_lifetime(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MissingLifetime,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

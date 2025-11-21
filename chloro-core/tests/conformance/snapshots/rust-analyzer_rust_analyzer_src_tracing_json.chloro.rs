@@ -44,16 +44,29 @@ impl<S, W> Layer<S> for TimingLayer<S, W>
 where
     S: Subscriber + for<'span> LookupSpan<'span>,
     W: for<'writer> MakeWriter<'writer> + Send + Sync + 'static, {
-    fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
+    fn on_new_span(
+        &self,
+        attrs: &Attributes<'_>,
+        id: &Id,
+        ctx: Context<'_, S>,
+    ) {
         let span = ctx.span(id).unwrap();
         let data = JsonData::new(attrs.metadata().name());
         span.extensions_mut().insert(data);
     }
 
-    fn on_event(&self, _event: &Event<'_>, _ctx: Context<'_, S>) {
+    fn on_event(
+        &self,
+        _event: &Event<'_>,
+        _ctx: Context<'_, S>,
+    ) {
     }
 
-    fn on_close(&self, id: Id, ctx: Context<'_, S>) {
+    fn on_close(
+        &self,
+        id: Id,
+        ctx: Context<'_, S>,
+    ) {
         #[derive(serde_derive::Serialize)]
         struct JsonDataInner {
             name: &'static str,

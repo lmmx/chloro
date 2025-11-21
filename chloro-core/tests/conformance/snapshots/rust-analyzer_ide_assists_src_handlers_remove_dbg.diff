@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14570 bytes
-Chloro size:   14312 bytes
+Chloro size:   14346 bytes
 Rustfmt size:  14570 bytes
 
 ✗ Outputs DIFFER
@@ -26,9 +26,14 @@ Rustfmt size:  14570 bytes
 -//     let x = 42 * (4 + 2);
 -// }
 -// ```
- pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn remove_dbg(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let macro_calls = if ctx.has_empty_selection() {
          vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]
+     } else {
              .filter_map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast))
              .collect()
      };
@@ -79,14 +84,9 @@ Rustfmt size:  14570 bytes
 -
      use super::*;
 -
--    fn check(
--        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
--        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
--    ) {
-+    fn check(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
-         check_assist(
-             remove_dbg,
-             &format!("fn main() {{\n{ra_fixture_before}\n}}"),
+     fn check(
+         #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+         #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
              &format!("fn main() {{\n{ra_fixture_after}\n}}"),
          );
      }

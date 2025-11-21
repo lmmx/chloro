@@ -10,7 +10,11 @@ use crate::{
     goto_definition::goto_definition, navigation_target::TryToNav,
 };
 
-pub(crate) fn goto_declaration(db: &RootDatabase, position @ FilePosition { file_id, offset }: FilePosition, config: &GotoDefinitionConfig<'_>) -> Option<RangeInfo<Vec<NavigationTarget>>> {
+pub(crate) fn goto_declaration(
+    db: &RootDatabase,
+    position @ FilePosition { file_id, offset }: FilePosition,
+    config: &GotoDefinitionConfig<'_>,
+) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(file_id).syntax().clone();
     let original_token = file

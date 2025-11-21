@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   33683 bytes
+Chloro size:   35043 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -59,7 +59,11 @@ Rustfmt size:  35032 bytes
  };
  
  impl<'db> InferenceContext<'_, 'db> {
-     pub(super) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
+-    pub(super) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
++    pub(super) fn canonicalize<T>(
++        &mut self,
++        t: T,
++    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
      where
 -        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
 -    {
@@ -67,6 +71,16 @@ Rustfmt size:  35032 bytes
          self.table.canonicalize(t)
      }
  }
+         InspectConfig { max_depth: 5 }
+     }
+ 
+-    fn visit_goal(&mut self, inspect_goal: &InspectGoal<'_, 'db>) {
++    fn visit_goal(
++        &mut self,
++        inspect_goal: &InspectGoal<'_, 'db>,
++    ) {
+         // No need to walk into goal subtrees that certainly hold, since they
+         // wouldn't then be stalled on an infer var.
          if inspect_goal.result() == Ok(Certainty::Yes) {
              return;
          }
@@ -81,64 +95,34 @@ Rustfmt size:  35032 bytes
          // If there's a unique way to prove a given goal, recurse into
          // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
          // and a `(): Trait<?0>` goal we recurse into the impl and look at
- /// This means that there may be some unresolved goals that actually set bounds for the placeholder
- /// type for the types to unify. For example `Option<T>` and `Option<U>` unify although there is
- /// unresolved goal `T = U`.
--pub fn could_unify<'db>(
--    db: &'db dyn HirDatabase,
--    env: Arc<TraitEnvironment<'db>>,
--    tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
--) -> bool {
-+pub fn could_unify<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>) -> bool {
-     could_unify_impl(db, env, tys, |ctxt| ctxt.try_evaluate_obligations())
- }
- 
- ///
- /// This means that placeholder types are not considered to unify if there are any bounds set on
- /// them. For example `Option<T>` and `Option<U>` do not unify as we cannot show that `T = U`
--pub fn could_unify_deeply<'db>(
--    db: &'db dyn HirDatabase,
--    env: Arc<TraitEnvironment<'db>>,
--    tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
--) -> bool {
+     env: Arc<TraitEnvironment<'db>>,
+     tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
+ ) -> bool {
 -    could_unify_impl(db, env, tys, |ctxt| {
 -        ctxt.evaluate_obligations_error_on_ambiguity()
 -    })
-+pub fn could_unify_deeply<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>) -> bool {
 +    could_unify_impl(db, env, tys, |ctxt| ctxt.evaluate_obligations_error_on_ambiguity())
  }
  
--fn could_unify_impl<'db>(
--    db: &'db dyn HirDatabase,
--    env: Arc<TraitEnvironment<'db>>,
--    tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
--    select: for<'a> fn(&mut ObligationCtxt<'a, 'db>) -> Vec<NextSolverError<'db>>,
--) -> bool {
-+fn could_unify_impl<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>, select: for<'a> fn(&mut ObligationCtxt<'a, 'db>) -> Vec<NextSolverError<'db>>) -> bool {
-     let interner = DbInterner::new_with(db, Some(env.krate), env.block);
-     let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
-     let cause = ObligationCause::dummy();
- impl<'db> InferenceTable<'db> {
-     /// Inside hir-ty you should use this for inference only, and always pass `owner`.
-     /// Outside it, always pass `owner = None`.
--    pub(crate) fn new(
--        db: &'db dyn HirDatabase,
--        trait_env: Arc<TraitEnvironment<'db>>,
--        owner: Option<DefWithBodyId>,
--    ) -> Self {
-+    pub(crate) fn new(db: &'db dyn HirDatabase, trait_env: Arc<TraitEnvironment<'db>>, owner: Option<DefWithBodyId>) -> Self {
-         let interner = DbInterner::new_with(db, Some(trait_env.krate), trait_env.block);
-         let typing_mode = match owner {
-             Some(owner) => TypingMode::typeck_for_body(interner, owner.into()),
+ fn could_unify_impl<'db>(
+         self.infer_ctxt.interner
      }
  
-     pub(crate) fn type_is_copy_modulo_regions(&self, ty: Ty<'db>) -> bool {
+-    pub(crate) fn type_is_copy_modulo_regions(&self, ty: Ty<'db>) -> bool {
 -        self.infer_ctxt
 -            .type_is_copy_modulo_regions(self.trait_env.env, ty)
++    pub(crate) fn type_is_copy_modulo_regions(
++        &self,
++        ty: Ty<'db>,
++    ) -> bool {
 +        self.infer_ctxt.type_is_copy_modulo_regions(self.trait_env.env, ty)
      }
  
-     pub(crate) fn type_var_is_sized(&self, self_ty: TyVid) -> bool {
+-    pub(crate) fn type_var_is_sized(&self, self_ty: TyVid) -> bool {
++    pub(crate) fn type_var_is_sized(
++        &self,
++        self_ty: TyVid,
++    ) -> bool {
          let Some(sized_did) = LangItem::Sized.resolve_trait(self.db, self.trait_env.krate) else {
              return true;
          };
@@ -158,14 +142,7 @@ Rustfmt size:  35032 bytes
 +        })
      }
  
--    pub(super) fn obligations_for_self_ty(
--        &self,
--        self_ty: TyVid,
--    ) -> SmallVec<[Obligation<'db, Predicate<'db>>; 4]> {
-+    pub(super) fn obligations_for_self_ty(&self, self_ty: TyVid) -> SmallVec<[Obligation<'db, Predicate<'db>>; 4]> {
-         let obligations = self.fulfillment_cx.pending_obligations();
-         let mut obligations_for_self_ty = SmallVec::new();
-         for obligation in obligations {
+     pub(super) fn obligations_for_self_ty(
              let goal = obligation.as_goal();
              self.infer_ctxt.visit_proof_tree(goal, &mut visitor);
          }
@@ -178,15 +155,47 @@ Rustfmt size:  35032 bytes
              !obligation.predicate.has_placeholders()
          });
          obligations_for_self_ty
+     }
  
-     fn type_matches_expected_vid(&self, expected_vid: TyVid, ty: Ty<'db>) -> bool {
+-    fn predicate_has_self_ty(&self, predicate: Predicate<'db>, expected_vid: TyVid) -> bool {
++    fn predicate_has_self_ty(
++        &self,
++        predicate: Predicate<'db>,
++        expected_vid: TyVid,
++    ) -> bool {
+         match predicate.kind().skip_binder() {
+             PredicateKind::Clause(ClauseKind::Trait(data)) => {
+                 self.type_matches_expected_vid(expected_vid, data.self_ty())
+         }
+     }
+ 
+-    fn type_matches_expected_vid(&self, expected_vid: TyVid, ty: Ty<'db>) -> bool {
++    fn type_matches_expected_vid(
++        &self,
++        expected_vid: TyVid,
++        ty: Ty<'db>,
++    ) -> bool {
          let ty = self.shallow_resolve(ty);
 -
          match ty.kind() {
              TyKind::Infer(rustc_type_ir::TyVar(found_vid)) => {
                  self.infer_ctxt.root_var(expected_vid) == self.infer_ctxt.root_var(found_vid)
+         }
+     }
  
-     pub(crate) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
+-    pub(super) fn set_diverging(&mut self, ty: Ty<'db>) {
++    pub(super) fn set_diverging(
++        &mut self,
++        ty: Ty<'db>,
++    ) {
+         self.diverging_type_vars.insert(ty);
+     }
+ 
+-    pub(crate) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
++    pub(crate) fn canonicalize<T>(
++        &mut self,
++        t: T,
++    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -199,7 +208,11 @@ Rustfmt size:  35032 bytes
  
 -    // FIXME: We should get rid of this method. We cannot deeply normalize during inference, only when finishing.
 -    // Inference should use shallow normalization (`try_structurally_resolve_type()`) only, when needed.
-     pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
+-    pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
++    pub(crate) fn normalize_associated_types_in<T>(
++        &mut self,
++        ty: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>> + Clone,
 -    {
@@ -207,8 +220,14 @@ Rustfmt size:  35032 bytes
          let ty = self.resolve_vars_with_obligations(ty);
          self.infer_ctxt
              .at(&ObligationCause::new(), self.trait_env.env)
+ 
+     /// Works almost same as [`Self::normalize_associated_types_in`], but this also resolves shallow
      /// the inference variables
-     pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(&mut self, ty: T) -> T
+-    pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(&mut self, ty: T) -> T
++    pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(
++        &mut self,
++        ty: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -216,17 +235,29 @@ Rustfmt size:  35032 bytes
          let ty = self.resolve_vars_with_obligations(ty);
          let ty = self.normalize_associated_types_in(ty);
          self.resolve_vars_with_obligations(ty)
-         }
      }
  
--    pub(crate) fn resolve_with_fallback<T>(
--        &mut self,
--        t: T,
--        fallback_ty: &mut dyn FnMut(DebruijnIndex, InferTy) -> Ty<'db>,
--        fallback_const: &mut dyn FnMut(DebruijnIndex, InferConst) -> Const<'db>,
--        fallback_region: &mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
--    ) -> T
-+    pub(crate) fn resolve_with_fallback<T>(&mut self, t: T, fallback_ty: &mut dyn FnMut(DebruijnIndex, InferTy) -> Ty<'db>, fallback_const: &mut dyn FnMut(DebruijnIndex, InferConst) -> Const<'db>, fallback_region: &mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>) -> T
+-    pub(crate) fn normalize_alias_ty(&mut self, alias: Ty<'db>) -> Ty<'db> {
++    pub(crate) fn normalize_alias_ty(
++        &mut self,
++        alias: Ty<'db>,
++    ) -> Ty<'db> {
+         self.infer_ctxt
+             .at(&ObligationCause::new(), self.trait_env.env)
+             .structurally_normalize_ty(alias, &mut self.fulfillment_cx)
+         self.infer_ctxt.next_region_var()
+     }
+ 
+-    pub(crate) fn next_var_for_param(&mut self, id: GenericParamId) -> GenericArg<'db> {
++    pub(crate) fn next_var_for_param(
++        &mut self,
++        id: GenericParamId,
++    ) -> GenericArg<'db> {
+         match id {
+             GenericParamId::TypeParamId(_) => self.next_ty_var().into(),
+             GenericParamId::ConstParamId(_) => self.next_const_var().into(),
+         fallback_region: &mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
+     ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -248,14 +279,8 @@ Rustfmt size:  35032 bytes
          t.fold_with(&mut Resolver {
              table: self,
              binder: DebruijnIndex::ZERO,
-         })
-     }
- 
--    pub(crate) fn instantiate_canonical<T>(
--        &mut self,
--        canonical: rustc_type_ir::Canonical<DbInterner<'db>, T>,
--    ) -> T
-+    pub(crate) fn instantiate_canonical<T>(&mut self, canonical: rustc_type_ir::Canonical<DbInterner<'db>, T>) -> T
+         canonical: rustc_type_ir::Canonical<DbInterner<'db>, T>,
+     ) -> T
      where
 -        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
 -    {
@@ -263,7 +288,11 @@ Rustfmt size:  35032 bytes
          self.infer_ctxt.instantiate_canonical(&canonical).0
      }
  
-     pub(crate) fn resolve_completely<T>(&mut self, value: T) -> T
+-    pub(crate) fn resolve_completely<T>(&mut self, value: T) -> T
++    pub(crate) fn resolve_completely<T>(
++        &mut self,
++        value: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -281,25 +310,45 @@ Rustfmt size:  35032 bytes
      }
  
      /// Unify two relatable values (e.g. `Ty`) and register new trait goals that arise from that.
-     pub(crate) fn unify<T: ToTrace<'db>>(&mut self, ty1: T, ty2: T) -> bool {
+-    pub(crate) fn unify<T: ToTrace<'db>>(&mut self, ty1: T, ty2: T) -> bool {
 -        self.try_unify(ty1, ty2)
 -            .map(|infer_ok| self.register_infer_ok(infer_ok))
 -            .is_ok()
++    pub(crate) fn unify<T: ToTrace<'db>>(
++        &mut self,
++        ty1: T,
++        ty2: T,
++    ) -> bool {
 +        self.try_unify(ty1, ty2).map(|infer_ok| self.register_infer_ok(infer_ok)).is_ok()
      }
  
      /// Unify two relatable values (e.g. `Ty`) and return new trait goals arising from it, so the
      /// caller needs to deal with them.
-     pub(crate) fn try_unify<T: ToTrace<'db>>(&mut self, t1: T, t2: T) -> InferResult<'db, ()> {
+-    pub(crate) fn try_unify<T: ToTrace<'db>>(&mut self, t1: T, t2: T) -> InferResult<'db, ()> {
 -        self.infer_ctxt
 -            .at(&ObligationCause::new(), self.trait_env.env)
 -            .eq(t1, t2)
++    pub(crate) fn try_unify<T: ToTrace<'db>>(
++        &mut self,
++        t1: T,
++        t2: T,
++    ) -> InferResult<'db, ()> {
 +        self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).eq(t1, t2)
      }
  
-     pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
+-    pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
++    pub(crate) fn shallow_resolve(
++        &self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         self.infer_ctxt.shallow_resolve(ty)
+     }
  
-     pub(crate) fn resolve_vars_with_obligations<T>(&mut self, t: T) -> T
+-    pub(crate) fn resolve_vars_with_obligations<T>(&mut self, t: T) -> T
++    pub(crate) fn resolve_vars_with_obligations<T>(
++        &mut self,
++        t: T,
++    ) -> T
      where
 -        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
 -    {
@@ -317,18 +366,38 @@ Rustfmt size:  35032 bytes
          self.select_obligations_where_possible();
          self.infer_ctxt.resolve_vars_if_possible(t)
      }
+ 
+     /// Create a `GenericArgs` full of infer vars for `def`.
+-    pub(crate) fn fresh_args_for_item(&self, def: SolverDefId) -> GenericArgs<'db> {
++    pub(crate) fn fresh_args_for_item(
++        &self,
++        def: SolverDefId,
++    ) -> GenericArgs<'db> {
+         self.infer_ctxt.fresh_args_for_item(def)
      }
  
-     /// Like `fresh_args_for_item()`, but first uses the args from `first`.
--    pub(crate) fn fill_rest_fresh_args(
--        &self,
--        def_id: SolverDefId,
--        first: impl IntoIterator<Item = GenericArg<'db>>,
--    ) -> GenericArgs<'db> {
-+    pub(crate) fn fill_rest_fresh_args(&self, def_id: SolverDefId, first: impl IntoIterator<Item = GenericArg<'db>>) -> GenericArgs<'db> {
-         self.infer_ctxt.fill_rest_fresh_args(def_id, first)
+     /// In case there is still ambiguity, the returned type may be an inference
+     /// variable. This is different from `structurally_resolve_type` which errors
+     /// in this case.
+-    pub(crate) fn try_structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
++    pub(crate) fn try_structurally_resolve_type(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         if let TyKind::Alias(..) = ty.kind() {
+             // We need to use a separate variable here as otherwise the temporary for
+             // `self.fulfillment_cx.borrow_mut()` is alive in the `Err` branch, resulting
+         }
      }
  
+-    pub(crate) fn structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
++    pub(crate) fn structurally_resolve_type(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         self.try_structurally_resolve_type(ty)
+         // FIXME: Err if it still contain infer vars.
+     }
      pub(crate) fn snapshot(&mut self) -> InferenceTableSnapshot<'db> {
          let ctxt_snapshot = self.infer_ctxt.start_snapshot();
          let obligations = self.fulfillment_cx.clone();
@@ -340,59 +409,56 @@ Rustfmt size:  35032 bytes
      }
  
      #[tracing::instrument(skip_all)]
+-    pub(crate) fn rollback_to(&mut self, snapshot: InferenceTableSnapshot<'db>) {
++    pub(crate) fn rollback_to(
++        &mut self,
++        snapshot: InferenceTableSnapshot<'db>,
++    ) {
+         self.infer_ctxt.rollback_to(snapshot.ctxt_snapshot);
+         self.fulfillment_cx = snapshot.obligations;
      }
- 
-     #[tracing::instrument(skip_all)]
--    pub(crate) fn run_in_snapshot<T>(
--        &mut self,
--        f: impl FnOnce(&mut InferenceTable<'db>) -> T,
--    ) -> T {
-+    pub(crate) fn run_in_snapshot<T>(&mut self, f: impl FnOnce(&mut InferenceTable<'db>) -> T) -> T {
-         let snapshot = self.snapshot();
-         let result = f(self);
-         self.rollback_to(snapshot);
-         result
-     }
- 
--    pub(crate) fn commit_if_ok<T, E>(
--        &mut self,
--        f: impl FnOnce(&mut InferenceTable<'db>) -> Result<T, E>,
--    ) -> Result<T, E> {
-+    pub(crate) fn commit_if_ok<T, E>(&mut self, f: impl FnOnce(&mut InferenceTable<'db>) -> Result<T, E>) -> Result<T, E> {
-         let snapshot = self.snapshot();
-         let result = f(self);
-         match result {
+     /// whether a trait *might* be implemented before deciding to 'lock in' the
      /// choice (during e.g. method resolution or deref).
      #[tracing::instrument(level = "debug", skip(self))]
-     pub(crate) fn try_obligation(&mut self, predicate: Predicate<'db>) -> NextTraitSolveResult {
+-    pub(crate) fn try_obligation(&mut self, predicate: Predicate<'db>) -> NextTraitSolveResult {
 -        let goal = next_solver::Goal {
 -            param_env: self.trait_env.env,
 -            predicate,
 -        };
++    pub(crate) fn try_obligation(
++        &mut self,
++        predicate: Predicate<'db>,
++    ) -> NextTraitSolveResult {
 +        let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
          let canonicalized = self.canonicalize(goal);
 -
          next_trait_solve_canonical_in_ctxt(&self.infer_ctxt, canonicalized)
      }
  
-     pub(crate) fn register_obligation(&mut self, predicate: Predicate<'db>) {
+-    pub(crate) fn register_obligation(&mut self, predicate: Predicate<'db>) {
 -        let goal = next_solver::Goal {
 -            param_env: self.trait_env.env,
 -            predicate,
 -        };
++    pub(crate) fn register_obligation(
++        &mut self,
++        predicate: Predicate<'db>,
++    ) {
 +        let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
          self.register_obligation_in_env(goal)
      }
  
-     #[tracing::instrument(level = "debug", skip(self))]
--    fn register_obligation_in_env(
--        &mut self,
--        goal: next_solver::Goal<'db, next_solver::Predicate<'db>>,
--    ) {
-+    fn register_obligation_in_env(&mut self, goal: next_solver::Goal<'db, next_solver::Predicate<'db>>) {
-         let result = next_trait_solve_in_ctxt(&self.infer_ctxt, goal);
-         tracing::debug!(?result);
-         match result {
+         }
+     }
+ 
+-    pub(crate) fn register_infer_ok<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
++    pub(crate) fn register_infer_ok<T>(
++        &mut self,
++        infer_ok: InferOk<'db, T>,
++    ) -> T {
+         let InferOk { value, obligations } = infer_ok;
+         self.register_predicates(obligations);
+         value
      }
  
      pub(crate) fn select_obligations_where_possible(&mut self) {
@@ -401,7 +467,11 @@ Rustfmt size:  35032 bytes
 +        self.fulfillment_cx.try_evaluate_obligations(&self.infer_ctxt);
      }
  
-     pub(super) fn register_predicate(&mut self, obligation: PredicateObligation<'db>) {
+-    pub(super) fn register_predicate(&mut self, obligation: PredicateObligation<'db>) {
++    pub(super) fn register_predicate(
++        &mut self,
++        obligation: PredicateObligation<'db>,
++    ) {
          if obligation.has_escaping_bound_vars() {
              panic!("escaping bound vars in predicate {:?}", obligation);
          }
@@ -411,7 +481,11 @@ Rustfmt size:  35032 bytes
 +        self.fulfillment_cx.register_predicate_obligation(&self.infer_ctxt, obligation);
      }
  
-     pub(super) fn register_predicates<I>(&mut self, obligations: I)
+-    pub(super) fn register_predicates<I>(&mut self, obligations: I)
++    pub(super) fn register_predicates<I>(
++        &mut self,
++        obligations: I,
++    )
      where
 -        I: IntoIterator<Item = PredicateObligation<'db>>,
 -    {
@@ -419,26 +493,8 @@ Rustfmt size:  35032 bytes
          obligations.into_iter().for_each(|obligation| {
              self.register_predicate(obligation);
          });
-     }
- 
--    pub(crate) fn callable_sig(
--        &mut self,
--        ty: Ty<'db>,
--        num_args: usize,
--    ) -> Option<(Option<FnTrait>, Vec<Ty<'db>>, Ty<'db>)> {
-+    pub(crate) fn callable_sig(&mut self, ty: Ty<'db>, num_args: usize) -> Option<(Option<FnTrait>, Vec<Ty<'db>>, Ty<'db>)> {
-         match ty.callable_sig(self.interner()) {
-             Some(sig) => {
-                 let sig = sig.skip_binder();
-         }
-     }
- 
--    fn callable_sig_from_fn_trait(
--        &mut self,
--        ty: Ty<'db>,
--        num_args: usize,
--    ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
-+    fn callable_sig_from_fn_trait(&mut self, ty: Ty<'db>, num_args: usize) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
+         num_args: usize,
+     ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
          for (fn_trait_name, output_assoc_name, subtraits) in [
 -            (
 -                FnTrait::FnOnce,
@@ -449,8 +505,14 @@ Rustfmt size:  35032 bytes
              (FnTrait::AsyncFnMut, sym::CallRefFuture, &[FnTrait::AsyncFn]),
              (FnTrait::AsyncFnOnce, sym::CallOnceFuture, &[]),
          ] {
+         None
+     }
  
-     pub(super) fn insert_type_vars<T>(&mut self, ty: T) -> T
+-    pub(super) fn insert_type_vars<T>(&mut self, ty: T) -> T
++    pub(super) fn insert_type_vars<T>(
++        &mut self,
++        ty: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -459,17 +521,25 @@ Rustfmt size:  35032 bytes
      }
  
      /// Replaces `Ty::Error` by a new type var, so we can maybe still infer it.
-     pub(super) fn insert_type_vars_shallow(&mut self, ty: Ty<'db>) -> Ty<'db> {
+-    pub(super) fn insert_type_vars_shallow(&mut self, ty: Ty<'db>) -> Ty<'db> {
 -        if ty.is_ty_error() {
 -            self.next_ty_var()
 -        } else {
 -            ty
 -        }
++    pub(super) fn insert_type_vars_shallow(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
 +        if ty.is_ty_error() { self.next_ty_var() } else { ty }
      }
  
      /// Whenever you lower a user-written type, you should call this.
-     pub(crate) fn process_user_written_ty<T>(&mut self, ty: T) -> T
+-    pub(crate) fn process_user_written_ty<T>(&mut self, ty: T) -> T
++    pub(crate) fn process_user_written_ty<T>(
++        &mut self,
++        ty: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -477,8 +547,14 @@ Rustfmt size:  35032 bytes
          self.process_remote_user_written_ty(ty)
          // FIXME: Register a well-formed obligation.
      }
+ 
+     /// The difference of this method from `process_user_written_ty()` is that this method doesn't register a well-formed obligation,
      /// while `process_user_written_ty()` should (but doesn't currently).
-     pub(crate) fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
+-    pub(crate) fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
++    pub(crate) fn process_remote_user_written_ty<T>(
++        &mut self,
++        ty: T,
++    ) -> T
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -486,18 +562,31 @@ Rustfmt size:  35032 bytes
          let ty = self.insert_type_vars(ty);
          // See https://github.com/rust-lang/rust/blob/cdb45c87e2cd43495379f7e867e3cc15dcee9f93/compiler/rustc_hir_typeck/src/fn_ctxt/mod.rs#L487-L495:
          // Even though the new solver only lazily normalizes usually, here we eagerly normalize so that not everything needs
+     }
  
      /// Replaces ConstScalar::Unknown by a new type var, so we can maybe still infer it.
-     pub(super) fn insert_const_vars_shallow(&mut self, c: Const<'db>) -> Const<'db> {
+-    pub(super) fn insert_const_vars_shallow(&mut self, c: Const<'db>) -> Const<'db> {
 -        if c.is_ct_error() {
 -            self.next_const_var()
 -        } else {
 -            c
 -        }
++    pub(super) fn insert_const_vars_shallow(
++        &mut self,
++        c: Const<'db>,
++    ) -> Const<'db> {
 +        if c.is_ct_error() { self.next_const_var() } else { c }
      }
  
      /// Check if given type is `Sized` or not
+-    pub(crate) fn is_sized(&mut self, ty: Ty<'db>) -> bool {
++    pub(crate) fn is_sized(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> bool {
+         fn short_circuit_trivial_tys(ty: Ty<'_>) -> Option<bool> {
+             match ty.kind() {
+                 TyKind::Bool
                  _ => None,
              }
          }
@@ -518,8 +607,14 @@ Rustfmt size:  35032 bytes
          let Some(sized) = LangItem::Sized.resolve_trait(self.db, self.trait_env.krate) else {
              return false;
          };
+ }
+ 
  impl fmt::Debug for InferenceTable<'_> {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
          f.debug_struct("InferenceTable")
 -            .field(
 -                "name",
@@ -551,26 +646,22 @@ Rustfmt size:  35032 bytes
      }
 -
      impl<'a, 'db> Resolver<'a, 'db> {
--        pub(super) fn new(
--            ctx: &'a mut InferenceTable<'db>,
--            should_normalize: bool,
--            nested_goals: &'a mut Vec<Goal<'db, Predicate<'db>>>,
--        ) -> Resolver<'a, 'db> {
+         pub(super) fn new(
+             ctx: &'a mut InferenceTable<'db>,
+             should_normalize: bool,
+             nested_goals: &'a mut Vec<Goal<'db, Predicate<'db>>>,
+         ) -> Resolver<'a, 'db> {
 -            Resolver {
 -                ctx,
 -                nested_goals,
 -                should_normalize,
 -            }
-+        pub(super) fn new(ctx: &'a mut InferenceTable<'db>, should_normalize: bool, nested_goals: &'a mut Vec<Goal<'db, Predicate<'db>>>) -> Resolver<'a, 'db> {
 +            Resolver { ctx, nested_goals, should_normalize }
          }
  
--        fn handle_term<T>(
--            &mut self,
--            value: T,
--            outer_exclusive_binder: impl FnOnce(T) -> DebruijnIndex,
--        ) -> T
-+        fn handle_term<T>(&mut self, value: T, outer_exclusive_binder: impl FnOnce(T) -> DebruijnIndex) -> T
+         fn handle_term<T>(
+             outer_exclusive_binder: impl FnOnce(T) -> DebruijnIndex,
+         ) -> T
          where
 -            T: Into<Term<'db>> + TypeSuperFoldable<DbInterner<'db>> + Copy,
 -        {
@@ -591,13 +682,40 @@ Rustfmt size:  35032 bytes
              self.ctx.interner()
          }
  
-         fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
+-        fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
 -            if r.is_var() {
 -                Region::error(self.ctx.interner())
 -            } else {
 -                r
 -            }
++        fn fold_region(
++            &mut self,
++            r: Region<'db>,
++        ) -> Region<'db> {
 +            if r.is_var() { Region::error(self.ctx.interner()) } else { r }
          }
  
-         fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
+-        fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
++        fn fold_ty(
++            &mut self,
++            ty: Ty<'db>,
++        ) -> Ty<'db> {
+             self.handle_term(ty, |it| it.outer_exclusive_binder())
+         }
+ 
+-        fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
++        fn fold_const(
++            &mut self,
++            ct: Const<'db>,
++        ) -> Const<'db> {
+             self.handle_term(ct, |it| it.outer_exclusive_binder())
+         }
+ 
+-        fn fold_predicate(&mut self, predicate: Predicate<'db>) -> Predicate<'db> {
++        fn fold_predicate(
++            &mut self,
++            predicate: Predicate<'db>,
++        ) -> Predicate<'db> {
+             assert!(
+                 !self.should_normalize,
+                 "normalizing predicates in writeback is not generally sound"

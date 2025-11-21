@@ -10,7 +10,10 @@ use syntax::{AstNode, Edition, TextRange, ToSmolStr};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn unused_variables(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedVariable) -> Option<Diagnostic> {
+pub(crate) fn unused_variables(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::UnusedVariable,
+) -> Option<Diagnostic> {
     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
     if ast.file_id.macro_file().is_some() {
         // FIXME: Our infra can't handle allow from within macro expansions rn
@@ -55,7 +58,15 @@ pub(crate) fn unused_variables(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedVari
     )
 }
 
-fn fixes(db: &RootDatabase, var_name: Name, name_range: TextRange, diagnostic_range: FileRange, is_in_marco: bool, is_shorthand_field: bool, edition: Edition) -> Option<Vec<Assist>> {
+fn fixes(
+    db: &RootDatabase,
+    var_name: Name,
+    name_range: TextRange,
+    diagnostic_range: FileRange,
+    is_in_marco: bool,
+    is_shorthand_field: bool,
+    edition: Edition,
+) -> Option<Vec<Assist>> {
     if is_in_marco {
         return None;
     }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21059 bytes
-Chloro size:   20497 bytes
+Chloro size:   20609 bytes
 Rustfmt size:  21059 bytes
 
 ✗ Outputs DIFFER
@@ -21,18 +21,16 @@ Rustfmt size:  21059 bytes
 -// | VS Code | <kbd>Alt+Shift+→</kbd>, <kbd>Alt+Shift+←</kbd> |
 -//
 -// ![Expand and Shrink Selection](https://user-images.githubusercontent.com/48062697/113020651-b42fc800-917a-11eb-8a4f-cf1a07859fac.gif)
- pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
+-pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
++pub(crate) fn extend_selection(
++    db: &RootDatabase,
++    frange: FileRange,
++) -> TextRange {
      let sema = Semantics::new(db);
      let src = sema.parse_guess_edition(frange.file_id);
      try_extend_selection(&sema, src.syntax(), frange).unwrap_or(frange.range)
- }
- 
--fn try_extend_selection(
--    sema: &Semantics<'_, RootDatabase>,
--    root: &SyntaxNode,
--    frange: FileRange,
--) -> Option<TextRange> {
-+fn try_extend_selection(sema: &Semantics<'_, RootDatabase>, root: &SyntaxNode, frange: FileRange) -> Option<TextRange> {
+     frange: FileRange,
+ ) -> Option<TextRange> {
      let range = frange.range;
 -
      let string_kinds = [COMMENT, STRING, BYTE_STRING, C_STRING];
@@ -71,14 +69,6 @@ Rustfmt size:  21059 bytes
      node.parent().map(|it| it.text_range())
  }
  
--fn extend_tokens_from_range(
--    sema: &Semantics<'_, RootDatabase>,
--    macro_call: ast::MacroCall,
--    original_range: TextRange,
--) -> Option<TextRange> {
-+fn extend_tokens_from_range(sema: &Semantics<'_, RootDatabase>, macro_call: ast::MacroCall, original_range: TextRange) -> Option<TextRange> {
-     let src = macro_call.syntax().covering_element(original_range);
-     let (first_token, last_token) = match src {
          NodeOrToken::Node(it) => (it.first_token()?, it.last_token()?),
          NodeOrToken::Token(it) => (it.clone(), it),
      };
@@ -124,14 +114,7 @@ Rustfmt size:  21059 bytes
      let range = first.text_range().cover(last.text_range());
      if range.contains_range(original_range) && original_range != range { Some(range) } else { None }
  }
-     node.ancestors().take_while(|n| n.text_range() == node.text_range()).last().unwrap()
- }
- 
--fn extend_single_word_in_comment_or_string(
--    leaf: &SyntaxToken,
--    offset: TextSize,
--) -> Option<TextRange> {
-+fn extend_single_word_in_comment_or_string(leaf: &SyntaxToken, offset: TextSize) -> Option<TextRange> {
+ ) -> Option<TextRange> {
      let text: &str = leaf.text();
      let cursor_position: u32 = (offset - leaf.text_range().start()).into();
 -
@@ -156,6 +139,27 @@ Rustfmt size:  21059 bytes
      let range = TextRange::new(from, to);
      if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
  }
+ 
+-fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
++fn extend_ws(
++    root: &SyntaxNode,
++    ws: SyntaxToken,
++    offset: TextSize,
++) -> TextRange {
+     let ws_text = ws.text();
+     let suffix = TextRange::new(offset, ws.text_range().end()) - ws.text_range().start();
+     let prefix = TextRange::new(ws.text_range().start(), offset) - ws.text_range().start();
+     ws.text_range()
+ }
+ 
+-fn pick_best(l: SyntaxToken, r: SyntaxToken) -> SyntaxToken {
++fn pick_best(
++    l: SyntaxToken,
++    r: SyntaxToken,
++) -> SyntaxToken {
+     return if priority(&r) > priority(&l) { r } else { l };
+     fn priority(n: &SyntaxToken) -> usize {
+         match n.kind() {
      fn is_single_line_ws(node: &SyntaxToken) -> bool {
          node.kind() == WHITESPACE && !node.text().contains('\n')
      }
@@ -182,13 +186,28 @@ Rustfmt size:  21059 bytes
      None
  }
  
+     }
+ }
+ 
+-fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
++fn adj_comments(
++    comment: &ast::Comment,
++    dir: Direction,
++) -> ast::Comment {
+     let mut res = comment.clone();
+     for element in comment.syntax().siblings_with_tokens(dir) {
+         let token = match element.as_token() {
  #[cfg(test)]
  mod tests {
      use crate::fixture;
 -
      use super::*;
 -
-     fn do_check(before: &str, afters: &[&str]) {
+-    fn do_check(before: &str, afters: &[&str]) {
++    fn do_check(
++        before: &str,
++        afters: &[&str],
++    ) {
          let (analysis, position) = fixture::position(before);
          let before = analysis.file_text(position.file_id).unwrap();
          let range = TextRange::empty(position.offset);

@@ -11,7 +11,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn replace_qualified_name_with_use(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn replace_qualified_name_with_use(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let mut original_path: ast::Path = ctx.find_node_at_offset()?;
     // We don't want to mess with use statements
     if original_path.syntax().ancestors().find_map(ast::UseTree::cast).is_some() {
@@ -86,7 +89,10 @@ fn drop_generic_args(path: &ast::Path) -> ast::Path {
 }
 
 /// Mutates `node` to shorten `path` in all descendants of `node`.
-fn shorten_paths(node: &SyntaxNode, path: &ast::Path) {
+fn shorten_paths(
+    node: &SyntaxNode,
+    path: &ast::Path,
+) {
     for child in node.children() {
         match_ast! {
             match child {
@@ -105,7 +111,10 @@ fn shorten_paths(node: &SyntaxNode, path: &ast::Path) {
     }
 }
 
-fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
+fn maybe_replace_path(
+    path: ast::Path,
+    target: ast::Path,
+) -> Option<()> {
     if !path_eq_no_generics(path.clone(), target) {
         return None;
     }
@@ -119,7 +128,10 @@ fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
     Some(())
 }
 
-fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
+fn path_eq_no_generics(
+    lhs: ast::Path,
+    rhs: ast::Path,
+) -> bool {
     let mut lhs_curr = lhs;
     let mut rhs_curr = rhs;
     loop {

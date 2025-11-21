@@ -27,7 +27,11 @@ mod tests;
 /// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
 /// Converts an `ast::Path` to `Path`. Works with use trees.
 /// It correctly handles `$crate` based path from macro call.
-pub(super) fn lower_path(collector: &mut ExprCollector<'_>, mut path: ast::Path, impl_trait_lower_fn: ImplTraitLowerFn<'_>) -> Option<Path> {
+pub(super) fn lower_path(
+    collector: &mut ExprCollector<'_>,
+    mut path: ast::Path,
+    impl_trait_lower_fn: ImplTraitLowerFn<'_>,
+) -> Option<Path> {
     let mut kind = PathKind::Plain;
     let mut type_anchor = None;
     let mut segments = Vec::new();
@@ -248,7 +252,10 @@ pub(super) fn lower_path(collector: &mut ExprCollector<'_>, mut path: ast::Path,
 
 /// This function finds the AST segment that corresponds to the HIR segment
 /// with index `segment_idx` on the path that is lowered from `path`.
-pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<ast::PathSegment> {
+pub fn hir_segment_to_ast_segment(
+    path: &ast::Path,
+    segment_idx: u32,
+) -> Option<ast::PathSegment> {
     // Too tightly coupled to `lower_path()`, but unfortunately we cannot decouple them,
     // as keeping source maps for all paths segments will have a severe impact on memory usage.
     let mut segments = path.segments();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   43143 bytes
+Chloro size:   43211 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -104,7 +104,11 @@ Rustfmt size:  46663 bytes
 -// }
 -// # pub mod std { pub mod collections { pub struct HashMap { } } }
 -// ```
- pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn auto_import(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let cfg = ctx.config.import_path_config();
 -
      let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
@@ -232,16 +236,8 @@ Rustfmt size:  46663 bytes
          }
      };
      GroupLabel(name)
- 
- /// Determine how relevant a given import is in the current context. Higher scores are more
- /// relevant.
--pub(crate) fn relevance_score(
--    ctx: &AssistContext<'_>,
--    import: &LocatedImport,
--    expected: Option<&Type<'_>>,
--    current_module: Option<&Module>,
--) -> i32 {
-+pub(crate) fn relevance_score(ctx: &AssistContext<'_>, import: &LocatedImport, expected: Option<&Type<'_>>, current_module: Option<&Module>) -> i32 {
+     current_module: Option<&Module>,
+ ) -> i32 {
      let mut score = 0;
 -
      let db = ctx.db();
@@ -268,6 +264,13 @@ Rustfmt size:  46663 bytes
      score
  }
  
+ /// A heuristic that gives a higher score to modules that are more separated.
+-fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Module) -> usize {
++fn module_distance_heuristic(
++    db: &dyn HirDatabase,
++    current: &Module,
++    item: &Module,
++) -> usize {
      // get the path starting from the item to the respective crate roots
      let mut current_path = current.path_to_root(db);
      let mut item_path = item.path_to_root(db);
@@ -313,7 +316,11 @@ Rustfmt size:  46663 bytes
 +        check_assist_target,
      };
 -
-     fn check_auto_import_order(before: &str, order: &[&str]) {
+-    fn check_auto_import_order(before: &str, order: &[&str]) {
++    fn check_auto_import_order(
++        before: &str,
++        order: &[&str],
++    ) {
          let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
 -        let frange = FileRange {
 -            file_id,

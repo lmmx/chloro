@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   65204 bytes
+Chloro size:   65351 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -34,18 +34,6 @@ Rustfmt size:  66636 bytes
  #[derive(Debug)]
  pub struct FindAllRefsConfig<'a> {
      pub search_scope: Option<SearchScope>,
- /// - `;` after unit struct: Shows unit literal initializations
- /// - Type name in definition: Shows all initialization usages
- ///   In these cases, other kinds of references (like type references) are filtered out.
--pub(crate) fn find_all_refs(
--    sema: &Semantics<'_, RootDatabase>,
--    position: FilePosition,
--    config: &FindAllRefsConfig<'_>,
--) -> Option<Vec<ReferenceSearchResult>> {
-+pub(crate) fn find_all_refs(sema: &Semantics<'_, RootDatabase>, position: FilePosition, config: &FindAllRefsConfig<'_>) -> Option<Vec<ReferenceSearchResult>> {
-     let _p = tracing::info_span!("find_all_refs").entered();
-     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
-     let make_searcher = |literal_search: bool| {
              ReferenceSearchResult { declaration, references }
          }
      };
@@ -65,18 +53,6 @@ Rustfmt size:  66636 bytes
      match name_for_constructor_search(&syntax, position) {
          Some(name) => {
              let def = match NameClass::classify(sema, &name)? {
-     }
- }
- 
--pub(crate) fn find_defs(
--    sema: &Semantics<'_, RootDatabase>,
--    syntax: &SyntaxNode,
--    offset: TextSize,
--) -> Option<Vec<Definition>> {
-+pub(crate) fn find_defs(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, offset: TextSize) -> Option<Vec<Definition>> {
-     let token = syntax.token_at_offset(offset).find(|t| {
-         matches!(
-             t.kind(),
                  | T![Self]
          )
      })?;
@@ -88,41 +64,28 @@ Rustfmt size:  66636 bytes
      Some(
          sema.descend_into_macros_exact(token)
              .into_iter()
- }
- 
- /// Filter out all non-literal usages for adt-defs
--fn retain_adt_literal_usages(
--    usages: &mut UsageSearchResult,
--    def: Definition,
--    sema: &Semantics<'_, RootDatabase>,
--) {
-+fn retain_adt_literal_usages(usages: &mut UsageSearchResult, def: Definition, sema: &Semantics<'_, RootDatabase>) {
-     let refs = usages.references.values_mut();
-     match def {
-         Definition::Adt(hir::Adt::Enum(enum_)) => {
+ /// - `None` otherwise
  ///
- /// # Returns
- /// `true` if the name reference is used as part of constructing a variant of the given enum.
--fn is_enum_lit_name_ref(
--    sema: &Semantics<'_, RootDatabase>,
--    enum_: hir::Enum,
--    name_ref: &ast::NameRef,
--) -> bool {
-+fn is_enum_lit_name_ref(sema: &Semantics<'_, RootDatabase>, enum_: hir::Enum, name_ref: &ast::NameRef) -> bool {
-     let path_is_variant_of_enum = |path: ast::Path| {
-         matches!(
-             sema.resolve_path(&path),
-     }).unwrap_or(false)
- }
+ /// The returned name is the name of the type whose constructor usages should be searched for.
+-fn name_for_constructor_search(syntax: &SyntaxNode, position: FilePosition) -> Option<ast::Name> {
++fn name_for_constructor_search(
++    syntax: &SyntaxNode,
++    position: FilePosition,
++) -> Option<ast::Name> {
+     let token = syntax.token_at_offset(position.offset).right_biased()?;
+     let token_parent = token.parent()?;
+     let kind = token.kind();
  
--fn handle_control_flow_keywords(
--    sema: &Semantics<'_, RootDatabase>,
--    FilePosition { file_id, offset }: FilePosition,
--) -> Option<ReferenceSearchResult> {
-+fn handle_control_flow_keywords(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offset }: FilePosition) -> Option<ReferenceSearchResult> {
-     let file = sema.parse_guess_edition(file_id);
-     let edition = sema
-         .attach_first_edition(file_id)
+ /// Checks if a path ends with the given name reference.
+ /// Helper function for checking constructor usage patterns.
+-fn path_ends_with(path: Option<ast::Path>, name_ref: &ast::NameRef) -> bool {
++fn path_ends_with(
++    path: Option<ast::Path>,
++    name_ref: &ast::NameRef,
++) -> bool {
+     path.and_then(|path| path.segment())
+         .and_then(|segment| segment.name_ref())
+         .map_or(false, |segment| segment == *name_ref)
          T![=>] => 3,
          _ => 1,
      })?;
@@ -486,19 +449,17 @@ Rustfmt size:  66636 bytes
          );
      }
 -
-     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
          check_with_scope(ra_fixture, None, expect)
      }
 -
--    fn check_with_scope(
--        #[rust_analyzer::rust_fixture] ra_fixture: &str,
--        search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>,
--        expect: Expect,
--    ) {
-+    fn check_with_scope(#[rust_analyzer::rust_fixture] ra_fixture: &str, search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>, expect: Expect) {
-         let (analysis, pos) = fixture::position(ra_fixture);
-         let config = FindAllRefsConfig {
-             search_scope: search_scope.map(|it| it(&analysis.db)),
+     fn check_with_scope(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>,
              minicore: MiniCore::default(),
          };
          let refs = analysis.find_all_refs(pos, &config).unwrap().unwrap();

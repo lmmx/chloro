@@ -101,7 +101,10 @@ impl Data {
         data
     }
 
-    fn into_node(self, name: &'static str) -> Node {
+    fn into_node(
+        self,
+        name: &'static str,
+    ) -> Node {
         Node {
             name,
             fields: self.fields,
@@ -117,7 +120,11 @@ pub struct DataVisitor<'a> {
 }
 
 impl Visit for DataVisitor<'_> {
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
+    fn record_debug(
+        &mut self,
+        field: &Field,
+        value: &dyn std::fmt::Debug,
+    ) {
         write!(self.string, "{} = {:?} ", field.name(), value).unwrap();
     }
 }
@@ -125,16 +132,29 @@ impl Visit for DataVisitor<'_> {
 impl<S> Layer<S> for SpanTree<S>
 where
     S: Subscriber + for<'span> LookupSpan<'span>, {
-    fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
+    fn on_new_span(
+        &self,
+        attrs: &Attributes<'_>,
+        id: &Id,
+        ctx: Context<'_, S>,
+    ) {
         let span = ctx.span(id).unwrap();
         let data = Data::new(attrs);
         span.extensions_mut().insert(data);
     }
 
-    fn on_event(&self, _event: &Event<'_>, _ctx: Context<'_, S>) {
+    fn on_event(
+        &self,
+        _event: &Event<'_>,
+        _ctx: Context<'_, S>,
+    ) {
     }
 
-    fn on_close(&self, id: Id, ctx: Context<'_, S>) {
+    fn on_close(
+        &self,
+        id: Id,
+        ctx: Context<'_, S>,
+    ) {
         let span = ctx.span(&id).unwrap();
         let data = span.extensions_mut().remove::<Data>().unwrap();
         let mut node = data.into_node(span.name());
@@ -162,12 +182,19 @@ struct Node {
 }
 
 impl Node {
-    fn print(&self, filter: &WriteFilter) {
+    fn print(
+        &self,
+        filter: &WriteFilter,
+    ) {
         self.go(0, filter)
     }
 
     #[allow(clippy::print_stderr)]
-    fn go(&self, level: usize, filter: &WriteFilter) {
+    fn go(
+        &self,
+        level: usize,
+        filter: &WriteFilter,
+    ) {
         if self.duration > filter.longer_than && level < filter.depth {
             let duration = ms(self.duration);
             let current_indent = level * 2;
@@ -251,7 +278,10 @@ impl WriteFilter {
 struct ms(Duration);
 
 impl std::fmt::Display for ms {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
         let n = self.0.as_millis();
         write!(f, "{n:5}ms")
     }

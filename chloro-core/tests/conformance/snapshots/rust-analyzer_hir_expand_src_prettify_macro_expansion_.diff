@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3259 bytes
-Chloro size:   3240 bytes
+Chloro size:   3259 bytes
 Rustfmt size:  3430 bytes
 
 ✗ Outputs DIFFER
@@ -18,18 +18,6 @@ Rustfmt size:  3430 bytes
  
  use crate::{db::ExpandDatabase, span_map::ExpansionSpanMap};
  
- /// Inserts whitespace and replaces `$crate` in macro expansions.
- #[expect(deprecated)]
--pub fn prettify_macro_expansion(
--    db: &dyn ExpandDatabase,
--    syn: SyntaxNode,
--    span_map: &ExpansionSpanMap,
--    target_crate_id: Crate,
--) -> SyntaxNode {
-+pub fn prettify_macro_expansion(db: &dyn ExpandDatabase, syn: SyntaxNode, span_map: &ExpansionSpanMap, target_crate_id: Crate) -> SyntaxNode {
-     // Because `syntax_bridge::prettify_macro_expansion::prettify_macro_expansion()` clones subtree for `syn`,
-     // that means it will be offsetted to the beginning.
-     let span_offset = syn.text_range().start();
      syntax_bridge::prettify_macro_expansion::prettify_macro_expansion(
          syn,
          &mut |dollar_crate| {

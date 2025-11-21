@@ -100,7 +100,11 @@ impl<'db> InferenceContext<'_, 'db> {
         fallback_occurred
     }
 
-    fn fallback_if_possible(&mut self, ty: Ty<'db>, diverging_fallback: &FxHashMap<Ty<'db>, Ty<'db>>) -> bool {
+    fn fallback_if_possible(
+        &mut self,
+        ty: Ty<'db>,
+        diverging_fallback: &FxHashMap<Ty<'db>, Ty<'db>>,
+    ) -> bool {
         // Careful: we do NOT shallow-resolve `ty`. We know that `ty`
         // is an unsolved variable, and we determine its fallback
         // based solely on how it was created, not what other type
@@ -199,7 +203,11 @@ impl<'db> InferenceContext<'_, 'db> {
     ///   reachable from there. Call that set `D`.
     /// * Walk over all unsolved, non-diverging variables, and find
     ///   any variable that has an edge into `D`.
-    fn calculate_diverging_fallback(&self, unresolved_variables: &[Ty<'db>], behavior: DivergingFallbackBehavior) -> FxHashMap<Ty<'db>, Ty<'db>> {
+    fn calculate_diverging_fallback(
+        &self,
+        unresolved_variables: &[Ty<'db>],
+        behavior: DivergingFallbackBehavior,
+    ) -> FxHashMap<Ty<'db>, Ty<'db>> {
         debug!("calculate_diverging_fallback({:?})", unresolved_variables);
         // Construct a coercion graph where an edge `A -> B` indicates
         // a type variable is that is coerced
@@ -387,7 +395,10 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// If `ty` is an unresolved type variable, returns its root vid.
-    fn root_vid(&self, ty: Ty<'db>) -> Option<TyVid> {
+    fn root_vid(
+        &self,
+        ty: Ty<'db>,
+    ) -> Option<TyVid> {
         Some(self.table.infer_ctxt.root_var(self.shallow_resolve(ty).ty_vid()?))
     }
 }

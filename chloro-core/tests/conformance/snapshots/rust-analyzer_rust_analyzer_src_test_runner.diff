@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   3950 bytes
+Chloro size:   4036 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,13 @@ Rustfmt size:  4381 bytes
      }
  }
  
-     fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
+ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
+-    fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
++    fn from_line(
++        &self,
++        line: &str,
++        _error: &mut String,
++    ) -> Option<CargoTestMessage> {
          let mut deserializer = serde_json::Deserializer::from_str(line);
          deserializer.disable_recursion_limit();
 -
@@ -61,19 +67,6 @@ Rustfmt size:  4381 bytes
  #[derive(Debug, Clone)]
  pub(crate) struct TestTarget {
      pub package: String,
- }
- 
- impl CargoTestHandle {
--    pub(crate) fn new(
--        path: Option<&str>,
--        options: CargoOptions,
--        root: &AbsPath,
--        ws_target_dir: Option<&Utf8Path>,
--        test_target: TestTarget,
--        sender: Sender<CargoTestMessage>,
--    ) -> std::io::Result<Self> {
-+    pub(crate) fn new(path: Option<&str>, options: CargoOptions, root: &AbsPath, ws_target_dir: Option<&Utf8Path>, test_target: TestTarget, sender: Sender<CargoTestMessage>) -> std::io::Result<Self> {
-         let mut cmd = toolchain::command(Tool::Cargo.path(), root, &options.extra_env);
          cmd.env("RUSTC_BOOTSTRAP", "1");
          cmd.arg("--color=always");
          cmd.arg("test");

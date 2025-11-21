@@ -29,14 +29,22 @@ pub(crate) enum Progress {
 }
 
 impl Progress {
-    pub(crate) fn fraction(done: usize, total: usize) -> f64 {
+    pub(crate) fn fraction(
+        done: usize,
+        total: usize,
+    ) -> f64 {
         assert!(done <= total);
         done as f64 / total.max(1) as f64
     }
 }
 
 impl GlobalState {
-    pub(crate) fn show_message(&mut self, typ: lsp_types::MessageType, message: String, show_open_log_button: bool) {
+    pub(crate) fn show_message(
+        &mut self,
+        typ: lsp_types::MessageType,
+        message: String,
+        show_open_log_button: bool,
+    ) {
         match self.config.open_server_logs() && show_open_log_button  {
             true => self.send_request::<lsp_types::request::ShowMessageRequest>(
                 lsp_types::ShowMessageRequestParams {
@@ -70,7 +78,11 @@ impl GlobalState {
 
     /// If `additional_info` is [`Some`], appends a note to the notification telling to check the logs.
     /// This will always log `message` + `additional_info` to the server's error log.
-    pub(crate) fn show_and_log_error(&mut self, message: String, additional_info: Option<String>) {
+    pub(crate) fn show_and_log_error(
+        &mut self,
+        message: String,
+        additional_info: Option<String>,
+    ) {
         match additional_info {
             Some(additional_info) => {
                 tracing::error!("{message}:\n{additional_info}");
@@ -100,14 +112,24 @@ impl GlobalState {
     /// It's unclear if making from source `cargo xtask install` builds more
     /// panicky is a good idea, let's see if we can keep our awesome bleeding
     /// edge users from being upset!
-    pub(crate) fn poke_rust_analyzer_developer(&mut self, message: String) {
+    pub(crate) fn poke_rust_analyzer_developer(
+        &mut self,
+        message: String,
+    ) {
         let from_source_build = option_env!("POKE_RA_DEVS").is_some();
         if from_source_build {
             self.show_and_log_error(message, None);
         }
     }
 
-    pub(crate) fn report_progress(&mut self, title: &str, state: Progress, message: Option<String>, fraction: Option<f64>, cancel_token: Option<String>) {
+    pub(crate) fn report_progress(
+        &mut self,
+        title: &str,
+        state: Progress,
+        message: Option<String>,
+        fraction: Option<f64>,
+        cancel_token: Option<String>,
+    ) {
         if !self.config.work_done_progress() {
             return;
         }
@@ -152,7 +174,11 @@ impl GlobalState {
     }
 }
 
-pub(crate) fn apply_document_changes(encoding: PositionEncoding, file_contents: &str, mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>) -> String {
+pub(crate) fn apply_document_changes(
+    encoding: PositionEncoding,
+    file_contents: &str,
+    mut content_changes: Vec<lsp_types::TextDocumentContentChangeEvent>,
+) -> String {
     // If at least one of the changes is a full document change, use the last
     // of them as the starting point and ignore all previous changes.
     let (mut text, content_changes) =
@@ -196,7 +222,10 @@ pub(crate) fn apply_document_changes(encoding: PositionEncoding, file_contents: 
 
 /// Checks that the edits inside the completion and the additional edits do not overlap.
 /// LSP explicitly forbids the additional edits to overlap both with the main edit and themselves.
-pub(crate) fn all_edits_are_disjoint(completion: &lsp_types::CompletionItem, additional_edits: &[lsp_types::TextEdit]) -> bool {
+pub(crate) fn all_edits_are_disjoint(
+    completion: &lsp_types::CompletionItem,
+    additional_edits: &[lsp_types::TextEdit],
+) -> bool {
     let mut edit_ranges = Vec::new();
     match completion.text_edit.as_ref() {
         Some(lsp_types::CompletionTextEdit::Edit(edit)) => {

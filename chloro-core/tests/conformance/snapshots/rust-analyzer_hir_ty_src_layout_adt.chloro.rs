@@ -19,7 +19,12 @@ use crate::{
     next_solver::GenericArgs,
 };
 
-pub fn layout_of_adt_query<'db>(db: &'db dyn HirDatabase, def: AdtId, args: GenericArgs<'db>, trait_env: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+pub fn layout_of_adt_query<'db>(
+    db: &'db dyn HirDatabase,
+    def: AdtId,
+    args: GenericArgs<'db>,
+    trait_env: Arc<TraitEnvironment<'db>>,
+) -> Result<Arc<Layout>, LayoutError> {
     let krate = trait_env.krate;
     let Ok(target) = db.target_data_layout(krate) else {
         return Err(LayoutError::TargetLayoutNotAvailable);
@@ -90,11 +95,19 @@ pub fn layout_of_adt_query<'db>(db: &'db dyn HirDatabase, def: AdtId, args: Gene
     Ok(Arc::new(result))
 }
 
-pub(crate) fn layout_of_adt_cycle_result<'db>(_: &'db dyn HirDatabase, _def: AdtId, _args: GenericArgs<'db>, _trait_env: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+pub(crate) fn layout_of_adt_cycle_result<'db>(
+    _: &'db dyn HirDatabase,
+    _def: AdtId,
+    _args: GenericArgs<'db>,
+    _trait_env: Arc<TraitEnvironment<'db>>,
+) -> Result<Arc<Layout>, LayoutError> {
     Err(LayoutError::RecursiveTypeWithoutIndirection)
 }
 
-fn layout_scalar_valid_range(db: &dyn HirDatabase, def: AdtId) -> (Bound<u128>, Bound<u128>) {
+fn layout_scalar_valid_range(
+    db: &dyn HirDatabase,
+    def: AdtId,
+) -> (Bound<u128>, Bound<u128>) {
     let attrs = db.attrs(def.into());
     let get = |name| {
         let attr = attrs.by_key(name).tt_values();
@@ -122,7 +135,12 @@ fn layout_scalar_valid_range(db: &dyn HirDatabase, def: AdtId) -> (Bound<u128>, 
 /// signed discriminant range and `#[repr]` attribute.
 /// N.B.: `u128` values above `i128::MAX` will be treated as signed, but
 /// that shouldn't affect anything, other than maybe debuginfo.
-fn repr_discr(dl: &TargetDataLayout, repr: &ReprOptions, min: i128, max: i128) -> Result<(Integer, bool), LayoutError> {
+fn repr_discr(
+    dl: &TargetDataLayout,
+    repr: &ReprOptions,
+    min: i128,
+    max: i128,
+) -> Result<(Integer, bool), LayoutError> {
     // Theoretically, negative values could be larger in unsigned representation
     // than the unsigned representation of the signed minimum. However, if there
     // are any negative values, the only valid unsigned representation is u128

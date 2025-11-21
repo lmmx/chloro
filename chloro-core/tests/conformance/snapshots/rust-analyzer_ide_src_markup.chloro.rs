@@ -26,7 +26,10 @@ impl From<String> for Markup {
 }
 
 impl fmt::Display for Markup {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         fmt::Display::fmt(&self.text, f)
     }
 }

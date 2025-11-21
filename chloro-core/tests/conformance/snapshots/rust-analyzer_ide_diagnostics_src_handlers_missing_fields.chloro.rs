@@ -22,7 +22,10 @@ use syntax::{
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Diagnostic {
+pub(crate) fn missing_fields(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MissingFields,
+) -> Diagnostic {
     let mut message = String::from("missing structure fields:\n");
     for field in &d.missed_fields {
         format_to!(message, "- {}\n", field.display(ctx.sema.db, ctx.edition));
@@ -38,7 +41,10 @@ pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingField
         .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MissingFields,
+) -> Option<Vec<Assist>> {
     // Note that although we could add a diagnostics to
     // fill the missing tuple field, e.g :
     // `struct A(usize);`
@@ -162,7 +168,12 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
     }
 }
 
-fn make_ty(ty: &hir::Type<'_>, db: &dyn HirDatabase, module: hir::Module, edition: Edition) -> ast::Type {
+fn make_ty(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    module: hir::Module,
+    edition: Edition,
+) -> ast::Type {
     let ty_str = match ty.as_adt() {
         Some(adt) => adt.name(db).display(db, edition).to_string(),
         None => {
@@ -172,7 +183,11 @@ fn make_ty(ty: &hir::Type<'_>, db: &dyn HirDatabase, module: hir::Module, editio
     make::ty(&ty_str)
 }
 
-fn get_default_constructor(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields, ty: &Type<'_>) -> Option<ast::Expr> {
+fn get_default_constructor(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::MissingFields,
+    ty: &Type<'_>,
+) -> Option<ast::Expr> {
     if let Some(builtin_ty) = ty.as_builtin() {
         if builtin_ty.is_int() || builtin_ty.is_uint() {
             return Some(make::ext::zero_number());

@@ -18,7 +18,10 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn convert_tuple_return_type_to_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_tuple_return_type_to_struct(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let type_ref = ret_type.ty()?;
     let ast::Type::TupleType(tuple_ty) = &type_ref else { return None };
@@ -66,7 +69,13 @@ pub(crate) fn convert_tuple_return_type_to_struct(acc: &mut Assists, ctx: &Assis
 }
 
 /// Replaces tuple usages with the corresponding tuple struct pattern.
-fn replace_usages(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: &UsageSearchResult, struct_name: &str, target_module: &hir::Module) {
+fn replace_usages(
+    edit: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    usages: &UsageSearchResult,
+    struct_name: &str,
+    target_module: &hir::Module,
+) {
     for (file_id, references) in usages.iter() {
         edit.edit_file(file_id.file_id(ctx.db()));
 
@@ -137,7 +146,13 @@ fn node_to_pats(node: SyntaxNode) -> Option<Vec<ast::Pat>> {
     }
 }
 
-fn augment_references_with_imports(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, references: &[FileReference], struct_name: &str, target_module: &hir::Module) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
+fn augment_references_with_imports(
+    edit: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    references: &[FileReference],
+    struct_name: &str,
+    target_module: &hir::Module,
+) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
     let mut visited_modules = FxHashSet::default();
     references
         .iter()
@@ -181,7 +196,15 @@ fn augment_references_with_imports(edit: &mut SourceChangeBuilder, ctx: &AssistC
         .collect()
 }
 
-fn add_tuple_struct_def(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: &UsageSearchResult, parent: &SyntaxNode, tuple_ty: &ast::TupleType, struct_name: &str, target_module: &hir::Module) {
+fn add_tuple_struct_def(
+    edit: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+    usages: &UsageSearchResult,
+    parent: &SyntaxNode,
+    tuple_ty: &ast::TupleType,
+    struct_name: &str,
+    target_module: &hir::Module,
+) {
     let make_struct_pub = usages
         .iter()
         .flat_map(|(_, refs)| refs)
@@ -202,7 +225,10 @@ fn add_tuple_struct_def(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>,
 }
 
 /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
-fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
+fn replace_body_return_values(
+    body: ast::Expr,
+    struct_name: &str,
+) {
     let mut exprs_to_wrap = Vec::new();
     let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_wrap, e);
     walk_expr(&body, &mut |expr| {
@@ -225,7 +251,10 @@ fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
     }
 }
 
-fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
+fn tail_cb_impl(
+    acc: &mut Vec<ast::Expr>,
+    e: &ast::Expr,
+) {
     match e {
         ast::Expr::BreakExpr(break_expr) => {
             if let Some(break_expr_arg) = break_expr.expr() {

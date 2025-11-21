@@ -14,7 +14,10 @@ use crate::{
     },
 };
 
-pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_missing_impl_members(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     add_missing_impl_members_inner(
         acc,
         ctx,
@@ -25,7 +28,10 @@ pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_
     )
 }
 
-pub(crate) fn add_missing_default_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_missing_default_members(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     add_missing_impl_members_inner(
         acc,
         ctx,
@@ -36,7 +42,14 @@ pub(crate) fn add_missing_default_members(acc: &mut Assists, ctx: &AssistContext
     )
 }
 
-fn add_missing_impl_members_inner(acc: &mut Assists, ctx: &AssistContext<'_>, mode: DefaultMethods, ignore_items: IgnoreAssocItems, assist_id: &'static str, label: &'static str) -> Option<()> {
+fn add_missing_impl_members_inner(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    mode: DefaultMethods,
+    ignore_items: IgnoreAssocItems,
+    assist_id: &'static str,
+    label: &'static str,
+) -> Option<()> {
     let _p = tracing::info_span!("add_missing_impl_members_inner").entered();
     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?;
     let impl_ = ctx.sema.to_def(&impl_def)?;
@@ -140,7 +153,13 @@ fn add_missing_impl_members_inner(acc: &mut Assists, ctx: &AssistContext<'_>, mo
     })
 }
 
-fn try_gen_trait_body(ctx: &AssistContext<'_>, func: &ast::Fn, trait_ref: hir::TraitRef<'_>, impl_def: &ast::Impl, edition: Edition) -> Option<ast::BlockExpr> {
+fn try_gen_trait_body(
+    ctx: &AssistContext<'_>,
+    func: &ast::Fn,
+    trait_ref: hir::TraitRef<'_>,
+    impl_def: &ast::Impl,
+    edition: Edition,
+) -> Option<ast::BlockExpr> {
     let trait_path = make::ext::ident_path(
         &trait_ref.trait_().name(ctx.db()).display(ctx.db(), edition).to_string(),
     );

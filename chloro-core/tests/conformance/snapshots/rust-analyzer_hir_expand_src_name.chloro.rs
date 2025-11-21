@@ -22,7 +22,10 @@ pub struct Name {
 }
 
 impl fmt::Debug for Name {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("Name")
             .field("symbol", &self.symbol.as_str())
             .field("ctx", &self.ctx)
@@ -31,37 +34,55 @@ impl fmt::Debug for Name {
 }
 
 impl Ord for Name {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(
+        &self,
+        other: &Self,
+    ) -> std::cmp::Ordering {
         self.symbol.as_str().cmp(other.symbol.as_str())
     }
 }
 
 impl PartialOrd for Name {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(
+        &self,
+        other: &Self,
+    ) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl PartialEq<Symbol> for Name {
-    fn eq(&self, sym: &Symbol) -> bool {
+    fn eq(
+        &self,
+        sym: &Symbol,
+    ) -> bool {
         self.symbol == *sym
     }
 }
 
 impl PartialEq<&Symbol> for Name {
-    fn eq(&self, &sym: &&Symbol) -> bool {
+    fn eq(
+        &self,
+        &sym: &&Symbol,
+    ) -> bool {
         self.symbol == *sym
     }
 }
 
 impl PartialEq<Name> for Symbol {
-    fn eq(&self, name: &Name) -> bool {
+    fn eq(
+        &self,
+        name: &Name,
+    ) -> bool {
         *self == name.symbol
     }
 }
 
 impl PartialEq<Name> for &Symbol {
-    fn eq(&self, name: &Name) -> bool {
+    fn eq(
+        &self,
+        name: &Name,
+    ) -> bool {
         **self == name.symbol
     }
 }
@@ -71,7 +92,10 @@ impl Name {
         Name { symbol: Symbol::intern(text), ctx: () }
     }
 
-    pub fn new(text: &str, mut ctx: SyntaxContext) -> Name {
+    pub fn new(
+        text: &str,
+        mut ctx: SyntaxContext,
+    ) -> Name {
         // For comparisons etc. we remove the edition, because sometimes we search for some `Name`
         // and we don't know which edition it came from.
         // Can't do that for all `SyntaxContextId`s because it breaks Salsa.
@@ -118,7 +142,10 @@ impl Name {
         }
     }
 
-    pub fn new_symbol(symbol: Symbol, ctx: SyntaxContext) -> Self {
+    pub fn new_symbol(
+        symbol: Symbol,
+        ctx: SyntaxContext,
+    ) -> Self {
         debug_assert!(!symbol.as_str().starts_with("r#"));
         _ = ctx;
         Self { symbol, ctx: () }
@@ -163,7 +190,10 @@ impl Name {
     }
 
     /// Whether this name needs to be escaped in the given edition via `r#`.
-    pub fn needs_escape(&self, edition: Edition) -> bool {
+    pub fn needs_escape(
+        &self,
+        edition: Edition,
+    ) -> bool {
         is_raw_identifier(self.symbol.as_str(), edition)
     }
 
@@ -174,13 +204,20 @@ impl Name {
         self.symbol.as_str()
     }
 
-    pub fn display<'a>(&'a self, db: &dyn crate::db::ExpandDatabase, edition: Edition) -> impl fmt::Display + 'a {
+    pub fn display<'a>(
+        &'a self,
+        db: &dyn crate::db::ExpandDatabase,
+        edition: Edition,
+    ) -> impl fmt::Display + 'a {
         _ = db;
         self.display_no_db(edition)
     }
 
     #[doc(hidden)]
-    pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
+    pub fn display_no_db(
+        &self,
+        edition: Edition,
+    ) -> impl fmt::Display + '_ {
         Display { name: self, edition }
     }
 
@@ -195,7 +232,10 @@ struct Display<'a> {
 }
 
 impl fmt::Display for Display<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         let mut symbol = self.name.symbol.as_str();
         if symbol == "'static" {
             // FIXME: '`static` can also be a label, and there it does need escaping.

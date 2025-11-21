@@ -20,7 +20,13 @@ use syntax::{
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: hir::DisplayTarget, node: &ast::Fn) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    display_target: hir::DisplayTarget,
+    node: &ast::Fn,
+) -> Option<()> {
     if !config.implicit_drop_hints {
         return None;
     }
@@ -119,7 +125,10 @@ pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'
     Some(())
 }
 
-fn nearest_token_after_node(node: &syntax::SyntaxNode, token_type: syntax::SyntaxKind) -> Option<syntax::SyntaxToken> {
+fn nearest_token_after_node(
+    node: &syntax::SyntaxNode,
+    token_type: syntax::SyntaxKind,
+) -> Option<syntax::SyntaxToken> {
     node.siblings_with_tokens(syntax::Direction::Next)
         .filter_map(|it| it.as_token().cloned())
         .find(|it| it.kind() == token_type)

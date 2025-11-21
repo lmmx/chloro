@@ -14,7 +14,11 @@ use tracing::{debug, warn};
 
 use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
 
-fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
+fn check_cfg(
+    db: &dyn ExpandDatabase,
+    attr: &Attr,
+    krate: Crate,
+) -> Option<bool> {
     if !attr.simple_name().as_deref().map(|v| v == "cfg")? {
         return None;
     }
@@ -23,20 +27,33 @@ fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool>
     Some(enabled)
 }
 
-fn check_cfg_attr(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
+fn check_cfg_attr(
+    db: &dyn ExpandDatabase,
+    attr: &Attr,
+    krate: Crate,
+) -> Option<bool> {
     if !attr.simple_name().as_deref().map(|v| v == "cfg_attr")? {
         return None;
     }
     check_cfg_attr_value(db, &attr.token_tree()?, krate)
 }
 
-pub fn check_cfg_attr_value(db: &dyn ExpandDatabase, attr: &TokenTree, krate: Crate) -> Option<bool> {
+pub fn check_cfg_attr_value(
+    db: &dyn ExpandDatabase,
+    attr: &TokenTree,
+    krate: Crate,
+) -> Option<bool> {
     let cfg_expr = parse_from_attr_token_tree(attr)?;
     let enabled = krate.cfg_options(db).check(&cfg_expr) != Some(false);
     Some(enabled)
 }
 
-fn process_has_attrs_with_possible_comma<I: HasAttrs>(db: &dyn ExpandDatabase, items: impl Iterator<Item = I>, krate: Crate, remove: &mut FxHashSet<SyntaxElement>) -> Option<()> {
+fn process_has_attrs_with_possible_comma<I: HasAttrs>(
+    db: &dyn ExpandDatabase,
+    items: impl Iterator<Item = I>,
+    krate: Crate,
+    remove: &mut FxHashSet<SyntaxElement>,
+) -> Option<()> {
     for item in items {
         let field_attrs = item.attrs();
         'attrs: for attr in field_attrs {
@@ -126,13 +143,21 @@ fn remove_tokens_within_cfg_attr(meta: Meta) -> Option<FxHashSet<SyntaxElement>>
 }
 
 /// Removes a possible comma after the [AstNode]
-fn remove_possible_comma(item: &impl AstNode, res: &mut FxHashSet<SyntaxElement>) {
+fn remove_possible_comma(
+    item: &impl AstNode,
+    res: &mut FxHashSet<SyntaxElement>,
+) {
     if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
         res.insert(comma);
     }
 }
 
-fn process_enum(db: &dyn ExpandDatabase, variants: VariantList, krate: Crate, remove: &mut FxHashSet<SyntaxElement>) -> Option<()> {
+fn process_enum(
+    db: &dyn ExpandDatabase,
+    variants: VariantList,
+    krate: Crate,
+    remove: &mut FxHashSet<SyntaxElement>,
+) -> Option<()> {
     'variant: for variant in variants.variants() {
         for attr in variant.attrs() {
             if let Some(enabled) = check_cfg(db, &attr, krate) {
@@ -175,7 +200,11 @@ fn process_enum(db: &dyn ExpandDatabase, variants: VariantList, krate: Crate, re
     Some(())
 }
 
-pub(crate) fn process_cfg_attrs(db: &dyn ExpandDatabase, node: &SyntaxNode, loc: &MacroCallLoc) -> Option<FxHashSet<SyntaxElement>> {
+pub(crate) fn process_cfg_attrs(
+    db: &dyn ExpandDatabase,
+    node: &SyntaxNode,
+    loc: &MacroCallLoc,
+) -> Option<FxHashSet<SyntaxElement>> {
     // FIXME: #[cfg_eval] is not implemented. But it is not stable yet
     let is_derive = match loc.def.kind {
         MacroDefKind::BuiltInDerive(..)
@@ -329,7 +358,10 @@ mod tests {
     use expect_test::{Expect, expect};
     use syntax::{AstNode, SourceFile, ast::Attr};
     use crate::cfg_process::parse_from_attr_token_tree;
-    fn check_dnf_from_syntax(input: &str, expect: Expect) {
+    fn check_dnf_from_syntax(
+        input: &str,
+        expect: Expect,
+    ) {
         let parse = SourceFile::parse(input, span::Edition::CURRENT);
         let node = match parse.tree().syntax().descendants().find_map(Attr::cast) {
             Some(it) => it,

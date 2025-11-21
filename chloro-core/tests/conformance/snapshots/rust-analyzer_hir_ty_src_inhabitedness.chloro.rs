@@ -22,7 +22,12 @@ use crate::{
 };
 
 /// Checks whether a type is visibly uninhabited from a particular module.
-pub(crate) fn is_ty_uninhabited_from<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, target_mod: ModuleId, env: Arc<TraitEnvironment<'db>>) -> bool {
+pub(crate) fn is_ty_uninhabited_from<'db>(
+    infcx: &InferCtxt<'db>,
+    ty: Ty<'db>,
+    target_mod: ModuleId,
+    env: Arc<TraitEnvironment<'db>>,
+) -> bool {
     let _p = tracing::info_span!("is_ty_uninhabited_from", ?ty).entered();
     let mut uninhabited_from = UninhabitedFrom::new(infcx, target_mod, env);
     let inhabitedness = ty.visit_with(&mut uninhabited_from);
@@ -30,7 +35,13 @@ pub(crate) fn is_ty_uninhabited_from<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, t
 }
 
 /// Checks whether a variant is visibly uninhabited from a particular module.
-pub(crate) fn is_enum_variant_uninhabited_from<'db>(infcx: &InferCtxt<'db>, variant: EnumVariantId, subst: GenericArgs<'db>, target_mod: ModuleId, env: Arc<TraitEnvironment<'db>>) -> bool {
+pub(crate) fn is_enum_variant_uninhabited_from<'db>(
+    infcx: &InferCtxt<'db>,
+    variant: EnumVariantId,
+    subst: GenericArgs<'db>,
+    target_mod: ModuleId,
+    env: Arc<TraitEnvironment<'db>>,
+) -> bool {
     let _p = tracing::info_span!("is_enum_variant_uninhabited_from").entered();
     let mut uninhabited_from = UninhabitedFrom::new(infcx, target_mod, env);
     let inhabitedness = uninhabited_from.visit_variant(variant.into(), subst);
@@ -53,7 +64,10 @@ struct VisiblyUninhabited;
 impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
     type Result = ControlFlow<VisiblyUninhabited>;
 
-    fn visit_ty(&mut self, mut ty: Ty<'db>) -> ControlFlow<VisiblyUninhabited> {
+    fn visit_ty(
+        &mut self,
+        mut ty: Ty<'db>,
+    ) -> ControlFlow<VisiblyUninhabited> {
         if self.recursive_ty.contains(&ty) || self.max_depth == 0 {
             // rustc considers recursive types always inhabited. I think it is valid to consider
             // recursive types as always uninhabited, but we should do what rustc is doing.
@@ -85,7 +99,11 @@ impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
 }
 
 impl<'a, 'db> UninhabitedFrom<'a, 'db> {
-    fn new(infcx: &'a InferCtxt<'db>, target_mod: ModuleId, env: Arc<TraitEnvironment<'db>>) -> Self {
+    fn new(
+        infcx: &'a InferCtxt<'db>,
+        target_mod: ModuleId,
+        env: Arc<TraitEnvironment<'db>>,
+    ) -> Self {
         Self { target_mod, recursive_ty: FxHashSet::default(), max_depth: 500, infcx, env }
     }
 
@@ -99,7 +117,11 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
         self.interner().db
     }
 
-    fn visit_adt(&mut self, adt: AdtId, subst: GenericArgs<'db>) -> ControlFlow<VisiblyUninhabited> {
+    fn visit_adt(
+        &mut self,
+        adt: AdtId,
+        subst: GenericArgs<'db>,
+    ) -> ControlFlow<VisiblyUninhabited> {
         // An ADT is uninhabited iff all its variants uninhabited.
         match adt {
             // rustc: For now, `union`s are never considered uninhabited.
@@ -120,7 +142,11 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
         }
     }
 
-    fn visit_variant(&mut self, variant: VariantId, subst: GenericArgs<'db>) -> ControlFlow<VisiblyUninhabited> {
+    fn visit_variant(
+        &mut self,
+        variant: VariantId,
+        subst: GenericArgs<'db>,
+    ) -> ControlFlow<VisiblyUninhabited> {
         let variant_data = variant.fields(self.db());
         let fields = variant_data.fields();
         if fields.is_empty() {
@@ -135,7 +161,12 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
         CONTINUE_OPAQUELY_INHABITED
     }
 
-    fn visit_field(&mut self, vis: Option<Visibility>, ty: &EarlyBinder<'db, Ty<'db>>, subst: GenericArgs<'db>) -> ControlFlow<VisiblyUninhabited> {
+    fn visit_field(
+        &mut self,
+        vis: Option<Visibility>,
+        ty: &EarlyBinder<'db, Ty<'db>>,
+        subst: GenericArgs<'db>,
+    ) -> ControlFlow<VisiblyUninhabited> {
         if vis.is_none_or(|it| it.is_visible_from(self.db(), self.target_mod)) {
             let ty = ty.instantiate(self.interner(), subst);
             ty.visit_with(self)

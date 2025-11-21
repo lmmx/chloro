@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1336 bytes
-Chloro size:   1202 bytes
+Chloro size:   1213 bytes
 Rustfmt size:  1370 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,9 @@ Rustfmt size:  1370 bytes
 -// Diagnostic: expected-function
 -//
 -// This diagnostic is triggered if a call is made on something that is not callable.
--pub(crate) fn expected_function(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::ExpectedFunction<'_>,
--) -> Diagnostic {
-+pub(crate) fn expected_function(ctx: &DiagnosticsContext<'_>, d: &hir::ExpectedFunction<'_>) -> Diagnostic {
+ pub(crate) fn expected_function(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::ExpectedFunction<'_>,
      Diagnostic::new_with_syntax_node_ptr(
          ctx,
          DiagnosticCode::RustcHardError("E0618"),

@@ -32,7 +32,11 @@ use crate::{
 /// - the yielded types don't contain inference variables (but may contain `TyKind::Error`).
 /// - a type won't be yielded more than once; in other words, the returned iterator will stop if it
 ///   detects a cycle in the deref chain.
-pub fn autoderef<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, ty: Canonical<'db, Ty<'db>>) -> impl Iterator<Item = Ty<'db>> + use<'db> {
+pub fn autoderef<'db>(
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    ty: Canonical<'db, Ty<'db>>,
+) -> impl Iterator<Item = Ty<'db>> + use<'db> {
     let mut table = InferenceTable::new(db, env, None);
     let ty = table.instantiate_canonical(ty);
     let mut autoderef = Autoderef::new_no_tracking(&mut table, ty);
@@ -57,14 +61,22 @@ pub fn autoderef<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>,
 }
 
 fn len(&self) -> usize;
-fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
+fn push(
+    &mut self,
+    ty: Ty<'db>,
+    kind: AutoderefKind,
+);
 
 impl<'db> TrackAutoderefSteps<'db> for usize {
     fn len(&self) -> usize {
         *self
     }
 
-    fn push(&mut self, _: Ty<'db>, _: AutoderefKind) {
+    fn push(
+        &mut self,
+        _: Ty<'db>,
+        _: AutoderefKind,
+    ) {
         *self += 1;
     }
 }
@@ -74,7 +86,11 @@ impl<'db> TrackAutoderefSteps<'db> for Vec<(Ty<'db>, AutoderefKind)> {
         self.len()
     }
 
-    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
+    fn push(
+        &mut self,
+        ty: Ty<'db>,
+        kind: AutoderefKind,
+    ) {
         self.push((ty, kind));
     }
 }
@@ -169,19 +185,28 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
 }
 
 impl<'a, 'db> Autoderef<'a, 'db> {
-    pub(crate) fn new(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
+    pub(crate) fn new(
+        table: &'a mut InferenceTable<'db>,
+        base_ty: Ty<'db>,
+    ) -> Self {
         Self::new_impl(table, base_ty)
     }
 }
 
 impl<'a, 'db> Autoderef<'a, 'db, usize> {
-    pub(crate) fn new_no_tracking(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
+    pub(crate) fn new_no_tracking(
+        table: &'a mut InferenceTable<'db>,
+        base_ty: Ty<'db>,
+    ) -> Self {
         Self::new_impl(table, base_ty)
     }
 }
 
 impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
-    fn new_impl(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
+    fn new_impl(
+        table: &'a mut InferenceTable<'db>,
+        base_ty: Ty<'db>,
+    ) -> Self {
         Autoderef {
             state: AutoderefSnapshot {
                 steps: Steps::default(),
@@ -231,7 +256,10 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
         }
     }
 
-    fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
+    fn overloaded_deref_ty(
+        &mut self,
+        ty: Ty<'db>,
+    ) -> Option<Ty<'db>> {
         debug!("overloaded_deref_ty({:?})", ty);
         let interner = self.table.interner();
         // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.
@@ -297,7 +325,10 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
     }
 }
 
-fn structurally_normalize_ty<'db>(table: &InferenceTable<'db>, ty: Ty<'db>) -> Option<(Ty<'db>, PredicateObligations<'db>)> {
+fn structurally_normalize_ty<'db>(
+    table: &InferenceTable<'db>,
+    ty: Ty<'db>,
+) -> Option<(Ty<'db>, PredicateObligations<'db>)> {
     let mut ocx = ObligationCtxt::new(&table.infer_ctxt);
     let Ok(normalized_ty) =
         ocx.structurally_normalize_ty(&ObligationCause::misc(), table.trait_env.env, ty)
@@ -313,7 +344,10 @@ fn structurally_normalize_ty<'db>(table: &InferenceTable<'db>, ty: Ty<'db>) -> O
     Some((normalized_ty, ocx.into_pending_obligations()))
 }
 
-pub(crate) fn overloaded_deref_ty<'db>(table: &InferenceTable<'db>, ty: Ty<'db>) -> Option<InferOk<'db, Ty<'db>>> {
+pub(crate) fn overloaded_deref_ty<'db>(
+    table: &InferenceTable<'db>,
+    ty: Ty<'db>,
+) -> Option<InferOk<'db, Ty<'db>>> {
     let interner = table.interner();
     let trait_target = LangItem::DerefTarget.resolve_type_alias(table.db, table.trait_env.krate)?;
     let (normalized_ty, obligations) =

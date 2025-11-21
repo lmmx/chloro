@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1596 bytes
-Chloro size:   1393 bytes
+Chloro size:   1404 bytes
 Rustfmt size:  1596 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,9 @@ Rustfmt size:  1596 bytes
 -//
 -// This diagnostic is shown when a `Fn`-trait-style generic parameters (`Trait(A, B) -> C`)
 -// was used on non-`Fn` trait/type.
--pub(crate) fn parenthesized_generic_args_without_fn_trait(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::ParenthesizedGenericArgsWithoutFnTrait,
--) -> Diagnostic {
-+pub(crate) fn parenthesized_generic_args_without_fn_trait(ctx: &DiagnosticsContext<'_>, d: &hir::ParenthesizedGenericArgsWithoutFnTrait) -> Diagnostic {
-     Diagnostic::new_with_syntax_node_ptr(
-         ctx,
-         DiagnosticCode::RustcHardError("E0214"),
+ pub(crate) fn parenthesized_generic_args_without_fn_trait(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::ParenthesizedGenericArgsWithoutFnTrait,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

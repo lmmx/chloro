@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 948 bytes
-Chloro size:   827 bytes
+Chloro size:   838 bytes
 Rustfmt size:  948 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,10 @@ Rustfmt size:  948 bytes
 -// Diagnostic: malformed-derive
 -//
 -// This diagnostic is shown when the derive attribute has invalid input.
--pub(crate) fn malformed_derive(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::MalformedDerive,
--) -> Diagnostic {
-+pub(crate) fn malformed_derive(ctx: &DiagnosticsContext<'_>, d: &hir::MalformedDerive) -> Diagnostic {
+ pub(crate) fn malformed_derive(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MalformedDerive,
+ ) -> Diagnostic {
      let display_range = ctx.sema.diagnostics_display_range(d.node);
 -
      Diagnostic::new(

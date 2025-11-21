@@ -4,7 +4,10 @@ use syntax::{AstNode, TextRange, TextSize, ast::HasVisibility};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
+pub(crate) fn private_field(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::PrivateField,
+) -> Diagnostic {
     // FIXME: add quickfix
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
@@ -25,7 +28,12 @@ pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField)
     ))
 }
 
-pub(crate) fn field_is_private_fixes(sema: &Semantics<'_, RootDatabase>, usage_file_id: EditionedFileId, private_field: hir::Field, fix_range: TextRange) -> Option<Vec<Assist>> {
+pub(crate) fn field_is_private_fixes(
+    sema: &Semantics<'_, RootDatabase>,
+    usage_file_id: EditionedFileId,
+    private_field: hir::Field,
+    fix_range: TextRange,
+) -> Option<Vec<Assist>> {
     let def_crate = private_field.krate(sema.db);
     let usage_crate = sema.file_to_module_def(usage_file_id.file_id(sema.db))?.krate();
     let mut visibility_text = if usage_crate == def_crate { "pub(crate) " } else { "pub " };

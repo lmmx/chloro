@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10526 bytes
-Chloro size:   10209 bytes
+Chloro size:   10266 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -45,9 +45,14 @@ Rustfmt size:  10803 bytes
 -//     frobnicate();
 -// }
 -// ```
- pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn remove_unused_param(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let param: ast::Param = ctx.find_node_at_offset()?;
      let ident_pat = match param.pat()? {
+         ast::Pat::IdentPat(it) => it,
          _ => return None,
      };
      let func = param.syntax().ancestors().find_map(ast::Fn::cast)?;
@@ -92,21 +97,6 @@ Rustfmt size:  10803 bytes
              }
              builder.add_file_edits(ctx.vfs_file_id(), editor);
          },
-     )
- }
- 
--fn process_usages(
--    ctx: &AssistContext<'_>,
--    builder: &mut SourceChangeBuilder,
--    editioned_file_id: EditionedFileId,
--    references: Vec<FileReference>,
--    arg_to_remove: usize,
--    is_self_present: bool,
--) {
-+fn process_usages(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, editioned_file_id: EditionedFileId, references: Vec<FileReference>, arg_to_remove: usize, is_self_present: bool) {
-     let source_file = ctx.sema.parse(editioned_file_id);
-     let file_id = editioned_file_id.file_id(ctx.db());
-     builder.edit_file(file_id);
      let possible_ranges = references
          .into_iter()
          .filter_map(|usage| process_usage(&source_file, usage, arg_to_remove, is_self_present));
@@ -125,19 +115,6 @@ Rustfmt size:  10803 bytes
              continue;
          };
          let mut editor = builder.make_editor(&parent);
-     }
- }
- 
--fn process_usage(
--    source_file: &SourceFile,
--    FileReference { range, .. }: FileReference,
--    mut arg_to_remove: usize,
--    is_self_present: bool,
--) -> Option<Vec<SyntaxElement>> {
-+fn process_usage(source_file: &SourceFile, FileReference { range, .. }: FileReference, mut arg_to_remove: usize, is_self_present: bool) -> Option<Vec<SyntaxElement>> {
-     let call_expr_opt: Option<ast::CallExpr> = find_node_at_range(source_file.syntax(), range);
-     if let Some(call_expr) = call_expr_opt {
-         let call_expr_range = call_expr.expr()?.syntax().text_range();
          let arg = call_expr.arg_list()?.args().nth(arg_to_remove)?;
          return Some(elements_to_remove(arg.syntax()));
      }

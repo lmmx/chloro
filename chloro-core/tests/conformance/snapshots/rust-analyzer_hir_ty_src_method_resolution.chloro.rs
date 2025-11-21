@@ -148,9 +148,11 @@ impl TyFingerprint {
 
 
 
-type TraitFpMap = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;
+type TraitFpMap =
+    FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;
 
-type TraitFpMapCollector = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Vec<ImplId>>>;
+type TraitFpMapCollector =
+    FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Vec<ImplId>>>;
 
 /// Trait impls defined or available in some crate.
 #[derive(Debug, Eq, PartialEq)]
@@ -159,21 +161,30 @@ pub struct TraitImpls {
 }
 
 impl TraitImpls {
-    pub(crate) fn trait_impls_in_crate_query(db: &dyn HirDatabase, krate: Crate) -> Arc<Self> {
+    pub(crate) fn trait_impls_in_crate_query(
+        db: &dyn HirDatabase,
+        krate: Crate,
+    ) -> Arc<Self> {
         let _p = tracing::info_span!("trait_impls_in_crate_query", ?krate).entered();
         let mut impls = FxHashMap::default();
         Self::collect_def_map(db, &mut impls, crate_def_map(db, krate));
         Arc::new(Self::finish(impls))
     }
 
-    pub(crate) fn trait_impls_in_block_query(db: &dyn HirDatabase, block: BlockId) -> Option<Arc<Self>> {
+    pub(crate) fn trait_impls_in_block_query(
+        db: &dyn HirDatabase,
+        block: BlockId,
+    ) -> Option<Arc<Self>> {
         let _p = tracing::info_span!("trait_impls_in_block_query").entered();
         let mut impls = FxHashMap::default();
         Self::collect_def_map(db, &mut impls, block_def_map(db, block));
         if impls.is_empty() { None } else { Some(Arc::new(Self::finish(impls))) }
     }
 
-    pub(crate) fn trait_impls_in_deps_query(db: &dyn HirDatabase, krate: Crate) -> Arc<[Arc<Self>]> {
+    pub(crate) fn trait_impls_in_deps_query(
+        db: &dyn HirDatabase,
+        krate: Crate,
+    ) -> Arc<[Arc<Self>]> {
         let _p = tracing::info_span!("trait_impls_in_deps_query", ?krate).entered();
         Arc::from_iter(
             db.transitive_deps(krate).into_iter().map(|krate| db.trait_impls_in_crate(krate)),
@@ -189,7 +200,11 @@ impl TraitImpls {
         }
     }
 
-    fn collect_def_map(db: &dyn HirDatabase, map: &mut TraitFpMapCollector, def_map: &DefMap) {
+    fn collect_def_map(
+        db: &dyn HirDatabase,
+        map: &mut TraitFpMapCollector,
+        def_map: &DefMap,
+    ) {
         for (_module_id, module_data) in def_map.modules() {
             for impl_id in module_data.scope.impls() {
                 // Reservation impls should be ignored during trait resolution, so we never need
@@ -222,7 +237,10 @@ impl TraitImpls {
     }
 
     /// Queries all trait impls for the given type.
-    pub fn for_self_ty_without_blanket_impls(&self, fp: TyFingerprint) -> impl Iterator<Item = ImplId> + '_ {
+    pub fn for_self_ty_without_blanket_impls(
+        &self,
+        fp: TyFingerprint,
+    ) -> impl Iterator<Item = ImplId> + '_ {
         self.map
             .values()
             .flat_map(move |impls| impls.get(&Some(fp)).into_iter())
@@ -230,7 +248,10 @@ impl TraitImpls {
     }
 
     /// Queries all impls of the given trait.
-    pub fn for_trait(&self, trait_: TraitId) -> impl Iterator<Item = ImplId> + '_ {
+    pub fn for_trait(
+        &self,
+        trait_: TraitId,
+    ) -> impl Iterator<Item = ImplId> + '_ {
         self.map
             .get(&trait_)
             .into_iter()
@@ -238,7 +259,11 @@ impl TraitImpls {
     }
 
     /// Queries all impls of `trait_` that may apply to `self_ty`.
-    pub fn for_trait_and_self_ty(&self, trait_: TraitId, self_ty: TyFingerprint) -> impl Iterator<Item = ImplId> + '_ {
+    pub fn for_trait_and_self_ty(
+        &self,
+        trait_: TraitId,
+        self_ty: TyFingerprint,
+    ) -> impl Iterator<Item = ImplId> + '_ {
         self.map
             .get(&trait_)
             .into_iter()
@@ -247,7 +272,11 @@ impl TraitImpls {
     }
 
     /// Queries whether `self_ty` has potentially applicable implementations of `trait_`.
-    pub fn has_impls_for_trait_and_self_ty(&self, trait_: TraitId, self_ty: TyFingerprint) -> bool {
+    pub fn has_impls_for_trait_and_self_ty(
+        &self,
+        trait_: TraitId,
+        self_ty: TyFingerprint,
+    ) -> bool {
         self.for_trait_and_self_ty(trait_, self_ty).next().is_some()
     }
 
@@ -270,7 +299,10 @@ pub struct InherentImpls {
 }
 
 impl InherentImpls {
-    pub(crate) fn inherent_impls_in_crate_query(db: &dyn HirDatabase, krate: Crate) -> Arc<Self> {
+    pub(crate) fn inherent_impls_in_crate_query(
+        db: &dyn HirDatabase,
+        krate: Crate,
+    ) -> Arc<Self> {
         let _p = tracing::info_span!("inherent_impls_in_crate_query", ?krate).entered();
         let mut impls = Self { map: FxHashMap::default(), invalid_impls: Vec::default() };
         let crate_def_map = crate_def_map(db, krate);
@@ -279,7 +311,10 @@ impl InherentImpls {
         Arc::new(impls)
     }
 
-    pub(crate) fn inherent_impls_in_block_query(db: &dyn HirDatabase, block: BlockId) -> Option<Arc<Self>> {
+    pub(crate) fn inherent_impls_in_block_query(
+        db: &dyn HirDatabase,
+        block: BlockId,
+    ) -> Option<Arc<Self>> {
         let _p = tracing::info_span!("inherent_impls_in_block_query").entered();
         let mut impls = Self { map: FxHashMap::default(), invalid_impls: Vec::default() };
         let block_def_map = block_def_map(db, block);
@@ -297,7 +332,11 @@ impl InherentImpls {
         self.map.shrink_to_fit();
     }
 
-    fn collect_def_map(&mut self, db: &dyn HirDatabase, def_map: &DefMap) {
+    fn collect_def_map(
+        &mut self,
+        db: &dyn HirDatabase,
+        def_map: &DefMap,
+    ) {
         for (_module_id, module_data) in def_map.modules() {
             for impl_id in module_data.scope.impls() {
                 let data = db.impl_signature(impl_id);
@@ -330,7 +369,10 @@ impl InherentImpls {
         }
     }
 
-    pub fn for_self_ty<'db>(&self, self_ty: Ty<'db>) -> &[ImplId] {
+    pub fn for_self_ty<'db>(
+        &self,
+        self_ty: Ty<'db>,
+    ) -> &[ImplId] {
         match TyFingerprint::for_inherent_impl(self_ty) {
             Some(fp) => self.map.get(&fp).map(|vec| vec.as_ref()).unwrap_or(&[]),
             None => &[],
@@ -346,7 +388,11 @@ impl InherentImpls {
     }
 }
 
-pub(crate) fn incoherent_inherent_impl_crates(db: &dyn HirDatabase, krate: Crate, fp: TyFingerprint) -> SmallVec<[Crate; 2]> {
+pub(crate) fn incoherent_inherent_impl_crates(
+    db: &dyn HirDatabase,
+    krate: Crate,
+    fp: TyFingerprint,
+) -> SmallVec<[Crate; 2]> {
     let _p = tracing::info_span!("incoherent_inherent_impl_crates").entered();
     let mut res = SmallVec::new();
     // should pass crate for finger print and do reverse deps
@@ -359,7 +405,11 @@ pub(crate) fn incoherent_inherent_impl_crates(db: &dyn HirDatabase, krate: Crate
     res
 }
 
-pub fn def_crates<'db>(db: &'db dyn HirDatabase, ty: Ty<'db>, cur_crate: Crate) -> Option<SmallVec<[Crate; 2]>> {
+pub fn def_crates<'db>(
+    db: &'db dyn HirDatabase,
+    ty: Ty<'db>,
+    cur_crate: Crate,
+) -> Option<SmallVec<[Crate; 2]>> {
     match ty.kind() {
         TyKind::Adt(adt_def, _) => {
             let def_id = adt_def.def_id().0;
@@ -431,7 +481,13 @@ pub fn def_crates<'db>(db: &'db dyn HirDatabase, ty: Ty<'db>, cur_crate: Crate) 
 }
 
 /// Look up the method with the given name.
-pub(crate) fn lookup_method<'db>(ty: &Canonical<'db, Ty<'db>>, table: &mut InferenceTable<'db>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: &Name) -> Option<(ReceiverAdjustments, FunctionId, bool)> {
+pub(crate) fn lookup_method<'db>(
+    ty: &Canonical<'db, Ty<'db>>,
+    table: &mut InferenceTable<'db>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: &Name,
+) -> Option<(ReceiverAdjustments, FunctionId, bool)> {
     let mut not_visible = None;
     let res = iterate_method_candidates(
         ty,
@@ -506,7 +562,11 @@ pub struct ReceiverAdjustments {
 }
 
 impl ReceiverAdjustments {
-    pub(crate) fn apply<'db>(&self, table: &mut InferenceTable<'db>, mut ty: Ty<'db>) -> (Ty<'db>, Vec<Adjustment<'db>>) {
+    pub(crate) fn apply<'db>(
+        &self,
+        table: &mut InferenceTable<'db>,
+        mut ty: Ty<'db>,
+    ) -> (Ty<'db>, Vec<Adjustment<'db>>) {
         let mut adjust = Vec::new();
         let mut autoderef = table.autoderef(ty);
         autoderef.next();
@@ -577,12 +637,23 @@ impl ReceiverAdjustments {
         (ty, adjust)
     }
 
-    fn with_autoref(&self, a: AutorefOrPtrAdjustment) -> ReceiverAdjustments {
+    fn with_autoref(
+        &self,
+        a: AutorefOrPtrAdjustment,
+    ) -> ReceiverAdjustments {
         Self { autoref: Some(a), ..*self }
     }
 }
 
-pub(crate) fn iterate_method_candidates<'db, T>(ty: &Canonical<'db, Ty<'db>>, table: &mut InferenceTable<'db>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, mode: LookupMode, mut callback: impl FnMut(ReceiverAdjustments, AssocItemId, bool) -> Option<T>) -> Option<T> {
+pub(crate) fn iterate_method_candidates<'db, T>(
+    ty: &Canonical<'db, Ty<'db>>,
+    table: &mut InferenceTable<'db>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    mode: LookupMode,
+    mut callback: impl FnMut(ReceiverAdjustments, AssocItemId, bool) -> Option<T>,
+) -> Option<T> {
     let mut slot = None;
     _ = iterate_method_candidates_dyn_impl(
         ty,
@@ -603,7 +674,12 @@ pub(crate) fn iterate_method_candidates<'db, T>(ty: &Canonical<'db, Ty<'db>>, ta
     slot
 }
 
-pub fn lookup_impl_const<'db>(infcx: &InferCtxt<'db>, env: Arc<TraitEnvironment<'db>>, const_id: ConstId, subs: GenericArgs<'db>) -> (ConstId, GenericArgs<'db>) {
+pub fn lookup_impl_const<'db>(
+    infcx: &InferCtxt<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+    const_id: ConstId,
+    subs: GenericArgs<'db>,
+) -> (ConstId, GenericArgs<'db>) {
     let interner = infcx.interner;
     let db = interner.db;
     let trait_id = match const_id.lookup(db).container {
@@ -625,7 +701,12 @@ pub fn lookup_impl_const<'db>(infcx: &InferCtxt<'db>, env: Arc<TraitEnvironment<
 
 /// Checks if the self parameter of `Trait` method is the `dyn Trait` and we should
 /// call the method using the vtable.
-pub fn is_dyn_method<'db>(interner: DbInterner<'db>, _env: Arc<TraitEnvironment<'db>>, func: FunctionId, fn_subst: GenericArgs<'db>) -> Option<usize> {
+pub fn is_dyn_method<'db>(
+    interner: DbInterner<'db>,
+    _env: Arc<TraitEnvironment<'db>>,
+    func: FunctionId,
+    fn_subst: GenericArgs<'db>,
+) -> Option<usize> {
     let db = interner.db;
     let ItemContainerId::TraitId(trait_id) = func.lookup(db).container else {
         return None;
@@ -654,7 +735,12 @@ pub fn is_dyn_method<'db>(interner: DbInterner<'db>, _env: Arc<TraitEnvironment<
 /// Looks up the impl method that actually runs for the trait method `func`.
 ///
 /// Returns `func` if it's not a method defined in a trait or the lookup failed.
-pub(crate) fn lookup_impl_method_query<'db>(db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, func: FunctionId, fn_subst: GenericArgs<'db>) -> (FunctionId, GenericArgs<'db>) {
+pub(crate) fn lookup_impl_method_query<'db>(
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    func: FunctionId,
+    fn_subst: GenericArgs<'db>,
+) -> (FunctionId, GenericArgs<'db>) {
     let interner = DbInterner::new_with(db, Some(env.krate), env.block);
     let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
     let ItemContainerId::TraitId(trait_id) = func.lookup(db).container else {
@@ -683,7 +769,12 @@ pub(crate) fn lookup_impl_method_query<'db>(db: &'db dyn HirDatabase, env: Arc<T
     )
 }
 
-fn lookup_impl_assoc_item_for_trait_ref<'db>(infcx: &InferCtxt<'db>, trait_ref: TraitRef<'db>, env: Arc<TraitEnvironment<'db>>, name: &Name) -> Option<(AssocItemId, GenericArgs<'db>)> {
+fn lookup_impl_assoc_item_for_trait_ref<'db>(
+    infcx: &InferCtxt<'db>,
+    trait_ref: TraitRef<'db>,
+    env: Arc<TraitEnvironment<'db>>,
+    name: &Name,
+) -> Option<(AssocItemId, GenericArgs<'db>)> {
     let (impl_id, impl_subst) = find_matching_impl(infcx, &env, trait_ref)?;
     let item =
         impl_id.impl_items(infcx.interner.db).items.iter().find_map(|(n, it)| match *it {
@@ -694,7 +785,11 @@ fn lookup_impl_assoc_item_for_trait_ref<'db>(infcx: &InferCtxt<'db>, trait_ref: 
     Some((item, impl_subst))
 }
 
-pub(crate) fn find_matching_impl<'db>(infcx: &InferCtxt<'db>, env: &TraitEnvironment<'db>, trait_ref: TraitRef<'db>) -> Option<(ImplId, GenericArgs<'db>)> {
+pub(crate) fn find_matching_impl<'db>(
+    infcx: &InferCtxt<'db>,
+    env: &TraitEnvironment<'db>,
+    trait_ref: TraitRef<'db>,
+) -> Option<(ImplId, GenericArgs<'db>)> {
     let trait_ref =
         infcx.at(&ObligationCause::dummy(), env.env).deeply_normalize(trait_ref).ok()?;
     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), env.env, trait_ref);
@@ -718,7 +813,12 @@ pub(crate) fn find_matching_impl<'db>(infcx: &InferCtxt<'db>, env: &TraitEnviron
     }
 }
 
-fn is_inherent_impl_coherent<'db>(db: &'db dyn HirDatabase, def_map: &DefMap, impl_id: ImplId, self_ty: Ty<'db>) -> bool {
+fn is_inherent_impl_coherent<'db>(
+    db: &'db dyn HirDatabase,
+    def_map: &DefMap,
+    impl_id: ImplId,
+    self_ty: Ty<'db>,
+) -> bool {
     let self_ty = self_ty.kind();
     let impl_allowed = match self_ty {
         TyKind::Tuple(_)
@@ -805,7 +905,10 @@ fn is_inherent_impl_coherent<'db>(db: &'db dyn HirDatabase, def_map: &DefMap, im
 /// - All of
 ///   - At least one of the types `T0..=Tn`` must be a local type. Let `Ti`` be the first such type.
 ///   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
-pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool {
+pub fn check_orphan_rules<'db>(
+    db: &'db dyn HirDatabase,
+    impl_: ImplId,
+) -> bool {
     let Some(impl_trait) = db.impl_trait(impl_) else {
         // not a trait impl
         return true;
@@ -858,7 +961,15 @@ pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool 
 }
 
 /// To be used from `hir` only.
-pub fn iterate_path_candidates<'db>(ty: &Canonical<'db, Ty<'db>>, db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+pub fn iterate_path_candidates<'db>(
+    ty: &Canonical<'db, Ty<'db>>,
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     iterate_method_candidates_dyn(
         ty,
         db,
@@ -873,7 +984,16 @@ pub fn iterate_path_candidates<'db>(ty: &Canonical<'db, Ty<'db>>, db: &'db dyn H
 }
 
 /// To be used from `hir` only.
-pub fn iterate_method_candidates_dyn<'db>(ty: &Canonical<'db, Ty<'db>>, db: &'db dyn HirDatabase, env: Arc<TraitEnvironment<'db>>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, mode: LookupMode, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+pub fn iterate_method_candidates_dyn<'db>(
+    ty: &Canonical<'db, Ty<'db>>,
+    db: &'db dyn HirDatabase,
+    env: Arc<TraitEnvironment<'db>>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    mode: LookupMode,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     iterate_method_candidates_dyn_impl(
         ty,
         &mut InferenceTable::new(db, env, None),
@@ -885,7 +1005,15 @@ pub fn iterate_method_candidates_dyn<'db>(ty: &Canonical<'db, Ty<'db>>, db: &'db
     )
 }
 
-fn iterate_method_candidates_dyn_impl<'db>(ty: &Canonical<'db, Ty<'db>>, table: &mut InferenceTable<'db>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, mode: LookupMode, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+fn iterate_method_candidates_dyn_impl<'db>(
+    ty: &Canonical<'db, Ty<'db>>,
+    table: &mut InferenceTable<'db>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    mode: LookupMode,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     let _p = tracing::info_span!(
         "iterate_method_candidates_dyn",
         ?mode,
@@ -946,7 +1074,15 @@ fn iterate_method_candidates_dyn_impl<'db>(ty: &Canonical<'db, Ty<'db>>, table: 
 }
 
 #[tracing::instrument(skip_all, fields(name = ?name))]
-fn iterate_method_candidates_with_autoref<'db>(table: &mut InferenceTable<'db>, receiver_ty: Canonical<'db, Ty<'db>>, first_adjustment: ReceiverAdjustments, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+fn iterate_method_candidates_with_autoref<'db>(
+    table: &mut InferenceTable<'db>,
+    receiver_ty: Canonical<'db, Ty<'db>>,
+    first_adjustment: ReceiverAdjustments,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     let interner = table.interner();
     let mut iterate_method_candidates_by_receiver = move |receiver_ty, first_adjustment| {
         iterate_method_candidates_by_receiver(
@@ -998,23 +1134,51 @@ fn iterate_method_candidates_with_autoref<'db>(table: &mut InferenceTable<'db>, 
     ControlFlow::Continue(())
 }
 
-fn on_inherent_method(&mut self, adjustments: ReceiverAdjustments, item: AssocItemId, is_visible: bool) -> ControlFlow<()>;
-fn on_trait_method(&mut self, adjustments: ReceiverAdjustments, item: AssocItemId, is_visible: bool) -> ControlFlow<()>;
+fn on_inherent_method(
+    &mut self,
+    adjustments: ReceiverAdjustments,
+    item: AssocItemId,
+    is_visible: bool,
+) -> ControlFlow<()>;
+fn on_trait_method(
+    &mut self,
+    adjustments: ReceiverAdjustments,
+    item: AssocItemId,
+    is_visible: bool,
+) -> ControlFlow<()>;
 
 impl<F> MethodCandidateCallback for F
 where
     F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>, {
-    fn on_inherent_method(&mut self, adjustments: ReceiverAdjustments, item: AssocItemId, is_visible: bool) -> ControlFlow<()> {
+    fn on_inherent_method(
+        &mut self,
+        adjustments: ReceiverAdjustments,
+        item: AssocItemId,
+        is_visible: bool,
+    ) -> ControlFlow<()> {
         self(adjustments, item, is_visible)
     }
 
-    fn on_trait_method(&mut self, adjustments: ReceiverAdjustments, item: AssocItemId, is_visible: bool) -> ControlFlow<()> {
+    fn on_trait_method(
+        &mut self,
+        adjustments: ReceiverAdjustments,
+        item: AssocItemId,
+        is_visible: bool,
+    ) -> ControlFlow<()> {
         self(adjustments, item, is_visible)
     }
 }
 
 #[tracing::instrument(skip_all, fields(name = ?name))]
-fn iterate_method_candidates_by_receiver<'db>(table: &mut InferenceTable<'db>, receiver_ty: Canonical<'db, Ty<'db>>, receiver_adjustments: ReceiverAdjustments, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+fn iterate_method_candidates_by_receiver<'db>(
+    table: &mut InferenceTable<'db>,
+    receiver_ty: Canonical<'db, Ty<'db>>,
+    receiver_adjustments: ReceiverAdjustments,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     let receiver_ty = table.instantiate_canonical(receiver_ty);
     // We're looking for methods with *receiver* type receiver_ty. These could
     // be found in any of the derefs of receiver_ty, so we have to go through
@@ -1067,7 +1231,14 @@ fn iterate_method_candidates_by_receiver<'db>(table: &mut InferenceTable<'db>, r
 }
 
 #[tracing::instrument(skip_all, fields(name = ?name))]
-fn iterate_method_candidates_for_self_ty<'db>(self_ty: &Canonical<'db, Ty<'db>>, table: &mut InferenceTable<'db>, traits_in_scope: &FxHashSet<TraitId>, visible_from_module: VisibleFromModule, name: Option<&Name>, callback: &mut dyn MethodCandidateCallback) -> ControlFlow<()> {
+fn iterate_method_candidates_for_self_ty<'db>(
+    self_ty: &Canonical<'db, Ty<'db>>,
+    table: &mut InferenceTable<'db>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    visible_from_module: VisibleFromModule,
+    name: Option<&Name>,
+    callback: &mut dyn MethodCandidateCallback,
+) -> ControlFlow<()> {
     table.run_in_snapshot(|table| {
         let self_ty = table.instantiate_canonical(*self_ty);
         iterate_inherent_methods(
@@ -1098,7 +1269,16 @@ fn iterate_method_candidates_for_self_ty<'db>(self_ty: &Canonical<'db, Ty<'db>>,
 }
 
 #[tracing::instrument(skip_all, fields(name = ?name, visible_from_module, receiver_ty))]
-fn iterate_trait_method_candidates<'db>(self_ty: Ty<'db>, table: &mut InferenceTable<'db>, traits_in_scope: &FxHashSet<TraitId>, name: Option<&Name>, receiver_ty: Option<Ty<'db>>, receiver_adjustments: Option<ReceiverAdjustments>, mode: LookupMode, callback: &mut dyn FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>) -> ControlFlow<()> {
+fn iterate_trait_method_candidates<'db>(
+    self_ty: Ty<'db>,
+    table: &mut InferenceTable<'db>,
+    traits_in_scope: &FxHashSet<TraitId>,
+    name: Option<&Name>,
+    receiver_ty: Option<Ty<'db>>,
+    receiver_adjustments: Option<ReceiverAdjustments>,
+    mode: LookupMode,
+    callback: &mut dyn FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,
+) -> ControlFlow<()> {
     let db = table.db;
     let canonical_self_ty = table.canonicalize(self_ty);
     let krate = table.trait_env.krate;
@@ -1167,7 +1347,16 @@ fn iterate_trait_method_candidates<'db>(self_ty: Ty<'db>, table: &mut InferenceT
 }
 
 #[tracing::instrument(skip_all, fields(name = ?name, visible_from_module, receiver_ty))]
-fn iterate_inherent_methods<'db>(self_ty: Ty<'db>, table: &mut InferenceTable<'db>, name: Option<&Name>, receiver_ty: Option<Ty<'db>>, receiver_adjustments: Option<ReceiverAdjustments>, visible_from_module: VisibleFromModule, mode: LookupMode, callback: &mut dyn FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>) -> ControlFlow<()> {
+fn iterate_inherent_methods<'db>(
+    self_ty: Ty<'db>,
+    table: &mut InferenceTable<'db>,
+    name: Option<&Name>,
+    receiver_ty: Option<Ty<'db>>,
+    receiver_adjustments: Option<ReceiverAdjustments>,
+    visible_from_module: VisibleFromModule,
+    mode: LookupMode,
+    callback: &mut dyn FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,
+) -> ControlFlow<()> {
     let db = table.db;
     let env = table.trait_env.clone();
     // For trait object types and placeholder types with trait bounds, the methods of the trait and
@@ -1315,7 +1504,11 @@ fn iterate_inherent_methods<'db>(self_ty: Ty<'db>, table: &mut InferenceTable<'d
 }
 
 /// Returns the receiver type for the index trait call.
-pub(crate) fn resolve_indexing_op<'db>(table: &mut InferenceTable<'db>, ty: Canonical<'db, Ty<'db>>, index_trait: TraitId) -> Option<ReceiverAdjustments> {
+pub(crate) fn resolve_indexing_op<'db>(
+    table: &mut InferenceTable<'db>,
+    ty: Canonical<'db, Ty<'db>>,
+    index_trait: TraitId,
+) -> Option<ReceiverAdjustments> {
     let ty = table.instantiate_canonical(ty);
     let deref_chain = autoderef_method_receiver(table, ty);
     for (ty, adj) in deref_chain {
@@ -1344,7 +1537,16 @@ enum IsValidCandidate {
 }
 
 #[tracing::instrument(skip_all, fields(name))]
-fn is_valid_impl_method_candidate<'db>(table: &mut InferenceTable<'db>, self_ty: Ty<'db>, receiver_ty: Option<Ty<'db>>, visible_from_module: Option<ModuleId>, name: Option<&Name>, impl_id: ImplId, item: AssocItemId, item_name: &Name) -> IsValidCandidate {
+fn is_valid_impl_method_candidate<'db>(
+    table: &mut InferenceTable<'db>,
+    self_ty: Ty<'db>,
+    receiver_ty: Option<Ty<'db>>,
+    visible_from_module: Option<ModuleId>,
+    name: Option<&Name>,
+    impl_id: ImplId,
+    item: AssocItemId,
+    item_name: &Name,
+) -> IsValidCandidate {
     match item {
         AssocItemId::FunctionId(f) => is_valid_impl_fn_candidate(
             table,
@@ -1385,7 +1587,15 @@ fn is_valid_impl_method_candidate<'db>(table: &mut InferenceTable<'db>, self_ty:
 
 /// Checks whether a given `AssocItemId` is applicable for `receiver_ty`.
 #[tracing::instrument(skip_all, fields(name))]
-fn is_valid_trait_method_candidate<'db>(table: &mut InferenceTable<'db>, trait_id: TraitId, name: Option<&Name>, receiver_ty: Option<Ty<'db>>, item: AssocItemId, self_ty: Ty<'db>, mode: LookupMode) -> IsValidCandidate {
+fn is_valid_trait_method_candidate<'db>(
+    table: &mut InferenceTable<'db>,
+    trait_id: TraitId,
+    name: Option<&Name>,
+    receiver_ty: Option<Ty<'db>>,
+    item: AssocItemId,
+    self_ty: Ty<'db>,
+    mode: LookupMode,
+) -> IsValidCandidate {
     let db = table.db;
     match item {
         AssocItemId::FunctionId(fn_id) => {
@@ -1446,7 +1656,16 @@ fn is_valid_trait_method_candidate<'db>(table: &mut InferenceTable<'db>, trait_i
 }
 
 #[tracing::instrument(skip_all, fields(name))]
-fn is_valid_impl_fn_candidate<'db>(table: &mut InferenceTable<'db>, impl_id: ImplId, fn_id: FunctionId, name: Option<&Name>, receiver_ty: Option<Ty<'db>>, self_ty: Ty<'db>, visible_from_module: Option<ModuleId>, item_name: &Name) -> IsValidCandidate {
+fn is_valid_impl_fn_candidate<'db>(
+    table: &mut InferenceTable<'db>,
+    impl_id: ImplId,
+    fn_id: FunctionId,
+    name: Option<&Name>,
+    receiver_ty: Option<Ty<'db>>,
+    self_ty: Ty<'db>,
+    visible_from_module: Option<ModuleId>,
+    item_name: &Name,
+) -> IsValidCandidate {
     check_that!(name.is_none_or(|n| n == item_name));
     let db = table.db;
     let data = db.function_signature(fn_id);
@@ -1506,7 +1725,11 @@ fn is_valid_impl_fn_candidate<'db>(table: &mut InferenceTable<'db>, impl_id: Imp
 /// This creates Substs for a trait with the given Self type and type variables
 /// for all other parameters, to query the trait solver with it.
 #[tracing::instrument(skip_all)]
-fn generic_implements_goal_ns<'db>(table: &mut InferenceTable<'db>, trait_: TraitId, self_ty: Canonical<'db, Ty<'db>>) -> Canonical<'db, Goal<'db, Predicate<'db>>> {
+fn generic_implements_goal_ns<'db>(
+    table: &mut InferenceTable<'db>,
+    trait_: TraitId,
+    self_ty: Canonical<'db, Ty<'db>>,
+) -> Canonical<'db, Goal<'db, Predicate<'db>>> {
     let args = table.infer_ctxt.fresh_args_for_item(SolverDefId::TraitId(trait_));
     let self_ty = table.instantiate_canonical(self_ty);
     let trait_ref =
@@ -1516,7 +1739,10 @@ fn generic_implements_goal_ns<'db>(table: &mut InferenceTable<'db>, trait_: Trai
     table.canonicalize(goal)
 }
 
-fn autoderef_method_receiver<'db>(table: &mut InferenceTable<'db>, ty: Ty<'db>) -> Vec<(Canonical<'db, Ty<'db>>, ReceiverAdjustments)> {
+fn autoderef_method_receiver<'db>(
+    table: &mut InferenceTable<'db>,
+    ty: Ty<'db>,
+) -> Vec<(Canonical<'db, Ty<'db>>, ReceiverAdjustments)> {
     let interner = table.interner();
     let mut deref_chain = Vec::new();
     let mut autoderef = autoderef::Autoderef::new_no_tracking(table, ty).use_receiver_trait();

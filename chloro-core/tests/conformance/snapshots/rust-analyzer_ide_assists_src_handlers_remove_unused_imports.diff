@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20736 bytes
+Chloro size:   20834 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
@@ -40,7 +40,11 @@ Rustfmt size:  21244 bytes
 -// mod foo {
 -// }
 -// ```
- pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn remove_unused_imports(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      // First, grab the uses that intersect with the current selection.
      let selected_el = match ctx.covering_element() {
          syntax::NodeOrToken::Node(n) => n,
@@ -67,42 +71,8 @@ Rustfmt size:  21244 bytes
      // Peek so we terminate early if an unused use is found. Only do the rest of the work if the user selects the assist.
      if unused.peek().is_some() {
          acc.add(
-     }
- }
- 
--fn is_path_per_ns_unused_in_scope(
--    ctx: &AssistContext<'_>,
--    u: &ast::UseTree,
--    scope: &mut Vec<SearchScope>,
--    path: &PathResolutionPerNs,
--) -> bool {
-+fn is_path_per_ns_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, path: &PathResolutionPerNs) -> bool {
-     if let Some(PathResolution::Def(ModuleDef::Trait(ref t))) = path.type_ns {
-         if is_trait_unused_in_scope(ctx, u, scope, t) {
-             let path = [path.value_ns, path.macro_ns];
-     }
- }
- 
--fn is_path_unused_in_scope(
--    ctx: &AssistContext<'_>,
--    u: &ast::UseTree,
--    scope: &mut Vec<SearchScope>,
--    path: &[Option<PathResolution>],
--) -> bool {
-+fn is_path_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, path: &[Option<PathResolution>]) -> bool {
-     !path
-         .iter()
-         .filter_map(|path| *path)
-         .any(|def| used_once_in_scope(ctx, def, u.rename(), scope))
- }
- 
--fn is_trait_unused_in_scope(
--    ctx: &AssistContext<'_>,
--    u: &ast::UseTree,
--    scope: &mut Vec<SearchScope>,
--    t: &hir::Trait,
--) -> bool {
-+fn is_trait_unused_in_scope(ctx: &AssistContext<'_>, u: &ast::UseTree, scope: &mut Vec<SearchScope>, t: &hir::Trait) -> bool {
+     t: &hir::Trait,
+ ) -> bool {
      !std::iter::once((Definition::Trait(*t), u.rename()))
 -        .chain(
 -            t.items(ctx.db())
@@ -113,13 +83,8 @@ Rustfmt size:  21244 bytes
          .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
  }
  
--fn used_once_in_scope(
--    ctx: &AssistContext<'_>,
--    def: Definition,
--    rename: Option<Rename>,
--    scopes: &Vec<SearchScope>,
--) -> bool {
-+fn used_once_in_scope(ctx: &AssistContext<'_>, def: Definition, rename: Option<Rename>, scopes: &Vec<SearchScope>) -> bool {
+     scopes: &Vec<SearchScope>,
+ ) -> bool {
      let mut found = false;
 -
      for scope in scopes {
@@ -132,7 +97,12 @@ Rustfmt size:  21244 bytes
      found
  }
  
- fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
+ /// Build a search scope spanning the given module but none of its submodules.
+-fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
++fn module_search_scope(
++    db: &RootDatabase,
++    module: hir::Module,
++) -> Vec<SearchScope> {
      let (file_id, range) = {
          let InFile { file_id, value } = module.definition_source(db);
 -        if let Some(InRealFile {

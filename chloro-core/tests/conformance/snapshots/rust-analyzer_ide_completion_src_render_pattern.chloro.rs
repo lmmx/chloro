@@ -14,7 +14,12 @@ use crate::{
     },
 };
 
-pub(crate) fn render_struct_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, strukt: hir::Struct, local_name: Option<Name>) -> Option<CompletionItem> {
+pub(crate) fn render_struct_pat(
+    ctx: RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    strukt: hir::Struct,
+    local_name: Option<Name>,
+) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_struct_pat").entered();
     let fields = strukt.fields(ctx.db());
     let (visible_fields, fields_omitted) = visible_fields(ctx.completion, &fields, strukt)?;
@@ -33,7 +38,14 @@ pub(crate) fn render_struct_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternCon
     Some(build_completion(ctx, label, lookup, pat, strukt, strukt.ty(db), false))
 }
 
-pub(crate) fn render_variant_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, path_ctx: Option<&PathCompletionCtx<'_>>, variant: hir::Variant, local_name: Option<Name>, path: Option<&hir::ModPath>) -> Option<CompletionItem> {
+pub(crate) fn render_variant_pat(
+    ctx: RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    path_ctx: Option<&PathCompletionCtx<'_>>,
+    variant: hir::Variant,
+    local_name: Option<Name>,
+    path: Option<&hir::ModPath>,
+) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_variant_pat").entered();
     let fields = variant.fields(ctx.db());
     let (visible_fields, fields_omitted) = visible_fields(ctx.completion, &fields, variant)?;
@@ -82,7 +94,15 @@ pub(crate) fn render_variant_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternCo
     ))
 }
 
-fn build_completion(ctx: RenderContext<'_>, label: SmolStr, lookup: SmolStr, pat: String, def: impl HasDocs + Copy, adt_ty: hir::Type<'_>, is_variant_missing: bool) -> CompletionItem {
+fn build_completion(
+    ctx: RenderContext<'_>,
+    label: SmolStr,
+    lookup: SmolStr,
+    pat: String,
+    def: impl HasDocs + Copy,
+    adt_ty: hir::Type<'_>,
+    is_variant_missing: bool,
+) -> CompletionItem {
     let mut relevance = ctx.completion_relevance();
     if is_variant_missing {
         relevance.type_match = super::compute_type_match(ctx.completion, &adt_ty);
@@ -105,7 +125,14 @@ fn build_completion(ctx: RenderContext<'_>, label: SmolStr, lookup: SmolStr, pat
     item.build(ctx.db())
 }
 
-fn render_pat(ctx: &RenderContext<'_>, pattern_ctx: &PatternContext, name: &str, kind: StructKind, fields: &[hir::Field], fields_omitted: bool) -> Option<String> {
+fn render_pat(
+    ctx: &RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    name: &str,
+    kind: StructKind,
+    fields: &[hir::Field],
+    fields_omitted: bool,
+) -> Option<String> {
     let mut pat = match kind {
         StructKind::Tuple => render_tuple_as_pat(ctx.snippet_cap(), fields, name, fields_omitted),
         StructKind::Record => render_record_as_pat(
@@ -138,7 +165,14 @@ fn render_pat(ctx: &RenderContext<'_>, pattern_ctx: &PatternContext, name: &str,
     Some(pat)
 }
 
-fn render_record_as_pat(db: &dyn HirDatabase, snippet_cap: Option<SnippetCap>, fields: &[hir::Field], name: &str, fields_omitted: bool, edition: Edition) -> String {
+fn render_record_as_pat(
+    db: &dyn HirDatabase,
+    snippet_cap: Option<SnippetCap>,
+    fields: &[hir::Field],
+    name: &str,
+    fields_omitted: bool,
+    edition: Edition,
+) -> String {
     let fields = fields.iter();
     match snippet_cap {
         Some(_) => {
@@ -162,7 +196,12 @@ fn render_record_as_pat(db: &dyn HirDatabase, snippet_cap: Option<SnippetCap>, f
     }
 }
 
-fn render_tuple_as_pat(snippet_cap: Option<SnippetCap>, fields: &[hir::Field], name: &str, fields_omitted: bool) -> String {
+fn render_tuple_as_pat(
+    snippet_cap: Option<SnippetCap>,
+    fields: &[hir::Field],
+    name: &str,
+    fields_omitted: bool,
+) -> String {
     let fields = fields.iter();
     match snippet_cap {
         Some(_) => {

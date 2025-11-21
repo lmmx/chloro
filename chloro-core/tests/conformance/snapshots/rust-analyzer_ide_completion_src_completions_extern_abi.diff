@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2212 bytes
-Chloro size:   1596 bytes
+Chloro size:   1611 bytes
 Rustfmt size:  2243 bytes
 
 ✗ Outputs DIFFER
@@ -54,17 +54,16 @@ Rustfmt size:  2243 bytes
 -    "unadjusted",
 -];
  
--pub(crate) fn complete_extern_abi(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    expanded: &ast::String,
--) -> Option<()> {
+ pub(crate) fn complete_extern_abi(
+     acc: &mut Completions,
+     ctx: &CompletionContext<'_>,
+     expanded: &ast::String,
+ ) -> Option<()> {
 -    if !expanded
 -        .syntax()
 -        .parent()
 -        .is_some_and(|it| ast::Abi::can_cast(it.kind()))
 -    {
-+pub(crate) fn complete_extern_abi(acc: &mut Completions, ctx: &CompletionContext<'_>, expanded: &ast::String) -> Option<()> {
 +    if !expanded.syntax().parent().is_some_and(|it| ast::Abi::can_cast(it.kind())) {
          return None;
      }

@@ -168,7 +168,15 @@ enum PositionUsedAs {
 }
 
 #[allow(clippy::unnecessary_lazy_evaluations)]
-pub(crate) fn parse(s: &ast::String, fmt_snippet: Option<String>, mut args: FormatArgumentsCollector, is_direct_literal: bool, mut synth: impl FnMut(Name, Option<TextRange>) -> ExprId, mut record_usage: impl FnMut(Name, Option<TextRange>), call_ctx: SyntaxContext) -> FormatArgs {
+pub(crate) fn parse(
+    s: &ast::String,
+    fmt_snippet: Option<String>,
+    mut args: FormatArgumentsCollector,
+    is_direct_literal: bool,
+    mut synth: impl FnMut(Name, Option<TextRange>) -> ExprId,
+    mut record_usage: impl FnMut(Name, Option<TextRange>),
+    call_ctx: SyntaxContext,
+) -> FormatArgs {
     let Ok(text) = s.value() else {
         return FormatArgs {
             template: Default::default(),
@@ -441,7 +449,10 @@ impl FormatArgumentsCollector {
         }
     }
 
-    pub fn add(&mut self, arg: FormatArgument) -> usize {
+    pub fn add(
+        &mut self,
+        arg: FormatArgument,
+    ) -> usize {
         let index = self.arguments.len();
         if let Some(name) = arg.kind.ident() {
             self.names.push((name.clone(), index));
@@ -464,12 +475,18 @@ impl FormatArgumentsCollector {
         index
     }
 
-    pub fn by_name(&self, name: &Name) -> Option<(usize, &FormatArgument)> {
+    pub fn by_name(
+        &self,
+        name: &Name,
+    ) -> Option<(usize, &FormatArgument)> {
         let &(_, i) = self.names.iter().find(|(n, _)| n == name)?;
         Some((i, &self.arguments[i]))
     }
 
-    pub fn by_index(&self, i: usize) -> Option<&FormatArgument> {
+    pub fn by_index(
+        &self,
+        i: usize,
+    ) -> Option<&FormatArgument> {
         (i < self.num_explicit_args).then(|| &self.arguments[i])
     }
 

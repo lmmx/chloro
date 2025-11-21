@@ -12,13 +12,20 @@ use syntax::{
 
 use crate::FileRange;
 
-pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
+pub(crate) fn extend_selection(
+    db: &RootDatabase,
+    frange: FileRange,
+) -> TextRange {
     let sema = Semantics::new(db);
     let src = sema.parse_guess_edition(frange.file_id);
     try_extend_selection(&sema, src.syntax(), frange).unwrap_or(frange.range)
 }
 
-fn try_extend_selection(sema: &Semantics<'_, RootDatabase>, root: &SyntaxNode, frange: FileRange) -> Option<TextRange> {
+fn try_extend_selection(
+    sema: &Semantics<'_, RootDatabase>,
+    root: &SyntaxNode,
+    frange: FileRange,
+) -> Option<TextRange> {
     let range = frange.range;
     let string_kinds = [COMMENT, STRING, BYTE_STRING, C_STRING];
     let list_kinds = [
@@ -93,7 +100,11 @@ fn try_extend_selection(sema: &Semantics<'_, RootDatabase>, root: &SyntaxNode, f
     node.parent().map(|it| it.text_range())
 }
 
-fn extend_tokens_from_range(sema: &Semantics<'_, RootDatabase>, macro_call: ast::MacroCall, original_range: TextRange) -> Option<TextRange> {
+fn extend_tokens_from_range(
+    sema: &Semantics<'_, RootDatabase>,
+    macro_call: ast::MacroCall,
+    original_range: TextRange,
+) -> Option<TextRange> {
     let src = macro_call.syntax().covering_element(original_range);
     let (first_token, last_token) = match src {
         NodeOrToken::Node(it) => (it.first_token()?, it.last_token()?),
@@ -153,7 +164,10 @@ fn shallowest_node(node: &SyntaxNode) -> SyntaxNode {
     node.ancestors().take_while(|n| n.text_range() == node.text_range()).last().unwrap()
 }
 
-fn extend_single_word_in_comment_or_string(leaf: &SyntaxToken, offset: TextSize) -> Option<TextRange> {
+fn extend_single_word_in_comment_or_string(
+    leaf: &SyntaxToken,
+    offset: TextSize,
+) -> Option<TextRange> {
     let text: &str = leaf.text();
     let cursor_position: u32 = (offset - leaf.text_range().start()).into();
     let (before, after) = text.split_at(cursor_position as usize);
@@ -173,7 +187,11 @@ fn extend_single_word_in_comment_or_string(leaf: &SyntaxToken, offset: TextSize)
     if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
 }
 
-fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
+fn extend_ws(
+    root: &SyntaxNode,
+    ws: SyntaxToken,
+    offset: TextSize,
+) -> TextRange {
     let ws_text = ws.text();
     let suffix = TextRange::new(offset, ws.text_range().end()) - ws.text_range().start();
     let prefix = TextRange::new(ws.text_range().start(), offset) - ws.text_range().start();
@@ -197,7 +215,10 @@ fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange 
     ws.text_range()
 }
 
-fn pick_best(l: SyntaxToken, r: SyntaxToken) -> SyntaxToken {
+fn pick_best(
+    l: SyntaxToken,
+    r: SyntaxToken,
+) -> SyntaxToken {
     return if priority(&r) > priority(&l) { r } else { l };
     fn priority(n: &SyntaxToken) -> usize {
         match n.kind() {
@@ -257,7 +278,10 @@ fn extend_comments(comment: ast::Comment) -> Option<TextRange> {
     }
 }
 
-fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
+fn adj_comments(
+    comment: &ast::Comment,
+    dir: Direction,
+) -> ast::Comment {
     let mut res = comment.clone();
     for element in comment.syntax().siblings_with_tokens(dir) {
         let token = match element.as_token() {
@@ -277,7 +301,10 @@ fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
 mod tests {
     use crate::fixture;
     use super::*;
-    fn do_check(before: &str, afters: &[&str]) {
+    fn do_check(
+        before: &str,
+        afters: &[&str],
+    ) {
         let (analysis, position) = fixture::position(before);
         let before = analysis.file_text(position.file_id).unwrap();
         let range = TextRange::empty(position.offset);

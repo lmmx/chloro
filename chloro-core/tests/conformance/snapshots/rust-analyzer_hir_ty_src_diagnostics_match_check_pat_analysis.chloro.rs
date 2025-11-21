@@ -26,11 +26,13 @@ use crate::{
 };
 use super::{FieldPat, Pat, PatKind};
 
-pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
+pub(crate) type DeconstructedPat<'a, 'db> =
+    rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
 
 pub(crate) type MatchArm<'a, 'b, 'db> = rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
 
-pub(crate) type WitnessPat<'a, 'db> = rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
+pub(crate) type WitnessPat<'a, 'db> =
+    rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
 
 /// [Constructor] uses this in unimplemented variants.
 /// It allows porting match expressions from upstream algorithm without losing semantics.
@@ -44,14 +46,21 @@ pub(crate) enum Void {
 pub(crate) struct EnumVariantContiguousIndex(usize);
 
 impl EnumVariantContiguousIndex {
-    fn from_enum_variant_id(db: &dyn HirDatabase, target_evid: EnumVariantId) -> Self {
+    fn from_enum_variant_id(
+        db: &dyn HirDatabase,
+        target_evid: EnumVariantId,
+    ) -> Self {
         // Find the index of this variant in the list of variants.
         use hir_def::Lookup;
         let i = target_evid.lookup(db).index as usize;
         EnumVariantContiguousIndex(i)
     }
 
-    fn to_enum_variant_id(self, db: &dyn HirDatabase, eid: EnumId) -> EnumVariantId {
+    fn to_enum_variant_id(
+        self,
+        db: &dyn HirDatabase,
+        eid: EnumId,
+    ) -> EnumVariantId {
         eid.enum_variants(db).variants[self.0].0
     }
 }
@@ -76,14 +85,23 @@ pub(crate) struct MatchCheckCtx<'a, 'db> {
 }
 
 impl<'a, 'db> MatchCheckCtx<'a, 'db> {
-    pub(crate) fn new(module: ModuleId, infcx: &'a InferCtxt<'db>, env: Arc<TraitEnvironment<'db>>) -> Self {
+    pub(crate) fn new(
+        module: ModuleId,
+        infcx: &'a InferCtxt<'db>,
+        env: Arc<TraitEnvironment<'db>>,
+    ) -> Self {
         let db = infcx.interner.db;
         let def_map = module.crate_def_map(db);
         let exhaustive_patterns = def_map.is_unstable_feature_enabled(&sym::exhaustive_patterns);
         Self { module, db, exhaustive_patterns, env, infcx }
     }
 
-    pub(crate) fn compute_match_usefulness<'b>(&self, arms: &[MatchArm<'a, 'b, 'db>], scrut_ty: Ty<'db>, known_valid_scrutinee: Option<bool>) -> Result<UsefulnessReport<'b, Self>, ()> {
+    pub(crate) fn compute_match_usefulness<'b>(
+        &self,
+        arms: &[MatchArm<'a, 'b, 'db>],
+        scrut_ty: Ty<'db>,
+        known_valid_scrutinee: Option<bool>,
+    ) -> Result<UsefulnessReport<'b, Self>, ()> {
         if scrut_ty.references_non_lt_error() {
             return Err(());
         }
@@ -98,17 +116,27 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         compute_match_usefulness(self, arms, scrut_ty, place_validity, complexity_limit)
     }
 
-    fn is_uninhabited(&self, ty: Ty<'db>) -> bool {
+    fn is_uninhabited(
+        &self,
+        ty: Ty<'db>,
+    ) -> bool {
         is_ty_uninhabited_from(self.infcx, ty, self.module, self.env.clone())
     }
 
     /// Returns whether the given ADT is from another crate declared `#[non_exhaustive]`.
-    fn is_foreign_non_exhaustive(&self, adt: hir_def::AdtId) -> bool {
+    fn is_foreign_non_exhaustive(
+        &self,
+        adt: hir_def::AdtId,
+    ) -> bool {
         let is_local = adt.krate(self.db) == self.module.krate();
         !is_local && self.db.attrs(adt.into()).by_key(sym::non_exhaustive).exists()
     }
 
-    fn variant_id_for_adt(db: &'db dyn HirDatabase, ctor: &Constructor<Self>, adt: hir_def::AdtId) -> Option<VariantId> {
+    fn variant_id_for_adt(
+        db: &'db dyn HirDatabase,
+        ctor: &Constructor<Self>,
+        adt: hir_def::AdtId,
+    ) -> Option<VariantId> {
         match ctor {
             Variant(id) => {
                 let hir_def::AdtId::EnumId(eid) = adt else {
@@ -125,7 +153,11 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         }
     }
 
-    fn list_variant_fields(&self, ty: Ty<'db>, variant: VariantId) -> impl Iterator<Item = (LocalFieldId, Ty<'db>)> {
+    fn list_variant_fields(
+        &self,
+        ty: Ty<'db>,
+        variant: VariantId,
+    ) -> impl Iterator<Item = (LocalFieldId, Ty<'db>)> {
         let (_, substs) = ty.as_adt().unwrap();
         let field_tys = self.db.field_types(variant);
         let fields_len = variant.fields(self.db).fields().len() as u32;
@@ -140,7 +172,10 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         })
     }
 
-    pub(crate) fn lower_pat(&self, pat: &Pat<'db>) -> DeconstructedPat<'a, 'db> {
+    pub(crate) fn lower_pat(
+        &self,
+        pat: &Pat<'db>,
+    ) -> DeconstructedPat<'a, 'db> {
         let singleton = |pat: DeconstructedPat<'a, 'db>| vec![pat.at_index(0)];
         let ctor;
         let mut fields: Vec<_>;
@@ -228,7 +263,10 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         DeconstructedPat::new(ctor, fields, arity, pat.ty, ())
     }
 
-    pub(crate) fn hoist_witness_pat(&self, pat: &WitnessPat<'a, 'db>) -> Pat<'db> {
+    pub(crate) fn hoist_witness_pat(
+        &self,
+        pat: &WitnessPat<'a, 'db>,
+    ) -> Pat<'db> {
         let mut subpatterns = pat.iter_fields().map(|p| self.hoist_witness_pat(p));
         let kind = match pat.ctor() {
             &Bool(value) => PatKind::LiteralBool { value },
@@ -300,7 +338,11 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         self.exhaustive_patterns
     }
 
-    fn ctor_arity(&self, ctor: &rustc_pattern_analysis::constructor::Constructor<Self>, ty: &Self::Ty) -> usize {
+    fn ctor_arity(
+        &self,
+        ctor: &rustc_pattern_analysis::constructor::Constructor<Self>,
+        ty: &Self::Ty,
+    ) -> usize {
         match ctor {
             Struct | Variant(_) | UnionField => match ty.kind() {
                 TyKind::Tuple(tys) => tys.len(),
@@ -327,7 +369,11 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         }
     }
 
-    fn ctor_sub_tys(&self, ctor: &rustc_pattern_analysis::constructor::Constructor<Self>, ty: &Self::Ty) -> impl ExactSizeIterator<Item = (Self::Ty, PrivateUninhabitedField)> {
+    fn ctor_sub_tys(
+        &self,
+        ctor: &rustc_pattern_analysis::constructor::Constructor<Self>,
+        ty: &Self::Ty,
+    ) -> impl ExactSizeIterator<Item = (Self::Ty, PrivateUninhabitedField)> {
         let single = |ty| smallvec![(ty, PrivateUninhabitedField(false))];
         let tys: SmallVec<[_; 2]> = match ctor {
             Struct | Variant(_) | UnionField => match ty.kind() {
@@ -380,7 +426,10 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         tys.into_iter()
     }
 
-    fn ctors_for_ty(&self, ty: &Self::Ty) -> Result<rustc_pattern_analysis::constructor::ConstructorSet<Self>, Self::Error> {
+    fn ctors_for_ty(
+        &self,
+        ty: &Self::Ty,
+    ) -> Result<rustc_pattern_analysis::constructor::ConstructorSet<Self>, Self::Error> {
         let cx = self;
         // Unhandled types are treated as non-exhaustive. Being explicit here instead of falling
         // to catchall arm to ease further implementation.
@@ -445,7 +494,11 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         })
     }
 
-    fn write_variant_name(f: &mut fmt::Formatter<'_>, _ctor: &Constructor<Self>, _ty: &Self::Ty) -> fmt::Result {
+    fn write_variant_name(
+        f: &mut fmt::Formatter<'_>,
+        _ctor: &Constructor<Self>,
+        _ty: &Self::Ty,
+    ) -> fmt::Result {
         write!(f, "<write_variant_name unsupported>")
         // We lack the database here ...
         // let variant = ty.as_adt().and_then(|(adt, _)| Self::variant_id_for_adt(db, ctor, adt));
@@ -465,7 +518,10 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Ok(())
     }
 
-    fn bug(&self, fmt: fmt::Arguments<'_>) {
+    fn bug(
+        &self,
+        fmt: fmt::Arguments<'_>,
+    ) {
         never!("{}", fmt)
     }
 
@@ -473,13 +529,20 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         Err(())
     }
 
-    fn report_mixed_deref_pat_ctors(&self, _deref_pat: &DeconstructedPat<'a, 'db>, _normal_pat: &DeconstructedPat<'a, 'db>) {
+    fn report_mixed_deref_pat_ctors(
+        &self,
+        _deref_pat: &DeconstructedPat<'a, 'db>,
+        _normal_pat: &DeconstructedPat<'a, 'db>,
+    ) {
         // FIXME(deref_patterns): This could report an error comparable to the one in rustc.
     }
 }
 
 impl fmt::Debug for MatchCheckCtx<'_, '_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("MatchCheckCtx").finish()
     }
 }

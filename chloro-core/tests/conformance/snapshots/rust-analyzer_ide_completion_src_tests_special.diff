@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27148 bytes
-Chloro size:   27139 bytes
+Chloro size:   27158 bytes
 Rustfmt size:  27179 bytes
 
 ✗ Outputs DIFFER
@@ -62,6 +62,18 @@ Rustfmt size:  27179 bytes
      check_with_trigger_character(
          r#"
  fn foo { crate:$0 }
+     );
+ }
+ 
+-fn check_signatures(src: &str, kind: CompletionItemKind, reduced: Expect, full: Expect) {
++fn check_signatures(
++    src: &str,
++    kind: CompletionItemKind,
++    reduced: Expect,
++    full: Expect,
++) {
+     const FULL_SIGNATURES_CONFIG: crate::CompletionConfig<'_> = {
+         let mut x = TEST_CONFIG;
          x.full_function_signatures = true;
          x
      };

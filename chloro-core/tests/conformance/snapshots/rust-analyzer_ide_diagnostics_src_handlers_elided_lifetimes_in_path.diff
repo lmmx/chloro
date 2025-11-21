@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2591 bytes
-Chloro size:   2399 bytes
+Chloro size:   2410 bytes
 Rustfmt size:  2591 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,9 @@ Rustfmt size:  2591 bytes
 -//
 -// This diagnostic is triggered when lifetimes are elided in paths. It is a lint only for some cases,
 -// and a hard error for others.
--pub(crate) fn elided_lifetimes_in_path(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::ElidedLifetimesInPath,
--) -> Diagnostic {
-+pub(crate) fn elided_lifetimes_in_path(ctx: &DiagnosticsContext<'_>, d: &hir::ElidedLifetimesInPath) -> Diagnostic {
-     if d.hard_error {
-         Diagnostic::new_with_syntax_node_ptr(
-             ctx,
+ pub(crate) fn elided_lifetimes_in_path(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::ElidedLifetimesInPath,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

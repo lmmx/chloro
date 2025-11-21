@@ -15,7 +15,11 @@ use crate::{
 use super::{DiagnosticsMapConfig, Fix};
 
 /// Determines the LSP severity from a diagnostic
-fn diagnostic_severity(config: &DiagnosticsMapConfig, level: crate::flycheck::DiagnosticLevel, code: Option<&crate::flycheck::DiagnosticCode>) -> Option<lsp_types::DiagnosticSeverity> {
+fn diagnostic_severity(
+    config: &DiagnosticsMapConfig,
+    level: crate::flycheck::DiagnosticLevel,
+    code: Option<&crate::flycheck::DiagnosticCode>,
+) -> Option<lsp_types::DiagnosticSeverity> {
     let res = match level {
         DiagnosticLevel::Ice => lsp_types::DiagnosticSeverity::ERROR,
         DiagnosticLevel::Error => lsp_types::DiagnosticSeverity::ERROR,
@@ -52,7 +56,12 @@ fn is_dummy_macro_file(file_name: &str) -> bool {
 }
 
 /// Converts a Rust span to a LSP location
-fn location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: &DiagnosticSpan, snap: &GlobalStateSnapshot) -> lsp_types::Location {
+fn location(
+    config: &DiagnosticsMapConfig,
+    workspace_root: &AbsPath,
+    span: &DiagnosticSpan,
+    snap: &GlobalStateSnapshot,
+) -> lsp_types::Location {
     let file_name = resolve_path(config, workspace_root, &span.file_name);
     let uri = url_from_abs_path(&file_name);
     let range = {
@@ -70,7 +79,12 @@ fn location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: &Diag
     lsp_types::Location::new(uri, range)
 }
 
-fn position(position_encoding: &PositionEncoding, span: &DiagnosticSpan, line_number: usize, column_offset_utf32: usize) -> lsp_types::Position {
+fn position(
+    position_encoding: &PositionEncoding,
+    span: &DiagnosticSpan,
+    line_number: usize,
+    column_offset_utf32: usize,
+) -> lsp_types::Position {
     let line_index = line_number - span.line_start;
     let column_offset_encoded = match span.text.get(line_index) {
         // Fast path.
@@ -101,7 +115,12 @@ fn position(position_encoding: &PositionEncoding, span: &DiagnosticSpan, line_nu
 ///
 /// This takes locations pointing into the standard library, or generally outside the current
 /// workspace into account and tries to avoid those, in case macros are involved.
-fn primary_location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: &DiagnosticSpan, snap: &GlobalStateSnapshot) -> lsp_types::Location {
+fn primary_location(
+    config: &DiagnosticsMapConfig,
+    workspace_root: &AbsPath,
+    span: &DiagnosticSpan,
+    snap: &GlobalStateSnapshot,
+) -> lsp_types::Location {
     let span_stack = std::iter::successors(Some(span), |span| Some(&span.expansion.as_ref()?.span));
     for span in span_stack.clone() {
         let abs_path = resolve_path(config, workspace_root, &span.file_name);
@@ -117,7 +136,12 @@ fn primary_location(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, spa
 /// Converts a secondary Rust span to a LSP related information
 ///
 /// If the span is unlabelled this will return `None`.
-fn diagnostic_related_information(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, span: DiagnosticSpan, snap: &GlobalStateSnapshot) -> Option<lsp_types::DiagnosticRelatedInformation> {
+fn diagnostic_related_information(
+    config: &DiagnosticsMapConfig,
+    workspace_root: &AbsPath,
+    span: DiagnosticSpan,
+    snap: &GlobalStateSnapshot,
+) -> Option<lsp_types::DiagnosticRelatedInformation> {
     let location = location(config, workspace_root, &span, snap);
     let message = span.label?;
     Some(lsp_types::DiagnosticRelatedInformation { location, message })
@@ -125,7 +149,11 @@ fn diagnostic_related_information(config: &DiagnosticsMapConfig, workspace_root:
 
 /// Resolves paths applying any matching path prefix remappings, and then
 /// joining the path to the workspace root.
-fn resolve_path(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, file_name: &str) -> AbsPathBuf {
+fn resolve_path(
+    config: &DiagnosticsMapConfig,
+    workspace_root: &AbsPath,
+    file_name: &str,
+) -> AbsPathBuf {
     match config
         .remap_prefix
         .iter()
@@ -146,7 +174,12 @@ enum MappedRustChildDiagnostic {
     MessageLine(String),
 }
 
-fn map_rust_child_diagnostic(config: &DiagnosticsMapConfig, workspace_root: &AbsPath, rd: &crate::flycheck::Diagnostic, snap: &GlobalStateSnapshot) -> MappedRustChildDiagnostic {
+fn map_rust_child_diagnostic(
+    config: &DiagnosticsMapConfig,
+    workspace_root: &AbsPath,
+    rd: &crate::flycheck::Diagnostic,
+    snap: &GlobalStateSnapshot,
+) -> MappedRustChildDiagnostic {
     let spans: SmallVec<[&DiagnosticSpan; 1]> = rd.spans.iter().filter(|s| s.is_primary).collect();
     if spans.is_empty() {
         // `rustc` uses these spanless children as a way to print multi-line
@@ -237,7 +270,9 @@ pub(crate) struct MappedRustDiagnostic {
 ///    `relatedInformation` or additional message lines.
 ///
 /// If the diagnostic has no primary span this will return `None`
-pub(crate) fn map_rust_diagnostic_to_lsp(config: &DiagnosticsMapConfig, crate::flycheck::Diagnostic {
+pub(crate) fn map_rust_diagnostic_to_lsp(
+    config: &DiagnosticsMapConfig,
+    crate::flycheck::Diagnostic {
         mut message,
         code: diagnostic_code,
         level,
@@ -245,7 +280,10 @@ pub(crate) fn map_rust_diagnostic_to_lsp(config: &DiagnosticsMapConfig, crate::f
         children,
         rendered,
         ..
-    }: crate::flycheck::Diagnostic, workspace_root: &AbsPath, snap: &GlobalStateSnapshot) -> Vec<MappedRustDiagnostic> {
+    }: crate::flycheck::Diagnostic,
+    workspace_root: &AbsPath,
+    snap: &GlobalStateSnapshot,
+) -> Vec<MappedRustDiagnostic> {
     let (primary_spans, secondary_spans): (
         SmallVec<[DiagnosticSpan; 1]>,
         SmallVec<[DiagnosticSpan; 1]>,
@@ -462,10 +500,17 @@ mod tests {
     use expect_test::{ExpectFile, expect_file};
     use lsp_types::ClientCapabilities;
     use paths::Utf8Path;
-    fn check(diagnostics_json: &str, expect: ExpectFile) {
+    fn check(
+        diagnostics_json: &str,
+        expect: ExpectFile,
+    ) {
         check_with_config(DiagnosticsMapConfig::default(), diagnostics_json, expect)
     }
-    fn check_with_config(config: DiagnosticsMapConfig, diagnostics_json: &str, expect: ExpectFile) {
+    fn check_with_config(
+        config: DiagnosticsMapConfig,
+        diagnostics_json: &str,
+        expect: ExpectFile,
+    ) {
         let diagnostic: crate::flycheck::Diagnostic =
             serde_json::from_str(diagnostics_json).unwrap();
         let workspace_root: &AbsPath = Utf8Path::new("/test/").try_into().unwrap();

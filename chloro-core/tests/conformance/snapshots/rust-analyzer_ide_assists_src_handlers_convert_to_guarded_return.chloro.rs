@@ -20,14 +20,21 @@ use crate::{
     utils::{invert_boolean_expression_legacy, is_never_block},
 };
 
-pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_to_guarded_return(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
         Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
         Either::Right(if_expr) => if_expr_to_guarded_return(if_expr, acc, ctx),
     }
 }
 
-fn if_expr_to_guarded_return(if_expr: ast::IfExpr, acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn if_expr_to_guarded_return(
+    if_expr: ast::IfExpr,
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let else_block = match if_expr.else_branch() {
         Some(ast::ElseBranch::Block(block_expr)) if is_never_block(&ctx.sema, &block_expr) => {
             Some(block_expr)
@@ -120,7 +127,11 @@ fn if_expr_to_guarded_return(if_expr: ast::IfExpr, acc: &mut Assists, ctx: &Assi
     )
 }
 
-fn let_stmt_to_guarded_return(let_stmt: ast::LetStmt, acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn let_stmt_to_guarded_return(
+    let_stmt: ast::LetStmt,
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let pat = let_stmt.pat()?;
     let expr = let_stmt.initializer()?;
     let let_token_range = let_stmt.let_token()?.text_range();
@@ -165,7 +176,10 @@ fn let_stmt_to_guarded_return(let_stmt: ast::LetStmt, acc: &mut Assists, ctx: &A
     )
 }
 
-fn early_expression(parent_container: SyntaxNode, sema: &Semantics<'_, RootDatabase>) -> Option<ast::Expr> {
+fn early_expression(
+    parent_container: SyntaxNode,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<ast::Expr> {
     let return_none_expr = || {
         let none_expr = make::expr_path(make::ext::ident_path("None"));
         make::expr_return(Some(none_expr))

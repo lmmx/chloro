@@ -28,7 +28,10 @@ use crate::{
     try_default,
 };
 
-pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> anyhow::Result<()> {
+pub(crate) fn handle_cancel(
+    state: &mut GlobalState,
+    params: CancelParams,
+) -> anyhow::Result<()> {
     let id: lsp_server::RequestId = match params.id {
         lsp_types::NumberOrString::Number(id) => id.into(),
         lsp_types::NumberOrString::String(id) => id.into(),
@@ -37,7 +40,10 @@ pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> an
     Ok(())
 }
 
-pub(crate) fn handle_work_done_progress_cancel(state: &mut GlobalState, params: WorkDoneProgressCancelParams) -> anyhow::Result<()> {
+pub(crate) fn handle_work_done_progress_cancel(
+    state: &mut GlobalState,
+    params: WorkDoneProgressCancelParams,
+) -> anyhow::Result<()> {
     if let lsp_types::NumberOrString::String(s) = &params.token
         && let Some(id) = s.strip_prefix("rust-analyzer/flycheck/")
         && let Ok(id) = id.parse::<u32>()
@@ -51,7 +57,10 @@ pub(crate) fn handle_work_done_progress_cancel(state: &mut GlobalState, params: 
     Ok(())
 }
 
-pub(crate) fn handle_did_open_text_document(state: &mut GlobalState, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_open_text_document(
+    state: &mut GlobalState,
+    params: DidOpenTextDocumentParams,
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_open_text_document").entered();
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         let already_exists = state
@@ -89,7 +98,10 @@ pub(crate) fn handle_did_open_text_document(state: &mut GlobalState, params: Did
     Ok(())
 }
 
-pub(crate) fn handle_did_change_text_document(state: &mut GlobalState, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_change_text_document(
+    state: &mut GlobalState,
+    params: DidChangeTextDocumentParams,
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_change_text_document").entered();
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         let Some(DocumentData { version, data }) = state.mem_docs.get_mut(&path) else {
@@ -114,7 +126,10 @@ pub(crate) fn handle_did_change_text_document(state: &mut GlobalState, params: D
     Ok(())
 }
 
-pub(crate) fn handle_did_close_text_document(state: &mut GlobalState, params: DidCloseTextDocumentParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_close_text_document(
+    state: &mut GlobalState,
+    params: DidCloseTextDocumentParams,
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_close_text_document").entered();
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         if state.mem_docs.remove(&path).is_err() {
@@ -135,7 +150,10 @@ pub(crate) fn handle_did_close_text_document(state: &mut GlobalState, params: Di
     Ok(())
 }
 
-pub(crate) fn handle_did_save_text_document(state: &mut GlobalState, params: DidSaveTextDocumentParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_save_text_document(
+    state: &mut GlobalState,
+    params: DidSaveTextDocumentParams,
+) -> anyhow::Result<()> {
     if let Ok(vfs_path) = from_proto::vfs_path(&params.text_document.uri) {
         let snap = state.snapshot();
         let file_id = try_default!(snap.vfs_path_to_file_id(&vfs_path)?);
@@ -189,7 +207,10 @@ pub(crate) fn handle_did_save_text_document(state: &mut GlobalState, params: Did
     Ok(())
 }
 
-pub(crate) fn handle_did_change_configuration(state: &mut GlobalState, _params: DidChangeConfigurationParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_change_configuration(
+    state: &mut GlobalState,
+    _params: DidChangeConfigurationParams,
+) -> anyhow::Result<()> {
     // As stated in https://github.com/microsoft/language-server-protocol/issues/676,
     // this notification's parameters should be ignored and the actual config queried separately.
     state.send_request::<lsp_types::request::WorkspaceConfiguration>(
@@ -229,7 +250,10 @@ pub(crate) fn handle_did_change_configuration(state: &mut GlobalState, _params: 
     Ok(())
 }
 
-pub(crate) fn handle_did_change_workspace_folders(state: &mut GlobalState, params: DidChangeWorkspaceFoldersParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_change_workspace_folders(
+    state: &mut GlobalState,
+    params: DidChangeWorkspaceFoldersParams,
+) -> anyhow::Result<()> {
     let config = Arc::make_mut(&mut state.config);
     for workspace in params.event.removed {
         let Ok(path) = workspace.uri.to_file_path() else { continue };
@@ -254,7 +278,10 @@ pub(crate) fn handle_did_change_workspace_folders(state: &mut GlobalState, param
     Ok(())
 }
 
-pub(crate) fn handle_did_change_watched_files(state: &mut GlobalState, params: DidChangeWatchedFilesParams) -> anyhow::Result<()> {
+pub(crate) fn handle_did_change_watched_files(
+    state: &mut GlobalState,
+    params: DidChangeWatchedFilesParams,
+) -> anyhow::Result<()> {
     for change in params.changes.iter().unique_by(|&it| &it.uri) {
         if let Ok(path) = from_proto::abs_path(&change.uri) {
             state.loader.handle.invalidate(path);
@@ -263,7 +290,10 @@ pub(crate) fn handle_did_change_watched_files(state: &mut GlobalState, params: D
     Ok(())
 }
 
-fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
+fn run_flycheck(
+    state: &mut GlobalState,
+    vfs_path: VfsPath,
+) -> bool {
     let _p = tracing::info_span!("run_flycheck").entered();
     let file_id = state.vfs.read().0.file_id(&vfs_path);
     if let Some((file_id, vfs::FileExcluded::No)) = file_id {
@@ -444,19 +474,28 @@ fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
     }
 }
 
-pub(crate) fn handle_cancel_flycheck(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
+pub(crate) fn handle_cancel_flycheck(
+    state: &mut GlobalState,
+    _: (),
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_cancel_flycheck").entered();
     state.flycheck.iter().for_each(|flycheck| flycheck.cancel());
     Ok(())
 }
 
-pub(crate) fn handle_clear_flycheck(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
+pub(crate) fn handle_clear_flycheck(
+    state: &mut GlobalState,
+    _: (),
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_clear_flycheck").entered();
     state.diagnostics.clear_check_all();
     Ok(())
 }
 
-pub(crate) fn handle_run_flycheck(state: &mut GlobalState, params: RunFlycheckParams) -> anyhow::Result<()> {
+pub(crate) fn handle_run_flycheck(
+    state: &mut GlobalState,
+    params: RunFlycheckParams,
+) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_run_flycheck").entered();
     if let Some(text_document) = params.text_document
         && let Ok(vfs_path) = from_proto::vfs_path(&text_document.uri)
@@ -473,7 +512,10 @@ pub(crate) fn handle_run_flycheck(state: &mut GlobalState, params: RunFlycheckPa
     Ok(())
 }
 
-pub(crate) fn handle_abort_run_test(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
+pub(crate) fn handle_abort_run_test(
+    state: &mut GlobalState,
+    _: (),
+) -> anyhow::Result<()> {
     if state.test_run_session.take().is_some() {
         state.send_notification::<lsp_ext::EndRunTest>(());
     }

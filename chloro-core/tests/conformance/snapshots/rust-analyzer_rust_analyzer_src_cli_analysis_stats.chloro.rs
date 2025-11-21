@@ -48,7 +48,10 @@ use crate::cli::{
 };
 
 impl flags::AnalysisStats {
-    pub fn run(self, verbosity: Verbosity) -> anyhow::Result<()> {
+    pub fn run(
+        self,
+        verbosity: Verbosity,
+    ) -> anyhow::Result<()> {
         let mut rng = {
             let seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
             Rand32::new(seed)
@@ -329,7 +332,12 @@ impl flags::AnalysisStats {
         Ok(())
     }
 
-    fn run_data_layout(&self, db: &RootDatabase, adts: &[hir::Adt], verbosity: Verbosity) {
+    fn run_data_layout(
+        &self,
+        db: &RootDatabase,
+        adts: &[hir::Adt],
+        verbosity: Verbosity,
+    ) {
         let mut sw = self.stop_watch();
         let mut all = 0;
         let mut fail = 0;
@@ -363,7 +371,12 @@ impl flags::AnalysisStats {
         report_metric("data layout time", data_layout_time.time.as_millis() as u64, "ms");
     }
 
-    fn run_const_eval(&self, db: &RootDatabase, bodies: &[DefWithBody], verbosity: Verbosity) {
+    fn run_const_eval(
+        &self,
+        db: &RootDatabase,
+        bodies: &[DefWithBody],
+        verbosity: Verbosity,
+    ) {
         let len = bodies
             .iter()
             .filter(|body| matches!(body, DefWithBody::Const(_) | DefWithBody::Static(_)))
@@ -404,7 +417,14 @@ impl flags::AnalysisStats {
     }
 
     /// Invariant: `file_ids` must be sorted and deduped before passing into here
-    fn run_term_search(&self, ws: &ProjectWorkspace, db: &RootDatabase, vfs: &Vfs, file_ids: &[EditionedFileId], verbosity: Verbosity) {
+    fn run_term_search(
+        &self,
+        ws: &ProjectWorkspace,
+        db: &RootDatabase,
+        vfs: &Vfs,
+        file_ids: &[EditionedFileId],
+        verbosity: Verbosity,
+    ) {
         let cargo_config = CargoConfig {
             sysroot: match self.no_sysroot {
                 true => None,
@@ -620,7 +640,12 @@ impl flags::AnalysisStats {
         bar.finish_and_clear();
     }
 
-    fn run_mir_lowering(&self, db: &RootDatabase, bodies: &[DefWithBody], verbosity: Verbosity) {
+    fn run_mir_lowering(
+        &self,
+        db: &RootDatabase,
+        bodies: &[DefWithBody],
+        verbosity: Verbosity,
+    ) {
         let mut bar = match verbosity {
             Verbosity::Quiet | Verbosity::Spammy => ProgressReport::hidden(),
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
@@ -668,7 +693,13 @@ impl flags::AnalysisStats {
         report_metric("mir lowering time", mir_lowering_time.time.as_millis() as u64, "ms");
     }
 
-    fn run_inference(&self, db: &RootDatabase, vfs: &Vfs, bodies: &[DefWithBody], verbosity: Verbosity) {
+    fn run_inference(
+        &self,
+        db: &RootDatabase,
+        vfs: &Vfs,
+        bodies: &[DefWithBody],
+        verbosity: Verbosity,
+    ) {
         let mut bar = match verbosity {
             Verbosity::Quiet | Verbosity::Spammy => ProgressReport::hidden(),
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
@@ -991,7 +1022,13 @@ impl flags::AnalysisStats {
         report_metric("inference time", inference_time.time.as_millis() as u64, "ms");
     }
 
-    fn run_body_lowering(&self, db: &RootDatabase, vfs: &Vfs, bodies: &[DefWithBody], verbosity: Verbosity) {
+    fn run_body_lowering(
+        &self,
+        db: &RootDatabase,
+        vfs: &Vfs,
+        bodies: &[DefWithBody],
+        verbosity: Verbosity,
+    ) {
         let mut bar = match verbosity {
             Verbosity::Quiet | Verbosity::Spammy => ProgressReport::hidden(),
             _ if self.output.is_some() => ProgressReport::hidden(),
@@ -1043,7 +1080,14 @@ impl flags::AnalysisStats {
     }
 
     /// Invariant: `file_ids` must be sorted and deduped before passing into here
-    fn run_ide_things(&self, analysis: Analysis, file_ids: &[EditionedFileId], db: &RootDatabase, vfs: &Vfs, verbosity: Verbosity) {
+    fn run_ide_things(
+        &self,
+        analysis: Analysis,
+        file_ids: &[EditionedFileId],
+        db: &RootDatabase,
+        vfs: &Vfs,
+        verbosity: Verbosity,
+    ) {
         let len = file_ids.len();
         let create_bar = || match verbosity {
             Verbosity::Quiet | Verbosity::Spammy => ProgressReport::hidden(),
@@ -1156,7 +1200,12 @@ impl flags::AnalysisStats {
         eprintln!("{:<20} {} ({} files)", "IDE:", ide_time, file_ids.len());
     }
 
-    fn should_process(&self, db: &RootDatabase, body_id: DefWithBody, module: hir::Module) -> bool {
+    fn should_process(
+        &self,
+        db: &RootDatabase,
+        body_id: DefWithBody,
+        module: hir::Module,
+    ) -> bool {
         if let Some(only_name) = self.only.as_deref() {
             let name = body_id.name(db).unwrap_or_else(Name::missing);
 
@@ -1174,7 +1223,11 @@ impl flags::AnalysisStats {
     }
 }
 
-fn full_name(db: &RootDatabase, body_id: DefWithBody, module: hir::Module) -> String {
+fn full_name(
+    db: &RootDatabase,
+    body_id: DefWithBody,
+    module: hir::Module,
+) -> String {
     module
         .krate()
         .display_name(db)
@@ -1192,7 +1245,12 @@ fn full_name(db: &RootDatabase, body_id: DefWithBody, module: hir::Module) -> St
         .join("::")
 }
 
-fn location_csv_expr(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, expr_id: ExprId) -> String {
+fn location_csv_expr(
+    db: &RootDatabase,
+    vfs: &Vfs,
+    sm: &BodySourceMap,
+    expr_id: ExprId,
+) -> String {
     let src = match sm.expr_syntax(expr_id) {
         Ok(s) => s,
         Err(SyntheticSyntax) => return "synthetic,,".to_owned(),
@@ -1208,7 +1266,12 @@ fn location_csv_expr(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, expr_id: 
     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
 }
 
-fn location_csv_pat(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, pat_id: PatId) -> String {
+fn location_csv_pat(
+    db: &RootDatabase,
+    vfs: &Vfs,
+    sm: &BodySourceMap,
+    pat_id: PatId,
+) -> String {
     let src = match sm.pat_syntax(pat_id) {
         Ok(s) => s,
         Err(SyntheticSyntax) => return "synthetic,,".to_owned(),
@@ -1224,7 +1287,12 @@ fn location_csv_pat(db: &RootDatabase, vfs: &Vfs, sm: &BodySourceMap, pat_id: Pa
     format!("{path},{}:{},{}:{}", start.line + 1, start.col, end.line + 1, end.col)
 }
 
-fn expr_syntax_range<'a>(db: &RootDatabase, vfs: &'a Vfs, sm: &BodySourceMap, expr_id: ExprId) -> Option<(&'a VfsPath, LineCol, LineCol)> {
+fn expr_syntax_range<'a>(
+    db: &RootDatabase,
+    vfs: &'a Vfs,
+    sm: &BodySourceMap,
+    expr_id: ExprId,
+) -> Option<(&'a VfsPath, LineCol, LineCol)> {
     let src = sm.expr_syntax(expr_id);
     if let Ok(src) = src {
         let root = db.parse_or_expand(src.file_id);
@@ -1241,7 +1309,12 @@ fn expr_syntax_range<'a>(db: &RootDatabase, vfs: &'a Vfs, sm: &BodySourceMap, ex
     }
 }
 
-fn pat_syntax_range<'a>(db: &RootDatabase, vfs: &'a Vfs, sm: &BodySourceMap, pat_id: PatId) -> Option<(&'a VfsPath, LineCol, LineCol)> {
+fn pat_syntax_range<'a>(
+    db: &RootDatabase,
+    vfs: &'a Vfs,
+    sm: &BodySourceMap,
+    pat_id: PatId,
+) -> Option<(&'a VfsPath, LineCol, LineCol)> {
     let src = sm.pat_syntax(pat_id);
     if let Ok(src) = src {
         let root = db.parse_or_expand(src.file_id);
@@ -1258,7 +1331,10 @@ fn pat_syntax_range<'a>(db: &RootDatabase, vfs: &'a Vfs, sm: &BodySourceMap, pat
     }
 }
 
-fn shuffle<T>(rng: &mut Rand32, slice: &mut [T]) {
+fn shuffle<T>(
+    rng: &mut Rand32,
+    slice: &mut [T],
+) {
     for i in 0..slice.len() {
         randomize_first(rng, &mut slice[i..]);
     }
@@ -1269,7 +1345,10 @@ fn shuffle<T>(rng: &mut Rand32, slice: &mut [T]) {
     }
 }
 
-fn percentage(n: u64, total: u64) -> u64 {
+fn percentage(
+    n: u64,
+    total: u64,
+) -> u64 {
     (n * 100).checked_div(total).unwrap_or(100)
 }
 
@@ -1277,7 +1356,10 @@ fn percentage(n: u64, total: u64) -> u64 {
 struct UsizeWithUnderscore(usize);
 
 impl fmt::Display for UsizeWithUnderscore {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         let num_str = self.0.to_string();
         if num_str.len() <= 3 {
             return write!(f, "{num_str}");
@@ -1295,7 +1377,10 @@ impl fmt::Display for UsizeWithUnderscore {
 }
 
 impl std::ops::AddAssign for UsizeWithUnderscore {
-    fn add_assign(&mut self, other: UsizeWithUnderscore) {
+    fn add_assign(
+        &mut self,
+        other: UsizeWithUnderscore,
+    ) {
         self.0 += other.0;
     }
 }
@@ -1322,7 +1407,10 @@ impl From<hir_def::item_tree::ItemTreeDataStats> for PrettyItemStats {
 }
 
 impl AddAssign for PrettyItemStats {
-    fn add_assign(&mut self, rhs: Self) {
+    fn add_assign(
+        &mut self,
+        rhs: Self,
+    ) {
         self.traits += rhs.traits;
         self.impls += rhs.impls;
         self.mods += rhs.mods;
@@ -1332,7 +1420,10 @@ impl AddAssign for PrettyItemStats {
 }
 
 impl fmt::Display for PrettyItemStats {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(
             f,
             "traits: {}, impl: {}, mods: {}, macro calls: {}, macro rules: {}",

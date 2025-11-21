@@ -13,7 +13,11 @@ pub enum Direction {
     Down,
 }
 
-pub(crate) fn move_item(db: &RootDatabase, range: FileRange, direction: Direction) -> Option<TextEdit> {
+pub(crate) fn move_item(
+    db: &RootDatabase,
+    range: FileRange,
+    direction: Direction,
+) -> Option<TextEdit> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(range.file_id);
     let item = if range.range.is_empty() {
@@ -31,7 +35,11 @@ pub(crate) fn move_item(db: &RootDatabase, range: FileRange, direction: Directio
     find_ancestors(item, direction, range.range)
 }
 
-fn find_ancestors(item: SyntaxElement, direction: Direction, range: TextRange) -> Option<TextEdit> {
+fn find_ancestors(
+    item: SyntaxElement,
+    direction: Direction,
+    range: TextRange,
+) -> Option<TextEdit> {
     let root = match item {
         SyntaxElement::Node(node) => node,
         SyntaxElement::Token(token) => token.parent()?,
@@ -74,7 +82,11 @@ fn find_ancestors(item: SyntaxElement, direction: Direction, range: TextRange) -
     move_in_direction(&ancestor, direction, range)
 }
 
-fn move_in_direction(node: &SyntaxNode, direction: Direction, range: TextRange) -> Option<TextEdit> {
+fn move_in_direction(
+    node: &SyntaxNode,
+    direction: Direction,
+    range: TextRange,
+) -> Option<TextEdit> {
     match_ast! {
         match node {
             ast::ArgList(it) => swap_sibling_in_list(node, it.args(), range, direction),
@@ -90,7 +102,12 @@ fn move_in_direction(node: &SyntaxNode, direction: Direction, range: TextRange) 
     }
 }
 
-fn swap_sibling_in_list<A: AstNode + Clone, I: Iterator<Item = A>>(node: &SyntaxNode, list: I, range: TextRange, direction: Direction) -> Option<TextEdit> {
+fn swap_sibling_in_list<A: AstNode + Clone, I: Iterator<Item = A>>(
+    node: &SyntaxNode,
+    list: I,
+    range: TextRange,
+    direction: Direction,
+) -> Option<TextEdit> {
     let list_lookup = list.tuple_windows().find(|(l, r)| match direction {
         Direction::Up => r.syntax().text_range().contains_range(range),
         Direction::Down => l.syntax().text_range().contains_range(range),
@@ -105,7 +122,11 @@ fn swap_sibling_in_list<A: AstNode + Clone, I: Iterator<Item = A>>(node: &Syntax
     }
 }
 
-fn replace_nodes<'a>(range: TextRange, mut first: &'a SyntaxNode, mut second: &'a SyntaxNode) -> TextEdit {
+fn replace_nodes<'a>(
+    range: TextRange,
+    mut first: &'a SyntaxNode,
+    mut second: &'a SyntaxNode,
+) -> TextEdit {
     let cursor_offset = if range.is_empty() {
         // FIXME: `applySnippetTextEdits` does not support non-empty selection ranges
         if first.text_range().contains_range(range) {
@@ -138,7 +159,11 @@ mod tests {
     use crate::fixture;
     use expect_test::{Expect, expect};
     use crate::Direction;
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect, direction: Direction) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+        direction: Direction,
+    ) {
         let (analysis, range) = fixture::range(ra_fixture);
         let edit = analysis.move_item(range, direction).unwrap().unwrap_or_default();
         let mut file = analysis.file_text(range.file_id).unwrap().to_string();

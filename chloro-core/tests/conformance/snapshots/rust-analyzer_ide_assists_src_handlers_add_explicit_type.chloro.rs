@@ -5,7 +5,10 @@ use syntax::ast::{self, AstNode, LetStmt, Param};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_explicit_type(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let syntax_node = ctx.find_node_at_offset::<Either<LetStmt, Param>>()?;
     let (ascribed_ty, expr, pat) = if let Either::Left(let_stmt) = syntax_node {
         let cursor_in_range = {

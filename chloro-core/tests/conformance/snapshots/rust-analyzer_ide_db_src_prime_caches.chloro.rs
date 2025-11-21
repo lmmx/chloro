@@ -27,7 +27,11 @@ pub struct ParallelPrimeCachesProgress {
     pub work_type: &'static str,
 }
 
-pub fn parallel_prime_caches(db: &RootDatabase, num_worker_threads: usize, cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync)) {
+pub fn parallel_prime_caches(
+    db: &RootDatabase,
+    num_worker_threads: usize,
+    cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync),
+) {
     let _p = tracing::info_span!("parallel_prime_caches").entered();
     enum ParallelPrimeCacheWorkerProgress {
         BeginCrateDefMap { crate_id: Crate, crate_name: Symbol },
@@ -256,7 +260,10 @@ pub fn parallel_prime_caches(db: &RootDatabase, num_worker_threads: usize, cb: &
     }
 }
 
-fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
+fn crate_name(
+    db: &RootDatabase,
+    krate: Crate,
+) -> Symbol {
     krate
         .extra_data(db)
         .display_name

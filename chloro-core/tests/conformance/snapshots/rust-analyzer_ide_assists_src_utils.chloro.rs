@@ -125,7 +125,12 @@ pub enum DefaultMethods {
     No,
 }
 
-pub fn filter_assoc_items(sema: &Semantics<'_, RootDatabase>, items: &[hir::AssocItem], default_methods: DefaultMethods, ignore_items: IgnoreAssocItems) -> Vec<InFile<ast::AssocItem>> {
+pub fn filter_assoc_items(
+    sema: &Semantics<'_, RootDatabase>,
+    items: &[hir::AssocItem],
+    default_methods: DefaultMethods,
+    ignore_items: IgnoreAssocItems,
+) -> Vec<InFile<ast::AssocItem>> {
     return items
         .iter()
         .copied()
@@ -181,7 +186,14 @@ pub fn filter_assoc_items(sema: &Semantics<'_, RootDatabase>, items: &[hir::Asso
 /// then inserts into `impl_`. Returns the modified `impl_` and the first associated item that got
 /// inserted.
 #[must_use]
-pub fn add_trait_assoc_items_to_impl(sema: &Semantics<'_, RootDatabase>, config: &AssistConfig, original_items: &[InFile<ast::AssocItem>], trait_: hir::Trait, impl_: &ast::Impl, target_scope: &hir::SemanticsScope<'_>) -> Vec<ast::AssocItem> {
+pub fn add_trait_assoc_items_to_impl(
+    sema: &Semantics<'_, RootDatabase>,
+    config: &AssistConfig,
+    original_items: &[InFile<ast::AssocItem>],
+    trait_: hir::Trait,
+    impl_: &ast::Impl,
+    target_scope: &hir::SemanticsScope<'_>,
+) -> Vec<ast::AssocItem> {
     let new_indent_level = IndentLevel::from_node(impl_.syntax()) + 1;
     original_items
         .iter()
@@ -256,7 +268,10 @@ pub(crate) fn vis_offset(node: &SyntaxNode) -> TextSize {
         .unwrap_or_else(|| node.text_range().start())
 }
 
-pub(crate) fn invert_boolean_expression(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
+pub(crate) fn invert_boolean_expression(
+    make: &SyntaxFactory,
+    expr: ast::Expr,
+) -> ast::Expr {
     invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
 }
 
@@ -264,7 +279,10 @@ pub(crate) fn invert_boolean_expression_legacy(expr: ast::Expr) -> ast::Expr {
     invert_special_case_legacy(&expr).unwrap_or_else(|| make::expr_prefix(T![!], expr).into())
 }
 
-fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Expr> {
+fn invert_special_case(
+    make: &SyntaxFactory,
+    expr: &ast::Expr,
+) -> Option<ast::Expr> {
     match expr {
         ast::Expr::BinExpr(bin) => {
             let op_kind = bin.op_kind()?;
@@ -383,7 +401,10 @@ pub(crate) fn next_prev() -> impl Iterator<Item = Direction> {
     [Direction::Next, Direction::Prev].into_iter()
 }
 
-pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
+pub(crate) fn does_pat_match_variant(
+    pat: &ast::Pat,
+    var: &ast::Pat,
+) -> bool {
     let first_node_text = |pat: &ast::Pat| pat.syntax().first_child().map(|node| node.text());
     let pat_head = match pat {
         ast::Pat::IdentPat(bind_pat) => match bind_pat.pat() {
@@ -396,17 +417,27 @@ pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
     pat_head == var_head
 }
 
-pub(crate) fn does_pat_variant_nested_or_literal(ctx: &AssistContext<'_>, pat: &ast::Pat) -> bool {
+pub(crate) fn does_pat_variant_nested_or_literal(
+    ctx: &AssistContext<'_>,
+    pat: &ast::Pat,
+) -> bool {
     check_pat_variant_nested_or_literal_with_depth(ctx, pat, 0)
 }
 
-fn check_pat_variant_from_enum(ctx: &AssistContext<'_>, pat: &ast::Pat) -> bool {
+fn check_pat_variant_from_enum(
+    ctx: &AssistContext<'_>,
+    pat: &ast::Pat,
+) -> bool {
     ctx.sema.type_of_pat(pat).is_none_or(|ty: hir::TypeInfo<'_>| {
         ty.adjusted().as_adt().is_some_and(|adt| matches!(adt, hir::Adt::Enum(_)))
     })
 }
 
-fn check_pat_variant_nested_or_literal_with_depth(ctx: &AssistContext<'_>, pat: &ast::Pat, depth_after_refutable: usize) -> bool {
+fn check_pat_variant_nested_or_literal_with_depth(
+    ctx: &AssistContext<'_>,
+    pat: &ast::Pat,
+    depth_after_refutable: usize,
+) -> bool {
     if depth_after_refutable > 1 {
         return true;
     }
@@ -470,7 +501,11 @@ fn check_pat_variant_nested_or_literal_with_depth(ctx: &AssistContext<'_>, pat: 
 ///  - `None`: an impl exists, but one of the function names within the impl matches one of the provided names.
 ///  - `Some(None)`: no impl exists.
 ///  - `Some(Some(_))`: an impl exists, with no matching function names.
-pub(crate) fn find_struct_impl(ctx: &AssistContext<'_>, adt: &ast::Adt, names: &[String]) -> Option<Option<ast::Impl>> {
+pub(crate) fn find_struct_impl(
+    ctx: &AssistContext<'_>,
+    adt: &ast::Adt,
+    names: &[String],
+) -> Option<Option<ast::Impl>> {
     let db = ctx.db();
     let module = adt.syntax().parent()?;
     let struct_def = ctx.sema.to_def(adt)?;
@@ -497,7 +532,10 @@ pub(crate) fn find_struct_impl(ctx: &AssistContext<'_>, adt: &ast::Adt, names: &
     Some(block)
 }
 
-fn has_any_fn(imp: &ast::Impl, names: &[String]) -> bool {
+fn has_any_fn(
+    imp: &ast::Impl,
+    names: &[String],
+) -> bool {
     if let Some(il) = imp.assoc_item_list() {
         for item in il.assoc_items() {
             if let ast::AssocItem::Fn(f) = item
@@ -512,7 +550,10 @@ fn has_any_fn(imp: &ast::Impl, names: &[String]) -> bool {
 }
 
 /// Find the end of the `impl` block for the given `ast::Impl`.
-pub(crate) fn find_impl_block_end(impl_def: ast::Impl, buf: &mut String) -> Option<TextSize> {
+pub(crate) fn find_impl_block_end(
+    impl_def: ast::Impl,
+    buf: &mut String,
+) -> Option<TextSize> {
     buf.push('\n');
     let end = impl_def
         .assoc_item_list()
@@ -525,7 +566,10 @@ pub(crate) fn find_impl_block_end(impl_def: ast::Impl, buf: &mut String) -> Opti
 
 /// Generates the surrounding `impl Type { <code> }` including type and lifetime
 /// parameters.
-pub(crate) fn generate_impl_text(adt: &ast::Adt, code: &str) -> String {
+pub(crate) fn generate_impl_text(
+    adt: &ast::Adt,
+    code: &str,
+) -> String {
     generate_impl_text_inner(adt, None, true, code)
 }
 
@@ -534,7 +578,11 @@ pub(crate) fn generate_impl_text(adt: &ast::Adt, code: &str) -> String {
 ///
 /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.
 #[allow(dead_code)]
-pub(crate) fn generate_trait_impl_text(adt: &ast::Adt, trait_text: &str, code: &str) -> String {
+pub(crate) fn generate_trait_impl_text(
+    adt: &ast::Adt,
+    trait_text: &str,
+    code: &str,
+) -> String {
     generate_impl_text_inner(adt, Some(trait_text), true, code)
 }
 
@@ -542,11 +590,20 @@ pub(crate) fn generate_trait_impl_text(adt: &ast::Adt, trait_text: &str, code: &
 /// and lifetime parameters, with `impl`'s generic parameters' bounds kept as-is.
 ///
 /// This is useful for traits like `From<T>`, since `impl<T> From<T> for U<T>` doesn't require `T: From<T>`.
-pub(crate) fn generate_trait_impl_text_intransitive(adt: &ast::Adt, trait_text: &str, code: &str) -> String {
+pub(crate) fn generate_trait_impl_text_intransitive(
+    adt: &ast::Adt,
+    trait_text: &str,
+    code: &str,
+) -> String {
     generate_impl_text_inner(adt, Some(trait_text), false, code)
 }
 
-fn generate_impl_text_inner(adt: &ast::Adt, trait_text: Option<&str>, trait_is_transitive: bool, code: &str) -> String {
+fn generate_impl_text_inner(
+    adt: &ast::Adt,
+    trait_text: Option<&str>,
+    trait_is_transitive: bool,
+    code: &str,
+) -> String {
     // Ensure lifetime params are before type & const params
     let generic_params = adt.generic_param_list().map(|generic_params| {
         let lifetime_params =
@@ -615,7 +672,10 @@ fn generate_impl_text_inner(adt: &ast::Adt, trait_text: Option<&str>, trait_is_t
 
 /// Generates the corresponding `impl Type {}` including type and lifetime
 /// parameters.
-pub(crate) fn generate_impl_with_item(adt: &ast::Adt, body: Option<ast::AssocItemList>) -> ast::Impl {
+pub(crate) fn generate_impl_with_item(
+    adt: &ast::Adt,
+    body: Option<ast::AssocItemList>,
+) -> ast::Impl {
     generate_impl_inner(false, adt, None, true, body)
 }
 
@@ -627,7 +687,11 @@ pub(crate) fn generate_impl(adt: &ast::Adt) -> ast::Impl {
 /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
 ///
 /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.
-pub(crate) fn generate_trait_impl(is_unsafe: bool, adt: &ast::Adt, trait_: ast::Type) -> ast::Impl {
+pub(crate) fn generate_trait_impl(
+    is_unsafe: bool,
+    adt: &ast::Adt,
+    trait_: ast::Type,
+) -> ast::Impl {
     generate_impl_inner(is_unsafe, adt, Some(trait_), true, None)
 }
 
@@ -635,11 +699,20 @@ pub(crate) fn generate_trait_impl(is_unsafe: bool, adt: &ast::Adt, trait_: ast::
 /// and lifetime parameters, with `impl`'s generic parameters' bounds kept as-is.
 ///
 /// This is useful for traits like `From<T>`, since `impl<T> From<T> for U<T>` doesn't require `T: From<T>`.
-pub(crate) fn generate_trait_impl_intransitive(adt: &ast::Adt, trait_: ast::Type) -> ast::Impl {
+pub(crate) fn generate_trait_impl_intransitive(
+    adt: &ast::Adt,
+    trait_: ast::Type,
+) -> ast::Impl {
     generate_impl_inner(false, adt, Some(trait_), false, None)
 }
 
-fn generate_impl_inner(is_unsafe: bool, adt: &ast::Adt, trait_: Option<ast::Type>, trait_is_transitive: bool, body: Option<ast::AssocItemList>) -> ast::Impl {
+fn generate_impl_inner(
+    is_unsafe: bool,
+    adt: &ast::Adt,
+    trait_: Option<ast::Type>,
+    trait_is_transitive: bool,
+    body: Option<ast::AssocItemList>,
+) -> ast::Impl {
     // Ensure lifetime params are before type & const params
     let generic_params = adt.generic_param_list().map(|generic_params| {
         let lifetime_params =
@@ -697,7 +770,12 @@ fn generate_impl_inner(is_unsafe: bool, adt: &ast::Adt, trait_: Option<ast::Type
     .clone_for_update()
 }
 
-pub(crate) fn add_method_to_adt(builder: &mut SourceChangeBuilder, adt: &ast::Adt, impl_def: Option<ast::Impl>, method: &str) {
+pub(crate) fn add_method_to_adt(
+    builder: &mut SourceChangeBuilder,
+    adt: &ast::Adt,
+    impl_def: Option<ast::Impl>,
+    method: &str,
+) {
     let mut buf = String::with_capacity(method.len() + 2);
     if impl_def.is_some() {
         buf.push('\n');
@@ -730,7 +808,11 @@ enum ReferenceConversionType {
 }
 
 impl<'db> ReferenceConversion<'db> {
-    pub(crate) fn convert_type(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> ast::Type {
+    pub(crate) fn convert_type(
+        &self,
+        db: &'db dyn HirDatabase,
+        display_target: DisplayTarget,
+    ) -> ast::Type {
         let ty = match self.conversion {
             ReferenceConversionType::Copy => self.ty.display(db, display_target).to_string(),
             ReferenceConversionType::AsRefStr => "&str".to_owned(),
@@ -776,7 +858,10 @@ impl<'db> ReferenceConversion<'db> {
         make::ty(&ty)
     }
 
-    pub(crate) fn getter(&self, field_name: String) -> ast::Expr {
+    pub(crate) fn getter(
+        &self,
+        field_name: String,
+    ) -> ast::Expr {
         let expr = make::expr_field(make::ext::expr_self(), &field_name);
         match self.conversion {
             ReferenceConversionType::Copy => expr,
@@ -796,7 +881,11 @@ impl<'db> ReferenceConversion<'db> {
     }
 }
 
-pub(crate) fn convert_reference_type<'db>(ty: hir::Type<'db>, db: &'db RootDatabase, famous_defs: &FamousDefs<'_, 'db>) -> Option<ReferenceConversion<'db>> {
+pub(crate) fn convert_reference_type<'db>(
+    ty: hir::Type<'db>,
+    db: &'db RootDatabase,
+    famous_defs: &FamousDefs<'_, 'db>,
+) -> Option<ReferenceConversion<'db>> {
     handle_copy(&ty, db)
         .or_else(|| handle_as_ref_str(&ty, db, famous_defs))
         .or_else(|| handle_as_ref_slice(&ty, db, famous_defs))
@@ -806,23 +895,38 @@ pub(crate) fn convert_reference_type<'db>(ty: hir::Type<'db>, db: &'db RootDatab
         .map(|(conversion, impls_deref)| ReferenceConversion { ty, conversion, impls_deref })
 }
 
-fn could_deref_to_target(ty: &hir::Type<'_>, target: &hir::Type<'_>, db: &dyn HirDatabase) -> bool {
+fn could_deref_to_target(
+    ty: &hir::Type<'_>,
+    target: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+) -> bool {
     let ty_ref = ty.add_reference(hir::Mutability::Shared);
     let target_ref = target.add_reference(hir::Mutability::Shared);
     ty_ref.could_coerce_to(db, &target_ref)
 }
 
-fn handle_copy(ty: &hir::Type<'_>, db: &dyn HirDatabase) -> Option<(ReferenceConversionType, bool)> {
+fn handle_copy(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+) -> Option<(ReferenceConversionType, bool)> {
     ty.is_copy(db).then_some((ReferenceConversionType::Copy, true))
 }
 
-fn handle_as_ref_str(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &FamousDefs<'_, '_>) -> Option<(ReferenceConversionType, bool)> {
+fn handle_as_ref_str(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    famous_defs: &FamousDefs<'_, '_>,
+) -> Option<(ReferenceConversionType, bool)> {
     let str_type = hir::BuiltinType::str().ty(db);
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
         .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
 }
 
-fn handle_as_ref_slice(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &FamousDefs<'_, '_>) -> Option<(ReferenceConversionType, bool)> {
+fn handle_as_ref_slice(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    famous_defs: &FamousDefs<'_, '_>,
+) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
     let slice_type = hir::Type::new_slice(type_argument);
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
@@ -831,7 +935,11 @@ fn handle_as_ref_slice(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &F
     ))
 }
 
-fn handle_dereferenced(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &FamousDefs<'_, '_>) -> Option<(ReferenceConversionType, bool)> {
+fn handle_dereferenced(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    famous_defs: &FamousDefs<'_, '_>,
+) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
         .then_some((
@@ -840,7 +948,11 @@ fn handle_dereferenced(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &F
         ))
 }
 
-fn handle_option_as_ref(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &FamousDefs<'_, '_>) -> Option<(ReferenceConversionType, bool)> {
+fn handle_option_as_ref(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    famous_defs: &FamousDefs<'_, '_>,
+) -> Option<(ReferenceConversionType, bool)> {
     if ty.as_adt() == famous_defs.core_option_Option()?.ty(db).as_adt() {
         Some((ReferenceConversionType::Option, false))
     } else {
@@ -848,7 +960,11 @@ fn handle_option_as_ref(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &
     }
 }
 
-fn handle_result_as_ref(ty: &hir::Type<'_>, db: &dyn HirDatabase, famous_defs: &FamousDefs<'_, '_>) -> Option<(ReferenceConversionType, bool)> {
+fn handle_result_as_ref(
+    ty: &hir::Type<'_>,
+    db: &dyn HirDatabase,
+    famous_defs: &FamousDefs<'_, '_>,
+) -> Option<(ReferenceConversionType, bool)> {
     if ty.as_adt() == famous_defs.core_result_Result()?.ty(db).as_adt() {
         Some((ReferenceConversionType::Result, false))
     } else {
@@ -868,7 +984,10 @@ pub(crate) fn get_methods(items: &ast::AssocItemList) -> Vec<ast::Fn> {
 }
 
 /// Trim(remove leading and trailing whitespace) `initial_range` in `source_file`, return the trimmed range.
-pub(crate) fn trimmed_text_range(source_file: &SourceFile, initial_range: TextRange) -> TextRange {
+pub(crate) fn trimmed_text_range(
+    source_file: &SourceFile,
+    initial_range: TextRange,
+) -> TextRange {
     let mut trimmed_range = initial_range;
     while source_file
         .syntax()
@@ -963,7 +1082,12 @@ fn test_string_prefix() {
 }
 
 /// Replaces the record expression, handling field shorthands including inside macros.
-pub(crate) fn replace_record_field_expr(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, record_field: ast::RecordExprField, initializer: ast::Expr) {
+pub(crate) fn replace_record_field_expr(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    record_field: ast::RecordExprField,
+    initializer: ast::Expr,
+) {
     if let Some(ast::Expr::PathExpr(path_expr)) = record_field.expr() {
         // replace field shorthand
         let file_range = ctx.sema.original_range(path_expr.syntax());
@@ -1016,7 +1140,10 @@ pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree
     tt_stack.pop().expect("parent token tree was closed before it was completed").1
 }
 
-pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<ast::Expr> {
+pub(crate) fn cover_let_chain(
+    mut expr: ast::Expr,
+    range: TextRange,
+) -> Option<ast::Expr> {
     if !expr.syntax().text_range().contains_range(range) {
         return None;
     }
@@ -1038,7 +1165,10 @@ pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<a
     }
 }
 
-pub fn is_body_const(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> bool {
+pub fn is_body_const(
+    sema: &Semantics<'_, RootDatabase>,
+    expr: &ast::Expr,
+) -> bool {
     let mut is_const = true;
     preorder_expr(expr, &mut |ev| {
         let expr = match ev {
@@ -1071,7 +1201,10 @@ pub fn is_body_const(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> bo
     is_const
 }
 
-pub(crate) fn is_never_block(sema: &Semantics<'_, RootDatabase>, block_expr: &ast::BlockExpr) -> bool {
+pub(crate) fn is_never_block(
+    sema: &Semantics<'_, RootDatabase>,
+    block_expr: &ast::BlockExpr,
+) -> bool {
     if let Some(tail_expr) = block_expr.tail_expr() {
         sema.type_of_expr(&tail_expr).is_some_and(|ty| ty.original.is_never())
     } else if let Some(ast::Stmt::ExprStmt(expr_stmt)) = block_expr.statements().last()

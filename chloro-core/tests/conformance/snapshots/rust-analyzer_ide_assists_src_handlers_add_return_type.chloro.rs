@@ -3,7 +3,10 @@ use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_a
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_return_type(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
     let module = ctx.sema.scope(tail_expr.syntax())?.module();
     let ty = ctx.sema.type_of_expr(&peel_blocks(tail_expr.clone()))?.adjusted();
@@ -44,7 +47,10 @@ enum InsertOrReplace {
 
 /// Check the potentially already specified return type and reject it or turn it into a builder command
 /// if allowed.
-fn ret_ty_to_action(ret_ty: Option<ast::RetType>, insert_after: SyntaxToken) -> Option<InsertOrReplace> {
+fn ret_ty_to_action(
+    ret_ty: Option<ast::RetType>,
+    insert_after: SyntaxToken,
+) -> Option<InsertOrReplace> {
     match ret_ty {
         Some(ret_ty) => match ret_ty.ty() {
             Some(ast::Type::InferType(_)) | None => {

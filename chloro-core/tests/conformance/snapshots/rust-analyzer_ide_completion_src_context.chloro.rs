@@ -515,7 +515,10 @@ impl CompletionContext<'_> {
     }
 
     /// Checks if an item is visible and not `doc(hidden)` at the completion site.
-    pub(crate) fn def_is_visible(&self, item: &ScopeDef) -> Visible {
+    pub(crate) fn def_is_visible(
+        &self,
+        item: &ScopeDef,
+    ) -> Visible {
         match item {
             ScopeDef::ModuleDef(def) => match def {
                 hir::ModuleDef::Module(it) => self.is_visible(it),
@@ -539,7 +542,10 @@ impl CompletionContext<'_> {
     }
 
     /// Checks if an item is visible, not `doc(hidden)` and stable at the completion site.
-    pub(crate) fn is_visible<I>(&self, item: &I) -> Visible
+    pub(crate) fn is_visible<I>(
+        &self,
+        item: &I,
+    ) -> Visible
     where
         I: hir::HasVisibility + hir::HasAttrs + hir::HasCrate + Copy, {
         let vis = item.visibility(self.db);
@@ -547,7 +553,10 @@ impl CompletionContext<'_> {
         self.is_visible_impl(&vis, &attrs, item.krate(self.db))
     }
 
-    pub(crate) fn doc_aliases<I>(&self, item: &I) -> Vec<SmolStr>
+    pub(crate) fn doc_aliases<I>(
+        &self,
+        item: &I,
+    ) -> Vec<SmolStr>
     where
         I: hir::HasAttrs + Copy, {
         let attrs = item.attrs(self.db);
@@ -555,7 +564,10 @@ impl CompletionContext<'_> {
     }
 
     /// Check if an item is `#[doc(hidden)]`.
-    pub(crate) fn is_item_hidden(&self, item: &hir::ItemInNs) -> bool {
+    pub(crate) fn is_item_hidden(
+        &self,
+        item: &hir::ItemInNs,
+    ) -> bool {
         let attrs = item.attrs(self.db);
         let krate = item.krate(self.db);
         match (attrs, krate) {
@@ -565,14 +577,20 @@ impl CompletionContext<'_> {
     }
 
     /// Checks whether this item should be listed in regards to stability. Returns `true` if we should.
-    pub(crate) fn check_stability(&self, attrs: Option<&hir::Attrs>) -> bool {
+    pub(crate) fn check_stability(
+        &self,
+        attrs: Option<&hir::Attrs>,
+    ) -> bool {
         let Some(attrs) = attrs else {
             return true;
         };
         !attrs.is_unstable() || self.is_nightly
     }
 
-    pub(crate) fn check_stability_and_hidden<I>(&self, item: I) -> bool
+    pub(crate) fn check_stability_and_hidden<I>(
+        &self,
+        item: I,
+    ) -> bool
     where
         I: hir::HasAttrs + hir::HasCrate, {
         let defining_crate = item.krate(self.db);
@@ -581,7 +599,10 @@ impl CompletionContext<'_> {
     }
 
     /// Whether the given trait is an operator trait or not.
-    pub(crate) fn is_ops_trait(&self, trait_: hir::Trait) -> bool {
+    pub(crate) fn is_ops_trait(
+        &self,
+        trait_: hir::Trait,
+    ) -> bool {
         match trait_.attrs(self.db).lang() {
             Some(lang) => OP_TRAIT_LANG_NAMES.contains(&lang.as_str()),
             None => false,
@@ -589,7 +610,10 @@ impl CompletionContext<'_> {
     }
 
     /// Whether the given trait has `#[doc(notable_trait)]`
-    pub(crate) fn is_doc_notable_trait(&self, trait_: hir::Trait) -> bool {
+    pub(crate) fn is_doc_notable_trait(
+        &self,
+        trait_: hir::Trait,
+    ) -> bool {
         trait_.attrs(self.db).has_doc_notable_trait()
     }
 
@@ -602,7 +626,11 @@ impl CompletionContext<'_> {
         traits_in_scope
     }
 
-    pub(crate) fn iterate_path_candidates(&self, ty: &hir::Type<'_>, mut cb: impl FnMut(hir::AssocItem)) {
+    pub(crate) fn iterate_path_candidates(
+        &self,
+        ty: &hir::Type<'_>,
+        mut cb: impl FnMut(hir::AssocItem),
+    ) {
         let mut seen = FxHashSet::default();
         ty.iterate_path_candidates(
             self.db,
@@ -623,7 +651,10 @@ impl CompletionContext<'_> {
 
     /// A version of [`SemanticsScope::process_all_names`] that filters out `#[doc(hidden)]` items and
     /// passes all doc-aliases along, to funnel it into [`Completions::add_path_resolution`].
-    pub(crate) fn process_all_names(&self, f: &mut dyn FnMut(Name, ScopeDef, Vec<SmolStr>)) {
+    pub(crate) fn process_all_names(
+        &self,
+        f: &mut dyn FnMut(Name, ScopeDef, Vec<SmolStr>),
+    ) {
         let _p = tracing::info_span!("CompletionContext::process_all_names").entered();
         self.scope.process_all_names(&mut |name, def| {
             if self.is_scope_def_hidden(def) {
@@ -634,19 +665,30 @@ impl CompletionContext<'_> {
         });
     }
 
-    pub(crate) fn process_all_names_raw(&self, f: &mut dyn FnMut(Name, ScopeDef)) {
+    pub(crate) fn process_all_names_raw(
+        &self,
+        f: &mut dyn FnMut(Name, ScopeDef),
+    ) {
         let _p = tracing::info_span!("CompletionContext::process_all_names_raw").entered();
         self.scope.process_all_names(f);
     }
 
-    fn is_scope_def_hidden(&self, scope_def: ScopeDef) -> bool {
+    fn is_scope_def_hidden(
+        &self,
+        scope_def: ScopeDef,
+    ) -> bool {
         if let (Some(attrs), Some(krate)) = (scope_def.attrs(self.db), scope_def.krate(self.db)) {
             return self.is_doc_hidden(&attrs, krate);
         }
         false
     }
 
-    fn is_visible_impl(&self, vis: &hir::Visibility, attrs: &hir::Attrs, defining_crate: hir::Crate) -> Visible {
+    fn is_visible_impl(
+        &self,
+        vis: &hir::Visibility,
+        attrs: &hir::Attrs,
+        defining_crate: hir::Crate,
+    ) -> Visible {
         if !self.check_stability(Some(attrs)) {
             return Visible::No;
         }
@@ -664,12 +706,19 @@ impl CompletionContext<'_> {
         if self.is_doc_hidden(attrs, defining_crate) { Visible::No } else { Visible::Yes }
     }
 
-    pub(crate) fn is_doc_hidden(&self, attrs: &hir::Attrs, defining_crate: hir::Crate) -> bool {
+    pub(crate) fn is_doc_hidden(
+        &self,
+        attrs: &hir::Attrs,
+        defining_crate: hir::Crate,
+    ) -> bool {
         // `doc(hidden)` items are only completed within the defining crate.
         self.krate != defining_crate && attrs.has_doc_hidden()
     }
 
-    pub(crate) fn doc_aliases_in_scope(&self, scope_def: ScopeDef) -> Vec<SmolStr> {
+    pub(crate) fn doc_aliases_in_scope(
+        &self,
+        scope_def: ScopeDef,
+    ) -> Vec<SmolStr> {
         if let Some(attrs) = scope_def.attrs(self.db) {
             attrs.doc_aliases().map(|it| it.as_str().into()).collect()
         } else {
@@ -679,7 +728,12 @@ impl CompletionContext<'_> {
 }
 
 impl<'db> CompletionContext<'db> {
-    pub(crate) fn new(db: &'db RootDatabase, position @ FilePosition { file_id, offset }: FilePosition, config: &'db CompletionConfig<'db>, trigger_character: Option<char>) -> Option<(CompletionContext<'db>, CompletionAnalysis<'db>)> {
+    pub(crate) fn new(
+        db: &'db RootDatabase,
+        position @ FilePosition { file_id, offset }: FilePosition,
+        config: &'db CompletionConfig<'db>,
+        trigger_character: Option<char>,
+    ) -> Option<(CompletionContext<'db>, CompletionAnalysis<'db>)> {
         let _p = tracing::info_span!("CompletionContext::new").entered();
         let sema = Semantics::new(db);
         let editioned_file_id = sema.attach_first_edition(file_id)?;

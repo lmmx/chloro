@@ -41,7 +41,10 @@ pub enum FormatSpecifier {
     Escape,
 }
 
-pub fn lex_format_specifiers(string: &ast::String, mut callback: &mut dyn FnMut(TextRange, FormatSpecifier)) {
+pub fn lex_format_specifiers(
+    string: &ast::String,
+    mut callback: &mut dyn FnMut(TextRange, FormatSpecifier),
+) {
     let mut char_ranges = Vec::new();
     string.escaped_char_ranges(&mut |range, res| char_ranges.push((range, res)));
     let mut chars = char_ranges

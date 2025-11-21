@@ -34,7 +34,11 @@ pub(super) struct Expander {
 }
 
 impl Expander {
-    pub(super) fn new(db: &dyn DefDatabase, current_file_id: HirFileId, def_map: &DefMap) -> Expander {
+    pub(super) fn new(
+        db: &dyn DefDatabase,
+        current_file_id: HirFileId,
+        def_map: &DefMap,
+    ) -> Expander {
         let recursion_limit = def_map.recursion_limit() as usize;
         let recursion_limit = if cfg!(test) {
             // Without this, `body::tests::your_stack_belongs_to_me` stack-overflows in debug
@@ -51,11 +55,18 @@ impl Expander {
         }
     }
 
-    pub(super) fn ctx_for_range(&self, range: TextRange) -> SyntaxContext {
+    pub(super) fn ctx_for_range(
+        &self,
+        range: TextRange,
+    ) -> SyntaxContext {
         self.span_map.span_for_range(range).ctx
     }
 
-    pub(super) fn hygiene_for_range(&self, db: &dyn DefDatabase, range: TextRange) -> HygieneId {
+    pub(super) fn hygiene_for_range(
+        &self,
+        db: &dyn DefDatabase,
+        range: TextRange,
+    ) -> HygieneId {
         match self.span_map.as_ref() {
             hir_expand::span_map::SpanMapRef::ExpansionSpanMap(span_map) => {
                 HygieneId::new(span_map.span_at(range.start()).ctx.opaque_and_semitransparent(db))
@@ -64,7 +75,12 @@ impl Expander {
         }
     }
 
-    pub(super) fn is_cfg_enabled(&self, db: &dyn DefDatabase, has_attrs: &dyn HasAttrs, cfg_options: &CfgOptions) -> Result<(), cfg::CfgExpr> {
+    pub(super) fn is_cfg_enabled(
+        &self,
+        db: &dyn DefDatabase,
+        has_attrs: &dyn HasAttrs,
+        cfg_options: &CfgOptions,
+    ) -> Result<(), cfg::CfgExpr> {
         Attrs::is_cfg_enabled_for(db, has_attrs, self.span_map.as_ref(), cfg_options)
     }
 
@@ -73,7 +89,14 @@ impl Expander {
         SyntaxContext::root(Edition::CURRENT_FIXME)
     }
 
-    pub(super) fn enter_expand<T: ast::AstNode>(&mut self, db: &dyn DefDatabase, macro_call: ast::MacroCall, krate: Crate, resolver: impl Fn(&ModPath) -> Option<MacroId>, eager_callback: EagerCallBackFn<'_>) -> Result<ExpandResult<Option<(Mark, Option<Parse<T>>)>>, UnresolvedMacro> {
+    pub(super) fn enter_expand<T: ast::AstNode>(
+        &mut self,
+        db: &dyn DefDatabase,
+        macro_call: ast::MacroCall,
+        krate: Crate,
+        resolver: impl Fn(&ModPath) -> Option<MacroId>,
+        eager_callback: EagerCallBackFn<'_>,
+    ) -> Result<ExpandResult<Option<(Mark, Option<Parse<T>>)>>, UnresolvedMacro> {
         // FIXME: within_limit should support this, instead of us having to extract the error
         let mut unresolved_macro_err = None;
         let result = self.within_limit(db, |this| {
@@ -117,11 +140,18 @@ impl Expander {
         if let Some(err) = unresolved_macro_err { Err(err) } else { Ok(result) }
     }
 
-    pub(super) fn enter_expand_id<T: ast::AstNode>(&mut self, db: &dyn DefDatabase, call_id: MacroCallId) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>> {
+    pub(super) fn enter_expand_id<T: ast::AstNode>(
+        &mut self,
+        db: &dyn DefDatabase,
+        call_id: MacroCallId,
+    ) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>> {
         self.within_limit(db, |_this| ExpandResult::ok(Some(call_id)))
     }
 
-    pub(super) fn exit(&mut self, Mark { file_id, span_map, ast_id_map, mut bomb }: Mark) {
+    pub(super) fn exit(
+        &mut self,
+        Mark { file_id, span_map, ast_id_map, mut bomb }: Mark,
+    ) {
         self.span_map = span_map;
         self.current_file_id = file_id;
         self.ast_id_map = ast_id_map;
@@ -137,7 +167,10 @@ impl Expander {
         bomb.defuse();
     }
 
-    pub(super) fn in_file<T>(&self, value: T) -> InFile<T> {
+    pub(super) fn in_file<T>(
+        &self,
+        value: T,
+    ) -> InFile<T> {
         InFile { file_id: self.current_file_id, value }
     }
 
@@ -145,7 +178,11 @@ impl Expander {
         self.current_file_id
     }
 
-    fn within_limit<F, T: ast::AstNode>(&mut self, db: &dyn DefDatabase, op: F) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>>
+    fn within_limit<F, T: ast::AstNode>(
+        &mut self,
+        db: &dyn DefDatabase,
+        op: F,
+    ) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>>
     where
         F: FnOnce(&mut Self) -> ExpandResult<Option<MacroCallId>>, {
         if self.recursion_depth == u32::MAX {

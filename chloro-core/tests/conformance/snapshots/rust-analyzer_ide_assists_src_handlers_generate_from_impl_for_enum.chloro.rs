@@ -4,7 +4,10 @@ use syntax::ast::{self, AstNode, HasName};
 
 use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
 
-pub(crate) fn generate_from_impl_for_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_from_impl_for_enum(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let variant_name = variant.name()?;
     let enum_ = ast::Adt::Enum(variant.parent_enum());
@@ -55,7 +58,10 @@ pub(crate) fn generate_from_impl_for_enum(acc: &mut Assists, ctx: &AssistContext
     )
 }
 
-fn existing_from_impl(sema: &'_ hir::Semantics<'_, RootDatabase>, variant: &ast::Variant) -> Option<()> {
+fn existing_from_impl(
+    sema: &'_ hir::Semantics<'_, RootDatabase>,
+    variant: &ast::Variant,
+) -> Option<()> {
     let db = sema.db;
     let variant = sema.to_def(variant)?;
     let krate = variant.module(db).krate();

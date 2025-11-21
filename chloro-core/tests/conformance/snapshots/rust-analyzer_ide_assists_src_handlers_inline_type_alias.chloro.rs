@@ -18,7 +18,10 @@ use crate::{
 };
 use super::inline_call::split_refs_and_uses;
 
-pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn inline_type_alias_uses(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
     let hir_alias = ctx.sema.to_def(&ast_alias)?;
@@ -77,7 +80,10 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
     )
 }
 
-pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn inline_type_alias(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let alias_instance = ctx.find_node_at_offset::<ast::PathType>()?;
     let concrete_type;
     let replacement;
@@ -113,7 +119,10 @@ pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 }
 
 impl Replacement {
-    fn replace_generic(&self, concrete_type: &ast::Type) -> SyntaxNode {
+    fn replace_generic(
+        &self,
+        concrete_type: &ast::Type,
+    ) -> SyntaxNode {
         match self {
             Replacement::Generic { lifetime_map, const_and_type_map } => {
                 create_replacement(lifetime_map, const_and_type_map, concrete_type)
@@ -131,7 +140,10 @@ enum Replacement {
     Plain,
 }
 
-fn inline(alias_def: &ast::TypeAlias, alias_instance: &ast::PathType) -> Option<Replacement> {
+fn inline(
+    alias_def: &ast::TypeAlias,
+    alias_instance: &ast::PathType,
+) -> Option<Replacement> {
     let repl = if let Some(alias_generics) = alias_def.generic_param_list() {
         if alias_generics.generic_params().next().is_none() {
             cov_mark::hit!(no_generics_params);
@@ -153,7 +165,10 @@ fn inline(alias_def: &ast::TypeAlias, alias_instance: &ast::PathType) -> Option<
 struct LifetimeMap(FxHashMap<String, ast::Lifetime>);
 
 impl LifetimeMap {
-    fn new(instance_args: &Option<ast::GenericArgList>, alias_generics: &ast::GenericParamList) -> Option<Self> {
+    fn new(
+        instance_args: &Option<ast::GenericArgList>,
+        alias_generics: &ast::GenericParamList,
+    ) -> Option<Self> {
         let mut inner = FxHashMap::default();
         let make = SyntaxFactory::without_mappings();
         let wildcard_lifetime = make.lifetime("'_");
@@ -189,7 +204,10 @@ impl LifetimeMap {
 struct ConstAndTypeMap(FxHashMap<String, SyntaxNode>);
 
 impl ConstAndTypeMap {
-    fn new(instance_args: &Option<ast::GenericArgList>, alias_generics: &ast::GenericParamList) -> Option<Self> {
+    fn new(
+        instance_args: &Option<ast::GenericArgList>,
+        alias_generics: &ast::GenericParamList,
+    ) -> Option<Self> {
         let mut inner = FxHashMap::default();
         let instance_generics = generic_args_to_const_and_type_generics(instance_args);
         let alias_generics = generic_param_list_to_const_and_type_generics(alias_generics);
@@ -242,7 +260,11 @@ impl ConstAndTypeMap {
 /// 3. Remove wildcard lifetimes entirely:
 ///
 ///    &[u64; 100]
-fn create_replacement(lifetime_map: &LifetimeMap, const_and_type_map: &ConstAndTypeMap, concrete_type: &ast::Type) -> SyntaxNode {
+fn create_replacement(
+    lifetime_map: &LifetimeMap,
+    const_and_type_map: &ConstAndTypeMap,
+    concrete_type: &ast::Type,
+) -> SyntaxNode {
     let updated_concrete_type = concrete_type.syntax().clone_subtree();
     let mut editor = SyntaxEditor::new(updated_concrete_type.clone());
     let mut replacements: Vec<(SyntaxNode, SyntaxNode)> = Vec::new();
@@ -286,7 +308,10 @@ fn create_replacement(lifetime_map: &LifetimeMap, const_and_type_map: &ConstAndT
     editor.finish().new_root().clone()
 }
 
-fn get_type_alias(ctx: &AssistContext<'_>, path: &ast::PathType) -> Option<ast::TypeAlias> {
+fn get_type_alias(
+    ctx: &AssistContext<'_>,
+    path: &ast::PathType,
+) -> Option<ast::TypeAlias> {
     let resolved_path = ctx.sema.resolve_path(&path.path()?)?;
     // We need the generics in the correct order to be able to map any provided
     // instance generics to declaration generics. The `hir::TypeAlias` doesn't

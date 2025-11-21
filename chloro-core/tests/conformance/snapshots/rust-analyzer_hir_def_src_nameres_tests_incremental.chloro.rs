@@ -13,7 +13,12 @@ use crate::{
     nameres::{crate_def_map, tests::TestDB},
 };
 
-fn check_def_map_is_not_recomputed(#[rust_analyzer::rust_fixture] ra_fixture_initial: &str, #[rust_analyzer::rust_fixture] ra_fixture_change: &str, expecta: Expect, expectb: Expect) {
+fn check_def_map_is_not_recomputed(
+    #[rust_analyzer::rust_fixture] ra_fixture_initial: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_change: &str,
+    expecta: Expect,
+    expectb: Expect,
+) {
     let (mut db, pos) = TestDB::with_position(ra_fixture_initial);
     let krate = db.fetch_test_crate();
     execute_assert_events(
@@ -563,7 +568,12 @@ pub type Ty = ();
     );
 }
 
-fn execute_assert_events(db: &TestDB, f: impl FnOnce(), required: &[(&str, usize)], expect: Expect) {
+fn execute_assert_events(
+    db: &TestDB,
+    f: impl FnOnce(),
+    required: &[(&str, usize)],
+    expect: Expect,
+) {
     let events = db.log_executed(f);
     for (event, count) in required {
         let n = events.iter().filter(|it| it.contains(event)).count();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6002 bytes
+Chloro size:   6055 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -17,27 +17,8 @@ Rustfmt size:  6074 bytes
  };
  
  pub(crate) mod trait_impl;
- 
--pub(crate) fn complete_item_list_in_expr(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx: &PathCompletionCtx<'_>,
--    expr_ctx: &PathExprCtx<'_>,
--) {
-+pub(crate) fn complete_item_list_in_expr(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, expr_ctx: &PathExprCtx<'_>) {
-     if !expr_ctx.in_block_expr {
-         return;
-     }
-     add_keywords(acc, ctx, None);
- }
- 
--pub(crate) fn complete_item_list(
--    acc: &mut Completions,
--    ctx: &CompletionContext<'_>,
--    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
--    kind: &ItemListKind,
--) {
-+pub(crate) fn complete_item_list(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, kind: &ItemListKind) {
+     kind: &ItemListKind,
+ ) {
      let _p = tracing::info_span!("complete_item_list").entered();
 -
      // We handle completions for trait-impls in [`item_list::trait_impl`]
@@ -48,8 +29,15 @@ Rustfmt size:  6074 bytes
      match qualified {
          Qualified::With {
              resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
+     }
+ }
  
- fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
+-fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
++fn add_keywords(
++    acc: &mut Completions,
++    ctx: &CompletionContext<'_>,
++    kind: Option<&ItemListKind>,
++) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
 -
 -    let in_item_list = matches!(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7864 bytes
-Chloro size:   7800 bytes
+Chloro size:   7886 bytes
 Rustfmt size:  7864 bytes
 
 ✗ Outputs DIFFER
@@ -17,19 +17,14 @@ Rustfmt size:  7864 bytes
  use super::*;
  
  macro_rules! from_bytes {
-         }
-     }
+ }
  
--    pub(super) fn exec_simd_intrinsic(
--        &mut self,
--        name: &str,
--        args: &[IntervalAndTy<'db>],
--        _generic_args: GenericArgs<'db>,
--        destination: Interval,
--        _locals: &Locals<'db>,
--        _span: MirSpan,
--    ) -> Result<'db, ()> {
-+    pub(super) fn exec_simd_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], _generic_args: GenericArgs<'db>, destination: Interval, _locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
-         match name {
-             "and" | "or" | "xor" => {
-                 let [left, right] = args else {
+ impl<'db> Evaluator<'db> {
+-    fn detect_simd_ty(&self, ty: Ty<'db>) -> Result<'db, (usize, Ty<'db>)> {
++    fn detect_simd_ty(
++        &self,
++        ty: Ty<'db>,
++    ) -> Result<'db, (usize, Ty<'db>)> {
+         match ty.kind() {
+             TyKind::Adt(adt_def, subst) => {
+                 let len = match subst.as_slice().get(1).and_then(|it| it.konst()) {

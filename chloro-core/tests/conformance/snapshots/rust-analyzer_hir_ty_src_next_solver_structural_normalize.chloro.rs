@@ -7,15 +7,27 @@ use crate::next_solver::{
 };
 
 impl<'db> At<'_, 'db> {
-    pub(crate) fn structurally_normalize_ty(&self, ty: Ty<'db>, fulfill_cx: &mut FulfillmentCtxt<'db>) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
+    pub(crate) fn structurally_normalize_ty(
+        &self,
+        ty: Ty<'db>,
+        fulfill_cx: &mut FulfillmentCtxt<'db>,
+    ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
         self.structurally_normalize_term(ty.into(), fulfill_cx).map(|term| term.expect_type())
     }
 
-    pub(crate) fn structurally_normalize_const(&self, ct: Const<'db>, fulfill_cx: &mut FulfillmentCtxt<'db>) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
+    pub(crate) fn structurally_normalize_const(
+        &self,
+        ct: Const<'db>,
+        fulfill_cx: &mut FulfillmentCtxt<'db>,
+    ) -> Result<Const<'db>, Vec<NextSolverError<'db>>> {
         self.structurally_normalize_term(ct.into(), fulfill_cx).map(|term| term.expect_const())
     }
 
-    pub(crate) fn structurally_normalize_term(&self, term: Term<'db>, fulfill_cx: &mut FulfillmentCtxt<'db>) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
+    pub(crate) fn structurally_normalize_term(
+        &self,
+        term: Term<'db>,
+        fulfill_cx: &mut FulfillmentCtxt<'db>,
+    ) -> Result<Term<'db>, Vec<NextSolverError<'db>>> {
         assert!(!term.is_infer(), "should have resolved vars before calling");
         if term.to_alias_term().is_none() {
             return Ok(term);

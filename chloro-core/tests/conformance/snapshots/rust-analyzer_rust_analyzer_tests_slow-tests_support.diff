@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20547 bytes
+Chloro size:   20900 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -28,6 +28,37 @@ Rustfmt size:  21158 bytes
  use test_utils::FixtureWithProjectMeta;
  use tracing_subscriber::fmt::TestWriter;
  use vfs::AbsPathBuf;
+         }
+     }
+ 
+-    pub(crate) fn tmp_dir(mut self, tmp_dir: TestDir) -> Self {
++    pub(crate) fn tmp_dir(
++        mut self,
++        tmp_dir: TestDir,
++    ) -> Self {
+         self.tmp_dir = Some(tmp_dir);
+         self
+     }
+ 
+-    pub(crate) fn root(mut self, path: &str) -> Self {
++    pub(crate) fn root(
++        mut self,
++        path: &str,
++    ) -> Self {
+         self.roots.push(path.into());
+         self
+     }
+         self
+     }
+ 
+-    pub(crate) fn with_config(mut self, config: serde_json::Value) -> Self {
++    pub(crate) fn with_config(
++        mut self,
++        config: serde_json::Value,
++    ) -> Self {
+         fn merge(dst: &mut serde_json::Value, src: serde_json::Value) {
+             match (dst, src) {
+                 (Value::Object(dst), Value::Object(src)) => {
  
      pub(crate) fn run_lsif(self) -> String {
          let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
@@ -63,8 +94,14 @@ Rustfmt size:  21158 bytes
                  exclude_vendored_libraries: false,
              },
              &mut buf,
+     /// if there is a path to config dir in the test fixture. However, in certain cases we create a
+     /// file in the config dir after server is run, something where our naive approach comes short.
      /// Using a `prelock` allows us to force a lock when we know we need it.
-     pub(crate) fn server_with_lock(self, config_lock: bool) -> Server {
+-    pub(crate) fn server_with_lock(self, config_lock: bool) -> Server {
++    pub(crate) fn server_with_lock(
++        self,
++        config_lock: bool,
++    ) -> Server {
          static CONFIG_DIR_LOCK: Mutex<()> = Mutex::new(());
 -
          let config_dir_guard = if config_lock {
@@ -149,15 +186,8 @@ Rustfmt size:  21158 bytes
          Server::new(config_dir_guard, tmp_dir.keep(), config)
      }
  }
- }
- 
- impl Server {
--    fn new(
--        config_dir_guard: Option<(MutexGuard<'static, ()>, TestDir)>,
--        dir: TestDir,
--        config: Config,
--    ) -> Server {
-+    fn new(config_dir_guard: Option<(MutexGuard<'static, ()>, TestDir)>, dir: TestDir, config: Config) -> Server {
+         config: Config,
+     ) -> Server {
          let (connection, client) = Connection::memory();
 -
          let _thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "test server")
@@ -167,8 +197,14 @@ Rustfmt size:  21158 bytes
          Server {
              req_id: Cell::new(1),
              dir,
+         }
+     }
  
-     pub(crate) fn doc_id(&self, rel_path: &str) -> TextDocumentIdentifier {
+-    pub(crate) fn doc_id(&self, rel_path: &str) -> TextDocumentIdentifier {
++    pub(crate) fn doc_id(
++        &self,
++        rel_path: &str,
++    ) -> TextDocumentIdentifier {
          let path = self.dir.path().join(rel_path);
 -        TextDocumentIdentifier {
 -            uri: Url::from_file_path(path).unwrap(),
@@ -176,7 +212,11 @@ Rustfmt size:  21158 bytes
 +        TextDocumentIdentifier { uri: Url::from_file_path(path).unwrap() }
      }
  
-     pub(crate) fn notification<N>(&self, params: N::Params)
+-    pub(crate) fn notification<N>(&self, params: N::Params)
++    pub(crate) fn notification<N>(
++        &self,
++        params: N::Params,
++    )
      where
          N: lsp_types::notification::Notification,
 -        N::Params: Serialize,
@@ -185,7 +225,14 @@ Rustfmt size:  21158 bytes
          let r = Notification::new(N::METHOD.to_owned(), params);
          self.send_notification(r)
      }
-     pub(crate) fn request<R>(&self, params: R::Params, expected_resp: Value)
+ 
+     #[track_caller]
+-    pub(crate) fn request<R>(&self, params: R::Params, expected_resp: Value)
++    pub(crate) fn request<R>(
++        &self,
++        params: R::Params,
++        expected_resp: Value,
++    )
      where
          R: lsp_types::request::Request,
 -        R::Params: Serialize,
@@ -194,7 +241,14 @@ Rustfmt size:  21158 bytes
          let actual = self.send_request::<R>(params);
          if let Some((expected_part, actual_part)) = find_mismatch(&expected_resp, &actual) {
              panic!(
-     pub(crate) fn send_request<R>(&self, params: R::Params) -> Value
+     }
+ 
+     #[track_caller]
+-    pub(crate) fn send_request<R>(&self, params: R::Params) -> Value
++    pub(crate) fn send_request<R>(
++        &self,
++        params: R::Params,
++    ) -> Value
      where
          R: lsp_types::request::Request,
 -        R::Params: Serialize,
@@ -208,7 +262,11 @@ Rustfmt size:  21158 bytes
      }
 +
      #[track_caller]
-     fn send_request_(&self, r: Request) -> Value {
+-    fn send_request_(&self, r: Request) -> Value {
++    fn send_request_(
++        &self,
++        r: Request,
++    ) -> Value {
          let id = r.id.clone();
          self.client.sender.send(r.clone().into()).unwrap();
 -        while let Some(msg) = self
@@ -240,16 +298,10 @@ Rustfmt size:  21158 bytes
          .unwrap_or_else(|Timeout| panic!("timeout while waiting for ws to load"));
          self
      }
--    fn wait_for_message_cond(
--        &self,
--        n: usize,
--        cond: &dyn Fn(&Message) -> bool,
--    ) -> Result<(), Timeout> {
 +
-+    fn wait_for_message_cond(&self, n: usize, cond: &dyn Fn(&Message) -> bool) -> Result<(), Timeout> {
-         let mut total = 0;
-         for msg in self.messages.borrow().iter() {
-             if cond(msg) {
+     fn wait_for_message_cond(
+         &self,
+         n: usize,
          }
          Ok(())
      }
@@ -260,10 +312,27 @@ Rustfmt size:  21158 bytes
          });
          Ok(msg)
      }
+-    fn send_notification(&self, not: Notification) {
 +
-     fn send_notification(&self, not: Notification) {
++    fn send_notification(
++        &self,
++        not: Notification,
++    ) {
          self.client.sender.send(Message::Notification(not)).unwrap();
      }
+ 
+         self.dir.path()
+     }
+ 
+-    pub(crate) fn write_file_and_save(&self, path: &str, text: String) {
++    pub(crate) fn write_file_and_save(
++        &self,
++        path: &str,
++        text: String,
++    ) {
+         fs::write(self.dir.path().join(path), &text).unwrap();
+         self.notification::<lsp_types::notification::DidSaveTextDocument>(
+             lsp_types::DidSaveTextDocumentParams {
  struct Timeout;
  
  fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout> {
@@ -285,6 +354,15 @@ Rustfmt size:  21158 bytes
  /// Compares JSON object for approximate equality.
  /// You can use `[..]` wildcard in strings (useful for OS dependent things such
  /// as paths). You can use a `"{...}"` string literal as a wildcard for
+ /// arbitrary nested JSON. Arrays are sorted before comparison.
+-fn find_mismatch<'a>(expected: &'a Value, actual: &'a Value) -> Option<(&'a Value, &'a Value)> {
++fn find_mismatch<'a>(
++    expected: &'a Value,
++    actual: &'a Value,
++) -> Option<(&'a Value, &'a Value)> {
+     match (expected, actual) {
+         (Value::Number(l), Value::Number(r)) if l == r => None,
+         (Value::Bool(l), Value::Bool(r)) if l == r => None,
              let mut l = l.iter().collect::<Vec<_>>();
              let mut r = r.iter().collect::<Vec<_>>();
  
@@ -307,6 +385,17 @@ Rustfmt size:  21158 bytes
  
              if !l.is_empty() {
                  assert!(!r.is_empty());
+ /// Compare a line with an expected pattern.
+ /// - Use `[..]` as a wildcard to match 0 or more characters on the same line
+ ///   (similar to `.*` in a regex).
+-fn lines_match(expected: &str, actual: &str) -> bool {
++fn lines_match(
++    expected: &str,
++    actual: &str,
++) -> bool {
+     // Let's not deal with / vs \ (windows...)
+     // First replace backslash-escaped backslashes with forward slashes
+     // which can occur in, for example, JSON output
      assert!(lines_match("a[..]", "a b"));
      assert!(lines_match("[..]", "a b"));
      assert!(lines_match("[..]b", "a b"));

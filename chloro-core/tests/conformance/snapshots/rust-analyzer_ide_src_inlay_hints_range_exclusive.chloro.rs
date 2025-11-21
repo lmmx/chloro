@@ -9,7 +9,12 @@ use syntax::{SyntaxToken, T, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
 
-pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(_sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, range: impl ast::RangeItem) -> Option<()> {
+pub(super) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(_sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    range: impl ast::RangeItem,
+) -> Option<()> {
     (config.range_exclusive_hints && range.end().is_some())
         .then(|| {
             range.op_token().filter(|token| token.kind() == T![..]).map(|token| {

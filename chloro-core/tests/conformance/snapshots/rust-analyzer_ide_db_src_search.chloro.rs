@@ -59,7 +59,8 @@ impl UsageSearchResult {
 impl IntoIterator for UsageSearchResult {
     type Item = (EditionedFileId, Vec<FileReference>);
 
-    type IntoIter = <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
+    type IntoIter =
+        <FxHashMap<EditionedFileId, Vec<FileReference>> as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.references.into_iter()
@@ -170,7 +171,10 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning all the reverse dependencies of the given crate.
-    fn reverse_dependencies(db: &RootDatabase, of: hir::Crate) -> SearchScope {
+    fn reverse_dependencies(
+        db: &RootDatabase,
+        of: hir::Crate,
+    ) -> SearchScope {
         let mut entries = FxHashMap::default();
         for rev_dep in of.transitive_reverse_dependencies(db) {
             let root_file = rev_dep.root_file(db);
@@ -187,7 +191,10 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning the given crate.
-    fn krate(db: &RootDatabase, of: hir::Crate) -> SearchScope {
+    fn krate(
+        db: &RootDatabase,
+        of: hir::Crate,
+    ) -> SearchScope {
         let root_file = of.root_file(db);
         let source_root_id = db.file_source_root(root_file).source_root_id(db);
         let source_root = db.source_root(source_root_id).source_root(db);
@@ -200,7 +207,10 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning the given module and all its submodules.
-    pub fn module_and_children(db: &RootDatabase, module: hir::Module) -> SearchScope {
+    pub fn module_and_children(
+        db: &RootDatabase,
+        module: hir::Module,
+    ) -> SearchScope {
         let mut entries = FxHashMap::default();
         let (file_id, range) = {
             let InFile { file_id, value } = module.definition_source_range(db);
@@ -242,7 +252,10 @@ impl SearchScope {
         SearchScope::new(files.iter().map(|f| (*f, None)).collect())
     }
 
-    pub fn intersection(&self, other: &SearchScope) -> SearchScope {
+    pub fn intersection(
+        &self,
+        other: &SearchScope,
+    ) -> SearchScope {
         let (mut small, mut large) = (&self.entries, &other.entries);
         if small.len() > large.len() {
             mem::swap(&mut small, &mut large)
@@ -269,7 +282,8 @@ impl SearchScope {
 impl IntoIterator for SearchScope {
     type Item = (EditionedFileId, Option<TextRange>);
 
-    type IntoIter = std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
+    type IntoIter =
+        std::collections::hash_map::IntoIter<EditionedFileId, Option<TextRange>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.entries.into_iter()
@@ -277,7 +291,10 @@ impl IntoIterator for SearchScope {
 }
 
 impl Definition {
-    fn search_scope(&self, db: &RootDatabase) -> SearchScope {
+    fn search_scope(
+        &self,
+        db: &RootDatabase,
+    ) -> SearchScope {
         let _p = tracing::info_span!("search_scope").entered();
         if let Definition::BuiltinType(_) = self {
             return SearchScope::crate_graph(db);
@@ -387,7 +404,10 @@ impl Definition {
         }
     }
 
-    pub fn usages<'a>(self, sema: &'a Semantics<'_, RootDatabase>) -> FindUsages<'a> {
+    pub fn usages<'a>(
+        self,
+        sema: &'a Semantics<'_, RootDatabase>,
+    ) -> FindUsages<'a> {
         FindUsages {
             def: self,
             rename: None,
@@ -423,18 +443,27 @@ impl<'a> FindUsages<'a> {
     }
 
     /// Limit the search to a given [`SearchScope`].
-    pub fn in_scope(self, scope: &'a SearchScope) -> Self {
+    pub fn in_scope(
+        self,
+        scope: &'a SearchScope,
+    ) -> Self {
         self.set_scope(Some(scope))
     }
 
     /// Limit the search to a given [`SearchScope`].
-    pub fn set_scope(mut self, scope: Option<&'a SearchScope>) -> Self {
+    pub fn set_scope(
+        mut self,
+        scope: Option<&'a SearchScope>,
+    ) -> Self {
         assert!(self.scope.is_none());
         self.scope = scope;
         self
     }
 
-    pub fn with_rename(mut self, rename: Option<&'a Rename>) -> Self {
+    pub fn with_rename(
+        mut self,
+        rename: Option<&'a Rename>,
+    ) -> Self {
         self.rename = rename;
         self
     }
@@ -457,7 +486,10 @@ impl<'a> FindUsages<'a> {
         res
     }
 
-    fn scope_files<'b>(db: &'b RootDatabase, scope: &'b SearchScope) -> impl Iterator<Item = (Arc<str>, EditionedFileId, TextRange)> + 'b {
+    fn scope_files<'b>(
+        db: &'b RootDatabase,
+        scope: &'b SearchScope,
+    ) -> impl Iterator<Item = (Arc<str>, EditionedFileId, TextRange)> + 'b {
         scope.entries.iter().map(|(&file_id, &search_range)| {
             let text = db.file_text(file_id.file_id(db)).text(db);
             let search_range =
@@ -467,7 +499,11 @@ impl<'a> FindUsages<'a> {
         })
     }
 
-    fn match_indices<'b>(text: &'b str, finder: &'b Finder<'b>, search_range: TextRange) -> impl Iterator<Item = TextSize> + 'b {
+    fn match_indices<'b>(
+        text: &'b str,
+        finder: &'b Finder<'b>,
+        search_range: TextRange,
+    ) -> impl Iterator<Item = TextSize> + 'b {
         finder.find_iter(text.as_bytes()).filter_map(move |idx| {
             let offset: TextSize = idx.try_into().unwrap();
             if !search_range.contains_inclusive(offset) {
@@ -491,7 +527,13 @@ impl<'a> FindUsages<'a> {
         })
     }
 
-    fn find_nodes<'b>(sema: &'b Semantics<'_, RootDatabase>, name: &str, file_id: EditionedFileId, node: &syntax::SyntaxNode, offset: TextSize) -> impl Iterator<Item = SyntaxNode> + 'b {
+    fn find_nodes<'b>(
+        sema: &'b Semantics<'_, RootDatabase>,
+        name: &str,
+        file_id: EditionedFileId,
+        node: &syntax::SyntaxNode,
+        offset: TextSize,
+    ) -> impl Iterator<Item = SyntaxNode> + 'b {
         node.token_at_offset(offset)
             .find(|it| {
                 // `name` is stripped of raw ident prefix. See the comment on name retrieval below.
@@ -523,7 +565,12 @@ impl<'a> FindUsages<'a> {
     /// that).
     ///
     /// Returns true if completed the search.
-    fn short_associated_function_fast_search(&self, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool, search_scope: &SearchScope, name: &str) -> bool {
+    fn short_associated_function_fast_search(
+        &self,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+        search_scope: &SearchScope,
+        name: &str,
+    ) -> bool {
         if self.scope.is_some() {
             return false;
         }
@@ -834,7 +881,10 @@ impl<'a> FindUsages<'a> {
         true
     }
 
-    pub fn search(&self, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) {
+    pub fn search(
+        &self,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) {
         let _p = tracing::info_span!("FindUsages:search").entered();
         let sema = self.sema;
         let search_scope = {
@@ -1022,7 +1072,12 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_self_ty_name_ref(&self, self_ty: &hir::Type<'_>, name_ref: &ast::NameRef, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_self_ty_name_ref(
+        &self,
+        self_ty: &hir::Type<'_>,
+        name_ref: &ast::NameRef,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         // See https://github.com/rust-lang/rust-analyzer/pull/15864/files/e0276dc5ddc38c65240edb408522bb869f15afb4#r1389848845
         let ty_eq = |ty: hir::Type<'_>| match (ty.as_adt(), self_ty.as_adt()) {
             (Some(ty), Some(self_ty)) => ty == self_ty,
@@ -1045,7 +1100,11 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_self_module_name_ref(&self, name_ref: &ast::NameRef, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_self_module_name_ref(
+        &self,
+        name_ref: &ast::NameRef,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         match NameRefClass::classify(self.sema, name_ref) {
             Some(NameRefClass::Definition(def @ Definition::Module(_), _)) if def == self.def => {
                 let FileRange { file_id, range } = self.sema.original_range(name_ref.syntax());
@@ -1065,7 +1124,14 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_format_args_ref(&self, file_id: EditionedFileId, range: TextRange, token: ast::String, res: Either<PathResolution, InlineAsmOperand>, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_format_args_ref(
+        &self,
+        file_id: EditionedFileId,
+        range: TextRange,
+        token: ast::String,
+        res: Either<PathResolution, InlineAsmOperand>,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         let def = res.either(Definition::from, Definition::from);
         if def == self.def {
             let reference = FileReference {
@@ -1079,7 +1145,11 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_lifetime(&self, lifetime: &ast::Lifetime, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_lifetime(
+        &self,
+        lifetime: &ast::Lifetime,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         match NameRefClass::classify_lifetime(self.sema, lifetime) {
             Some(NameRefClass::Definition(def, _)) if def == self.def => {
                 let FileRange { file_id, range } = self.sema.original_range(lifetime.syntax());
@@ -1094,7 +1164,11 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_name_ref(&self, name_ref: &ast::NameRef, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_name_ref(
+        &self,
+        name_ref: &ast::NameRef,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         match NameRefClass::classify(self.sema, name_ref) {
             Some(NameRefClass::Definition(def, _))
                 if self.def == def
@@ -1168,7 +1242,11 @@ impl<'a> FindUsages<'a> {
         }
     }
 
-    fn found_name(&self, name: &ast::Name, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) -> bool {
+    fn found_name(
+        &self,
+        name: &ast::Name,
+        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
+    ) -> bool {
         match NameClass::classify(self.sema, name) {
             Some(NameClass::PatFieldShorthand { local_def: _, field_ref, adt_subst: _ })
                 if matches!(
@@ -1223,7 +1301,10 @@ impl<'a> FindUsages<'a> {
     }
 }
 
-fn def_to_ty<'db>(sema: &Semantics<'db, RootDatabase>, def: &Definition) -> Option<hir::Type<'db>> {
+fn def_to_ty<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    def: &Definition,
+) -> Option<hir::Type<'db>> {
     match def {
         Definition::Adt(adt) => Some(adt.ty(sema.db)),
         Definition::TypeAlias(it) => Some(it.ty(sema.db)),
@@ -1234,7 +1315,11 @@ fn def_to_ty<'db>(sema: &Semantics<'db, RootDatabase>, def: &Definition) -> Opti
 }
 
 impl ReferenceCategory {
-    fn new(sema: &Semantics<'_, RootDatabase>, def: &Definition, r: &ast::NameRef) -> ReferenceCategory {
+    fn new(
+        sema: &Semantics<'_, RootDatabase>,
+        def: &Definition,
+        r: &ast::NameRef,
+    ) -> ReferenceCategory {
         let mut result = ReferenceCategory::empty();
         if is_name_ref_in_test(sema, r) {
             result |= ReferenceCategory::TEST;
@@ -1277,7 +1362,10 @@ fn is_name_ref_in_import(name_ref: &ast::NameRef) -> bool {
         .is_some_and(|it| it.kind() == SyntaxKind::USE_TREE)
 }
 
-fn is_name_ref_in_test(sema: &Semantics<'_, RootDatabase>, name_ref: &ast::NameRef) -> bool {
+fn is_name_ref_in_test(
+    sema: &Semantics<'_, RootDatabase>,
+    name_ref: &ast::NameRef,
+) -> bool {
     name_ref.syntax().ancestors().any(|node| match ast::Fn::cast(node) {
         Some(it) => sema.to_def(&it).is_some_and(|func| func.is_test(sema.db)),
         None => false,

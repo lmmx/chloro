@@ -36,7 +36,10 @@ pub struct TextEditBuilder {
 }
 
 impl Indel {
-    pub fn insert(offset: TextSize, text: String) -> Indel {
+    pub fn insert(
+        offset: TextSize,
+        text: String,
+    ) -> Indel {
         Indel::replace(TextRange::empty(offset), text)
     }
 
@@ -44,11 +47,17 @@ impl Indel {
         Indel::replace(range, String::new())
     }
 
-    pub fn replace(range: TextRange, replace_with: String) -> Indel {
+    pub fn replace(
+        range: TextRange,
+        replace_with: String,
+    ) -> Indel {
         Indel { delete: range, insert: replace_with }
     }
 
-    pub fn apply(&self, text: &mut String) {
+    pub fn apply(
+        &self,
+        text: &mut String,
+    ) {
         let start: usize = self.delete.start().into();
         let end: usize = self.delete.end().into();
         text.replace_range(start..end, &self.insert);
@@ -60,7 +69,10 @@ impl TextEdit {
         TextEditBuilder::default()
     }
 
-    pub fn insert(offset: TextSize, text: String) -> TextEdit {
+    pub fn insert(
+        offset: TextSize,
+        text: String,
+    ) -> TextEdit {
         let mut builder = TextEdit::builder();
         builder.insert(offset, text);
         builder.finish()
@@ -72,7 +84,10 @@ impl TextEdit {
         builder.finish()
     }
 
-    pub fn replace(range: TextRange, replace_with: String) -> TextEdit {
+    pub fn replace(
+        range: TextRange,
+        replace_with: String,
+    ) -> TextEdit {
         let mut builder = TextEdit::builder();
         builder.replace(range, replace_with);
         builder.finish()
@@ -90,7 +105,10 @@ impl TextEdit {
         self.into_iter()
     }
 
-    pub fn apply(&self, text: &mut String) {
+    pub fn apply(
+        &self,
+        text: &mut String,
+    ) {
         match self.len() {
             0 => return,
             1 => {
@@ -116,7 +134,10 @@ impl TextEdit {
         assert_eq!(TextSize::of(&*text), total_len);
     }
 
-    pub fn union(&mut self, other: TextEdit) -> Result<(), TextEdit> {
+    pub fn union(
+        &mut self,
+        other: TextEdit,
+    ) -> Result<(), TextEdit> {
         let iter_merge =
             self.iter().merge_by(other.iter(), |l, r| l.delete.start() <= r.delete.start());
         if !check_disjoint(&mut iter_merge.clone()) {
@@ -127,7 +148,10 @@ impl TextEdit {
         Ok(())
     }
 
-    pub fn apply_to_offset(&self, offset: TextSize) -> Option<TextSize> {
+    pub fn apply_to_offset(
+        &self,
+        offset: TextSize,
+    ) -> Option<TextSize> {
         let mut res = offset;
         for indel in &self.indels {
             if indel.delete.start() >= offset {
@@ -142,7 +166,10 @@ impl TextEdit {
         Some(res)
     }
 
-    pub(crate) fn set_annotation(&mut self, conflict_annotation: Option<ChangeAnnotationId>) {
+    pub(crate) fn set_annotation(
+        &mut self,
+        conflict_annotation: Option<ChangeAnnotationId>,
+    ) {
         self.annotation = conflict_annotation;
     }
 
@@ -176,15 +203,26 @@ impl TextEditBuilder {
         self.indels.is_empty()
     }
 
-    pub fn replace(&mut self, range: TextRange, replace_with: String) {
+    pub fn replace(
+        &mut self,
+        range: TextRange,
+        replace_with: String,
+    ) {
         self.indel(Indel::replace(range, replace_with));
     }
 
-    pub fn delete(&mut self, range: TextRange) {
+    pub fn delete(
+        &mut self,
+        range: TextRange,
+    ) {
         self.indel(Indel::delete(range));
     }
 
-    pub fn insert(&mut self, offset: TextSize, text: String) {
+    pub fn insert(
+        &mut self,
+        offset: TextSize,
+        text: String,
+    ) {
         self.indel(Indel::insert(offset, text));
     }
 
@@ -195,11 +233,17 @@ impl TextEditBuilder {
         TextEdit { indels, annotation }
     }
 
-    pub fn invalidates_offset(&self, offset: TextSize) -> bool {
+    pub fn invalidates_offset(
+        &self,
+        offset: TextSize,
+    ) -> bool {
         self.indels.iter().any(|indel| indel.delete.contains_inclusive(offset))
     }
 
-    pub fn indel(&mut self, indel: Indel) {
+    pub fn indel(
+        &mut self,
+        indel: Indel,
+    ) {
         self.indels.push(indel);
         if self.indels.len() <= 16 {
             assert_disjoint_or_equal(&mut self.indels);
@@ -240,7 +284,10 @@ fn coalesce_indels(indels: Vec<Indel>) -> Vec<Indel> {
 #[cfg(test)]
 mod tests {
     use super::{TextEdit, TextEditBuilder, TextRange};
-    fn range(start: u32, end: u32) -> TextRange {
+    fn range(
+        start: u32,
+        end: u32,
+    ) -> TextRange {
         TextRange::new(start.into(), end.into())
     }
     #[test]

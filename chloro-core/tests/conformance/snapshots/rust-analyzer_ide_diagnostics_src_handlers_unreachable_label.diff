@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1864 bytes
-Chloro size:   1816 bytes
+Chloro size:   1827 bytes
 Rustfmt size:  1898 bytes
 
 ✗ Outputs DIFFER
@@ -11,12 +11,9 @@ Rustfmt size:  1898 bytes
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  
 -// Diagnostic: unreachable-label
--pub(crate) fn unreachable_label(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnreachableLabel,
--) -> Diagnostic {
-+pub(crate) fn unreachable_label(ctx: &DiagnosticsContext<'_>, d: &hir::UnreachableLabel) -> Diagnostic {
-     let name = &d.name;
+ pub(crate) fn unreachable_label(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnreachableLabel,
      Diagnostic::new_with_syntax_node_ptr(
          ctx,
          DiagnosticCode::RustcHardError("E0767"),

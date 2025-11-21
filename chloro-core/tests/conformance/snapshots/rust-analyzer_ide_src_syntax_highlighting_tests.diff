@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31331 bytes
-Chloro size:   30794 bytes
+Chloro size:   30828 bytes
 Rustfmt size:  31474 bytes
 
 ✗ Outputs DIFFER
@@ -67,31 +67,14 @@ Rustfmt size:  31474 bytes
  }
  
  #[test]
- /// Highlights the code given by the `ra_fixture` argument, renders the
- /// result as HTML, and compares it with the HTML file given as `snapshot`.
- /// Note that the `snapshot` file is overwritten by the rendered HTML.
--fn check_highlighting_with_config(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    config: HighlightConfig<'_>,
--    expect: ExpectFile,
--    rainbow: bool,
--) {
-+fn check_highlighting_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: HighlightConfig<'_>, expect: ExpectFile, rainbow: bool) {
+     rainbow: bool,
+ ) {
      let (analysis, file_id) = fixture::file(ra_fixture.trim());
 -    let actual_html = &analysis
 -        .highlight_as_html_with_config(config, file_id, rainbow)
 -        .unwrap();
 +    let actual_html = &analysis.highlight_as_html_with_config(config, file_id, rainbow).unwrap();
      expect.assert_eq(actual_html)
- }
- 
--fn check_highlighting(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    expect: ExpectFile,
--    rainbow: bool,
--) {
-+fn check_highlighting(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: ExpectFile, rainbow: bool) {
-     check_highlighting_with_config(ra_fixture, HL_CONFIG, expect, rainbow)
  }
  
      if skip_slow_tests() {

@@ -16,7 +16,10 @@ use crate::{
     utils::ref_field_expr::determine_ref_and_parens,
 };
 
-pub(crate) fn destructure_struct_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn destructure_struct_binding(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;
     acc.add(
@@ -28,7 +31,11 @@ pub(crate) fn destructure_struct_binding(acc: &mut Assists, ctx: &AssistContext<
     Some(())
 }
 
-fn destructure_struct_binding_impl(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, data: &StructEditData) {
+fn destructure_struct_binding_impl(
+    ctx: &AssistContext<'_>,
+    builder: &mut SourceChangeBuilder,
+    data: &StructEditData,
+) {
     let field_names = generate_field_names(ctx, data);
     let mut editor = builder.make_editor(data.ident_pat.syntax());
     destructure_pat(ctx, &mut editor, data, &field_names);
@@ -50,7 +57,10 @@ struct StructEditData {
     edition: Edition,
 }
 
-fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
+fn collect_data(
+    ident_pat: ast::IdentPat,
+    ctx: &AssistContext<'_>,
+) -> Option<StructEditData> {
     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
     let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else { return None };
     let module = ctx.sema.scope(ident_pat.syntax())?.module();
@@ -108,7 +118,11 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
     })
 }
 
-fn get_names_in_scope(ctx: &AssistContext<'_>, ident_pat: &ast::IdentPat, usages: &[FileReference]) -> Option<FxHashSet<SmolStr>> {
+fn get_names_in_scope(
+    ctx: &AssistContext<'_>,
+    ident_pat: &ast::IdentPat,
+    usages: &[FileReference],
+) -> Option<FxHashSet<SmolStr>> {
     fn last_usage(usages: &[FileReference]) -> Option<SyntaxNode> {
         usages.last()?.name.syntax().into_node()
     }
@@ -126,7 +140,12 @@ fn get_names_in_scope(ctx: &AssistContext<'_>, ident_pat: &ast::IdentPat, usages
     Some(names)
 }
 
-fn destructure_pat(_ctx: &AssistContext<'_>, editor: &mut SyntaxEditor, data: &StructEditData, field_names: &[(SmolStr, SmolStr)]) {
+fn destructure_pat(
+    _ctx: &AssistContext<'_>,
+    editor: &mut SyntaxEditor,
+    data: &StructEditData,
+    field_names: &[(SmolStr, SmolStr)],
+) {
     let ident_pat = &data.ident_pat;
     let name = &data.name;
     let struct_path = mod_path_to_ast(&data.struct_def_path, data.edition);
@@ -173,7 +192,10 @@ fn destructure_pat(_ctx: &AssistContext<'_>, editor: &mut SyntaxEditor, data: &S
     editor.replace(data.ident_pat.syntax(), destructured_pat);
 }
 
-fn generate_field_names(ctx: &AssistContext<'_>, data: &StructEditData) -> Vec<(SmolStr, SmolStr)> {
+fn generate_field_names(
+    ctx: &AssistContext<'_>,
+    data: &StructEditData,
+) -> Vec<(SmolStr, SmolStr)> {
     match data.kind {
         hir::StructKind::Tuple => data
             .visible_fields
@@ -197,7 +219,10 @@ fn generate_field_names(ctx: &AssistContext<'_>, data: &StructEditData) -> Vec<(
     }
 }
 
-fn new_field_name(base_name: SmolStr, names_in_scope: &FxHashSet<SmolStr>) -> SmolStr {
+fn new_field_name(
+    base_name: SmolStr,
+    names_in_scope: &FxHashSet<SmolStr>,
+) -> SmolStr {
     let mut name = base_name.clone();
     let mut i = 1;
     while names_in_scope.contains(&name) {
@@ -207,7 +232,12 @@ fn new_field_name(base_name: SmolStr, names_in_scope: &FxHashSet<SmolStr>) -> Sm
     name
 }
 
-fn update_usages(ctx: &AssistContext<'_>, editor: &mut SyntaxEditor, data: &StructEditData, field_names: &FxHashMap<SmolStr, SmolStr>) {
+fn update_usages(
+    ctx: &AssistContext<'_>,
+    editor: &mut SyntaxEditor,
+    data: &StructEditData,
+    field_names: &FxHashMap<SmolStr, SmolStr>,
+) {
     let make = SyntaxFactory::with_mappings();
     let edits = data
         .usages
@@ -220,7 +250,13 @@ fn update_usages(ctx: &AssistContext<'_>, editor: &mut SyntaxEditor, data: &Stru
     }
 }
 
-fn build_usage_edit(ctx: &AssistContext<'_>, make: &SyntaxFactory, data: &StructEditData, usage: &FileReference, field_names: &FxHashMap<SmolStr, SmolStr>) -> Option<(SyntaxNode, SyntaxNode)> {
+fn build_usage_edit(
+    ctx: &AssistContext<'_>,
+    make: &SyntaxFactory,
+    data: &StructEditData,
+    usage: &FileReference,
+    field_names: &FxHashMap<SmolStr, SmolStr>,
+) -> Option<(SyntaxNode, SyntaxNode)> {
     match usage.name.syntax().ancestors().find_map(ast::FieldExpr::cast) {
         Some(field_expr) => Some({
             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();

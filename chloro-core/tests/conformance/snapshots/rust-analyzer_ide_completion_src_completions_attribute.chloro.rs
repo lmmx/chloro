@@ -37,7 +37,13 @@ mod macro_use;
 mod repr;
 
 /// Complete inputs to known builtin attributes as well as derive attributes
-pub(crate) fn complete_known_attribute_input(acc: &mut Completions, ctx: &CompletionContext<'_>, &colon_prefix: &bool, fake_attribute_under_caret: &ast::Attr, extern_crate: Option<&ast::ExternCrate>) -> Option<()> {
+pub(crate) fn complete_known_attribute_input(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    &colon_prefix: &bool,
+    fake_attribute_under_caret: &ast::Attr,
+    extern_crate: Option<&ast::ExternCrate>,
+) -> Option<()> {
     let attribute = fake_attribute_under_caret;
     let path = attribute.path()?;
     let segments = path.segments().map(|s| s.name_ref()).collect::<Option<Vec<_>>>()?;
@@ -80,7 +86,12 @@ pub(crate) fn complete_known_attribute_input(acc: &mut Completions, ctx: &Comple
     Some(())
 }
 
-pub(crate) fn complete_attribute_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx) {
+pub(crate) fn complete_attribute_path(
+    acc: &mut Completions,
+    ctx: &CompletionContext<'_>,
+    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+    &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx,
+) {
     let is_inner = kind == AttrKind::Inner;
     for (derive_helper, derive_name) in derive_helpers {
         let mut item = CompletionItem::new(
@@ -198,7 +209,10 @@ impl AttrCompletion {
         self.lookup.unwrap_or(self.label)
     }
 
-    const fn qualifiers(self, qualifiers: &'static [&'static str]) -> AttrCompletion {
+    const fn qualifiers(
+        self,
+        qualifiers: &'static [&'static str],
+    ) -> AttrCompletion {
         AttrCompletion { qualifiers, ..self }
     }
 
@@ -207,7 +221,11 @@ impl AttrCompletion {
     }
 }
 
-const fn attr(label: &'static str, lookup: Option<&'static str>, snippet: Option<&'static str>) -> AttrCompletion {
+const fn attr(
+    label: &'static str,
+    lookup: Option<&'static str>,
+    snippet: Option<&'static str>,
+) -> AttrCompletion {
     AttrCompletion { label, lookup, snippet, qualifiers: &[], prefer_inner: false }
 }
 

@@ -1236,13 +1236,22 @@ fn foo(x: &fn(&dyn Trait)) {}
 /// Highlights the code given by the `ra_fixture` argument, renders the
 /// result as HTML, and compares it with the HTML file given as `snapshot`.
 /// Note that the `snapshot` file is overwritten by the rendered HTML.
-fn check_highlighting_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: HighlightConfig<'_>, expect: ExpectFile, rainbow: bool) {
+fn check_highlighting_with_config(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    config: HighlightConfig<'_>,
+    expect: ExpectFile,
+    rainbow: bool,
+) {
     let (analysis, file_id) = fixture::file(ra_fixture.trim());
     let actual_html = &analysis.highlight_as_html_with_config(config, file_id, rainbow).unwrap();
     expect.assert_eq(actual_html)
 }
 
-fn check_highlighting(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: ExpectFile, rainbow: bool) {
+fn check_highlighting(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: ExpectFile,
+    rainbow: bool,
+) {
     check_highlighting_with_config(ra_fixture, HL_CONFIG, expect, rainbow)
 }
 

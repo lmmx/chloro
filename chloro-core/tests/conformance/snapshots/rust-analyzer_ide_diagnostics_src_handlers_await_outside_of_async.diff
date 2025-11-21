@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2097 bytes
-Chloro size:   1939 bytes
+Chloro size:   1950 bytes
 Rustfmt size:  2131 bytes
 
 ✗ Outputs DIFFER
@@ -14,12 +14,9 @@ Rustfmt size:  2131 bytes
 -// Diagnostic: await-outside-of-async
 -//
 -// This diagnostic is triggered if the `await` keyword is used outside of an async function or block
--pub(crate) fn await_outside_of_async(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::AwaitOutsideOfAsync,
--) -> Diagnostic {
-+pub(crate) fn await_outside_of_async(ctx: &DiagnosticsContext<'_>, d: &hir::AwaitOutsideOfAsync) -> Diagnostic {
-     let display_range =
+ pub(crate) fn await_outside_of_async(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::AwaitOutsideOfAsync,
          adjusted_display_range(ctx, d.node, &|node| Some(node.await_token()?.text_range()));
      Diagnostic::new(
          crate::DiagnosticCode::RustcHardError("E0728"),

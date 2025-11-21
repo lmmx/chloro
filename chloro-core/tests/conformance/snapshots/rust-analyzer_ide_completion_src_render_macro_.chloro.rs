@@ -10,17 +10,34 @@ use crate::{
     render::RenderContext,
 };
 
-pub(crate) fn render_macro(ctx: RenderContext<'_>, PathCompletionCtx { kind, has_macro_bang, has_call_parens, .. }: &PathCompletionCtx<'_>, name: hir::Name, macro_: hir::Macro) -> Builder {
+pub(crate) fn render_macro(
+    ctx: RenderContext<'_>,
+    PathCompletionCtx { kind, has_macro_bang, has_call_parens, .. }: &PathCompletionCtx<'_>,
+    name: hir::Name,
+    macro_: hir::Macro,
+) -> Builder {
     let _p = tracing::info_span!("render_macro").entered();
     render(ctx, *kind == PathKind::Use, *has_macro_bang, *has_call_parens, name, macro_)
 }
 
-pub(crate) fn render_macro_pat(ctx: RenderContext<'_>, _pattern_ctx: &PatternContext, name: hir::Name, macro_: hir::Macro) -> Builder {
+pub(crate) fn render_macro_pat(
+    ctx: RenderContext<'_>,
+    _pattern_ctx: &PatternContext,
+    name: hir::Name,
+    macro_: hir::Macro,
+) -> Builder {
     let _p = tracing::info_span!("render_macro_pat").entered();
     render(ctx, false, false, false, name, macro_)
 }
 
-fn render(ctx @ RenderContext { completion, .. }: RenderContext<'_>, is_use_path: bool, has_macro_bang: bool, has_call_parens: bool, name: hir::Name, macro_: hir::Macro) -> Builder {
+fn render(
+    ctx @ RenderContext { completion, .. }: RenderContext<'_>,
+    is_use_path: bool,
+    has_macro_bang: bool,
+    has_call_parens: bool,
+    name: hir::Name,
+    macro_: hir::Macro,
+) -> Builder {
     let source_range = if ctx.is_immediately_after_macro_bang() {
         cov_mark::hit!(completes_macro_call_if_cursor_at_bang_token);
         completion.token.parent().map_or_else(|| ctx.source_range(), |it| it.text_range())
@@ -64,7 +81,13 @@ fn render(ctx @ RenderContext { completion, .. }: RenderContext<'_>, is_use_path
     item
 }
 
-fn label(ctx: &RenderContext<'_>, needs_bang: bool, bra: &str, ket: &str, name: &SmolStr) -> SmolStr {
+fn label(
+    ctx: &RenderContext<'_>,
+    needs_bang: bool,
+    bra: &str,
+    ket: &str,
+    name: &SmolStr,
+) -> SmolStr {
     if needs_bang {
         if ctx.snippet_cap().is_some() {
             format_smolstr!("{name}!{bra}…{ket}",)
@@ -80,7 +103,10 @@ fn banged_name(name: &str) -> SmolStr {
     SmolStr::from_iter([name, "!"])
 }
 
-fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static str) {
+fn guess_macro_braces(
+    macro_name: &str,
+    docs: &str,
+) -> (&'static str, &'static str) {
     let mut votes = [0, 0, 0];
     for (idx, s) in docs.match_indices(&macro_name) {
         let (before, after) = (&docs[..idx], &docs[idx + s.len()..]);

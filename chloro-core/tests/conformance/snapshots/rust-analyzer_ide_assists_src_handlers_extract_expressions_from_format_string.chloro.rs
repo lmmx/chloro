@@ -12,7 +12,10 @@ use syntax::{
 
 use crate::{AssistContext, Assists, utils};
 
-pub(crate) fn extract_expressions_from_format_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn extract_expressions_from_format_string(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
     let tt = fmt_string.syntax().parent().and_then(ast::TokenTree::cast)?;
     let tt_delimiter = tt.left_delimiter_token()?.kind();
@@ -143,7 +146,10 @@ pub(crate) fn extract_expressions_from_format_string(acc: &mut Assists, ctx: &As
     Some(())
 }
 
-fn format_str_index(raw_tokens: &[NodeOrToken<TokenTree, SyntaxToken>], fmt_string: &ast::String) -> usize {
+fn format_str_index(
+    raw_tokens: &[NodeOrToken<TokenTree, SyntaxToken>],
+    fmt_string: &ast::String,
+) -> usize {
     let fmt_string = fmt_string.syntax();
     raw_tokens
         .iter()

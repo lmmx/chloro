@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3906 bytes
-Chloro size:   3876 bytes
+Chloro size:   3895 bytes
 Rustfmt size:  4014 bytes
 
 ✗ Outputs DIFFER
@@ -18,17 +18,6 @@ Rustfmt size:  4014 bytes
  use syntax::ast::{self, AstNode};
  
  use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
- 
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    path: Either<ast::PathType, ast::DynTraitType>,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, path: Either<ast::PathType, ast::DynTraitType>) -> Option<()> {
-     let parent = path.syntax().parent()?;
-     let range = match path {
-         Either::Left(path) => {
                      it.trait_().map_or(
                          // only show it for impl type if the impl is not incomplete, otherwise we
                          // are likely typing a trait impl

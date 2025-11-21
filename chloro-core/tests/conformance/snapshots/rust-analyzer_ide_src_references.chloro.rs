@@ -98,7 +98,11 @@ pub struct FindAllRefsConfig<'a> {
 /// - `;` after unit struct: Shows unit literal initializations
 /// - Type name in definition: Shows all initialization usages
 ///   In these cases, other kinds of references (like type references) are filtered out.
-pub(crate) fn find_all_refs(sema: &Semantics<'_, RootDatabase>, position: FilePosition, config: &FindAllRefsConfig<'_>) -> Option<Vec<ReferenceSearchResult>> {
+pub(crate) fn find_all_refs(
+    sema: &Semantics<'_, RootDatabase>,
+    position: FilePosition,
+    config: &FindAllRefsConfig<'_>,
+) -> Option<Vec<ReferenceSearchResult>> {
     let _p = tracing::info_span!("find_all_refs").entered();
     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
     let make_searcher = |literal_search: bool| {
@@ -180,7 +184,11 @@ pub(crate) fn find_all_refs(sema: &Semantics<'_, RootDatabase>, position: FilePo
     }
 }
 
-pub(crate) fn find_defs(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, offset: TextSize) -> Option<Vec<Definition>> {
+pub(crate) fn find_defs(
+    sema: &Semantics<'_, RootDatabase>,
+    syntax: &SyntaxNode,
+    offset: TextSize,
+) -> Option<Vec<Definition>> {
     let token = syntax.token_at_offset(offset).find(|t| {
         matches!(
             t.kind(),
@@ -241,7 +249,11 @@ pub(crate) fn find_defs(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode,
 }
 
 /// Filter out all non-literal usages for adt-defs
-fn retain_adt_literal_usages(usages: &mut UsageSearchResult, def: Definition, sema: &Semantics<'_, RootDatabase>) {
+fn retain_adt_literal_usages(
+    usages: &mut UsageSearchResult,
+    def: Definition,
+    sema: &Semantics<'_, RootDatabase>,
+) {
     let refs = usages.references.values_mut();
     match def {
         Definition::Adt(hir::Adt::Enum(enum_)) => {
@@ -278,7 +290,10 @@ fn retain_adt_literal_usages(usages: &mut UsageSearchResult, def: Definition, se
 /// - `None` otherwise
 ///
 /// The returned name is the name of the type whose constructor usages should be searched for.
-fn name_for_constructor_search(syntax: &SyntaxNode, position: FilePosition) -> Option<ast::Name> {
+fn name_for_constructor_search(
+    syntax: &SyntaxNode,
+    position: FilePosition,
+) -> Option<ast::Name> {
     let token = syntax.token_at_offset(position.offset).right_biased()?;
     let token_parent = token.parent()?;
     let kind = token.kind();
@@ -325,7 +340,11 @@ fn name_for_constructor_search(syntax: &SyntaxNode, position: FilePosition) -> O
 ///
 /// # Returns
 /// `true` if the name reference is used as part of constructing a variant of the given enum.
-fn is_enum_lit_name_ref(sema: &Semantics<'_, RootDatabase>, enum_: hir::Enum, name_ref: &ast::NameRef) -> bool {
+fn is_enum_lit_name_ref(
+    sema: &Semantics<'_, RootDatabase>,
+    enum_: hir::Enum,
+    name_ref: &ast::NameRef,
+) -> bool {
     let path_is_variant_of_enum = |path: ast::Path| {
         matches!(
             sema.resolve_path(&path),
@@ -350,7 +369,10 @@ fn is_enum_lit_name_ref(sema: &Semantics<'_, RootDatabase>, enum_: hir::Enum, na
 
 /// Checks if a path ends with the given name reference.
 /// Helper function for checking constructor usage patterns.
-fn path_ends_with(path: Option<ast::Path>, name_ref: &ast::NameRef) -> bool {
+fn path_ends_with(
+    path: Option<ast::Path>,
+    name_ref: &ast::NameRef,
+) -> bool {
     path.and_then(|path| path.segment())
         .and_then(|segment| segment.name_ref())
         .map_or(false, |segment| segment == *name_ref)
@@ -373,7 +395,10 @@ fn is_lit_name_ref(name_ref: &ast::NameRef) -> bool {
     }).unwrap_or(false)
 }
 
-fn handle_control_flow_keywords(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offset }: FilePosition) -> Option<ReferenceSearchResult> {
+fn handle_control_flow_keywords(
+    sema: &Semantics<'_, RootDatabase>,
+    FilePosition { file_id, offset }: FilePosition,
+) -> Option<ReferenceSearchResult> {
     let file = sema.parse_guess_edition(file_id);
     let edition = sema
         .attach_first_edition(file_id)
@@ -1431,10 +1456,17 @@ fn main() {
             "#]],
         );
     }
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         check_with_scope(ra_fixture, None, expect)
     }
-    fn check_with_scope(#[rust_analyzer::rust_fixture] ra_fixture: &str, search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>, expect: Expect) {
+    fn check_with_scope(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>,
+        expect: Expect,
+    ) {
         let (analysis, pos) = fixture::position(ra_fixture);
         let config = FindAllRefsConfig {
             search_scope: search_scope.map(|it| it(&analysis.db)),

@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn replace_filter_map_next_with_find_map(ctx: &DiagnosticsContext<'_>, d: &hir::ReplaceFilterMapNextWithFindMap) -> Diagnostic {
+pub(crate) fn replace_filter_map_next_with_find_map(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::ReplaceFilterMapNextWithFindMap,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::Clippy("filter_map_next"),
@@ -19,7 +22,10 @@ pub(crate) fn replace_filter_map_next_with_find_map(ctx: &DiagnosticsContext<'_>
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::ReplaceFilterMapNextWithFindMap) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::ReplaceFilterMapNextWithFindMap,
+) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.file);
     let next_expr = d.next_expr.to_node(&root);
     let next_call = ast::MethodCallExpr::cast(next_expr.syntax().clone())?;

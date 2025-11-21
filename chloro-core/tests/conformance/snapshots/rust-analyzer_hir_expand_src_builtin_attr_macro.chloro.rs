@@ -32,7 +32,13 @@ macro_rules! register_builtin {
 }
 
 impl BuiltinAttrExpander {
-    pub fn expand(&self, db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+    pub fn expand(
+        &self,
+        db: &dyn ExpandDatabase,
+        id: MacroCallId,
+        tt: &tt::TopSubtree,
+        span: Span,
+    ) -> ExpandResult<tt::TopSubtree> {
         self.expander()(db, id, tt, span)
     }
 
@@ -57,11 +63,21 @@ pub fn find_builtin_attr(ident: &name::Name) -> Option<BuiltinAttrExpander> {
     BuiltinAttrExpander::find_by_name(ident)
 }
 
-fn dummy_attr_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, _span: Span) -> ExpandResult<tt::TopSubtree> {
+fn dummy_attr_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    _span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     ExpandResult::ok(tt.clone())
 }
 
-fn dummy_gate_test_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn dummy_gate_test_expand(
+    _db: &dyn ExpandDatabase,
+    _id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let result = quote::quote! { span=>
         #[cfg(test)]
         #tt
@@ -90,7 +106,12 @@ fn dummy_gate_test_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::T
 /// always resolve as a derive without nameres recollecting them.
 /// So this hacky approach is a lot more friendly for us, though it does require a bit of support in
 /// [`hir::Semantics`] to make this work.
-fn derive_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+fn derive_expand(
+    db: &dyn ExpandDatabase,
+    id: MacroCallId,
+    tt: &tt::TopSubtree,
+    span: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let loc = db.lookup_intern_macro_call(id);
     let derives = match &loc.kind {
         MacroCallKind::Attr { attr_args: Some(attr_args), .. } if loc.def.is_attribute_derive() => {
@@ -106,7 +127,11 @@ fn derive_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, 
     pseudo_derive_attr_expansion(tt, derives, span)
 }
 
-pub fn pseudo_derive_attr_expansion(_: &tt::TopSubtree, args: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
+pub fn pseudo_derive_attr_expansion(
+    _: &tt::TopSubtree,
+    args: &tt::TopSubtree,
+    call_site: Span,
+) -> ExpandResult<tt::TopSubtree> {
     let mk_leaf =
         |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
     let mut token_trees = tt::TopSubtreeBuilder::new(args.top_subtree().delimiter);

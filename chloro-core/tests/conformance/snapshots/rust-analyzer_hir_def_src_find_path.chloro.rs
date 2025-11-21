@@ -22,7 +22,14 @@ use crate::{
 
 /// Find a path that can be used to refer to a certain item. This can depend on
 /// *from where* you're referring to the item, hence the `from` parameter.
-pub fn find_path(db: &dyn DefDatabase, item: ItemInNs, from: ModuleId, mut prefix_kind: PrefixKind, ignore_local_imports: bool, mut cfg: FindPathConfig) -> Option<ModPath> {
+pub fn find_path(
+    db: &dyn DefDatabase,
+    item: ItemInNs,
+    from: ModuleId,
+    mut prefix_kind: PrefixKind,
+    ignore_local_imports: bool,
+    mut cfg: FindPathConfig,
+) -> Option<ModPath> {
     let _p = tracing::info_span!("find_path").entered();
     // - if the item is a builtin, it's in scope
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
@@ -94,7 +101,11 @@ struct FindPathCtx<'db> {
 }
 
 /// Attempts to find a path to refer to the given `item` visible from the `from` ModuleId
-fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Option<ModPath> {
+fn find_path_inner(
+    ctx: &FindPathCtx<'_>,
+    item: ItemInNs,
+    max_len: usize,
+) -> Option<ModPath> {
     // - if the item is a module, jump straight to module search
     if !ctx.is_std_item
         && let ItemInNs::Types(ModuleDefId::ModuleId(module_id)) = item
@@ -137,7 +148,13 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
 }
 
 #[tracing::instrument(skip_all)]
-fn find_path_for_module(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, module_id: ModuleId, maybe_extern: bool, max_len: usize) -> Option<Choice> {
+fn find_path_for_module(
+    ctx: &FindPathCtx<'_>,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    module_id: ModuleId,
+    maybe_extern: bool,
+    max_len: usize,
+) -> Option<Choice> {
     if max_len == 0 {
         // recursive base case, we can't find a path of length 0
         return None;
@@ -227,7 +244,13 @@ fn find_path_for_module(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(
     best_choice
 }
 
-fn find_in_scope(db: &dyn DefDatabase, def_map: &DefMap, from: ModuleId, item: ItemInNs, ignore_local_imports: bool) -> Option<Name> {
+fn find_in_scope(
+    db: &dyn DefDatabase,
+    def_map: &DefMap,
+    from: ModuleId,
+    item: ItemInNs,
+    ignore_local_imports: bool,
+) -> Option<Name> {
     // FIXME: We could have multiple applicable names here, but we currently only return the first
     def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
         def_map[local_id].scope.names_of(item, |name, _, declared| {
@@ -238,7 +261,12 @@ fn find_in_scope(db: &dyn DefDatabase, def_map: &DefMap, from: ModuleId, item: I
 
 /// Returns single-segment path (i.e. without any prefix) if `item` is found in prelude and its
 /// name doesn't clash in current scope.
-fn find_in_prelude(db: &dyn DefDatabase, local_def_map: &DefMap, item: ItemInNs, from: ModuleId) -> Option<Choice> {
+fn find_in_prelude(
+    db: &dyn DefDatabase,
+    local_def_map: &DefMap,
+    item: ItemInNs,
+    from: ModuleId,
+) -> Option<Choice> {
     let (prelude_module, _) = local_def_map.prelude()?;
     let prelude_def_map = prelude_module.def_map(db);
     let prelude_scope = &prelude_def_map[prelude_module.local_id].scope;
@@ -264,7 +292,11 @@ fn find_in_prelude(db: &dyn DefDatabase, local_def_map: &DefMap, item: ItemInNs,
     }
 }
 
-fn is_kw_kind_relative_to_from(def_map: &DefMap, item: ModuleId, from: ModuleId) -> Option<PathKind> {
+fn is_kw_kind_relative_to_from(
+    def_map: &DefMap,
+    item: ModuleId,
+    from: ModuleId,
+) -> Option<PathKind> {
     if item.krate != from.krate || item.is_within_block() || from.is_within_block() {
         return None;
     }
@@ -286,7 +318,13 @@ fn is_kw_kind_relative_to_from(def_map: &DefMap, item: ModuleId, from: ModuleId)
 }
 
 #[tracing::instrument(skip_all)]
-fn calculate_best_path(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, item: ItemInNs, max_len: usize, best_choice: &mut Option<Choice>) {
+fn calculate_best_path(
+    ctx: &FindPathCtx<'_>,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    item: ItemInNs,
+    max_len: usize,
+    best_choice: &mut Option<Choice>,
+) {
     let fuel = ctx.fuel.get();
     if fuel == 0 {
         // we ran out of fuel, so we stop searching here
@@ -319,7 +357,13 @@ fn calculate_best_path(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(I
     }
 }
 
-fn find_in_sysroot(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, item: ItemInNs, max_len: usize, best_choice: &mut Option<Choice>) {
+fn find_in_sysroot(
+    ctx: &FindPathCtx<'_>,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    item: ItemInNs,
+    max_len: usize,
+    best_choice: &mut Option<Choice>,
+) {
     let dependencies = &ctx.from.krate.data(ctx.db).dependencies;
     let mut search = |lang, best_choice: &mut _| {
         if let Some(dep) = dependencies.iter().filter(|it| it.is_sysroot()).find(|dep| {
@@ -359,7 +403,14 @@ fn find_in_sysroot(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemI
         });
 }
 
-fn find_in_dep(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, item: ItemInNs, max_len: usize, best_choice: &mut Option<Choice>, dep: Crate) {
+fn find_in_dep(
+    ctx: &FindPathCtx<'_>,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    item: ItemInNs,
+    max_len: usize,
+    best_choice: &mut Option<Choice>,
+    dep: Crate,
+) {
     let import_map = ctx.db.import_map(dep);
     let Some(import_info_for) = import_map.import_info_for(item) else {
         return;
@@ -395,7 +446,13 @@ fn find_in_dep(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs,
     }
 }
 
-fn calculate_best_path_local(ctx: &FindPathCtx<'_>, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, item: ItemInNs, max_len: usize, best_choice: &mut Option<Choice>) {
+fn calculate_best_path_local(
+    ctx: &FindPathCtx<'_>,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    item: ItemInNs,
+    max_len: usize,
+    best_choice: &mut Option<Choice>,
+) {
     // FIXME: cache the `find_local_import_locations` output?
     find_local_import_locations(
         ctx.db,
@@ -431,7 +488,12 @@ struct Choice {
 }
 
 impl Choice {
-    fn new(prefer_prelude: bool, kind: PathKind, name: Name, stability: Stability) -> Self {
+    fn new(
+        prefer_prelude: bool,
+        kind: PathKind,
+        name: Name,
+        stability: Stability,
+    ) -> Self {
         Self {
             path_text_len: path_kind_len(kind) + name.as_str().len(),
             stability,
@@ -440,14 +502,23 @@ impl Choice {
         }
     }
 
-    fn push(mut self, prefer_prelude: bool, name: Name) -> Self {
+    fn push(
+        mut self,
+        prefer_prelude: bool,
+        name: Name,
+    ) -> Self {
         self.path_text_len += name.as_str().len();
         self.prefer_due_to_prelude |= prefer_prelude && name == sym::prelude;
         self.path.push_segment(name);
         self
     }
 
-    fn try_select(current: &mut Option<Choice>, mut other: Choice, prefer_prelude: bool, name: Name) {
+    fn try_select(
+        current: &mut Option<Choice>,
+        mut other: Choice,
+        prefer_prelude: bool,
+        name: Name,
+    ) {
         let Some(current) = current else {
             *current = Some(other.push(prefer_prelude, name));
             return;
@@ -488,7 +559,14 @@ fn path_kind_len(kind: PathKind) -> usize {
 }
 
 /// Finds locations in `from.krate` from which `item` can be imported by `from`.
-fn find_local_import_locations(db: &dyn DefDatabase, item: ItemInNs, from: ModuleId, def_map: &DefMap, visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>, mut cb: impl FnMut(&mut FxHashSet<(ItemInNs, ModuleId)>, &Name, ModuleId)) {
+fn find_local_import_locations(
+    db: &dyn DefDatabase,
+    item: ItemInNs,
+    from: ModuleId,
+    def_map: &DefMap,
+    visited_modules: &mut FxHashSet<(ItemInNs, ModuleId)>,
+    mut cb: impl FnMut(&mut FxHashSet<(ItemInNs, ModuleId)>, &Name, ModuleId),
+) {
     let _p = tracing::info_span!("find_local_import_locations").entered();
     // `from` can import anything below `from` with visibility of at least `from`, and anything
     // above `from` with any visibility. That means we do not need to descend into private siblings
@@ -583,7 +661,15 @@ mod tests {
     /// item the `path` refers to returns that same path when called from the
     /// module the cursor is in.
     #[track_caller]
-    fn check_found_path_(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, prefer_prelude: bool, prefer_absolute: bool, prefer_no_std: bool, allow_unstable: bool, expect: Expect) {
+    fn check_found_path_(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        prefer_prelude: bool,
+        prefer_absolute: bool,
+        prefer_no_std: bool,
+        allow_unstable: bool,
+        expect: Expect,
+    ) {
         let (db, pos) = TestDB::with_position(ra_fixture);
         let module = db.module_at_position(pos);
         let parsed_path_file =
@@ -637,19 +723,39 @@ mod tests {
         }
         expect.assert_eq(&res);
     }
-    fn check_found_path(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, expect: Expect) {
+    fn check_found_path(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        expect: Expect,
+    ) {
         check_found_path_(ra_fixture, path, false, false, false, false, expect);
     }
-    fn check_found_path_prelude(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, expect: Expect) {
+    fn check_found_path_prelude(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        expect: Expect,
+    ) {
         check_found_path_(ra_fixture, path, true, false, false, false, expect);
     }
-    fn check_found_path_absolute(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, expect: Expect) {
+    fn check_found_path_absolute(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        expect: Expect,
+    ) {
         check_found_path_(ra_fixture, path, false, true, false, false, expect);
     }
-    fn check_found_path_prefer_no_std(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, expect: Expect) {
+    fn check_found_path_prefer_no_std(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        expect: Expect,
+    ) {
         check_found_path_(ra_fixture, path, false, false, true, false, expect);
     }
-    fn check_found_path_prefer_no_std_allow_unstable(#[rust_analyzer::rust_fixture] ra_fixture: &str, path: &str, expect: Expect) {
+    fn check_found_path_prefer_no_std_allow_unstable(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        path: &str,
+        expect: Expect,
+    ) {
         check_found_path_(ra_fixture, path, false, false, true, true, expect);
     }
     #[test]

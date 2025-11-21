@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22284 bytes
-Chloro size:   20662 bytes
+Chloro size:   20792 bytes
 Rustfmt size:  22284 bytes
 
 ✗ Outputs DIFFER
@@ -32,9 +32,14 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_setter(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      // This if condition denotes two modes this assist can work in:
      // - First is acting upon selection of record fields
+     // - Next is acting upon a single record field
      //
      // This is the only part where implementation diverges a bit,
      // subsequent code is generic for both of these modes
@@ -116,7 +121,11 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_getter(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      generate_getter_impl(acc, ctx, false)
  }
  
@@ -141,21 +150,14 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_getter_mut(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      generate_getter_impl(acc, ctx, true)
  }
-     Set,
- }
  
--pub(crate) fn generate_getter_impl(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--    mutable: bool,
--) -> Option<()> {
-+pub(crate) fn generate_getter_impl(acc: &mut Assists, ctx: &AssistContext<'_>, mutable: bool) -> Option<()> {
-     let (strukt, info_of_record_fields, fn_names) =
-         extract_and_parse(ctx, if mutable { AssistType::MutGet } else { AssistType::Get })?;
-     // No record fields to do work on :(
      if info_of_record_fields.is_empty() {
          return None;
      }
@@ -183,18 +185,6 @@ Rustfmt size:  22284 bytes
      acc.add_group(
          &GroupLabel("Generate getter/setter".to_owned()),
          AssistId::generate(id),
-     )
- }
- 
--fn generate_getter_from_info(
--    ctx: &AssistContext<'_>,
--    info: &AssistInfo,
--    record_field_info: &RecordFieldInfo,
--) -> ast::Fn {
-+fn generate_getter_from_info(ctx: &AssistContext<'_>, info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
-     let (ty, body) = if matches!(info.assist_type, AssistType::MutGet) {
-         (
-             make::ty_ref(record_field_info.field_ty.clone(), true),
              )
          })
      };
@@ -214,6 +204,15 @@ Rustfmt size:  22284 bytes
      make::fn_(
          None,
          strukt.visibility(),
+     )
+ }
+ 
+-fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
++fn generate_setter_from_info(
++    info: &AssistInfo,
++    record_field_info: &RecordFieldInfo,
++) -> ast::Fn {
+     let strukt = &info.strukt;
      let field_name = &record_field_info.fn_name;
      let fn_name = make::name(&format!("set_{field_name}"));
      let field_ty = &record_field_info.field_ty;
@@ -234,17 +233,6 @@ Rustfmt size:  22284 bytes
      // Make the setter fn
      make::fn_(
          None,
-     )
- }
- 
--fn extract_and_parse(
--    ctx: &AssistContext<'_>,
--    assist_type: AssistType,
--) -> Option<(ast::Struct, Vec<RecordFieldInfo>, Vec<String>)> {
-+fn extract_and_parse(ctx: &AssistContext<'_>, assist_type: AssistType) -> Option<(ast::Struct, Vec<RecordFieldInfo>, Vec<String>)> {
-     // This if condition denotes two modes assists can work in:
-     // - First is acting upon selection of record fields
-     // - Next is acting upon a single record field
  
          return Some((parent_struct, info_of_record_fields, field_names));
      }
@@ -252,29 +240,14 @@ Rustfmt size:  22284 bytes
      // Single Record Field mode
      let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
      let field = ctx.find_node_at_offset::<ast::RecordField>()?;
-     Some((strukt, vec![record_field_info], vec![fn_name]))
- }
- 
--fn extract_and_parse_record_fields(
--    node: &ast::Struct,
--    selection_range: TextRange,
--    assist_type: &AssistType,
--) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
-+fn extract_and_parse_record_fields(node: &ast::Struct, selection_range: TextRange, assist_type: &AssistType) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
+ ) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
      let mut field_names: Vec<String> = vec![];
      let field_list = node.field_list()?;
 -
      match field_list {
          ast::FieldList::RecordFieldList(ele) => {
              let info_of_record_fields_in_selection = ele
-     }
- }
- 
--fn parse_record_field(
--    record_field: ast::RecordField,
--    assist_type: &AssistType,
--) -> Option<RecordFieldInfo> {
-+fn parse_record_field(record_field: ast::RecordField, assist_type: &AssistType) -> Option<RecordFieldInfo> {
+ ) -> Option<RecordFieldInfo> {
      let field_name = record_field.name()?;
      let field_ty = record_field.ty()?;
 -
@@ -288,13 +261,8 @@ Rustfmt size:  22284 bytes
      Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
  }
  
--fn build_source_change(
--    builder: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    info_of_record_fields: Vec<RecordFieldInfo>,
--    assist_info: AssistInfo,
--) {
-+fn build_source_change(builder: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, info_of_record_fields: Vec<RecordFieldInfo>, assist_info: AssistInfo) {
+     assist_info: AssistInfo,
+ ) {
      let record_fields_count = info_of_record_fields.len();
 -
      let impl_def = if let Some(impl_def) = &assist_info.impl_def {

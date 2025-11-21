@@ -73,11 +73,19 @@ pub(crate) fn completion_list_no_kw_with_private_editable(#[rust_analyzer::rust_
     completion_list_with_config(config, ra_fixture, false, None)
 }
 
-pub(crate) fn completion_list_with_trigger_character(#[rust_analyzer::rust_fixture] ra_fixture: &str, trigger_character: Option<char>) -> String {
+pub(crate) fn completion_list_with_trigger_character(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    trigger_character: Option<char>,
+) -> String {
     completion_list_with_config(TEST_CONFIG, ra_fixture, true, trigger_character)
 }
 
-fn completion_list_with_config_raw(config: CompletionConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, include_keywords: bool, trigger_character: Option<char>) -> Vec<CompletionItem> {
+fn completion_list_with_config_raw(
+    config: CompletionConfig<'_>,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    include_keywords: bool,
+    trigger_character: Option<char>,
+) -> Vec<CompletionItem> {
     let _tracing = setup_tracing();
     // filter out all but one built-in type completion for smaller test outputs
     let items = get_all_items(config, ra_fixture, trigger_character);
@@ -96,7 +104,12 @@ fn completion_list_with_config_raw(config: CompletionConfig<'_>, #[rust_analyzer
         .collect()
 }
 
-fn completion_list_with_config(config: CompletionConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, include_keywords: bool, trigger_character: Option<char>) -> String {
+fn completion_list_with_config(
+    config: CompletionConfig<'_>,
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    include_keywords: bool,
+    trigger_character: Option<char>,
+) -> String {
     render_completion_list(completion_list_with_config_raw(
         config,
         ra_fixture,
@@ -117,11 +130,18 @@ pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Root
     (database, position)
 }
 
-pub(crate) fn do_completion(code: &str, kind: CompletionItemKind) -> Vec<CompletionItem> {
+pub(crate) fn do_completion(
+    code: &str,
+    kind: CompletionItemKind,
+) -> Vec<CompletionItem> {
     do_completion_with_config(TEST_CONFIG, code, kind)
 }
 
-pub(crate) fn do_completion_with_config(config: CompletionConfig<'_>, code: &str, kind: CompletionItemKind) -> Vec<CompletionItem> {
+pub(crate) fn do_completion_with_config(
+    config: CompletionConfig<'_>,
+    code: &str,
+    kind: CompletionItemKind,
+) -> Vec<CompletionItem> {
     get_all_items(config, code, None)
         .into_iter()
         .filter(|c| c.kind == kind)
@@ -171,12 +191,21 @@ fn render_completion_list(completions: Vec<CompletionItem>) -> String {
 }
 
 #[track_caller]
-pub(crate) fn check_edit(what: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+pub(crate) fn check_edit(
+    what: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+) {
     check_edit_with_config(TEST_CONFIG, what, ra_fixture_before, ra_fixture_after)
 }
 
 #[track_caller]
-pub(crate) fn check_edit_with_config(config: CompletionConfig<'_>, what: &str, ra_fixture_before: &str, ra_fixture_after: &str) {
+pub(crate) fn check_edit_with_config(
+    config: CompletionConfig<'_>,
+    what: &str,
+    ra_fixture_before: &str,
+    ra_fixture_after: &str,
+) {
     let ra_fixture_after = trim_indent(ra_fixture_after);
     let (db, position) = position(ra_fixture_before);
     let completions: Vec<CompletionItem> =
@@ -199,31 +228,51 @@ pub(crate) fn check_edit_with_config(config: CompletionConfig<'_>, what: &str, r
     assert_eq_text!(&ra_fixture_after, &actual)
 }
 
-pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+pub(crate) fn check(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let actual = completion_list(ra_fixture);
     expect.assert_eq(&actual);
 }
 
-pub(crate) fn check_with_base_items(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+pub(crate) fn check_with_base_items(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     check(&format!("{BASE_ITEMS_FIXTURE}{ra_fixture}"), expect)
 }
 
-pub(crate) fn check_no_kw(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+pub(crate) fn check_no_kw(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let actual = completion_list_no_kw(ra_fixture);
     expect.assert_eq(&actual)
 }
 
-pub(crate) fn check_with_private_editable(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+pub(crate) fn check_with_private_editable(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let actual = completion_list_no_kw_with_private_editable(ra_fixture);
     expect.assert_eq(&actual);
 }
 
-pub(crate) fn check_with_trigger_character(#[rust_analyzer::rust_fixture] ra_fixture: &str, trigger_character: Option<char>, expect: Expect) {
+pub(crate) fn check_with_trigger_character(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    trigger_character: Option<char>,
+    expect: Expect,
+) {
     let actual = completion_list_with_trigger_character(ra_fixture, trigger_character);
     expect.assert_eq(&actual)
 }
 
-pub(crate) fn get_all_items(config: CompletionConfig<'_>, code: &str, trigger_character: Option<char>) -> Vec<CompletionItem> {
+pub(crate) fn get_all_items(
+    config: CompletionConfig<'_>,
+    code: &str,
+    trigger_character: Option<char>,
+) -> Vec<CompletionItem> {
     let (db, position) = position(code);
     let res = hir::attach_db(&db, || {
         HirDatabase::zalsa_register_downcaster(&db);

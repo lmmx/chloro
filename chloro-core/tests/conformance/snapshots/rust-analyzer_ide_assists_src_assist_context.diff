@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8190 bytes
+Chloro size:   8447 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -41,13 +41,8 @@ Rustfmt size:  8697 bytes
      covering_element: SyntaxElement,
  }
  
- impl<'a> AssistContext<'a> {
--    pub(crate) fn new(
--        sema: Semantics<'a, RootDatabase>,
--        config: &'a AssistConfig,
--        frange: FileRange,
--    ) -> AssistContext<'a> {
-+    pub(crate) fn new(sema: Semantics<'a, RootDatabase>, config: &'a AssistConfig, frange: FileRange) -> AssistContext<'a> {
+         frange: FileRange,
+     ) -> AssistContext<'a> {
          let source_file = sema.parse(frange.file_id);
 -
          let start = frange.range.start();
@@ -87,8 +82,12 @@ Rustfmt size:  8697 bytes
      pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
          self.token_at_offset.clone()
      }
+-    pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
 +
-     pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
++    pub(crate) fn find_token_syntax_at_offset(
++        &self,
++        kind: SyntaxKind,
++    ) -> Option<SyntaxToken> {
          self.token_at_offset().find(|it| it.kind() == kind)
      }
 +
@@ -117,17 +116,19 @@ Rustfmt size:  8697 bytes
      /// Returns the element covered by the selection range, this excludes trailing whitespace in the selection.
      pub(crate) fn covering_element(&self) -> SyntaxElement {
          self.covering_element.clone()
-         self.buf
-     }
+ }
  
--    pub(crate) fn add(
--        &mut self,
--        id: AssistId,
--        label: impl Into<String>,
--        target: TextRange,
--        f: impl FnOnce(&mut SourceChangeBuilder),
--    ) -> Option<()> {
-+    pub(crate) fn add(&mut self, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+ impl Assists {
+-    pub(crate) fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
++    pub(crate) fn new(
++        ctx: &AssistContext<'_>,
++        resolve: AssistResolveStrategy,
++    ) -> Assists {
+         Assists {
+             resolve,
+             file: ctx.frange.file_id.file_id(ctx.db()),
+         f: impl FnOnce(&mut SourceChangeBuilder),
+     ) -> Option<()> {
          let mut f = Some(f);
 -        self.add_impl(None, id, label.into(), target, &mut |it| {
 -            f.take().unwrap()(it)
@@ -135,15 +136,9 @@ Rustfmt size:  8697 bytes
 +        self.add_impl(None, id, label.into(), target, &mut |it| f.take().unwrap()(it))
      }
  
--    pub(crate) fn add_group(
--        &mut self,
--        group: &GroupLabel,
--        id: AssistId,
--        label: impl Into<String>,
--        target: TextRange,
--        f: impl FnOnce(&mut SourceChangeBuilder),
--    ) -> Option<()> {
-+    pub(crate) fn add_group(&mut self, group: &GroupLabel, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+     pub(crate) fn add_group(
+         f: impl FnOnce(&mut SourceChangeBuilder),
+     ) -> Option<()> {
          let mut f = Some(f);
 -        self.add_impl(Some(group), id, label.into(), target, &mut |it| {
 -            f.take().unwrap()(it)
@@ -151,15 +146,7 @@ Rustfmt size:  8697 bytes
 +        self.add_impl(Some(group), id, label.into(), target, &mut |it| f.take().unwrap()(it))
      }
  
--    fn add_impl(
--        &mut self,
--        group: Option<&GroupLabel>,
--        id: AssistId,
--        label: String,
--        target: TextRange,
--        f: &mut dyn FnMut(&mut SourceChangeBuilder),
--    ) -> Option<()> {
-+    fn add_impl(&mut self, group: Option<&GroupLabel>, id: AssistId, label: String, target: TextRange, f: &mut dyn FnMut(&mut SourceChangeBuilder)) -> Option<()> {
+     fn add_impl(
          if !self.is_allowed(&id) {
              return None;
          }
@@ -185,3 +172,11 @@ Rustfmt size:  8697 bytes
          Some(())
      }
  
+-    fn is_allowed(&self, id: &AssistId) -> bool {
++    fn is_allowed(
++        &self,
++        id: &AssistId,
++    ) -> bool {
+         match &self.allowed {
+             Some(allowed) => allowed.iter().any(|kind| kind.contains(id.1)),
+             None => true,

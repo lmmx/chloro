@@ -84,7 +84,10 @@ impl<'db> Elaboratable<DbInterner<'db>> for PredicateObligation<'db> {
         self.predicate
     }
 
-    fn child(&self, clause: Clause<'db>) -> Self {
+    fn child(
+        &self,
+        clause: Clause<'db>,
+    ) -> Self {
         Obligation {
             cause: self.cause.clone(),
             param_env: self.param_env,
@@ -93,7 +96,13 @@ impl<'db> Elaboratable<DbInterner<'db>> for PredicateObligation<'db> {
         }
     }
 
-    fn child_with_derived_cause(&self, clause: Clause<'db>, _span: Span, _parent_trait_pred: PolyTraitPredicate<'db>, _index: usize) -> Self {
+    fn child_with_derived_cause(
+        &self,
+        clause: Clause<'db>,
+        _span: Span,
+        _parent_trait_pred: PolyTraitPredicate<'db>,
+        _index: usize,
+    ) -> Self {
         let cause = ObligationCause::new();
         Obligation {
             cause,
@@ -112,7 +121,10 @@ impl<'db, T: Copy> Obligation<'db, T> {
 
 impl<'db, T: PartialEq> PartialEq<Obligation<'db, T>> for Obligation<'db, T> {
     #[inline]
-    fn eq(&self, other: &Obligation<'db, T>) -> bool {
+    fn eq(
+        &self,
+        other: &Obligation<'db, T>,
+    ) -> bool {
         // Ignore `cause` and `recursion_depth`. This is a small performance
         // win for a few crates, and a huge performance win for the crate in
         // https://github.com/rust-lang/rustc-perf/pull/1680, which greatly
@@ -125,7 +137,10 @@ impl<'db, T: Eq> Eq for Obligation<'db, T> {
 }
 
 impl<'db, T: Hash> Hash for Obligation<'db, T> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+    fn hash<H: Hasher>(
+        &self,
+        state: &mut H,
+    ) {
         // See the comment on `Obligation::eq`.
         self.param_env.hash(state);
         self.predicate.hash(state);
@@ -148,7 +163,10 @@ impl<'db> PredicateObligation<'db> {
     /// Flips the polarity of the inner predicate.
     ///
     /// Given `T: Trait` predicate it returns `T: !Trait` and given `T: !Trait` returns `T: Trait`.
-    pub fn flip_polarity(&self, _interner: DbInterner<'db>) -> Option<PredicateObligation<'db>> {
+    pub fn flip_polarity(
+        &self,
+        _interner: DbInterner<'db>,
+    ) -> Option<PredicateObligation<'db>> {
         Some(PredicateObligation {
             cause: self.cause.clone(),
             param_env: self.param_env,
@@ -159,7 +177,12 @@ impl<'db> PredicateObligation<'db> {
 }
 
 impl<'db, O> Obligation<'db, O> {
-    pub fn new(tcx: DbInterner<'db>, cause: ObligationCause, param_env: ParamEnv<'db>, predicate: impl Upcast<DbInterner<'db>, O>) -> Obligation<'db, O> {
+    pub fn new(
+        tcx: DbInterner<'db>,
+        cause: ObligationCause,
+        param_env: ParamEnv<'db>,
+        predicate: impl Upcast<DbInterner<'db>, O>,
+    ) -> Obligation<'db, O> {
         Self::with_depth(tcx, cause, 0, param_env, predicate)
     }
 
@@ -167,16 +190,29 @@ impl<'db, O> Obligation<'db, O> {
     ///
     /// To deal with this evaluate and fulfill explicitly update the depth
     /// of nested obligations using this function.
-    pub fn set_depth_from_parent(&mut self, parent_depth: usize) {
+    pub fn set_depth_from_parent(
+        &mut self,
+        parent_depth: usize,
+    ) {
         self.recursion_depth = cmp::max(parent_depth + 1, self.recursion_depth);
     }
 
-    pub fn with_depth(tcx: DbInterner<'db>, cause: ObligationCause, recursion_depth: usize, param_env: ParamEnv<'db>, predicate: impl Upcast<DbInterner<'db>, O>) -> Obligation<'db, O> {
+    pub fn with_depth(
+        tcx: DbInterner<'db>,
+        cause: ObligationCause,
+        recursion_depth: usize,
+        param_env: ParamEnv<'db>,
+        predicate: impl Upcast<DbInterner<'db>, O>,
+    ) -> Obligation<'db, O> {
         let predicate = predicate.upcast(tcx);
         Obligation { cause, param_env, recursion_depth, predicate }
     }
 
-    pub fn with<P>(&self, tcx: DbInterner<'db>, value: impl Upcast<DbInterner<'db>, P>) -> Obligation<'db, P> {
+    pub fn with<P>(
+        &self,
+        tcx: DbInterner<'db>,
+        value: impl Upcast<DbInterner<'db>, P>,
+    ) -> Obligation<'db, P> {
         Obligation::with_depth(tcx, self.cause.clone(), self.recursion_depth, self.param_env, value)
     }
 }
@@ -186,7 +222,12 @@ impl<'db, O> Obligation<'db, O> {
 /// `bound` or is not known to meet bound (note that this is
 /// conservative towards *no impl*, which is the opposite of the
 /// `evaluate` methods).
-pub(crate) fn type_known_to_meet_bound_modulo_regions<'tcx>(infcx: &InferCtxt<'tcx>, param_env: ParamEnv<'tcx>, ty: Ty<'tcx>, def_id: TraitId) -> bool {
+pub(crate) fn type_known_to_meet_bound_modulo_regions<'tcx>(
+    infcx: &InferCtxt<'tcx>,
+    param_env: ParamEnv<'tcx>,
+    ty: Ty<'tcx>,
+    def_id: TraitId,
+) -> bool {
     let trait_ref = TraitRef::new(infcx.interner, def_id.into(), [ty]);
     pred_known_to_hold_modulo_regions(infcx, param_env, trait_ref)
 }
@@ -195,7 +236,11 @@ pub(crate) fn type_known_to_meet_bound_modulo_regions<'tcx>(infcx: &InferCtxt<'t
 ///
 /// Ping me on zulip if you want to use this method and need help with finding
 /// an appropriate replacement.
-fn pred_known_to_hold_modulo_regions<'db>(infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, pred: impl Upcast<DbInterner<'db>, Predicate<'db>>) -> bool {
+fn pred_known_to_hold_modulo_regions<'db>(
+    infcx: &InferCtxt<'db>,
+    param_env: ParamEnv<'db>,
+    pred: impl Upcast<DbInterner<'db>, Predicate<'db>>,
+) -> bool {
     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), param_env, pred);
     let result = infcx.evaluate_obligation(&obligation);
     debug!(?result);

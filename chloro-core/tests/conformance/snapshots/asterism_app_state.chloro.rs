@@ -81,7 +81,11 @@ pub enum View {
 impl AppState {
     /// Initialises application state with parsed sections and determines file mode.
     #[must_use]
-    pub fn new(files: Vec<PathBuf>, sections: Vec<Section>, wrap_width: usize) -> Self {
+    pub fn new(
+        files: Vec<PathBuf>,
+        sections: Vec<Section>,
+        wrap_width: usize,
+    ) -> Self {
         let file_mode = if files.len() == 1 {
             FileMode::Single
         } else {
@@ -107,7 +111,10 @@ impl AppState {
         }
     }
 
-    fn build_tree(files: &[PathBuf], sections: &[Section]) -> Vec<TreeNode> {
+    fn build_tree(
+        files: &[PathBuf],
+        sections: &[Section],
+    ) -> Vec<TreeNode> {
         let mut nodes = Vec::new();
         // Determine if this is difftastic mode by checking if multiple sections share the same file_path
         // (in markdown mode, each section has a unique file path or sections are from the same file)
@@ -263,7 +270,10 @@ impl AppState {
 
     /// Calculates total lines added before a section to determine correct write position.
     #[must_use]
-    pub fn cumulative_offset(&self, index: usize) -> usize {
+    pub fn cumulative_offset(
+        &self,
+        index: usize,
+    ) -> usize {
         let section = &self.sections[index];
         let target_file = &section.file_path;
         let target_line = section.line_start;
@@ -279,7 +289,10 @@ impl AppState {
     }
 
     /// Restores previously edited content from a saved edit plan.
-    pub fn load_docs(&mut self, plan: EditPlan) {
+    pub fn load_docs(
+        &mut self,
+        plan: EditPlan,
+    ) {
         let mut doc_map: HashMap<String, Vec<String>> = HashMap::new();
         for edit in plan.edits {
             let key = format!(
@@ -387,7 +400,10 @@ impl AppState {
     }
 
     /// Returns to section list, optionally persisting editor changes.
-    pub fn exit_detail_view(&mut self, save: bool) {
+    pub fn exit_detail_view(
+        &mut self,
+        save: bool,
+    ) {
         if save {
             if let Some(ref editor_state) = self.editor_state {
                 if let Some(section_idx) = self.get_current_section_index() {
@@ -814,7 +830,10 @@ impl AppState {
     }
 
     /// Rewrite an entire file with reordered sections
-    fn rewrite_file_sections(file_path: &str, sections: &[&Section]) -> io::Result<()> {
+    fn rewrite_file_sections(
+        file_path: &str,
+        sections: &[&Section],
+    ) -> io::Result<()> {
         let content = fs::read_to_string(file_path)?;
         let mut new_content = String::new();
         for section in sections {

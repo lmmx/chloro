@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111676 bytes
-Chloro size:   110412 bytes
+Chloro size:   111739 bytes
 Rustfmt size:  111676 bytes
 
 ✗ Outputs DIFFER
@@ -15,55 +15,6 @@ Rustfmt size:  111676 bytes
  use super::{
      BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic, TypeMismatch,
      cast::CastCheck, find_breakable,
- }
- 
- impl<'db> InferenceContext<'_, 'db> {
--    pub(crate) fn infer_expr(
--        &mut self,
--        tgt_expr: ExprId,
--        expected: &Expectation<'db>,
--        is_read: ExprIsRead,
--    ) -> Ty<'db> {
-+    pub(crate) fn infer_expr(&mut self, tgt_expr: ExprId, expected: &Expectation<'db>, is_read: ExprIsRead) -> Ty<'db> {
-         let ty = self.infer_expr_inner(tgt_expr, expected, is_read);
-         if let Some(expected_ty) = expected.only_has_type(&mut self.table) {
-             let could_unify = self.unify(ty, expected_ty);
-         ty
-     }
- 
--    pub(crate) fn infer_expr_no_expect(
--        &mut self,
--        tgt_expr: ExprId,
--        is_read: ExprIsRead,
--    ) -> Ty<'db> {
-+    pub(crate) fn infer_expr_no_expect(&mut self, tgt_expr: ExprId, is_read: ExprIsRead) -> Ty<'db> {
-         self.infer_expr_inner(tgt_expr, &Expectation::None, is_read)
-     }
- 
-     /// Infer type of expression with possibly implicit coerce to the expected type.
-     /// Return the type after possible coercion.
--    pub(super) fn infer_expr_coerce(
--        &mut self,
--        expr: ExprId,
--        expected: &Expectation<'db>,
--        is_read: ExprIsRead,
--    ) -> Ty<'db> {
-+    pub(super) fn infer_expr_coerce(&mut self, expr: ExprId, expected: &Expectation<'db>, is_read: ExprIsRead) -> Ty<'db> {
-         let ty = self.infer_expr_inner(expr, expected, is_read);
-         if let Some(target) = expected.only_has_type(&mut self.table) {
-             let coerce_never = if self.expr_guaranteed_to_constitute_read_for_never(expr, is_read) {
-     /// expression and the *parent* expression is the scrutinee of a match or
-     /// the pointee of an `&` addr-of expression, since both of those parent
-     /// expressions take a *place* and not a value.
--    pub(super) fn expr_guaranteed_to_constitute_read_for_never(
--        &mut self,
--        expr: ExprId,
--        is_read: ExprIsRead,
--    ) -> bool {
-+    pub(super) fn expr_guaranteed_to_constitute_read_for_never(&mut self, expr: ExprId, is_read: ExprIsRead) -> bool {
-         // rustc does the place expr check first, but since we are feeding
-         // readness of the `expr` as a given value, we just can short-circuit
-         // the place expr check if it's true(see codes and comments below)
          if is_read == ExprIsRead::Yes {
              return true;
          }
@@ -78,29 +29,30 @@ Rustfmt size:  111676 bytes
          // rustc queries parent hir node of `expr` here and determine whether
          // the current `expr` is read of value per its parent.
          // But since we don't have hir node, we cannot follow such "bottom-up"
+     /// Whether this pattern constitutes a read of value of the scrutinee that
+     /// it is matching against. This is used to determine whether we should
+     /// perform `NeverToAny` coercions.
+-    fn pat_guaranteed_to_constitute_read_for_never(&self, pat: PatId) -> bool {
++    fn pat_guaranteed_to_constitute_read_for_never(
++        &self,
++        pat: PatId,
++    ) -> bool {
+         match &self.body[pat] {
+             // Does not constitute a read.
+             Pat::Wild => false,
          }
      }
  
--    fn infer_expr_coerce_never(
--        &mut self,
--        expr: ExprId,
--        expected: &Expectation<'db>,
--        is_read: ExprIsRead,
--    ) -> Ty<'db> {
-+    fn infer_expr_coerce_never(&mut self, expr: ExprId, expected: &Expectation<'db>, is_read: ExprIsRead) -> Ty<'db> {
-         let ty = self.infer_expr_inner(expr, expected, is_read);
-         // While we don't allow *arbitrary* coercions here, we *do* allow
-         // coercions from `!` to `expected`.
-     }
- 
-     #[tracing::instrument(level = "debug", skip(self, is_read), ret)]
--    fn infer_expr_inner(
--        &mut self,
--        tgt_expr: ExprId,
--        expected: &Expectation<'db>,
--        is_read: ExprIsRead,
--    ) -> Ty<'db> {
-+    fn infer_expr_inner(&mut self, tgt_expr: ExprId, expected: &Expectation<'db>, is_read: ExprIsRead) -> Ty<'db> {
+-    fn is_syntactic_place_expr(&self, expr: ExprId) -> bool {
++    fn is_syntactic_place_expr(
++        &self,
++        expr: ExprId,
++    ) -> bool {
+         match &self.body[expr] {
+             // Lang item paths cannot currently be local variables or statics.
+             Expr::Path(Path::LangItem(_, _)) => false,
+         is_read: ExprIsRead,
+     ) -> Ty<'db> {
          self.db.unwind_if_revision_cancelled();
 -
          let expr = &self.body[tgt_expr];
@@ -109,15 +61,16 @@ Rustfmt size:  111676 bytes
          ty
      }
  
--    fn infer_async_block(
--        &mut self,
--        tgt_expr: ExprId,
--        id: &Option<BlockId>,
--        statements: &[Statement],
--        tail: &Option<ExprId>,
--    ) -> Ty<'db> {
-+    fn infer_async_block(&mut self, tgt_expr: ExprId, id: &Option<BlockId>, statements: &[Statement], tail: &Option<ExprId>) -> Ty<'db> {
-         let ret_ty = self.table.next_ty_var();
+-    fn infer_expr_path(&mut self, path: &Path, id: ExprOrPatId, scope_id: ExprId) -> Ty<'db> {
++    fn infer_expr_path(
++        &mut self,
++        path: &Path,
++        id: ExprOrPatId,
++        scope_id: ExprId,
++    ) -> Ty<'db> {
+         let g = self.resolver.update_to_inner_scope(self.db, self.owner, scope_id);
+         let ty = match self.infer_path(path, id) {
+             Some(ty) => ty,
          let prev_diverges = mem::replace(&mut self.diverges, Diverges::Maybe);
          let prev_ret_ty = mem::replace(&mut self.return_ty, ret_ty);
          let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(ret_ty));
@@ -136,31 +89,16 @@ Rustfmt size:  111676 bytes
          self.lower_async_block_type_impl_trait(inner_ty, tgt_expr)
      }
  
--    pub(crate) fn lower_async_block_type_impl_trait(
--        &mut self,
--        inner_ty: Ty<'db>,
--        tgt_expr: ExprId,
--    ) -> Ty<'db> {
-+    pub(crate) fn lower_async_block_type_impl_trait(&mut self, inner_ty: Ty<'db>, tgt_expr: ExprId) -> Ty<'db> {
-         let coroutine_id = InternedCoroutine(self.owner, tgt_expr);
-         let coroutine_id = self.db.intern_coroutine(coroutine_id).into();
-         let parent_args = GenericArgs::identity_for_item(self.interner(), self.generic_def.into());
-         )
+         }
      }
  
--    pub(crate) fn write_fn_trait_method_resolution(
--        &mut self,
--        fn_x: FnTrait,
--        derefed_callee: Ty<'db>,
--        adjustments: &mut Vec<Adjustment<'db>>,
--        callee_ty: Ty<'db>,
--        params: &[Ty<'db>],
--        tgt_expr: ExprId,
--    ) {
-+    pub(crate) fn write_fn_trait_method_resolution(&mut self, fn_x: FnTrait, derefed_callee: Ty<'db>, adjustments: &mut Vec<Adjustment<'db>>, callee_ty: Ty<'db>, params: &[Ty<'db>], tgt_expr: ExprId) {
-         match fn_x {
-             FnTrait::FnOnce | FnTrait::AsyncFnOnce => (),
-             FnTrait::FnMut | FnTrait::AsyncFnMut => {
+-    fn infer_expr_array(&mut self, array: &Array, expected: &Expectation<'db>) -> Ty<'db> {
++    fn infer_expr_array(
++        &mut self,
++        array: &Array,
++        expected: &Expectation<'db>,
++    ) -> Ty<'db> {
+         let elem_ty = match expected.to_option(&mut self.table).as_ref().map(|t| t.kind()) {
              Some(TyKind::Array(st, _) | TyKind::Slice(st)) => st,
              _ => self.table.next_ty_var(),
          };
@@ -170,6 +108,40 @@ Rustfmt size:  111676 bytes
          let expected = Expectation::has_type(elem_ty);
          let (elem_ty, len) = match array {
              Array::ElementList { elements, .. } if elements.is_empty() => {
+         Ty::new_array_with_const_len(self.interner(), elem_ty, len)
+     }
+ 
+-    pub(super) fn infer_return(&mut self, expr: ExprId) {
++    pub(super) fn infer_return(
++        &mut self,
++        expr: ExprId,
++    ) {
+         let ret_ty = self
+             .return_coercion
+             .as_mut()
+         self.return_coercion = Some(coerce_many);
+     }
+ 
+-    fn infer_expr_return(&mut self, ret: ExprId, expr: Option<ExprId>) -> Ty<'db> {
++    fn infer_expr_return(
++        &mut self,
++        ret: ExprId,
++        expr: Option<ExprId>,
++    ) -> Ty<'db> {
+         match self.return_coercion {
+             Some(_) => {
+                 if let Some(expr) = expr {
+         self.types.never
+     }
+ 
+-    fn infer_expr_become(&mut self, expr: ExprId) -> Ty<'db> {
++    fn infer_expr_become(
++        &mut self,
++        expr: ExprId,
++    ) -> Ty<'db> {
+         match &self.return_coercion {
+             Some(return_coercion) => {
+                 let ret_ty = return_coercion.expected_ty();
                  self.infer_expr_no_expect(expr, ExprIsRead::Yes);
              }
          }
@@ -177,20 +149,15 @@ Rustfmt size:  111676 bytes
          self.types.never
      }
  
-         }
-     }
- 
--    fn infer_overloadable_binop(
--        &mut self,
--        lhs: ExprId,
--        op: BinaryOp,
--        rhs: ExprId,
--        tgt_expr: ExprId,
--    ) -> Ty<'db> {
-+    fn infer_overloadable_binop(&mut self, lhs: ExprId, op: BinaryOp, rhs: ExprId, tgt_expr: ExprId) -> Ty<'db> {
-         let lhs_expectation = Expectation::none();
-         let is_read = if matches!(op, BinaryOp::Assignment { .. }) {
-             ExprIsRead::Yes
+-    fn infer_expr_box(&mut self, inner_expr: ExprId, expected: &Expectation<'db>) -> Ty<'db> {
++    fn infer_expr_box(
++        &mut self,
++        inner_expr: ExprId,
++        expected: &Expectation<'db>,
++    ) -> Ty<'db> {
+         if let Some(box_id) = self.resolve_boxed_box() {
+             let table = &mut self.table;
+             let inner_exp = expected
          };
          let lhs_ty = self.infer_expr(lhs, &lhs_expectation, is_read);
          let rhs_ty = self.table.next_ty_var();
@@ -225,22 +192,6 @@ Rustfmt size:  111676 bytes
          if self.is_builtin_binop(lhs_ty, rhs_ty, op) {
              // use knowledge of built-in binary ops, which can sometimes help inference
              let builtin_ret = self.enforce_builtin_binop_types(lhs_ty, rhs_ty, op);
-         }
-     }
- 
--    fn infer_block(
--        &mut self,
--        expr: ExprId,
--        block_id: Option<BlockId>,
--        statements: &[Statement],
--        tail: Option<ExprId>,
--        label: Option<LabelId>,
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn infer_block(&mut self, expr: ExprId, block_id: Option<BlockId>, statements: &[Statement], tail: Option<ExprId>, label: Option<LabelId>, expected: &Expectation<'db>) -> Ty<'db> {
-         let coerce_ty = expected.coercion_target_type(&mut self.table);
-         let g = self.resolver.update_to_inner_scope(self.db, self.owner, expr);
-         let prev_state = block_id.map(|block_id| {
              let prev_block = self.table.infer_ctxt.interner.block.replace(block_id);
              (prev_env, prev_block)
          });
@@ -255,15 +206,6 @@ Rustfmt size:  111676 bytes
          break_ty.unwrap_or(ty)
      }
  
--    fn lookup_field(
--        &mut self,
--        receiver_ty: Ty<'db>,
--        name: &Name,
--    ) -> Option<(Ty<'db>, Either<FieldId, TupleFieldId>, Vec<Adjustment<'db>>, bool)> {
-+    fn lookup_field(&mut self, receiver_ty: Ty<'db>, name: &Name) -> Option<(Ty<'db>, Either<FieldId, TupleFieldId>, Vec<Adjustment<'db>>, bool)> {
-         let interner = self.interner();
-         let mut autoderef = self.table.autoderef(receiver_ty);
-         let mut private_field = None;
                  .instantiate(interner, parameters);
              Some((Either::Left(field_id), ty))
          });
@@ -271,17 +213,7 @@ Rustfmt size:  111676 bytes
          Some(match res {
              Some((field_id, ty)) => {
                  let adjustments = autoderef.adjust_steps();
-         })
-     }
- 
--    fn infer_field_access(
--        &mut self,
--        tgt_expr: ExprId,
--        receiver: ExprId,
--        name: &Name,
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn infer_field_access(&mut self, tgt_expr: ExprId, receiver: ExprId, name: &Name, expected: &Expectation<'db>) -> Ty<'db> {
+     ) -> Ty<'db> {
          // Field projections don't constitute reads.
          let receiver_ty = self.infer_expr_inner(receiver, &Expectation::none(), ExprIsRead::No);
 -
@@ -294,53 +226,14 @@ Rustfmt size:  111676 bytes
          match self.lookup_field(receiver_ty, name) {
              Some((ty, field_id, adjustments, is_public)) => {
                  self.write_expr_adj(receiver, adjustments.into_boxed_slice());
-         }
-     }
- 
--    fn infer_call(
--        &mut self,
--        tgt_expr: ExprId,
--        callee: ExprId,
--        args: &[ExprId],
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn infer_call(&mut self, tgt_expr: ExprId, callee: ExprId, args: &[ExprId], expected: &Expectation<'db>) -> Ty<'db> {
-         let callee_ty = self.infer_expr(callee, &Expectation::none(), ExprIsRead::Yes);
-         let interner = self.interner();
-         let mut derefs = self.table.autoderef(callee_ty);
-         )
-     }
- 
--    fn check_call(
--        &mut self,
--        tgt_expr: ExprId,
--        args: &[ExprId],
--        callee_ty: Ty<'db>,
--        param_tys: &[Ty<'db>],
--        ret_ty: Ty<'db>,
--        indices_to_skip: &[u32],
--        is_varargs: bool,
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn check_call(&mut self, tgt_expr: ExprId, args: &[ExprId], callee_ty: Ty<'db>, param_tys: &[Ty<'db>], ret_ty: Ty<'db>, indices_to_skip: &[u32], is_varargs: bool, expected: &Expectation<'db>) -> Ty<'db> {
+         expected: &Expectation<'db>,
+     ) -> Ty<'db> {
          self.register_obligations_for_call(callee_ty);
 -
          self.check_call_arguments(
              tgt_expr,
              param_tys,
-         self.table.normalize_associated_types_in(ret_ty)
-     }
- 
--    fn infer_method_call(
--        &mut self,
--        tgt_expr: ExprId,
--        receiver: ExprId,
--        args: &[ExprId],
--        method_name: &Name,
--        generic_args: Option<&HirGenericArgs>,
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn infer_method_call(&mut self, tgt_expr: ExprId, receiver: ExprId, args: &[ExprId], method_name: &Name, generic_args: Option<&HirGenericArgs>, expected: &Expectation<'db>) -> Ty<'db> {
+     ) -> Ty<'db> {
          let receiver_ty = self.infer_expr_inner(receiver, &Expectation::none(), ExprIsRead::Yes);
          let receiver_ty = self.table.try_structurally_resolve_type(receiver_ty);
 -
@@ -356,21 +249,6 @@ Rustfmt size:  111676 bytes
          let resolved = method_resolution::lookup_method(
              &canonicalized_receiver,
              &mut self.table,
-         }
-     }
- 
--    fn check_method_call(
--        &mut self,
--        tgt_expr: ExprId,
--        args: &[ExprId],
--        method_ty: Ty<'db>,
--        receiver_ty: Ty<'db>,
--        expected: &Expectation<'db>,
--    ) -> Ty<'db> {
-+    fn check_method_call(&mut self, tgt_expr: ExprId, args: &[ExprId], method_ty: Ty<'db>, receiver_ty: Ty<'db>, expected: &Expectation<'db>) -> Ty<'db> {
-         self.register_obligations_for_call(method_ty);
-         let ((formal_receiver_ty, param_tys), ret_ty, is_varargs) =
-             match method_ty.callable_sig(self.interner()) {
                  }
              };
          self.table.unify(formal_receiver_ty, receiver_ty);
@@ -378,27 +256,21 @@ Rustfmt size:  111676 bytes
          self.check_call_arguments(tgt_expr, &param_tys, ret_ty, expected, args, &[], is_varargs);
          self.table.normalize_associated_types_in(ret_ty)
      }
- 
-     /// Generic function that factors out common logic from function calls,
-     /// method calls and overloaded operators.
--    pub(in super::super) fn check_call_arguments(
--        &mut self,
--        call_expr: ExprId,
+     pub(in super::super) fn check_call_arguments(
+         &mut self,
+         call_expr: ExprId,
 -        // Types (as defined in the *signature* of the target function)
--        formal_input_tys: &[Ty<'db>],
--        formal_output: Ty<'db>,
+         formal_input_tys: &[Ty<'db>],
+         formal_output: Ty<'db>,
 -        // Expected output from the parent expression or statement
--        expectation: &Expectation<'db>,
+         expectation: &Expectation<'db>,
 -        // The expressions for each provided argument
--        provided_args: &[ExprId],
--        skip_indices: &[u32],
+         provided_args: &[ExprId],
+         skip_indices: &[u32],
 -        // Whether the function is variadic, for example when imported from C
--        c_variadic: bool,
--    ) {
-+    pub(in super::super) fn check_call_arguments(&mut self, call_expr: ExprId, formal_input_tys: &[Ty<'db>], formal_output: Ty<'db>, expectation: &Expectation<'db>, provided_args: &[ExprId], skip_indices: &[u32], c_variadic: bool) {
+         c_variadic: bool,
+     ) {
          // First, let's unify the formal method signature with the expectation eagerly.
-         // We use this to guide coercion inference; it's output is "fudged" which means
-         // any remaining type variables are assigned to new, unrelated variables. This
                      .ok()
              })
              .unwrap_or_default();
@@ -444,14 +316,6 @@ Rustfmt size:  111676 bytes
          if !args_count_matches {}
      }
  
--    fn substs_for_method_call(
--        &mut self,
--        expr: ExprId,
--        def: GenericDefId,
--        generic_args: Option<&HirGenericArgs>,
--    ) -> GenericArgs<'db> {
-+    fn substs_for_method_call(&mut self, expr: ExprId, def: GenericDefId, generic_args: Option<&HirGenericArgs>) -> GenericArgs<'db> {
-         struct LowererCtx<'a, 'b, 'db> {
              ctx: &'a mut InferenceContext<'b, 'db>,
              expr: ExprId,
          }
@@ -466,6 +330,29 @@ Rustfmt size:  111676 bytes
          substs_from_args_and_bindings(
              self.db,
              self.body,
+         )
+     }
+ 
+-    fn register_obligations_for_call(&mut self, callable_ty: Ty<'db>) {
++    fn register_obligations_for_call(
++        &mut self,
++        callable_ty: Ty<'db>,
++    ) {
+         let callable_ty = self.table.try_structurally_resolve_type(callable_ty);
+         if let TyKind::FnDef(fn_def, parameters) = callable_ty.kind() {
+             let generic_predicates =
+     }
+ 
+     /// Returns the argument indices to skip.
+-    fn check_legacy_const_generics(&mut self, callee: Ty<'db>, args: &[ExprId]) -> Box<[u32]> {
++    fn check_legacy_const_generics(
++        &mut self,
++        callee: Ty<'db>,
++        args: &[ExprId],
++    ) -> Box<[u32]> {
+         let (func, _subst) = match callee.kind() {
+             TyKind::FnDef(callable, subst) => {
+                 let func = match callable.0 {
              }
              _ => return Default::default(),
          };
@@ -485,6 +372,27 @@ Rustfmt size:  111676 bytes
          // check legacy const parameters
          for arg_idx in legacy_const_generics_indices.iter().copied() {
              if arg_idx >= args.len() as u32 {
+     }
+ 
+     /// Dereferences a single level of immutable referencing.
+-    fn deref_ty_if_possible(&mut self, ty: Ty<'db>) -> Ty<'db> {
++    fn deref_ty_if_possible(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         let ty = self.table.try_structurally_resolve_type(ty);
+         match ty.kind() {
+             TyKind::Ref(_, inner, Mutability::Not) => {
+ 
+     /// Enforces expectations on lhs type and rhs type depending on the operator and returns the
+     /// output type of the binary op.
+-    fn enforce_builtin_binop_types(&mut self, lhs: Ty<'db>, rhs: Ty<'db>, op: BinaryOp) -> Ty<'db> {
++    fn enforce_builtin_binop_types(
++        &mut self,
++        lhs: Ty<'db>,
++        rhs: Ty<'db>,
++        op: BinaryOp,
++    ) -> Ty<'db> {
          // Special-case a single layer of referencing, so that things like `5.0 + &6.0f32` work (See rust-lang/rust#57447).
          let lhs = self.deref_ty_if_possible(lhs);
          let rhs = self.deref_ty_if_possible(rhs);
@@ -504,6 +412,13 @@ Rustfmt size:  111676 bytes
          if is_assign { self.types.unit } else { output_ty }
      }
  
+-    fn is_builtin_binop(&mut self, lhs: Ty<'db>, rhs: Ty<'db>, op: BinaryOp) -> bool {
++    fn is_builtin_binop(
++        &mut self,
++        lhs: Ty<'db>,
++        rhs: Ty<'db>,
++        op: BinaryOp,
++    ) -> bool {
          // Special-case a single layer of referencing, so that things like `5.0 + &6.0f32` work (See rust-lang/rust#57447).
          let lhs = self.deref_ty_if_possible(lhs);
          let rhs = self.deref_ty_if_possible(rhs);
@@ -516,17 +431,3 @@ Rustfmt size:  111676 bytes
          match op {
              BinaryOp::LogicOp(_) => true,
  
-         }
-     }
- 
--    pub(super) fn with_breakable_ctx<T>(
--        &mut self,
--        kind: BreakableKind,
--        ty: Option<Ty<'db>>,
--        label: Option<LabelId>,
--        cb: impl FnOnce(&mut Self) -> T,
--    ) -> (Option<Ty<'db>>, T) {
-+    pub(super) fn with_breakable_ctx<T>(&mut self, kind: BreakableKind, ty: Option<Ty<'db>>, label: Option<LabelId>, cb: impl FnOnce(&mut Self) -> T) -> (Option<Ty<'db>>, T) {
-         self.breakables.push({
-             BreakableContext { kind, may_break: false, coerce: ty.map(CoerceMany::new), label }
-         });

@@ -19,7 +19,10 @@ pub struct TreeDiff {
 }
 
 impl TreeDiff {
-    pub fn into_text_edit(&self, builder: &mut TextEditBuilder) {
+    pub fn into_text_edit(
+        &self,
+        builder: &mut TextEditBuilder,
+    ) {
         let _p = tracing::info_span!("into_text_edit").entered();
         for (anchor, to) in &self.insertions {
             let offset = match anchor {
@@ -47,7 +50,10 @@ impl TreeDiff {
 /// such that applying this map on `from` will result in `to`.
 ///
 /// This function tries to find a fine-grained diff.
-pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
+pub fn diff(
+    from: &SyntaxNode,
+    to: &SyntaxNode,
+) -> TreeDiff {
     let _p = tracing::info_span!("diff").entered();
     let mut diff = TreeDiff {
         replacements: FxHashMap::default(),
@@ -488,7 +494,11 @@ fn main() {
             "#]],
         )
     }
-    fn check_diff(from: &str, to: &str, expected_diff: Expect) {
+    fn check_diff(
+        from: &str,
+        to: &str,
+        expected_diff: Expect,
+    ) {
         let from_node = SourceFile::parse(from, Edition::CURRENT).tree().syntax().clone();
         let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
         let diff = super::diff(&from_node, &to_node);

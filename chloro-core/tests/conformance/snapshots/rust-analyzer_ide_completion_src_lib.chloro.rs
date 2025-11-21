@@ -127,7 +127,12 @@ impl CompletionFieldsToResolve {
 /// existing node. Asking for, eg, type of this `CodeFragment` node works
 /// correctly, as the underlying infrastructure makes use of contexts to do
 /// analysis.
-pub fn completions(db: &RootDatabase, config: &CompletionConfig<'_>, position: FilePosition, trigger_character: Option<char>) -> Option<Vec<CompletionItem>> {
+pub fn completions(
+    db: &RootDatabase,
+    config: &CompletionConfig<'_>,
+    position: FilePosition,
+    trigger_character: Option<char>,
+) -> Option<Vec<CompletionItem>> {
     let (ctx, analysis) = &CompletionContext::new(db, position, config, trigger_character)?;
     let mut completions = Completions::default();
     // prevent `(` from triggering unwanted completion noise
@@ -202,7 +207,12 @@ pub fn completions(db: &RootDatabase, config: &CompletionConfig<'_>, position: F
 
 /// Resolves additional completion data at the position given.
 /// This is used for import insertion done via completions like flyimport and custom user snippets.
-pub fn resolve_completion_edits(db: &RootDatabase, config: &CompletionConfig<'_>, FilePosition { file_id, offset }: FilePosition, imports: impl IntoIterator<Item = String>) -> Option<Vec<TextEdit>> {
+pub fn resolve_completion_edits(
+    db: &RootDatabase,
+    config: &CompletionConfig<'_>,
+    FilePosition { file_id, offset }: FilePosition,
+    imports: impl IntoIterator<Item = String>,
+) -> Option<Vec<TextEdit>> {
     let _p = tracing::info_span!("resolve_completion_edits").entered();
     let sema = hir::Semantics::new(db);
     let editioned_file_id = sema.attach_first_edition(file_id)?;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9511 bytes
+Chloro size:   9533 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -41,11 +41,10 @@ Rustfmt size:  9843 bytes
 -// ```
 +use crate::{AssistContext, Assists, utils};
  
--pub(crate) fn extract_expressions_from_format_string(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn extract_expressions_from_format_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn extract_expressions_from_format_string(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
 -    let tt = fmt_string
 -        .syntax()
@@ -71,14 +70,6 @@ Rustfmt size:  9843 bytes
      Some(())
  }
  
--fn format_str_index(
--    raw_tokens: &[NodeOrToken<TokenTree, SyntaxToken>],
--    fmt_string: &ast::String,
--) -> usize {
-+fn format_str_index(raw_tokens: &[NodeOrToken<TokenTree, SyntaxToken>], fmt_string: &ast::String) -> usize {
-     let fmt_string = fmt_string.syntax();
-     raw_tokens
-         .iter()
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap};

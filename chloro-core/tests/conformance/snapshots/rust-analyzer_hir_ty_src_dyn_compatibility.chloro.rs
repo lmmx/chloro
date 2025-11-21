@@ -48,7 +48,10 @@ pub enum MethodViolationCode {
     UndispatchableReceiver,
 }
 
-pub fn dyn_compatibility(db: &dyn HirDatabase, trait_: TraitId) -> Option<DynCompatibilityViolation> {
+pub fn dyn_compatibility(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+) -> Option<DynCompatibilityViolation> {
     let interner = DbInterner::new_with(db, Some(trait_.krate(db)), None);
     for super_trait in elaborate::supertrait_def_ids(interner, trait_.into()) {
         if let Some(v) = db.dyn_compatibility_of_trait(super_trait.0) {
@@ -62,7 +65,11 @@ pub fn dyn_compatibility(db: &dyn HirDatabase, trait_: TraitId) -> Option<DynCom
     None
 }
 
-pub fn dyn_compatibility_with_callback<F>(db: &dyn HirDatabase, trait_: TraitId, cb: &mut F) -> ControlFlow<()>
+pub fn dyn_compatibility_with_callback<F>(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+    cb: &mut F,
+) -> ControlFlow<()>
 where
     F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
     let interner = DbInterner::new_with(db, Some(trait_.krate(db)), None);
@@ -74,7 +81,11 @@ where
     dyn_compatibility_of_trait_with_callback(db, trait_, cb)
 }
 
-pub fn dyn_compatibility_of_trait_with_callback<F>(db: &dyn HirDatabase, trait_: TraitId, cb: &mut F) -> ControlFlow<()>
+pub fn dyn_compatibility_of_trait_with_callback<F>(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+    cb: &mut F,
+) -> ControlFlow<()>
 where
     F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
     // Check whether this has a `Sized` bound
@@ -96,7 +107,10 @@ where
     ControlFlow::Continue(())
 }
 
-pub fn dyn_compatibility_of_trait_query(db: &dyn HirDatabase, trait_: TraitId) -> Option<DynCompatibilityViolation> {
+pub fn dyn_compatibility_of_trait_query(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+) -> Option<DynCompatibilityViolation> {
     let mut res = None;
     _ = dyn_compatibility_of_trait_with_callback(db, trait_, &mut |osv| {
         res = Some(osv);
@@ -105,7 +119,10 @@ pub fn dyn_compatibility_of_trait_query(db: &dyn HirDatabase, trait_: TraitId) -
     res
 }
 
-pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> bool {
+pub fn generics_require_sized_self(
+    db: &dyn HirDatabase,
+    def: GenericDefId,
+) -> bool {
     let krate = def.module(db).krate();
     let Some(sized) = LangItem::Sized.resolve_trait(db, krate) else {
         return false;
@@ -133,13 +150,19 @@ pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> b
     })
 }
 
-fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
+fn predicates_reference_self(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+) -> bool {
     db.generic_predicates(trait_.into())
         .iter()
         .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
 }
 
-fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
+fn bounds_reference_self(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+) -> bool {
     let trait_data = trait_.trait_items(db);
     trait_data
         .items
@@ -167,7 +190,12 @@ enum AllowSelfProjection {
     No,
 }
 
-fn predicate_references_self<'db>(db: &'db dyn HirDatabase, trait_: TraitId, predicate: &Clause<'db>, allow_self_projection: AllowSelfProjection) -> bool {
+fn predicate_references_self<'db>(
+    db: &'db dyn HirDatabase,
+    trait_: TraitId,
+    predicate: &Clause<'db>,
+    allow_self_projection: AllowSelfProjection,
+) -> bool {
     match predicate.kind().skip_binder() {
         ClauseKind::Trait(trait_pred) => trait_pred.trait_ref.args.iter().skip(1).any(|arg| {
             contains_illegal_self_type_reference(db, trait_, &arg, allow_self_projection)
@@ -181,7 +209,12 @@ fn predicate_references_self<'db>(db: &'db dyn HirDatabase, trait_: TraitId, pre
     }
 }
 
-fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbInterner<'db>>>(db: &'db dyn HirDatabase, trait_: TraitId, t: &T, allow_self_projection: AllowSelfProjection) -> bool {
+fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbInterner<'db>>>(
+    db: &'db dyn HirDatabase,
+    trait_: TraitId,
+    t: &T,
+    allow_self_projection: AllowSelfProjection,
+) -> bool {
     struct IllegalSelfTypeVisitor<'db> {
         db: &'db dyn HirDatabase,
         trait_: TraitId,
@@ -232,7 +265,12 @@ fn contains_illegal_self_type_reference<'db, T: rustc_type_ir::TypeVisitable<DbI
     t.visit_with(&mut visitor).is_break()
 }
 
-fn dyn_compatibility_violation_for_assoc_item<F>(db: &dyn HirDatabase, trait_: TraitId, item: AssocItemId, cb: &mut F) -> ControlFlow<()>
+fn dyn_compatibility_violation_for_assoc_item<F>(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+    item: AssocItemId,
+    cb: &mut F,
+) -> ControlFlow<()>
 where
     F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
     // Any item that has a `Self : Sized` requisite is otherwise
@@ -263,7 +301,12 @@ where
     }
 }
 
-fn virtual_call_violations_for_method<F>(db: &dyn HirDatabase, trait_: TraitId, func: FunctionId, cb: &mut F) -> ControlFlow<()>
+fn virtual_call_violations_for_method<F>(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+    func: FunctionId,
+    cb: &mut F,
+) -> ControlFlow<()>
 where
     F: FnMut(MethodViolationCode) -> ControlFlow<()>, {
     let func_data = db.function_signature(func);
@@ -332,7 +375,12 @@ where
     ControlFlow::Continue(())
 }
 
-fn receiver_is_dispatchable<'db>(db: &dyn HirDatabase, trait_: TraitId, func: FunctionId, sig: &EarlyBinder<'db, Binder<'db, rustc_type_ir::FnSig<DbInterner<'db>>>>) -> bool {
+fn receiver_is_dispatchable<'db>(
+    db: &dyn HirDatabase,
+    trait_: TraitId,
+    func: FunctionId,
+    sig: &EarlyBinder<'db, Binder<'db, rustc_type_ir::FnSig<DbInterner<'db>>>>,
+) -> bool {
     let sig = sig.instantiate_identity();
     let interner: DbInterner<'_> = DbInterner::new_with(db, Some(trait_.krate(db)), None);
     let self_param_id = TypeParamId::from_unchecked(TypeOrConstParamId {
@@ -403,14 +451,22 @@ fn receiver_is_dispatchable<'db>(db: &dyn HirDatabase, trait_: TraitId, func: Fu
     res.map_or(false, |res| matches!(res.1, rustc_type_ir::solve::Certainty::Yes))
 }
 
-fn receiver_for_self_ty<'db>(interner: DbInterner<'db>, func: FunctionId, receiver_ty: Ty<'db>, self_ty: Ty<'db>) -> Ty<'db> {
+fn receiver_for_self_ty<'db>(
+    interner: DbInterner<'db>,
+    func: FunctionId,
+    receiver_ty: Ty<'db>,
+    self_ty: Ty<'db>,
+) -> Ty<'db> {
     let args = GenericArgs::for_item(interner, SolverDefId::FunctionId(func), |index, kind, _| {
         if index == 0 { self_ty.into() } else { mk_param(interner, index, kind) }
     });
     EarlyBinder::bind(receiver_ty).instantiate(interner, args)
 }
 
-fn contains_illegal_impl_trait_in_trait<'db>(db: &'db dyn HirDatabase, sig: &EarlyBinder<'db, Binder<'db, rustc_type_ir::FnSig<DbInterner<'db>>>>) -> Option<MethodViolationCode> {
+fn contains_illegal_impl_trait_in_trait<'db>(
+    db: &'db dyn HirDatabase,
+    sig: &EarlyBinder<'db, Binder<'db, rustc_type_ir::FnSig<DbInterner<'db>>>>,
+) -> Option<MethodViolationCode> {
     struct OpaqueTypeCollector(FxHashSet<InternedOpaqueTyId>);
     impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for OpaqueTypeCollector {
         type Result = ControlFlow<()>;

@@ -58,7 +58,10 @@ impl<'db> InferCtxt<'db> {
     }
 
     #[instrument(skip(self, snapshot), level = "debug")]
-    pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {
+    pub(crate) fn rollback_to(
+        &self,
+        snapshot: CombinedSnapshot,
+    ) {
         let CombinedSnapshot { undo_snapshot, region_constraints_snapshot, universe } = snapshot;
         self.universe.set(universe);
         let mut inner = self.inner.borrow_mut();
@@ -67,7 +70,10 @@ impl<'db> InferCtxt<'db> {
     }
 
     #[instrument(skip(self, snapshot), level = "debug")]
-    fn commit_from(&self, snapshot: CombinedSnapshot) {
+    fn commit_from(
+        &self,
+        snapshot: CombinedSnapshot,
+    ) {
         let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } =
             snapshot;
         self.inner.borrow_mut().commit(undo_snapshot);
@@ -75,7 +81,10 @@ impl<'db> InferCtxt<'db> {
 
     /// Execute `f` and commit the bindings if closure `f` returns `Ok(_)`.
     #[instrument(skip(self, f), level = "debug")]
-    pub fn commit_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
+    pub fn commit_if_ok<T, E, F>(
+        &self,
+        f: F,
+    ) -> Result<T, E>
     where
         F: FnOnce(&CombinedSnapshot) -> Result<T, E>, {
         let snapshot = self.start_snapshot();
@@ -94,7 +103,10 @@ impl<'db> InferCtxt<'db> {
 
     /// Execute `f` then unroll any bindings it creates.
     #[instrument(skip(self, f), level = "debug")]
-    pub fn probe<R, F>(&self, f: F) -> R
+    pub fn probe<R, F>(
+        &self,
+        f: F,
+    ) -> R
     where
         F: FnOnce(&CombinedSnapshot) -> R, {
         let snapshot = self.start_snapshot();
@@ -105,14 +117,20 @@ impl<'db> InferCtxt<'db> {
 
     /// Scan the constraints produced since `snapshot` and check whether
     /// we added any region constraints.
-    pub fn region_constraints_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {
+    pub fn region_constraints_added_in_snapshot(
+        &self,
+        snapshot: &CombinedSnapshot,
+    ) -> bool {
         self.inner
             .borrow_mut()
             .unwrap_region_constraints()
             .region_constraints_added_in_snapshot(&snapshot.undo_snapshot)
     }
 
-    pub fn opaque_types_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {
+    pub fn opaque_types_added_in_snapshot(
+        &self,
+        snapshot: &CombinedSnapshot,
+    ) -> bool {
         self.inner.borrow().undo_log.opaque_types_in_snapshot(&snapshot.undo_snapshot)
     }
 }

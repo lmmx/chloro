@@ -27,7 +27,10 @@ fn current_machine_target_data() -> TargetData {
     .unwrap()
 }
 
-fn eval_goal(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) -> Result<Arc<Layout>, LayoutError> {
+fn eval_goal(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    minicore: &str,
+) -> Result<Arc<Layout>, LayoutError> {
     let _tracing = setup_tracing();
     let target_data = current_machine_target_data();
     let target_data_layout = target_data.data_layout;
@@ -96,7 +99,10 @@ fn eval_goal(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) ->
 }
 
 /// A version of `eval_goal` for types that can not be expressed in ADTs, like closures and `impl Trait`
-fn eval_expr(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) -> Result<Arc<Layout>, LayoutError> {
+fn eval_expr(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    minicore: &str,
+) -> Result<Arc<Layout>, LayoutError> {
     let _tracing = setup_tracing();
     let target_data = current_machine_target_data();
     let target_data_layout = target_data.data_layout;
@@ -135,21 +141,34 @@ fn eval_expr(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str) ->
 }
 
 #[track_caller]
-fn check_size_and_align(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str, size: u64, align: u64) {
+fn check_size_and_align(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    minicore: &str,
+    size: u64,
+    align: u64,
+) {
     let l = eval_goal(ra_fixture, minicore).unwrap();
     assert_eq!(l.size.bytes(), size, "size mismatch");
     assert_eq!(l.align.bytes(), align, "align mismatch");
 }
 
 #[track_caller]
-fn check_size_and_align_expr(#[rust_analyzer::rust_fixture] ra_fixture: &str, minicore: &str, size: u64, align: u64) {
+fn check_size_and_align_expr(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    minicore: &str,
+    size: u64,
+    align: u64,
+) {
     let l = eval_expr(ra_fixture, minicore).unwrap();
     assert_eq!(l.size.bytes(), size, "size mismatch");
     assert_eq!(l.align.bytes(), align, "align mismatch");
 }
 
 #[track_caller]
-fn check_fail(#[rust_analyzer::rust_fixture] ra_fixture: &str, e: LayoutError) {
+fn check_fail(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    e: LayoutError,
+) {
     let r = eval_goal(ra_fixture, "");
     assert_eq!(r, Err(e));
 }

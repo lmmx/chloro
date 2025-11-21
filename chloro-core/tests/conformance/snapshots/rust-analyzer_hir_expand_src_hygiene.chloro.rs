@@ -27,26 +27,53 @@ use span::{Edition, MacroCallId, Span, SyntaxContext};
 
 use crate::db::ExpandDatabase;
 
-pub fn span_with_def_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
+pub fn span_with_def_site_ctxt(
+    db: &dyn ExpandDatabase,
+    span: Span,
+    expn_id: MacroCallId,
+    edition: Edition,
+) -> Span {
     span_with_ctxt_from_mark(db, span, expn_id, Transparency::Opaque, edition)
 }
 
-pub fn span_with_call_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
+pub fn span_with_call_site_ctxt(
+    db: &dyn ExpandDatabase,
+    span: Span,
+    expn_id: MacroCallId,
+    edition: Edition,
+) -> Span {
     span_with_ctxt_from_mark(db, span, expn_id, Transparency::Transparent, edition)
 }
 
-pub fn span_with_mixed_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
+pub fn span_with_mixed_site_ctxt(
+    db: &dyn ExpandDatabase,
+    span: Span,
+    expn_id: MacroCallId,
+    edition: Edition,
+) -> Span {
     span_with_ctxt_from_mark(db, span, expn_id, Transparency::SemiTransparent, edition)
 }
 
-fn span_with_ctxt_from_mark(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, transparency: Transparency, edition: Edition) -> Span {
+fn span_with_ctxt_from_mark(
+    db: &dyn ExpandDatabase,
+    span: Span,
+    expn_id: MacroCallId,
+    transparency: Transparency,
+    edition: Edition,
+) -> Span {
     Span {
         ctx: apply_mark(db, SyntaxContext::root(edition), expn_id, transparency, edition),
         ..span
     }
 }
 
-pub(super) fn apply_mark(db: &dyn ExpandDatabase, ctxt: span::SyntaxContext, call_id: span::MacroCallId, transparency: Transparency, edition: Edition) -> SyntaxContext {
+pub(super) fn apply_mark(
+    db: &dyn ExpandDatabase,
+    ctxt: span::SyntaxContext,
+    call_id: span::MacroCallId,
+    transparency: Transparency,
+    edition: Edition,
+) -> SyntaxContext {
     if transparency == Transparency::Opaque {
         return apply_mark_internal(db, ctxt, call_id, transparency, edition);
     }
@@ -74,7 +101,13 @@ pub(super) fn apply_mark(db: &dyn ExpandDatabase, ctxt: span::SyntaxContext, cal
     apply_mark_internal(db, call_site_ctxt, call_id, transparency, edition)
 }
 
-fn apply_mark_internal(db: &dyn ExpandDatabase, ctxt: SyntaxContext, call_id: MacroCallId, transparency: Transparency, edition: Edition) -> SyntaxContext {
+fn apply_mark_internal(
+    db: &dyn ExpandDatabase,
+    ctxt: SyntaxContext,
+    call_id: MacroCallId,
+    transparency: Transparency,
+    edition: Edition,
+) -> SyntaxContext {
     let call_id = Some(call_id);
     let mut opaque = ctxt.opaque(db);
     let mut opaque_and_semitransparent = ctxt.opaque_and_semitransparent(db);

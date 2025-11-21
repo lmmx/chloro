@@ -42,7 +42,13 @@ pub enum ConstEvalError<'db> {
 }
 
 impl ConstEvalError<'_> {
-    pub fn pretty_print(&self, f: &mut String, db: &dyn HirDatabase, span_formatter: impl Fn(span::FileId, span::TextRange) -> String, display_target: DisplayTarget) -> std::result::Result<(), std::fmt::Error> {
+    pub fn pretty_print(
+        &self,
+        f: &mut String,
+        db: &dyn HirDatabase,
+        span_formatter: impl Fn(span::FileId, span::TextRange) -> String,
+        display_target: DisplayTarget,
+    ) -> std::result::Result<(), std::fmt::Error> {
         match self {
             ConstEvalError::MirLowerError(e) => {
                 e.pretty_print(f, db, span_formatter, display_target)
@@ -70,7 +76,12 @@ impl<'db> From<MirEvalError<'db>> for ConstEvalError<'db> {
 }
 
 /// Interns a constant scalar with the given type
-pub fn intern_const_ref<'a>(db: &'a dyn HirDatabase, value: &LiteralConstRef, ty: Ty<'a>, krate: Crate) -> Const<'a> {
+pub fn intern_const_ref<'a>(
+    db: &'a dyn HirDatabase,
+    value: &LiteralConstRef,
+    ty: Ty<'a>,
+    krate: Crate,
+) -> Const<'a> {
     let interner = DbInterner::new_with(db, Some(krate), None);
     let layout = db.layout_of_ty(ty, TraitEnvironment::empty(krate));
     let kind = match value {
@@ -112,7 +123,11 @@ pub fn intern_const_ref<'a>(db: &'a dyn HirDatabase, value: &LiteralConstRef, ty
 }
 
 /// Interns a possibly-unknown target usize
-pub fn usize_const<'db>(db: &'db dyn HirDatabase, value: Option<u128>, krate: Crate) -> Const<'db> {
+pub fn usize_const<'db>(
+    db: &'db dyn HirDatabase,
+    value: Option<u128>,
+    krate: Crate,
+) -> Const<'db> {
     intern_const_ref(
         db,
         &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
@@ -121,7 +136,10 @@ pub fn usize_const<'db>(db: &'db dyn HirDatabase, value: Option<u128>, krate: Cr
     )
 }
 
-pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u128> {
+pub fn try_const_usize<'db>(
+    db: &'db dyn HirDatabase,
+    c: Const<'db>,
+) -> Option<u128> {
     match c.kind() {
         ConstKind::Param(_) => None,
         ConstKind::Infer(_) => None,
@@ -143,7 +161,10 @@ pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u
     }
 }
 
-pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<i128> {
+pub fn try_const_isize<'db>(
+    db: &'db dyn HirDatabase,
+    c: &Const<'db>,
+) -> Option<i128> {
     match (*c).kind() {
         ConstKind::Param(_) => None,
         ConstKind::Infer(_) => None,
@@ -165,7 +186,10 @@ pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<
     }
 }
 
-pub(crate) fn const_eval_discriminant_variant<'db>(db: &'db dyn HirDatabase, variant_id: EnumVariantId) -> Result<i128, ConstEvalError<'db>> {
+pub(crate) fn const_eval_discriminant_variant<'db>(
+    db: &'db dyn HirDatabase,
+    variant_id: EnumVariantId,
+) -> Result<i128, ConstEvalError<'db>> {
     let interner = DbInterner::new_with(db, None, None);
     let def = variant_id.into();
     let body = db.body(def);
@@ -198,7 +222,10 @@ pub(crate) fn const_eval_discriminant_variant<'db>(db: &'db dyn HirDatabase, var
     Ok(c)
 }
 
-pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
+pub(crate) fn eval_to_const<'db>(
+    expr: ExprId,
+    ctx: &mut InferenceContext<'_, 'db>,
+) -> Const<'db> {
     let infer = ctx.fixme_resolve_all_clone();
     fn has_closure(body: &Body, expr: ExprId) -> bool {
         if matches!(body[expr], Expr::Closure { .. }) {
@@ -232,19 +259,35 @@ pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'd
     unknown_const(infer[expr])
 }
 
-pub(crate) fn const_eval_cycle_result<'db>(_: &'db dyn HirDatabase, _: GeneralConstId, _: GenericArgs<'db>, _: Option<Arc<TraitEnvironment<'db>>>) -> Result<Const<'db>, ConstEvalError<'db>> {
+pub(crate) fn const_eval_cycle_result<'db>(
+    _: &'db dyn HirDatabase,
+    _: GeneralConstId,
+    _: GenericArgs<'db>,
+    _: Option<Arc<TraitEnvironment<'db>>>,
+) -> Result<Const<'db>, ConstEvalError<'db>> {
     Err(ConstEvalError::MirLowerError(MirLowerError::Loop))
 }
 
-pub(crate) fn const_eval_static_cycle_result<'db>(_: &'db dyn HirDatabase, _: StaticId) -> Result<Const<'db>, ConstEvalError<'db>> {
+pub(crate) fn const_eval_static_cycle_result<'db>(
+    _: &'db dyn HirDatabase,
+    _: StaticId,
+) -> Result<Const<'db>, ConstEvalError<'db>> {
     Err(ConstEvalError::MirLowerError(MirLowerError::Loop))
 }
 
-pub(crate) fn const_eval_discriminant_cycle_result<'db>(_: &'db dyn HirDatabase, _: EnumVariantId) -> Result<i128, ConstEvalError<'db>> {
+pub(crate) fn const_eval_discriminant_cycle_result<'db>(
+    _: &'db dyn HirDatabase,
+    _: EnumVariantId,
+) -> Result<i128, ConstEvalError<'db>> {
     Err(ConstEvalError::MirLowerError(MirLowerError::Loop))
 }
 
-pub(crate) fn const_eval_query<'db>(db: &'db dyn HirDatabase, def: GeneralConstId, subst: GenericArgs<'db>, trait_env: Option<Arc<TraitEnvironment<'db>>>) -> Result<Const<'db>, ConstEvalError<'db>> {
+pub(crate) fn const_eval_query<'db>(
+    db: &'db dyn HirDatabase,
+    def: GeneralConstId,
+    subst: GenericArgs<'db>,
+    trait_env: Option<Arc<TraitEnvironment<'db>>>,
+) -> Result<Const<'db>, ConstEvalError<'db>> {
     let body = match def {
         GeneralConstId::ConstId(c) => {
             db.monomorphized_mir_body(c.into(), subst, db.trait_environment(c.into()))?
@@ -258,7 +301,10 @@ pub(crate) fn const_eval_query<'db>(db: &'db dyn HirDatabase, def: GeneralConstI
     Ok(c)
 }
 
-pub(crate) fn const_eval_static_query<'db>(db: &'db dyn HirDatabase, def: StaticId) -> Result<Const<'db>, ConstEvalError<'db>> {
+pub(crate) fn const_eval_static_query<'db>(
+    db: &'db dyn HirDatabase,
+    def: StaticId,
+) -> Result<Const<'db>, ConstEvalError<'db>> {
     let interner = DbInterner::new_with(db, None, None);
     let body = db.monomorphized_mir_body(
         def.into(),

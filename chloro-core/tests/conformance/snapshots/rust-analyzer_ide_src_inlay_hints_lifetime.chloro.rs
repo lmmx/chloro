@@ -18,7 +18,13 @@ use crate::{
     inlay_hints::InlayHintCtx,
 };
 
-pub(super) fn fn_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd: &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, func: ast::Fn) -> Option<()> {
+pub(super) fn fn_hints(
+    acc: &mut Vec<InlayHint>,
+    ctx: &mut InlayHintCtx,
+    fd: &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    func: ast::Fn,
+) -> Option<()> {
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
@@ -60,7 +66,13 @@ pub(super) fn fn_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd: &Fa
     )
 }
 
-pub(super) fn fn_ptr_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd: &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, func: ast::FnPtrType) -> Option<()> {
+pub(super) fn fn_ptr_hints(
+    acc: &mut Vec<InlayHint>,
+    ctx: &mut InlayHintCtx,
+    fd: &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    func: ast::FnPtrType,
+) -> Option<()> {
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
@@ -117,7 +129,13 @@ pub(super) fn fn_ptr_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd:
     )
 }
 
-pub(super) fn fn_path_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd: &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, func: &ast::PathType) -> Option<()> {
+pub(super) fn fn_path_hints(
+    acc: &mut Vec<InlayHint>,
+    ctx: &mut InlayHintCtx,
+    fd: &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    func: &ast::PathType,
+) -> Option<()> {
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
@@ -170,7 +188,18 @@ fn path_as_fn(path: &ast::Path) -> Option<(ast::ParenthesizedArgList, Option<ast
     path.segment().and_then(|it| it.parenthesized_arg_list().zip(Some(it.ret_type())))
 }
 
-fn hints_(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, FamousDefs(_, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, params: impl Iterator<Item = (Option<ast::Name>, ast::Type)>, generic_param_list: Option<ast::GenericParamList>, ret_type: Option<ast::RetType>, self_param: Option<ast::SelfParam>, on_missing_gpl: impl FnOnce(&mut Vec<InlayHint>, &[SmolStr]), mut is_trivial: bool) -> Option<()> {
+fn hints_(
+    acc: &mut Vec<InlayHint>,
+    ctx: &mut InlayHintCtx,
+    FamousDefs(_, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    params: impl Iterator<Item = (Option<ast::Name>, ast::Type)>,
+    generic_param_list: Option<ast::GenericParamList>,
+    ret_type: Option<ast::RetType>,
+    self_param: Option<ast::SelfParam>,
+    on_missing_gpl: impl FnOnce(&mut Vec<InlayHint>, &[SmolStr]),
+    mut is_trivial: bool,
+) -> Option<()> {
     let is_elided = |lt: &Option<ast::Lifetime>| match lt {
         Some(lt) => matches!(lt.text().as_str(), "'_"),
         None => true,

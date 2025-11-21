@@ -8,7 +8,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn reorder_impl_items(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     let items = impl_ast.assoc_item_list()?;
     let parent_node = match ctx.covering_element() {
@@ -70,7 +73,10 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     )
 }
 
-fn compute_item_ranks(path: &ast::Path, ctx: &AssistContext<'_>) -> Option<FxHashMap<String, usize>> {
+fn compute_item_ranks(
+    path: &ast::Path,
+    ctx: &AssistContext<'_>,
+) -> Option<FxHashMap<String, usize>> {
     let td = trait_definition(path, &ctx.sema)?;
     Some(
         td.items(ctx.db())
@@ -82,7 +88,10 @@ fn compute_item_ranks(path: &ast::Path, ctx: &AssistContext<'_>) -> Option<FxHas
     )
 }
 
-fn trait_definition(path: &ast::Path, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Trait> {
+fn trait_definition(
+    path: &ast::Path,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<hir::Trait> {
     match sema.resolve_path(path)? {
         PathResolution::Def(hir::ModuleDef::Trait(trait_)) => Some(trait_),
         _ => None,

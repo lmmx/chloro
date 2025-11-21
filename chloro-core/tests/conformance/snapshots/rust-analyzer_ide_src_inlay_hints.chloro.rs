@@ -60,7 +60,12 @@ mod ra_fixture;
 
 mod range_exclusive;
 
-pub(crate) fn inlay_hints(db: &RootDatabase, file_id: FileId, range_limit: Option<TextRange>, config: &InlayHintsConfig<'_>) -> Vec<InlayHint> {
+pub(crate) fn inlay_hints(
+    db: &RootDatabase,
+    file_id: FileId,
+    range_limit: Option<TextRange>,
+    config: &InlayHintsConfig<'_>,
+) -> Vec<InlayHint> {
     let _p = tracing::info_span!("inlay_hints").entered();
     let sema = Semantics::new(db);
     let file_id = sema
@@ -103,7 +108,14 @@ struct InlayHintCtx {
     extern_block_parent: Option<ast::ExternBlock>,
 }
 
-pub(crate) fn inlay_hints_resolve(db: &RootDatabase, file_id: FileId, resolve_range: TextRange, hash: u64, config: &InlayHintsConfig<'_>, hasher: impl Fn(&InlayHint) -> u64) -> Option<InlayHint> {
+pub(crate) fn inlay_hints_resolve(
+    db: &RootDatabase,
+    file_id: FileId,
+    resolve_range: TextRange,
+    hash: u64,
+    config: &InlayHintsConfig<'_>,
+    hasher: impl Fn(&InlayHint) -> u64,
+) -> Option<InlayHint> {
     let _p = tracing::info_span!("inlay_hints_resolve").entered();
     let sema = Semantics::new(db);
     let file_id = sema
@@ -134,7 +146,10 @@ pub(crate) fn inlay_hints_resolve(db: &RootDatabase, file_id: FileId, resolve_ra
     acc.into_iter().find(|hint| hasher(hint) == hash)
 }
 
-fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<SyntaxNode> {
+fn handle_event(
+    ctx: &mut InlayHintCtx,
+    node: WalkEvent<SyntaxNode>,
+) -> Option<SyntaxNode> {
     match node {
         WalkEvent::Enter(node) => {
             if let Some(node) = ast::AnyHasGenericParams::cast(node.clone()) {
@@ -167,7 +182,15 @@ fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<S
     }
 }
 
-fn hints(hints: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, famous_defs @ FamousDefs(sema, _krate): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, file_id: EditionedFileId, display_target: DisplayTarget, node: SyntaxNode) {
+fn hints(
+    hints: &mut Vec<InlayHint>,
+    ctx: &mut InlayHintCtx,
+    famous_defs @ FamousDefs(sema, _krate): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    file_id: EditionedFileId,
+    display_target: DisplayTarget,
+    node: SyntaxNode,
+) {
     closing_brace::hints(
         hints,
         sema,
@@ -280,7 +303,10 @@ pub struct InlayHintsConfig<'a> {
 }
 
 impl InlayHintsConfig<'_> {
-    fn lazy_text_edit(&self, finish: impl FnOnce() -> TextEdit) -> LazyProperty<TextEdit> {
+    fn lazy_text_edit(
+        &self,
+        finish: impl FnOnce() -> TextEdit,
+    ) -> LazyProperty<TextEdit> {
         if self.fields_to_resolve.resolve_text_edits {
             LazyProperty::Lazy
         } else {
@@ -290,7 +316,10 @@ impl InlayHintsConfig<'_> {
         }
     }
 
-    fn lazy_tooltip(&self, finish: impl FnOnce() -> InlayTooltip) -> LazyProperty<InlayTooltip> {
+    fn lazy_tooltip(
+        &self,
+        finish: impl FnOnce() -> InlayTooltip,
+    ) -> LazyProperty<InlayTooltip> {
         if self.fields_to_resolve.resolve_hint_tooltip
             && self.fields_to_resolve.resolve_label_tooltip
         {
@@ -311,7 +340,10 @@ impl InlayHintsConfig<'_> {
 
     /// This always reports a resolvable location, so only use this when it is very likely for a
     /// location link to actually resolve but where computing `finish` would be costly.
-    fn lazy_location_opt(&self, finish: impl FnOnce() -> Option<FileRange>) -> Option<LazyProperty<FileRange>> {
+    fn lazy_location_opt(
+        &self,
+        finish: impl FnOnce() -> Option<FileRange>,
+    ) -> Option<LazyProperty<FileRange>> {
         if self.fields_to_resolve.resolve_label_location {
             Some(LazyProperty::Lazy)
         } else {
@@ -459,7 +491,10 @@ impl<T> LazyProperty<T> {
 }
 
 impl std::hash::Hash for InlayHint {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: std::hash::Hasher>(
+        &self,
+        state: &mut H,
+    ) {
         self.range.hash(state);
         self.position.hash(state);
         self.pad_left.hash(state);
@@ -471,7 +506,10 @@ impl std::hash::Hash for InlayHint {
 }
 
 impl InlayHint {
-    fn closing_paren_after(kind: InlayKind, range: TextRange) -> InlayHint {
+    fn closing_paren_after(
+        kind: InlayKind,
+        range: TextRange,
+    ) -> InlayHint {
         InlayHint {
             range,
             kind,
@@ -497,13 +535,20 @@ pub struct InlayHintLabel {
 }
 
 impl InlayHintLabel {
-    pub fn simple(s: impl Into<String>, tooltip: Option<LazyProperty<InlayTooltip>>, linked_location: Option<LazyProperty<FileRange>>) -> InlayHintLabel {
+    pub fn simple(
+        s: impl Into<String>,
+        tooltip: Option<LazyProperty<InlayTooltip>>,
+        linked_location: Option<LazyProperty<FileRange>>,
+    ) -> InlayHintLabel {
         InlayHintLabel {
             parts: smallvec![InlayHintLabelPart { text: s.into(), linked_location, tooltip }],
         }
     }
 
-    pub fn prepend_str(&mut self, s: &str) {
+    pub fn prepend_str(
+        &mut self,
+        s: &str,
+    ) {
         match &mut *self.parts {
             [InlayHintLabelPart { text, linked_location: None, tooltip: None }, ..] => {
                 text.insert_str(0, s)
@@ -515,7 +560,10 @@ impl InlayHintLabel {
         }
     }
 
-    pub fn append_str(&mut self, s: &str) {
+    pub fn append_str(
+        &mut self,
+        s: &str,
+    ) {
         match &mut *self.parts {
             [.., InlayHintLabelPart { text, linked_location: None, tooltip: None }] => {
                 text.push_str(s)
@@ -528,7 +576,10 @@ impl InlayHintLabel {
         }
     }
 
-    pub fn append_part(&mut self, part: InlayHintLabelPart) {
+    pub fn append_part(
+        &mut self,
+        part: InlayHintLabelPart,
+    ) {
         if part.linked_location.is_none()
             && part.tooltip.is_none()
             && let Some(InlayHintLabelPart { text, linked_location: None, tooltip: None }) =
@@ -562,13 +613,19 @@ impl From<&str> for InlayHintLabel {
 }
 
 impl fmt::Display for InlayHintLabel {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "{}", self.parts.iter().map(|part| &part.text).format(""))
     }
 }
 
 impl fmt::Debug for InlayHintLabel {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_list().entries(&self.parts).finish()
     }
 }
@@ -588,7 +645,10 @@ pub struct InlayHintLabelPart {
 }
 
 impl std::hash::Hash for InlayHintLabelPart {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: std::hash::Hasher>(
+        &self,
+        state: &mut H,
+    ) {
         self.text.hash(state);
         self.linked_location.is_some().hash(state);
         self.tooltip.is_some().hash(state);
@@ -596,7 +656,10 @@ impl std::hash::Hash for InlayHintLabelPart {
 }
 
 impl fmt::Debug for InlayHintLabelPart {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
                 text.fmt(f)
@@ -629,13 +692,19 @@ struct InlayHintLabelBuilder<'a> {
 }
 
 impl fmt::Write for InlayHintLabelBuilder<'_> {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
+    fn write_str(
+        &mut self,
+        s: &str,
+    ) -> fmt::Result {
         self.last_part.write_str(s)
     }
 }
 
 impl HirWrite for InlayHintLabelBuilder<'_> {
-    fn start_location_link(&mut self, def: ModuleDefId) {
+    fn start_location_link(
+        &mut self,
+        def: ModuleDefId,
+    ) {
         never!(self.location.is_some(), "location link is already started");
         self.make_new_part();
         self.location = Some(if self.resolve {
@@ -672,7 +741,12 @@ impl InlayHintLabelBuilder<'_> {
     }
 }
 
-fn label_of_ty(famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, ty: &hir::Type<'_>, display_target: DisplayTarget) -> Option<InlayHintLabel> {
+fn label_of_ty(
+    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    ty: &hir::Type<'_>,
+    display_target: DisplayTarget,
+) -> Option<InlayHintLabel> {
     fn rec(
         sema: &Semantics<'_, RootDatabase>,
         famous_defs: &FamousDefs<'_, '_>,
@@ -737,7 +811,11 @@ fn label_of_ty(famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &
 }
 
 /// Checks if the type is an Iterator from std::iter and returns the iterator trait and the item type of the concrete iterator.
-fn hint_iterator<'db>(sema: &Semantics<'db, RootDatabase>, famous_defs: &FamousDefs<'_, 'db>, ty: &hir::Type<'db>) -> Option<(hir::Trait, hir::TypeAlias, hir::Type<'db>)> {
+fn hint_iterator<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    famous_defs: &FamousDefs<'_, 'db>,
+    ty: &hir::Type<'db>,
+) -> Option<(hir::Trait, hir::TypeAlias, hir::Type<'db>)> {
     let db = sema.db;
     let strukt = ty.strip_references().as_adt()?;
     let krate = strukt.module(db).krate();
@@ -764,7 +842,15 @@ fn hint_iterator<'db>(sema: &Semantics<'db, RootDatabase>, famous_defs: &FamousD
     None
 }
 
-fn ty_to_text_edit(sema: &Semantics<'_, RootDatabase>, config: &InlayHintsConfig<'_>, node_for_hint: &SyntaxNode, ty: &hir::Type<'_>, offset_to_insert_ty: TextSize, additional_edits: &dyn Fn(&mut TextEditBuilder), prefix: impl Into<String>) -> Option<LazyProperty<TextEdit>> {
+fn ty_to_text_edit(
+    sema: &Semantics<'_, RootDatabase>,
+    config: &InlayHintsConfig<'_>,
+    node_for_hint: &SyntaxNode,
+    ty: &hir::Type<'_>,
+    offset_to_insert_ty: TextSize,
+    additional_edits: &dyn Fn(&mut TextEditBuilder),
+    prefix: impl Into<String>,
+) -> Option<LazyProperty<TextEdit>> {
     // FIXME: Limit the length and bail out on excess somehow?
     let rendered = sema
         .scope(node_for_hint)
@@ -800,7 +886,10 @@ mod tests {
         check_with_config(TEST_CONFIG, ra_fixture);
     }
     #[track_caller]
-    pub(super) fn check_with_config(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+    pub(super) fn check_with_config(
+        config: InlayHintsConfig<'_>,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let mut expected = extract_annotations(&analysis.file_text(file_id).unwrap());
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
@@ -814,7 +903,11 @@ mod tests {
         assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
     }
     #[track_caller]
-    pub(super) fn check_expect(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    pub(super) fn check_expect(
+        config: InlayHintsConfig<'_>,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
         let filtered =
@@ -824,7 +917,11 @@ mod tests {
     /// Computes inlay hints for the fixture, applies all the provided text edits and then runs
     /// expect test.
     #[track_caller]
-    pub(super) fn check_edit(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    pub(super) fn check_edit(
+        config: InlayHintsConfig<'_>,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
         let edits = inlay_hints
@@ -840,7 +937,10 @@ mod tests {
         expect.assert_eq(&actual);
     }
     #[track_caller]
-    pub(super) fn check_no_edit(config: InlayHintsConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+    pub(super) fn check_no_edit(
+        config: InlayHintsConfig<'_>,
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
         let edits: Vec<_> =

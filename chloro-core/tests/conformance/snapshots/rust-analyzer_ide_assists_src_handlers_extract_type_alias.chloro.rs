@@ -7,7 +7,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn extract_type_alias(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;
     }
@@ -76,7 +79,10 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     )
 }
 
-fn collect_used_generics<'gp>(ty: &ast::Type, known_generics: &'gp [ast::GenericParam]) -> Option<Vec<&'gp ast::GenericParam>> {
+fn collect_used_generics<'gp>(
+    ty: &ast::Type,
+    known_generics: &'gp [ast::GenericParam],
+) -> Option<Vec<&'gp ast::GenericParam>> {
     // can't use a closure -> closure here cause lifetime inference fails for that
     fn find_lifetime(text: &str) -> impl Fn(&&ast::GenericParam) -> bool + '_ {
         move |gp: &&ast::GenericParam| match gp {

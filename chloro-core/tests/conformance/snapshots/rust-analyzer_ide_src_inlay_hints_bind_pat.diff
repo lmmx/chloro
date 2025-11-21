@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28332 bytes
-Chloro size:   28240 bytes
+Chloro size:   28278 bytes
 Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
@@ -29,14 +29,7 @@ Rustfmt size:  28759 bytes
 +    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
  };
  
--pub(super) fn hints(
--    acc: &mut Vec<InlayHint>,
--    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,
--    config: &InlayHintsConfig<'_>,
--    display_target: DisplayTarget,
--    pat: &ast::IdentPat,
--) -> Option<()> {
-+pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, pat: &ast::IdentPat) -> Option<()> {
+ pub(super) fn hints(
      if !config.type_hints {
          return None;
      }
@@ -90,15 +83,6 @@ Rustfmt size:  28759 bytes
      Some(())
  }
  
--fn is_named_constructor(
--    sema: &Semantics<'_, RootDatabase>,
--    pat: &ast::IdentPat,
--    ty_name: &str,
--) -> Option<()> {
-+fn is_named_constructor(sema: &Semantics<'_, RootDatabase>, pat: &ast::IdentPat, ty_name: &str) -> Option<()> {
-     let let_node = pat.syntax().parent()?;
-     let expr = match_ast! {
-         match let_node {
              _ => None,
          }
      }?;

@@ -58,17 +58,26 @@ impl<'a> RenderContext<'a> {
         }
     }
 
-    pub(crate) fn private_editable(mut self, private_editable: bool) -> Self {
+    pub(crate) fn private_editable(
+        mut self,
+        private_editable: bool,
+    ) -> Self {
         self.is_private_editable = private_editable;
         self
     }
 
-    pub(crate) fn import_to_add(mut self, import_to_add: Option<LocatedImport>) -> Self {
+    pub(crate) fn import_to_add(
+        mut self,
+        import_to_add: Option<LocatedImport>,
+    ) -> Self {
         self.import_to_add = import_to_add;
         self
     }
 
-    pub(crate) fn doc_aliases(mut self, doc_aliases: Vec<SmolStr>) -> Self {
+    pub(crate) fn doc_aliases(
+        mut self,
+        doc_aliases: Vec<SmolStr>,
+    ) -> Self {
         self.doc_aliases = doc_aliases;
         self
     }
@@ -98,12 +107,18 @@ impl<'a> RenderContext<'a> {
             && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
     }
 
-    fn is_deprecated(&self, def: impl HasAttrs) -> bool {
+    fn is_deprecated(
+        &self,
+        def: impl HasAttrs,
+    ) -> bool {
         let attrs = def.attrs(self.db());
         attrs.by_key(sym::deprecated).exists()
     }
 
-    fn is_deprecated_assoc_item(&self, as_assoc_item: impl AsAssocItem) -> bool {
+    fn is_deprecated_assoc_item(
+        &self,
+        as_assoc_item: impl AsAssocItem,
+    ) -> bool {
         let db = self.db();
         let assoc = match as_assoc_item.as_assoc_item(db) {
             Some(assoc) => assoc,
@@ -121,12 +136,21 @@ impl<'a> RenderContext<'a> {
                 .unwrap_or(false)
     }
 
-    fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
+    fn docs(
+        &self,
+        def: impl HasDocs,
+    ) -> Option<Documentation> {
         def.docs(self.db())
     }
 }
 
-pub(crate) fn render_field(ctx: RenderContext<'_>, dot_access: &DotAccess<'_>, receiver: Option<SmolStr>, field: hir::Field, ty: &hir::Type<'_>) -> CompletionItem {
+pub(crate) fn render_field(
+    ctx: RenderContext<'_>,
+    dot_access: &DotAccess<'_>,
+    receiver: Option<SmolStr>,
+    field: hir::Field,
+    ty: &hir::Type<'_>,
+) -> CompletionItem {
     let db = ctx.db();
     let is_deprecated = ctx.is_deprecated(field);
     let name = field.name(db);
@@ -191,12 +215,20 @@ pub(crate) fn render_field(ctx: RenderContext<'_>, dot_access: &DotAccess<'_>, r
     item.build(db)
 }
 
-fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
+fn field_with_receiver(
+    receiver: Option<&str>,
+    field_name: &str,
+) -> SmolStr {
     receiver
         .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
 }
 
-pub(crate) fn render_tuple_field(ctx: RenderContext<'_>, receiver: Option<SmolStr>, field: usize, ty: &hir::Type<'_>) -> CompletionItem {
+pub(crate) fn render_tuple_field(
+    ctx: RenderContext<'_>,
+    receiver: Option<SmolStr>,
+    field: usize,
+    ty: &hir::Type<'_>,
+) -> CompletionItem {
     let mut item = CompletionItem::new(
         SymbolKind::Field,
         ctx.source_range(),
@@ -212,7 +244,10 @@ pub(crate) fn render_tuple_field(ctx: RenderContext<'_>, receiver: Option<SmolSt
     item.build(ctx.db())
 }
 
-pub(crate) fn render_type_inference(ty_string: String, ctx: &CompletionContext<'_>) -> CompletionItem {
+pub(crate) fn render_type_inference(
+    ty_string: String,
+    ctx: &CompletionContext<'_>,
+) -> CompletionItem {
     let mut builder = CompletionItem::new(
         CompletionItemKind::InferredType,
         ctx.source_range(),
@@ -227,15 +262,29 @@ pub(crate) fn render_type_inference(ty_string: String, ctx: &CompletionContext<'
     builder.build(ctx.db)
 }
 
-pub(crate) fn render_path_resolution(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: hir::Name, resolution: ScopeDef) -> Builder {
+pub(crate) fn render_path_resolution(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    local_name: hir::Name,
+    resolution: ScopeDef,
+) -> Builder {
     render_resolution_path(ctx, path_ctx, local_name, None, resolution)
 }
 
-pub(crate) fn render_pattern_resolution(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, local_name: hir::Name, resolution: ScopeDef) -> Builder {
+pub(crate) fn render_pattern_resolution(
+    ctx: RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    local_name: hir::Name,
+    resolution: ScopeDef,
+) -> Builder {
     render_resolution_pat(ctx, pattern_ctx, local_name, None, resolution)
 }
 
-pub(crate) fn render_resolution_with_import(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, import_edit: LocatedImport) -> Option<Builder> {
+pub(crate) fn render_resolution_with_import(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    import_edit: LocatedImport,
+) -> Option<Builder> {
     let resolution = ScopeDef::from(import_edit.original_item);
     let local_name = get_import_name(resolution, &ctx, &import_edit)?;
     // This now just renders the alias text, but we need to find the aliases earlier and call this with the alias instead.
@@ -244,13 +293,20 @@ pub(crate) fn render_resolution_with_import(ctx: RenderContext<'_>, path_ctx: &P
     Some(render_resolution_path(ctx, path_ctx, local_name, Some(import_edit), resolution))
 }
 
-pub(crate) fn render_resolution_with_import_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, import_edit: LocatedImport) -> Option<Builder> {
+pub(crate) fn render_resolution_with_import_pat(
+    ctx: RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    import_edit: LocatedImport,
+) -> Option<Builder> {
     let resolution = ScopeDef::from(import_edit.original_item);
     let local_name = get_import_name(resolution, &ctx, &import_edit)?;
     Some(render_resolution_pat(ctx, pattern_ctx, local_name, Some(import_edit), resolution))
 }
 
-pub(crate) fn render_expr(ctx: &CompletionContext<'_>, expr: &hir::term_search::Expr<'_>) -> Option<Builder> {
+pub(crate) fn render_expr(
+    ctx: &CompletionContext<'_>,
+    expr: &hir::term_search::Expr<'_>,
+) -> Option<Builder> {
     let mut i = 1;
     let mut snippet_formatter = |ty: &hir::Type<'_>| {
         let arg_name = ty
@@ -300,7 +356,11 @@ pub(crate) fn render_expr(ctx: &CompletionContext<'_>, expr: &hir::term_search::
     Some(item)
 }
 
-fn get_import_name(resolution: ScopeDef, ctx: &RenderContext<'_>, import_edit: &LocatedImport) -> Option<hir::Name> {
+fn get_import_name(
+    resolution: ScopeDef,
+    ctx: &RenderContext<'_>,
+    import_edit: &LocatedImport,
+) -> Option<hir::Name> {
     // FIXME: Temporary workaround for handling aliased import.
     // This should be removed after we have proper support for importing alias.
     // <https://github.com/rust-lang/rust-analyzer/issues/14079>
@@ -313,7 +373,11 @@ fn get_import_name(resolution: ScopeDef, ctx: &RenderContext<'_>, import_edit: &
     }
 }
 
-fn scope_def_to_name(resolution: ScopeDef, ctx: &RenderContext<'_>, import_edit: &LocatedImport) -> Option<hir::Name> {
+fn scope_def_to_name(
+    resolution: ScopeDef,
+    ctx: &RenderContext<'_>,
+    import_edit: &LocatedImport,
+) -> Option<hir::Name> {
     Some(match resolution {
         ScopeDef::ModuleDef(hir::ModuleDef::Function(f)) => f.name(ctx.completion.db),
         ScopeDef::ModuleDef(hir::ModuleDef::Const(c)) => c.name(ctx.completion.db)?,
@@ -322,7 +386,13 @@ fn scope_def_to_name(resolution: ScopeDef, ctx: &RenderContext<'_>, import_edit:
     })
 }
 
-fn render_resolution_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, local_name: hir::Name, import_to_add: Option<LocatedImport>, resolution: ScopeDef) -> Builder {
+fn render_resolution_pat(
+    ctx: RenderContext<'_>,
+    pattern_ctx: &PatternContext,
+    local_name: hir::Name,
+    import_to_add: Option<LocatedImport>,
+    resolution: ScopeDef,
+) -> Builder {
     let _p = tracing::info_span!("render_resolution_pat").entered();
     use hir::ModuleDef::*;
     if let ScopeDef::ModuleDef(Macro(mac)) = resolution {
@@ -333,7 +403,13 @@ fn render_resolution_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, l
     }
 }
 
-fn render_resolution_path(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: hir::Name, import_to_add: Option<LocatedImport>, resolution: ScopeDef) -> Builder {
+fn render_resolution_path(
+    ctx: RenderContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    local_name: hir::Name,
+    import_to_add: Option<LocatedImport>,
+    resolution: ScopeDef,
+) -> Builder {
     let _p = tracing::info_span!("render_resolution_path").entered();
     use hir::ModuleDef::*;
     let krate = ctx.completion.display_target;
@@ -426,7 +502,12 @@ fn render_resolution_path(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'
     item
 }
 
-fn render_resolution_simple_(ctx: RenderContext<'_>, local_name: &hir::Name, import_to_add: Option<LocatedImport>, resolution: ScopeDef) -> Builder {
+fn render_resolution_simple_(
+    ctx: RenderContext<'_>,
+    local_name: &hir::Name,
+    import_to_add: Option<LocatedImport>,
+    resolution: ScopeDef,
+) -> Builder {
     let _p = tracing::info_span!("render_resolution_simple_").entered();
     let db = ctx.db();
     let ctx = ctx.import_to_add(import_to_add);
@@ -478,7 +559,10 @@ fn res_to_kind(resolution: ScopeDef) -> CompletionItemKind {
     }
 }
 
-fn scope_def_docs(db: &RootDatabase, resolution: ScopeDef) -> Option<Documentation> {
+fn scope_def_docs(
+    db: &RootDatabase,
+    resolution: ScopeDef,
+) -> Option<Documentation> {
     use hir::ModuleDef::*;
     match resolution {
         ScopeDef::ModuleDef(Module(it)) => it.docs(db),
@@ -492,7 +576,10 @@ fn scope_def_docs(db: &RootDatabase, resolution: ScopeDef) -> Option<Documentati
     }
 }
 
-fn scope_def_is_deprecated(ctx: &RenderContext<'_>, resolution: ScopeDef) -> bool {
+fn scope_def_is_deprecated(
+    ctx: &RenderContext<'_>,
+    resolution: ScopeDef,
+) -> bool {
     match resolution {
         ScopeDef::ModuleDef(it) => ctx.is_deprecated_assoc_item(it),
         ScopeDef::GenericParam(it) => ctx.is_deprecated(it),
@@ -501,7 +588,11 @@ fn scope_def_is_deprecated(ctx: &RenderContext<'_>, resolution: ScopeDef) -> boo
     }
 }
 
-fn match_types(ctx: &CompletionContext<'_>, ty1: &hir::Type<'_>, ty2: &hir::Type<'_>) -> Option<CompletionRelevanceTypeMatch> {
+fn match_types(
+    ctx: &CompletionContext<'_>,
+    ty1: &hir::Type<'_>,
+    ty2: &hir::Type<'_>,
+) -> Option<CompletionRelevanceTypeMatch> {
     if ty1 == ty2 {
         Some(CompletionRelevanceTypeMatch::Exact)
     } else if ty1.could_unify_with(ctx.db, ty2) {
@@ -511,7 +602,10 @@ fn match_types(ctx: &CompletionContext<'_>, ty1: &hir::Type<'_>, ty2: &hir::Type
     }
 }
 
-fn compute_type_match(ctx: &CompletionContext<'_>, completion_ty: &hir::Type<'_>) -> Option<CompletionRelevanceTypeMatch> {
+fn compute_type_match(
+    ctx: &CompletionContext<'_>,
+    completion_ty: &hir::Type<'_>,
+) -> Option<CompletionRelevanceTypeMatch> {
     let expected_type = ctx.expected_type.as_ref()?;
     // We don't ever consider unit type to be an exact type match, since
     // nearly always this is not meaningful to the user.
@@ -521,11 +615,17 @@ fn compute_type_match(ctx: &CompletionContext<'_>, completion_ty: &hir::Type<'_>
     match_types(ctx, expected_type, completion_ty)
 }
 
-fn compute_exact_name_match(ctx: &CompletionContext<'_>, completion_name: &str) -> bool {
+fn compute_exact_name_match(
+    ctx: &CompletionContext<'_>,
+    completion_name: &str,
+) -> bool {
     ctx.expected_name.as_ref().is_some_and(|name| name.text() == completion_name)
 }
 
-fn compute_ref_match(ctx: &CompletionContext<'_>, completion_ty: &hir::Type<'_>) -> Option<CompletionItemRefMode> {
+fn compute_ref_match(
+    ctx: &CompletionContext<'_>,
+    completion_ty: &hir::Type<'_>,
+) -> Option<CompletionItemRefMode> {
     let expected_type = ctx.expected_type.as_ref()?;
     let expected_without_ref = expected_type.remove_ref();
     let completion_without_ref = completion_ty.remove_ref();
@@ -553,7 +653,12 @@ fn compute_ref_match(ctx: &CompletionContext<'_>, completion_ty: &hir::Type<'_>)
     None
 }
 
-fn path_ref_match(completion: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, ty: &hir::Type<'_>, item: &mut Builder) {
+fn path_ref_match(
+    completion: &CompletionContext<'_>,
+    path_ctx: &PathCompletionCtx<'_>,
+    ty: &hir::Type<'_>,
+    item: &mut Builder,
+) {
     if let Some(original_path) = &path_ctx.original_path {
         // At least one char was typed by the user already, in that case look for the original path
         if let Some(original_path) = completion.sema.original_ast_node(original_path.clone())
@@ -583,18 +688,29 @@ mod tests {
         tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
     };
     #[track_caller]
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, kind: impl Into<CompletionItemKind>, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        kind: impl Into<CompletionItemKind>,
+        expect: Expect,
+    ) {
         let actual = do_completion(ra_fixture, kind.into());
         expect.assert_debug_eq(&actual);
     }
     #[track_caller]
-    fn check_kinds(#[rust_analyzer::rust_fixture] ra_fixture: &str, kinds: &[CompletionItemKind], expect: Expect) {
+    fn check_kinds(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        kinds: &[CompletionItemKind],
+        expect: Expect,
+    ) {
         let actual: Vec<_> =
             kinds.iter().flat_map(|&kind| do_completion(ra_fixture, kind)).collect();
         expect.assert_debug_eq(&actual);
     }
     #[track_caller]
-    fn check_function_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_function_relevance(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let actual: Vec<_> =
             do_completion(ra_fixture, CompletionItemKind::SymbolKind(SymbolKind::Method))
                 .into_iter()
@@ -603,14 +719,21 @@ mod tests {
         expect.assert_debug_eq(&actual);
     }
     #[track_caller]
-    fn check_relevance_for_kinds(#[rust_analyzer::rust_fixture] ra_fixture: &str, kinds: &[CompletionItemKind], expect: Expect) {
+    fn check_relevance_for_kinds(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        kinds: &[CompletionItemKind],
+        expect: Expect,
+    ) {
         let mut actual = get_all_items(TEST_CONFIG, ra_fixture, None);
         actual.retain(|it| kinds.contains(&it.kind));
         actual.sort_by_key(|it| (cmp::Reverse(it.relevance.score()), it.label.primary.clone()));
         check_relevance_(actual, expect);
     }
     #[track_caller]
-    fn check_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check_relevance(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         let mut actual = get_all_items(TEST_CONFIG, ra_fixture, None);
         actual.retain(|it| it.kind != CompletionItemKind::Snippet);
         actual.retain(|it| it.kind != CompletionItemKind::Keyword);
@@ -619,7 +742,10 @@ mod tests {
         check_relevance_(actual, expect);
     }
     #[track_caller]
-    fn check_relevance_(actual: Vec<CompletionItem>, expect: Expect) {
+    fn check_relevance_(
+        actual: Vec<CompletionItem>,
+        expect: Expect,
+    ) {
         let actual = actual
             .into_iter()
             .flat_map(|it| {

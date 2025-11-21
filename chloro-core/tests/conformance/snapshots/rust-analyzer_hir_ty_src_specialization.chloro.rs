@@ -16,7 +16,11 @@ use crate::{
     },
 };
 
-fn specializes_query_cycle(_db: &dyn HirDatabase, _specializing_impl_def_id: ImplId, _parent_impl_def_id: ImplId) -> bool {
+fn specializes_query_cycle(
+    _db: &dyn HirDatabase,
+    _specializing_impl_def_id: ImplId,
+    _parent_impl_def_id: ImplId,
+) -> bool {
     false
 }
 
@@ -32,7 +36,11 @@ fn specializes_query_cycle(_db: &dyn HirDatabase, _specializing_impl_def_id: Imp
 /// bounds), then `specializing_impl_def_id` must also be const for the same
 /// set of types.
 #[salsa::tracked(cycle_result = specializes_query_cycle)]
-fn specializes_query(db: &dyn HirDatabase, specializing_impl_def_id: ImplId, parent_impl_def_id: ImplId) -> bool {
+fn specializes_query(
+    db: &dyn HirDatabase,
+    specializing_impl_def_id: ImplId,
+    parent_impl_def_id: ImplId,
+) -> bool {
     let trait_env = db.trait_environment(specializing_impl_def_id.into());
     let interner = DbInterner::new_with(db, Some(trait_env.krate), trait_env.block);
     let specializing_impl_signature = db.impl_signature(specializing_impl_def_id);
@@ -105,7 +113,11 @@ fn specializes_query(db: &dyn HirDatabase, specializing_impl_def_id: ImplId, par
     true
 }
 
-pub(crate) fn specializes(db: &dyn HirDatabase, specializing_impl_def_id: ImplId, parent_impl_def_id: ImplId) -> bool {
+pub(crate) fn specializes(
+    db: &dyn HirDatabase,
+    specializing_impl_def_id: ImplId,
+    parent_impl_def_id: ImplId,
+) -> bool {
     let module = specializing_impl_def_id.loc(db).container;
     // We check that the specializing impl comes from a crate that has specialization enabled.
     //

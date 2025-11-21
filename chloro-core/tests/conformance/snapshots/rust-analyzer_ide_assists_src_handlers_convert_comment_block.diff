@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   8349 bytes
+Chloro size:   8393 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -32,7 +32,11 @@ Rustfmt size:  9185 bytes
 -//   comment
 -//   */
 -// ```
- pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_comment_block(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let comment = ctx.find_token_at_offset::<ast::Comment>()?;
      // Only allow comments which are alone on their line
      if let Some(prev) = comment.syntax().prev_token() {
@@ -42,8 +46,14 @@ Rustfmt size:  9185 bytes
      match comment.kind().shape {
          ast::CommentShape::Block => block_to_line(acc, comment),
          ast::CommentShape::Line => line_to_block(acc, comment),
+     }
+ }
  
- fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
+-fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
++fn block_to_line(
++    acc: &mut Assists,
++    comment: ast::Comment,
++) -> Option<()> {
      let target = comment.syntax().text_range();
 -
      acc.add(
@@ -61,7 +71,14 @@ Rustfmt size:  9185 bytes
  
              let text = comment.text();
              let text = &text[comment.prefix().len()..(text.len() - "*/".len())].trim();
- fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
+     )
+ }
+ 
+-fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
++fn line_to_block(
++    acc: &mut Assists,
++    comment: ast::Comment,
++) -> Option<()> {
      // Find all the comments we'll be collapsing into a block
      let comments = relevant_line_comments(&comment);
 -
@@ -135,7 +152,11 @@ Rustfmt size:  9185 bytes
 -//              */
 -//
 -// But since such comments aren't idiomatic we're okay with this.
- pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
+-pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) -> String {
++pub(crate) fn line_comment_text(
++    indentation: IndentLevel,
++    comm: ast::Comment,
++) -> String {
      let text = comm.text();
      let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);
 -    let contents = contents_without_prefix

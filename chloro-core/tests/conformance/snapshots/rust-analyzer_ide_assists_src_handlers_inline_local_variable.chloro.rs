@@ -14,7 +14,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn inline_local_variable(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let file_id = ctx.file_id();
     let range = ctx.selection_trimmed();
     let InlineData { let_stmt, delete_let, references, target } =
@@ -103,7 +106,12 @@ struct InlineData {
     references: Vec<FileReference>,
 }
 
-fn inline_let(sema: &Semantics<'_, RootDatabase>, let_stmt: ast::LetStmt, range: TextRange, file_id: EditionedFileId) -> Option<InlineData> {
+fn inline_let(
+    sema: &Semantics<'_, RootDatabase>,
+    let_stmt: ast::LetStmt,
+    range: TextRange,
+    file_id: EditionedFileId,
+) -> Option<InlineData> {
     let bind_pat = match let_stmt.pat()? {
         ast::Pat::IdentPat(pat) => pat,
         _ => return None,
@@ -132,7 +140,12 @@ fn inline_let(sema: &Semantics<'_, RootDatabase>, let_stmt: ast::LetStmt, range:
     }
 }
 
-fn inline_usage(sema: &Semantics<'_, RootDatabase>, path_expr: ast::PathExpr, range: TextRange, file_id: EditionedFileId) -> Option<InlineData> {
+fn inline_usage(
+    sema: &Semantics<'_, RootDatabase>,
+    path_expr: ast::PathExpr,
+    range: TextRange,
+    file_id: EditionedFileId,
+) -> Option<InlineData> {
     let path = path_expr.path()?;
     let name = path.as_single_name_ref()?;
     if !name.syntax().text_range().contains_range(range) {

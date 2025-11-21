@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7192 bytes
-Chloro size:   6975 bytes
+Chloro size:   7017 bytes
 Rustfmt size:  7216 bytes
 
 ✗ Outputs DIFFER
@@ -24,29 +24,9 @@ Rustfmt size:  7216 bytes
 -// Diagnostic: unused-variables
 -//
 -// This diagnostic is triggered when a local variable is not used.
--pub(crate) fn unused_variables(
--    ctx: &DiagnosticsContext<'_>,
--    d: &hir::UnusedVariable,
--) -> Option<Diagnostic> {
-+pub(crate) fn unused_variables(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedVariable) -> Option<Diagnostic> {
-     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
-     if ast.file_id.macro_file().is_some() {
-         // FIXME: Our infra can't handle allow from within macro expansions rn
-     )
- }
- 
--fn fixes(
--    db: &RootDatabase,
--    var_name: Name,
--    name_range: TextRange,
--    diagnostic_range: FileRange,
--    is_in_marco: bool,
--    is_shorthand_field: bool,
--    edition: Edition,
--) -> Option<Vec<Assist>> {
-+fn fixes(db: &RootDatabase, var_name: Name, name_range: TextRange, diagnostic_range: FileRange, is_in_marco: bool, is_shorthand_field: bool, edition: Edition) -> Option<Vec<Assist>> {
-     if is_in_marco {
-         return None;
+ pub(crate) fn unused_variables(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnusedVariable,
      }
      let name = var_name.display(db, edition).to_smolstr();
      let name = name.strip_prefix("r#").unwrap_or(&name);

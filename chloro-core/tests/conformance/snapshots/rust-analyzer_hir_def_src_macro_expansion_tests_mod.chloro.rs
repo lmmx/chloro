@@ -52,7 +52,10 @@ mod mbe;
 mod proc_macros;
 
 #[track_caller]
-fn check_errors(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+fn check_errors(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect: Expect,
+) {
     let db = TestDB::with_files(ra_fixture);
     let krate = db.fetch_test_crate();
     let def_map = crate_def_map(&db, krate);
@@ -83,7 +86,10 @@ fn check_errors(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect)
     expect.assert_eq(&errors);
 }
 
-fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, mut expect: Expect) {
+fn check(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    mut expect: Expect,
+) {
     let extra_proc_macros = vec![(
         r#"
 #[proc_macro_attribute]
@@ -258,7 +264,10 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
     expect.assert_eq(&expanded_text);
 }
 
-fn reindent(indent: IndentLevel, pp: String) -> String {
+fn reindent(
+    indent: IndentLevel,
+    pp: String,
+) -> String {
     if !pp.contains('\n') {
         return pp;
     }
@@ -274,7 +283,12 @@ fn reindent(indent: IndentLevel, pp: String) -> String {
     res
 }
 
-fn pretty_print_macro_expansion(expn: SyntaxNode, map: SpanMapRef<'_>, show_spans: bool, show_ctxt: bool) -> String {
+fn pretty_print_macro_expansion(
+    expn: SyntaxNode,
+    map: SpanMapRef<'_>,
+    show_spans: bool,
+    show_ctxt: bool,
+) -> String {
     let mut res = String::new();
     let mut prev_kind = EOF;
     let mut indent_level = 0;
@@ -345,7 +359,16 @@ fn pretty_print_macro_expansion(expn: SyntaxNode, map: SpanMapRef<'_>, show_span
 struct IdentityWhenValidProcMacroExpander;
 
 impl ProcMacroExpander for IdentityWhenValidProcMacroExpander {
-    fn expand(&self, subtree: &TopSubtree, _: Option<&TopSubtree>, _: &base_db::Env, _: Span, _: Span, _: Span, _: String) -> Result<TopSubtree, ProcMacroExpansionError> {
+    fn expand(
+        &self,
+        subtree: &TopSubtree,
+        _: Option<&TopSubtree>,
+        _: &base_db::Env,
+        _: Span,
+        _: Span,
+        _: Span,
+        _: String,
+    ) -> Result<TopSubtree, ProcMacroExpansionError> {
         let (parse, _) = syntax_bridge::token_tree_to_syntax_node(
             subtree,
             syntax_bridge::TopEntryPoint::MacroItems,
@@ -359,7 +382,10 @@ impl ProcMacroExpander for IdentityWhenValidProcMacroExpander {
         }
     }
 
-    fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool {
+    fn eq_dyn(
+        &self,
+        other: &dyn ProcMacroExpander,
+    ) -> bool {
         other.type_id() == TypeId::of::<Self>()
     }
 }

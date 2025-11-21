@@ -7,7 +7,10 @@ use syntax::{AstNode, TextRange, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn generic_args_prohibited(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Diagnostic {
+pub(crate) fn generic_args_prohibited(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::GenericArgsProhibited,
+) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,
         DiagnosticCode::RustcHardError("E0109"),
@@ -35,7 +38,10 @@ fn describe_reason(reason: GenericArgsProhibitedReason) -> String {
     format!("generic arguments are not allowed on {kind}")
 }
 
-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option<Vec<Assist>> {
+fn fixes(
+    ctx: &DiagnosticsContext<'_>,
+    d: &hir::GenericArgsProhibited,
+) -> Option<Vec<Assist>> {
     let file_id = d.args.file_id.file_id()?;
     let syntax = d.args.to_node(ctx.sema.db);
     let range = match &syntax {

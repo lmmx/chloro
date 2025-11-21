@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5345 bytes
-Chloro size:   4803 bytes
+Chloro size:   4922 bytes
 Rustfmt size:  5475 bytes
 
 ✗ Outputs DIFFER
@@ -19,18 +19,6 @@ Rustfmt size:  5475 bytes
  use super::quote;
  
  macro_rules! register_builtin {
- }
- 
- impl BuiltinAttrExpander {
--    pub fn expand(
--        &self,
--        db: &dyn ExpandDatabase,
--        id: MacroCallId,
--        tt: &tt::TopSubtree,
--        span: Span,
--    ) -> ExpandResult<tt::TopSubtree> {
-+    pub fn expand(&self, db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
-         self.expander()(db, id, tt, span)
      }
  
      pub fn is_derive(self) -> bool {
@@ -70,37 +58,7 @@ Rustfmt size:  5475 bytes
  pub fn find_builtin_attr(ident: &name::Name) -> Option<BuiltinAttrExpander> {
      BuiltinAttrExpander::find_by_name(ident)
  }
- 
--fn dummy_attr_expand(
--    _db: &dyn ExpandDatabase,
--    _id: MacroCallId,
--    tt: &tt::TopSubtree,
--    _span: Span,
--) -> ExpandResult<tt::TopSubtree> {
-+fn dummy_attr_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, _span: Span) -> ExpandResult<tt::TopSubtree> {
-     ExpandResult::ok(tt.clone())
- }
- 
--fn dummy_gate_test_expand(
--    _db: &dyn ExpandDatabase,
--    _id: MacroCallId,
--    tt: &tt::TopSubtree,
--    span: Span,
--) -> ExpandResult<tt::TopSubtree> {
-+fn dummy_gate_test_expand(_db: &dyn ExpandDatabase, _id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
-     let result = quote::quote! { span=>
-         #[cfg(test)]
-         #tt
- /// always resolve as a derive without nameres recollecting them.
- /// So this hacky approach is a lot more friendly for us, though it does require a bit of support in
- /// [`hir::Semantics`] to make this work.
--fn derive_expand(
--    db: &dyn ExpandDatabase,
--    id: MacroCallId,
--    tt: &tt::TopSubtree,
--    span: Span,
--) -> ExpandResult<tt::TopSubtree> {
-+fn derive_expand(db: &dyn ExpandDatabase, id: MacroCallId, tt: &tt::TopSubtree, span: Span) -> ExpandResult<tt::TopSubtree> {
+ ) -> ExpandResult<tt::TopSubtree> {
      let loc = db.lookup_intern_macro_call(id);
      let derives = match &loc.kind {
 -        MacroCallKind::Attr {
@@ -113,14 +71,9 @@ Rustfmt size:  5475 bytes
          _ => {
              return ExpandResult::ok(tt::TopSubtree::empty(tt::DelimSpan {
                  open: span,
-     pseudo_derive_attr_expansion(tt, derives, span)
- }
- 
--pub fn pseudo_derive_attr_expansion(
--    _: &tt::TopSubtree,
--    args: &tt::TopSubtree,
--    call_site: Span,
--) -> ExpandResult<tt::TopSubtree> {
+     args: &tt::TopSubtree,
+     call_site: Span,
+ ) -> ExpandResult<tt::TopSubtree> {
 -    let mk_leaf = |char| {
 -        tt::Leaf::Punct(tt::Punct {
 -            char,
@@ -129,7 +82,6 @@ Rustfmt size:  5475 bytes
 -        })
 -    };
 -
-+pub fn pseudo_derive_attr_expansion(_: &tt::TopSubtree, args: &tt::TopSubtree, call_site: Span) -> ExpandResult<tt::TopSubtree> {
 +    let mk_leaf =
 +        |char| tt::Leaf::Punct(tt::Punct { char, spacing: tt::Spacing::Alone, span: call_site });
      let mut token_trees = tt::TopSubtreeBuilder::new(args.top_subtree().delimiter);

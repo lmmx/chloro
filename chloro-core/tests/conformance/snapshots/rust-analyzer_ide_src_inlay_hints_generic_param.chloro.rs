@@ -13,7 +13,12 @@ use crate::{
 };
 use super::param_name::is_argument_similar_to_param_name;
 
-pub(crate) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, krate): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, node: AnyHasGenericArgs) -> Option<()> {
+pub(crate) fn hints(
+    acc: &mut Vec<InlayHint>,
+    FamousDefs(sema, krate): &FamousDefs<'_, '_>,
+    config: &InlayHintsConfig<'_>,
+    node: AnyHasGenericArgs,
+) -> Option<()> {
     let GenericParameterHints { type_hints, lifetime_hints, const_hints } =
         config.generic_parameter_hints;
     if !(type_hints || lifetime_hints || const_hints) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10632 bytes
-Chloro size:   10028 bytes
+Chloro size:   10103 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -32,12 +32,9 @@ Rustfmt size:  10803 bytes
 -// | VS Code | <kbd>Ctrl+F12</kbd>
 -//
 -// ![Go to Implementation](https://user-images.githubusercontent.com/48062697/113065566-02f85480-91b1-11eb-9288-aaad8abd8841.gif)
--pub(crate) fn goto_implementation(
--    db: &RootDatabase,
--    config: &GotoImplementationConfig,
--    FilePosition { file_id, offset }: FilePosition,
--) -> Option<RangeInfo<Vec<NavigationTarget>>> {
-+pub(crate) fn goto_implementation(db: &RootDatabase, config: &GotoImplementationConfig, FilePosition { file_id, offset }: FilePosition) -> Option<RangeInfo<Vec<NavigationTarget>>> {
+ pub(crate) fn goto_implementation(
+     db: &RootDatabase,
+     config: &GotoImplementationConfig,
      let sema = Semantics::new(db);
      let source_file = sema.parse_guess_edition(file_id);
      let syntax = source_file.syntax().clone();
@@ -52,29 +49,14 @@ Rustfmt size:  10803 bytes
      Some(RangeInfo { range, info: navs })
  }
  
-         .collect()
- }
- 
--fn impls_for_trait(
--    sema: &Semantics<'_, RootDatabase>,
--    trait_: hir::Trait,
--) -> Vec<NavigationTarget> {
-+fn impls_for_trait(sema: &Semantics<'_, RootDatabase>, trait_: hir::Trait) -> Vec<NavigationTarget> {
-     Impl::all_for_trait(sema.db, trait_)
+-fn impls_for_ty(sema: &Semantics<'_, RootDatabase>, ty: hir::Type<'_>) -> Vec<NavigationTarget> {
++fn impls_for_ty(
++    sema: &Semantics<'_, RootDatabase>,
++    ty: hir::Type<'_>,
++) -> Vec<NavigationTarget> {
+     Impl::all_for_type(sema.db, ty)
          .into_iter()
          .filter_map(|imp| imp.try_to_nav(sema))
-         .collect()
- }
- 
--fn impls_for_trait_item(
--    sema: &Semantics<'_, RootDatabase>,
--    trait_: hir::Trait,
--    fun_name: hir::Name,
--) -> Vec<NavigationTarget> {
-+fn impls_for_trait_item(sema: &Semantics<'_, RootDatabase>, trait_: hir::Trait, fun_name: hir::Name) -> Vec<NavigationTarget> {
-     Impl::all_for_trait(sema.db, trait_)
-         .into_iter()
-         .filter_map(|imp| {
  mod tests {
      use ide_db::FileRange;
      use itertools::Itertools;
@@ -92,11 +74,10 @@ Rustfmt size:  10803 bytes
      }
 -
      #[track_caller]
--    fn check_with_config(
--        config: &GotoImplementationConfig,
--        #[rust_analyzer::rust_fixture] ra_fixture: &str,
--    ) {
-+    fn check_with_config(config: &GotoImplementationConfig, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+     fn check_with_config(
+         config: &GotoImplementationConfig,
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+     ) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
 -
 -        let navs = analysis

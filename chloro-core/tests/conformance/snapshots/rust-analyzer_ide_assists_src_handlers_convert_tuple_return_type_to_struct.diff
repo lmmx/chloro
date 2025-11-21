@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20081 bytes
-Chloro size:   19417 bytes
+Chloro size:   19527 bytes
 Rustfmt size:  20081 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,10 @@ Rustfmt size:  20081 bytes
 -//     FooResult(1, 2, 3)
 -// }
 -// ```
--pub(crate) fn convert_tuple_return_type_to_struct(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn convert_tuple_return_type_to_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn convert_tuple_return_type_to_struct(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
      let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
      let type_ref = ret_type.ty()?;
 -
@@ -58,31 +57,8 @@ Rustfmt size:  20081 bytes
      let target = type_ref.syntax().text_range();
      acc.add(
          AssistId::refactor_rewrite("convert_tuple_return_type_to_struct"),
- }
- 
- /// Replaces tuple usages with the corresponding tuple struct pattern.
--fn replace_usages(
--    edit: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    usages: &UsageSearchResult,
--    struct_name: &str,
--    target_module: &hir::Module,
--) {
-+fn replace_usages(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: &UsageSearchResult, struct_name: &str, target_module: &hir::Module) {
-     for (file_id, references) in usages.iter() {
-         edit.edit_file(file_id.file_id(ctx.db()));
- 
-     }
- }
- 
--fn augment_references_with_imports(
--    edit: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    references: &[FileReference],
--    struct_name: &str,
--    target_module: &hir::Module,
--) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
-+fn augment_references_with_imports(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, references: &[FileReference], struct_name: &str, target_module: &hir::Module) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
+     target_module: &hir::Module,
+ ) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
      let mut visited_modules = FxHashSet::default();
 -
      references
@@ -92,19 +68,9 @@ Rustfmt size:  20081 bytes
  }
  
 -// Adds the definition of the tuple struct before the parent function.
--fn add_tuple_struct_def(
--    edit: &mut SourceChangeBuilder,
--    ctx: &AssistContext<'_>,
--    usages: &UsageSearchResult,
--    parent: &SyntaxNode,
--    tuple_ty: &ast::TupleType,
--    struct_name: &str,
--    target_module: &hir::Module,
--) {
-+fn add_tuple_struct_def(edit: &mut SourceChangeBuilder, ctx: &AssistContext<'_>, usages: &UsageSearchResult, parent: &SyntaxNode, tuple_ty: &ast::TupleType, struct_name: &str, target_module: &hir::Module) {
-     let make_struct_pub = usages
-         .iter()
-         .flat_map(|(_, refs)| refs)
+ fn add_tuple_struct_def(
+     edit: &mut SourceChangeBuilder,
+     ctx: &AssistContext<'_>,
          })
          .any(|module| module.nearest_non_block_module(ctx.db()) != *target_module);
      let visibility = if make_struct_pub { Some(make::visibility_pub()) } else { None };
@@ -122,7 +88,11 @@ Rustfmt size:  20081 bytes
  }
  
  /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
- fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
+-fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
++fn replace_body_return_values(
++    body: ast::Expr,
++    struct_name: &str,
++) {
      let mut exprs_to_wrap = Vec::new();
 -
      let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_wrap, e);
@@ -135,6 +105,17 @@ Rustfmt size:  20081 bytes
      for ret_expr in exprs_to_wrap {
          if let ast::Expr::TupleExpr(tuple_expr) = &ret_expr {
              let struct_constructor = make::expr_call(
+     }
+ }
+ 
+-fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
++fn tail_cb_impl(
++    acc: &mut Vec<ast::Expr>,
++    e: &ast::Expr,
++) {
+     match e {
+         ast::Expr::BreakExpr(break_expr) => {
+             if let Some(break_expr_arg) = break_expr.expr() {
  #[cfg(test)]
  mod tests {
      use super::*;

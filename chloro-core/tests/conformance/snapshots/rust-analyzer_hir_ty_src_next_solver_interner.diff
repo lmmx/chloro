@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   78957 bytes
+Chloro size:   81678 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -162,18 +162,6 @@ Rustfmt size:  84055 bytes
      pub fn conjure() -> DbInterner<'db> {
          crate::with_attached_db(|db| DbInterner {
              db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
-         })
-     }
- 
--    pub fn new_with(
--        db: &'db dyn HirDatabase,
--        krate: Option<Crate>,
--        block: Option<BlockId>,
--    ) -> DbInterner<'db> {
-+    pub fn new_with(db: &'db dyn HirDatabase, krate: Option<Crate>, block: Option<BlockId>) -> DbInterner<'db> {
-         DbInterner { db, krate, block }
-     }
- 
      }
  }
  
@@ -199,6 +187,17 @@ Rustfmt size:  84055 bytes
  pub struct DepNodeIndex;
  
  #[derive(Debug)]
+ }
+ 
+ impl<T: std::fmt::Debug> std::fmt::Debug for Placeholder<T> {
+-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut std::fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         if self.universe == UniverseIndex::ROOT {
+             write!(f, "!{:?}", self.bound)
+         } else {
  
  #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
  pub struct AllocId;
@@ -212,6 +211,16 @@ Rustfmt size:  84055 bytes
  #[derive(Debug, Clone, Eq, PartialEq, Hash)]
  pub enum VariantDef {
      Struct(StructId),
+         }
+     }
+ 
+-    pub fn fields(&self, db: &dyn HirDatabase) -> Vec<(Idx<FieldData>, FieldData)> {
++    pub fn fields(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> Vec<(Idx<FieldData>, FieldData)> {
+         let id: VariantId = match self {
+             VariantDef::Struct(it) => (*it).into(),
              VariantDef::Union(it) => (*it).into(),
              VariantDef::Enum(it) => (*it).into(),
          };
@@ -258,7 +267,25 @@ Rustfmt size:  84055 bytes
 -// different tests, oh my).
  impl std::hash::Hash for AdtDefInner {
      #[inline]
-     fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
+-    fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
++    fn hash<H: std::hash::Hasher>(
++        &self,
++        s: &mut H,
++    ) {
+         self.id.hash(s)
+     }
+ }
+ }
+ 
+ impl AdtDef {
+-    pub fn new<'db>(def_id: AdtId, interner: DbInterner<'db>) -> Self {
++    pub fn new<'db>(
++        def_id: AdtId,
++        interner: DbInterner<'db>,
++    ) -> Self {
+         let db = interner.db();
+         let (flags, variants, repr) = match def_id {
+             AdtId::StructId(struct_id) => {
                  (flags, variants, repr)
              }
          };
@@ -276,16 +303,6 @@ Rustfmt size:  84055 bytes
      }
  
      pub fn inner(&self) -> &AdtDefInner {
-         self.inner().flags.is_fundamental
-     }
- 
--    fn struct_tail_ty(
--        self,
--        interner: DbInterner<'db>,
--    ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
-+    fn struct_tail_ty(self, interner: DbInterner<'db>) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
-         let hir_def::AdtId::StructId(struct_id) = self.inner().id else {
-             return None;
          };
          let id: VariantId = struct_id.into();
          let field_types = interner.db().field_types(id);
@@ -293,11 +310,6 @@ Rustfmt size:  84055 bytes
          field_types.iter().last().map(|f| *f.1)
      }
  
--    fn all_field_tys(
--        self,
--        interner: DbInterner<'db>,
--    ) -> EarlyBinder<DbInterner<'db>, impl IntoIterator<Item = Ty<'db>>> {
-+    fn all_field_tys(self, interner: DbInterner<'db>) -> EarlyBinder<DbInterner<'db>, impl IntoIterator<Item = Ty<'db>>> {
          let db = interner.db();
          // FIXME: this is disabled just to match the behavior with chalk right now
          let _field_tys = |id: VariantId| {
@@ -316,12 +328,8 @@ Rustfmt size:  84055 bytes
          EarlyBinder::bind(tys)
      }
  
--    fn sizedness_constraint(
--        self,
--        interner: DbInterner<'db>,
--        sizedness: SizedTraitKind,
--    ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
-+    fn sizedness_constraint(self, interner: DbInterner<'db>, sizedness: SizedTraitKind) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
+         sizedness: SizedTraitKind,
+     ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
          if self.is_struct() {
 -            let tail_ty = self
 -                .all_field_tys(interner)
@@ -332,17 +340,49 @@ Rustfmt size:  84055 bytes
  
              let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
  
-         }
+ }
+ 
+ impl fmt::Debug for AdtDef {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         crate::with_attached_db(|db| match self.inner().id {
+             AdtId::StructId(struct_id) => {
+                 let data = db.struct_signature(struct_id);
+         false
      }
  
--    fn destructor(
--        self,
--        _interner: DbInterner<'db>,
--    ) -> Option<rustc_type_ir::solve::AdtDestructorKind> {
-+    fn destructor(self, _interner: DbInterner<'db>) -> Option<rustc_type_ir::solve::AdtDestructorKind> {
-         // FIXME(next-solver)
-         None
+-    fn feature_bound_holds_in_crate(self, _symbol: ()) -> bool {
++    fn feature_bound_holds_in_crate(
++        self,
++        _symbol: (),
++    ) -> bool {
+         false
      }
+ }
+ }
+ 
+ impl<'db> std::fmt::Debug for InternedWrapperNoDebug<PatternKind<'db>> {
+-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut std::fmt::Formatter<'_>,
++    ) -> std::fmt::Result {
+         self.0.fmt(f)
+     }
+ }
+ 
+ impl<'db> Pattern<'db> {
+-    pub fn new(interner: DbInterner<'db>, kind: PatternKind<'db>) -> Self {
++    pub fn new(
++        interner: DbInterner<'db>,
++        kind: PatternKind<'db>,
++    ) -> Self {
+         Pattern::new_(interner.db(), InternedWrapperNoDebug(kind))
+     }
+ 
  
      fn outer_exclusive_binder(&self) -> rustc_type_ir::DebruijnIndex {
          match self.inner() {
@@ -362,15 +402,6 @@ Rustfmt size:  84055 bytes
      fn kind(self) -> Self::Kind {
          *self.inner()
      }
- }
- 
- impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
--    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
--        relation: &mut R,
--        a: Self,
--        b: Self,
--    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
-+    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
          let tcx = relation.cx();
          match (a.kind(), b.kind()) {
              (
@@ -435,35 +466,6 @@ Rustfmt size:  84055 bytes
      type BoundVarKind = BoundVarKind;
  
      type PredefinedOpaques = PredefinedOpaques<'db>;
- 
--    fn mk_predefined_opaques_in_body(
--        self,
--        data: &[(OpaqueTypeKey<'db>, Self::Ty)],
--    ) -> Self::PredefinedOpaques {
-+    fn mk_predefined_opaques_in_body(self, data: &[(OpaqueTypeKey<'db>, Self::Ty)]) -> Self::PredefinedOpaques {
-         PredefinedOpaques::new_from_iter(self, data.iter().cloned())
-     }
- 
-     type CanonicalVarKinds = CanonicalVars<'db>;
- 
--    fn mk_canonical_var_kinds(
--        self,
--        kinds: &[rustc_type_ir::CanonicalVarKind<Self>],
--    ) -> Self::CanonicalVarKinds {
-+    fn mk_canonical_var_kinds(self, kinds: &[rustc_type_ir::CanonicalVarKind<Self>]) -> Self::CanonicalVarKinds {
-         CanonicalVars::new_from_iter(self, kinds.iter().cloned())
-     }
- 
-     type ExternalConstraints = ExternalConstraints<'db>;
- 
--    fn mk_external_constraints(
--        self,
--        data: rustc_type_ir::solve::ExternalConstraintsData<Self>,
--    ) -> Self::ExternalConstraints {
-+    fn mk_external_constraints(self, data: rustc_type_ir::solve::ExternalConstraintsData<Self>) -> Self::ExternalConstraints {
-         ExternalConstraints::new(self, data)
-     }
- 
      type Tracked<T: fmt::Debug + Clone> = Tracked<T>;
  
      type Ty = Ty<'db>;
@@ -529,7 +531,22 @@ Rustfmt size:  84055 bytes
      type Clauses = Clauses<'db>;
  
      type GenericsOf = Generics;
-     fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
+ 
+     type Features = Features;
+ 
+-    fn mk_args(self, args: &[Self::GenericArg]) -> Self::GenericArgs {
++    fn mk_args(
++        self,
++        args: &[Self::GenericArg],
++    ) -> Self::GenericArgs {
+         GenericArgs::new_from_iter(self, args.iter().cloned())
+     }
+ 
+-    fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
++    fn mk_args_from_iter<I, T>(
++        self,
++        args: I,
++    ) -> T::Output
      where
          I: Iterator<Item = T>,
 -        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
@@ -538,39 +555,63 @@ Rustfmt size:  84055 bytes
          CollectAndApply::collect_and_apply(args, |g| {
              GenericArgs::new_from_iter(self, g.iter().cloned())
          })
- 
-     type UnsizingParams = UnsizingParams;
- 
--    fn mk_tracked<T: fmt::Debug + Clone>(
--        self,
--        data: T,
--        _dep_node: Self::DepNodeIndex,
--    ) -> Self::Tracked<T> {
-+    fn mk_tracked<T: fmt::Debug + Clone>(self, data: T, _dep_node: Self::DepNodeIndex) -> Self::Tracked<T> {
          Tracked(data)
      }
  
+-    fn get_tracked<T: fmt::Debug + Clone>(self, tracked: &Self::Tracked<T>) -> T {
++    fn get_tracked<T: fmt::Debug + Clone>(
++        self,
++        tracked: &Self::Tracked<T>,
++    ) -> T {
+         tracked.0.clone()
+     }
+ 
+-    fn with_cached_task<T>(self, task: impl FnOnce() -> T) -> (T, Self::DepNodeIndex) {
++    fn with_cached_task<T>(
++        self,
++        task: impl FnOnce() -> T,
++    ) -> (T, Self::DepNodeIndex) {
          (task(), DepNodeIndex)
      }
  
--    fn with_global_cache<R>(
--        self,
--        f: impl FnOnce(&mut rustc_type_ir::search_graph::GlobalCache<Self>) -> R,
--    ) -> R {
-+    fn with_global_cache<R>(self, f: impl FnOnce(&mut rustc_type_ir::search_graph::GlobalCache<Self>) -> R) -> R {
-         tls_cache::with_cache(self.db, f)
+         panic!("evaluation shouldn't be concurrent yet")
      }
  
--    fn canonical_param_env_cache_get_or_insert<R>(
--        self,
--        _param_env: Self::ParamEnv,
--        f: impl FnOnce() -> rustc_type_ir::CanonicalParamEnvCacheEntry<Self>,
--        from_entry: impl FnOnce(&rustc_type_ir::CanonicalParamEnvCacheEntry<Self>) -> R,
--    ) -> R {
-+    fn canonical_param_env_cache_get_or_insert<R>(self, _param_env: Self::ParamEnv, f: impl FnOnce() -> rustc_type_ir::CanonicalParamEnvCacheEntry<Self>, from_entry: impl FnOnce(&rustc_type_ir::CanonicalParamEnvCacheEntry<Self>) -> R) -> R {
-         from_entry(&f())
+-    fn expand_abstract_consts<T: rustc_type_ir::TypeFoldable<Self>>(self, _: T) -> T {
++    fn expand_abstract_consts<T: rustc_type_ir::TypeFoldable<Self>>(
++        self,
++        _: T,
++    ) -> T {
+         unreachable!("only used by the old trait solver in rustc");
      }
  
+-    fn generics_of(self, def_id: Self::DefId) -> Self::GenericsOf {
++    fn generics_of(
++        self,
++        def_id: Self::DefId,
++    ) -> Self::GenericsOf {
+         generics(self.db(), def_id)
+     }
+ 
+-    fn variances_of(self, def_id: Self::DefId) -> Self::VariancesOf {
++    fn variances_of(
++        self,
++        def_id: Self::DefId,
++    ) -> Self::VariancesOf {
+         let generic_def = match def_id {
+             SolverDefId::Ctor(Ctor::Enum(def_id)) | SolverDefId::EnumVariantId(def_id) => {
+                 def_id.loc(self.db).parent.into()
+         self.db.variances_of(generic_def)
+     }
+ 
+-    fn type_of(self, def_id: Self::DefId) -> EarlyBinder<Self, Self::Ty> {
++    fn type_of(
++        self,
++        def_id: Self::DefId,
++    ) -> EarlyBinder<Self, Self::Ty> {
+         match def_id {
+             SolverDefId::TypeAliasId(id) => {
+                 use hir_def::Lookup;
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -581,27 +622,24 @@ Rustfmt size:  84055 bytes
              }
              _ => panic!("Unexpected def_id `{def_id:?}` provided for `type_of`"),
          }
-         }
      }
  
--    fn alias_term_kind(
--        self,
--        alias: rustc_type_ir::AliasTerm<Self>,
--    ) -> rustc_type_ir::AliasTermKind {
-+    fn alias_term_kind(self, alias: rustc_type_ir::AliasTerm<Self>) -> rustc_type_ir::AliasTermKind {
+-    fn adt_def(self, def_id: Self::AdtId) -> Self::AdtDef {
++    fn adt_def(
++        self,
++        def_id: Self::AdtId,
++    ) -> Self::AdtDef {
+         AdtDef::new(def_id.0, self)
+     }
+ 
+-    fn alias_ty_kind(self, alias: rustc_type_ir::AliasTy<Self>) -> AliasTyKind {
++    fn alias_ty_kind(
++        self,
++        alias: rustc_type_ir::AliasTy<Self>,
++    ) -> AliasTyKind {
          match alias.def_id {
-             SolverDefId::InternedOpaqueTyId(_) => AliasTermKind::OpaqueTy,
+             SolverDefId::InternedOpaqueTyId(_) => AliasTyKind::Opaque,
              SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
-         }
-     }
- 
--    fn trait_ref_and_own_args_for_alias(
--        self,
--        def_id: Self::DefId,
--        args: Self::GenericArgs,
--    ) -> (rustc_type_ir::TraitRef<Self>, Self::GenericArgsSlice) {
-+    fn trait_ref_and_own_args_for_alias(self, def_id: Self::DefId, args: Self::GenericArgs) -> (rustc_type_ir::TraitRef<Self>, Self::GenericArgsSlice) {
-         let trait_def_id = self.parent(def_id);
          let trait_generics = self.generics_of(trait_def_id);
          let trait_args = GenericArgs::new_from_iter(
              self,
@@ -619,23 +657,34 @@ Rustfmt size:  84055 bytes
 +        (TraitRef::new_from_args(self, trait_def_id.try_into().unwrap(), trait_args), alias_args)
      }
  
-     fn check_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) -> bool {
+-    fn check_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) -> bool {
++    fn check_args_compatible(
++        self,
++        _def_id: Self::DefId,
++        _args: Self::GenericArgs,
++    ) -> bool {
+         // FIXME
          true
      }
  
 -    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {}
-+    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
++    fn debug_assert_args_compatible(
++        self,
++        _def_id: Self::DefId,
++        _args: Self::GenericArgs,
++    ) {
 +    }
  
--    fn debug_assert_existential_args_compatible(
--        self,
--        _def_id: Self::DefId,
--        _args: Self::GenericArgs,
--    ) {
-+    fn debug_assert_existential_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
+     fn debug_assert_existential_args_compatible(
+         self,
+     ) {
      }
  
-     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
+-    fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
++    fn mk_type_list_from_iter<I, T>(
++        self,
++        args: I,
++    ) -> T::Output
      where
          I: Iterator<Item = T>,
 -        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>,
@@ -644,7 +693,11 @@ Rustfmt size:  84055 bytes
          CollectAndApply::collect_and_apply(args, |g| Tys::new_from_iter(self, g.iter().cloned()))
      }
  
-     fn parent(self, def_id: Self::DefId) -> Self::DefId {
+-    fn parent(self, def_id: Self::DefId) -> Self::DefId {
++    fn parent(
++        self,
++        def_id: Self::DefId,
++    ) -> Self::DefId {
          use hir_def::Lookup;
 -
          let container = match def_id {
@@ -657,17 +710,36 @@ Rustfmt size:  84055 bytes
          match container {
              ItemContainerId::ImplId(it) => it.into(),
              ItemContainerId::TraitId(it) => it.into(),
-         Features
-     }
- 
--    fn fn_sig(
--        self,
--        def_id: Self::FunctionId,
--    ) -> EarlyBinder<Self, rustc_type_ir::Binder<Self, rustc_type_ir::FnSig<Self>>> {
-+    fn fn_sig(self, def_id: Self::FunctionId) -> EarlyBinder<Self, rustc_type_ir::Binder<Self, rustc_type_ir::FnSig<Self>>> {
          self.db().callable_item_signature(def_id.0)
      }
  
+-    fn coroutine_movability(self, def_id: Self::CoroutineId) -> rustc_ast_ir::Movability {
++    fn coroutine_movability(
++        self,
++        def_id: Self::CoroutineId,
++    ) -> rustc_ast_ir::Movability {
+         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
+         // the current infer query, except with revealed opaques - is it rare enough to not matter?
+         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
+         }
+     }
+ 
+-    fn coroutine_for_closure(self, def_id: Self::CoroutineClosureId) -> Self::CoroutineId {
++    fn coroutine_for_closure(
++        self,
++        def_id: Self::CoroutineClosureId,
++    ) -> Self::CoroutineId {
+         def_id
+     }
+ 
+-    fn generics_require_sized_self(self, def_id: Self::DefId) -> bool {
++    fn generics_require_sized_self(
++        self,
++        def_id: Self::DefId,
++    ) -> bool {
+         let sized_trait =
+             LangItem::Sized.resolve_trait(self.db(), self.krate.expect("Must have self.krate"));
+         let Some(sized_id) = sized_trait else {
              return false; /* No Sized trait, can't require it! */
          };
          let sized_def_id = sized_id.into();
@@ -675,25 +747,6 @@ Rustfmt size:  84055 bytes
          // Search for a predicate like `Self : Sized` amongst the trait bounds.
          let predicates = self.predicates_of(def_id);
          elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
-     }
- 
-     #[tracing::instrument(skip(self), ret)]
--    fn item_bounds(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-+    fn item_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-         explicit_item_bounds(self, def_id).map_bound(|bounds| {
-             Clauses::new_from_iter(self, elaborate(self, bounds).collect::<Vec<_>>())
-         })
-     }
- 
-     #[tracing::instrument(skip(self), ret)]
--    fn item_self_bounds(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-+    fn item_self_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
          explicit_item_bounds(self, def_id).map_bound(|bounds| {
              Clauses::new_from_iter(
                  self,
@@ -704,12 +757,8 @@ Rustfmt size:  84055 bytes
              )
          })
      }
- 
--    fn item_non_self_bounds(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-+    fn item_non_self_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         def_id: Self::DefId,
+     ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
          let all_bounds: FxHashSet<_> = self.item_bounds(def_id).skip_binder().into_iter().collect();
 -        let own_bounds: FxHashSet<_> = self
 -            .item_self_bounds(def_id)
@@ -721,40 +770,16 @@ Rustfmt size:  84055 bytes
          if all_bounds.len() == own_bounds.len() {
              EarlyBinder::bind(Clauses::new_from_iter(self, []))
          } else {
-     }
- 
-     #[tracing::instrument(level = "debug", skip(self), ret)]
--    fn predicates_of(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-+    fn predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
-         let predicates = self.db().generic_predicates(def_id.try_into().unwrap());
-         let predicates: Vec<_> = predicates.iter().cloned().collect();
-         EarlyBinder::bind(predicates.into_iter())
-     }
- 
-     #[tracing::instrument(level = "debug", skip(self), ret)]
--    fn own_predicates_of(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         self,
+         def_id: Self::DefId,
+     ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
 -        let predicates = self
 -            .db()
 -            .generic_predicates_without_parent(def_id.try_into().unwrap());
-+    fn own_predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
 +        let predicates = self.db().generic_predicates_without_parent(def_id.try_into().unwrap());
          let predicates: Vec<_> = predicates.iter().cloned().collect();
          EarlyBinder::bind(predicates.into_iter())
      }
- 
-     #[tracing::instrument(skip(self), ret)]
--    fn explicit_super_predicates_of(
--        self,
--        def_id: Self::TraitId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
-+    fn explicit_super_predicates_of(self, def_id: Self::TraitId) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
-         let is_self = |ty: Ty<'db>| match ty.kind() {
              rustc_type_ir::TyKind::Param(param) => param.index == 0,
              _ => false,
          };
@@ -762,17 +787,6 @@ Rustfmt size:  84055 bytes
          let predicates: Vec<(Clause<'db>, Span)> = self
              .db()
              .generic_predicates(def_id.0.into())
-     }
- 
-     #[tracing::instrument(skip(self), ret)]
--    fn explicit_implied_predicates_of(
--        self,
--        def_id: Self::DefId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
-+    fn explicit_implied_predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
-         fn is_self_or_assoc(ty: Ty<'_>) -> bool {
-             match ty.kind() {
-                 rustc_type_ir::TyKind::Param(param) => param.index == 0,
                  _ => false,
              }
          }
@@ -780,52 +794,93 @@ Rustfmt size:  84055 bytes
          let predicates: Vec<(Clause<'db>, Span)> = self
              .db()
              .generic_predicates(def_id.try_into().unwrap())
-         EarlyBinder::bind(predicates)
-     }
- 
--    fn impl_super_outlives(
--        self,
--        impl_id: Self::ImplId,
--    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         self,
+         impl_id: Self::ImplId,
+     ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
 -        let trait_ref = self
 -            .db()
 -            .impl_trait(impl_id.0)
 -            .expect("expected an impl of trait");
-+    fn impl_super_outlives(self, impl_id: Self::ImplId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
 +        let trait_ref = self.db().impl_trait(impl_id.0).expect("expected an impl of trait");
          trait_ref.map_bound(|trait_ref| {
              let clause: Clause<'_> = trait_ref.upcast(self);
              Clauses::new_from_iter(
+         EarlyBinder::bind([unimplemented!()])
      }
  
-     #[expect(unreachable_code)]
--    fn const_conditions(
--        self,
--        _def_id: Self::DefId,
--    ) -> EarlyBinder<
-+    fn const_conditions(self, _def_id: Self::DefId) -> EarlyBinder<
-         Self,
-         impl IntoIterator<Item = rustc_type_ir::Binder<Self, rustc_type_ir::TraitRef<Self>>>,
-     > {
+-    fn has_target_features(self, _def_id: Self::FunctionId) -> bool {
++    fn has_target_features(
++        self,
++        _def_id: Self::FunctionId,
++    ) -> bool {
+         false
      }
  
-     fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
+-    fn require_lang_item(self, lang_item: SolverLangItem) -> Self::DefId {
++    fn require_lang_item(
++        self,
++        lang_item: SolverLangItem,
++    ) -> Self::DefId {
+         let lang_item = match lang_item {
+             SolverLangItem::AsyncFnKindUpvars => unimplemented!(),
+             SolverLangItem::AsyncFnOnceOutput => LangItem::AsyncFnOnceOutput,
+         }
+     }
+ 
+-    fn require_trait_lang_item(self, lang_item: SolverTraitLangItem) -> TraitIdWrapper {
++    fn require_trait_lang_item(
++        self,
++        lang_item: SolverTraitLangItem,
++    ) -> TraitIdWrapper {
+         let lang_item = match lang_item {
+             SolverTraitLangItem::AsyncFn => LangItem::AsyncFn,
+             SolverTraitLangItem::AsyncFnKindHelper => unimplemented!(),
+             .into()
+     }
+ 
+-    fn require_adt_lang_item(self, lang_item: SolverAdtLangItem) -> AdtIdWrapper {
++    fn require_adt_lang_item(
++        self,
++        lang_item: SolverAdtLangItem,
++    ) -> AdtIdWrapper {
+         let lang_item = match lang_item {
+             SolverAdtLangItem::Option => LangItem::Option,
+             SolverAdtLangItem::Poll => LangItem::Poll,
+             .into()
+     }
+ 
+-    fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
 -        self.as_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
 -        })
++    fn is_lang_item(
++        self,
++        def_id: Self::DefId,
++        lang_item: SolverLangItem,
++    ) -> bool {
 +        self.as_lang_item(def_id)
 +            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
-     fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
+-    fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
 -        self.as_trait_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
 -        })
++    fn is_trait_lang_item(
++        self,
++        def_id: Self::TraitId,
++        lang_item: SolverTraitLangItem,
++    ) -> bool {
 +        self.as_trait_lang_item(def_id)
 +            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
-     fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
+-    fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
++    fn is_adt_lang_item(
++        self,
++        def_id: Self::AdtId,
++        lang_item: SolverAdtLangItem,
++    ) -> bool {
          // FIXME: derive PartialEq on SolverTraitLangItem
 -        self.as_adt_lang_item(def_id).map_or(false, |l| {
 -            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
@@ -834,7 +889,45 @@ Rustfmt size:  84055 bytes
 +            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
      }
  
-     fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
+-    fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
++    fn as_lang_item(
++        self,
++        def_id: Self::DefId,
++    ) -> Option<SolverLangItem> {
+         let def_id: AttrDefId = match def_id {
+             SolverDefId::TraitId(id) => id.into(),
+             SolverDefId::TypeAliasId(id) => id.into(),
+         )
+     }
+ 
+-    fn as_trait_lang_item(self, def_id: Self::TraitId) -> Option<SolverTraitLangItem> {
++    fn as_trait_lang_item(
++        self,
++        def_id: Self::TraitId,
++    ) -> Option<SolverTraitLangItem> {
+         let def_id: AttrDefId = def_id.0.into();
+         let lang_item = self.db().lang_attr(def_id)?;
+         as_lang_item!(
+         )
+     }
+ 
+-    fn as_adt_lang_item(self, def_id: Self::AdtId) -> Option<SolverAdtLangItem> {
++    fn as_adt_lang_item(
++        self,
++        def_id: Self::AdtId,
++    ) -> Option<SolverAdtLangItem> {
+         let def_id: AttrDefId = def_id.0.into();
+         let lang_item = self.db().lang_attr(def_id)?;
+         as_lang_item!(
+         )
+     }
+ 
+-    fn associated_type_def_ids(self, def_id: Self::DefId) -> impl IntoIterator<Item = Self::DefId> {
++    fn associated_type_def_ids(
++        self,
++        def_id: Self::DefId,
++    ) -> impl IntoIterator<Item = Self::DefId> {
+         let trait_ = match def_id {
              SolverDefId::TraitId(id) => id,
              _ => unreachable!(),
          };
@@ -845,16 +938,7 @@ Rustfmt size:  84055 bytes
 +        trait_.trait_items(self.db()).associated_types().map(|id| id.into())
      }
  
--    fn for_each_relevant_impl(
--        self,
--        trait_: Self::TraitId,
--        self_ty: Self::Ty,
--        mut f: impl FnMut(Self::ImplId),
--    ) {
-+    fn for_each_relevant_impl(self, trait_: Self::TraitId, self_ty: Self::Ty, mut f: impl FnMut(Self::ImplId)) {
-         let trait_ = trait_.0;
-         let self_ty_fp = TyFingerprint::for_trait_impl(self_ty);
-         let fps: &[TyFingerprint] = match self_ty.kind() {
+     fn for_each_relevant_impl(
              TyKind::Infer(InferTy::FloatVar(..)) => &ALL_FLOAT_FPS,
              _ => self_ty_fp.as_slice(),
          };
@@ -882,24 +966,135 @@ Rustfmt size:  84055 bytes
                              });
                              if contains_errors {
                                  continue;
+         }
+     }
  
-     fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
+-    fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
++    fn for_each_blanket_impl(
++        self,
++        trait_def_id: Self::TraitId,
++        mut f: impl FnMut(Self::ImplId),
++    ) {
          let Some(krate) = self.krate else { return };
 -
          for impls in self.db.trait_impls_in_deps(krate).iter() {
              for impl_id in impls.for_trait(trait_def_id.0) {
                  let impl_data = self.db.impl_signature(impl_id);
+         }
      }
  
-     #[tracing::instrument(skip(self), ret)]
--    fn impl_trait_ref(
--        self,
--        impl_id: Self::ImplId,
--    ) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
-+    fn impl_trait_ref(self, impl_id: Self::ImplId) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
-         let db = self.db();
-         db.impl_trait(impl_id.0)
-             // ImplIds for impls where the trait ref can't be resolved should never reach trait solving
+-    fn has_item_definition(self, _def_id: Self::DefId) -> bool {
++    fn has_item_definition(
++        self,
++        _def_id: Self::DefId,
++    ) -> bool {
+         // FIXME(next-solver): should check if the associated item has a value.
+         true
+     }
+ 
+-    fn impl_is_default(self, impl_def_id: Self::ImplId) -> bool {
++    fn impl_is_default(
++        self,
++        impl_def_id: Self::ImplId,
++    ) -> bool {
+         self.db.impl_signature(impl_def_id.0).is_default()
+     }
+ 
+             .expect("invalid impl passed to trait solver")
+     }
+ 
+-    fn impl_polarity(self, impl_id: Self::ImplId) -> rustc_type_ir::ImplPolarity {
++    fn impl_polarity(
++        self,
++        impl_id: Self::ImplId,
++    ) -> rustc_type_ir::ImplPolarity {
+         let impl_data = self.db().impl_signature(impl_id.0);
+         if impl_data.flags.contains(ImplFlags::NEGATIVE) {
+             ImplPolarity::Negative
+         }
+     }
+ 
+-    fn trait_is_auto(self, trait_: Self::TraitId) -> bool {
++    fn trait_is_auto(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
+         let trait_data = self.db().trait_signature(trait_.0);
+         trait_data.flags.contains(TraitFlags::AUTO)
+     }
+ 
+-    fn trait_is_alias(self, trait_: Self::TraitId) -> bool {
++    fn trait_is_alias(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
+         let trait_data = self.db().trait_signature(trait_.0);
+         trait_data.flags.contains(TraitFlags::ALIAS)
+     }
+ 
+-    fn trait_is_dyn_compatible(self, trait_: Self::TraitId) -> bool {
++    fn trait_is_dyn_compatible(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
+         crate::dyn_compatibility::dyn_compatibility(self.db(), trait_.0).is_none()
+     }
+ 
+-    fn trait_is_fundamental(self, trait_: Self::TraitId) -> bool {
++    fn trait_is_fundamental(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
+         let trait_data = self.db().trait_signature(trait_.0);
+         trait_data.flags.contains(TraitFlags::FUNDAMENTAL)
+     }
+ 
+-    fn trait_may_be_implemented_via_object(self, _trait_def_id: Self::TraitId) -> bool {
++    fn trait_may_be_implemented_via_object(
++        self,
++        _trait_def_id: Self::TraitId,
++    ) -> bool {
+         // FIXME(next-solver): should check the `TraitFlags` for
+         // the `#[rustc_do_not_implement_via_object]` flag
+         true
+     }
+ 
+-    fn is_impl_trait_in_trait(self, _def_id: Self::DefId) -> bool {
++    fn is_impl_trait_in_trait(
++        self,
++        _def_id: Self::DefId,
++    ) -> bool {
+         // FIXME(next-solver)
+         false
+     }
+ 
+-    fn delay_bug(self, msg: impl ToString) -> Self::ErrorGuaranteed {
++    fn delay_bug(
++        self,
++        msg: impl ToString,
++    ) -> Self::ErrorGuaranteed {
+         panic!("Bug encountered in next-trait-solver: {}", msg.to_string())
+     }
+ 
+-    fn is_general_coroutine(self, def_id: Self::CoroutineId) -> bool {
++    fn is_general_coroutine(
++        self,
++        def_id: Self::CoroutineId,
++    ) -> bool {
+         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
+         // the current infer query, except with revealed opaques - is it rare enough to not matter?
+         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
+         )
+     }
+ 
+-    fn coroutine_is_async(self, def_id: Self::CoroutineId) -> bool {
++    fn coroutine_is_async(
++        self,
++        def_id: Self::CoroutineId,
++    ) -> bool {
+         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
+         // the current infer query, except with revealed opaques - is it rare enough to not matter?
+         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
          let body = self.db.body(owner);
          matches!(
              body[expr_id],
@@ -912,7 +1107,29 @@ Rustfmt size:  84055 bytes
          )
      }
  
-     fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
+-    fn coroutine_is_gen(self, _coroutine_def_id: Self::CoroutineId) -> bool {
++    fn coroutine_is_gen(
++        self,
++        _coroutine_def_id: Self::CoroutineId,
++    ) -> bool {
+         // We don't handle gen coroutines yet.
+         false
+     }
+ 
+-    fn coroutine_is_async_gen(self, _coroutine_def_id: Self::CoroutineId) -> bool {
++    fn coroutine_is_async_gen(
++        self,
++        _coroutine_def_id: Self::CoroutineId,
++    ) -> bool {
+         // We don't handle gen coroutines yet.
+         false
+     }
+ 
+-    fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
++    fn unsizing_params_for_adt(
++        self,
++        id: Self::AdtId,
++    ) -> Self::UnsizingParams {
          let def = AdtDef::new(id.0, self);
          let num_params = self.generics_of(id.into()).count();
 -
@@ -947,14 +1164,6 @@ Rustfmt size:  84055 bytes
          UnsizingParams(unsizing_params)
      }
  
--    fn anonymize_bound_vars<T: rustc_type_ir::TypeFoldable<Self>>(
--        self,
--        value: rustc_type_ir::Binder<Self, T>,
--    ) -> rustc_type_ir::Binder<Self, T> {
-+    fn anonymize_bound_vars<T: rustc_type_ir::TypeFoldable<Self>>(self, value: rustc_type_ir::Binder<Self, T>) -> rustc_type_ir::Binder<Self, T> {
-         struct Anonymize<'a, 'db> {
-             interner: DbInterner<'db>,
-             map: &'a mut FxIndexMap<BoundVar, BoundVarKind>,
                  Const::new_bound(self.interner, DebruijnIndex::ZERO, BoundConst { var })
              }
          }
@@ -968,6 +1177,26 @@ Rustfmt size:  84055 bytes
          let inner = self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate);
          let bound_vars = CollectAndApply::collect_and_apply(map.into_values(), |xs| {
              BoundVarKinds::new_from_iter(self, xs.iter().cloned())
+         Binder::bind_with_vars(inner, bound_vars)
+     }
+ 
+-    fn opaque_types_defined_by(self, def_id: Self::LocalDefId) -> Self::LocalDefIds {
++    fn opaque_types_defined_by(
++        self,
++        def_id: Self::LocalDefId,
++    ) -> Self::LocalDefIds {
+         let Ok(def_id) = DefWithBodyId::try_from(def_id) else {
+             return SolverDefIds::default();
+         };
+         SolverDefIds::new_from_iter(self, result)
+     }
+ 
+-    fn opaque_types_and_coroutines_defined_by(self, def_id: Self::LocalDefId) -> Self::LocalDefIds {
++    fn opaque_types_and_coroutines_defined_by(
++        self,
++        def_id: Self::LocalDefId,
++    ) -> Self::LocalDefIds {
+         let Ok(def_id) = DefWithBodyId::try_from(def_id) else {
              return SolverDefIds::default();
          };
          let mut result = Vec::new();
@@ -984,17 +1213,23 @@ Rustfmt size:  84055 bytes
          SolverDefIds::new_from_iter(self, result)
      }
  
+-    fn alias_has_const_conditions(self, _def_id: Self::DefId) -> bool {
++    fn alias_has_const_conditions(
++        self,
++        _def_id: Self::DefId,
++    ) -> bool {
+         // FIXME(next-solver)
          false
      }
+         EarlyBinder::bind([])
+     }
  
--    fn explicit_implied_const_bounds(
--        self,
--        _def_id: Self::DefId,
--    ) -> EarlyBinder<
-+    fn explicit_implied_const_bounds(self, _def_id: Self::DefId) -> EarlyBinder<
-         Self,
-         impl IntoIterator<Item = rustc_type_ir::Binder<Self, rustc_type_ir::TraitRef<Self>>>,
-     > {
+-    fn fn_is_const(self, id: Self::FunctionId) -> bool {
++    fn fn_is_const(
++        self,
++        id: Self::FunctionId,
++    ) -> bool {
+         let id = match id.0 {
              CallableDefId::FunctionId(id) => id,
              _ => return false,
          };
@@ -1005,85 +1240,105 @@ Rustfmt size:  84055 bytes
 +        self.db().function_signature(id).flags.contains(FnFlags::CONST)
      }
  
-     fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
+-    fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
++    fn impl_is_const(
++        self,
++        _def_id: Self::ImplId,
++    ) -> bool {
          false
      }
  
--    fn opt_alias_variances(
--        self,
--        _kind: impl Into<rustc_type_ir::AliasTermKind>,
--        _def_id: Self::DefId,
--    ) -> Option<Self::VariancesOf> {
-+    fn opt_alias_variances(self, _kind: impl Into<rustc_type_ir::AliasTermKind>, _def_id: Self::DefId) -> Option<Self::VariancesOf> {
          None
      }
  
-         }
+-    fn type_of_opaque_hir_typeck(self, def_id: Self::LocalDefId) -> EarlyBinder<Self, Self::Ty> {
++    fn type_of_opaque_hir_typeck(
++        self,
++        def_id: Self::LocalDefId,
++    ) -> EarlyBinder<Self, Self::Ty> {
+         match def_id {
+             SolverDefId::InternedOpaqueTyId(opaque) => {
+                 let impl_trait_id = self.db().lookup_intern_impl_trait_id(opaque);
+         }))
      }
  
--    fn coroutine_hidden_types(
--        self,
--        _def_id: Self::CoroutineId,
--    ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
-+    fn coroutine_hidden_types(self, _def_id: Self::CoroutineId) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
-         // FIXME: Actually implement this.
-         EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
-             types: Tys::default(),
-     }
- 
-     fn is_default_trait(self, def_id: Self::TraitId) -> bool {
+-    fn is_default_trait(self, def_id: Self::TraitId) -> bool {
 -        self.as_trait_lang_item(def_id)
 -            .map_or(false, |l| matches!(l, SolverTraitLangItem::Sized))
++    fn is_default_trait(
++        self,
++        def_id: Self::TraitId,
++    ) -> bool {
 +        self.as_trait_lang_item(def_id).map_or(false, |l| matches!(l, SolverTraitLangItem::Sized))
      }
  
-     fn trait_is_coinductive(self, trait_: Self::TraitId) -> bool {
+-    fn trait_is_coinductive(self, trait_: Self::TraitId) -> bool {
 -        self.db()
 -            .trait_signature(trait_.0)
 -            .flags
 -            .contains(TraitFlags::COINDUCTIVE)
++    fn trait_is_coinductive(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
 +        self.db().trait_signature(trait_.0).flags.contains(TraitFlags::COINDUCTIVE)
      }
  
-     fn trait_is_unsafe(self, trait_: Self::TraitId) -> bool {
+-    fn trait_is_unsafe(self, trait_: Self::TraitId) -> bool {
 -        self.db()
 -            .trait_signature(trait_.0)
 -            .flags
 -            .contains(TraitFlags::UNSAFE)
++    fn trait_is_unsafe(
++        self,
++        trait_: Self::TraitId,
++    ) -> bool {
 +        self.db().trait_signature(trait_.0).flags.contains(TraitFlags::UNSAFE)
      }
  
-     fn impl_self_is_guaranteed_unsized(self, _def_id: Self::ImplId) -> bool {
+-    fn impl_self_is_guaranteed_unsized(self, _def_id: Self::ImplId) -> bool {
++    fn impl_self_is_guaranteed_unsized(
++        self,
++        _def_id: Self::ImplId,
++    ) -> bool {
          false
      }
  
--    fn impl_specializes(
--        self,
--        specializing_impl_def_id: Self::ImplId,
--        parent_impl_def_id: Self::ImplId,
--    ) -> bool {
-+    fn impl_specializes(self, specializing_impl_def_id: Self::ImplId, parent_impl_def_id: Self::ImplId) -> bool {
-         crate::specialization::specializes(
-             self.db,
-             specializing_impl_def_id.0,
      }
  
      type Probe = rustc_type_ir::solve::inspect::Probe<DbInterner<'db>>;
+-    fn mk_probe(self, probe: rustc_type_ir::solve::inspect::Probe<Self>) -> Self::Probe {
 +
-     fn mk_probe(self, probe: rustc_type_ir::solve::inspect::Probe<Self>) -> Self::Probe {
++    fn mk_probe(
++        self,
++        probe: rustc_type_ir::solve::inspect::Probe<Self>,
++    ) -> Self::Probe {
          probe
      }
--    fn evaluate_root_goal_for_proof_tree_raw(
--        self,
--        canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>,
--    ) -> (rustc_type_ir::solve::QueryResult<Self>, Self::Probe) {
 +
-+    fn evaluate_root_goal_for_proof_tree_raw(self, canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>) -> (rustc_type_ir::solve::QueryResult<Self>, Self::Probe) {
-         rustc_next_trait_solver::solve::evaluate_root_goal_for_proof_tree_raw_provider::<
-             SolverContext<'db>,
-             Self,
+     fn evaluate_root_goal_for_proof_tree_raw(
+         self,
+         canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>,
+         >(self, canonical_goal)
+     }
+ 
+-    fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
++    fn is_sizedness_trait(
++        self,
++        def_id: Self::TraitId,
++    ) -> bool {
+         matches!(
+             self.as_trait_lang_item(def_id),
+             Some(SolverTraitLangItem::Sized | SolverTraitLangItem::MetaSized)
+ }
+ 
  impl<'db> DbInterner<'db> {
-     pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
+-    pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
++    pub fn shift_bound_var_indices<T>(
++        self,
++        bound_vars: usize,
++        value: T,
++    ) -> T
      where
 -        T: rustc_type_ir::TypeFoldable<Self>,
 -    {
@@ -1124,38 +1379,8 @@ Rustfmt size:  84055 bytes
                  },
              },
          )
-     }
- 
--    pub fn replace_escaping_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(
--        self,
--        value: T,
--        delegate: impl BoundVarReplacerDelegate<'db>,
--    ) -> T {
-+    pub fn replace_escaping_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(self, value: T, delegate: impl BoundVarReplacerDelegate<'db>) -> T {
-         if !value.has_escaping_bound_vars() {
-             value
-         } else {
-         }
-     }
- 
--    pub fn replace_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(
--        self,
--        value: Binder<'db, T>,
--        delegate: impl BoundVarReplacerDelegate<'db>,
--    ) -> T {
-+    pub fn replace_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(self, value: Binder<'db, T>, delegate: impl BoundVarReplacerDelegate<'db>) -> T {
-         self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate)
-     }
- 
--    pub fn mk_fn_sig<I>(
--        self,
--        inputs: I,
--        output: Ty<'db>,
--        c_variadic: bool,
--        safety: Safety,
--        abi: FnAbi,
--    ) -> FnSig<'db>
-+    pub fn mk_fn_sig<I>(self, inputs: I, output: Ty<'db>, c_variadic: bool, safety: Safety, abi: FnAbi) -> FnSig<'db>
+         abi: FnAbi,
+     ) -> FnSig<'db>
      where
 -        I: IntoIterator<Item = Ty<'db>>,
 -    {
@@ -1200,7 +1425,12 @@ Rustfmt size:  84055 bytes
 -
      impl Attached {
          #[inline]
-         fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+-        fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
++        fn attach<R>(
++            &self,
++            db: &dyn HirDatabase,
++            op: impl FnOnce() -> R,
++        ) -> R {
              struct DbGuard<'s> {
                  state: Option<&'s Attached>,
              }
@@ -1230,6 +1460,15 @@ Rustfmt size:  84055 bytes
              let _guard = DbGuard::new(self, db);
              op()
          }
+ 
+         #[inline]
+-        fn attach_allow_change<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
++        fn attach_allow_change<R>(
++            &self,
++            db: &dyn HirDatabase,
++            op: impl FnOnce() -> R,
++        ) -> R {
+             struct DbGuard<'s> {
                  state: &'s Attached,
                  prev: Option<NonNull<dyn HirDatabase>>,
              }
@@ -1258,12 +1497,16 @@ Rustfmt size:  84055 bytes
          }
  
          #[inline]
-         fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
+-        fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
 -            let db = self
 -                .database
 -                .get()
 -                .expect("Try to use attached db, but not db is attached");
 -
++        fn with<R>(
++            &self,
++            op: impl FnOnce(&dyn HirDatabase) -> R,
++        ) -> R {
 +            let db = self.database.get().expect("Try to use attached db, but not db is attached");
              // SAFETY: The db is attached, so it must be valid.
              op(unsafe { db.as_ref() })
@@ -1275,12 +1518,20 @@ Rustfmt size:  84055 bytes
 -    }
 -
      #[inline]
-     pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+-    pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
++    pub fn attach_db<R>(
++        db: &dyn HirDatabase,
++        op: impl FnOnce() -> R,
++    ) -> R {
          GLOBAL_DB.with(|global_db| global_db.attach(db, op))
      }
 -
      #[inline]
-     pub fn attach_db_allow_change<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+-    pub fn attach_db_allow_change<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
++    pub fn attach_db_allow_change<R>(
++        db: &dyn HirDatabase,
++        op: impl FnOnce() -> R,
++    ) -> R {
          GLOBAL_DB.with(|global_db| global_db.attach_allow_change(db, op))
      }
 -
@@ -1307,13 +1558,9 @@ Rustfmt size:  84055 bytes
 -        static GLOBAL_CACHE: RefCell<Option<Cache>> = const { RefCell::new(None) };
 -    }
 -
--    pub(super) fn with_cache<'db, T>(
--        db: &'db dyn HirDatabase,
--        f: impl FnOnce(&mut GlobalCache<DbInterner<'db>>) -> T,
--    ) -> T {
-+    pub(super) fn with_cache<'db, T>(db: &'db dyn HirDatabase, f: impl FnOnce(&mut GlobalCache<DbInterner<'db>>) -> T) -> T {
-         GLOBAL_CACHE.with_borrow_mut(|handle| {
-             let (db_nonce, revision) = db.nonce_and_revision();
+     pub(super) fn with_cache<'db, T>(
+         db: &'db dyn HirDatabase,
+         f: impl FnOnce(&mut GlobalCache<DbInterner<'db>>) -> T,
              let handle = match handle {
                  Some(handle) => {
                      if handle.revision != revision || db_nonce != handle.db_nonce {

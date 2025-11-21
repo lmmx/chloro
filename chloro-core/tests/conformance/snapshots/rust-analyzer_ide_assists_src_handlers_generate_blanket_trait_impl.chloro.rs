@@ -19,7 +19,10 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn generate_blanket_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_blanket_trait_impl(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let traitd = ast::Trait::cast(name.syntax().parent()?)?;
     if existing_any_impl(&traitd, &ctx.sema).is_some() {
@@ -100,7 +103,10 @@ pub(crate) fn generate_blanket_trait_impl(acc: &mut Assists, ctx: &AssistContext
     Some(())
 }
 
-fn existing_any_impl(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<hir::Impl> {
+fn existing_any_impl(
+    traitd: &ast::Trait,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<hir::Impl> {
     let db = sema.db;
     let traitd = sema.to_def(traitd)?;
     traitd
@@ -110,7 +116,10 @@ fn existing_any_impl(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) ->
         .find(|impl_| impl_.trait_(db).is_some_and(|it| it == traitd))
 }
 
-fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
+fn has_sized(
+    traitd: &ast::Trait,
+    sema: &Semantics<'_, RootDatabase>,
+) -> bool {
     if let Some(sized) = find_bound("Sized", traitd.type_bound_list()) {
         sized.question_mark_token().is_none()
     } else if let Some(is_sized) = where_clause_sized(traitd.where_clause()) {
@@ -121,7 +130,10 @@ fn has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> bool {
     }
 }
 
-fn super_traits_has_sized(traitd: &ast::Trait, sema: &Semantics<'_, RootDatabase>) -> Option<bool> {
+fn super_traits_has_sized(
+    traitd: &ast::Trait,
+    sema: &Semantics<'_, RootDatabase>,
+) -> Option<bool> {
     let traitd = sema.to_def(traitd)?;
     let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
     Some(traitd.all_supertraits(sema.db).contains(&sized))
@@ -168,7 +180,10 @@ fn where_clause_sized(where_clause: Option<ast::WhereClause>) -> Option<bool> {
     })
 }
 
-fn apply_sized(has_sized: bool, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBoundList> {
+fn apply_sized(
+    has_sized: bool,
+    bounds: Option<ast::TypeBoundList>,
+) -> Option<ast::TypeBoundList> {
     if has_sized {
         return bounds;
     }
@@ -201,11 +216,17 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
     make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
 }
 
-fn find_bound(s: &str, bounds: Option<ast::TypeBoundList>) -> Option<ast::TypeBound> {
+fn find_bound(
+    s: &str,
+    bounds: Option<ast::TypeBoundList>,
+) -> Option<ast::TypeBound> {
     bounds.into_iter().flat_map(|bounds| bounds.bounds()).find(|bound| ty_bound_is(bound, s))
 }
 
-fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
+fn ty_bound_is(
+    bound: &ast::TypeBound,
+    s: &str,
+) -> bool {
     matches!(bound.ty(),
         Some(ast::Type::PathType(ty)) if ty.path()
             .and_then(|path| path.segment())
@@ -213,7 +234,10 @@ fn ty_bound_is(bound: &ast::TypeBound, s: &str) -> bool {
             .is_some_and(|name| name.text() == s))
 }
 
-fn todo_fn(f: &ast::Fn, config: &AssistConfig) -> ast::Fn {
+fn todo_fn(
+    f: &ast::Fn,
+    config: &AssistConfig,
+) -> ast::Fn {
     let params = f.param_list().unwrap_or_else(|| make::param_list(None, None));
     make::fn_(
         cfg_attrs(f),

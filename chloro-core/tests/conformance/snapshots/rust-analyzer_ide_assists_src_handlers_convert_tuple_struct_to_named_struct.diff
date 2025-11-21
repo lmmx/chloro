@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25918 bytes
+Chloro size:   25997 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -59,13 +59,9 @@ Rustfmt size:  26763 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn convert_tuple_struct_to_named_struct(
--    acc: &mut Assists,
--    ctx: &AssistContext<'_>,
--) -> Option<()> {
-+pub(crate) fn convert_tuple_struct_to_named_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-     let strukt_or_variant = ctx
-         .find_node_at_offset::<ast::Struct>()
+ pub(crate) fn convert_tuple_struct_to_named_struct(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
          .map(Either::Left)
          .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
      let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
@@ -78,19 +74,6 @@ Rustfmt size:  26763 bytes
      let tuple_fields = match field_list {
          ast::FieldList::TupleFieldList(it) => it,
          ast::FieldList::RecordFieldList(_) => return None,
-     )
- }
- 
--fn edit_struct_def(
--    editor: &mut SyntaxEditor,
--    strukt: &Either<ast::Struct, ast::Variant>,
--    tuple_fields: ast::TupleFieldList,
--    names: Vec<ast::Name>,
--) {
-+fn edit_struct_def(editor: &mut SyntaxEditor, strukt: &Either<ast::Struct, ast::Variant>, tuple_fields: ast::TupleFieldList, names: Vec<ast::Name>) {
-     let record_fields = tuple_fields.fields().zip(names).filter_map(|(f, name)| {
-         let field = ast::make::record_field(f.visibility(), name, f.ty()?);
-         let mut field_editor = SyntaxEditor::new(field.syntax().clone());
      let make = SyntaxFactory::without_mappings();
      let record_fields = make.record_field_list(record_fields);
      let tuple_fields_before = Position::before(tuple_fields.syntax());
@@ -105,15 +88,6 @@ Rustfmt size:  26763 bytes
      editor.replace(tuple_fields.syntax(), record_fields.syntax());
  }
  
--fn edit_struct_references(
--    ctx: &AssistContext<'_>,
--    edit: &mut SourceChangeBuilder,
--    strukt: Either<hir::Struct, hir::Variant>,
--    names: &[ast::Name],
--) {
-+fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: Either<hir::Struct, hir::Variant>, names: &[ast::Name]) {
-     let strukt_def = match strukt {
-         Either::Left(s) => Definition::Adt(hir::Adt::Struct(s)),
          Either::Right(v) => Definition::Variant(v),
      };
      let usages = strukt_def.usages(&ctx.sema).include_self_refs().all();
@@ -128,30 +102,6 @@ Rustfmt size:  26763 bytes
      for (file_id, refs) in usages {
          let source = ctx.sema.parse(file_id);
          let source = source.syntax();
-     }
- }
- 
--fn edit_field_references(
--    ctx: &AssistContext<'_>,
--    edit: &mut SourceChangeBuilder,
--    fields: impl Iterator<Item = ast::TupleField>,
--    names: &[ast::Name],
--) {
-+fn edit_field_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, fields: impl Iterator<Item = ast::TupleField>, names: &[ast::Name]) {
-     for (field, name) in fields.zip(names) {
-         let field = match ctx.sema.to_def(&field) {
-             Some(it) => it,
-         .collect()
- }
- 
--fn generate_record_pat_list(
--    pat: &ast::TupleStructPat,
--    names: &[ast::Name],
--) -> ast::RecordPatFieldList {
-+fn generate_record_pat_list(pat: &ast::TupleStructPat, names: &[ast::Name]) -> ast::RecordPatFieldList {
-     let pure_fields = pat.fields().filter(|p| !matches!(p, ast::Pat::RestPat(_)));
-     let rest_len = names.len().saturating_sub(pure_fields.clone().count());
-     let rest_pat = pat.fields().find_map(|p| ast::RestPat::cast(p.syntax().clone()));
          pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
      let before_rest = pat.fields().zip(names).take(rest_idx);
      let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);

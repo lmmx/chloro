@@ -11,7 +11,10 @@ use crate::{
     AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder, utils::next_prev,
 };
 
-pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn remove_unused_param(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
     let ident_pat = match param.pat()? {
         ast::Pat::IdentPat(it) => it,
@@ -70,7 +73,14 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     )
 }
 
-fn process_usages(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, editioned_file_id: EditionedFileId, references: Vec<FileReference>, arg_to_remove: usize, is_self_present: bool) {
+fn process_usages(
+    ctx: &AssistContext<'_>,
+    builder: &mut SourceChangeBuilder,
+    editioned_file_id: EditionedFileId,
+    references: Vec<FileReference>,
+    arg_to_remove: usize,
+    is_self_present: bool,
+) {
     let source_file = ctx.sema.parse(editioned_file_id);
     let file_id = editioned_file_id.file_id(ctx.db());
     builder.edit_file(file_id);
@@ -94,7 +104,12 @@ fn process_usages(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, ed
     }
 }
 
-fn process_usage(source_file: &SourceFile, FileReference { range, .. }: FileReference, mut arg_to_remove: usize, is_self_present: bool) -> Option<Vec<SyntaxElement>> {
+fn process_usage(
+    source_file: &SourceFile,
+    FileReference { range, .. }: FileReference,
+    mut arg_to_remove: usize,
+    is_self_present: bool,
+) -> Option<Vec<SyntaxElement>> {
     let call_expr_opt: Option<ast::CallExpr> = find_node_at_range(source_file.syntax(), range);
     if let Some(call_expr) = call_expr_opt {
         let call_expr_range = call_expr.expr()?.syntax().text_range();

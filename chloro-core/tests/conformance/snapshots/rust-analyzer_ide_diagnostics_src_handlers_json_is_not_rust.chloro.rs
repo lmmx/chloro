@@ -27,7 +27,10 @@ struct State {
 }
 
 impl State {
-    fn generate_new_name(&mut self, name: &str) -> ast::Name {
+    fn generate_new_name(
+        &mut self,
+        name: &str,
+    ) -> ast::Name {
         let name = stdx::to_camel_case(name);
         let count = if let Some(count) = self.names.get_mut(&name) {
             *count += 1;
@@ -58,7 +61,11 @@ impl State {
         }
     }
 
-    fn build_struct(&mut self, name: &str, value: &serde_json::Map<String, serde_json::Value>) -> ast::Type {
+    fn build_struct(
+        &mut self,
+        name: &str,
+        value: &serde_json::Map<String, serde_json::Value>,
+    ) -> ast::Type {
         let name = self.generate_new_name(name);
         let ty = make::ty(&name.to_string());
         let strukt = make::struct_(
@@ -76,7 +83,11 @@ impl State {
         ty
     }
 
-    fn type_of(&mut self, name: &str, value: &serde_json::Value) -> ast::Type {
+    fn type_of(
+        &mut self,
+        name: &str,
+        value: &serde_json::Value,
+    ) -> ast::Type {
         match value {
             serde_json::Value::Null => make::ty_unit(),
             serde_json::Value::Bool(_) => make::ty("bool"),
@@ -94,7 +105,14 @@ impl State {
     }
 }
 
-pub(crate) fn json_in_items(sema: &Semantics<'_, RootDatabase>, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, node: &SyntaxNode, config: &DiagnosticsConfig, edition: Edition) {
+pub(crate) fn json_in_items(
+    sema: &Semantics<'_, RootDatabase>,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    node: &SyntaxNode,
+    config: &DiagnosticsConfig,
+    edition: Edition,
+) {
     (|| {
         if node.kind() == SyntaxKind::ERROR
             && node.first_token().map(|x| x.kind()) == Some(SyntaxKind::L_CURLY)

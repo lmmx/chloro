@@ -39,7 +39,10 @@ enum UsageKind<'db> {
 }
 
 impl<'db> UsageKind<'db> {
-    fn merge(&mut self, other: UsageKind<'db>) {
+    fn merge(
+        &mut self,
+        other: UsageKind<'db>,
+    ) {
         match (&*self, &other) {
             (UsageKind::HasDefiningUse(_), _) | (_, UsageKind::None) => unreachable!(),
             (UsageKind::None, _) => *self = other,
@@ -62,7 +65,10 @@ impl<'db> UsageKind<'db> {
 }
 
 impl<'db> InferenceContext<'_, 'db> {
-    fn compute_definition_site_hidden_types(&mut self, mut opaque_types: Vec<(OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)>) {
+    fn compute_definition_site_hidden_types(
+        &mut self,
+        mut opaque_types: Vec<(OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)>,
+    ) {
         for entry in opaque_types.iter_mut() {
             *entry = self.table.infer_ctxt.resolve_vars_if_possible(*entry);
         }
@@ -116,7 +122,11 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     #[tracing::instrument(skip(self), ret)]
-    fn consider_opaque_type_use(&self, opaque_type_key: OpaqueTypeKey<'db>, hidden_type: OpaqueHiddenType<'db>) -> UsageKind<'db> {
+    fn consider_opaque_type_use(
+        &self,
+        opaque_type_key: OpaqueTypeKey<'db>,
+        hidden_type: OpaqueHiddenType<'db>,
+    ) -> UsageKind<'db> {
         // We ignore uses of the opaque if they have any inference variables
         // as this can frequently happen with recursive calls.
         //

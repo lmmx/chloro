@@ -10,7 +10,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
-pub(crate) fn convert_named_struct_to_tuple_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn convert_named_struct_to_tuple_struct(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     // XXX: We don't currently provide this assist for struct definitions inside macros, but if we
     // are to lift this limitation, don't forget to make `edit_struct_def()` consider macro files
     // too.
@@ -43,7 +46,12 @@ pub(crate) fn convert_named_struct_to_tuple_struct(acc: &mut Assists, ctx: &Assi
     )
 }
 
-fn edit_struct_def(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: &Either<ast::Struct, ast::Variant>, record_fields: ast::RecordFieldList) {
+fn edit_struct_def(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    strukt: &Either<ast::Struct, ast::Variant>,
+    record_fields: ast::RecordFieldList,
+) {
     // Note that we don't need to consider macro files in this function because this is
     // currently not triggered for struct definitions inside macro calls.
     let tuple_fields = record_fields.fields().filter_map(|f| {
@@ -95,7 +103,11 @@ fn edit_struct_def(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, stru
     }
 }
 
-fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: Either<hir::Struct, hir::Variant>) {
+fn edit_struct_references(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    strukt: Either<hir::Struct, hir::Variant>,
+) {
     let strukt_def = match strukt {
         Either::Left(s) => Definition::Adt(hir::Adt::Struct(s)),
         Either::Right(v) => Definition::Variant(v),
@@ -109,7 +121,11 @@ fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilde
     }
 }
 
-fn process_struct_name_reference(ctx: &AssistContext<'_>, r: FileReference, edit: &mut SourceChangeBuilder) -> Option<()> {
+fn process_struct_name_reference(
+    ctx: &AssistContext<'_>,
+    r: FileReference,
+    edit: &mut SourceChangeBuilder,
+) -> Option<()> {
     // First check if it's the last semgnet of a path that directly belongs to a record
     // expression/pattern.
     let name_ref = r.name.as_name_ref()?;
@@ -164,7 +180,11 @@ fn process_struct_name_reference(ctx: &AssistContext<'_>, r: FileReference, edit
     Some(())
 }
 
-fn edit_field_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, fields: impl Iterator<Item = ast::RecordField>) {
+fn edit_field_references(
+    ctx: &AssistContext<'_>,
+    edit: &mut SourceChangeBuilder,
+    fields: impl Iterator<Item = ast::RecordField>,
+) {
     for (index, field) in fields.enumerate() {
         let field = match ctx.sema.to_def(&field) {
             Some(it) => it,

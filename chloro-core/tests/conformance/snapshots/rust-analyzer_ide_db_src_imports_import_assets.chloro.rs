@@ -119,7 +119,10 @@ pub struct ImportAssets<'db> {
 }
 
 impl<'db> ImportAssets<'db> {
-    pub fn for_method_call(method_call: &ast::MethodCallExpr, sema: &Semantics<'db, RootDatabase>) -> Option<Self> {
+    pub fn for_method_call(
+        method_call: &ast::MethodCallExpr,
+        sema: &Semantics<'db, RootDatabase>,
+    ) -> Option<Self> {
         let candidate_node = method_call.syntax().clone();
         Some(Self {
             import_candidate: ImportCandidate::for_method_call(sema, method_call)?,
@@ -128,7 +131,10 @@ impl<'db> ImportAssets<'db> {
         })
     }
 
-    pub fn for_exact_path(fully_qualified_path: &ast::Path, sema: &Semantics<'db, RootDatabase>) -> Option<Self> {
+    pub fn for_exact_path(
+        fully_qualified_path: &ast::Path,
+        sema: &Semantics<'db, RootDatabase>,
+    ) -> Option<Self> {
         let candidate_node = fully_qualified_path.syntax().clone();
         if let Some(use_tree) = candidate_node.ancestors().find_map(ast::UseTree::cast) {
             // Path is inside a use tree, then only continue if it is the first segment of a use statement.
@@ -145,7 +151,10 @@ impl<'db> ImportAssets<'db> {
         })
     }
 
-    pub fn for_ident_pat(sema: &Semantics<'db, RootDatabase>, pat: &ast::IdentPat) -> Option<Self> {
+    pub fn for_ident_pat(
+        sema: &Semantics<'db, RootDatabase>,
+        pat: &ast::IdentPat,
+    ) -> Option<Self> {
         if !pat.is_simple_ident() {
             return None;
         }
@@ -158,7 +167,13 @@ impl<'db> ImportAssets<'db> {
         })
     }
 
-    pub fn for_fuzzy_path(module_with_candidate: Module, qualifier: Option<ast::Path>, fuzzy_name: String, sema: &Semantics<'db, RootDatabase>, candidate_node: SyntaxNode) -> Option<Self> {
+    pub fn for_fuzzy_path(
+        module_with_candidate: Module,
+        qualifier: Option<ast::Path>,
+        fuzzy_name: String,
+        sema: &Semantics<'db, RootDatabase>,
+        candidate_node: SyntaxNode,
+    ) -> Option<Self> {
         Some(Self {
             import_candidate: ImportCandidate::for_fuzzy_path(qualifier, fuzzy_name, sema)?,
             module_with_candidate,
@@ -166,7 +181,12 @@ impl<'db> ImportAssets<'db> {
         })
     }
 
-    pub fn for_fuzzy_method_call(module_with_method_call: Module, receiver_ty: Type<'db>, fuzzy_method_name: String, candidate_node: SyntaxNode) -> Option<Self> {
+    pub fn for_fuzzy_method_call(
+        module_with_method_call: Module,
+        receiver_ty: Type<'db>,
+        fuzzy_method_name: String,
+        candidate_node: SyntaxNode,
+    ) -> Option<Self> {
         Some(Self {
             import_candidate: ImportCandidate::TraitMethod(TraitImportCandidate {
                 receiver_ty,
@@ -201,11 +221,20 @@ pub struct LocatedImport {
 }
 
 impl LocatedImport {
-    pub fn new(import_path: ModPath, item_to_import: ItemInNs, original_item: ItemInNs, complete_in_flyimport: CompleteInFlyimport) -> Self {
+    pub fn new(
+        import_path: ModPath,
+        item_to_import: ItemInNs,
+        original_item: ItemInNs,
+        complete_in_flyimport: CompleteInFlyimport,
+    ) -> Self {
         Self { import_path, item_to_import, original_item, complete_in_flyimport }
     }
 
-    pub fn new_no_completion(import_path: ModPath, item_to_import: ItemInNs, original_item: ItemInNs) -> Self {
+    pub fn new_no_completion(
+        import_path: ModPath,
+        item_to_import: ItemInNs,
+        original_item: ItemInNs,
+    ) -> Self {
         Self {
             import_path,
             item_to_import,
@@ -220,13 +249,22 @@ impl<'db> ImportAssets<'db> {
         &self.import_candidate
     }
 
-    pub fn search_for_imports(&self, sema: &Semantics<'db, RootDatabase>, cfg: ImportPathConfig, prefix_kind: PrefixKind) -> impl Iterator<Item = LocatedImport> {
+    pub fn search_for_imports(
+        &self,
+        sema: &Semantics<'db, RootDatabase>,
+        cfg: ImportPathConfig,
+        prefix_kind: PrefixKind,
+    ) -> impl Iterator<Item = LocatedImport> {
         let _p = tracing::info_span!("ImportAssets::search_for_imports").entered();
         self.search_for(sema, Some(prefix_kind), cfg)
     }
 
     /// This may return non-absolute paths if a part of the returned path is already imported into scope.
-    pub fn search_for_relative_paths(&self, sema: &Semantics<'db, RootDatabase>, cfg: ImportPathConfig) -> impl Iterator<Item = LocatedImport> {
+    pub fn search_for_relative_paths(
+        &self,
+        sema: &Semantics<'db, RootDatabase>,
+        cfg: ImportPathConfig,
+    ) -> impl Iterator<Item = LocatedImport> {
         let _p = tracing::info_span!("ImportAssets::search_for_relative_paths").entered();
         self.search_for(sema, None, cfg)
     }
@@ -261,7 +299,12 @@ impl<'db> ImportAssets<'db> {
         }
     }
 
-    fn search_for(&self, sema: &Semantics<'db, RootDatabase>, prefixed: Option<PrefixKind>, cfg: ImportPathConfig) -> impl Iterator<Item = LocatedImport> {
+    fn search_for(
+        &self,
+        sema: &Semantics<'db, RootDatabase>,
+        prefixed: Option<PrefixKind>,
+        cfg: ImportPathConfig,
+    ) -> impl Iterator<Item = LocatedImport> {
         let _p = tracing::info_span!("ImportAssets::search_for").entered();
         let scope = match sema.scope(&self.candidate_node) {
             Some(it) => it,
@@ -312,7 +355,10 @@ impl<'db> ImportAssets<'db> {
         .into_iter()
     }
 
-    fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
+    fn scope_definitions(
+        &self,
+        sema: &Semantics<'_, RootDatabase>,
+    ) -> FxHashSet<ScopeDef> {
         let _p = tracing::info_span!("ImportAssets::scope_definitions").entered();
         let mut scope_definitions = FxHashSet::default();
         if let Some(scope) = sema.scope(&self.candidate_node) {
@@ -324,7 +370,14 @@ impl<'db> ImportAssets<'db> {
     }
 }
 
-fn path_applicable_imports(db: &RootDatabase, scope: &SemanticsScope<'_>, current_crate: Crate, path_candidate: &PathImportCandidate, mod_path: impl Fn(ItemInNs) -> Option<ModPath> + Copy, scope_filter: impl Fn(ItemInNs) -> bool + Copy) -> FxIndexSet<LocatedImport> {
+fn path_applicable_imports(
+    db: &RootDatabase,
+    scope: &SemanticsScope<'_>,
+    current_crate: Crate,
+    path_candidate: &PathImportCandidate,
+    mod_path: impl Fn(ItemInNs) -> Option<ModPath> + Copy,
+    scope_filter: impl Fn(ItemInNs) -> bool + Copy,
+) -> FxIndexSet<LocatedImport> {
     let _p = tracing::info_span!("ImportAssets::path_applicable_imports").entered();
     match &*path_candidate.qualifier {
         [] => {
@@ -388,7 +441,16 @@ fn path_applicable_imports(db: &RootDatabase, scope: &SemanticsScope<'_>, curren
 
 /// Validates and builds an import for `resolved_qualifier` if the `unresolved_qualifier` appended
 /// to it resolves and there is a validate `candidate` after that.
-fn validate_resolvable(db: &RootDatabase, scope: &SemanticsScope<'_>, mod_path: impl Fn(ItemInNs) -> Option<ModPath>, scope_filter: impl Fn(ItemInNs) -> bool, candidate: &NameToImport, resolved_qualifier: ItemInNs, unresolved_qualifier: &[Name], complete_in_flyimport: CompleteInFlyimport) -> SmallVec<[LocatedImport; 1]> {
+fn validate_resolvable(
+    db: &RootDatabase,
+    scope: &SemanticsScope<'_>,
+    mod_path: impl Fn(ItemInNs) -> Option<ModPath>,
+    scope_filter: impl Fn(ItemInNs) -> bool,
+    candidate: &NameToImport,
+    resolved_qualifier: ItemInNs,
+    unresolved_qualifier: &[Name],
+    complete_in_flyimport: CompleteInFlyimport,
+) -> SmallVec<[LocatedImport; 1]> {
     let _p = tracing::info_span!("ImportAssets::import_for_item").entered();
     let qualifier = (|| {
         let mut adjusted_resolved_qualifier = resolved_qualifier;
@@ -481,7 +543,10 @@ fn validate_resolvable(db: &RootDatabase, scope: &SemanticsScope<'_>, mod_path: 
     result
 }
 
-pub fn item_for_path_search(db: &RootDatabase, item: ItemInNs) -> Option<ItemInNs> {
+pub fn item_for_path_search(
+    db: &RootDatabase,
+    item: ItemInNs,
+) -> Option<ItemInNs> {
     Some(match item {
         ItemInNs::Types(_) | ItemInNs::Values(_) => match item_as_assoc(db, item) {
             Some(assoc_item) => item_for_path_search_assoc(db, assoc_item)?,
@@ -491,7 +556,10 @@ pub fn item_for_path_search(db: &RootDatabase, item: ItemInNs) -> Option<ItemInN
     })
 }
 
-fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Option<ItemInNs> {
+fn item_for_path_search_assoc(
+    db: &RootDatabase,
+    assoc_item: AssocItem,
+) -> Option<ItemInNs> {
     Some(match assoc_item.container(db) {
         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
         AssocItemContainer::Impl(impl_) => {
@@ -500,7 +568,15 @@ fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Optio
     })
 }
 
-fn trait_applicable_items<'db>(db: &'db RootDatabase, current_crate: Crate, scope: &SemanticsScope<'db>, trait_candidate: &TraitImportCandidate<'db>, trait_assoc_item: bool, mod_path: impl Fn(ItemInNs) -> Option<ModPath>, scope_filter: impl Fn(hir::Trait) -> bool) -> FxIndexSet<LocatedImport> {
+fn trait_applicable_items<'db>(
+    db: &'db RootDatabase,
+    current_crate: Crate,
+    scope: &SemanticsScope<'db>,
+    trait_candidate: &TraitImportCandidate<'db>,
+    trait_assoc_item: bool,
+    mod_path: impl Fn(ItemInNs) -> Option<ModPath>,
+    scope_filter: impl Fn(hir::Trait) -> bool,
+) -> FxIndexSet<LocatedImport> {
     let _p = tracing::info_span!("ImportAssets::trait_applicable_items").entered();
     let inherent_traits = trait_candidate.receiver_ty.applicable_inherent_traits(db);
     let env_traits = trait_candidate.receiver_ty.env_traits(db);
@@ -646,7 +722,13 @@ fn assoc_to_item(assoc: AssocItem) -> ItemInNs {
 }
 
 #[tracing::instrument(skip_all)]
-fn get_mod_path(db: &RootDatabase, item_to_search: ItemInNs, module_with_candidate: &Module, prefixed: Option<PrefixKind>, cfg: FindPathConfig) -> Option<ModPath> {
+fn get_mod_path(
+    db: &RootDatabase,
+    item_to_search: ItemInNs,
+    module_with_candidate: &Module,
+    prefixed: Option<PrefixKind>,
+    cfg: FindPathConfig,
+) -> Option<ModPath> {
     if let Some(prefix_kind) = prefixed {
         module_with_candidate.find_use_path(db, item_to_search, prefix_kind, cfg)
     } else {
@@ -655,7 +737,10 @@ fn get_mod_path(db: &RootDatabase, item_to_search: ItemInNs, module_with_candida
 }
 
 impl<'db> ImportCandidate<'db> {
-    fn for_method_call(sema: &Semantics<'db, RootDatabase>, method_call: &ast::MethodCallExpr) -> Option<Self> {
+    fn for_method_call(
+        sema: &Semantics<'db, RootDatabase>,
+        method_call: &ast::MethodCallExpr,
+    ) -> Option<Self> {
         match sema.resolve_method_call(method_call) {
             Some(_) => None,
             None => Some(Self::TraitMethod(TraitImportCandidate {
@@ -667,7 +752,10 @@ impl<'db> ImportCandidate<'db> {
         }
     }
 
-    fn for_regular_path(sema: &Semantics<'db, RootDatabase>, path: &ast::Path) -> Option<Self> {
+    fn for_regular_path(
+        sema: &Semantics<'db, RootDatabase>,
+        path: &ast::Path,
+    ) -> Option<Self> {
         if sema.resolve_path(path).is_some() {
             return None;
         }
@@ -678,7 +766,10 @@ impl<'db> ImportCandidate<'db> {
         )
     }
 
-    fn for_name(sema: &Semantics<'db, RootDatabase>, name: &ast::Name) -> Option<Self> {
+    fn for_name(
+        sema: &Semantics<'db, RootDatabase>,
+        name: &ast::Name,
+    ) -> Option<Self> {
         if sema
             .scope(name.syntax())?
             .speculative_resolve(&make::ext::ident_path(&name.text()))
@@ -692,12 +783,20 @@ impl<'db> ImportCandidate<'db> {
         }))
     }
 
-    fn for_fuzzy_path(qualifier: Option<ast::Path>, fuzzy_name: String, sema: &Semantics<'db, RootDatabase>) -> Option<Self> {
+    fn for_fuzzy_path(
+        qualifier: Option<ast::Path>,
+        fuzzy_name: String,
+        sema: &Semantics<'db, RootDatabase>,
+    ) -> Option<Self> {
         path_import_candidate(sema, qualifier, NameToImport::fuzzy(fuzzy_name))
     }
 }
 
-fn path_import_candidate<'db>(sema: &Semantics<'db, RootDatabase>, qualifier: Option<ast::Path>, name: NameToImport) -> Option<ImportCandidate<'db>> {
+fn path_import_candidate<'db>(
+    sema: &Semantics<'db, RootDatabase>,
+    qualifier: Option<ast::Path>,
+    name: NameToImport,
+) -> Option<ImportCandidate<'db>> {
     Some(match qualifier {
         Some(qualifier) => match sema.resolve_path(&qualifier) {
             Some(PathResolution::Def(ModuleDef::BuiltinType(_))) | None => {
@@ -734,6 +833,9 @@ fn path_import_candidate<'db>(sema: &Semantics<'db, RootDatabase>, qualifier: Op
     })
 }
 
-fn item_as_assoc(db: &RootDatabase, item: ItemInNs) -> Option<AssocItem> {
+fn item_as_assoc(
+    db: &RootDatabase,
+    item: ItemInNs,
+) -> Option<AssocItem> {
     item.into_module_def().as_assoc_item(db)
 }

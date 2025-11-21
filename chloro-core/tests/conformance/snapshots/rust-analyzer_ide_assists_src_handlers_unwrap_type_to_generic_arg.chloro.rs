@@ -6,7 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn unwrap_type_to_generic_arg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn unwrap_type_to_generic_arg(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let path_type = ctx.find_node_at_offset::<ast::PathType>()?;
     let path = path_type.path()?;
     let segment = path.segment()?;

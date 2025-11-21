@@ -14,7 +14,10 @@ use crate::{
 };
 use super::{MirEvalError, interpret_mir};
 
-fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
+fn eval_main(
+    db: &TestDB,
+    file_id: EditionedFileId,
+) -> Result<(String, String), MirEvalError<'_>> {
     crate::attach_db(db, || {
         let interner = DbInterner::new_with(db, None, None);
         let module_id = db.module_for_file(file_id.file_id(db));
@@ -53,7 +56,11 @@ fn check_pass(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     check_pass_and_stdio(ra_fixture, "", "");
 }
 
-fn check_pass_and_stdio(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_stdout: &str, expected_stderr: &str) {
+fn check_pass_and_stdio(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expected_stdout: &str,
+    expected_stderr: &str,
+) {
     let _tracing = setup_tracing();
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
@@ -100,7 +107,10 @@ fn check_pass_and_stdio(#[rust_analyzer::rust_fixture] ra_fixture: &str, expecte
     })
 }
 
-fn check_panic(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_panic: &str) {
+fn check_panic(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expected_panic: &str,
+) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
         let file_id = *file_ids.last().unwrap();
@@ -112,7 +122,10 @@ fn check_panic(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_panic: 
     })
 }
 
-fn check_error_with(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect_err: impl FnOnce(MirEvalError<'_>) -> bool) {
+fn check_error_with(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+    expect_err: impl FnOnce(MirEvalError<'_>) -> bool,
+) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
         let file_id = *file_ids.last().unwrap();

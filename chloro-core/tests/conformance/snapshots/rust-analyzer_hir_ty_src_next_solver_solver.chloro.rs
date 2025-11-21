@@ -53,14 +53,21 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         self.0.interner
     }
 
-    fn build_with_canonical<V>(cx: Self::Interner, canonical: &rustc_type_ir::CanonicalQueryInput<Self::Interner, V>) -> (Self, V, rustc_type_ir::CanonicalVarValues<Self::Interner>)
+    fn build_with_canonical<V>(
+        cx: Self::Interner,
+        canonical: &rustc_type_ir::CanonicalQueryInput<Self::Interner, V>,
+    ) -> (Self, V, rustc_type_ir::CanonicalVarValues<Self::Interner>)
     where
         V: rustc_type_ir::TypeFoldable<Self::Interner>, {
         let (infcx, value, vars) = cx.infer_ctxt().build_with_canonical(canonical);
         (SolverContext(infcx), value, vars)
     }
 
-    fn fresh_var_for_kind_with_span(&self, arg: GenericArg<'db>, _span: Span) -> GenericArg<'db> {
+    fn fresh_var_for_kind_with_span(
+        &self,
+        arg: GenericArg<'db>,
+        _span: Span,
+    ) -> GenericArg<'db> {
         match arg.kind() {
             GenericArgKind::Lifetime(_) => self.next_region_var().into(),
             GenericArgKind::Type(_) => self.next_ty_var().into(),
@@ -68,11 +75,18 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         }
     }
 
-    fn leak_check(&self, _max_input_universe: rustc_type_ir::UniverseIndex) -> Result<(), NoSolution> {
+    fn leak_check(
+        &self,
+        _max_input_universe: rustc_type_ir::UniverseIndex,
+    ) -> Result<(), NoSolution> {
         Ok(())
     }
 
-    fn well_formed_goals(&self, _param_env: ParamEnv<'db>, _arg: <Self::Interner as rustc_type_ir::Interner>::Term) -> Option<
+    fn well_formed_goals(
+        &self,
+        _param_env: ParamEnv<'db>,
+        _arg: <Self::Interner as rustc_type_ir::Interner>::Term,
+    ) -> Option<
         Vec<
             rustc_type_ir::solve::Goal<
                 Self::Interner,
@@ -94,17 +108,34 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         vec![]
     }
 
-    fn instantiate_canonical<V>(&self, canonical: rustc_type_ir::Canonical<Self::Interner, V>, values: rustc_type_ir::CanonicalVarValues<Self::Interner>) -> V
+    fn instantiate_canonical<V>(
+        &self,
+        canonical: rustc_type_ir::Canonical<Self::Interner, V>,
+        values: rustc_type_ir::CanonicalVarValues<Self::Interner>,
+    ) -> V
     where
         V: rustc_type_ir::TypeFoldable<Self::Interner>, {
         canonical.instantiate(self.cx(), &values)
     }
 
-    fn instantiate_canonical_var(&self, kind: CanonicalVarKind<'db>, _span: <Self::Interner as Interner>::Span, var_values: &[GenericArg<'db>], universe_map: impl Fn(rustc_type_ir::UniverseIndex) -> rustc_type_ir::UniverseIndex) -> GenericArg<'db> {
+    fn instantiate_canonical_var(
+        &self,
+        kind: CanonicalVarKind<'db>,
+        _span: <Self::Interner as Interner>::Span,
+        var_values: &[GenericArg<'db>],
+        universe_map: impl Fn(rustc_type_ir::UniverseIndex) -> rustc_type_ir::UniverseIndex,
+    ) -> GenericArg<'db> {
         self.0.instantiate_canonical_var(kind, var_values, universe_map)
     }
 
-    fn add_item_bounds_for_hidden_type(&self, def_id: SolverDefId, args: GenericArgs<'db>, param_env: ParamEnv<'db>, hidden_ty: Ty<'db>, goals: &mut Vec<Goal<'db, Predicate<'db>>>) {
+    fn add_item_bounds_for_hidden_type(
+        &self,
+        def_id: SolverDefId,
+        args: GenericArgs<'db>,
+        param_env: ParamEnv<'db>,
+        hidden_ty: Ty<'db>,
+        goals: &mut Vec<Goal<'db, Predicate<'db>>>,
+    ) {
         let interner = self.interner;
         let opaque_id = def_id.expect_opaque_ty();
         // Require that the hidden type is well-formed. We have to
@@ -153,7 +184,12 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         }
     }
 
-    fn fetch_eligible_assoc_item(&self, _goal_trait_ref: rustc_type_ir::TraitRef<Self::Interner>, trait_assoc_def_id: SolverDefId, impl_id: ImplIdWrapper) -> Result<Option<SolverDefId>, ErrorGuaranteed> {
+    fn fetch_eligible_assoc_item(
+        &self,
+        _goal_trait_ref: rustc_type_ir::TraitRef<Self::Interner>,
+        trait_assoc_def_id: SolverDefId,
+        impl_id: ImplIdWrapper,
+    ) -> Result<Option<SolverDefId>, ErrorGuaranteed> {
         let impl_items = impl_id.0.impl_items(self.0.interner.db());
         let id = match trait_assoc_def_id {
             SolverDefId::TypeAliasId(trait_assoc_id) => {
@@ -197,11 +233,20 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         Ok(id)
     }
 
-    fn is_transmutable(&self, _dst: Ty<'db>, _src: Ty<'db>, _assume: <Self::Interner as rustc_type_ir::Interner>::Const) -> Result<Certainty, NoSolution> {
+    fn is_transmutable(
+        &self,
+        _dst: Ty<'db>,
+        _src: Ty<'db>,
+        _assume: <Self::Interner as rustc_type_ir::Interner>::Const,
+    ) -> Result<Certainty, NoSolution> {
         unimplemented!()
     }
 
-    fn evaluate_const(&self, _param_env: ParamEnv<'db>, uv: rustc_type_ir::UnevaluatedConst<Self::Interner>) -> Option<<Self::Interner as rustc_type_ir::Interner>::Const> {
+    fn evaluate_const(
+        &self,
+        _param_env: ParamEnv<'db>,
+        uv: rustc_type_ir::UnevaluatedConst<Self::Interner>,
+    ) -> Option<<Self::Interner as rustc_type_ir::Interner>::Const> {
         let c = match uv.def {
             SolverDefId::ConstId(c) => GeneralConstId::ConstId(c),
             SolverDefId::StaticId(c) => GeneralConstId::StaticId(c),
@@ -212,10 +257,14 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         Some(ec)
     }
 
-    fn compute_goal_fast_path(&self, goal: rustc_type_ir::solve::Goal<
+    fn compute_goal_fast_path(
+        &self,
+        goal: rustc_type_ir::solve::Goal<
             Self::Interner,
             <Self::Interner as rustc_type_ir::Interner>::Predicate,
-        >, _span: <Self::Interner as rustc_type_ir::Interner>::Span) -> Option<Certainty> {
+        >,
+        _span: <Self::Interner as rustc_type_ir::Interner>::Span,
+    ) -> Option<Certainty> {
         if let Some(trait_pred) = goal.predicate.as_trait_clause() {
             if self.shallow_resolve(trait_pred.self_ty().skip_binder()).is_ty_var()
                 // We don't do this fast path when opaques are defined since we may

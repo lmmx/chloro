@@ -27,11 +27,17 @@ use crate::{
     utils::{convert_reference_type, find_struct_impl},
 };
 
-pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn generate_function(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
 }
 
-fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn gen_fn(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let path_expr: ast::PathExpr = ctx.find_node_at_offset()?;
     let call = path_expr.syntax().parent().and_then(ast::CallExpr::cast)?;
     let path = path_expr.path()?;
@@ -63,12 +69,22 @@ struct TargetInfo {
 }
 
 impl TargetInfo {
-    fn new(target_module: Option<Module>, adt_info: Option<AdtInfo>, target: GeneratedFunctionTarget, file: FileId) -> Self {
+    fn new(
+        target_module: Option<Module>,
+        adt_info: Option<AdtInfo>,
+        target: GeneratedFunctionTarget,
+        file: FileId,
+    ) -> Self {
         Self { target_module, adt_info, target, file }
     }
 }
 
-fn fn_target_info(ctx: &AssistContext<'_>, path: ast::Path, call: &CallExpr, fn_name: &str) -> Option<TargetInfo> {
+fn fn_target_info(
+    ctx: &AssistContext<'_>,
+    path: ast::Path,
+    call: &CallExpr,
+    fn_name: &str,
+) -> Option<TargetInfo> {
     match path.qualifier() {
         Some(qualifier) => match ctx.sema.resolve_path(&qualifier) {
             Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))) => {
@@ -94,7 +110,10 @@ fn fn_target_info(ctx: &AssistContext<'_>, path: ast::Path, call: &CallExpr, fn_
     }
 }
 
-fn gen_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+fn gen_method(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     if ctx.sema.resolve_method_call(&call).is_some() {
         return None;
@@ -122,7 +141,15 @@ fn gen_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     add_func_to_accumulator(acc, ctx, text_range, function_builder, file, Some(adt_info), label)
 }
 
-fn add_func_to_accumulator(acc: &mut Assists, ctx: &AssistContext<'_>, text_range: TextRange, function_builder: FunctionBuilder, file: FileId, adt_info: Option<AdtInfo>, label: String) -> Option<()> {
+fn add_func_to_accumulator(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+    text_range: TextRange,
+    function_builder: FunctionBuilder,
+    file: FileId,
+    adt_info: Option<AdtInfo>,
+    label: String,
+) -> Option<()> {
     acc.add(AssistId::generate("generate_function"), label, text_range, |edit| {
         edit.edit_file(file);
 
@@ -150,7 +177,11 @@ fn add_func_to_accumulator(acc: &mut Assists, ctx: &AssistContext<'_>, text_rang
     })
 }
 
-fn get_adt_source(ctx: &AssistContext<'_>, adt: &hir::Adt, fn_name: &str) -> Option<(Option<ast::Impl>, FileId)> {
+fn get_adt_source(
+    ctx: &AssistContext<'_>,
+    adt: &hir::Adt,
+    fn_name: &str,
+) -> Option<(Option<ast::Impl>, FileId)> {
     let range = adt.source(ctx.sema.db)?.syntax().original_file_range_rooted(ctx.sema.db);
     let file = ctx.sema.parse(range.file_id);
     let adt_source =
@@ -176,7 +207,14 @@ struct FunctionBuilder {
 impl FunctionBuilder {
     /// Prepares a generated function that matches `call`.
     /// The function is generated in `target_module` or next to `call`
-    fn from_call(ctx: &AssistContext<'_>, call: &ast::CallExpr, fn_name: &str, target_module: Option<Module>, target: GeneratedFunctionTarget, adt_info: &Option<AdtInfo>) -> Option<Self> {
+    fn from_call(
+        ctx: &AssistContext<'_>,
+        call: &ast::CallExpr,
+        fn_name: &str,
+        target_module: Option<Module>,
+        target: GeneratedFunctionTarget,
+        adt_info: &Option<AdtInfo>,
+    ) -> Option<Self> {
         let target_module =
             target_module.or_else(|| ctx.sema.scope(target.syntax()).map(|it| it.module()))?;
         let target_edition = target_module.krate().edition(ctx.db());
@@ -235,7 +273,14 @@ impl FunctionBuilder {
         })
     }
 
-    fn from_method_call(ctx: &AssistContext<'_>, call: &ast::MethodCallExpr, name: &ast::NameRef, receiver_ty: Type<'_>, target_module: Module, target: GeneratedFunctionTarget) -> Option<Self> {
+    fn from_method_call(
+        ctx: &AssistContext<'_>,
+        call: &ast::MethodCallExpr,
+        name: &ast::NameRef,
+        receiver_ty: Type<'_>,
+        target_module: Module,
+        target: GeneratedFunctionTarget,
+    ) -> Option<Self> {
         let target_edition = target_module.krate().edition(ctx.db());
         let current_module = ctx.sema.scope(call.syntax())?.module();
         let visibility = calculate_necessary_visibility(current_module, target_module, ctx);
@@ -276,7 +321,11 @@ impl FunctionBuilder {
         })
     }
 
-    fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
+    fn render(
+        self,
+        cap: Option<SnippetCap>,
+        edit: &mut SourceChangeBuilder,
+    ) -> ast::Fn {
         let visibility = match self.visibility {
             Visibility::None => None,
             Visibility::Crate => Some(make::visibility_pub_crate()),
@@ -334,7 +383,12 @@ impl FunctionBuilder {
 ///   the correct return type).
 /// * If we could infer the return type, don't focus it (and thus focus the function body) so the
 ///   user can change the `todo!` function body.
-fn make_return_type(ctx: &AssistContext<'_>, expr: &ast::Expr, target_module: Module, necessary_generic_params: &mut FxHashSet<hir::GenericParam>) -> (Option<ast::RetType>, bool) {
+fn make_return_type(
+    ctx: &AssistContext<'_>,
+    expr: &ast::Expr,
+    target_module: Module,
+    necessary_generic_params: &mut FxHashSet<hir::GenericParam>,
+) -> (Option<ast::RetType>, bool) {
     let (ret_ty, should_focus_return_type) = {
         match ctx.sema.type_of_expr(expr).map(TypeInfo::original) {
             Some(ty) if ty.is_unknown() => (Some(make::ty_placeholder()), true),
@@ -354,7 +408,12 @@ fn make_return_type(ctx: &AssistContext<'_>, expr: &ast::Expr, target_module: Mo
     (ret_type, should_focus_return_type)
 }
 
-fn make_fn_body_as_new_function(ctx: &AssistContext<'_>, fn_name: &str, adt_info: &Option<AdtInfo>, edition: Edition) -> Option<ast::BlockExpr> {
+fn make_fn_body_as_new_function(
+    ctx: &AssistContext<'_>,
+    fn_name: &str,
+    adt_info: &Option<AdtInfo>,
+    edition: Edition,
+) -> Option<ast::BlockExpr> {
     if fn_name != "new" {
         return None;
     };
@@ -402,12 +461,20 @@ fn make_fn_body_as_new_function(ctx: &AssistContext<'_>, fn_name: &str, adt_info
     Some(fn_body)
 }
 
-fn get_fn_target_info(ctx: &AssistContext<'_>, target_module: Option<Module>, call: CallExpr) -> Option<TargetInfo> {
+fn get_fn_target_info(
+    ctx: &AssistContext<'_>,
+    target_module: Option<Module>,
+    call: CallExpr,
+) -> Option<TargetInfo> {
     let (target, file) = get_fn_target(ctx, target_module, call)?;
     Some(TargetInfo::new(target_module, None, target, file))
 }
 
-fn get_fn_target(ctx: &AssistContext<'_>, target_module: Option<Module>, call: CallExpr) -> Option<(GeneratedFunctionTarget, FileId)> {
+fn get_fn_target(
+    ctx: &AssistContext<'_>,
+    target_module: Option<Module>,
+    call: CallExpr,
+) -> Option<(GeneratedFunctionTarget, FileId)> {
     let mut file = ctx.vfs_file_id();
     let target = match target_module {
         Some(target_module) => {
@@ -420,7 +487,11 @@ fn get_fn_target(ctx: &AssistContext<'_>, target_module: Option<Module>, call: C
     Some((target, file))
 }
 
-fn get_method_target(ctx: &AssistContext<'_>, impl_: &Option<ast::Impl>, adt: &Adt) -> Option<GeneratedFunctionTarget> {
+fn get_method_target(
+    ctx: &AssistContext<'_>,
+    impl_: &Option<ast::Impl>,
+    adt: &Adt,
+) -> Option<GeneratedFunctionTarget> {
     let target = match impl_ {
         Some(impl_) => GeneratedFunctionTarget::InImpl(impl_.clone()),
         None => GeneratedFunctionTarget::AfterItem(adt.source(ctx.sema.db)?.syntax().value.clone()),
@@ -428,7 +499,12 @@ fn get_method_target(ctx: &AssistContext<'_>, impl_: &Option<ast::Impl>, adt: &A
     Some(target)
 }
 
-fn assoc_fn_target_info(ctx: &AssistContext<'_>, call: &CallExpr, adt: hir::Adt, fn_name: &str) -> Option<TargetInfo> {
+fn assoc_fn_target_info(
+    ctx: &AssistContext<'_>,
+    call: &CallExpr,
+    adt: hir::Adt,
+    fn_name: &str,
+) -> Option<TargetInfo> {
     let current_module = ctx.sema.scope(call.syntax())?.module();
     let module = adt.module(ctx.sema.db);
     let target_module = if current_module == module { None } else { Some(module) };
@@ -465,7 +541,11 @@ impl GeneratedFunctionTarget {
         }
     }
 
-    fn insert_impl_at(&self, edit: &mut SourceChangeBuilder, impl_: ast::Impl) {
+    fn insert_impl_at(
+        &self,
+        edit: &mut SourceChangeBuilder,
+        impl_: ast::Impl,
+    ) {
         match self {
             GeneratedFunctionTarget::AfterItem(item) => {
                 let item = edit.make_syntax_mut(item.clone());
@@ -503,7 +583,11 @@ impl GeneratedFunctionTarget {
         }
     }
 
-    fn insert_fn_at(&self, edit: &mut SourceChangeBuilder, func: ast::Fn) {
+    fn insert_fn_at(
+        &self,
+        edit: &mut SourceChangeBuilder,
+        func: ast::Fn,
+    ) {
         match self {
             GeneratedFunctionTarget::AfterItem(item) => {
                 let item = edit.make_syntax_mut(item.clone());
@@ -560,13 +644,21 @@ struct AdtInfo {
 }
 
 impl AdtInfo {
-    fn new(adt: Adt, impl_exists: bool) -> Self {
+    fn new(
+        adt: Adt,
+        impl_exists: bool,
+    ) -> Self {
         Self { adt, impl_exists }
     }
 }
 
 /// Computes parameter list for the generated function.
-fn fn_args(ctx: &AssistContext<'_>, target_module: Module, call: ast::CallableExpr, necessary_generic_params: &mut FxHashSet<hir::GenericParam>) -> Option<ast::ParamList> {
+fn fn_args(
+    ctx: &AssistContext<'_>,
+    target_module: Module,
+    call: ast::CallableExpr,
+    necessary_generic_params: &mut FxHashSet<hir::GenericParam>,
+) -> Option<ast::ParamList> {
     let mut arg_names = Vec::new();
     let mut arg_types = Vec::new();
     for arg in call.arg_list()?.args() {
@@ -594,7 +686,11 @@ fn fn_args(ctx: &AssistContext<'_>, target_module: Module, call: ast::CallableEx
 /// NOTE: Generic parameters returned from this function may cause name clash at `target`. We don't
 /// currently do anything about it because it's actually easy to resolve it after the assist: just
 /// use the Rename functionality.
-fn fn_generic_params(ctx: &AssistContext<'_>, necessary_params: FxHashSet<hir::GenericParam>, target: &GeneratedFunctionTarget) -> Option<(Option<ast::GenericParamList>, Option<ast::WhereClause>)> {
+fn fn_generic_params(
+    ctx: &AssistContext<'_>,
+    necessary_params: FxHashSet<hir::GenericParam>,
+    target: &GeneratedFunctionTarget,
+) -> Option<(Option<ast::GenericParamList>, Option<ast::WhereClause>)> {
     if necessary_params.is_empty() {
         // Not really needed but fast path.
         return Some((None, None));
@@ -694,7 +790,10 @@ fn containing_body(ctx: &AssistContext<'_>) -> Option<hir::DefWithBody> {
     Some(def)
 }
 
-fn get_bounds_in_scope<D>(ctx: &AssistContext<'_>, def: D) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
+fn get_bounds_in_scope<D>(
+    ctx: &AssistContext<'_>,
+    def: D,
+) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
 where
     D: HasSource,
     D::Ast: HasGenericParams, {
@@ -756,7 +855,10 @@ struct WherePredWithParams {
     other_params: FxHashSet<hir::GenericParam>,
 }
 
-fn compute_contained_params_in_generic_param(ctx: &AssistContext<'_>, node: ast::GenericParam) -> Option<ParamBoundWithParams> {
+fn compute_contained_params_in_generic_param(
+    ctx: &AssistContext<'_>,
+    node: ast::GenericParam,
+) -> Option<ParamBoundWithParams> {
     match &node {
         ast::GenericParam::TypeParam(ty) => {
             let self_ty_param = ctx.sema.to_def(ty)?.into();
@@ -782,7 +884,10 @@ fn compute_contained_params_in_generic_param(ctx: &AssistContext<'_>, node: ast:
     }
 }
 
-fn compute_contained_params_in_where_pred(ctx: &AssistContext<'_>, node: ast::WherePred) -> Option<WherePredWithParams> {
+fn compute_contained_params_in_where_pred(
+    ctx: &AssistContext<'_>,
+    node: ast::WherePred,
+) -> Option<WherePredWithParams> {
     let self_ty = node.ty()?;
     let bound_list = node.type_bound_list()?;
     let self_ty_params = self_ty
@@ -798,7 +903,10 @@ fn compute_contained_params_in_where_pred(ctx: &AssistContext<'_>, node: ast::Wh
     Some(WherePredWithParams { node, self_ty_params, other_params })
 }
 
-fn filter_generic_params(ctx: &AssistContext<'_>, node: SyntaxNode) -> Option<hir::GenericParam> {
+fn filter_generic_params(
+    ctx: &AssistContext<'_>,
+    node: SyntaxNode,
+) -> Option<hir::GenericParam> {
     let path = ast::Path::cast(node)?;
     match ctx.sema.resolve_path(&path)? {
         PathResolution::TypeParam(it) => Some(it.into()),
@@ -832,7 +940,11 @@ fn filter_generic_params(ctx: &AssistContext<'_>, node: SyntaxNode) -> Option<hi
 /// nodes that represent params in `necessary_params` by usual and boring DFS.
 ///
 /// The time complexity is O(|generic_params| + |where_preds| + |necessary_params|).
-fn filter_unnecessary_bounds(generic_params: &mut Vec<ParamBoundWithParams>, where_preds: &mut Vec<WherePredWithParams>, necessary_params: FxHashSet<hir::GenericParam>) {
+fn filter_unnecessary_bounds(
+    generic_params: &mut Vec<ParamBoundWithParams>,
+    where_preds: &mut Vec<WherePredWithParams>,
+    necessary_params: FxHashSet<hir::GenericParam>,
+) {
     // All `self_ty_param` should be unique as they were collected from `ast::GenericParamList`s.
     let param_map: FxHashMap<hir::GenericParam, usize> =
         generic_params.iter().map(|it| it.self_ty_param).zip(0..).collect();
@@ -883,7 +995,12 @@ fn filter_unnecessary_bounds(generic_params: &mut Vec<ParamBoundWithParams>, whe
 
 /// Filters out bounds from impl if we're generating the function into the same impl we're
 /// generating from.
-fn filter_bounds_in_scope(generic_params: &mut Vec<ParamBoundWithParams>, where_preds: &mut Vec<WherePredWithParams>, ctx: &AssistContext<'_>, target: &GeneratedFunctionTarget) -> Option<()> {
+fn filter_bounds_in_scope(
+    generic_params: &mut Vec<ParamBoundWithParams>,
+    where_preds: &mut Vec<WherePredWithParams>,
+    ctx: &AssistContext<'_>,
+    target: &GeneratedFunctionTarget,
+) -> Option<()> {
     let target_impl = target.parent().ancestors().find_map(ast::Impl::cast)?;
     let target_impl = ctx.sema.to_def(&target_impl)?;
     // It's sufficient to test only the first element of `generic_params` because of the order of
@@ -932,7 +1049,10 @@ fn deduplicate_arg_names(arg_names: &mut [String]) {
     }
 }
 
-fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> String {
+fn fn_arg_name(
+    sema: &Semantics<'_, RootDatabase>,
+    arg_expr: &ast::Expr,
+) -> String {
     let name = (|| match arg_expr {
         ast::Expr::CastExpr(cast_expr) => Some(fn_arg_name(sema, &cast_expr.expr()?)),
         expr => {
@@ -960,7 +1080,12 @@ fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> Stri
     }
 }
 
-fn fn_arg_type(ctx: &AssistContext<'_>, target_module: Module, fn_arg: &ast::Expr, generic_params: &mut FxHashSet<hir::GenericParam>) -> String {
+fn fn_arg_type(
+    ctx: &AssistContext<'_>,
+    target_module: Module,
+    fn_arg: &ast::Expr,
+    generic_params: &mut FxHashSet<hir::GenericParam>,
+) -> String {
     fn maybe_displayed_type(
         ctx: &AssistContext<'_>,
         target_module: Module,
@@ -1015,7 +1140,10 @@ fn next_space_for_fn_after_call_site(expr: ast::CallableExpr) -> Option<Generate
     last_ancestor.map(GeneratedFunctionTarget::AfterItem)
 }
 
-fn next_space_for_fn_in_module(db: &dyn hir::db::HirDatabase, target_module: hir::Module) -> (FileId, GeneratedFunctionTarget) {
+fn next_space_for_fn_in_module(
+    db: &dyn hir::db::HirDatabase,
+    target_module: hir::Module,
+) -> (FileId, GeneratedFunctionTarget) {
     let module_source = target_module.definition_source(db);
     let file = module_source.file_id.original_file(db);
     let assist_item = match &module_source.value {
@@ -1051,7 +1179,11 @@ enum Visibility {
     Pub,
 }
 
-fn calculate_necessary_visibility(current_module: Module, target_module: Module, ctx: &AssistContext<'_>) -> Visibility {
+fn calculate_necessary_visibility(
+    current_module: Module,
+    target_module: Module,
+    ctx: &AssistContext<'_>,
+) -> Visibility {
     let db = ctx.db();
     let current_module = current_module.nearest_non_block_module(db);
     let target_module = target_module.nearest_non_block_module(db);
@@ -1074,11 +1206,18 @@ impl Graph {
         Self { edges: vec![Vec::new(); node_count] }
     }
 
-    fn add_edge(&mut self, from: usize, to: usize) {
+    fn add_edge(
+        &mut self,
+        from: usize,
+        to: usize,
+    ) {
         self.edges[from].push(to);
     }
 
-    fn edges_for(&self, node_idx: usize) -> &[usize] {
+    fn edges_for(
+        &self,
+        node_idx: usize,
+    ) -> &[usize] {
         &self.edges[node_idx]
     }
 
@@ -1086,7 +1225,10 @@ impl Graph {
         self.edges.len()
     }
 
-    fn compute_reachable_nodes(&self, starting_nodes: impl IntoIterator<Item = usize>) -> Vec<bool> {
+    fn compute_reachable_nodes(
+        &self,
+        starting_nodes: impl IntoIterator<Item = usize>,
+    ) -> Vec<bool> {
         let mut visitor = Visitor::new(self);
         for idx in starting_nodes {
             visitor.mark_reachable(idx);
@@ -1107,7 +1249,10 @@ impl<'g> Visitor<'g> {
         Self { graph, visited, stack: Vec::new() }
     }
 
-    fn mark_reachable(&mut self, start_idx: usize) {
+    fn mark_reachable(
+        &mut self,
+        start_idx: usize,
+    ) {
         // non-recursive DFS
         stdx::always!(self.stack.is_empty());
         self.stack.push(start_idx);

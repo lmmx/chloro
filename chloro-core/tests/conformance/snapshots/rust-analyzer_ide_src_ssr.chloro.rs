@@ -5,7 +5,11 @@
 use ide_assists::{Assist, AssistId, AssistResolveStrategy, GroupLabel};
 use ide_db::{FileRange, RootDatabase, label::Label, source_change::SourceChange};
 
-pub(crate) fn ssr_assists(db: &RootDatabase, resolve: &AssistResolveStrategy, frange: FileRange) -> Vec<Assist> {
+pub(crate) fn ssr_assists(
+    db: &RootDatabase,
+    resolve: &AssistResolveStrategy,
+    frange: FileRange,
+) -> Vec<Assist> {
     let mut ssr_assists = Vec::with_capacity(2);
     let (match_finder, comment_range) = match ide_ssr::ssr_from_comment(db, frange) {
         Some(ssr_data) => ssr_data,
@@ -54,7 +58,10 @@ mod tests {
     };
     use test_fixture::WithFixture;
     use super::ssr_assists;
-    fn get_assists(#[rust_analyzer::rust_fixture] ra_fixture: &str, resolve: AssistResolveStrategy) -> Vec<Assist> {
+    fn get_assists(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        resolve: AssistResolveStrategy,
+    ) -> Vec<Assist> {
         let (mut db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
         let mut local_roots = FxHashSet::default();
         local_roots.insert(test_fixture::WORKSPACE);

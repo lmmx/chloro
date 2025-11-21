@@ -9,7 +9,10 @@ use crate::{
     utils::{required_hashes, string_prefix, string_suffix},
 };
 
-pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn make_raw_string(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if token.is_raw() {
         return None;
@@ -30,7 +33,10 @@ pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     )
 }
 
-pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn make_usual_string(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;
@@ -52,7 +58,10 @@ pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     )
 }
 
-pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn add_hash(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;
@@ -68,7 +77,10 @@ pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()>
     })
 }
 
-pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+pub(crate) fn remove_hash(
+    acc: &mut Assists,
+    ctx: &AssistContext<'_>,
+) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;
@@ -91,7 +103,12 @@ pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     })
 }
 
-fn replace_literal(token: &impl AstToken, new: &str, builder: &mut SourceChangeBuilder, ctx: &AssistContext<'_>) {
+fn replace_literal(
+    token: &impl AstToken,
+    new: &str,
+    builder: &mut SourceChangeBuilder,
+    ctx: &AssistContext<'_>,
+) {
     let token = token.syntax();
     let node = token.parent().expect("no parent token");
     let mut edit = builder.make_editor(&node);

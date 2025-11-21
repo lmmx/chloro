@@ -119,7 +119,11 @@ pub struct ComplexMemoryMap<'db> {
 }
 
 impl ComplexMemoryMap<'_> {
-    fn insert(&mut self, addr: usize, val: Box<[u8]>) {
+    fn insert(
+        &mut self,
+        addr: usize,
+        val: Box<[u8]>,
+    ) {
         match self.memory.entry(addr) {
             Entry::Occupied(mut e) => {
                 if e.get().len() < val.len() {
@@ -134,7 +138,10 @@ impl ComplexMemoryMap<'_> {
 }
 
 impl<'db> MemoryMap<'db> {
-    pub fn vtable_ty(&self, id: usize) -> Result<Ty<'db>, MirEvalError<'db>> {
+    pub fn vtable_ty(
+        &self,
+        id: usize,
+    ) -> Result<Ty<'db>, MirEvalError<'db>> {
         match self {
             MemoryMap::Empty | MemoryMap::Simple(_) => Err(MirEvalError::InvalidVTableId(id)),
             MemoryMap::Complex(cm) => cm.vtable.ty(id),
@@ -148,7 +155,10 @@ impl<'db> MemoryMap<'db> {
     /// This functions convert each address by a function `f` which gets the byte intervals and assign an address
     /// to them. It is useful when you want to load a constant with a memory map in a new memory. You can pass an
     /// allocator function as `f` and it will return a mapping of old addresses to new addresses.
-    fn transform_addresses(&self, mut f: impl FnMut(&[u8], usize) -> Result<usize, MirEvalError<'db>>) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
+    fn transform_addresses(
+        &self,
+        mut f: impl FnMut(&[u8], usize) -> Result<usize, MirEvalError<'db>>,
+    ) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
         let mut transform = |(addr, val): (&usize, &[u8])| {
             let addr = *addr;
             let align = if addr == 0 { 64 } else { (addr - (addr & (addr - 1))).min(64) };
@@ -167,7 +177,11 @@ impl<'db> MemoryMap<'db> {
         }
     }
 
-    fn get(&self, addr: usize, size: usize) -> Option<&[u8]> {
+    fn get(
+        &self,
+        addr: usize,
+        size: usize,
+    ) -> Option<&[u8]> {
         if size == 0 {
             Some(&[])
         } else {
@@ -182,7 +196,10 @@ impl<'db> MemoryMap<'db> {
 }
 
 /// Return an index of a parameter in the generic type parameter list by it's id.
-pub fn param_idx(db: &dyn HirDatabase, id: TypeOrConstParamId) -> Option<usize> {
+pub fn param_idx(
+    db: &dyn HirDatabase,
+    id: TypeOrConstParamId,
+) -> Option<usize> {
     generics::generics(db, id.parent).type_or_const_param_idx(id)
 }
 
@@ -228,14 +245,20 @@ pub enum FnAbi {
 }
 
 impl PartialEq for FnAbi {
-    fn eq(&self, _other: &Self) -> bool {
+    fn eq(
+        &self,
+        _other: &Self,
+    ) -> bool {
         // FIXME: Proper equality breaks `coercion::two_closures_lub` test
         true
     }
 }
 
 impl Hash for FnAbi {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: std::hash::Hasher>(
+        &self,
+        state: &mut H,
+    ) {
         // Required because of the FIXME above and due to us implementing `Eq`, without this
         // we would break the `Hash` + `Eq` contract
         core::mem::discriminant(&Self::Unknown).hash(state);
@@ -338,7 +361,10 @@ pub enum ImplTraitId<'db> {
 /// 'Canonicalizes' the `t` by replacing any errors with new variables. Also
 /// ensures there are no unbound variables or inference variables anywhere in
 /// the `t`.
-pub fn replace_errors_with_variables<'db, T>(interner: DbInterner<'db>, t: &T) -> Canonical<'db, T>
+pub fn replace_errors_with_variables<'db, T>(
+    interner: DbInterner<'db>,
+    t: &T,
+) -> Canonical<'db, T>
 where
     T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone, {
     use rustc_type_ir::{FallibleTypeFolder, TypeSuperFoldable};
@@ -468,7 +494,11 @@ where
 }
 
 /// To be used from `hir` only.
-pub fn callable_sig_from_fn_trait<'db>(self_ty: Ty<'db>, trait_env: Arc<TraitEnvironment<'db>>, db: &'db dyn HirDatabase) -> Option<(FnTrait, PolyFnSig<'db>)> {
+pub fn callable_sig_from_fn_trait<'db>(
+    self_ty: Ty<'db>,
+    trait_env: Arc<TraitEnvironment<'db>>,
+    db: &'db dyn HirDatabase,
+) -> Option<(FnTrait, PolyFnSig<'db>)> {
     let krate = trait_env.krate;
     let fn_once_trait = FnTrait::FnOnce.get_id(db, krate)?;
     let output_assoc_type = fn_once_trait
@@ -531,14 +561,20 @@ struct ParamCollector {
 impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
     type Result = ();
 
-    fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
+    fn visit_ty(
+        &mut self,
+        ty: Ty<'db>,
+    ) -> Self::Result {
         if let TyKind::Param(param) = ty.kind() {
             self.params.insert(param.id.into());
         }
         ty.super_visit_with(self);
     }
 
-    fn visit_const(&mut self, konst: Const<'db>) -> Self::Result {
+    fn visit_const(
+        &mut self,
+        konst: Const<'db>,
+    ) -> Self::Result {
         if let ConstKind::Param(param) = konst.kind() {
             self.params.insert(param.id.into());
         }
@@ -555,7 +591,11 @@ where
     Vec::from_iter(collector.params)
 }
 
-pub fn known_const_to_ast<'db>(konst: Const<'db>, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> Option<ConstArg> {
+pub fn known_const_to_ast<'db>(
+    konst: Const<'db>,
+    db: &'db dyn HirDatabase,
+    display_target: DisplayTarget,
+) -> Option<ConstArg> {
     Some(make::expr_const_value(konst.display(db, display_target).to_string().as_str()))
 }
 

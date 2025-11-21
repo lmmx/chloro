@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18403 bytes
-Chloro size:   18283 bytes
+Chloro size:   18345 bytes
 Rustfmt size:  18467 bytes
 
 ✗ Outputs DIFFER
@@ -47,14 +47,9 @@ Rustfmt size:  18467 bytes
  ///
 -// NOTE: We don't have a `Feature: ` section for assists, they are special-cased
 -// in the manual.
--pub fn assists(
--    db: &RootDatabase,
--    config: &AssistConfig,
--    resolve: AssistResolveStrategy,
--    range: ide_db::FileRange,
--) -> Vec<Assist> {
-+pub fn assists(db: &RootDatabase, config: &AssistConfig, resolve: AssistResolveStrategy, range: ide_db::FileRange) -> Vec<Assist> {
-     let sema = Semantics::new(db);
+ pub fn assists(
+     db: &RootDatabase,
+     config: &AssistConfig,
      let file_id = sema
          .attach_first_edition(range.file_id)
          .unwrap_or_else(|| EditionedFileId::new(db, range.file_id, Edition::CURRENT));
@@ -74,8 +69,13 @@ Rustfmt size:  18467 bytes
  mod handlers {
      use crate::{AssistContext, Assists};
 -
-     pub(crate) type Handler = fn(&mut Assists, &AssistContext<'_>) -> Option<()>;
+-    pub(crate) type Handler = fn(&mut Assists, &AssistContext<'_>) -> Option<()>;
 -
++    pub(crate) type Handler =
++        fn(
++            &mut Assists,
++            &AssistContext<'_>,
++        ) -> Option<()>;
      mod add_braces;
      mod add_explicit_enum_discriminant;
      mod add_explicit_type;

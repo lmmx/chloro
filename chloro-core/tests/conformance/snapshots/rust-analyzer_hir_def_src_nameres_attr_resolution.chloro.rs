@@ -27,7 +27,14 @@ pub enum ResolvedAttr {
 }
 
 impl DefMap {
-    pub(crate) fn resolve_attr_macro(&self, local_def_map: &LocalDefMap, db: &dyn DefDatabase, original_module: LocalModuleId, ast_id: AstIdWithPath<ast::Item>, attr: &Attr) -> Result<ResolvedAttr, UnresolvedMacro> {
+    pub(crate) fn resolve_attr_macro(
+        &self,
+        local_def_map: &LocalDefMap,
+        db: &dyn DefDatabase,
+        original_module: LocalModuleId,
+        ast_id: AstIdWithPath<ast::Item>,
+        attr: &Attr,
+    ) -> Result<ResolvedAttr, UnresolvedMacro> {
         // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`
         if self.is_builtin_or_registered_attr(&ast_id.path) {
             return Ok(ResolvedAttr::Other);
@@ -62,7 +69,10 @@ impl DefMap {
         )))
     }
 
-    pub(crate) fn is_builtin_or_registered_attr(&self, path: &ModPath) -> bool {
+    pub(crate) fn is_builtin_or_registered_attr(
+        &self,
+        path: &ModPath,
+    ) -> bool {
         if path.kind != PathKind::Plain {
             return false;
         }
@@ -85,7 +95,13 @@ impl DefMap {
     }
 }
 
-pub(super) fn attr_macro_as_call_id(db: &dyn DefDatabase, item_attr: &AstIdWithPath<ast::Item>, macro_attr: &Attr, krate: Crate, def: MacroDefId) -> MacroCallId {
+pub(super) fn attr_macro_as_call_id(
+    db: &dyn DefDatabase,
+    item_attr: &AstIdWithPath<ast::Item>,
+    macro_attr: &Attr,
+    krate: Crate,
+    def: MacroDefId,
+) -> MacroCallId {
     let arg = match macro_attr.input.as_deref() {
         Some(AttrInput::TokenTree(tt)) => {
             let mut tt = tt.clone();
@@ -107,7 +123,16 @@ pub(super) fn attr_macro_as_call_id(db: &dyn DefDatabase, item_attr: &AstIdWithP
     )
 }
 
-pub(super) fn derive_macro_as_call_id(db: &dyn DefDatabase, item_attr: &AstIdWithPath<ast::Adt>, derive_attr_index: AttrId, derive_pos: u32, call_site: SyntaxContext, krate: Crate, resolver: impl Fn(&ModPath) -> Option<(MacroId, MacroDefId)>, derive_macro_id: MacroCallId) -> Result<(MacroId, MacroDefId, MacroCallId), UnresolvedMacro> {
+pub(super) fn derive_macro_as_call_id(
+    db: &dyn DefDatabase,
+    item_attr: &AstIdWithPath<ast::Adt>,
+    derive_attr_index: AttrId,
+    derive_pos: u32,
+    call_site: SyntaxContext,
+    krate: Crate,
+    resolver: impl Fn(&ModPath) -> Option<(MacroId, MacroDefId)>,
+    derive_macro_id: MacroCallId,
+) -> Result<(MacroId, MacroDefId, MacroCallId), UnresolvedMacro> {
     let (macro_id, def_id) = resolver(&item_attr.path)
         .filter(|(_, def_id)| def_id.is_derive())
         .ok_or_else(|| UnresolvedMacro { path: item_attr.path.as_ref().clone() })?;

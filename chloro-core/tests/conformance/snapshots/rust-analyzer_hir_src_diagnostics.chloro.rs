@@ -412,7 +412,11 @@ pub struct IncorrectGenericsOrder {
 }
 
 impl<'db> AnyDiagnostic<'db> {
-    pub(crate) fn body_validation_diagnostic(db: &'db dyn HirDatabase, diagnostic: BodyValidationDiagnostic, source_map: &hir_def::expr_store::BodySourceMap) -> Option<AnyDiagnostic<'db>> {
+    pub(crate) fn body_validation_diagnostic(
+        db: &'db dyn HirDatabase,
+        diagnostic: BodyValidationDiagnostic,
+        source_map: &hir_def::expr_store::BodySourceMap,
+    ) -> Option<AnyDiagnostic<'db>> {
         match diagnostic {
             BodyValidationDiagnostic::RecordMissingFields { record, variant, missed_fields } => {
                 let variant_data = variant.fields(db);
@@ -542,7 +546,13 @@ impl<'db> AnyDiagnostic<'db> {
         None
     }
 
-    pub(crate) fn inference_diagnostic(db: &'db dyn HirDatabase, def: DefWithBodyId, d: &InferenceDiagnostic<'db>, source_map: &hir_def::expr_store::BodySourceMap, sig_map: &hir_def::expr_store::ExpressionStoreSourceMap) -> Option<AnyDiagnostic<'db>> {
+    pub(crate) fn inference_diagnostic(
+        db: &'db dyn HirDatabase,
+        def: DefWithBodyId,
+        d: &InferenceDiagnostic<'db>,
+        source_map: &hir_def::expr_store::BodySourceMap,
+        sig_map: &hir_def::expr_store::ExpressionStoreSourceMap,
+    ) -> Option<AnyDiagnostic<'db>> {
         let expr_syntax = |expr| {
             source_map
                 .expr_syntax(expr)
@@ -732,7 +742,10 @@ impl<'db> AnyDiagnostic<'db> {
         })
     }
 
-    fn path_diagnostic(diag: &PathLoweringDiagnostic, path: InFile<ast::Path>) -> Option<AnyDiagnostic<'db>> {
+    fn path_diagnostic(
+        diag: &PathLoweringDiagnostic,
+        path: InFile<ast::Path>,
+    ) -> Option<AnyDiagnostic<'db>> {
         Some(match *diag {
             PathLoweringDiagnostic::GenericArgsProhibited { segment, reason } => {
                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
@@ -822,7 +835,11 @@ impl<'db> AnyDiagnostic<'db> {
         })
     }
 
-    pub(crate) fn ty_diagnostic(diag: &TyLoweringDiagnostic, source_map: &ExpressionStoreSourceMap, db: &'db dyn HirDatabase) -> Option<AnyDiagnostic<'db>> {
+    pub(crate) fn ty_diagnostic(
+        diag: &TyLoweringDiagnostic,
+        source_map: &ExpressionStoreSourceMap,
+        db: &'db dyn HirDatabase,
+    ) -> Option<AnyDiagnostic<'db>> {
         let Ok(source) = source_map.type_syntax(diag.source) else {
             stdx::never!("error on synthetic type syntax");
             return None;
@@ -837,7 +854,10 @@ impl<'db> AnyDiagnostic<'db> {
     }
 }
 
-fn path_generics_source_to_ast(path: &ast::Path, generics_source: PathGenericsSource) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
+fn path_generics_source_to_ast(
+    path: &ast::Path,
+    generics_source: PathGenericsSource,
+) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
     Some(match generics_source {
         PathGenericsSource::Segment(segment) => {
             let segment = hir_segment_to_ast_segment(path, segment)?;

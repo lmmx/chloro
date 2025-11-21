@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   13977 bytes
+Chloro size:   14003 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -37,9 +37,14 @@ Rustfmt size:  14420 bytes
 -//     };
 -// }
 -// ```
- pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_let_else_to_match(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      // Should focus on the `else` token to trigger
      let let_stmt = ctx
+         .find_token_syntax_at_offset(T![else])
          return None;
      }
      let pat = let_stmt.pat()?;
@@ -64,18 +69,6 @@ Rustfmt size:  14420 bytes
      acc.add(
          AssistId::refactor_rewrite("convert_let_else_to_match"),
          if bindings.is_empty() {
-     )
- }
- 
--fn remove_mut_and_collect_idents(
--    make: &SyntaxFactory,
--    pat: &ast::Pat,
--    acc: &mut Vec<ast::IdentPat>,
--) -> Option<ast::Pat> {
-+fn remove_mut_and_collect_idents(make: &SyntaxFactory, pat: &ast::Pat, acc: &mut Vec<ast::IdentPat>) -> Option<ast::Pat> {
-     Some(match pat {
-         ast::Pat::IdentPat(p) => {
-             acc.push(p.clone());
              }
              non_mut_pat.into()
          }

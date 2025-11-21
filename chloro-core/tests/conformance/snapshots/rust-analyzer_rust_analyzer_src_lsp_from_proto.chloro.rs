@@ -22,7 +22,10 @@ pub(crate) fn vfs_path(url: &lsp_types::Url) -> anyhow::Result<vfs::VfsPath> {
     abs_path(url).map(vfs::VfsPath::from)
 }
 
-pub(crate) fn offset(line_index: &LineIndex, position: lsp_types::Position) -> anyhow::Result<TextSize> {
+pub(crate) fn offset(
+    line_index: &LineIndex,
+    position: lsp_types::Position,
+) -> anyhow::Result<TextSize> {
     let line_col = match line_index.encoding {
         PositionEncoding::Utf8 => LineCol { line: position.line, col: position.character },
         PositionEncoding::Wide(enc) => {
@@ -48,7 +51,10 @@ pub(crate) fn offset(line_index: &LineIndex, position: lsp_types::Position) -> a
     Ok(line_range.start() + clamped_len)
 }
 
-pub(crate) fn text_range(line_index: &LineIndex, range: lsp_types::Range) -> anyhow::Result<TextRange> {
+pub(crate) fn text_range(
+    line_index: &LineIndex,
+    range: lsp_types::Range,
+) -> anyhow::Result<TextRange> {
     let start = offset(line_index, range.start)?;
     let end = offset(line_index, range.end)?;
     match end < start {
@@ -58,12 +64,18 @@ pub(crate) fn text_range(line_index: &LineIndex, range: lsp_types::Range) -> any
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn file_id(snap: &GlobalStateSnapshot, url: &lsp_types::Url) -> anyhow::Result<Option<FileId>> {
+pub(crate) fn file_id(
+    snap: &GlobalStateSnapshot,
+    url: &lsp_types::Url,
+) -> anyhow::Result<Option<FileId>> {
     snap.url_to_file_id(url)
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn file_position(snap: &GlobalStateSnapshot, tdpp: lsp_types::TextDocumentPositionParams) -> anyhow::Result<Option<FilePosition>> {
+pub(crate) fn file_position(
+    snap: &GlobalStateSnapshot,
+    tdpp: lsp_types::TextDocumentPositionParams,
+) -> anyhow::Result<Option<FilePosition>> {
     let file_id = try_default!(file_id(snap, &tdpp.text_document.uri)?);
     let line_index = snap.file_line_index(file_id)?;
     let offset = offset(&line_index, tdpp.position)?;
@@ -71,12 +83,20 @@ pub(crate) fn file_position(snap: &GlobalStateSnapshot, tdpp: lsp_types::TextDoc
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn file_range(snap: &GlobalStateSnapshot, text_document_identifier: &lsp_types::TextDocumentIdentifier, range: lsp_types::Range) -> anyhow::Result<Option<FileRange>> {
+pub(crate) fn file_range(
+    snap: &GlobalStateSnapshot,
+    text_document_identifier: &lsp_types::TextDocumentIdentifier,
+    range: lsp_types::Range,
+) -> anyhow::Result<Option<FileRange>> {
     file_range_uri(snap, &text_document_identifier.uri, range)
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn file_range_uri(snap: &GlobalStateSnapshot, document: &lsp_types::Url, range: lsp_types::Range) -> anyhow::Result<Option<FileRange>> {
+pub(crate) fn file_range_uri(
+    snap: &GlobalStateSnapshot,
+    document: &lsp_types::Url,
+    range: lsp_types::Range,
+) -> anyhow::Result<Option<FileRange>> {
     let file_id = try_default!(file_id(snap, document)?);
     let line_index = snap.file_line_index(file_id)?;
     let range = text_range(&line_index, range)?;
@@ -97,7 +117,11 @@ pub(crate) fn assist_kind(kind: lsp_types::CodeActionKind) -> Option<AssistKind>
 }
 
 /// Returns `None` if the file was excluded.
-pub(crate) fn annotation(snap: &GlobalStateSnapshot, range: lsp_types::Range, data: lsp_ext::CodeLensResolveData) -> anyhow::Result<Option<Annotation>> {
+pub(crate) fn annotation(
+    snap: &GlobalStateSnapshot,
+    range: lsp_types::Range,
+    data: lsp_ext::CodeLensResolveData,
+) -> anyhow::Result<Option<Annotation>> {
     match data.kind {
         lsp_ext::CodeLensResolveDataKind::Impls(params) => {
             if snap.url_file_version(&params.text_document_position_params.text_document.uri)

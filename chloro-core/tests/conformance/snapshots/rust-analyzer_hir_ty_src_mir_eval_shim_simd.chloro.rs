@@ -21,7 +21,10 @@ macro_rules! not_supported {
 }
 
 impl<'db> Evaluator<'db> {
-    fn detect_simd_ty(&self, ty: Ty<'db>) -> Result<'db, (usize, Ty<'db>)> {
+    fn detect_simd_ty(
+        &self,
+        ty: Ty<'db>,
+    ) -> Result<'db, (usize, Ty<'db>)> {
         match ty.kind() {
             TyKind::Adt(adt_def, subst) => {
                 let len = match subst.as_slice().get(1).and_then(|it| it.konst()) {
@@ -60,7 +63,15 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    pub(super) fn exec_simd_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], _generic_args: GenericArgs<'db>, destination: Interval, _locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+    pub(super) fn exec_simd_intrinsic(
+        &mut self,
+        name: &str,
+        args: &[IntervalAndTy<'db>],
+        _generic_args: GenericArgs<'db>,
+        destination: Interval,
+        _locals: &Locals<'db>,
+        _span: MirSpan,
+    ) -> Result<'db, ()> {
         match name {
             "and" | "or" | "xor" => {
                 let [left, right] = args else {

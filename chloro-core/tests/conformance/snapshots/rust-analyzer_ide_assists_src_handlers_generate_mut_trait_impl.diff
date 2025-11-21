@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11413 bytes
-Chloro size:   10368 bytes
+Chloro size:   10390 bytes
 Rustfmt size:  11741 bytes
 
 ✗ Outputs DIFFER
@@ -55,7 +55,11 @@ Rustfmt size:  11741 bytes
 -//     }
 -// }
 -// ```
- pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+-pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_mut_trait_impl(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
      let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();
      let indent = impl_def.indent_level();
 -
@@ -159,6 +163,17 @@ Rustfmt size:  11741 bytes
              );
          }
          _ => {}
+     None
+ }
+ 
+-fn get_trait_mut(apply_trait: &hir::Trait, famous: FamousDefs<'_, '_>) -> Option<&'static str> {
++fn get_trait_mut(
++    apply_trait: &hir::Trait,
++    famous: FamousDefs<'_, '_>,
++) -> Option<&'static str> {
+     let trait_ = Some(apply_trait);
+     if trait_ == famous.core_convert_Index().as_ref() {
+         return Some("IndexMut");
  #[cfg(test)]
  mod tests {
      use crate::{

@@ -28,7 +28,10 @@ pub struct FileStructureConfig {
     pub exclude_locals: bool,
 }
 
-pub(crate) fn file_structure(file: &SourceFile, config: &FileStructureConfig) -> Vec<StructureNode> {
+pub(crate) fn file_structure(
+    file: &SourceFile,
+    config: &FileStructureConfig,
+) -> Vec<StructureNode> {
     let mut res = Vec::new();
     let mut stack = Vec::new();
     for event in file.syntax().preorder_with_tokens() {
@@ -62,7 +65,10 @@ pub(crate) fn file_structure(file: &SourceFile, config: &FileStructureConfig) ->
     res
 }
 
-fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<StructureNode> {
+fn structure_node(
+    node: &SyntaxNode,
+    config: &FileStructureConfig,
+) -> Option<StructureNode> {
     fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
         decl_with_detail(&node, None, kind)
     }
@@ -240,10 +246,17 @@ fn structure_token(token: SyntaxToken) -> Option<StructureNode> {
 mod tests {
     use expect_test::{Expect, expect};
     use super::*;
-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+    fn check(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        expect: Expect,
+    ) {
         check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
     }
-    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: &FileStructureConfig, expect: Expect) {
+    fn check_with_config(
+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+        config: &FileStructureConfig,
+        expect: Expect,
+    ) {
         let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT).ok().unwrap();
         let structure = file_structure(&file, config);
         expect.assert_debug_eq(&structure)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   18784 bytes
+Chloro size:   18962 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -36,14 +36,11 @@ Rustfmt size:  23115 bytes
  impl RatomlTest {
 -    const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;
 -    const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
- 
--    fn new(
--        fixtures: Vec<&str>,
--        roots: Vec<&str>,
--        client_config: Option<serde_json::Value>,
--    ) -> Self {
 +
-+    fn new(fixtures: Vec<&str>, roots: Vec<&str>, client_config: Option<serde_json::Value>) -> Self {
+ 
+     fn new(
+         fixtures: Vec<&str>,
+     ) -> Self {
          let tmp_dir = TestDir::new();
          let tmp_path = tmp_dir.path().to_owned();
 -
@@ -79,7 +76,11 @@ Rustfmt size:  23115 bytes
          case
      }
  
-     fn fixture_path(&self, fixture: &str) -> Url {
+-    fn fixture_path(&self, fixture: &str) -> Url {
++    fn fixture_path(
++        &self,
++        fixture: &str,
++    ) -> Url {
          let mut lines = fixture.trim().split('\n');
 -
 -        let mut path = lines
@@ -124,7 +125,12 @@ Rustfmt size:  23115 bytes
          .unwrap()
      }
  
-     fn create(&mut self, fixture_path: &str, text: String) {
+-    fn create(&mut self, fixture_path: &str, text: String) {
++    fn create(
++        &mut self,
++        fixture_path: &str,
++        text: String,
++    ) {
          let url = self.fixture_path(fixture_path);
 -
 -        self.server
@@ -167,7 +173,7 @@ Rustfmt size:  23115 bytes
 +        });
      }
  
-     fn delete(&mut self, file_idx: usize) {
+-    fn delete(&mut self, file_idx: usize) {
 -        self.server
 -            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
 -                text_document: TextDocumentItem {
@@ -178,6 +184,10 @@ Rustfmt size:  23115 bytes
 -                },
 -            });
 -
++    fn delete(
++        &mut self,
++        file_idx: usize,
++    ) {
 +        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
 +            text_document: TextDocumentItem {
 +                uri: self.urls[file_idx].clone(),
@@ -200,7 +210,7 @@ Rustfmt size:  23115 bytes
 +        });
      }
  
-     fn edit(&mut self, file_idx: usize, text: String) {
+-    fn edit(&mut self, file_idx: usize, text: String) {
 -        self.server
 -            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
 -                text_document: TextDocumentItem {
@@ -223,6 +233,11 @@ Rustfmt size:  23115 bytes
 -                    text,
 -                }],
 -            });
++    fn edit(
++        &mut self,
++        file_idx: usize,
++        text: String,
++    ) {
 +        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
 +            text_document: TextDocumentItem {
 +                uri: self.urls[file_idx].clone(),
@@ -244,16 +259,7 @@ Rustfmt size:  23115 bytes
 +        });
      }
  
--    fn query(
--        &self,
--        query: InternalTestingFetchConfigOption,
--        source_file_idx: usize,
--        expected: InternalTestingFetchConfigResponse,
--    ) {
-+    fn query(&self, query: InternalTestingFetchConfigOption, source_file_idx: usize, expected: InternalTestingFetchConfigResponse) {
-         let res = self.server.send_request::<InternalTestingFetchConfig>(
-             InternalTestingFetchConfigParams {
-                 text_document: Some(TextDocumentIdentifier {
+     fn query(
      if skip_slow_tests() {
          return;
      }

@@ -70,7 +70,10 @@ impl ops::Deref for BodySourceMap {
 }
 
 impl Body {
-    pub(crate) fn body_with_source_map_query(db: &dyn DefDatabase, def: DefWithBodyId) -> (Arc<Body>, Arc<BodySourceMap>) {
+    pub(crate) fn body_with_source_map_query(
+        db: &dyn DefDatabase,
+        def: DefWithBodyId,
+    ) -> (Arc<Body>, Arc<BodySourceMap>) {
         let _p = tracing::info_span!("body_with_source_map_query").entered();
         let mut params = None;
         let mut is_async_fn = false;
@@ -105,19 +108,40 @@ impl Body {
         (Arc::new(body), Arc::new(source_map))
     }
 
-    pub(crate) fn body_query(db: &dyn DefDatabase, def: DefWithBodyId) -> Arc<Body> {
+    pub(crate) fn body_query(
+        db: &dyn DefDatabase,
+        def: DefWithBodyId,
+    ) -> Arc<Body> {
         db.body_with_source_map(def).0
     }
 
-    pub fn pretty_print(&self, db: &dyn DefDatabase, owner: DefWithBodyId, edition: Edition) -> String {
+    pub fn pretty_print(
+        &self,
+        db: &dyn DefDatabase,
+        owner: DefWithBodyId,
+        edition: Edition,
+    ) -> String {
         pretty::print_body_hir(db, self, owner, edition)
     }
 
-    pub fn pretty_print_expr(&self, db: &dyn DefDatabase, owner: DefWithBodyId, expr: ExprId, edition: Edition) -> String {
+    pub fn pretty_print_expr(
+        &self,
+        db: &dyn DefDatabase,
+        owner: DefWithBodyId,
+        expr: ExprId,
+        edition: Edition,
+    ) -> String {
         pretty::print_expr_hir(db, self, owner, expr, edition)
     }
 
-    pub fn pretty_print_pat(&self, db: &dyn DefDatabase, owner: DefWithBodyId, pat: PatId, oneline: bool, edition: Edition) -> String {
+    pub fn pretty_print_pat(
+        &self,
+        db: &dyn DefDatabase,
+        owner: DefWithBodyId,
+        pat: PatId,
+        oneline: bool,
+        edition: Edition,
+    ) -> String {
         pretty::print_pat_hir(db, self, owner, pat, oneline, edition)
     }
 }
