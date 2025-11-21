@@ -26,8 +26,8 @@ with use cases of code diffing in mind.
 
 ## Rustfmt Conformance
 
-Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt, as tested on the
-[crates][ra-crates] of the rust-analyzer repo itself:
+Diff 'leaderboard' for how well chloro's formatting conforms to rustfmt's,
+as tested on the rust-analyzer [crates][ra-crates]:
 
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
