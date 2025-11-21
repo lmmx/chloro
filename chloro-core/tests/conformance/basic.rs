@@ -12,6 +12,16 @@ fn compare_asterism_app_state() {
 }
 
 #[test]
+fn compare_asterism_app_state_min() {
+    let code = load_fixture("asterism/app_state_min");
+    let result = compare_with_rustfmt(&code, "asterism/app_state_min");
+
+    // Snapshot both outputs
+    assert_snapshot!("app_state_min_chloro", result.chloro);
+    assert_snapshot!("app_state_min_rustfmt", result.rustfmt);
+}
+
+#[test]
 fn compare_asterism_config() {
     let code = load_fixture("asterism/config");
     compare_with_rustfmt(&code, "asterism/config");

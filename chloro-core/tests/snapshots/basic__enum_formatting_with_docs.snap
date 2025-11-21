@@ -1,0 +1,8 @@
+---
+source: chloro-core/tests/basic.rs
+expression: format_source(input)
+---
+pub enum Result {
+    Ok(i32),
+    Err(String),
+}
