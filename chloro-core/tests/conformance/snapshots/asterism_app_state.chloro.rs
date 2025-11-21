@@ -5,21 +5,13 @@
 //! track of the cumulative total number of lines that have been added to the file during the
 //! session so that we can determine the correct offset to insert content at without re-parsing.
 use crate::edit_plan::{Edit, EditPlan};
-
 use crate::formats::markdown::MarkdownFormat;
-
 use crate::input;
-
 use crate::section::ChunkType;
-
 use crate::section::{Section, TreeNode};
-
 use edtui::{EditorState, Lines};
-
 use std::collections::HashMap;
-
 use std::path::PathBuf;
-
 use std::{fs, io};
 
 #[derive(PartialEq)]
@@ -28,12 +20,14 @@ pub enum FileMode {
     Multi,
 }
 
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum MoveState {
     None,
     Selected,
     Moved,
 }
+
 
 pub struct AppState {
     pub sections: Vec<Section>,
@@ -51,12 +45,14 @@ pub struct AppState {
     pub moving_section_index: Option<usize>,
 }
 
+
 #[derive(PartialEq)]
 pub enum View {
     List,
     Detail,
     Command,
 }
+
 
 impl AppState {
     #[must_use]
@@ -747,6 +743,8 @@ impl AppState {
     }
 }
 
+
 #[cfg(test)]
 #[path = "tests/app_state.rs"]
 mod tests;
+

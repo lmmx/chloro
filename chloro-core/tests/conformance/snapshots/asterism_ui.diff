@@ -1,0 +1,188 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16168 bytes
+Chloro size:   16029 bytes
+Rustfmt size:  16168 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! The UI renders the application state into something visible and vim-able.
+ //!
+ //! The draw function dispatches based on the current view (list or editor).
+ //! The list view shows a unified tree with files and sections using box-drawing characters.
+-
+ use crate::app_state::{AppState, MoveState, View};
+ use crate::config::Config;
+ use crate::formats::Format;
+     Frame,
+ };
+ 
+-/// Renders the active view based on current application state.
+ pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
+     match app.current_view {
+         View::List => draw_list(f, app),
+     }
+ }
+ 
+-/// Generate box-drawing prefix for tree structure
++
+ fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
+     if level == 0 {
+         return String::new();
+     }
+-
+     let mut prefix = String::new();
+-
+     // Draw indentation and vertical lines for parent levels
+     for i in 0..level.saturating_sub(1) {
+         prefix.push_str("  "); // Two spaces for indentation
+             prefix.push_str("  ");
+         }
+     }
+-
+     // Add final indentation before the branch
+     prefix.push_str("  ");
+-
+     // Draw branch for current level
+     prefix.push_str("   ");
+-
+     prefix
+ }
+ 
++
+ #[allow(clippy::too_many_lines)]
+ fn draw_list(f: &mut Frame, app: &AppState) {
+     let chunks = Layout::default()
+         .direction(Direction::Vertical)
+         .constraints([Constraint::Min(0), Constraint::Length(3)])
+         .split(f.area());
+-
+     // Determine if we're in difftastic mode by checking if any section has chunk_type
+     let is_difftastic = app.sections.iter().any(|s| s.chunk_type.is_some())
+         || app.sections.iter().any(|s| s.title.contains("@@"));
+-
+     let format: Box<dyn Format> = if is_difftastic {
+         Box::new(crate::formats::difftastic::DifftasticFormat)
+     } else {
+         Box::new(crate::formats::markdown::MarkdownFormat)
+     };
+-
+     let mut is_last_at_level = vec![false; app.tree_nodes.len()];
+-
+     // Calculate which nodes are last children of their parent for box-drawing
+     for (i, node) in app.tree_nodes.iter().enumerate() {
+         // A node is "last" if there's no subsequent sibling (same parent, same tree_level)
+ 
+         is_last_at_level[i] = !has_sibling_after;
+     }
+-
+     // Track which parent levels still have siblings coming
+     let mut parent_has_siblings: Vec<bool> = Vec::new();
+-
+     let items: Vec<ListItem> = app
+         .tree_nodes
+         .iter()
+             ListItem::new(line).style(style)
+         })
+         .collect();
+-
+     let title = match (
+         app.file_mode == crate::app_state::FileMode::Multi,
+         &app.move_state,
+         (false, MoveState::None) => "Sections".to_string(),
+         (false, _) => "Sections (MOVING)".to_string(),
+     };
+-
+     let list = List::new(items).block(Block::default().borders(Borders::ALL).title(title));
+-
+     f.render_widget(list, chunks[0]);
+-
+     let help = if app.move_state == MoveState::None {
+         "↑/↓: Navigate | ←/→: Parent/Child | Enter: Edit | Ctrl+↑/↓/←/→: Start Move | q: Quit"
+     } else {
+         "Ctrl+↑/↓: Move | Ctrl+←/→: Level | Ctrl+Home/End: Top/Bottom | :w Save | Esc: Cancel"
+     };
+-
+     let help_widget = Paragraph::new(help).block(Block::default().borders(Borders::ALL));
+     f.render_widget(help_widget, chunks[1]);
+ }
+ 
++
+ #[allow(clippy::too_many_lines)]
+ fn draw_list_with_command(f: &mut Frame, app: &AppState) {
+     let chunks = Layout::default()
+         .direction(Direction::Vertical)
+         .constraints([Constraint::Min(0), Constraint::Length(3)])
+         .split(f.area());
+-
+     // Determine if we're in difftastic mode by checking if any section has chunk_type
+     let is_difftastic = app.sections.iter().any(|s| s.chunk_type.is_some())
+         || app.sections.iter().any(|s| s.title.contains("@@"));
+-
+     let format: Box<dyn Format> = if is_difftastic {
+         Box::new(crate::formats::difftastic::DifftasticFormat)
+     } else {
+         Box::new(crate::formats::markdown::MarkdownFormat)
+     };
+-
+     // Calculate which nodes are last at their level
+     let mut is_last_at_level: Vec<bool> = vec![false; app.tree_nodes.len()];
+     for (i, node) in app.tree_nodes.iter().enumerate() {
+         }
+         is_last_at_level[i] = !found_next;
+     }
+-
+     let mut parent_has_siblings: Vec<bool> = Vec::new();
+-
+     let items: Vec<ListItem> = app
+         .tree_nodes
+         .iter()
+             ListItem::new(line).style(style)
+         })
+         .collect();
+-
+     let title = match (
+         app.file_mode == crate::app_state::FileMode::Multi,
+         &app.move_state,
+         (false, MoveState::None) => "Sections".to_string(),
+         (false, _) => "Sections (MOVING)".to_string(),
+     };
+-
+     let list = List::new(items).block(Block::default().borders(Borders::ALL).title(title));
+-
+     f.render_widget(list, chunks[0]);
+-
+     // Show command buffer instead of help
+     let command_text = format!(":{}", app.command_buffer);
+     let command_widget =
+     f.render_widget(command_widget, chunks[1]);
+ }
+ 
++
+ fn draw_detail(f: &mut Frame, app: &mut AppState) {
+     let chunks = Layout::default()
+         .direction(Direction::Vertical)
+             Constraint::Length(3), // Help
+         ])
+         .split(f.area());
+-
+     // Breadcrumb navigation
+     if let Some(section_idx) = app.get_current_section_index() {
+         let section = &app.sections[section_idx];
+             f.render_widget(editor, inner);
+         }
+     }
+-
+     // Help/command line
+     let help_text = if app.current_view == View::Command {
+         format!(":{}", app.command_buffer)
+         ":w Save | :x Save & Exit | :q Quit | :q! Force Quit | :wn Save & Next | :wp Save & Prev"
+             .to_string()
+     };
+-
+     let help = Paragraph::new(help_text).block(Block::default().borders(Borders::ALL));
+     f.render_widget(help, chunks[2]);
+ }
++

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3468 bytes
-Chloro size:   2474 bytes
+Chloro size:   2475 bytes
 Rustfmt size:  3468 bytes
 
 ✗ Outputs DIFFER
@@ -14,11 +14,8 @@ Rustfmt size:  3468 bytes
  //! asterism uses textum for generic line-based patching that works with any text format.
 -
  use serde::{Deserialize, Serialize};
-+
  use std::collections::HashMap;
-+
  use std::io;
-+
  use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
  
 -/// Serialisable collection of file modifications for atomic application.
@@ -29,6 +26,7 @@ Rustfmt size:  3468 bytes
  }
  
 -/// Precise coordinates and content for replacing a section in a file.
++
  #[derive(Serialize, Deserialize, Clone)]
  pub struct Edit {
 -    /// Target file path for this modification.
@@ -47,7 +45,7 @@ Rustfmt size:  3468 bytes
      pub item_name: String,
  }
  
- impl EditPlan {
+-impl EditPlan {
 -    /// Apply all edits in the plan using textum patches.
 -    ///
 -    /// Groups edits by file and uses textum's `PatchSet` to apply all changes
@@ -58,9 +56,11 @@ Rustfmt size:  3468 bytes
 -    ///
 -    /// Returns an error if file operations, patching, or line number conversion fails.
 -    pub fn apply(&mut self) -> io::Result<()> {
+-        let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
+ 
++impl EditPlan {
 +    pub fn apply() -> io::Result<()> {
-         let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
--
++        let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
          for edit in &self.edits {
              file_groups
                  .entry(edit.file_name.clone())
@@ -78,3 +78,9 @@ Rustfmt size:  3468 bytes
          Ok(())
      }
  }
+ 
++
+ #[cfg(test)]
+ #[path = "tests/edit_plan.rs"]
+ mod tests;
++

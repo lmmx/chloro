@@ -28,6 +28,8 @@ fn compare_all_fixtures() {
             .strip_prefix(&fixtures_dir)
             .unwrap()
             .to_string_lossy()
+            .strip_suffix(".rs")
+            .unwrap_or_default()
             .to_string();
 
         eprintln!();

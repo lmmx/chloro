@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   27403 bytes
+Chloro size:   27401 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
@@ -16,21 +16,9 @@ Rustfmt size:  31467 bytes
  //! session so that we can determine the correct offset to insert content at without re-parsing.
 -
  use crate::edit_plan::{Edit, EditPlan};
-+
  use crate::formats::markdown::MarkdownFormat;
-+
  use crate::input;
-+
- use crate::section::ChunkType;
-+
- use crate::section::{Section, TreeNode};
-+
- use edtui::{EditorState, Lines};
-+
- use std::collections::HashMap;
-+
  use std::path::PathBuf;
-+
  use std::{fs, io};
  
 -/// Determines navigation scope and quit behavior based on project size.
@@ -43,6 +31,7 @@ Rustfmt size:  31467 bytes
  }
  
 -/// Tracks the lifecycle of a section reordering operation.
++
  #[derive(Clone, PartialEq, Debug)]
  pub enum MoveState {
 -    /// No section is being moved; normal navigation mode.
@@ -54,6 +43,7 @@ Rustfmt size:  31467 bytes
  }
  
 -/// Bridges document sections and the interactive editor, maintaining session state.
++
  pub struct AppState {
 -    /// All parsed sections across loaded files.
      pub sections: Vec<Section>,
@@ -84,6 +74,7 @@ Rustfmt size:  31467 bytes
  }
  
 -/// Determines which UI screen renders and how input is interpreted.
++
  #[derive(PartialEq)]
  pub enum View {
 -    /// Shows hierarchical section tree with navigation.
@@ -94,6 +85,7 @@ Rustfmt size:  31467 bytes
      Command,
  }
  
++
  impl AppState {
 -    /// Initialises application state with parsed sections and determines file mode.
      #[must_use]
@@ -605,3 +597,10 @@ Rustfmt size:  31467 bytes
          fs::write(file_path, new_content)?;
          Ok(())
      }
+ }
+ 
++
+ #[cfg(test)]
+ #[path = "tests/app_state.rs"]
+ mod tests;
++

@@ -1,0 +1,35 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 375 bytes
+Chloro size:   390 bytes
+Rustfmt size:  375 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ #![allow(clippy::multiple_crate_versions)]
+ 
+ pub mod app_state;
++
++
+ pub mod config;
++
++
+ pub mod edit_plan;
++
++
+ pub mod formats;
++
++
+ pub mod highlight;
++
++
+ pub mod input;
++
++
+ pub mod section;
++
++
+ pub mod ui;
++

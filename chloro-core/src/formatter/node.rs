@@ -22,13 +22,14 @@ pub use useitem::format_use;
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            let mut last_was_item = false;
+            let mut last_kind: Option<SyntaxKind> = None;
 
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
+                        let current_kind = n.kind();
                         let is_item = matches!(
-                            n.kind(),
+                            current_kind,
                             SyntaxKind::FN
                                 | SyntaxKind::STRUCT
                                 | SyntaxKind::ENUM
@@ -40,20 +41,25 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 | SyntaxKind::STATIC
                         );
 
-                        // Add blank line before items (except the first one)
-                        if is_item && last_was_item {
-                            buf.push('\n');
+                        if is_item {
+                            // Add blank line between different item types
+                            if let Some(last) = last_kind {
+                                // Don't add blank line between consecutive USE statements
+                                if !(current_kind == SyntaxKind::USE && last == SyntaxKind::USE) {
+                                    buf.push('\n');
+                                }
+                            }
                         }
 
                         format_node(&n, buf, indent);
-                        last_was_item = is_item;
+                        buf.push('\n');
+
+                        if is_item {
+                            last_kind = Some(current_kind);
+                        }
                     }
                     NodeOrToken::Token(t) => {
                         format_token(&t, buf, indent);
-                        // Comments and attributes don't count as items
-                        if !matches!(t.kind(), SyntaxKind::WHITESPACE | SyntaxKind::COMMENT) {
-                            last_was_item = false;
-                        }
                     }
                 }
             }
