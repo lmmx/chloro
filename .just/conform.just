@@ -35,7 +35,7 @@ conf-impact:
     echo -e "\n${BOLD}Top 20 most impacted (by LOC/diff size):${RESET}"
 
     # Header
-    echo -e "${BOLD}Score  SizeRank  DiffRank    Impact       +   / -       File${RESET}"
+    echo -e "${BOLD}Rank  SizeRank  DiffRank    Impact       +   / -       File${RESET}"
     echo "────────────────────────────────────────────────────────────────────────────"
 
     # Collect data with full relative path
@@ -82,9 +82,12 @@ conf-impact:
             close(cmd_diff)
             close(cmd_total)
 
-            printf "%5d  %8d  %8d  %7.1f%%  \033[32m%6s\033[0m  /  \033[31m%-6s\033[0m  %s\n",
+            printf "%d|%d|%d|%.1f|%s|%s|%s\n",
                 score, size_rank, diff_rank, impact,
                 diff_fmt, total_fmt,
                 filename
-        }' | sort -n | head -20
+        }' | sort -n | head -20 | nl -nln | awk -F'|' '{
+            printf "%4d  %8s  %8s  %7s%%  \033[32m%6s\033[0m  /  \033[31m%-6s\033[0m  %s\n",
+                $1, $2, $3, $4, $5, $6, $7
+        }'
     }
