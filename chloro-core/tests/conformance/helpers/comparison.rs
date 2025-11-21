@@ -14,7 +14,7 @@ impl ComparisonResult {
         let output_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
             .join("conformance")
-            .join("output");
+            .join("snapshots");
 
         fs::create_dir_all(&output_dir).unwrap();
 
@@ -34,7 +34,7 @@ impl ComparisonResult {
         // Generate and write diff
         let diff_content = self.generate_diff_content();
         let diff_path = output_dir.join(format!("{}.diff", safe_name));
-        fs::write(&diff_path, &diff_content).unwrap();
+        fs::write(&diff_path, diff_content).unwrap();
         eprintln!("Wrote: {}", diff_path.display());
 
         // Show diff in terminal
