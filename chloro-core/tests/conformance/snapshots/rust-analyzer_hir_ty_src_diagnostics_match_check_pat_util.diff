@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1313 bytes
-Chloro size:   1237 bytes
+Chloro size:   1309 bytes
 Rustfmt size:  1430 bytes
 
 ✗ Outputs DIFFER
@@ -33,27 +33,6 @@ Rustfmt size:  1430 bytes
      }
  
      fn size_hint(&self) -> (usize, Option<usize>) {
-     }
- }
- 
--pub(crate) trait EnumerateAndAdjustIterator {
--    fn enumerate_and_adjust(
--        self,
--        expected_len: usize,
--        gap_pos: Option<usize>,
--    ) -> EnumerateAndAdjust<Self>
--    where
-+fn enumerate_and_adjust(
-+    self,
-+    expected_len: usize,
-+    gap_pos: Option<usize>,
-+) -> EnumerateAndAdjust<Self>
-+where
-         Self: Sized;
--}
- 
- impl<T: ExactSizeIterator> EnumerateAndAdjustIterator for T {
-     fn enumerate_and_adjust(
          gap_pos: Option<usize>,
      ) -> EnumerateAndAdjust<Self>
      where

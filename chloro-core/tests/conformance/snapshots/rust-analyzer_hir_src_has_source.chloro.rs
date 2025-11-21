@@ -17,18 +17,21 @@ use crate::{
     Struct, Trait, TypeAlias, TypeOrConstParam, Union, Variant, VariantDef, db::HirDatabase,
 };
 
-type Ast;
-/// Fetches the definition's source node.
-/// Using [`crate::Semantics::source`] is preferred when working with [`crate::Semantics`],
-/// as that caches the parsed file in the semantics' cache.
-///
-/// The current some implementations can return `InFile` instead of `Option<InFile>`.
-/// But we made this method `Option` to support rlib in the future
-/// by <https://github.com/rust-lang/rust-analyzer/issues/6913>
-fn source(
-    self,
-    db: &dyn HirDatabase,
-) -> Option<InFile<Self::Ast>>;
+pub trait HasSource {
+    type Ast;
+
+    /// Fetches the definition's source node.
+    /// Using [`crate::Semantics::source`] is preferred when working with [`crate::Semantics`],
+    /// as that caches the parsed file in the semantics' cache.
+    ///
+    /// The current some implementations can return `InFile` instead of `Option<InFile>`.
+    /// But we made this method `Option` to support rlib in the future
+    /// by <https://github.com/rust-lang/rust-analyzer/issues/6913>
+    fn source(
+        self,
+        db: &dyn HirDatabase,
+    ) -> Option<InFile<Self::Ast>>;
+}
 
 /// NB: Module is !HasSource, because it has two source nodes at the same time:
 /// definition and declaration.

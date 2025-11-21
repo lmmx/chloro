@@ -325,7 +325,9 @@ pub struct ItemTreeDataStats {
 }
 
 /// Trait implemented by all nodes in the item tree.
-type Source;
+pub(crate) trait ItemTreeNode {
+    type Source;
+}
 
 #[allow(type_alias_bounds)]
 pub(crate) type ItemTreeAstId<T: ItemTreeNode> = FileAstId<T::Source>;

@@ -471,14 +471,18 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
 }
 
 /// The public API to interact with proof trees.
-type Result;
-fn config(&self) -> InspectConfig {
-    InspectConfig { max_depth: 10 }
+pub(crate) trait ProofTreeVisitor<'db> {
+    type Result;
+
+    fn config(&self) -> InspectConfig {
+        InspectConfig { max_depth: 10 }
+    }
+
+    fn visit_goal(
+        &mut self,
+        goal: &InspectGoal<'_, 'db>,
+    ) -> Self::Result;
 }
-fn visit_goal(
-    &mut self,
-    goal: &InspectGoal<'_, 'db>,
-) -> Self::Result;
 
 impl<'db> InferCtxt<'db> {
     pub(crate) fn visit_proof_tree<V: ProofTreeVisitor<'db>>(

@@ -23,21 +23,24 @@ use hir_expand::{HirFileId, attrs::collect_attrs};
 use span::AstIdNode;
 use syntax::{AstPtr, ast};
 
-fn child_by_source(
-    &self,
-    db: &dyn DefDatabase,
-    file_id: HirFileId,
-) -> DynMap {
-    let mut res = DynMap::default();
-    self.child_by_source_to(db, &mut res, file_id);
-    res
+pub(crate) trait ChildBySource {
+    fn child_by_source(
+        &self,
+        db: &dyn DefDatabase,
+        file_id: HirFileId,
+    ) -> DynMap {
+        let mut res = DynMap::default();
+        self.child_by_source_to(db, &mut res, file_id);
+        res
+    }
+
+    fn child_by_source_to(
+        &self,
+        db: &dyn DefDatabase,
+        map: &mut DynMap,
+        file_id: HirFileId,
+    );
 }
-fn child_by_source_to(
-    &self,
-    db: &dyn DefDatabase,
-    map: &mut DynMap,
-    file_id: HirFileId,
-);
 
 impl ChildBySource for TraitId {
     fn child_by_source_to(

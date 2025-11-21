@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   50128 bytes
+Chloro size:   50170 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -132,16 +132,6 @@ Rustfmt size:  49754 bytes
          match self.unresolved {
              TyInt(_) => write!(
                  f,
-     interner: DbInterner<'db>,
- }
- 
--pub trait DbInternerInferExt<'db> {
--    fn infer_ctxt(self) -> InferCtxtBuilder<'db>;
--}
-+fn infer_ctxt(self) -> InferCtxtBuilder<'db>;
- 
- impl<'db> DbInternerInferExt<'db> for DbInterner<'db> {
-     fn infer_ctxt(self) -> InferCtxtBuilder<'db> {
          input: &CanonicalQueryInput<'db, T>,
      ) -> (InferCtxt<'db>, T, CanonicalVarValues<'db>)
      where

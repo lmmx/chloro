@@ -203,10 +203,15 @@ impl<N: AstIdNode> HasModule for AssocItemLoc<N> {
     }
 }
 
-type Container;
-type Ast;
-fn ast_id(&self) -> AstId<Self::Ast>;
-fn container(&self) -> Self::Container;
+pub trait AstIdLoc {
+    type Container;
+
+    type Ast;
+
+    fn ast_id(&self) -> AstId<Self::Ast>;
+
+    fn container(&self) -> Self::Container;
+}
 
 impl<N: AstIdNode> AstIdLoc for ItemLoc<N> {
     type Container = ModuleId;
@@ -1074,19 +1079,22 @@ impl VariantId {
     }
 }
 
-/// Returns the enclosing module this thing is defined within.
-fn module(
-    &self,
-    db: &dyn DefDatabase,
-) -> ModuleId;
-/// Returns the crate this thing is defined within.
-#[inline]
-#[doc(alias = "crate")]
-fn krate(
-    &self,
-    db: &dyn DefDatabase,
-) -> Crate {
-    self.module(db).krate
+pub trait HasModule {
+    /// Returns the enclosing module this thing is defined within.
+    fn module(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> ModuleId;
+
+    /// Returns the crate this thing is defined within.
+    #[inline]
+    #[doc(alias = "crate")]
+    fn krate(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> Crate {
+        self.module(db).krate
+    }
 }
 
 impl<N, ItemId> HasModule for ItemId

@@ -113,20 +113,27 @@ macro_rules! impl_intern_lookup {
     };
 }
 
-// ideally these would be defined in base-db, but the orphan rule doesn't let us
-type Database;
-type ID;
-fn intern(
-    self,
-    db: &Self::Database,
-) -> Self::ID;
+pub trait Intern {
+    type Database;
 
-type Database;
-type Data;
-fn lookup(
-    &self,
-    db: &Self::Database,
-) -> Self::Data;
+    type ID;
+
+    fn intern(
+        self,
+        db: &Self::Database,
+    ) -> Self::ID;
+}
+
+pub trait Lookup {
+    type Database;
+
+    type Data;
+
+    fn lookup(
+        &self,
+        db: &Self::Database,
+    ) -> Self::Data;
+}
 pub type ExpandResult<T> = ValueResult<T, ExpandError>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]

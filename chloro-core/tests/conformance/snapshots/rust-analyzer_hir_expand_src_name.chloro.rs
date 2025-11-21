@@ -254,7 +254,9 @@ impl fmt::Display for Display<'_> {
     }
 }
 
-fn as_name(&self) -> Name;
+pub trait AsName {
+    fn as_name(&self) -> Name;
+}
 
 impl AsName for ast::NameRef {
     fn as_name(&self) -> Name {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   17236 bytes
+Chloro size:   17315 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
@@ -165,27 +165,10 @@ Rustfmt size:  18477 bytes
  }
  
 -pub trait UpmapFromRaFixture: Sized {
--    fn upmap_from_ra_fixture(
--        self,
--        analysis: &RaFixtureAnalysis,
--        virtual_file_id: FileId,
--        real_file_id: FileId,
--    ) -> Result<Self, ()>;
--}
-+fn upmap_from_ra_fixture(
-+    self,
-+    analysis: &RaFixtureAnalysis,
-+    virtual_file_id: FileId,
-+    real_file_id: FileId,
-+) -> Result<Self, ()>;
- 
--trait IsEmpty {
--    fn is_empty(&self) -> bool;
--}
-+fn is_empty(&self) -> bool;
- 
- impl<T> IsEmpty for Vec<T> {
-     fn is_empty(&self) -> bool {
++pub trait UpmapFromRaFixture {
+     fn upmap_from_ra_fixture(
+         self,
+         analysis: &RaFixtureAnalysis,
      }
  }
  

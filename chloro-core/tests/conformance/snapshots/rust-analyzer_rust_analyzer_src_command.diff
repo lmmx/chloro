@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   6947 bytes
+Chloro size:   7008 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
@@ -13,17 +13,16 @@ Rustfmt size:  7231 bytes
  /// cargo output into a Rust data type
 -pub(crate) trait CargoParser<T>: Send + 'static {
 -    fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
--    fn from_eof(&self) -> Option<T>;
--}
-+fn from_line(
-+    &self,
-+    line: &str,
-+    error: &mut String,
-+) -> Option<T>;
-+fn from_eof(&self) -> Option<T>;
++pub(crate) trait CargoParser<T> {
++    fn from_line(
++        &self,
++        line: &str,
++        error: &mut String,
++    ) -> Option<T>;
++
+     fn from_eof(&self) -> Option<T>;
+ }
  
- struct CargoActor<T> {
-     parser: Box<dyn CargoParser<T>>,
          stderr: ChildStderr,
      ) -> Self {
          let parser = Box::new(parser);

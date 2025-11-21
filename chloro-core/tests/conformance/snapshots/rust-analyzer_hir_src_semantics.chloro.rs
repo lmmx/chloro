@@ -2445,11 +2445,14 @@ fn macro_call_to_macro_id(
     }
 }
 
-type Def;
-fn to_def(
-    sema: &SemanticsImpl<'_>,
-    src: InFile<&Self>,
-) -> Option<Self::Def>;
+pub trait ToDef {
+    type Def;
+
+    fn to_def(
+        sema: &SemanticsImpl<'_>,
+        src: InFile<&Self>,
+    ) -> Option<Self::Def>;
+}
 
 macro_rules! to_def_impls {
     ($(($def:path, $ast:path, $meth:ident)),* ,) => {$(

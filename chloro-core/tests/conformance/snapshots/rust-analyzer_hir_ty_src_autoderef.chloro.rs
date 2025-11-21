@@ -61,12 +61,15 @@ pub fn autoderef<'db>(
     v.into_iter()
 }
 
-fn len(&self) -> usize;
-fn push(
-    &mut self,
-    ty: Ty<'db>,
-    kind: AutoderefKind,
-);
+pub(crate) trait TrackAutoderefSteps<'db> {
+    fn len(&self) -> usize;
+
+    fn push(
+        &mut self,
+        ty: Ty<'db>,
+        kind: AutoderefKind,
+    );
+}
 
 impl<'db> TrackAutoderefSteps<'db> for usize {
     fn len(&self) -> usize {

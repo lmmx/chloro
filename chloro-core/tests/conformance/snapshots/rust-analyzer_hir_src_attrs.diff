@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11937 bytes
-Chloro size:   11463 bytes
+Chloro size:   11511 bytes
 Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
@@ -23,23 +23,18 @@ Rustfmt size:  12307 bytes
  };
  use hir_expand::{
      mod_path::{ModPath, PathKind},
-     Struct, Trait, Type, TypeAlias, TypeParam, Union, Variant, VariantDef,
  };
  
--pub trait HasAttrs {
+ pub trait HasAttrs {
 -    fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner;
--    #[doc(hidden)]
--    fn attr_id(self) -> AttrDefId;
--}
-+fn attrs(
-+    self,
-+    db: &dyn HirDatabase,
-+) -> AttrsWithOwner;
-+#[doc(hidden)]
-+fn attr_id(self) -> AttrDefId;
- 
- macro_rules! impl_has_attrs {
-     ($(($def:ident, $def_id:ident),)*) => {$(
++    fn attrs(
++        self,
++        db: &dyn HirDatabase,
++    ) -> AttrsWithOwner;
++
+     #[doc(hidden)]
+     fn attr_id(self) -> AttrDefId;
+ }
          }
      )*};
  }

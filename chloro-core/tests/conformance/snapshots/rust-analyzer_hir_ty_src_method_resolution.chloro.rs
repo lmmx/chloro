@@ -1154,18 +1154,21 @@ fn iterate_method_candidates_with_autoref<'db>(
     ControlFlow::Continue(())
 }
 
-fn on_inherent_method(
-    &mut self,
-    adjustments: ReceiverAdjustments,
-    item: AssocItemId,
-    is_visible: bool,
-) -> ControlFlow<()>;
-fn on_trait_method(
-    &mut self,
-    adjustments: ReceiverAdjustments,
-    item: AssocItemId,
-    is_visible: bool,
-) -> ControlFlow<()>;
+pub trait MethodCandidateCallback {
+    fn on_inherent_method(
+        &mut self,
+        adjustments: ReceiverAdjustments,
+        item: AssocItemId,
+        is_visible: bool,
+    ) -> ControlFlow<()>;
+
+    fn on_trait_method(
+        &mut self,
+        adjustments: ReceiverAdjustments,
+        item: AssocItemId,
+        is_visible: bool,
+    ) -> ControlFlow<()>;
+}
 
 impl<F> MethodCandidateCallback for F
 where

@@ -937,58 +937,68 @@ pub(crate) enum TypeLikeConst<'a> {
     Path(&'a Path),
 }
 
-fn report_elided_lifetimes_in_path(
-    &mut self,
-    def: GenericDefId,
-    expected_count: u32,
-    hard_error: bool,
-);
-fn report_elision_failure(
-    &mut self,
-    def: GenericDefId,
-    expected_count: u32,
-);
-fn report_missing_lifetime(
-    &mut self,
-    def: GenericDefId,
-    expected_count: u32,
-);
-fn report_len_mismatch(
-    &mut self,
-    def: GenericDefId,
-    provided_count: u32,
-    expected_count: u32,
-    kind: IncorrectGenericsLenKind,
-);
-fn report_arg_mismatch(
-    &mut self,
-    param_id: GenericParamId,
-    arg_idx: u32,
-    has_self_arg: bool,
-);
-fn provided_kind(
-    &mut self,
-    param_id: GenericParamId,
-    param: GenericParamDataRef<'_>,
-    arg: &HirGenericArg,
-) -> GenericArg<'db>;
-fn provided_type_like_const(
-    &mut self,
-    const_ty: Ty<'db>,
-    arg: TypeLikeConst<'_>,
-) -> Const<'db>;
-fn inferred_kind(
-    &mut self,
-    def: GenericDefId,
-    param_id: GenericParamId,
-    param: GenericParamDataRef<'_>,
-    infer_args: bool,
-    preceding_args: &[GenericArg<'db>],
-) -> GenericArg<'db>;
-fn parent_arg(
-    &mut self,
-    param_id: GenericParamId,
-) -> GenericArg<'db>;
+pub(crate) trait GenericArgsLowerer<'db> {
+    fn report_elided_lifetimes_in_path(
+        &mut self,
+        def: GenericDefId,
+        expected_count: u32,
+        hard_error: bool,
+    );
+
+    fn report_elision_failure(
+        &mut self,
+        def: GenericDefId,
+        expected_count: u32,
+    );
+
+    fn report_missing_lifetime(
+        &mut self,
+        def: GenericDefId,
+        expected_count: u32,
+    );
+
+    fn report_len_mismatch(
+        &mut self,
+        def: GenericDefId,
+        provided_count: u32,
+        expected_count: u32,
+        kind: IncorrectGenericsLenKind,
+    );
+
+    fn report_arg_mismatch(
+        &mut self,
+        param_id: GenericParamId,
+        arg_idx: u32,
+        has_self_arg: bool,
+    );
+
+    fn provided_kind(
+        &mut self,
+        param_id: GenericParamId,
+        param: GenericParamDataRef<'_>,
+        arg: &HirGenericArg,
+    ) -> GenericArg<'db>;
+
+    fn provided_type_like_const(
+        &mut self,
+        const_ty: Ty<'db>,
+        arg: TypeLikeConst<'_>,
+    ) -> Const<'db>;
+
+    fn inferred_kind(
+        &mut self,
+        def: GenericDefId,
+        param_id: GenericParamId,
+        param: GenericParamDataRef<'_>,
+        infer_args: bool,
+        preceding_args: &[GenericArg<'db>],
+    ) -> GenericArg<'db>;
+
+    fn parent_arg(
+        &mut self,
+        param_id: GenericParamId,
+    ) -> GenericArg<'db>;
+}
 
 /// Returns true if there was an error.
 fn check_generic_args_len<'db>(

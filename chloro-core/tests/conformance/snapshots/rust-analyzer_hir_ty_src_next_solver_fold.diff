@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5559 bytes
-Chloro size:   5719 bytes
+Chloro size:   5813 bytes
 Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
@@ -22,29 +22,29 @@ Rustfmt size:  5644 bytes
  use super::{
      Binder, BoundRegion, BoundTy, Const, ConstKind, DbInterner, Predicate, Region, Ty, TyKind,
  };
- /// Any implementation must make sure that each bound variable always
  /// gets mapped to the same result. `BoundVarReplacer` caches by using
  /// a `DelayedMap` which does not cache the first few types it encounters.
--pub trait BoundVarReplacerDelegate<'db> {
+ pub trait BoundVarReplacerDelegate<'db> {
 -    fn replace_region(&mut self, br: BoundRegion) -> Region<'db>;
 -    fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db>;
 -    fn replace_const(&mut self, bv: BoundConst) -> Const<'db>;
--}
-+fn replace_region(
-+    &mut self,
-+    br: BoundRegion,
-+) -> Region<'db>;
-+fn replace_ty(
-+    &mut self,
-+    bt: BoundTy,
-+) -> Ty<'db>;
-+fn replace_const(
-+    &mut self,
-+    bv: BoundConst,
-+) -> Const<'db>;
++    fn replace_region(
++        &mut self,
++        br: BoundRegion,
++    ) -> Region<'db>;
++
++    fn replace_ty(
++        &mut self,
++        bt: BoundTy,
++    ) -> Ty<'db>;
++
++    fn replace_const(
++        &mut self,
++        bv: BoundConst,
++    ) -> Const<'db>;
+ }
  
  /// A simple delegate taking 3 mutable functions. The used functions must
- /// always return the same result for each bound variable, no matter how
  }
  
  impl<'db, 'a> BoundVarReplacerDelegate<'db> for FnMutDelegate<'db, 'a> {

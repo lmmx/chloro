@@ -45,7 +45,8 @@ fn snapshot_parser_crate_roundtrip_diff() {
     let config = UnifiedDiffConfig::default();
     let printer = BasicLineDiffPrinter(&input.interner);
     let unified_diff = diff.unified_diff(&printer, config, &input);
+    let cleaned_diff = crate::helpers::strip_hunk_headers(&unified_diff.to_string());
 
     // Snapshot just the diff
-    assert_snapshot!("parser_crate_roundtrip_diff", unified_diff.to_string());
+    assert_snapshot!("parser_crate_roundtrip_diff", cleaned_diff);
 }

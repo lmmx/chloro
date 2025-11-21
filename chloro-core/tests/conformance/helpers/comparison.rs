@@ -8,7 +8,7 @@ pub struct ComparisonResult {
     pub rustfmt: String,
 }
 
-fn strip_hunk_headers(diff: &str) -> String {
+pub fn strip_hunk_headers(diff: &str) -> String {
     diff.lines()
         .filter(|line| !line.starts_with("@@"))
         .collect::<Vec<_>>()

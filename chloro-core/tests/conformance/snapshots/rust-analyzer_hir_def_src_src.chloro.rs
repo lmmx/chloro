@@ -10,18 +10,22 @@ use crate::{
     UseId, VariantId, attr::Attrs, db::DefDatabase,
 };
 
-type Value;
-fn source(
-    &self,
-    db: &dyn DefDatabase,
-) -> InFile<Self::Value> {
-    let InFile { file_id, value } = self.ast_ptr(db);
-    InFile::new(file_id, value.to_node(&db.parse_or_expand(file_id)))
+pub trait HasSource {
+    type Value;
+
+    fn source(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> InFile<Self::Value> {
+        let InFile { file_id, value } = self.ast_ptr(db);
+        InFile::new(file_id, value.to_node(&db.parse_or_expand(file_id)))
+    }
+
+    fn ast_ptr(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> InFile<AstPtr<Self::Value>>;
 }
-fn ast_ptr(
-    &self,
-    db: &dyn DefDatabase,
-) -> InFile<AstPtr<Self::Value>>;
 
 impl<T> HasSource for T
 where
@@ -38,11 +42,14 @@ where
     }
 }
 
-type Value;
-fn child_source(
-    &self,
-    db: &dyn DefDatabase,
-) -> InFile<ArenaMap<ChildId, Self::Value>>;
+pub trait HasChildSource<ChildId> {
+    type Value;
+
+    fn child_source(
+        &self,
+        db: &dyn DefDatabase,
+    ) -> InFile<ArenaMap<ChildId, Self::Value>>;
+}
 
 /// Maps a `UseTree` contained in this import back to its AST node.
 pub fn use_tree_to_ast(

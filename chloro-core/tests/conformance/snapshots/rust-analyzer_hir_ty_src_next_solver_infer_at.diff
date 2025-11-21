@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11656 bytes
+Chloro size:   11703 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -73,15 +73,15 @@ Rustfmt size:  11331 bytes
  
 -pub trait ToTrace<'db>: Relate<DbInterner<'db>> {
 -    fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
--}
-+fn to_trace(
-+    cause: &ObligationCause,
-+    a: Self,
-+    b: Self,
-+) -> TypeTrace<'db>;
++pub trait ToTrace<'db> {
++    fn to_trace(
++        cause: &ObligationCause,
++        a: Self,
++        b: Self,
++    ) -> TypeTrace<'db>;
+ }
  
  impl<'a, 'db> At<'a, 'db> {
-     /// Makes `actual <: expected`. For example, if type-checking a
      /// call like `foo(x)`, where `foo: fn(i32)`, you might have
      /// `sup(i32, x)`, since the "expected" type is the type that
      /// appears in the signature.

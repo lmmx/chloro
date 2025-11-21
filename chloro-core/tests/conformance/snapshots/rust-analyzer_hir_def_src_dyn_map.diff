@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6860 bytes
-Chloro size:   7083 bytes
+Chloro size:   7156 bytes
 Rustfmt size:  6980 bytes
 
 ✗ Outputs DIFFER
@@ -129,29 +129,27 @@ Rustfmt size:  6980 bytes
  
  impl<K, V, P> Clone for Key<K, V, P> {
      fn clone(&self) -> Key<K, V, P> {
-     }
- }
  
--pub trait Policy {
--    type K;
--    type V;
--
+ pub trait Policy {
+     type K;
++
+     type V;
+ 
 -    fn insert(map: &mut DynMap, key: Self::K, value: Self::V);
 -    fn get<'a>(map: &'a DynMap, key: &Self::K) -> Option<&'a Self::V>;
--    fn is_empty(map: &DynMap) -> bool;
--}
-+type K;
-+type V;
-+fn insert(
-+    map: &mut DynMap,
-+    key: Self::K,
-+    value: Self::V,
-+);
-+fn get<'a>(
-+    map: &'a DynMap,
-+    key: &Self::K,
-+) -> Option<&'a Self::V>;
-+fn is_empty(map: &DynMap) -> bool;
++    fn insert(
++        map: &mut DynMap,
++        key: Self::K,
++        value: Self::V,
++    );
++
++    fn get<'a>(
++        map: &'a DynMap,
++        key: &Self::K,
++    ) -> Option<&'a Self::V>;
++
+     fn is_empty(map: &DynMap) -> bool;
+ }
  
  impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
      type K = K;

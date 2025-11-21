@@ -272,14 +272,18 @@ impl RaFixtureAnalysis {
     }
 }
 
-fn upmap_from_ra_fixture(
-    self,
-    analysis: &RaFixtureAnalysis,
-    virtual_file_id: FileId,
-    real_file_id: FileId,
-) -> Result<Self, ()>;
+pub trait UpmapFromRaFixture {
+    fn upmap_from_ra_fixture(
+        self,
+        analysis: &RaFixtureAnalysis,
+        virtual_file_id: FileId,
+        real_file_id: FileId,
+    ) -> Result<Self, ()>;
+}
 
-fn is_empty(&self) -> bool;
+trait IsEmpty {
+    fn is_empty(&self) -> bool;
+}
 
 impl<T> IsEmpty for Vec<T> {
     fn is_empty(&self) -> bool {

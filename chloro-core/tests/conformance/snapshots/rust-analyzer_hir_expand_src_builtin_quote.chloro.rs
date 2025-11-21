@@ -131,11 +131,13 @@ macro_rules! quote {
     }
 }
 
-fn to_tokens(
-    self,
-    span: Span,
-    builder: &mut TopSubtreeBuilder,
-);
+pub trait ToTokenTree {
+    fn to_tokens(
+        self,
+        span: Span,
+        builder: &mut TopSubtreeBuilder,
+    );
+}
 
 /// Wraps `TokenTreesView` with a delimiter (a subtree, but without allocating).
 pub struct WithDelimiter<'a> {

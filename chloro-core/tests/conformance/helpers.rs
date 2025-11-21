@@ -3,7 +3,7 @@ pub mod fixture;
 pub mod roundtrip;
 pub mod rustfmt;
 
-pub use comparison::ComparisonResult;
+pub use comparison::{strip_hunk_headers, ComparisonResult};
 pub use fixture::load_fixture;
 
 use chloro_core::format_source;

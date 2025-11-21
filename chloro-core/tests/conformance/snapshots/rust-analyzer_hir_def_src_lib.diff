@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   39101 bytes
+Chloro size:   39224 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -237,16 +237,16 @@ Rustfmt size:  45085 bytes
      }
  }
  
--pub trait AstIdLoc {
--    type Container;
+ pub trait AstIdLoc {
+     type Container;
 -    type Ast: AstNode;
--    fn ast_id(&self) -> AstId<Self::Ast>;
--    fn container(&self) -> Self::Container;
--}
-+type Container;
-+type Ast;
-+fn ast_id(&self) -> AstId<Self::Ast>;
-+fn container(&self) -> Self::Container;
++
++    type Ast;
++
+     fn ast_id(&self) -> AstId<Self::Ast>;
++
+     fn container(&self) -> Self::Container;
+ }
  
  impl<N: AstIdNode> AstIdLoc for ItemLoc<N> {
      type Container = ModuleId;
@@ -990,31 +990,25 @@ Rustfmt size:  45085 bytes
          match self {
              VariantId::EnumVariantId(it) => it.lookup(db).parent.into(),
              VariantId::StructId(it) => it.into(),
-     }
- }
  
--pub trait HasModule {
--    /// Returns the enclosing module this thing is defined within.
+ pub trait HasModule {
+     /// Returns the enclosing module this thing is defined within.
 -    fn module(&self, db: &dyn DefDatabase) -> ModuleId;
--    /// Returns the crate this thing is defined within.
--    #[inline]
--    #[doc(alias = "crate")]
++    fn module(
++        &self,
++        db: &dyn DefDatabase,
++    ) -> ModuleId;
++
+     /// Returns the crate this thing is defined within.
+     #[inline]
+     #[doc(alias = "crate")]
 -    fn krate(&self, db: &dyn DefDatabase) -> Crate {
--        self.module(db).krate
--    }
-+/// Returns the enclosing module this thing is defined within.
-+fn module(
-+    &self,
-+    db: &dyn DefDatabase,
-+) -> ModuleId;
-+/// Returns the crate this thing is defined within.
-+#[inline]
-+#[doc(alias = "crate")]
-+fn krate(
-+    &self,
-+    db: &dyn DefDatabase,
-+) -> Crate {
-+    self.module(db).krate
++    fn krate(
++        &self,
++        db: &dyn DefDatabase,
++    ) -> Crate {
+         self.module(db).krate
+     }
  }
  
 -// In theory this impl should work out for us, but rustc thinks it collides with all the other

@@ -116,15 +116,19 @@ impl UpmapFromRaFixture for NavigationTarget {
     }
 }
 
-fn to_nav(
-    &self,
-    db: &RootDatabase,
-) -> UpmappingResult<NavigationTarget>;
+pub(crate) trait ToNav {
+    fn to_nav(
+        &self,
+        db: &RootDatabase,
+    ) -> UpmappingResult<NavigationTarget>;
+}
 
-fn try_to_nav(
-    &self,
-    sema: &Semantics<'_, RootDatabase>,
-) -> Option<UpmappingResult<NavigationTarget>>;
+pub trait TryToNav {
+    fn try_to_nav(
+        &self,
+        sema: &Semantics<'_, RootDatabase>,
+    ) -> Option<UpmappingResult<NavigationTarget>>;
+}
 
 impl<T: TryToNav, U: TryToNav> TryToNav for Either<T, U> {
     fn try_to_nav(
@@ -342,13 +346,16 @@ impl TryToNav for hir::ModuleDef {
     }
 }
 
-const KIND: SymbolKind;
-fn container_name(
-    self,
-    db: &RootDatabase,
-) -> Option<Symbol> {
-    _ = db;
-    None
+pub(crate) trait ToNavFromAst {
+    const KIND: SymbolKind;
+
+    fn container_name(
+        self,
+        db: &RootDatabase,
+    ) -> Option<Symbol> {
+        _ = db;
+        None
+    }
 }
 
 fn container_name(

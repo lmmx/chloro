@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12958 bytes
+Chloro size:   13029 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -39,15 +39,16 @@ Rustfmt size:  13256 bytes
  }
  
 -pub(crate) trait TrackAutoderefSteps<'db>: Default + fmt::Debug {
--    fn len(&self) -> usize;
++pub(crate) trait TrackAutoderefSteps<'db> {
+     fn len(&self) -> usize;
 -    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
--}
-+fn len(&self) -> usize;
-+fn push(
-+    &mut self,
-+    ty: Ty<'db>,
-+    kind: AutoderefKind,
-+);
++
++    fn push(
++        &mut self,
++        ty: Ty<'db>,
++        kind: AutoderefKind,
++    );
+ }
  
  impl<'db> TrackAutoderefSteps<'db> for usize {
      fn len(&self) -> usize {
