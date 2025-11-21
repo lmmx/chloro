@@ -1,0 +1,136 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 4526 bytes
+Chloro size:   4132 bytes
+Rustfmt size:  4581 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use ide_db::{famous_defs::FamousDefs, RootDatabase};
++use ide_db::{RootDatabase, famous_defs::FamousDefs};
+ use syntax::ast::{self, AstNode, HasName};
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: generate_default_from_enum_variant
+-//
+-// Adds a Default impl for an enum using a variant.
+-//
+-// ```
+-// enum Version {
+-//  Undefined,
+-//  Minor$0,
+-//  Major,
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Version {
+-//  Undefined,
+-//  Minor,
+-//  Major,
+-// }
+-//
+-// impl Default for Version {
+-//     fn default() -> Self {
+-//         Self::Minor
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_default_from_enum_variant(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++pub(crate) fn generate_default_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
+     let variant_name = variant.name()?;
+     let enum_name = variant.parent_enum().name()?;
+         cov_mark::hit!(test_gen_default_on_non_unit_variant_not_implemented);
+         return None;
+     }
+-    if !variant
+-        .syntax()
+-        .text_range()
+-        .contains_range(ctx.selection_trimmed())
+-    {
++    if !variant.syntax().text_range().contains_range(ctx.selection_trimmed()) {
+         return None;
+     }
+-
+     if existing_default_impl(&ctx.sema, &variant).is_some() {
+         cov_mark::hit!(test_gen_default_impl_already_exists);
+         return None;
+     }
+-
+     let target = variant.syntax().text_range();
+     acc.add(
+         AssistId::generate("generate_default_from_enum_variant"),
+     )
+ }
+ 
+-fn existing_default_impl(
+-    sema: &'_ hir::Semantics<'_, RootDatabase>,
+-    variant: &ast::Variant,
+-) -> Option<()> {
++fn existing_default_impl(sema: &'_ hir::Semantics<'_, RootDatabase>, variant: &ast::Variant) -> Option<()> {
+     let variant = sema.to_def(variant)?;
+     let enum_ = variant.parent_enum(sema.db);
+     let krate = enum_.module(sema.db).krate();
+-
+     let default_trait = FamousDefs(sema, krate).core_default_Default()?;
+     let enum_type = enum_.ty(sema.db);
+-
+-    if enum_type.impls_trait(sema.db, default_trait, &[]) {
+-        Some(())
+-    } else {
+-        None
+-    }
++    if enum_type.impls_trait(sema.db, default_trait, &[]) { Some(()) } else { None }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_generate_default_from_variant() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_default_selected_variant() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_default_not_applicable_with_multiple_variant_selection() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_default_already_implemented() {
+         cov_mark::check!(test_gen_default_impl_already_exists);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_no_element() {
+         cov_mark::check!(test_gen_default_on_non_unit_variant_not_implemented);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_default_from_variant_with_one_variant() {
+         check_assist(

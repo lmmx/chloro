@@ -1,0 +1,96 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6321 bytes
+Chloro size:   6194 bytes
+Rustfmt size:  6321 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use cfg::DnfExpr;
+ use stdx::format_to;
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
+-
+-// Diagnostic: inactive-code
+-//
+-// This diagnostic is shown for code with inactive `#[cfg]` attributes.
+-pub(crate) fn inactive_code(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::InactiveCode,
+-) -> Option<Diagnostic> {
++pub(crate) fn inactive_code(ctx: &DiagnosticsContext<'_>, d: &hir::InactiveCode) -> Option<Diagnostic> {
+     // If there's inactive code somewhere in a macro, don't propagate to the call-site.
+     if d.node.file_id.is_macro() {
+         return None;
+     }
+-
+     let inactive = DnfExpr::new(&d.cfg).why_inactive(&d.opts);
+     let mut message = "code is inactive due to #[cfg] directives".to_owned();
+-
+     if let Some(inactive) = inactive {
+         let inactive_reasons = inactive.to_string();
+ 
+ 
+ #[cfg(test)]
+ mod tests {
+-    use crate::{tests::check_diagnostics_with_config, DiagnosticsConfig};
+-
++    use crate::{DiagnosticsConfig, tests::check_diagnostics_with_config};
+     #[track_caller]
+     pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         let config = DiagnosticsConfig {
+         };
+         check_diagnostics_with_config(config, ra_fixture)
+     }
+-
+     #[test]
+     fn cfg_diagnostics() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn inactive_item() {
+         // Additional tests in `cfg` crate. This only tests disabled cfgs.
+-
+         check(
+             r#"
+     #[cfg(no)] pub fn f() {}
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inactive_assoc_item() {
+         check(
+ "#,
+         );
+     }
+-
+     /// Tests that `cfg` attributes behind `cfg_attr` is handled properly.
+     #[test]
+     fn inactive_via_cfg_attr() {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inactive_fields_and_variants() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn modules() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn cfg_true_false() {
+         check(

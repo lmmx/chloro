@@ -8,6 +8,18 @@ Rustfmt size:  1117 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
+ //! Configuration to acknowledge developer preferences as well as set defaults.
+ //!
+ //! Specifically, we try to find an asterism.toml, and if present we load settings from there.
+ //! This provides wrapping width and file extension preferences.
+ 
+-use facet::Facet;
+ use std::fs;
+ 
++use facet::Facet;
+ /// User preferences loaded from asterism.toml or falling back to defaults.
+ #[derive(Facet, Clone)]
+ pub struct Config {
      /// Maximum line width for editor text wrapping.
      #[facet(default = 100)]
      pub wrap_width: usize,

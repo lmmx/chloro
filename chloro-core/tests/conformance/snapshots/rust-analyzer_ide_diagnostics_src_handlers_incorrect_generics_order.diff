@@ -1,0 +1,47 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2328 bytes
+Chloro size:   2165 bytes
+Rustfmt size:  2328 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ use hir::GenericArgKind;
+ use syntax::SyntaxKind;
+ 
+-// Diagnostic: incorrect-generics-order
+-//
+-// This diagnostic is triggered the order of provided generic arguments does not match their declaration.
+-pub(crate) fn incorrect_generics_order(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::IncorrectGenericsOrder,
+-) -> Diagnostic {
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
++pub(crate) fn incorrect_generics_order(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectGenericsOrder) -> Diagnostic {
+     let provided_description = match d.provided_arg.value.kind() {
+         SyntaxKind::CONST_ARG => "constant",
+         SyntaxKind::LIFETIME_ARG => "lifetime",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn lifetime_out_of_order() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn types_and_consts() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn no_error_when_num_incorrect() {
+         check_diagnostics(

@@ -1,0 +1,189 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 19028 bytes
+Chloro size:   18869 bytes
+Rustfmt size:  19028 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
+     parent_module::crates_for,
+ };
+-
+ /// A static representation of fully analyzed source code.
+ ///
+ /// The intended use-case is powering read-only code browsers and emitting LSIF/SCIP.
+     let mut worklist: Vec<_> =
+         Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
+     let mut modules = Vec::new();
+-
+     while let Some(module) = worklist.pop() {
+         modules.push(module);
+         worklist.extend(module.children(db));
+     }
+-
+     modules
+ }
+ 
+-fn documentation_for_definition(
+-    sema: &Semantics<'_, RootDatabase>,
+-    def: Definition,
+-    scope_node: &SyntaxNode,
+-) -> Option<Documentation> {
++fn documentation_for_definition(sema: &Semantics<'_, RootDatabase>, def: Definition, scope_node: &SyntaxNode) -> Option<Documentation> {
+     let famous_defs = match &def {
+         Definition::BuiltinType(_) => Some(FamousDefs(sema, sema.scope(scope_node)?.krate())),
+         _ => None,
+     };
+-
+     def.docs(
+         sema.db,
+         famous_defs.as_ref(),
+     )
+ }
+ 
+-// FIXME: This is a weird function
+-fn get_definitions(
+-    sema: &Semantics<'_, RootDatabase>,
+-    token: SyntaxToken,
+-) -> Option<ArrayVec<Definition, 2>> {
++fn get_definitions(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> Option<ArrayVec<Definition, 2>> {
+     for token in sema.descend_into_macros_exact(token) {
+         let def = IdentClass::classify_token(sema, &token).map(IdentClass::definitions_no_ops);
+         if let Some(defs) = def
+ }
+ 
+ pub enum VendoredLibrariesConfig<'a> {
+-    Included { workspace_root: &'a VfsPath },
++    Included {
++        workspace_root: &'a VfsPath,
++    },
+     Excluded,
+ }
+ 
+             )
+         });
+         let mut result = StaticIndexedFile { file_id, inlay_hints, folds, tokens: vec![] };
+-
+         let mut add_token = |def: Definition, range: TextRange, scope_node: &SyntaxNode| {
+             let id = if let Some(it) = self.def_map.get(&def) {
+                 *it
+             });
+             result.tokens.push((range, id));
+         };
+-
+         if let Some(module) = sema.file_to_module_def(file_id) {
+             let def = Definition::Module(module);
+             let range = root.text_range();
+             add_token(def, range, &root);
+         }
+-
+         for token in tokens {
+             let range = token.text_range();
+             let node = token.parent().unwrap();
+         self.files.push(result);
+     }
+ 
+-    pub fn compute<'a>(
+-        analysis: &'a Analysis,
+-        vendored_libs_config: VendoredLibrariesConfig<'_>,
+-    ) -> StaticIndex<'a> {
++    pub fn compute<'a>(analysis: &'a Analysis, vendored_libs_config: VendoredLibrariesConfig<'_>) -> StaticIndex<'a> {
+         let db = &analysis.db;
+         hir::attach_db(db, || {
+             let work = all_modules(db).into_iter().filter(|module| {
+     use crate::{StaticIndex, fixture};
+     use ide_db::{FileRange, FxHashMap, FxHashSet, base_db::VfsPath};
+     use syntax::TextSize;
+-
+     use super::VendoredLibrariesConfig;
+-
+-    fn check_all_ranges(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        vendored_libs_config: VendoredLibrariesConfig<'_>,
+-    ) {
++    fn check_all_ranges(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
+         let s = StaticIndex::compute(&analysis, vendored_libs_config);
+         let mut range_set: FxHashSet<_> = ranges.iter().map(|it| it.0).collect();
+             panic!("unfound ranges {range_set:?}");
+         }
+     }
+-
+     #[track_caller]
+-    fn check_definitions(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        vendored_libs_config: VendoredLibrariesConfig<'_>,
+-    ) {
++    fn check_definitions(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
+         let s = StaticIndex::compute(&analysis, vendored_libs_config);
+         let mut range_set: FxHashSet<_> = ranges.iter().map(|it| it.0).collect();
+             panic!("unfound definitions {range_set:?}");
+         }
+     }
+-
+     #[track_caller]
+-    fn check_references(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        vendored_libs_config: VendoredLibrariesConfig<'_>,
+-    ) {
++    fn check_references(#[rust_analyzer::rust_fixture] ra_fixture: &str, vendored_libs_config: VendoredLibrariesConfig<'_>) {
+         let (analysis, ranges) = fixture::annotations_without_marker(ra_fixture);
+         let s = StaticIndex::compute(&analysis, vendored_libs_config);
+         let mut range_set: FxHashMap<_, i32> = ranges.iter().map(|it| (it.0, 0)).collect();
+-
+         // Make sure that all references have at least one range. We use a HashMap instead of a
+         // a HashSet so that we can have more than one reference at the same range.
+         for (_, t) in s.tokens.iter() {
+             }
+         }
+     }
+-
+     #[test]
+     fn field_initialization() {
+         check_references(
+             },
+         );
+     }
+-
+     #[test]
+     fn struct_and_enum() {
+         check_all_ranges(
+                 workspace_root: &VfsPath::new_virtual_path("/workspace".to_owned()),
+             },
+         );
+-
+         check_references(
+             r#"
+ struct Foo;
+             },
+         );
+     }
+-
+     #[test]
+     fn multi_crate() {
+         check_definitions(
+             },
+         );
+     }
+-
+     #[test]
+     fn vendored_crate() {
+         check_all_ranges(
+             },
+         );
+     }
+-
+     #[test]
+     fn vendored_crate_excluded() {
+         check_all_ranges(
+             VendoredLibrariesConfig::Excluded,
+         )
+     }
+-
+     #[test]
+     fn derives() {
+         check_all_ranges(

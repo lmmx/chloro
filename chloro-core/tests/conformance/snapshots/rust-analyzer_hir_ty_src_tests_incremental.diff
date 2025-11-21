@@ -1,0 +1,158 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 20373 bytes
+Chloro size:   20265 bytes
+Rustfmt size:  20373 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use test_fixture::WithFixture;
+ 
+ use crate::{db::HirDatabase, test_db::TestDB};
+-
+ use super::visit_module;
+-
+ #[test]
+ fn typing_whitespace_inside_a_function_should_not_invalidate_types() {
+     let (mut db, pos) = TestDB::with_position(
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ fn foo() -> i32 {
+     1
+     +
+     1
+ }";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ fn foo() -> f32 {
+     1.0 + 2.0
+     1 + 1
+ }
+ ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ fn foo() -> i32 {
+     1 + 1
+     field: i32,
+ }
+ ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ fn foo() -> i32 {
+     1 + 1
+     B
+ }
+ ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ use std::collections::HashMap;
+ 
+     2.0 * 3.0
+ }
+ ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ fn foo() -> i32 {
+     1 + 1
+     }
+ }
+ ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+     );
+ }
+ 
+-// FIXME(next-solver): does this test make sense with fast path?
+ #[test]
+ fn add_struct_invalidates_trait_solve() {
+     let (mut db, file_id) = TestDB::with_single_file(
+     s.$0
+ }",
+     );
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let new_text = "
+ //- /main.rs crate:main
+ struct AnotherStruct;
+     s.method();
+     s.$0
+ }";
+-
+     db.set_file_text(file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+     );
+ }
+ 
+-fn execute_assert_events(
+-    db: &TestDB,
+-    f: impl FnOnce(),
+-    required: &[(&str, usize)],
+-    expect: Expect,
+-) {
++fn execute_assert_events(db: &TestDB, f: impl FnOnce(), required: &[(&str, usize)], expect: Expect) {
+     crate::attach_db(db, || {
+         let (executed, events) = db.log_executed(f);
+         for (event, count) in required {

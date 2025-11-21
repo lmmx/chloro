@@ -1,0 +1,188 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11088 bytes
+Chloro size:   11005 bytes
+Rustfmt size:  11331 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! things. (That system should probably be refactored.)
+ 
+ use rustc_type_ir::{
++    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
+     error::ExpectedFound,
+     inherent::{IntoKind, Span as _},
+-    relate::{solver_relating::RelateExt, Relate, TypeRelation},
+-    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
++    relate::{Relate, TypeRelation, solver_relating::RelateExt},
+ };
+ 
+ use crate::next_solver::{
+-    fulfill::NextSolverError,
+-    infer::relate::lattice::{LatticeOp, LatticeOpKind},
+     AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
+     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
+     TraitRef, Ty,
++    fulfill::NextSolverError,
++    infer::relate::lattice::{LatticeOp, LatticeOpKind},
+ };
+-
+ use super::{
+-    traits::{Obligation, ObligationCause},
+     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
++    traits::{Obligation, ObligationCause},
+ };
+-
+ #[derive(Clone, Copy)]
+ pub struct At<'a, 'db> {
+     pub infcx: &'a InferCtxt<'db>,
+ impl<'db> InferCtxt<'db> {
+     #[inline]
+     pub fn at<'a>(&'a self, cause: &'a ObligationCause, param_env: ParamEnv<'db>) -> At<'a, 'db> {
+-        At {
+-            infcx: self,
+-            cause,
+-            param_env,
+-        }
++        At { infcx: self, cause, param_env }
+     }
+ 
+     /// Forks the inference context, creating a new inference context with the same inference
+     pub fn fork_with_typing_mode(&self, typing_mode: TypingMode<DbInterner<'db>>) -> Self {
+         // Unlike `fork`, this invalidates all cache entries as they may depend on the
+         // typing mode.
+-
+         Self {
+             interner: self.interner,
+             typing_mode,
+     }
+ }
+ 
+-pub trait ToTrace<'db>: Relate<DbInterner<'db>> {
+-    fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
+-}
++fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db>;
+ 
+ impl<'a, 'db> At<'a, 'db> {
+     /// Makes `actual <: expected`. For example, if type-checking a
+     /// appears in the signature.
+     pub fn sup<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
+     where
+-        T: ToTrace<'db>,
+-    {
++        T: ToTrace<'db>, {
+         RelateExt::relate(
+             self.infcx,
+             self.param_env,
+     /// Makes `expected <: actual`.
+     pub fn sub<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
+     where
+-        T: ToTrace<'db>,
+-    {
++        T: ToTrace<'db>, {
+         RelateExt::relate(
+             self.infcx,
+             self.param_env,
+     /// Makes `expected == actual`.
+     pub fn eq<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
+     where
+-        T: Relate<DbInterner<'db>>,
+-    {
++        T: Relate<DbInterner<'db>>, {
+         RelateExt::relate(
+             self.infcx,
+             self.param_env,
+ 
+     pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
+     where
+-        T: ToTrace<'db>,
+-    {
++        T: ToTrace<'db>, {
+         match variance {
+             Variance::Covariant => self.sub(expected, actual),
+             Variance::Invariant => self.eq(expected, actual),
+     /// the current environment. This errors in case normalization fails or is ambiguous.
+     pub fn deeply_normalize<T>(self, value: T) -> Result<T, Vec<NextSolverError<'db>>>
+     where
+-        T: TypeFoldable<DbInterner<'db>>,
+-    {
++        T: TypeFoldable<DbInterner<'db>>, {
+         crate::next_solver::normalize::deeply_normalize(self, value)
+     }
+ 
+     /// "expected type".
+     pub fn lub<T>(self, expected: T, actual: T) -> InferResult<'db, T>
+     where
+-        T: ToTrace<'db>,
+-    {
++        T: ToTrace<'db>, {
+         let mut op = LatticeOp::new(
+             self.infcx,
+             ToTrace::to_trace(self.cause, expected, actual),
+             LatticeOpKind::Lub,
+         );
+         let value = op.relate(expected, actual)?;
+-        Ok(InferOk {
+-            value,
+-            obligations: op.into_obligations(),
+-        })
++        Ok(InferOk { value, obligations: op.into_obligations() })
+     }
+ 
+     fn goals_to_obligations(&self, goals: Vec<Goal<'db, Predicate<'db>>>) -> InferOk<'db, ()> {
+ 
+ impl<'db> ToTrace<'db> for Region<'db> {
+     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
+-        TypeTrace {
+-            cause: cause.clone(),
+-            values: ValuePairs::Regions(ExpectedFound::new(a, b)),
+-        }
++        TypeTrace { cause: cause.clone(), values: ValuePairs::Regions(ExpectedFound::new(a, b)) }
+     }
+ }
+ 
+ 
+ impl<'db> ToTrace<'db> for Term<'db> {
+     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
+-        TypeTrace {
+-            cause: cause.clone(),
+-            values: ValuePairs::Terms(ExpectedFound::new(a, b)),
+-        }
++        TypeTrace { cause: cause.clone(), values: ValuePairs::Terms(ExpectedFound::new(a, b)) }
+     }
+ }
+ 
+ impl<'db> ToTrace<'db> for TraitRef<'db> {
+     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
+-        TypeTrace {
+-            cause: cause.clone(),
+-            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
+-        }
++        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
+     }
+ }
+ 
+ 
+ impl<'db> ToTrace<'db> for AliasTerm<'db> {
+     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
+-        TypeTrace {
+-            cause: cause.clone(),
+-            values: ValuePairs::Aliases(ExpectedFound::new(a, b)),
+-        }
++        TypeTrace { cause: cause.clone(), values: ValuePairs::Aliases(ExpectedFound::new(a, b)) }
+     }
+ }
+ 
+ 
+ impl<'db> ToTrace<'db> for PolyFnSig<'db> {
+     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
+-        TypeTrace {
+-            cause: cause.clone(),
+-            values: ValuePairs::PolySigs(ExpectedFound::new(a, b)),
+-        }
++        TypeTrace { cause: cause.clone(), values: ValuePairs::PolySigs(ExpectedFound::new(a, b)) }
+     }
+ }
+ 

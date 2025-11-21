@@ -1,0 +1,411 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 23615 bytes
+Chloro size:   22790 bytes
+Rustfmt size:  23945 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use ide_db::{defs::Definition, search::FileReference};
+ use itertools::Itertools;
+ use syntax::{
++    SyntaxKind,
+     ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility},
+     match_ast,
+     syntax_editor::{Position, SyntaxEditor},
+-    SyntaxKind,
+ };
+ 
+-use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
+-
+-// Assist: convert_named_struct_to_tuple_struct
+-//
+-// Converts struct with named fields to tuple struct, and analogously for enum variants with named
+-// fields.
+-//
+-// ```
+-// struct Point$0 { x: f32, y: f32 }
+-//
+-// impl Point {
+-//     pub fn new(x: f32, y: f32) -> Self {
+-//         Point { x, y }
+-//     }
+-//
+-//     pub fn x(&self) -> f32 {
+-//         self.x
+-//     }
+-//
+-//     pub fn y(&self) -> f32 {
+-//         self.y
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// struct Point(f32, f32);
+-//
+-// impl Point {
+-//     pub fn new(x: f32, y: f32) -> Self {
+-//         Point(x, y)
+-//     }
+-//
+-//     pub fn x(&self) -> f32 {
+-//         self.0
+-//     }
+-//
+-//     pub fn y(&self) -> f32 {
+-//         self.1
+-//     }
+-// }
+-// ```
+-pub(crate) fn convert_named_struct_to_tuple_struct(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
++pub(crate) fn convert_named_struct_to_tuple_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     // XXX: We don't currently provide this assist for struct definitions inside macros, but if we
+     // are to lift this limitation, don't forget to make `edit_struct_def()` consider macro files
+     // too.
+         .find_node_at_offset::<ast::Struct>()
+         .map(Either::Left)
+         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
+-    let field_list = strukt_or_variant
+-        .as_ref()
+-        .either(|s| s.field_list(), |v| v.field_list())?;
+-
++    let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+     if ctx.offset() > field_list.syntax().text_range().start() {
+         // Assist could be distracting after the braces
+         return None;
+     }
+-
+     let record_fields = match field_list {
+         ast::FieldList::RecordFieldList(it) => it,
+         ast::FieldList::TupleFieldList(_) => return None,
+         Either::Left(s) => Either::Left(ctx.sema.to_def(s)?),
+         Either::Right(v) => Either::Right(ctx.sema.to_def(v)?),
+     };
+-
+     acc.add(
+         AssistId::refactor_rewrite("convert_named_struct_to_tuple_struct"),
+         "Convert to tuple struct",
+     )
+ }
+ 
+-fn edit_struct_def(
+-    ctx: &AssistContext<'_>,
+-    edit: &mut SourceChangeBuilder,
+-    strukt: &Either<ast::Struct, ast::Variant>,
+-    record_fields: ast::RecordFieldList,
+-) {
++fn edit_struct_def(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: &Either<ast::Struct, ast::Variant>, record_fields: ast::RecordFieldList) {
+     // Note that we don't need to consider macro files in this function because this is
+     // currently not triggered for struct definitions inside macro calls.
+     let tuple_fields = record_fields.fields().filter_map(|f| {
+         let mut editor = SyntaxEditor::new(field.syntax().clone());
+         editor.insert_all(
+             Position::first_child_of(field.syntax()),
+-            f.attrs()
+-                .map(|attr| attr.syntax().clone_subtree().clone_for_update().into())
+-                .collect(),
++            f.attrs().map(|attr| attr.syntax().clone_subtree().clone_for_update().into()).collect(),
+         );
+         let field_syntax = editor.finish().new_root().clone();
+         let field = ast::TupleField::cast(field_syntax)?;
+     });
+     let tuple_fields = ast::make::tuple_field_list(tuple_fields);
+     let record_fields_text_range = record_fields.syntax().text_range();
+-
+     edit.edit_file(ctx.vfs_file_id());
+     edit.replace(record_fields_text_range, tuple_fields.syntax().text());
+-
+     if let Either::Left(strukt) = strukt {
+         if let Some(w) = strukt.where_clause() {
+             let mut where_clause = w.to_string();
+             where_clause.push(';');
+ 
+             edit.delete(w.syntax().text_range());
+-            edit.insert(
+-                record_fields_text_range.end(),
+-                ast::make::tokens::single_newline().text(),
+-            );
++            edit.insert(record_fields_text_range.end(), ast::make::tokens::single_newline().text());
+             edit.insert(record_fields_text_range.end(), where_clause);
+-            edit.insert(
+-                record_fields_text_range.end(),
+-                ast::make::tokens::single_newline().text(),
+-            );
++            edit.insert(record_fields_text_range.end(), ast::make::tokens::single_newline().text());
+ 
+             if let Some(tok) = strukt
+                 .generic_param_list()
+             edit.insert(record_fields_text_range.end(), ";");
+         }
+     }
+-
+     if let Some(tok) = record_fields
+         .l_curly_token()
+         .and_then(|tok| tok.prev_token())
+     }
+ }
+ 
+-fn edit_struct_references(
+-    ctx: &AssistContext<'_>,
+-    edit: &mut SourceChangeBuilder,
+-    strukt: Either<hir::Struct, hir::Variant>,
+-) {
++fn edit_struct_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, strukt: Either<hir::Struct, hir::Variant>) {
+     let strukt_def = match strukt {
+         Either::Left(s) => Definition::Adt(hir::Adt::Struct(s)),
+         Either::Right(v) => Definition::Variant(v),
+     };
+     let usages = strukt_def.usages(&ctx.sema).include_self_refs().all();
+-
+     for (file_id, refs) in usages {
+         edit.edit_file(file_id.file_id(ctx.db()));
+         for r in refs {
+     }
+ }
+ 
+-fn process_struct_name_reference(
+-    ctx: &AssistContext<'_>,
+-    r: FileReference,
+-    edit: &mut SourceChangeBuilder,
+-) -> Option<()> {
++fn process_struct_name_reference(ctx: &AssistContext<'_>, r: FileReference, edit: &mut SourceChangeBuilder) -> Option<()> {
+     // First check if it's the last semgnet of a path that directly belongs to a record
+     // expression/pattern.
+     let name_ref = r.name.as_name_ref()?;
+-    let path_segment = name_ref
+-        .syntax()
+-        .parent()
+-        .and_then(ast::PathSegment::cast)?;
++    let path_segment = name_ref.syntax().parent().and_then(ast::PathSegment::cast)?;
+     // A `PathSegment` always belongs to a `Path`, so there's at least one `Path` at this point.
+-    let full_path = path_segment
+-        .syntax()
+-        .parent()?
+-        .ancestors()
+-        .map_while(ast::Path::cast)
+-        .last()?;
+-
++    let full_path =
++        path_segment.syntax().parent()?.ancestors().map_while(ast::Path::cast).last()?;
+     if full_path.segment()?.name_ref()? != *name_ref {
+         // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
+         // struct we want to edit.
+         return None;
+     }
+-
+     // FIXME: Processing RecordPat and RecordExpr for unordered fields, and insert RestPat
+     let parent = full_path.syntax().parent()?;
+     match_ast! {
+             _ => {}
+         }
+     }
+-
+     Some(())
+ }
+ 
+-fn edit_field_references(
+-    ctx: &AssistContext<'_>,
+-    edit: &mut SourceChangeBuilder,
+-    fields: impl Iterator<Item = ast::RecordField>,
+-) {
++fn edit_field_references(ctx: &AssistContext<'_>, edit: &mut SourceChangeBuilder, fields: impl Iterator<Item = ast::RecordField>) {
+     for (index, field) in fields.enumerate() {
+         let field = match ctx.sema.to_def(&field) {
+             Some(it) => it,
+             for r in refs {
+                 if let Some(name_ref) = r.name.as_name_ref() {
+                     // Only edit the field reference if it's part of a `.field` access
+-                    if name_ref
+-                        .syntax()
+-                        .parent()
+-                        .and_then(ast::FieldExpr::cast)
+-                        .is_some()
+-                    {
++                    if name_ref.syntax().parent().and_then(ast::FieldExpr::cast).is_some() {
+                         edit.replace(r.range, index.to_string());
+                     }
+                 }
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn not_applicable_other_than_record_struct() {
+         check_assist_not_applicable(convert_named_struct_to_tuple_struct, r#"struct Foo$0(u32)"#);
+         check_assist_not_applicable(convert_named_struct_to_tuple_struct, r#"struct Foo$0;"#);
+     }
+-
+     #[test]
+     fn convert_simple_struct() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_struct_cursor_on_struct_keyword() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_and_rest_pat() {
+         check_assist(
+ fn foo(A(..): A) {}
+ "#,
+         );
+-
+         check_assist(
+             convert_named_struct_to_tuple_struct,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_struct_cursor_on_visibility_keyword() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_referenced_via_self_kw() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_destructured_struct() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_visibility() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_wrapped_references() {
+         check_assist(
+     }
+ }"#,
+         );
+-
+         check_assist(
+             convert_named_struct_to_tuple_struct,
+             r#"
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_multi_file_references() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_where_clause() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_other_than_record_variant() {
+         check_assist_not_applicable(
+             r#"enum Enum { Variant$0 }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_referenced_via_self_kw() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_destructured_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_with_wrapped_references() {
+         check_assist(
+     }
+ }"#,
+         );
+-
+         check_assist(
+             convert_named_struct_to_tuple_struct,
+             r#"
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_with_multi_file_references() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_directly_used_variant() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn field_access_inside_macro_call() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn struct_usage_inside_macro_call() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn struct_name_ref_may_not_be_part_of_struct_expr_or_struct_pat() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fields_with_attrs() {
+         check_assist(

@@ -1,0 +1,187 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8527 bytes
+Chloro size:   8189 bytes
+Rustfmt size:  8697 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! See [`AssistContext`].
+ 
+ use hir::{EditionedFileId, FileRange, Semantics};
+-use ide_db::{label::Label, FileId, RootDatabase};
++pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
++use ide_db::{FileId, RootDatabase, label::Label};
+ use syntax::Edition;
+ use syntax::{
+-    algo::{self, find_node_at_offset, find_node_at_range},
+     AstNode, AstToken, Direction, SourceFile, SyntaxElement, SyntaxKind, SyntaxToken, TextRange,
+     TextSize, TokenAtOffset,
++    algo::{self, find_node_at_offset, find_node_at_range},
+ };
+ 
+ use crate::{
+-    assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
++    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, assist_config::AssistConfig,
+ };
+-
+-pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
+-
+ /// `AssistContext` allows to apply an assist or check if it could be applied.
+ ///
+ /// Assists use a somewhat over-engineered approach, given the current needs.
+     frange: FileRange,
+     trimmed_range: TextRange,
+     source_file: SourceFile,
+-    // We cache this here to speed up things slightly
+     token_at_offset: TokenAtOffset<SyntaxToken>,
+-    // We cache this here to speed up things slightly
+     covering_element: SyntaxElement,
+ }
+ 
+ impl<'a> AssistContext<'a> {
+-    pub(crate) fn new(
+-        sema: Semantics<'a, RootDatabase>,
+-        config: &'a AssistConfig,
+-        frange: FileRange,
+-    ) -> AssistContext<'a> {
++    pub(crate) fn new(sema: Semantics<'a, RootDatabase>, config: &'a AssistConfig, frange: FileRange) -> AssistContext<'a> {
+         let source_file = sema.parse(frange.file_id);
+-
+         let start = frange.range.start();
+         let end = frange.range.end();
+         let left = source_file.syntax().token_at_offset(start);
+         let right = source_file.syntax().token_at_offset(end);
+-        let left = left
+-            .right_biased()
+-            .and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
+-        let right = right
+-            .left_biased()
+-            .and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
++        let left =
++            left.right_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Next));
++        let right =
++            right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
+         let left = left.map(|t| t.text_range().start().clamp(start, end));
+         let right = right.map(|t| t.text_range().end().clamp(start, end));
+-
+         let trimmed_range = match (left, right) {
+             (Some(left), Some(right)) if left <= right => TextRange::new(left, right),
+             // Selection solely consists of whitespace so just fall back to the original
+         };
+         let token_at_offset = source_file.syntax().token_at_offset(frange.range.start());
+         let covering_element = source_file.syntax().covering_element(trimmed_range);
+-
+         AssistContext {
+             config,
+             sema,
+         self.sema.db
+     }
+ 
+-    // NB, this ignores active selection.
+     pub(crate) fn offset(&self) -> TextSize {
+         self.frange.range.start()
+     }
+     pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
+         self.token_at_offset.clone()
+     }
++
+     pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
+         self.token_at_offset().find(|it| it.kind() == kind)
+     }
++
+     pub(crate) fn find_token_at_offset<T: AstToken>(&self) -> Option<T> {
+         self.token_at_offset().find_map(T::cast)
+     }
++
+     pub(crate) fn find_node_at_offset<N: AstNode>(&self) -> Option<N> {
+         find_node_at_offset(self.source_file.syntax(), self.offset())
+     }
++
+     pub(crate) fn find_node_at_trimmed_offset<N: AstNode>(&self) -> Option<N> {
+         find_node_at_offset(self.source_file.syntax(), self.trimmed_range.start())
+     }
++
+     pub(crate) fn find_node_at_range<N: AstNode>(&self) -> Option<N> {
+         find_node_at_range(self.source_file.syntax(), self.trimmed_range)
+     }
++
+     pub(crate) fn find_node_at_offset_with_descend<N: AstNode>(&self) -> Option<N> {
+-        self.sema
+-            .find_node_at_offset_with_descend(self.source_file.syntax(), self.offset())
++        self.sema.find_node_at_offset_with_descend(self.source_file.syntax(), self.offset())
+     }
++
+     /// Returns the element covered by the selection range, this excludes trailing whitespace in the selection.
+     pub(crate) fn covering_element(&self) -> SyntaxElement {
+         self.covering_element.clone()
+         self.buf
+     }
+ 
+-    pub(crate) fn add(
+-        &mut self,
+-        id: AssistId,
+-        label: impl Into<String>,
+-        target: TextRange,
+-        f: impl FnOnce(&mut SourceChangeBuilder),
+-    ) -> Option<()> {
++    pub(crate) fn add(&mut self, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+         let mut f = Some(f);
+-        self.add_impl(None, id, label.into(), target, &mut |it| {
+-            f.take().unwrap()(it)
+-        })
++        self.add_impl(None, id, label.into(), target, &mut |it| f.take().unwrap()(it))
+     }
+ 
+-    pub(crate) fn add_group(
+-        &mut self,
+-        group: &GroupLabel,
+-        id: AssistId,
+-        label: impl Into<String>,
+-        target: TextRange,
+-        f: impl FnOnce(&mut SourceChangeBuilder),
+-    ) -> Option<()> {
++    pub(crate) fn add_group(&mut self, group: &GroupLabel, id: AssistId, label: impl Into<String>, target: TextRange, f: impl FnOnce(&mut SourceChangeBuilder)) -> Option<()> {
+         let mut f = Some(f);
+-        self.add_impl(Some(group), id, label.into(), target, &mut |it| {
+-            f.take().unwrap()(it)
+-        })
++        self.add_impl(Some(group), id, label.into(), target, &mut |it| f.take().unwrap()(it))
+     }
+ 
+-    fn add_impl(
+-        &mut self,
+-        group: Option<&GroupLabel>,
+-        id: AssistId,
+-        label: String,
+-        target: TextRange,
+-        f: &mut dyn FnMut(&mut SourceChangeBuilder),
+-    ) -> Option<()> {
++    fn add_impl(&mut self, group: Option<&GroupLabel>, id: AssistId, label: String, target: TextRange, f: &mut dyn FnMut(&mut SourceChangeBuilder)) -> Option<()> {
+         if !self.is_allowed(&id) {
+             return None;
+         }
+-
+         let mut command = None;
+         let source_change = if self.resolve.should_resolve(&id) {
+             let mut builder = SourceChangeBuilder::new(self.file);
+         } else {
+             None
+         };
+-
+         let label = Label::new(label);
+         let group = group.cloned();
+-        self.buf.push(Assist {
+-            id,
+-            label,
+-            group,
+-            target,
+-            source_change,
+-            command,
+-        });
++        self.buf.push(Assist { id, label, group, target, source_change, command });
+         Some(())
+     }
+ 

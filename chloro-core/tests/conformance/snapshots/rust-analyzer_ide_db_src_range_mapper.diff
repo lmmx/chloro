@@ -1,0 +1,51 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2223 bytes
+Chloro size:   2222 bytes
+Rustfmt size:  2294 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Maps between ranges in documents.
+ 
+ use std::cmp::Ordering;
+ 
+ use stdx::equal_range_by;
+ use syntax::{TextRange, TextSize};
+-
+ #[derive(Default)]
+ pub struct RangeMapper {
+     buf: String,
+     fn add_impl(&mut self, text: &str, source: Option<TextSize>) {
+         let len = TextSize::of(text);
+         let target_range = TextRange::at(TextSize::of(&self.buf), len);
+-        self.ranges
+-            .push((target_range, source.map(|it| TextRange::at(it, len))));
++        self.ranges.push((target_range, source.map(|it| TextRange::at(it, len))));
+         self.buf.push_str(text);
+     }
+ 
+         // Using a binary search here is a bit complicated because of the `None` entries.
+         // But the number of lines in fixtures is usually low.
+         let (target_range, source_range) =
+-            self.ranges
+-                .iter()
+-                .find_map(|&(target_range, source_range)| {
+-                    let source_range = source_range?;
+-                    if !source_range.contains(offset) {
+-                        return None;
+-                    }
+-                    Some((target_range, source_range))
+-                })?;
++            self.ranges.iter().find_map(|&(target_range, source_range)| {
++                let source_range = source_range?;
++                if !source_range.contains(offset) {
++                    return None;
++                }
++                Some((target_range, source_range))
++            })?;
+         Some(offset - source_range.start() + target_range.start())
+     }
+ }

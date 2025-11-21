@@ -1,0 +1,199 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11061 bytes
+Chloro size:   10668 bytes
+Rustfmt size:  11278 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::fmt;
+ 
+ use hir::{DisplayTarget, Field, HirDisplay, Layout, Semantics, Type};
+ use ide_db::{
++    RootDatabase,
+     defs::Definition,
+     helpers::{get_definition, pick_best_token},
+-    RootDatabase,
+ };
+ use syntax::{AstNode, SyntaxKind};
+ 
+ use crate::FilePosition;
+-
+ pub struct MemoryLayoutNode {
+     pub item_name: String,
+     pub typename: String,
+     pub nodes: Vec<MemoryLayoutNode>,
+ }
+ 
+-// NOTE: this is currently strictly for testing and so isn't super useful as a visualization tool, however it could be adapted to become one?
+ impl fmt::Display for RecursiveMemoryLayout {
+     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+         fn process(
+             }
+             Ok(())
+         }
+-
+         process(fmt, &self.nodes, 0, 0)
+     }
+ }
+     }
+ }
+ 
+-// Feature: View Memory Layout
+-//
+-// Displays the recursive memory layout of a datatype.
+-//
+-// | Editor  | Action Name |
+-// |---------|-------------|
+-// | VS Code | **rust-analyzer: View Memory Layout** |
+-pub(crate) fn view_memory_layout(
+-    db: &RootDatabase,
+-    position: FilePosition,
+-) -> Option<RecursiveMemoryLayout> {
++pub(crate) fn view_memory_layout(db: &RootDatabase, position: FilePosition) -> Option<RecursiveMemoryLayout> {
+     let sema = Semantics::new(db);
+     let file = sema.parse_guess_edition(position.file_id);
+     let display_target = sema.first_crate(position.file_id)?.to_display_target(db);
+-    let token = pick_best_token(
+-        file.syntax().token_at_offset(position.offset),
+-        |kind| match kind {
++    let token =
++        pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
+             SyntaxKind::IDENT => 3,
+             _ => 0,
+-        },
+-    )?;
+-
++        })?;
+     let def = get_definition(&sema, token)?;
+-
+     let ty = match def {
+         Definition::Adt(it) => it.ty(db),
+         Definition::TypeAlias(it) => it.ty(db),
+         Definition::Static(it) => it.ty(db),
+         _ => return None,
+     };
+-
+     fn read_layout(
+         nodes: &mut Vec<MemoryLayoutNode>,
+         db: &RootDatabase,
+ 
+         for (i, (_, child_ty)) in fields.iter().enumerate() {
+             if let Ok(child_layout) = child_ty.layout(db) {
+-                read_layout(
+-                    nodes,
+-                    db,
+-                    child_ty,
+-                    &child_layout,
+-                    children_start + i,
+-                    display_target,
+-                );
++                read_layout(nodes, db, child_ty, &child_layout, children_start + i, display_target);
+             }
+         }
+     }
+-
+     ty.layout(db)
+         .map(|layout| {
+             let item_name = match def {
+                 | Definition::SelfType(_) => "[ROOT]".to_owned(),
+ 
+                 // def is an item
+-                def => def
+-                    .name(db)
+-                    .map(|n| n.as_str().to_owned())
+-                    .unwrap_or("[ROOT]".to_owned()),
++                def => def.name(db).map(|n| n.as_str().to_owned()).unwrap_or("[ROOT]".to_owned()),
+             };
+ 
+             let typename = ty.display(db, display_target).to_string();
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::fixture;
+     use expect_test::expect;
+-
+-    fn make_memory_layout(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    ) -> Option<RecursiveMemoryLayout> {
++    fn make_memory_layout(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> Option<RecursiveMemoryLayout> {
+         let (analysis, position, _) = fixture::annotations(ra_fixture);
+-
+         hir::attach_db(&analysis.db, || view_memory_layout(&analysis.db, position))
+     }
+-
+     #[test]
+     fn view_memory_layout_none() {
+         assert!(make_memory_layout(r#"$0"#).is_none());
+         assert!(make_memory_layout(r#"stru$0ct Blah {}"#).is_none());
+     }
+-
+     #[test]
+     fn view_memory_layout_primitive() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_constant() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_static() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_tuple() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_c_struct() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_struct() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_member() {
+         expect![[r#"
+             .to_string(),
+         );
+     }
+-
+     #[test]
+     fn view_memory_layout_alias() {
+         let ml_a = make_memory_layout(
+ "#,
+         )
+         .unwrap();
+-
+         let ml_b = make_memory_layout(
+             r#"
+ struct X$0 {
+ "#,
+         )
+         .unwrap();
+-
+         assert_eq!(ml_a.to_string(), ml_b.to_string());
+     }
+ }

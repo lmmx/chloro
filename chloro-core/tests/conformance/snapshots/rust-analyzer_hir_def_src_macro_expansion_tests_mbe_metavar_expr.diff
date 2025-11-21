@@ -1,0 +1,19 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7880 bytes
+Chloro size:   7879 bytes
+Rustfmt size:  7880 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Tests for RFC 3086 metavariable expressions.
+ 
+ use expect_test::expect;
+ 
+ use crate::macro_expansion_tests::check;
+-
+ #[test]
+ fn test_dollar_dollar() {
+     check(

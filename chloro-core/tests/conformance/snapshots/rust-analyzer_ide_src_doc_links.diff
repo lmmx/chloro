@@ -1,0 +1,368 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 31554 bytes
+Chloro size:   30402 bytes
+Rustfmt size:  31554 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Extracts, resolves and rewrites links and intra-doc links in markdown documentation.
+ 
+-#[cfg(test)]
+-mod tests;
+-
+-mod intra_doc_links;
+-
+ use std::ops::Range;
+ 
+-use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
+-use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
+-use stdx::format_to;
+-use url::Url;
+-
+ use hir::{
+     Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
+ };
+     documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
+     helpers::pick_best_token,
+ };
++use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
++use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
++use stdx::format_to;
+ use syntax::{
+     AstNode, AstToken,
+     SyntaxKind::*,
+     ast::{self, IsString},
+     match_ast,
+ };
++use url::Url;
+ 
+ use crate::{
+     FilePosition, Semantics,
+     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
+ };
++#[cfg(test)]
++mod tests;
++
++mod intra_doc_links;
+ 
+ /// Web and local links to an item's documentation.
+ #[derive(Default, Debug, Clone, PartialEq, Eq)]
+     pub local_url: Option<String>,
+ }
+ 
+-const MARKDOWN_OPTIONS: Options =
+-    Options::ENABLE_FOOTNOTES.union(Options::ENABLE_TABLES).union(Options::ENABLE_TASKLISTS);
+ 
+ /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
+-pub(crate) fn rewrite_links(
+-    db: &RootDatabase,
+-    markdown: &str,
+-    definition: Definition,
+-    range_map: Option<DocsRangeMap>,
+-) -> String {
++pub(crate) fn rewrite_links(db: &RootDatabase, markdown: &str, definition: Definition, range_map: Option<DocsRangeMap>) -> String {
+     let mut cb = broken_link_clone_cb;
+     let doc = Parser::new_with_broken_link_callback(markdown, MARKDOWN_OPTIONS, Some(&mut cb))
+         .into_offset_iter();
+-
+     let doc = map_links(doc, |target, title, range, link_type| {
+         // This check is imperfect, there's some overlap between valid intra-doc links
+         // and valid URLs so we choose to be too eager to try to resolve what might be
+ /// Remove all links in markdown documentation.
+ pub(crate) fn remove_links(markdown: &str) -> String {
+     let mut drop_link = false;
+-
+     let mut cb = |_: BrokenLink<'_>| {
+         let empty = InlineStr::try_from("").unwrap();
+         Some((CowStr::Inlined(empty), CowStr::Inlined(empty)))
+         }
+         _ => Some(evt),
+     });
+-
+     let mut out = String::new();
+     cmark_resume_with_options(
+         doc,
+     out
+ }
+ 
+-// Feature: Open Docs
+-//
+-// Retrieve a links to documentation for the given symbol.
+-//
+-// The simplest way to use this feature is via the context menu. Right-click on
+-// the selected item. The context menu opens. Select **Open Docs**.
+-//
+-// | Editor  | Action Name |
+-// |---------|-------------|
+-// | VS Code | **rust-analyzer: Open Docs** |
+-pub(crate) fn external_docs(
+-    db: &RootDatabase,
+-    FilePosition { file_id, offset }: FilePosition,
+-    target_dir: Option<&str>,
+-    sysroot: Option<&str>,
+-) -> Option<DocumentationLinks> {
++pub(crate) fn external_docs(db: &RootDatabase, FilePosition { file_id, offset }: FilePosition, target_dir: Option<&str>, sysroot: Option<&str>) -> Option<DocumentationLinks> {
+     let sema = &Semantics::new(db);
+     let file = sema.parse_guess_edition(file_id).syntax().clone();
+     let token = pick_best_token(file.token_at_offset(offset), |kind| match kind {
+         _ => 1,
+     })?;
+     let token = sema.descend_into_macros_single_exact(token);
+-
+     let node = token.parent()?;
+     let definition = match_ast! {
+         match node {
+             _ => return None
+         }
+     };
+-
+     Some(get_doc_links(db, definition, target_dir, sysroot))
+ }
+ 
+ /// Extracts all links from a given markdown text returning the definition text range, link-text
+ /// and the namespace if known.
+-pub(crate) fn extract_definitions_from_docs(
+-    docs: &Documentation,
+-) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
++pub(crate) fn extract_definitions_from_docs(docs: &Documentation) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
+     Parser::new_with_broken_link_callback(
+         docs.as_str(),
+         MARKDOWN_OPTIONS,
+     .collect()
+ }
+ 
+-pub(crate) fn resolve_doc_path_for_def(
+-    db: &dyn HirDatabase,
+-    def: Definition,
+-    link: &str,
+-    ns: Option<hir::Namespace>,
+-    is_inner_doc: bool,
+-) -> Option<Definition> {
++pub(crate) fn resolve_doc_path_for_def(db: &dyn HirDatabase, def: Definition, link: &str, ns: Option<hir::Namespace>, is_inner_doc: bool) -> Option<Definition> {
+     match def {
+         Definition::Module(it) => it.resolve_doc_path(db, link, ns, is_inner_doc),
+         Definition::Crate(it) => it.resolve_doc_path(db, link, ns, is_inner_doc),
+     .map(Definition::from)
+ }
+ 
+-pub(crate) fn doc_attributes(
+-    sema: &Semantics<'_, RootDatabase>,
+-    node: &SyntaxNode,
+-) -> Option<(hir::AttrsWithOwner, Definition)> {
++pub(crate) fn doc_attributes(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode) -> Option<(hir::AttrsWithOwner, Definition)> {
+     match_ast! {
+         match node {
+             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.attrs(sema.db), Definition::from(def))),
+ }
+ 
+ impl DocCommentToken {
+-    pub(crate) fn get_definition_with_descend_at<T>(
+-        self,
+-        sema: &Semantics<'_, RootDatabase>,
+-        offset: TextSize,
+-        // Definition, CommentOwner, range of intra doc link in original file
+-        mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>,
+-    ) -> Option<T> {
++    pub(crate) fn get_definition_with_descend_at<T>(self, sema: &Semantics<'_, RootDatabase>, offset: TextSize, mut cb: impl FnMut(Definition, SyntaxNode, TextRange) -> Option<T>) -> Option<T> {
+         let DocCommentToken { prefix_len, doc_token } = self;
+         // offset relative to the comments contents
+         let original_start = doc_token.text_range().start();
+         let relative_comment_offset = offset - original_start - prefix_len;
+-
+         sema.descend_into_macros(doc_token).into_iter().find_map(|t| {
+             let (node, descended_prefix_len, is_inner) = match_ast!{
+                 match t {
+     ///    //! [`S$0`]
+     /// }
+     /// ```
+-    fn doc_attributes(
+-        sema: &Semantics<'_, RootDatabase>,
+-        node: &SyntaxNode,
+-        is_inner_doc: bool,
+-    ) -> Option<(AttrsWithOwner, Definition)> {
++    fn doc_attributes(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode, is_inner_doc: bool) -> Option<(AttrsWithOwner, Definition)> {
+         if is_inner_doc && node.kind() != SOURCE_FILE {
+             let parent = node.parent()?;
+             doc_attributes(sema, &parent).or(doc_attributes(sema, &parent.parent()?))
+     Some((/*url*/ link.reference.clone(), /*title*/ link.reference))
+ }
+ 
+-// FIXME:
+-// BUG: For Option::Some
+-// Returns https://doc.rust-lang.org/nightly/core/prelude/v1/enum.Option.html#variant.Some
+-// Instead of https://doc.rust-lang.org/nightly/core/option/enum.Option.html
+-//
+-// This should cease to be a problem if RFC2988 (Stable Rustdoc URLs) is implemented
+-// https://github.com/rust-lang/rfcs/pull/2988
+-fn get_doc_links(
+-    db: &RootDatabase,
+-    def: Definition,
+-    target_dir: Option<&str>,
+-    sysroot: Option<&str>,
+-) -> DocumentationLinks {
++fn get_doc_links(db: &RootDatabase, def: Definition, target_dir: Option<&str>, sysroot: Option<&str>) -> DocumentationLinks {
+     let join_url = |base_url: Option<Url>, path: &str| -> Option<Url> {
+         base_url.and_then(|url| url.join(path).ok())
+     };
+-
+     let Some((target, file, frag)) = filename_and_frag_for_def(db, def) else {
+         return Default::default();
+     };
+-
+     let (mut web_url, mut local_url) = get_doc_base_urls(db, target, target_dir, sysroot);
+-
+     let append_mod = !matches!(def, Definition::Macro(m) if m.is_macro_export(db));
+     if append_mod && let Some(path) = mod_path_of_def(db, target) {
+         web_url = join_url(web_url, &path);
+         local_url = join_url(local_url, &path);
+     }
+-
+     web_url = join_url(web_url, &file);
+     local_url = join_url(local_url, &file);
+-
+     if let Some(url) = web_url.as_mut() {
+         url.set_fragment(frag.as_deref())
+     }
+     if let Some(url) = local_url.as_mut() {
+         url.set_fragment(frag.as_deref())
+     }
+-
+     DocumentationLinks {
+         web_url: web_url.map(|it| it.into()),
+         local_url: local_url.map(|it| it.into()),
+     }
+ }
+ 
+-fn rewrite_intra_doc_link(
+-    db: &RootDatabase,
+-    def: Definition,
+-    target: &str,
+-    title: &str,
+-    is_inner_doc: bool,
+-    link_type: LinkType,
+-) -> Option<(String, String)> {
++fn rewrite_intra_doc_link(db: &RootDatabase, def: Definition, target: &str, title: &str, is_inner_doc: bool, link_type: LinkType) -> Option<(String, String)> {
+     let (link, ns) = parse_intra_doc_link(target);
+-
+     let (link, anchor) = match link.split_once('#') {
+         Some((new_link, anchor)) => (new_link, Some(anchor)),
+         None => (link, None),
+     };
+-
+     let resolved = resolve_doc_path_for_def(db, def, link, ns, is_inner_doc)?;
+     let mut url = get_doc_base_urls(db, resolved, None, None).0?;
+-
+     let (_, file, frag) = filename_and_frag_for_def(db, resolved)?;
+     if let Some(path) = mod_path_of_def(db, resolved) {
+         url = url.join(&path).ok()?;
+     }
+-
+     let frag = anchor.or(frag.as_deref());
+-
+     url = url.join(&file).ok()?;
+     url.set_fragment(frag);
+-
+     // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
+     // as the title.
+     let title = match link_type {
+             strip_prefixes_suffixes(title).to_owned()
+         }
+     };
+-
+     Some((url.into(), title))
+ }
+ 
+     if !(target.contains('#') || target.contains(".html")) {
+         return None;
+     }
+-
+     let mut url = get_doc_base_urls(db, def, None, None).0?;
+     let (def, file, frag) = filename_and_frag_for_def(db, def)?;
+-
+     if let Some(path) = mod_path_of_def(db, def) {
+         url = url.join(&path).ok()?;
+     }
+-
+     url = url.join(&file).ok()?;
+     url.set_fragment(frag.as_deref());
+     url.join(target).ok().map(Into::into)
+ }
+ 
+ /// Rewrites a markdown document, applying 'callback' to each link.
+-fn map_links<'e>(
+-    events: impl Iterator<Item = (Event<'e>, Range<usize>)>,
+-    callback: impl Fn(&str, &str, Range<usize>, LinkType) -> (Option<LinkType>, String, String),
+-) -> impl Iterator<Item = Event<'e>> {
++fn map_links<'e>(events: impl Iterator<Item = (Event<'e>, Range<usize>)>, callback: impl Fn(&str, &str, Range<usize>, LinkType) -> (Option<LinkType>, String, String)) -> impl Iterator<Item = Event<'e>> {
+     let mut in_link = false;
+     // holds the origin link target on start event and the rewritten one on end event
+     let mut end_link_target: Option<CowStr<'_>> = None;
+     // however in some cases we want to change the link type, for example,
+     // `Shortcut` type parsed from Start/End tags doesn't make sense for url links
+     let mut end_link_type: Option<LinkType> = None;
+-
+     events.map(move |(evt, range)| match evt {
+         Event::Start(Tag::Link(link_type, ref target, _)) => {
+             in_link = true;
+ /// file:///project/root/target/doc/std/iter/trait.Iterator.html#tymethod.next
+ /// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ /// ```
+-fn get_doc_base_urls(
+-    db: &RootDatabase,
+-    def: Definition,
+-    target_dir: Option<&str>,
+-    sysroot: Option<&str>,
+-) -> (Option<Url>, Option<Url>) {
++fn get_doc_base_urls(db: &RootDatabase, def: Definition, target_dir: Option<&str>, sysroot: Option<&str>) -> (Option<Url>, Option<Url>) {
+     let local_doc = target_dir
+         .and_then(|path| Url::parse(&format!("file:///{path}/")).ok())
+         .and_then(|it| it.join("doc/").ok());
+         .and_then(|krate| db.toolchain_channel(krate.into()))
+         .unwrap_or(ReleaseChannel::Nightly)
+         .as_str();
+-
+     // special case base url of `BuiltinType` to core
+     // https://github.com/rust-lang/rust-analyzer/issues/12250
+     if let Definition::BuiltinType(..) = def {
+         let system_link = system_doc.and_then(|it| it.join("core/").ok());
+         return (web_link, system_link);
+     };
+-
+     let Some(krate) = krate else { return Default::default() };
+     let Some(display_name) = krate.display_name(db) else { return Default::default() };
+     let (web_base, local_base) = match krate.origin(db) {
+         .and_then(|it| Url::parse(&it).ok())
+         .and_then(|it| it.join(&format!("{display_name}/")).ok());
+     let local_base = local_base.and_then(|it| it.join(&format!("{display_name}/")).ok());
+-
+     (web_base, local_base)
+ }
+ 
+ /// https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
+ ///                                    ^^^^^^^^^^^^^^^^^^^
+ /// ```
+-fn filename_and_frag_for_def(
+-    db: &dyn HirDatabase,
+-    def: Definition,
+-) -> Option<(Definition, String, Option<String>)> {
++fn filename_and_frag_for_def(db: &dyn HirDatabase, def: Definition) -> Option<(Definition, String, Option<String>)> {
+     if let Some(assoc_item) = def.as_assoc_item(db) {
+         let def = match assoc_item.container(db) {
+             AssocItemContainer::Trait(t) => t.into(),
+         let frag = get_assoc_item_fragment(db, assoc_item)?;
+         return Some((def, file, Some(frag)));
+     }
+-
+     let res = match def {
+         Definition::Adt(adt) => match adt {
+             Adt::Struct(s) => {
+         | Definition::InlineAsmRegOrRegClass(_)
+         | Definition::InlineAsmOperand(_) => return None,
+     };
+-
+     Some((def, res, None))
+ }
+ 

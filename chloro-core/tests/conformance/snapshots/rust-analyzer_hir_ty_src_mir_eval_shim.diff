@@ -1,0 +1,229 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 69401 bytes
+Chloro size:   68787 bytes
+Rustfmt size:  69401 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Interpret intrinsics, lang items and `extern "C"` wellknown functions which their implementation
+ //! is not available.
+ //!
++
+ use std::cmp::{self, Ordering};
+ 
+ use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
+     },
+     next_solver::Region,
+ };
+-
+ mod simd;
+ 
+ macro_rules! from_bytes {
+ }
+ 
+ impl<'db> Evaluator<'db> {
+-    pub(super) fn detect_and_exec_special_function(
+-        &mut self,
+-        def: FunctionId,
+-        args: &[IntervalAndTy<'db>],
+-        generic_args: GenericArgs<'db>,
+-        locals: &Locals<'db>,
+-        destination: Interval,
+-        span: MirSpan,
+-    ) -> Result<'db, bool> {
++    pub(super) fn detect_and_exec_special_function(&mut self, def: FunctionId, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, bool> {
+         if self.not_special_fn_cache.borrow().contains(&def) {
+             return Ok(false);
+         }
+-
+         let function_data = self.db.function_signature(def);
+         let attrs = self.db.attrs(def.into());
+         let is_intrinsic = FunctionSignature::is_intrinsic(self.db, def);
+-
+         if is_intrinsic {
+             return self.exec_intrinsic(
+                 function_data.name.as_str(),
+                 )
+                 .map(|()| true);
+         }
+-
+         let alloc_fn =
+             attrs.iter().filter_map(|it| it.path().as_ident()).map(|it| it.symbol()).find(|it| {
+                 [
+         Ok(false)
+     }
+ 
+-    pub(super) fn detect_and_redirect_special_function(
+-        &mut self,
+-        def: FunctionId,
+-    ) -> Result<'db, Option<FunctionId>> {
++    pub(super) fn detect_and_redirect_special_function(&mut self, def: FunctionId) -> Result<'db, Option<FunctionId>> {
+         // `PanicFmt` is redirected to `ConstPanicFmt`
+         if let Some(LangItem::PanicFmt) = self.db.lang_attr(def.into()) {
+             let resolver = CrateRootModuleId::from(self.crate_id).resolver(self.db);
+     }
+ 
+     /// Clone has special impls for tuples and function pointers
+-    fn exec_clone(
+-        &mut self,
+-        def: FunctionId,
+-        args: &[IntervalAndTy<'db>],
+-        self_ty: Ty<'db>,
+-        locals: &Locals<'db>,
+-        destination: Interval,
+-        span: MirSpan,
+-    ) -> Result<'db, ()> {
++    fn exec_clone(&mut self, def: FunctionId, args: &[IntervalAndTy<'db>], self_ty: Ty<'db>, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, ()> {
+         match self_ty.kind() {
+             TyKind::FnPtr(..) => {
+                 let [arg] = args else {
+         Ok(())
+     }
+ 
+-    fn exec_clone_for_fields(
+-        &mut self,
+-        ty_iter: impl Iterator<Item = Ty<'db>>,
+-        layout: Arc<Layout>,
+-        addr: Address,
+-        def: FunctionId,
+-        locals: &Locals<'db>,
+-        destination: Interval,
+-        span: MirSpan,
+-    ) -> Result<'db, ()> {
++    fn exec_clone_for_fields(&mut self, ty_iter: impl Iterator<Item = Ty<'db>>, layout: Arc<Layout>, addr: Address, def: FunctionId, locals: &Locals<'db>, destination: Interval, span: MirSpan) -> Result<'db, ()> {
+         for (i, ty) in ty_iter.enumerate() {
+             let size = self.layout(ty)?.size.bytes_usize();
+             let tmp = self.heap_allocate(self.ptr_size(), self.ptr_size())?;
+         Ok(())
+     }
+ 
+-    fn exec_alloc_fn(
+-        &mut self,
+-        alloc_fn: &Symbol,
+-        args: &[IntervalAndTy<'db>],
+-        destination: Interval,
+-    ) -> Result<'db, ()> {
++    fn exec_alloc_fn(&mut self, alloc_fn: &Symbol, args: &[IntervalAndTy<'db>], destination: Interval) -> Result<'db, ()> {
+         match alloc_fn {
+             _ if *alloc_fn == sym::rustc_allocator_zeroed || *alloc_fn == sym::rustc_allocator => {
+                 let [size, align] = args else {
+     fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
+         use LangItem::*;
+         let attrs = self.db.attrs(def.into());
+-
+         if attrs.by_key(sym::rustc_const_panic_str).exists() {
+             // `#[rustc_const_panic_str]` is treated like `lang = "begin_panic"` by rustc CTFE.
+             return Some(LangItem::BeginPanic);
+         }
+-
+         let candidate = attrs.lang_item()?;
+         // We want to execute these functions with special logic
+         // `PanicFmt` is not detected here as it's redirected later.
+         if [BeginPanic, SliceLen, DropInPlace].contains(&candidate) {
+             return Some(candidate);
+         }
+-
+         None
+     }
+ 
+-    fn exec_lang_item(
+-        &mut self,
+-        it: LangItem,
+-        generic_args: GenericArgs<'db>,
+-        args: &[IntervalAndTy<'db>],
+-        locals: &Locals<'db>,
+-        span: MirSpan,
+-    ) -> Result<'db, Vec<u8>> {
++    fn exec_lang_item(&mut self, it: LangItem, generic_args: GenericArgs<'db>, args: &[IntervalAndTy<'db>], locals: &Locals<'db>, span: MirSpan) -> Result<'db, Vec<u8>> {
+         use LangItem::*;
+         let mut args = args.iter();
+         match it {
+         }
+     }
+ 
+-    fn exec_syscall(
+-        &mut self,
+-        id: i64,
+-        args: &[IntervalAndTy<'db>],
+-        destination: Interval,
+-        _locals: &Locals<'db>,
+-        _span: MirSpan,
+-    ) -> Result<'db, ()> {
++    fn exec_syscall(&mut self, id: i64, args: &[IntervalAndTy<'db>], destination: Interval, _locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+         match id {
+             318 => {
+                 // SYS_getrandom
+         }
+     }
+ 
+-    fn exec_extern_c(
+-        &mut self,
+-        as_str: &str,
+-        args: &[IntervalAndTy<'db>],
+-        _generic_args: GenericArgs<'db>,
+-        destination: Interval,
+-        locals: &Locals<'db>,
+-        span: MirSpan,
+-    ) -> Result<'db, ()> {
++    fn exec_extern_c(&mut self, as_str: &str, args: &[IntervalAndTy<'db>], _generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, span: MirSpan) -> Result<'db, ()> {
+         match as_str {
+             "memcmp" => {
+                 let [ptr1, ptr2, size] = args else {
+         }
+     }
+ 
+-    fn exec_intrinsic(
+-        &mut self,
+-        name: &str,
+-        args: &[IntervalAndTy<'db>],
+-        generic_args: GenericArgs<'db>,
+-        destination: Interval,
+-        locals: &Locals<'db>,
+-        span: MirSpan,
+-        needs_override: bool,
+-    ) -> Result<'db, bool> {
++    fn exec_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, span: MirSpan, needs_override: bool) -> Result<'db, bool> {
+         if let Some(name) = name.strip_prefix("atomic_") {
+             return self
+                 .exec_atomic_intrinsic(name, args, generic_args, destination, locals, span)
+         .map(|()| true)
+     }
+ 
+-    fn size_align_of_unsized(
+-        &mut self,
+-        ty: Ty<'db>,
+-        metadata: Interval,
+-        locals: &Locals<'db>,
+-    ) -> Result<'db, (usize, usize)> {
++    fn size_align_of_unsized(&mut self, ty: Ty<'db>, metadata: Interval, locals: &Locals<'db>) -> Result<'db, (usize, usize)> {
+         Ok(match ty.kind() {
+             TyKind::Str => (from_bytes!(usize, metadata.get(self)?), 1),
+             TyKind::Slice(inner) => {
+         })
+     }
+ 
+-    fn exec_atomic_intrinsic(
+-        &mut self,
+-        name: &str,
+-        args: &[IntervalAndTy<'db>],
+-        generic_args: GenericArgs<'db>,
+-        destination: Interval,
+-        locals: &Locals<'db>,
+-        _span: MirSpan,
+-    ) -> Result<'db, ()> {
++    fn exec_atomic_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], generic_args: GenericArgs<'db>, destination: Interval, locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+         // We are a single threaded runtime with no UB checking and no optimization, so
+         // we can implement atomic intrinsics as normal functions.
+-
+         if name.starts_with("singlethreadfence_") || name.starts_with("fence_") {
+             return Ok(());
+         }
+-
+         // The rest of atomic intrinsics have exactly one generic arg
+-
+         let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
+             return Err(MirEvalError::InternalError(
+                 "atomic intrinsic generic arg is not provided".into(),

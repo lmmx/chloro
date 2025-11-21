@@ -1,0 +1,26 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 42944 bytes
+Chloro size:   42943 bytes
+Rustfmt size:  42944 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use expect_test::expect;
+ 
+ use crate::tests::check;
+-
+ use super::{check_infer, check_no_mismatches, check_types};
+-
+ #[test]
+ fn infer_slice_method() {
+     check_types(
+ "#,
+     );
+ }
++
+ #[test]
+ fn receiver_adjustment_autoref() {
+     check(

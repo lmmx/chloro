@@ -1,0 +1,55 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2564 bytes
+Chloro size:   2426 bytes
+Rustfmt size:  2696 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::db::ExpandDatabase;
+ use ide_db::{assists::Assist, base_db::AnchoredPathBuf, source_change::FileSystemEdit};
+ use itertools::Itertools;
+ use syntax::AstNode;
+ 
+-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: unresolved-module
+-//
+-// This diagnostic is triggered if rust-analyzer is unable to discover referred module.
+-pub(crate) fn unresolved_module(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::UnresolvedModule,
+-) -> Diagnostic {
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
++pub(crate) fn unresolved_module(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Diagnostic {
+     Diagnostic::new_with_syntax_node_ptr(
+         ctx,
+         DiagnosticCode::RustcHardError("E0583"),
+                     &format!("Create module at `{candidate}`"),
+                     FileSystemEdit::CreateFile {
+                         dst: AnchoredPathBuf {
+-                            anchor: d
+-                                .decl
+-                                .file_id
+-                                .original_file(ctx.sema.db)
+-                                .file_id(ctx.sema.db),
++                            anchor: d.decl.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+                             path: candidate.clone(),
+                         },
+                         initial_contents: "".to_owned(),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn unresolved_module() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_unresolved_module_diagnostic() {
+         check_diagnostics(

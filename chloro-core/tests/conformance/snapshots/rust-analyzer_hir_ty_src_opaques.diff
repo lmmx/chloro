@@ -1,0 +1,146 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7261 bytes
+Chloro size:   7122 bytes
+Rustfmt size:  7430 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use triomphe::Arc;
+ 
+ use crate::{
++    ImplTraitId,
+     db::{HirDatabase, InternedOpaqueTyId},
+     lower::{ImplTraitIdx, ImplTraits},
+     next_solver::{
+-        infer::{traits::ObligationCause, DbInternerInferExt},
+-        obligation_ctxt::ObligationCtxt,
+         DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+-    ImplTraitId,
+ };
+-
+-pub(crate) fn opaque_types_defined_by(
+-    db: &dyn HirDatabase,
+-    def_id: DefWithBodyId,
+-    result: &mut Vec<SolverDefId>,
+-) {
++pub(crate) fn opaque_types_defined_by(db: &dyn HirDatabase, def_id: DefWithBodyId, result: &mut Vec<SolverDefId>) {
+     if let DefWithBodyId::FunctionId(func) = def_id {
+         // A function may define its own RPITs.
+         extend_with_opaques(
+             result,
+         );
+     }
+-
+     let extend_with_taits = |type_alias| {
+         extend_with_opaques(
+             db,
+             result,
+         );
+     };
+-
+     // Collect opaques from assoc items.
+     let extend_with_atpit_from_assoc_items = |assoc_items: &[(Name, AssocItemId)]| {
+         assoc_items
+         DefWithBodyId::FunctionId(id) => extend_with_atpit_from_container(id.loc(db).container),
+         DefWithBodyId::StaticId(_) | DefWithBodyId::VariantId(_) => {}
+     }
+-
+     // FIXME: Collect opaques from `#[define_opaque]`.
+-
+     fn extend_with_opaques<'db>(
+         db: &'db dyn HirDatabase,
+         opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
+     }
+ }
+ 
+-// These are firewall queries to prevent drawing dependencies between infers:
+-
+ #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
+-pub(crate) fn rpit_hidden_types<'db>(
+-    db: &'db dyn HirDatabase,
+-    function: FunctionId,
+-) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
++pub(crate) fn rpit_hidden_types<'db>(db: &'db dyn HirDatabase, function: FunctionId) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
+     let infer = db.infer(function.into());
+     let mut result = ArenaMap::new();
+     for (opaque, hidden_type) in infer.return_position_impl_trait_types(db) {
+ }
+ 
+ #[salsa::tracked(returns(ref), unsafe(non_update_return_type))]
+-pub(crate) fn tait_hidden_types<'db>(
+-    db: &'db dyn HirDatabase,
+-    type_alias: TypeAliasId,
+-) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
++pub(crate) fn tait_hidden_types<'db>(db: &'db dyn HirDatabase, type_alias: TypeAliasId) -> ArenaMap<ImplTraitIdx<'db>, EarlyBinder<'db, Ty<'db>>> {
+     let loc = type_alias.loc(db);
+     let module = loc.module(db);
+     let interner = DbInterner::new_with(db, Some(module.krate()), module.containing_block());
+     let mut ocx = ObligationCtxt::new(&infcx);
+     let cause = ObligationCause::dummy();
+     let param_env = db.trait_environment(type_alias.into()).env;
+-
+     let defining_bodies = tait_defining_bodies(db, &loc);
+-
+     let taits_count = db
+         .type_alias_impl_traits(type_alias)
+         .map_or(0, |taits| (*taits).as_ref().skip_binder().impl_traits.len());
+-
+     let mut result = ArenaMap::with_capacity(taits_count);
+     for defining_body in defining_bodies {
+         let infer = db.infer(defining_body);
+                     entry.insert(EarlyBinder::bind(hidden_type));
+                 }
+                 la_arena::Entry::Occupied(entry) => {
+-                    _ = ocx.eq(
+-                        &cause,
+-                        param_env,
+-                        entry.get().instantiate_identity(),
+-                        hidden_type,
+-                    );
++                    _ = ocx.eq(&cause, param_env, entry.get().instantiate_identity(), hidden_type);
+                 }
+             }
+         }
+     }
+-
+     _ = ocx.try_evaluate_obligations();
+-
+     // Fill missing entries.
+     for idx in 0..taits_count {
+         let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(idx as u32));
+             }
+             la_arena::Entry::Occupied(mut entry) => {
+                 *entry.get_mut() = entry.get().map_bound(|hidden_type| {
+-                    infcx
+-                        .resolve_vars_if_possible(hidden_type)
+-                        .replace_infer_with_error(interner)
++                    infcx.resolve_vars_if_possible(hidden_type).replace_infer_with_error(interner)
+                 });
+             }
+         }
+     }
+-
+     result
+ }
+ 
+-fn tait_defining_bodies(
+-    db: &dyn HirDatabase,
+-    loc: &AssocItemLoc<ast::TypeAlias>,
+-) -> Vec<DefWithBodyId> {
++fn tait_defining_bodies(db: &dyn HirDatabase, loc: &AssocItemLoc<ast::TypeAlias>) -> Vec<DefWithBodyId> {
+     let from_assoc_items = |assoc_items: &[(Name, AssocItemId)]| {
+         // Associated Type Position Impl Trait.
+         assoc_items
+         }
+         _ => {}
+     }
+-
+     // FIXME: Support general TAITs, or decisively decide not to.
+     Vec::new()
+ }

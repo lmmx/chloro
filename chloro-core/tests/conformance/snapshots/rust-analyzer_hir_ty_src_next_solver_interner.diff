@@ -1,0 +1,1346 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 82113 bytes
+Chloro size:   78956 bytes
+Rustfmt size:  84055 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Things related to the Interner in the next-trait-solver.
+ 
+ use std::{fmt, ops::ControlFlow};
+ 
+-pub use tls_cache::clear_tls_solver_cache;
+-pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
+-
+ use base_db::Crate;
+ use hir_def::{
+-    lang_item::LangItem,
+-    signatures::{FieldData, FnFlags, ImplFlags, StructFlags, TraitFlags},
+     AdtId, AttrDefId, BlockId, CallableDefId, DefWithBodyId, EnumVariantId, ItemContainerId,
+     StructId, UnionId, VariantId,
++    lang_item::LangItem,
++    signatures::{FieldData, FnFlags, ImplFlags, StructFlags, TraitFlags},
+ };
+ use la_arena::Idx;
+ use rustc_abi::{ReprFlags, ReprOptions};
+ use rustc_hash::FxHashSet;
+ use rustc_index::bit_set::DenseBitSet;
+ use rustc_type_ir::{
++    AliasTermKind, AliasTyKind, BoundVar, CollectAndApply, CoroutineWitnessTypes, DebruijnIndex,
++    EarlyBinder, FlagComputation, Flags, GenericArgKind, ImplPolarity, InferTy, Interner, TraitRef,
++    TypeVisitableExt, UniverseIndex, Upcast, Variance,
+     elaborate::elaborate,
+     error::TypeError,
+     inherent::{self, GenericsOf, IntoKind, SliceLike as _, Span as _, Ty as _},
+     lang_items::{SolverAdtLangItem, SolverLangItem, SolverTraitLangItem},
+     solve::SizedTraitKind,
+-    AliasTermKind, AliasTyKind, BoundVar, CollectAndApply, CoroutineWitnessTypes, DebruijnIndex,
+-    EarlyBinder, FlagComputation, Flags, GenericArgKind, ImplPolarity, InferTy, Interner, TraitRef,
+-    TypeVisitableExt, UniverseIndex, Upcast, Variance,
+ };
++pub use tls_cache::clear_tls_solver_cache;
++pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
+ 
++pub use crate::_interned_vec_db as interned_vec_db;
++pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
+ use crate::{
++    FnAbi,
+     db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
+-    method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
++    method_resolution::{ALL_FLOAT_FPS, ALL_INT_FPS, TyFingerprint},
+     next_solver::{
+-        util::{explicit_item_bounds, for_trait_impls, ContainsTypeErrors},
+         AdtIdWrapper, BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper,
+         CoroutineIdWrapper, Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey,
+         RegionAssumptions, SolverContext, SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
++        util::{ContainsTypeErrors, explicit_item_bounds, for_trait_impls},
+     },
+-    FnAbi,
+ };
+-
+ use super::{
+-    abi::Safety,
+-    fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
+-    generics::{generics, Generics},
+-    region::{
+-        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
+-    },
+-    util::sizedness_constraint_for_ty,
+     Binder, BoundExistentialPredicates, BoundTy, BoundTyKind, Clause, ClauseKind, Clauses, Const,
+     ErrorGuaranteed, ExprConst, ExternalConstraints, GenericArg, GenericArgs, ParamConst, ParamEnv,
+     ParamTy, PlaceholderConst, PlaceholderTy, PredefinedOpaques, Predicate, SolverDefId, Term, Ty,
+     TyKind, Tys, Valtree, ValueConst,
++    abi::Safety,
++    fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
++    generics::{Generics, generics},
++    region::{
++        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
++    },
++    util::sizedness_constraint_for_ty,
+ };
+-
+ #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
+ pub struct InternedWrapperNoDebug<T>(pub(crate) T);
+ 
+                 folder: &mut F,
+             ) -> Result<Self, F::Error> {
+                 use rustc_type_ir::inherent::SliceLike as _;
+-                let inner: smallvec::SmallVec<[_; 2]> = self
+-                    .iter()
+-                    .map(|v| v.try_fold_with(folder))
+-                    .collect::<Result<_, _>>()?;
++                let inner: smallvec::SmallVec<[_; 2]> =
++                    self.iter().map(|v| v.try_fold_with(folder)).collect::<Result<_, _>>()?;
+                 Ok($name::new_(folder.cx().db(), inner))
+             }
+             fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
+                 interner: DbInterner<'db>,
+                 data: impl IntoIterator<Item = $ty>,
+             ) -> Self {
+-                $name::new_(
+-                    interner.db(),
+-                    data.into_iter().collect::<smallvec::SmallVec<[_; 2]>>(),
+-                )
++                $name::new_(interner.db(), data.into_iter().collect::<smallvec::SmallVec<[_; 2]>>())
+             }
+ 
+             pub fn inner(&self) -> &smallvec::SmallVec<[$ty; 2]> {
+     };
+ }
+ 
+-pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
+-
+ #[macro_export]
+ #[doc(hidden)]
+ macro_rules! _interned_vec_db {
+                 folder: &mut F,
+             ) -> Result<Self, F::Error> {
+                 use rustc_type_ir::inherent::SliceLike as _;
+-                let inner: smallvec::SmallVec<[_; 2]> = self
+-                    .iter()
+-                    .map(|v| v.try_fold_with(folder))
+-                    .collect::<Result<_, _>>()?;
++                let inner: smallvec::SmallVec<[_; 2]> =
++                    self.iter().map(|v| v.try_fold_with(folder)).collect::<Result<_, _>>()?;
+                 Ok($name::new_(folder.cx().db(), inner))
+             }
+             fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
+                 interner: DbInterner<'db>,
+                 data: impl IntoIterator<Item = $ty<'db>>,
+             ) -> Self {
+-                $name::new_(
+-                    interner.db(),
+-                    data.into_iter().collect::<smallvec::SmallVec<[_; 2]>>(),
+-                )
++                $name::new_(interner.db(), data.into_iter().collect::<smallvec::SmallVec<[_; 2]>>())
+             }
+ 
+             pub fn inner(&self) -> &smallvec::SmallVec<[$ty<'db>; 2]> {
+     };
+ }
+ 
+-pub use crate::_interned_vec_db as interned_vec_db;
+-
+ #[derive(Debug, Copy, Clone)]
+ pub struct DbInterner<'db> {
+     pub(crate) db: &'db dyn HirDatabase,
+     pub(crate) block: Option<BlockId>,
+ }
+ 
+-// FIXME: very wrong, see https://github.com/rust-lang/rust/pull/144808
+-unsafe impl Send for DbInterner<'_> {}
+-unsafe impl Sync for DbInterner<'_> {}
++unsafe impl Send for DbInterner<'_> {
++}
++
++unsafe impl Sync for DbInterner<'_> {
++}
+ 
+ impl<'db> DbInterner<'db> {
+-    // FIXME(next-solver): remove this method
+     pub fn conjure() -> DbInterner<'db> {
+         crate::with_attached_db(|db| DbInterner {
+             db: unsafe { std::mem::transmute::<&dyn HirDatabase, &'db dyn HirDatabase>(db) },
+         })
+     }
+ 
+-    pub fn new_with(
+-        db: &'db dyn HirDatabase,
+-        krate: Option<Crate>,
+-        block: Option<BlockId>,
+-    ) -> DbInterner<'db> {
++    pub fn new_with(db: &'db dyn HirDatabase, krate: Option<Crate>, block: Option<BlockId>) -> DbInterner<'db> {
+         DbInterner { db, krate, block }
+     }
+ 
+     }
+ }
+ 
+-// This is intentionally left as `()`
+ #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+ pub struct Span(());
+ 
+         Span(())
+     }
+ }
+-
+-interned_vec_nolifetime_salsa!(BoundVarKinds, BoundVarKind, nofold);
+-
+ #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+ pub enum BoundVarKind {
+     Ty(BoundTyKind),
+         }
+     }
+ }
+-
+-interned_vec_db!(CanonicalVars, CanonicalVarKind, nofold);
+-
+ pub struct DepNodeIndex;
+ 
+ #[derive(Debug)]
+ 
+ #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+ pub struct AllocId;
+-
+-interned_vec_nolifetime_salsa!(VariancesOf, Variance, nofold);
+-
+ #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+ pub struct VariantIdx(usize);
+ 
+-// FIXME: could/should store actual data?
+ #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+ pub enum VariantDef {
+     Struct(StructId),
+             VariantDef::Union(it) => (*it).into(),
+             VariantDef::Enum(it) => (*it).into(),
+         };
+-        id.fields(db)
+-            .fields()
+-            .iter()
+-            .map(|(id, data)| (id, data.clone()))
+-            .collect()
++        id.fields(db).fields().iter().map(|(id, data)| (id, data.clone())).collect()
+     }
+ }
+ 
+-/*
+-/// Definition of a variant -- a struct's fields or an enum variant.
+-#[derive(Debug, HashStable, TyEncodable, TyDecodable)]
+-pub struct VariantDef {
+-    /// `DefId` that identifies the variant itself.
+-    /// If this variant belongs to a struct or union, then this is a copy of its `DefId`.
+-    pub def_id: DefId,
+-    /// `DefId` that identifies the variant's constructor.
+-    /// If this variant is a struct variant, then this is `None`.
+-    pub ctor: Option<(CtorKind, DefId)>,
+-    /// Variant or struct name, maybe empty for anonymous adt (struct or union).
+-    pub name: Symbol,
+-    /// Discriminant of this variant.
+-    pub discr: VariantDiscr,
+-    /// Fields of this variant.
+-    pub fields: IndexVec<FieldIdx, FieldDef>,
+-    /// The error guarantees from parser, if any.
+-    tainted: Option<ErrorGuaranteed>,
+-    /// Flags of the variant (e.g. is field list non-exhaustive)?
+-    flags: VariantFlags,
+-}
+-*/
+-
+ #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+ pub struct AdtFlags {
+     is_enum: bool,
+     repr: ReprOptions,
+ }
+ 
+-// We're gonna cheat a little bit and implement `Hash` on only the `DefId` and
+-// accept there might be collisions for def ids from different crates (or across
+-// different tests, oh my).
+ impl std::hash::Hash for AdtDefInner {
+     #[inline]
+     fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
+                 (flags, variants, repr)
+             }
+         };
+-
+-        AdtDef::new_(
+-            db,
+-            AdtDefInner {
+-                id: def_id,
+-                variants,
+-                flags,
+-                repr,
+-            },
+-        )
++        AdtDef::new_(db, AdtDefInner { id: def_id, variants, flags, repr })
+     }
+ 
+     pub fn inner(&self) -> &AdtDefInner {
+         self.inner().flags.is_fundamental
+     }
+ 
+-    fn struct_tail_ty(
+-        self,
+-        interner: DbInterner<'db>,
+-    ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
++    fn struct_tail_ty(self, interner: DbInterner<'db>) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
+         let hir_def::AdtId::StructId(struct_id) = self.inner().id else {
+             return None;
+         };
+         let id: VariantId = struct_id.into();
+         let field_types = interner.db().field_types(id);
+-
+         field_types.iter().last().map(|f| *f.1)
+     }
+ 
+-    fn all_field_tys(
+-        self,
+-        interner: DbInterner<'db>,
+-    ) -> EarlyBinder<DbInterner<'db>, impl IntoIterator<Item = Ty<'db>>> {
++    fn all_field_tys(self, interner: DbInterner<'db>) -> EarlyBinder<DbInterner<'db>, impl IntoIterator<Item = Ty<'db>>> {
+         let db = interner.db();
+         // FIXME: this is disabled just to match the behavior with chalk right now
+         let _field_tys = |id: VariantId| {
+-            db.field_types(id)
+-                .iter()
+-                .map(|(_, ty)| ty.skip_binder())
+-                .collect::<Vec<_>>()
++            db.field_types(id).iter().map(|(_, ty)| ty.skip_binder()).collect::<Vec<_>>()
+         };
+         let field_tys = |_id: VariantId| vec![];
+         let tys: Vec<_> = match self.inner().id {
+                 .flat_map(|&(variant_id, _, _)| field_tys(variant_id.into()))
+                 .collect(),
+         };
+-
+         EarlyBinder::bind(tys)
+     }
+ 
+-    fn sizedness_constraint(
+-        self,
+-        interner: DbInterner<'db>,
+-        sizedness: SizedTraitKind,
+-    ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
++    fn sizedness_constraint(self, interner: DbInterner<'db>, sizedness: SizedTraitKind) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
+         if self.is_struct() {
+-            let tail_ty = self
+-                .all_field_tys(interner)
+-                .skip_binder()
+-                .into_iter()
+-                .last()?;
++            let tail_ty = self.all_field_tys(interner).skip_binder().into_iter().last()?;
+ 
+             let constraint_ty = sizedness_constraint_for_ty(interner, sizedness, tail_ty)?;
+ 
+         }
+     }
+ 
+-    fn destructor(
+-        self,
+-        _interner: DbInterner<'db>,
+-    ) -> Option<rustc_type_ir::solve::AdtDestructorKind> {
++    fn destructor(self, _interner: DbInterner<'db>) -> Option<rustc_type_ir::solve::AdtDestructorKind> {
+         // FIXME(next-solver)
+         None
+     }
+ 
+     fn outer_exclusive_binder(&self) -> rustc_type_ir::DebruijnIndex {
+         match self.inner() {
+-            PatternKind::Range { start, end } => start
+-                .outer_exclusive_binder()
+-                .max(end.outer_exclusive_binder()),
++            PatternKind::Range { start, end } => {
++                start.outer_exclusive_binder().max(end.outer_exclusive_binder())
++            }
+             PatternKind::Or(pats) => {
+                 let mut idx = pats.as_slice()[0].outer_exclusive_binder();
+                 for pat in pats.as_slice()[1..].iter() {
+ 
+ impl<'db> rustc_type_ir::inherent::IntoKind for Pattern<'db> {
+     type Kind = rustc_type_ir::PatternKind<DbInterner<'db>>;
++
+     fn kind(self) -> Self::Kind {
+         *self.inner()
+     }
+ }
+ 
+ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
+-    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(
+-        relation: &mut R,
+-        a: Self,
+-        b: Self,
+-    ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
++    fn relate<R: rustc_type_ir::relate::TypeRelation<DbInterner<'db>>>(relation: &mut R, a: Self, b: Self) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
+         let tcx = relation.cx();
+         match (a.kind(), b.kind()) {
+             (
+-                PatternKind::Range {
+-                    start: start_a,
+-                    end: end_a,
+-                },
+-                PatternKind::Range {
+-                    start: start_b,
+-                    end: end_b,
+-                },
++                PatternKind::Range { start: start_a, end: end_a },
++                PatternKind::Range { start: start_b, end: end_b },
+             ) => {
+                 let start = relation.relate(start_a, start_b)?;
+                 let end = relation.relate(end_a, end_b)?;
+         }
+     }
+ }
+-
+-interned_vec_db!(PatList, Pattern);
+-
+ macro_rules! as_lang_item {
+     (
+         $solver_enum:ident, $var:ident;
+ 
+ impl<'db> Interner for DbInterner<'db> {
+     type DefId = SolverDefId;
++
+     type LocalDefId = SolverDefId;
++
+     type LocalDefIds = SolverDefIds<'db>;
++
+     type TraitId = TraitIdWrapper;
++
+     type ForeignId = TypeAliasIdWrapper;
++
+     type FunctionId = CallableIdWrapper;
++
+     type ClosureId = ClosureIdWrapper;
++
+     type CoroutineClosureId = CoroutineIdWrapper;
++
+     type CoroutineId = CoroutineIdWrapper;
++
+     type AdtId = AdtIdWrapper;
++
+     type ImplId = ImplIdWrapper;
++
+     type Span = Span;
+ 
+     type GenericArgs = GenericArgs<'db>;
++
+     type GenericArgsSlice = GenericArgs<'db>;
++
+     type GenericArg = GenericArg<'db>;
+ 
+     type Term = Term<'db>;
+ 
+     type BoundVarKinds = BoundVarKinds<'db>;
++
+     type BoundVarKind = BoundVarKind;
+ 
+     type PredefinedOpaques = PredefinedOpaques<'db>;
+ 
+-    fn mk_predefined_opaques_in_body(
+-        self,
+-        data: &[(OpaqueTypeKey<'db>, Self::Ty)],
+-    ) -> Self::PredefinedOpaques {
++    fn mk_predefined_opaques_in_body(self, data: &[(OpaqueTypeKey<'db>, Self::Ty)]) -> Self::PredefinedOpaques {
+         PredefinedOpaques::new_from_iter(self, data.iter().cloned())
+     }
+ 
+     type CanonicalVarKinds = CanonicalVars<'db>;
+ 
+-    fn mk_canonical_var_kinds(
+-        self,
+-        kinds: &[rustc_type_ir::CanonicalVarKind<Self>],
+-    ) -> Self::CanonicalVarKinds {
++    fn mk_canonical_var_kinds(self, kinds: &[rustc_type_ir::CanonicalVarKind<Self>]) -> Self::CanonicalVarKinds {
+         CanonicalVars::new_from_iter(self, kinds.iter().cloned())
+     }
+ 
+     type ExternalConstraints = ExternalConstraints<'db>;
+ 
+-    fn mk_external_constraints(
+-        self,
+-        data: rustc_type_ir::solve::ExternalConstraintsData<Self>,
+-    ) -> Self::ExternalConstraints {
++    fn mk_external_constraints(self, data: rustc_type_ir::solve::ExternalConstraintsData<Self>) -> Self::ExternalConstraints {
+         ExternalConstraints::new(self, data)
+     }
+ 
+     type Tracked<T: fmt::Debug + Clone> = Tracked<T>;
+ 
+     type Ty = Ty<'db>;
++
+     type Tys = Tys<'db>;
++
+     type FnInputTys = Tys<'db>;
++
+     type ParamTy = ParamTy;
++
+     type BoundTy = BoundTy;
++
+     type PlaceholderTy = PlaceholderTy;
++
+     type Symbol = ();
+ 
+     type ErrorGuaranteed = ErrorGuaranteed;
++
+     type BoundExistentialPredicates = BoundExistentialPredicates<'db>;
++
+     type AllocId = AllocId;
++
+     type Pat = Pattern<'db>;
++
+     type PatList = PatList<'db>;
++
+     type Safety = Safety;
++
+     type Abi = FnAbi;
+ 
+     type Const = Const<'db>;
++
+     type PlaceholderConst = PlaceholderConst;
++
+     type ParamConst = ParamConst;
++
+     type BoundConst = BoundConst;
++
+     type ValueConst = ValueConst<'db>;
++
+     type ValTree = Valtree<'db>;
++
+     type ExprConst = ExprConst;
+ 
+     type Region = Region<'db>;
++
+     type EarlyParamRegion = EarlyParamRegion;
++
+     type LateParamRegion = LateParamRegion;
++
+     type BoundRegion = BoundRegion;
++
+     type PlaceholderRegion = PlaceholderRegion;
+ 
+     type RegionAssumptions = RegionAssumptions<'db>;
+ 
+     type ParamEnv = ParamEnv<'db>;
++
+     type Predicate = Predicate<'db>;
++
+     type Clause = Clause<'db>;
++
+     type Clauses = Clauses<'db>;
+ 
+     type GenericsOf = Generics;
+     fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
+     where
+         I: Iterator<Item = T>,
+-        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
+-    {
++        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>, {
+         CollectAndApply::collect_and_apply(args, |g| {
+             GenericArgs::new_from_iter(self, g.iter().cloned())
+         })
+ 
+     type UnsizingParams = UnsizingParams;
+ 
+-    fn mk_tracked<T: fmt::Debug + Clone>(
+-        self,
+-        data: T,
+-        _dep_node: Self::DepNodeIndex,
+-    ) -> Self::Tracked<T> {
++    fn mk_tracked<T: fmt::Debug + Clone>(self, data: T, _dep_node: Self::DepNodeIndex) -> Self::Tracked<T> {
+         Tracked(data)
+     }
+ 
+         (task(), DepNodeIndex)
+     }
+ 
+-    fn with_global_cache<R>(
+-        self,
+-        f: impl FnOnce(&mut rustc_type_ir::search_graph::GlobalCache<Self>) -> R,
+-    ) -> R {
++    fn with_global_cache<R>(self, f: impl FnOnce(&mut rustc_type_ir::search_graph::GlobalCache<Self>) -> R) -> R {
+         tls_cache::with_cache(self.db, f)
+     }
+ 
+-    fn canonical_param_env_cache_get_or_insert<R>(
+-        self,
+-        _param_env: Self::ParamEnv,
+-        f: impl FnOnce() -> rustc_type_ir::CanonicalParamEnvCacheEntry<Self>,
+-        from_entry: impl FnOnce(&rustc_type_ir::CanonicalParamEnvCacheEntry<Self>) -> R,
+-    ) -> R {
++    fn canonical_param_env_cache_get_or_insert<R>(self, _param_env: Self::ParamEnv, f: impl FnOnce() -> rustc_type_ir::CanonicalParamEnvCacheEntry<Self>, from_entry: impl FnOnce(&rustc_type_ir::CanonicalParamEnvCacheEntry<Self>) -> R) -> R {
+         from_entry(&f())
+     }
+ 
+                     Ctor::Struct(id) => id.into(),
+                     Ctor::Enum(id) => id.into(),
+                 };
+-                self.db
+-                    .value_ty(id)
+-                    .expect("`SolverDefId::Ctor` should have a function-like ctor")
++                self.db.value_ty(id).expect("`SolverDefId::Ctor` should have a function-like ctor")
+             }
+             _ => panic!("Unexpected def_id `{def_id:?}` provided for `type_of`"),
+         }
+         }
+     }
+ 
+-    fn alias_term_kind(
+-        self,
+-        alias: rustc_type_ir::AliasTerm<Self>,
+-    ) -> rustc_type_ir::AliasTermKind {
++    fn alias_term_kind(self, alias: rustc_type_ir::AliasTerm<Self>) -> rustc_type_ir::AliasTermKind {
+         match alias.def_id {
+             SolverDefId::InternedOpaqueTyId(_) => AliasTermKind::OpaqueTy,
+             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
+         }
+     }
+ 
+-    fn trait_ref_and_own_args_for_alias(
+-        self,
+-        def_id: Self::DefId,
+-        args: Self::GenericArgs,
+-    ) -> (rustc_type_ir::TraitRef<Self>, Self::GenericArgsSlice) {
++    fn trait_ref_and_own_args_for_alias(self, def_id: Self::DefId, args: Self::GenericArgs) -> (rustc_type_ir::TraitRef<Self>, Self::GenericArgsSlice) {
+         let trait_def_id = self.parent(def_id);
+         let trait_generics = self.generics_of(trait_def_id);
+         let trait_args = GenericArgs::new_from_iter(
+             self,
+-            args.as_slice()[0..trait_generics.own_params.len()]
+-                .iter()
+-                .cloned(),
++            args.as_slice()[0..trait_generics.own_params.len()].iter().cloned(),
+         );
+         let alias_args =
+             GenericArgs::new_from_iter(self, args.iter().skip(trait_generics.own_params.len()));
+-        (
+-            TraitRef::new_from_args(self, trait_def_id.try_into().unwrap(), trait_args),
+-            alias_args,
+-        )
++        (TraitRef::new_from_args(self, trait_def_id.try_into().unwrap(), trait_args), alias_args)
+     }
+ 
+     fn check_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) -> bool {
+         true
+     }
+ 
+-    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {}
++    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
++    }
+ 
+-    fn debug_assert_existential_args_compatible(
+-        self,
+-        _def_id: Self::DefId,
+-        _args: Self::GenericArgs,
+-    ) {
++    fn debug_assert_existential_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
+     }
+ 
+     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
+     where
+         I: Iterator<Item = T>,
+-        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>,
+-    {
++        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>, {
+         CollectAndApply::collect_and_apply(args, |g| Tys::new_from_iter(self, g.iter().cloned()))
+     }
+ 
+     fn parent(self, def_id: Self::DefId) -> Self::DefId {
+         use hir_def::Lookup;
+-
+         let container = match def_id {
+             SolverDefId::FunctionId(it) => it.lookup(self.db()).container,
+             SolverDefId::TypeAliasId(it) => it.lookup(self.db()).container,
+             | SolverDefId::Ctor(..)
+             | SolverDefId::InternedOpaqueTyId(..) => panic!(),
+         };
+-
+         match container {
+             ItemContainerId::ImplId(it) => it.into(),
+             ItemContainerId::TraitId(it) => it.into(),
+         Features
+     }
+ 
+-    fn fn_sig(
+-        self,
+-        def_id: Self::FunctionId,
+-    ) -> EarlyBinder<Self, rustc_type_ir::Binder<Self, rustc_type_ir::FnSig<Self>>> {
++    fn fn_sig(self, def_id: Self::FunctionId) -> EarlyBinder<Self, rustc_type_ir::Binder<Self, rustc_type_ir::FnSig<Self>>> {
+         self.db().callable_item_signature(def_id.0)
+     }
+ 
+             return false; /* No Sized trait, can't require it! */
+         };
+         let sized_def_id = sized_id.into();
+-
+         // Search for a predicate like `Self : Sized` amongst the trait bounds.
+         let predicates = self.predicates_of(def_id);
+         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
+     }
+ 
+     #[tracing::instrument(skip(self), ret)]
+-    fn item_bounds(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++    fn item_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         explicit_item_bounds(self, def_id).map_bound(|bounds| {
+             Clauses::new_from_iter(self, elaborate(self, bounds).collect::<Vec<_>>())
+         })
+     }
+ 
+     #[tracing::instrument(skip(self), ret)]
+-    fn item_self_bounds(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++    fn item_self_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         explicit_item_bounds(self, def_id).map_bound(|bounds| {
+             Clauses::new_from_iter(
+                 self,
+-                elaborate(self, bounds)
+-                    .filter_only_self()
+-                    .collect::<Vec<_>>(),
++                elaborate(self, bounds).filter_only_self().collect::<Vec<_>>(),
+             )
+         })
+     }
+ 
+-    fn item_non_self_bounds(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++    fn item_non_self_bounds(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         let all_bounds: FxHashSet<_> = self.item_bounds(def_id).skip_binder().into_iter().collect();
+-        let own_bounds: FxHashSet<_> = self
+-            .item_self_bounds(def_id)
+-            .skip_binder()
+-            .into_iter()
+-            .collect();
++        let own_bounds: FxHashSet<_> =
++            self.item_self_bounds(def_id).skip_binder().into_iter().collect();
+         if all_bounds.len() == own_bounds.len() {
+             EarlyBinder::bind(Clauses::new_from_iter(self, []))
+         } else {
+     }
+ 
+     #[tracing::instrument(level = "debug", skip(self), ret)]
+-    fn predicates_of(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++    fn predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+         let predicates = self.db().generic_predicates(def_id.try_into().unwrap());
+         let predicates: Vec<_> = predicates.iter().cloned().collect();
+         EarlyBinder::bind(predicates.into_iter())
+     }
+ 
+     #[tracing::instrument(level = "debug", skip(self), ret)]
+-    fn own_predicates_of(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+-        let predicates = self
+-            .db()
+-            .generic_predicates_without_parent(def_id.try_into().unwrap());
++    fn own_predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++        let predicates = self.db().generic_predicates_without_parent(def_id.try_into().unwrap());
+         let predicates: Vec<_> = predicates.iter().cloned().collect();
+         EarlyBinder::bind(predicates.into_iter())
+     }
+ 
+     #[tracing::instrument(skip(self), ret)]
+-    fn explicit_super_predicates_of(
+-        self,
+-        def_id: Self::TraitId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
++    fn explicit_super_predicates_of(self, def_id: Self::TraitId) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
+         let is_self = |ty: Ty<'db>| match ty.kind() {
+             rustc_type_ir::TyKind::Param(param) => param.index == 0,
+             _ => false,
+         };
+-
+         let predicates: Vec<(Clause<'db>, Span)> = self
+             .db()
+             .generic_predicates(def_id.0.into())
+     }
+ 
+     #[tracing::instrument(skip(self), ret)]
+-    fn explicit_implied_predicates_of(
+-        self,
+-        def_id: Self::DefId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
++    fn explicit_implied_predicates_of(self, def_id: Self::DefId) -> EarlyBinder<Self, impl IntoIterator<Item = (Self::Clause, Self::Span)>> {
+         fn is_self_or_assoc(ty: Ty<'_>) -> bool {
+             match ty.kind() {
+                 rustc_type_ir::TyKind::Param(param) => param.index == 0,
+                 _ => false,
+             }
+         }
+-
+         let predicates: Vec<(Clause<'db>, Span)> = self
+             .db()
+             .generic_predicates(def_id.try_into().unwrap())
+         EarlyBinder::bind(predicates)
+     }
+ 
+-    fn impl_super_outlives(
+-        self,
+-        impl_id: Self::ImplId,
+-    ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
+-        let trait_ref = self
+-            .db()
+-            .impl_trait(impl_id.0)
+-            .expect("expected an impl of trait");
++    fn impl_super_outlives(self, impl_id: Self::ImplId) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
++        let trait_ref = self.db().impl_trait(impl_id.0).expect("expected an impl of trait");
+         trait_ref.map_bound(|trait_ref| {
+             let clause: Clause<'_> = trait_ref.upcast(self);
+             Clauses::new_from_iter(
+     }
+ 
+     #[expect(unreachable_code)]
+-    fn const_conditions(
+-        self,
+-        _def_id: Self::DefId,
+-    ) -> EarlyBinder<
++    fn const_conditions(self, _def_id: Self::DefId) -> EarlyBinder<
+         Self,
+         impl IntoIterator<Item = rustc_type_ir::Binder<Self, rustc_type_ir::TraitRef<Self>>>,
+     > {
+     }
+ 
+     fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
+-        self.as_lang_item(def_id).map_or(false, |l| {
+-            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
+-        })
++        self.as_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+     }
+ 
+     fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
+-        self.as_trait_lang_item(def_id).map_or(false, |l| {
+-            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
+-        })
++        self.as_trait_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+     }
+ 
+     fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
+         // FIXME: derive PartialEq on SolverTraitLangItem
+-        self.as_adt_lang_item(def_id).map_or(false, |l| {
+-            std::mem::discriminant(&l) == std::mem::discriminant(&lang_item)
+-        })
++        self.as_adt_lang_item(def_id)
++            .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
+     }
+ 
+     fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
+             SolverDefId::TraitId(id) => id,
+             _ => unreachable!(),
+         };
+-        trait_
+-            .trait_items(self.db())
+-            .associated_types()
+-            .map(|id| id.into())
++        trait_.trait_items(self.db()).associated_types().map(|id| id.into())
+     }
+ 
+-    fn for_each_relevant_impl(
+-        self,
+-        trait_: Self::TraitId,
+-        self_ty: Self::Ty,
+-        mut f: impl FnMut(Self::ImplId),
+-    ) {
++    fn for_each_relevant_impl(self, trait_: Self::TraitId, self_ty: Self::Ty, mut f: impl FnMut(Self::ImplId)) {
+         let trait_ = trait_.0;
+         let self_ty_fp = TyFingerprint::for_trait_impl(self_ty);
+         let fps: &[TyFingerprint] = match self_ty.kind() {
+             TyKind::Infer(InferTy::FloatVar(..)) => &ALL_FLOAT_FPS,
+             _ => self_ty_fp.as_slice(),
+         };
+-
+         if fps.is_empty() {
+             _ = for_trait_impls(
+                 self.db(),
+                     for i in impls.for_trait(trait_) {
+                         use rustc_type_ir::TypeVisitable;
+                         let contains_errors = self.db().impl_trait(i).map_or(false, |b| {
+-                            b.skip_binder()
+-                                .visit_with(&mut ContainsTypeErrors)
+-                                .is_break()
++                            b.skip_binder().visit_with(&mut ContainsTypeErrors).is_break()
+                         });
+                         if contains_errors {
+                             continue;
+                         for i in impls.for_trait_and_self_ty(trait_, *fp) {
+                             use rustc_type_ir::TypeVisitable;
+                             let contains_errors = self.db().impl_trait(i).map_or(false, |b| {
+-                                b.skip_binder()
+-                                    .visit_with(&mut ContainsTypeErrors)
+-                                    .is_break()
++                                b.skip_binder().visit_with(&mut ContainsTypeErrors).is_break()
+                             });
+                             if contains_errors {
+                                 continue;
+ 
+     fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
+         let Some(krate) = self.krate else { return };
+-
+         for impls in self.db.trait_impls_in_deps(krate).iter() {
+             for impl_id in impls.for_trait(trait_def_id.0) {
+                 let impl_data = self.db.impl_signature(impl_id);
+     }
+ 
+     #[tracing::instrument(skip(self), ret)]
+-    fn impl_trait_ref(
+-        self,
+-        impl_id: Self::ImplId,
+-    ) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
++    fn impl_trait_ref(self, impl_id: Self::ImplId) -> EarlyBinder<Self, rustc_type_ir::TraitRef<Self>> {
+         let db = self.db();
+         db.impl_trait(impl_id.0)
+             // ImplIds for impls where the trait ref can't be resolved should never reach trait solving
+         let body = self.db.body(owner);
+         matches!(
+             body[expr_id],
+-            hir_def::hir::Expr::Closure {
+-                closure_kind: hir_def::hir::ClosureKind::Async,
+-                ..
+-            } | hir_def::hir::Expr::Async { .. }
++            hir_def::hir::Expr::Closure { closure_kind: hir_def::hir::ClosureKind::Async, .. }
++                | hir_def::hir::Expr::Async { .. }
+         )
+     }
+ 
+     fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
+         let def = AdtDef::new(id.0, self);
+         let num_params = self.generics_of(id.into()).count();
+-
+         let maybe_unsizing_param_idx = |arg: GenericArg<'db>| match arg.kind() {
+             GenericArgKind::Type(ty) => match ty.kind() {
+                 rustc_type_ir::TyKind::Param(p) => Some(p.index),
+                 _ => None,
+             },
+         };
+-
+         // The last field of the structure has to exist and contain type/const parameters.
+         let variant = def.non_enum_variant();
+         let fields = variant.fields(self.db());
+         let Some((tail_field, prefix_fields)) = fields.split_last() else {
+             return UnsizingParams(DenseBitSet::new_empty(num_params));
+         };
+-
+         let field_types = self.db().field_types(variant.id());
+         let mut unsizing_params = DenseBitSet::new_empty(num_params);
+         let ty = field_types[tail_field.0];
+                 unsizing_params.insert(i);
+             }
+         }
+-
+         // Ensure none of the other fields mention the parameters used
+         // in unsizing.
+         for field in prefix_fields {
+                 }
+             }
+         }
+-
+         UnsizingParams(unsizing_params)
+     }
+ 
+-    fn anonymize_bound_vars<T: rustc_type_ir::TypeFoldable<Self>>(
+-        self,
+-        value: rustc_type_ir::Binder<Self, T>,
+-    ) -> rustc_type_ir::Binder<Self, T> {
++    fn anonymize_bound_vars<T: rustc_type_ir::TypeFoldable<Self>>(self, value: rustc_type_ir::Binder<Self, T>) -> rustc_type_ir::Binder<Self, T> {
+         struct Anonymize<'a, 'db> {
+             interner: DbInterner<'db>,
+             map: &'a mut FxIndexMap<BoundVar, BoundVarKind>,
+                 Const::new_bound(self.interner, DebruijnIndex::ZERO, BoundConst { var })
+             }
+         }
+-
+         let mut map = Default::default();
+-        let delegate = Anonymize {
+-            interner: self,
+-            map: &mut map,
+-        };
++        let delegate = Anonymize { interner: self, map: &mut map };
+         let inner = self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate);
+         let bound_vars = CollectAndApply::collect_and_apply(map.into_values(), |xs| {
+             BoundVarKinds::new_from_iter(self, xs.iter().cloned())
+             return SolverDefIds::default();
+         };
+         let mut result = Vec::new();
+-
+         crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
+-
+         // Collect coroutines.
+         let body = self.db.body(def_id);
+         body.exprs().for_each(|(expr_id, expr)| {
+                 result.push(coroutine.into());
+             }
+         });
+-
+         SolverDefIds::new_from_iter(self, result)
+     }
+ 
+         false
+     }
+ 
+-    fn explicit_implied_const_bounds(
+-        self,
+-        _def_id: Self::DefId,
+-    ) -> EarlyBinder<
++    fn explicit_implied_const_bounds(self, _def_id: Self::DefId) -> EarlyBinder<
+         Self,
+         impl IntoIterator<Item = rustc_type_ir::Binder<Self, rustc_type_ir::TraitRef<Self>>>,
+     > {
+             CallableDefId::FunctionId(id) => id,
+             _ => return false,
+         };
+-        self.db()
+-            .function_signature(id)
+-            .flags
+-            .contains(FnFlags::CONST)
++        self.db().function_signature(id).flags.contains(FnFlags::CONST)
+     }
+ 
+     fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
+         false
+     }
+ 
+-    fn opt_alias_variances(
+-        self,
+-        _kind: impl Into<rustc_type_ir::AliasTermKind>,
+-        _def_id: Self::DefId,
+-    ) -> Option<Self::VariancesOf> {
++    fn opt_alias_variances(self, _kind: impl Into<rustc_type_ir::AliasTermKind>, _def_id: Self::DefId) -> Option<Self::VariancesOf> {
+         None
+     }
+ 
+         }
+     }
+ 
+-    fn coroutine_hidden_types(
+-        self,
+-        _def_id: Self::CoroutineId,
+-    ) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
++    fn coroutine_hidden_types(self, _def_id: Self::CoroutineId) -> EarlyBinder<Self, Binder<'db, CoroutineWitnessTypes<Self>>> {
+         // FIXME: Actually implement this.
+         EarlyBinder::bind(Binder::dummy(CoroutineWitnessTypes {
+             types: Tys::default(),
+     }
+ 
+     fn is_default_trait(self, def_id: Self::TraitId) -> bool {
+-        self.as_trait_lang_item(def_id)
+-            .map_or(false, |l| matches!(l, SolverTraitLangItem::Sized))
++        self.as_trait_lang_item(def_id).map_or(false, |l| matches!(l, SolverTraitLangItem::Sized))
+     }
+ 
+     fn trait_is_coinductive(self, trait_: Self::TraitId) -> bool {
+-        self.db()
+-            .trait_signature(trait_.0)
+-            .flags
+-            .contains(TraitFlags::COINDUCTIVE)
++        self.db().trait_signature(trait_.0).flags.contains(TraitFlags::COINDUCTIVE)
+     }
+ 
+     fn trait_is_unsafe(self, trait_: Self::TraitId) -> bool {
+-        self.db()
+-            .trait_signature(trait_.0)
+-            .flags
+-            .contains(TraitFlags::UNSAFE)
++        self.db().trait_signature(trait_.0).flags.contains(TraitFlags::UNSAFE)
+     }
+ 
+     fn impl_self_is_guaranteed_unsized(self, _def_id: Self::ImplId) -> bool {
+         false
+     }
+ 
+-    fn impl_specializes(
+-        self,
+-        specializing_impl_def_id: Self::ImplId,
+-        parent_impl_def_id: Self::ImplId,
+-    ) -> bool {
++    fn impl_specializes(self, specializing_impl_def_id: Self::ImplId, parent_impl_def_id: Self::ImplId) -> bool {
+         crate::specialization::specializes(
+             self.db,
+             specializing_impl_def_id.0,
+     }
+ 
+     type Probe = rustc_type_ir::solve::inspect::Probe<DbInterner<'db>>;
++
+     fn mk_probe(self, probe: rustc_type_ir::solve::inspect::Probe<Self>) -> Self::Probe {
+         probe
+     }
+-    fn evaluate_root_goal_for_proof_tree_raw(
+-        self,
+-        canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>,
+-    ) -> (rustc_type_ir::solve::QueryResult<Self>, Self::Probe) {
++
++    fn evaluate_root_goal_for_proof_tree_raw(self, canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>) -> (rustc_type_ir::solve::QueryResult<Self>, Self::Probe) {
+         rustc_next_trait_solver::solve::evaluate_root_goal_for_proof_tree_raw_provider::<
+             SolverContext<'db>,
+             Self,
+ impl<'db> DbInterner<'db> {
+     pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
+     where
+-        T: rustc_type_ir::TypeFoldable<Self>,
+-    {
++        T: rustc_type_ir::TypeFoldable<Self>, {
+         let shift_bv = |bv: BoundVar| BoundVar::from_usize(bv.as_usize() + bound_vars);
+         self.replace_escaping_bound_vars_uncached(
+             value,
+                     Region::new_bound(
+                         self,
+                         DebruijnIndex::ZERO,
+-                        BoundRegion {
+-                            var: shift_bv(r.var),
+-                            kind: r.kind,
+-                        },
++                        BoundRegion { var: shift_bv(r.var), kind: r.kind },
+                     )
+                 },
+                 types: &mut |t: BoundTy| {
+                     Ty::new_bound(
+                         self,
+                         DebruijnIndex::ZERO,
+-                        BoundTy {
+-                            var: shift_bv(t.var),
+-                            kind: t.kind,
+-                        },
++                        BoundTy { var: shift_bv(t.var), kind: t.kind },
+                     )
+                 },
+                 consts: &mut |c| {
+-                    Const::new_bound(
+-                        self,
+-                        DebruijnIndex::ZERO,
+-                        BoundConst {
+-                            var: shift_bv(c.var),
+-                        },
+-                    )
++                    Const::new_bound(self, DebruijnIndex::ZERO, BoundConst { var: shift_bv(c.var) })
+                 },
+             },
+         )
+     }
+ 
+-    pub fn replace_escaping_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(
+-        self,
+-        value: T,
+-        delegate: impl BoundVarReplacerDelegate<'db>,
+-    ) -> T {
++    pub fn replace_escaping_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(self, value: T, delegate: impl BoundVarReplacerDelegate<'db>) -> T {
+         if !value.has_escaping_bound_vars() {
+             value
+         } else {
+         }
+     }
+ 
+-    pub fn replace_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(
+-        self,
+-        value: Binder<'db, T>,
+-        delegate: impl BoundVarReplacerDelegate<'db>,
+-    ) -> T {
++    pub fn replace_bound_vars_uncached<T: rustc_type_ir::TypeFoldable<DbInterner<'db>>>(self, value: Binder<'db, T>, delegate: impl BoundVarReplacerDelegate<'db>) -> T {
+         self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate)
+     }
+ 
+-    pub fn mk_fn_sig<I>(
+-        self,
+-        inputs: I,
+-        output: Ty<'db>,
+-        c_variadic: bool,
+-        safety: Safety,
+-        abi: FnAbi,
+-    ) -> FnSig<'db>
++    pub fn mk_fn_sig<I>(self, inputs: I, output: Ty<'db>, c_variadic: bool, safety: Safety, abi: FnAbi) -> FnSig<'db>
+     where
+-        I: IntoIterator<Item = Ty<'db>>,
+-    {
++        I: IntoIterator<Item = Ty<'db>>, {
+         FnSig {
+             inputs_and_output: Tys::new_from_iter(
+                 self,
+         )+
+     };
+ }
+-
+-TrivialTypeTraversalImpls! {
+-    SolverDefId,
+-    TraitIdWrapper,
+-    TypeAliasIdWrapper,
+-    CallableIdWrapper,
+-    ClosureIdWrapper,
+-    CoroutineIdWrapper,
+-    AdtIdWrapper,
+-    ImplIdWrapper,
+-    Pattern<'db>,
+-    Safety,
+-    FnAbi,
+-    Span,
+-    ParamConst,
+-    ParamTy,
+-    BoundRegion,
+-    BoundVar,
+-    Placeholder<BoundRegion>,
+-    Placeholder<BoundTy>,
+-    Placeholder<BoundVar>,
+-}
+-
+ mod tls_db {
+     use std::{cell::Cell, ptr::NonNull};
+-
+     use crate::db::HirDatabase;
+-
+     struct Attached {
+         database: Cell<Option<NonNull<dyn HirDatabase>>>,
+     }
+-
+     impl Attached {
+         #[inline]
+         fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+             struct DbGuard<'s> {
+                 state: Option<&'s Attached>,
+             }
+-
+             impl<'s> DbGuard<'s> {
+                 #[inline]
+                 fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
+                         None => {
+                             // Otherwise, set the database.
+                             attached.database.set(Some(NonNull::from(db)));
+-                            Self {
+-                                state: Some(attached),
+-                            }
++                            Self { state: Some(attached) }
+                         }
+                     }
+                 }
+             }
+-
+             impl Drop for DbGuard<'_> {
+                 #[inline]
+                 fn drop(&mut self) {
+                     }
+                 }
+             }
+-
+             let _guard = DbGuard::new(self, db);
+             op()
+         }
+                 state: &'s Attached,
+                 prev: Option<NonNull<dyn HirDatabase>>,
+             }
+-
+             impl<'s> DbGuard<'s> {
+                 #[inline]
+                 fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
+                     let prev = attached.database.replace(Some(NonNull::from(db)));
+-                    Self {
+-                        state: attached,
+-                        prev,
+-                    }
++                    Self { state: attached, prev }
+                 }
+             }
+-
+             impl Drop for DbGuard<'_> {
+                 #[inline]
+                 fn drop(&mut self) {
+                     self.state.database.set(self.prev);
+                 }
+             }
+-
+             let _guard = DbGuard::new(self, db);
+             op()
+         }
+ 
+         #[inline]
+         fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
+-            let db = self
+-                .database
+-                .get()
+-                .expect("Try to use attached db, but not db is attached");
+-
++            let db = self.database.get().expect("Try to use attached db, but not db is attached");
+             // SAFETY: The db is attached, so it must be valid.
+             op(unsafe { db.as_ref() })
+         }
+     }
+-
+-    thread_local! {
+-        static GLOBAL_DB: Attached = const { Attached { database: Cell::new(None) } };
+-    }
+-
+     #[inline]
+     pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+         GLOBAL_DB.with(|global_db| global_db.attach(db, op))
+     }
+-
+     #[inline]
+     pub fn attach_db_allow_change<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
+         GLOBAL_DB.with(|global_db| global_db.attach_allow_change(db, op))
+     }
+-
+     #[inline]
+     pub fn with_attached_db<R>(op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
+         GLOBAL_DB.with(
+ 
+ mod tls_cache {
+     use crate::db::HirDatabase;
+-
+     use super::DbInterner;
+     use base_db::Nonce;
+     use rustc_type_ir::search_graph::GlobalCache;
+     use salsa::Revision;
+     use std::cell::RefCell;
+-
+     struct Cache {
+         cache: GlobalCache<DbInterner<'static>>,
+         revision: Revision,
+         db_nonce: Nonce,
+     }
+-
+-    thread_local! {
+-        static GLOBAL_CACHE: RefCell<Option<Cache>> = const { RefCell::new(None) };
+-    }
+-
+-    pub(super) fn with_cache<'db, T>(
+-        db: &'db dyn HirDatabase,
+-        f: impl FnOnce(&mut GlobalCache<DbInterner<'db>>) -> T,
+-    ) -> T {
++    pub(super) fn with_cache<'db, T>(db: &'db dyn HirDatabase, f: impl FnOnce(&mut GlobalCache<DbInterner<'db>>) -> T) -> T {
+         GLOBAL_CACHE.with_borrow_mut(|handle| {
+             let (db_nonce, revision) = db.nonce_and_revision();
+             let handle = match handle {
+                 Some(handle) => {
+                     if handle.revision != revision || db_nonce != handle.db_nonce {
+-                        *handle = Cache {
+-                            cache: GlobalCache::default(),
+-                            revision,
+-                            db_nonce,
+-                        };
++                        *handle = Cache { cache: GlobalCache::default(), revision, db_nonce };
+                     }
+                     handle
+                 }
+-                None => handle.insert(Cache {
+-                    cache: GlobalCache::default(),
+-                    revision,
+-                    db_nonce,
+-                }),
++                None => handle.insert(Cache { cache: GlobalCache::default(), revision, db_nonce }),
+             };
+ 
+             // SAFETY: No idea
+             })
+         })
+     }
+-
+     /// Clears the thread-local trait solver cache.
+     ///
+     /// Should be called before getting memory usage estimations, as the solver cache

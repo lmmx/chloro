@@ -1,0 +1,60 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3138 bytes
+Chloro size:   3002 bytes
+Rustfmt size:  3138 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::InFile;
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: trait-impl-orphan
+-//
+-// Only traits defined in the current crate can be implemented for arbitrary types
+-pub(crate) fn trait_impl_orphan(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::TraitImplOrphan,
+-) -> Diagnostic {
++pub(crate) fn trait_impl_orphan(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplOrphan) -> Diagnostic {
+     Diagnostic::new_with_syntax_node_ptr(
+         ctx,
+         DiagnosticCode::RustcHardError("E0117"),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn generics() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fundamental() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn dyn_object() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn twice_fundamental() {
+         check_diagnostics(

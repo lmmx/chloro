@@ -1,0 +1,199 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10022 bytes
+Chloro size:   9860 bytes
+Rustfmt size:  10253 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use hir::{db::ExpandDatabase, FileRange, HirDisplay, InFile};
++use hir::{FileRange, HirDisplay, InFile, db::ExpandDatabase};
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
+     assists::{Assist, AssistId},
+     source_change::SourceChange,
+ };
+ use syntax::{
+-    ast::{self, make, HasArgList},
+-    format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
++    AstNode, SmolStr, TextRange, ToSmolStr,
++    ast::{self, HasArgList, make},
++    format_smolstr,
+ };
+ 
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: unresolved-method
+-//
+-// This diagnostic is triggered if a method does not exist on a given type.
+-pub(crate) fn unresolved_method(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::UnresolvedMethodCall<'_>,
+-) -> Diagnostic {
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
++pub(crate) fn unresolved_method(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Diagnostic {
+     let suffix = if d.field_with_same_name.is_some() {
+         ", but a field with a similar name exists"
+     } else if d.assoc_func_with_same_name.is_some() {
+         // FIXME: add quickfix
+         None
+     };
+-
+     let assoc_func_fix = assoc_func_fix(ctx, d);
+-
+     let mut fixes = vec![];
+     if let Some(field_fix) = field_fix {
+         fixes.push(field_fix);
+     if let Some(assoc_func_fix) = assoc_func_fix {
+         fixes.push(assoc_func_fix);
+     }
+-
+-    if fixes.is_empty() {
+-        None
+-    } else {
+-        Some(fixes)
+-    }
++    if fixes.is_empty() { None } else { Some(fixes) }
+ }
+ 
+-fn field_fix(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::UnresolvedMethodCall<'_>,
+-    ty: &hir::Type<'_>,
+-) -> Option<Assist> {
++fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>, ty: &hir::Type<'_>) -> Option<Assist> {
+     if !ty.impls_fnonce(ctx.sema.db) {
+         return None;
+     }
+         ast::Expr::MethodCallExpr(mcall) => {
+             let FileRange { range, file_id } =
+                 ctx.sema.original_range_opt(mcall.receiver()?.syntax())?;
+-            let FileRange {
+-                range: range2,
+-                file_id: file_id2,
+-            } = ctx.sema.original_range_opt(mcall.name_ref()?.syntax())?;
++            let FileRange { range: range2, file_id: file_id2 } =
++                ctx.sema.original_range_opt(mcall.name_ref()?.syntax())?;
+             if file_id != file_id2 {
+                 return None;
+             }
+         group: None,
+         target: range,
+         source_change: Some(SourceChange::from_iter([
+-            (
+-                file_id.file_id(ctx.sema.db),
+-                TextEdit::insert(range.start(), "(".to_owned()),
+-            ),
+-            (
+-                file_id.file_id(ctx.sema.db),
+-                TextEdit::insert(range.end(), ")".to_owned()),
+-            ),
++            (file_id.file_id(ctx.sema.db), TextEdit::insert(range.start(), "(".to_owned())),
++            (file_id.file_id(ctx.sema.db), TextEdit::insert(range.end(), ")".to_owned())),
+         ])),
+         command: None,
+     })
+ }
+ 
+-fn assoc_func_fix(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::UnresolvedMethodCall<'_>,
+-) -> Option<Assist> {
++fn assoc_func_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Option<Assist> {
+     if let Some(f) = d.assoc_func_with_same_name {
+         let db = ctx.sema.db;
+ 
+                 .unwrap_or(false)
+         };
+ 
+-        let mut receiver_type_adt_name = receiver_type
+-            .as_adt()?
+-            .name(db)
+-            .display_no_db(ctx.edition)
+-            .to_smolstr();
++        let mut receiver_type_adt_name =
++            receiver_type.as_adt()?.name(db).display_no_db(ctx.edition).to_smolstr();
+ 
+-        let generic_parameters: Vec<SmolStr> = receiver_type
+-            .generic_parameters(db, ctx.display_target)
+-            .collect();
++        let generic_parameters: Vec<SmolStr> =
++            receiver_type.generic_parameters(db, ctx.display_target).collect();
+         // if receiver should be pass as first arg in the assoc func,
+         // we could omit generic parameters cause compiler can deduce it automatically
+         if !need_to_take_receiver_as_first_arg && !generic_parameters.is_empty() {
+         let assoc_func_path = make::expr_path(make::path_from_text(&assoc_func_path));
+ 
+         let args: Vec<_> = if need_to_take_receiver_as_first_arg {
+-            std::iter::once(receiver)
+-                .chain(call.arg_list()?.args())
+-                .collect()
++            std::iter::once(receiver).chain(call.arg_list()?.args()).collect()
+         } else {
+             call.arg_list()?.args().collect()
+         };
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix};
+-
+     #[test]
+     fn test_assoc_func_fix() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_assoc_func_diagnostic() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_assoc_func_fix_with_generic() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn smoke_test() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn smoke_test_in_macro_def_site() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn smoke_test_in_macro_call_site() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn field() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn callable_field() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn iter_collect() {
+         check_diagnostics(

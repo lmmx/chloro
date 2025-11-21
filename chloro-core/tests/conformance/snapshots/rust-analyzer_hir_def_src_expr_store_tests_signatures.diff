@@ -1,0 +1,45 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5818 bytes
+Chloro size:   5814 bytes
+Rustfmt size:  5818 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
++use expect_test::{Expect, expect};
++use test_fixture::WithFixture;
++
+ use crate::{
++    GenericDefId, ModuleDefId,
+     expr_store::pretty::{print_function, print_struct},
+     nameres::crate_def_map,
+     test_db::TestDB,
+-    GenericDefId, ModuleDefId,
+ };
+-use expect_test::{expect, Expect};
+-use test_fixture::WithFixture;
+-
+ use super::super::*;
+-
+ fn lower_and_print(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+     let db = TestDB::with_files(ra_fixture);
+-
+     let krate = db.fetch_test_crate();
+     let def_map = crate_def_map(&db, krate);
+     let mut defs = vec![];
+             defs.push(def);
+         }
+     }
+-
+     let mut out = String::new();
+     for def in defs {
+         match def {
+             GenericDefId::TypeAliasId(_id) => (),
+         }
+     }
+-
+     expect.assert_eq(&out);
+ }
+ 

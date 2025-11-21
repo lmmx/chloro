@@ -1,0 +1,80 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3900 bytes
+Chloro size:   2962 bytes
+Rustfmt size:  3900 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{AstToken, Direction, NodeOrToken, SyntaxKind, algo, ast::Ident};
+ 
+ use crate::{CompletionItem, completions::Completions, context::CompletionContext};
+-
+ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
+     let add_completion = |item: &str| {
+         let mut completion =
+         completion.insert_text(format!(r#""{item}""#));
+         acc.add(completion.build(ctx.db));
+     };
+-
+     // FIXME: Move this into context/analysis.rs
+     let previous = ctx
+         .original_token
+     }
+ }
+ 
+-const CFG_CONDITION: &[(&str, &str)] =
+-    &[("all", "all($0)"), ("any", "any($0)"), ("not", "not($0)")];
+ 
+-const KNOWN_ARCH: [&str; 20] = [
+-    "aarch64",
+-    "arm",
+-    "avr",
+-    "csky",
+-    "hexagon",
+-    "mips",
+-    "mips64",
+-    "msp430",
+-    "nvptx64",
+-    "powerpc",
+-    "powerpc64",
+-    "riscv32",
+-    "riscv64",
+-    "s390x",
+-    "sparc",
+-    "sparc64",
+-    "wasm32",
+-    "wasm64",
+-    "x86",
+-    "x86_64",
+-];
+ 
+-const KNOWN_ENV: [&str; 7] = ["eabihf", "gnu", "gnueabihf", "msvc", "relibc", "sgx", "uclibc"];
+ 
+-const KNOWN_OS: [&str; 20] = [
+-    "cuda",
+-    "dragonfly",
+-    "emscripten",
+-    "freebsd",
+-    "fuchsia",
+-    "haiku",
+-    "hermit",
+-    "illumos",
+-    "l4re",
+-    "linux",
+-    "netbsd",
+-    "none",
+-    "openbsd",
+-    "psp",
+-    "redox",
+-    "solaris",
+-    "uefi",
+-    "unknown",
+-    "vxworks",
+-    "windows",
+-];
+ 
+-const KNOWN_VENDOR: [&str; 8] =
+-    ["apple", "fortanix", "nvidia", "pc", "sony", "unknown", "wrs", "uwp"];

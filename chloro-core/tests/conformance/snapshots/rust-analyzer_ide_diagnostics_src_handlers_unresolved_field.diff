@@ -1,0 +1,262 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15690 bytes
+Chloro size:   15353 bytes
+Rustfmt size:  15822 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+-use hir::{db::ExpandDatabase, Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union};
++use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
+     assists::{Assist, AssistId},
+     source_change::{SourceChange, SourceChangeBuilder},
+ };
+ use syntax::{
+-    algo,
+-    ast::{self, edit::IndentLevel, make, FieldList, Name, Visibility},
+-    AstNode, AstPtr, Direction, SyntaxKind, TextSize,
++    AstNode, AstPtr, Direction, SyntaxKind, TextSize, algo,
++    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
+ };
+ use syntax::{
+-    ast::{edit::AstNodeEdit, Type},
+     SyntaxNode,
++    ast::{Type, edit::AstNodeEdit},
+ };
+ 
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: unresolved-field
+-//
+-// This diagnostic is triggered if a field does not exist on a given type.
+-pub(crate) fn unresolved_field(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::UnresolvedField<'_>,
+-) -> Diagnostic {
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
++pub(crate) fn unresolved_field(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Diagnostic {
+     let method_suffix = if d.method_with_same_name_exists {
+         ", but a method with a similar name exists"
+     } else {
+         fixes.extend(method_fix(ctx, &d.expr));
+     }
+     fixes.extend(field_fix(ctx, d));
+-    if fixes.is_empty() {
+-        None
+-    } else {
+-        Some(fixes)
+-    }
++    if fixes.is_empty() { None } else { Some(fixes) }
+ }
+ 
+-// FIXME: Add Snippet Support
+ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
+     // Get the FileRange of the invalid field access
+     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
+     let expr = d.expr.value.to_node(&root).left()?;
+-
+     let error_range = ctx.sema.original_range_opt(expr.syntax())?;
+     let field_name = d.name.as_str();
+     // Convert the receiver to an ADT
+     let adt = d.receiver.strip_references().as_adt()?;
+     let target_module = adt.module(ctx.sema.db);
+-
+-    let suggested_type = if let Some(new_field_type) = ctx
+-        .sema
+-        .type_of_expr(&expr)
+-        .map(|v| v.adjusted())
+-        .filter(|it| !it.is_unknown())
++    let suggested_type = if let Some(new_field_type) =
++        ctx.sema.type_of_expr(&expr).map(|v| v.adjusted()).filter(|it| !it.is_unknown())
+     {
+-        let display = new_field_type
+-            .display_source_code(ctx.sema.db, target_module.into(), false)
+-            .ok();
++        let display =
++            new_field_type.display_source_code(ctx.sema.db, target_module.into(), false).ok();
+         make::ty(display.as_deref().unwrap_or("()"))
+     } else {
+         make::ty("()")
+     };
+-
+     if !is_editable_crate(target_module.krate(), ctx.sema.db)
+         || SyntaxKind::from_keyword(field_name, ctx.edition).is_some()
+     {
+         return None;
+     }
+-
+     match adt {
+         Adt::Struct(adt_struct) => {
+             add_field_to_struct_fix(ctx, adt_struct, field_name, suggested_type, error_range)
+     }
+ }
+ 
+-fn add_variant_to_union(
+-    ctx: &DiagnosticsContext<'_>,
+-    adt_union: Union,
+-    field_name: &str,
+-    suggested_type: Type,
+-    error_range: FileRange,
+-) -> Option<Assist> {
++fn add_variant_to_union(ctx: &DiagnosticsContext<'_>, adt_union: Union, field_name: &str, suggested_type: Type, error_range: FileRange) -> Option<Assist> {
+     let adt_source = adt_union.source(ctx.sema.db)?;
+     let adt_syntax = adt_source.syntax();
+     let field_list = adt_source.value.record_field_list()?;
+     let range = adt_syntax.original_file_range_rooted(ctx.sema.db);
+     let field_name = make::name(field_name);
+-
+-    let (offset, record_field) = record_field_layout(
+-        None,
+-        field_name,
+-        suggested_type,
+-        field_list,
+-        adt_syntax.value,
+-    )?;
+-
++    let (offset, record_field) =
++        record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
+     let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
+     src_change_builder.insert(offset, record_field);
+     Some(Assist {
+     })
+ }
+ 
+-fn add_field_to_struct_fix(
+-    ctx: &DiagnosticsContext<'_>,
+-    adt_struct: Struct,
+-    field_name: &str,
+-    suggested_type: Type,
+-    error_range: FileRange,
+-) -> Option<Assist> {
++fn add_field_to_struct_fix(ctx: &DiagnosticsContext<'_>, adt_struct: Struct, field_name: &str, suggested_type: Type, error_range: FileRange) -> Option<Assist> {
+     let struct_source = adt_struct.source(ctx.sema.db)?;
+     let struct_syntax = struct_source.syntax();
+     let struct_range = struct_syntax.original_file_range_rooted(ctx.sema.db);
+ }
+ 
+ /// Used to determine the layout of the record field in the struct.
+-fn record_field_layout(
+-    visibility: Option<Visibility>,
+-    name: Name,
+-    suggested_type: Type,
+-    field_list: ast::RecordFieldList,
+-    struct_syntax: &SyntaxNode,
+-) -> Option<(TextSize, String)> {
++fn record_field_layout(visibility: Option<Visibility>, name: Name, suggested_type: Type, field_list: ast::RecordFieldList, struct_syntax: &SyntaxNode) -> Option<(TextSize, String)> {
+     let (offset, needs_comma, indent) = match field_list.fields().last() {
+         Some(record_field) => {
+             let syntax = algo::skip_trivia_token(field_list.r_curly_token()?, Direction::Prev)?;
+     };
+     let comma = if needs_comma { ",\n" } else { "\n" };
+     let record_field = make::record_field(visibility, name, suggested_type);
+-
+-    Some((
+-        offset,
+-        format!("{comma}{indent}{record_field}{trailing_new_line}"),
+-    ))
++    Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
+ }
+ 
+-// FIXME: We should fill out the call here, move the cursor and trigger signature help
+-fn method_fix(
+-    ctx: &DiagnosticsContext<'_>,
+-    expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>,
+-) -> Option<Assist> {
++fn method_fix(ctx: &DiagnosticsContext<'_>, expr_ptr: &InFile<AstPtr<Either<ast::Expr, ast::Pat>>>) -> Option<Assist> {
+     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
+     let expr = expr_ptr.value.to_node(&root);
+     let FileRange { range, file_id } = ctx.sema.original_range_opt(expr.syntax())?;
+         command: None,
+     })
+ }
++
+ #[cfg(test)]
+ mod tests {
+-
+     use crate::{
++        DiagnosticsConfig,
+         tests::{
+             check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
+             check_fix, check_no_fix,
+         },
+-        DiagnosticsConfig,
+     };
+-
+     #[test]
+     fn smoke_test() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_clash() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_trait_() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_trait_2() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_on_unknown() {
+         check_diagnostics_with_disabled(
+             &["E0425"],
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_for_missing_name() {
+         let mut config = DiagnosticsConfig::test_sample();
+         config.disabled.insert("syntax-error".to_owned());
+         check_diagnostics_with_config(config, "fn foo() { (). }");
+     }
+-
+     #[test]
+     fn unresolved_field_fix_on_unit() {
+         check_fix(
+             }
+             "#,
+         );
+-
+         check_fix(
+             r#"
+             mod indent {
+             "#,
+         );
+     }
+-
+     #[test]
+     fn no_fix_when_indexed() {
+         check_no_fix(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn no_fix_when_without_field() {
+         check_no_fix(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn regression_18683() {
+         check_diagnostics(

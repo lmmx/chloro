@@ -1,0 +1,597 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 33395 bytes
+Chloro size:   33190 bytes
+Rustfmt size:  34403 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! A map of all publicly exported items in a crate.
+ 
+ use std::fmt;
+ 
+ use base_db::Crate;
+-use fst::{raw::IndexedValue, Automaton, Streamer};
++use fst::{Automaton, Streamer, raw::IndexedValue};
+ use hir_expand::name::Name;
+ use itertools::Itertools;
+ use rustc_hash::FxHashSet;
+ use triomphe::Arc;
+ 
+ use crate::{
++    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
+     db::DefDatabase,
+     item_scope::{ImportOrExternCrate, ItemInNs},
+-    nameres::{assoc::TraitItems, crate_def_map, DefMap},
++    nameres::{DefMap, assoc::TraitItems, crate_def_map},
+     visibility::Visibility,
+-    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
+ };
+-
+ /// Item import details stored in the `ImportMap`.
+ #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+ pub struct ImportInfo {
+         for (k, v) in self.item_to_info_map.iter() {
+             format_to!(out, "{:?} ({:?}) -> ", k, v.1);
+             for v in &v.0 {
+-                format_to!(
+-                    out,
+-                    "{}:{:?}, ",
+-                    v.name.display(db, Edition::CURRENT),
+-                    v.container
+-                );
++                format_to!(out, "{}:{:?}, ", v.name.display(db, Edition::CURRENT), v.container);
+             }
+             format_to!(out, "\n");
+         }
+ 
+     pub(crate) fn import_map_query(db: &dyn DefDatabase, krate: Crate) -> Arc<Self> {
+         let _p = tracing::info_span!("import_map_query").entered();
+-
+         let map = Self::collect_import_map(db, krate);
+-
+         let mut importables: Vec<_> = map
+             .iter()
+             // We've only collected items, whose name cannot be tuple field so unwrapping is fine.
+             lhs_chars.cmp(rhs_chars)
+         });
+         importables.dedup();
+-
+         // Build the FST, taking care not to insert duplicate values.
+         let mut builder = fst::MapBuilder::memory();
+         let mut iter = importables
+             .iter()
+             .enumerate()
+             .dedup_by(|&(_, (_, lhs, _)), &(_, (_, rhs, _))| lhs.eq_ignore_ascii_case(rhs));
+-
+         let mut insert = |name: &str, start, end| {
+-            builder
+-                .insert(
+-                    name.to_ascii_lowercase(),
+-                    ((start as u64) << 32) | end as u64,
+-                )
+-                .unwrap()
++            builder.insert(name.to_ascii_lowercase(), ((start as u64) << 32) | end as u64).unwrap()
+         };
+-
+         if let Some((mut last, (_, name, _))) = iter.next() {
+             debug_assert_eq!(last, 0);
+             let mut last_name = name;
+             }
+             insert(last_name, last, importables.len());
+         }
+-
+-        let importables = importables
+-            .into_iter()
+-            .map(|(item, _, idx)| (item, idx))
+-            .collect();
+-        Arc::new(ImportMap {
+-            item_to_info_map: map,
+-            fst: builder.into_map(),
+-            importables,
+-        })
++        let importables = importables.into_iter().map(|(item, _, idx)| (item, idx)).collect();
++        Arc::new(ImportMap { item_to_info_map: map, fst: builder.into_map(), importables })
+     }
+ 
+     pub fn import_info_for(&self, item: ItemInNs) -> Option<&[ImportInfo]> {
+ 
+     fn collect_import_map(db: &dyn DefDatabase, krate: Crate) -> ImportMapIndex {
+         let _p = tracing::info_span!("collect_import_map").entered();
+-
+         let def_map = crate_def_map(db, krate);
+         let mut map = FxIndexMap::default();
+-
+         // We look only into modules that are public(ly reexported), starting with the crate root.
+         let root = def_map.module_id(DefMap::ROOT);
+         let mut worklist = vec![root];
+         let mut visited = FxHashSet::default();
+-
+         while let Some(module) = worklist.pop() {
+             if !visited.insert(module) {
+                 continue;
+ 
+             let visible_items = mod_data.scope.entries().filter_map(|(name, per_ns)| {
+                 let per_ns = per_ns.filter_visibility(|vis| vis == Visibility::Public);
+-                if per_ns.is_none() {
+-                    None
+-                } else {
+-                    Some((name, per_ns))
+-                }
++                if per_ns.is_none() { None } else { Some((name, per_ns)) }
+             });
+ 
+             for (name, per_ns) in visible_items {
+                         );
+                     }
+ 
+-                    let (infos, _) = map
+-                        .entry(item)
+-                        .or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::No));
++                    let (infos, _) =
++                        map.entry(item).or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::No));
+                     infos.reserve_exact(1);
+                     infos.push(import_info);
+ 
+         map
+     }
+ 
+-    fn collect_trait_assoc_items(
+-        db: &dyn DefDatabase,
+-        map: &mut ImportMapIndex,
+-        tr: TraitId,
+-        is_type_in_ns: bool,
+-        trait_import_info: &ImportInfo,
+-    ) {
++    fn collect_trait_assoc_items(db: &dyn DefDatabase, map: &mut ImportMapIndex, tr: TraitId, is_type_in_ns: bool, trait_import_info: &ImportInfo) {
+         let _p = tracing::info_span!("collect_trait_assoc_items").entered();
+         for &(ref assoc_item_name, item) in &TraitItems::query(db, tr).items {
+             let module_def_id = match item {
+                 complete: do_not_complete,
+             };
+ 
+-            let (infos, _) = map
+-                .entry(assoc_item)
+-                .or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
++            let (infos, _) =
++                map.entry(assoc_item).or_insert_with(|| (SmallVec::new(), IsTraitAssocItem::Yes));
+             infos.reserve_exact(1);
+             infos.push(assoc_item_info);
+         }
+     }
+ }
+ 
+-impl Eq for ImportMap {}
++impl Eq for ImportMap {
++}
++
+ impl PartialEq for ImportMap {
+     fn eq(&self, other: &Self) -> bool {
+         // `fst` and `importables` are built from `map`, so we don't need to compare them.
+                 }
+             })
+             .collect();
+-
+         importable_names.sort();
+         f.write_str(&importable_names.join("\n"))
+     }
+                     let m = if case_sensitive {
+                         name.match_indices(query_char).next()
+                     } else {
+-                        name.match_indices([query_char, query_char.to_ascii_uppercase()])
+-                            .next()
++                        name.match_indices([query_char, query_char.to_ascii_uppercase()]).next()
+                     };
+                     match m {
+                         Some((index, _)) => {
+-                            name = name[index..]
+-                                .strip_prefix(|_: char| true)
+-                                .unwrap_or_default();
++                            name = name[index..].strip_prefix(|_: char| true).unwrap_or_default();
+                             true
+                         }
+                         None => false,
+ 
+     /// Fuzzy finds items instead of exact matching.
+     pub fn fuzzy(self) -> Self {
+-        Self {
+-            search_mode: SearchMode::Fuzzy,
+-            ..self
+-        }
++        Self { search_mode: SearchMode::Fuzzy, ..self }
+     }
+ 
+     pub fn prefix(self) -> Self {
+-        Self {
+-            search_mode: SearchMode::Prefix,
+-            ..self
+-        }
++        Self { search_mode: SearchMode::Prefix, ..self }
+     }
+ 
+     pub fn exact(self) -> Self {
+-        Self {
+-            search_mode: SearchMode::Exact,
+-            ..self
+-        }
++        Self { search_mode: SearchMode::Exact, ..self }
+     }
+ 
+     /// Specifies whether we want to include associated items in the result.
+ 
+     /// Respect casing of the query string when matching.
+     pub fn case_sensitive(self) -> Self {
+-        Self {
+-            case_sensitive: true,
+-            ..self
+-        }
++        Self { case_sensitive: true, ..self }
+     }
+ 
+     fn matches_assoc_mode(&self, is_trait_assoc_item: IsTraitAssocItem) -> bool {
+ /// Searches dependencies of `krate` for an importable name matching `query`.
+ ///
+ /// This returns a list of items that could be imported from dependencies of `krate`.
+-pub fn search_dependencies(
+-    db: &dyn DefDatabase,
+-    krate: Crate,
+-    query: &Query,
+-) -> FxHashSet<(ItemInNs, Complete)> {
++pub fn search_dependencies(db: &dyn DefDatabase, krate: Crate, query: &Query) -> FxHashSet<(ItemInNs, Complete)> {
+     let _p = tracing::info_span!("search_dependencies", ?query).entered();
+-
+-    let import_maps: Vec<_> = krate
+-        .data(db)
+-        .dependencies
+-        .iter()
+-        .map(|dep| db.import_map(dep.crate_id))
+-        .collect();
+-
++    let import_maps: Vec<_> =
++        krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
+     let mut op = fst::map::OpBuilder::new();
+-
+     match query.search_mode {
+         SearchMode::Exact => {
+             let automaton = fst::automaton::Str::new(&query.lowercased);
+     }
+ }
+ 
+-fn search_maps(
+-    _db: &dyn DefDatabase,
+-    import_maps: &[Arc<ImportMap>],
+-    mut stream: fst::map::Union<'_>,
+-    query: &Query,
+-) -> FxHashSet<(ItemInNs, Complete)> {
++fn search_maps(_db: &dyn DefDatabase, import_maps: &[Arc<ImportMap>], mut stream: fst::map::Union<'_>, query: &Query) -> FxHashSet<(ItemInNs, Complete)> {
+     let mut res = FxHashSet::default();
+     while let Some((_, indexed_values)) = stream.next() {
+-        for &IndexedValue {
+-            index: import_map_idx,
+-            value,
+-        } in indexed_values
+-        {
++        for &IndexedValue { index: import_map_idx, value } in indexed_values {
+             let end = (value & 0xFFFF_FFFF) as usize;
+             let start = (value >> 32) as usize;
+-            let ImportMap {
+-                item_to_info_map,
+-                importables,
+-                ..
+-            } = &*import_maps[import_map_idx];
++            let ImportMap { item_to_info_map, importables, .. } = &*import_maps[import_map_idx];
+             let importables = &importables[start..end];
+ 
+             let iter = importables
+                         .then(|| (item, &import_infos[info_idx as usize]))
+                 })
+                 .filter(|&(_, info)| {
+-                    query
+-                        .search_mode
+-                        .check(&query.query, query.case_sensitive, info.name.as_str())
++                    query.search_mode.check(&query.query, query.case_sensitive, info.name.as_str())
+                 })
+                 .map(|(item, import_info)| (item, import_info.complete));
+             res.extend(iter);
+         }
+     }
+-
+     res
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use base_db::RootQueryDb;
+-    use expect_test::{expect, Expect};
++    use expect_test::{Expect, expect};
+     use test_fixture::WithFixture;
+-
+-    use crate::{nameres::assoc::TraitItems, test_db::TestDB, ItemContainerId, Lookup};
+-
++    use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
+     use super::*;
+-
+     impl ImportMap {
+         fn fmt_for_test(&self, db: &dyn DefDatabase) -> String {
+             let mut importable_paths: Vec<_> = self
+                     format!("- {path} ({ns})")
+                 })
+                 .collect();
+-
+             importable_paths.sort();
+             importable_paths.join("\n")
+         }
+     }
+-
+-    fn check_search(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        crate_name: &str,
+-        query: Query,
+-        expect: Expect,
+-    ) {
++    fn check_search(#[rust_analyzer::rust_fixture] ra_fixture: &str, crate_name: &str, query: Query, expect: Expect) {
+         let db = TestDB::with_files(ra_fixture);
+         let all_crates = db.all_crates();
+         let krate = all_crates
+                     .is_some_and(|it| it.crate_name().as_str() == crate_name)
+             })
+             .expect("could not find crate");
+-
+         let actual = search_dependencies(&db, krate, &query)
+             .into_iter()
+             .filter_map(|(dependency, _)| {
+             .collect::<String>();
+         expect.assert_eq(&actual)
+     }
+-
+-    fn assoc_item_path(
+-        db: &dyn DefDatabase,
+-        dependency_imports: &ImportMap,
+-        dependency: ItemInNs,
+-    ) -> Option<String> {
++    fn assoc_item_path(db: &dyn DefDatabase, dependency_imports: &ImportMap, dependency: ItemInNs) -> Option<String> {
+         let (dependency_assoc_item_id, container) = match dependency.as_module_def_id()? {
+             ModuleDefId::FunctionId(id) => (AssocItemId::from(id), id.lookup(db).container),
+             ModuleDefId::ConstId(id) => (AssocItemId::from(id), id.lookup(db).container),
+             ModuleDefId::TypeAliasId(id) => (AssocItemId::from(id), id.lookup(db).container),
+             _ => return None,
+         };
+-
+         let ItemContainerId::TraitId(trait_id) = container else {
+             return None;
+         };
+-
+         let trait_info = dependency_imports.import_info_for(ItemInNs::Types(trait_id.into()))?;
+-
+         let trait_items = TraitItems::query(db, trait_id);
+         let (assoc_item_name, _) = trait_items
+             .items
+             assoc_item_name.display(db, Edition::CURRENT)
+         ))
+     }
+-
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+         let db = TestDB::with_files(ra_fixture);
+         let all_crates = db.all_crates();
+-
+         let actual = all_crates
+             .iter()
+             .copied()
+             })
+             .sorted()
+             .collect::<String>();
+-
+         expect.assert_eq(&actual)
+     }
+-
+     fn render_path(db: &dyn DefDatabase, info: &ImportInfo) -> String {
+         let mut module = info.container;
+         let mut segments = vec![&info.name];
+-
+         let def_map = module.def_map(db);
+-        assert!(
+-            def_map.block_id().is_none(),
+-            "block local items should not be in `ImportMap`"
+-        );
+-
++        assert!(def_map.block_id().is_none(), "block local items should not be in `ImportMap`");
+         while let Some(parent) = module.containing_module(db) {
+             let parent_data = &def_map[parent.local_id];
+-            let (name, _) = parent_data
+-                .children
+-                .iter()
+-                .find(|(_, id)| **id == module.local_id)
+-                .unwrap();
++            let (name, _) =
++                parent_data.children.iter().find(|(_, id)| **id == module.local_id).unwrap();
+             segments.push(name);
+             module = parent;
+         }
+-
+-        segments
+-            .iter()
+-            .rev()
+-            .map(|it| it.display(db, Edition::CURRENT))
+-            .join("::")
++        segments.iter().rev().map(|it| it.display(db, Edition::CURRENT)).join("::")
+     }
+-
+     #[test]
+     fn smoke() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn prefers_shortest_path() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn type_reexport_cross_crate() {
+         // Reexports need to be visible from a crate, even if the original crate exports the item
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn macro_reexport() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn module_reexport() {
+         // Reexporting modules from a dependency adds all contents to the import map.
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn cyclic_module_reexport() {
+         // A cyclic reexport does not hang.
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn private_macro() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn namespacing() {
+         check(
+                 - Thing (v)
+             "#]],
+         );
+-
+         check(
+             r"
+             //- /lib.rs crate:lib
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn fuzzy_import_trait_and_assoc_items() {
+         cov_mark::check!(type_aliases_ignored);
+             }
+         }
+     "#;
+-
+         check_search(
+             ra_fixture,
+             "main",
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_items_filtering() {
+         let ra_fixture = r#"
+             }
+         }
+     "#;
+-
+         check_search(
+             ra_fixture,
+             "main",
+-            Query::new("fmt".to_owned())
+-                .fuzzy()
+-                .assoc_search_mode(AssocSearchMode::AssocItemsOnly),
++            Query::new("fmt".to_owned()).fuzzy().assoc_search_mode(AssocSearchMode::AssocItemsOnly),
+             expect![[r#"
+                 dep::fmt::Display::FMT_CONST (a)
+                 dep::fmt::Display::format_function (a)
+                 dep::fmt::Display::format_method (a)
+             "#]],
+         );
+-
+         check_search(
+             ra_fixture,
+             "main",
+-            Query::new("fmt".to_owned())
+-                .fuzzy()
+-                .assoc_search_mode(AssocSearchMode::Exclude),
++            Query::new("fmt".to_owned()).fuzzy().assoc_search_mode(AssocSearchMode::Exclude),
+             expect![[r#"
+                 dep::fmt (t)
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn search_mode() {
+         let ra_fixture = r#"
+     pub struct NotImportableFromMain;
+ }
+ "#;
+-
+         check_search(
+             ra_fixture,
+             "main",
+                 dep::format (f)
+             "#]],
+         );
+-
+         check_search(
+             ra_fixture,
+             "main",
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn name_only() {
+         let ra_fixture = r#"
+                 pub struct NotImportableFromMain;
+             }
+         "#;
+-
+         check_search(
+             ra_fixture,
+             "main",
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn search_casing() {
+         let ra_fixture = r#"
+             pub struct fmt;
+             pub struct FMT;
+         "#;
+-
+         check_search(
+             ra_fixture,
+             "main",
+                 dep::fmt (v)
+             "#]],
+         );
+-
+         check_search(
+             ra_fixture,
+             "main",
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn unicode_fn_name() {
+         let ra_fixture = r#"
+             //- /dep.rs crate:dep
+             pub fn あい() {}
+         "#;
+-
+         check_search(
+             ra_fixture,
+             "main",

@@ -1,0 +1,19 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2776 bytes
+Chloro size:   2776 bytes
+Rustfmt size:  2776 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion tests for visibility modifiers.
++
+ use expect_test::expect;
+ 
+ use crate::tests::{check, check_with_private_editable, check_with_trigger_character};
+-
+ #[test]
+ fn empty_pub() {
+     cov_mark::check!(kw_completion_in);

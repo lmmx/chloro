@@ -1,0 +1,411 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 30915 bytes
+Chloro size:   30251 bytes
+Rustfmt size:  30915 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+         gen_trait_fn_body, generate_trait_impl,
+     },
+ };
+-
+-// Assist: replace_derive_with_manual_impl
+-//
+-// Converts a `derive` impl into a manual one.
+-//
+-// ```
+-// # //- minicore: derive
+-// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
+-// #[derive(Deb$0ug, Display)]
+-// struct S;
+-// ```
+-// ->
+-// ```
+-// # trait Debug { fn fmt(&self, f: &mut Formatter) -> Result<()>; }
+-// #[derive(Display)]
+-// struct S;
+-//
+-// impl Debug for S {
+-//     $0fn fmt(&self, f: &mut Formatter) -> Result<()> {
+-//         f.debug_struct("S").finish()
+-//     }
+-// }
+-// ```
+-pub(crate) fn replace_derive_with_manual_impl(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++pub(crate) fn replace_derive_with_manual_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let attr = ctx.find_node_at_offset_with_descend::<ast::Attr>()?;
+     let path = attr.path()?;
+     let macro_file = ctx.sema.hir_file_for(attr.syntax()).macro_file()?;
+     if !macro_file.is_derive_attr_pseudo_expansion(ctx.db()) {
+         return None;
+     }
+-
+     let InFile { file_id, value } = macro_file.call_node(ctx.db());
+     if file_id.is_macro() {
+         // FIXME: make this work in macro files
+         .filter_map(ast::Attr::cast)
+         .filter_map(|attr| attr.path())
+         .collect::<Vec<_>>();
+-
+     let adt = value.parent().and_then(ast::Adt::cast)?;
+     let attr = ast::Attr::cast(value)?;
+     let args = attr.token_tree()?;
+-
+     let current_module = ctx.sema.scope(adt.syntax())?.module();
+     let current_crate = current_module.krate();
+     let current_edition = current_crate.edition(ctx.db());
+     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_crate));
+-
+     let found_traits = items_locator::items_with_name(
+         ctx.db(),
+         current_crate,
+             .map(|path| mod_path_to_ast(path, current_edition))
+             .zip(Some(trait_))
+     });
+-
+     let mut no_traits_found = true;
+     for (replace_trait_path, trait_) in found_traits.inspect(|_| no_traits_found = false) {
+         add_assist(
+     Some(())
+ }
+ 
+-fn add_assist(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-    attr: &ast::Attr,
+-    old_derives: &[ast::Path],
+-    old_tree: &ast::TokenTree,
+-    old_trait_path: &ast::Path,
+-    replace_trait_path: &ast::Path,
+-    trait_: Option<hir::Trait>,
+-    adt: &ast::Adt,
+-) -> Option<()> {
++fn add_assist(acc: &mut Assists, ctx: &AssistContext<'_>, attr: &ast::Attr, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, replace_trait_path: &ast::Path, trait_: Option<hir::Trait>, adt: &ast::Adt) -> Option<()> {
+     let target = attr.syntax().text_range();
+     let annotated_name = adt.name()?;
+     let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
+-
+     acc.add(AssistId::refactor("replace_derive_with_manual_impl"), label, target, |builder| {
+         let insert_after = Position::after(adt.syntax());
+         let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
+     })
+ }
+ 
+-fn impl_def_from_trait(
+-    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
+-    config: &AssistConfig,
+-    adt: &ast::Adt,
+-    annotated_name: &ast::Name,
+-    trait_: Option<hir::Trait>,
+-    trait_path: &ast::Path,
+-    impl_is_unsafe: bool,
+-) -> Option<ast::Impl> {
++fn impl_def_from_trait(sema: &hir::Semantics<'_, ide_db::RootDatabase>, config: &AssistConfig, adt: &ast::Adt, annotated_name: &ast::Name, trait_: Option<hir::Trait>, trait_path: &ast::Path, impl_is_unsafe: bool) -> Option<ast::Impl> {
+     let trait_ = trait_?;
+     let target_scope = sema.scope(annotated_name.syntax())?;
+-
+     // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
+     let ignore_items = if trait_.module(sema.db).krate().origin(sema.db).is_local() {
+         IgnoreAssocItems::No
+     } else {
+         IgnoreAssocItems::DocHiddenAttrPresent
+     };
+-
+     let trait_items =
+         filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
+-
+     if trait_items.is_empty() {
+         return None;
+     }
+     let impl_def = generate_trait_impl(impl_is_unsafe, adt, make::ty_path(trait_path.clone()));
+-
+     let assoc_items =
+         add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
+     let assoc_item_list = if let Some((first, other)) =
+         make::assoc_item_list(None)
+     }
+     .clone_for_update();
+-
+     let impl_def = impl_def.clone_subtree();
+     let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
+     editor.replace(impl_def.assoc_item_list()?.syntax(), assoc_item_list.syntax());
+     Some(impl_def)
+ }
+ 
+-fn update_attribute(
+-    editor: &mut SyntaxEditor,
+-    old_derives: &[ast::Path],
+-    old_tree: &ast::TokenTree,
+-    old_trait_path: &ast::Path,
+-    attr: &ast::Attr,
+-) {
++fn update_attribute(editor: &mut SyntaxEditor, old_derives: &[ast::Path], old_tree: &ast::TokenTree, old_trait_path: &ast::Path, attr: &ast::Attr) {
+     let new_derives = old_derives
+         .iter()
+         .filter(|t| t.to_string() != old_trait_path.to_string())
+         .collect::<Vec<_>>();
+     let has_more_derives = !new_derives.is_empty();
+-
+     if has_more_derives {
+         // Make the paths into flat lists of tokens in a vec
+         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn add_custom_impl_debug_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_debug_tuple_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_hash_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_hash_tuple_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_hash_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_tuple_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_empty_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_tuple_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_record_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_ord_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_ord_record_struct_multi_field() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_ord_tuple_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_tuple_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_empty_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_single_variant_tuple_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_partial_tuple_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_tuple_enum() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_tuple_enum_generic() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_tuple_enum_generic_existing_bounds() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_partial_eq_record_enum() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_for_with_visibility_modifier() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_when_multiple_inputs() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_default_generic_record_struct() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_clone_generic_tuple_struct_with_bounds() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_ignore_derive_macro_without_input() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn test_ignore_if_cursor_on_param() {
+         check_assist_not_applicable(
+ struct Foo {}
+             "#,
+         );
+-
+         check_assist_not_applicable(
+             replace_derive_with_manual_impl,
+             r#"
+             "#,
+         )
+     }
+-
+     #[test]
+     fn test_ignore_if_not_derive() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn works_at_start_of_file() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn add_custom_impl_keep_path() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_custom_impl_replace_path() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafeness_of_a_trait_observed() {
+         check_assist(

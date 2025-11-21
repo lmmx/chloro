@@ -1,0 +1,36 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1147 bytes
+Chloro size:   1043 bytes
+Rustfmt size:  1147 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Injected inlay hints for `#[rust_analyzer::rust_fixture]`.
+ 
+ use hir::{EditionedFileId, Semantics};
+-use ide_db::{impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture, RootDatabase};
+-use syntax::{ast, AstToken};
++use ide_db::{RootDatabase, impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture};
++use syntax::{AstToken, ast};
+ 
+ use crate::{Analysis, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip};
+-
+-pub(super) fn hints(
+-    acc: &mut Vec<InlayHint>,
+-    sema: &Semantics<'_, RootDatabase>,
+-    file_id: EditionedFileId,
+-    config: &InlayHintsConfig<'_>,
+-    literal: ast::Literal,
+-) -> Option<()> {
++pub(super) fn hints(acc: &mut Vec<InlayHint>, sema: &Semantics<'_, RootDatabase>, file_id: EditionedFileId, config: &InlayHintsConfig<'_>, literal: ast::Literal) -> Option<()> {
+     let file_id = file_id.file_id(sema.db);
+     let literal = ast::String::cast(literal.token())?;
+     let (analysis, fixture_analysis) =
+     }
+     Some(())
+ }
+-
+-impl_empty_upmap_from_ra_fixture!(InlayHintPosition, InlayKind, InlayTooltip);

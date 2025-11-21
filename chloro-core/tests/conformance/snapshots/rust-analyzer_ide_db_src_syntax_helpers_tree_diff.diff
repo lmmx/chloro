@@ -1,0 +1,233 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 14963 bytes
+Chloro size:   14867 bytes
+Rustfmt size:  15195 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Basic tree diffing functionality.
++
+ use rustc_hash::FxHashMap;
+ use syntax::{NodeOrToken, SyntaxElement, SyntaxNode};
+ 
+-use crate::{text_edit::TextEditBuilder, FxIndexMap};
+-
++use crate::{FxIndexMap, text_edit::TextEditBuilder};
+ #[derive(Debug, Hash, PartialEq, Eq)]
+ enum TreeDiffInsertPos {
+     After(SyntaxElement),
+ pub struct TreeDiff {
+     replacements: FxHashMap<SyntaxElement, SyntaxElement>,
+     deletions: Vec<SyntaxElement>,
+-    // the vec as well as the indexmap are both here to preserve order
+     insertions: FxIndexMap<TreeDiffInsertPos, Vec<SyntaxElement>>,
+ }
+ 
+ impl TreeDiff {
+     pub fn into_text_edit(&self, builder: &mut TextEditBuilder) {
+         let _p = tracing::info_span!("into_text_edit").entered();
+-
+         for (anchor, to) in &self.insertions {
+             let offset = match anchor {
+                 TreeDiffInsertPos::After(it) => it.text_range().end(),
+                 TreeDiffInsertPos::AsFirstChild(it) => it.text_range().start(),
+             };
+-            to.iter()
+-                .for_each(|to| builder.insert(offset, to.to_string()));
++            to.iter().for_each(|to| builder.insert(offset, to.to_string()));
+         }
+         for (from, to) in &self.replacements {
+             builder.replace(from.text_range(), to.to_string());
+ /// This function tries to find a fine-grained diff.
+ pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
+     let _p = tracing::info_span!("diff").entered();
+-
+     let mut diff = TreeDiff {
+         replacements: FxHashMap::default(),
+         insertions: FxIndexMap::default(),
+         deletions: Vec::new(),
+     };
+     let (from, to) = (from.clone().into(), to.clone().into());
+-
+     if !syntax_element_eq(&from, &to) {
+         go(&mut diff, from, to);
+     }
+     return diff;
+-
+     fn syntax_element_eq(lhs: &SyntaxElement, rhs: &SyntaxElement) -> bool {
+         lhs.kind() == rhs.kind()
+             && lhs.text_range().len() == rhs.text_range().len()
+                 _ => false,
+             }
+     }
+-
+     // FIXME: this is horribly inefficient. I bet there's a cool algorithm to diff trees properly.
+     fn go(diff: &mut TreeDiff, lhs: SyntaxElement, rhs: SyntaxElement) {
+         let (lhs, rhs) = match lhs.as_node().zip(rhs.as_node()) {
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{expect, Expect};
++    use expect_test::{Expect, expect};
+     use itertools::Itertools;
+     use parser::{Edition, SyntaxKind};
+     use syntax::{AstNode, SourceFile, SyntaxElement};
+-
+     use crate::text_edit::TextEdit;
+-
+     #[test]
+     fn replace_node_token() {
+         cov_mark::check!(diff_node_token_replace);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn replace_parent() {
+         cov_mark::check!(diff_insert_as_first_child);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn insert_last() {
+         cov_mark::check!(diff_insert);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn insert_middle() {
+         check_diff(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn insert_first() {
+         check_diff(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn first_child_insertion() {
+         cov_mark::check!(insert_first_child);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn delete_last() {
+         cov_mark::check!(diff_delete);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn delete_middle() {
+         cov_mark::check!(diff_insertions);
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn delete_first() {
+         check_diff(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn merge_use() {
+         check_diff(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn early_return_assist() {
+         check_diff(
+             "#]],
+         )
+     }
+-
+     fn check_diff(from: &str, to: &str, expected_diff: Expect) {
+-        let from_node = SourceFile::parse(from, Edition::CURRENT)
+-            .tree()
+-            .syntax()
+-            .clone();
+-        let to_node = SourceFile::parse(to, Edition::CURRENT)
+-            .tree()
+-            .syntax()
+-            .clone();
++        let from_node = SourceFile::parse(from, Edition::CURRENT).tree().syntax().clone();
++        let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
+         let diff = super::diff(&from_node, &to_node);
+-
+         let line_number =
+             |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
+-
+         let fmt_syntax = |syn: &SyntaxElement| match syn.kind() {
+             SyntaxKind::WHITESPACE => format!("{:?}", syn.to_string()),
+             _ => format!("{syn}"),
+         };
+-
+         let insertions =
+-            diff.insertions
+-                .iter()
+-                .format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
+-                    f(&format!(
+-                        "Line {}: {:?}\n-> {}",
+-                        line_number(match k {
+-                            super::TreeDiffInsertPos::After(syn) => syn,
+-                            super::TreeDiffInsertPos::AsFirstChild(syn) => syn,
+-                        }),
+-                        k,
+-                        v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
+-                    ))
+-                });
+-
++            diff.insertions.iter().format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
++                f(&format!(
++                    "Line {}: {:?}\n-> {}",
++                    line_number(match k {
++                        super::TreeDiffInsertPos::After(syn) => syn,
++                        super::TreeDiffInsertPos::AsFirstChild(syn) => syn,
++                    }),
++                    k,
++                    v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
++                ))
++            });
+         let replacements = diff
+             .replacements
+             .iter()
+             .sorted_by_key(|(syntax, _)| syntax.text_range().start())
+             .format_with("\n", |(k, v), f| {
+-                f(&format!(
+-                    "Line {}: {k:?} -> {}",
+-                    line_number(k),
+-                    fmt_syntax(v)
+-                ))
++                f(&format!("Line {}: {k:?} -> {}", line_number(k), fmt_syntax(v)))
+             });
+-
+-        let deletions = diff.deletions.iter().format_with("\n", |v, f| {
+-            f(&format!("Line {}: {}", line_number(v), fmt_syntax(v)))
+-        });
+-
++        let deletions = diff
++            .deletions
++            .iter()
++            .format_with("\n", |v, f| f(&format!("Line {}: {}", line_number(v), fmt_syntax(v))));
+         let actual = format!(
+             "insertions:\n\n{insertions}\n\nreplacements:\n\n{replacements}\n\ndeletions:\n\n{deletions}\n"
+         );
+         expected_diff.assert_eq(&actual);
+-
+         let mut from = from.to_owned();
+         let mut text_edit = TextEdit::builder();
+         diff.into_text_edit(&mut text_edit);

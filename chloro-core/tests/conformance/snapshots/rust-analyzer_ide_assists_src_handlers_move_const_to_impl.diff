@@ -1,0 +1,169 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10203 bytes
+Chloro size:   9467 bytes
+Rustfmt size:  10203 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::assist_context::{AssistContext, Assists};
+-
+-// NOTE: Code may break if the self type implements a trait that has associated const with the same
+-// name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
+-// pretty rare case.
+-
+-// Assist: move_const_to_impl
+-//
+-// Move a local constant item in a method to impl's associated constant. All the references will be
+-// qualified with `Self::`.
+-//
+-// ```
+-// struct S;
+-// impl S {
+-//     fn foo() -> usize {
+-//         /// The answer.
+-//         const C$0: usize = 42;
+-//
+-//         C * C
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// struct S;
+-// impl S {
+-//     /// The answer.
+-//     const C: usize = 42;
+-//
+-//     fn foo() -> usize {
+-//         Self::C * Self::C
+-//     }
+-// }
+-// ```
+ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let db = ctx.db();
+     let const_: ast::Const = ctx.find_node_at_offset()?;
+     {
+         return None;
+     }
+-
+     let parent_fn = const_.syntax().ancestors().find_map(ast::Fn::cast)?;
+-
+     // NOTE: We can technically provide this assist for default methods in trait definitions, but
+     // it's somewhat complex to handle it correctly when the const's name conflicts with
+     // supertrait's item. We may want to consider implementing it in the future.
+     if impl_.trait_(db).is_some() {
+         return None;
+     }
+-
+     let def = ctx.sema.to_def(&const_)?;
+     let name = def.name(db)?;
+     let items = impl_.source(db)?.value.assoc_item_list()?;
+-
+     let ty = impl_.self_ty(db);
+     // If there exists another associated item with the same name, skip the assist.
+     if ty
+     {
+         return None;
+     }
+-
+     acc.add(
+         AssistId::refactor_rewrite("move_const_to_impl"),
+         "Move const to impl block",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn not_applicable_to_top_level_const() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_to_free_fn() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_when_at_const_body() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_when_inside_const_body_block() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_to_trait_impl_fn() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_to_non_assoc_fn_inside_impl() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_when_const_with_same_name_exists() {
+         check_assist_not_applicable(
+     }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             move_const_to_impl,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_const_simple_body() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_const_simple_body_existing_const() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_const_block_body() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn correct_indent_when_nested() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_const_in_nested_scope_with_same_name_in_other_scope() {
+         check_assist(

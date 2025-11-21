@@ -1,0 +1,76 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 18992 bytes
+Chloro size:   18964 bytes
+Rustfmt size:  19179 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     setup_tracing,
+     test_db::TestDB,
+ };
+-
+-use super::{interpret_mir, MirEvalError};
+-
++use super::{MirEvalError, interpret_mir};
+ fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
+     crate::attach_db(db, || {
+         let interner = DbInterner::new_with(db, None, None);
+             .declarations()
+             .find_map(|x| match x {
+                 hir_def::ModuleDefId::FunctionId(x) => {
+-                    if db
+-                        .function_signature(x)
+-                        .name
+-                        .display(db, Edition::CURRENT)
+-                        .to_string()
++                    if db.function_signature(x).name.display(db, Edition::CURRENT).to_string()
+                         == "main"
+                     {
+                         Some(x)
+     check_pass_and_stdio(ra_fixture, "", "");
+ }
+ 
+-fn check_pass_and_stdio(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    expected_stdout: &str,
+-    expected_stderr: &str,
+-) {
++fn check_pass_and_stdio(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_stdout: &str, expected_stderr: &str) {
+     let _tracing = setup_tracing();
+     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
+     crate::attach_db(&db, || {
+         let file_id = *file_ids.last().unwrap();
+         let e = eval_main(&db, file_id).unwrap_err();
+         assert_eq!(
+-            e.is_panic()
+-                .unwrap_or_else(|| panic!("unexpected error: {e:?}")),
++            e.is_panic().unwrap_or_else(|| panic!("unexpected error: {e:?}")),
+             expected_panic
+         );
+     })
+ }
+ 
+-fn check_error_with(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    expect_err: impl FnOnce(MirEvalError<'_>) -> bool,
+-) {
++fn check_error_with(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect_err: impl FnOnce(MirEvalError<'_>) -> bool) {
+     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
+     crate::attach_db(&db, || {
+         let file_id = *file_ids.last().unwrap();
+ ) {
+ }
+ "#,
+-        |e| {
+-            matches!(
+-                e,
+-                MirEvalError::MirLowerError(_, MirLowerError::GenericArgNotProvided(..))
+-            )
+-        },
++        |e| matches!(e, MirEvalError::MirLowerError(_, MirLowerError::GenericArgNotProvided(..))),
+     );
+ }
+ 

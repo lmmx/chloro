@@ -1,0 +1,137 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2916 bytes
+Chloro size:   2891 bytes
+Rustfmt size:  3239 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Implementation of "range exclusive" inlay hints:
+ //! ```ignore
+ //! for i in 0../* < */10 {}
+ //! if let ../* < */100 = 50 {}
+ //! ```
++
+ use ide_db::famous_defs::FamousDefs;
+-use syntax::{ast, SyntaxToken, T};
++use syntax::{SyntaxToken, T, ast};
+ 
+ use crate::{InlayHint, InlayHintsConfig};
+-
+-pub(super) fn hints(
+-    acc: &mut Vec<InlayHint>,
+-    FamousDefs(_sema, _): &FamousDefs<'_, '_>,
+-    config: &InlayHintsConfig<'_>,
+-    range: impl ast::RangeItem,
+-) -> Option<()> {
++pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(_sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, range: impl ast::RangeItem) -> Option<()> {
+     (config.range_exclusive_hints && range.end().is_some())
+         .then(|| {
+-            range
+-                .op_token()
+-                .filter(|token| token.kind() == T![..])
+-                .map(|token| {
+-                    acc.push(inlay_hint(token));
+-                })
++            range.op_token().filter(|token| token.kind() == T![..]).map(|token| {
++                acc.push(inlay_hint(token));
++            })
+         })
+         .flatten()
+ }
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+         InlayHintsConfig,
++        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+     };
+-
+     #[test]
+     fn range_exclusive_expression_bounded_above_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     let a = 0..10;
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn range_exclusive_expression_unbounded_above_no_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     let a = 0..;
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn range_inclusive_expression_no_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     let a = 0..=10;
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn range_exclusive_pattern_bounded_above_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     if let 0..10 = 0 {}
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn range_exclusive_pattern_unbounded_above_no_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     if let 0.. = 0 {}
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn range_inclusive_pattern_no_hints() {
+         check_with_config(
+-            InlayHintsConfig {
+-                range_exclusive_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { range_exclusive_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     if let 0..=10 = 0 {}

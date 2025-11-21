@@ -1,0 +1,217 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16583 bytes
+Chloro size:   16048 bytes
+Rustfmt size:  16583 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
+     next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
+ };
+-
+ #[derive(Debug)]
+ pub(crate) enum Int {
+     I,
+     Float,
+     FnPtr,
+     Ptr(Ty<'db>, Mutability),
+-    // `DynStar` is Not supported yet in r-a
+ }
+ 
+ impl<'db> CastTy<'db> {
+     NeedViaThinPtr,
+     NeedViaInt,
+     NonScalar,
+-    // We don't want to report errors with unknown types currently.
+-    // UnknownCastPtrKind,
+-    // UnknownExprPtrKind,
+ }
+ 
+ impl CastError {
+-    fn into_diagnostic<'db>(
+-        self,
+-        expr: ExprId,
+-        expr_ty: Ty<'db>,
+-        cast_ty: Ty<'db>,
+-    ) -> InferenceDiagnostic<'db> {
++    fn into_diagnostic<'db>(self, expr: ExprId, expr_ty: Ty<'db>, cast_ty: Ty<'db>) -> InferenceDiagnostic<'db> {
+         InferenceDiagnostic::InvalidCast { expr, error: self, expr_ty, cast_ty }
+     }
+ }
+ }
+ 
+ impl<'db> CastCheck<'db> {
+-    pub(super) fn new(
+-        expr: ExprId,
+-        source_expr: ExprId,
+-        expr_ty: Ty<'db>,
+-        cast_ty: Ty<'db>,
+-    ) -> Self {
++    pub(super) fn new(expr: ExprId, source_expr: ExprId, expr_ty: Ty<'db>, cast_ty: Ty<'db>) -> Self {
+         Self { expr, source_expr, expr_ty, cast_ty }
+     }
+ 
+-    pub(super) fn check(
+-        &mut self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-    ) -> Result<(), InferenceDiagnostic<'db>> {
++    pub(super) fn check(&mut self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), InferenceDiagnostic<'db>> {
+         self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
+         self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
+-
+         // This should always come first so that we apply the coercion, which impacts infer vars.
+         if ctx
+             .coerce(
+             ctx.result.coercion_casts.insert(self.source_expr);
+             return Ok(());
+         }
+-
+         if self.expr_ty.references_non_lt_error() || self.cast_ty.references_non_lt_error() {
+             return Ok(());
+         }
+-
+         if !self.cast_ty.flags().contains(TypeFlags::HAS_TY_INFER)
+             && !ctx.table.is_sized(self.cast_ty)
+         {
+                 cast_ty: self.cast_ty,
+             });
+         }
+-
+         // Chalk doesn't support trait upcasting and fails to solve some obvious goals
+         // when the trait environment contains some recursive traits (See issue #18047)
+         // We skip cast checks for such cases for now, until the next-gen solver.
+         if contains_dyn_trait(self.cast_ty) {
+             return Ok(());
+         }
+-
+         self.do_check(ctx).map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
+     }
+ 
+                 },
+                 _ => return Err(CastError::NonScalar),
+             };
+-
+         // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
+-
+         match (t_from, t_cast) {
+             (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
+             (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),
+         }
+     }
+ 
+-    fn check_ref_cast(
+-        &self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-        t_expr: Ty<'db>,
+-        m_expr: Mutability,
+-        t_cast: Ty<'db>,
+-        m_cast: Mutability,
+-    ) -> Result<(), CastError> {
++    fn check_ref_cast(&self, ctx: &mut InferenceContext<'_, 'db>, t_expr: Ty<'db>, m_expr: Mutability, t_cast: Ty<'db>, m_cast: Mutability) -> Result<(), CastError> {
+         // Mutability order is opposite to rustc. `Mut < Not`
+         if m_expr <= m_cast
+             && let TyKind::Array(ety, _) = t_expr.kind()
+                 return Ok(());
+             }
+         }
+-
+         Err(CastError::IllegalCast)
+     }
+ 
+-    fn check_ptr_ptr_cast(
+-        &self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-        src: Ty<'db>,
+-        dst: Ty<'db>,
+-    ) -> Result<(), CastError> {
++    fn check_ptr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, src: Ty<'db>, dst: Ty<'db>) -> Result<(), CastError> {
+         let src_kind = pointer_kind(src, ctx).map_err(|_| CastError::Unknown)?;
+         let dst_kind = pointer_kind(dst, ctx).map_err(|_| CastError::Unknown)?;
+-
+         match (src_kind, dst_kind) {
+             (Some(PointerKind::Error), _) | (_, Some(PointerKind::Error)) => Ok(()),
+             // (_, None) => Err(CastError::UnknownCastPtrKind),
+         }
+     }
+ 
+-    fn check_ptr_addr_cast(
+-        &self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-        expr_ty: Ty<'db>,
+-    ) -> Result<(), CastError> {
++    fn check_ptr_addr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, expr_ty: Ty<'db>) -> Result<(), CastError> {
+         match pointer_kind(expr_ty, ctx).map_err(|_| CastError::Unknown)? {
+             // None => Err(CastError::UnknownExprPtrKind),
+             None => Ok(()),
+         }
+     }
+ 
+-    fn check_addr_ptr_cast(
+-        &self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-        cast_ty: Ty<'db>,
+-    ) -> Result<(), CastError> {
++    fn check_addr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, cast_ty: Ty<'db>) -> Result<(), CastError> {
+         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
+             // None => Err(CastError::UnknownCastPtrKind),
+             None => Ok(()),
+         }
+     }
+ 
+-    fn check_fptr_ptr_cast(
+-        &self,
+-        ctx: &mut InferenceContext<'_, 'db>,
+-        cast_ty: Ty<'db>,
+-    ) -> Result<(), CastError> {
++    fn check_fptr_ptr_cast(&self, ctx: &mut InferenceContext<'_, 'db>, cast_ty: Ty<'db>) -> Result<(), CastError> {
+         match pointer_kind(cast_ty, ctx).map_err(|_| CastError::Unknown)? {
+             // None => Err(CastError::UnknownCastPtrKind),
+             None => Ok(()),
+ 
+ #[derive(Debug, PartialEq, Eq)]
+ enum PointerKind<'db> {
+-    // thin pointer
+     Thin,
+-    // trait object
+     VTable(BoundExistentialPredicates<'db>),
+-    // slice
+     Length,
+     OfAlias,
+     OfParam(ParamTy),
+     Error,
+ }
+ 
+-fn pointer_kind<'db>(
+-    ty: Ty<'db>,
+-    ctx: &mut InferenceContext<'_, 'db>,
+-) -> Result<Option<PointerKind<'db>>, ()> {
++fn pointer_kind<'db>(ty: Ty<'db>, ctx: &mut InferenceContext<'_, 'db>) -> Result<Option<PointerKind<'db>>, ()> {
+     let ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(ty);
+-
+     if ctx.table.is_sized(ty) {
+         return Ok(Some(PointerKind::Thin));
+     }
+-
+     match ty.kind() {
+         TyKind::Slice(_) | TyKind::Str => Ok(Some(PointerKind::Length)),
+         TyKind::Dynamic(bounds, _) => Ok(Some(PointerKind::VTable(bounds))),
+ 
+ fn contains_dyn_trait<'db>(ty: Ty<'db>) -> bool {
+     use std::ops::ControlFlow;
+-
+     use rustc_type_ir::{TypeSuperVisitable, TypeVisitable, TypeVisitor};
+-
+     struct DynTraitVisitor;
+-
+     impl<'db> TypeVisitor<DbInterner<'db>> for DynTraitVisitor {
+         type Result = ControlFlow<()>;
+ 
+             }
+         }
+     }
+-
+     ty.visit_with(&mut DynTraitVisitor).is_break()
+ }

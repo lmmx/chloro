@@ -1,0 +1,260 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 14005 bytes
+Chloro size:   13954 bytes
+Rustfmt size:  14005 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completes `where` and `for` keywords.
+ 
+ use syntax::ast::{self, Item};
+ 
+ use crate::{CompletionContext, Completions};
+-
+-pub(crate) fn complete_for_and_where(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    keyword_item: &ast::Item,
+-) {
++pub(crate) fn complete_for_and_where(acc: &mut Completions, ctx: &CompletionContext<'_>, keyword_item: &ast::Item) {
+     let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
+-
+     match keyword_item {
+         Item::Impl(it) => {
+             if it.for_token().is_none() && it.trait_().is_none() && it.self_ty().is_some() {
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::tests::{check, check_edit};
+-
+     #[test]
+     fn test_else_edit_after_if() {
+         check_edit(
+ } }"#,
+         );
+     }
+-
+     #[test]
+     fn test_keywords_after_unsafe_in_block_expr() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_completion_await_impls_future() {
+         check(
+                 sn unsafe                                                           unsafe {}
+             "#]],
+         );
+-
+         check(
+             r#"
+ //- minicore: future
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_completion_await_impls_into_future() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn for_in_impl() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn let_semi() {
+         cov_mark::check!(let_semi);
+ }; }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "else",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "else if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "else if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "else",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "loop",
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn if_completion_in_match_guard() {
+         check_edit(
+ ",
+         )
+     }
+-
+     #[test]
+     fn if_completion_in_match_arm_expr() {
+         check_edit(
+ ",
+         )
+     }
+-
+     #[test]
+     fn if_completion_in_match_arm_expr_block() {
+         check_edit(
+ ",
+         )
+     }
+-
+     #[test]
+     fn if_completion_in_parameter() {
+         check_edit(
+ }
+ ",
+         );
+-
+         check_edit(
+             "if",
+             r"
+ }
+ ",
+         );
+-
+         check_edit(
+             "if",
+             r"
+ }
+ ",
+         );
+-
+         check_edit(
+             "if let",
+             r"
+ ",
+         );
+     }
+-
+     #[test]
+     fn if_completion_in_let_statement() {
+         check_edit(
+ }
+ ",
+         );
+-
+         check_edit(
+             "if let",
+             r"
+ ",
+         );
+     }
+-
+     #[test]
+     fn if_completion_in_format() {
+         check_edit(
+ }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn if_completion_in_value_expected_expressions() {
+         check_edit(
+ }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "if",
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn completes_let_in_block() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn completes_let_in_condition() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn completes_let_in_no_empty_condition() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn completes_let_in_condition_block() {
+         check_edit(

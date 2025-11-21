@@ -1,0 +1,694 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 53059 bytes
+Chloro size:   52312 bytes
+Rustfmt size:  53059 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: wrap_return_type_in_option
+-//
+-// Wrap the function's return type into Option.
+-//
+-// ```
+-// # //- minicore: option
+-// fn foo() -> i32$0 { 42i32 }
+-// ```
+-// ->
+-// ```
+-// fn foo() -> Option<i32> { Some(42i32) }
+-// ```
+-
+-// Assist: wrap_return_type_in_result
+-//
+-// Wrap the function's return type into Result.
+-//
+-// ```
+-// # //- minicore: result
+-// fn foo() -> i32$0 { 42i32 }
+-// ```
+-// ->
+-// ```
+-// fn foo() -> Result<i32, ${0:_}> { Ok(42i32) }
+-// ```
+-
+ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
+     let parent = ret_type.syntax().parent()?;
+             _ => return None,
+         }
+     };
+-
+     let type_ref = &ret_type.ty()?;
+     let ty = ctx.sema.resolve_type(type_ref)?;
+     let ty_adt = ty.as_adt();
+     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(type_ref.syntax())?.krate());
+-
+     for kind in WrapperKind::ALL {
+         let Some(core_wrapper) = kind.core_type(&famous_defs) else {
+             continue;
+             },
+         );
+     }
+-
+     Some(())
+ }
+ 
+ }
+ 
+ impl WrapperKind {
+-    const ALL: &'static [WrapperKind] = &[WrapperKind::Option, WrapperKind::Result];
+ 
+     fn assist_id(&self) -> AssistId {
+         let s = match self {
+             WrapperKind::Option => "wrap_return_type_in_option",
+             WrapperKind::Result => "wrap_return_type_in_result",
+         };
+-
+         AssistId::refactor_rewrite(s)
+     }
+ 
+     }
+ }
+ 
+-// Try to find an wrapper type alias in the current scope (shadowing the default).
+-fn wrapper_alias<'db>(
+-    ctx: &AssistContext<'db>,
+-    make: &SyntaxFactory,
+-    core_wrapper: hir::Enum,
+-    ast_ret_type: &ast::Type,
+-    semantic_ret_type: &hir::Type<'db>,
+-    wrapper: hir::Symbol,
+-) -> Option<(ast::PathType, hir::Type<'db>)> {
++fn wrapper_alias<'db>(ctx: &AssistContext<'db>, make: &SyntaxFactory, core_wrapper: hir::Enum, ast_ret_type: &ast::Type, semantic_ret_type: &hir::Type<'db>, wrapper: hir::Symbol) -> Option<(ast::PathType, hir::Type<'db>)> {
+     let wrapper_path = hir::ModPath::from_segments(
+         hir::PathKind::Plain,
+         iter::once(hir::Name::new_symbol_root(wrapper)),
+     );
+-
+     ctx.sema.resolve_mod_path(ast_ret_type.syntax(), &wrapper_path).and_then(|def| {
+         def.filter_map(|def| match def.into_module_def() {
+             hir::ModuleDef::TypeAlias(alias) => {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};
+-
+     use super::*;
+-
+     #[test]
+     fn wrap_return_type_in_option_simple() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_break_split_tail() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_closure() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_return_type_bad_cursor() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_return_type_bad_cursor_closure() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_closure_non_block() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_return_type_already_option_std() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_return_type_already_option() {
+         cov_mark::check!(wrap_return_type_simple_return_type_already_wrapped);
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_return_type_already_option_closure() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_cursor() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_closure() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_only() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_block_like() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_without_block_closure() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_nested_if() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_await() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_array() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_cast() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_block_like_match() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_loop_with_tail() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_loop_in_let_stmt() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_block_like_match_return_expr() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_block_like_match_deeper() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_tail_block_like_early_return() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_in_option_tail_position() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_closure() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_option_simple_with_weird_forms() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_option_type() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_imported_local_option_type() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Option.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_option_type_from_function_body() {
+         check_assist_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_option_type_already_using_alias() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Option.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_break_split_tail() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_closure() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_return_type_bad_cursor() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_return_type_bad_cursor_closure() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_closure_non_block() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_return_type_already_result_std() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_return_type_already_result() {
+         cov_mark::check!(wrap_return_type_simple_return_type_already_wrapped);
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_return_type_already_result_closure() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_cursor() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_closure() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_only() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_block_like() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_without_block_closure() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_nested_if() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_await() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_array() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_cast() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_block_like_match() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_loop_with_tail() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_loop_in_let_stmt() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_block_like_match_return_expr() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_block_like_match_deeper() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_tail_block_like_early_return() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_in_result_tail_position() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_closure() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_result_simple_with_weird_forms() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_result_type() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_imported_local_result_type() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_result_type_from_function_body() {
+         check_assist_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_result_type_already_using_alias() {
+         check_assist_not_applicable_by_label(
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn wrap_return_type_in_local_result_type_multiple_generics() {
+         check_assist_by_label(
+ "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             "#,
+             WrapperKind::Result.label(),
+         );
+-
+         check_assist_by_label(
+             wrap_return_type,
+             r#"
+             WrapperKind::Result.label(),
+         );
+     }
+-
+     #[test]
+     fn already_wrapped() {
+         check_assist_by_label(

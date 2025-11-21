@@ -1,0 +1,104 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 27148 bytes
+Chloro size:   27138 bytes
+Rustfmt size:  27179 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Tests that don't fit into a specific category.
+ 
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use ide_db::SymbolKind;
+ 
+ use crate::{
+-    tests::{
+-        check, check_edit, check_no_kw, check_with_trigger_character, do_completion_with_config,
+-        TEST_CONFIG,
+-    },
+     CompletionItemKind,
++    tests::{
++        TEST_CONFIG, check, check_edit, check_no_kw, check_with_trigger_character,
++        do_completion_with_config,
++    },
+ };
+-
+ #[test]
+ fn completes_if_prefix_is_keyword() {
+     check_edit(
+             st RightType WrongType
+         "#]],
+     );
+-
+     check_edit(
+         "RightType",
+         r#"
+             ev Baz Baz
+         "#]],
+     );
+-
+     check_no_kw(
+         r#"
+ //- /main.rs crate:main deps:e
+             md core
+         "#]],
+     );
+-
+     check_with_trigger_character(
+         r#"
+ fn foo { crate::$0 }
+             fn foo() fn()
+         "#]],
+     );
+-
+     check_with_trigger_character(
+         r#"
+ fn foo { crate:$0 }
+             fn foo() fn()
+         "#]],
+     );
+-
+     check_with_trigger_character(
+         r#"
+ fn foo { crate:$0 }
+         x.full_function_signatures = true;
+         x
+     };
+-
+     // reduced signature
+     let completion = do_completion_with_config(TEST_CONFIG, src, kind);
+     assert!(completion[0].detail.is_some());
+     reduced.assert_eq(completion[0].detail.as_ref().unwrap());
+-
+     // full signature
+     let completion = do_completion_with_config(FULL_SIGNATURES_CONFIG, src, kind);
+     assert!(completion[0].detail.is_some());
+         expect!("fn(&'x mut T) -> u8"),
+         expect!("pub fn foo<'x, T>(x: &'x mut T) -> u8 where T: Clone,"),
+     );
+-
+     check_signatures(
+         r#"
+ struct Foo;
+         expect!("const fn(Foo) -> !"),
+         expect!("pub const fn baz(x: Foo) -> !"),
+     );
+-
+     check_signatures(
+         r#"
+ struct Foo;
+ #[test]
+ fn fn_generic_params_const_param_snippet() {
+     check_edit("const", "fn foo<c$0>() {}", "fn foo<const $1: $0>() {}");
+-    check_edit(
+-        "const",
+-        "fn foo<T, c$0>() {}",
+-        "fn foo<T, const $1: $0>() {}",
+-    );
++    check_edit("const", "fn foo<T, c$0>() {}", "fn foo<T, const $1: $0>() {}");
+     check(
+         r#"
+ fn foo<T: $0>() {}

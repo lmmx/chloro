@@ -1,0 +1,239 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 31419 bytes
+Chloro size:   31387 bytes
+Rustfmt size:  31419 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion tests for attributes.
++
+ use expect_test::expect;
+ 
+ use crate::tests::{check, check_edit};
+-
+ #[test]
+ fn derive_helpers() {
+     check(
+ "#,
+         expect![[r#""#]],
+     );
+-
+     check(
+         r#"
+ //- minicore: derive, copy
+ 
+ mod cfg {
+     use super::*;
+-
+     #[test]
+     fn inside_cfg() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn inside_cfg_attr() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn cfg_target_endian() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn inside_conditional() {
+         check_edit(
+ 
+ mod derive {
+     use super::*;
+-
+     #[test]
+     fn no_completion_for_incorrect_derive() {
+         check(
+             expect![[]],
+         )
+     }
+-
+     #[test]
+     fn empty_derive() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn derive_with_input_before() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn derive_with_input_after() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn derive_with_existing_derives() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn derive_flyimport() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn derive_flyimport_edit() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn qualified() {
+         check(
+ 
+ mod lint {
+     use super::*;
+-
+     #[test]
+     fn lint_empty() {
+         check_edit(
+             r#"#[allow(deprecated)] struct Test;"#,
+         )
+     }
+-
+     #[test]
+     fn lint_with_existing() {
+         check_edit(
+             r#"#[allow(keyword_idents, deprecated)] struct Test;"#,
+         )
+     }
+-
+     #[test]
+     fn lint_qualified() {
+         check_edit(
+             r#"#[allow(keyword_idents, deprecated)] struct Test;"#,
+         )
+     }
+-
+     #[test]
+     fn lint_feature() {
+         check_edit(
+             r#"#[feature(box_patterns)] struct Test;"#,
+         )
+     }
+-
+     #[test]
+     fn lint_clippy_unqualified() {
+         check_edit(
+             r#"#[allow(clippy::as_conversions)] struct Test;"#,
+         );
+     }
+-
+     #[test]
+     fn lint_clippy_qualified() {
+         check_edit(
+             r#"#[allow(clippy::as_conversions)] struct Test;"#,
+         );
+     }
+-
+     #[test]
+     fn lint_rustdoc_unqualified() {
+         check_edit(
+             r#"#[allow(rustdoc::bare_urls)] struct Test;"#,
+         );
+     }
+-
+     #[test]
+     fn lint_rustdoc_qualified() {
+         check_edit(
+             r#"#[allow(rustdoc::bare_urls)] struct Test;"#,
+         );
+     }
+-
+     #[test]
+     fn lint_unclosed() {
+         check_edit(
+ 
+ mod repr {
+     use super::*;
+-
+     #[test]
+     fn no_completion_for_incorrect_repr() {
+         check(r#"#[repr{$0)] struct Test;"#, expect![[]])
+     }
+-
+     #[test]
+     fn empty() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn transparent() {
+         check(r#"#[repr(transparent, $0)] struct Test;"#, expect![[r#""#]]);
+     }
+-
+     #[test]
+     fn align() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn packed() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn c() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn prim() {
+         check(
+ 
+ mod macro_use {
+     use super::*;
+-
+     #[test]
+     fn completes_macros() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn only_completes_exported_macros() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn does_not_completes_already_imported_macros() {
+         check(

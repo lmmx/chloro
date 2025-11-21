@@ -1,0 +1,159 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10280 bytes
+Chloro size:   10238 bytes
+Rustfmt size:  10776 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion of names from the current scope in type position.
+ 
+ use hir::{HirDisplay, ScopeDef};
+-use syntax::{ast, AstNode};
++use syntax::{AstNode, ast};
+ 
+ use crate::{
++    CompletionContext, Completions,
+     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
+     render::render_type_inference,
+-    CompletionContext, Completions,
+ };
+-
+-pub(crate) fn complete_type_path(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
+-    location: &TypeLocation,
+-) {
++pub(crate) fn complete_type_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, location: &TypeLocation) {
+     let _p = tracing::info_span!("complete_type_path").entered();
+-
+     let scope_def_applicable = |def| {
+         use hir::{GenericParam::*, ModuleDef::*};
+         match def {
+             | ScopeDef::GenericParam(TypeParam(_)) => location.complete_types(),
+         }
+     };
+-
+     let add_assoc_item = |acc: &mut Completions, item| match item {
+         hir::AssocItem::Const(ct) if matches!(location, TypeLocation::GenericArg { .. }) => {
+             acc.add_const(ctx, ct)
+         hir::AssocItem::Function(_) | hir::AssocItem::Const(_) => (),
+         hir::AssocItem::TypeAlias(ty) => acc.add_type_alias(ctx, ty),
+     };
+-
+     match qualified {
+-        Qualified::TypeAnchor {
+-            ty: None,
+-            trait_: None,
+-        } => ctx
++        Qualified::TypeAnchor { ty: None, trait_: None } => ctx
+             .traits_in_scope()
+             .iter()
+             .flat_map(|&it| hir::Trait::from(it).items(ctx.sema.db))
+             .for_each(|item| add_assoc_item(acc, item)),
+-        Qualified::TypeAnchor {
+-            trait_: Some(trait_),
+-            ..
+-        } => trait_
+-            .items(ctx.sema.db)
+-            .into_iter()
+-            .for_each(|item| add_assoc_item(acc, item)),
+-        Qualified::TypeAnchor {
+-            ty: Some(ty),
+-            trait_: None,
+-        } => {
++        Qualified::TypeAnchor { trait_: Some(trait_), .. } => {
++            trait_.items(ctx.sema.db).into_iter().for_each(|item| add_assoc_item(acc, item))
++        }
++        Qualified::TypeAnchor { ty: Some(ty), trait_: None } => {
+             ctx.iterate_path_candidates(ty, |item| {
+                 add_assoc_item(acc, item);
+             });
+                 None::<()>
+             });
+         }
+-        Qualified::With {
+-            resolution: None, ..
+-        } => {}
+-        Qualified::With {
+-            resolution: Some(resolution),
+-            ..
+-        } => {
++        Qualified::With { resolution: None, .. } => {}
++        Qualified::With { resolution: Some(resolution), .. } => {
+             // Add associated types on type parameters and `Self`.
+-            ctx.scope
+-                .assoc_type_shorthand_candidates(resolution, |alias| {
+-                    acc.add_type_alias(ctx, alias);
+-                });
++            ctx.scope.assoc_type_shorthand_candidates(resolution, |alias| {
++                acc.add_type_alias(ctx, alias);
++            });
+ 
+             match resolution {
+                 hir::PathResolution::Def(hir::ModuleDef::Module(module)) => {
+                     return;
+                 }
+                 TypeLocation::GenericArg {
+-                    args: Some(arg_list),
+-                    of_trait: Some(trait_),
+-                    ..
++                    args: Some(arg_list), of_trait: Some(trait_), ..
+                 } => {
+-                    if arg_list
+-                        .syntax()
+-                        .ancestors()
+-                        .find_map(ast::TypeBound::cast)
+-                        .is_some()
+-                    {
++                    if arg_list.syntax().ancestors().find_map(ast::TypeBound::cast).is_some() {
+                         let arg_idx = arg_list
+                             .generic_args()
+                             .filter(|arg| {
+ 
+                         let n_required_params = trait_.type_or_const_param_count(ctx.sema.db, true);
+                         if arg_idx >= n_required_params {
+-                            trait_
+-                                .items_with_supertraits(ctx.sema.db)
+-                                .into_iter()
+-                                .for_each(|it| {
+-                                    if let hir::AssocItem::TypeAlias(alias) = it {
+-                                        cov_mark::hit!(complete_assoc_type_in_generics_list);
+-                                        acc.add_type_alias_with_eq(ctx, alias);
+-                                    }
+-                                });
++                            trait_.items_with_supertraits(ctx.sema.db).into_iter().for_each(|it| {
++                                if let hir::AssocItem::TypeAlias(alias) = it {
++                                    cov_mark::hit!(complete_assoc_type_in_generics_list);
++                                    acc.add_type_alias_with_eq(ctx, alias);
++                                }
++                            });
+ 
+                             let n_params = trait_.type_or_const_param_count(ctx.sema.db, false);
+                             if arg_idx >= n_params {
+     }
+ }
+ 
+-pub(crate) fn complete_ascribed_type(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    path_ctx: &PathCompletionCtx<'_>,
+-    ascription: &TypeAscriptionTarget,
+-) -> Option<()> {
++pub(crate) fn complete_ascribed_type(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, ascription: &TypeAscriptionTarget) -> Option<()> {
+     if !path_ctx.is_trivial_path() {
+         return None;
+     }
+     }?
+     .adjusted();
+     if !ty.is_unknown() {
+-        let ty_string = ty
+-            .display_source_code(ctx.db, ctx.module.into(), true)
+-            .ok()?;
++        let ty_string = ty.display_source_code(ctx.db, ctx.module.into(), true).ok()?;
+         acc.add(render_type_inference(ty_string, ctx));
+     }
+     None

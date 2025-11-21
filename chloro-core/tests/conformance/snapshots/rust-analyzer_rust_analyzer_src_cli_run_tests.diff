@@ -1,0 +1,47 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3378 bytes
+Chloro size:   3373 bytes
+Rustfmt size:  3378 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Run all tests in a project, similar to `cargo test`, but using the mir interpreter.
+ 
+ use hir::{Crate, Module};
+ use hir_ty::db::HirDatabase;
+-use ide_db::{base_db::SourceDatabase, LineIndexDatabase};
++use ide_db::{LineIndexDatabase, base_db::SourceDatabase};
++use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
+ use profile::StopWatch;
+ use project_model::{CargoConfig, RustLibSource};
+ use syntax::TextRange;
+ 
+-use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
+-
+-use crate::cli::{flags, full_name_of_item, Result};
+-
++use crate::cli::{Result, flags, full_name_of_item};
+ impl flags::RunTests {
+     pub fn run(self) -> Result<()> {
+         let cargo_config = CargoConfig {
+         };
+         let (ref db, _vfs, _proc_macro) =
+             load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
+-
+         let tests = all_modules(db)
+             .into_iter()
+             .flat_map(|x| x.declarations(db))
+         .map(|krate| krate.root_module())
+         .collect();
+     let mut modules = Vec::new();
+-
+     while let Some(module) = worklist.pop() {
+         modules.push(module);
+         worklist.extend(module.children(db));
+     }
+-
+     modules
+ }

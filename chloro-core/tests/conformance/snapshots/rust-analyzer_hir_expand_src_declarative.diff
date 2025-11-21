@@ -1,0 +1,117 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6595 bytes
+Chloro size:   6476 bytes
+Rustfmt size:  6864 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Compiled declarative macro expanders (`macro_rules!` and `macro`)
+ 
+ use base_db::Crate;
+ use intern::sym;
+ use span::{Edition, Span, SyntaxContext};
+ use stdx::TupleExt;
+-use syntax::{ast, AstNode};
++use syntax::{AstNode, ast};
+ use syntax_bridge::DocCommentDesugarMode;
+ use triomphe::Arc;
+ 
+ use crate::{
++    AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
+     attrs::RawAttrs,
+     db::ExpandDatabase,
+-    hygiene::{apply_mark, Transparency},
+-    tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
++    hygiene::{Transparency, apply_mark},
++    tt,
+ };
+-
+ /// Old-style `macro_rules` or the new macros 2.0
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct DeclarativeMacroExpander {
+ }
+ 
+ impl DeclarativeMacroExpander {
+-    pub fn expand(
+-        &self,
+-        db: &dyn ExpandDatabase,
+-        tt: tt::TopSubtree,
+-        call_id: MacroCallId,
+-        span: Span,
+-    ) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
++    pub fn expand(&self, db: &dyn ExpandDatabase, tt: tt::TopSubtree, call_id: MacroCallId, span: Span) -> ExpandResult<(tt::TopSubtree, Option<u32>)> {
+         let loc = db.lookup_intern_macro_call(call_id);
+         match self.mac.err() {
+             Some(_) => ExpandResult::new(
+-                (
+-                    tt::TopSubtree::empty(tt::DelimSpan {
+-                        open: span,
+-                        close: span,
+-                    }),
+-                    None,
+-                ),
++                (tt::TopSubtree::empty(tt::DelimSpan { open: span, close: span }), None),
+                 ExpandError::new(span, ExpandErrorKind::MacroDefinition),
+             ),
+             None => self
+         }
+     }
+ 
+-    pub fn expand_unhygienic(
+-        &self,
+-        tt: tt::TopSubtree,
+-        call_site: Span,
+-        def_site_edition: Edition,
+-    ) -> ExpandResult<tt::TopSubtree> {
++    pub fn expand_unhygienic(&self, tt: tt::TopSubtree, call_site: Span, def_site_edition: Edition) -> ExpandResult<tt::TopSubtree> {
+         match self.mac.err() {
+             Some(_) => ExpandResult::new(
+-                tt::TopSubtree::empty(tt::DelimSpan {
+-                    open: call_site,
+-                    close: call_site,
+-                }),
++                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                 ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
+             ),
+             None => self
+         }
+     }
+ 
+-    pub(crate) fn expander(
+-        db: &dyn ExpandDatabase,
+-        def_crate: Crate,
+-        id: AstId<ast::Macro>,
+-    ) -> Arc<DeclarativeMacroExpander> {
++    pub(crate) fn expander(db: &dyn ExpandDatabase, def_crate: Crate, id: AstId<ast::Macro>) -> Arc<DeclarativeMacroExpander> {
+         let (root, map) = crate::db::parse_with_map(db, id.file_id);
+         let root = root.syntax_node();
+-
+         let transparency = |node| {
+             // ... would be nice to have the item tree here
+             let attrs = RawAttrs::new_expanded(db, node, map.as_ref(), def_crate.cfg_options(db));
+                 def_crate.data(db).edition
+             } else {
+                 // UNWRAP-SAFETY: Only the root context has no outer expansion
+-                let krate = db
+-                    .lookup_intern_macro_call(ctx.outer_expn(db).unwrap().into())
+-                    .def
+-                    .krate;
++                let krate =
++                    db.lookup_intern_macro_call(ctx.outer_expn(db).unwrap().into()).def.krate;
+                 krate.data(db).edition
+             }
+         };
+             HirFileId::MacroFile(macro_file) => macro_file.lookup(db).ctxt,
+             HirFileId::FileId(file) => SyntaxContext::root(file.edition(db)),
+         });
+-        Arc::new(DeclarativeMacroExpander {
+-            mac,
+-            transparency,
+-            edition,
+-        })
++        Arc::new(DeclarativeMacroExpander { mac, transparency, edition })
+     }
+ }

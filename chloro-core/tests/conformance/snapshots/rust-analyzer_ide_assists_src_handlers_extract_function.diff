@@ -1,0 +1,1712 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 141954 bytes
+Chloro size:   140720 bytes
+Rustfmt size:  141954 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     assist_context::{AssistContext, Assists, TreeMutator},
+     utils::generate_impl,
+ };
+-
+-// Assist: extract_function
+-//
+-// Extracts selected statements and comments into new function.
+-//
+-// ```
+-// fn main() {
+-//     let n = 1;
+-//     $0let m = n + 2;
+-//     // calculate
+-//     let k = m + n;$0
+-//     let g = 3;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     let n = 1;
+-//     fun_name(n);
+-//     let g = 3;
+-// }
+-//
+-// fn $0fun_name(n: i32) {
+-//     let m = n + 2;
+-//     // calculate
+-//     let k = m + n;
+-// }
+-// ```
+ pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let range = ctx.selection_trimmed();
+     if range.is_empty() {
+         return None;
+     }
+-
+     let node = ctx.covering_element();
+     if matches!(node.kind(), T!['{'] | T!['}'] | T!['('] | T![')'] | T!['['] | T![']']) {
+         cov_mark::hit!(extract_function_in_braces_is_not_applicable);
+         return None;
+     }
+-
+     if node.kind() == COMMENT {
+         cov_mark::hit!(extract_function_in_comment_is_not_applicable);
+         return None;
+     }
+-
+     let node = match node {
+         syntax::NodeOrToken::Node(n) => n,
+         syntax::NodeOrToken::Token(t) => t.parent()?,
+     };
+-
+     let body = extraction_target(&node, range)?;
+-
+     let (locals_used, self_param) = body.analyze(&ctx.sema);
+-
+     let anchor = if self_param.is_some() { Anchor::Method } else { Anchor::Freestanding };
+     let insert_after = node_to_insert_after(&body, anchor)?;
+     let semantics_scope = ctx.sema.scope(&insert_after)?;
+     let module = semantics_scope.module();
+     let edition = semantics_scope.krate().edition(ctx.db());
+-
+     let (container_info, contains_tail_expr) = body.analyze_container(&ctx.sema, edition)?;
+-
+     let ret_ty = body.return_ty(ctx)?;
+     let control_flow = body.external_control_flow(ctx, &container_info)?;
+     let ret_values = body.ret_values(ctx, node.parent().as_ref().unwrap_or(&node));
+-
+     let target_range = body.text_range();
+-
+     let scope = ImportScope::find_insert_use_container(&node, &ctx.sema)?;
+-
+     acc.add_group(
+         &GroupLabel("Extract into...".to_owned()),
+         AssistId::refactor_extract("extract_function"),
+                 .to_string(),
+         )
+     });
+-
+     let default_name = "fun_name";
+-
+     let mut name = default_name.to_owned();
+     let mut counter = 0;
+     while names_in_scope.contains(&name) {
+             ),
+         };
+     }
+-
+     // Covering element returned the parent block of one or multiple statements that have been selected
+     if let Some(stmt_list) = ast::StmtList::cast(node.clone()) {
+         if let Some(block_expr) = stmt_list.syntax().parent().and_then(ast::BlockExpr::cast)
+         // Extract the full statements.
+         return FunctionBody::from_range(stmt_list, selection_range);
+     }
+-
+     let expr = ast::Expr::cast(node.clone())?;
+     // A node got selected fully
+     if node.text_range() == selection_range {
+         return FunctionBody::from_expr(expr);
+     }
+-
+     node.ancestors().find_map(ast::Expr::cast).and_then(FunctionBody::from_expr)
+ }
+ 
+     Method,
+ }
+ 
+-// FIXME: ControlFlow and ContainerInfo both track some function modifiers, feels like these two should
+-// probably be merged somehow.
+ #[derive(Debug)]
+ struct ControlFlow<'db> {
+     kind: Option<FlowKind<'db>>,
+ #[derive(Debug, Clone)]
+ enum TryKind<'db> {
+     Option,
+-    Result { ty: hir::Type<'db> },
++    Result {
++        ty: hir::Type<'db>,
++    },
+ }
+ 
+ #[derive(Debug)]
+ #[derive(Debug)]
+ enum FunctionBody {
+     Expr(ast::Expr),
+-    Span { parent: ast::StmtList, elements: RangeInclusive<SyntaxElement>, text_range: TextRange },
++    Span {
++        parent: ast::StmtList,
++        elements: RangeInclusive<SyntaxElement>,
++        text_range: TextRange,
++    },
+ }
+ 
+ #[derive(Debug)]
+         }
+     }
+ 
+-    fn to_param(
+-        &self,
+-        ctx: &AssistContext<'_>,
+-        module: hir::Module,
+-        edition: Edition,
+-    ) -> ast::Param {
++    fn to_param(&self, ctx: &AssistContext<'_>, module: hir::Module, edition: Edition) -> ast::Param {
+         let var = self.var.name(ctx.db()).display(ctx.db(), edition).to_string();
+         let var_name = make::name(&var);
+         let pat = match self.kind() {
+                 make::ext::simple_ident_pat(var_name)
+             }
+         };
+-
+         let ty = make_ty(&self.ty, ctx, module);
+         let ty = match self.kind() {
+             ParamKind::Value | ParamKind::MutValue => ty,
+             ParamKind::SharedRef => make::ty_ref(ty, false),
+             ParamKind::MutRef => make::ty_ref(ty, true),
+         };
+-
+         make::param(pat.into(), ty)
+     }
+ }
+ 
+ impl<'db> TryKind<'db> {
+-    fn of_ty(
+-        ty: hir::Type<'db>,
+-        ctx: &AssistContext<'db>,
+-        edition: Edition,
+-    ) -> Option<TryKind<'db>> {
++    fn of_ty(ty: hir::Type<'db>, ctx: &AssistContext<'db>, edition: Edition) -> Option<TryKind<'db>> {
+         if ty.is_unknown() {
+             // We favour Result for `expr?`
+             return Some(TryKind::Result { ty });
+ 
+     fn from_range(parent: ast::StmtList, selected: TextRange) -> Option<FunctionBody> {
+         let full_body = parent.syntax().children_with_tokens();
+-
+         // Get all of the elements intersecting with the selection
+         let mut stmts_in_selection = full_body
+             .filter(|it| ast::Stmt::can_cast(it.kind()) || it.kind() == COMMENT)
+             .filter(|it| selected.intersect(it.text_range()).filter(|it| !it.is_empty()).is_some());
+-
+         let first_element = stmts_in_selection.next();
+-
+         // If the tail expr is part of the selection too, make that the last element
+         // Otherwise use the last stmt
+         let last_element = if let Some(tail_expr) =
+         } else {
+             stmts_in_selection.last()
+         };
+-
+         let elements = match (first_element, last_element) {
+             (None, _) => {
+                 cov_mark::hit!(extract_function_empty_selection_is_not_applicable);
+             (Some(first), None) => first.clone()..=first,
+             (Some(first), Some(last)) => first..=last,
+         };
+-
+         let text_range = elements.start().text_range().cover(elements.end().text_range());
+-
+         Some(Self::Span { parent, elements, text_range })
+     }
+ 
+ impl FunctionBody {
+     /// Analyzes a function body, returning the used local variables that are referenced in it as well as
+     /// whether it contains an await expression.
+-    fn analyze(
+-        &self,
+-        sema: &Semantics<'_, RootDatabase>,
+-    ) -> (FxIndexSet<Local>, Option<ast::SelfParam>) {
++    fn analyze(&self, sema: &Semantics<'_, RootDatabase>) -> (FxIndexSet<Local>, Option<ast::SelfParam>) {
+         let mut self_param = None;
+         let mut res = FxIndexSet::default();
+-
+         fn local_from_name_ref(
+             sema: &Semantics<'_, RootDatabase>,
+             name_ref: ast::NameRef,
+                 _ => None,
+             }
+         }
+-
+         let mut add_name_if_local = |local_ref: Local| {
+             let InFile { file_id, value } = local_ref.primary_source(sema.db).source;
+             // locals defined inside macros are not relevant to us
+         (res, self_param)
+     }
+ 
+-    fn analyze_container<'db>(
+-        &self,
+-        sema: &Semantics<'db, RootDatabase>,
+-        edition: Edition,
+-    ) -> Option<(ContainerInfo<'db>, bool)> {
++    fn analyze_container<'db>(&self, sema: &Semantics<'db, RootDatabase>, edition: Edition) -> Option<(ContainerInfo<'db>, bool)> {
+         let mut ancestors = self.parent()?.ancestors();
+         let infer_expr_opt = |expr| sema.type_of_expr(&expr?).map(TypeInfo::adjusted);
+         let mut parent_loop = None;
+                 parent_loop.get_or_insert(loop_.syntax().clone());
+             }
+         };
+-
+         let (is_const, expr, ty) = loop {
+             let anc = ancestors.next()?;
+             break match_ast! {
+                 }
+             };
+         };
+-
+         let expr = expr?;
+         let contains_tail_expr = if let Some(body_tail) = self.tail_expr() {
+             let mut contains_tail_expr = false;
+         } else {
+             false
+         };
+-
+         let parent = self.parent()?;
+         let parents = generic_parents(&parent);
+         let generic_param_lists = parents.iter().filter_map(|it| it.generic_param_list()).collect();
+         let where_clauses = parents.iter().filter_map(|it| it.where_clause()).collect();
+-
+         Some((
+             ContainerInfo {
+                 is_const,
+     }
+ 
+     /// Local variables defined inside `body` that are accessed outside of it
+-    fn ret_values<'a>(
+-        &self,
+-        ctx: &'a AssistContext<'_>,
+-        parent: &SyntaxNode,
+-    ) -> impl Iterator<Item = OutlivedLocal> + 'a {
++    fn ret_values<'a>(&self, ctx: &'a AssistContext<'_>, parent: &SyntaxNode) -> impl Iterator<Item = OutlivedLocal> + 'a {
+         let parent = parent.clone();
+         let range = self.text_range();
+         locals_defined_in_body(&ctx.sema, self)
+     }
+ 
+     /// Analyses the function body for external control flow.
+-    fn external_control_flow<'db>(
+-        &self,
+-        ctx: &AssistContext<'db>,
+-        container_info: &ContainerInfo<'db>,
+-    ) -> Option<ControlFlow<'db>> {
++    fn external_control_flow<'db>(&self, ctx: &AssistContext<'db>, container_info: &ContainerInfo<'db>) -> Option<ControlFlow<'db>> {
+         let mut ret_expr = None;
+         let mut try_expr = None;
+         let mut break_expr = None;
+         let mut continue_expr = None;
+         let mut is_async = false;
+         let mut _is_unsafe = false;
+-
+         let mut unsafe_depth = 0;
+         let mut loop_depth = 0;
+-
+         self.preorder_expr(&mut |expr| {
+             let expr = match expr {
+                 WalkEvent::Enter(e) => e,
+             }
+             false
+         });
+-
+         let kind = match (try_expr, ret_expr, break_expr, continue_expr) {
+             (Some(_), _, None, None) => {
+                 let ret_ty = container_info.ret_type.clone()?;
+             (None, None, None, Some(c)) => Some(FlowKind::Continue(c.lifetime())),
+             (None, None, None, None) => None,
+         };
+-
+         Some(ControlFlow { kind, is_async, is_unsafe: _is_unsafe })
+     }
+ 
+     /// find variables that should be extracted as params
+     ///
+     /// Computes additional info that affects param type and mutability
+-    fn extracted_function_params<'db>(
+-        &self,
+-        ctx: &AssistContext<'db>,
+-        container_info: &ContainerInfo<'db>,
+-        locals: FxIndexSet<Local>,
+-    ) -> Vec<Param<'db>> {
++    fn extracted_function_params<'db>(&self, ctx: &AssistContext<'db>, container_info: &ContainerInfo<'db>, locals: FxIndexSet<Local>) -> Vec<Param<'db>> {
+         locals
+             .into_iter()
+             .sorted()
+ }
+ 
+ /// checks if relevant var is used with `&mut` access inside body
+-fn has_exclusive_usages(
+-    ctx: &AssistContext<'_>,
+-    usages: &LocalUsages,
+-    body: &FunctionBody,
+-) -> bool {
++fn has_exclusive_usages(ctx: &AssistContext<'_>, usages: &LocalUsages, body: &FunctionBody) -> bool {
+     usages
+         .iter()
+         .filter(|reference| body.contains_range(reference.range))
+ }
+ 
+ /// checks if this reference requires `&mut` access inside node
+-fn reference_is_exclusive(
+-    reference: &FileReference,
+-    node: &dyn HasTokenAtOffset,
+-    ctx: &AssistContext<'_>,
+-) -> bool {
++fn reference_is_exclusive(reference: &FileReference, node: &dyn HasTokenAtOffset, ctx: &AssistContext<'_>) -> bool {
+     // FIXME: this quite an incorrect way to go about doing this :-)
+     // `FileReference` is an IDE-type --- it encapsulates data communicated to the human,
+     // but doesn't necessary fully reflect all the intricacies of the underlying language semantics
+     // The correct approach here would be to expose this entire analysis as a method on some hir
+     // type. Something like `body.free_variables(statement_range)`.
+-
+     // we directly modify variable with set: `n = 0`, `n += 1`
+     if reference.category.contains(ReferenceCategory::WRITE) {
+         return true;
+     }
+-
+     // we take `&mut` reference to variable: `&mut v`
+     let path = match path_element_of_reference(node, reference) {
+         Some(path) => path,
+         None => return false,
+     };
+-
+     expr_require_exclusive_access(ctx, &path).unwrap_or(false)
+ }
+ 
+         // FIXME: expand macro and check output for mutable usages of the variable?
+         return None;
+     }
+-
+     let parent = expr.syntax().parent()?;
+-
+     if let Some(bin_expr) = ast::BinExpr::cast(parent.clone()) {
+         if matches!(bin_expr.op_kind()?, ast::BinaryOp::Assignment { .. }) {
+             return Some(bin_expr.lhs()?.syntax() == expr.syntax());
+         }
+         return Some(false);
+     }
+-
+     if let Some(ref_expr) = ast::RefExpr::cast(parent.clone()) {
+         return Some(ref_expr.mut_token().is_some());
+     }
+-
+     if let Some(method_call) = ast::MethodCallExpr::cast(parent.clone()) {
+         let func = ctx.sema.resolve_method_call(&method_call)?;
+         let self_param = func.self_param(ctx.db())?;
+ 
+         return Some(matches!(access, hir::Access::Exclusive));
+     }
+-
+     if let Some(field) = ast::FieldExpr::cast(parent) {
+         return expr_require_exclusive_access(ctx, &field.into());
+     }
+-
+     Some(false)
+ }
+ 
+-trait HasTokenAtOffset {
+-    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken>;
+-}
++fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken>;
+ 
+ impl HasTokenAtOffset for SyntaxNode {
+     fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken> {
+ /// # Preconditions
+ ///
+ /// `node` must cover `reference`, that is `node.text_range().contains_range(reference.range)`
+-fn path_element_of_reference(
+-    node: &dyn HasTokenAtOffset,
+-    reference: &FileReference,
+-) -> Option<ast::Expr> {
++fn path_element_of_reference(node: &dyn HasTokenAtOffset, reference: &FileReference) -> Option<ast::Expr> {
+     let token = node.token_at_offset(reference.range.start()).right_biased().or_else(|| {
+         stdx::never!(false, "cannot find token at variable usage: {:?}", reference);
+         None
+ }
+ 
+ /// list local variables defined inside `body`
+-fn locals_defined_in_body(
+-    sema: &Semantics<'_, RootDatabase>,
+-    body: &FunctionBody,
+-) -> FxIndexSet<Local> {
++fn locals_defined_in_body(sema: &Semantics<'_, RootDatabase>, body: &FunctionBody) -> FxIndexSet<Local> {
+     // FIXME: this doesn't work well with macros
+     //        see https://github.com/rust-lang/rust-analyzer/pull/7535#discussion_r570048550
+     let mut res = FxIndexSet::default();
+ }
+ 
+ /// Returns usage details if local variable is used after(outside of) body
+-fn local_outlives_body(
+-    ctx: &AssistContext<'_>,
+-    body_range: TextRange,
+-    local: Local,
+-    parent: &SyntaxNode,
+-) -> Option<OutlivedLocal> {
++fn local_outlives_body(ctx: &AssistContext<'_>, body_range: TextRange, local: Local, parent: &SyntaxNode) -> Option<OutlivedLocal> {
+     let usages = LocalUsages::find_local_usages(ctx, local);
+     let mut has_mut_usages = false;
+     let mut any_outlives = false;
+ }
+ 
+ /// checks if the relevant local was defined before(outside of) body
+-fn is_defined_outside_of_body(
+-    ctx: &AssistContext<'_>,
+-    body: &FunctionBody,
+-    src: &LocalSource,
+-) -> bool {
++fn is_defined_outside_of_body(ctx: &AssistContext<'_>, body: &FunctionBody, src: &LocalSource) -> bool {
+     src.original_file(ctx.db()) == ctx.file_id() && !body.contains_node(src.syntax())
+ }
+ 
+ fn find_non_trait_impl(trait_impl: &SyntaxNode) -> Option<ast::Impl> {
+     let as_impl = ast::Impl::cast(trait_impl.clone())?;
+     let impl_type = Some(impl_type_name(&as_impl)?);
+-
+     let siblings = trait_impl.parent()?.children();
+     siblings
+         .filter_map(ast::Impl::cast)
+ /// Fixes up the call site before the target expressions are replaced with the call expression
+ fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
+     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
+-
+     if let Some(parent_match_arm) = parent_match_arm
+         && parent_match_arm.comma_token().is_none()
+     {
+ 
+ fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -> SyntaxNode {
+     let ret_ty = fun.return_type(ctx);
+-
+     let args = make::arg_list(fun.params.iter().map(|param| param.to_arg(ctx, fun.mods.edition)));
+     let name = fun.name.clone();
+     let mut call_expr = if fun.self_param.is_some() {
+         let func = make::expr_path(make::path_unqualified(make::path_segment(name)));
+         make::expr_call(func, args).into()
+     };
+-
+     let handler = FlowHandler::from_ret_ty(fun, &ret_ty);
+-
+     if fun.control_flow.is_async {
+         call_expr = make::expr_await(call_expr);
+     }
+-
+     let expr = handler.make_call_expr(call_expr).clone_for_update();
+     expr.indent(indent);
+-
+     let outliving_bindings = match fun.outliving_locals.as_slice() {
+         [] => None,
+         [var] => {
+             Some(ast::Pat::TuplePat(make::tuple_pat(binding_pats)))
+         }
+     };
+-
+     let parent_match_arm = fun.body.parent().and_then(ast::MatchArm::cast);
+-
+     if let Some(bindings) = outliving_bindings {
+         // with bindings that outlive it
+         make::let_stmt(bindings, None, Some(expr)).syntax().clone_for_update()
+ 
+ enum FlowHandler<'db> {
+     None,
+-    Try { kind: TryKind<'db> },
+-    If { action: FlowKind<'db> },
+-    IfOption { action: FlowKind<'db> },
+-    MatchOption { none: FlowKind<'db> },
+-    MatchResult { err: FlowKind<'db> },
++    Try {
++        kind: TryKind<'db>,
++    },
++    If {
++        action: FlowKind<'db>,
++    },
++    IfOption {
++        action: FlowKind<'db>,
++    },
++    MatchOption {
++        none: FlowKind<'db>,
++    },
++    MatchResult {
++        err: FlowKind<'db>,
++    },
+ }
+ 
+ impl<'db> FlowHandler<'db> {
+         let Some(action) = fun.control_flow.kind.clone() else {
+             return FlowHandler::None;
+         };
+-
+         if let FunType::Unit = ret_ty {
+             match action {
+                 FlowKind::Return(None) | FlowKind::Break(_, None) | FlowKind::Continue(_) => {
+     make::expr_path(make::ext::ident_path(&name))
+ }
+ 
+-fn format_function(
+-    ctx: &AssistContext<'_>,
+-    module: hir::Module,
+-    fun: &Function<'_>,
+-    old_indent: IndentLevel,
+-) -> ast::Fn {
++fn format_function(ctx: &AssistContext<'_>, module: hir::Module, fun: &Function<'_>, old_indent: IndentLevel) -> ast::Fn {
+     let fun_name = make::name(&fun.name.text());
+     let params = fun.make_param_list(ctx, module, fun.mods.edition);
+     let ret_ty = fun.make_ret_ty(ctx, module);
+     let body = make_body(ctx, old_indent, fun);
+     let (generic_params, where_clause) = make_generic_params_and_where_clause(ctx, fun);
+-
+     make::fn_(
+         None,
+         None,
+     )
+ }
+ 
+-fn make_generic_params_and_where_clause(
+-    ctx: &AssistContext<'_>,
+-    fun: &Function<'_>,
+-) -> (Option<ast::GenericParamList>, Option<ast::WhereClause>) {
++fn make_generic_params_and_where_clause(ctx: &AssistContext<'_>, fun: &Function<'_>) -> (Option<ast::GenericParamList>, Option<ast::WhereClause>) {
+     let used_type_params = fun.type_params(ctx);
+-
+     let generic_param_list = make_generic_param_list(ctx, fun, &used_type_params);
+     let where_clause = make_where_clause(ctx, fun, &used_type_params);
+-
+     (generic_param_list, where_clause)
+ }
+ 
+-fn make_generic_param_list(
+-    ctx: &AssistContext<'_>,
+-    fun: &Function<'_>,
+-    used_type_params: &[TypeParam],
+-) -> Option<ast::GenericParamList> {
++fn make_generic_param_list(ctx: &AssistContext<'_>, fun: &Function<'_>, used_type_params: &[TypeParam]) -> Option<ast::GenericParamList> {
+     let mut generic_params = fun
+         .mods
+         .generic_param_lists
+                 .filter(|param| param_is_required(ctx, param, used_type_params))
+         })
+         .peekable();
+-
+     if generic_params.peek().is_some() {
+         Some(make::generic_param_list(generic_params))
+     } else {
+     }
+ }
+ 
+-fn param_is_required(
+-    ctx: &AssistContext<'_>,
+-    param: &ast::GenericParam,
+-    used_type_params: &[TypeParam],
+-) -> bool {
++fn param_is_required(ctx: &AssistContext<'_>, param: &ast::GenericParam, used_type_params: &[TypeParam]) -> bool {
+     match param {
+         ast::GenericParam::ConstParam(_) | ast::GenericParam::LifetimeParam(_) => false,
+         ast::GenericParam::TypeParam(type_param) => match &ctx.sema.to_def(type_param) {
+     }
+ }
+ 
+-fn make_where_clause(
+-    ctx: &AssistContext<'_>,
+-    fun: &Function<'_>,
+-    used_type_params: &[TypeParam],
+-) -> Option<ast::WhereClause> {
++fn make_where_clause(ctx: &AssistContext<'_>, fun: &Function<'_>, used_type_params: &[TypeParam]) -> Option<ast::WhereClause> {
+     let mut predicates = fun
+         .mods
+         .where_clauses
+                 .filter(|pred| pred_is_required(ctx, pred, used_type_params))
+         })
+         .peekable();
+-
+     if predicates.peek().is_some() { Some(make::where_clause(predicates)) } else { None }
+ }
+ 
+-fn pred_is_required(
+-    ctx: &AssistContext<'_>,
+-    pred: &ast::WherePred,
+-    used_type_params: &[TypeParam],
+-) -> bool {
++fn pred_is_required(ctx: &AssistContext<'_>, pred: &ast::WherePred, used_type_params: &[TypeParam]) -> bool {
+     match resolved_type_param(ctx, pred) {
+         Some(it) => used_type_params.contains(&it),
+         None => false,
+         ast::Type::PathType(path_type) => path_type.path(),
+         _ => None,
+     }?;
+-
+     match ctx.sema.resolve_path(&path)? {
+         PathResolution::TypeParam(type_param) => Some(type_param),
+         _ => None,
+         type_params_in_descendant_paths.chain(type_params_in_params).collect()
+     }
+ 
+-    fn make_param_list(
+-        &self,
+-        ctx: &AssistContext<'_>,
+-        module: hir::Module,
+-        edition: Edition,
+-    ) -> ast::ParamList {
++    fn make_param_list(&self, ctx: &AssistContext<'_>, module: hir::Module, edition: Edition) -> ast::ParamList {
+         let self_param = self.self_param.clone();
+         let params = self.params.iter().map(|param| param.to_param(ctx, module, edition));
+         make::param_list(self_param, params)
+     }
+ }
+ 
+-fn make_body(
+-    ctx: &AssistContext<'_>,
+-    old_indent: IndentLevel,
+-    fun: &Function<'_>,
+-) -> ast::BlockExpr {
++fn make_body(ctx: &AssistContext<'_>, old_indent: IndentLevel, fun: &Function<'_>) -> ast::BlockExpr {
+     let ret_ty = fun.return_type(ctx);
+     let handler = FlowHandler::from_ret_ty(fun, &ret_ty);
+-
+     let block = match &fun.body {
+         FunctionBody::Expr(expr) => {
+             let expr = rewrite_body_segment(ctx, &fun.params, &handler, expr.syntax());
+             make::hacky_block_expr(elements, tail_expr)
+         }
+     };
+-
+     match &handler {
+         FlowHandler::None => block,
+         FlowHandler::Try { kind } => {
+ fn with_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr {
+     let stmt_tail_opt: Option<ast::Stmt> =
+         block.tail_expr().map(|expr| make::expr_stmt(expr).into());
+-
+     let mut elements: Vec<SyntaxElement> = vec![];
+-
+     block.statements().for_each(|stmt| {
+         elements.push(syntax::NodeOrToken::Node(stmt.syntax().clone()));
+     });
+-
+     if let Some(stmt_list) = block.stmt_list() {
+         stmt_list.syntax().children_with_tokens().for_each(|node_or_token| {
+             if let syntax::NodeOrToken::Token(_) = &node_or_token {
+             };
+         });
+     }
+-
+     if let Some(stmt_tail) = stmt_tail_opt {
+         elements.push(syntax::NodeOrToken::Node(stmt_tail.syntax().clone()));
+     }
+-
+     make::hacky_block_expr(elements, Some(tail_expr))
+ }
+ 
+     make::ty(&ty_str)
+ }
+ 
+-fn rewrite_body_segment(
+-    ctx: &AssistContext<'_>,
+-    params: &[Param<'_>],
+-    handler: &FlowHandler<'_>,
+-    syntax: &SyntaxNode,
+-) -> SyntaxNode {
++fn rewrite_body_segment(ctx: &AssistContext<'_>, params: &[Param<'_>], handler: &FlowHandler<'_>, syntax: &SyntaxNode) -> SyntaxNode {
+     let syntax = fix_param_usages(ctx, params, syntax);
+     update_external_control_flow(handler, &syntax);
+     syntax
+ }
+ 
+ /// change all usages to account for added `&`/`&mut` for some params
+-fn fix_param_usages(
+-    ctx: &AssistContext<'_>,
+-    params: &[Param<'_>],
+-    syntax: &SyntaxNode,
+-) -> SyntaxNode {
++fn fix_param_usages(ctx: &AssistContext<'_>, params: &[Param<'_>], syntax: &SyntaxNode) -> SyntaxNode {
+     let mut usages_for_param: Vec<(&Param<'_>, Vec<ast::Expr>)> = Vec::new();
+-
+     let tm = TreeMutator::new(syntax);
+-
+     for param in params {
+         if !param.kind().is_ref() {
+             continue;
+ 
+         usages_for_param.push((param, usages.collect()));
+     }
+-
+     let res = tm.make_syntax_mut(syntax);
+-
+     for (param, usages) in usages_for_param {
+         for usage in usages {
+             match usage.syntax().ancestors().skip(1).find_map(ast::Expr::cast) {
+             }
+         }
+     }
+-
+     res
+ }
+ 
+     }
+ }
+ 
+-fn make_rewritten_flow(
+-    handler: &FlowHandler<'_>,
+-    arg_expr: Option<ast::Expr>,
+-) -> Option<ast::Expr> {
++fn make_rewritten_flow(handler: &FlowHandler<'_>, arg_expr: Option<ast::Expr>) -> Option<ast::Expr> {
+     let value = match handler {
+         FlowHandler::None | FlowHandler::Try { .. } => return None,
+         FlowHandler::If { .. } => make::expr_call(
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn no_args_from_binary_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_binary_expr_in_module() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_binary_expr_indented() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_stmt_with_last_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_stmt_unit() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_if() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_if_else() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_if_let_else() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_match() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_while() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_for() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_loop_unit() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_loop_with_return() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_args_from_match() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_partial_block_single_line() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_partial_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn argument_form_expr() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn argument_used_twice_form_expr() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn two_arguments_form_expr() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn argument_and_locals() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn in_comment_is_not_applicable() {
+         cov_mark::check!(extract_function_in_comment_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn main() { 1 + /* $0comment$0 */ 1; }");
+     }
+-
+     #[test]
+     fn empty_selection_is_not_applicable() {
+         cov_mark::check!(extract_function_empty_selection_is_not_applicable);
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn part_of_expr_stmt() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_expr() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_from_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn param_from_closure() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_return_stmt() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_add_extra_whitespace() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_stmt() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_cast() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_not_applicable() {
+         check_assist_not_applicable(extract_function, r"fn foo() { $0return$0; } ");
+     }
+-
+     #[test]
+     fn method_to_freestanding() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_with_reference() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_with_mut() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn variable_defined_inside_and_used_after_no_ret() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn variable_defined_inside_and_used_after_mutably_no_ret() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn two_variables_defined_inside_and_used_after_no_ret() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn multi_variables_defined_inside_and_used_after_mutably_no_ret() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn nontrivial_patterns_define_variables() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn struct_with_two_fields_pattern_define_variables() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_var_from_outer_scope() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_field_from_outer_scope() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_nested_field_from_outer_scope() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_param_many_usages_stmt() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_param_many_usages_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_param_by_value() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn mut_param_because_of_mut_ref() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_param_by_value_because_of_mut_ref() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mut_method_call() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn shared_method_call() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn mut_method_call_with_other_receiver() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn non_copy_without_usages_after() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn non_copy_used_after() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn copy_used_after() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn copy_custom_used_after() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn indented_stmts() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn indented_stmts_inside_mod() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_to_parent() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_and_continue() {
+         cov_mark::check!(external_control_flow_break_and_continue);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_and_break() {
+         cov_mark::check!(external_control_flow_return_and_bc);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_loop_with_if() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_loop_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_loop_nested_labeled() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn continue_loop_nested_labeled() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_from_nested_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_from_nested_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_from_nested_and_outer_loops() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_from_nested_fn() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_with_value() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_with_value_and_label() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn break_with_value_and_return() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_option() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_option_unit() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_result() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_option_with_return() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_result_with_return() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_and_break() {
+         cov_mark::check!(external_control_flow_try_and_bc);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_and_return_ok() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn param_usage_in_macro() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn param_usage_in_macro_with_nested_tt() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn param_usage_in_macro_with_nested_tt_2() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_with_await() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_with_await_and_result_not_producing_match_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_with_await_and_result_producing_match_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_with_await_in_args() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_does_not_extract_standalone_blocks() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_adds_comma_for_match_arm() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         // Makes sure no semicolon is added for unit-valued match arms
+         check_assist(
+             extract_function,
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_does_not_tear_comments_apart() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_does_not_tear_body_apart() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_does_not_wrap_res_in_res() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_knows_const() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_does_not_move_outer_loop_vars() {
+         check_assist(
+ "#,
+         );
+     }
+-
+-    // regression test for #9822
+     #[test]
+     fn extract_mut_ref_param_has_no_mut_binding_in_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_with_macro_arg() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unresolvable_types_default_to_placeholder() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn reference_mutable_param_with_further_usages() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn reference_mutable_param_without_further_usages() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_copies_comment_at_start() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_copies_comment_in_between() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_copies_comment_at_end() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_copies_comment_indented() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_does_preserve_whitespace() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_function_long_form_comment() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn it_should_not_generate_duplicate_function_names() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn should_increment_suffix_until_it_finds_space() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_method_from_trait_impl() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_method_from_trait_with_existing_non_empty_impl_block() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_function_from_trait_with_existing_non_empty_impl_block() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_method_from_trait_with_multiple_existing_impl_blocks() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_method_from_trait_with_multiple_existing_trait_impl_blocks() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn closure_arguments() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn preserve_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn dont_emit_type_with_hidden_lifetime_parameter() {
+         // FIXME: We should emit a `<T: Debug>` generic argument for the generated function
+ "#,
+         );
+     }
+-
+     #[test]
+     fn preserve_generics_from_body() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn filter_unused_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn empty_generic_param_list() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn preserve_where_clause() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn filter_unused_where_clause() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn nested_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn filters_unused_nested_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn nested_where_clauses() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn filters_unused_nested_where_clauses() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn tail_expr_no_extra_control_flow() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn non_tail_expr_of_tail_expr_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn non_tail_expr_of_tail_if_block() {
+         // FIXME: double semicolon
+ "#,
+         );
+     }
+-
+     #[test]
+     fn tail_expr_of_tail_block_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn non_tail_expr_with_comment_of_tail_expr_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn comments_in_block_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn sort_params_in_order() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fmt_macro_argument() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn in_left_curly_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn foo() { $0}$0");
+     }
+-
+     #[test]
+     fn in_right_curly_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn foo() $0{$0 }");
+     }
+-
+     #[test]
+     fn in_left_paren_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn foo( $0)$0 { }");
+     }
+-
+     #[test]
+     fn in_right_paren_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn foo $0($0 ) { }");
+     }
+-
+     #[test]
+     fn in_left_brack_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);
+         check_assist_not_applicable(extract_function, r"fn foo(arr: &mut [i32$0]$0) {}");
+     }
+-
+     #[test]
+     fn in_right_brack_is_not_applicable() {
+         cov_mark::check!(extract_function_in_braces_is_not_applicable);

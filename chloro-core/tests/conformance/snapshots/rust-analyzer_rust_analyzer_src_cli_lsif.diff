@@ -1,0 +1,134 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12611 bytes
+Chloro size:   12535 bytes
+Rustfmt size:  12892 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
+     VendoredLibrariesConfig,
+ };
+-use ide_db::{line_index::WideEncoding, LineIndexDatabase};
+-use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};
++use ide_db::{LineIndexDatabase, line_index::WideEncoding};
++use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
+ use lsp_types::lsif;
+ use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
+ use rustc_hash::FxHashMap;
+     lsp::to_proto,
+     version::version,
+ };
+-
+ struct LsifManager<'a, 'w> {
+     count: i32,
+     token_map: FxHashMap<TokenId, Id>,
+ }
+ 
+ impl LsifManager<'_, '_> {
+-    fn new<'a, 'w>(
+-        analysis: &'a Analysis,
+-        db: &'a RootDatabase,
+-        vfs: &'a Vfs,
+-        out: &'w mut dyn std::io::Write,
+-    ) -> LsifManager<'a, 'w> {
++    fn new<'a, 'w>(analysis: &'a Analysis, db: &'a RootDatabase, vfs: &'a Vfs, out: &'w mut dyn std::io::Write) -> LsifManager<'a, 'w> {
+         LsifManager {
+             count: 0,
+             token_map: FxHashMap::default(),
+ 
+     fn add(&mut self, data: lsif::Element) -> Id {
+         let id = Id(self.count);
+-        self.emit(
+-            &serde_json::to_string(&lsif::Entry {
+-                id: id.into(),
+-                data,
+-            })
+-            .unwrap(),
+-        );
++        self.emit(&serde_json::to_string(&lsif::Entry { id: id.into(), data }).unwrap());
+         self.count += 1;
+         id
+     }
+             let mut edges = token.references.iter().fold(
+                 FxHashMap::<_, Vec<lsp_types::NumberOrString>>::default(),
+                 |mut edges, it| {
+-                    let entry = edges
+-                        .entry((it.range.file_id, it.is_definition))
+-                        .or_default();
++                    let entry = edges.entry((it.range.file_id, it.is_definition)).or_default();
+                     entry.push((*self.range_map.get(&it.range).unwrap()).into());
+                     edges
+                 },
+     }
+ 
+     fn add_file(&mut self, file: StaticIndexedFile) {
+-        let StaticIndexedFile {
+-            file_id,
+-            tokens,
+-            folds,
+-            ..
+-        } = file;
++        let StaticIndexedFile { file_id, tokens, folds, .. } = file;
+         let doc_id = self.get_file_id(file_id);
+         let text = self.analysis.file_text(file_id).unwrap();
+         let line_index = self.db.line_index(file_id);
+                     range: to_proto::range(&line_index, range),
+                     tag: None,
+                 });
+-                self.range_map
+-                    .insert(FileRange { file_id, range }, range_id);
++                self.range_map.insert(FileRange { file_id, range }, range_id);
+                 let result_set_id = self.get_token_id(id);
+                 self.add_edge(lsif::Edge::Next(lsif::EdgeData {
+                     in_v: result_set_id.into(),
+ }
+ 
+ impl flags::Lsif {
+-    pub fn run(
+-        self,
+-        out: &mut dyn std::io::Write,
+-        sysroot: Option<RustLibSource>,
+-    ) -> anyhow::Result<()> {
++    pub fn run(self, out: &mut dyn std::io::Write, sysroot: Option<RustLibSource>) -> anyhow::Result<()> {
+         let now = Instant::now();
+-        let cargo_config = &CargoConfig {
+-            sysroot,
+-            all_targets: true,
+-            set_test: true,
+-            ..Default::default()
+-        };
++        let cargo_config =
++            &CargoConfig { sysroot, all_targets: true, set_test: true, ..Default::default() };
+         let no_progress = &|_| ();
+         let load_cargo_config = LoadCargoConfig {
+             load_out_dirs_from_check: true,
+         let root = ProjectManifest::discover_single(&path)?;
+         eprintln!("Generating LSIF for project at {root}");
+         let mut workspace = ProjectWorkspace::load(root, cargo_config, no_progress)?;
+-
+         let build_scripts = workspace.run_build_scripts(cargo_config, no_progress)?;
+         workspace.set_build_scripts(build_scripts);
+-
+         let (db, vfs, _proc_macro) =
+             load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
+         let host = AnalysisHost::with_database(db);
+         let db = host.raw_database();
+         let analysis = host.analysis();
+-
+         let vendored_libs_config = if self.exclude_vendored_libraries {
+             VendoredLibrariesConfig::Excluded
+         } else {
+-            VendoredLibrariesConfig::Included {
+-                workspace_root: &path.clone().into(),
+-            }
++            VendoredLibrariesConfig::Included { workspace_root: &path.clone().into() }
+         };
+-
+         let si = StaticIndex::compute(&analysis, vendored_libs_config);
+-
+         let mut lsif = LsifManager::new(&analysis, db, &vfs, out);
+         lsif.add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
+             version: String::from("0.5.0"),

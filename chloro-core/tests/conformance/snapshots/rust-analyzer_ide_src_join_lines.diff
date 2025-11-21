@@ -1,0 +1,500 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 22055 bytes
+Chloro size:   21356 bytes
+Rustfmt size:  22055 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_assists::utils::extract_trivial_expression;
+ use ide_db::syntax_helpers::node_ext::expr_as_name_ref;
++use ide_db::text_edit::{TextEdit, TextEditBuilder};
+ use itertools::Itertools;
+ use syntax::{
+     NodeOrToken, SourceFile, SyntaxElement,
+     SyntaxToken, T, TextRange, TextSize,
+     ast::{self, AstNode, AstToken, IsString},
+ };
+-
+-use ide_db::text_edit::{TextEdit, TextEditBuilder};
+-
+ pub struct JoinLinesConfig {
+     pub join_else_if: bool,
+     pub remove_trailing_comma: bool,
+     pub join_assignments: bool,
+ }
+ 
+-// Feature: Join Lines
+-//
+-// Join selected lines into one, smartly fixing up whitespace, trailing commas, and braces.
+-//
+-// See [this gif](https://user-images.githubusercontent.com/1711539/124515923-4504e800-dde9-11eb-8d58-d97945a1a785.gif) for the cases handled specially by joined lines.
+-//
+-// | Editor  | Action Name |
+-// |---------|-------------|
+-// | VS Code | **rust-analyzer: Join lines** |
+-//
+-// ![Join Lines](https://user-images.githubusercontent.com/48062697/113020661-b6922200-917a-11eb-87c4-b75acc028f11.gif)
+-pub(crate) fn join_lines(
+-    config: &JoinLinesConfig,
+-    file: &SourceFile,
+-    range: TextRange,
+-) -> TextEdit {
++pub(crate) fn join_lines(config: &JoinLinesConfig, file: &SourceFile, range: TextRange) -> TextEdit {
+     let range = if range.is_empty() {
+         let syntax = file.syntax();
+         let text = syntax.text().slice(range.start()..);
+     } else {
+         range
+     };
+-
+     let mut edit = TextEdit::builder();
+     match file.syntax().covering_element(range) {
+         NodeOrToken::Node(node) => {
+     edit.finish()
+ }
+ 
+-fn remove_newlines(
+-    config: &JoinLinesConfig,
+-    edit: &mut TextEditBuilder,
+-    token: &SyntaxToken,
+-    range: TextRange,
+-) {
++fn remove_newlines(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: &SyntaxToken, range: TextRange) {
+     let intersection = match range.intersect(token.text_range()) {
+         Some(range) => range,
+         None => return,
+     };
+-
+     let range = intersection - token.text_range().start();
+     let text = token.text();
+     for (pos, _) in text[range].bytes().enumerate().filter(|&(_, b)| b == b'\n') {
+     }
+ }
+ 
+-fn remove_newline(
+-    config: &JoinLinesConfig,
+-    edit: &mut TextEditBuilder,
+-    token: &SyntaxToken,
+-    offset: TextSize,
+-) {
++fn remove_newline(config: &JoinLinesConfig, edit: &mut TextEditBuilder, token: &SyntaxToken, offset: TextSize) {
+     if token.kind() != WHITESPACE || token.text().bytes().filter(|&b| b == b'\n').count() != 1 {
+         let n_spaces_after_line_break = {
+             let suff = &token.text()[TextRange::new(
+         edit.replace(range, replace_with.to_owned());
+         return;
+     }
+-
+     // The node is between two other nodes
+     let (prev, next) = match (token.prev_sibling_or_token(), token.next_sibling_or_token()) {
+         (Some(prev), Some(next)) => (prev, next),
+         _ => return,
+     };
+-
+     if config.remove_trailing_comma && prev.kind() == T![,] {
+         match next.kind() {
+             T![')'] | T![']'] => {
+             _ => (),
+         }
+     }
+-
+     if config.join_else_if
+         && let (Some(prev), Some(_next)) = (as_if_expr(&prev), as_if_expr(&next))
+     {
+             }
+         }
+     }
+-
+     if config.join_assignments && join_assignments(edit, &prev, &next).is_some() {
+         return;
+     }
+-
+     if config.unwrap_trivial_blocks {
+         // Special case that turns something like:
+         //
+             return;
+         }
+     }
+-
+     if let (Some(_), Some(next)) = (
+         prev.as_token().cloned().and_then(ast::Comment::cast),
+         next.as_token().cloned().and_then(ast::Comment::cast),
+         ));
+         return;
+     }
+-
+     // Remove newline but add a computed amount of whitespace characters
+     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
+ }
+         return None;
+     }
+     let expr = extract_trivial_expression(&block_expr)?;
+-
+     let block_range = block_expr.syntax().text_range();
+     let mut buf = expr.syntax().text().to_string();
+-
+     // Match block needs to have a comma after the block
+     if let Some(match_arm) = block_expr.syntax().parent().and_then(ast::MatchArm::cast)
+         && match_arm.comma_token().is_none()
+     {
+         buf.push(',');
+     }
+-
+     edit.replace(block_range, buf);
+-
+     Some(())
+ }
+ 
+     Some(())
+ }
+ 
+-fn join_assignments(
+-    edit: &mut TextEditBuilder,
+-    prev: &SyntaxElement,
+-    next: &SyntaxElement,
+-) -> Option<()> {
++fn join_assignments(edit: &mut TextEditBuilder, prev: &SyntaxElement, next: &SyntaxElement) -> Option<()> {
+     let let_stmt = ast::LetStmt::cast(prev.as_node()?.clone())?;
+     if let_stmt.eq_token().is_some() {
+         cov_mark::hit!(join_assignments_already_initialized);
+         ast::Pat::IdentPat(it) => it,
+         _ => return None,
+     };
+-
+     let expr_stmt = ast::ExprStmt::cast(next.as_node()?.clone())?;
+     let bin_expr = match expr_stmt.expr()? {
+         ast::Expr::BinExpr(it) => it,
+     }
+     let lhs = bin_expr.lhs()?;
+     let name_ref = expr_as_name_ref(&lhs)?;
+-
+     if name_ref.to_string() != let_ident_pat.syntax().to_string() {
+         cov_mark::hit!(join_assignments_mismatch);
+         return None;
+     }
+-
+     edit.delete(let_stmt.semicolon_token()?.text_range().cover(lhs.syntax().text_range()));
+     Some(())
+ }
+ #[cfg(test)]
+ mod tests {
+     use test_utils::{add_cursor, assert_eq_text, extract_offset, extract_range};
+-
+     use super::*;
+-
+-    fn check_join_lines(
+-        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-    ) {
++    fn check_join_lines(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+         let config = JoinLinesConfig {
+             join_else_if: true,
+             remove_trailing_comma: true,
+             unwrap_trivial_blocks: true,
+             join_assignments: true,
+         };
+-
+         let (before_cursor_pos, before) = extract_offset(ra_fixture_before);
+         let file = SourceFile::parse(&before, span::Edition::CURRENT).ok().unwrap();
+-
+         let range = TextRange::empty(before_cursor_pos);
+         let result = join_lines(&config, &file, range);
+-
+         let actual = {
+             let mut actual = before;
+             result.apply(&mut actual);
+         let actual = add_cursor(&actual, actual_cursor_pos);
+         assert_eq_text!(ra_fixture_after, &actual);
+     }
+-
+-    fn check_join_lines_sel(
+-        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-        #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-    ) {
++    fn check_join_lines_sel(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+         let config = JoinLinesConfig {
+             join_else_if: true,
+             remove_trailing_comma: true,
+             unwrap_trivial_blocks: true,
+             join_assignments: true,
+         };
+-
+         let (sel, before) = extract_range(ra_fixture_before);
+         let parse = SourceFile::parse(&before, span::Edition::CURRENT);
+         let result = join_lines(&config, &parse.tree(), sel);
+         };
+         assert_eq_text!(ra_fixture_after, &actual);
+     }
+-
+     #[test]
+     fn test_join_lines_comma() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_lambda_block() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_block() {
+         check_join_lines(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_diverging_block() {
+         check_join_lines(
+         ",
+         );
+     }
+-
+     #[test]
+     fn join_lines_adds_comma_for_block_in_match_arm() {
+         check_join_lines(
+ }",
+         );
+     }
+-
+     #[test]
+     fn join_lines_multiline_in_block() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn join_lines_keeps_comma_for_block_in_match_arm() {
+         // We already have a comma
+     }
+ }",
+         );
+-
+         // comma with whitespace between brace and ,
+         check_join_lines(
+             r"
+     }
+ }",
+         );
+-
+         // comma with newline between brace and ,
+         check_join_lines(
+             r"
+ }",
+         );
+     }
+-
+     #[test]
+     fn join_lines_keeps_comma_with_single_arg_tuple() {
+         // A single arg tuple
+     let x = ($04,);
+ }",
+         );
+-
+         // single arg tuple with whitespace between brace and comma
+         check_join_lines(
+             r"
+     let x = ($04   ,);
+ }",
+         );
+-
+         // single arg tuple with newline between brace and comma
+         check_join_lines(
+             r"
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_use_items_left() {
+         // No space after the '{'
+ };",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_use_items_right() {
+         // No space after the '}'
+ $0    TextSize, TextRange};",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_use_items_right_comma() {
+         // No space after the '}'
+ $0    TextSize, TextRange};",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_use_tree() {
+         check_join_lines(
+ };",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_normal_comments() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_doc_comments() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_mod_comments() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_multiline_comments_1() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_multiline_comments_2() {
+         check_join_lines(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_selection_fn_args() {
+         check_join_lines_sel(
+     ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_selection_struct() {
+         check_join_lines_sel(
+     ",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_selection_dot_chain() {
+         check_join_lines_sel(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_selection_lambda_block_body() {
+         check_join_lines_sel(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_join_lines_commented_block() {
+         check_join_lines(
+         ",
+         )
+     }
+-
+     #[test]
+     fn join_lines_mandatory_blocks_block() {
+         check_join_lines(
+ }
+         ",
+         );
+-
+         check_join_lines(
+             r"
+ fn foo() {
+ }
+         ",
+         );
+-
+         check_join_lines(
+             r"
+ fn foo() {
+ }
+         ",
+         );
+-
+         check_join_lines(
+             r"
+ fn foo() {
+         ",
+         );
+     }
+-
+     #[test]
+     fn join_string_literal() {
+         {
+ "#,
+             );
+         }
+-
+         {
+             cov_mark::check!(join_string_literal_close_quote);
+             check_join_lines(
+ "#,
+             );
+         }
+-
+         check_join_lines(
+             r#"
+ fn main() {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn join_last_line_empty() {
+         check_join_lines(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn join_two_ifs() {
+         cov_mark::check!(join_two_ifs);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn join_two_ifs_with_existing_else() {
+         cov_mark::check!(join_two_ifs_with_existing_else);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn join_assignments() {
+         check_join_lines(
+ }
+ "#,
+         );
+-
+         cov_mark::check!(join_assignments_mismatch);
+         check_join_lines(
+             r#"
+ }
+ "#,
+         );
+-
+         cov_mark::check!(join_assignments_already_initialized);
+         check_join_lines(
+             r#"

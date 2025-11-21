@@ -5,16 +5,17 @@
 //! track of the cumulative total number of lines that have been added to the file during the
 //! session so that we can determine the correct offset to insert content at without re-parsing.
 
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::{fs, io};
+
+use edtui::{EditorState, Lines};
+
 use crate::edit_plan::{Edit, EditPlan};
 use crate::formats::markdown::MarkdownFormat;
 use crate::input;
 use crate::section::ChunkType;
 use crate::section::{Section, TreeNode};
-use edtui::{EditorState, Lines};
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::{fs, io};
-
 /// Determines navigation scope and quit behavior based on project size.
 #[derive(PartialEq)]
 pub enum FileMode {

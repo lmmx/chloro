@@ -1,0 +1,292 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 24418 bytes
+Chloro size:   23461 bytes
+Rustfmt size:  24577 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use rustc_type_ir::{RegionKind, RegionVid, UniverseIndex};
+ use tracing::{debug, instrument};
+ 
+-use self::CombineMapType::*;
+-use self::UndoLog::*;
+-use super::unify_key::RegionVidKey;
+-use super::MemberConstraint;
+ use crate::next_solver::infer::snapshot::undo_log::{InferCtxtUndoLogs, Snapshot};
+ use crate::next_solver::infer::unify_key::RegionVariableValue;
+ use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Region, Ty};
+-
++use self::CombineMapType::*;
++use self::UndoLog::*;
++use super::MemberConstraint;
++use super::unify_key::RegionVidKey;
+ #[derive(Debug, Clone, Default)]
+ pub struct RegionConstraintStorage<'db> {
+     /// For each `RegionVid`, the corresponding `RegionVariableOrigin`.
+     pub(super) var_infos: IndexVec<RegionVid, RegionVariableInfo>,
+-
+     pub(super) data: RegionConstraintData<'db>,
+-
+     /// For a given pair of regions (R1, R2), maps to a region R3 that
+     /// is designated as their LUB (edges R1 <= R3 and R2 <= R3
+     /// exist). This prevents us from making many such regions.
+     lubs: CombineMap<'db>,
+-
+     /// For a given pair of regions (R1, R2), maps to a region R3 that
+     /// is designated as their GLB (edges R3 <= R1 and R3 <= R2
+     /// exist). This prevents us from making many such regions.
+     glbs: CombineMap<'db>,
+-
+     /// When we add a R1 == R2 constraint, we currently add (a) edges
+     /// R1 <= R2 and R2 <= R1 and (b) we unify the two regions in this
+     /// table. You can then call `opportunistic_resolve_var` early
+     /// would wind up with a fresh stream of region variables that have been
+     /// equated but appear distinct.
+     pub(super) unification_table: ut::UnificationTableStorage<RegionVidKey<'db>>,
+-
+     /// a flag set to true when we perform any unifications; this is used
+     /// to micro-optimize `take_and_reset_data`
+     any_unifications: bool,
+     /// Constraints of the form `A <= B`, where either `A` or `B` can
+     /// be a region variable (or neither, as it happens).
+     pub constraints: Vec<Constraint<'db>>,
+-
+     /// Constraints of the form `R0 member of [R1, ..., Rn]`, meaning that
+     /// `R0` must be equal to one of the regions `R1..Rn`. These occur
+     /// with `impl Trait` quite frequently.
+     pub member_constraints: Vec<MemberConstraint<'db>>,
+-
+     /// A "verify" is something that we need to verify after inference
+     /// is done, but which does not directly affect inference in any
+     /// way.
+ pub enum Constraint<'db> {
+     /// A region variable is a subregion of another.
+     VarSubVar(RegionVid, RegionVid),
+-
+     /// A concrete region is a subregion of region variable.
+     RegSubVar(Region<'db>, RegionVid),
+-
+     /// A region variable is a subregion of a concrete region. This does not
+     /// directly affect inference, but instead is checked after
+     /// inference is complete.
+     VarSubReg(RegionVid, Region<'db>),
+-
+     /// A constraint where neither side is a variable. This does not
+     /// directly affect inference, but instead is checked after
+     /// inference is complete.
+ pub enum VerifyBound<'db> {
+     /// See [`VerifyIfEq`] docs
+     IfEq(Binder<'db, VerifyIfEq<'db>>),
+-
+     /// Given a region `R`, expands to the function:
+     ///
+     /// ```ignore (pseudo-rust)
+     /// This is used when we can establish that `G: R` -- therefore,
+     /// if `R: min`, then by transitivity `G: min`.
+     OutlivedBy(Region<'db>),
+-
+     /// Given a region `R`, true if it is `'empty`.
+     IsEmpty,
+-
+     /// Given a set of bounds `B`, expands to the function:
+     ///
+     /// ```ignore (pseudo-rust)
+     /// In other words, if we meet some bound in `B`, that suffices.
+     /// This is used when all the bounds in `B` are known to apply to `G`.
+     AnyBound(Vec<VerifyBound<'db>>),
+-
+     /// Given a set of bounds `B`, expands to the function:
+     ///
+     /// ```ignore (pseudo-rust)
+ pub struct VerifyIfEq<'db> {
+     /// Type which must match the generic `G`
+     pub ty: Ty<'db>,
+-
+     /// Bound that applies if `ty` is equal.
+     pub bound: Region<'db>,
+ }
+ pub(crate) enum UndoLog<'db> {
+     /// We added `RegionVid`.
+     AddVar(RegionVid),
+-
+     /// We added the given `constraint`.
+     AddConstraint(usize),
+-
+     /// We added the given `verify`.
+     #[expect(dead_code, reason = "this is used in rustc")]
+     AddVerify(usize),
+-
+     /// We added a GLB/LUB "combination variable".
+     AddCombination(CombineMapType, TwoRegions<'db>),
+ }
+ 
+ #[derive(Debug, Clone)]
+ pub struct RegionVariableInfo {
+-    // FIXME: This is only necessary for `fn take_and_reset_data` and
+-    // `lexical_region_resolve`. We should rework `lexical_region_resolve`
+-    // in the near/medium future anyways and could move the unverse info
+-    // for `fn take_and_reset_data` into a separate table which is
+-    // only populated when needed.
+-    //
+-    // For both of these cases it is fine that this can diverge from the
+-    // actual universe of the variable, which is directly stored in the
+-    // unification table for unknown region variables. At some point we could
+-    // stop emitting bidirectional outlives constraints if equate succeeds.
+-    // This would be currently unsound as it would cause us to drop the universe
+-    // changes in `lexical_region_resolve`.
+     pub universe: UniverseIndex,
+ }
+ 
+ 
+ impl<'db> RegionConstraintStorage<'db> {
+     #[inline]
+-    pub(crate) fn with_log<'a>(
+-        &'a mut self,
+-        undo_log: &'a mut InferCtxtUndoLogs<'db>,
+-    ) -> RegionConstraintCollector<'db, 'a> {
+-        RegionConstraintCollector {
+-            storage: self,
+-            undo_log,
+-        }
++    pub(crate) fn with_log<'a>(&'a mut self, undo_log: &'a mut InferCtxtUndoLogs<'db>) -> RegionConstraintCollector<'db, 'a> {
++        RegionConstraintCollector { storage: self, undo_log }
+     }
+ }
+ 
+     /// Not legal during a snapshot.
+     pub fn take_and_reset_data(&mut self) -> RegionConstraintData<'db> {
+         assert!(!UndoLogs::<UndoLog<'db>>::in_snapshot(&self.undo_log));
+-
+         // If you add a new field to `RegionConstraintCollector`, you
+         // should think carefully about whether it needs to be cleared
+         // or updated in some way.
+             unification_table: _,
+             any_unifications,
+         } = self.storage;
+-
+         // Clear the tables of (lubs, glbs), so that we will create
+         // fresh regions if we do a LUB operation. As it happens,
+         // LUB/GLB are not performed by the MIR type-checker, which is
+         // the one that uses this method, but it's good to be correct.
+         lubs.clear();
+         glbs.clear();
+-
+         let data = mem::take(data);
+-
+         // Clear all unifications and recreate the variables a "now
+         // un-unified" state. Note that when we unify `a` and `b`, we
+         // also insert `a <= b` and a `b <= a` edges, so the
+                     universe: self.storage.var_infos[key.vid].universe,
+                 });
+         }
+-
+         data
+     }
+ 
+ 
+     pub(super) fn start_snapshot(&self) -> RegionSnapshot {
+         debug!("RegionConstraintCollector: start_snapshot");
+-        RegionSnapshot {
+-            any_unifications: self.storage.any_unifications,
+-        }
++        RegionSnapshot { any_unifications: self.storage.any_unifications }
+     }
+ 
+     pub(super) fn rollback_to(&mut self, snapshot: RegionSnapshot) {
+ 
+     pub(super) fn new_region_var(&mut self, universe: UniverseIndex) -> RegionVid {
+         let vid = self.storage.var_infos.push(RegionVariableInfo { universe });
+-
+-        let u_vid = self
+-            .unification_table_mut()
+-            .new_key(RegionVariableValue::Unknown { universe });
++        let u_vid = self.unification_table_mut().new_key(RegionVariableValue::Unknown { universe });
+         assert_eq!(vid, u_vid.vid);
+         self.undo_log.push(AddVar(vid));
+         debug!("created new region variable {:?} in {:?}", vid, universe);
+ 
+     fn add_constraint(&mut self, constraint: Constraint<'db>) {
+         // cannot add constraints once regions are resolved
+-        debug!(
+-            "RegionConstraintCollector: add_constraint({:?})",
+-            constraint
+-        );
+-
++        debug!("RegionConstraintCollector: add_constraint({:?})", constraint);
+         let index = self.storage.data.constraints.len();
+         self.storage.data.constraints.push(constraint);
+         self.undo_log.push(AddConstraint(index));
+     #[instrument(skip(self), level = "debug")]
+     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
+         // cannot add constraints once regions are resolved
+-
+         match (sub.kind(), sup.kind()) {
+             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
+                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
+         }
+     }
+ 
+-    pub(super) fn lub_regions(
+-        &mut self,
+-        db: DbInterner<'db>,
+-        a: Region<'db>,
+-        b: Region<'db>,
+-    ) -> Region<'db> {
++    pub(super) fn lub_regions(&mut self, db: DbInterner<'db>, a: Region<'db>, b: Region<'db>) -> Region<'db> {
+         // cannot add constraints once regions are resolved
+         debug!("RegionConstraintCollector: lub_regions({:?}, {:?})", a, b);
+         #[expect(clippy::if_same_then_else)]
+         }
+     }
+ 
+-    pub(super) fn glb_regions(
+-        &mut self,
+-        db: DbInterner<'db>,
+-        a: Region<'db>,
+-        b: Region<'db>,
+-    ) -> Region<'db> {
++    pub(super) fn glb_regions(&mut self, db: DbInterner<'db>, a: Region<'db>, b: Region<'db>) -> Region<'db> {
+         // cannot add constraints once regions are resolved
+         debug!("RegionConstraintCollector: glb_regions({:?}, {:?})", a, b);
+         #[expect(clippy::if_same_then_else)]
+ 
+     /// Resolves a region var to its value in the unification table, if it exists.
+     /// Otherwise, it is resolved to the root `ReVar` in the table.
+-    pub fn opportunistic_resolve_var(
+-        &mut self,
+-        cx: DbInterner<'db>,
+-        vid: RegionVid,
+-    ) -> Region<'db> {
++    pub fn opportunistic_resolve_var(&mut self, cx: DbInterner<'db>, vid: RegionVid) -> Region<'db> {
+         let mut ut = self.unification_table_mut();
+         let root_vid = ut.find(vid).vid;
+         match ut.probe_value(root_vid) {
+         }
+     }
+ 
+-    fn combine_vars(
+-        &mut self,
+-        cx: DbInterner<'db>,
+-        t: CombineMapType,
+-        a: Region<'db>,
+-        b: Region<'db>,
+-    ) -> Region<'db> {
++    fn combine_vars(&mut self, cx: DbInterner<'db>, t: CombineMapType, a: Region<'db>, b: Region<'db>) -> Region<'db> {
+         let vars = TwoRegions { a, b };
+         if let Some(c) = self.combine_map(t.clone()).get(&vars) {
+             return Region::new_var(cx, *c);
+     /// Returns `true` if this region constraint data contains no constraints, and `false`
+     /// otherwise.
+     pub fn is_empty(&self) -> bool {
+-        let RegionConstraintData {
+-            constraints,
+-            member_constraints,
+-            verifys,
+-        } = self;
++        let RegionConstraintData { constraints, member_constraints, verifys } = self;
+         constraints.is_empty() && member_constraints.is_empty() && verifys.is_empty()
+     }
+ }

@@ -1,0 +1,68 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11544 bytes
+Chloro size:   11408 bytes
+Rustfmt size:  11544 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Tools to work with format string literals for the `format_args!` family of macros.
++
+ use syntax::{
+     AstNode, AstToken, TextRange, TextSize,
+     ast::{self, IsString},
+ };
+-
+-// FIXME: This can probably be re-implemented via the HIR?
+ pub fn is_format_string(string: &ast::String) -> bool {
+     // Check if `string` is a format string argument of a macro invocation.
+     // `string` is a string literal, mapped down into the innermost macro expansion.
+     Escape,
+ }
+ 
+-// FIXME: Remove this, we can use rustc_format_parse instead
+-pub fn lex_format_specifiers(
+-    string: &ast::String,
+-    mut callback: &mut dyn FnMut(TextRange, FormatSpecifier),
+-) {
++pub fn lex_format_specifiers(string: &ast::String, mut callback: &mut dyn FnMut(TextRange, FormatSpecifier)) {
+     let mut char_ranges = Vec::new();
+     string.escaped_char_ranges(&mut |range, res| char_ranges.push((range, res)));
+     let mut chars = char_ranges
+         .iter()
+         .filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?)))
+         .peekable();
+-
+     while let Some((range, first_char)) = chars.next() {
+         if let '{' = first_char {
+             // Format specifier, see syntax at https://doc.rust-lang.org/std/fmt/index.html#syntax
+             read_escaped_format_specifier(&mut chars, &mut callback);
+         }
+     }
+-
+     fn skip_char_and_emit<I, F>(
+         chars: &mut std::iter::Peekable<I>,
+         emit: FormatSpecifier,
+         let (range, _) = chars.next().unwrap();
+         callback(range, emit);
+     }
+-
+     fn read_integer<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
+     where
+         I: Iterator<Item = (TextRange, char)>,
+         }
+         callback(range, FormatSpecifier::Integer);
+     }
+-
+     fn read_identifier<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
+     where
+         I: Iterator<Item = (TextRange, char)>,
+         }
+         callback(range, FormatSpecifier::Identifier);
+     }
+-
+     fn read_escaped_format_specifier<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
+     where
+         I: Iterator<Item = (TextRange, char)>,

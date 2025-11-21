@@ -1,0 +1,220 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 17858 bytes
+Chloro size:   17668 bytes
+Rustfmt size:  18799 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use either::Either;
+ use hir_def::{expr_store::Body, hir::BindingId};
+-use hir_expand::{name::Name, Lookup};
++use hir_expand::{Lookup, name::Name};
+ use la_arena::ArenaMap;
+ 
+ use crate::{
+     display::{ClosureStyle, DisplayTarget, HirDisplay},
+     mir::{PlaceElem, ProjectionElem, StatementKind, TerminatorKind},
+ };
+-
+ use super::{
+     AggregateKind, BasicBlockId, BorrowKind, LocalId, MirBody, MutBorrowKind, Operand, OperandKind,
+     Place, Rvalue, UnOp,
+ };
+-
+ macro_rules! w {
+     ($dst:expr, $($arg:tt)*) => {
+         { let _ = write!($dst, $($arg)*); }
+         ctx.for_body(|this| match ctx.body.owner {
+             hir_def::DefWithBodyId::FunctionId(id) => {
+                 let data = db.function_signature(id);
+-                w!(
+-                    this,
+-                    "fn {}() ",
+-                    data.name.display(db, this.display_target.edition)
+-                );
++                w!(this, "fn {}() ", data.name.display(db, this.display_target.edition));
+             }
+             hir_def::DefWithBodyId::StaticId(id) => {
+                 let data = db.static_signature(id);
+-                w!(
+-                    this,
+-                    "static {}: _ = ",
+-                    data.name.display(db, this.display_target.edition)
+-                );
++                w!(this, "static {}: _ = ", data.name.display(db, this.display_target.edition));
+             }
+             hir_def::DefWithBodyId::ConstId(id) => {
+                 let data = db.const_signature(id);
+         ctx.result
+     }
+ 
+-    // String with lines is rendered poorly in `dbg` macros, which I use very much, so this
+-    // function exists to solve that.
+     pub fn dbg(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> impl Debug {
+         struct StringDbg(String);
+         impl Debug for StringDbg {
+ 
+ impl Write for MirPrettyCtx<'_, '_> {
+     fn write_str(&mut self, s: &str) -> std::fmt::Result {
+-        let mut it = s.split('\n'); // note: `.lines()` is wrong here
++        let mut it = s.split('\n');
++        // note: `.lines()` is wrong here
+         self.write(it.next().unwrap_or_default());
+         for line in it {
+             self.write_line();
+ }
+ 
+ impl<'db> HirDisplay<'db> for LocalName<'db> {
+-    fn hir_fmt(
+-        &self,
+-        f: &mut crate::display::HirFormatter<'_, 'db>,
+-    ) -> Result<(), crate::display::HirDisplayError> {
++    fn hir_fmt(&self, f: &mut crate::display::HirFormatter<'_, 'db>) -> Result<(), crate::display::HirDisplayError> {
+         match self {
+             LocalName::Unknown(l) => write!(f, "_{}", u32::from(l.into_raw())),
+             LocalName::Binding(n, l) => {
+-                write!(
+-                    f,
+-                    "{}_{}",
+-                    n.display(f.db, f.edition()),
+-                    u32::from(l.into_raw())
+-                )
++                write!(f, "{}_{}", n.display(f.db, f.edition()), u32::from(l.into_raw()))
+             }
+         }
+     }
+         wln!(self, "}}");
+     }
+ 
+-    fn new(
+-        body: &'a MirBody<'db>,
+-        hir_body: &'a Body,
+-        db: &'db dyn HirDatabase,
+-        display_target: DisplayTarget,
+-    ) -> Self {
++    fn new(body: &'a MirBody<'db>, hir_body: &'a Body, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> Self {
+         let local_to_binding = body.local_to_binding_map();
+         MirPrettyCtx {
+             body,
+             wln!(
+                 self,
+                 "let {}: {};",
+-                self.local_name(id)
+-                    .display_test(self.db, self.display_target),
++                self.local_name(id).display_test(self.db, self.display_target),
+                 self.hir_display(&local.ty)
+             );
+         }
+                             wln!(
+                                 this,
+                                 "StorageDead({})",
+-                                this.local_name(*p)
+-                                    .display_test(this.db, this.display_target)
++                                this.local_name(*p).display_test(this.db, this.display_target)
+                             );
+                         }
+                         StatementKind::StorageLive(p) => {
+                             wln!(
+                                 this,
+                                 "StorageLive({})",
+-                                this.local_name(*p)
+-                                    .display_test(this.db, this.display_target)
++                                this.local_name(*p).display_test(this.db, this.display_target)
+                             );
+                         }
+                         StatementKind::Deinit(p) => {
+                                 wln!(this, "_ => {},", this.basic_block_id(targets.otherwise()));
+                             });
+                         }
+-                        TerminatorKind::Call {
+-                            func,
+-                            args,
+-                            destination,
+-                            target,
+-                            ..
+-                        } => {
++                        TerminatorKind::Call { func, args, destination, target, .. } => {
+                             w!(this, "Call ");
+                             this.with_block(|this| {
+                                 w!(this, "func: ");
+         ) {
+             let Some((last, head)) = projections.split_last() else {
+                 // no projection
+-                w!(
+-                    this,
+-                    "{}",
+-                    this.local_name(local)
+-                        .display_test(this.db, this.display_target)
+-                );
++                w!(this, "{}", this.local_name(local).display_test(this.db, this.display_target));
+                 return;
+             };
+             match last {
+                         }
+                         hir_def::VariantId::StructId(_) | hir_def::VariantId::UnionId(_) => {
+                             f(this, local, head);
+-                            w!(
+-                                this,
+-                                ".{}",
+-                                name.display(this.db, this.display_target.edition)
+-                            );
++                            w!(this, ".{}", name.display(this.db, this.display_target.edition));
+                         }
+                     }
+                 }
+                     w!(
+                         this,
+                         "[{}]",
+-                        this.local_name(*l)
+-                            .display_test(this.db, this.display_target)
++                        this.local_name(*l).display_test(this.db, this.display_target)
+                     );
+                 }
+                 it => {
+                 }
+             }
+         }
+-        f(
+-            self,
+-            p.local,
+-            p.projection.lookup(&self.body.projection_store),
+-        );
++        f(self, p.local, p.projection.lookup(&self.body.projection_store));
+     }
+ 
+     fn operand(&mut self, r: &Operand<'db>) {
+                 match r {
+                     BorrowKind::Shared => w!(self, "&"),
+                     BorrowKind::Shallow => w!(self, "&shallow "),
+-                    BorrowKind::Mut {
+-                        kind: MutBorrowKind::ClosureCapture,
+-                    } => w!(self, "&uniq "),
++                    BorrowKind::Mut { kind: MutBorrowKind::ClosureCapture } => w!(self, "&uniq "),
+                     BorrowKind::Mut {
+                         kind: MutBorrowKind::Default | MutBorrowKind::TwoPhasedBorrow,
+                     } => w!(self, "&mut "),
+             Rvalue::Repeat(op, len) => {
+                 w!(self, "[");
+                 self.operand(op);
+-                w!(
+-                    self,
+-                    "; {}]",
+-                    len.display_test(self.db, self.display_target)
+-                );
++                w!(self, "; {}]", len.display_test(self.db, self.display_target));
+             }
+             Rvalue::Aggregate(AggregateKind::Adt(_, _), it) => {
+                 w!(self, "Adt(");
+ 
+     fn hir_display<'b, T: HirDisplay<'db>>(&self, ty: &'b T) -> impl Display + use<'a, 'b, 'db, T>
+     where
+-        'db: 'b,
+-    {
++        'db: 'b, {
+         ty.display_test(self.db, self.display_target)
+             .with_closure_style(ClosureStyle::ClosureWithSubst)
+     }

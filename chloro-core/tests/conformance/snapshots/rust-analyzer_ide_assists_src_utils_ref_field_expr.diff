@@ -1,0 +1,67 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5111 bytes
+Chloro size:   5095 bytes
+Rustfmt size:  5132 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This module contains a helper for converting a field access expression into a
+ //! path expression. This is used when destructuring a tuple or struct.
+ //!
+ //! It determines whether to deref the new expression and/or wrap it in parentheses,
+ //! based on the parent of the existing expression.
++
+ use syntax::{
+-    ast::{self, make, FieldExpr, MethodCallExpr},
+     AstNode, T,
++    ast::{self, FieldExpr, MethodCallExpr, make},
+ };
+ 
+ use crate::AssistContext;
+-
+ /// Decides whether the new path expression needs to be dereferenced and/or wrapped in parens.
+ /// Returns the relevant parent expression to replace and the [RefData].
+-pub(crate) fn determine_ref_and_parens(
+-    ctx: &AssistContext<'_>,
+-    field_expr: &FieldExpr,
+-) -> (ast::Expr, RefData) {
++pub(crate) fn determine_ref_and_parens(ctx: &AssistContext<'_>, field_expr: &FieldExpr) -> (ast::Expr, RefData) {
+     let s = field_expr.syntax();
+-    let mut ref_data = RefData {
+-        needs_deref: true,
+-        needs_parentheses: true,
+-    };
++    let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
+     let mut target_node = field_expr.clone().into();
+-
+     let parent = match s.parent().map(ast::Expr::cast) {
+         Some(Some(parent)) => parent,
+         Some(None) => {
+         }
+         None => return (target_node, ref_data),
+     };
+-
+     match parent {
+         ast::Expr::ParenExpr(it) => {
+             // already parens in place -> don't replace
+             ref_data.needs_parentheses = false;
+         }
+     };
+-
+     (target_node, ref_data)
+ }
+ 
+         if self.needs_deref {
+             expr = make::expr_prefix(T![*], expr).into();
+         }
+-
+         if self.needs_parentheses {
+             expr = make::expr_paren(expr).into();
+         }
+-
+         expr
+     }
+ }

@@ -1,0 +1,38 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1159 bytes
+Chloro size:   1132 bytes
+Rustfmt size:  1159 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion of field list position.
+ 
+ use crate::{
+-    context::{PathCompletionCtx, Qualified},
+     CompletionContext, Completions,
++    context::{PathCompletionCtx, Qualified},
+ };
+-
+-pub(crate) fn complete_field_list_tuple_variant(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    path_ctx: &PathCompletionCtx<'_>,
+-) {
++pub(crate) fn complete_field_list_tuple_variant(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>) {
+     if ctx.qualifier_ctx.vis_node.is_some() {
+     } else if let PathCompletionCtx {
+         has_macro_bang: false,
+     }
+ }
+ 
+-pub(crate) fn complete_field_list_record_variant(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-) {
++pub(crate) fn complete_field_list_record_variant(acc: &mut Completions, ctx: &CompletionContext<'_>) {
+     if ctx.qualifier_ctx.vis_node.is_none() {
+         let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
+         add_keyword("pub(crate)", "pub(crate) $0");

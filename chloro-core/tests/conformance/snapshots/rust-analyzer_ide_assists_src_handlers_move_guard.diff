@@ -1,0 +1,309 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 21223 bytes
+Chloro size:   19956 bytes
+Rustfmt size:  21223 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{
+     SyntaxKind::WHITESPACE,
+     ast::{AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat, edit::AstNodeEdit, make},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: move_guard_to_arm_body
+-//
+-// Moves match guard into match arm body.
+-//
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move { distance } $0if distance > 10 => foo(),
+-//         _ => (),
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move { distance } => if distance > 10 {
+-//             foo()
+-//         },
+-//         _ => (),
+-//     }
+-// }
+-// ```
+ pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let match_arm = ctx.find_node_at_offset::<MatchArm>()?;
+     let guard = match_arm.guard()?;
+     }
+     let space_before_guard = guard.syntax().prev_sibling_or_token();
+     let space_after_arrow = match_arm.fat_arrow_token()?.next_sibling_or_token();
+-
+     let guard_condition = guard.condition()?.reset_indent();
+     let arm_expr = match_arm.expr()?;
+     let then_branch = make::block_expr(None, Some(arm_expr.reset_indent().indent(1.into())));
+     let if_expr = make::expr_if(guard_condition, then_branch, None).indent(arm_expr.indent_level());
+-
+     let target = guard.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("move_guard_to_arm_body"),
+     )
+ }
+ 
+-// Assist: move_arm_cond_to_match_guard
+-//
+-// Moves if expression from match arm body into a guard.
+-//
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move { distance } => $0if distance > 10 { foo() },
+-//         _ => (),
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move { distance } if distance > 10 => foo(),
+-//         _ => (),
+-//     }
+-// }
+-// ```
+-pub(crate) fn move_arm_cond_to_match_guard(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++pub(crate) fn move_arm_cond_to_match_guard(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let match_arm: MatchArm = ctx.find_node_at_offset::<MatchArm>()?;
+     let match_pat = match_arm.pat()?;
+     let arm_body = match_arm.expr()?;
+-
+     let mut replace_node = None;
+     let if_expr: IfExpr = IfExpr::cast(arm_body.syntax().clone()).or_else(|| {
+         let block_expr = BlockExpr::cast(arm_body.syntax().clone())?;
+     if ctx.offset() > if_expr.then_branch()?.syntax().text_range().start() {
+         return None;
+     }
+-
+     let replace_node = replace_node.unwrap_or_else(|| if_expr.syntax().clone());
+     let needs_dedent = replace_node != *if_expr.syntax();
+     let (conds_blocks, tail) = parse_if_chain(if_expr)?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("move_arm_cond_to_match_guard"),
+         "Move condition to match guard",
+     )
+ }
+ 
+-// Parses an if-else-if chain to get the conditions and the then branches until we encounter an else
+-// branch or the end.
+ fn parse_if_chain(if_expr: IfExpr) -> Option<(Vec<(Expr, BlockExpr)>, Option<BlockExpr>)> {
+     let mut conds_blocks = Vec::new();
+     let mut curr_if = if_expr;
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+-
+     #[test]
+     fn move_guard_to_arm_body_range() {
+         cov_mark::check!(move_guard_inapplicable_in_arm_body);
+             r#"if x > 10"#,
+         );
+     }
+-
+     #[test]
+     fn move_guard_to_arm_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_let_guard_to_arm_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_multiline_guard_to_arm_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_guard_to_arm_body_works_complex_match() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_in_block_to_match_guard_works() {
+         cov_mark::check!(move_guard_ifelse_has_wildcard);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_in_block_to_match_guard_no_wildcard_works() {
+         cov_mark::check_count!(move_guard_ifelse_has_wildcard, 0);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_in_block_to_match_guard_wildcard_guard_works() {
+         cov_mark::check_count!(move_guard_ifelse_has_wildcard, 0);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_in_block_to_match_guard_add_comma_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_if_let_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_if_empty_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_if_multiline_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_in_block_to_match_guard_if_multiline_body_works() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_works() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_block_works() {
+         cov_mark::check!(move_guard_ifelse_expr_only);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_else_if_empty_body_works() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_multiline_works() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_multiline_else_works() {
+         cov_mark::check!(move_guard_ifelse_else_block);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_multiline_else_block_works() {
+         cov_mark::check!(move_guard_ifelse_in_block);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_last_arm_works() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_with_else_comma_works() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_elseif() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_elseif_in_block() {
+         cov_mark::check!(move_guard_ifelse_in_block);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_elseif_chain() {
+         cov_mark::check!(move_guard_ifelse_else_tail);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_elseif_iflet() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn move_arm_cond_to_match_guard_elseif_notail() {
+         cov_mark::check!(move_guard_ifelse_notail);

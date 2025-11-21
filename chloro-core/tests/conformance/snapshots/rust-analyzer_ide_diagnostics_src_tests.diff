@@ -1,0 +1,202 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12273 bytes
+Chloro size:   12148 bytes
+Rustfmt size:  12328 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-#![allow(clippy::print_stderr)]
+-
+-mod overly_long_real_world_cases;
+-
+ use hir::setup_tracing;
+ use ide_db::{
++    LineIndexDatabase, RootDatabase,
+     assists::{AssistResolveStrategy, ExprFillDefaultMode},
+     base_db::SourceDatabase,
+-    LineIndexDatabase, RootDatabase,
+ };
+ use itertools::Itertools;
+ use stdx::trim_indent;
+ use test_fixture::WithFixture;
+-use test_utils::{assert_eq_text, extract_annotations, MiniCore};
++use test_utils::{MiniCore, assert_eq_text, extract_annotations};
+ 
+ use crate::{DiagnosticsConfig, Severity};
++#![allow(clippy::print_stderr)]
++mod overly_long_real_world_cases;
+ 
+ /// Takes a multi-file input fixture with annotated cursor positions,
+ /// and checks that:
+ ///  * the first diagnostic fix trigger range touches the input cursor position
+ ///  * that the contents of the file containing the cursor match `after` after the diagnostic fix is applied
+ #[track_caller]
+-pub(crate) fn check_fix(
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
++pub(crate) fn check_fix(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+     check_nth_fix(0, ra_fixture_before, ra_fixture_after);
+ }
++
+ /// Takes a multi-file input fixture with annotated cursor positions,
+ /// and checks that:
+ ///  * a diagnostic is produced
+ ///  * every diagnostic fixes trigger range touches the input cursor position
+ ///  * that the contents of the file containing the cursor match `after` after each diagnostic fix is applied
+-pub(crate) fn check_fixes(
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    ra_fixtures_after: Vec<&str>,
+-) {
++pub(crate) fn check_fixes(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, ra_fixtures_after: Vec<&str>) {
+     for (i, ra_fixture_after) in ra_fixtures_after.iter().enumerate() {
+         check_nth_fix(i, ra_fixture_before, ra_fixture_after)
+     }
+ }
+ 
+ #[track_caller]
+-fn check_nth_fix(
+-    nth: usize,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
++fn check_nth_fix(nth: usize, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+     let mut config = DiagnosticsConfig::test_sample();
+     config.expr_fill_default = ExprFillDefaultMode::Default;
+     check_nth_fix_with_config(config, nth, ra_fixture_before, ra_fixture_after)
+ }
+ 
+ #[track_caller]
+-pub(crate) fn check_fix_with_disabled(
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-    disabled: impl Iterator<Item = String>,
+-) {
++pub(crate) fn check_fix_with_disabled(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str, disabled: impl Iterator<Item = String>) {
+     let mut config = DiagnosticsConfig::test_sample();
+     config.expr_fill_default = ExprFillDefaultMode::Default;
+     config.disabled.extend(disabled);
+ }
+ 
+ #[track_caller]
+-fn check_nth_fix_with_config(
+-    config: DiagnosticsConfig,
+-    nth: usize,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
++fn check_nth_fix_with_config(config: DiagnosticsConfig, nth: usize, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+     let after = trim_indent(ra_fixture_after);
+-
+     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
+     let diagnostic = hir::attach_db(&db, || {
+         super::full_diagnostics(
+         }
+         actual
+     };
+-
+     assert!(
+         fix.target.contains_inclusive(file_position.offset),
+         "diagnostic fix range {:?} does not touch cursor position {:?}",
+     assert_eq_text!(&after, &actual);
+ }
+ 
+-pub(crate) fn check_fixes_unordered(
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    ra_fixtures_after: Vec<&str>,
+-) {
++pub(crate) fn check_fixes_unordered(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, ra_fixtures_after: Vec<&str>) {
+     for ra_fixture_after in ra_fixtures_after.iter() {
+         check_has_fix(ra_fixture_before, ra_fixture_after)
+     }
+ }
+ 
+ #[track_caller]
+-pub(crate) fn check_has_fix(
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
++pub(crate) fn check_has_fix(#[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
+     let after = trim_indent(ra_fixture_after);
+-
+     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
+     let mut conf = DiagnosticsConfig::test_sample();
+     conf.expr_fill_default = ExprFillDefaultMode::Default;
+     })
+     .pop()
+     .unwrap();
+-    assert!(
+-        diagnostic.fixes.is_none(),
+-        "got a fix when none was expected: {diagnostic:?}"
+-    );
++    assert!(diagnostic.fixes.is_none(), "got a fix when none was expected: {diagnostic:?}");
+ }
+ 
+ #[track_caller]
+ }
+ 
+ #[track_caller]
+-pub(crate) fn check_diagnostics_with_disabled(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    disabled: &[&str],
+-) {
++pub(crate) fn check_diagnostics_with_disabled(#[rust_analyzer::rust_fixture] ra_fixture: &str, disabled: &[&str]) {
+     let mut config = DiagnosticsConfig::test_sample();
+-    config
+-        .disabled
+-        .extend(disabled.iter().map(|&s| s.to_owned()));
++    config.disabled.extend(disabled.iter().map(|&s| s.to_owned()));
+     check_diagnostics_with_config(config, ra_fixture)
+ }
+ 
+ #[track_caller]
+-pub(crate) fn check_diagnostics_with_config(
+-    config: DiagnosticsConfig,
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-) {
++pub(crate) fn check_diagnostics_with_config(config: DiagnosticsConfig, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
+     let _tracing = setup_tracing();
+-
+     let (db, files) = RootDatabase::with_many_files(ra_fixture);
+     let mut annotations = files
+         .iter()
+ fn test_disabled_diagnostics() {
+     let mut config = DiagnosticsConfig::test_sample();
+     config.disabled.insert("E0583".into());
+-
+     let (db, file_id) = RootDatabase::with_single_file(r#"mod foo;"#);
+     let file_id = file_id.file_id(&db);
+-
+     let diagnostics = hir::attach_db(&db, || {
+         super::full_diagnostics(&db, &config, &AssistResolveStrategy::All, file_id)
+     });
+     assert!(diagnostics.is_empty());
+-
+     let diagnostics = hir::attach_db(&db, || {
+         super::full_diagnostics(
+             &db,
+     if test_utils::skip_slow_tests() {
+         return;
+     }
+-
+     fn check(minicore: MiniCore) {
+         let source = minicore.source_code(MiniCore::RAW_SOURCE);
+         let mut config = DiagnosticsConfig::test_sample();
+         config.disabled.insert("remove-unnecessary-else".to_owned());
+         check_diagnostics_with_config(config, &source);
+     }
+-
+     // Checks that there is no diagnostic in minicore for each flag.
+     for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
+         if flag == "clone" {
+     }
+     // And one time for all flags, to check codes which are behind multiple flags + prevent name collisions
+     eprintln!("Checking all minicore flags");
+-    check(MiniCore::from_flags(MiniCore::available_flags(
+-        MiniCore::RAW_SOURCE,
+-    )))
++    check(MiniCore::from_flags(MiniCore::available_flags(MiniCore::RAW_SOURCE)))
+ }

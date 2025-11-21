@@ -1,0 +1,105 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 52289 bytes
+Chloro size:   52044 bytes
+Rustfmt size:  52289 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
+     traits::FnTrait,
+ };
+-
+-// The below functions handle capture and closure kind (Fn, FnMut, ..)
+-
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ pub(crate) struct HirPlace<'db> {
+     pub(crate) local: BindingId,
+         ty
+     }
+ 
+-    fn capture_kind_of_truncated_place(
+-        &self,
+-        mut current_capture: CaptureKind,
+-        len: usize,
+-    ) -> CaptureKind {
++    fn capture_kind_of_truncated_place(&self, mut current_capture: CaptureKind, len: usize) -> CaptureKind {
+         if let CaptureKind::ByRef(BorrowKind::Mut {
+             kind: MutBorrowKind::Default | MutBorrowKind::TwoPhasedBorrow,
+         }) = current_capture
+         });
+     }
+ 
+-    fn truncate_capture_spans(
+-        &self,
+-        capture: &mut CapturedItemWithoutTy<'db>,
+-        mut truncate_to: usize,
+-    ) {
++    fn truncate_capture_spans(&self, capture: &mut CapturedItemWithoutTy<'db>, mut truncate_to: usize) {
+         // The first span is the identifier, and it must always remain.
+         truncate_to += 1;
+         for span_stack in &mut capture.span_stacks {
+         }
+     }
+ 
+-    fn ref_capture_with_adjusts(
+-        &mut self,
+-        m: Mutability,
+-        tgt_expr: ExprId,
+-        rest: &[Adjustment<'db>],
+-    ) {
++    fn ref_capture_with_adjusts(&mut self, m: Mutability, tgt_expr: ExprId, rest: &[Adjustment<'db>]) {
+         let capture_kind = match m {
+             Mutability::Mut => CaptureKind::ByRef(BorrowKind::Mut { kind: MutBorrowKind::Default }),
+             Mutability::Not => CaptureKind::ByRef(BorrowKind::Shared),
+             }
+             None => *result = Some(ck),
+         };
+-
+         self.walk_pat_inner(
+             pat,
+             &mut update_result,
+         );
+     }
+ 
+-    fn walk_pat_inner(
+-        &mut self,
+-        p: PatId,
+-        update_result: &mut impl FnMut(CaptureKind),
+-        mut for_mut: BorrowKind,
+-    ) {
++    fn walk_pat_inner(&mut self, p: PatId, update_result: &mut impl FnMut(CaptureKind), mut for_mut: BorrowKind) {
+         match &self.body[p] {
+             Pat::Ref { .. }
+             | Pat::Box { .. }
+     ///
+     /// These dependencies are collected in the main inference. We do a topological sort in this function. It
+     /// will consume the `deferred_closures` field and return its content in a sorted vector.
+-    fn sort_closures(
+-        &mut self,
+-    ) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
++    fn sort_closures(&mut self) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
+         let mut deferred_closures = mem::take(&mut self.deferred_closures);
+         let mut dependents_count: FxHashMap<InternedClosureId, usize> =
+             deferred_closures.keys().map(|it| (*it, 0)).collect();
+         {
+             self.closure_dependencies.entry(c).or_default().push(dep);
+         }
+-
+         fn dep_creates_cycle(
+             closure_dependencies: &FxHashMap<InternedClosureId, Vec<InternedClosureId>>,
+             visited: &mut FxHashSet<InternedClosureId>,
+ }
+ 
+ /// Call this only when the last span in the stack isn't a split.
+-fn apply_adjusts_to_place<'db>(
+-    current_capture_span_stack: &mut Vec<MirSpan>,
+-    mut r: HirPlace<'db>,
+-    adjustments: &[Adjustment<'db>],
+-) -> Option<HirPlace<'db>> {
++fn apply_adjusts_to_place<'db>(current_capture_span_stack: &mut Vec<MirSpan>, mut r: HirPlace<'db>, adjustments: &[Adjustment<'db>]) -> Option<HirPlace<'db>> {
+     let span = *current_capture_span_stack.last().expect("empty capture span stack");
+     for adj in adjustments {
+         match &adj.kind {

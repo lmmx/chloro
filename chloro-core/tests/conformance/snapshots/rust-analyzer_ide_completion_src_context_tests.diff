@@ -1,0 +1,63 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11057 bytes
+Chloro size:   11051 bytes
+Rustfmt size:  11096 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use hir::HirDisplay;
+ 
+ use crate::{
+     context::CompletionContext,
+-    tests::{position, TEST_CONFIG},
++    tests::{TEST_CONFIG, position},
+ };
+-
+ fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+     let (db, pos) = position(ra_fixture);
+     let config = TEST_CONFIG;
+-    let (completion_context, _analysis) = hir::attach_db(&db, || {
+-        CompletionContext::new(&db, pos, &config, None).unwrap()
+-    });
+-
++    let (completion_context, _analysis) =
++        hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
+     let ty = completion_context
+         .expected_type
+         .map(|t| {
+             hir::attach_db(&db, || {
+-                t.display_test(&db, completion_context.krate.to_display_target(&db))
+-                    .to_string()
++                t.display_test(&db, completion_context.krate.to_display_target(&db)).to_string()
+             })
+         })
+         .unwrap_or("?".to_owned());
+-
+-    let name = completion_context
+-        .expected_name
+-        .map_or_else(|| "?".to_owned(), |name| name.to_string());
+-
++    let name =
++        completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
+     expect.assert_eq(&format!("ty: {ty}, name: {name}"));
+ }
+ 
+ "#,
+         expect![[r#"ty: Foo, name: ?"#]],
+     );
+-
+     check_expected_type_and_name(
+         r#"
+ enum Foo { Bar, Baz, Quux }
+ "#,
+         expect![[r#"ty: u32, name: ?"#]],
+     );
+-
+     check_expected_type_and_name(
+         r#"
+ //- minicore: fn

@@ -1,0 +1,449 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 30062 bytes
+Chloro size:   29467 bytes
+Rustfmt size:  30062 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+-
+-// Assist: extract_struct_from_enum_variant
+-//
+-// Extracts a struct from enum variant.
+-//
+-// ```
+-// enum A { $0One(u32, u32) }
+-// ```
+-// ->
+-// ```
+-// struct One(u32, u32);
+-//
+-// enum A { One(One) }
+-// ```
+-pub(crate) fn extract_struct_from_enum_variant(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++pub(crate) fn extract_struct_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
+     let field_list = extract_field_list_if_applicable(&variant)?;
+-
+     let variant_name = variant.name()?;
+     let variant_hir = ctx.sema.to_def(&variant)?;
+     if existing_definition(ctx.db(), &variant_name, &variant_hir) {
+         cov_mark::hit!(test_extract_enum_not_applicable_if_struct_exists);
+         return None;
+     }
+-
+     let enum_ast = variant.parent_enum();
+     let enum_hir = ctx.sema.to_def(&enum_ast)?;
+     let target = variant.syntax().text_range();
+     )
+ }
+ 
+-fn extract_field_list_if_applicable(
+-    variant: &ast::Variant,
+-) -> Option<Either<ast::RecordFieldList, ast::TupleFieldList>> {
++fn extract_field_list_if_applicable(variant: &ast::Variant) -> Option<Either<ast::RecordFieldList, ast::TupleFieldList>> {
+     match variant.kind() {
+         ast::StructKind::Record(field_list) if field_list.fields().next().is_some() => {
+             Some(Either::Left(field_list))
+         .any(|(name, _)| name.as_str() == variant_name.text().trim_start_matches("r#"))
+ }
+ 
+-fn extract_generic_params(
+-    known_generics: &ast::GenericParamList,
+-    field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
+-) -> Option<ast::GenericParamList> {
++fn extract_generic_params(known_generics: &ast::GenericParamList, field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>) -> Option<ast::GenericParamList> {
+     let mut generics = known_generics.generic_params().map(|param| (param, false)).collect_vec();
+-
+     let tagged_one = match field_list {
+         Either::Left(field_list) => field_list
+             .fields()
+             .filter_map(|f| f.ty())
+             .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
+     };
+-
+     let generics = generics.into_iter().filter_map(|(param, tag)| tag.then_some(param));
+     tagged_one.then(|| make::generic_param_list(generics))
+ }
+ 
+ fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
+     let mut tagged_one = false;
+-
+     for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
+         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
+             match param {
+             }
+         }
+     }
+-
+     tagged_one
+ }
+ 
+-fn create_struct_def(
+-    name: ast::Name,
+-    variant: &ast::Variant,
+-    field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
+-    generics: Option<ast::GenericParamList>,
+-    enum_: &ast::Enum,
+-) -> ast::Struct {
++fn create_struct_def(name: ast::Name, variant: &ast::Variant, field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>, generics: Option<ast::GenericParamList>, enum_: &ast::Enum) -> ast::Struct {
+     let enum_vis = enum_.visibility();
+-
+     let insert_vis = |node: &'_ SyntaxNode, vis: &'_ SyntaxNode| {
+         let vis = vis.clone_for_update();
+         ted::insert(ted::Position::before(node), vis);
+     };
+-
+     // for fields without any existing visibility, use visibility of enum
+     let field_list: ast::FieldList = match field_list {
+         Either::Left(field_list) => {
+         }
+     };
+     let field_list = field_list.indent(IndentLevel::single());
+-
+     let strukt = make::struct_(enum_vis, name, generics, field_list).clone_for_update();
+-
+     // take comments from variant
+     ted::insert_all(
+         ted::Position::first_child_of(strukt.syntax()),
+         take_all_comments(variant.syntax()),
+     );
+-
+     // copy attributes from enum
+     ted::insert_all(
+         ted::Position::first_child_of(strukt.syntax()),
+             })
+             .collect(),
+     );
+-
+     strukt
+ }
+ 
+         Some(generic_args) => make::ty(&format!("{name}{generic_args}")),
+         None => make::ty(&name.text()),
+     };
+-
+     // change from a record to a tuple field list
+     let tuple_field = make::tuple_field(None, ty);
+     let field_list = make::tuple_field_list(iter::once(tuple_field)).clone_for_update();
+     ted::replace(variant.field_list()?.syntax(), field_list.syntax());
+-
+     // remove any ws after the name
+     if let Some(ws) = name
+         .syntax()
+     {
+         ted::remove(SyntaxElement::Token(ws));
+     }
+-
+     Some(())
+ }
+ 
+-// Note: this also detaches whitespace after comments,
+-// since `SyntaxNode::splice_children` (and by extension `ted::insert_all_raw`)
+-// detaches nodes. If we only took the comments, we'd leave behind the old whitespace.
+ fn take_all_comments(node: &SyntaxNode) -> Vec<SyntaxElement> {
+     let mut remove_next_ws = false;
+     node.children_with_tokens()
+         .collect()
+ }
+ 
+-fn apply_references(
+-    insert_use_cfg: InsertUseConfig,
+-    segment: ast::PathSegment,
+-    node: SyntaxNode,
+-    import: Option<(ImportScope, hir::ModPath)>,
+-    edition: Edition,
+-) {
++fn apply_references(insert_use_cfg: InsertUseConfig, segment: ast::PathSegment, node: SyntaxNode, import: Option<(ImportScope, hir::ModPath)>, edition: Edition) {
+     if let Some((scope, path)) = import {
+         insert_use(&scope, mod_path_to_ast(&path, edition), &insert_use_cfg);
+     }
+     ted::insert_raw(ted::Position::after(&node), make::token(T![')']));
+ }
+ 
+-fn process_references(
+-    ctx: &AssistContext<'_>,
+-    builder: &mut SourceChangeBuilder,
+-    visited_modules: &mut FxHashSet<Module>,
+-    enum_module_def: &ModuleDef,
+-    variant_hir_name: &Name,
+-    refs: Vec<FileReference>,
+-) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
++fn process_references(ctx: &AssistContext<'_>, builder: &mut SourceChangeBuilder, visited_modules: &mut FxHashSet<Module>, enum_module_def: &ModuleDef, variant_hir_name: &Name, refs: Vec<FileReference>) -> Vec<(ast::PathSegment, SyntaxNode, Option<(ImportScope, hir::ModPath)>)> {
+     // we have to recollect here eagerly as we are about to edit the tree we need to calculate the changes
+     // and corresponding nodes up front
+     refs.into_iter()
+         .collect()
+ }
+ 
+-fn reference_to_node(
+-    sema: &hir::Semantics<'_, RootDatabase>,
+-    reference: FileReference,
+-) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
++fn reference_to_node(sema: &hir::Semantics<'_, RootDatabase>, reference: FileReference) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
+     let segment =
+         reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
+-
+     // filter out the reference in marco
+     let segment_range = segment.syntax().text_range();
+     if segment_range != reference.range {
+         return None;
+     }
+-
+     let parent = segment.parent_path().syntax().parent()?;
+     let expr_or_pat = match_ast! {
+         match parent {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_with_marco() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn issue_16197() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_several_fields_tuple() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_several_fields_named() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_one_field_named() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_carries_over_generics() {
+         check_assist(
+ enum En<T> { Var(Var<T>) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_carries_over_attributes() {
+         check_assist(
+ enum Enum { Variant(Variant) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_indent_to_parent_enum() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_indent_to_parent_enum_in_mod() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keep_comments_and_attrs_one_field_named() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keep_comments_and_attrs_several_fields_named() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keep_comments_and_attrs_several_fields_tuple() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_move_struct_variant_comments() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_move_tuple_variant_comments() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keep_existing_visibility_named() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keep_existing_visibility_tuple() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_enum_variant_name_value_namespace() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_no_visibility() {
+         check_assist(
+ enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_pub_visibility() {
+         check_assist(
+ pub enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_pub_in_mod_visibility() {
+         check_assist(
+ pub(in something) enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_pub_crate_visibility() {
+         check_assist(
+ pub(crate) enum A { One(One) }"#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_with_complex_imports() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn extract_record_fix_references() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_record_fix_references2() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_several_files() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_several_files_record() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_extract_struct_record_nested_call_exp() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_enum_not_applicable_for_element_with_no_fields() {
+         check_assist_not_applicable(extract_struct_from_enum_variant, r#"enum A { $0One }"#);
+     }
+-
+     #[test]
+     fn test_extract_enum_not_applicable_if_struct_exists() {
+         cov_mark::check!(test_extract_enum_not_applicable_if_struct_exists);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_not_applicable_one_field() {
+         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0One(u32) }");
+     }
+-
+     #[test]
+     fn test_extract_not_applicable_no_field_tuple() {
+         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0None() }");
+     }
+-
+     #[test]
+     fn test_extract_not_applicable_no_field_named() {
+         check_assist_not_applicable(extract_struct_from_enum_variant, r"enum A { $0None {} }");
+     }
+-
+     #[test]
+     fn test_extract_struct_only_copies_needed_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_with_lifetime_type_const() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_without_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_struct_keeps_trait_bounds() {
+         check_assist(

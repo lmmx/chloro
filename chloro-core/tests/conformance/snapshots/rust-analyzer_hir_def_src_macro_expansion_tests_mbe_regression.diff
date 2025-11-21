@@ -1,0 +1,24 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 29035 bytes
+Chloro size:   29033 bytes
+Rustfmt size:  29035 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use expect_test::expect;
+ 
+ use crate::macro_expansion_tests::check;
+-
+ #[test]
+ fn test_vec() {
+     check(
+ #[test]
+ fn test_winapi_struct() {
+     // from https://github.com/retep998/winapi-rs/blob/a7ef2bca086aae76cf6c4ce4c2552988ed9798ad/src/macros.rs#L366
+-
+     check(
+         r#"
+ macro_rules! STRUCT {

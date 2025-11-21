@@ -1,0 +1,681 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 26548 bytes
+Chloro size:   25528 bytes
+Rustfmt size:  26702 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use rustc_hash::FxHashMap;
+ use stdx::to_lower_snake_case;
+ use syntax::{
++    AstNode, Edition, SmolStr, SmolStrBuilder, ToSmolStr,
+     ast::{self, HasName},
+-    match_ast, AstNode, Edition, SmolStr, SmolStrBuilder, ToSmolStr,
++    match_ast,
+ };
+ 
+ use crate::RootDatabase;
+-
+ /// Trait names, that will be ignored when in `impl Trait` and `dyn Trait`
+-const USELESS_TRAITS: &[&str] = &["Send", "Sync", "Copy", "Clone", "Eq", "PartialEq"];
+ 
+ /// Identifier names that won't be suggested, ever
+ ///
+ /// **NOTE**: they all must be snake lower case
+-const USELESS_NAMES: &[&str] = &[
+-    "new", "default", "option", "some", "none", "ok", "err", "str", "string", "from", "into",
+-];
+ 
+-const USELESS_NAME_PREFIXES: &[&str] = &["from_", "with_", "into_"];
+ 
+ /// Generic types replaced by their first argument
+ ///
+ /// # Examples
+ /// `Option<Name>` -> `Name`
+ /// `Result<User, Error>` -> `User`
+-const WRAPPER_TYPES: &[&str] = &["Box", "Arc", "Rc", "Option", "Result"];
+ 
+ /// Generic types replaced by a plural of their first argument.
+ ///
+ /// # Examples
+ /// `Vec<Name>` -> "names"
+-const SEQUENCE_TYPES: &[&str] = &["Vec", "VecDeque", "LinkedList"];
+ 
+ /// Prefixes to strip from methods names
+ ///
+ /// `vec.as_slice()` -> `slice`
+ /// `args.into_config()` -> `config`
+ /// `bytes.to_vec()` -> `vec`
+-const USELESS_METHOD_PREFIXES: &[&str] = &["into_", "as_", "to_"];
+ 
+ /// Useless methods that are stripped from expression
+ ///
+ /// # Examples
+ /// `var.name().to_string()` -> `var.name()`
+-const USELESS_METHODS: &[&str] = &[
+-    "to_string",
+-    "as_str",
+-    "to_owned",
+-    "as_ref",
+-    "clone",
+-    "cloned",
+-    "expect",
+-    "expect_none",
+-    "unwrap",
+-    "unwrap_none",
+-    "unwrap_or",
+-    "unwrap_or_default",
+-    "unwrap_or_else",
+-    "unwrap_unchecked",
+-    "iter",
+-    "into_iter",
+-    "iter_mut",
+-    "into_future",
+-];
+ 
+ /// Generator for new names
+ ///
+                 }
+             });
+         }
+-
+         generator
+     }
+ 
+         let (prefix, suffix) = Self::split_numeric_suffix(name);
+         let prefix = SmolStr::new(prefix);
+         let suffix = suffix.unwrap_or(0);
+-
+         match self.pool.entry(prefix.clone()) {
+             Entry::Vacant(entry) => {
+                 entry.insert(suffix);
+     /// - If `ty` is an `impl Trait`, it will suggest the name of the first trait.
+     ///
+     /// If the suggested name conflicts with reserved keywords, it will return `None`.
+-    pub fn for_type<'db>(
+-        &mut self,
+-        ty: &hir::Type<'db>,
+-        db: &'db RootDatabase,
+-        edition: Edition,
+-    ) -> Option<SmolStr> {
++    pub fn for_type<'db>(&mut self, ty: &hir::Type<'db>, db: &'db RootDatabase, edition: Edition) -> Option<SmolStr> {
+         let name = name_of_type(ty, db, edition)?;
+         Some(self.suggest_name(&name))
+     }
+             .type_bound_list()
+             .and_then(|bounds| bounds.syntax().text().char_at(0.into()))
+             .unwrap_or('T');
+-
+         self.suggest_name(&c.to_string())
+     }
+ 
+     /// It also applies heuristics to filter out less informative names
+     ///
+     /// Currently it sticks to the first name found.
+-    pub fn for_variable(
+-        &mut self,
+-        expr: &ast::Expr,
+-        sema: &Semantics<'_, RootDatabase>,
+-    ) -> SmolStr {
++    pub fn for_variable(&mut self, expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> SmolStr {
+         // `from_param` does not benefit from stripping it need the largest
+         // context possible so we check firstmost
+         if let Some(name) = from_param(expr, sema) {
+             return self.suggest_name(&name);
+         }
+-
+         let mut next_expr = Some(expr.clone());
+         while let Some(expr) = next_expr {
+             let name = from_call(&expr)
+                 _ => break,
+             }
+         }
+-
+         self.suggest_name("var_name")
+     }
+ 
+         let (prefix, suffix) = Self::split_numeric_suffix(name);
+         let prefix = SmolStr::new(prefix);
+         let suffix = suffix.unwrap_or(0);
+-
+         match self.pool.entry(prefix) {
+             Entry::Vacant(entry) => {
+                 entry.insert(suffix);
+     /// # Examples
+     /// `a1b2c3` -> `a1b2c`
+     fn split_numeric_suffix(name: &str) -> (&str, Option<usize>) {
+-        let pos = name
+-            .rfind(|c: char| !c.is_numeric())
+-            .expect("Name cannot be empty or all-numeric");
++        let pos =
++            name.rfind(|c: char| !c.is_numeric()).expect("Name cannot be empty or all-numeric");
+         let (prefix, suffix) = name.split_at(pos + 1);
+         (prefix, suffix.parse().ok())
+     }
+ 
+ fn normalize(name: &str) -> Option<SmolStr> {
+     let name = to_lower_snake_case(name).to_smolstr();
+-
+     if USELESS_NAMES.contains(&name.as_str()) {
+         return None;
+     }
+-
+-    if USELESS_NAME_PREFIXES
+-        .iter()
+-        .any(|prefix| name.starts_with(prefix))
+-    {
++    if USELESS_NAME_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
+         return None;
+     }
+-
+     if !is_valid_name(&name) {
+         return None;
+     }
+-
+     Some(name)
+ }
+ 
+ 
+ fn is_useless_method(method: &ast::MethodCallExpr) -> bool {
+     let ident = method.name_ref().and_then(|it| it.ident_token());
+-
+     match ident {
+         Some(ident) => USELESS_METHODS.contains(&ident.text()),
+         None => false,
+     };
+     let ident = method.name_ref()?.ident_token()?;
+     let mut name = ident.text();
+-
+     if USELESS_METHODS.contains(&name) {
+         return None;
+     }
+-
+     for prefix in USELESS_METHOD_PREFIXES {
+         if let Some(suffix) = name.strip_prefix(prefix) {
+             name = suffix;
+             break;
+         }
+     }
+-
+     normalize(name)
+ }
+ 
+             _ => return None,
+         }
+     };
+-
+     let (idx, _) = arg_list.args().find_position(|it| it == expr).unwrap();
+     let param = func.params().into_iter().nth(idx)?;
+     let pat = sema.source(param)?.value.right()?.pat()?;
+     let ty = sema.type_of_expr(expr)?.adjusted();
+     let ty = ty.remove_ref().unwrap_or(ty);
+     let edition = sema.scope(expr.syntax())?.krate().edition(sema.db);
+-
+     name_of_type(&ty, sema.db, edition)
+ }
+ 
+-fn name_of_type<'db>(
+-    ty: &hir::Type<'db>,
+-    db: &'db RootDatabase,
+-    edition: Edition,
+-) -> Option<SmolStr> {
++fn name_of_type<'db>(ty: &hir::Type<'db>, db: &'db RootDatabase, edition: Edition) -> Option<SmolStr> {
+     let name = if let Some(adt) = ty.as_adt() {
+         let name = adt.name(db).display(db, edition).to_string();
+ 
+     normalize(&name)
+ }
+ 
+-fn sequence_name<'db>(
+-    inner_ty: Option<&hir::Type<'db>>,
+-    db: &'db RootDatabase,
+-    edition: Edition,
+-) -> SmolStr {
++fn sequence_name<'db>(inner_ty: Option<&hir::Type<'db>>, db: &'db RootDatabase, edition: Edition) -> SmolStr {
+     let items_str = SmolStr::new_static("items");
+     let Some(inner_ty) = inner_ty else {
+         return items_str;
+     let Some(name) = name_of_type(inner_ty, db, edition) else {
+         return items_str;
+     };
+-
+     if name.ends_with(['s', 'x', 'y']) {
+         // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
+         // create a plural.
+ mod tests {
+     use hir::FileRange;
+     use test_fixture::WithFixture;
+-
+     use super::*;
+-
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
+         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
+-        let frange = FileRange {
+-            file_id,
+-            range: range_or_offset.into(),
+-        };
++        let frange = FileRange { file_id, range: range_or_offset.into() };
+         let sema = Semantics::new(&db);
+-
+         let source_file = sema.parse(frange.file_id);
+-
+         let element = source_file.syntax().covering_element(frange.range);
+-        let expr = element
+-            .ancestors()
+-            .find_map(ast::Expr::cast)
+-            .expect("selection is not an expression");
++        let expr =
++            element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
+         assert_eq!(
+             expr.syntax().text_range(),
+             frange.range,
+             "selection is not an expression(yet contained in one)"
+         );
+-        let name = hir::attach_db(sema.db, || {
+-            NameGenerator::default().for_variable(&expr, &sema)
+-        });
++        let name = hir::attach_db(sema.db, || NameGenerator::default().for_variable(&expr, &sema));
+         assert_eq!(&name, expected);
+     }
+-
+     #[test]
+     fn no_args() {
+         check(r#"fn foo() { $0bar()$0 }"#, "bar");
+         check(r#"fn foo() { $0bar.frobnicate()$0 }"#, "frobnicate");
+     }
+-
+     #[test]
+     fn single_arg() {
+         check(r#"fn foo() { $0bar(1)$0 }"#, "bar");
+     }
+-
+     #[test]
+     fn many_args() {
+         check(r#"fn foo() { $0bar(1, 2, 3)$0 }"#, "bar");
+     }
+-
+     #[test]
+     fn path() {
+         check(r#"fn foo() { $0i32::bar(1, 2, 3)$0 }"#, "bar");
+     }
+-
+     #[test]
+     fn generic_params() {
+         check(r#"fn foo() { $0bar::<i32>(1, 2, 3)$0 }"#, "bar");
+-        check(
+-            r#"fn foo() { $0bar.frobnicate::<i32, u32>()$0 }"#,
+-            "frobnicate",
+-        );
++        check(r#"fn foo() { $0bar.frobnicate::<i32, u32>()$0 }"#, "frobnicate");
+     }
+-
+     #[test]
+     fn to_name() {
+         check(
+             "config",
+         );
+     }
+-
+     #[test]
+     fn plain_func() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn mut_param() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn func_does_not_exist() {
+         check(r#"fn foo() { bar($01$0, 2) }"#, "var_name");
+     }
+-
+     #[test]
+     fn unnamed_param() {
+         check(
+             "var_name",
+         );
+     }
+-
+     #[test]
+     fn tuple_pat() {
+         check(
+             "var_name",
+         );
+     }
+-
+     #[test]
+     fn ref_pat() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn box_pat() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn param_out_of_index() {
+         check(
+             "var_name",
+         );
+     }
+-
+     #[test]
+     fn generic_param_resolved() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn generic_param_unresolved() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn method() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn method_on_impl_trait() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn method_ufcs() {
+         check(
+             "n",
+         );
+     }
+-
+     #[test]
+     fn method_self() {
+         check(
+             "s",
+         );
+     }
+-
+     #[test]
+     fn method_self_named() {
+         check(
+             "strukt",
+         );
+     }
+-
+     #[test]
+     fn i32() {
+         check(r#"fn foo() { let _: i32 = $01$0; }"#, "var_name");
+     }
+-
+     #[test]
+     fn u64() {
+         check(r#"fn foo() { let _: u64 = $01$0; }"#, "var_name");
+     }
+-
+     #[test]
+     fn bool() {
+         check(r#"fn foo() { let _: bool = $0true$0; }"#, "var_name");
+     }
+-
+     #[test]
+     fn struct_unit() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn struct_unit_to_snake() {
+         check(
+             "seed_state",
+         );
+     }
+-
+     #[test]
+     fn struct_single_arg() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn struct_with_fields() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn enum_() {
+         check(
+             "kind",
+         );
+     }
+-
+     #[test]
+     fn enum_generic_resolved() {
+         check(
+             "kind",
+         );
+     }
+-
+     #[test]
+     fn enum_generic_unresolved() {
+         check(
+             "kind",
+         );
+     }
+-
+     #[test]
+     fn dyn_trait() {
+         check(
+             "dyn_handler",
+         );
+     }
+-
+     #[test]
+     fn impl_trait() {
+         check(
+             "static_handler",
+         );
+     }
+-
+     #[test]
+     fn impl_trait_plus_clone() {
+         check(
+             "static_handler",
+         );
+     }
+-
+     #[test]
+     fn impl_trait_plus_lifetime() {
+         check(
+             "static_handler",
+         );
+     }
+-
+     #[test]
+     fn impl_trait_plus_trait() {
+         check(
+             "bar",
+         );
+     }
+-
+     #[test]
+     fn ref_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn box_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn box_generic() {
+         check(
+             "bar",
+         );
+     }
+-
+     #[test]
+     fn option_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn result_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn arc_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn rc_value() {
+         check(
+             "seed",
+         );
+     }
+-
+     #[test]
+     fn vec_value() {
+         check(
+             "seeds",
+         );
+     }
+-
+     #[test]
+     fn vec_value_ends_with_s() {
+         check(
+             "items",
+         );
+     }
+-
+     #[test]
+     fn vecdeque_value() {
+         check(
+             "seeds",
+         );
+     }
+-
+     #[test]
+     fn slice_value() {
+         check(
+             "seeds",
+         );
+     }
+-
+     #[test]
+     fn ref_call() {
+         check(
+             "bar",
+         );
+     }
+-
+     #[test]
+     fn name_to_string() {
+         check(
+             "name",
+         );
+     }
+-
+     #[test]
+     fn nested_useless_method() {
+         check(
+             "name",
+         );
+     }
+-
+     #[test]
+     fn struct_field_name() {
+         check(
+             "some_field",
+         );
+     }
+-
+     #[test]
+     fn from_and_to_func() {
+         check(
+ "#,
+             "bar",
+         );
+-
+         check(
+             r#"
+ //- minicore: from
+             "bar",
+         );
+     }
+-
+     #[test]
+     fn useless_name_prefix() {
+         check(
+ "#,
+             "bar",
+         );
+-
+         check(
+             r#"
+ struct Foo;
+             "bar",
+         );
+     }
+-
+     #[test]
+     fn conflicts_with_existing_names() {
+         let mut generator = NameGenerator::default();
+         assert_eq!(generator.suggest_name("a"), "a1");
+         assert_eq!(generator.suggest_name("a"), "a2");
+         assert_eq!(generator.suggest_name("a"), "a3");
+-
+         assert_eq!(generator.suggest_name("b"), "b");
+         assert_eq!(generator.suggest_name("b2"), "b2");
+         assert_eq!(generator.suggest_name("b"), "b3");
+         assert_eq!(generator.suggest_name("b"), "b4");
+         assert_eq!(generator.suggest_name("b3"), "b5");
+-
+         // ---------
+         let mut generator = NameGenerator::new_with_names(["a", "b", "b2", "c4"].into_iter());
+         assert_eq!(generator.suggest_name("a"), "a1");
+         assert_eq!(generator.suggest_name("a"), "a2");
+-
+         assert_eq!(generator.suggest_name("b"), "b3");
+         assert_eq!(generator.suggest_name("b2"), "b4");
+-
+         assert_eq!(generator.suggest_name("c"), "c5");
+     }
+ }

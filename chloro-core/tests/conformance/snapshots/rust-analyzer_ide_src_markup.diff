@@ -1,0 +1,37 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1115 bytes
+Chloro size:   1073 bytes
+Rustfmt size:  1115 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Markdown formatting.
+ //!
+ //! Sometimes, we want to display a "rich text" in the UI. At the moment, we use
+ //! markdown for this purpose. It doesn't feel like a right option, but that's
+ //! what is used by LSP, so let's keep it simple.
++
+ use std::fmt;
+ 
+ use ide_db::impl_empty_upmap_from_ra_fixture;
+-
+ #[derive(Clone, Default, Debug, Hash, PartialEq, Eq)]
+ pub struct Markup {
+     text: String,
+     pub fn as_str(&self) -> &str {
+         self.text.as_str()
+     }
++
+     pub fn fenced_block(contents: impl fmt::Display) -> Markup {
+         format!("```rust\n{contents}\n```").into()
+     }
++
+     pub fn fenced_block_text(contents: impl fmt::Display) -> Markup {
+         format!("```text\n{contents}\n```").into()
+     }
+ }
+-
+-impl_empty_upmap_from_ra_fixture!(Markup);

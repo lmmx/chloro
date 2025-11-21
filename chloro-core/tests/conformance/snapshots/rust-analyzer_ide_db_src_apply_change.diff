@@ -1,0 +1,52 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10358 bytes
+Chloro size:   10227 bytes
+Rustfmt size:  10358 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use salsa::{Database as _, Durability, Setter as _};
+ 
+ use crate::{
+-    symbol_index::{LibraryRoots, LocalRoots},
+     ChangeWithProcMacros, RootDatabase,
++    symbol_index::{LibraryRoots, LocalRoots},
+ };
+-
+ impl RootDatabase {
+     pub fn request_cancellation(&mut self) {
+         let _p = tracing::info_span!("RootDatabase::request_cancellation").entered();
+         }
+         change.apply(self);
+     }
+-
+     // Feature: Memory Usage
+     //
+     // Clears rust-analyzer's internal database and prints memory usage statistics.
+     // |---------|-------------|
+     // | VS Code | **rust-analyzer: Memory Usage (Clears Database)**
+ 
+-    // ![Memory Usage](https://user-images.githubusercontent.com/48062697/113065592-08559f00-91b1-11eb-8c96-64b88068ec02.gif)
+     pub fn per_query_memory_usage(&mut self) -> Vec<(String, Bytes, usize)> {
+         let mut acc: Vec<(String, Bytes, usize)> = vec![];
+-
+         // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
+         // where
+         //     QueryTable<'q, Q>: DebugQueryTable,
+         //     }
+         //     table.entries::<EntryCounter>().0
+         // }
+-
+         macro_rules! purge_each_query {
+             ($($q:path)*) => {$(
+                 let before = memory_usage().allocated;
+             // base_db::SourceRootQuery
+             // base_db::SourceRootCratesQuery
+         ];
+-
+         acc.sort_by_key(|it| std::cmp::Reverse(it.1));
+         acc
+     }

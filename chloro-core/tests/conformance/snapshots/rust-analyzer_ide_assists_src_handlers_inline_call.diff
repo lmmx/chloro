@@ -1,0 +1,502 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 41039 bytes
+Chloro size:   39340 bytes
+Rustfmt size:  41039 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     AssistId,
+     assist_context::{AssistContext, Assists},
+ };
+-
+-// Assist: inline_into_callers
+-//
+-// Inline a function or method body into all of its callers where possible, creating a `let` statement per parameter
+-// unless the parameter can be inlined. The parameter will be inlined either if it the supplied argument is a simple local
+-// or if the parameter is only accessed inside the function body once.
+-// If all calls can be inlined the function will be removed.
+-//
+-// ```
+-// fn print(_: &str) {}
+-// fn foo$0(word: &str) {
+-//     if !word.is_empty() {
+-//         print(word);
+-//     }
+-// }
+-// fn bar() {
+-//     foo("안녕하세요");
+-//     foo("여러분");
+-// }
+-// ```
+-// ->
+-// ```
+-// fn print(_: &str) {}
+-//
+-// fn bar() {
+-//     {
+-//         let word: &str = "안녕하세요";
+-//         if !word.is_empty() {
+-//             print(word);
+-//         }
+-//     };
+-//     {
+-//         let word: &str = "여러분";
+-//         if !word.is_empty() {
+-//             print(word);
+-//         }
+-//     };
+-// }
+-// ```
+ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let def_file = ctx.file_id();
+     let vfs_def_file = ctx.vfs_file_id();
+     let ast_func = name.syntax().parent().and_then(ast::Fn::cast)?;
+     let func_body = ast_func.body()?;
+     let param_list = ast_func.param_list()?;
+-
+     let function = ctx.sema.to_def(&ast_func)?;
+-
+     let params = get_fn_params(ctx.sema.db, function, &param_list)?;
+-
+     let usages = Definition::Function(function).usages(&ctx.sema);
+     if !usages.at_least_one() {
+         return None;
+     }
+-
+     let is_recursive_fn = usages
+         .clone()
+         .in_scope(&SearchScope::file_range(FileRange {
+         cov_mark::hit!(inline_into_callers_recursive);
+         return None;
+     }
+-
+     acc.add(
+         AssistId::refactor_inline("inline_into_callers"),
+         "Inline into all callers",
+     )
+ }
+ 
+-pub(super) fn split_refs_and_uses<T: ast::AstNode>(
+-    builder: &mut SourceChangeBuilder,
+-    iter: impl IntoIterator<Item = FileReference>,
+-    mut map_ref: impl FnMut(ast::NameRef) -> Option<T>,
+-) -> (Vec<T>, Vec<ast::Path>) {
++pub(super) fn split_refs_and_uses<T: ast::AstNode>(builder: &mut SourceChangeBuilder, iter: impl IntoIterator<Item = FileReference>, mut map_ref: impl FnMut(ast::NameRef) -> Option<T>) -> (Vec<T>, Vec<ast::Path>) {
+     iter.into_iter()
+         .filter_map(|file_ref| match file_ref.name {
+             FileReferenceNode::NameRef(name_ref) => Some(name_ref),
+         .partition_map(|either| either)
+ }
+ 
+-// Assist: inline_call
+-//
+-// Inlines a function or method body creating a `let` statement per parameter unless the parameter
+-// can be inlined. The parameter will be inlined either if it the supplied argument is a simple local
+-// or if the parameter is only accessed inside the function body once.
+-//
+-// ```
+-// # //- minicore: option
+-// fn foo(name: Option<&str>) {
+-//     let name = name.unwrap$0();
+-// }
+-// ```
+-// ->
+-// ```
+-// fn foo(name: Option<&str>) {
+-//     let name = match name {
+-//             Some(val) => val,
+-//             None => panic!("called `Option::unwrap()` on a `None` value"),
+-//         };
+-// }
+-// ```
+ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
+     let call_info = CallInfo::from_name_ref(
+             (ctx.sema.resolve_method_call(call)?, format!("Inline `{name_ref}`"))
+         }
+     };
+-
+     let fn_source = ctx.sema.source(function)?;
+     let fn_body = fn_source.value.body()?;
+     let param_list = fn_source.value.param_list()?;
+-
+     let FileRange { file_id, range } = fn_source.syntax().original_file_range_rooted(ctx.sema.db);
+     if file_id == ctx.file_id() && range.contains(ctx.offset()) {
+         cov_mark::hit!(inline_call_recursive);
+         return None;
+     }
+     let params = get_fn_params(ctx.sema.db, function, &param_list)?;
+-
+     if call_info.arguments.len() != params.len() {
+         // Can't inline the function because they've passed the wrong number of
+         // arguments to this function
+         cov_mark::hit!(inline_call_incorrect_number_of_arguments);
+         return None;
+     }
+-
+     let syntax = call_info.node.syntax().clone();
+     acc.add(AssistId::refactor_inline("inline_call"), label, syntax.text_range(), |builder| {
+         let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
+     }
+ }
+ 
+-fn get_fn_params<'db>(
+-    db: &'db dyn HirDatabase,
+-    function: hir::Function,
+-    param_list: &ast::ParamList,
+-) -> Option<Vec<(ast::Pat, Option<ast::Type>, hir::Param<'db>)>> {
++fn get_fn_params<'db>(db: &'db dyn HirDatabase, function: hir::Function, param_list: &ast::ParamList) -> Option<Vec<(ast::Pat, Option<ast::Type>, hir::Param<'db>)>> {
+     let mut assoc_fn_params = function.assoc_fn_params(db).into_iter();
+-
+     let mut params = Vec::new();
+     if let Some(self_param) = param_list.self_param() {
+         // Keep `ref` and `mut` and transform them into `&` and `mut` later
+     for param in param_list.params() {
+         params.push((param.pat()?, param.ty(), assoc_fn_params.next()?));
+     }
+-
+     Some(params)
+ }
+ 
+-fn inline(
+-    sema: &Semantics<'_, RootDatabase>,
+-    function_def_file_id: EditionedFileId,
+-    function: hir::Function,
+-    fn_body: &ast::BlockExpr,
+-    params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)],
+-    CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo,
+-) -> ast::Expr {
++fn inline(sema: &Semantics<'_, RootDatabase>, function_def_file_id: EditionedFileId, function: hir::Function, fn_body: &ast::BlockExpr, params: &[(ast::Pat, Option<ast::Type>, hir::Param<'_>)], CallInfo { node, arguments, generic_arg_list, krate }: &CallInfo) -> ast::Expr {
+     let file_id = sema.hir_file_for(fn_body.syntax());
+     let mut body = if let Some(macro_file) = file_id.macro_file() {
+         cov_mark::hit!(inline_call_defined_in_macro);
+             }
+         })
+         .collect();
+-
+     if function.self_param(sema.db).is_some() {
+         let this = || {
+             make::name_ref("this")
+                 });
+         }
+     }
+-
+     // We should place the following code after last usage of `usages_for_locals`
+     // because `ted::replace` will change the offset in syntax tree, which makes
+     // `FileReference` incorrect
+             ted::replace(self_tok, replace_with);
+         }
+     }
+-
+     let mut func_let_vars: BTreeSet<String> = BTreeSet::new();
+-
+     // grab all of the local variable declarations in the function
+     for stmt in fn_body.statements() {
+         if let Some(let_stmt) = ast::LetStmt::cast(stmt.syntax().to_owned()) {
+             }
+         }
+     }
+-
+     let mut let_stmts = Vec::new();
+-
+     // Inline parameter expressions or generate `let` statements depending on whether inlining works or not.
+     for ((pat, param_ty, param), usages, expr) in izip!(params, param_use_nodes, arguments) {
+         // izip confuses RA due to our lack of hygiene info currently losing us type info causing incorrect errors
+             }
+         }
+     }
+-
+     if let Some(generic_arg_list) = generic_arg_list.clone()
+         && let Some((target, source)) = &sema.scope(node.syntax()).zip(sema.scope(fn_body.syntax()))
+     {
+             body = new_body;
+         }
+     }
+-
+     let is_async_fn = function.is_async(sema.db);
+     if is_async_fn {
+         cov_mark::hit!(inline_call_async_fn);
+             ted::insert(ted::Position::after(position.clone()), let_stmt.syntax().clone());
+         });
+     }
+-
+     let original_indentation = match node {
+         ast::CallableExpr::Call(it) => it.indent_level(),
+         ast::CallableExpr::MethodCall(it) => it.indent_level(),
+     };
+     body.reindent_to(original_indentation);
+-
+     let no_stmts = body.statements().next().is_none();
+     match body.tail_expr() {
+         Some(expr) if matches!(expr, ast::Expr::ClosureExpr(_)) && no_stmts => {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn no_args_or_return_value_gets_inlined_without_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_when_incorrect_number_of_parameters_are_provided() {
+         cov_mark::check!(inline_call_incorrect_number_of_arguments);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn args_with_side_effects() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_with_multiple_statements() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_with_self_param() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_by_val() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_by_ref() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn generic_method_by_ref() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_by_ref_mut() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_multi_use_expr_in_param() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_use_local_in_param() {
+         cov_mark::check!(inline_call_inline_locals);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_in_impl() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn wraps_closure_in_paren() {
+         cov_mark::check!(inline_call_inline_closure);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_single_literal_expr() {
+         cov_mark::check!(inline_call_inline_literal);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_emits_type_for_coercion() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_substitutes_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_callers() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_callers_across_files() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_callers_across_files_with_def_file() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_callers_recursive() {
+         cov_mark::check!(inline_into_callers_recursive);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_call_recursive() {
+         cov_mark::check!(inline_call_recursive);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_call_field_shorthand() {
+         cov_mark::check!(inline_call_inline_direct_field);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_callers_wrapped_in_parentheses() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_wrapped_in_parentheses() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_defined_in_macro() {
+         cov_mark::check!(inline_call_defined_in_macro);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_with_self_type() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_with_self_type_but_within_same_impl() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn local_variable_shadowing_callers_argument() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_fn_single_expression() {
+         cov_mark::check!(inline_call_async_fn);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_fn_multiple_statements() {
+         cov_mark::check!(inline_call_async_fn);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_fn_with_let_statements() {
+         cov_mark::check!(inline_call_async_fn);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_call_closure_body() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_call_with_multiple_self_types_eq() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_with_self_type_in_macros() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn method_by_reborrow() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn method_by_mut() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_call_with_reference_in_macros() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn inline_into_callers_in_macros_not_applicable() {
+         check_assist_not_applicable(

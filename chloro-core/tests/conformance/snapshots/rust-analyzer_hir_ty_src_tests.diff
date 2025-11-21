@@ -1,0 +1,286 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 22347 bytes
+Chloro size:   22073 bytes
+Rustfmt size:  23079 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-mod closure_captures;
+-mod coercion;
+-mod diagnostics;
+-mod display_source_code;
+-mod incremental;
+-mod macros;
+-mod method_resolution;
+-mod never_type;
+-mod opaque_types;
+-mod patterns;
+-mod regression;
+-mod simple;
+-mod trait_aliases;
+-mod traits;
+-
+ use base_db::{Crate, SourceDatabase};
+ use expect_test::Expect;
+ use hir_def::{
++    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
+     db::DefDatabase,
+     expr_store::{Body, BodySourceMap},
+     hir::{ExprId, Pat, PatId},
+     item_scope::ItemScope,
+     nameres::DefMap,
+     src::HasSource,
+-    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
+ };
+-use hir_expand::{db::ExpandDatabase, FileRange, InFile};
++use hir_expand::{FileRange, InFile, db::ExpandDatabase};
+ use itertools::Itertools;
+ use rustc_hash::FxHashMap;
+ use stdx::format_to;
+ use syntax::{
+-    ast::{self, AstNode, HasName},
+     SyntaxNode,
++    ast::{self, AstNode, HasName},
+ };
+ use test_fixture::WithFixture;
+ use triomphe::Arc;
+ 
+ use crate::{
++    InferenceResult,
+     db::HirDatabase,
+     display::{DisplayTarget, HirDisplay},
+     infer::{Adjustment, TypeMismatch},
+     next_solver::Ty,
+     setup_tracing,
+     test_db::TestDB,
+-    InferenceResult,
+ };
++mod closure_captures;
+ 
+-// These tests compare the inference results for all expressions in a file
+-// against snapshots of the expected results using expect. Use
+-// `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.
++mod coercion;
++
++mod diagnostics;
++
++mod display_source_code;
++
++mod incremental;
++
++mod macros;
++
++mod method_resolution;
++
++mod never_type;
++
++mod opaque_types;
++
++mod patterns;
++
++mod regression;
++
++mod simple;
++
++mod trait_aliases;
++
++mod traits;
+ 
+ #[track_caller]
+ fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+ }
+ 
+ #[track_caller]
+-fn check_impl(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    allow_none: bool,
+-    only_types: bool,
+-    display_source: bool,
+-) {
++fn check_impl(#[rust_analyzer::rust_fixture] ra_fixture: &str, allow_none: bool, only_types: bool, display_source: bool) {
+     let _tracing = setup_tracing();
+     let (db, files) = TestDB::with_many_files(ra_fixture);
+-
+     crate::attach_db(&db, || {
+         let mut had_annotations = false;
+         let mut mismatches = FxHashMap::default();
+                 } else if expected.starts_with("adjustments:") {
+                     adjustments.insert(
+                         file_range,
+-                        expected
+-                            .trim_start_matches("adjustments:")
+-                            .trim()
+-                            .to_owned(),
++                        expected.trim_start_matches("adjustments:").trim().to_owned(),
+                     );
+                 } else {
+                     panic!("unexpected annotation: {expected} @ {range:?}");
+                     } else {
+                         ty.display_test(&db, display_target).to_string()
+                     };
+-                    assert_eq!(
+-                        actual, expected,
+-                        "type annotation differs at {:#?}",
+-                        range.range
+-                    );
++                    assert_eq!(actual, expected, "type annotation differs at {:#?}", range.range);
+                 }
+             }
+ 
+                     } else {
+                         ty.display_test(&db, display_target).to_string()
+                     };
+-                    assert_eq!(
+-                        actual, expected,
+-                        "type annotation differs at {:#?}",
+-                        range.range
+-                    );
++                    assert_eq!(actual, expected, "type annotation differs at {:#?}", range.range);
+                 }
+                 if let Some(expected) = adjustments.remove(&range) {
+                     let adjustments = inference_result
+                 match mismatches.remove(&range) {
+                     Some(annotation) => assert_eq!(actual, annotation),
+                     None => {
+-                        format_to!(
+-                            unexpected_type_mismatches,
+-                            "{:?}: {}\n",
+-                            range.range,
+-                            actual
+-                        )
++                        format_to!(unexpected_type_mismatches, "{:?}: {}\n", range.range, actual)
+                     }
+                 }
+             }
+ 
+         let mut buf = String::new();
+         if !unexpected_type_mismatches.is_empty() {
+-            format_to!(
+-                buf,
+-                "Unexpected type mismatches:\n{}",
+-                unexpected_type_mismatches
+-            );
++            format_to!(buf, "Unexpected type mismatches:\n{}", unexpected_type_mismatches);
+         }
+         if !mismatches.is_empty() {
+             format_to!(buf, "Unchecked mismatch annotations:\n");
+     });
+ }
+ 
+-fn expr_node(
+-    body_source_map: &BodySourceMap,
+-    expr: ExprId,
+-    db: &TestDB,
+-) -> Option<InFile<SyntaxNode>> {
++fn expr_node(body_source_map: &BodySourceMap, expr: ExprId, db: &TestDB) -> Option<InFile<SyntaxNode>> {
+     Some(match body_source_map.expr_syntax(expr) {
+         Ok(sp) => {
+             let root = db.parse_or_expand(sp.file_id);
+     })
+ }
+ 
+-fn pat_node(
+-    body_source_map: &BodySourceMap,
+-    pat: PatId,
+-    db: &TestDB,
+-) -> Option<InFile<SyntaxNode>> {
++fn pat_node(body_source_map: &BodySourceMap, pat: PatId, db: &TestDB) -> Option<InFile<SyntaxNode>> {
+     Some(match body_source_map.pat_syntax(pat) {
+         Ok(sp) => {
+             let root = db.parse_or_expand(sp.file_id);
+ fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
+     let _tracing = setup_tracing();
+     let (db, file_id) = TestDB::with_single_file(content);
+-
+     crate::attach_db(&db, || {
+         let mut buf = String::new();
+ 
+             for (node, ty) in &types {
+                 let (range, text) =
+                     if let Some(self_param) = ast::SelfParam::cast(node.value.clone()) {
+-                        (
+-                            self_param.name().unwrap().syntax().text_range(),
+-                            "self".to_owned(),
+-                        )
++                        (self_param.name().unwrap().syntax().text_range(), "self".to_owned())
+                     } else {
+-                        (
+-                            node.value.text_range(),
+-                            node.value.text().to_string().replace('\n', " "),
+-                        )
++                        (node.value.text_range(), node.value.text().to_string().replace('\n', " "))
+                     };
+                 let macro_prefix = if node.file_id != file_id { "!" } else { "" };
+                 format_to!(
+     })
+ }
+ 
+-pub(crate) fn visit_module(
+-    db: &TestDB,
+-    crate_def_map: &DefMap,
+-    module_id: LocalModuleId,
+-    cb: &mut dyn FnMut(ModuleDefId),
+-) {
++pub(crate) fn visit_module(db: &TestDB, crate_def_map: &DefMap, module_id: LocalModuleId, cb: &mut dyn FnMut(ModuleDefId)) {
+     visit_scope(db, crate_def_map, &crate_def_map[module_id].scope, cb);
+     for impl_id in crate_def_map[module_id].scope.impls() {
+         let impl_data = impl_id.impl_items(db);
+             }
+         }
+     }
+-
+     fn visit_scope(
+         db: &TestDB,
+         crate_def_map: &DefMap,
+                     visit_body(db, &body, cb);
+                 }
+                 ModuleDefId::AdtId(hir_def::AdtId::EnumId(it)) => {
+-                    it.enum_variants(db)
+-                        .variants
+-                        .iter()
+-                        .for_each(|&(it, _, _)| {
+-                            let body = db.body(it.into());
+-                            cb(it.into());
+-                            visit_body(db, &body, cb);
+-                        });
++                    it.enum_variants(db).variants.iter().for_each(|&(it, _, _)| {
++                        let body = db.body(it.into());
++                        cb(it.into());
++                        visit_body(db, &body, cb);
++                    });
+                 }
+                 ModuleDefId::TraitId(it) => {
+                     let trait_data = it.trait_items(db);
+             }
+         }
+     }
+-
+     fn visit_body(db: &TestDB, body: &Body, cb: &mut dyn FnMut(ModuleDefId)) {
+         for (_, def_map) in body.blocks(db) {
+             for (mod_id, _) in def_map.modules() {
+         }
+     ",
+     );
+-
+     crate::attach_db(&db, || {
+         let module = db.module_for_file(pos.file_id.file_id(&db));
+         let crate_def_map = module.def_map(&db);
+             });
+         });
+     });
+-
+     let new_text = "
+         //- /lib.rs
+         trait Index {
+             x.push(1);
+         }
+     ";
+-
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     crate::attach_db(&db, || {
+         let module = db.module_for_file(pos.file_id.file_id(&db));
+         let crate_def_map = module.def_map(&db);

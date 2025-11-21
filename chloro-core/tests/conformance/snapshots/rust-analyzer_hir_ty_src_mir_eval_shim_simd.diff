@@ -1,0 +1,37 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7864 bytes
+Chloro size:   7799 bytes
+Rustfmt size:  7864 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Shim implementation for simd intrinsics
+ 
+ use std::cmp::Ordering;
+ 
+ use crate::consteval::try_const_usize;
+-
+ use super::*;
+-
+ macro_rules! from_bytes {
+     ($ty:tt, $value:expr) => {
+         ($ty::from_le_bytes(match ($value).try_into() {
+         }
+     }
+ 
+-    pub(super) fn exec_simd_intrinsic(
+-        &mut self,
+-        name: &str,
+-        args: &[IntervalAndTy<'db>],
+-        _generic_args: GenericArgs<'db>,
+-        destination: Interval,
+-        _locals: &Locals<'db>,
+-        _span: MirSpan,
+-    ) -> Result<'db, ()> {
++    pub(super) fn exec_simd_intrinsic(&mut self, name: &str, args: &[IntervalAndTy<'db>], _generic_args: GenericArgs<'db>, destination: Interval, _locals: &Locals<'db>, _span: MirSpan) -> Result<'db, ()> {
+         match name {
+             "and" | "or" | "xor" => {
+                 let [left, right] = args else {

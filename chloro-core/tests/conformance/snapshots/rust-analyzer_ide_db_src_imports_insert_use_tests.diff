@@ -1,0 +1,259 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 29250 bytes
+Chloro size:   29142 bytes
+Rustfmt size:  29734 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use stdx::trim_indent;
+ use test_fixture::WithFixture;
+-use test_utils::{assert_eq_text, CURSOR_MARKER};
++use test_utils::{CURSOR_MARKER, assert_eq_text};
+ 
+ use super::*;
+-
+ #[test]
+ fn trailing_comment_in_empty_file() {
+     check(
+ #[test]
+ fn insert_empty_file() {
+     cov_mark::check_count!(insert_empty_file, 2);
+-
+     // Default configuration
+     // empty files will get two trailing newlines
+     // this is due to the test case insert_no_imports above
+ 
+ ",
+     );
+-
+     // "not group" configuration
+     check_with_config(
+         "use external_crate2::bar::A",
+ #[test]
+ fn insert_empty_module() {
+     cov_mark::check_count!(insert_empty_module, 2);
+-
+     // Default configuration
+     check(
+         "foo::bar",
+ ",
+         ImportGranularity::Item,
+     );
+-
+     // "not group" configuration
+     check_with_config(
+         "foo::bar",
+ #[test]
+ fn insert_after_inner_attr() {
+     cov_mark::check_count!(insert_empty_inner_attr, 2);
+-
+     // Default configuration
+     check_crate(
+         "foo::bar",
+ 
+ use foo::bar;",
+     );
+-
+     // "not group" configuration
+     check_with_config(
+         "foo::bar",
+ 
+ #[test]
+ fn merge_last_into_self() {
+-    check_module(
+-        "foo::bar::baz",
+-        r"use foo::bar;",
+-        r"use foo::bar::{self, baz};",
+-    );
+-    check_one(
+-        "foo::bar::baz",
+-        r"use {foo::bar};",
+-        r"use {foo::bar::{self, baz}};",
+-    );
++    check_module("foo::bar::baz", r"use foo::bar;", r"use foo::bar::{self, baz};");
++    check_one("foo::bar::baz", r"use {foo::bar};", r"use {foo::bar::{self, baz}};");
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn merge_into_module_import() {
+-    check_crate(
+-        "std::fmt::Result",
+-        r"use std::{fmt, io};",
+-        r"use std::{fmt::{self, Result}, io};",
+-    )
++    check_crate("std::fmt::Result", r"use std::{fmt, io};", r"use std::{fmt::{self, Result}, io};")
+ }
+ 
+ #[test]
+ fn merge_groups_self() {
+-    check_crate(
+-        "std::fmt::Debug",
+-        r"use std::fmt;",
+-        r"use std::fmt::{self, Debug};",
+-    )
++    check_crate("std::fmt::Debug", r"use std::fmt;", r"use std::fmt::{self, Debug};")
+ }
+ 
+ #[test]
+ 
+ #[test]
+ fn guess_single() {
+-    check_guess(
+-        r"use foo::{baz::{qux, quux}, bar};",
+-        ImportGranularityGuess::Crate,
+-    );
++    check_guess(r"use foo::{baz::{qux, quux}, bar};", ImportGranularityGuess::Crate);
+     check_guess(r"use foo::bar;", ImportGranularityGuess::Unknown);
+-    check_guess(
+-        r"use foo::bar::{baz, qux};",
+-        ImportGranularityGuess::CrateOrModule,
+-    );
++    check_guess(r"use foo::bar::{baz, qux};", ImportGranularityGuess::CrateOrModule);
+     check_guess(r"use {foo::bar};", ImportGranularityGuess::One);
+ }
+ 
+     );
+ }
+ 
+-fn check_with_config(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-    config: &InsertUseConfig,
+-) {
++fn check_with_config(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str, config: &InsertUseConfig) {
+     let (db, file_id, pos) = if ra_fixture_before.contains(CURSOR_MARKER) {
+         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture_before);
+ 
+     let sema = &Semantics::new(&db);
+     let source_file = sema.parse(file_id);
+     let file = pos
+-        .and_then(|pos| {
+-            source_file
+-                .syntax()
+-                .token_at_offset(pos.expect_offset())
+-                .next()?
+-                .parent()
+-        })
++        .and_then(|pos| source_file.syntax().token_at_offset(pos.expect_offset()).next()?.parent())
+         .and_then(|it| ImportScope::find_insert_use_container(&it, sema))
+         .unwrap_or_else(|| ImportScope {
+             kind: ImportScopeKind::File(source_file),
+         .descendants()
+         .find_map(ast::Path::cast)
+         .unwrap();
+-
+     insert_use(&file, path, config);
+-    let result = file
+-        .as_syntax_node()
+-        .ancestors()
+-        .last()
+-        .unwrap()
+-        .to_string();
++    let result = file.as_syntax_node().ancestors().last().unwrap().to_string();
+     assert_eq_text!(&trim_indent(ra_fixture_after), &result);
+ }
+ 
+-fn check(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-    granularity: ImportGranularity,
+-) {
++fn check(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str, granularity: ImportGranularity) {
+     check_with_config(
+         path,
+         ra_fixture_before,
+     )
+ }
+ 
+-fn check_crate(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
+-    check(
+-        path,
+-        ra_fixture_before,
+-        ra_fixture_after,
+-        ImportGranularity::Crate,
+-    )
++fn check_crate(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
++    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Crate)
+ }
+ 
+-fn check_module(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
+-    check(
+-        path,
+-        ra_fixture_before,
+-        ra_fixture_after,
+-        ImportGranularity::Module,
+-    )
++fn check_module(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
++    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Module)
+ }
+ 
+-fn check_none(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
+-    check(
+-        path,
+-        ra_fixture_before,
+-        ra_fixture_after,
+-        ImportGranularity::Item,
+-    )
++fn check_none(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
++    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::Item)
+ }
+ 
+-fn check_one(
+-    path: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
+-) {
+-    check(
+-        path,
+-        ra_fixture_before,
+-        ra_fixture_after,
+-        ImportGranularity::One,
+-    )
++fn check_one(path: &str, #[rust_analyzer::rust_fixture] ra_fixture_before: &str, #[rust_analyzer::rust_fixture] ra_fixture_after: &str) {
++    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::One)
+ }
+ 
+ fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior) {
+         .descendants()
+         .find_map(ast::Use::cast)
+         .unwrap();
+-
+     let use1 = ast::SourceFile::parse(ra_fixture1, span::Edition::CURRENT)
+         .tree()
+         .syntax()
+         .descendants()
+         .find_map(ast::Use::cast)
+         .unwrap();
+-
+     let result = try_merge_imports(&use0, &use1, mb);
+     assert_eq!(result.map(|u| u.to_string()), None);
+ }
+ 
+ fn check_guess(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: ImportGranularityGuess) {
+     let syntax = ast::SourceFile::parse(ra_fixture, span::Edition::CURRENT).tree();
+-    let file = ImportScope {
+-        kind: ImportScopeKind::File(syntax),
+-        required_cfgs: vec![],
+-    };
++    let file = ImportScope { kind: ImportScopeKind::File(syntax), required_cfgs: vec![] };
+     assert_eq!(super::guess_granularity_from_scope(&file), expected);
+ }

@@ -1,0 +1,94 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3698 bytes
+Chloro size:   3528 bytes
+Rustfmt size:  3698 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: non-exhaustive-let
+-//
+-// This diagnostic is triggered if a `let` statement without an `else` branch has a non-exhaustive
+-// pattern.
+-pub(crate) fn non_exhaustive_let(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::NonExhaustiveLet,
+-) -> Diagnostic {
++pub(crate) fn non_exhaustive_let(ctx: &DiagnosticsContext<'_>, d: &hir::NonExhaustiveLet) -> Diagnostic {
+     Diagnostic::new_with_syntax_node_ptr(
+         ctx,
+         DiagnosticCode::RustcHardError("E0005"),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn option_nonexhaustive() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn option_exhaustive() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn option_nonexhaustive_inside_blocks() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ //- minicore: future, option
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ //- minicore: option
+ "#,
+         );
+     }
+-
+     #[test]
+     fn min_exhaustive() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ //- minicore: result
+ "#,
+         );
+     }
+-
+     #[test]
+     fn empty_patterns_normalize() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn regression_20259() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn uninhabited_variants() {
+         check_diagnostics(

@@ -1,0 +1,167 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11045 bytes
+Chloro size:   10817 bytes
+Rustfmt size:  11497 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! A desugared representation of paths like `crate::foo` or `<Type as Trait>::bar`.
+ 
+ use std::iter;
+ 
+-use crate::{
+-    lang_item::LangItemTarget,
+-    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
+-};
+ use hir_expand::{
+     mod_path::{ModPath, PathKind},
+     name::Name,
+ };
+ use intern::Interned;
+ 
++use crate::{
++    lang_item::LangItemTarget,
++    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
++};
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ pub enum Path {
+     /// `BarePath` is used when the path has neither generics nor type anchor, since the vast majority of paths
+ 
+ // This type is being used a lot, make sure it doesn't grow unintentionally.
+ #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
+-const _: () = {
++{
+     assert!(size_of::<Path>() == 24);
+     assert!(size_of::<Option<Path>>() == 24);
+-};
+-
++}
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ pub struct NormalPath {
+     pub generic_args: Box<[Option<GenericArgs>]>,
+ 
+     pub fn segments(&self) -> PathSegments<'_> {
+         match self {
+-            Path::BarePath(mod_path) => PathSegments {
+-                segments: mod_path.segments(),
+-                generic_args: None,
+-            },
++            Path::BarePath(mod_path) => {
++                PathSegments { segments: mod_path.segments(), generic_args: None }
++            }
+             Path::Normal(path) => PathSegments {
+                 segments: path.mod_path.segments(),
+                 generic_args: Some(&path.generic_args),
+             },
+-            Path::LangItem(_, seg) => PathSegments {
+-                segments: seg.as_slice(),
+-                generic_args: None,
+-            },
++            Path::LangItem(_, seg) => PathSegments { segments: seg.as_slice(), generic_args: None },
+         }
+     }
+ 
+                 }
+                 Some(Path::BarePath(Interned::new(ModPath::from_segments(
+                     mod_path.kind,
+-                    mod_path.segments()[..mod_path.segments().len() - 1]
+-                        .iter()
+-                        .cloned(),
++                    mod_path.segments()[..mod_path.segments().len() - 1].iter().cloned(),
+                 ))))
+             }
+             Path::Normal(path) => {
+                 let generic_args = &path.generic_args;
+                 let qualifier_mod_path = Interned::new(ModPath::from_segments(
+                     mod_path.kind,
+-                    mod_path.segments()[..mod_path.segments().len() - 1]
+-                        .iter()
+-                        .cloned(),
++                    mod_path.segments()[..mod_path.segments().len() - 1].iter().cloned(),
+                 ));
+                 let qualifier_generic_args = &generic_args[..generic_args.len() - 1];
+                 if type_anchor.is_none() && qualifier_generic_args.iter().all(|it| it.is_none()) {
+ }
+ 
+ impl PathSegment<'_> {
+-    pub const MISSING: PathSegment<'static> = PathSegment {
+-        name: &Name::missing(),
+-        args_and_bindings: None,
+-    };
+ }
+ 
+ #[derive(Debug, Clone, Copy)]
+ }
+ 
+ impl<'a> PathSegments<'a> {
+-    pub const EMPTY: PathSegments<'static> = PathSegments {
+-        segments: &[],
+-        generic_args: None,
+-    };
++
+     pub fn is_empty(&self) -> bool {
+         self.len() == 0
+     }
++
+     pub fn len(&self) -> usize {
+         self.segments.len()
+     }
++
+     pub fn first(&self) -> Option<PathSegment<'a>> {
+         self.get(0)
+     }
++
+     pub fn last(&self) -> Option<PathSegment<'a>> {
+         self.get(self.len().checked_sub(1)?)
+     }
+     pub fn strip_last(&self) -> PathSegments<'a> {
+         PathSegments {
+             segments: self.segments.split_last().map_or(&[], |it| it.1),
+-            generic_args: self
+-                .generic_args
+-                .map(|it| it.split_last().map_or(&[][..], |it| it.1)),
++            generic_args: self.generic_args.map(|it| it.split_last().map_or(&[][..], |it| it.1)),
+         }
+     }
+ 
+     pub fn strip_last_two(&self) -> PathSegments<'a> {
+         PathSegments {
+-            segments: self
+-                .segments
+-                .get(..self.segments.len().saturating_sub(2))
+-                .unwrap_or(&[]),
++            segments: self.segments.get(..self.segments.len().saturating_sub(2)).unwrap_or(&[]),
+             generic_args: self
+                 .generic_args
+                 .map(|it| it.get(..it.len().saturating_sub(2)).unwrap_or(&[])),
+     pub fn iter(&self) -> impl Iterator<Item = PathSegment<'a>> {
+         self.segments
+             .iter()
+-            .zip(
+-                self.generic_args
+-                    .into_iter()
+-                    .flatten()
+-                    .chain(iter::repeat(&None)),
+-            )
+-            .map(|(name, args)| PathSegment {
+-                name,
+-                args_and_bindings: args.as_ref(),
+-            })
++            .zip(self.generic_args.into_iter().flatten().chain(iter::repeat(&None)))
++            .map(|(name, args)| PathSegment { name, args_and_bindings: args.as_ref() })
+     }
+ }
+ 
+ 
+ impl From<Name> for Path {
+     fn from(name: Name) -> Path {
+-        Path::BarePath(Interned::new(ModPath::from_segments(
+-            PathKind::Plain,
+-            iter::once(name),
+-        )))
++        Path::BarePath(Interned::new(ModPath::from_segments(PathKind::Plain, iter::once(name))))
+     }
+ }

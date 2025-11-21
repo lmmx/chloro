@@ -1,0 +1,136 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5189 bytes
+Chloro size:   4633 bytes
+Rustfmt size:  5232 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use syntax::{
++    AstNode, T,
+     ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
+-    match_ast, AstNode, T,
++    match_ast,
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: add_braces
+-//
+-// Adds braces to closure bodies, match arm expressions and assignment bodies.
+-//
+-// ```
+-// fn foo(n: i32) -> i32 {
+-//     match n {
+-//         1 =>$0 n + 1,
+-//         _ => 0
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn foo(n: i32) -> i32 {
+-//     match n {
+-//         1 => {
+-//             n + 1
+-//         },
+-//         _ => 0
+-//     }
+-// }
+-// ```
+-// ---
+-// ```
+-// fn foo(n: i32) -> i32 {
+-//     let x =$0 n + 2;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn foo(n: i32) -> i32 {
+-//     let x = {
+-//         n + 2
+-//     };
+-// }
+-// ```
+ pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let (expr_type, expr) = get_replacement_node(ctx)?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("add_braces"),
+         match expr_type {
+             let new_expr = expr.reset_indent().indent(1.into());
+             let block_expr = make.block_expr(None, Some(new_expr));
+ 
+-            editor.replace(
+-                expr.syntax(),
+-                block_expr.indent(expr.indent_level()).syntax(),
+-            );
++            editor.replace(expr.syntax(), block_expr.indent(expr.indent_level()).syntax());
+ 
+             editor.add_mappings(make.finish_with_mappings());
+             builder.add_file_edits(ctx.vfs_file_id(), editor);
+     } else {
+         return None;
+     };
+-
+     if matches!(body, ast::Expr::BlockExpr(_)) {
+         return None;
+     }
+-
+     Some((parent_type, body))
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn suggest_add_braces_for_closure() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn suggest_add_braces_for_closure_in_match() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn suggest_add_braces_for_assignment() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_assist_for_closures_with_braces() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn suggest_add_braces_for_match() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn multiple_indent() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_assist_for_match_with_braces() {
+         check_assist_not_applicable(

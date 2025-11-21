@@ -1,0 +1,35 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1812 bytes
+Chloro size:   1809 bytes
+Rustfmt size:  1812 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use base_db::SourceDatabase;
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use itertools::Itertools;
+ 
+-use crate::tests::{completion_list_with_config_raw, position, TEST_CONFIG};
+-
++use crate::tests::{TEST_CONFIG, completion_list_with_config_raw, position};
+ fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+     let completions = completion_list_with_config_raw(TEST_CONFIG, ra_fixture, true, None);
+     let (db, position) = position(ra_fixture);
+                 a::dyn();$0
+         "#]],
+     );
+-
+     check(
+         r#"
+ //- /a.rs crate:a edition:2018
+                 a::r#dyn();$0
+         "#]],
+     );
+-
+     check(
+         r#"
+ //- /a.rs crate:a edition:2018

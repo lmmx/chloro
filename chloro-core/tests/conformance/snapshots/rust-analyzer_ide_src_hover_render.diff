@@ -1,0 +1,543 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 53876 bytes
+Chloro size:   53333 bytes
+Rustfmt size:  53876 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Logic for rendering the different hover messages
++
+ use std::{env, mem, ops::Not};
+ 
+ use either::Either;
+     hover::{SubstTyLen, notable_traits, walk_and_push_ty},
+     interpret::render_const_eval_error,
+ };
+-
+-pub(super) fn type_info_of(
+-    sema: &Semantics<'_, RootDatabase>,
+-    _config: &HoverConfig<'_>,
+-    expr_or_pat: &Either<ast::Expr, ast::Pat>,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn type_info_of(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, expr_or_pat: &Either<ast::Expr, ast::Pat>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     let ty_info = match expr_or_pat {
+         Either::Left(expr) => sema.type_of_expr(expr)?,
+         Either::Right(pat) => sema.type_of_pat(pat)?,
+     type_info(sema, _config, ty_info, edition, display_target)
+ }
+ 
+-pub(super) fn closure_expr(
+-    sema: &Semantics<'_, RootDatabase>,
+-    config: &HoverConfig<'_>,
+-    c: ast::ClosureExpr,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn closure_expr(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, c: ast::ClosureExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     let TypeInfo { original, .. } = sema.type_of_expr(&c.into())?;
+     closure_ty(sema, config, &TypeInfo { original, adjusted: None }, edition, display_target)
+ }
+ 
+-pub(super) fn try_expr(
+-    sema: &Semantics<'_, RootDatabase>,
+-    _config: &HoverConfig<'_>,
+-    try_expr: &ast::TryExpr,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn try_expr(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, try_expr: &ast::TryExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     let inner_ty = sema.type_of_expr(&try_expr.expr()?)?.original;
+     let mut ancestors = try_expr.syntax().ancestors();
+     let mut body_ty = loop {
+             }
+         };
+     };
+-
+     if inner_ty == body_ty {
+         return None;
+     }
+-
+     let mut inner_ty = inner_ty;
+     let mut s = "Try Target".to_owned();
+-
+     let adts = inner_ty.as_adt().zip(body_ty.as_adt());
+     if let Some((hir::Adt::Enum(inner), hir::Adt::Enum(body))) = adts {
+         let famous_defs = FamousDefs(sema, sema.scope(try_expr.syntax())?.krate());
+             }
+         }
+     }
+-
+     let mut res = HoverResult::default();
+-
+     let mut targets: Vec<hir::ModuleDef> = Vec::new();
+     let mut push_new_def = |item: hir::ModuleDef| {
+         if !targets.contains(&item) {
+     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
+         res.actions.push(actions);
+     }
+-
+     let inner_ty = inner_ty.display(sema.db, display_target).to_string();
+     let body_ty = body_ty.display(sema.db, display_target).to_string();
+     let ty_len_max = inner_ty.len().max(body_ty.len());
+-
+     let l = "Propagated as: ".len() - " Type: ".len();
+     let static_text_len_diff = l as isize - s.len() as isize;
+     let tpad = static_text_len_diff.max(0) as usize;
+     let ppad = static_text_len_diff.min(0).unsigned_abs();
+-
+     res.markup = format!(
+         "```text\n{} Type: {:>pad0$}\nPropagated as: {:>pad1$}\n```\n",
+         s,
+     Some(res)
+ }
+ 
+-pub(super) fn deref_expr(
+-    sema: &Semantics<'_, RootDatabase>,
+-    _config: &HoverConfig<'_>,
+-    deref_expr: &ast::PrefixExpr,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn deref_expr(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, deref_expr: &ast::PrefixExpr, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     let inner_ty = sema.type_of_expr(&deref_expr.expr()?)?.original;
+     let TypeInfo { original, adjusted } =
+         sema.type_of_expr(&ast::Expr::from(deref_expr.clone()))?;
+-
+     let mut res = HoverResult::default();
+     let mut targets: Vec<hir::ModuleDef> = Vec::new();
+     let mut push_new_def = |item: hir::ModuleDef| {
+     };
+     walk_and_push_ty(sema.db, &inner_ty, &mut push_new_def);
+     walk_and_push_ty(sema.db, &original, &mut push_new_def);
+-
+     res.markup = if let Some(adjusted_ty) = adjusted {
+         walk_and_push_ty(sema.db, &adjusted_ty, &mut push_new_def);
+         let original = original.display(sema.db, display_target).to_string();
+     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
+         res.actions.push(actions);
+     }
+-
+     Some(res)
+ }
+ 
+-pub(super) fn underscore(
+-    sema: &Semantics<'_, RootDatabase>,
+-    config: &HoverConfig<'_>,
+-    token: &SyntaxToken,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn underscore(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, token: &SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     if token.kind() != T![_] {
+         return None;
+     }
+     //         ast::Param(_it) => (),
+     //         ast::RetType(_it) => (),
+     //         ast::TypeArg(_it) => (),
+-
+     //         ast::CastExpr(_it) => (),
+     //         ast::ParenType(_it) => (),
+     //         ast::TupleType(_it) => (),
+     //         _ => return None,
+     //     }
+     // }
+-
+     // FIXME: https://github.com/rust-lang/rust-analyzer/issues/11762, this currently always returns Unknown
+     // type_info(sema, config, sema.resolve_type(&ast::Type::InferType(it))?, None)
+     None
+ }
+ 
+-pub(super) fn keyword(
+-    sema: &Semantics<'_, RootDatabase>,
+-    config: &HoverConfig<'_>,
+-    token: &SyntaxToken,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++pub(super) fn keyword(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, token: &SyntaxToken, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     if !token.kind().is_keyword(edition) || !config.documentation || !config.keywords {
+         return None;
+     }
+     let parent = token.parent()?;
+     let famous_defs = FamousDefs(sema, sema.scope(&parent)?.krate());
+-
+     let KeywordHint { description, keyword_mod, actions } =
+         keyword_hints(sema, token, parent, edition, display_target);
+-
+     let doc_owner = find_std_module(&famous_defs, &keyword_mod, edition)?;
+     let (docs, range_map) = doc_owner.docs_with_rangemap(sema.db)?;
+     let (markup, range_map) =
+ /// Returns missing types in a record pattern.
+ /// Only makes sense when there's a rest pattern in the record pattern.
+ /// i.e. `let S {a, ..} = S {a: 1, b: 2}`
+-pub(super) fn struct_rest_pat(
+-    sema: &Semantics<'_, RootDatabase>,
+-    _config: &HoverConfig<'_>,
+-    pattern: &ast::RecordPat,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> HoverResult {
++pub(super) fn struct_rest_pat(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, pattern: &ast::RecordPat, edition: Edition, display_target: DisplayTarget) -> HoverResult {
+     let missing_fields = sema.record_pattern_missing_fields(pattern);
+-
+     // if there are no missing fields, the end result is a hover that shows ".."
+     // should be left in to indicate that there are no more fields in the pattern
+     // example, S {a: 1, b: 2, ..} when struct S {a: u32, b: u32}
+-
+     let mut res = HoverResult::default();
+     let mut targets: Vec<hir::ModuleDef> = Vec::new();
+     let mut push_new_def = |item: hir::ModuleDef| {
+     for (_, t) in &missing_fields {
+         walk_and_push_ty(sema.db, t, &mut push_new_def);
+     }
+-
+     res.markup = {
+         let mut s = String::from(".., ");
+         for (f, _) in &missing_fields {
+         }
+         _ => return None,
+     };
+-
+     let tmp;
+     let needle = if is_clippy {
+         tmp = format!("clippy::{}", token.text());
+     } else {
+         token.text()
+     };
+-
+     let lint =
+         lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
+     Some(HoverResult {
+     })
+ }
+ 
+-pub(super) fn process_markup(
+-    db: &RootDatabase,
+-    def: Definition,
+-    markup: &Markup,
+-    markup_range_map: Option<DocsRangeMap>,
+-    config: &HoverConfig<'_>,
+-) -> Markup {
++pub(super) fn process_markup(db: &RootDatabase, def: Definition, markup: &Markup, markup_range_map: Option<DocsRangeMap>, config: &HoverConfig<'_>) -> Markup {
+     let markup = markup.as_str();
+     let markup = if config.links_in_hover {
+         rewrite_links(db, markup, def, markup_range_map)
+     .map(|name| name.display(db, edition).to_string())
+ }
+ 
+-pub(super) fn path(
+-    db: &RootDatabase,
+-    module: hir::Module,
+-    item_name: Option<String>,
+-    edition: Edition,
+-) -> String {
++pub(super) fn path(db: &RootDatabase, module: hir::Module, item_name: Option<String>, edition: Edition) -> String {
+     let crate_name = module.krate().display_name(db).as_ref().map(|it| it.to_string());
+     let module_path = module
+         .path_to_root(db)
+     crate_name.into_iter().chain(module_path).chain(item_name).join("::")
+ }
+ 
+-pub(super) fn definition(
+-    db: &RootDatabase,
+-    def: Definition,
+-    famous_defs: Option<&FamousDefs<'_, '_>>,
+-    notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)],
+-    macro_arm: Option<u32>,
+-    render_extras: bool,
+-    subst_types: Option<&Vec<(Symbol, Type<'_>)>>,
+-    config: &HoverConfig<'_>,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> (Markup, Option<DocsRangeMap>) {
++pub(super) fn definition(db: &RootDatabase, def: Definition, famous_defs: Option<&FamousDefs<'_, '_>>, notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)], macro_arm: Option<u32>, render_extras: bool, subst_types: Option<&Vec<(Symbol, Type<'_>)>>, config: &HoverConfig<'_>, edition: Edition, display_target: DisplayTarget) -> (Markup, Option<DocsRangeMap>) {
+     let mod_path = definition_path(db, &def, edition);
+     let label = match def {
+         Definition::Trait(trait_) => trait_
+         }
+         _ => None,
+     };
+-
+     let layout_info = || match def {
+         Definition::Field(it) => render_memory_layout(
+             config.memory_layout,
+         ),
+         _ => None,
+     };
+-
+     let drop_info = || {
+         if !config.show_drop_glue {
+             return None;
+ 
+         Some(rendered_drop_glue.to_owned())
+     };
+-
+     let dyn_compatibility_info = || match def {
+         Definition::Trait(it) => {
+             let mut dyn_compatibility_info = String::new();
+         }
+         _ => None,
+     };
+-
+     let variance_info = || match def {
+         Definition::GenericParam(it) => it.variance(db).as_ref().map(ToString::to_string),
+         _ => None,
+     };
+-
+     let mut extra = String::new();
+     if render_extras {
+         if let Some(notable_traits) =
+         desc.push_str(" = ");
+         desc.push_str(&value);
+     }
+-
+     let subst_types = match config.max_subst_ty_len {
+         SubstTyLen::Hide => String::new(),
+         SubstTyLen::LimitTo(_) | SubstTyLen::Unlimited => {
+                 .unwrap_or_default()
+         }
+     };
+-
+     markup(
+         docs.map(Into::into),
+         range_map,
+     has_dtor: Option<bool>,
+ }
+ 
+-pub(super) fn literal(
+-    sema: &Semantics<'_, RootDatabase>,
+-    token: SyntaxToken,
+-    display_target: DisplayTarget,
+-) -> Option<Markup> {
++pub(super) fn literal(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, display_target: DisplayTarget) -> Option<Markup> {
+     let lit = token.parent().and_then(ast::Literal::cast)?;
+     let ty = if let Some(p) = lit.syntax().parent().and_then(ast::Pat::cast) {
+         sema.type_of_pat(&p)?
+         sema.type_of_expr(&ast::Expr::Literal(lit))?
+     }
+     .original;
+-
+     let value = match_ast! {
+         match token {
+             ast::String(string)     => string.value().as_ref().map_err(|e| format!("{e:?}")).map(ToString::to_string),
+         }
+     };
+     let ty = ty.display(sema.db, display_target);
+-
+     let mut s = format!("```rust\n{ty}\n```\n---\n\n");
+     match value {
+         Ok(value) => {
+     Some(s.into())
+ }
+ 
+-fn render_notable_trait(
+-    db: &RootDatabase,
+-    notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)],
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<String> {
++fn render_notable_trait(db: &RootDatabase, notable_traits: &[(Trait, Vec<(Option<Type<'_>>, Name)>)], edition: Edition, display_target: DisplayTarget) -> Option<String> {
+     let mut desc = String::new();
+     let mut needs_impl_header = true;
+     for (trait_, assoc_types) in notable_traits {
+     }
+ }
+ 
+-fn type_info(
+-    sema: &Semantics<'_, RootDatabase>,
+-    config: &HoverConfig<'_>,
+-    ty: TypeInfo<'_>,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++fn type_info(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, ty: TypeInfo<'_>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     if let Some(res) = closure_ty(sema, config, &ty, edition, display_target) {
+         return Some(res);
+     };
+         }
+     };
+     walk_and_push_ty(db, &original, &mut push_new_def);
+-
+     res.markup = if let Some(adjusted_ty) = adjusted {
+         walk_and_push_ty(db, &adjusted_ty, &mut push_new_def);
+ 
+     Some(res)
+ }
+ 
+-fn closure_ty(
+-    sema: &Semantics<'_, RootDatabase>,
+-    config: &HoverConfig<'_>,
+-    TypeInfo { original, adjusted }: &TypeInfo<'_>,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Option<HoverResult> {
++fn closure_ty(sema: &Semantics<'_, RootDatabase>, config: &HoverConfig<'_>, TypeInfo { original, adjusted }: &TypeInfo<'_>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
+     let c = original.as_closure()?;
+     let mut captures_rendered = c.captured_items(sema.db)
+         .into_iter()
+     c.capture_types(sema.db).into_iter().for_each(|ty| {
+         walk_and_push_ty(sema.db, &ty, &mut push_new_def);
+     });
+-
+     let adjusted = if let Some(adjusted_ty) = adjusted {
+         walk_and_push_ty(sema.db, adjusted_ty, &mut push_new_def);
+         format!(
+         String::new()
+     };
+     let mut markup = format!("```rust\n{}\n```", c.display_with_impl(sema.db, display_target));
+-
+     if let Some(trait_) = c.fn_trait(sema.db).get_id(sema.db, original.krate(sema.db).into()) {
+         push_new_def(hir::Trait::from(trait_).into())
+     }
+         format_to!(markup, "\n---\n{layout}");
+     }
+     format_to!(markup, "{adjusted}\n\n## Captures\n{}", captures_rendered,);
+-
+     let mut res = HoverResult::default();
+     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
+         res.actions.push(actions);
+     def.module(db).map(|module| path(db, module, rendered_parent, edition))
+ }
+ 
+-fn markup(
+-    docs: Option<String>,
+-    range_map: Option<DocsRangeMap>,
+-    rust: String,
+-    extra: Option<String>,
+-    mod_path: Option<String>,
+-    subst_types: String,
+-) -> (Markup, Option<DocsRangeMap>) {
++fn markup(docs: Option<String>, range_map: Option<DocsRangeMap>, rust: String, extra: Option<String>, mod_path: Option<String>, subst_types: String) -> (Markup, Option<DocsRangeMap>) {
+     let mut buf = String::new();
+-
+     if let Some(mod_path) = mod_path
+         && !mod_path.is_empty()
+     {
+         format_to!(buf, "```rust\n{}\n```\n\n", mod_path);
+     }
+     format_to!(buf, "```rust\n{}\n```", rust);
+-
+     if let Some(extra) = extra {
+         buf.push_str(&extra);
+     }
+-
+     if !subst_types.is_empty() {
+         format_to!(buf, "\n___\n{subst_types}");
+     }
+-
+     if let Some(doc) = docs {
+         format_to!(buf, "\n___\n\n");
+         let offset = TextSize::new(buf.len() as u32);
+     }
+ }
+ 
+-fn render_memory_layout(
+-    config: Option<MemoryLayoutHoverConfig>,
+-    layout: impl FnOnce() -> Result<Layout, LayoutError>,
+-    offset: impl FnOnce(&Layout) -> Option<u64>,
+-    padding: impl FnOnce(&Layout) -> Option<(&str, u64)>,
+-    tag: impl FnOnce(&Layout) -> Option<usize>,
+-) -> Option<String> {
++fn render_memory_layout(config: Option<MemoryLayoutHoverConfig>, layout: impl FnOnce() -> Result<Layout, LayoutError>, offset: impl FnOnce(&Layout) -> Option<u64>, padding: impl FnOnce(&Layout) -> Option<(&str, u64)>, tag: impl FnOnce(&Layout) -> Option<usize>) -> Option<String> {
+     let config = config?;
+     let layout = layout().ok()?;
+-
+     let mut label = String::new();
+-
+     if let Some(render) = config.size {
+         let size = match tag(&layout) {
+             Some(tag) => layout.size() as usize - tag,
+         }
+         format_to!(label, ", ");
+     }
+-
+     if let Some(render) = config.alignment {
+         let align = layout.align();
+         format_to!(label, "align = ");
+         }
+         format_to!(label, ", ");
+     }
+-
+     if let Some(render) = config.offset
+         && let Some(offset) = offset(&layout)
+     {
+         }
+         format_to!(label, ", ");
+     }
+-
+     if let Some(render) = config.padding
+         && let Some((padding_name, padding)) = padding(&layout)
+     {
+         }
+         format_to!(label, ", ");
+     }
+-
+     if config.niches
+         && let Some(niches) = layout.niches()
+     {
+             format_to!(label, "niches = {niches}, ");
+         }
+     }
+-    label.pop(); // ' '
+-    label.pop(); // ','
++    label.pop();
++    // ' '
++    label.pop();
++    // ','
+     Some(label)
+ }
+ 
+     }
+ }
+ 
+-fn keyword_hints(
+-    sema: &Semantics<'_, RootDatabase>,
+-    token: &SyntaxToken,
+-    parent: syntax::SyntaxNode,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> KeywordHint {
++fn keyword_hints(sema: &Semantics<'_, RootDatabase>, token: &SyntaxToken, parent: syntax::SyntaxNode, edition: Edition, display_target: DisplayTarget) -> KeywordHint {
+     match token.kind() {
+         T![await] | T![loop] | T![match] | T![unsafe] | T![as] | T![try] | T![if] | T![else] => {
+             let keyword_mod = format!("{}_keyword", token.text());
+     }
+ }
+ 
+-fn render_dyn_compatibility(
+-    db: &RootDatabase,
+-    buf: &mut String,
+-    safety: Option<DynCompatibilityViolation>,
+-) {
++fn render_dyn_compatibility(db: &RootDatabase, buf: &mut String, safety: Option<DynCompatibilityViolation>) {
+     let Some(osv) = safety else {
+         buf.push_str("Is dyn-compatible");
+         return;
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+-    const TESTERS: [u128; 10] = [0, 1, 2, 3, 4, 255, 256, 257, u128::MAX - 1, u128::MAX];
+-
+     #[test]
+     fn test_is_pwr2minus1() {
+         const OUTCOMES: [bool; 10] =
+             assert_eq!(actual, expected, "is_pwr2minu1({test}) gave {actual}, expected {expected}");
+         }
+     }
+-
+     #[test]
+     fn test_is_pwr2plus1() {
+         const OUTCOMES: [bool; 10] =
+             assert_eq!(actual, expected, "is_pwr2plus1({test}) gave {actual}, expected {expected}");
+         }
+     }
+-
+     #[test]
+     fn test_pwr2_to_exponent() {
+         const TESTERS: [u128; 9] = [

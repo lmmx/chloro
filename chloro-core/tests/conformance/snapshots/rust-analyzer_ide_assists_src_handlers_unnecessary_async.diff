@@ -1,0 +1,144 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7946 bytes
+Chloro size:   7525 bytes
+Rustfmt size:  7946 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::{AssistContext, Assists};
+-
+-// FIXME: This ought to be a diagnostic lint.
+-
+-// Assist: unnecessary_async
+-//
+-// Removes the `async` mark from functions which have no `.await` in their body.
+-// Looks for calls to the functions and removes the `.await` on the call site.
+-//
+-// ```
+-// pub asy$0nc fn foo() {}
+-// pub async fn bar() { foo().await }
+-// ```
+-// ->
+-// ```
+-// pub fn foo() {}
+-// pub async fn bar() { foo() }
+-// ```
+ pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let function: ast::Fn = ctx.find_node_at_offset()?;
+-
+     // Do nothing if the cursor isn't on the async token.
+     let async_token = function.async_token()?;
+     if !async_token.text_range().contains_inclusive(ctx.offset()) {
+     {
+         return None;
+     }
+-
+     // Remove the `async` keyword plus whitespace after it, if any.
+     let async_range = {
+         let async_token = function.async_token()?;
+             async_token.text_range()
+         }
+     };
+-
+     // Otherwise, we may remove the `async` keyword.
+     acc.add(
+         AssistId::quick_fix("unnecessary_async"),
+     )
+ }
+ 
+-fn find_all_references(
+-    ctx: &AssistContext<'_>,
+-    def: &Definition,
+-) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
++fn find_all_references(ctx: &AssistContext<'_>, def: &Definition) -> impl Iterator<Item = (EditionedFileId, FileReference)> {
+     def.usages(&ctx.sema).all().into_iter().flat_map(|(file_id, references)| {
+         references.into_iter().map(move |reference| (file_id, reference))
+     })
+             .parent()
+             .and_then(ast::AwaitExpr::cast)
+     };
+-
+     ctx.sema.original_ast_node(await_expr?)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     #[test]
+     fn applies_on_empty_function() {
+         check_assist(unnecessary_async, "pub asy$0nc fn f() {}", "pub fn f() {}")
+     }
+-
+     #[test]
+     fn applies_and_removes_whitespace() {
+         check_assist(unnecessary_async, "pub async$0       fn f() {}", "pub fn f() {}")
+     }
+-
+     #[test]
+     fn applies_on_function_with_a_non_await_expr() {
+         check_assist(unnecessary_async, "pub asy$0nc fn f() { f2() }", "pub fn f() { f2() }")
+     }
+-
+     #[test]
+     fn does_not_apply_on_function_with_an_await_expr() {
+         check_assist_not_applicable(unnecessary_async, "pub asy$0nc fn f() { f2().await }")
+     }
+-
+     #[test]
+     fn applies_and_removes_await_on_reference() {
+         check_assist(
+ pub async fn f3() { f2() }"#,
+         )
+     }
+-
+     #[test]
+     fn applies_and_removes_await_from_within_module() {
+         check_assist(
+ pub async fn f3() { a::f2() }"#,
+         )
+     }
+-
+     #[test]
+     fn applies_and_removes_await_on_inner_await() {
+         check_assist(
+ pub async fn f4(i: i32) { }"#,
+         )
+     }
+-
+     #[test]
+     fn applies_and_removes_await_on_outer_await() {
+         check_assist(
+ pub async fn f4() -> i32 { 1 }"#,
+         )
+     }
+-
+     #[test]
+     fn applies_on_method_call() {
+         check_assist(
+ pub async fn f(s: &S) { s.f2() }"#,
+         )
+     }
+-
+     #[test]
+     fn does_not_apply_on_function_with_a_nested_await_expr() {
+         check_assist_not_applicable(
+             "async$0 fn f() { if true { loop { f2().await } } }",
+         )
+     }
+-
+     #[test]
+     fn does_not_apply_when_not_on_async_token() {
+         check_assist_not_applicable(unnecessary_async, "pub async fn$0 f() { f2() }")
+     }
+-
+     #[test]
+     fn does_not_apply_on_async_trait_method() {
+         check_assist_not_applicable(

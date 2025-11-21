@@ -33,6 +33,12 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     buf.push(' ');
 
+    // Check if this is a trait impl
+    if let Some(trait_) = impl_.trait_() {
+        buf.push_str(&trait_.syntax().text().to_string());
+        buf.push_str(" for ");
+    }
+
     if let Some(ty) = impl_.self_ty() {
         buf.push_str(&ty.syntax().text().to_string());
     }

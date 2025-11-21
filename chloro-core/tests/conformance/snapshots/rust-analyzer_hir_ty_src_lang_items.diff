@@ -1,0 +1,80 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3398 bytes
+Chloro size:   3397 bytes
+Rustfmt size:  3608 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Functions to detect special lang items
+ 
+-use hir_def::{lang_item::LangItem, signatures::StructFlags, AdtId};
++use hir_def::{AdtId, lang_item::LangItem, signatures::StructFlags};
+ use hir_expand::name::Name;
+ use intern::sym;
+ 
+ use crate::db::HirDatabase;
+-
+ pub fn is_box(db: &dyn HirDatabase, adt: AdtId) -> bool {
+-    let AdtId::StructId(id) = adt else {
+-        return false;
+-    };
++    let AdtId::StructId(id) = adt else { return false };
+     db.struct_signature(id).flags.contains(StructFlags::IS_BOX)
+ }
+ 
+             ArithOp::Rem => (Name::new_symbol_root(sym::rem_assign), LangItem::RemAssign),
+             ArithOp::Shl => (Name::new_symbol_root(sym::shl_assign), LangItem::ShlAssign),
+             ArithOp::Shr => (Name::new_symbol_root(sym::shr_assign), LangItem::ShrAssign),
+-            ArithOp::BitXor => (
+-                Name::new_symbol_root(sym::bitxor_assign),
+-                LangItem::BitXorAssign,
+-            ),
+-            ArithOp::BitOr => (
+-                Name::new_symbol_root(sym::bitor_assign),
+-                LangItem::BitOrAssign,
+-            ),
+-            ArithOp::BitAnd => (
+-                Name::new_symbol_root(sym::bitand_assign),
+-                LangItem::BitAndAssign,
+-            ),
++            ArithOp::BitXor => (Name::new_symbol_root(sym::bitxor_assign), LangItem::BitXorAssign),
++            ArithOp::BitOr => (Name::new_symbol_root(sym::bitor_assign), LangItem::BitOrAssign),
++            ArithOp::BitAnd => (Name::new_symbol_root(sym::bitand_assign), LangItem::BitAndAssign),
+         },
+         BinaryOp::CmpOp(cop) => match cop {
+             CmpOp::Eq { negated: false } => (Name::new_symbol_root(sym::eq), LangItem::PartialEq),
+             CmpOp::Eq { negated: true } => (Name::new_symbol_root(sym::ne), LangItem::PartialEq),
+-            CmpOp::Ord {
+-                ordering: Ordering::Less,
+-                strict: false,
+-            } => (Name::new_symbol_root(sym::le), LangItem::PartialOrd),
+-            CmpOp::Ord {
+-                ordering: Ordering::Less,
+-                strict: true,
+-            } => (Name::new_symbol_root(sym::lt), LangItem::PartialOrd),
+-            CmpOp::Ord {
+-                ordering: Ordering::Greater,
+-                strict: false,
+-            } => (Name::new_symbol_root(sym::ge), LangItem::PartialOrd),
+-            CmpOp::Ord {
+-                ordering: Ordering::Greater,
+-                strict: true,
+-            } => (Name::new_symbol_root(sym::gt), LangItem::PartialOrd),
++            CmpOp::Ord { ordering: Ordering::Less, strict: false } => {
++                (Name::new_symbol_root(sym::le), LangItem::PartialOrd)
++            }
++            CmpOp::Ord { ordering: Ordering::Less, strict: true } => {
++                (Name::new_symbol_root(sym::lt), LangItem::PartialOrd)
++            }
++            CmpOp::Ord { ordering: Ordering::Greater, strict: false } => {
++                (Name::new_symbol_root(sym::ge), LangItem::PartialOrd)
++            }
++            CmpOp::Ord { ordering: Ordering::Greater, strict: true } => {
++                (Name::new_symbol_root(sym::gt), LangItem::PartialOrd)
++            }
+         },
+         BinaryOp::Assignment { op: None } => return None,
+     })

@@ -1,0 +1,29 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2830 bytes
+Chloro size:   2850 bytes
+Rustfmt size:  2830 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This files contains the declaration of diagnostics kinds for ty and path lowering.
+ 
+ use hir_def::type_ref::TypeRefId;
+ use hir_def::{GenericDefId, GenericParamId};
+-
+ #[derive(Debug, PartialEq, Eq, Clone)]
+ pub struct TyLoweringDiagnostic {
+     pub source: TypeRefId,
+     /// Generic arguments directly on the segment.
+     Segment(u32),
+     /// Generic arguments on an associated type, e.g. `Foo<Assoc<A, B> = C>` or `Foo<Assoc<A, B>: Bound>`.
+-    AssocType { segment: u32, assoc_type: u32 },
++    AssocType {
++        segment: u32,
++        assoc_type: u32,
++    },
+ }
+ 
+ #[derive(Debug, PartialEq, Eq, Clone)]

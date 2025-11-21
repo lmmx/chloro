@@ -1,0 +1,152 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6477 bytes
+Chloro size:   5918 bytes
+Rustfmt size:  6522 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::HirDisplay;
+ use ide_db::{assists::AssistId, defs::Definition};
+ use stdx::to_upper_snake_case;
+ use syntax::{
+-    ast::{self, syntax_factory::SyntaxFactory, HasName},
+     AstNode,
++    ast::{self, HasName, syntax_factory::SyntaxFactory},
+ };
+ 
+ use crate::{
+     assist_context::{AssistContext, Assists},
+     utils::{self},
+ };
+-
+-// Assist: promote_local_to_const
+-//
+-// Promotes a local variable to a const item changing its name to a `SCREAMING_SNAKE_CASE` variant
+-// if the local uses no non-const expressions.
+-//
+-// ```
+-// fn main() {
+-//     let foo$0 = true;
+-//
+-//     if foo {
+-//         println!("It's true");
+-//     } else {
+-//         println!("It's false");
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     const $0FOO: bool = true;
+-//
+-//     if FOO {
+-//         println!("It's true");
+-//     } else {
+-//         println!("It's false");
+-//     }
+-// }
+-// ```
+ pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
+     let name = pat.name()?;
+         return None;
+     }
+     let let_stmt = pat.syntax().parent().and_then(ast::LetStmt::cast)?;
+-
+     let module = ctx.sema.scope(pat.syntax())?.module();
+     let local = ctx.sema.to_def(&pat)?;
+     let ty = ctx.sema.type_of_pat(&pat.into())?.original;
+-
+     let ty = match ty.display_source_code(ctx.db(), module.into(), false) {
+         Ok(ty) => ty,
+         Err(_) => return None,
+     };
+-
+     let initializer = let_stmt.initializer()?;
+     if !utils::is_body_const(&ctx.sema, &initializer) {
+         cov_mark::hit!(promote_local_non_const);
+         return None;
+     }
+-
+     acc.add(
+         AssistId::refactor("promote_local_to_const"),
+         "Promote local to constant",
+                 let name_ref = make.name_ref(&name);
+ 
+                 for usage in usages {
+-                    let Some(usage_name) = usage.name.as_name_ref().cloned() else {
+-                        continue;
+-                    };
++                    let Some(usage_name) = usage.name.as_name_ref().cloned() else { continue };
+                     if let Some(record_field) = ast::RecordExprField::for_name_ref(&usage_name) {
+                         let path = make.ident_path(&name);
+                         let name_expr = make.expr_path(path);
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn simple() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn multiple_uses() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn usage_in_field_shorthand() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn usage_in_macro() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn usage_shorthand_in_macro() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn not_applicable_non_const_meth_call() {
+         cov_mark::check!(promote_local_non_const);
+ ",
+         );
+     }
+-
+     #[test]
+     fn not_applicable_non_const_call() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn not_applicable_unknown_ty() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn not_applicable_non_simple_ident() {
+         cov_mark::check!(promote_local_non_simple_ident);

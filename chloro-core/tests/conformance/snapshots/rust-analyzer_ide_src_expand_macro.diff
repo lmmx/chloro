@@ -1,0 +1,350 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 21133 bytes
+Chloro size:   20593 bytes
+Rustfmt size:  21133 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
+ 
+ use crate::FilePosition;
+-
+ pub struct ExpandedMacro {
+     pub name: String,
+     pub expansion: String,
+ }
+ 
+-// Feature: Expand Macro Recursively
+-//
+-// Shows the full macro expansion of the macro at the current caret position.
+-//
+-// | Editor  | Action Name |
+-// |---------|-------------|
+-// | VS Code | **rust-analyzer: Expand macro recursively at caret** |
+-//
+-// ![Expand Macro Recursively](https://user-images.githubusercontent.com/48062697/113020648-b3973180-917a-11eb-84a9-ecb921293dc5.gif)
+ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
+     let sema = Semantics::new(db);
+     let file_id = sema.attach_first_edition(position.file_id)?;
+     let file = sema.parse(file_id);
+     let krate = sema.file_to_module_def(file_id.file_id(db))?.krate().into();
+-
+     let tok = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
+         SyntaxKind::IDENT => 1,
+         _ => 0,
+     })?;
+-
+     // due to how rust-analyzer works internally, we need to special case derive attributes,
+     // otherwise they might not get found, e.g. here with the cursor at $0 `#[attr]` would expand:
+     // ```
+     // #[derive($0Foo)]
+     // struct Bar;
+     // ```
+-
+     let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
+         let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
+         if !macro_file.is_derive_attr_pseudo_expansion(db) {
+         }
+         Some(ExpandedMacro { name, expansion })
+     });
+-
+     if derive.is_some() {
+         return derive;
+     }
+-
+     let syntax_token = sema.descend_into_macros_exact(tok);
+     'tokens: for syntax_token in syntax_token {
+         let mut anc = syntax_token.parent_ancestors();
+     None
+ }
+ 
+-fn expand_macro_recur(
+-    sema: &Semantics<'_, RootDatabase>,
+-    macro_call: &ast::Item,
+-    error: &mut String,
+-    result_span_map: &mut SpanMap<SyntaxContext>,
+-    offset_in_original_node: TextSize,
+-) -> Option<SyntaxNode> {
++fn expand_macro_recur(sema: &Semantics<'_, RootDatabase>, macro_call: &ast::Item, error: &mut String, result_span_map: &mut SpanMap<SyntaxContext>, offset_in_original_node: TextSize) -> Option<SyntaxNode> {
+     let ExpandResult { value: expanded, err } = match macro_call {
+         item @ ast::Item::MacroCall(macro_call) => sema
+             .expand_attr_macro(item)
+     Some(expand(sema, expanded, error, result_span_map, u32::from(offset_in_original_node) as i32))
+ }
+ 
+-fn expand(
+-    sema: &Semantics<'_, RootDatabase>,
+-    expanded: SyntaxNode,
+-    error: &mut String,
+-    result_span_map: &mut SpanMap<SyntaxContext>,
+-    mut offset_in_original_node: i32,
+-) -> SyntaxNode {
++fn expand(sema: &Semantics<'_, RootDatabase>, expanded: SyntaxNode, error: &mut String, result_span_map: &mut SpanMap<SyntaxContext>, mut offset_in_original_node: i32) -> SyntaxNode {
+     let children = expanded.descendants().filter_map(ast::Item::cast);
+     let mut replacements = Vec::new();
+-
+     for child in children {
+         if let Some(new_node) = expand_macro_recur(
+             sema,
+             replacements.push((child, new_node));
+         }
+     }
+-
+     replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
+     expanded
+ }
+ 
+-fn format(
+-    db: &RootDatabase,
+-    kind: SyntaxKind,
+-    file_id: FileId,
+-    expanded: SyntaxNode,
+-    span_map: &SpanMap<SyntaxContext>,
+-    krate: Crate,
+-) -> String {
++fn format(db: &RootDatabase, kind: SyntaxKind, file_id: FileId, expanded: SyntaxNode, span_map: &SpanMap<SyntaxContext>, krate: Crate) -> String {
+     let expansion = prettify_macro_expansion(db, expanded, span_map, krate).to_string();
+-
+     _format(db, kind, file_id, &expansion).unwrap_or(expansion)
+ }
+ 
+ #[cfg(any(test, target_arch = "wasm32", target_os = "emscripten"))]
+-fn _format(
+-    _db: &RootDatabase,
+-    _kind: SyntaxKind,
+-    _file_id: FileId,
+-    expansion: &str,
+-) -> Option<String> {
++fn _format(_db: &RootDatabase, _kind: SyntaxKind, _file_id: FileId, expansion: &str) -> Option<String> {
+     // remove trailing spaces for test
+     use itertools::Itertools;
+     Some(expansion.lines().map(|x| x.trim_end()).join("\n"))
+ }
+ 
+ #[cfg(not(any(test, target_arch = "wasm32", target_os = "emscripten")))]
+-fn _format(
+-    db: &RootDatabase,
+-    kind: SyntaxKind,
+-    file_id: FileId,
+-    expansion: &str,
+-) -> Option<String> {
++fn _format(db: &RootDatabase, kind: SyntaxKind, file_id: FileId, expansion: &str) -> Option<String> {
+     use ide_db::base_db::RootQueryDb;
+-
+     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
+     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
+     const BUILTIN_REPLACE: &str = "builtin__POUND";
+         _ => ("", ""),
+     };
+     let expansion = format!("{prefix}{expansion}{suffix}");
+-
+     let &crate_id = db.relevant_crates(file_id).iter().next()?;
+     let edition = crate_id.data(db).edition;
+-
+     #[allow(clippy::disallowed_methods)]
+     let mut cmd = std::process::Command::new(toolchain::Tool::Rustfmt.path());
+     cmd.arg("--edition");
+     cmd.arg(edition.to_string());
+-
+     let mut rustfmt = cmd
+         .stdin(std::process::Stdio::piped())
+         .stdout(std::process::Stdio::piped())
+         .stderr(std::process::Stdio::piped())
+         .spawn()
+         .ok()?;
+-
+     std::io::Write::write_all(&mut rustfmt.stdin.as_mut()?, expansion.as_bytes()).ok()?;
+-
+     let output = rustfmt.wait_with_output().ok()?;
+     let captured_stdout = String::from_utf8(output.stdout).ok()?;
+-
+     if output.status.success() && !captured_stdout.trim().is_empty() {
+         let output = captured_stdout
+             .replace(DOLLAR_CRATE_REPLACE, "$crate")
+ #[cfg(test)]
+ mod tests {
+     use expect_test::{Expect, expect};
+-
+     use crate::fixture;
+-
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+         let (analysis, pos) = fixture::position(ra_fixture);
+         let actual = format!("{}\n{}", expansion.name, expansion.expansion);
+         expect.assert_eq(&actual);
+     }
+-
+     #[test]
+     fn expand_allowed_builtin_macro() {
+         check(
+                 "test10btrue""#]],
+         );
+     }
+-
+     #[test]
+     fn do_not_expand_disallowed_macro() {
+         let (analysis, pos) = fixture::position(
+         let expansion = analysis.expand_macro(pos).unwrap();
+         assert!(expansion.is_none());
+     }
+-
+     #[test]
+     fn macro_expand_as_keyword() {
+         check(
+                 5i64 as _"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_underscore() {
+         check(
+                 for _ in 0..42{}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_recursive_expansion() {
+         check(
+                 fn b(){}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_multiple_lines() {
+         check(
+                 }"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_match_ast() {
+         check(
+                 }"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_match_ast_inside_let_statement() {
+         check(
+                 {}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_inner_macro_rules() {
+         check(
+                 }"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_inner_macro_fail_to_expand() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_with_dollar_crate() {
+         check(
+                 0"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_with_dyn_absolute_path() {
+         check(
+                 fn f<T>(_: &dyn ::std::marker::Copy){}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_item_expansion_in_expression_call() {
+         check(
+                 fn f<T>(){}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_derive() {
+         check(
+                     }"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_derive2() {
+         check(
+                 impl <>core::marker::Copy for Foo< >where{}"#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expand_derive_multi() {
+         check(
+                     }"#]],
+         );
+     }
+-
+     #[test]
+     fn dollar_crate() {
+         check(
+ crate::Foo;"#]],
+         );
+     }
+-
+     #[test]
+     fn semi_glueing() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_call() {
+         check(
+                 fn assoc(){}"#]],
+         );
+     }
+-
+     #[test]
+     fn eager() {
+         check(
+                 "<>""#]],
+         );
+     }
+-
+     #[test]
+     fn in_included() {
+         check(
+                 fn item(){}"#]],
+         );
+     }
+-
+     #[test]
+     fn include() {
+         check(
+                 foo();"#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_sig() {
+         check(
+                 u32"#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_generics() {
+         check(
+                 Trait"#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_fields() {
+         check(

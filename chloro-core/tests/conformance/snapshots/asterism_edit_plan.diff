@@ -8,6 +8,21 @@ Rustfmt size:  3468 bytes
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
+ //! The edit plan manages document modifications using textum patches.
+ //!
+ //! This module defines the transformation that work in the TUI manifests as actual edits on disk.
+ //! asterism uses textum for generic line-based patching that works with any text format.
+ 
+-use serde::{Deserialize, Serialize};
+ use std::collections::HashMap;
+ use std::io;
+-use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
+ 
++use serde::{Deserialize, Serialize};
++use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
+ /// Serialisable collection of file modifications for atomic application.
+ #[derive(Serialize, Deserialize, Clone)]
+ pub struct EditPlan {
      /// Returns an error if file operations, patching, or line number conversion fails.
      pub fn apply(&mut self) -> io::Result<()> {
          let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();

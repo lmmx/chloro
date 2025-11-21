@@ -1,0 +1,232 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 17460 bytes
+Chloro size:   16024 bytes
+Rustfmt size:  17756 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //!
+ //! See also a neighboring `body` module.
+ 
+-pub mod format_args;
+-pub mod generics;
+-pub mod type_ref;
+-
+ use std::fmt;
+ 
+-use hir_expand::{name::Name, MacroDefId};
++use hir_expand::{MacroDefId, name::Name};
+ use intern::Symbol;
+ use la_arena::Idx;
+ use rustc_apfloat::ieee::{Half as f16, Quad as f128};
+ use syntax::ast;
++pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
+ use type_ref::TypeRefId;
+ 
+ use crate::{
++    BlockId,
+     builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
+     expr_store::{
+-        path::{GenericArgs, Path},
+         HygieneId,
++        path::{GenericArgs, Path},
+     },
+     type_ref::{Mutability, Rawness},
+-    BlockId,
+ };
++pub mod format_args;
+ 
+-pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
++pub mod generics;
++
++pub mod type_ref;
+ 
+ pub type BindingId = Idx<Binding>;
+ 
+ 
+ pub type PatId = Idx<Pat>;
+ 
+-// FIXME: Encode this as a single u32, we won't ever reach all 32 bits especially given these counts
+-// are local to the body.
+ #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+ pub enum ExprOrPatId {
+     ExprId(ExprId),
+         matches!(self, Self::PatId(_))
+     }
+ }
+-stdx::impl_from!(ExprId, PatId for ExprOrPatId);
+-
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct Label {
+     pub name: Name,
+ }
++
+ pub type LabelId = Idx<Label>;
+ 
+-// We leave float values as a string to avoid double rounding.
+-// For PartialEq, string comparison should work, as ordering is not important
+-// https://github.com/rust-lang/rust-analyzer/issues/12380#issuecomment-1137284360
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct FloatTypeWrapper(Symbol);
+ 
+-// FIXME(#17451): Use builtin types once stabilised.
+ impl FloatTypeWrapper {
+     pub fn new(sym: Symbol) -> Self {
+         Self(sym)
+     Bool(bool),
+     Int(i128, Option<BuiltinInt>),
+     Uint(u128, Option<BuiltinUint>),
+-    // Here we are using a wrapper around float because float primitives do not implement Eq, so they
+-    // could not be used directly here, to understand how the wrapper works go to definition of
+-    // FloatTypeWrapper
+     Float(FloatTypeWrapper, Option<BuiltinFloat>),
+ }
+ 
+-#[derive(Debug, Clone, Eq, PartialEq)]
+ /// Used in range patterns.
++#[derive(Debug, Clone, Eq, PartialEq)]
+ pub enum LiteralOrConst {
+     Literal(Literal),
+     Const(PatId),
+ 
+ impl Literal {
+     pub fn negate(self) -> Option<Self> {
+-        if let Literal::Int(i, k) = self {
+-            Some(Literal::Int(-i, k))
+-        } else {
+-            None
+-        }
++        if let Literal::Int(i, k) = self { Some(Literal::Int(-i, k)) } else { None }
+     }
+ }
+ 
+             }
+             LiteralKind::FloatNumber(lit) => {
+                 let ty = lit.suffix().and_then(BuiltinFloat::from_suffix);
+-                Literal::Float(
+-                    FloatTypeWrapper::new(Symbol::intern(&lit.value_string())),
+-                    ty,
+-                )
++                Literal::Float(FloatTypeWrapper::new(Symbol::intern(&lit.value_string())), ty)
+             }
+             LiteralKind::ByteString(bs) => {
+                 let text = bs.value().map_or_else(|_| Default::default(), Box::from);
+                 Literal::ByteString(text)
+             }
+             LiteralKind::String(s) => {
+-                let text = s
+-                    .value()
+-                    .map_or_else(|_| Symbol::empty(), |it| Symbol::intern(&it));
++                let text = s.value().map_or_else(|_| Symbol::empty(), |it| Symbol::intern(&it));
+                 Literal::String(text)
+             }
+             LiteralKind::CString(s) => {
+         tail: Option<ExprId>,
+     },
+     Const(ExprId),
+-    // FIXME: Fold this into Block with an unsafe flag?
+     Unsafe {
+         id: Option<BlockId>,
+         statements: Box<[Statement]>,
+         rhs: ExprId,
+         op: Option<BinaryOp>,
+     },
+-    // Assignments need a special treatment because of destructuring assignment.
+     Assignment {
+         target: PatId,
+         value: ExprId,
+ 
+ #[derive(Clone, Copy, PartialEq, Eq, Hash)]
+ pub struct AsmOptions(u16);
+-bitflags::bitflags! {
+-    impl AsmOptions: u16 {
+-        const PURE            = 1 << 0;
+-        const NOMEM           = 1 << 1;
+-        const READONLY        = 1 << 2;
+-        const PRESERVES_FLAGS = 1 << 3;
+-        const NORETURN        = 1 << 4;
+-        const NOSTACK         = 1 << 5;
+-        const ATT_SYNTAX      = 1 << 6;
+-        const RAW             = 1 << 7;
+-        const MAY_UNWIND      = 1 << 8;
+-    }
+-}
+-
+ impl AsmOptions {
+-    pub const COUNT: usize = Self::all().bits().count_ones() as usize;
+ 
+-    pub const GLOBAL_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW);
+-    pub const NAKED_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW).union(Self::NORETURN);
++
+ 
+     pub fn human_readable_names(&self) -> Vec<&'static str> {
+         let mut options = vec![];
+-
+         if self.contains(AsmOptions::PURE) {
+             options.push("pure");
+         }
+         if self.contains(AsmOptions::MAY_UNWIND) {
+             options.push("may_unwind");
+         }
+-
+         options
+     }
+ }
+     }
+ 
+     pub fn is_clobber(&self) -> bool {
+-        matches!(
+-            self,
+-            AsmOperand::Out {
+-                reg: InlineAsmRegOrRegClass::Reg(_),
+-                late: _,
+-                expr: None
+-            }
+-        )
++        matches!(self, AsmOperand::Out { reg: InlineAsmRegOrRegClass::Reg(_), late: _, expr: None })
+     }
+ }
+ 
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub enum Array {
+-    ElementList { elements: Box<[ExprId]> },
+-    Repeat { initializer: ExprId, repeat: ExprId },
++    ElementList {
++        elements: Box<[ExprId]>,
++    },
++    Repeat {
++        initializer: ExprId,
++        repeat: ExprId,
++    },
+ }
+ 
+ #[derive(Debug, Clone, Eq, PartialEq)]
+     /// mode `None`; if you do `let Some(x) = &Some(22)`, it will
+     /// ultimately be inferred to be by-reference.
+     Unannotated,
+-
+     /// Annotated with `mut x` -- could be either ref or not, similar to `None`.
+     Mutable,
+-
+     /// Annotated as `ref`, like `ref x`
+     Ref,
+-
+     /// Annotated as `ref mut x`.
+     RefMut,
+ }
+                 args.iter().copied().for_each(f);
+             }
+             Pat::Ref { pat, .. } => f(*pat),
+-            Pat::Slice {
+-                prefix,
+-                slice,
+-                suffix,
+-            } => {
++            Pat::Slice { prefix, slice, suffix } => {
+                 let total_iter = prefix.iter().chain(slice.iter()).chain(suffix.iter());
+                 total_iter.copied().for_each(f);
+             }

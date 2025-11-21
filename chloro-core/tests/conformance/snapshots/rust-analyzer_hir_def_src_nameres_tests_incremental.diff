@@ -1,0 +1,222 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15843 bytes
+Chloro size:   14692 bytes
+Rustfmt size:  16061 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use base_db::{
+     CrateDisplayName, CrateGraphBuilder, CrateName, CrateOrigin, CrateWorkspaceData,
+     DependencyBuilder, Env, RootQueryDb, SourceDatabase,
+ };
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use intern::Symbol;
+ use span::Edition;
+ use test_fixture::WithFixture;
+     db::DefDatabase,
+     nameres::{crate_def_map, tests::TestDB},
+ };
+-
+-fn check_def_map_is_not_recomputed(
+-    #[rust_analyzer::rust_fixture] ra_fixture_initial: &str,
+-    #[rust_analyzer::rust_fixture] ra_fixture_change: &str,
+-    expecta: Expect,
+-    expectb: Expect,
+-) {
++fn check_def_map_is_not_recomputed(#[rust_analyzer::rust_fixture] ra_fixture_initial: &str, #[rust_analyzer::rust_fixture] ra_fixture_change: &str, expecta: Expect, expectb: Expect) {
+     let (mut db, pos) = TestDB::with_position(ra_fixture_initial);
+     let krate = db.fetch_test_crate();
+     execute_assert_events(
+         expecta,
+     );
+     db.set_file_text(pos.file_id.file_id(&db), ra_fixture_change);
+-
+     execute_assert_events(
+         &db,
+         || {
+ pub const BAZ: u32 = 0;
+     "#,
+     );
+-
+     for &krate in db.all_crates().iter() {
+         crate_def_map(&db, krate);
+     }
+-
+     let all_crates_before = db.all_crates();
+-
+     {
+         // Add a dependency a -> b.
+         let mut new_crate_graph = CrateGraphBuilder::default();
+                 Default::default(),
+                 None,
+                 Env::default(),
+-                CrateOrigin::Local {
+-                    repo: None,
+-                    name: Some(Symbol::intern(crate_name)),
+-                },
++                CrateOrigin::Local { repo: None, name: Some(Symbol::intern(crate_name)) },
+                 false,
+                 Arc::new(
+                     // FIXME: This is less than ideal
+                     )
+                     .unwrap(),
+                 ),
+-                Arc::new(CrateWorkspaceData {
+-                    target: Err("".into()),
+-                    toolchain: None,
+-                }),
++                Arc::new(CrateWorkspaceData { target: Err("".into()), toolchain: None }),
+             )
+         };
+         let a = add_crate("a", 0);
+             .unwrap();
+         new_crate_graph.set_in_db(&mut db);
+     }
+-
+     let all_crates_after = db.all_crates();
+     assert!(
+         Arc::ptr_eq(&all_crates_before, &all_crates_after),
+     );
+ }
+ 
+-// Would be nice if this was the case, but as attribute inputs are stored in the item tree, this is
+-// not currently the case.
+-// #[test]
+-// fn typing_inside_an_attribute_arg_should_not_invalidate_def_map() {
+-//     check_def_map_is_not_recomputed(
+-//         r"
+-// //- proc_macros: identity
+-// //- /lib.rs
+-// mod foo;
+-
+-// //- /foo/mod.rs
+-// pub mod bar;
+-
+-// //- /foo/bar.rs
+-// $0
+-// #[proc_macros::identity]
+-// fn f() {}
+-// ",
+-//         r"
+-// #[proc_macros::identity(foo)]
+-// fn f() {}
+-// ",
+-//     );
+-// }
+-
+ #[test]
+ fn typing_inside_macro_heavy_file_should_not_invalidate_def_map() {
+     check_def_map_is_not_recomputed(
+     );
+ }
+ 
+-// Would be nice if this was the case, but as attribute inputs are stored in the item tree, this is
+-// not currently the case.
+-// #[test]
+-// fn typing_inside_a_derive_should_not_invalidate_def_map() {
+-//     check_def_map_is_not_recomputed(
+-//         r"
+-// //- proc_macros: derive_identity
+-// //- minicore:derive
+-// //- /lib.rs
+-// mod foo;
+-
+-// //- /foo/mod.rs
+-// pub mod bar;
+-
+-// //- /foo/bar.rs
+-// $0
+-// #[derive(proc_macros::DeriveIdentity)]
+-// #[allow()]
+-// struct S;
+-// ",
+-//         r"
+-// #[derive(proc_macros::DeriveIdentity)]
+-// #[allow(dead_code)]
+-// struct S;
+-// ",
+-//     );
+-// }
+-
+ #[test]
+ fn typing_inside_a_function_should_not_invalidate_item_expansions() {
+     let (mut db, pos) = TestDB::with_position(
+             let (_, module_data) = crate_def_map.modules.iter().last().unwrap();
+             assert_eq!(module_data.scope.resolutions().count(), 4);
+         },
+-        &[
+-            ("file_item_tree_query", 6),
+-            ("parse_macro_expansion_shim", 3),
+-        ],
++        &[("file_item_tree_query", 6), ("parse_macro_expansion_shim", 3)],
+         expect![[r#"
+             [
+                 "crate_local_def_map",
+             ]
+         "#]],
+     );
+-
+     let new_text = r#"
+ m!(X);
+ fn quux() { 92 }
+ m!(Z);
+ "#;
+     db.set_file_text(pos.file_id.file_id(&db), new_text);
+-
+     execute_assert_events(
+         &db,
+         || {
+             let (_, module_data) = crate_def_map.modules.iter().last().unwrap();
+             assert_eq!(module_data.scope.resolutions().count(), 4);
+         },
+-        &[
+-            ("file_item_tree_query", 1),
+-            ("parse_macro_expansion_shim", 0),
+-        ],
++        &[("file_item_tree_query", 1), ("parse_macro_expansion_shim", 0)],
+         expect![[r#"
+             [
+                 "parse_shim",
+ pub type Ty = ();
+ "#,
+     );
+-
+     execute_assert_events(
+         &db,
+         || {
+             ]
+         "#]],
+     );
+-
+     let file_id = pos.file_id.file_id(&db);
+     let file_text = db.file_text(file_id).text(&db);
+     db.set_file_text(file_id, &format!("{file_text}\n"));
+-
+     execute_assert_events(
+         &db,
+         || {
+     );
+ }
+ 
+-fn execute_assert_events(
+-    db: &TestDB,
+-    f: impl FnOnce(),
+-    required: &[(&str, usize)],
+-    expect: Expect,
+-) {
++fn execute_assert_events(db: &TestDB, f: impl FnOnce(), required: &[(&str, usize)], expect: Expect) {
+     let events = db.log_executed(f);
+     for (event, count) in required {
+         let n = events.iter().filter(|it| it.contains(event)).count();
+-        assert_eq!(
+-            n, *count,
+-            "Expected {event} to be executed {count} times, but only got {n}"
+-        );
++        assert_eq!(n, *count, "Expected {event} to be executed {count} times, but only got {n}");
+     }
+     expect.assert_debug_eq(&events);
+ }

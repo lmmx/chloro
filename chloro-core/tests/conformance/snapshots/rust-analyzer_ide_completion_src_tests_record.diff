@@ -1,0 +1,47 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5682 bytes
+Chloro size:   5676 bytes
+Rustfmt size:  5682 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use expect_test::expect;
+ 
+ use crate::tests::check;
+-
+ use super::check_edit;
+-
+ #[test]
+ fn without_default_impl() {
+     check(
+             kw ref
+         "#]],
+     );
+-
+     check(
+         r#"
+ //- minicore:result
+ #[test]
+ fn in_functional_update() {
+     cov_mark::check!(functional_update);
+-
+     check(
+         r#"
+ //- minicore:default
+ }
+ "#,
+     );
+-
+     check_edit(
+         "pub",
+         r"
+ }
+ "#,
+     );
+-
+     check_edit(
+         "pub(super)",
+         r"

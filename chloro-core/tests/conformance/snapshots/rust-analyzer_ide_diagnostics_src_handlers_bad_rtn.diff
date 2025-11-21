@@ -1,0 +1,34 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1132 bytes
+Chloro size:   982 bytes
+Rustfmt size:  1132 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::Severity;
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+-
+-// Diagnostic: bad-rtn
+-//
+-// This diagnostic is shown when a RTN (Return Type Notation, `Type::method(..): Send`) is written in an improper place.
+ pub(crate) fn bad_rtn(ctx: &DiagnosticsContext<'_>, d: &hir::BadRtn) -> Diagnostic {
+     Diagnostic::new_with_syntax_node_ptr(
+         ctx,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn fn_traits_also_emit() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn bad_rtn() {
+         check_diagnostics(

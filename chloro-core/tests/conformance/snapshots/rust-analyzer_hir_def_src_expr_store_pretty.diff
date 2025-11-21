@@ -1,0 +1,231 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 45518 bytes
+Chloro size:   45100 bytes
+Rustfmt size:  45518 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! A pretty-printer for HIR.
+-#![allow(dead_code)]
+ 
+ use std::{
+     fmt::{self, Write},
+ };
+ use crate::{LifetimeParamId, signatures::StructFlags};
+ use crate::{item_tree::FieldsShape, signatures::FieldData};
+-
+ use super::*;
+-
++#![allow(dead_code)]
+ macro_rules! w {
+     ($dst:expr, $($arg:tt)*) => {
+         { let _ = write!($dst, $($arg)*); }
+ where
+     Id: Lookup<Database = dyn DefDatabase, Data = Loc>,
+     Loc: HasSource,
+-    Loc::Value: ast::HasName,
+-{
++    Loc::Value: ast::HasName, {
+     let loc = id.lookup(db);
+     let source = loc.source(db);
+     source.value.name().map_or_else(|| default.to_owned(), |name| name.to_string())
+ }
+ 
+-pub fn print_body_hir(
+-    db: &dyn DefDatabase,
+-    body: &Body,
+-    owner: DefWithBodyId,
+-    edition: Edition,
+-) -> String {
++pub fn print_body_hir(db: &dyn DefDatabase, body: &Body, owner: DefWithBodyId, edition: Edition) -> String {
+     let header = match owner {
+         DefWithBodyId::FunctionId(it) => format!("fn {}", item_name(db, it, "<missing>")),
+         DefWithBodyId::StaticId(it) => format!("static {} = ", item_name(db, it, "<missing>")),
+             item_name(db, it, "<missing>")
+         ),
+     };
+-
+     let mut p = Printer {
+         db,
+         store: body,
+         ),
+         VariantId::UnionId(it) => format!("union {}", item_name(db, it, "<missing>")),
+     };
+-
+     let fields = owner.fields(db);
+-
+     let mut p = Printer {
+         db,
+         store: &fields.store,
+         FieldsShape::Tuple => wln!(p, "("),
+         FieldsShape::Unit => (),
+     }
+-
+     for (_, data) in fields.fields().iter() {
+         let FieldData { name, type_ref, visibility, is_unsafe } = data;
+         match visibility {
+         w!(p, "{}: ", name.display(db, p.edition));
+         p.print_type_ref(*type_ref);
+     }
+-
+     match fields.shape {
+         FieldsShape::Record => wln!(p, "}}"),
+         FieldsShape::Tuple => wln!(p, ");"),
+     }
+ }
+ 
+-pub fn print_path(
+-    db: &dyn DefDatabase,
+-    store: &ExpressionStore,
+-    path: &Path,
+-    edition: Edition,
+-) -> String {
++pub fn print_path(db: &dyn DefDatabase, store: &ExpressionStore, path: &Path, edition: Edition) -> String {
+     let mut p = Printer {
+         db,
+         store,
+     p.buf
+ }
+ 
+-pub fn print_struct(
+-    db: &dyn DefDatabase,
+-    StructSignature { name, generic_params, store, flags, shape, repr }: &StructSignature,
+-    edition: Edition,
+-) -> String {
++pub fn print_struct(db: &dyn DefDatabase, StructSignature { name, generic_params, store, flags, shape, repr }: &StructSignature, edition: Edition) -> String {
+     let mut p = Printer {
+         db,
+         store,
+         FieldsShape::Tuple => wln!(p, "(...)"),
+         FieldsShape::Unit => (),
+     }
+-
+     print_where_clauses(db, generic_params, &mut p);
+-
+     match shape {
+         FieldsShape::Record => wln!(p),
+         FieldsShape::Tuple => wln!(p, ";"),
+         FieldsShape::Unit => wln!(p, ";"),
+     }
+-
+     p.buf
+ }
+ 
+-pub fn print_function(
+-    db: &dyn DefDatabase,
+-    FunctionSignature {
++pub fn print_function(db: &dyn DefDatabase, FunctionSignature {
+         name,
+         generic_params,
+         store,
+         abi,
+         flags,
+         legacy_const_generics_indices,
+-    }: &FunctionSignature,
+-    edition: Edition,
+-) -> String {
++    }: &FunctionSignature, edition: Edition) -> String {
+     let mut p = Printer {
+         db,
+         store,
+         w!(p, " -> ");
+         p.print_type_ref(*ret_type);
+     }
+-
+     print_where_clauses(db, generic_params, &mut p);
+     wln!(p, " {{...}}");
+-
+     p.buf
+ }
+ 
+     }
+ }
+ 
+-pub fn print_expr_hir(
+-    db: &dyn DefDatabase,
+-    store: &ExpressionStore,
+-    _owner: DefWithBodyId,
+-    expr: ExprId,
+-    edition: Edition,
+-) -> String {
++pub fn print_expr_hir(db: &dyn DefDatabase, store: &ExpressionStore, _owner: DefWithBodyId, expr: ExprId, edition: Edition) -> String {
+     let mut p = Printer {
+         db,
+         store,
+     p.buf
+ }
+ 
+-pub fn print_pat_hir(
+-    db: &dyn DefDatabase,
+-    store: &ExpressionStore,
+-    _owner: DefWithBodyId,
+-    pat: PatId,
+-    oneline: bool,
+-    edition: Edition,
+-) -> String {
++pub fn print_pat_hir(db: &dyn DefDatabase, store: &ExpressionStore, _owner: DefWithBodyId, pat: PatId, oneline: bool, edition: Edition) -> String {
+     let mut p = Printer {
+         db,
+         store,
+                 };
+             }
+         }
+-
+         Ok(())
+     }
+ }
+         }
+     }
+ 
+-    // Add a newline if the current line is not empty.
+-    // If the current line is empty, add a space instead.
+-    //
+-    // Do not use [`writeln!()`] or [`wln!()`] here, which will result in
+-    // infinite recursive calls to this function.
+     fn newline(&mut self) {
+         if matches!(self.line_format, LineFormat::Oneline) {
+             match self.buf.chars().last() {
+ 
+     fn print_expr(&mut self, expr: ExprId) {
+         let expr = &self.store[expr];
+-
+         match expr {
+             Expr::Missing => w!(self, "�"),
+             Expr::Underscore => w!(self, "_"),
+         }
+     }
+ 
+-    fn print_block(
+-        &mut self,
+-        label: Option<&str>,
+-        statements: &[Statement],
+-        tail: &Option<la_arena::Idx<Expr>>,
+-    ) {
++    fn print_block(&mut self, label: Option<&str>, statements: &[Statement], tail: &Option<la_arena::Idx<Expr>>) {
+         self.whitespace();
+         if let Some(lbl) = label {
+             w!(self, "{}", lbl);
+ 
+     fn print_pat(&mut self, pat: PatId) {
+         let pat = &self.store[pat];
+-
+         match pat {
+             Pat::Missing => w!(self, "�"),
+             Pat::Wild => w!(self, "_"),
+                 ),
+             },
+         }
+-
+         for (i, segment) in path.segments().iter().enumerate() {
+             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
+                 w!(self, "::");
+ 
+     pub(crate) fn print_type_param(&mut self, param: TypeParamId) {
+         let generic_params = self.db.generic_params(param.parent());
+-
+         match generic_params[param.local_id()].name() {
+             Some(name) => w!(self, "{}", name.display(self.db, self.edition)),
+             None => w!(self, "Param[{}]", param.local_id().into_raw()),

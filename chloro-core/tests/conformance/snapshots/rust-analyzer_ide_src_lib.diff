@@ -1,0 +1,775 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 33665 bytes
+Chloro size:   31728 bytes
+Rustfmt size:  33868 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! However, IDE specific bits of the analysis (most notably completion) happen
+ //! in this crate.
+ 
+-// For proving that RootDatabase is RefUnwindSafe.
+-
+-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+-#![recursion_limit = "128"]
+-
+-#[cfg(test)]
+-mod fixture;
+-
+-mod markup;
+-mod navigation_target;
+-
+-mod annotations;
+-mod call_hierarchy;
+-mod child_modules;
+-mod doc_links;
+-mod expand_macro;
+-mod extend_selection;
+-mod fetch_crates;
+-mod file_structure;
+-mod folding_ranges;
+-mod goto_declaration;
+-mod goto_definition;
+-mod goto_implementation;
+-mod goto_type_definition;
+-mod highlight_related;
+-mod hover;
+-mod inlay_hints;
+-mod interpret;
+-mod join_lines;
+-mod markdown_remove;
+-mod matching_brace;
+-mod moniker;
+-mod move_item;
+-mod parent_module;
+-mod references;
+-mod rename;
+-mod runnables;
+-mod signature_help;
+-mod ssr;
+-mod static_index;
+-mod status;
+-mod syntax_highlighting;
+-mod test_explorer;
+-mod typing;
+-mod view_crate_graph;
+-mod view_hir;
+-mod view_item_tree;
+-mod view_memory_layout;
+-mod view_mir;
+-mod view_syntax_tree;
+-
+ use std::panic::{AssertUnwindSafe, UnwindSafe};
+ 
+ use cfg::CfgOptions;
+ use fetch_crates::CrateInfo;
+-use hir::{crate_def_map, sym, ChangeWithProcMacros, EditionedFileId};
+-use ide_db::{
+-    base_db::{
+-        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
+-        SourceDatabase, VfsPath,
+-    },
+-    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
++pub use hir::Semantics;
++use hir::{ChangeWithProcMacros, EditionedFileId, crate_def_map, sym};
++pub use ide_assists::{
++    Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
+ };
+-use ide_db::{ra_fixture::RaFixtureAnalysis, MiniCore};
++pub use ide_completion::{
++    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
++    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
++};
++pub use ide_db::{
++    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
++    assists::ExprFillDefaultMode,
++    base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
++    documentation::Documentation,
++    label::Label,
++    line_index::{LineCol, LineIndex},
++    prime_caches::ParallelPrimeCachesProgress,
++    search::{ReferenceCategory, SearchScope},
++    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
++    symbol_index::Query,
++    text_edit::{Indel, TextEdit},
++};
++use ide_db::{
++    FxHashMap, FxIndexSet, LineIndexDatabase,
++    base_db::{
++        CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
++        salsa::Cancelled,
++    },
++    prime_caches, symbol_index,
++};
++use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
++pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
++pub use ide_ssr::SsrError;
+ use macros::UpmapFromRaFixture;
+-use syntax::{ast, SourceFile};
++pub use span::Edition;
++use syntax::{SourceFile, ast};
++pub use syntax::{TextRange, TextSize};
+ use triomphe::Arc;
+-use view_memory_layout::{view_memory_layout, RecursiveMemoryLayout};
++use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
+ 
+ use crate::navigation_target::ToNav;
+-
+ pub use crate::{
+     annotations::{Annotation, AnnotationConfig, AnnotationKind, AnnotationLocation},
+     call_hierarchy::{CallHierarchyConfig, CallItem},
+         StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
+     },
+     syntax_highlighting::{
+-        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
+         HighlightConfig, HlRange,
++        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
+     },
+     test_explorer::{TestItem, TestItemKind},
+ };
+-pub use hir::Semantics;
+-pub use ide_assists::{
+-    Assist, AssistConfig, AssistId, AssistKind, AssistResolveStrategy, SingleResolve,
+-};
+-pub use ide_completion::{
+-    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
+-    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
+-};
+-pub use ide_db::{
+-    assists::ExprFillDefaultMode,
+-    base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
+-    documentation::Documentation,
+-    label::Label,
+-    line_index::{LineCol, LineIndex},
+-    prime_caches::ParallelPrimeCachesProgress,
+-    search::{ReferenceCategory, SearchScope},
+-    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
+-    symbol_index::Query,
+-    text_edit::{Indel, TextEdit},
+-    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
+-};
+-pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
+-pub use ide_ssr::SsrError;
+-pub use span::Edition;
+-pub use syntax::{TextRange, TextSize};
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
++#![recursion_limit = "128"]
++#[cfg(test)]
++mod fixture;
++
++mod markup;
++
++mod navigation_target;
++
++mod annotations;
++
++mod call_hierarchy;
++
++mod child_modules;
++
++mod doc_links;
++
++mod expand_macro;
++
++mod extend_selection;
++
++mod fetch_crates;
++
++mod file_structure;
++
++mod folding_ranges;
++
++mod goto_declaration;
++
++mod goto_definition;
++
++mod goto_implementation;
++
++mod goto_type_definition;
++
++mod highlight_related;
++
++mod hover;
++
++mod inlay_hints;
++
++mod interpret;
++
++mod join_lines;
++
++mod markdown_remove;
++
++mod matching_brace;
++
++mod moniker;
++
++mod move_item;
++
++mod parent_module;
++
++mod references;
++
++mod rename;
++
++mod runnables;
++
++mod signature_help;
++
++mod ssr;
++
++mod static_index;
++
++mod status;
++
++mod syntax_highlighting;
++
++mod test_explorer;
++
++mod typing;
++
++mod view_crate_graph;
++
++mod view_hir;
++
++mod view_item_tree;
++
++mod view_memory_layout;
++
++mod view_mir;
++
++mod view_syntax_tree;
+ 
+ pub type Cancellable<T> = Result<T, Cancelled>;
+ 
+ 
+ impl AnalysisHost {
+     pub fn new(lru_capacity: Option<u16>) -> AnalysisHost {
+-        AnalysisHost {
+-            db: RootDatabase::new(lru_capacity),
+-        }
++        AnalysisHost { db: RootDatabase::new(lru_capacity) }
+     }
+ 
+     pub fn with_database(db: RootDatabase) -> AnalysisHost {
+     /// Returns a snapshot of the current state, which you can query for
+     /// semantic information.
+     pub fn analysis(&self) -> Analysis {
+-        Analysis {
+-            db: self.db.clone(),
+-        }
++        Analysis { db: self.db.clone() }
+     }
+ 
+     /// Applies changes to the current state of the world. If there are
+     pub fn per_query_memory_usage(&mut self) -> Vec<(String, profile::Bytes, usize)> {
+         self.db.per_query_memory_usage()
+     }
++
+     pub fn request_cancellation(&mut self) {
+         self.db.request_cancellation();
+     }
++
+     pub fn raw_database(&self) -> &RootDatabase {
+         &self.db
+     }
++
+     pub fn raw_database_mut(&mut self) -> &mut RootDatabase {
+         &mut self.db
+     }
+     db: RootDatabase,
+ }
+ 
+-// As a general design guideline, `Analysis` API are intended to be independent
+-// from the language server protocol. That is, when exposing some functionality
+-// we should think in terms of "what API makes most sense" and not in terms of
+-// "what types LSP uses". Although currently LSP is the only consumer of the
+-// API, the API should in theory be usable as a library, or via a different
+-// protocol.
+ impl Analysis {
+-    // Creates an analysis instance for a single file, without any external
+-    // dependencies, stdlib support or ability to apply changes. See
+-    // `AnalysisHost` for creating a fully-featured analysis.
+     pub fn from_single_file(text: String) -> (Analysis, FileId) {
+         let mut host = AnalysisHost::default();
+         let file_id = FileId::from_raw(0);
+         let mut file_set = FileSet::default();
+         file_set.insert(file_id, VfsPath::new_virtual_path("/main.rs".to_owned()));
+         let source_root = SourceRoot::new_local(file_set);
+-
+         let mut change = ChangeWithProcMacros::default();
+         change.set_roots(vec![source_root]);
+         let mut crate_graph = CrateGraphBuilder::default();
+         // FIXME: cfg options
+         // Default to enable test for single file.
+         let mut cfg_options = CfgOptions::default();
+-
+         // FIXME: This is less than ideal
+         let proc_macro_cwd = Arc::new(
+             TryFrom::try_from(&*std::env::current_dir().unwrap().as_path().to_string_lossy())
+             cfg_options,
+             None,
+             Env::default(),
+-            CrateOrigin::Local {
+-                repo: None,
+-                name: None,
+-            },
++            CrateOrigin::Local { repo: None, name: None },
+             false,
+             proc_macro_cwd,
+             Arc::new(CrateWorkspaceData {
+         );
+         change.change_file(file_id, Some(text));
+         change.set_crate_graph(crate_graph);
+-
+         host.apply_change(change);
+         (host.analysis(), file_id)
+     }
+ 
+-    pub(crate) fn from_ra_fixture(
+-        sema: &Semantics<'_, RootDatabase>,
+-        literal: ast::String,
+-        expanded: &ast::String,
+-        minicore: MiniCore<'_>,
+-    ) -> Option<(Analysis, RaFixtureAnalysis)> {
++    pub(crate) fn from_ra_fixture(sema: &Semantics<'_, RootDatabase>, literal: ast::String, expanded: &ast::String, minicore: MiniCore<'_>) -> Option<(Analysis, RaFixtureAnalysis)> {
+         Self::from_ra_fixture_with_on_cursor(sema, literal, expanded, minicore, &mut |_| {})
+     }
+ 
+     /// Like [`Analysis::from_ra_fixture()`], but also calls `on_cursor` with the cursor position.
+-    pub(crate) fn from_ra_fixture_with_on_cursor(
+-        sema: &Semantics<'_, RootDatabase>,
+-        literal: ast::String,
+-        expanded: &ast::String,
+-        minicore: MiniCore<'_>,
+-        on_cursor: &mut dyn FnMut(TextRange),
+-    ) -> Option<(Analysis, RaFixtureAnalysis)> {
++    pub(crate) fn from_ra_fixture_with_on_cursor(sema: &Semantics<'_, RootDatabase>, literal: ast::String, expanded: &ast::String, minicore: MiniCore<'_>, on_cursor: &mut dyn FnMut(TextRange)) -> Option<(Analysis, RaFixtureAnalysis)> {
+         let analysis =
+             RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
+-        Some((
+-            Analysis {
+-                db: analysis.db.clone(),
+-            },
+-            analysis,
+-        ))
++        Some((Analysis { db: analysis.db.clone() }, analysis))
+     }
+ 
+     /// Debug info about the current state of the analysis.
+ 
+     pub fn parallel_prime_caches<F>(&self, num_worker_threads: usize, cb: F) -> Cancellable<()>
+     where
+-        F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe,
+-    {
++        F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe, {
+         self.with_db(move |db| prime_caches::parallel_prime_caches(db, num_worker_threads, &cb))
+     }
+ 
+         self.with_db(|db| typing::on_enter(db, position))
+     }
+ 
+-    pub const SUPPORTED_TRIGGER_CHARS: &[char] = typing::TRIGGER_CHARS;
+ 
+     /// Returns an edit which should be applied after a character was typed.
+     ///
+     /// This is useful for some on-the-fly fixups, like adding `;` to `let =`
+     /// automatically.
+-    pub fn on_char_typed(
+-        &self,
+-        position: FilePosition,
+-        char_typed: char,
+-    ) -> Cancellable<Option<SourceChange>> {
++    pub fn on_char_typed(&self, position: FilePosition, char_typed: char) -> Cancellable<Option<SourceChange>> {
+         // Fast path to not even parse the file.
+         if !typing::TRIGGER_CHARS.contains(&char_typed) {
+             return Ok(None);
+         }
+-
+         self.with_db(|db| typing::on_char_typed(db, position, char_typed))
+     }
+ 
+     /// Returns a tree representation of symbols in the file. Useful to draw a
+     /// file outline.
+-    pub fn file_structure(
+-        &self,
+-        config: &FileStructureConfig,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<StructureNode>> {
++    pub fn file_structure(&self, config: &FileStructureConfig, file_id: FileId) -> Cancellable<Vec<StructureNode>> {
+         // FIXME: Edition
+         self.with_db(|db| {
+             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
+     }
+ 
+     /// Returns a list of the places in the file where type hints can be displayed.
+-    pub fn inlay_hints(
+-        &self,
+-        config: &InlayHintsConfig<'_>,
+-        file_id: FileId,
+-        range: Option<TextRange>,
+-    ) -> Cancellable<Vec<InlayHint>> {
++    pub fn inlay_hints(&self, config: &InlayHintsConfig<'_>, file_id: FileId, range: Option<TextRange>) -> Cancellable<Vec<InlayHint>> {
+         self.with_db(|db| inlay_hints::inlay_hints(db, file_id, range, config))
+     }
+-    pub fn inlay_hints_resolve(
+-        &self,
+-        config: &InlayHintsConfig<'_>,
+-        file_id: FileId,
+-        resolve_range: TextRange,
+-        hash: u64,
+-        hasher: impl Fn(&InlayHint) -> u64 + Send + UnwindSafe,
+-    ) -> Cancellable<Option<InlayHint>> {
++
++    pub fn inlay_hints_resolve(&self, config: &InlayHintsConfig<'_>, file_id: FileId, resolve_range: TextRange, hash: u64, hasher: impl Fn(&InlayHint) -> u64 + Send + UnwindSafe) -> Cancellable<Option<InlayHint>> {
+         self.with_db(|db| {
+             inlay_hints::inlay_hints_resolve(db, file_id, resolve_range, hash, config, hasher)
+         })
+     }
+ 
+     /// Returns the definitions from the symbol at `position`.
+-    pub fn goto_definition(
+-        &self,
+-        position: FilePosition,
+-        config: &GotoDefinitionConfig<'_>,
+-    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
++    pub fn goto_definition(&self, position: FilePosition, config: &GotoDefinitionConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
+         self.with_db(|db| goto_definition::goto_definition(db, position, config))
+     }
+ 
+     /// Returns the declaration from the symbol at `position`.
+-    pub fn goto_declaration(
+-        &self,
+-        position: FilePosition,
+-        config: &GotoDefinitionConfig<'_>,
+-    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
++    pub fn goto_declaration(&self, position: FilePosition, config: &GotoDefinitionConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
+         self.with_db(|db| goto_declaration::goto_declaration(db, position, config))
+     }
+ 
+     /// Returns the impls from the symbol at `position`.
+-    pub fn goto_implementation(
+-        &self,
+-        config: &GotoImplementationConfig,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
++    pub fn goto_implementation(&self, config: &GotoImplementationConfig, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
+         self.with_db(|db| goto_implementation::goto_implementation(db, config, position))
+     }
+ 
+     /// Returns the type definitions for the symbol at `position`.
+-    pub fn goto_type_definition(
+-        &self,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
++    pub fn goto_type_definition(&self, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
+         self.with_db(|db| goto_type_definition::goto_type_definition(db, position))
+     }
+ 
+-    pub fn find_all_refs(
+-        &self,
+-        position: FilePosition,
+-        config: &FindAllRefsConfig<'_>,
+-    ) -> Cancellable<Option<Vec<ReferenceSearchResult>>> {
++    pub fn find_all_refs(&self, position: FilePosition, config: &FindAllRefsConfig<'_>) -> Cancellable<Option<Vec<ReferenceSearchResult>>> {
+         let config = AssertUnwindSafe(config);
+         self.with_db(|db| references::find_all_refs(&Semantics::new(db), position, &config))
+     }
+ 
+     /// Returns a short text describing element at position.
+-    pub fn hover(
+-        &self,
+-        config: &HoverConfig<'_>,
+-        range: FileRange,
+-    ) -> Cancellable<Option<RangeInfo<HoverResult>>> {
++    pub fn hover(&self, config: &HoverConfig<'_>, range: FileRange) -> Cancellable<Option<RangeInfo<HoverResult>>> {
+         self.with_db(|db| hover::hover(db, range, config))
+     }
+ 
+     /// Returns moniker of symbol at position.
+-    pub fn moniker(
+-        &self,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<RangeInfo<Vec<moniker::MonikerResult>>>> {
++    pub fn moniker(&self, position: FilePosition) -> Cancellable<Option<RangeInfo<Vec<moniker::MonikerResult>>>> {
+         self.with_db(|db| moniker::moniker(db, position))
+     }
+ 
+     /// # Arguments
+     /// * `position` - Position in the file.
+     /// * `target_dir` - Directory where the build output is stored.
+-    pub fn external_docs(
+-        &self,
+-        position: FilePosition,
+-        target_dir: Option<&str>,
+-        sysroot: Option<&str>,
+-    ) -> Cancellable<doc_links::DocumentationLinks> {
++    pub fn external_docs(&self, position: FilePosition, target_dir: Option<&str>, sysroot: Option<&str>) -> Cancellable<doc_links::DocumentationLinks> {
+         self.with_db(|db| {
+             doc_links::external_docs(db, position, target_dir, sysroot).unwrap_or_default()
+         })
+     }
+ 
+     /// Computes call hierarchy candidates for the given file position.
+-    pub fn call_hierarchy(
+-        &self,
+-        position: FilePosition,
+-        config: &CallHierarchyConfig<'_>,
+-    ) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
++    pub fn call_hierarchy(&self, position: FilePosition, config: &CallHierarchyConfig<'_>) -> Cancellable<Option<RangeInfo<Vec<NavigationTarget>>>> {
+         self.with_db(|db| call_hierarchy::call_hierarchy(db, position, config))
+     }
+ 
+     /// Computes incoming calls for the given file position.
+-    pub fn incoming_calls(
+-        &self,
+-        config: &CallHierarchyConfig<'_>,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<Vec<CallItem>>> {
++    pub fn incoming_calls(&self, config: &CallHierarchyConfig<'_>, position: FilePosition) -> Cancellable<Option<Vec<CallItem>>> {
+         self.with_db(|db| call_hierarchy::incoming_calls(db, config, position))
+     }
+ 
+     /// Computes outgoing calls for the given file position.
+-    pub fn outgoing_calls(
+-        &self,
+-        config: &CallHierarchyConfig<'_>,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<Vec<CallItem>>> {
++    pub fn outgoing_calls(&self, config: &CallHierarchyConfig<'_>, position: FilePosition) -> Cancellable<Option<Vec<CallItem>>> {
+         self.with_db(|db| call_hierarchy::outgoing_calls(db, config, position))
+     }
+ 
+     }
+ 
+     /// Returns the set of tests for the given file position.
+-    pub fn related_tests(
+-        &self,
+-        position: FilePosition,
+-        search_scope: Option<SearchScope>,
+-    ) -> Cancellable<Vec<Runnable>> {
++    pub fn related_tests(&self, position: FilePosition, search_scope: Option<SearchScope>) -> Cancellable<Vec<Runnable>> {
+         let search_scope = AssertUnwindSafe(search_scope);
+         self.with_db(|db| {
+             let _ = &search_scope;
+     }
+ 
+     /// Computes all ranges to highlight for a given item in a file.
+-    pub fn highlight_related(
+-        &self,
+-        config: HighlightRelatedConfig,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<Vec<HighlightedRange>>> {
++    pub fn highlight_related(&self, config: HighlightRelatedConfig, position: FilePosition) -> Cancellable<Option<Vec<HighlightedRange>>> {
+         self.with_db(|db| {
+             highlight_related::highlight_related(&Semantics::new(db), config, position)
+         })
+     }
+ 
+     /// Computes syntax highlighting for the given file
+-    pub fn highlight(
+-        &self,
+-        highlight_config: HighlightConfig<'_>,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<HlRange>> {
++    pub fn highlight(&self, highlight_config: HighlightConfig<'_>, file_id: FileId) -> Cancellable<Vec<HlRange>> {
+         self.with_db(|db| syntax_highlighting::highlight(db, &highlight_config, file_id, None))
+     }
+ 
+     /// Computes syntax highlighting for the given file range.
+-    pub fn highlight_range(
+-        &self,
+-        highlight_config: HighlightConfig<'_>,
+-        frange: FileRange,
+-    ) -> Cancellable<Vec<HlRange>> {
++    pub fn highlight_range(&self, highlight_config: HighlightConfig<'_>, frange: FileRange) -> Cancellable<Vec<HlRange>> {
+         self.with_db(|db| {
+             syntax_highlighting::highlight(
+                 db,
+     }
+ 
+     /// Computes syntax highlighting for the given file.
+-    pub fn highlight_as_html_with_config(
+-        &self,
+-        config: HighlightConfig<'_>,
+-        file_id: FileId,
+-        rainbow: bool,
+-    ) -> Cancellable<String> {
++    pub fn highlight_as_html_with_config(&self, config: HighlightConfig<'_>, file_id: FileId, rainbow: bool) -> Cancellable<String> {
+         self.with_db(|db| {
+             syntax_highlighting::highlight_as_html_with_config(db, &config, file_id, rainbow)
+         })
+     }
+ 
+     /// Computes completions at the given position.
+-    pub fn completions(
+-        &self,
+-        config: &CompletionConfig<'_>,
+-        position: FilePosition,
+-        trigger_character: Option<char>,
+-    ) -> Cancellable<Option<Vec<CompletionItem>>> {
++    pub fn completions(&self, config: &CompletionConfig<'_>, position: FilePosition, trigger_character: Option<char>) -> Cancellable<Option<Vec<CompletionItem>>> {
+         self.with_db(|db| ide_completion::completions(db, config, position, trigger_character))
+     }
+ 
+     /// Resolves additional completion data at the position given.
+-    pub fn resolve_completion_edits(
+-        &self,
+-        config: &CompletionConfig<'_>,
+-        position: FilePosition,
+-        imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe,
+-    ) -> Cancellable<Vec<TextEdit>> {
++    pub fn resolve_completion_edits(&self, config: &CompletionConfig<'_>, position: FilePosition, imports: impl IntoIterator<Item = String> + std::panic::UnwindSafe) -> Cancellable<Vec<TextEdit>> {
+         Ok(self
+             .with_db(|db| ide_completion::resolve_completion_edits(db, config, position, imports))?
+             .unwrap_or_default())
+     }
+ 
+     /// Computes the set of parser level diagnostics for the given file.
+-    pub fn syntax_diagnostics(
+-        &self,
+-        config: &DiagnosticsConfig,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<Diagnostic>> {
++    pub fn syntax_diagnostics(&self, config: &DiagnosticsConfig, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
+         self.with_db(|db| ide_diagnostics::syntax_diagnostics(db, config, file_id))
+     }
+ 
+     /// Computes the set of semantic diagnostics for the given file.
+-    pub fn semantic_diagnostics(
+-        &self,
+-        config: &DiagnosticsConfig,
+-        resolve: AssistResolveStrategy,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<Diagnostic>> {
++    pub fn semantic_diagnostics(&self, config: &DiagnosticsConfig, resolve: AssistResolveStrategy, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
+         self.with_db(|db| ide_diagnostics::semantic_diagnostics(db, config, &resolve, file_id))
+     }
+ 
+     /// Computes the set of both syntax and semantic diagnostics for the given file.
+-    pub fn full_diagnostics(
+-        &self,
+-        config: &DiagnosticsConfig,
+-        resolve: AssistResolveStrategy,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<Diagnostic>> {
++    pub fn full_diagnostics(&self, config: &DiagnosticsConfig, resolve: AssistResolveStrategy, file_id: FileId) -> Cancellable<Vec<Diagnostic>> {
+         self.with_db(|db| ide_diagnostics::full_diagnostics(db, config, &resolve, file_id))
+     }
+ 
+     /// Convenience function to return assists + quick fixes for diagnostics
+-    pub fn assists_with_fixes(
+-        &self,
+-        assist_config: &AssistConfig,
+-        diagnostics_config: &DiagnosticsConfig,
+-        resolve: AssistResolveStrategy,
+-        frange: FileRange,
+-    ) -> Cancellable<Vec<Assist>> {
++    pub fn assists_with_fixes(&self, assist_config: &AssistConfig, diagnostics_config: &DiagnosticsConfig, resolve: AssistResolveStrategy, frange: FileRange) -> Cancellable<Vec<Assist>> {
+         let include_fixes = match &assist_config.allowed {
+             Some(it) => it.contains(&AssistKind::QuickFix),
+             None => true,
+         };
+-
+         self.with_db(|db| {
+             let diagnostic_assists = if diagnostics_config.enabled && include_fixes {
+                 ide_diagnostics::full_diagnostics(db, diagnostics_config, &resolve, frange.file_id)
+ 
+     /// Returns the edit required to rename reference at the position to the new
+     /// name.
+-    pub fn rename(
+-        &self,
+-        position: FilePosition,
+-        new_name: &str,
+-        config: &RenameConfig,
+-    ) -> Cancellable<Result<SourceChange, RenameError>> {
++    pub fn rename(&self, position: FilePosition, new_name: &str, config: &RenameConfig) -> Cancellable<Result<SourceChange, RenameError>> {
+         self.with_db(|db| rename::rename(db, position, new_name, config))
+     }
+ 
+-    pub fn prepare_rename(
+-        &self,
+-        position: FilePosition,
+-    ) -> Cancellable<Result<RangeInfo<()>, RenameError>> {
++    pub fn prepare_rename(&self, position: FilePosition) -> Cancellable<Result<RangeInfo<()>, RenameError>> {
+         self.with_db(|db| rename::prepare_rename(db, position))
+     }
+ 
+-    pub fn will_rename_file(
+-        &self,
+-        file_id: FileId,
+-        new_name_stem: &str,
+-    ) -> Cancellable<Option<SourceChange>> {
++    pub fn will_rename_file(&self, file_id: FileId, new_name_stem: &str) -> Cancellable<Option<SourceChange>> {
+         self.with_db(|db| rename::will_rename_file(db, file_id, new_name_stem))
+     }
+ 
+-    pub fn structural_search_replace(
+-        &self,
+-        query: &str,
+-        parse_only: bool,
+-        resolve_context: FilePosition,
+-        selections: Vec<FileRange>,
+-    ) -> Cancellable<Result<SourceChange, SsrError>> {
++    pub fn structural_search_replace(&self, query: &str, parse_only: bool, resolve_context: FilePosition, selections: Vec<FileRange>) -> Cancellable<Result<SourceChange, SsrError>> {
+         self.with_db(|db| {
+             let rule: ide_ssr::SsrRule = query.parse()?;
+             let mut match_finder =
+                 ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
+             match_finder.add_rule(rule)?;
+-            let edits = if parse_only {
+-                Default::default()
+-            } else {
+-                match_finder.edits()
+-            };
++            let edits = if parse_only { Default::default() } else { match_finder.edits() };
+             Ok(SourceChange::from_iter(edits))
+         })
+     }
+ 
+-    pub fn annotations(
+-        &self,
+-        config: &AnnotationConfig<'_>,
+-        file_id: FileId,
+-    ) -> Cancellable<Vec<Annotation>> {
++    pub fn annotations(&self, config: &AnnotationConfig<'_>, file_id: FileId) -> Cancellable<Vec<Annotation>> {
+         self.with_db(|db| annotations::annotations(db, config, file_id))
+     }
+ 
+-    pub fn resolve_annotation(
+-        &self,
+-        config: &AnnotationConfig<'_>,
+-        annotation: Annotation,
+-    ) -> Cancellable<Annotation> {
++    pub fn resolve_annotation(&self, config: &AnnotationConfig<'_>, annotation: Annotation) -> Cancellable<Annotation> {
+         self.with_db(|db| annotations::resolve_annotation(db, config, annotation))
+     }
+ 
+-    pub fn move_item(
+-        &self,
+-        range: FileRange,
+-        direction: Direction,
+-    ) -> Cancellable<Option<TextEdit>> {
++    pub fn move_item(&self, range: FileRange, direction: Direction) -> Cancellable<Option<TextEdit>> {
+         self.with_db(|db| move_item::move_item(db, range, direction))
+     }
+ 
+-    pub fn get_recursive_memory_layout(
+-        &self,
+-        position: FilePosition,
+-    ) -> Cancellable<Option<RecursiveMemoryLayout>> {
++    pub fn get_recursive_memory_layout(&self, position: FilePosition) -> Cancellable<Option<RecursiveMemoryLayout>> {
+         self.with_db(|db| view_memory_layout(db, position))
+     }
+ 
+     /// catching it on the API boundary.
+     fn with_db<F, T>(&self, f: F) -> Cancellable<T>
+     where
+-        F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe,
+-    {
++        F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe, {
+         // We use `attach_db_allow_change()` and not `attach_db()` because fixture injection can change the database.
+         hir::attach_db_allow_change(&self.db, || Cancelled::catch(|| f(&self.db)))
+     }

@@ -1,0 +1,41 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 88820 bytes
+Chloro size:   88465 bytes
+Rustfmt size:  88820 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use expect_test::expect;
+ 
+ use super::{check, check_infer, check_no_mismatches, check_types};
+-
+ #[test]
+ fn infer_adt_self() {
+     check_types(
+ }
+ 
+ #[test]
+-// FIXME
+ #[should_panic]
+ fn const_eval_in_function_signature() {
+     check_types(
+     );
+ }
+ 
+-// This test is actually testing the shadowing behavior within hir_def. It
+-// lives here because the testing infrastructure in hir_def isn't currently
+-// capable of asserting the necessary conditions.
+ #[test]
+ fn should_be_shadowing_imports() {
+     check_types(
+     );
+ }
+ 
+-// FIXME(next-solver): `&'? str` in 231..262 seems suspicious.
+-// Should revisit this once we fully migrated into next-solver without chalk-ir.
+ #[test]
+ fn coroutine_types_inferred() {
+     check_infer(

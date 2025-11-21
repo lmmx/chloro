@@ -1,0 +1,213 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 25826 bytes
+Chloro size:   25339 bytes
+Rustfmt size:  25826 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! See [`PathTransform`].
+ 
+-use crate::helpers::mod_path_to_ast;
+ use either::Either;
+ use hir::{
+     AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
+     syntax_editor::{self, SyntaxEditor},
+ };
+ 
++use crate::helpers::mod_path_to_ast;
+ #[derive(Default, Debug)]
+ struct AstSubsts {
+     types_and_consts: Vec<TypeOrConst>,
+ 
+ #[derive(Debug)]
+ enum TypeOrConst {
+-    Either(ast::TypeArg), // indistinguishable type or const param
++    Either(ast::TypeArg),
+     Const(ast::ConstArg),
+ }
+ 
+ type LifetimeName = String;
++
+ type DefaultedParam = Either<hir::TypeParam, hir::ConstParam>;
+ 
+ /// `PathTransform` substitutes path in SyntaxNodes in bulk.
+ }
+ 
+ impl<'a> PathTransform<'a> {
+-    pub fn trait_impl(
+-        target_scope: &'a SemanticsScope<'a>,
+-        source_scope: &'a SemanticsScope<'a>,
+-        trait_: hir::Trait,
+-        impl_: ast::Impl,
+-    ) -> PathTransform<'a> {
++    pub fn trait_impl(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, trait_: hir::Trait, impl_: ast::Impl) -> PathTransform<'a> {
+         PathTransform {
+             source_scope,
+             target_scope,
+         }
+     }
+ 
+-    pub fn function_call(
+-        target_scope: &'a SemanticsScope<'a>,
+-        source_scope: &'a SemanticsScope<'a>,
+-        function: hir::Function,
+-        generic_arg_list: ast::GenericArgList,
+-    ) -> PathTransform<'a> {
++    pub fn function_call(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, function: hir::Function, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+         PathTransform {
+             source_scope,
+             target_scope,
+         }
+     }
+ 
+-    pub fn impl_transformation(
+-        target_scope: &'a SemanticsScope<'a>,
+-        source_scope: &'a SemanticsScope<'a>,
+-        impl_: hir::Impl,
+-        generic_arg_list: ast::GenericArgList,
+-    ) -> PathTransform<'a> {
++    pub fn impl_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, impl_: hir::Impl, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+         PathTransform {
+             source_scope,
+             target_scope,
+         }
+     }
+ 
+-    pub fn adt_transformation(
+-        target_scope: &'a SemanticsScope<'a>,
+-        source_scope: &'a SemanticsScope<'a>,
+-        adt: hir::Adt,
+-        generic_arg_list: ast::GenericArgList,
+-    ) -> PathTransform<'a> {
++    pub fn adt_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>, adt: hir::Adt, generic_arg_list: ast::GenericArgList) -> PathTransform<'a> {
+         PathTransform {
+             source_scope,
+             target_scope,
+         }
+     }
+ 
+-    pub fn generic_transformation(
+-        target_scope: &'a SemanticsScope<'a>,
+-        source_scope: &'a SemanticsScope<'a>,
+-    ) -> PathTransform<'a> {
++    pub fn generic_transformation(target_scope: &'a SemanticsScope<'a>, source_scope: &'a SemanticsScope<'a>) -> PathTransform<'a> {
+         PathTransform {
+             source_scope,
+             target_scope,
+     }
+ 
+     #[must_use]
+-    pub fn apply_all<'b>(
+-        &self,
+-        nodes: impl IntoIterator<Item = &'b SyntaxNode>,
+-    ) -> Vec<SyntaxNode> {
++    pub fn apply_all<'b>(&self, nodes: impl IntoIterator<Item = &'b SyntaxNode>) -> Vec<SyntaxNode> {
+         let ctx = self.build_ctx();
+         nodes.into_iter().map(|node| ctx.apply(&node.clone())).collect()
+     }
+                     .replace(lifetime.syntax(), subst.clone_subtree().clone_for_update().syntax());
+             }
+         });
+-
+         editor.finish().new_root().clone()
+     }
+ 
+             }
+             result
+         }
+-
+         let root_path = path.clone_subtree();
+-
+         let result = find_child_paths_and_ident_pats(&root_path);
+         let mut editor = SyntaxEditor::new(root_path.clone());
+         for sub_path in result {
+             let new = self.transform_path(sub_path.syntax());
+             editor.replace(sub_path.syntax(), new);
+         }
+-
+         let update_sub_item = editor.finish().new_root().clone().clone_subtree();
+         let item = find_child_paths_and_ident_pats(&update_sub_item);
+         let mut editor = SyntaxEditor::new(update_sub_item);
+         }
+         editor.finish().new_root().clone()
+     }
+-    fn transform_path_or_ident_pat(
+-        &self,
+-        editor: &mut SyntaxEditor,
+-        item: &Either<ast::Path, ast::IdentPat>,
+-    ) -> Option<()> {
++
++    fn transform_path_or_ident_pat(&self, editor: &mut SyntaxEditor, item: &Either<ast::Path, ast::IdentPat>) -> Option<()> {
+         match item {
+             Either::Left(path) => self.transform_path_(editor, path),
+             Either::Right(ident_pat) => self.transform_ident_pat(editor, ident_pat),
+             return None;
+         }
+         let resolution = self.source_scope.speculative_resolve(path)?;
+-
+         match resolution {
+             hir::PathResolution::TypeParam(tp) => {
+                 if let Some(subst) = self.type_substs.get(&tp) {
+         Some(())
+     }
+ 
+-    fn transform_ident_pat(
+-        &self,
+-        editor: &mut SyntaxEditor,
+-        ident_pat: &ast::IdentPat,
+-    ) -> Option<()> {
++    fn transform_ident_pat(&self, editor: &mut SyntaxEditor, ident_pat: &ast::IdentPat) -> Option<()> {
+         let name = ident_pat.name()?;
+-
+         let temp_path = make::path_from_text(&name.text());
+-
+         let resolution = self.source_scope.speculative_resolve(&temp_path)?;
+-
+         match resolution {
+             hir::PathResolution::Def(def) if def.as_assoc_item(self.source_scope.db).is_none() => {
+                 let cfg = FindPathConfig {
+     }
+ }
+ 
+-// FIXME: It would probably be nicer if we could get this via HIR (i.e. get the
+-// trait ref, and then go from the types in the substs back to the syntax).
+ fn get_syntactic_substs(impl_def: ast::Impl) -> Option<AstSubsts> {
+     let target_trait = impl_def.trait_()?;
+     let path_type = match target_trait {
+         _ => return None,
+     };
+     let generic_arg_list = path_type.path()?.segment()?.generic_arg_list()?;
+-
+     get_type_args_from_arg_list(generic_arg_list)
+ }
+ 
+         ast::GenericArg::LifetimeArg(l_arg) => result.lifetimes.push(l_arg),
+         _ => (),
+     });
+-
+     Some(result)
+ }
+ 
+-fn find_trait_for_assoc_item(
+-    scope: &SemanticsScope<'_>,
+-    type_param: hir::TypeParam,
+-    assoc_item: ast::NameRef,
+-) -> Option<hir::Trait> {
++fn find_trait_for_assoc_item(scope: &SemanticsScope<'_>, type_param: hir::TypeParam, assoc_item: ast::NameRef) -> Option<hir::Trait> {
+     let db = scope.db;
+     let trait_bounds = type_param.trait_bounds(db);
+-
+     let assoc_item_name = assoc_item.text();
+-
+     for trait_ in trait_bounds {
+         let names = trait_.items(db).into_iter().filter_map(|item| match item {
+             hir::AssocItem::TypeAlias(ta) => Some(ta.name(db)),
+             }
+         }
+     }
+-
+     None
+ }

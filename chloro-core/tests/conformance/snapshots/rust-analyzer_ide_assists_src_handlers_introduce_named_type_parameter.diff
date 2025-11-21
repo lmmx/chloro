@@ -1,0 +1,124 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5391 bytes
+Chloro size:   5156 bytes
+Rustfmt size:  5418 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::syntax_helpers::suggest_name;
+ use itertools::Itertools;
+-use syntax::ast::{self, syntax_factory::SyntaxFactory, AstNode, HasGenericParams, HasName};
++use syntax::ast::{self, AstNode, HasGenericParams, HasName, syntax_factory::SyntaxFactory};
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: introduce_named_type_parameter
+-//
+-// Replaces `impl Trait` function argument with the named generic.
+-//
+-// ```
+-// fn foo(bar: $0impl Bar) {}
+-// ```
+-// ->
+-// ```
+-// fn foo<$0B: Bar>(bar: B) {}
+-// ```
+-pub(crate) fn introduce_named_type_parameter(
+-    acc: &mut Assists,
+-    ctx: &AssistContext<'_>,
+-) -> Option<()> {
++pub(crate) fn introduce_named_type_parameter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let impl_trait_type = ctx.find_node_at_offset::<ast::ImplTraitType>()?;
+-    let param = impl_trait_type
+-        .syntax()
+-        .ancestors()
+-        .find_map(ast::Param::cast)?;
++    let param = impl_trait_type.syntax().ancestors().find_map(ast::Param::cast)?;
+     let fn_ = param.syntax().ancestors().nth(2).and_then(ast::Fn::cast)?;
+     let type_bound_list = impl_trait_type.type_bound_list()?;
+-
+     let make = SyntaxFactory::with_mappings();
+     let target = fn_.syntax().text_range();
+     acc.add(
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::check_assist;
+-
+     #[test]
+     fn introduce_named_generic_params() {
+         check_assist(
+             r#"fn foo<G, $0B: Bar>(bar: B) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_without_generic_params() {
+         check_assist(
+             r#"fn foo<$0B: Bar>(bar: B) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_two_impl_trait_with_generic_params() {
+         check_assist(
+             r#"fn foo<G, $0B: Bar>(foo: impl Foo, bar: B) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_with_empty_generic_params() {
+         check_assist(
+             r#"fn foo<$0B: Bar>(bar: B) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_with_empty_multiline_generic_params() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_with_exist_generic_letter() {
+         check_assist(
+             r#"fn foo<B, $0B1: Bar>(bar: B1) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_with_more_exist_generic_letter() {
+         check_assist(
+             r#"fn foo<B, B0, B1, B3, $0B4: Bar>(bar: B4) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_with_multiline_generic_params() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_trait_multiple() {
+         check_assist(
+             r#"fn foo<$0F: Foo + Bar>(bar: F) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_with_mut() {
+         check_assist(
+             r#"fn f<$0I: Iterator<Item = i32>>(iter: &mut I) {}"#,
+         );
+     }
+-
+     #[test]
+     fn replace_impl_inside() {
+         check_assist(

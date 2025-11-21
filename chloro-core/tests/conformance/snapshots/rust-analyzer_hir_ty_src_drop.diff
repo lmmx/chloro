@@ -1,0 +1,86 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6718 bytes
+Chloro size:   6642 bytes
+Rustfmt size:  6767 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Utilities for computing drop info about types.
+ 
+-use hir_def::{lang_item::LangItem, signatures::StructFlags, AdtId};
++use hir_def::{AdtId, lang_item::LangItem, signatures::StructFlags};
+ use rustc_hash::FxHashSet;
+ use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
+ use stdx::never;
+ use triomphe::Arc;
+ 
+ use crate::{
+-    consteval,
++    TraitEnvironment, consteval,
+     db::HirDatabase,
+     method_resolution::TyFingerprint,
+     next_solver::{
+-        infer::{traits::ObligationCause, InferCtxt},
+-        obligation_ctxt::ObligationCtxt,
+         Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+-    TraitEnvironment,
+ };
+-
+ fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {
+     let module = match adt {
+         AdtId::EnumId(id) => db.lookup_intern_enum(id).container,
+         },
+         None => db.trait_impls_in_crate(module.krate()),
+     };
+-    impls
+-        .for_trait_and_self_ty(drop_trait, TyFingerprint::Adt(adt))
+-        .next()
+-        .is_some()
++    impls.for_trait_and_self_ty(drop_trait, TyFingerprint::Adt(adt)).next().is_some()
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+ pub enum DropGlue {
+-    // Order of variants is important.
+     None,
+     /// May have a drop glue if some type parameter has it.
+     ///
+     HasDropGlue,
+ }
+ 
+-pub fn has_drop_glue<'db>(
+-    infcx: &InferCtxt<'db>,
+-    ty: Ty<'db>,
+-    env: Arc<TraitEnvironment<'db>>,
+-) -> DropGlue {
++pub fn has_drop_glue<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, env: Arc<TraitEnvironment<'db>>) -> DropGlue {
+     has_drop_glue_impl(infcx, ty, env, &mut FxHashSet::default())
+ }
+ 
+-fn has_drop_glue_impl<'db>(
+-    infcx: &InferCtxt<'db>,
+-    ty: Ty<'db>,
+-    env: Arc<TraitEnvironment<'db>>,
+-    visited: &mut FxHashSet<Ty<'db>>,
+-) -> DropGlue {
++fn has_drop_glue_impl<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, env: Arc<TraitEnvironment<'db>>, visited: &mut FxHashSet<Ty<'db>>) -> DropGlue {
+     let mut ocx = ObligationCtxt::new(infcx);
+-    let ty = ocx
+-        .structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty)
+-        .unwrap_or(ty);
+-
++    let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+     if !visited.insert(ty) {
+         // Recursive type.
+         return DropGlue::None;
+     }
+-
+     let db = infcx.interner.db;
+     match ty.kind() {
+         TyKind::Adt(adt_def, subst) => {

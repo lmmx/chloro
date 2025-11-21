@@ -1,0 +1,306 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 19519 bytes
+Chloro size:   19467 bytes
+Rustfmt size:  20051 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::iter;
+ 
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use hir::Semantics;
+ use ide_db::{
++    FilePosition, FileRange, RootDatabase,
+     defs::Definition,
+     documentation::{DocsRangeMap, Documentation, HasDocs},
+-    FilePosition, FileRange, RootDatabase,
+ };
+ use itertools::Itertools;
+-use syntax::{ast, match_ast, AstNode, SyntaxNode};
++use syntax::{AstNode, SyntaxNode, ast, match_ast};
+ 
+ use crate::{
++    TryToNav,
+     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
+-    fixture, TryToNav,
++    fixture,
+ };
+-
+-fn check_external_docs(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    target_dir: Option<&str>,
+-    expect_web_url: Option<Expect>,
+-    expect_local_url: Option<Expect>,
+-    sysroot: Option<&str>,
+-) {
++fn check_external_docs(#[rust_analyzer::rust_fixture] ra_fixture: &str, target_dir: Option<&str>, expect_web_url: Option<Expect>, expect_local_url: Option<Expect>, sysroot: Option<&str>) {
+     let (analysis, position) = fixture::position(ra_fixture);
+-    let links = analysis
+-        .external_docs(position, target_dir, sysroot)
+-        .unwrap();
+-
++    let links = analysis.external_docs(position, target_dir, sysroot).unwrap();
+     let web_url = links.web_url;
+     let local_url = links.local_url;
+-
+     match (expect_web_url, web_url) {
+         (Some(expect), Some(url)) => expect.assert_eq(&url),
+         (None, None) => (),
+         _ => panic!("Unexpected web url"),
+     }
+-
+     match (expect_local_url, local_url) {
+         (Some(expect), Some(url)) => expect.assert_eq(&url),
+         (None, None) => (),
+     let (analysis, position) = fixture::position(ra_fixture);
+     let sema = &Semantics::new(&analysis.db);
+     let (cursor_def, docs, range) = def_under_cursor(sema, &position);
+-    let res = hir::attach_db(sema.db, || {
+-        rewrite_links(sema.db, docs.as_str(), cursor_def, Some(range))
+-    });
++    let res =
++        hir::attach_db(sema.db, || rewrite_links(sema.db, docs.as_str(), cursor_def, Some(range)));
+     expect.assert_eq(&res)
+ }
+ 
+ fn check_doc_links(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+     let key_fn = |&(FileRange { file_id, range }, _): &_| (file_id, range.start());
+-
+     let (analysis, position, mut expected) = fixture::annotations(ra_fixture);
+     expected.sort_by_key(key_fn);
+     let sema = &Semantics::new(&analysis.db);
+         .into_iter()
+         .flat_map(|(text_range, link, ns)| {
+             let attr = range.map(text_range);
+-            let is_inner_attr = attr
+-                .map(|(_file, attr)| attr.is_inner_attr())
+-                .unwrap_or(false);
++            let is_inner_attr = attr.map(|(_file, attr)| attr.is_inner_attr()).unwrap_or(false);
+             let def = hir::attach_db(sema.db, || {
+                 resolve_doc_path_for_def(sema.db, cursor_def, &link, ns, is_inner_attr)
+                     .unwrap_or_else(|| panic!("Failed to resolve {link}"))
+             });
+-            def.try_to_nav(sema)
+-                .unwrap()
+-                .into_iter()
+-                .zip(iter::repeat(link))
++            def.try_to_nav(sema).unwrap().into_iter().zip(iter::repeat(link))
+         })
+         .map(|(nav_target, link)| {
+-            let range = FileRange {
+-                file_id: nav_target.file_id,
+-                range: nav_target.focus_or_full_range(),
+-            };
++            let range =
++                FileRange { file_id: nav_target.file_id, range: nav_target.focus_or_full_range() };
+             (range, link)
+         })
+         .sorted_by_key(key_fn)
+     assert_eq!(expected, actual);
+ }
+ 
+-fn def_under_cursor(
+-    sema: &Semantics<'_, RootDatabase>,
+-    position: &FilePosition,
+-) -> (Definition, Documentation, DocsRangeMap) {
++fn def_under_cursor(sema: &Semantics<'_, RootDatabase>, position: &FilePosition) -> (Definition, Documentation, DocsRangeMap) {
+     let (docs, def) = sema
+         .parse_guess_edition(position.file_id)
+         .syntax()
+     (def, docs, range)
+ }
+ 
+-fn node_to_def(
+-    sema: &Semantics<'_, RootDatabase>,
+-    node: &SyntaxNode,
+-) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
++fn node_to_def(sema: &Semantics<'_, RootDatabase>, node: &SyntaxNode) -> Option<Option<(Option<(Documentation, DocsRangeMap)>, Definition)>> {
+     Some(match_ast! {
+         match node {
+             ast::SourceFile(it)  => sema.to_def(&it).map(|def| (def.docs_with_rangemap(sema.db), Definition::Module(def))),
+ let x: u3$02 = 0;
+ "#,
+         Some("/home/user/project"),
+-        Some(expect![[
+-            r#"https://doc.rust-lang.org/nightly/core/primitive.u32.html"#
+-        ]]),
+-        Some(expect![[
+-            r#"file:///sysroot/share/doc/rust/html/core/primitive.u32.html"#
+-        ]]),
++        Some(expect![[r#"https://doc.rust-lang.org/nightly/core/primitive.u32.html"#]]),
++        Some(expect![[r#"file:///sysroot/share/doc/rust/html/core/primitive.u32.html"#]]),
+         Some("/sysroot"),
+     );
+ }
+ "#,
+         Some("/home/user/project"),
+         Some(expect!["https://doc.rust-lang.org/stable/std/index.html"]),
+-        Some(expect![
+-            "file:///sysroot/share/doc/rust/html/std/index.html"
+-        ]),
++        Some(expect!["file:///sysroot/share/doc/rust/html/std/index.html"]),
+         Some("/sysroot"),
+     );
+ }
+ "#,
+         Some("/home/user/project"),
+         Some(expect![[r#"https://docs.rs/foo/*/foo/struct.Foo.html"#]]),
+-        Some(expect![[
+-            r#"file:///home/user/project/doc/foo/struct.Foo.html"#
+-        ]]),
++        Some(expect![[r#"file:///home/user/project/doc/foo/struct.Foo.html"#]]),
+         Some("/sysroot"),
+     );
+ }
+ "#,
+         Some(r"C:\Users\user\project"),
+         Some(expect![[r#"https://docs.rs/foo/*/foo/struct.Foo.html"#]]),
+-        Some(expect![[
+-            r#"file:///C:/Users/user/project/doc/foo/struct.Foo.html"#
+-        ]]),
++        Some(expect![[r#"file:///C:/Users/user/project/doc/foo/struct.Foo.html"#]]),
+         Some("/sysroot"),
+     );
+ }
+ "#,
+         Some("C:/Users/user/project"),
+         Some(expect![[r#"https://docs.rs/foo/*/foo/struct.Foo.html"#]]),
+-        Some(expect![[
+-            r#"file:///C:/Users/user/project/doc/foo/struct.Foo.html"#
+-        ]]),
++        Some(expect![[r#"file:///C:/Users/user/project/doc/foo/struct.Foo.html"#]]),
+         Some("/sysroot"),
+     );
+ }
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#structfield.field"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#structfield.field"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#method.method"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#method.method"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedconstant.CONST"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedconstant.CONST"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#method.method"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#method.method"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedconstant.CONST"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedconstant.CONST"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedtype.Type"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/struct.Foo.html#associatedtype.Type"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/trait.Foo.html#tymethod.method"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/trait.Foo.html#tymethod.method"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/trait.Foo.html#associatedconstant.CONST"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/trait.Foo.html#associatedconstant.CONST"##]]),
+         None,
+         None,
+     );
+ }
+ "#,
+         None,
+-        Some(expect![[
+-            r##"https://docs.rs/foo/*/foo/trait.Foo.html#associatedtype.Type"##
+-        ]]),
++        Some(expect![[r##"https://docs.rs/foo/*/foo/trait.Foo.html#associatedtype.Type"##]]),
+         None,
+         None,
+     );
+ }
+         "#,
+         None,
+-        Some(expect![[
+-            r#"https://docs.rs/foo/*/foo/wrapper/module/struct.Item.html"#
+-        ]]),
++        Some(expect![[r#"https://docs.rs/foo/*/foo/wrapper/module/struct.Item.html"#]]),
+         None,
+         None,
+     )
+ }
+         "#,
+         Some("/home/user/project"),
+-        Some(expect![[
+-            r#"https://docs.rs/foo/*/foo/macro.my_macro.html"#
+-        ]]),
+-        Some(expect![[
+-            r#"file:///home/user/project/doc/foo/macro.my_macro.html"#
+-        ]]),
++        Some(expect![[r#"https://docs.rs/foo/*/foo/macro.my_macro.html"#]]),
++        Some(expect![[r#"file:///home/user/project/doc/foo/macro.my_macro.html"#]]),
+         Some("/sysroot"),
+     );
+ }
+ }
+ "#,
+     );
+-
+     check_doc_links(
+         r#"
+ mod M$0 {
+ "#,
+         expect![[r#"[Foo](https://docs.rs/foo/*/foo/Foo/index.html)"#]],
+     );
+-
+     check_rewrite(
+         r#"
+ //- /main.rs crate:foo

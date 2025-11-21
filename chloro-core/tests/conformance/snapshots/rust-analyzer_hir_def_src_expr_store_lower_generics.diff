@@ -1,0 +1,202 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11017 bytes
+Chloro size:   10762 bytes
+Rustfmt size:  11350 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use triomphe::Arc;
+ 
+ use crate::{
+-    expr_store::{lower::ExprCollector, TypePtr},
++    GenericDefId, TypeOrConstParamId, TypeParamId,
++    expr_store::{TypePtr, lower::ExprCollector},
+     hir::generics::{
+         ConstParamData, GenericParams, LifetimeParamData, TypeOrConstParamData, TypeParamData,
+         TypeParamProvenance, WherePredicate,
+     },
+     type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
+-    GenericDefId, TypeOrConstParamId, TypeParamId,
+ };
+-
+ pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(
+     &'ec mut ExprCollector<'db>,
+     TypePtr,
+             parent,
+         }
+     }
+-    pub(crate) fn with_self_param(
+-        ec: &mut ExprCollector<'_>,
+-        parent: GenericDefId,
+-        bounds: Option<ast::TypeBoundList>,
+-    ) -> Self {
++
++    pub(crate) fn with_self_param(ec: &mut ExprCollector<'_>, parent: GenericDefId, bounds: Option<ast::TypeBoundList>) -> Self {
+         let mut this = Self::new(parent);
+         this.fill_self_param(ec, bounds);
+         this
+     }
+ 
+-    pub(crate) fn lower(
+-        &mut self,
+-        ec: &mut ExprCollector<'_>,
+-        generic_param_list: Option<ast::GenericParamList>,
+-        where_clause: Option<ast::WhereClause>,
+-    ) {
++    pub(crate) fn lower(&mut self, ec: &mut ExprCollector<'_>, generic_param_list: Option<ast::GenericParamList>, where_clause: Option<ast::WhereClause>) {
+         if let Some(params) = generic_param_list {
+             self.lower_param_list(ec, params)
+         }
+         }
+     }
+ 
+-    pub(crate) fn collect_impl_trait<R>(
+-        &mut self,
+-        ec: &mut ExprCollector<'_>,
+-        cb: impl FnOnce(&mut ExprCollector<'_>, ImplTraitLowerFn<'_>) -> R,
+-    ) -> R {
++    pub(crate) fn collect_impl_trait<R>(&mut self, ec: &mut ExprCollector<'_>, cb: impl FnOnce(&mut ExprCollector<'_>, ImplTraitLowerFn<'_>) -> R) -> R {
+         cb(
+             ec,
+             &mut Self::lower_argument_impl_trait(
+     }
+ 
+     pub(crate) fn finish(self) -> Arc<GenericParams> {
+-        let Self {
+-            mut lifetimes,
+-            mut type_or_consts,
+-            mut where_predicates,
+-            parent: _,
+-        } = self;
+-
++        let Self { mut lifetimes, mut type_or_consts, mut where_predicates, parent: _ } = self;
+         if lifetimes.is_empty() && type_or_consts.is_empty() && where_predicates.is_empty() {
+             static EMPTY: LazyLock<Arc<GenericParams>> = LazyLock::new(|| {
+                 Arc::new(GenericParams {
+             });
+             return Arc::clone(&EMPTY);
+         }
+-
+         lifetimes.shrink_to_fit();
+         type_or_consts.shrink_to_fit();
+         where_predicates.shrink_to_fit();
+ 
+             match generic_param {
+                 ast::GenericParam::TypeParam(type_param) => {
+-                    let name = type_param
+-                        .name()
+-                        .map_or_else(Name::missing, |it| it.as_name());
++                    let name = type_param.name().map_or_else(Name::missing, |it| it.as_name());
+                     let default = type_param.default_type().map(|it| {
+                         ec.lower_type_ref(it, &mut ExprCollector::impl_trait_error_allocator)
+                     });
+                     self.lower_bounds(ec, type_param.type_bound_list(), Either::Left(type_ref));
+                 }
+                 ast::GenericParam::ConstParam(const_param) => {
+-                    let name = const_param
+-                        .name()
+-                        .map_or_else(Name::missing, |it| it.as_name());
++                    let name = const_param.name().map_or_else(Name::missing, |it| it.as_name());
+                     let ty = ec.lower_type_ref_opt(
+                         const_param.ty(),
+                         &mut ExprCollector::impl_trait_error_allocator,
+         }
+     }
+ 
+-    fn lower_where_predicates(
+-        &mut self,
+-        ec: &mut ExprCollector<'_>,
+-        where_clause: ast::WhereClause,
+-    ) {
++    fn lower_where_predicates(&mut self, ec: &mut ExprCollector<'_>, where_clause: ast::WhereClause) {
+         for pred in where_clause.predicates() {
+             let target = if let Some(type_ref) = pred.ty() {
+                 Either::Left(
+                 continue;
+             };
+ 
+-            let lifetimes: Option<Box<_>> = pred
+-                .for_binder()
+-                .and_then(|it| it.generic_param_list())
+-                .map(|param_list| {
++            let lifetimes: Option<Box<_>> =
++                pred.for_binder().and_then(|it| it.generic_param_list()).map(|param_list| {
+                     // Higher-Ranked Trait Bounds
+                     param_list
+                         .lifetime_params()
+         }
+     }
+ 
+-    fn lower_bounds(
+-        &mut self,
+-        ec: &mut ExprCollector<'_>,
+-        type_bounds: Option<ast::TypeBoundList>,
+-        target: Either<TypeRefId, LifetimeRefId>,
+-    ) {
+-        for bound in type_bounds
+-            .iter()
+-            .flat_map(|type_bound_list| type_bound_list.bounds())
+-        {
++    fn lower_bounds(&mut self, ec: &mut ExprCollector<'_>, type_bounds: Option<ast::TypeBoundList>, target: Either<TypeRefId, LifetimeRefId>) {
++        for bound in type_bounds.iter().flat_map(|type_bound_list| type_bound_list.bounds()) {
+             self.lower_type_bound_as_predicate(ec, bound, None, target);
+         }
+     }
+ 
+-    fn lower_type_bound_as_predicate(
+-        &mut self,
+-        ec: &mut ExprCollector<'_>,
+-        bound: ast::TypeBound,
+-        hrtb_lifetimes: Option<&[Name]>,
+-        target: Either<TypeRefId, LifetimeRefId>,
+-    ) {
++    fn lower_type_bound_as_predicate(&mut self, ec: &mut ExprCollector<'_>, bound: ast::TypeBound, hrtb_lifetimes: Option<&[Name]>, target: Either<TypeRefId, LifetimeRefId>) {
+         let bound = ec.lower_type_bound(
+             bound,
+             &mut Self::lower_argument_impl_trait(
+                     target: type_ref,
+                     bound,
+                 },
+-                None => WherePredicate::TypeBound {
+-                    target: type_ref,
+-                    bound,
+-                },
+-            },
+-            (Either::Right(lifetime), TypeBound::Lifetime(bound)) => WherePredicate::Lifetime {
+-                target: lifetime,
+-                bound,
++                None => WherePredicate::TypeBound { target: type_ref, bound },
+             },
++            (Either::Right(lifetime), TypeBound::Lifetime(bound)) => {
++                WherePredicate::Lifetime { target: lifetime, bound }
++            }
+             (Either::Right(_), TypeBound::ForLifetime(..) | TypeBound::Path(..)) => return,
+         };
+         self.where_predicates.push(predicate);
+     }
+ 
+-    fn lower_argument_impl_trait(
+-        type_or_consts: &mut Arena<TypeOrConstParamData>,
+-        where_predicates: &mut Vec<WherePredicate>,
+-        parent: GenericDefId,
+-    ) -> impl for<'ec, 'db> FnMut(&'ec mut ExprCollector<'db>, TypePtr, ThinVec<TypeBound>) -> TypeRefId
+-    {
++    fn lower_argument_impl_trait(type_or_consts: &mut Arena<TypeOrConstParamData>, where_predicates: &mut Vec<WherePredicate>, parent: GenericDefId) -> impl for<'ec, 'db> FnMut(&'ec mut ExprCollector<'db>, TypePtr, ThinVec<TypeBound>) -> TypeRefId {
+         move |ec, ptr, impl_trait_bounds| {
+             let param = TypeParamData {
+                 name: None,
+             }));
+             let type_ref = ec.alloc_type_ref(param_id, ptr);
+             for bound in impl_trait_bounds {
+-                where_predicates.push(WherePredicate::TypeBound {
+-                    target: type_ref,
+-                    bound: bound.clone(),
+-                });
++                where_predicates
++                    .push(WherePredicate::TypeBound { target: type_ref, bound: bound.clone() });
+             }
+             type_ref
+         }

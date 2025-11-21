@@ -1,0 +1,75 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 14630 bytes
+Chloro size:   14622 bytes
+Rustfmt size:  14630 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion tests for pattern position.
++
+ use expect_test::expect;
+ 
+ use crate::tests::{check, check_edit, check_with_base_items};
+-
+ #[test]
+ fn wildcard() {
+     check_with_base_items(
+             kw ref
+         "#]],
+     );
+-
+     check(
+         r#"
+ enum Enum {
+             ct ABC const ABC: Self
+         "#]],
+     );
+-
+     check(
+         r#"
+ enum MyEnum {}
+             ct B pub const B: i32
+         "#]],
+     );
+-
+     check(
+         r#"
+ union U {
+             ct D pub const D: i32
+         "#]],
+     );
+-
+     check(
+         r#"
+ #![rustc_coherence_is_core]
+ }
+ "#,
+     );
+-
+     check_edit(
+         "ref",
+         r#"
+ }
+ "#,
+     );
+-
+     check_edit(
+         "s1",
+         r#"
+ }
+ "#,
+     );
+-
+     // Tests for &adt
+     check_edit(
+         "s1",
+ }
+ "#,
+     );
+-
+     // Do not suggest reserved keywords
+     check(
+         r#"

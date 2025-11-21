@@ -1,0 +1,23 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1461 bytes
+Chloro size:   1461 bytes
+Rustfmt size:  1461 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Defines a unit of change that can applied to the database to get the next
+ //! state. Changes are transactional.
+-use base_db::{salsa::Durability, CrateGraphBuilder, FileChange, SourceRoot};
++
++use base_db::{CrateGraphBuilder, FileChange, SourceRoot, salsa::Durability};
+ use span::FileId;
+ use triomphe::Arc;
+ 
+ use crate::{db::ExpandDatabase, proc_macro::ProcMacrosBuilder};
+-
+ #[derive(Debug, Default)]
+ pub struct ChangeWithProcMacros {
+     pub source_change: FileChange,

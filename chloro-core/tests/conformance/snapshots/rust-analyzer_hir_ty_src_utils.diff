@@ -1,0 +1,181 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7506 bytes
+Chloro size:   7455 bytes
+Rustfmt size:  7929 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Helper functions for working with def, which don't need to be a separate
+ //! query, but can't be computed directly from `*Data` (ie, which need a `db`).
+ 
+ use std::cell::LazyCell;
+ 
+ use base_db::{
+-    target::{self, TargetData},
+     Crate,
++    target::{self, TargetData},
+ };
+ use hir_def::{
++    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
+     db::DefDatabase,
+     hir::generics::WherePredicate,
+     lang_item::LangItem,
+     resolver::{HasResolver, TypeNs},
+     type_ref::{TraitBoundModifier, TypeRef},
+-    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
+ };
+ use intern::sym;
+ use rustc_abi::TargetDataLayout;
+-use smallvec::{smallvec, SmallVec};
++use smallvec::{SmallVec, smallvec};
+ use span::Edition;
+ 
+ use crate::{
++    TargetFeatures,
+     db::HirDatabase,
+     layout::{Layout, TagEncoding},
+     mir::pad16,
+-    TargetFeatures,
+ };
+-
+ pub(crate) fn fn_traits(db: &dyn DefDatabase, krate: Crate) -> impl Iterator<Item = TraitId> + '_ {
+     [LangItem::Fn, LangItem::FnMut, LangItem::FnOnce]
+         .into_iter()
+ pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
+     // we need to take care a bit here to avoid infinite loops in case of cycles
+     // (i.e. if we have `trait A: B; trait B: A;`)
+-
+     let mut result = smallvec![trait_];
+     let mut i = 0;
+     while let Some(&t) = result.get(i) {
+             WherePredicate::Lifetime { .. } => None,
+         })
+         .filter(|(_, bound_modifier)| matches!(bound_modifier, TraitBoundModifier::None))
+-        .filter_map(
+-            |(path, _)| match resolver.resolve_path_in_type_ns_fully(db, path) {
+-                Some(TypeNs::TraitId(t)) => Some(t),
+-                _ => None,
+-            },
+-        )
++        .filter_map(|(path, _)| match resolver.resolve_path_in_type_ns_fully(db, path) {
++            Some(TypeNs::TraitId(t)) => Some(t),
++            _ => None,
++        })
+         .for_each(cb);
+ }
+ 
+     }
+ }
+ 
+-pub fn is_fn_unsafe_to_call(
+-    db: &dyn HirDatabase,
+-    func: FunctionId,
+-    caller_target_features: &TargetFeatures,
+-    call_edition: Edition,
+-    target_feature_is_safe: TargetFeatureIsSafeInTarget,
+-) -> Unsafety {
++pub fn is_fn_unsafe_to_call(db: &dyn HirDatabase, func: FunctionId, caller_target_features: &TargetFeatures, call_edition: Edition, target_feature_is_safe: TargetFeatureIsSafeInTarget) -> Unsafety {
+     let data = db.function_signature(func);
+     if data.is_unsafe() {
+         return Unsafety::Unsafe;
+     }
+-
+     if data.has_target_feature() && target_feature_is_safe == TargetFeatureIsSafeInTarget::No {
+         // RFC 2396 <https://rust-lang.github.io/rfcs/2396-target-feature-1.1.html>.
+         let callee_target_features =
+             TargetFeatures::from_attrs_no_implications(&db.attrs(func.into()));
+-        if !caller_target_features
+-            .enabled
+-            .is_superset(&callee_target_features.enabled)
+-        {
++        if !caller_target_features.enabled.is_superset(&callee_target_features.enabled) {
+             return Unsafety::Unsafe;
+         }
+     }
+-
+     if data.is_deprecated_safe_2024() {
+         if call_edition.at_least_2024() {
+             return Unsafety::Unsafe;
+             return Unsafety::DeprecatedSafe2024;
+         }
+     }
+-
+     let loc = func.lookup(db);
+     match loc.container {
+         hir_def::ItemContainerId::ExternBlockId(block) => {
+             if is_intrinsic_block {
+                 // legacy intrinsics
+                 // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute
+-                if db
+-                    .attrs(func.into())
+-                    .by_key(sym::rustc_safe_intrinsic)
+-                    .exists()
+-                {
++                if db.attrs(func.into()).by_key(sym::rustc_safe_intrinsic).exists() {
+                     Unsafety::Safe
+                 } else {
+                     Unsafety::Unsafe
+             } else {
+                 // Function in an `extern` block are always unsafe to call, except when
+                 // it is marked as `safe`.
+-                if data.is_safe() {
+-                    Unsafety::Safe
+-                } else {
+-                    Unsafety::Unsafe
+-                }
++                if data.is_safe() { Unsafety::Safe } else { Unsafety::Unsafe }
+             }
+         }
+         _ => Unsafety::Safe,
+     }
+ }
+ 
+-pub(crate) fn detect_variant_from_bytes<'a>(
+-    layout: &'a Layout,
+-    db: &dyn HirDatabase,
+-    target_data_layout: &TargetDataLayout,
+-    b: &[u8],
+-    e: EnumId,
+-) -> Option<(EnumVariantId, &'a Layout)> {
++pub(crate) fn detect_variant_from_bytes<'a>(layout: &'a Layout, db: &dyn HirDatabase, target_data_layout: &TargetDataLayout, b: &[u8], e: EnumId) -> Option<(EnumVariantId, &'a Layout)> {
+     let (var_id, var_layout) = match &layout.variants {
+         hir_def::layout::Variants::Empty => unreachable!(),
+         hir_def::layout::Variants::Single { index } => {
+             (e.enum_variants(db).variants[index.0].0, layout)
+         }
+-        hir_def::layout::Variants::Multiple {
+-            tag,
+-            tag_encoding,
+-            variants,
+-            ..
+-        } => {
++        hir_def::layout::Variants::Multiple { tag, tag_encoding, variants, .. } => {
+             let size = tag.size(target_data_layout).bytes_usize();
+             let offset = layout.fields.offset(0).bytes_usize(); // The only field on enum variants is the tag field
+             let tag = i128::from_le_bytes(pad16(&b[offset..offset + size], false));
+                         })?;
+                     (var_idx, layout)
+                 }
+-                TagEncoding::Niche {
+-                    untagged_variant,
+-                    niche_start,
+-                    ..
+-                } => {
++                TagEncoding::Niche { untagged_variant, niche_start, .. } => {
+                     let candidate_tag = tag.wrapping_sub(*niche_start as i128) as usize;
+                     let variant = variants
+                         .iter_enumerated()
+                         .filter(|x| x != untagged_variant)
+                         .nth(candidate_tag)
+                         .unwrap_or(*untagged_variant);
+-                    (
+-                        e.enum_variants(db).variants[variant.0].0,
+-                        &variants[variant],
+-                    )
++                    (e.enum_variants(db).variants[variant.0].0, &variants[variant])
+                 }
+             }
+         }

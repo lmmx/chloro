@@ -1,0 +1,887 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 66636 bytes
+Chloro size:   65203 bytes
+Rustfmt size:  66636 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{
+     Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav, highlight_related,
+ };
+-
+ /// Result of a reference search operation.
+ #[derive(Debug, Clone, UpmapFromRaFixture)]
+ pub struct ReferenceSearchResult {
+     pub is_mut: bool,
+ }
+ 
+-// Feature: Find All References
+-//
+-// Shows all references of the item at the cursor location. This includes:
+-// - Direct references to variables, functions, types, etc.
+-// - Constructor/initialization references when cursor is on struct/enum definition tokens
+-// - References in patterns and type contexts
+-// - References through dereferencing and borrowing
+-// - References in macro expansions
+-//
+-// Special handling for constructors:
+-// - When the cursor is on `{`, `(`, or `;` in a struct/enum definition
+-// - When the cursor is on the type name in a struct/enum definition
+-// These cases will show only constructor/initialization usages of the type
+-//
+-// | Editor  | Shortcut |
+-// |---------|----------|
+-// | VS Code | <kbd>Shift+Alt+F12</kbd> |
+-//
+-// ![Find All References](https://user-images.githubusercontent.com/48062697/113020670-b7c34f00-917a-11eb-8003-370ac5f2b3cb.gif)
+-
+ #[derive(Debug)]
+ pub struct FindAllRefsConfig<'a> {
+     pub search_scope: Option<SearchScope>,
+ /// - `;` after unit struct: Shows unit literal initializations
+ /// - Type name in definition: Shows all initialization usages
+ ///   In these cases, other kinds of references (like type references) are filtered out.
+-pub(crate) fn find_all_refs(
+-    sema: &Semantics<'_, RootDatabase>,
+-    position: FilePosition,
+-    config: &FindAllRefsConfig<'_>,
+-) -> Option<Vec<ReferenceSearchResult>> {
++pub(crate) fn find_all_refs(sema: &Semantics<'_, RootDatabase>, position: FilePosition, config: &FindAllRefsConfig<'_>) -> Option<Vec<ReferenceSearchResult>> {
+     let _p = tracing::info_span!("find_all_refs").entered();
+     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
+     let make_searcher = |literal_search: bool| {
+             ReferenceSearchResult { declaration, references }
+         }
+     };
+-
+     // Find references for control-flow keywords.
+     if let Some(res) = handle_control_flow_keywords(sema, position) {
+         return Some(vec![res]);
+     }
+-
+     if let Some(token) = syntax.token_at_offset(position.offset).left_biased()
+         && let Some(token) = ast::String::cast(token.clone())
+         && let Some((analysis, fixture_analysis)) =
+             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, position.file_id)
+             .ok();
+     }
+-
+     match name_for_constructor_search(&syntax, position) {
+         Some(name) => {
+             let def = match NameClass::classify(sema, &name)? {
+     }
+ }
+ 
+-pub(crate) fn find_defs(
+-    sema: &Semantics<'_, RootDatabase>,
+-    syntax: &SyntaxNode,
+-    offset: TextSize,
+-) -> Option<Vec<Definition>> {
++pub(crate) fn find_defs(sema: &Semantics<'_, RootDatabase>, syntax: &SyntaxNode, offset: TextSize) -> Option<Vec<Definition>> {
+     let token = syntax.token_at_offset(offset).find(|t| {
+         matches!(
+             t.kind(),
+                 | T![Self]
+         )
+     })?;
+-
+     if let Some((.., resolution)) = sema.check_for_format_args_template(token.clone(), offset) {
+         return resolution.map(Definition::from).map(|it| vec![it]);
+     }
+-
+     Some(
+         sema.descend_into_macros_exact(token)
+             .into_iter()
+ }
+ 
+ /// Filter out all non-literal usages for adt-defs
+-fn retain_adt_literal_usages(
+-    usages: &mut UsageSearchResult,
+-    def: Definition,
+-    sema: &Semantics<'_, RootDatabase>,
+-) {
++fn retain_adt_literal_usages(usages: &mut UsageSearchResult, def: Definition, sema: &Semantics<'_, RootDatabase>) {
+     let refs = usages.references.values_mut();
+     match def {
+         Definition::Adt(hir::Adt::Enum(enum_)) => {
+ ///
+ /// # Returns
+ /// `true` if the name reference is used as part of constructing a variant of the given enum.
+-fn is_enum_lit_name_ref(
+-    sema: &Semantics<'_, RootDatabase>,
+-    enum_: hir::Enum,
+-    name_ref: &ast::NameRef,
+-) -> bool {
++fn is_enum_lit_name_ref(sema: &Semantics<'_, RootDatabase>, enum_: hir::Enum, name_ref: &ast::NameRef) -> bool {
+     let path_is_variant_of_enum = |path: ast::Path| {
+         matches!(
+             sema.resolve_path(&path),
+     }).unwrap_or(false)
+ }
+ 
+-fn handle_control_flow_keywords(
+-    sema: &Semantics<'_, RootDatabase>,
+-    FilePosition { file_id, offset }: FilePosition,
+-) -> Option<ReferenceSearchResult> {
++fn handle_control_flow_keywords(sema: &Semantics<'_, RootDatabase>, FilePosition { file_id, offset }: FilePosition) -> Option<ReferenceSearchResult> {
+     let file = sema.parse_guess_edition(file_id);
+     let edition = sema
+         .attach_first_edition(file_id)
+         T![=>] => 3,
+         _ => 1,
+     })?;
+-
+     let references = match token.kind() {
+         T![fn] | T![return] | T![try] => highlight_related::highlight_exit_points(sema, token),
+         T![async] => highlight_related::highlight_yield_points(sema, token),
+         (file_id.file_id(sema.db), ranges)
+     })
+     .collect();
+-
+     Some(ReferenceSearchResult { declaration: None, references })
+ }
+ 
+     use hir::EditionedFileId;
+     use ide_db::{FileId, MiniCore, RootDatabase};
+     use stdx::format_to;
+-
+     use crate::{SearchScope, fixture, references::FindAllRefsConfig};
+-
+     #[test]
+     fn exclude_tests() {
+         check(
+                 FileId(0) 75..84 test
+             "#]],
+         );
+-
+         check(
+             r#"
+ fn test_func() {}
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_access() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_literal_after_space() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_literal_before_space() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_literal_with_generic_type() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_literal_for_tuple() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_literal_for_union() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_enum_after_space() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_variant_record_after_space() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_variant_tuple_before_paren() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_enum_before_space() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_enum_with_generic_type() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_enum_for_tuple() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_for_local() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn search_filters_by_range() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_for_param_inside() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_for_fn_param() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_field_name() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_impl_item_name() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_enum_var_name() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_enum_var_field() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_self() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_self_inside_not_adt_impl() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_find_all_refs_two_modules() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_decl_module() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_decl_module_on_self() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_decl_module_on_self_crate_root() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_super_mod_vis() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_with_scope() {
+         let code = r#"
+             //- /bar.rs
+             fn f() { super::quux(); }
+         "#;
+-
+         check_with_scope(
+             code,
+             None,
+                 FileId(2) 16..20
+             "#]],
+         );
+-
+         check_with_scope(
+             code,
+             Some(&mut |db| {
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_macro_def() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_basic_highlight_read_write() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_basic_highlight_field_read_write() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_basic_highlight_decl_no_write() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_struct_function_refs_outside_module() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_nested_module() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_struct_pat() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_enum_var_pat() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_all_refs_enum_var_privacy() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_self_refs() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_self_refs_decl() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_if_branches() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_match_branches() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_match_arm_arrow() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_nested_branches() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_match_with_complex_guards() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_mixed_if_match_expressions() {
+         check(
+             "#]],
+         );
+     }
+-
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+         check_with_scope(ra_fixture, None, expect)
+     }
+-
+-    fn check_with_scope(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>,
+-        expect: Expect,
+-    ) {
++    fn check_with_scope(#[rust_analyzer::rust_fixture] ra_fixture: &str, search_scope: Option<&mut dyn FnMut(&RootDatabase) -> SearchScope>, expect: Expect) {
+         let (analysis, pos) = fixture::position(ra_fixture);
+         let config = FindAllRefsConfig {
+             search_scope: search_scope.map(|it| it(&analysis.db)),
+             minicore: MiniCore::default(),
+         };
+         let refs = analysis.find_all_refs(pos, &config).unwrap().unwrap();
+-
+         let mut actual = String::new();
+         for mut refs in refs {
+             actual += "\n\n";
+         }
+         expect.assert_eq(actual.trim_start())
+     }
+-
+     #[test]
+     fn test_find_lifetimes_function() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_lifetimes_type_alias() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_lifetimes_trait_impl() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_map_range_to_original() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_map_range_to_original_ref() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_labels() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_find_const_param() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_trait() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_trait_self() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_self_ty() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_trait_alias() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_trait_alias_self() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_attr_differs_from_fn_with_same_name() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_const_in_pattern() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_primitives() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_transitive() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_decl_macro_references() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn macro_doesnt_reference_attribute_on_call() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn multi_def() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn attr_expanded() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn attr_assoc_item() {
+         check(
+             "#]],
+         )
+     }
+-
+-    // FIXME: import is classified as function
+     #[test]
+     fn attr() {
+         check(
+             "#]],
+         );
+     }
+-
+-    // FIXME: import is classified as function
+     #[test]
+     fn proc_macro() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn derive() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_items_trait_def() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_items_trait_impl_def() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_items_ref() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn name_clashes() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn raw_identifier() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn implicit_format_args() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_fn_kw() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_exit_points() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_ref_yield_points() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_for_kw() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_break_kw() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_break_kw_for_block() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_break_with_label() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_return_in_try() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_break_in_try() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_return_in_async_block() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn goto_ref_on_return_in_macro_call() {
+         check(
+             "#]],
+         )
+     }
+-
+     // The following are tests for short_associated_function_fast_search() in crates/ide-db/src/search.rs, because find all references
+     // use `FindUsages` and I found it easy to test it here.
+-
+     #[test]
+     fn goto_ref_on_short_associated_function() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_short_associated_function_with_aliases() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_short_associated_function_self_works() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_short_associated_function_overlapping_self_ranges() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_short_associated_function_no_direct_self_but_path_contains_self() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+-    // Checks that we can circumvent our fast path logic using complicated type level functions.
+-    // This mainly exists as a documentation. I don't believe it is fixable.
+-    // Usages search is not 100% accurate anyway; we miss macros.
+     #[test]
+     fn goto_ref_on_short_associated_function_complicated_type_magic_can_confuse_our_logic() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_short_associated_function_same_path_mention_alias_and_self() {
+         cov_mark::check!(short_associated_function_fast_search);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn goto_ref_on_included_file() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_if_let_match_combined() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_highlight_nested_match_expressions() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn raw_labels_and_lifetimes() {
+         check(

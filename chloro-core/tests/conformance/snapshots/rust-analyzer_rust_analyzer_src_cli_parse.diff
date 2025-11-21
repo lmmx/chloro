@@ -1,0 +1,20 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 526 bytes
+Chloro size:   526 bytes
+Rustfmt size:  526 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Read Rust code on stdin, print syntax tree on stdout.
++
+ use ide::Edition;
+ use syntax::{AstNode, SourceFile};
+ 
+ use crate::cli::{flags, read_stdin};
+-
+ impl flags::Parse {
+     pub fn run(self) -> anyhow::Result<()> {
+         let _p = tracing::info_span!("flags::Parse::run").entered();

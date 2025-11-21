@@ -1,0 +1,826 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 52351 bytes
+Chloro size:   51034 bytes
+Rustfmt size:  52351 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
+-
+-// Assist: extract_variable
+-//
+-// Extracts subexpression into a variable.
+-//
+-// ```
+-// fn main() {
+-//     $0(1 + 2)$0 * 4;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     let $0var_name = 1 + 2;
+-//     var_name * 4;
+-// }
+-// ```
+-
+-// Assist: extract_constant
+-//
+-// Extracts subexpression into a constant.
+-//
+-// ```
+-// fn main() {
+-//     $0(1 + 2)$0 * 4;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     const $0VAR_NAME: i32 = 1 + 2;
+-//     VAR_NAME * 4;
+-// }
+-// ```
+-
+-// Assist: extract_static
+-//
+-// Extracts subexpression into a static.
+-//
+-// ```
+-// fn main() {
+-//     $0(1 + 2)$0 * 4;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     static $0VAR_NAME: i32 = 1 + 2;
+-//     VAR_NAME * 4;
+-// }
+-// ```
+ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let node = if ctx.has_empty_selection() {
+         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
+             NodeOrToken::Token(it) => it.parent()?,
+         }
+     };
+-
+     let node = node.ancestors().take_while(|anc| anc.text_range() == node.text_range()).last()?;
+     let range = node.text_range();
+-
+     let to_extract = node
+         .descendants()
+         .take_while(|it| range.contains_range(it.text_range()))
+         .find_map(valid_target_expr)?;
+-
+     let ty = ctx.sema.type_of_expr(&to_extract).map(TypeInfo::adjusted);
+     if matches!(&ty, Some(ty_info) if ty_info.is_unit()) {
+         return None;
+     }
+-
+     let parent = to_extract.syntax().parent().and_then(ast::Expr::cast);
+     // Any expression that autoderefs may need adjustment.
+     let mut needs_adjust = parent.as_ref().is_some_and(|it| match it {
+             },
+         );
+     }
+-
+     Some(())
+ }
+ 
+ }
+ 
+ impl ExtractionKind {
+-    const ALL: &'static [ExtractionKind] =
+-        &[ExtractionKind::Variable, ExtractionKind::Constant, ExtractionKind::Static];
+ 
+     fn assist_id(&self) -> AssistId {
+         let s = match self {
+             ExtractionKind::Constant => "extract_constant",
+             ExtractionKind::Static => "extract_static",
+         };
+-
+         AssistId::refactor_extract(s)
+     }
+ 
+         }
+     }
+ 
+-    fn get_name_and_expr(
+-        &self,
+-        ctx: &AssistContext<'_>,
+-        to_extract: &ast::Expr,
+-    ) -> (String, SyntaxNode) {
++    fn get_name_and_expr(&self, ctx: &AssistContext<'_>, to_extract: &ast::Expr) -> (String, SyntaxNode) {
+         // We only do this sort of extraction for fields because they should have lowercase names
+         if let ExtractionKind::Variable = self {
+             let field_shorthand = to_extract
+                 return (field.to_string(), field.syntax().clone());
+             }
+         }
+-
+         let mut name_generator =
+             suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(to_extract.syntax()));
+         let var_name = if let Some(literal_name) = get_literal_name(ctx, to_extract) {
+         } else {
+             name_generator.for_variable(to_extract, &ctx.sema)
+         };
+-
+         let var_name = match self {
+             ExtractionKind::Variable => var_name.to_lowercase(),
+             ExtractionKind::Constant | ExtractionKind::Static => var_name.to_uppercase(),
+         };
+-
+         (var_name, to_extract.syntax().clone())
+     }
+ }
+     let ast::Expr::Literal(literal) = expr else {
+         return None;
+     };
+-
+     let inner = match literal.kind() {
+         ast::LiteralKind::String(string) => string.value().ok()?.into_owned(),
+         ast::LiteralKind::ByteString(byte_string) => {
+         }
+         _ => return None,
+     };
+-
+     // Entirely arbitrary
+     if inner.len() > 32 {
+         return None;
+     }
+-
+     match LexedStr::single_token(ctx.edition(), &inner) {
+         Some((SyntaxKind::IDENT, None)) => Some(inner),
+         _ => None,
+                 }
+                 None
+             });
+-
+         match kind {
+             ExtractionKind::Constant | ExtractionKind::Static if result.is_none() => {
+                 to_extract.syntax().ancestors().find_map(|node| {
+ 
+ #[cfg(test)]
+ mod tests {
+-    // NOTE: We use check_assist_by_label, but not check_assist_not_applicable_by_label
+-    // because all of our not-applicable tests should behave that way for both assists
+-    // extract_variable offers, and check_assist_not_applicable ensures neither is offered
+     use crate::tests::{
+         check_assist_by_label, check_assist_not_applicable, check_assist_not_applicable_by_label,
+         check_assist_target,
+     };
+-
+     use super::*;
+-
+     #[test]
+     fn extract_var_simple_without_select() {
+         check_assist_by_label(
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_const_simple_without_select() {
+         check_assist_by_label(
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn extract_static_simple_without_select() {
+         check_assist_by_label(
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_unit_expr_without_select() {
+         check_assist_not_applicable(
+ }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             extract_variable,
+             r#"
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn extract_var_simple() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_const_simple() {
+         check_assist_by_label(
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn extract_static_simple() {
+         check_assist_by_label(
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_in_comment() {
+         cov_mark::check!(extract_var_in_comment_is_not_applicable);
+         check_assist_not_applicable(extract_variable, r#"fn main() { 1 + /* $0comment$0 */ 1; }"#);
+     }
+-
+     #[test]
+     fn extract_var_expr_stmt() {
+         cov_mark::check!(test_extract_var_expr_stmt);
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_const_expr_stmt() {
+         cov_mark::check!(test_extract_var_expr_stmt);
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn extract_static_expr_stmt() {
+         cov_mark::check!(test_extract_var_expr_stmt);
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_var_part_of_expr_stmt() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_const_part_of_expr_stmt() {
+         check_assist_by_label(
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn extract_static_part_of_expr_stmt() {
+         check_assist_by_label(
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_var_last_expr() {
+         cov_mark::check!(test_extract_var_last_expr);
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_const_last_expr() {
+         cov_mark::check!(test_extract_var_last_expr);
+             "Extract into constant",
+         )
+     }
+-
+     #[test]
+     fn extract_static_last_expr() {
+         cov_mark::check!(test_extract_var_last_expr);
+             "Extract into static",
+         )
+     }
+-
+     #[test]
+     fn extract_var_in_match_arm_no_block() {
+         cov_mark::check!(test_extract_var_in_match_arm_no_block);
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_in_match_arm_with_block() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_in_match_guard() {
+         cov_mark::check!(test_extract_var_in_match_guard);
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_in_closure_no_block() {
+         cov_mark::check!(test_extract_var_in_closure_no_block);
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_in_closure_with_block() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_path_simple() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_path_method() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_return() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_does_not_add_extra_whitespace() {
+         check_assist_by_label(
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_break() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_let_expr() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_for_cast() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_field_shorthand() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_type() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_parameter() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_parameter_name_has_precedence_over_type() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_function() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_method() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_method_param() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_name_from_ufcs_method_param() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_var_parameter_name_has_precedence_over_function() {
+         check_assist_by_label(
+             "Extract into variable",
+         )
+     }
+-
+     #[test]
+     fn extract_macro_call() {
+         check_assist_by_label(
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_var_for_return_not_applicable() {
+         check_assist_not_applicable(extract_variable, "fn foo() { $0return$0; } ");
+     }
+-
+     #[test]
+     fn extract_var_for_break_not_applicable() {
+         check_assist_not_applicable(extract_variable, "fn main() { loop { $0break$0; }; }");
+     }
+-
+     #[test]
+     fn extract_var_for_let_expr_not_applicable() {
+         check_assist_not_applicable(
+             "fn main() { if $0let Some(x) = Some(2+2) {} }",
+         );
+     }
+-
+     #[test]
+     fn extract_var_unit_expr_not_applicable() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+-    // FIXME: This is not quite correct, but good enough(tm) for the sorting heuristic
+     #[test]
+     fn extract_var_target() {
+         check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
+-
+         check_assist_target(
+             extract_variable,
+             r#"
+             "2 + 2",
+         );
+     }
+-
+     #[test]
+     fn extract_var_no_block_body() {
+         check_assist_not_applicable_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_const_no_block_body() {
+         check_assist_by_label(
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn extract_static_no_block_body() {
+         check_assist_by_label(
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into static",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_var_mutable_reference_parameter() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_const_mutable_reference_parameter() {
+         check_assist_not_applicable_by_label(
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_static_mutable_reference_parameter() {
+         check_assist_not_applicable_by_label(
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_var_mutable_reference_parameter_deep_nesting() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_reference_parameter() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_index_deref() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_reference_parameter_deep_nesting() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_regular_parameter() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_mutable_reference_local() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_reference_local() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_var_for_mutable_borrow() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_const_for_mutable_borrow() {
+         check_assist_not_applicable_by_label(
+             "Extract into constant",
+         );
+     }
+-
+     #[test]
+     fn dont_extract_static_for_mutable_borrow() {
+         check_assist_not_applicable_by_label(
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn generates_no_ref_on_calls() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn generates_no_ref_for_deref() {
+         check_assist_by_label(
+             "Extract into variable",
+         );
+     }
+-
+     #[test]
+     fn extract_string_literal() {
+         check_assist_by_label(
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_variable_string_literal_use_field_shorthand() {
+         // When field shorthand is available, it should
+ "#,
+             "Extract into variable",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+ "#,
+             "Extract into constant",
+         );
+-
+         check_assist_by_label(
+             extract_variable,
+             r#"
+             "Extract into static",
+         );
+     }
+-
+     #[test]
+     fn extract_variable_name_conflicts() {
+         check_assist_by_label(

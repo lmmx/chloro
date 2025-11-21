@@ -1,0 +1,430 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 27018 bytes
+Chloro size:   26739 bytes
+Rustfmt size:  27018 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use hir::{db::ExpandDatabase, CaseType, InFile};
++use hir::{CaseType, InFile, db::ExpandDatabase};
+ use ide_db::{assists::Assist, defs::NameClass, rename::RenameDefinition};
+ use syntax::AstNode;
+ 
+ use crate::{
+-    // references::rename::rename_with_semantics,
+-    unresolved_fix,
+     Diagnostic,
+     DiagnosticCode,
+     DiagnosticsContext,
++    // references::rename::rename_with_semantics,
++    unresolved_fix,
+ };
+-
+-// Diagnostic: incorrect-ident-case
+-//
+-// This diagnostic is triggered if an item name doesn't follow [Rust naming convention](https://doc.rust-lang.org/1.0.0/style/style/naming/README.html).
+ pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {
+     let code = match d.expected_case {
+         CaseType::LowerSnakeCase => DiagnosticCode::RustcLint("non_snake_case"),
+     let root = ctx.sema.db.parse_or_expand(d.file);
+     let name_node = d.ident.to_node(&root);
+     let def = NameClass::classify(&ctx.sema, &name_node)?.defined()?;
+-
+     let name_node = InFile::new(d.file, name_node.syntax());
+     let frange = name_node.original_file_range_rooted(ctx.sema.db);
+-
+     let label = format!("Rename to {}", d.suggested_text);
+     let mut res = unresolved_fix("change_case", &label, frange.range);
+     if ctx.resolve.should_resolve(&res.id) {
+         let source_change = def.rename(&ctx.sema, &d.suggested_text, RenameDefinition::Yes);
+         res.source_change = Some(source_change.ok().unwrap_or_default());
+     }
+-
+     Some(vec![res])
+ }
+ 
+ #[cfg(test)]
+ mod change_case {
+     use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};
+-
+     #[test]
+     fn test_rename_incorrect_case() {
+         check_fix(
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ pub fn some_fn(NonSnakeCase$0: u8) -> u8 {
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ pub fn SomeFn$0(val: u8) -> u8 {
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ fn some_fn() {
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ static S: i32 = M::A;
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_uppercase_const_no_diagnostics() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_rename_incorrect_case_struct_method() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_single_incorrect_case_diagnostic_in_function_name_issue_6970() {
+         check_diagnostics(
+         );
+         check_fix(r#"fn FOO$0() {}"#, r#"fn foo() {}"#);
+     }
+-
+     #[test]
+     fn incorrect_function_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_function_params() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_variable_names() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_struct_names() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_for_camel_cased_acronyms_in_struct_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_struct_field() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_enum_names() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_for_camel_cased_acronyms_in_enum_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_enum_variant_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_const_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_static_name() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fn_inside_impl_struct() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_for_enum_variants() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn allow_attributes_crate_attr() {
+         check_diagnostics(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn external_macro() {
+         check_diagnostics(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn complex_ignore() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn infinite_loop_inner_items() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+-    #[test] // Issue #8809.
++    #[test]
+     fn parenthesized_parameter() {
+         check_diagnostics(
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn ignores_no_mangle_items() {
+         cov_mark::check!(extern_func_no_mangle_ignored);
+             "#,
+         );
+     }
+-
+     #[test]
+     fn ignores_no_mangle_items_with_no_abi() {
+         cov_mark::check!(extern_func_no_mangle_ignored);
+             "#,
+         );
+     }
+-
+     #[test]
+     fn no_mangle_items_with_rust_abi() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn no_mangle_items_non_extern() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn extern_fn_name() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn ignores_extern_items() {
+         cov_mark::check!(extern_func_incorrect_case_ignored);
+             "#,
+         );
+     }
+-
+     #[test]
+     fn ignores_extern_items_from_macro() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn incorrect_trait_and_assoc_item_names() {
+         check_diagnostics(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostics_for_trait_impl_assoc_items_except_pats_in_body() {
+         cov_mark::check!(trait_impl_assoc_const_incorrect_case_ignored);
+             &["unused_variables"],
+         );
+     }
+-
+     #[test]
+     fn allow_attributes() {
+         check_diagnostics(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn deny_attributes() {
+         check_diagnostics(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn fn_inner_items() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn const_body_inner_items() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn static_body_inner_items() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+-    // FIXME
+     #[should_panic]
+     fn enum_variant_body_inner_item() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn module_name_inline() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn module_name_decl() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_field_shorthand() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_match() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ struct Foo(u8);
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ fn main() {
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ enum Foo { V1, V2 }
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_for_loop() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ //- minicore: iterators
+ "#,
+         );
+     }
+-
+     #[test]
+     fn override_lint_level() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn different_files() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn cfged_lint_attrs() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn allow_with_comment() {
+         check_diagnostics(

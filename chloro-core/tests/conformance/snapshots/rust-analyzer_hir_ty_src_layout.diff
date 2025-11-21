@@ -1,0 +1,241 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 14485 bytes
+Chloro size:   14289 bytes
+Rustfmt size:  14808 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Compute the binary representation of a type
+ 
+ use std::fmt;
+ 
+ use hir_def::{
+-    layout::{LayoutCalculatorError, LayoutData},
+     AdtId, LocalFieldId, StructId,
++    layout::{LayoutCalculatorError, LayoutData},
+ };
+ use la_arena::{Idx, RawIdx};
+-
+ use rustc_abi::{
+     AddressSpace, Float, Integer, LayoutCalculator, Primitive, ReprOptions, Scalar, StructKind,
+     TargetDataLayout, WrappingRange,
+ };
+ use rustc_index::IndexVec;
+ use rustc_type_ir::{
+-    inherent::{IntoKind, SliceLike},
+     FloatTy, IntTy, UintTy,
++    inherent::{IntoKind, SliceLike},
+ };
+ use triomphe::Arc;
+ 
+ use crate::{
++    TraitEnvironment,
+     consteval::try_const_usize,
+     db::HirDatabase,
+     next_solver::{
+-        infer::{traits::ObligationCause, DbInternerInferExt},
+         DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause},
+     },
+-    TraitEnvironment,
+ };
+-
+ pub(crate) use self::adt::layout_of_adt_cycle_result;
+ pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
+-
+ pub(crate) mod adt;
++
+ pub(crate) mod target;
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+ }
+ 
+ pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;
++
+ pub type TagEncoding = hir_def::layout::TagEncoding<RustcEnumVariantIdx>;
++
+ pub type Variants = hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx>;
+ 
+ #[derive(Debug, PartialEq, Eq, Clone)]
+ pub enum LayoutError {
+-    // FIXME: Remove more variants once they get added to LayoutCalculatorError
+     BadCalc(LayoutCalculatorError<()>),
+     HasErrorConst,
+     HasErrorType,
+     UserReprTooSmall,
+ }
+ 
+-impl std::error::Error for LayoutError {}
++impl std::error::Error for LayoutError {
++}
++
+ impl fmt::Display for LayoutError {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         match self {
+             LayoutError::TargetLayoutNotAvailable => write!(f, "target layout not available"),
+             LayoutError::Unknown => write!(f, "unknown"),
+             LayoutError::UserReprTooSmall => {
+-                write!(
+-                    f,
+-                    "the `#[repr]` hint is too small to hold the discriminants of the enum"
+-                )
++                write!(f, "the `#[repr]` hint is too small to hold the discriminants of the enum")
+             }
+         }
+     }
+ 
+ impl<'a> LayoutCx<'a> {
+     fn new(target: &'a TargetDataLayout) -> Self {
+-        Self {
+-            calc: LayoutCalculator::new(target),
+-        }
++        Self { calc: LayoutCalculator::new(target) }
+     }
+ }
+ 
+-// FIXME: move this to the `rustc_abi`.
+-fn layout_of_simd_ty<'db>(
+-    db: &'db dyn HirDatabase,
+-    id: StructId,
+-    repr_packed: bool,
+-    args: &GenericArgs<'db>,
+-    env: Arc<TraitEnvironment<'db>>,
+-    dl: &TargetDataLayout,
+-) -> Result<Arc<Layout>, LayoutError> {
++fn layout_of_simd_ty<'db>(db: &'db dyn HirDatabase, id: StructId, repr_packed: bool, args: &GenericArgs<'db>, env: Arc<TraitEnvironment<'db>>, dl: &TargetDataLayout) -> Result<Arc<Layout>, LayoutError> {
+     // Supported SIMD vectors are homogeneous ADTs with exactly one array field:
+     //
+     // * #[repr(simd)] struct S([T; 4])
+     // where T is a primitive scalar (integer/float/pointer).
+     let fields = db.field_types(id.into());
+     let mut fields = fields.iter();
+-    let Some(TyKind::Array(e_ty, e_len)) =
+-        fields.next().filter(|_| fields.next().is_none()).map(|f| {
+-            (*f.1)
+-                .instantiate(DbInterner::new_with(db, None, None), args)
+-                .kind()
+-        })
++    let Some(TyKind::Array(e_ty, e_len)) = fields
++        .next()
++        .filter(|_| fields.next().is_none())
++        .map(|f| (*f.1).instantiate(DbInterner::new_with(db, None, None), args).kind())
+     else {
+         return Err(LayoutError::InvalidSimdType);
+     };
+-
+     let e_len = try_const_usize(db, e_len).ok_or(LayoutError::HasErrorConst)? as u64;
+     let e_ly = db.layout_of_ty(e_ty, env)?;
+-
+     let cx = LayoutCx::new(dl);
+     Ok(Arc::new(cx.calc.simd_type(e_ly, e_len, repr_packed)?))
+ }
+ 
+-pub fn layout_of_ty_query<'db>(
+-    db: &'db dyn HirDatabase,
+-    ty: Ty<'db>,
+-    trait_env: Arc<TraitEnvironment<'db>>,
+-) -> Result<Arc<Layout>, LayoutError> {
++pub fn layout_of_ty_query<'db>(db: &'db dyn HirDatabase, ty: Ty<'db>, trait_env: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+     let krate = trait_env.krate;
+     let interner = DbInterner::new_with(db, Some(krate), trait_env.block);
+     let Ok(target) = db.target_data_layout(krate) else {
+     let cx = LayoutCx::new(dl);
+     let infer_ctxt = interner.infer_ctxt().build(TypingMode::PostAnalysis);
+     let cause = ObligationCause::dummy();
+-    let ty = infer_ctxt
+-        .at(&cause, ParamEnv::empty())
+-        .deeply_normalize(ty)
+-        .unwrap_or(ty);
++    let ty = infer_ctxt.at(&cause, ParamEnv::empty()).deeply_normalize(ty).unwrap_or(ty);
+     let result = match ty.kind() {
+         TyKind::Adt(def, args) => {
+             match def.inner().id {
+             dl,
+             Scalar::Initialized {
+                 value: Primitive::Int(Integer::I32, false),
+-                valid_range: WrappingRange {
+-                    start: 0,
+-                    end: 0x10FFFF,
+-                },
++                valid_range: WrappingRange { start: 0, end: 0x10FFFF },
+             },
+         ),
+         TyKind::Int(i) => Layout::scalar(
+             ),
+         ),
+         TyKind::Tuple(tys) => {
+-            let kind = if tys.len() == 0 {
+-                StructKind::AlwaysSized
+-            } else {
+-                StructKind::MaybeUnsized
+-            };
++            let kind =
++                if tys.len() == 0 { StructKind::AlwaysSized } else { StructKind::MaybeUnsized };
+ 
+             let fields = tys
+                 .iter()
+         }
+         TyKind::Str => {
+             let element = scalar_unit(dl, Primitive::Int(Integer::I8, false));
+-            cx.calc
+-                .array_like::<_, _, ()>(&Layout::scalar(dl, element), None)?
++            cx.calc.array_like::<_, _, ()>(&Layout::scalar(dl, element), None)?
+         }
+         // Potentially-wide pointers.
+         TyKind::Ref(_, pointee, _) | TyKind::RawPtr(pointee, _) => {
+             let fields = captures
+                 .iter()
+                 .map(|it| {
+-                    let ty = it
+-                        .ty
+-                        .instantiate(interner, args.split_closure_args_untupled().parent_args);
++                    let ty =
++                        it.ty.instantiate(interner, args.split_closure_args_untupled().parent_args);
+                     db.layout_of_ty(ty, trait_env.clone())
+                 })
+                 .collect::<Result<Vec<_>, _>>()?;
+             let fields = fields.iter().map(|it| &**it).collect::<Vec<_>>();
+             let fields = fields.iter().collect::<IndexVec<_, _>>();
+-            cx.calc
+-                .univariant(&fields, &ReprOptions::default(), StructKind::AlwaysSized)?
++            cx.calc.univariant(&fields, &ReprOptions::default(), StructKind::AlwaysSized)?
+         }
+ 
+         TyKind::Coroutine(_, _)
+     Ok(Arc::new(result))
+ }
+ 
+-pub(crate) fn layout_of_ty_cycle_result<'db>(
+-    _: &dyn HirDatabase,
+-    _: Ty<'db>,
+-    _: Arc<TraitEnvironment<'db>>,
+-) -> Result<Arc<Layout>, LayoutError> {
++pub(crate) fn layout_of_ty_cycle_result<'db>(_: &dyn HirDatabase, _: Ty<'db>, _: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
+     Err(LayoutError::RecursiveTypeWithoutIndirection)
+ }
+ 
+     }
+ }
+ 
+-fn field_ty<'a>(
+-    db: &'a dyn HirDatabase,
+-    def: hir_def::VariantId,
+-    fd: LocalFieldId,
+-    args: &GenericArgs<'a>,
+-) -> Ty<'a> {
++fn field_ty<'a>(db: &'a dyn HirDatabase, def: hir_def::VariantId, fd: LocalFieldId, args: &GenericArgs<'a>) -> Ty<'a> {
+     db.field_types(def)[fd].instantiate(DbInterner::new_with(db, None, None), args)
+ }
+ 
+ fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
+-    Scalar::Initialized {
+-        value,
+-        valid_range: WrappingRange::full(value.size(dl)),
+-    }
++    Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
+ }
+ 
+ #[cfg(test)]

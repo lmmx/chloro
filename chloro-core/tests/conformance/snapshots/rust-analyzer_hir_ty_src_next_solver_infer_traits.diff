@@ -1,0 +1,184 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8087 bytes
+Chloro size:   7721 bytes
+Rustfmt size:  8281 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use hir_def::TraitId;
+ use macros::{TypeFoldable, TypeVisitable};
+-use rustc_type_ir::elaborate::Elaboratable;
+ use rustc_type_ir::Upcast;
++use rustc_type_ir::elaborate::Elaboratable;
+ use tracing::debug;
+ 
+ use crate::next_solver::{
+     Clause, DbInterner, Goal, ParamEnv, PolyTraitPredicate, Predicate, Span, TraitPredicate,
+     TraitRef, Ty,
+ };
+-
+ use super::InferCtxt;
+-
+ /// The reason why we incurred this obligation; used for error reporting.
+ ///
+ /// Non-misc `ObligationCauseCode`s are stored on the heap. This gives the
+ /// only live for a short period of time.
+ #[derive(Clone, Debug, PartialEq, Eq)]
+ pub struct ObligationCause {
+-    // FIXME: This should contain an `ExprId`/`PatId` etc., and a cause code. But for now we
+-    // don't report trait solving diagnostics, so this is irrelevant.
+     _private: (),
+ }
+ 
+ /// scope. The eventual result is usually a `Selection` (defined below).
+ #[derive(Clone, Debug, TypeVisitable, TypeFoldable)]
+ pub struct Obligation<'db, T> {
++    /// The reason we have to prove this thing.
+     #[type_foldable(identity)]
+     #[type_visitable(ignore)]
+-    /// The reason we have to prove this thing.
+     pub cause: ObligationCause,
+-
+     /// The environment in which we should prove this thing.
+     pub param_env: ParamEnv<'db>,
+-
+     /// The thing we are trying to prove.
+     pub predicate: T,
+-
+     /// If we started proving this as a result of trying to prove
+     /// something else, track the total depth to ensure termination.
+     /// If this goes over a certain threshold, we abort compilation --
+         }
+     }
+ 
+-    fn child_with_derived_cause(
+-        &self,
+-        clause: Clause<'db>,
+-        _span: Span,
+-        _parent_trait_pred: PolyTraitPredicate<'db>,
+-        _index: usize,
+-    ) -> Self {
++    fn child_with_derived_cause(&self, clause: Clause<'db>, _span: Span, _parent_trait_pred: PolyTraitPredicate<'db>, _index: usize) -> Self {
+         let cause = ObligationCause::new();
+         Obligation {
+             cause,
+ 
+ impl<'db, T: Copy> Obligation<'db, T> {
+     pub fn as_goal(&self) -> Goal<'db, T> {
+-        Goal {
+-            param_env: self.param_env,
+-            predicate: self.predicate,
+-        }
++        Goal { param_env: self.param_env, predicate: self.predicate }
+     }
+ }
+ 
+     }
+ }
+ 
+-impl<'db, T: Eq> Eq for Obligation<'db, T> {}
++impl<'db, T: Eq> Eq for Obligation<'db, T> {
++}
+ 
+ impl<'db, T: Hash> Hash for Obligation<'db, T> {
+     fn hash<H: Hasher>(&self, state: &mut H) {
+ 
+ impl<'db, P> From<Obligation<'db, P>> for Goal<'db, P> {
+     fn from(value: Obligation<'db, P>) -> Self {
+-        Goal {
+-            param_env: value.param_env,
+-            predicate: value.predicate,
+-        }
++        Goal { param_env: value.param_env, predicate: value.predicate }
+     }
+ }
+ 
+ pub(crate) type PredicateObligation<'db> = Obligation<'db, Predicate<'db>>;
++
+ pub(crate) type TraitObligation<'db> = Obligation<'db, TraitPredicate<'db>>;
+ 
+ pub(crate) type PredicateObligations<'db> = Vec<PredicateObligation<'db>>;
+ }
+ 
+ impl<'db, O> Obligation<'db, O> {
+-    pub fn new(
+-        tcx: DbInterner<'db>,
+-        cause: ObligationCause,
+-        param_env: ParamEnv<'db>,
+-        predicate: impl Upcast<DbInterner<'db>, O>,
+-    ) -> Obligation<'db, O> {
++    pub fn new(tcx: DbInterner<'db>, cause: ObligationCause, param_env: ParamEnv<'db>, predicate: impl Upcast<DbInterner<'db>, O>) -> Obligation<'db, O> {
+         Self::with_depth(tcx, cause, 0, param_env, predicate)
+     }
+ 
+         self.recursion_depth = cmp::max(parent_depth + 1, self.recursion_depth);
+     }
+ 
+-    pub fn with_depth(
+-        tcx: DbInterner<'db>,
+-        cause: ObligationCause,
+-        recursion_depth: usize,
+-        param_env: ParamEnv<'db>,
+-        predicate: impl Upcast<DbInterner<'db>, O>,
+-    ) -> Obligation<'db, O> {
++    pub fn with_depth(tcx: DbInterner<'db>, cause: ObligationCause, recursion_depth: usize, param_env: ParamEnv<'db>, predicate: impl Upcast<DbInterner<'db>, O>) -> Obligation<'db, O> {
+         let predicate = predicate.upcast(tcx);
+-        Obligation {
+-            cause,
+-            param_env,
+-            recursion_depth,
+-            predicate,
+-        }
++        Obligation { cause, param_env, recursion_depth, predicate }
+     }
+ 
+-    pub fn with<P>(
+-        &self,
+-        tcx: DbInterner<'db>,
+-        value: impl Upcast<DbInterner<'db>, P>,
+-    ) -> Obligation<'db, P> {
+-        Obligation::with_depth(
+-            tcx,
+-            self.cause.clone(),
+-            self.recursion_depth,
+-            self.param_env,
+-            value,
+-        )
++    pub fn with<P>(&self, tcx: DbInterner<'db>, value: impl Upcast<DbInterner<'db>, P>) -> Obligation<'db, P> {
++        Obligation::with_depth(tcx, self.cause.clone(), self.recursion_depth, self.param_env, value)
+     }
+ }
+ 
+ /// `bound` or is not known to meet bound (note that this is
+ /// conservative towards *no impl*, which is the opposite of the
+ /// `evaluate` methods).
+-pub(crate) fn type_known_to_meet_bound_modulo_regions<'tcx>(
+-    infcx: &InferCtxt<'tcx>,
+-    param_env: ParamEnv<'tcx>,
+-    ty: Ty<'tcx>,
+-    def_id: TraitId,
+-) -> bool {
++pub(crate) fn type_known_to_meet_bound_modulo_regions<'tcx>(infcx: &InferCtxt<'tcx>, param_env: ParamEnv<'tcx>, ty: Ty<'tcx>, def_id: TraitId) -> bool {
+     let trait_ref = TraitRef::new(infcx.interner, def_id.into(), [ty]);
+     pred_known_to_hold_modulo_regions(infcx, param_env, trait_ref)
+ }
+ ///
+ /// Ping me on zulip if you want to use this method and need help with finding
+ /// an appropriate replacement.
+-fn pred_known_to_hold_modulo_regions<'db>(
+-    infcx: &InferCtxt<'db>,
+-    param_env: ParamEnv<'db>,
+-    pred: impl Upcast<DbInterner<'db>, Predicate<'db>>,
+-) -> bool {
++fn pred_known_to_hold_modulo_regions<'db>(infcx: &InferCtxt<'db>, param_env: ParamEnv<'db>, pred: impl Upcast<DbInterner<'db>, Predicate<'db>>) -> bool {
+     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), param_env, pred);
+-
+     let result = infcx.evaluate_obligation(&obligation);
+     debug!(?result);
+-
+     result.must_apply_modulo_regions()
+ }

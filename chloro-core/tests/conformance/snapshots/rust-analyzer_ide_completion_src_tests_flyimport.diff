@@ -1,0 +1,277 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 34327 bytes
+Chloro size:   34277 bytes
+Rustfmt size:  34347 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ 
+ use crate::{
+-    context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
+-    tests::{check_edit, check_edit_with_config, TEST_CONFIG},
+     CompletionConfig,
++    context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
++    tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+ };
+-
+ fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+     check_with_config(TEST_CONFIG, ra_fixture, expect);
+ }
+ 
+-fn check_with_config(
+-    config: CompletionConfig<'_>,
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    expect: Expect,
+-) {
++fn check_with_config(config: CompletionConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+     let (db, position) = crate::tests::position(ra_fixture);
+     let (ctx, analysis) =
+         crate::context::CompletionContext::new(&db, position, &config, None).unwrap();
+-
+     let mut acc = crate::completions::Completions::default();
+     hir::attach_db(ctx.db, || {
+-        if let CompletionAnalysis::Name(NameContext {
+-            kind: NameKind::IdentPat(pat_ctx),
+-            ..
+-        }) = &analysis
++        if let CompletionAnalysis::Name(NameContext { kind: NameKind::IdentPat(pat_ctx), .. }) =
++            &analysis
+         {
+             crate::completions::flyimport::import_on_the_fly_pat(&mut acc, &ctx, pat_ctx);
+         }
+             }
+         }
+     });
+-
+     expect.assert_eq(&super::render_completion_list(Vec::from(acc)));
+ }
+ 
+ #[test]
+ fn short_paths_are_prefix_matched() {
+     cov_mark::check!(flyimport_prefix_on_short_path);
+-
+     check(
+         r#"
+ //- /lib.rs crate:dep
+             dep::test_mod::TestStruct::wei$0
+         }
+         "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             fn weird_function() (use dep::test_mod::TestTrait) fn()
+         "#]],
+     );
+-
+     check_edit(
+         "weird_function",
+         fixture,
+             dep::test_mod::TestStruct::spe$0
+         }
+         "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             ct SPECIAL_CONST (use dep::test_mod::TestTrait) u8
+         "#]],
+     );
+-
+     check_edit(
+         "SPECIAL_CONST",
+         fixture,
+             test_struct.ran$0
+         }
+         "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             me random_method() (use dep::test_mod::TestTrait) fn(&self)
+         "#]],
+     );
+-
+     check_edit(
+         "random_method",
+         fixture,
+     t.$0
+ }
+ "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             me some_method() (use foo::TestTrait) fn(&self)
+         "#]],
+     );
+-
+     check_edit(
+         "some_method",
+         fixture,
+     t.$0
+ }
+ "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             me some_method() (use foo::TestTrait) fn(&self)
+         "#]],
+     );
+-
+     check_edit(
+         "some_method",
+         fixture,
+     whatever.inner().$0
+ }
+ "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             me not_in_scope() (use foo::NotInScope) fn(&self)
+         "#]],
+     );
+-
+     check_edit(
+         "not_in_scope",
+         fixture,
+     a.$0
+ }
+ "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+     dep::test_mod::TestAlias::ran$0
+ }
+ "#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             fn random_method() (use dep::test_mod::TestTrait) fn()
+         "#]],
+     );
+-
+     check_edit(
+         "random_method",
+         fixture,
+             me random_method() (use dep::test_mod::TestTrait) fn(&self) DEPRECATED
+         "#]],
+     );
+-
+     check(
+         r#"
+ //- /lib.rs crate:dep
+     Ite$0
+ }"#;
+     let mut config = TEST_CONFIG;
+-
+     config.insert_use.prefix_kind = hir::PrefixKind::ByCrate;
+     check_edit_with_config(
+         config.clone(),
+     Item
+ }"#,
+     );
+-
+     config.insert_use.prefix_kind = hir::PrefixKind::BySelf;
+     check_edit_with_config(
+         config.clone(),
+     Item
+ }"#,
+     );
+-
+     config.insert_use.prefix_kind = hir::PrefixKind::Plain;
+     check_edit_with_config(
+         config,
+ }"#;
+     let mut config = TEST_CONFIG;
+     config.prefer_absolute = true;
+-
+     check_edit_with_config(
+         config.clone(),
+         "Item",
+ fn main() {
+     bar::baz::Ite$0
+ }"#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             st Item (use foo::bar) Item
+         "#]],
+     );
+-
+     check_edit(
+         "Item",
+         fixture,
+ fn main() {
+     Item::TEST_A$0
+ }"#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             ct TEST_ASSOC (use foo::Item) usize
+         "#]],
+     );
+-
+     check_edit(
+         "TEST_ASSOC",
+         fixture,
+ fn main() {
+     bar::Item::TEST_A$0
+ }"#;
+-
+     check(
+         fixture,
+         expect![[r#"
+             ct TEST_ASSOC (use foo::bar) usize
+         "#]],
+     );
+-
+     check_edit(
+         "TEST_ASSOC",
+         fixture,
+             ct TEST_CONST (use foo::TEST_CONST) usize
+         "#]],
+     );
+-
+     check(
+         r#"
+ mod foo {
+             fn test_function() (use foo::test_function) fn() -> i32
+         "#]],
+     );
+-
+     check(
+         r#"
+ mod foo {
+ "#,
+         expect![[r#""#]],
+     );
+-
+     check(
+         r#"
+ mod m {
+ "#,
+         expect![[r#""#]],
+     );
+-
+     check(
+         r#"
+ mod m {
+ }"#,
+         expect![[r#""#]],
+     );
+-
+     check(
+         r#"
+ mod foo {

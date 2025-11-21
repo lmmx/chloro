@@ -1,0 +1,357 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 30934 bytes
+Chloro size:   30771 bytes
+Rustfmt size:  32147 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use span::Edition;
+ 
+ use crate::{
+-    term_search::Expr, Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl,
+-    ModuleDef, ScopeDef, Type, TypeParam,
++    Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl, ModuleDef, ScopeDef,
++    Type, TypeParam, term_search::Expr,
+ };
+-
+ use super::{LookupTable, NewTypesKey, TermSearchCtx};
+-
+ /// # Trivial tactic
+ ///
+ /// Attempts to fulfill the goal by trying items in scope
+ ///
+ /// _Note that there is no use of calling this tactic in every iteration as the output does not
+ /// depend on the current state of `lookup`_
+-pub(super) fn trivial<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn trivial<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     defs.iter().filter_map(|def| {
+         let expr = match def {
+ ///
+ /// _Note that there is no use of calling this tactic in every iteration as the output does not
+ /// depend on the current state of `lookup`_
+-pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+-
+     defs.iter()
+         .filter_map(|def| match def {
+             ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn data_constructor<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     lookup
+                 // Note that we need special case for 0 param constructors because of multi cartesian
+                 // product
+                 let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
+-                    vec![Expr::Struct {
+-                        strukt,
+-                        generics,
+-                        params: Vec::new(),
+-                    }]
++                    vec![Expr::Struct { strukt, generics, params: Vec::new() }]
+                 } else {
+                     param_exprs
+                         .into_iter()
+                         .multi_cartesian_product()
+-                        .map(|params| Expr::Struct {
+-                            strukt,
+-                            generics: generics.clone(),
+-                            params,
+-                        })
++                        .map(|params| Expr::Struct { strukt, generics: generics.clone(), params })
+                         .collect()
+                 };
+ 
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn free_function<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     defs.iter()
+ 
+                 // Only account for stable type parameters for now, unstable params can be default
+                 // tho, for example in `Box<T, #[unstable] A: Allocator>`
+-                if type_params
+-                    .iter()
+-                    .any(|it| it.is_unstable(db) && it.default(db).is_none())
+-                {
++                if type_params.iter().any(|it| it.is_unstable(db) && it.default(db).is_none()) {
+                     return None;
+                 }
+ 
+-                let non_default_type_params_len = type_params
+-                    .iter()
+-                    .filter(|it| it.default(db).is_none())
+-                    .count();
++                let non_default_type_params_len =
++                    type_params.iter().filter(|it| it.default(db).is_none()).count();
+ 
+                 // Ignore bigger number of generics for now as they kill the performance
+                 if non_default_type_params_len > 0 {
+                         // Note that we need special case for 0 param constructors because of multi cartesian
+                         // product
+                         let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
+-                            vec![Expr::Function {
+-                                func: *it,
+-                                generics,
+-                                params: Vec::new(),
+-                            }]
++                            vec![Expr::Function { func: *it, generics, params: Vec::new() }]
+                         } else {
+                             param_exprs
+                                 .into_iter()
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn impl_method<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     lookup
+         .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
+         .filter(|_| should_continue())
+         .flat_map(|ty| {
+-            Impl::all_for_type(db, ty.clone())
+-                .into_iter()
+-                .map(move |imp| (ty.clone(), imp))
+-        })
+-        .flat_map(|(ty, imp)| {
+-            imp.items(db)
+-                .into_iter()
+-                .map(move |item| (imp, ty.clone(), item))
++            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+         })
++        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+         .filter_map(|(imp, ty, it)| match it {
+             AssocItem::Function(f) => Some((imp, ty, f)),
+             _ => None,
+                 return None;
+             }
+ 
+-            let self_ty = it
+-                .self_param(db)
+-                .expect("No self param")
+-                .ty_with_args(db, ty.type_arguments());
++            let self_ty =
++                it.self_param(db).expect("No self param").ty_with_args(db, ty.type_arguments());
+ 
+             // Ignore functions that have different self type
+             if !self_ty.autoderef(db).any(|s_ty| ty == s_ty) {
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn struct_projection<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     lookup
+         .new_types(NewTypesKey::StructProjection)
+         .into_iter()
+-        .map(|ty| {
+-            (
+-                ty.clone(),
+-                lookup.find(db, &ty).expect("Expr not in lookup"),
+-            )
+-        })
++        .map(|ty| (ty.clone(), lookup.find(db, &ty).expect("Expr not in lookup")))
+         .filter(|_| should_continue())
+         .flat_map(move |(ty, targets)| {
+-            ty.fields(db)
+-                .into_iter()
+-                .filter_map(move |(field, filed_ty)| {
+-                    if !field.is_visible_from(db, module) {
+-                        return None;
+-                    }
+-                    let exprs = targets.clone().into_iter().map(move |target| Expr::Field {
+-                        field,
+-                        expr: Box::new(target),
+-                    });
+-                    Some((filed_ty, exprs))
+-                })
++            ty.fields(db).into_iter().filter_map(move |(field, filed_ty)| {
++                if !field.is_visible_from(db, module) {
++                    return None;
++                }
++                let exprs = targets
++                    .clone()
++                    .into_iter()
++                    .map(move |target| Expr::Field { field, expr: Box::new(target) });
++                Some((filed_ty, exprs))
++            })
+         })
+         .filter_map(|(ty, exprs)| ty.could_unify_with_deeply(db, &ctx.goal).then_some(exprs))
+         .flatten()
+ /// * `ctx` - Context for the term search
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+-pub(super) fn famous_types<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn famous_types<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     let interner = DbInterner::new_with(db, None, None);
+     let bool_ty = Ty::new_bool(interner);
+     let unit_ty = Ty::new_unit(interner);
+     [
+-        Expr::FamousType {
+-            ty: Type::new(db, module.id, bool_ty),
+-            value: "true",
+-        },
+-        Expr::FamousType {
+-            ty: Type::new(db, module.id, bool_ty),
+-            value: "false",
+-        },
+-        Expr::FamousType {
+-            ty: Type::new(db, module.id, unit_ty),
+-            value: "()",
+-        },
++        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "true" },
++        Expr::FamousType { ty: Type::new(db, module.id, bool_ty), value: "false" },
++        Expr::FamousType { ty: Type::new(db, module.id, unit_ty), value: "()" },
+     ]
+     .into_iter()
+     .inspect(|exprs| {
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn impl_static_method<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+     lookup
+         .filter(|ty| !ty.type_arguments().any(|it| it.contains_unknown()))
+         .filter(|_| should_continue())
+         .flat_map(|ty| {
+-            Impl::all_for_type(db, ty.clone())
+-                .into_iter()
+-                .map(move |imp| (ty.clone(), imp))
++            Impl::all_for_type(db, ty.clone()).into_iter().map(move |imp| (ty.clone(), imp))
+         })
+         .filter(|(_, imp)| !imp.is_unsafe(db))
+-        .flat_map(|(ty, imp)| {
+-            imp.items(db)
+-                .into_iter()
+-                .map(move |item| (imp, ty.clone(), item))
+-        })
++        .flat_map(|(ty, imp)| imp.items(db).into_iter().map(move |item| (imp, ty.clone(), item)))
+         .filter_map(|(imp, ty, it)| match it {
+             AssocItem::Function(f) => Some((imp, ty, f)),
+             _ => None,
+             // product
+             let generics = ty.type_arguments().collect();
+             let fn_exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
+-                vec![Expr::Function {
+-                    func: it,
+-                    generics,
+-                    params: Vec::new(),
+-                }]
++                vec![Expr::Function { func: it, generics, params: Vec::new() }]
+             } else {
+                 param_exprs
+                     .into_iter()
+                     .multi_cartesian_product()
+-                    .map(|params| Expr::Function {
+-                        func: it,
+-                        generics: generics.clone(),
+-                        params,
+-                    })
++                    .map(|params| Expr::Function { func: it, generics: generics.clone(), params })
+                     .collect()
+             };
+ 
+ /// * `defs` - Set of items in scope at term search target location
+ /// * `lookup` - Lookup table for types
+ /// * `should_continue` - Function that indicates when to stop iterating
+-pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
+-    ctx: &'a TermSearchCtx<'db, DB>,
+-    _defs: &'a FxHashSet<ScopeDef>,
+-    lookup: &'lt mut LookupTable<'db>,
+-    should_continue: &'a dyn std::ops::Fn() -> bool,
+-) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
++pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(ctx: &'a TermSearchCtx<'db, DB>, _defs: &'a FxHashSet<ScopeDef>, lookup: &'lt mut LookupTable<'db>, should_continue: &'a dyn std::ops::Fn() -> bool) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
+     let db = ctx.sema.db;
+     let module = ctx.scope.module();
+-
+     lookup
+         .types_wishlist()
+         .clone()
+             }
+ 
+             // Early exit if some param cannot be filled from lookup
+-            let param_exprs: Vec<Vec<Expr<'db>>> = ty
+-                .type_arguments()
+-                .map(|field| lookup.find(db, &field))
+-                .collect::<Option<_>>()?;
++            let param_exprs: Vec<Vec<Expr<'db>>> =
++                ty.type_arguments().map(|field| lookup.find(db, &field)).collect::<Option<_>>()?;
+ 
+             let exprs: Vec<Expr<'db>> = param_exprs
+                 .into_iter()
+                     let tys: Vec<Type<'_>> = params.iter().map(|it| it.ty(db)).collect();
+                     let tuple_ty = Type::new_tuple(module.krate().into(), &tys);
+ 
+-                    let expr = Expr::Tuple {
+-                        ty: tuple_ty.clone(),
+-                        params,
+-                    };
++                    let expr = Expr::Tuple { ty: tuple_ty.clone(), params };
+                     lookup.insert(tuple_ty, iter::once(expr.clone()));
+                     expr
+                 })
+             Some(exprs)
+         })
+         .flatten()
+-        .filter_map(|expr| {
+-            expr.ty(db)
+-                .could_unify_with_deeply(db, &ctx.goal)
+-                .then_some(expr)
+-        })
++        .filter_map(|expr| expr.ty(db).could_unify_with_deeply(db, &ctx.goal).then_some(expr))
+ }

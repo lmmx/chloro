@@ -1,0 +1,196 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 33220 bytes
+Chloro size:   31312 bytes
+Rustfmt size:  33220 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Re-export diagnostics such that clients of `hir` don't have to depend on
+ //! low-level crates.
+ //!
+ //! This probably isn't the best way to do this -- ideally, diagnostics should
+ //! be expressed in terms of hir types themselves.
++
+ use cfg::{CfgExpr, CfgOptions};
+ use either::Either;
++pub use hir_def::VariantId;
+ use hir_def::{
+     DefWithBodyId, GenericParamId, SyntheticSyntax,
+     expr_store::{
+     db::HirDatabase,
+     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
+ };
++pub use hir_ty::{
++    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
++    diagnostics::{CaseType, IncorrectCase},
++};
+ use syntax::{
+     AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
+     ast::{self, HasGenericArgs},
+ use triomphe::Arc;
+ 
+ use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
+-
+-pub use hir_def::VariantId;
+-pub use hir_ty::{
+-    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
+-    diagnostics::{CaseType, IncorrectCase},
+-};
+-
+ macro_rules! diagnostics {
+     ($AnyDiagnostic:ident <$db:lifetime> -> $($diag:ident $(<$lt:lifetime>)?,)*) => {
+         #[derive(Debug)]
+         )*
+     };
+ }
+-// FIXME Accept something like the following in the macro call instead
+-// diagnostics![
+-// pub struct BreakOutsideOfLoop {
+-//     pub expr: InFile<AstPtr<ast::Expr>>,
+-//     pub is_break: bool,
+-//     pub bad_value_break: bool,
+-// }, ...
+-// or more concisely
+-// BreakOutsideOfLoop {
+-//     expr: InFile<AstPtr<ast::Expr>>,
+-//     is_break: bool,
+-//     bad_value_break: bool,
+-// }, ...
+-// ]
+-
+-diagnostics![AnyDiagnostic<'db> ->
+-    AwaitOutsideOfAsync,
+-    BreakOutsideOfLoop,
+-    CastToUnsized<'db>,
+-    ExpectedFunction<'db>,
+-    InactiveCode,
+-    IncoherentImpl,
+-    IncorrectCase,
+-    InvalidCast<'db>,
+-    InvalidDeriveTarget,
+-    MacroDefError,
+-    MacroError,
+-    MacroExpansionParseError,
+-    MalformedDerive,
+-    MismatchedArgCount,
+-    MismatchedTupleStructPatArgCount,
+-    MissingFields,
+-    MissingMatchArms,
+-    MissingUnsafe,
+-    MovedOutOfRef<'db>,
+-    NeedMut,
+-    NonExhaustiveLet,
+-    NoSuchField,
+-    PrivateAssocItem,
+-    PrivateField,
+-    RemoveTrailingReturn,
+-    RemoveUnnecessaryElse,
+-    ReplaceFilterMapNextWithFindMap,
+-    TraitImplIncorrectSafety,
+-    TraitImplMissingAssocItems,
+-    TraitImplOrphan,
+-    TraitImplRedundantAssocItems,
+-    TypedHole<'db>,
+-    TypeMismatch<'db>,
+-    UndeclaredLabel,
+-    UnimplementedBuiltinMacro,
+-    UnreachableLabel,
+-    UnresolvedAssocItem,
+-    UnresolvedExternCrate,
+-    UnresolvedField<'db>,
+-    UnresolvedImport,
+-    UnresolvedMacroCall,
+-    UnresolvedMethodCall<'db>,
+-    UnresolvedModule,
+-    UnresolvedIdent,
+-    UnusedMut,
+-    UnusedVariable,
+-    GenericArgsProhibited,
+-    ParenthesizedGenericArgsWithoutFnTrait,
+-    BadRtn,
+-    IncorrectGenericsLen,
+-    IncorrectGenericsOrder,
+-    MissingLifetime,
+-    ElidedLifetimesInPath,
+-];
+-
+ #[derive(Debug)]
+ pub struct BreakOutsideOfLoop {
+     pub expr: InFile<ExprOrPatPtr>,
+     pub path: ModPath,
+     pub is_bang: bool,
+ }
++
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct UnreachableLabel {
+     pub node: InFile<AstPtr<ast::Lifetime>>,
+     pub impl_: AstPtr<ast::Impl>,
+ }
+ 
+-// FIXME: Split this off into the corresponding 4 rustc errors
+ #[derive(Debug, PartialEq, Eq)]
+ pub struct TraitImplIncorrectSafety {
+     pub file_id: HirFileId,
+ }
+ 
+ impl<'db> AnyDiagnostic<'db> {
+-    pub(crate) fn body_validation_diagnostic(
+-        db: &'db dyn HirDatabase,
+-        diagnostic: BodyValidationDiagnostic,
+-        source_map: &hir_def::expr_store::BodySourceMap,
+-    ) -> Option<AnyDiagnostic<'db>> {
++    pub(crate) fn body_validation_diagnostic(db: &'db dyn HirDatabase, diagnostic: BodyValidationDiagnostic, source_map: &hir_def::expr_store::BodySourceMap) -> Option<AnyDiagnostic<'db>> {
+         match diagnostic {
+             BodyValidationDiagnostic::RecordMissingFields { record, variant, missed_fields } => {
+                 let variant_data = variant.fields(db);
+         None
+     }
+ 
+-    pub(crate) fn inference_diagnostic(
+-        db: &'db dyn HirDatabase,
+-        def: DefWithBodyId,
+-        d: &InferenceDiagnostic<'db>,
+-        source_map: &hir_def::expr_store::BodySourceMap,
+-        sig_map: &hir_def::expr_store::ExpressionStoreSourceMap,
+-    ) -> Option<AnyDiagnostic<'db>> {
++    pub(crate) fn inference_diagnostic(db: &'db dyn HirDatabase, def: DefWithBodyId, d: &InferenceDiagnostic<'db>, source_map: &hir_def::expr_store::BodySourceMap, sig_map: &hir_def::expr_store::ExpressionStoreSourceMap) -> Option<AnyDiagnostic<'db>> {
+         let expr_syntax = |expr| {
+             source_map
+                 .expr_syntax(expr)
+         })
+     }
+ 
+-    fn path_diagnostic(
+-        diag: &PathLoweringDiagnostic,
+-        path: InFile<ast::Path>,
+-    ) -> Option<AnyDiagnostic<'db>> {
++    fn path_diagnostic(diag: &PathLoweringDiagnostic, path: InFile<ast::Path>) -> Option<AnyDiagnostic<'db>> {
+         Some(match *diag {
+             PathLoweringDiagnostic::GenericArgsProhibited { segment, reason } => {
+                 let segment = hir_segment_to_ast_segment(&path.value, segment)?;
+         })
+     }
+ 
+-    pub(crate) fn ty_diagnostic(
+-        diag: &TyLoweringDiagnostic,
+-        source_map: &ExpressionStoreSourceMap,
+-        db: &'db dyn HirDatabase,
+-    ) -> Option<AnyDiagnostic<'db>> {
++    pub(crate) fn ty_diagnostic(diag: &TyLoweringDiagnostic, source_map: &ExpressionStoreSourceMap, db: &'db dyn HirDatabase) -> Option<AnyDiagnostic<'db>> {
+         let Ok(source) = source_map.type_syntax(diag.source) else {
+             stdx::never!("error on synthetic type syntax");
+             return None;
+     }
+ }
+ 
+-fn path_generics_source_to_ast(
+-    path: &ast::Path,
+-    generics_source: PathGenericsSource,
+-) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
++fn path_generics_source_to_ast(path: &ast::Path, generics_source: PathGenericsSource) -> Option<Either<ast::GenericArgList, ast::NameRef>> {
+     Some(match generics_source {
+         PathGenericsSource::Segment(segment) => {
+             let segment = hir_segment_to_ast_segment(path, segment)?;

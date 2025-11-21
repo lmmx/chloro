@@ -1,0 +1,19 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3940 bytes
+Chloro size:   3940 bytes
+Rustfmt size:  3940 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion tests for predicates and bounds.
++
+ use expect_test::expect;
+ 
+ use crate::tests::{check, check_with_base_items};
+-
+ #[test]
+ fn predicate_start() {
+     // FIXME: `for` kw

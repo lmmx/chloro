@@ -1,0 +1,28 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2543 bytes
+Chloro size:   2476 bytes
+Rustfmt size:  2543 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::iter;
+ 
+ use hir::Semantics;
+-use syntax::ast::{self, make, Pat};
++use syntax::ast::{self, Pat, make};
+ 
+ use crate::RootDatabase;
+-
+ /// Enum types that implement `std::ops::Try` trait.
+ #[derive(Clone, Copy, Debug)]
+ pub enum TryEnum {
+ }
+ 
+ impl TryEnum {
+-    const ALL: [TryEnum; 2] = [TryEnum::Option, TryEnum::Result];
+ 
+     /// Returns `Some(..)` if the provided type is an enum that implements `std::ops::Try`.
+     pub fn from_ty(sema: &Semantics<'_, RootDatabase>, ty: &hir::Type<'_>) -> Option<TryEnum> {

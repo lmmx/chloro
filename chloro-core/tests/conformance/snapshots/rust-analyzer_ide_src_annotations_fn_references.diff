@@ -1,0 +1,85 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2772 bytes
+Chloro size:   2751 bytes
+Rustfmt size:  2808 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This module implements a methods and free functions search in the specified file.
+ //! We have to skip tests, so cannot reuse file_structure module.
+ 
+ use hir::Semantics;
+ use ide_assists::utils::test_related_attribute_syn;
+ use ide_db::RootDatabase;
+-use syntax::{ast, ast::HasName, AstNode, SyntaxNode, TextRange};
++use syntax::{AstNode, SyntaxNode, TextRange, ast, ast::HasName};
+ 
+ use crate::FileId;
+-
+-pub(super) fn find_all_methods(
+-    db: &RootDatabase,
+-    file_id: FileId,
+-) -> Vec<(TextRange, Option<TextRange>)> {
++pub(super) fn find_all_methods(db: &RootDatabase, file_id: FileId) -> Vec<(TextRange, Option<TextRange>)> {
+     let sema = Semantics::new(db);
+     let source_file = sema.parse_guess_edition(file_id);
+-    source_file
+-        .syntax()
+-        .descendants()
+-        .filter_map(method_range)
+-        .collect()
++    source_file.syntax().descendants().filter_map(method_range).collect()
+ }
+ 
+ fn method_range(item: SyntaxNode) -> Option<(TextRange, Option<TextRange>)> {
+ #[cfg(test)]
+ mod tests {
+     use syntax::TextRange;
+-
+-    use crate::fixture;
+     use crate::TextSize;
++    use crate::fixture;
+     use std::ops::RangeInclusive;
+-
+     #[test]
+     fn test_find_all_methods() {
+         let (analysis, pos) = fixture::position(
+             pub fn generic_fn<T>(arg: T) {}
+         "#,
+         );
+-
+         let refs = super::find_all_methods(&analysis.db, pos.file_id);
+         check_result(&refs, &[3..=13, 27..=33, 47..=57]);
+     }
+-
+     #[test]
+     fn test_find_trait_methods() {
+         let (analysis, pos) = fixture::position(
+             }
+         "#,
+         );
+-
+         let refs = super::find_all_methods(&analysis.db, pos.file_id);
+         check_result(&refs, &[19..=22, 35..=38]);
+     }
+-
+     #[test]
+     fn test_skip_tests() {
+         let (analysis, pos) = fixture::position(
+             }
+         "#,
+         );
+-
+         let refs = super::find_all_methods(&analysis.db, pos.file_id);
+         check_result(&refs, &[28..=34]);
+     }
+-
+     fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
+         assert_eq!(refs.len(), expected.len());
+-
+         for (i, &(full, focus)) in refs.iter().enumerate() {
+             let range = &expected[i];
+             let item = focus.unwrap_or(full);

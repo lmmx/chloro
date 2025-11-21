@@ -1,0 +1,395 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 22408 bytes
+Chloro size:   21506 bytes
+Rustfmt size:  22967 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! The type system. We currently use this to infer types for completion, hover
+ //! information and various assists.
+ 
+-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+-
+-// FIXME: We used to import `rustc_*` deps from `rustc_private` with `feature = "in-rust-tree" but
+-// temporarily switched to crates.io versions due to hardships that working on them from rustc
+-// demands corresponding changes on rust-analyzer at the same time.
+-// For details, see the zulip discussion below:
+-// https://rust-lang.zulipchat.com/#narrow/channel/185405-t-compiler.2Frust-analyzer/topic/relying.20on.20in-tree.20.60rustc_type_ir.60.2F.60rustc_next_trait_solver.60/with/541055689
+-
+-extern crate ra_ap_rustc_index as rustc_index;
+-
+-extern crate ra_ap_rustc_abi as rustc_abi;
+-
+-extern crate ra_ap_rustc_pattern_analysis as rustc_pattern_analysis;
+-
+-extern crate ra_ap_rustc_ast_ir as rustc_ast_ir;
+-
+-extern crate ra_ap_rustc_type_ir as rustc_type_ir;
+-
+-extern crate ra_ap_rustc_next_trait_solver as rustc_next_trait_solver;
+-
+-extern crate self as hir_ty;
+-
+-mod infer;
+-mod inhabitedness;
+-mod lower;
+-pub mod next_solver;
+-mod opaques;
+-mod specialization;
+-mod target_feature;
+-mod utils;
+-mod variance;
+-
+-pub mod autoderef;
+-pub mod consteval;
+-pub mod db;
+-pub mod diagnostics;
+-pub mod display;
+-pub mod drop;
+-pub mod dyn_compatibility;
+-pub mod generics;
+-pub mod lang_items;
+-pub mod layout;
+-pub mod method_resolution;
+-pub mod mir;
+-pub mod primitive;
+-pub mod traits;
+-
+-#[cfg(test)]
+-mod test_db;
+-#[cfg(test)]
+-mod tests;
+-
+ use std::hash::Hash;
+ 
+-use hir_def::{type_ref::Rawness, CallableDefId, TypeOrConstParamId};
++pub use autoderef::autoderef;
++use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
+ use hir_expand::name::Name;
+-use indexmap::{map::Entry, IndexMap};
+-use intern::{sym, Symbol};
++use indexmap::{IndexMap, map::Entry};
++pub use infer::{
++    Adjust, Adjustment, AutoBorrow, BindingMode, InferenceDiagnostic, InferenceResult,
++    InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
++    cast::CastError,
++    closure::analysis::{CaptureKind, CapturedItem},
++    could_coerce, could_unify, could_unify_deeply,
++};
++use intern::{Symbol, sym};
++pub use lower::{
++    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
++    associated_type_shorthand_candidates, diagnostics::*,
++};
++pub use method_resolution::check_orphan_rules;
+ use mir::{MirEvalError, VTableMap};
++pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
+ use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
+ use rustc_type_ir::{
+-    inherent::{IntoKind, SliceLike, Ty as _},
+     BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
++    inherent::{IntoKind, SliceLike, Ty as _},
+ };
+-use syntax::ast::{make, ConstArg};
++use syntax::ast::{ConstArg, make};
++pub use target_feature::TargetFeatures;
+ use traits::FnTrait;
++pub use traits::TraitEnvironment;
+ use triomphe::Arc;
++pub use utils::{
++    TargetFeatureIsSafeInTarget, Unsafety, all_super_traits, direct_super_traits,
++    is_fn_unsafe_to_call, target_feature_is_safe_in_target,
++};
+ 
+ use crate::{
+     db::HirDatabase,
+     display::{DisplayTarget, HirDisplay},
+     infer::unify::InferenceTable,
+     next_solver::{
+-        abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
+-        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig,
+-        Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
++        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
++        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
++        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
+     },
+ };
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
++mod infer;
+ 
+-pub use autoderef::autoderef;
+-pub use infer::{
+-    cast::CastError,
+-    closure::analysis::{CaptureKind, CapturedItem},
+-    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
+-    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
+-    PointerCast,
+-};
+-pub use lower::{
+-    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
+-    TyLoweringContext, ValueTyDefId,
+-};
+-pub use method_resolution::check_orphan_rules;
+-pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
+-pub use target_feature::TargetFeatures;
+-pub use traits::TraitEnvironment;
+-pub use utils::{
+-    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+-    TargetFeatureIsSafeInTarget, Unsafety,
+-};
++mod inhabitedness;
++
++mod lower;
++
++pub mod next_solver;
++
++mod opaques;
++
++mod specialization;
++
++mod target_feature;
++
++mod utils;
++
++mod variance;
++
++pub mod autoderef;
++
++pub mod consteval;
++
++pub mod db;
++
++pub mod diagnostics;
++
++pub mod display;
++
++pub mod drop;
++
++pub mod dyn_compatibility;
++
++pub mod generics;
++
++pub mod lang_items;
++
++pub mod layout;
++
++pub mod method_resolution;
++
++pub mod mir;
++
++pub mod primitive;
++
++pub mod traits;
++
++#[cfg(test)]
++mod test_db;
++
++#[cfg(test)]
++mod tests;
+ 
+ /// A constant can have reference to other things. Memory map job is holding
+ /// the necessary bits of memory of the const eval session to keep the constant
+     /// This functions convert each address by a function `f` which gets the byte intervals and assign an address
+     /// to them. It is useful when you want to load a constant with a memory map in a new memory. You can pass an
+     /// allocator function as `f` and it will return a mapping of old addresses to new addresses.
+-    fn transform_addresses(
+-        &self,
+-        mut f: impl FnMut(&[u8], usize) -> Result<usize, MirEvalError<'db>>,
+-    ) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
++    fn transform_addresses(&self, mut f: impl FnMut(&[u8], usize) -> Result<usize, MirEvalError<'db>>) -> Result<FxHashMap<usize, usize>, MirEvalError<'db>> {
+         let mut transform = |(addr, val): (&usize, &[u8])| {
+             let addr = *addr;
+-            let align = if addr == 0 {
+-                64
+-            } else {
+-                (addr - (addr & (addr - 1))).min(64)
+-            };
++            let align = if addr == 0 { 64 } else { (addr - (addr & (addr - 1))).min(64) };
+             f(val, align).map(|it| (addr, it))
+         };
+         match self {
+                 map.insert(addr, val);
+                 map
+             }),
+-            MemoryMap::Complex(cm) => cm
+-                .memory
+-                .iter()
+-                .map(|(addr, val)| transform((addr, val)))
+-                .collect(),
++            MemoryMap::Complex(cm) => {
++                cm.memory.iter().map(|(addr, val)| transform((addr, val))).collect()
++            }
+         }
+     }
+ 
+ /// the `t`.
+ pub fn replace_errors_with_variables<'db, T>(interner: DbInterner<'db>, t: &T) -> Canonical<'db, T>
+ where
+-    T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone,
+-{
++    T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone, {
+     use rustc_type_ir::{FallibleTypeFolder, TypeSuperFoldable};
+     struct ErrorReplacer<'db> {
+         interner: DbInterner<'db>,
+             #[cfg(debug_assertions)]
+             let error = || Err(());
+             #[cfg(not(debug_assertions))]
+-            let error = || {
+-                Ok(Ty::new_error(
+-                    self.interner,
+-                    crate::next_solver::ErrorGuaranteed,
+-                ))
+-            };
++            let error = || Ok(Ty::new_error(self.interner, crate::next_solver::ErrorGuaranteed));
+ 
+             match t.kind() {
+                 TyKind::Error(_) => {
+                     Ok(Ty::new_bound(
+                         self.interner,
+                         self.binder,
+-                        BoundTy {
+-                            var,
+-                            kind: BoundTyKind::Anon,
+-                        },
++                        BoundTy { var, kind: BoundTyKind::Anon },
+                     ))
+                 }
+                 TyKind::Infer(_) => error(),
+             match ct.kind() {
+                 ConstKind::Error(_) => {
+                     let var = rustc_type_ir::BoundVar::from_usize(self.vars.len());
+-                    self.vars
+-                        .push(CanonicalVarKind::Const(rustc_type_ir::UniverseIndex::ZERO));
+-                    Ok(Const::new_bound(
+-                        self.interner,
+-                        self.binder,
+-                        BoundConst { var },
+-                    ))
++                    self.vars.push(CanonicalVarKind::Const(rustc_type_ir::UniverseIndex::ZERO));
++                    Ok(Const::new_bound(self.interner, self.binder, BoundConst { var }))
+                 }
+                 ConstKind::Infer(_) => error(),
+                 ConstKind::Bound(BoundVarIndexKind::Bound(index), _) if index > self.binder => {
+             match region.kind() {
+                 RegionKind::ReError(_) => {
+                     let var = rustc_type_ir::BoundVar::from_usize(self.vars.len());
+-                    self.vars
+-                        .push(CanonicalVarKind::Region(rustc_type_ir::UniverseIndex::ZERO));
++                    self.vars.push(CanonicalVarKind::Region(rustc_type_ir::UniverseIndex::ZERO));
+                     Ok(Region::new_bound(
+                         self.interner,
+                         self.binder,
+-                        BoundRegion {
+-                            var,
+-                            kind: BoundRegionKind::Anon,
+-                        },
++                        BoundRegion { var, kind: BoundRegionKind::Anon },
+                     ))
+                 }
+                 RegionKind::ReVar(_) => error(),
+             }
+         }
+     }
+-
+-    let mut error_replacer = ErrorReplacer {
+-        vars: Vec::new(),
+-        binder: rustc_type_ir::DebruijnIndex::ZERO,
+-        interner,
+-    };
++    let mut error_replacer =
++        ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
+     let value = match t.clone().try_fold_with(&mut error_replacer) {
+         Ok(t) => t,
+         Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
+ }
+ 
+ /// To be used from `hir` only.
+-pub fn callable_sig_from_fn_trait<'db>(
+-    self_ty: Ty<'db>,
+-    trait_env: Arc<TraitEnvironment<'db>>,
+-    db: &'db dyn HirDatabase,
+-) -> Option<(FnTrait, PolyFnSig<'db>)> {
++pub fn callable_sig_from_fn_trait<'db>(self_ty: Ty<'db>, trait_env: Arc<TraitEnvironment<'db>>, db: &'db dyn HirDatabase) -> Option<(FnTrait, PolyFnSig<'db>)> {
+     let krate = trait_env.krate;
+     let fn_once_trait = FnTrait::FnOnce.get_id(db, krate)?;
+     let output_assoc_type = fn_once_trait
+         .trait_items(db)
+         .associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
+-
+     let mut table = InferenceTable::new(db, trait_env.clone(), None);
+-
+     // Register two obligations:
+     // - Self: FnOnce<?args_ty>
+     // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
+         rustc_type_ir::AliasTyKind::Projection,
+         AliasTy::new(table.interner(), output_assoc_type.into(), args),
+     );
+-
+     let pred = Predicate::upcast_from(trait_ref, table.interner());
+     if !table.try_obligation(pred).no_solution() {
+         table.register_obligation(pred);
+         if let TyKind::Param(param) = ty.kind() {
+             self.params.insert(param.id.into());
+         }
+-
+         ty.super_visit_with(self);
+     }
+ 
+         if let ConstKind::Param(param) = konst.kind() {
+             self.params.insert(param.id.into());
+         }
+-
+         konst.super_visit_with(self);
+     }
+ }
+ /// Returns unique params for types and consts contained in `value`.
+ pub fn collect_params<'db, T>(value: &T) -> Vec<TypeOrConstParamId>
+ where
+-    T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>,
+-{
+-    let mut collector = ParamCollector {
+-        params: FxHashSet::default(),
+-    };
++    T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>, {
++    let mut collector = ParamCollector { params: FxHashSet::default() };
+     value.visit_with(&mut collector);
+     Vec::from_iter(collector.params)
+ }
+ 
+-pub fn known_const_to_ast<'db>(
+-    konst: Const<'db>,
+-    db: &'db dyn HirDatabase,
+-    display_target: DisplayTarget,
+-) -> Option<ConstArg> {
+-    Some(make::expr_const_value(
+-        konst.display(db, display_target).to_string().as_str(),
+-    ))
++pub fn known_const_to_ast<'db>(konst: Const<'db>, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> Option<ConstArg> {
++    Some(make::expr_const_value(konst.display(db, display_target).to_string().as_str()))
+ }
+ 
+ #[derive(Debug, Copy, Clone)]
+ pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
+     use std::env;
+     use std::sync::LazyLock;
+-    use tracing_subscriber::{layer::SubscriberExt, Registry};
++    use tracing_subscriber::{Registry, layer::SubscriberExt};
+     use tracing_tree::HierarchicalLayer;
+-
+     static ENABLE: LazyLock<bool> = LazyLock::new(|| env::var("CHALK_DEBUG").is_ok());
+     if !*ENABLE {
+         return None;
+     }
+-
+-    let filter: tracing_subscriber::filter::Targets = env::var("CHALK_DEBUG")
+-        .ok()
+-        .and_then(|it| it.parse().ok())
+-        .unwrap_or_default();
++    let filter: tracing_subscriber::filter::Targets =
++        env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
+     let layer = HierarchicalLayer::default()
+         .with_indent_lines(true)
+         .with_ansi(false)

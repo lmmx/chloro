@@ -1,0 +1,172 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6625 bytes
+Chloro size:   6579 bytes
+Rustfmt size:  6782 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! there is no value in lifting these out into the outline module test since they will either not
+ //! show up for normal completions, or they won't show completions other than lifetimes depending
+ //! on the fixture input.
+-use hir::{sym, Name, ScopeDef};
++
++use hir::{Name, ScopeDef, sym};
+ 
+ use crate::{
+     completions::Completions,
+     context::{CompletionContext, LifetimeContext, LifetimeKind},
+ };
+-
+ /// Completes lifetimes.
+-pub(crate) fn complete_lifetime(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    lifetime_ctx: &LifetimeContext,
+-) {
+-    let &LifetimeContext {
+-        kind:
+-            LifetimeKind::Lifetime {
+-                in_lifetime_param_bound,
+-                def,
+-            },
+-        ..
+-    } = lifetime_ctx
++pub(crate) fn complete_lifetime(acc: &mut Completions, ctx: &CompletionContext<'_>, lifetime_ctx: &LifetimeContext) {
++    let &LifetimeContext { kind: LifetimeKind::Lifetime { in_lifetime_param_bound, def }, .. } =
++        lifetime_ctx
+     else {
+         return;
+     };
+-
+     ctx.process_all_names_raw(&mut |name, res| {
+-        if matches!(
+-            res,
+-            ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))
+-        ) {
++        if matches!(res, ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_))) {
+             acc.add_lifetime(ctx, name);
+         }
+     });
+ }
+ 
+ /// Completes labels.
+-pub(crate) fn complete_label(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    lifetime_ctx: &LifetimeContext,
+-) {
+-    if !matches!(
+-        lifetime_ctx,
+-        LifetimeContext {
+-            kind: LifetimeKind::LabelRef,
+-            ..
+-        }
+-    ) {
++pub(crate) fn complete_label(acc: &mut Completions, ctx: &CompletionContext<'_>, lifetime_ctx: &LifetimeContext) {
++    if !matches!(lifetime_ctx, LifetimeContext { kind: LifetimeKind::LabelRef, .. }) {
+         return;
+     }
+     ctx.process_all_names_raw(&mut |name, res| {
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::tests::{check, check_edit};
+-
+     #[test]
+     fn check_lifetime_edit() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_ref() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_ref_missing_ty() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_arg_list() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_where_pred() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_ty_bound() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn dont_complete_lifetime_in_assoc_ty_bound() {
+         check(
+             expect![[r#""#]],
+         );
+     }
+-
+     #[test]
+     fn complete_lifetime_in_param_list() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn check_label_edit() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn complete_label_in_loop() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_label_in_block_nested() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_label_in_loop_with_value() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_label_in_while_cond() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn complete_label_in_for_iterable() {
+         check(

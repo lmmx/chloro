@@ -1,0 +1,53 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8029 bytes
+Chloro size:   7980 bytes
+Rustfmt size:  8029 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::fmt;
+ 
+ use hir_expand::name::{AsName, Name};
+-use intern::{sym, Symbol};
++use intern::{Symbol, sym};
+ /// Different signed int types.
+ #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+ pub enum BuiltinInt {
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinInt {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinInt> {
+         let res = match suffix {
+         };
+         Some(res)
+     }
++
+     pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinInt> {
+         let res = match suffix {
+             s if *s == sym::isize => Self::Isize,
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinUint {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinUint> {
+         let res = match suffix {
+         };
+         Some(res)
+     }
++
+     pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinUint> {
+         let res = match suffix {
+             s if *s == sym::usize => Self::Usize,
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinFloat {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinFloat> {
+         let res = match suffix {

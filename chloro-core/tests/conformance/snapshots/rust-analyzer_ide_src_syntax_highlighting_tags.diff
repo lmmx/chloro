@@ -1,0 +1,114 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10817 bytes
+Chloro size:   9849 bytes
+Rustfmt size:  10923 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use ide_db::SymbolKind;
+-
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ pub struct Highlight {
+     pub tag: HlTag,
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ pub enum HlTag {
+     Symbol(SymbolKind),
+-
+     AttributeBracket,
+     BoolLiteral,
+     BuiltinType,
+     Punctuation(HlPunct),
+     StringLiteral,
+     UnresolvedReference,
+-
+-    // For things which don't have a specific highlight.
+     None,
+ }
+ 
+-// Don't forget to adjust the feature description in crates/ide/src/syntax_highlighting.rs.
+-// And make sure to use the lsp strings used when converting to the protocol in crates\rust-analyzer\src\semantic_tokens.rs, not the names of the variants here.
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ #[repr(u8)]
+ pub enum HlMod {
+     /// Used for associated items.
+-    Associated = 0,
++    Associated,
+     /// Used with keywords like `async` and `await`.
+     Async,
+     /// Used to differentiate individual elements within attribute calls.
+     Static,
+     /// Used for items in traits and trait impls.
+     Trait,
+-    // Keep this last!
+     /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
+     Unsafe,
+ }
+ }
+ 
+ impl HlMod {
+-    const ALL: &'static [HlMod; HlMod::Unsafe as usize + 1] = &[
+-        HlMod::Associated,
+-        HlMod::Async,
+-        HlMod::Attribute,
+-        HlMod::Callable,
+-        HlMod::Const,
+-        HlMod::Consuming,
+-        HlMod::ControlFlow,
+-        HlMod::CrateRoot,
+-        HlMod::DefaultLibrary,
+-        HlMod::Definition,
+-        HlMod::Documentation,
+-        HlMod::Injected,
+-        HlMod::IntraDocLink,
+-        HlMod::Library,
+-        HlMod::Macro,
+-        HlMod::Mutable,
+-        HlMod::ProcMacro,
+-        HlMod::Public,
+-        HlMod::Reference,
+-        HlMod::Static,
+-        HlMod::Trait,
+-        HlMod::Unsafe,
+-    ];
+ 
+     fn as_str(self) -> &'static str {
+         match self {
+     }
+ 
+     fn mask(self) -> u32 {
+-        debug_assert!(
+-            Self::ALL.len() <= 32,
+-            "HlMod::mask is not enough to cover all variants"
+-        );
++        debug_assert!(Self::ALL.len() <= 32, "HlMod::mask is not enough to cover all variants");
+         1 << (self as u32)
+     }
+ }
+ 
+ impl Highlight {
+     pub(crate) fn new(tag: HlTag) -> Highlight {
+-        Highlight {
+-            tag,
+-            mods: HlMods::default(),
+-        }
++        Highlight { tag, mods: HlMods::default() }
+     }
++
+     pub fn is_empty(&self) -> bool {
+         self.tag == HlTag::None && self.mods.is_empty()
+     }
+     }
+ 
+     pub fn iter(self) -> impl Iterator<Item = HlMod> {
+-        HlMod::ALL
+-            .iter()
+-            .copied()
+-            .filter(move |it| self.0 & it.mask() == it.mask())
++        HlMod::ALL.iter().copied().filter(move |it| self.0 & it.mask() == it.mask())
+     }
+ }

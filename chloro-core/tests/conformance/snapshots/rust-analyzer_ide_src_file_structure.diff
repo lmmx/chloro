@@ -1,0 +1,159 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 34792 bytes
+Chloro size:   34172 bytes
+Rustfmt size:  34938 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::SymbolKind;
+ use syntax::{
++    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange, WalkEvent,
+     ast::{self, HasAttrs, HasGenericParams, HasName},
+-    match_ast, AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange,
+-    WalkEvent,
++    match_ast,
+ };
+-
+ #[derive(Debug, Clone)]
+ pub struct StructureNode {
+     pub parent: Option<usize>,
+     pub exclude_locals: bool,
+ }
+ 
+-// Feature: File Structure
+-//
+-// Provides a tree of the symbols defined in the file. Can be used to
+-//
+-// * fuzzy search symbol in a file (super useful)
+-// * draw breadcrumbs to describe the context around the cursor
+-// * draw outline of the file
+-//
+-// | Editor  | Shortcut |
+-// |---------|----------|
+-// | VS Code | <kbd>Ctrl+Shift+O</kbd> |
+-//
+-// ![File Structure](https://user-images.githubusercontent.com/48062697/113020654-b42fc800-917a-11eb-8388-e7dc4d92b02e.gif)
+-pub(crate) fn file_structure(
+-    file: &SourceFile,
+-    config: &FileStructureConfig,
+-) -> Vec<StructureNode> {
++pub(crate) fn file_structure(file: &SourceFile, config: &FileStructureConfig) -> Vec<StructureNode> {
+     let mut res = Vec::new();
+     let mut stack = Vec::new();
+-
+     for event in file.syntax().preorder_with_tokens() {
+         match event {
+             WalkEvent::Enter(NodeOrToken::Node(node)) => {
+     fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
+         decl_with_detail(&node, None, kind)
+     }
+-
+     fn decl_with_type_ref<N: HasName + HasAttrs>(
+         node: &N,
+         type_ref: Option<ast::Type>,
+         });
+         decl_with_detail(node, detail, kind)
+     }
+-
+     fn decl_with_detail<N: HasName + HasAttrs>(
+         node: &N,
+         detail: Option<String>,
+             node_range: node.syntax().text_range(),
+             kind,
+             detail,
+-            deprecated: node
+-                .attrs()
+-                .filter_map(|x| x.simple_name())
+-                .any(|x| x == "deprecated"),
++            deprecated: node.attrs().filter_map(|x| x.simple_name()).any(|x| x == "deprecated"),
+         })
+     }
+-
+     fn collapse_ws(node: &SyntaxNode, output: &mut String) {
+         let mut can_insert_ws = false;
+         node.text().for_each_chunk(|chunk| {
+             }
+         })
+     }
+-
+     match_ast! {
+         match node {
+             ast::Fn(it) => {
+     if let Some(comment) = ast::Comment::cast(token) {
+         let text = comment.text().trim();
+ 
+-        if let Some(region_name) = text
+-            .strip_prefix("// region:")
+-            .map(str::trim)
+-            .filter(|it| !it.is_empty())
++        if let Some(region_name) =
++            text.strip_prefix("// region:").map(str::trim).filter(|it| !it.is_empty())
+         {
+             return Some(StructureNode {
+                 parent: None,
+             });
+         }
+     }
+-
+     None
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+-    use expect_test::{expect, Expect};
+-
++    use expect_test::{Expect, expect};
+     use super::*;
+-
+-    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig {
+-        exclude_locals: true,
+-    };
+-
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
+         check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
+     }
+-
+-    fn check_with_config(
+-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-        config: &FileStructureConfig,
+-        expect: Expect,
+-    ) {
+-        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT)
+-            .ok()
+-            .unwrap();
++    fn check_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: &FileStructureConfig, expect: Expect) {
++        let file = SourceFile::parse(ra_fixture, span::Edition::CURRENT).ok().unwrap();
+         let structure = file_structure(&file, config);
+         expect.assert_debug_eq(&structure)
+     }
+-
+     #[test]
+     fn test_negative_trait_bound() {
+         let txt = r#"impl !Unpin for Test {}"#;
+         "#]],
+         );
+     }
+-
+     #[test]
+     fn test_file_structure() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_file_structure_include_locals() {
+         check_with_config(
+     let _ = g();
+ }
+ "#,
+-            &FileStructureConfig {
+-                exclude_locals: false,
+-            },
++            &FileStructureConfig { exclude_locals: false },
+             expect![[r#"
+                 [
+                     StructureNode {

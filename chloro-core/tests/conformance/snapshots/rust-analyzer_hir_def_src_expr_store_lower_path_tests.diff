@@ -1,0 +1,45 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3759 bytes
+Chloro size:   3758 bytes
+Rustfmt size:  3774 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use span::Edition;
+ use syntax::ast::{self, make};
+ use test_fixture::WithFixture;
+ 
+ use crate::{
+     expr_store::{
++        ExpressionStore,
+         lower::{
+-            path::{hir_segment_to_ast_segment, SEGMENT_LOWERING_MAP},
+             ExprCollector,
++            path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
+         },
+         path::Path,
+-        pretty, ExpressionStore,
++        pretty,
+     },
+     nameres::crate_def_map,
+     test_db::TestDB,
+ };
+-
+ fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
+     let (db, file_id) = TestDB::with_single_file("");
+     let krate = db.fetch_test_crate();
+-    let mut ctx = ExprCollector::new(
+-        &db,
+-        crate_def_map(&db, krate).root_module_id(),
+-        file_id.into(),
+-    );
++    let mut ctx =
++        ExprCollector::new(&db, crate_def_map(&db, krate).root_module_id(), file_id.into());
+     let lowered_path = ctx.lower_path(path, &mut ExprCollector::impl_trait_allocator);
+     let (store, _) = ctx.store.finish();
+     (db, store, lowered_path)

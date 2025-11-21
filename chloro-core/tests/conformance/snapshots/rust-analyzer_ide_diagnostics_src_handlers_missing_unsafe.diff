@@ -1,0 +1,365 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 25127 bytes
+Chloro size:   24254 bytes
+Rustfmt size:  25127 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{SyntaxNode, ast};
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+-
+-// Diagnostic: missing-unsafe
+-//
+-// This diagnostic is triggered if an operation marked as `unsafe` is used outside of an `unsafe` function or block.
+ pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
+     let code = match d.lint {
+         UnsafeLint::HardError => DiagnosticCode::RustcHardError("E0133"),
+     if d.node.file_id.is_macro() {
+         return None;
+     }
+-
+     let root = ctx.sema.db.parse_or_expand(d.node.file_id);
+     let node = d.node.value.to_node(&root);
+     let expr = node.syntax().ancestors().find_map(ast::Expr::cast)?;
+-
+     let node_to_add_unsafe_block = pick_best_node_to_add_unsafe_block(&expr)?;
+-
+     let mut replacement = format!("unsafe {{ {} }}", node_to_add_unsafe_block.text());
+     if let Some(expr) = ast::Expr::cast(node_to_add_unsafe_block.clone())
+         && needs_parentheses(&expr)
+     Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
+ }
+ 
+-// Pick the first ancestor expression of the unsafe `expr` that is not a
+-// receiver of a method call, a field access, the left-hand side of an
+-// assignment, or a reference. As all of those cases would incur a forced move
+-// if wrapped which might not be wanted. That is:
+-// - `unsafe_expr.foo` -> `unsafe { unsafe_expr.foo }`
+-// - `unsafe_expr.foo.bar` -> `unsafe { unsafe_expr.foo.bar }`
+-// - `unsafe_expr.foo()` -> `unsafe { unsafe_expr.foo() }`
+-// - `unsafe_expr.foo.bar()` -> `unsafe { unsafe_expr.foo.bar() }`
+-// - `unsafe_expr += 1` -> `unsafe { unsafe_expr += 1 }`
+-// - `&unsafe_expr` -> `unsafe { &unsafe_expr }`
+-// - `&&unsafe_expr` -> `unsafe { &&unsafe_expr }`
+ fn pick_best_node_to_add_unsafe_block(unsafe_expr: &ast::Expr) -> Option<SyntaxNode> {
+     // The `unsafe_expr` might be:
+     // - `ast::CallExpr`: call an unsafe function
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix, check_no_fix};
+-
+     #[test]
+     fn missing_unsafe_diagnostic_with_raw_ptr() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn missing_unsafe_diagnostic_with_unsafe_call() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn missing_unsafe_diagnostic_with_static_mut() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn missing_unsafe_diagnostic_with_extern_static() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_unsafe_diagnostic_with_addr_of_static() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_missing_unsafe_diagnostic_with_safe_intrinsic() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_missing_unsafe_diagnostic_with_legacy_safe_intrinsic() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_missing_unsafe_diagnostic_with_deprecated_safe_2024() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_unsafe_block_when_dereferencing_a_raw_pointer() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_unsafe_block_when_calling_unsafe_function() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_unsafe_block_when_calling_unsafe_method() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_unsafe_block_when_accessing_mutable_static() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_unsafe_block_when_calling_unsafe_intrinsic() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_as_a_receiver_of_a_method_call() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn raw_deref_on_union_field() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_as_an_argument_of_a_method_call() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_as_left_hand_side_of_assignment() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_as_right_hand_side_of_assignment() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_in_binary_plus() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn needs_parentheses_for_unambiguous() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn ref_to_unsafe_expr() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn ref_ref_to_unsafe_expr() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unsafe_expr_in_macro_call() {
+         check_no_fix(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn rustc_deprecated_safe_2024() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn orphan_unsafe_format_args() {
+         // Checks that we don't place orphan arguments for formatting under an unsafe block.
+ }
+         "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ //- minicore: fmt
+         "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_op_in_unsafe_fn_allowed_by_default_in_edition_2021() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_op_in_unsafe_fn_warn_by_default_in_edition_2024() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_op_in_unsafe_fn() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn no_unsafe_diagnostic_with_safe_kw() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_unsafe_diagnostic_when_destructuring_union_with_wildcard() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn union_destructuring() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn union_field_access() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inline_asm() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_op_in_unsafe_fn_dismissed_in_signature() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn union_assignment_allowed() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn raw_ref_reborrow_is_safe() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn target_feature() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_fn_ptr_call() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_call_in_const_expr() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn asm_label() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn regression_19823() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn no_false_positive_on_format_args_since_1_89_0() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn naked_asm_is_safe() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn target_feature_safe_on_wasm() {
+         check_diagnostics(

@@ -1,0 +1,41 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 937 bytes
+Chloro size:   904 bytes
+Rustfmt size:  976 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Things related to the infer context of the next-trait-solver.
+ 
+-pub(crate) mod table;
+-
++use macros::{TypeFoldable, TypeVisitable};
+ pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
+ 
+-use macros::{TypeFoldable, TypeVisitable};
+-
+-use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
++use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
++pub(crate) mod table;
+ 
+ #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
+ pub struct OpaqueHiddenType<'db> {
+     /// it hasn't previously been defined. This does not emit any
+     /// constraints and it's the responsibility of the caller to make
+     /// sure that the item bounds of the opaque are checked.
+-    pub fn register_hidden_type_in_storage(
+-        &self,
+-        opaque_type_key: OpaqueTypeKey<'db>,
+-        hidden_ty: OpaqueHiddenType<'db>,
+-    ) -> Option<Ty<'db>> {
+-        self.inner
+-            .borrow_mut()
+-            .opaque_types()
+-            .register(opaque_type_key, hidden_ty)
++    pub fn register_hidden_type_in_storage(&self, opaque_type_key: OpaqueTypeKey<'db>, hidden_ty: OpaqueHiddenType<'db>) -> Option<Ty<'db>> {
++        self.inner.borrow_mut().opaque_types().register(opaque_type_key, hidden_ty)
+     }
+ }

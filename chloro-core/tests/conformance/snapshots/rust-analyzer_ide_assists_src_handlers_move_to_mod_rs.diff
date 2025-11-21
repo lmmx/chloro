@@ -1,0 +1,88 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3134 bytes
+Chloro size:   2960 bytes
+Rustfmt size:  3155 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::{assists::AssistId, base_db::AnchoredPathBuf};
+-use syntax::{ast, AstNode, ToSmolStr};
++use syntax::{AstNode, ToSmolStr, ast};
+ 
+ use crate::{
+     assist_context::{AssistContext, Assists},
+     utils::trimmed_text_range,
+ };
+-
+-// Assist: move_to_mod_rs
+-//
+-// Moves xxx.rs to xxx/mod.rs.
+-//
+-// ```
+-// //- /main.rs
+-// mod a;
+-// //- /a.rs
+-// $0fn t() {}$0
+-// ```
+-// ->
+-// ```
+-// fn t() {}
+-// ```
+ pub(crate) fn move_to_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let source_file = ctx.find_node_at_offset::<ast::SourceFile>()?;
+     let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;
+         cov_mark::hit!(not_all_selected);
+         return None;
+     }
+-
+     let target = source_file.syntax().text_range();
+     let module_name = module.name(ctx.db())?.as_str().to_smolstr();
+     let path = format!("./{module_name}/mod.rs");
+-    let dst = AnchoredPathBuf {
+-        anchor: ctx.vfs_file_id(),
+-        path,
+-    };
++    let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+     acc.add(
+         AssistId::refactor("move_to_mod_rs"),
+         format!("Convert {module_name}.rs to {module_name}/mod.rs"),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn trivial() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn must_select_all_file() {
+         cov_mark::check!(not_all_selected);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn cannot_promote_mod_rs() {
+         cov_mark::check!(already_mod_rs);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn cannot_promote_main_and_lib_rs() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn works_in_mod() {
+         // note: /a/b.rs remains untouched

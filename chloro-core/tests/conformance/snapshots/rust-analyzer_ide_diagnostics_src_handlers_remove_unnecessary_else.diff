@@ -1,0 +1,160 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10179 bytes
+Chloro size:   9938 bytes
+Rustfmt size:  10254 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::{db::ExpandDatabase, diagnostics::RemoveUnnecessaryElse};
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{assists::Assist, source_change::SourceChange};
+ use itertools::Itertools;
+ use syntax::{
++    AstNode, SyntaxToken, TextRange,
+     ast::{
+         self,
+         edit::{AstNodeEdit, IndentLevel},
+     },
+-    AstNode, SyntaxToken, TextRange,
+ };
+ 
+ use crate::{
+-    adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity,
++    Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
+ };
+-
+-// Diagnostic: remove-unnecessary-else
+-//
+-// This diagnostic is triggered when there is an `else` block for an `if` expression whose
+-// then branch diverges (e.g. ends with a `return`, `continue`, `break` e.t.c).
+-pub(crate) fn remove_unnecessary_else(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &RemoveUnnecessaryElse,
+-) -> Option<Diagnostic> {
++pub(crate) fn remove_unnecessary_else(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Diagnostic> {
+     if d.if_expr.file_id.macro_file().is_some() {
+         // FIXME: Our infra can't handle allow from within macro expansions rn
+         return None;
+     }
+-
+     let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
+         if_expr.else_token().as_ref().map(SyntaxToken::text_range)
+     });
+     let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
+     let if_expr = d.if_expr.value.to_node(&root);
+     let if_expr = ctx.sema.original_ast_node(if_expr)?;
+-
+     let mut indent = IndentLevel::from_node(if_expr.syntax());
+-    let has_parent_if_expr = if_expr
+-        .syntax()
+-        .parent()
+-        .and_then(ast::IfExpr::cast)
+-        .is_some();
++    let has_parent_if_expr = if_expr.syntax().parent().and_then(ast::IfExpr::cast).is_some();
+     if has_parent_if_expr {
+         indent = indent + 1;
+     }
+             ),
+         )
+     };
+-
+     let edit = TextEdit::replace(range, replacement);
+     let source_change = SourceChange::from_text_edit(
+-        d.if_expr
+-            .file_id
+-            .original_file(ctx.sema.db)
+-            .file_id(ctx.sema.db),
++        d.if_expr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
+         edit,
+     );
+-
+     Some(vec![fix(
+         "remove_unnecessary_else",
+         "Remove unnecessary else block",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics_with_disabled, check_fix};
+-
+     #[test]
+     fn remove_unnecessary_else_for_return() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_return2() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_return3() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_return_in_child_if_expr() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_return_in_child_if_expr2() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_break() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_continue() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unnecessary_else_for_never() {
+         check_diagnostics_with_disabled(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_if_no_else_branch() {
+         check_diagnostics_with_disabled(
+             &["E0425"],
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_if_no_divergence() {
+         check_diagnostics_with_disabled(
+             &["E0425"],
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_if_no_divergence_in_else_branch() {
+         check_diagnostics_with_disabled(
+             &["needless_return", "E0425"],
+         );
+     }
+-
+     #[test]
+     fn no_diagnostic_if_not_expr_stmt() {
+         check_diagnostics_with_disabled(

@@ -1,0 +1,51 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15742 bytes
+Chloro size:   15733 bytes
+Rustfmt size:  15742 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-mod globs;
+-mod incremental;
+-mod macros;
+-mod mod_resolution;
+-mod primitives;
+-
+ use base_db::RootQueryDb;
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use test_fixture::WithFixture;
+ 
+ use crate::{
+-    nameres::{crate_def_map, DefMap},
++    nameres::{DefMap, crate_def_map},
+     test_db::TestDB,
+ };
++mod globs;
+ 
+-fn compute_crate_def_map(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    cb: impl FnOnce(&DefMap),
+-) {
++mod incremental;
++
++mod macros;
++
++mod mod_resolution;
++
++mod primitives;
++
++fn compute_crate_def_map(#[rust_analyzer::rust_fixture] ra_fixture: &str, cb: impl FnOnce(&DefMap)) {
+     let db = TestDB::with_files(ra_fixture);
+     let krate = db.fetch_test_crate();
+     cb(crate_def_map(&db, krate));
+ fn edition_specific_preludes() {
+     // We can't test the 2015 prelude here since you can't reexport its contents with 2015's
+     // absolute paths.
+-
+     check(
+         r#"
+         //- /main.rs edition:2018 crate:main deps:std

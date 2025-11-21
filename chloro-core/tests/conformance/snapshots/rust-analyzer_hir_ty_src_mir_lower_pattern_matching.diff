@@ -1,0 +1,198 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 29552 bytes
+Chloro size:   28964 bytes
+Rustfmt size:  29552 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+         },
+     },
+ };
+-
+ macro_rules! not_supported {
+     ($x: expr) => {
+         return Err(MirLowerError::NotSupported(format!($x)))
+ }
+ 
+ pub(super) enum AdtPatternShape<'a> {
+-    Tuple { args: &'a [PatId], ellipsis: Option<u32> },
+-    Record { args: &'a [RecordFieldPat] },
++    Tuple {
++        args: &'a [PatId],
++        ellipsis: Option<u32>,
++    },
++    Record {
++        args: &'a [RecordFieldPat],
++    },
+     Unit,
+ }
+ 
+     /// `current_else` argument to save an unnecessary jump. If `current_else` isn't `None`, the result mismatched path
+     /// wouldn't be `None` as well. Note that this function will add jumps to the beginning of the `current_else` block,
+     /// so it should be an empty block.
+-    pub(super) fn pattern_match(
+-        &mut self,
+-        current: BasicBlockId<'db>,
+-        current_else: Option<BasicBlockId<'db>>,
+-        cond_place: Place<'db>,
+-        pattern: PatId,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    pub(super) fn pattern_match(&mut self, current: BasicBlockId<'db>, current_else: Option<BasicBlockId<'db>>, cond_place: Place<'db>, pattern: PatId) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         let (current, current_else) = self.pattern_match_inner(
+             current,
+             current_else,
+         Ok((current, current_else))
+     }
+ 
+-    pub(super) fn pattern_match_assignment(
+-        &mut self,
+-        current: BasicBlockId<'db>,
+-        value: Place<'db>,
+-        pattern: PatId,
+-    ) -> Result<'db, BasicBlockId<'db>> {
++    pub(super) fn pattern_match_assignment(&mut self, current: BasicBlockId<'db>, value: Place<'db>, pattern: PatId) -> Result<'db, BasicBlockId<'db>> {
+         let (current, _) =
+             self.pattern_match_inner(current, None, value, pattern, MatchingMode::Assign)?;
+         Ok(current)
+     }
+ 
+-    pub(super) fn match_self_param(
+-        &mut self,
+-        id: BindingId,
+-        current: BasicBlockId<'db>,
+-        local: LocalId<'db>,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    pub(super) fn match_self_param(&mut self, id: BindingId, current: BasicBlockId<'db>, local: LocalId<'db>) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         self.pattern_match_binding(
+             id,
+             BindingMode::Move,
+         )
+     }
+ 
+-    fn pattern_match_inner(
+-        &mut self,
+-        mut current: BasicBlockId<'db>,
+-        mut current_else: Option<BasicBlockId<'db>>,
+-        mut cond_place: Place<'db>,
+-        pattern: PatId,
+-        mode: MatchingMode,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_match_inner(&mut self, mut current: BasicBlockId<'db>, mut current_else: Option<BasicBlockId<'db>>, mut cond_place: Place<'db>, pattern: PatId, mode: MatchingMode) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         let cnt = self.infer.pat_adjustments.get(&pattern).map(|x| x.len()).unwrap_or_default();
+         cond_place.projection = self.result.projection_store.intern(
+             cond_place
+         })
+     }
+ 
+-    fn pattern_match_binding(
+-        &mut self,
+-        id: BindingId,
+-        mode: BindingMode,
+-        cond_place: Place<'db>,
+-        span: MirSpan,
+-        current: BasicBlockId<'db>,
+-        current_else: Option<BasicBlockId<'db>>,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_match_binding(&mut self, id: BindingId, mode: BindingMode, cond_place: Place<'db>, span: MirSpan, current: BasicBlockId<'db>, current_else: Option<BasicBlockId<'db>>) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         let target_place = self.binding_local(id)?;
+         self.push_storage_live(id, current)?;
+         self.push_match_assignment(current, target_place, mode, cond_place, span);
+         Ok((current, current_else))
+     }
+ 
+-    fn push_match_assignment(
+-        &mut self,
+-        current: BasicBlockId<'db>,
+-        target_place: LocalId<'db>,
+-        mode: BindingMode,
+-        cond_place: Place<'db>,
+-        span: MirSpan,
+-    ) {
++    fn push_match_assignment(&mut self, current: BasicBlockId<'db>, target_place: LocalId<'db>, mode: BindingMode, cond_place: Place<'db>, span: MirSpan) {
+         self.push_assignment(
+             current,
+             target_place.into(),
+         );
+     }
+ 
+-    fn pattern_match_const(
+-        &mut self,
+-        current_else: Option<BasicBlockId<'db>>,
+-        current: BasicBlockId<'db>,
+-        c: Operand<'db>,
+-        cond_place: Place<'db>,
+-        pattern: Idx<Pat>,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_match_const(&mut self, current_else: Option<BasicBlockId<'db>>, current: BasicBlockId<'db>, c: Operand<'db>, cond_place: Place<'db>, pattern: Idx<Pat>) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         let then_target = self.new_basic_block();
+         let else_target = current_else.unwrap_or_else(|| self.new_basic_block());
+         let discr: Place<'db> =
+         Ok((then_target, Some(else_target)))
+     }
+ 
+-    fn pattern_matching_variant(
+-        &mut self,
+-        cond_place: Place<'db>,
+-        variant: VariantId,
+-        mut current: BasicBlockId<'db>,
+-        span: MirSpan,
+-        mut current_else: Option<BasicBlockId<'db>>,
+-        shape: AdtPatternShape<'_>,
+-        mode: MatchingMode,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_matching_variant(&mut self, cond_place: Place<'db>, variant: VariantId, mut current: BasicBlockId<'db>, span: MirSpan, mut current_else: Option<BasicBlockId<'db>>, shape: AdtPatternShape<'_>, mode: MatchingMode) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         Ok(match variant {
+             VariantId::EnumVariantId(v) => {
+                 if mode == MatchingMode::Check {
+         })
+     }
+ 
+-    fn pattern_matching_variant_fields(
+-        &mut self,
+-        shape: AdtPatternShape<'_>,
+-        variant_data: &VariantFields,
+-        v: VariantId,
+-        current: BasicBlockId<'db>,
+-        current_else: Option<BasicBlockId<'db>>,
+-        cond_place: &Place<'db>,
+-        mode: MatchingMode,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_matching_variant_fields(&mut self, shape: AdtPatternShape<'_>, variant_data: &VariantFields, v: VariantId, current: BasicBlockId<'db>, current_else: Option<BasicBlockId<'db>>, cond_place: &Place<'db>, mode: MatchingMode) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         Ok(match shape {
+             AdtPatternShape::Record { args } => {
+                 let it = args
+         })
+     }
+ 
+-    fn pattern_match_adt(
+-        &mut self,
+-        mut current: BasicBlockId<'db>,
+-        mut current_else: Option<BasicBlockId<'db>>,
+-        args: impl Iterator<Item = (PlaceElem<'db>, PatId)>,
+-        cond_place: &Place<'db>,
+-        mode: MatchingMode,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_match_adt(&mut self, mut current: BasicBlockId<'db>, mut current_else: Option<BasicBlockId<'db>>, args: impl Iterator<Item = (PlaceElem<'db>, PatId)>, cond_place: &Place<'db>, mode: MatchingMode) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         for (proj, arg) in args {
+             let cond_place = cond_place.project(proj, &mut self.result.projection_store);
+             (current, current_else) =
+         Ok((current, current_else))
+     }
+ 
+-    fn pattern_match_tuple_like(
+-        &mut self,
+-        current: BasicBlockId<'db>,
+-        current_else: Option<BasicBlockId<'db>>,
+-        args: &[PatId],
+-        ellipsis: Option<u32>,
+-        fields: impl DoubleEndedIterator<Item = PlaceElem<'db>> + Clone,
+-        cond_place: &Place<'db>,
+-        mode: MatchingMode,
+-    ) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
++    fn pattern_match_tuple_like(&mut self, current: BasicBlockId<'db>, current_else: Option<BasicBlockId<'db>>, args: &[PatId], ellipsis: Option<u32>, fields: impl DoubleEndedIterator<Item = PlaceElem<'db>> + Clone, cond_place: &Place<'db>, mode: MatchingMode) -> Result<'db, (BasicBlockId<'db>, Option<BasicBlockId<'db>>)> {
+         let (al, ar) = args.split_at(ellipsis.map_or(args.len(), |it| it as usize));
+         let it = al
+             .iter()

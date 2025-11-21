@@ -1,0 +1,318 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 28638 bytes
+Chloro size:   27963 bytes
+Rustfmt size:  28638 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+         infer::InferCtxt,
+     },
+ };
+-
+ use super::{
+     Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
+     GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
+     TyKind,
+     fold::{BoundVarReplacer, FnMutDelegate},
+ };
+-
+ #[derive(Clone, Debug)]
+ pub struct Discr<'db> {
+     /// Bit representation of the discriminant (e.g., `-128i8` is `0xFF_u128`).
+     pub fn wrap_incr(self, interner: DbInterner<'db>) -> Self {
+         self.checked_add(interner, 1).0
+     }
++
+     pub fn checked_add(self, interner: DbInterner<'db>, n: u128) -> (Self, bool) {
+         let (size, signed) = self.ty.int_size_and_signed(interner);
+         let (val, oflo) = if signed {
+     }
+ }
+ 
+-pub trait IntegerTypeExt {
+-    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
+-    fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db>;
+-    fn disr_incr<'db>(
+-        &self,
+-        interner: DbInterner<'db>,
+-        val: Option<Discr<'db>>,
+-    ) -> Option<Discr<'db>>;
+-}
++fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
++fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db>;
++fn disr_incr<'db>(&self, interner: DbInterner<'db>, val: Option<Discr<'db>>) -> Option<Discr<'db>>;
+ 
+ impl IntegerTypeExt for IntegerType {
+     fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db> {
+         Discr { val: 0, ty: self.to_ty(interner) }
+     }
+ 
+-    fn disr_incr<'db>(
+-        &self,
+-        interner: DbInterner<'db>,
+-        val: Option<Discr<'db>>,
+-    ) -> Option<Discr<'db>> {
++    fn disr_incr<'db>(&self, interner: DbInterner<'db>, val: Option<Discr<'db>>) -> Option<Discr<'db>> {
+         if let Some(val) = val {
+             assert_eq!(self.to_ty(interner), val.ty);
+             let (new, oflo) = val.checked_add(interner, 1);
+     }
+ }
+ 
+-pub trait IntegerExt {
+-    fn to_ty<'db>(&self, interner: DbInterner<'db>, signed: bool) -> Ty<'db>;
+-    fn from_int_ty<C: HasDataLayout>(cx: &C, ity: IntTy) -> Integer;
+-    fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer;
+-    fn repr_discr<'db>(
+-        interner: DbInterner<'db>,
+-        ty: Ty<'db>,
+-        repr: &ReprOptions,
+-        min: i128,
+-        max: i128,
+-    ) -> (Integer, bool);
+-}
++fn to_ty<'db>(&self, interner: DbInterner<'db>, signed: bool) -> Ty<'db>;
++fn from_int_ty<C: HasDataLayout>(cx: &C, ity: IntTy) -> Integer;
++fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer;
++fn repr_discr<'db>(interner: DbInterner<'db>, ty: Ty<'db>, repr: &ReprOptions, min: i128, max: i128) -> (Integer, bool);
+ 
+ impl IntegerExt for Integer {
+     #[inline]
+             IntTy::Isize => cx.data_layout().ptr_sized_integer(),
+         }
+     }
++
+     fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer {
+         use Integer::*;
+         match ity {
+     /// signed discriminant range and `#[repr]` attribute.
+     /// N.B.: `u128` values above `i128::MAX` will be treated as signed, but
+     /// that shouldn't affect anything, other than maybe debuginfo.
+-    fn repr_discr<'db>(
+-        interner: DbInterner<'db>,
+-        ty: Ty<'db>,
+-        repr: &ReprOptions,
+-        min: i128,
+-        max: i128,
+-    ) -> (Integer, bool) {
++    fn repr_discr<'db>(interner: DbInterner<'db>, ty: Ty<'db>, repr: &ReprOptions, min: i128, max: i128) -> (Integer, bool) {
+         // Theoretically, negative values could be larger in unsigned representation
+         // than the unsigned representation of the signed minimum. However, if there
+         // are any negative values, the only valid unsigned representation is u128
+         // which can fit all i128 values, so the result remains unaffected.
+         let unsigned_fit = Integer::fit_unsigned(std::cmp::max(min as u128, max as u128));
+         let signed_fit = std::cmp::max(Integer::fit_signed(min), Integer::fit_signed(max));
+-
+         if let Some(ity) = repr.int {
+             let discr = Integer::from_attr(&interner, ity);
+             let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
+             }
+             return (discr, ity.is_signed());
+         }
+-
+         let at_least = if repr.c() {
+             // This is usually I32, however it can be different on some platforms,
+             // notably hexagon and arm-none/thumb-none
+             // repr(Rust) enums try to be as small as possible
+             Integer::I8
+         };
+-
+         // If there are no negative values, we can use the unsigned fit.
+         if min >= 0 {
+             (std::cmp::max(unsigned_fit, at_least), false)
+     }
+ }
+ 
+-pub trait FloatExt {
+-    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
+-    fn from_float_ty(fty: FloatTy) -> Self;
+-}
++fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
++fn from_float_ty(fty: FloatTy) -> Self;
+ 
+ impl FloatExt for Float {
+     #[inline]
+     }
+ }
+ 
+-pub trait PrimitiveExt {
+-    fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
+-    fn to_int_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
+-}
++fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
++fn to_int_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
+ 
+ impl PrimitiveExt for Primitive {
+     #[inline]
+     }
+ }
+ 
+-pub trait CoroutineArgsExt<'db> {
+-    fn discr_ty(&self, interner: DbInterner<'db>) -> Ty<'db>;
+-}
++fn discr_ty(&self, interner: DbInterner<'db>) -> Ty<'db>;
+ 
+ impl<'db> CoroutineArgsExt<'db> for CoroutineArgs<DbInterner<'db>> {
+     /// The type of the state discriminant used in the coroutine type.
+                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
+             );
+         }
+-
+         t.super_visit_with(self)
+     }
+ 
+                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
+             );
+         }
+-
+         c.super_visit_with(self)
+     }
+ 
+     }
+ }
+ 
+-pub struct BottomUpFolder<'db, F, G, H>
+-where
+-    F: FnMut(Ty<'db>) -> Ty<'db>,
+-    G: FnMut(Region<'db>) -> Region<'db>,
+-    H: FnMut(Const<'db>) -> Const<'db>,
+-{
++pub struct BottomUpFolder<'db, F, G, H> {
+     pub interner: DbInterner<'db>,
+     pub ty_op: F,
+     pub lt_op: G,
+ where
+     F: FnMut(Ty<'db>) -> Ty<'db>,
+     G: FnMut(Region<'db>) -> Region<'db>,
+-    H: FnMut(Const<'db>) -> Const<'db>,
+-{
++    H: FnMut(Const<'db>) -> Const<'db>, {
+     fn cx(&self) -> DbInterner<'db> {
+         self.interner
+     }
+     }
+ }
+ 
+-pub(crate) fn for_trait_impls(
+-    db: &dyn HirDatabase,
+-    krate: Crate,
+-    block: Option<BlockId>,
+-    trait_id: hir_def::TraitId,
+-    self_ty_fp: Option<TyFingerprint>,
+-    mut f: impl FnMut(&TraitImpls) -> ControlFlow<()>,
+-) -> ControlFlow<()> {
++pub(crate) fn for_trait_impls(db: &dyn HirDatabase, krate: Crate, block: Option<BlockId>, trait_id: hir_def::TraitId, self_ty_fp: Option<TyFingerprint>, mut f: impl FnMut(&TraitImpls) -> ControlFlow<()>) -> ControlFlow<()> {
+     // Note: Since we're using `impls_for_trait` and `impl_provided_for`,
+     // only impls where the trait can be resolved should ever reach Chalk.
+     // `impl_datum` relies on that and will panic if the trait can't be resolved.
+         Some(TyFingerprint::Dyn(trait_id)) => Some(trait_id.module(db)),
+         _ => None,
+     };
+-
+     let mut def_blocks =
+         [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
+-
+     let block_impls = iter::successors(block, |&block_id| {
+         cov_mark::hit!(block_local_impls);
+         block_id.loc(db).module.containing_block()
+     ControlFlow::Continue(())
+ }
+ 
+-// FIXME(next-trait-solver): uplift
+-pub fn sizedness_constraint_for_ty<'db>(
+-    interner: DbInterner<'db>,
+-    sizedness: SizedTraitKind,
+-    ty: Ty<'db>,
+-) -> Option<Ty<'db>> {
++pub fn sizedness_constraint_for_ty<'db>(interner: DbInterner<'db>, sizedness: SizedTraitKind, ty: Ty<'db>) -> Option<Ty<'db>> {
+     use rustc_type_ir::TyKind::*;
+-
+     match ty.kind() {
+         // these are always sized
+         Bool | Char | Int(..) | Uint(..) | Float(..) | RawPtr(..) | Ref(..) | FnDef(..)
+     }
+ }
+ 
+-pub fn apply_args_to_binder<'db, T: TypeFoldable<DbInterner<'db>>>(
+-    b: Binder<'db, T>,
+-    args: GenericArgs<'db>,
+-    interner: DbInterner<'db>,
+-) -> T {
++pub fn apply_args_to_binder<'db, T: TypeFoldable<DbInterner<'db>>>(b: Binder<'db, T>, args: GenericArgs<'db>, interner: DbInterner<'db>) -> T {
+     let types = &mut |ty: BoundTy| args.as_slice()[ty.var.index()].expect_ty();
+     let regions = &mut |region: BoundRegion| args.as_slice()[region.var.index()].expect_region();
+     let consts = &mut |const_: BoundConst| args.as_slice()[const_.var.index()].expect_const();
+     b.skip_binder().fold_with(&mut instantiate)
+ }
+ 
+-pub fn explicit_item_bounds<'db>(
+-    interner: DbInterner<'db>,
+-    def_id: SolverDefId,
+-) -> EarlyBinder<'db, Clauses<'db>> {
++pub fn explicit_item_bounds<'db>(interner: DbInterner<'db>, def_id: SolverDefId) -> EarlyBinder<'db, Clauses<'db>> {
+     let db = interner.db();
+     match def_id {
+         SolverDefId::TypeAliasId(type_alias) => {
+ }
+ 
+ impl<'a, 'db> PlaceholderReplacer<'a, 'db> {
+-    pub fn replace_placeholders<T: TypeFoldable<DbInterner<'db>>>(
+-        infcx: &'a InferCtxt<'db>,
+-        mapped_regions: FxIndexMap<PlaceholderRegion, BoundRegion>,
+-        mapped_types: FxIndexMap<Placeholder<BoundTy>, BoundTy>,
+-        mapped_consts: FxIndexMap<PlaceholderConst, BoundConst>,
+-        universe_indices: &'a [Option<UniverseIndex>],
+-        value: T,
+-    ) -> T {
++    pub fn replace_placeholders<T: TypeFoldable<DbInterner<'db>>>(infcx: &'a InferCtxt<'db>, mapped_regions: FxIndexMap<PlaceholderRegion, BoundRegion>, mapped_types: FxIndexMap<Placeholder<BoundTy>, BoundTy>, mapped_consts: FxIndexMap<PlaceholderConst, BoundConst>, universe_indices: &'a [Option<UniverseIndex>], value: T) -> T {
+         let mut replacer = PlaceholderReplacer {
+             infcx,
+             mapped_regions,
+         self.infcx.interner
+     }
+ 
+-    fn fold_binder<T: TypeFoldable<DbInterner<'db>>>(
+-        &mut self,
+-        t: Binder<'db, T>,
+-    ) -> Binder<'db, T> {
++    fn fold_binder<T: TypeFoldable<DbInterner<'db>>>(&mut self, t: Binder<'db, T>) -> Binder<'db, T> {
+         if !t.has_placeholders() && !t.has_infer() {
+             return t;
+         }
+                 .opportunistic_resolve_var(self.infcx.interner, vid),
+             _ => r0,
+         };
+-
+         let r2 = match r1.kind() {
+             RegionKind::RePlaceholder(p) => {
+                 let replace_var = self.mapped_regions.get(&p);
+             }
+             _ => r1,
+         };
+-
+         tracing::debug!(?r0, ?r1, ?r2, "fold_region");
+-
+         r2
+     }
+ 
+     }
+ }
+ 
+-pub fn sizedness_fast_path<'db>(
+-    tcx: DbInterner<'db>,
+-    predicate: Predicate<'db>,
+-    param_env: ParamEnv<'db>,
+-) -> bool {
++pub fn sizedness_fast_path<'db>(tcx: DbInterner<'db>, predicate: Predicate<'db>, param_env: ParamEnv<'db>) -> bool {
+     // Proving `Sized`/`MetaSized`, very often on "obviously sized" types like
+     // `&T`, accounts for about 60% percentage of the predicates we have to prove. No need to
+     // canonicalize and all that for such cases.
+             }
+         }
+     }
+-
+     false
+ }

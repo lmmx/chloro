@@ -1,0 +1,285 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16012 bytes
+Chloro size:   15704 bytes
+Rustfmt size:  16309 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{
++    AstNode, SyntaxKind, T, TextRange,
+     ast::{
+         self,
+         edit::{AstNodeEdit, IndentLevel},
+         make,
+     },
+-    AstNode, SyntaxKind, TextRange, T,
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+-
+-// Assist: unwrap_block
+-//
+-// This assist removes if...else, for, while and loop control statements to just keep the body.
+-//
+-// ```
+-// fn foo() {
+-//     if true {$0
+-//         println!("foo");
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn foo() {
+-//     println!("foo");
+-// }
+-// ```
+ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+     let assist_id = AssistId::refactor_rewrite("unwrap_block");
+     let assist_label = "Unwrap block";
+     let target = block.syntax().text_range();
+     let mut parent = block.syntax().parent()?;
+     if ast::MatchArm::can_cast(parent.kind()) {
+-        parent = parent
+-            .ancestors()
+-            .find(|it| ast::MatchExpr::can_cast(it.kind()))?
++        parent = parent.ancestors().find(|it| ast::MatchExpr::can_cast(it.kind()))?
+     }
+-
+     let kind = parent.kind();
+     if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
+         acc.add(assist_id, assist_label, target, |builder| {
+-            builder.replace(
+-                block.syntax().text_range(),
+-                update_expr_string(block.to_string()),
+-            );
++            builder.replace(block.syntax().text_range(), update_expr_string(block.to_string()));
+         })
+     } else if matches!(kind, SyntaxKind::LET_STMT) {
+         let parent = ast::LetStmt::cast(parent)?;
+                 let let_stmt = make::let_stmt(pattern, ty, Some(initializer));
+                 if !stmts.is_empty() {
+                     let block = make::block_expr(stmts, None);
+-                    format!(
+-                        "{}\n    {}",
+-                        update_expr_string(block.to_string()),
+-                        let_stmt
+-                    )
++                    format!("{}\n    {}", update_expr_string(block.to_string()), let_stmt)
+                 } else {
+                     let_stmt.to_string()
+                 }
+                         );
+ 
+                         edit.delete(range_to_del);
+-                        edit.replace(
+-                            target,
+-                            update_expr_string_without_newline(block.to_string()),
+-                        );
++                        edit.replace(target, update_expr_string_without_newline(block.to_string()));
+                     });
+                 }
+             }
+         };
+ 
+         acc.add(assist_id, assist_label, target, |builder| {
+-            builder.replace(
+-                parent.syntax().text_range(),
+-                update_expr_string(block.to_string()),
+-            );
++            builder.replace(parent.syntax().text_range(), update_expr_string(block.to_string()));
+         })
+     }
+ }
+     // (`unsafe`, `async` etc.).
+     let after_open_brace_index = expr_str.find('{').map_or(0, |it| it + 1);
+     let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);
+-
+     // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
+     // then continue to remove trailing whitespace.
+     let expr_str = expr_str.trim_end_matches(whitespace_pat);
+     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
+-
+     expr_str
+         .lines()
+         .map(|line| line.replacen("    ", "", 1)) // Delete indentation
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn unwrap_tail_expr_block() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn unwrap_stmt_expr_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_else() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_else_if() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_else_if_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_else_if_nested_else() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_else_if_nested_middle() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_bad_cursor_position() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_for() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_in_for() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_loop() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_while() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unwrap_match_arm() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_in_while_bad_cursor_position() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_single_line() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_nested_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn nested_single_line() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             unwrap_block,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_if_single_line() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn if_single_statement() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn multiple_statements() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unwrap_block_in_let_initializers() {
+         // https://github.com/rust-lang/rust-analyzer/issues/13679
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unwrap_if_in_let_initializers() {
+         // https://github.com/rust-lang/rust-analyzer/issues/13679
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unwrap_block_with_modifiers() {
+         // https://github.com/rust-lang/rust-analyzer/issues/17964

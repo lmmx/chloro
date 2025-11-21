@@ -1,0 +1,73 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3077 bytes
+Chloro size:   2956 bytes
+Rustfmt size:  3122 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::InFile;
+ use syntax::ast;
+ 
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
+-
+-// Diagnostic: trait-impl-incorrect-safety
+-//
+-// Diagnoses incorrect safety annotations of trait impls.
+-pub(crate) fn trait_impl_incorrect_safety(
+-    ctx: &DiagnosticsContext<'_>,
+-    d: &hir::TraitImplIncorrectSafety,
+-) -> Diagnostic {
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range};
++pub(crate) fn trait_impl_incorrect_safety(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplIncorrectSafety) -> Diagnostic {
+     Diagnostic::new(
+         DiagnosticCode::Ra("trait-impl-incorrect-safety", Severity::Error),
+         if d.should_be_safe {
+         },
+         adjusted_display_range::<ast::Impl>(
+             ctx,
+-            InFile {
+-                file_id: d.file_id,
+-                value: d.impl_,
+-            },
++            InFile { file_id: d.file_id, value: d.impl_ },
+             &|impl_| {
+                 if d.should_be_safe {
+                     Some(match (impl_.unsafe_token(), impl_.impl_token()) {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn drop_may_dangle() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn negative() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inherent() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unsafe_unresolved_trait() {
+         check_diagnostics(

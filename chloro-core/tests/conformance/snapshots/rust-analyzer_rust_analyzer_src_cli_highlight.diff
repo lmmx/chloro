@@ -1,0 +1,19 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 406 bytes
+Chloro size:   405 bytes
+Rustfmt size:  406 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Read Rust code on stdin, print HTML highlighted version to stdout.
+ 
+ use ide::Analysis;
+ 
+ use crate::cli::{flags, read_stdin};
+-
+ impl flags::Highlight {
+     pub fn run(self) -> anyhow::Result<()> {
+         let (analysis, file_id) = Analysis::from_single_file(read_stdin()?);

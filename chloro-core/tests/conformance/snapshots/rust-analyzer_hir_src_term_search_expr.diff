@@ -1,0 +1,128 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16513 bytes
+Chloro size:   16556 bytes
+Rustfmt size:  16513 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     Adt, AsAssocItem, AssocItemContainer, Const, ConstParam, Field, Function, Local, ModuleDef,
+     SemanticsScope, Static, Struct, StructKind, Trait, Type, Variant,
+ };
+-
+ /// Helper function to get path to `ModuleDef`
+-fn mod_item_path(
+-    sema_scope: &SemanticsScope<'_>,
+-    def: &ModuleDef,
+-    cfg: FindPathConfig,
+-) -> Option<ModPath> {
++fn mod_item_path(sema_scope: &SemanticsScope<'_>, def: &ModuleDef, cfg: FindPathConfig) -> Option<ModPath> {
+     let db = sema_scope.db;
+     let m = sema_scope.module();
+     m.find_path(db, *def, cfg)
+ }
+ 
+ /// Helper function to get path to `ModuleDef` as string
+-fn mod_item_path_str(
+-    sema_scope: &SemanticsScope<'_>,
+-    def: &ModuleDef,
+-    cfg: FindPathConfig,
+-    edition: Edition,
+-) -> Result<String, DisplaySourceCodeError> {
++fn mod_item_path_str(sema_scope: &SemanticsScope<'_>, def: &ModuleDef, cfg: FindPathConfig, edition: Edition) -> Result<String, DisplaySourceCodeError> {
+     let path = mod_item_path(sema_scope, def, cfg);
+     path.map(|it| it.display(sema_scope.db, edition).to_string())
+         .ok_or(DisplaySourceCodeError::PathNotFound)
+     /// Constant generic parameter
+     ConstParam(ConstParam),
+     /// Well known type (such as `true` for bool)
+-    FamousType { ty: Type<'db>, value: &'static str },
++    FamousType {
++        ty: Type<'db>,
++        value: &'static str,
++    },
+     /// Function call (does not take self param)
+-    Function { func: Function, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Function {
++        func: Function,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Method call (has self param)
+     Method {
+         func: Function,
+         params: Vec<Expr<'db>>,
+     },
+     /// Enum variant construction
+-    Variant { variant: Variant, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Variant {
++        variant: Variant,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Struct construction
+-    Struct { strukt: Struct, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Struct {
++        strukt: Struct,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Tuple construction
+-    Tuple { ty: Type<'db>, params: Vec<Expr<'db>> },
++    Tuple {
++        ty: Type<'db>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Struct field access
+-    Field { expr: Box<Expr<'db>>, field: Field },
++    Field {
++        expr: Box<Expr<'db>>,
++        field: Field,
++    },
+     /// Passing type as reference (with `&`)
+     Reference(Box<Expr<'db>>),
+     /// Indicates possibility of many different options that all evaluate to `ty`
+     /// Note that trait imports are not added to generated code.
+     /// To make sure that the code is valid, callee has to also ensure that all the traits listed
+     /// by `traits_used` method are also imported.
+-    pub fn gen_source_code(
+-        &self,
+-        sema_scope: &SemanticsScope<'db>,
+-        many_formatter: &mut dyn FnMut(&Type<'db>) -> String,
+-        cfg: FindPathConfig,
+-        display_target: DisplayTarget,
+-    ) -> Result<String, DisplaySourceCodeError> {
++    pub fn gen_source_code(&self, sema_scope: &SemanticsScope<'db>, many_formatter: &mut dyn FnMut(&Type<'db>) -> String, cfg: FindPathConfig, display_target: DisplayTarget) -> Result<String, DisplaySourceCodeError> {
+         let db = sema_scope.db;
+         let edition = display_target.edition;
+         let mod_item_path_str = |s, def| mod_item_path_str(s, def, cfg, edition);
+     /// List the traits used in type tree
+     pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
+         let mut res = Vec::new();
+-
+         if let Expr::Method { func, params, .. } = self {
+             res.extend(params.iter().flat_map(|it| it.traits_used(db)));
+             if let Some(it) = func.as_assoc_item(db)
+                 res.push(it);
+             }
+         }
+-
+         res
+     }
+ 
+ }
+ 
+ /// Helper function to find name of container
+-fn container_name(
+-    container: AssocItemContainer,
+-    sema_scope: &SemanticsScope<'_>,
+-    cfg: FindPathConfig,
+-    edition: Edition,
+-    display_target: DisplayTarget,
+-) -> Result<String, DisplaySourceCodeError> {
++fn container_name(container: AssocItemContainer, sema_scope: &SemanticsScope<'_>, cfg: FindPathConfig, edition: Edition, display_target: DisplayTarget) -> Result<String, DisplaySourceCodeError> {
+     let container_name = match container {
+         crate::AssocItemContainer::Trait(trait_) => {
+             mod_item_path_str(sema_scope, &ModuleDef::Trait(trait_), cfg, edition)?

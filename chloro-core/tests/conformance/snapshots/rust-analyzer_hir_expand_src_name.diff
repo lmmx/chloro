@@ -1,0 +1,120 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8537 bytes
+Chloro size:   8068 bytes
+Rustfmt size:  8636 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! See [`Name`].
+ 
+ use std::fmt;
+ 
+-use intern::{sym, Symbol};
++use intern::{Symbol, sym};
+ use span::{Edition, SyntaxContext};
+ use syntax::utils::is_raw_identifier;
+ use syntax::{ast, format_smolstr};
+-
+ /// `Name` is a wrapper around string, which is used in hir for both references
+ /// and declarations. In theory, names should also carry hygiene info, but we are
+ /// not there yet!
+ #[derive(Clone, PartialEq, Eq, Hash)]
+ pub struct Name {
+     symbol: Symbol,
+-    // If you are making this carry actual hygiene, beware that the special handling for variables and labels
+-    // in bodies can go.
+     ctx: (),
+ }
+ 
+     }
+ }
+ 
+-// No need to strip `r#`, all comparisons are done against well-known symbols.
+ impl PartialEq<Symbol> for Name {
+     fn eq(&self, sym: &Symbol) -> bool {
+         self.symbol == *sym
+ 
+ impl Name {
+     fn new_text(text: &str) -> Name {
+-        Name {
+-            symbol: Symbol::intern(text),
+-            ctx: (),
+-        }
++        Name { symbol: Symbol::intern(text), ctx: () }
+     }
+ 
+     pub fn new(text: &str, mut ctx: SyntaxContext) -> Name {
+         Self { symbol, ctx: () }
+     }
+ 
+-    // FIXME: This needs to go once we have hygiene
+     pub fn new_symbol_root(sym: Symbol) -> Self {
+         Self::new_symbol(sym, SyntaxContext::root(Edition::Edition2015))
+     }
+     /// name is equal only to itself. It's not clear how to implement this in
+     /// salsa though, so we punt on that bit for a moment.
+     pub const fn missing() -> Name {
+-        Name {
+-            symbol: sym::MISSING_NAME,
+-            ctx: (),
+-        }
++        Name { symbol: sym::MISSING_NAME, ctx: () }
+     }
+ 
+     /// Returns true if this is a fake name for things missing in the source code. See
+     /// Returns the text this name represents if it isn't a tuple field.
+     ///
+     /// Do not use this for user-facing text, use `display` instead to handle editions properly.
+-    // FIXME: This should take a database argument to hide the interning
+     pub fn as_str(&self) -> &str {
+         self.symbol.as_str()
+     }
+ 
+-    pub fn display<'a>(
+-        &'a self,
+-        db: &dyn crate::db::ExpandDatabase,
+-        edition: Edition,
+-    ) -> impl fmt::Display + 'a {
++    pub fn display<'a>(&'a self, db: &dyn crate::db::ExpandDatabase, edition: Edition) -> impl fmt::Display + 'a {
+         _ = db;
+         self.display_no_db(edition)
+     }
+ 
+-    // FIXME: Remove this in favor of `display`, see fixme on `as_str`
+     #[doc(hidden)]
+     pub fn display_no_db(&self, edition: Edition) -> impl fmt::Display + '_ {
+-        Display {
+-            name: self,
+-            edition,
+-        }
++        Display { name: self, edition }
+     }
+ 
+     pub fn symbol(&self) -> &Symbol {
+ impl fmt::Display for Display<'_> {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         let mut symbol = self.name.symbol.as_str();
+-
+         if symbol == "'static" {
+             // FIXME: '`static` can also be a label, and there it does need escaping.
+             // But knowing where it is will require adding a parameter to `display()`,
+             // and that is an infectious change.
+             return f.write_str(symbol);
+         }
+-
+         if let Some(s) = symbol.strip_prefix('\'') {
+             f.write_str("'")?;
+             symbol = s;
+     }
+ }
+ 
+-pub trait AsName {
+-    fn as_name(&self) -> Name;
+-}
++fn as_name(&self) -> Name;
+ 
+ impl AsName for ast::NameRef {
+     fn as_name(&self) -> Name {

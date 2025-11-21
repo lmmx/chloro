@@ -1,0 +1,135 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7434 bytes
+Chloro size:   7296 bytes
+Rustfmt size:  7434 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     CompletionContext, CompletionItem, CompletionItemKind, Completions,
+     context::{ParamContext, ParamKind, PatternContext},
+ };
+-
+-// FIXME: Make this a submodule of [`pattern`]
+ /// Complete repeated parameters, both name and type. For example, if all
+ /// functions in a file have a `spam: &mut Spam` parameter, a completion with
+ /// `spam: &mut Spam` insert text/label will be suggested.
+ ///
+ /// Also complete parameters for closure or local functions from the surrounding defined locals.
+-pub(crate) fn complete_fn_param(
+-    acc: &mut Completions,
+-    ctx: &CompletionContext<'_>,
+-    pattern_ctx: &PatternContext,
+-) -> Option<()> {
++pub(crate) fn complete_fn_param(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) -> Option<()> {
+     let (ParamContext { param_list, kind, .. }, impl_or_trait) = match pattern_ctx {
+         PatternContext { param_ctx: Some(kind), impl_or_trait, .. } => (kind, impl_or_trait),
+         _ => return None,
+     };
+-
+     let comma_wrapper = comma_wrapper(ctx);
+     let mut add_new_item_to_acc = |label: &str| {
+         let mk_item = |label: &str, range: TextRange| {
+         // See the full discussion: https://github.com/rust-lang/rust-analyzer/issues/12073
+         item.add_to(acc, ctx.db)
+     };
+-
+     match kind {
+         ParamKind::Function(function) => {
+             fill_fn_params(ctx, function, param_list, impl_or_trait, add_new_item_to_acc);
+             });
+         }
+     }
+-
+     Some(())
+ }
+ 
+-fn fill_fn_params(
+-    ctx: &CompletionContext<'_>,
+-    function: &ast::Fn,
+-    param_list: &ast::ParamList,
+-    impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>,
+-    mut add_new_item_to_acc: impl FnMut(&str),
+-) {
++fn fill_fn_params(ctx: &CompletionContext<'_>, function: &ast::Fn, param_list: &ast::ParamList, impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>, mut add_new_item_to_acc: impl FnMut(&str)) {
+     let mut file_params = FxHashMap::default();
+-
+     let mut extract_params = |f: ast::Fn| {
+         f.param_list().into_iter().flat_map(|it| it.params()).for_each(|param| {
+             if let Some(pat) = param.pat() {
+             }
+         });
+     };
+-
+     for node in ctx.token.parent_ancestors() {
+         match_ast! {
+             match node {
+             }
+         };
+     }
+-
+     if let Some(stmt_list) = function.syntax().parent().and_then(ast::StmtList::cast) {
+         params_from_stmt_list_scope(ctx, stmt_list, |name, ty| {
+             file_params
+     if should_add_self_completions(ctx.token.text_range().start(), param_list, impl_or_trait) {
+         self_completion_items.into_iter().for_each(&mut add_new_item_to_acc);
+     }
+-
+     file_params.keys().for_each(|whole_param| add_new_item_to_acc(whole_param));
+ }
+ 
+-fn params_from_stmt_list_scope(
+-    ctx: &CompletionContext<'_>,
+-    stmt_list: ast::StmtList,
+-    mut cb: impl FnMut(hir::Name, String),
+-) {
++fn params_from_stmt_list_scope(ctx: &CompletionContext<'_>, stmt_list: ast::StmtList, mut cb: impl FnMut(hir::Name, String)) {
+     let syntax_node = match stmt_list.syntax().last_child() {
+         Some(it) => it,
+         None => return,
+     }
+ }
+ 
+-fn remove_duplicated(
+-    file_params: &mut FxHashMap<String, String>,
+-    fn_params: ast::AstChildren<ast::Param>,
+-) {
++fn remove_duplicated(file_params: &mut FxHashMap<String, String>, fn_params: ast::AstChildren<ast::Param>) {
+     fn_params.for_each(|param| {
+         let whole_param = param.syntax().text().to_string();
+         file_params.remove(&whole_param);
+     })
+ }
+ 
+-fn should_add_self_completions(
+-    cursor: TextSize,
+-    param_list: &ast::ParamList,
+-    impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>,
+-) -> bool {
++fn should_add_self_completions(cursor: TextSize, param_list: &ast::ParamList, impl_or_trait: &Option<Either<ast::Impl, ast::Trait>>) -> bool {
+     if impl_or_trait.is_none() || param_list.self_param().is_some() {
+         return false;
+     }
+ fn comma_wrapper(ctx: &CompletionContext<'_>) -> Option<(impl Fn(&str) -> String, TextRange)> {
+     let param =
+         ctx.original_token.parent_ancestors().find(|node| node.kind() == SyntaxKind::PARAM)?;
+-
+     let next_token_kind = {
+         let t = param.last_token()?.next_token()?;
+         let t = algo::skip_whitespace_token(t, Direction::Next)?;
+         let t = algo::skip_whitespace_token(t, Direction::Prev)?;
+         t.kind()
+     };
+-
+     let has_trailing_comma =
+         matches!(next_token_kind, SyntaxKind::COMMA | SyntaxKind::R_PAREN | SyntaxKind::PIPE);
+     let trailing = if has_trailing_comma { "" } else { "," };
+-
+     let has_leading_comma =
+         matches!(prev_token_kind, SyntaxKind::COMMA | SyntaxKind::L_PAREN | SyntaxKind::PIPE);
+     let leading = if has_leading_comma { "" } else { ", " };
+-
+     Some((move |label: &_| format!("{leading}{label}{trailing}"), param.text_range()))
+ }

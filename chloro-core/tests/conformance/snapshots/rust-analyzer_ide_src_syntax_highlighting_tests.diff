@@ -1,0 +1,134 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 31331 bytes
+Chloro size:   30793 bytes
+Rustfmt size:  31474 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::time::Instant;
+ 
+-use expect_test::{expect_file, ExpectFile};
++use expect_test::{ExpectFile, expect_file};
+ use ide_db::{MiniCore, SymbolKind};
+ use span::Edition;
+-use test_utils::{bench, bench_fixture, skip_slow_tests, AssertLinear};
++use test_utils::{AssertLinear, bench, bench_fixture, skip_slow_tests};
+ 
+-use crate::{fixture, FileRange, HighlightConfig, HlTag, TextRange};
+-
+-const HL_CONFIG: HighlightConfig<'_> = HighlightConfig {
+-    strings: true,
+-    comments: true,
+-    punctuation: true,
+-    specialize_punctuation: true,
+-    specialize_operator: true,
+-    operator: true,
+-    inject_doc_comment: true,
+-    macro_bang: true,
+-    syntactic_name_ref_highlighting: false,
+-    minicore: MiniCore::default(),
+-};
++use crate::{FileRange, HighlightConfig, HlTag, TextRange, fixture};
+ 
+ #[test]
+ fn attributes() {
+     );
+ }
+ 
+-// Rainbow highlighting uses a deterministic hash (fxhash) but the hashing does differ
+-// depending on the pointer width so only runs this on 64-bit targets.
+ #[cfg(target_pointer_width = "64")]
+ #[test]
+ fn test_rainbow_highlighting() {
+ }
+ "#,
+     );
+-
+     // The "x"
+     let highlights = &analysis
+         .highlight_range(
+             HL_CONFIG,
+-            FileRange {
+-                file_id,
+-                range: TextRange::at(45.into(), 1.into()),
+-            },
++            FileRange { file_id, range: TextRange::at(45.into(), 1.into()) },
+         )
+         .unwrap();
+-
+-    assert_eq!(
+-        &highlights[0].highlight.to_string(),
+-        "field.declaration.public"
+-    );
++    assert_eq!(&highlights[0].highlight.to_string(), "field.declaration.public");
+ }
+ 
+ #[test]
+ /// Highlights the code given by the `ra_fixture` argument, renders the
+ /// result as HTML, and compares it with the HTML file given as `snapshot`.
+ /// Note that the `snapshot` file is overwritten by the rendered HTML.
+-fn check_highlighting_with_config(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    config: HighlightConfig<'_>,
+-    expect: ExpectFile,
+-    rainbow: bool,
+-) {
++fn check_highlighting_with_config(#[rust_analyzer::rust_fixture] ra_fixture: &str, config: HighlightConfig<'_>, expect: ExpectFile, rainbow: bool) {
+     let (analysis, file_id) = fixture::file(ra_fixture.trim());
+-    let actual_html = &analysis
+-        .highlight_as_html_with_config(config, file_id, rainbow)
+-        .unwrap();
++    let actual_html = &analysis.highlight_as_html_with_config(config, file_id, rainbow).unwrap();
+     expect.assert_eq(actual_html)
+ }
+ 
+-fn check_highlighting(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-    expect: ExpectFile,
+-    rainbow: bool,
+-) {
++fn check_highlighting(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: ExpectFile, rainbow: bool) {
+     check_highlighting_with_config(ra_fixture, HL_CONFIG, expect, rainbow)
+ }
+ 
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let fixture = bench_fixture::big_struct();
+     let (analysis, file_id) = fixture::file(&fixture);
+-
+     let hash = {
+         let _pt = bench("syntax highlighting long struct");
+         analysis
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut al = AssertLinear::default();
+     while al.next_round() {
+         for i in 6..=10 {
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let fixture = bench_fixture::glorious_old_parser();
+     let (analysis, file_id) = fixture::file(&fixture);
+-
+     let hash = {
+         let _pt = bench("syntax highlighting parser");
+         analysis
+             .unwrap()
+             .iter()
+             .filter(|it| {
+-                matches!(
+-                    it.highlight.tag,
+-                    HlTag::Symbol(SymbolKind::Function | SymbolKind::Method)
+-                )
++                matches!(it.highlight.tag, HlTag::Symbol(SymbolKind::Function | SymbolKind::Method))
+             })
+             .count()
+     };
