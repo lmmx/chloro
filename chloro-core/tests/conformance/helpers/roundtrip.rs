@@ -37,16 +37,28 @@ pub fn write_snapshots(result: &RoundTripResult, name: &str) {
         .join("snapshots");
     fs::create_dir_all(&output_dir).unwrap();
 
-    let safe_name = name.replace('/', "_");
+    // Split the name and create nested directories
+    let parts: Vec<&str> = name.split('/').collect();
+    let (dirs, filename) = if parts.len() > 1 {
+        (&parts[..parts.len() - 1], parts[parts.len() - 1])
+    } else {
+        (&[][..], name)
+    };
+
+    let mut full_dir = output_dir;
+    for dir in dirs {
+        full_dir = full_dir.join(dir);
+    }
+    fs::create_dir_all(&full_dir).unwrap();
 
     fs::write(
-        output_dir.join(format!("{}_chloro.rs", safe_name)),
+        full_dir.join(format!("{}_chloro.rs", filename)),
         format!("{}\n", result.chloro),
     )
     .unwrap();
 
     fs::write(
-        output_dir.join(format!("{}_rustfmt.rs", safe_name)),
+        full_dir.join(format!("{}_rustfmt.rs", filename)),
         format!("{}\n", result.rustfmt),
     )
     .unwrap();
