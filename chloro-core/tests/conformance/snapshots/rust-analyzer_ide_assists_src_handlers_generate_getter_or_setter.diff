@@ -1,0 +1,452 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 22284 bytes
+Chloro size:   20792 bytes
+Rustfmt size:  22284 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     utils::{convert_reference_type, find_struct_impl, generate_impl},
+ };
+ 
+-// Assist: generate_setter
+-//
+-// Generate a setter method.
+-//
+-// ```
+-// struct Person {
+-//     nam$0e: String,
+-// }
+-// ```
+-// ->
+-// ```
+-// struct Person {
+-//     name: String,
+-// }
+-//
+-// impl Person {
+-//     fn $0set_name(&mut self, name: String) {
+-//         self.name = name;
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_setter(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     // This if condition denotes two modes this assist can work in:
+     // - First is acting upon selection of record fields
+     // - Next is acting upon a single record field
+     //
+     // This is the only part where implementation diverges a bit,
+     // subsequent code is generic for both of these modes
+-
+     let (strukt, info_of_record_fields, mut fn_names) = extract_and_parse(ctx, AssistType::Set)?;
+-
+     // No record fields to do work on :(
+     if info_of_record_fields.is_empty() {
+         return None;
+     }
+-
+     // Prepend set_ to fn names.
+     fn_names.iter_mut().for_each(|name| *name = format!("set_{name}"));
+-
+     // Return early if we've found an existing fn
+     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
+-
+     // Computing collective text range of all record fields in selected region
+     let target: TextRange = info_of_record_fields
+         .iter()
+         .map(|record_field_info| record_field_info.target)
+         .reduce(|acc, target| acc.cover(target))?;
+-
+     let setter_info = AssistInfo { impl_def, strukt, assist_type: AssistType::Set };
+-
+     acc.add_group(
+         &GroupLabel("Generate getter/setter".to_owned()),
+         AssistId::generate("generate_setter"),
+     Some(())
+ }
+ 
+-// Assist: generate_getter
+-//
+-// Generate a getter method.
+-//
+-// ```
+-// # //- minicore: as_ref, deref
+-// # pub struct String;
+-// # impl AsRef<str> for String {
+-// #     fn as_ref(&self) -> &str {
+-// #         ""
+-// #     }
+-// # }
+-// #
+-// # impl core::ops::Deref for String {
+-// #     type Target = str;
+-// #     fn deref(&self) -> &Self::Target {
+-// #         ""
+-// #     }
+-// # }
+-// #
+-// struct Person {
+-//     nam$0e: String,
+-// }
+-// ```
+-// ->
+-// ```
+-// # pub struct String;
+-// # impl AsRef<str> for String {
+-// #     fn as_ref(&self) -> &str {
+-// #         ""
+-// #     }
+-// # }
+-// #
+-// # impl core::ops::Deref for String {
+-// #     type Target = str;
+-// #     fn deref(&self) -> &Self::Target {
+-// #         ""
+-// #     }
+-// # }
+-// #
+-// struct Person {
+-//     name: String,
+-// }
+-//
+-// impl Person {
+-//     fn $0name(&self) -> &str {
+-//         &self.name
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_getter(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     generate_getter_impl(acc, ctx, false)
+ }
+ 
+-// Assist: generate_getter_mut
+-//
+-// Generate a mut getter method.
+-//
+-// ```
+-// struct Person {
+-//     nam$0e: String,
+-// }
+-// ```
+-// ->
+-// ```
+-// struct Person {
+-//     name: String,
+-// }
+-//
+-// impl Person {
+-//     fn $0name_mut(&mut self) -> &mut String {
+-//         &mut self.name
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_getter_mut(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     generate_getter_impl(acc, ctx, true)
+ }
+ 
+     if info_of_record_fields.is_empty() {
+         return None;
+     }
+-
+     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
+-
+     let (id, label) = if mutable {
+         ("generate_getter_mut", "Generate a mut getter method")
+     } else {
+         ("generate_getter", "Generate a getter method")
+     };
+-
+     // Computing collective text range of all record fields in selected region
+     let target: TextRange = info_of_record_fields
+         .iter()
+         .map(|record_field_info| record_field_info.target)
+         .reduce(|acc, target| acc.cover(target))?;
+-
+     let getter_info = AssistInfo {
+         impl_def,
+         strukt,
+         assist_type: if mutable { AssistType::MutGet } else { AssistType::Get },
+     };
+-
+     acc.add_group(
+         &GroupLabel("Generate getter/setter".to_owned()),
+         AssistId::generate(id),
+             )
+         })
+     };
+-
+     let self_param = if matches!(info.assist_type, AssistType::MutGet) {
+         make::mut_self_param()
+     } else {
+         make::self_param()
+     };
+-
+     let strukt = &info.strukt;
+     let fn_name = make::name(&record_field_info.fn_name);
+     let params = make::param_list(Some(self_param), []);
+     let ret_type = Some(make::ret_type(ty));
+     let body = make::block_expr([], Some(body));
+-
+     make::fn_(
+         None,
+         strukt.visibility(),
+     )
+ }
+ 
+-fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
++fn generate_setter_from_info(
++    info: &AssistInfo,
++    record_field_info: &RecordFieldInfo,
++) -> ast::Fn {
+     let strukt = &info.strukt;
+     let field_name = &record_field_info.fn_name;
+     let fn_name = make::name(&format!("set_{field_name}"));
+     let field_ty = &record_field_info.field_ty;
+-
+     // Make the param list
+     // `(&mut self, $field_name: $field_ty)`
+     let field_param =
+         make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
+     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
+-
+     // Make the assignment body
+     // `self.$field_name = $field_name`
+     let self_expr = make::ext::expr_self();
+     let rhs = make::expr_path(make::ext::ident_path(field_name));
+     let assign_stmt = make::expr_stmt(make::expr_assignment(lhs, rhs).into());
+     let body = make::block_expr([assign_stmt.into()], None);
+-
+     // Make the setter fn
+     make::fn_(
+         None,
+ 
+         return Some((parent_struct, info_of_record_fields, field_names));
+     }
+-
+     // Single Record Field mode
+     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
+     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
+ ) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
+     let mut field_names: Vec<String> = vec![];
+     let field_list = node.field_list()?;
+-
+     match field_list {
+         ast::FieldList::RecordFieldList(ele) => {
+             let info_of_record_fields_in_selection = ele
+ ) -> Option<RecordFieldInfo> {
+     let field_name = record_field.name()?;
+     let field_ty = record_field.ty()?;
+-
+     let mut fn_name = to_lower_snake_case(&field_name.to_string());
+     if matches!(assist_type, AssistType::MutGet) {
+         format_to!(fn_name, "_mut");
+     }
+-
+     let target = record_field.syntax().text_range();
+-
+     Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
+ }
+ 
+     assist_info: AssistInfo,
+ ) {
+     let record_fields_count = info_of_record_fields.len();
+-
+     let impl_def = if let Some(impl_def) = &assist_info.impl_def {
+         // We have an existing impl to add to
+         builder.make_mut(impl_def.clone())
+ 
+         impl_def
+     };
+-
+     let assoc_item_list = impl_def.get_or_create_assoc_item_list();
+-
+     for (i, record_field_info) in info_of_record_fields.iter().enumerate() {
+         // Make the new getter or setter fn
+         let new_fn = match assist_info.assist_type {
+ #[cfg(test)]
+ mod tests_getter {
+     use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_generate_getter_from_field() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             generate_getter_mut,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_getter_from_field_no_snippet_cap() {
+         check_assist_no_snippet_cap(
+ }
+ "#,
+         );
+-
+         check_assist_no_snippet_cap(
+             generate_getter_mut,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_getter_already_implemented() {
+         check_assist_not_applicable(
+ }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             generate_getter_mut,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_getter_from_field_with_visibility_marker() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_getter_from_field_with_visibility_marker_no_snippet_cap() {
+         check_assist_no_snippet_cap(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_multiple_generate_getter() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_multiple_generate_getter_no_snippet_cap() {
+         check_assist_no_snippet_cap(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_not_a_special_case() {
+         cov_mark::check_count!(convert_reference_type, 0);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_convert_reference_type() {
+         cov_mark::check_count!(convert_reference_type, 6);
+-
+         // Copy
+         check_assist(
+             generate_getter,
+ }
+ "#,
+         );
+-
+         // AsRef<str>
+         check_assist(
+             generate_getter,
+ }
+ "#,
+         );
+-
+         // AsRef<T>
+         check_assist(
+             generate_getter,
+ }
+ "#,
+         );
+-
+         // AsRef<[T]>
+         check_assist(
+             generate_getter,
+ }
+ "#,
+         );
+-
+         // Option
+         check_assist(
+             generate_getter,
+ }
+ "#,
+         );
+-
+         // Result
+         check_assist(
+             generate_getter,
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_multiple_getters_from_selection() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_multiple_getters_from_selection_one_already_exists() {
+         // As impl for one of the fields already exist, skip it
+ #[cfg(test)]
+ mod tests_setter {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     fn check_not_applicable(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_assist_not_applicable(generate_setter, ra_fixture)
+     }
+-
+     #[test]
+     fn test_generate_setter_from_field() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_setter_already_implemented() {
+         check_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_setter_from_field_with_visibility_marker() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_multiple_generate_setter() {
+         check_assist(

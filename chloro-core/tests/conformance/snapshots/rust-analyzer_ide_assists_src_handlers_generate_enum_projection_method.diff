@@ -1,0 +1,171 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8011 bytes
+Chloro size:   7112 bytes
+Rustfmt size:  8033 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::ast::{self, AstNode, HasName};
+ 
+ use crate::{
+-    utils::{add_method_to_adt, find_struct_impl},
+     AssistContext, AssistId, Assists,
++    utils::{add_method_to_adt, find_struct_impl},
+ };
+ 
+-// Assist: generate_enum_try_into_method
+-//
+-// Generate a `try_into_` method for this enum variant.
+-//
+-// ```
+-// enum Value {
+-//  Number(i32),
+-//  Text(String)$0,
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Value {
+-//  Number(i32),
+-//  Text(String),
+-// }
+-//
+-// impl Value {
+-//     fn try_into_text(self) -> Result<String, Self> {
+-//         if let Self::Text(v) = self {
+-//             Ok(v)
+-//         } else {
+-//             Err(self)
+-//         }
+-//     }
+-// }
+-// ```
+ pub(crate) fn generate_enum_try_into_method(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+     )
+ }
+ 
+-// Assist: generate_enum_as_method
+-//
+-// Generate an `as_` method for this enum variant.
+-//
+-// ```
+-// enum Value {
+-//  Number(i32),
+-//  Text(String)$0,
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Value {
+-//  Number(i32),
+-//  Text(String),
+-// }
+-//
+-// impl Value {
+-//     fn as_text(&self) -> Option<&String> {
+-//         if let Self::Text(v) = self {
+-//             Some(v)
+-//         } else {
+-//             None
+-//         }
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_enum_as_method(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     generate_enum_projection_method(
+         acc,
+         ctx,
+         happy_case,
+         sad_case,
+     } = props;
+-
+     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
+     let variant_name = variant.name()?;
+     let parent_enum = ast::Adt::Enum(variant.parent_enum());
+-
+     let (pattern_suffix, field_type, bound_name) = match variant.kind() {
+         ast::StructKind::Record(record) => {
+             let (field,) = record.fields().collect_tuple()?;
+         }
+         ast::StructKind::Unit => return None,
+     };
+-
+-    let fn_name = format!(
+-        "{fn_name_prefix}_{}",
+-        &to_lower_snake_case(&variant_name.text())
+-    );
+-
++    let fn_name = format!("{fn_name_prefix}_{}", &to_lower_snake_case(&variant_name.text()));
+     // Return early if we've found an existing new fn
+     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
+-
+     let target = variant.syntax().text_range();
+     acc.add_group(
+         &GroupLabel("Generate an `is_`,`as_`, or `try_into_` for this enum variant".to_owned()),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_generate_enum_try_into_tuple_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_try_into_already_implemented() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_try_into_unit_variant() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_try_into_record_with_multiple_fields() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_try_into_tuple_with_multiple_fields() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_try_into_record_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_as_tuple_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_generate_enum_as_record_variant() {
+         check_assist(

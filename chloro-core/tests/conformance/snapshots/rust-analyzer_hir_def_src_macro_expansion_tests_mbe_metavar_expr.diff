@@ -1,0 +1,8 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7880 bytes
+Chloro size:   7880 bytes
+Rustfmt size:  7880 bytes
+
+✓ Outputs are IDENTICAL

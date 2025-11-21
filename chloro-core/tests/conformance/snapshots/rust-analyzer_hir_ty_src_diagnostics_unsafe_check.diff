@@ -1,0 +1,148 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 17194 bytes
+Chloro size:   17319 bytes
+Rustfmt size:  17194 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     pub deprecated_safe_calls: Vec<ExprId>,
+ }
+ 
+-pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafeResult {
++pub fn missing_unsafe(
++    db: &dyn HirDatabase,
++    def: DefWithBodyId,
++) -> MissingUnsafeResult {
+     let _p = tracing::info_span!("missing_unsafe").entered();
+-
+     let is_unsafe = match def {
+         DefWithBodyId::FunctionId(it) => db.function_signature(it).is_unsafe(),
+         DefWithBodyId::StaticId(_) | DefWithBodyId::ConstId(_) | DefWithBodyId::VariantId(_) => {
+             false
+         }
+     };
+-
+     let mut res = MissingUnsafeResult { fn_is_unsafe: is_unsafe, ..MissingUnsafeResult::default() };
+     let body = db.body(def);
+     let infer = db.infer(def);
+     };
+     let mut visitor = UnsafeVisitor::new(db, &infer, &body, def, &mut callback);
+     visitor.walk_expr(body.body_expr);
+-
+     if !is_unsafe {
+         // Unsafety in function parameter patterns (that can only be union destructuring)
+         // cannot be inserted into an unsafe block, so even with `unsafe_op_in_unsafe_fn`
+             visitor.walk_pat(param);
+         }
+     }
+-
+     res
+ }
+ 
+         reason: UnsafetyReason,
+     },
+     /// A lint.
+-    DeprecatedSafe2024 { node: ExprId, inside_unsafe_block: InsideUnsafeBlock },
++    DeprecatedSafe2024 {
++        node: ExprId,
++        inside_unsafe_block: InsideUnsafeBlock,
++    },
+ }
+ 
+ pub fn unsafe_operations_for_body<'db>(
+     inside_union_destructure: bool,
+     callback: &'db mut dyn FnMut(UnsafeDiagnostic),
+     def_target_features: TargetFeatures,
+-    // FIXME: This needs to be the edition of the span of each call.
+     edition: Edition,
+     /// On some targets (WASM), calling safe functions with `#[target_feature]` is always safe, even when
+     /// the target feature is not enabled. This flag encodes that.
+         }
+     }
+ 
+-    fn on_unsafe_op(&mut self, node: ExprOrPatId, reason: UnsafetyReason) {
++    fn on_unsafe_op(
++        &mut self,
++        node: ExprOrPatId,
++        reason: UnsafetyReason,
++    ) {
+         (self.callback)(UnsafeDiagnostic::UnsafeOperation {
+             node,
+             inside_unsafe_block: self.inside_unsafe_block,
+         });
+     }
+ 
+-    fn check_call(&mut self, node: ExprId, func: FunctionId) {
++    fn check_call(
++        &mut self,
++        node: ExprId,
++        func: FunctionId,
++    ) {
+         let unsafety = is_fn_unsafe_to_call(
+             self.db,
+             func,
+         result
+     }
+ 
+-    fn walk_pats_top(&mut self, pats: impl Iterator<Item = PatId>, parent_expr: ExprId) {
++    fn walk_pats_top(
++        &mut self,
++        pats: impl Iterator<Item = PatId>,
++        parent_expr: ExprId,
++    ) {
+         let guard = self.resolver.update_to_inner_scope(self.db, self.def, parent_expr);
+         pats.for_each(|pat| self.walk_pat(pat));
+         self.resolver.reset_to_guard(guard);
+     }
+ 
+-    fn walk_pat(&mut self, current: PatId) {
++    fn walk_pat(
++        &mut self,
++        current: PatId,
++    ) {
+         let pat = &self.body[current];
+-
+         if self.inside_union_destructure {
+             match pat {
+                 Pat::Tuple { .. }
+                 Pat::Missing | Pat::Wild | Pat::Or(_) => {}
+             }
+         }
+-
+         match pat {
+             Pat::Record { .. } => {
+                 if let Some((AdtId::UnionId(_), _)) = self.infer[current].as_adt() {
+             &Pat::Expr(expr) => self.walk_expr(expr),
+             _ => {}
+         }
+-
+         self.body.walk_pats_shallow(current, |pat| self.walk_pat(pat));
+     }
+ 
+-    fn walk_expr(&mut self, current: ExprId) {
++    fn walk_expr(
++        &mut self,
++        current: ExprId,
++    ) {
+         let expr = &self.body[current];
+         let inside_assignment = mem::replace(&mut self.inside_assignment, false);
+         match expr {
+             Expr::Const(e) => self.walk_expr(*e),
+             _ => {}
+         }
+-
+         self.body.walk_child_exprs_without_pats(current, |child| self.walk_expr(child));
+     }
+ 
+-    fn mark_unsafe_path(&mut self, node: ExprOrPatId, path: &Path) {
++    fn mark_unsafe_path(
++        &mut self,
++        node: ExprOrPatId,
++        path: &Path,
++    ) {
+         let hygiene = self.body.expr_or_pat_path_hygiene(node);
+         let value_or_partial = self.resolver.resolve_path_in_value_ns(self.db, path, hygiene);
+         if let Some(ResolveValueResult::ValueNs(ValueNs::StaticId(id), _)) = value_or_partial {

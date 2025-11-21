@@ -1,0 +1,253 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 20081 bytes
+Chloro size:   19527 bytes
+Rustfmt size:  20081 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::assist_context::{AssistContext, Assists};
+ 
+-// Assist: convert_tuple_return_type_to_struct
+-//
+-// This converts the return type of a function from a tuple type
+-// into a tuple struct and updates the body accordingly.
+-//
+-// ```
+-// fn bar() {
+-//     let (a, b, c) = foo();
+-// }
+-//
+-// fn foo() -> ($0u32, u32, u32) {
+-//     (1, 2, 3)
+-// }
+-// ```
+-// ->
+-// ```
+-// fn bar() {
+-//     let FooResult(a, b, c) = foo();
+-// }
+-//
+-// struct FooResult(u32, u32, u32);
+-//
+-// fn foo() -> FooResult {
+-//     FooResult(1, 2, 3)
+-// }
+-// ```
+ pub(crate) fn convert_tuple_return_type_to_struct(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
+     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
+     let type_ref = ret_type.ty()?;
+-
+     let ast::Type::TupleType(tuple_ty) = &type_ref else { return None };
+     if tuple_ty.fields().any(|field| matches!(field, ast::Type::ImplTraitType(_))) {
+         return None;
+     }
+-
+     let fn_ = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
+     let fn_def = ctx.sema.to_def(&fn_)?;
+     let fn_name = fn_.name()?;
+     let target_module = ctx.sema.scope(fn_.syntax())?.module().nearest_non_block_module(ctx.db());
+-
+     let target = type_ref.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("convert_tuple_return_type_to_struct"),
+     target_module: &hir::Module,
+ ) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
+     let mut visited_modules = FxHashSet::default();
+-
+     references
+         .iter()
+         .filter_map(|FileReference { name, .. }| {
+         .collect()
+ }
+ 
+-// Adds the definition of the tuple struct before the parent function.
+ fn add_tuple_struct_def(
+     edit: &mut SourceChangeBuilder,
+     ctx: &AssistContext<'_>,
+         })
+         .any(|module| module.nearest_non_block_module(ctx.db()) != *target_module);
+     let visibility = if make_struct_pub { Some(make::visibility_pub()) } else { None };
+-
+     let field_list = ast::FieldList::TupleFieldList(make::tuple_field_list(
+         tuple_ty.fields().map(|ty| make::tuple_field(visibility.clone(), ty)),
+     ));
+     let struct_name = make::name(struct_name);
+     let struct_def = make::struct_(visibility, struct_name, None, field_list).clone_for_update();
+-
+     let indent = IndentLevel::from_node(parent);
+     struct_def.reindent_to(indent);
+-
+     edit.insert(parent.text_range().start(), format!("{struct_def}\n\n{indent}"));
+ }
+ 
+ /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
+-fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
++fn replace_body_return_values(
++    body: ast::Expr,
++    struct_name: &str,
++) {
+     let mut exprs_to_wrap = Vec::new();
+-
+     let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_wrap, e);
+     walk_expr(&body, &mut |expr| {
+         if let ast::Expr::ReturnExpr(ret_expr) = expr
+         }
+     });
+     for_each_tail_expr(&body, tail_cb);
+-
+     for ret_expr in exprs_to_wrap {
+         if let ast::Expr::TupleExpr(tuple_expr) = &ret_expr {
+             let struct_constructor = make::expr_call(
+     }
+ }
+ 
+-fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
++fn tail_cb_impl(
++    acc: &mut Vec<ast::Expr>,
++    e: &ast::Expr,
++) {
+     match e {
+         ast::Expr::BreakExpr(break_expr) => {
+             if let Some(break_expr_arg) = break_expr.expr() {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     #[test]
+     fn function_basic() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn struct_and_usages_indented() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn field_usage() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn method_usage() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn method_usage_within_same_impl() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn multiple_usages() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn usage_match_tuple_pat() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn usage_if_let_tuple_pat() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn function_nested_outer() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn function_nested_inner() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn trait_impl_and_usage() {
+         cov_mark::check!(replace_trait_impl_fns);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn body_wraps_nested() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn body_wraps_break_and_return() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn body_doesnt_wrap_identifier() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn body_doesnt_wrap_other_exprs() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn cross_file_and_module() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn does_not_replace_nested_usage() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn function_with_non_tuple_return_type() {
+         check_assist_not_applicable(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn function_with_impl_type() {
+         check_assist_not_applicable(

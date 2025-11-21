@@ -1,0 +1,183 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11162 bytes
+Chloro size:   11366 bytes
+Rustfmt size:  11162 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Term search
+ 
++pub use expr::Expr;
+ use hir_def::type_ref::Mutability;
+ use hir_ty::db::HirDatabase;
+ use itertools::Itertools;
+ use crate::{ModuleDef, ScopeDef, Semantics, SemanticsScope, Type};
+ 
+ mod expr;
+-pub use expr::Expr;
+ 
+ mod tactics;
+ 
+     /// # Arguments
+     /// `threshold` - threshold value for many trees (more than that is many)
+     /// `exprs` - expressions iterator
+-    fn new(threshold: usize, exprs: impl Iterator<Item = Expr<'db>>) -> AlternativeExprs<'db> {
++    fn new(
++        threshold: usize,
++        exprs: impl Iterator<Item = Expr<'db>>,
++    ) -> AlternativeExprs<'db> {
+         let mut it = AlternativeExprs::Few(Default::default());
+         it.extend_with_threshold(threshold, exprs);
+         it
+     ///
+     /// # Arguments
+     /// `ty` - Type of expressions queried (this is used to give type to `Expr::Many`)
+-    fn exprs(&self, ty: &Type<'db>) -> Vec<Expr<'db>> {
++    fn exprs(
++        &self,
++        ty: &Type<'db>,
++    ) -> Vec<Expr<'db>> {
+         match self {
+             AlternativeExprs::Few(exprs) => exprs.iter().cloned().collect(),
+             AlternativeExprs::Many => vec![Expr::Many(ty.clone())],
+     /// # Arguments
+     /// `threshold` - threshold value for many trees (more than that is many)
+     /// `exprs` - expressions iterator
+-    fn extend_with_threshold(&mut self, threshold: usize, exprs: impl Iterator<Item = Expr<'db>>) {
++    fn extend_with_threshold(
++        &mut self,
++        threshold: usize,
++        exprs: impl Iterator<Item = Expr<'db>>,
++    ) {
+         match self {
+             AlternativeExprs::Few(tts) => {
+                 for it in exprs {
+ 
+ impl<'db> LookupTable<'db> {
+     /// Initialize lookup table
+-    fn new(many_threshold: usize, goal: Type<'db>) -> Self {
++    fn new(
++        many_threshold: usize,
++        goal: Type<'db>,
++    ) -> Self {
+         let mut res = Self { many_threshold, ..Default::default() };
+         res.new_types.insert(NewTypesKey::ImplMethod, Vec::new());
+         res.new_types.insert(NewTypesKey::StructProjection, Vec::new());
+     }
+ 
+     /// Find all `Expr`s that unify with the `ty`
+-    fn find(&mut self, db: &'db dyn HirDatabase, ty: &Type<'db>) -> Option<Vec<Expr<'db>>> {
++    fn find(
++        &mut self,
++        db: &'db dyn HirDatabase,
++        ty: &Type<'db>,
++    ) -> Option<Vec<Expr<'db>>> {
+         let res = self
+             .data
+             .iter()
+             .find(|(t, _)| t.could_unify_with_deeply(db, ty))
+             .map(|(t, tts)| tts.exprs(t));
+-
+         if res.is_none() {
+             self.types_wishlist.insert(ty.clone());
+         }
+-
+         // Collapse suggestions if there are many
+         if let Some(res) = &res
+             && res.len() > self.many_threshold
+         {
+             return Some(vec![Expr::Many(ty.clone())]);
+         }
+-
+         res
+     }
+ 
+     ///
+     /// For example if we have type `i32` in data and we query for `&i32` it map all the type
+     /// trees we have for `i32` with `Expr::Reference` and returns them.
+-    fn find_autoref(&mut self, db: &'db dyn HirDatabase, ty: &Type<'db>) -> Option<Vec<Expr<'db>>> {
++    fn find_autoref(
++        &mut self,
++        db: &'db dyn HirDatabase,
++        ty: &Type<'db>,
++    ) -> Option<Vec<Expr<'db>>> {
+         let res = self
+             .data
+             .iter()
+                             .collect()
+                     })
+             });
+-
+         if res.is_none() {
+             self.types_wishlist.insert(ty.clone());
+         }
+-
+         // Collapse suggestions if there are many
+         if let Some(res) = &res
+             && res.len() > self.many_threshold
+         {
+             return Some(vec![Expr::Many(ty.clone())]);
+         }
+-
+         res
+     }
+ 
+     /// Note that the types have to be the same, unification is not enough as unification is not
+     /// transitive. For example Vec<i32> and FxHashSet<i32> both unify with Iterator<Item = i32>,
+     /// but they clearly do not unify themselves.
+-    fn insert(&mut self, ty: Type<'db>, exprs: impl Iterator<Item = Expr<'db>>) {
++    fn insert(
++        &mut self,
++        ty: Type<'db>,
++        exprs: impl Iterator<Item = Expr<'db>>,
++    ) {
+         match self.data.get_mut(&ty) {
+             Some(it) => {
+                 it.extend_with_threshold(self.many_threshold, exprs);
+     /// Query new types reached since last query by key
+     ///
+     /// Create new key if you wish to query it to avoid conflicting with existing queries.
+-    fn new_types(&mut self, key: NewTypesKey) -> Vec<Type<'db>> {
++    fn new_types(
++        &mut self,
++        key: NewTypesKey,
++    ) -> Vec<Type<'db>> {
+         match self.new_types.get_mut(&key) {
+             Some(it) => std::mem::take(it),
+             None => Vec::new(),
+     let module = ctx.scope.module();
+     let mut defs = FxHashSet::default();
+     defs.insert(ScopeDef::ModuleDef(ModuleDef::Module(module)));
+-
+     ctx.scope.process_all_names(&mut |_, def| {
+         defs.insert(def);
+     });
+-
+     let mut lookup = LookupTable::new(ctx.config.many_alternatives_threshold, ctx.goal.clone());
+     let fuel = std::cell::Cell::new(ctx.config.fuel);
+-
+     let should_continue = &|| {
+         let remaining = fuel.get();
+         fuel.set(remaining.saturating_sub(1));
+         }
+         remaining > 0
+     };
+-
+     // Try trivial tactic first, also populates lookup table
+     let mut solutions: Vec<Expr<'db>> = tactics::trivial(ctx, &defs, &mut lookup).collect();
+     // Use well known types tactic before iterations as it does not depend on other tactics
+     solutions.extend(tactics::famous_types(ctx, &defs, &mut lookup));
+     solutions.extend(tactics::assoc_const(ctx, &defs, &mut lookup));
+-
+     while should_continue() {
+         solutions.extend(tactics::data_constructor(ctx, &defs, &mut lookup, should_continue));
+         solutions.extend(tactics::free_function(ctx, &defs, &mut lookup, should_continue));
+         solutions.extend(tactics::impl_static_method(ctx, &defs, &mut lookup, should_continue));
+         solutions.extend(tactics::make_tuple(ctx, &defs, &mut lookup, should_continue));
+     }
+-
+     solutions.into_iter().filter(|it| !it.is_many()).unique().collect()
+ }

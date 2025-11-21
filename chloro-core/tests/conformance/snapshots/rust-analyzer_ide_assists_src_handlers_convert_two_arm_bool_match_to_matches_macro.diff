@@ -1,0 +1,141 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7706 bytes
+Chloro size:   7307 bytes
+Rustfmt size:  7706 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: convert_two_arm_bool_match_to_matches_macro
+-//
+-// Convert 2-arm match that evaluates to a boolean into the equivalent matches! invocation.
+-//
+-// ```
+-// fn main() {
+-//     match scrutinee$0 {
+-//         Some(val) if val.cond() => true,
+-//         _ => false,
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     matches!(scrutinee, Some(val) if val.cond())
+-// }
+-// ```
+ pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+     let second_arm_expr = second_arm.expr()?;
+     let first_arm_body = is_bool_literal_expr(&ctx.sema, &first_arm_expr)?;
+     let second_arm_body = is_bool_literal_expr(&ctx.sema, &second_arm_expr)?;
+-
+     if !matches!(
+         (&first_arm_body, &second_arm_body),
+         (Literal(true), Literal(false))
+         cov_mark::hit!(non_invert_bool_literal_arms);
+         return None;
+     }
+-
+     let target_range = ctx.sema.original_range(match_expr.syntax()).range;
+     let expr = match_expr.expr()?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("convert_two_arm_bool_match_to_matches_macro"),
+         "Convert to matches!",
+     {
+         return Some(ArmBodyExpression::Literal(b));
+     }
+-
+     if !sema.type_of_expr(expr)?.original.is_bool() {
+         return None;
+     }
+-
+     Some(ArmBodyExpression::Expression(expr.clone()))
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+-
+     use super::convert_two_arm_bool_match_to_matches_macro;
+-
+     #[test]
+     fn not_applicable_outside_of_range_left() {
+         check_assist_not_applicable(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_non_two_arm_match() {
+         cov_mark::check!(non_two_arm_match);
+         "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_both_false_arms() {
+         cov_mark::check!(non_invert_bool_literal_arms);
+         "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_both_true_arms() {
+         cov_mark::check!(non_invert_bool_literal_arms);
+         "#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_case() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_invert_case() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_with_guard_case() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_enum_match_cases() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_target_simple() {
+         check_assist_target(
+     }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_target_complex() {
+         check_assist_target(
+     }",
+         );
+     }
+-
+     #[test]
+     fn convert_non_literal_bool() {
+         check_assist(

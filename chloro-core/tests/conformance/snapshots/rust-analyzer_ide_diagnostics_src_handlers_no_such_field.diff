@@ -1,0 +1,197 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11158 bytes
+Chloro size:   11034 bytes
+Rustfmt size:  11215 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+-use hir::{db::ExpandDatabase, HasSource, HirDisplay, Semantics, VariantId};
++use hir::{HasSource, HirDisplay, Semantics, VariantId, db::ExpandDatabase};
+ use ide_db::text_edit::TextEdit;
+-use ide_db::{source_change::SourceChange, EditionedFileId, RootDatabase};
++use ide_db::{EditionedFileId, RootDatabase, source_change::SourceChange};
+ use syntax::{
+-    ast::{self, edit::IndentLevel, make},
+     AstNode,
++    ast::{self, edit::IndentLevel, make},
+ };
+ 
+ use crate::{
+-    fix, handlers::private_field::field_is_private_fixes, Assist, Diagnostic, DiagnosticCode,
+-    DiagnosticsContext,
++    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix,
++    handlers::private_field::field_is_private_fixes,
+ };
+ 
+-// Diagnostic: no-such-field
+-//
+-// This diagnostic is triggered if created structure does not have field provided in record.
+-pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
++pub(crate) fn no_such_field(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::NoSuchField,
++) -> Diagnostic {
+     let (code, message) = if d.private.is_some() {
+         ("E0451", "field is private")
+     } else if let VariantId::EnumVariantId(_) = d.variant {
+     } else {
+         ("E0560", "no such field")
+     };
+-
+     let node = d.field.map(Into::into);
+     Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError(code), message, node)
+         .stable()
+         .with_fixes(fixes(ctx, d))
+ }
+ 
+-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {
++fn fixes(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::NoSuchField,
++) -> Option<Vec<Assist>> {
+     // FIXME: quickfix for pattern
+     let root = ctx.sema.db.parse_or_expand(d.field.file_id);
+     match &d.field.value.to_node(&root) {
+         }
+     };
+     let def_file_id = def_file_id.original_file(sema.db);
+-
+     let new_field_type = sema.type_of_expr(&record_expr_field.expr()?)?.adjusted();
+     if new_field_type.is_unknown() {
+         return None;
+     let new_field = make::record_field(
+         None,
+         make::name(record_expr_field.field_name()?.ident_token()?.text()),
+-        make::ty(
+-            &new_field_type
+-                .display_source_code(sema.db, module.into(), true)
+-                .ok()?,
+-        ),
++        make::ty(&new_field_type.display_source_code(sema.db, module.into(), true).ok()?),
+     );
+-
+     let last_field = record_fields.fields().last()?;
+     let last_field_syntax = last_field.syntax();
+     let indent = IndentLevel::from_node(last_field_syntax);
+-
+     let mut new_field = new_field.to_string();
+     if usage_file_id != def_file_id {
+         new_field = format!("pub(crate) {new_field}");
+     }
+     new_field = format!("\n{indent}{new_field}");
+-
+     let needs_comma = !last_field_syntax.to_string().ends_with(',');
+     if needs_comma {
+         new_field = format!(",{new_field}");
+     }
+-
+     let source_change = SourceChange::from_text_edit(
+         def_file_id.file_id(sema.db),
+         TextEdit::insert(last_field_syntax.text_range().end(), new_field),
+     );
+-
+     return Some(vec![fix(
+         "create_field",
+         "Create field",
+         source_change,
+         sema.original_range(record_expr_field.syntax()).range,
+     )]);
+-
+     fn record_field_list(field_def_list: ast::FieldList) -> Option<ast::RecordFieldList> {
+         match field_def_list {
+             ast::FieldList::RecordFieldList(it) => Some(it),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix, check_no_fix};
+-
+     #[test]
+     fn dont_work_for_field_with_disabled_cfg() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_such_field_diagnostics() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_such_field_enum_with_feature_flag_diagnostics() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_such_field_with_feature_flag_diagnostics_on_struct_lit() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_such_field_with_type_macro() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_field_from_usage() {
+         check_fix(
+ ",
+         )
+     }
+-
+     #[test]
+     fn test_add_field_in_other_file_from_usage() {
+         check_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_tuple_field_on_record_struct() {
+         check_no_fix(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_struct_field_private() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_struct_field_private_same_crate_fix() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ mod m {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_struct_field_private_other_crate_fix() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn editions_between_macros() {
+         check_diagnostics(

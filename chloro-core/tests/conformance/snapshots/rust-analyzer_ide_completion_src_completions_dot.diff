@@ -1,0 +1,456 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 35861 bytes
+Chloro size:   35796 bytes
+Rustfmt size:  35861 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+         DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
+         _ => return,
+     };
+-
+     let has_parens = matches!(dot_access.kind, DotAccessKind::Method);
+     let traits_in_scope = ctx.traits_in_scope();
+-
+     // Suggest .await syntax for types that implement Future trait
+     if let Some(future_output) = receiver_ty.into_future_output(ctx.db) {
+         let await_str = SmolStr::new_static("await");
+             });
+         }
+     }
+-
+     complete_fields(
+         acc,
+         ctx,
+     complete_methods(ctx, receiver_ty, &traits_in_scope, |func| {
+         acc.add_method(ctx, dot_access, func, None, None)
+     });
+-
+     if ctx.config.enable_auto_iter && !receiver_ty.strip_references().impls_iterator(ctx.db) {
+         // FIXME:
+         // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
+         PathExprCtx { self_param: Some(self_param), .. } => self_param,
+         _ => return,
+     };
+-
+     let ty = self_param.ty(ctx.db);
+     complete_fields(
+         acc,
+         // is also an inherent method, especially considering that it may be private, and filtered later).
+         seen_methods: FxHashSet<Function>,
+     }
+-
+     impl<F> MethodCandidateCallback for Callback<'_, F>
+     where
+         F: FnMut(hir::Function),
+             ControlFlow::Continue(())
+         }
+     }
+-
+     receiver.iterate_method_candidates_split_inherent(
+         ctx.db,
+         &ctx.scope,
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::tests::{check_edit, check_no_kw, check_with_private_editable};
+-
+     #[test]
+     fn test_struct_field_and_method_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn no_unstable_method_on_stable() {
+         check_no_kw(
+             expect![""],
+         );
+     }
+-
+     #[test]
+     fn unstable_method_on_nightly() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_field_completion_self() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_struct_field_completion_autoderef() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_no_struct_field_completion_for_method_call() {
+         check_no_kw(
+             expect![[r#""#]],
+         );
+     }
+-
+     #[test]
+     fn test_visibility_filtering() {
+         check_no_kw(
+                 fd pub_field u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r#"
+ //- /lib.rs crate:lib new_source_root:library
+                 fd pub_field u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r#"
+ //- /lib.rs crate:lib new_source_root:library
+                 fd 1 f64
+             "#]],
+         );
+-
+         check_no_kw(
+             r#"
+ //- /lib.rs crate:lib new_source_root:local
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_visibility_filtering_with_private_editable_enabled() {
+         check_with_private_editable(
+                 fd super_field   u32
+             "#]],
+         );
+-
+         check_with_private_editable(
+             r#"
+ //- /lib.rs crate:lib new_source_root:library
+                 fd pub_field u32
+             "#]],
+         );
+-
+         check_with_private_editable(
+             r#"
+ //- /lib.rs crate:lib new_source_root:library
+                 fd 1 f64
+             "#]],
+         );
+-
+         check_with_private_editable(
+             r#"
+ //- /lib.rs crate:lib new_source_root:local
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_local_impls() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_doc_hidden_filtering() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_union_field_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_method_completion_only_fitting_impls() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn test_trait_method_completion() {
+         check_no_kw(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_trait_method_completion_deduplicated() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn completes_trait_method_from_other_module() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_no_non_self_method() {
+         check_no_kw(
+             expect![[r#""#]],
+         );
+     }
+-
+     #[test]
+     fn test_tuple_field_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_tuple_struct_field_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_tuple_field_inference() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_field_no_same_name() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_tuple_field_no_same_index() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_tuple_struct_deref_to_tuple_no_same_index() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_completion_works_in_consts() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_simple_macro_1() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_simple_macro_2() {
+         // this doesn't work yet because the macro doesn't expand without the token -- maybe it can be fixed with better recovery
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn works_in_simple_macro_recursive_1() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn macro_expansion_resilient() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_method_completion_issue_3547() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn completes_method_call_when_receiver_is_a_macro_call() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn completes_after_macro_call_in_submodule() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn issue_8931() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn completes_bare_fields_and_methods_in_methods() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn macro_completion_after_dot() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn completes_method_call_when_receiver_type_has_errors_issue_10297() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn postfix_drop_completion() {
+         cov_mark::check!(postfix_drop_completion);
+ ",
+         )
+     }
+-
+     #[test]
+     fn issue_12484() {
+         check_no_kw(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn only_consider_same_type_once() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn no_inference_var_in_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_impl_1() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn assoc_impl_2() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_struct_function_field_completion() {
+         check_no_kw(
+                 fd fn_field fn()
+             "#]],
+         );
+-
+         check_edit(
+             "fn_field",
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_tuple_function_field_completion() {
+         check_no_kw(
+                 fd 1 fn()
+             "#]],
+         );
+-
+         check_edit(
+             "1",
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_fn_field_dot_access_method_has_parens_false() {
+         check_no_kw(
+                 me bar(…) fn(self, T) -> T
+             "#]],
+         );
+-
+         check_edit(
+             "baz",
+             r#"
+ }
+ "#,
+         );
+-
+         check_edit(
+             "bar",
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn skip_iter() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn skip_await() {
+         check_no_kw(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn receiver_without_deref_impl_completion() {
+         check_no_kw(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn no_iter_suggestion_on_iterator() {
+         check_no_kw(

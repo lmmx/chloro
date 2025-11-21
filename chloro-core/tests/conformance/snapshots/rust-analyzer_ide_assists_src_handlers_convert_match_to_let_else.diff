@@ -1,0 +1,259 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12337 bytes
+Chloro size:   11800 bytes
+Rustfmt size:  12415 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::defs::{Definition, NameRefClass};
+ use syntax::{
+-    ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory, HasName, Name},
+-    syntax_editor::SyntaxEditor,
+     AstNode, SyntaxNode,
++    ast::{self, HasName, Name, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
++    syntax_editor::SyntaxEditor,
+ };
+ 
+ use crate::{
+-    assist_context::{AssistContext, Assists},
+     AssistId,
++    assist_context::{AssistContext, Assists},
+ };
+ 
+-// Assist: convert_match_to_let_else
+-//
+-// Converts let statement with match initializer to let-else statement.
+-//
+-// ```
+-// # //- minicore: option
+-// fn foo(opt: Option<()>) {
+-//     let val$0 = match opt {
+-//         Some(it) => it,
+-//         None => return,
+-//     };
+-// }
+-// ```
+-// ->
+-// ```
+-// fn foo(opt: Option<()>) {
+-//     let Some(val) = opt else { return };
+-// }
+-// ```
+-pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_match_to_let_else(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let let_stmt: ast::LetStmt = ctx.find_node_at_offset()?;
+     let pat = let_stmt.pat()?;
+     if ctx.offset() > pat.syntax().text_range().end() {
+         return None;
+     }
+-
+-    let Some(ast::Expr::MatchExpr(initializer)) = let_stmt.initializer() else {
+-        return None;
+-    };
++    let Some(ast::Expr::MatchExpr(initializer)) = let_stmt.initializer() else { return None };
+     let initializer_expr = initializer.expr()?;
+-
+     let (extracting_arm, diverging_arm) = find_arms(ctx, &initializer)?;
+     if extracting_arm.guard().is_some() {
+         cov_mark::hit!(extracting_arm_has_guard);
+         return None;
+     }
+-
+     let diverging_arm_expr = match diverging_arm.expr()?.dedent(1.into()) {
+         ast::Expr::BlockExpr(block) if block.modifier().is_none() && block.label().is_none() => {
+             block.to_string()
+     };
+     let extracting_arm_pat = extracting_arm.pat()?;
+     let extracted_variable_positions = find_extracted_variable(ctx, &extracting_arm)?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("convert_match_to_let_else"),
+         "Convert match to let-else",
+     )
+ }
+ 
+-// Given a match expression, find extracting and diverging arms.
+ fn find_arms(
+     ctx: &AssistContext<'_>,
+     match_expr: &ast::MatchExpr,
+     if arms.len() != 2 {
+         return None;
+     }
+-
+     let mut extracting = None;
+     let mut diverging = None;
+     for arm in arms {
+             extracting = Some(arm);
+         }
+     }
+-
+     match (extracting, diverging) {
+         (Some(extracting), Some(diverging)) => Some((extracting, diverging)),
+         _ => {
+     }
+ }
+ 
+-// Given an extracting arm, find the extracted variable.
+-fn find_extracted_variable(ctx: &AssistContext<'_>, arm: &ast::MatchArm) -> Option<Vec<Name>> {
++fn find_extracted_variable(
++    ctx: &AssistContext<'_>,
++    arm: &ast::MatchArm,
++) -> Option<Vec<Name>> {
+     match arm.expr()? {
+         ast::Expr::PathExpr(path) => {
+             let name_ref = path.syntax().descendants().find_map(ast::NameRef::cast)?;
+             match NameRefClass::classify(&ctx.sema, &name_ref)? {
+                 NameRefClass::Definition(Definition::Local(local), _) => {
+-                    let source = local
+-                        .sources(ctx.db())
+-                        .into_iter()
+-                        .map(|x| x.into_ident_pat()?.name());
++                    let source =
++                        local.sources(ctx.db()).into_iter().map(|x| x.into_ident_pat()?.name());
+                     source.collect()
+                 }
+                 _ => None,
+     }
+ }
+ 
+-// Rename `extracted` with `binding` in `pat`.
+-fn rename_variable(pat: &ast::Pat, extracted: &[Name], binding: ast::Pat) -> SyntaxNode {
++fn rename_variable(
++    pat: &ast::Pat,
++    extracted: &[Name],
++    binding: ast::Pat,
++) -> SyntaxNode {
+     let syntax = pat.syntax().clone_subtree();
+     let mut editor = SyntaxEditor::new(syntax.clone());
+     let make = SyntaxFactory::with_mappings();
+     for extracted_syntax in extracted {
+         // If `extracted` variable is a record field, we should rename it to `binding`,
+         // otherwise we just need to replace `extracted` with `binding`.
+-        if let Some(record_pat_field) = extracted_syntax
+-            .ancestors()
+-            .find_map(ast::RecordPatField::cast)
++        if let Some(record_pat_field) =
++            extracted_syntax.ancestors().find_map(ast::RecordPatField::cast)
+         {
+             if let Some(name_ref) = record_pat_field.field_name() {
+                 editor.replace(
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn should_not_be_applicable_for_non_diverging_match() {
+         cov_mark::check!(non_diverging_match);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn or_pattern_multiple_binding() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn indent_level() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn should_not_be_applicable_if_extracting_arm_is_not_an_identity_expr() {
+         cov_mark::check_count!(extracting_arm_is_not_an_identity_expr, 2);
+ }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             convert_match_to_let_else,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn should_not_be_applicable_if_extracting_arm_has_guard() {
+         cov_mark::check!(extracting_arm_has_guard);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn basic_pattern() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn keeps_modifiers() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn nested_pattern() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn works_with_any_diverging_block() {
+         check_assist(
+ }
+     "#,
+         );
+-
+         check_assist(
+             convert_match_to_let_else,
+             r#"
+ }
+     "#,
+         );
+-
+         check_assist(
+             convert_match_to_let_else,
+             r#"
+     "#,
+         );
+     }
+-
+     #[test]
+     fn struct_pattern() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn renames_whole_binding() {
+         check_assist(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn complex_pattern() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn diverging_block() {
+         check_assist(

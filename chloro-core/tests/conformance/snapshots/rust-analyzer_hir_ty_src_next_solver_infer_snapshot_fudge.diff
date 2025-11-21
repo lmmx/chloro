@@ -1,0 +1,197 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10383 bytes
+Chloro size:   10491 bytes
+Rustfmt size:  10823 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     unify::{self as ut, UnifyKey},
+ };
+ use rustc_type_ir::{
+-    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
+-    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
++    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
++    TypeSuperFoldable, TypeVisitableExt, inherent::IntoKind,
+ };
+ 
+ use crate::next_solver::{
++    Const, ConstKind, DbInterner, Region, Ty, TyKind,
+     infer::{
+-        iter_idx_range,
++        InferCtxt, UnificationTable, iter_idx_range,
+         snapshot::VariableLengths,
+         type_variable::TypeVariableOrigin,
+         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
+-        InferCtxt, UnificationTable,
+     },
+-    Const, ConstKind, DbInterner, Region, Ty, TyKind,
+ };
+ 
+ fn vars_since_snapshot<'db, T>(
+ ) -> Range<T>
+ where
+     T: UnifyKey,
+-    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>,
+-{
++    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>, {
+     T::from_index(snapshot_var_len as u32)..T::from_index(table.len() as u32)
+ }
+ 
+ ) -> (Range<ConstVid>, Vec<ConstVariableOrigin>) {
+     let range = vars_since_snapshot(table, snapshot_var_len);
+     let range = range.start.vid..range.end.vid;
+-
+     (
+         range.clone(),
+         iter_idx_range(range)
+             .map(|index| match table.probe_value(index) {
+                 ConstVariableValue::Known { value: _ } => ConstVariableOrigin {},
+-                ConstVariableValue::Unknown {
+-                    origin,
+-                    universe: _,
+-                } => origin,
++                ConstVariableValue::Unknown { origin, universe: _ } => origin,
+             })
+             .collect(),
+     )
+     /// the actual types (`?T`, `Option<?T>`) -- and remember that
+     /// after the snapshot is popped, the variable `?T` is no longer
+     /// unified.
+-    pub fn fudge_inference_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
++    pub fn fudge_inference_if_ok<T, E, F>(
++        &self,
++        f: F,
++    ) -> Result<T, E>
+     where
+         F: FnOnce() -> Result<T, E>,
+-        T: TypeFoldable<DbInterner<'db>>,
+-    {
++        T: TypeFoldable<DbInterner<'db>>, {
+         let variable_lengths = self.variable_lengths();
+         let (snapshot_vars, value) = self.probe(|_| {
+             let value = f()?;
+             let snapshot_vars = SnapshotVarData::new(self, variable_lengths);
+             Ok((snapshot_vars, self.resolve_vars_if_possible(value)))
+         })?;
+-
+         // At this point, we need to replace any of the now-popped
+         // type/region variables that appear in `value` with a fresh
+         // variable of the appropriate kind. We can't do this during
+         if snapshot_vars.is_empty() {
+             value
+         } else {
+-            value.fold_with(&mut InferenceFudger {
+-                infcx: self,
+-                snapshot_vars,
+-            })
++            value.fold_with(&mut InferenceFudger { infcx: self, snapshot_vars })
+         }
+     }
+ }
+ }
+ 
+ impl SnapshotVarData {
+-    fn new(infcx: &InferCtxt<'_>, vars_pre_snapshot: VariableLengths) -> SnapshotVarData {
++    fn new(
++        infcx: &InferCtxt<'_>,
++        vars_pre_snapshot: VariableLengths,
++    ) -> SnapshotVarData {
+         let mut inner = infcx.inner.borrow_mut();
+         let region_vars = inner
+             .unwrap_region_constraints()
+             .vars_since_snapshot(vars_pre_snapshot.region_constraints_len);
+-        let type_vars = inner
+-            .type_variables()
+-            .vars_since_snapshot(vars_pre_snapshot.type_var_len);
+-        let int_vars = vars_since_snapshot(
+-            &inner.int_unification_table(),
+-            vars_pre_snapshot.int_var_len,
+-        );
+-        let float_vars = vars_since_snapshot(
+-            &inner.float_unification_table(),
+-            vars_pre_snapshot.float_var_len,
+-        );
+-
++        let type_vars = inner.type_variables().vars_since_snapshot(vars_pre_snapshot.type_var_len);
++        let int_vars =
++            vars_since_snapshot(&inner.int_unification_table(), vars_pre_snapshot.int_var_len);
++        let float_vars =
++            vars_since_snapshot(&inner.float_unification_table(), vars_pre_snapshot.float_var_len);
+         let const_vars = const_vars_since_snapshot(
+             &mut inner.const_unification_table(),
+             vars_pre_snapshot.const_var_len,
+         );
+-        SnapshotVarData {
+-            region_vars,
+-            type_vars,
+-            int_vars,
+-            float_vars,
+-            const_vars,
+-        }
++        SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars }
+     }
+ 
+     fn is_empty(&self) -> bool {
+-        let SnapshotVarData {
+-            region_vars,
+-            type_vars,
+-            int_vars,
+-            float_vars,
+-            const_vars,
+-        } = self;
++        let SnapshotVarData { region_vars, type_vars, int_vars, float_vars, const_vars } = self;
+         region_vars.is_empty()
+             && type_vars.0.is_empty()
+             && int_vars.is_empty()
+         self.infcx.interner
+     }
+ 
+-    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
++    fn fold_ty(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> Ty<'db> {
+         if let TyKind::Infer(infer_ty) = ty.kind() {
+             match infer_ty {
+                 rustc_type_ir::TyVar(vid) => {
+                         // variables to their binding anyhow, we know
+                         // that it is unbound, so we can just return
+                         // it.
+-                        debug_assert!(self
+-                            .infcx
+-                            .inner
+-                            .borrow_mut()
+-                            .type_variables()
+-                            .probe(vid)
+-                            .is_unknown());
++                        debug_assert!(
++                            self.infcx.inner.borrow_mut().type_variables().probe(vid).is_unknown()
++                        );
+                         ty
+                     }
+                 }
+         }
+     }
+ 
+-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
++    fn fold_region(
++        &mut self,
++        r: Region<'db>,
++    ) -> Region<'db> {
+         if let RegionKind::ReVar(vid) = r.kind() {
+             if self.snapshot_vars.region_vars.contains(&vid) {
+                 self.infcx.next_region_var()
+         }
+     }
+ 
+-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
++    fn fold_const(
++        &mut self,
++        ct: Const<'db>,
++    ) -> Const<'db> {
+         if let ConstKind::Infer(infer_ct) = ct.kind() {
+             match infer_ct {
+                 rustc_type_ir::InferConst::Var(vid) => {

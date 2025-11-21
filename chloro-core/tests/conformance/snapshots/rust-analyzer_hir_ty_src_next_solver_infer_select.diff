@@ -1,0 +1,176 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16020 bytes
+Chloro size:   16080 bytes
+Rustfmt size:  16174 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-#![expect(dead_code, reason = "this is used by rustc")]
+-
+ use std::ops::ControlFlow;
+ 
+ use hir_def::{ImplId, TraitId};
+ use macros::{TypeFoldable, TypeVisitable};
+ use rustc_type_ir::{
+-    solve::{inspect::ProbeKind, BuiltinImplSource, CandidateSource, Certainty},
+     Interner,
++    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind},
+ };
+ 
+ use crate::{
+     db::InternedOpaqueTyId,
+     next_solver::{
++        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
+         infer::{
++            InferCtxt,
+             select::EvaluationResult::*,
+             traits::{Obligation, ObligationCause, PredicateObligation, TraitObligation},
+-            InferCtxt,
+         },
+         inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
+-        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
+     },
+ };
+ 
++#![expect(dead_code, reason = "this is used by rustc")]
+ #[derive(Clone, Debug, PartialEq, Eq)]
+ pub enum SelectionError<'db> {
+     /// The trait is not implemented.
+ pub(crate) enum ImplSource<'db, N> {
+     /// ImplSource identifying a particular impl.
+     UserDefined(ImplSourceUserDefinedData<'db, N>),
+-
+     /// Successful resolution to an obligation provided by the caller
+     /// for some type parameter. The `Vec<N>` represents the
+     /// obligations incurred from normalizing the where-clause (if
+     /// any).
+     Param(Vec<N>),
+-
+     /// Successful resolution for a builtin impl.
+     Builtin(BuiltinImplSource, Vec<N>),
+ }
+         }
+     }
+ 
+-    pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
++    pub(crate) fn map<M, F>(
++        self,
++        f: F,
++    ) -> ImplSource<'db, M>
+     where
+-        F: FnMut(N) -> M,
+-    {
++        F: FnMut(N) -> M, {
+         match self {
+             ImplSource::UserDefined(i) => ImplSource::UserDefined(ImplSourceUserDefinedData {
+                 impl_def_id: i.impl_def_id,
+     }
+ }
+ 
+-struct Select {}
++struct Select {
++}
+ 
+ impl<'db> ProofTreeVisitor<'db> for Select {
+     type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
+ 
+-    fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
++    fn visit_goal(
++        &mut self,
++        goal: &InspectGoal<'_, 'db>,
++    ) -> Self::Result {
+         let mut candidates = goal.candidates();
+         candidates.retain(|cand| cand.result().is_ok());
+-
+         // No candidates -- not implemented.
+         if candidates.is_empty() {
+             return ControlFlow::Break(Err(SelectionError::Unimplemented));
+         }
+-
+         // One candidate, no need to winnow.
+         if candidates.len() == 1 {
+             return ControlFlow::Break(Ok(to_selection(candidates.into_iter().next().unwrap())));
+         }
+-
+         // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
+         // codegen, and only on the good path.
+         if matches!(goal.result().unwrap(), Certainty::Maybe { .. }) {
+             return ControlFlow::Break(Ok(None));
+         }
+-
+         // We need to winnow. See comments on `candidate_should_be_dropped_in_favor_of`.
+         let mut i = 0;
+         while i < candidates.len() {
+                 }
+             }
+         }
+-
+         ControlFlow::Break(Ok(to_selection(candidates.into_iter().next().unwrap())))
+     }
+ }
+     if matches!(other.result().unwrap(), Certainty::Maybe { .. }) {
+         return false;
+     }
+-
+-    let ProbeKind::TraitCandidate {
+-        source: victim_source,
+-        result: _,
+-    } = victim.kind()
+-    else {
++    let ProbeKind::TraitCandidate { source: victim_source, result: _ } = victim.kind() else {
+         return false;
+     };
+-    let ProbeKind::TraitCandidate {
+-        source: other_source,
+-        result: _,
+-    } = other.kind()
+-    else {
++    let ProbeKind::TraitCandidate { source: other_source, result: _ } = other.kind() else {
+         return false;
+     };
+-
+     match (victim_source, other_source) {
+         (_, CandidateSource::CoherenceUnknowable) | (CandidateSource::CoherenceUnknowable, _) => {
+             panic!("should not have assembled a CoherenceUnknowable candidate")
+         ) => true,
+ 
+         // Prefer specializing candidates over specialized candidates.
+-        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => victim
+-            .goal()
+-            .infcx()
+-            .interner
+-            .impl_specializes(other_def_id, victim_def_id),
++        (CandidateSource::Impl(victim_def_id), CandidateSource::Impl(other_def_id)) => {
++            victim.goal().infcx().interner.impl_specializes(other_def_id, victim_def_id)
++        }
+ 
+         _ => false,
+     }
+     if let Certainty::Maybe { .. } = cand.shallow_certainty() {
+         return None;
+     }
+-
+     let nested = match cand.result().expect("expected positive result") {
+         Certainty::Yes => Vec::new(),
+         Certainty::Maybe { .. } => cand
+             })
+             .collect(),
+     };
+-
+     Some(match cand.kind() {
+         ProbeKind::TraitCandidate { source, result: _ } => match source {
+             CandidateSource::Impl(impl_def_id) => {
+         | ProbeKind::Root { result: _ }
+         | ProbeKind::ShadowedEnvProbing
+         | ProbeKind::RigidAlias { result: _ } => {
+-            panic!(
+-                "didn't expect to assemble trait candidate from {:#?}",
+-                cand.kind()
+-            )
++            panic!("didn't expect to assemble trait candidate from {:#?}", cand.kind())
+         }
+     })
+ }

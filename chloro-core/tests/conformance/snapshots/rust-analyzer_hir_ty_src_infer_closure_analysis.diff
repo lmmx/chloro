@@ -1,0 +1,369 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 52289 bytes
+Chloro size:   52971 bytes
+Rustfmt size:  52289 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     traits::FnTrait,
+ };
+ 
+-// The below functions handle capture and closure kind (Fn, FnMut, ..)
+-
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ pub(crate) struct HirPlace<'db> {
+     pub(crate) local: BindingId,
+ }
+ 
+ impl<'db> HirPlace<'db> {
+-    fn ty(&self, ctx: &mut InferenceContext<'_, 'db>) -> Ty<'db> {
++    fn ty(
++        &self,
++        ctx: &mut InferenceContext<'_, 'db>,
++    ) -> Ty<'db> {
+         let mut ty = ctx.table.resolve_completely(ctx.result[self.local]);
+         for p in &self.projections {
+             ty = p.projected_ty(
+         self.place.projections.iter().any(|it| !matches!(it, ProjectionElem::Deref))
+     }
+ 
+-    pub fn ty(&self, db: &'db dyn HirDatabase, subst: GenericArgs<'db>) -> Ty<'db> {
++    pub fn ty(
++        &self,
++        db: &'db dyn HirDatabase,
++        subst: GenericArgs<'db>,
++    ) -> Ty<'db> {
+         let interner = DbInterner::new_with(db, None, None);
+         self.ty.instantiate(interner, subst.split_closure_args_untupled().parent_args)
+     }
+     }
+ 
+     /// Converts the place to a name that can be inserted into source code.
+-    pub fn place_to_name(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
++    pub fn place_to_name(
++        &self,
++        owner: DefWithBodyId,
++        db: &dyn HirDatabase,
++    ) -> String {
+         let body = db.body(owner);
+         let mut result = body[self.place.local].name.as_str().to_owned();
+         for proj in &self.place.projections {
+         result
+     }
+ 
+-    pub fn display_place_source_code(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
++    pub fn display_place_source_code(
++        &self,
++        owner: DefWithBodyId,
++        db: &dyn HirDatabase,
++    ) -> String {
+         let body = db.body(owner);
+         let krate = owner.krate(db);
+         let edition = krate.data(db).edition;
+         result
+     }
+ 
+-    pub fn display_place(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
++    pub fn display_place(
++        &self,
++        owner: DefWithBodyId,
++        db: &dyn HirDatabase,
++    ) -> String {
+         let body = db.body(owner);
+         let krate = owner.krate(db);
+         let edition = krate.data(db).edition;
+ }
+ 
+ impl<'db> CapturedItemWithoutTy<'db> {
+-    fn with_ty(self, ctx: &mut InferenceContext<'_, 'db>) -> CapturedItem<'db> {
++    fn with_ty(
++        self,
++        ctx: &mut InferenceContext<'_, 'db>,
++    ) -> CapturedItem<'db> {
+         let ty = self.place.ty(ctx);
+         let ty = match &self.kind {
+             CaptureKind::ByValue => ty,
+ }
+ 
+ impl<'db> InferenceContext<'_, 'db> {
+-    fn place_of_expr(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
++    fn place_of_expr(
++        &mut self,
++        tgt_expr: ExprId,
++    ) -> Option<HirPlace<'db>> {
+         let r = self.place_of_expr_without_adjust(tgt_expr)?;
+         let adjustments =
+             self.result.expr_adjustments.get(&tgt_expr).map(|it| &**it).unwrap_or_default();
+     }
+ 
+     /// Pushes the span into `current_capture_span_stack`, *without clearing it first*.
+-    fn path_place(&mut self, path: &Path, id: ExprOrPatId) -> Option<HirPlace<'db>> {
++    fn path_place(
++        &mut self,
++        path: &Path,
++        id: ExprOrPatId,
++    ) -> Option<HirPlace<'db>> {
+         if path.type_anchor().is_some() {
+             return None;
+         }
+     }
+ 
+     /// Changes `current_capture_span_stack` to contain the stack of spans for this expr.
+-    fn place_of_expr_without_adjust(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
++    fn place_of_expr_without_adjust(
++        &mut self,
++        tgt_expr: ExprId,
++    ) -> Option<HirPlace<'db>> {
+         self.current_capture_span_stack.clear();
+         match &self.body[tgt_expr] {
+             Expr::Path(p) => {
+         None
+     }
+ 
+-    fn push_capture(&mut self, place: HirPlace<'db>, kind: CaptureKind) {
++    fn push_capture(
++        &mut self,
++        place: HirPlace<'db>,
++        kind: CaptureKind,
++    ) {
+         self.current_captures.push(CapturedItemWithoutTy {
+             place,
+             kind,
+         }
+     }
+ 
+-    fn ref_expr(&mut self, expr: ExprId, place: Option<HirPlace<'db>>) {
++    fn ref_expr(
++        &mut self,
++        expr: ExprId,
++        place: Option<HirPlace<'db>>,
++    ) {
+         if let Some(place) = place {
+             self.add_capture(place, CaptureKind::ByRef(BorrowKind::Shared));
+         }
+         self.walk_expr(expr);
+     }
+ 
+-    fn add_capture(&mut self, place: HirPlace<'db>, kind: CaptureKind) {
++    fn add_capture(
++        &mut self,
++        place: HirPlace<'db>,
++        kind: CaptureKind,
++    ) {
+         if self.is_upvar(&place) {
+             self.push_capture(place, kind);
+         }
+     }
+ 
+-    fn mutate_path_pat(&mut self, path: &Path, id: PatId) {
++    fn mutate_path_pat(
++        &mut self,
++        path: &Path,
++        id: PatId,
++    ) {
+         if let Some(place) = self.path_place(path, id.into()) {
+             self.add_capture(
+                 place,
+         }
+     }
+ 
+-    fn mutate_expr(&mut self, expr: ExprId, place: Option<HirPlace<'db>>) {
++    fn mutate_expr(
++        &mut self,
++        expr: ExprId,
++        place: Option<HirPlace<'db>>,
++    ) {
+         if let Some(place) = place {
+             self.add_capture(
+                 place,
+         self.walk_expr(expr);
+     }
+ 
+-    fn consume_expr(&mut self, expr: ExprId) {
++    fn consume_expr(
++        &mut self,
++        expr: ExprId,
++    ) {
+         if let Some(place) = self.place_of_expr(expr) {
+             self.consume_place(place);
+         }
+         self.walk_expr(expr);
+     }
+ 
+-    fn consume_place(&mut self, place: HirPlace<'db>) {
++    fn consume_place(
++        &mut self,
++        place: HirPlace<'db>,
++    ) {
+         if self.is_upvar(&place) {
+             let ty = place.ty(self);
+             let kind = if self.is_ty_copy(ty) {
+         }
+     }
+ 
+-    fn walk_expr_with_adjust(&mut self, tgt_expr: ExprId, adjustment: &[Adjustment<'db>]) {
++    fn walk_expr_with_adjust(
++        &mut self,
++        tgt_expr: ExprId,
++        adjustment: &[Adjustment<'db>],
++    ) {
+         if let Some((last, rest)) = adjustment.split_last() {
+             match &last.kind {
+                 Adjust::NeverToAny | Adjust::Deref(None) | Adjust::Pointer(_) => {
+         self.walk_expr_with_adjust(tgt_expr, rest);
+     }
+ 
+-    fn walk_expr(&mut self, tgt_expr: ExprId) {
++    fn walk_expr(
++        &mut self,
++        tgt_expr: ExprId,
++    ) {
+         if let Some(it) = self.result.expr_adjustments.get_mut(&tgt_expr) {
+             // FIXME: this take is completely unneeded, and just is here to make borrow checker
+             // happy. Remove it if you can.
+         }
+     }
+ 
+-    fn walk_expr_without_adjust(&mut self, tgt_expr: ExprId) {
++    fn walk_expr_without_adjust(
++        &mut self,
++        tgt_expr: ExprId,
++    ) {
+         match &self.body[tgt_expr] {
+             Expr::OffsetOf(_) => (),
+             Expr::InlineAsm(e) => e.operands.iter().for_each(|(_, op)| match op {
+         }
+     }
+ 
+-    fn walk_pat(&mut self, result: &mut Option<CaptureKind>, pat: PatId) {
++    fn walk_pat(
++        &mut self,
++        result: &mut Option<CaptureKind>,
++        pat: PatId,
++    ) {
+         let mut update_result = |ck: CaptureKind| match result {
+             Some(r) => {
+                 *r = cmp::max(*r, ck);
+             }
+             None => *result = Some(ck),
+         };
+-
+         self.walk_pat_inner(
+             pat,
+             &mut update_result,
+         self.body.walk_pats_shallow(p, |p| self.walk_pat_inner(p, update_result, for_mut));
+     }
+ 
+-    fn expr_ty(&self, expr: ExprId) -> Ty<'db> {
++    fn expr_ty(
++        &self,
++        expr: ExprId,
++    ) -> Ty<'db> {
+         self.result[expr]
+     }
+ 
+-    fn expr_ty_after_adjustments(&self, e: ExprId) -> Ty<'db> {
++    fn expr_ty_after_adjustments(
++        &self,
++        e: ExprId,
++    ) -> Ty<'db> {
+         let mut ty = None;
+         if let Some(it) = self.result.expr_adjustments.get(&e)
+             && let Some(it) = it.last()
+         ty.unwrap_or_else(|| self.expr_ty(e))
+     }
+ 
+-    fn is_upvar(&self, place: &HirPlace<'db>) -> bool {
++    fn is_upvar(
++        &self,
++        place: &HirPlace<'db>,
++    ) -> bool {
+         if let Some(c) = self.current_closure {
+             let InternedClosure(_, root) = self.db.lookup_intern_closure(c);
+             return self.body.is_binding_upvar(place.local, root);
+         false
+     }
+ 
+-    fn is_ty_copy(&mut self, ty: Ty<'db>) -> bool {
++    fn is_ty_copy(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> bool {
+         if let TyKind::Closure(id, _) = ty.kind() {
+             // FIXME: We handle closure as a special case, since chalk consider every closure as copy. We
+             // should probably let chalk know which closures are copy, but I don't know how doing it
+         self.table.type_is_copy_modulo_regions(ty)
+     }
+ 
+-    fn select_from_expr(&mut self, expr: ExprId) {
++    fn select_from_expr(
++        &mut self,
++        expr: ExprId,
++    ) {
+         self.walk_expr(expr);
+     }
+ 
+         }
+     }
+ 
+-    fn consume_with_pat(&mut self, mut place: HirPlace<'db>, tgt_pat: PatId) {
++    fn consume_with_pat(
++        &mut self,
++        mut place: HirPlace<'db>,
++        tgt_pat: PatId,
++    ) {
+         let adjustments_count =
+             self.result.pat_adjustments.get(&tgt_pat).map(|it| it.len()).unwrap_or_default();
+         place.projections.extend((0..adjustments_count).map(|_| ProjectionElem::Deref));
+             .truncate(self.current_capture_span_stack.len() - adjustments_count);
+     }
+ 
+-    fn consume_exprs(&mut self, exprs: impl Iterator<Item = ExprId>) {
++    fn consume_exprs(
++        &mut self,
++        exprs: impl Iterator<Item = ExprId>,
++    ) {
+         for expr in exprs {
+             self.consume_expr(expr);
+         }
+         r
+     }
+ 
+-    fn analyze_closure(&mut self, closure: InternedClosureId) -> FnTrait {
++    fn analyze_closure(
++        &mut self,
++        closure: InternedClosureId,
++    ) -> FnTrait {
+         let InternedClosure(_, root) = self.db.lookup_intern_closure(closure);
+         self.current_closure = Some(closure);
+         let Expr::Closure { body, capture_by, .. } = &self.body[root] else {
+     ///
+     /// These dependencies are collected in the main inference. We do a topological sort in this function. It
+     /// will consume the `deferred_closures` field and return its content in a sorted vector.
+-    fn sort_closures(
+-        &mut self,
+-    ) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
++    fn sort_closures(&mut self) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
+         let mut deferred_closures = mem::take(&mut self.deferred_closures);
+         let mut dependents_count: FxHashMap<InternedClosureId, usize> =
+             deferred_closures.keys().map(|it| (*it, 0)).collect();
+         result
+     }
+ 
+-    pub(crate) fn add_current_closure_dependency(&mut self, dep: InternedClosureId) {
++    pub(crate) fn add_current_closure_dependency(
++        &mut self,
++        dep: InternedClosureId,
++    ) {
+         if let Some(c) = self.current_closure
+             && !dep_creates_cycle(&self.closure_dependencies, &mut FxHashSet::default(), c, dep)
+         {
+             self.closure_dependencies.entry(c).or_default().push(dep);
+         }
+-
+         fn dep_creates_cycle(
+             closure_dependencies: &FxHashMap<InternedClosureId, Vec<InternedClosureId>>,
+             visited: &mut FxHashSet<InternedClosureId>,

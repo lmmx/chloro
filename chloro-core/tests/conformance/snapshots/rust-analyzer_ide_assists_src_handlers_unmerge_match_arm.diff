@@ -1,0 +1,117 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6719 bytes
+Chloro size:   6204 bytes
+Rustfmt size:  6740 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use syntax::{
+-    ast::{self, edit::IndentLevel, syntax_factory::SyntaxFactory, AstNode},
+-    syntax_editor::{Element, Position},
+     Direction, SyntaxKind, T,
++    ast::{self, AstNode, edit::IndentLevel, syntax_factory::SyntaxFactory},
++    syntax_editor::{Element, Position},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: unmerge_match_arm
+-//
+-// Splits the current match with a `|` pattern into two arms with identical bodies.
+-//
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move(..) $0| Action::Stop => foo(),
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move(..) => foo(),
+-//         Action::Stop => foo(),
+-//     }
+-// }
+-// ```
+-pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn unmerge_match_arm(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let pipe_token = ctx.find_token_syntax_at_offset(T![|])?;
+     let or_pat = ast::OrPat::cast(pipe_token.parent()?)?;
+     if or_pat.leading_pipe().is_some_and(|it| it == pipe_token) {
+     }
+     let match_arm = ast::MatchArm::cast(or_pat.syntax().parent()?)?;
+     let match_arm_body = match_arm.expr()?;
+-
+     // We don't need to check for leading pipe because it is directly under `MatchArm`
+     // without `OrPat`.
+-
+     let new_parent = match_arm.syntax().parent()?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("unmerge_match_arm"),
+         "Unmerge match arm",
+             let new_pat = if pats_after.len() == 1 {
+                 pats_after[0].clone()
+             } else {
+-                make.or_pat(pats_after, or_pat.leading_pipe().is_some())
+-                    .into()
++                make.or_pat(pats_after, or_pat.leading_pipe().is_some()).into()
+             };
+             let new_match_arm = make.match_arm(new_pat, match_arm.guard(), match_arm_body);
+             let mut pipe_index = pipe_token.index();
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn unmerge_match_arm_single_pipe() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unmerge_match_arm_guard() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unmerge_match_arm_leading_pipe() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unmerge_match_arm_multiple_pipes() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unmerge_match_arm_inserts_comma_if_required() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unmerge_match_arm_inserts_comma_if_had_after() {
+         check_assist(

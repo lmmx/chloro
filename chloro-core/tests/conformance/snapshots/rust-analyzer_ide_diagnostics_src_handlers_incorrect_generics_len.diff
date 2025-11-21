@@ -1,0 +1,105 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5407 bytes
+Chloro size:   5254 bytes
+Rustfmt size:  5407 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ use hir::IncorrectGenericsLenKind;
+ 
+-// Diagnostic: incorrect-generics-len
+-//
+-// This diagnostic is triggered if the number of generic arguments does not match their declaration.
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
++
+ pub(crate) fn incorrect_generics_len(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::IncorrectGenericsLen,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn partially_specified_generics() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn enum_variant() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn lifetimes() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn no_error_for_elided_lifetimes() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn errs_for_elided_lifetimes_if_lifetimes_are_explicitly_provided() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn types_and_consts() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn respects_defaults() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn constant() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn assoc_type() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn regression_19669() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn generic_assoc_type_infer_lifetime_in_expr_position() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn enum_type_alias_default_param() {
+         check_diagnostics(

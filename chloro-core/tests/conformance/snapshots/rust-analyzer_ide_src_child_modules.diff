@@ -1,0 +1,83 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2866 bytes
+Chloro size:   2665 bytes
+Rustfmt size:  2945 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::NavigationTarget;
+ 
+-// Feature: Child Modules
+-//
+-// Navigates to the child modules of the current module.
+-//
+-// | Editor  | Action Name |
+-// |---------|-------------|
+-// | VS Code | **rust-analyzer: Locate child modules** |
+-
+ /// This returns `Vec` because a module may be included from several places.
+-pub(crate) fn child_modules(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
++pub(crate) fn child_modules(
++    db: &RootDatabase,
++    position: FilePosition,
++) -> Vec<NavigationTarget> {
+     let sema = Semantics::new(db);
+     let source_file = sema.parse_guess_edition(position.file_id);
+     // First go to the parent module which contains the cursor
+     let module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
+-
+     match module {
+         Some(module) => {
+             // Return all child modules inside the ItemList of the parent module
+ #[cfg(test)]
+ mod tests {
+     use ide_db::FileRange;
+-
+     use crate::fixture;
+-
+     fn check_child_module(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         let (analysis, position, expected) = fixture::annotations(ra_fixture);
+         let navs = analysis.child_modules(position).unwrap();
+         let navs = navs
+             .iter()
+-            .map(|nav| FileRange {
+-                file_id: nav.file_id,
+-                range: nav.focus_or_full_range(),
+-            })
++            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+             .collect::<Vec<_>>();
+-        assert_eq!(
+-            expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(),
+-            navs
+-        );
++        assert_eq!(expected.into_iter().map(|(fr, _)| fr).collect::<Vec<_>>(), navs);
+     }
+-
+     #[test]
+     fn test_resolve_child_module() {
+         check_child_module(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_resolve_child_module_on_module_decl() {
+         check_child_module(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_resolve_child_module_for_inline() {
+         check_child_module(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_resolve_multi_child_module() {
+         check_child_module(

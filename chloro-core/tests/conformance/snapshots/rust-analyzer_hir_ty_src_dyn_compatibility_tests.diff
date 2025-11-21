@@ -1,0 +1,102 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8624 bytes
+Chloro size:   8620 bytes
+Rustfmt size:  8816 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::ops::ControlFlow;
+ 
++use DynCompatibilityViolationKind::*;
+ use hir_def::db::DefDatabase;
+ use rustc_hash::{FxHashMap, FxHashSet};
+ use syntax::ToSmolStr;
+ use test_fixture::WithFixture;
+ 
+ use crate::{dyn_compatibility::dyn_compatibility_with_callback, test_db::TestDB};
+-
+ use super::{
+     DynCompatibilityViolation,
+     MethodViolationCode::{self, *},
+ };
+ 
+-use DynCompatibilityViolationKind::*;
+-
+ #[allow(clippy::upper_case_acronyms)]
+ #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ enum DynCompatibilityViolationKind {
+     #[rust_analyzer::rust_fixture] ra_fixture: &str,
+     expected: impl IntoIterator<Item = (&'a str, Vec<DynCompatibilityViolationKind>)>,
+ ) {
+-    let mut expected: FxHashMap<_, _> = expected
+-        .into_iter()
+-        .map(|(id, osvs)| (id, FxHashSet::from_iter(osvs)))
+-        .collect();
++    let mut expected: FxHashMap<_, _> =
++        expected.into_iter().map(|(id, osvs)| (id, FxHashSet::from_iter(osvs))).collect();
+     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
+     for (trait_id, name) in file_ids.into_iter().flat_map(|file_id| {
+         let module_id = db.module_for_file(file_id.file_id(&db));
+                 ControlFlow::Continue(())
+             });
+         });
+-        assert_eq!(
+-            osvs, expected,
+-            "dyn-compatibility violations for `{name}` do not match;"
+-        );
++        assert_eq!(osvs, expected, "dyn-compatibility violations for `{name}` do not match;");
+     }
+-
+     let remains: Vec<_> = expected.keys().collect();
+-    assert!(
+-        remains.is_empty(),
+-        "Following traits do not exist in the test fixture; {remains:?}"
+-    );
++    assert!(remains.is_empty(), "Following traits do not exist in the test fixture; {remains:?}");
+ }
+ 
+ #[test]
+     fn bar<'a>(&self, t: &'a ());
+ }
+ "#,
+-        [
+-            ("Bar", vec![Method(Generic)]),
+-            ("Quux", vec![]),
+-            ("Qax", vec![]),
+-        ],
++        [("Bar", vec![Method(Generic)]), ("Quux", vec![]), ("Qax", vec![])],
+     );
+ }
+ 
+ "#,
+         [("Bar", vec![SizedSelf])],
+     );
+-
+     check_dyn_compatibility(
+         r#"
+ //- minicore: dispatch_from_dyn
+ 
+ trait SuperTrait<T>: GatTrait {}
+ "#,
+-        [
+-            ("GatTrait", vec![GAT]),
+-            ("SuperTrait", vec![HasNonCompatibleSuperTrait]),
+-        ],
++        [("GatTrait", vec![GAT]), ("SuperTrait", vec![HasNonCompatibleSuperTrait])],
+     );
+ }
+ 
+ 
+ trait Bar: Foo {}
+ "#,
+-        [
+-            ("Foo", vec![Method(Generic)]),
+-            ("Bar", vec![HasNonCompatibleSuperTrait]),
+-        ],
++        [("Foo", vec![Method(Generic)]), ("Bar", vec![HasNonCompatibleSuperTrait])],
+     );
+ }
+ 

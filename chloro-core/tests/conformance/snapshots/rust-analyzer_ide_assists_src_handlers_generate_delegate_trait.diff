@@ -1,0 +1,653 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 46739 bytes
+Chloro size:   45233 bytes
+Rustfmt size:  47157 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::ops::Not;
+ 
++use either::Either;
++use hir::{HasVisibility, db::HirDatabase};
++use ide_db::{
++    FxHashMap, FxHashSet,
++    assists::{AssistId, GroupLabel},
++    path_transform::PathTransform,
++    syntax_helpers::suggest_name,
++};
++use itertools::Itertools;
++use syntax::{
++    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
++    ast::{
++        self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
++        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
++        WherePred,
++        edit::{self, AstNodeEdit},
++        make,
++    },
++    ted::{self, Position},
++};
++
+ use crate::{
+     assist_context::{AssistContext, Assists},
+     utils::convert_param_list_to_arg_list,
+ };
+-use either::Either;
+-use hir::{db::HirDatabase, HasVisibility};
+-use ide_db::{
+-    assists::{AssistId, GroupLabel},
+-    path_transform::PathTransform,
+-    syntax_helpers::suggest_name,
+-    FxHashMap, FxHashSet,
+-};
+-use itertools::Itertools;
+-use syntax::{
+-    ast::{
+-        self,
+-        edit::{self, AstNodeEdit},
+-        make, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
+-        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
+-        WherePred,
+-    },
+-    ted::{self, Position},
+-    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
+-};
+ 
+-// Assist: generate_delegate_trait
+-//
+-// Generate delegate trait implementation for `StructField`s.
+-//
+-// ```
+-// trait SomeTrait {
+-//     type T;
+-//     fn fn_(arg: u32) -> u32;
+-//     fn method_(&mut self) -> bool;
+-// }
+-// struct A;
+-// impl SomeTrait for A {
+-//     type T = u32;
+-//
+-//     fn fn_(arg: u32) -> u32 {
+-//         42
+-//     }
+-//
+-//     fn method_(&mut self) -> bool {
+-//         false
+-//     }
+-// }
+-// struct B {
+-//     a$0: A,
+-// }
+-// ```
+-// ->
+-// ```
+-// trait SomeTrait {
+-//     type T;
+-//     fn fn_(arg: u32) -> u32;
+-//     fn method_(&mut self) -> bool;
+-// }
+-// struct A;
+-// impl SomeTrait for A {
+-//     type T = u32;
+-//
+-//     fn fn_(arg: u32) -> u32 {
+-//         42
+-//     }
+-//
+-//     fn method_(&mut self) -> bool {
+-//         false
+-//     }
+-// }
+-// struct B {
+-//     a: A,
+-// }
+-//
+-// impl SomeTrait for B {
+-//     type T = <A as SomeTrait>::T;
+-//
+-//     fn fn_(arg: u32) -> u32 {
+-//         <A as SomeTrait>::fn_(arg)
+-//     }
+-//
+-//     fn method_(&mut self) -> bool {
+-//         <A as SomeTrait>::method_(&mut self.a)
+-//     }
+-// }
+-// ```
+-pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_delegate_trait(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     if !ctx.config.code_action_grouping {
+         return None;
+     }
+-
+     let strukt = Struct::new(ctx.find_node_at_offset::<ast::Struct>()?)?;
+-
+     let field: Field = match ctx.find_node_at_offset::<ast::RecordField>() {
+         Some(field) => Field::new(ctx, Either::Left(field))?,
+         None => {
+             Field::new(ctx, either::Right((field, field_list)))?
+         }
+     };
+-
+     strukt.delegate(field, acc, ctx);
+     Some(())
+ }
+         f: Either<ast::RecordField, (ast::TupleField, ast::TupleFieldList)>,
+     ) -> Option<Field> {
+         let db = ctx.sema.db;
+-
+         let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;
+         let edition = module.krate().edition(ctx.db());
+-
+         let (name, range, ty) = match f {
+             Either::Left(f) => {
+                 let name = f.name()?.to_string();
+                 (name, f.syntax().text_range(), f.ty()?)
+             }
+         };
+-
+         let hir_ty = ctx.sema.resolve_type(&ty)?;
+         let type_impls = hir::Impl::all_for_type(db, hir_ty.clone());
+         let mut impls = Vec::with_capacity(type_impls.len());
+-
+         if let Some(tp) = hir_ty.as_type_param(db) {
+             for tb in tp.trait_bounds(db) {
+                 impls.push(Delegee::Bound(tb));
+             }
+         };
+-
+         for imp in type_impls {
+             if let Some(tr) = imp.trait_(db).filter(|tr| tr.is_visible_from(db, module)) {
+                 impls.push(Delegee::Impls(tr, imp))
+             }
+         }
+-
+-        Some(Field {
+-            name,
+-            ty,
+-            range,
+-            impls,
+-            edition,
+-        })
++        Some(Field { name, ty, range, impls, edition })
+     }
+ }
+ 
+ }
+ 
+ impl Delegee {
+-    fn signature(&self, db: &dyn HirDatabase, edition: Edition) -> String {
++    fn signature(
++        &self,
++        db: &dyn HirDatabase,
++        edition: Edition,
++    ) -> String {
+         let mut s = String::new();
+-
+         let (Delegee::Bound(it) | Delegee::Impls(it, _)) = self;
+-
+         for m in it.module(db).path_to_root(db).iter().rev() {
+             if let Some(name) = m.name(db) {
+                 s.push_str(&format!("{}::", name.display_no_db(edition).to_smolstr()));
+             }
+         }
+-
+         s.push_str(&it.name(db).display_no_db(edition).to_smolstr());
+         s
+     }
+         Some(Struct { name, strukt: s })
+     }
+ 
+-    pub(crate) fn delegate(&self, field: Field, acc: &mut Assists, ctx: &AssistContext<'_>) {
++    pub(crate) fn delegate(
++        &self,
++        field: Field,
++        acc: &mut Assists,
++        ctx: &AssistContext<'_>,
++    ) {
+         let db = ctx.db();
+-
+         for (index, delegee) in field.impls.iter().enumerate() {
+             let trait_ = match delegee {
+                 Delegee::Bound(b) => b,
+             };
+ 
+             acc.add_group(
+-                &GroupLabel(format!(
+-                    "Generate delegate trait impls for field `{}`",
+-                    field.name
+-                )),
++                &GroupLabel(format!("Generate delegate trait impls for field `{}`", field.name)),
+                 AssistId(
+                     "generate_delegate_trait",
+                     ide_db::assists::AssistKind::Generate,
+                     Some(index),
+                 ),
+-                format!(
+-                    "Generate delegate trait impl `{}` for `{}`",
+-                    signature, field.name
+-                ),
++                format!("Generate delegate trait impl `{}` for `{}`", signature, field.name),
+                 field.range,
+                 |builder| {
+                     builder.insert(
+     let ast_strukt = &strukt.strukt;
+     let strukt_ty = make::ty_path(make::ext::ident_path(&strukt.name.to_string()));
+     let strukt_params = ast_strukt.generic_param_list();
+-
+     match delegee {
+         Delegee::Bound(delegee) => {
+             let bound_def = ctx.sema.source(delegee.to_owned())?.value;
+ 
+             // 2.3) Instantiate generics with `transform_impl`, this step also
+             // remove unused params.
+-            let trait_gen_args = old_impl
+-                .trait_()?
+-                .generic_arg_list()
+-                .and_then(|trait_args| {
+-                    let trait_args = &mut trait_args.clone_for_update();
+-                    if let Some(new_args) = transform_impl(
+-                        ctx,
+-                        ast_strukt,
+-                        &old_impl,
+-                        &transform_args,
+-                        trait_args.clone_subtree(),
+-                    ) {
+-                        *trait_args = new_args.clone_subtree();
+-                        Some(new_args)
+-                    } else {
+-                        None
+-                    }
+-                });
++            let trait_gen_args = old_impl.trait_()?.generic_arg_list().and_then(|trait_args| {
++                let trait_args = &mut trait_args.clone_for_update();
++                if let Some(new_args) = transform_impl(
++                    ctx,
++                    ast_strukt,
++                    &old_impl,
++                    &transform_args,
++                    trait_args.clone_subtree(),
++                ) {
++                    *trait_args = new_args.clone_subtree();
++                    Some(new_args)
++                } else {
++                    None
++                }
++            });
+ 
+             let type_gen_args = strukt_params.clone().map(|params| params.to_generic_args());
+             let path_type =
+     let source_scope = ctx.sema.scope(old_impl.self_ty()?.syntax())?;
+     let target_scope = ctx.sema.scope(strukt.syntax())?;
+     let hir_old_impl = ctx.sema.to_impl_def(old_impl)?;
+-
+     let transform = args.as_ref().map_or_else(
+         || PathTransform::generic_transformation(&target_scope, &source_scope),
+         |args| {
+             )
+         },
+     );
+-
+     N::cast(transform.apply(syntax.syntax()))
+ }
+ 
+     }
+ }
+ 
+-fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: ast::WhereClause) {
++fn remove_useless_where_clauses(
++    trait_ty: &ast::Type,
++    self_ty: &ast::Type,
++    wc: ast::WhereClause,
++) {
+     let live_generics = [trait_ty, self_ty]
+         .into_iter()
+         .flat_map(|ty| ty.generic_arg_list())
+         .flat_map(|gal| gal.generic_args())
+         .map(|x| x.to_string())
+         .collect::<FxHashSet<_>>();
+-
+     // Keep where-clauses that have generics after substitution, and remove the
+     // rest.
+     let has_live_generics = |pred: &WherePred| {
+             .any(|e| e.kind() == SyntaxKind::IDENT && live_generics.contains(&e.to_string()))
+             .not()
+     };
+-    wc.predicates()
+-        .filter(has_live_generics)
+-        .for_each(|pred| wc.remove_predicate(pred));
+-
++    wc.predicates().filter(has_live_generics).for_each(|pred| wc.remove_predicate(pred));
+     if wc.predicates().count() == 0 {
+         // Remove useless whitespaces
+         [syntax::Direction::Prev, syntax::Direction::Next]
+     }
+ }
+ 
+-// Generate generic args that should be apply to current impl.
+-//
+-// For example, say we have implementation `impl<A, B, C> Trait for B<A>`,
+-// and `b: B<T>` in struct `S<T>`. Then the `A` should be instantiated to `T`.
+-// While the last two generic args `B` and `C` doesn't change, it remains
+-// `<B, C>`. So we apply `<T, B, C>` as generic arguments to impl.
+ fn generate_args_for_impl(
+     old_impl_gpl: Option<GenericParamList>,
+     self_ty: &ast::Type,
+     // Create pairs of the args of `self_ty` and corresponding `field_ty` to
+     // form the substitution list
+     let mut arg_substs = FxHashMap::default();
+-
+     if let field_ty @ ast::Type::PathType(_) = field_ty {
+         let field_args = field_ty.generic_arg_list().map(|gal| gal.generic_args());
+         let self_ty_args = self_ty.generic_arg_list().map(|gal| gal.generic_args());
+         if let (Some(field_args), Some(self_ty_args)) = (field_args, self_ty_args) {
+-            self_ty_args
+-                .zip(field_args)
+-                .for_each(|(self_ty_arg, field_arg)| {
+-                    arg_substs
+-                        .entry(self_ty_arg.to_string())
+-                        .or_insert(field_arg);
+-                })
++            self_ty_args.zip(field_args).for_each(|(self_ty_arg, field_arg)| {
++                arg_substs.entry(self_ty_arg.to_string()).or_insert(field_arg);
++            })
+         }
+     }
+-
+     let args = old_impl_args
+         .map(|old_arg| {
+             arg_substs.get(&old_arg.to_string()).map_or_else(
+     args: &GenericArgList,
+ ) -> Option<N>
+ where
+-    N: ast::AstNode,
+-{
++    N: ast::AstNode, {
+     let hir_strukt = ctx.sema.to_struct_def(strukt)?;
+     let hir_adt = hir::Adt::from(hir_strukt);
+-
+     let item = item.clone_for_update();
+     let scope = ctx.sema.scope(item.syntax())?;
+-
+     let transform = PathTransform::adt_transformation(&scope, &scope, hir_adt, args.clone());
+     N::cast(transform.apply(item.syntax()))
+ }
+ 
+-fn has_self_type(trait_: hir::Trait, ctx: &AssistContext<'_>) -> Option<()> {
++fn has_self_type(
++    trait_: hir::Trait,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let trait_source = ctx.sema.source(trait_)?.value;
+     trait_source
+         .syntax()
+     }
+ }
+ 
+-fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option<AssocItem> {
++fn const_assoc_item(
++    item: syntax::ast::Const,
++    qual_path_ty: ast::Path,
++) -> Option<AssocItem> {
+     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
+-
+     // We want rhs of the const assignment to be a qualified path
+     // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
+     // The qualified will have the following generic syntax :
+         make::expr_path(qualified_path),
+     )
+     .clone_for_update();
+-
+     Some(AssocItem::Const(inner))
+ }
+ 
+ ) -> Option<AssocItem> {
+     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
+     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
+-
+     let call = match item.param_list() {
+         // Methods and funcs should be handled separately.
+         // We ask if the func has a `self` param.
+ 
+                 make::expr_call(make::expr_path(qualified_path), args)
+             }
+-            None => make::expr_call(
+-                make::expr_path(qualified_path),
+-                convert_param_list_to_arg_list(l),
+-            ),
++            None => {
++                make::expr_call(make::expr_path(qualified_path), convert_param_list_to_arg_list(l))
++            }
+         },
+         None => make::expr_call(
+             make::expr_path(qualified_path),
+         ),
+     }
+     .clone_for_update();
+-
+     let body = make::block_expr(vec![], Some(call.into())).clone_for_update();
+     let func = make::fn_(
+         item.attrs(),
+         item.gen_token().is_some(),
+     )
+     .clone_for_update();
+-
+     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
+ }
+ 
+-fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<AssocItem> {
++fn ty_assoc_item(
++    item: syntax::ast::TypeAlias,
++    qual_path_ty: Path,
++) -> Option<AssocItem> {
+     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
+     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
+     let ty = make::ty_path(qualified_path);
+     let ident = item.name()?.to_string();
+-
+     let alias = make::ty_alias(
+         item.attrs(),
+         ident.as_str(),
+         Some((ty, None)),
+     )
+     .indent(edit::IndentLevel(1));
+-
+     Some(AssocItem::TypeAlias(alias))
+ }
+ 
+-fn qualified_path(qual_path_ty: ast::Path, path_expr_seg: ast::Path) -> ast::Path {
++fn qualified_path(
++    qual_path_ty: ast::Path,
++    path_expr_seg: ast::Path,
++) -> ast::Path {
+     make::path_from_text(&format!("{qual_path_ty}::{path_expr_seg}"))
+ }
+ 
+ #[cfg(test)]
+ mod test {
+-
+     use super::*;
+     use crate::tests::{
+         check_assist, check_assist_not_applicable, check_assist_not_applicable_no_grouping,
+     };
+-
+     #[test]
+     fn test_tuple_struct_basic() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_self_ty() {
+         // trait with `Self` type cannot be delegated
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_struct_struct_basic() {
+         check_assist(
+ "#,
+         )
+     }
+-
+-    // Structs need to be by def populated with fields
+-    // However user can invoke this assist while still editing
+-    // We therefore assert its non-applicability
+     #[test]
+     fn test_yet_empty_struct() {
+         check_assist_not_applicable(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_yet_unspecified_field_type() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_unsafe_trait() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_unsafe_trait_with_unsafe_fn() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_struct_with_where_clause() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_fields_with_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generics_with_conflict_names() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_lifetime_with_conflict_names() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_multiple_generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_generics_multiplex() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_complex_without_where() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_complex_two() {
+         check_assist(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn test_complex_three() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn test_type_bound() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_type_bound_with_generics_1() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_type_bound_with_generics_2() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn test_docstring_example() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn import_from_other_mod() {
+         check_assist(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn test_fn_with_attrs() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_ty_alias_attrs() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn assoc_items_attributes_mutably_cloned() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn delegate_trait_skipped_when_no_grouping() {
+         check_assist_not_applicable_no_grouping(

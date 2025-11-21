@@ -1,0 +1,135 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5466 bytes
+Chloro size:   5342 bytes
+Rustfmt size:  5636 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::{EditionedFileId, FileRange, HasCrate, HasSource, Semantics};
+-use ide_db::{assists::Assist, source_change::SourceChange, text_edit::TextEdit, RootDatabase};
+-use syntax::{ast::HasVisibility, AstNode, TextRange, TextSize};
++use ide_db::{RootDatabase, assists::Assist, source_change::SourceChange, text_edit::TextEdit};
++use syntax::{AstNode, TextRange, TextSize, ast::HasVisibility};
+ 
+-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+ 
+-// Diagnostic: private-field
+-//
+-// This diagnostic is triggered if the accessed field is not visible from the current module.
+-pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
++pub(crate) fn private_field(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::PrivateField,
++) -> Diagnostic {
+     // FIXME: add quickfix
+     Diagnostic::new_with_syntax_node_ptr(
+         ctx,
+         format!(
+             "field `{}` of `{}` is private",
+             d.field.name(ctx.sema.db).display(ctx.sema.db, ctx.edition),
+-            d.field
+-                .parent_def(ctx.sema.db)
+-                .name(ctx.sema.db)
+-                .display(ctx.sema.db, ctx.edition)
++            d.field.parent_def(ctx.sema.db).name(ctx.sema.db).display(ctx.sema.db, ctx.edition)
+         ),
+         d.expr.map(|it| it.into()),
+     )
+         &ctx.sema,
+         d.expr.file_id.original_file(ctx.sema.db),
+         d.field,
+-        ctx.sema
+-            .original_range(d.expr.to_node(ctx.sema.db).syntax())
+-            .range,
++        ctx.sema.original_range(d.expr.to_node(ctx.sema.db).syntax()).range,
+     ))
+ }
+ 
+     fix_range: TextRange,
+ ) -> Option<Vec<Assist>> {
+     let def_crate = private_field.krate(sema.db);
+-    let usage_crate = sema
+-        .file_to_module_def(usage_file_id.file_id(sema.db))?
+-        .krate();
+-    let mut visibility_text = if usage_crate == def_crate {
+-        "pub(crate) "
+-    } else {
+-        "pub "
+-    };
+-
++    let usage_crate = sema.file_to_module_def(usage_file_id.file_id(sema.db))?.krate();
++    let mut visibility_text = if usage_crate == def_crate { "pub(crate) " } else { "pub " };
+     let source = private_field.source(sema.db)?;
+     let existing_visibility = match &source.value {
+         hir::FieldSource::Named(it) => it.visibility(),
+         Some(visibility) => {
+             // If there is an existing visibility, don't insert whitespace after.
+             visibility_text = visibility_text.trim_end();
+-            source
+-                .with_value(visibility.syntax())
+-                .original_file_range_opt(sema.db)?
+-                .0
++            source.with_value(visibility.syntax()).original_file_range_opt(sema.db)?.0
+         }
+         None => {
+             let (range, _) = source.syntax().original_file_range_opt(sema.db)?;
+         range.file_id.file_id(sema.db),
+         TextEdit::replace(range.range, visibility_text.into()),
+     );
+-
+     Some(vec![fix(
+         "increase_field_visibility",
+         "Increase field visibility",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix};
+-
+     #[test]
+     fn private_field() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn private_tuple_field() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn private_but_shadowed_in_deref() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn block_module_madness() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn block_module_madness2() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn change_visibility_fix() {
+         check_fix(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn change_visibility_with_existing_visibility() {
+         check_fix(

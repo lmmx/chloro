@@ -1,0 +1,101 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16513 bytes
+Chloro size:   16730 bytes
+Rustfmt size:  16513 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     /// Constant generic parameter
+     ConstParam(ConstParam),
+     /// Well known type (such as `true` for bool)
+-    FamousType { ty: Type<'db>, value: &'static str },
++    FamousType {
++        ty: Type<'db>,
++        value: &'static str,
++    },
+     /// Function call (does not take self param)
+-    Function { func: Function, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Function {
++        func: Function,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Method call (has self param)
+     Method {
+         func: Function,
+         params: Vec<Expr<'db>>,
+     },
+     /// Enum variant construction
+-    Variant { variant: Variant, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Variant {
++        variant: Variant,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Struct construction
+-    Struct { strukt: Struct, generics: Vec<Type<'db>>, params: Vec<Expr<'db>> },
++    Struct {
++        strukt: Struct,
++        generics: Vec<Type<'db>>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Tuple construction
+-    Tuple { ty: Type<'db>, params: Vec<Expr<'db>> },
++    Tuple {
++        ty: Type<'db>,
++        params: Vec<Expr<'db>>,
++    },
+     /// Struct field access
+-    Field { expr: Box<Expr<'db>>, field: Field },
++    Field {
++        expr: Box<Expr<'db>>,
++        field: Field,
++    },
+     /// Passing type as reference (with `&`)
+     Reference(Box<Expr<'db>>),
+     /// Indicates possibility of many different options that all evaluate to `ty`
+     /// Get type of the type tree.
+     ///
+     /// Same as getting the type of root node
+-    pub fn ty(&self, db: &'db dyn HirDatabase) -> Type<'db> {
++    pub fn ty(
++        &self,
++        db: &'db dyn HirDatabase,
++    ) -> Type<'db> {
+         match self {
+             Expr::Const(it) => it.ty(db),
+             Expr::Static(it) => it.ty(db),
+     }
+ 
+     /// List the traits used in type tree
+-    pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
++    pub fn traits_used(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> Vec<Trait> {
+         let mut res = Vec::new();
+-
+         if let Expr::Method { func, params, .. } = self {
+             res.extend(params.iter().flat_map(|it| it.traits_used(db)));
+             if let Some(it) = func.as_assoc_item(db)
+                 res.push(it);
+             }
+         }
+-
+         res
+     }
+ 
+     /// macro!().bar()
+     /// &macro!()
+     /// ```
+-    fn contains_many_in_illegal_pos(&self, db: &dyn HirDatabase) -> bool {
++    fn contains_many_in_illegal_pos(
++        &self,
++        db: &dyn HirDatabase,
++    ) -> bool {
+         match self {
+             Expr::Method { target, func, .. } => {
+                 match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {

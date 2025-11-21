@@ -1,0 +1,249 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 57017 bytes
+Chloro size:   57034 bytes
+Rustfmt size:  57422 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use base_db::RootQueryDb;
+ use hir_def::db::DefDatabase;
+ use hir_expand::EditionedFileId;
+ use rustc_apfloat::{
+-    ieee::{Half as f16, Quad as f128},
+     Float,
++    ieee::{Half as f16, Quad as f128},
+ };
+ use rustc_type_ir::inherent::IntoKind;
+ use test_fixture::WithFixture;
+ use test_utils::skip_slow_tests;
+ 
+ use crate::{
++    MemoryMap,
+     consteval::try_const_usize,
+     db::HirDatabase,
+     display::DisplayTarget,
+     next_solver::{Const, ConstBytes, ConstKind, DbInterner, GenericArgs},
+     setup_tracing,
+     test_db::TestDB,
+-    MemoryMap,
+ };
+-
+ use super::{
+     super::mir::{MirEvalError, MirLowerError},
+     ConstEvalError,
+     crate::attach_db(&db, || match eval_goal(&db, file_id) {
+         Ok(_) => panic!("Expected fail, but it succeeded"),
+         Err(e) => {
+-            assert!(
+-                error(simplify(e.clone())),
+-                "Actual error was: {}",
+-                pretty_print_err(e, &db)
+-            )
++            assert!(error(simplify(e.clone())), "Actual error was: {}", pretty_print_err(e, &db))
+         }
+     })
+ }
+ 
+ #[track_caller]
+-fn check_number(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: i128) {
++fn check_number(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    answer: i128,
++) {
+     check_answer(ra_fixture, |b, _| {
+         assert_eq!(
+             b,
+ }
+ 
+ #[track_caller]
+-fn check_str(#[rust_analyzer::rust_fixture] ra_fixture: &str, answer: &str) {
++fn check_str(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    answer: &str,
++) {
+     check_answer(ra_fixture, |b, mm| {
+         let addr = usize::from_le_bytes(b[0..b.len() / 2].try_into().unwrap());
+         let size = usize::from_le_bytes(b[b.len() / 2..].try_into().unwrap());
+     });
+ }
+ 
+-fn pretty_print_err(e: ConstEvalError<'_>, db: &TestDB) -> String {
++fn pretty_print_err(
++    e: ConstEvalError<'_>,
++    db: &TestDB,
++) -> String {
+     let mut err = String::new();
+     let span_formatter = |file, range| format!("{file:?} {range:?}");
+     let display_target =
+     err
+ }
+ 
+-fn eval_goal(db: &TestDB, file_id: EditionedFileId) -> Result<Const<'_>, ConstEvalError<'_>> {
++fn eval_goal(
++    db: &TestDB,
++    file_id: EditionedFileId,
++) -> Result<Const<'_>, ConstEvalError<'_>> {
+     let _tracing = setup_tracing();
+     let interner = DbInterner::new_with(db, None, None);
+     let module_id = db.module_for_file(file_id.file_id(db));
+         .declarations()
+         .find_map(|x| match x {
+             hir_def::ModuleDefId::ConstId(x) => {
+-                if db
+-                    .const_signature(x)
+-                    .name
+-                    .as_ref()?
+-                    .display(db, file_id.edition(db))
+-                    .to_string()
++                if db.const_signature(x).name.as_ref()?.display(db, file_id.edition(db)).to_string()
+                     == "GOAL"
+                 {
+                     Some(x)
+             _ => None,
+         })
+         .expect("No const named GOAL found in the test");
+-    db.const_eval(
+-        const_id.into(),
+-        GenericArgs::new_from_iter(interner, []),
+-        None,
+-    )
++    db.const_eval(const_id.into(), GenericArgs::new_from_iter(interner, []), None)
+ }
+ 
+ #[test]
+     check_fail(r#"const GOAL: i8 = 1 << 8"#, |e| {
+         e == ConstEvalError::MirEvalError(MirEvalError::Panic("Overflow in Shl".to_owned()))
+     });
+-    check_number(
+-        r#"const GOAL: i32 = 100000000i32 << 11"#,
+-        (100000000i32 << 11) as i128,
+-    );
++    check_number(r#"const GOAL: i32 = 100000000i32 << 11"#, (100000000i32 << 11) as i128);
+ }
+ 
+ #[test]
+     check_number(
+         r#"const GOAL: f16 = 2.0 + 3.0 * 5.5 - 8.;"#,
+         i128::from_le_bytes(pad16(
+-            &u16::try_from("10.5".parse::<f16>().unwrap().to_bits())
+-                .unwrap()
+-                .to_le_bytes(),
++            &u16::try_from("10.5".parse::<f16>().unwrap().to_bits()).unwrap().to_le_bytes(),
+             true,
+         )),
+     );
+     check_number(
+         r#"const GOAL: f16 = -90.0 + 36.0;"#,
+         i128::from_le_bytes(pad16(
+-            &u16::try_from("-54.0".parse::<f16>().unwrap().to_bits())
+-                .unwrap()
+-                .to_le_bytes(),
++            &u16::try_from("-54.0".parse::<f16>().unwrap().to_bits()).unwrap().to_le_bytes(),
+             true,
+         )),
+     );
+ fn floating_point_casts() {
+     check_number(r#"const GOAL: usize = 12i32 as f32 as usize"#, 12);
+     check_number(r#"const GOAL: i8 = -12i32 as f64 as i8"#, -12);
+-    check_number(
+-        r#"const GOAL: i32 = (-1ui8 as f32 + 2u64 as f32) as i32"#,
+-        1,
+-    );
++    check_number(r#"const GOAL: i32 = (-1ui8 as f32 + 2u64 as f32) as i32"#, 1);
+     check_number(r#"const GOAL: i8 = (0./0.) as i8"#, 0);
+     check_number(r#"const GOAL: i8 = (1./0.) as i8"#, 127);
+     check_number(r#"const GOAL: i8 = (-1./0.) as i8"#, -128);
+-    check_number(
+-        r#"const GOAL: i64 = 1e18f64 as f32 as i64"#,
+-        999999984306749440,
+-    );
++    check_number(r#"const GOAL: i64 = 1e18f64 as f32 as i64"#, 999999984306749440);
+ }
+ 
+ #[test]
+         "#,
+         10,
+     );
+-
+     check_number(
+         r#"
+     const fn max(a: &i32, b: &i32) -> &i32 {
+     "#,
+         6,
+     );
+-
+     check_number(
+         r#"
+     const F1: i32 = 2147483647;
+     "#,
+         2147483622,
+     );
+-
+     check_number(
+         r#"
+     const F1: i32 = -2147483648;
+     "#,
+         -2147483630,
+     );
+-
+     check_number(
+         r#"
+     const F1: i32 = 10;
+     "#,
+         -10,
+     );
+-
+     check_number(
+         r#"
+     const F1: i32 = 25;
+     "#,
+         0,
+     );
+-
+     check_number(
+         r#"
+     const A: i32 = -2147483648;
+     "#,
+         0,
+     );
+-
+     check_number(
+         r#"
+     const GOAL: i64 = (-2147483648_i32) as i64;
+ }
+ 
+ #[test]
+-// FIXME
+ #[should_panic]
+ fn from_ne_bytes() {
+     check_number(
+ }
+ 
+ #[test]
+-// FIXME
+ #[should_panic]
+ fn anonymous_const_block() {
+     check_number(
+     if skip_slow_tests() {
+         return;
+     }
+-
+     check_fail(
+         r#"
+     const GOAL: usize = loop {};
+         z[1]
+     };
+     "#,
+-        |e| {
+-            matches!(
+-                e,
+-                ConstEvalError::MirLowerError(MirLowerError::UnsizedTemporary(_))
+-            )
+-        },
++        |e| matches!(e, ConstEvalError::MirLowerError(MirLowerError::UnsizedTemporary(_))),
+     );
+ }
+ 

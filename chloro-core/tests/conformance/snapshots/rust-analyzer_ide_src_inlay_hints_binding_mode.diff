@@ -1,0 +1,117 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6415 bytes
+Chloro size:   6408 bytes
+Rustfmt size:  6621 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Implementation of "binding mode" inlay hints:
+ //! ```no_run
+ //! let /* & */ (/* ref */ x,) = &(0,);
+ //! ```
++
+ use std::mem;
+ 
+ use hir::Mutability;
+ use ide_db::famous_defs::FamousDefs;
+-
+ use ide_db::text_edit::TextEditBuilder;
+ use syntax::ast::{self, AstNode};
+ 
+     if !config.binding_mode_hints {
+         return None;
+     }
+-
+-    let outer_paren_pat = pat
+-        .syntax()
+-        .ancestors()
+-        .skip(1)
+-        .map_while(ast::ParenPat::cast)
+-        .last();
++    let outer_paren_pat = pat.syntax().ancestors().skip(1).map_while(ast::ParenPat::cast).last();
+     let range = outer_paren_pat.as_ref().map_or_else(
+         || match pat {
+             // for ident patterns that @ bind a name, render the un-ref patterns in front of the inner pattern
+             // instead of the name as that makes it more clear and doesn't really change the outcome
+-            ast::Pat::IdentPat(it) => it
+-                .pat()
+-                .map_or_else(|| it.syntax().text_range(), |it| it.syntax().text_range()),
++            ast::Pat::IdentPat(it) => {
++                it.pat().map_or_else(|| it.syntax().text_range(), |it| it.syntax().text_range())
++            }
+             it => it.syntax().text_range(),
+         },
+         |it| it.syntax().text_range(),
+         hint.pad_right = was_mut_last;
+         acc.push(hint);
+     }
+-
+     if let hints @ [_, ..] = &mut acc[acc_base..] {
+         let edit = config.lazy_text_edit(|| {
+             let mut edit = TextEditBuilder::default();
+             }
+             edit.finish()
+         });
+-        hints
+-            .iter_mut()
+-            .for_each(|h| h.text_edit = Some(edit.clone()));
++        hints.iter_mut().for_each(|h| h.text_edit = Some(edit.clone()));
+     }
+-
+     Some(())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::{
+-        inlay_hints::tests::{check_edit, check_with_config, DISABLED_CONFIG},
+         InlayHintsConfig,
++        inlay_hints::tests::{DISABLED_CONFIG, check_edit, check_with_config},
+     };
+-
+     #[test]
+     fn hints_binding_modes() {
+         check_with_config(
+-            InlayHintsConfig {
+-                binding_mode_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn __(
+     (x,): (u32,),
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn hints_binding_modes_complex_ident_pat() {
+         check_with_config(
+-            InlayHintsConfig {
+-                binding_mode_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+             r#"
+ struct Struct {
+     field: &'static str,
+ "#,
+         );
+     }
+-
+     #[test]
+     fn edits() {
+         check_edit(
+-            InlayHintsConfig {
+-                binding_mode_hints: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { binding_mode_hints: true, ..DISABLED_CONFIG },
+             r#"
+ fn main() {
+     match &(0,) {

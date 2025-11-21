@@ -1,0 +1,185 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15319 bytes
+Chloro size:   14680 bytes
+Rustfmt size:  15319 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     utils::{invert_boolean_expression, unwrap_trivial_block},
+ };
+ 
+-// Assist: convert_if_to_bool_then
+-//
+-// Converts an if expression into a corresponding `bool::then` call.
+-//
+-// ```
+-// # //- minicore: option
+-// fn main() {
+-//     if$0 cond {
+-//         Some(val)
+-//     } else {
+-//         None
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     cond.then(|| val)
+-// }
+-// ```
+-pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_if_to_bool_then(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     // FIXME applies to match as well
+     let expr = ctx.find_node_at_offset::<ast::IfExpr>()?;
+     if !expr.if_token()?.text_range().contains_inclusive(ctx.offset()) {
+         return None;
+     }
+-
+     let cond = expr.condition().filter(|cond| !is_pattern_cond(cond.clone()))?;
+     let then = expr.then_branch()?;
+     let else_ = match expr.else_branch()? {
+             return None;
+         }
+     };
+-
+     let (none_variant, some_variant) = option_variants(&ctx.sema, expr.syntax())?;
+-
+     let (invert_cond, closure_body) = match (
+         block_is_none_variant(&ctx.sema, &then, none_variant),
+         block_is_none_variant(&ctx.sema, &else_, none_variant),
+         (invert @ false, true) => (invert, ast::Expr::BlockExpr(then)),
+         _ => return None,
+     };
+-
+     if is_invalid_body(&ctx.sema, some_variant, &closure_body) {
+         cov_mark::hit!(convert_if_to_bool_then_pattern_invalid_body);
+         return None;
+     }
+-
+     let target = expr.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("convert_if_to_bool_then"),
+     )
+ }
+ 
+-// Assist: convert_bool_then_to_if
+-//
+-// Converts a `bool::then` method call to an equivalent if expression.
+-//
+-// ```
+-// # //- minicore: bool_impl
+-// fn main() {
+-//     (0 == 0).then$0(|| val)
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     if 0 == 0 {
+-//         Some(val)
+-//     } else {
+-//         None
+-//     }
+-// }
+-// ```
+-pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_bool_then_to_if(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let name_ref = ctx.find_node_at_offset::<ast::NameRef>()?;
+     let mcall = name_ref.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
+     let receiver = mcall.receiver()?;
+     if !assoc.implementing_ty(ctx.sema.db)?.is_bool() {
+         return None;
+     }
+-
+     let target = mcall.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("convert_bool_then_to_if"),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn convert_if_to_bool_then_simple() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_invert() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_none_none() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_some_some() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_mixed() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_chain() {
+         cov_mark::check!(convert_if_to_bool_then_chain);
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_pattern_cond() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_if_to_bool_then_pattern_invalid_body() {
+         cov_mark::check_count!(convert_if_to_bool_then_pattern_invalid_body, 2);
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_bool_then_to_if_inapplicable() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_bool_then_to_if_simple() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn convert_bool_then_to_if_tails() {
+         check_assist(

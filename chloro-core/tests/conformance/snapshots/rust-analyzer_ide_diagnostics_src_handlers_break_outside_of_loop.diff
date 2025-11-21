@@ -1,0 +1,74 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2954 bytes
+Chloro size:   2824 bytes
+Rustfmt size:  2954 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: break-outside-of-loop
+-//
+-// This diagnostic is triggered if the `break` keyword is used outside of a loop.
+ pub(crate) fn break_outside_of_loop(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::BreakOutsideOfLoop,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn outside_of_loop() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_blocks_are_borders() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closures_are_borders() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn blocks_pass_through() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_blocks_pass_through() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn label_blocks() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn value_break_in_for_loop() {
+         // FIXME: the error is correct, but the message is terrible
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_block_desugaring_inside_closure() {
+         // regression test for #14701

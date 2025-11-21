@@ -1,0 +1,809 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 58223 bytes
+Chloro size:   56867 bytes
+Rustfmt size:  58223 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ #[derive(PartialEq, Eq, Hash)]
+ pub struct HighlightedRange {
+     pub range: TextRange,
+-    // FIXME: This needs to be more precise. Reference category makes sense only
+-    // for references, but we also have defs. And things like exit points are
+-    // neither.
+     pub category: ReferenceCategory,
+ }
+ 
+ 
+ type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
+ 
+-// Feature: Highlight Related
+-//
+-// Highlights constructs related to the thing under the cursor:
+-//
+-// 1. if on an identifier, highlights all references to that identifier in the current file
+-//      * additionally, if the identifier is a trait in a where clause, type parameter trait bound or use item, highlights all references to that trait's assoc items in the corresponding scope
+-// 1. if on an `async` or `await` token, highlights all yield points for that async context
+-// 1. if on a `return` or `fn` keyword, `?` character or `->` return type arrow, highlights all exit points for that context
+-// 1. if on a `break`, `loop`, `while` or `for` token, highlights all break points for that loop or block context
+-// 1. if on a `move` or `|` token that belongs to a closure, highlights all captures of the closure.
+-//
+-// Note: `?`, `|` and `->` do not currently trigger this behavior in the VSCode editor.
+ pub(crate) fn highlight_related(
+     sema: &Semantics<'_, RootDatabase>,
+     config: HighlightRelatedConfig,
+         .attach_first_edition(file_id)
+         .unwrap_or_else(|| EditionedFileId::current_edition(sema.db, file_id));
+     let syntax = sema.parse(file_id).syntax().clone();
+-
+     let token = pick_best_token(syntax.token_at_offset(offset), |kind| match kind {
+         T![?] => 4, // prefer `?` when the cursor is sandwiched like in `await$0?`
+         T![->] | T![=>] => 4,
+             }
+         }
+     }
+-
+     res.extend(usages);
+     if res.is_empty() { None } else { Some(res.into_iter().collect()) }
+ }
+     token: SyntaxToken,
+ ) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
+     let mut highlights: HighlightMap = FxHashMap::default();
+-
+     let push_to_highlights = |file_id, range, highlights: &mut HighlightMap| {
+         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
+             let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+             highlights.entry(file_id).or_default().insert(hrange);
+         }
+     };
+-
+     let push_tail_expr = |tail: Option<ast::Expr>, highlights: &mut HighlightMap| {
+         let Some(tail) = tail else {
+             return;
+             push_to_highlights(file_id, Some(range), highlights);
+         });
+     };
+-
+     let nodes = goto_definition::find_branch_root(sema, &token).into_iter();
+     match token.kind() {
+         T![match] => {
+         }
+         _ => {}
+     }
+-
+     highlights
+         .into_iter()
+         .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
+     body: ast::Expr,
+ ) -> Option<HighlightMap> {
+     let mut highlights: FxHashMap<EditionedFileId, FxHashSet<_>> = FxHashMap::default();
+-
+     let mut push_to_highlights = |file_id, range| {
+         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
+             let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
+             highlights.entry(file_id).or_default().insert(hrange);
+         }
+     };
+-
+     if let Some(tok) = def_token {
+         let file_id = sema.hir_file_for(&tok.parent()?);
+         let range = Some(tok.text_range());
+         push_to_highlights(file_id, range);
+     }
+-
+     WalkExpandedExprCtx::new(sema).walk(&body, &mut |_, expr| {
+         let file_id = sema.hir_file_for(expr.syntax());
+ 
+ 
+         push_to_highlights(file_id, range);
+     });
+-
+     // We should handle `return` separately, because when it is used in a `try` block,
+     // it will exit the outside function instead of the block itself.
+     WalkExpandedExprCtx::new(sema)
+ 
+             push_to_highlights(file_id, range);
+         });
+-
+     let tail = match body {
+         ast::Expr::BlockExpr(b) => b.tail_expr(),
+         e => Some(e),
+     };
+-
+     if let Some(tail) = tail {
+         for_each_tail_expr(&tail, &mut |tail| {
+             let file_id = sema.hir_file_for(tail.syntax());
+     Some(highlights)
+ }
+ 
+-// If `file_id` is None,
+ pub(crate) fn highlight_exit_points(
+     sema: &Semantics<'_, RootDatabase>,
+     token: SyntaxToken,
+         };
+         merge_map(&mut res, new_map);
+     }
+-
+     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+ }
+ 
+ 
+         Some(highlights)
+     }
+-
+     let Some(loops) = goto_definition::find_loops(sema, &token) else {
+         return FxHashMap::default();
+     };
+-
+     let mut res = FxHashMap::default();
+     let token_kind = token.kind();
+     for expr in loops {
+         };
+         merge_map(&mut res, new_map);
+     }
+-
+     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+ }
+ 
+ 
+         Some(highlights)
+     }
+-
+     let mut res = FxHashMap::default();
+     for anc in goto_definition::find_fn_or_blocks(sema, &token) {
+         let new_map = match_ast! {
+         };
+         merge_map(&mut res, new_map);
+     }
+-
+     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
+ }
+ 
+-fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange> {
++fn cover_range(
++    r0: Option<TextRange>,
++    r1: Option<TextRange>,
++) -> Option<TextRange> {
+     match (r0, r1) {
+         (Some(r0), Some(r1)) => Some(r0.cover(r1)),
+         (Some(range), None) => Some(range),
+     }
+ }
+ 
+-fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
++fn find_defs(
++    sema: &Semantics<'_, RootDatabase>,
++    token: SyntaxToken,
++) -> FxHashSet<Definition> {
+     sema.descend_into_macros_exact(token)
+         .into_iter()
+         .filter_map(|token| IdentClass::classify_token(sema, &token))
+     InFile::new(file_id, text_range?).original_node_file_range_opt(db).map(|(frange, _)| frange)
+ }
+ 
+-fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
++fn merge_map(
++    res: &mut HighlightMap,
++    new: Option<HighlightMap>,
++) {
+     let Some(new) = new else {
+         return;
+     };
+         Self { sema, depth: 0, check_ctx: &is_closure_or_blk_with_modif }
+     }
+ 
+-    fn with_check_ctx(&self, check_ctx: &'static dyn Fn(&ast::Expr) -> bool) -> Self {
++    fn with_check_ctx(
++        &self,
++        check_ctx: &'static dyn Fn(&ast::Expr) -> bool,
++    ) -> Self {
+         Self { check_ctx, ..*self }
+     }
+ 
+-    fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
++    fn walk(
++        &mut self,
++        expr: &ast::Expr,
++        cb: &mut dyn FnMut(usize, ast::Expr),
++    ) {
+         preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
+             match ev {
+                 syntax::WalkEvent::Enter(expr) => {
+         })
+     }
+ 
+-    fn handle_expanded(&mut self, expanded: ast::MacroStmts, cb: &mut dyn FnMut(usize, ast::Expr)) {
++    fn handle_expanded(
++        &mut self,
++        expanded: ast::MacroStmts,
++        cb: &mut dyn FnMut(usize, ast::Expr),
++    ) {
+         if let Some(expr) = expanded.expr() {
+             self.walk(&expr, cb);
+         }
+-
+         for stmt in expanded.statements() {
+             if let ast::Stmt::ExprStmt(stmt) = stmt
+                 && let Some(expr) = stmt.expr()
+ 
+         Some(highlights)
+     }
+-
+     hl(sema, &token, token.parent().and_then(ast::BlockExpr::cast)).unwrap_or_default()
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use itertools::Itertools;
+-
+     use crate::fixture;
+-
+     use super::*;
+-
+-    const ENABLED_CONFIG: HighlightRelatedConfig = HighlightRelatedConfig {
+-        break_points: true,
+-        exit_points: true,
+-        references: true,
+-        closure_captures: true,
+-        yield_points: true,
+-        branch_exit_points: true,
+-    };
+-
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_with_config(ra_fixture, ENABLED_CONFIG);
+     }
+-
+     #[track_caller]
+     fn check_with_config(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         config: HighlightRelatedConfig,
+     ) {
+         let (analysis, pos, annotations) = fixture::annotations(ra_fixture);
+-
+         let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
+-
+         let mut expected =
+             annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
+-
+         let mut actual: Vec<(TextRange, String)> = hls
+             .into_iter()
+             .map(|hl| {
+             .collect();
+         actual.sort_by_key(|(range, _)| range.start());
+         expected.sort_by_key(|(range, _)| range.start());
+-
+         assert_eq!(expected, actual);
+     }
+-
+     #[test]
+     fn test_hl_unsafe_block() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_tuple_fields() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_module() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_self_in_crate_root() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_self_in_module() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_local() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_local_in_attr() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_multi_macro_usage() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_yield_points() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_yield_points2() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_exit_points_of_async_blocks() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_let_else_yield_points() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_yield_nested_fn() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_yield_nested_async_blocks() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_exit_points() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_exit_points2() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_exit_points3() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_let_else_exit_points() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_prefer_ref_over_tail_exit() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_never_call_is_exit_point() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_inner_tail_exit_points() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_inner_tail_exit_points_labeled_block() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_inner_tail_exit_points_loops() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_loop() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_loop2() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_for() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_for_but_not_continue() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_continue_for_but_not_break() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_and_continue() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_while() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_labeled_block() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_unlabeled_loop() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_break_unlabeled_block_in_loop() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_field_shorthand() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_ref_local() {
+         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ fn foo() {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_ref_local_preserved_break() {
+         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ fn foo() {
+ "#,
+             config.clone(),
+         );
+-
+         check_with_config(
+             r#"
+ fn foo() {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_ref_local_preserved_yield() {
+         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ async fn foo() {
+ "#,
+             config.clone(),
+         );
+-
+         check_with_config(
+             r#"
+     async fn foo() {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_ref_local_preserved_exit() {
+         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ fn foo() -> i32 {
+ "#,
+             config.clone(),
+         );
+-
+         check_with_config(
+             r#"
+   fn foo() ->$0 i32 {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_break() {
+         let config = HighlightRelatedConfig { break_points: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ fn foo() {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_yield() {
+         let config = HighlightRelatedConfig { yield_points: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ async$0 fn foo() {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_disabled_exit() {
+         let config = HighlightRelatedConfig { exit_points: false, ..ENABLED_CONFIG };
+-
+         check_with_config(
+             r#"
+ fn foo() ->$0 i32 {
+             config,
+         );
+     }
+-
+     #[test]
+     fn test_hl_multi_local() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_hl_trait_impl_methods() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_assoc_type_highlighting() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_closure_capture_pipe() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_closure_capture_move() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_trait_highlights_assoc_item_uses() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_trait_highlights_assoc_item_uses_use_tree() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn implicit_format_args() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn return_in_macros() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn return_in_closure() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn return_in_try() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn break_in_try() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn no_highlight_on_return_in_macro_call() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn nested_match() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn single_arm_highlight() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn no_branches_when_disabled() {
+         let config = HighlightRelatedConfig { branch_exit_points: false, ..ENABLED_CONFIG };
+             config,
+         );
+     }
+-
+     #[test]
+     fn asm() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn complex_arms_highlight() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn match_in_macro_highlight() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn match_in_macro_highlight_2() {
+         check(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn nested_if_else() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn if_else_if_highlight() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn complex_if_branches() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn if_in_macro_highlight() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn match_in_macro() {
+         // We should not highlight the outer `match` expression.
+             "#,
+         )
+     }
+-
+     #[test]
+     fn labeled_block_tail_expr() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn labeled_block_tail_expr_2() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn different_unsafe_block() {
+         check(

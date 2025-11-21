@@ -1,0 +1,399 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 36630 bytes
+Chloro size:   36500 bytes
+Rustfmt size:  36630 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+         TextRange::new(first_child.text_range().start(), ctx.source_range().end())
+     };
+-
+     complete_trait_impl(acc, ctx, kind, replacement_range, &impl_def);
+     Some(())
+ }
+         fn_name.display(ctx.db, ctx.edition),
+         if func.assoc_fn_params(ctx.db).is_empty() { "" } else { ".." }
+     );
+-
+     let completion_kind = CompletionItemKind::SymbolKind(if func.has_self_param(ctx.db) {
+         SymbolKind::Method
+     } else {
+         SymbolKind::Function
+     });
+-
+     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
+     item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
+         .set_documentation(func.docs(ctx.db))
+         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+-
+     if let Some(source) = ctx.sema.source(func)
+         && let Some(transformed_fn) =
+             get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
+         trait_,
+         ctx.sema.source(impl_def)?.value,
+     );
+-
+     let assoc_item = assoc_item.clone_for_update();
+     // FIXME: Paths in nested macros are not handled well. See
+     // `macro_generated_assoc_item2` test.
+         trait_,
+         ctx.sema.source(impl_def)?.value,
+     );
+-
+     let fn_ = fn_.clone_for_update();
+     // FIXME: Paths in nested macros are not handled well. See
+     // `macro_generated_assoc_item2` test.
+     impl_def: hir::Impl,
+ ) {
+     let alias_name = type_alias.name(ctx.db).as_str().to_smolstr();
+-
+     let label = format_smolstr!("type {alias_name} =");
+-
+     let mut item =
+         CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
+     item.lookup_by(format!("type {alias_name}"))
+         .set_documentation(type_alias.docs(ctx.db))
+         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+-
+     if let Some(source) = ctx.sema.source(type_alias) {
+         let assoc_item = ast::AssocItem::TypeAlias(source.value);
+         if let Some(transformed_item) = get_transformed_assoc_item(ctx, assoc_item, impl_def) {
+     impl_def: hir::Impl,
+ ) {
+     let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
+-
+     if let Some(const_name) = const_name
+         && let Some(source) = ctx.sema.source(const_)
+     {
+     } else {
+         const_.syntax().clone()
+     };
+-
+     let start = const_.text_range().start();
+     let const_end = const_.text_range().end();
+-
+     let end = const_
+         .children_with_tokens()
+         .find(|s| s.kind() == T![;] || s.kind() == T![=])
+         .map_or(const_end, |f| f.text_range().start());
+-
+     let len = end - start;
+     let range = TextRange::new(0.into(), len);
+-
+     let syntax = const_.text().slice(range).to_string();
+-
+     format_smolstr!("{} =", syntax.trim_end())
+ }
+ 
+     } else {
+         node.syntax().clone()
+     };
+-
+     let start = node.text_range().start();
+     let end = node.text_range().end();
+-
+     let end = node
+         .last_child_or_token()
+         .filter(|s| s.kind() == T![;] || s.kind() == SyntaxKind::BLOCK_EXPR)
+         .map_or(end, |f| f.text_range().start());
+-
+     let len = end - start;
+     let syntax = node.text().slice(..len).to_string();
+-
+     syntax.trim_end().to_owned()
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::tests::{check, check_edit, check_no_kw};
+-
+     #[test]
+     fn no_completion_inside_fn() {
+         check_no_kw(
+                 bt u32 u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { fn test(); fn test2(); }
+ ",
+             expect![[""]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { fn test(); fn test2(); }
+ ",
+             expect![[""]],
+         );
+-
+         // https://github.com/rust-lang/rust-analyzer/pull/5976#issuecomment-692332191
+         check_no_kw(
+             r"
+ ",
+             expect![[r#""#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { fn test(_: i32); fn test2(); }
+                 bn self
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { fn test(_: fn()); fn test2(); }
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn no_completion_inside_const() {
+         check_no_kw(
+ ",
+             expect![[r#""#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
+                 bt u32 u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
+                 bt u32 u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
+                 bt u32 u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
+ ",
+             expect![[""]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
+             expect![[""]],
+         );
+     }
+-
+     #[test]
+     fn no_completion_inside_type() {
+         check_no_kw(
+                 bt u32 u32
+             "#]],
+         );
+-
+         check_no_kw(
+             r"
+ trait Test { type Test; type Test2; fn test(); }
+             expect![[r#""#]],
+         );
+     }
+-
+     #[test]
+     fn name_ref_single_function() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn single_function() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn generic_fn() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn associated_type() {
+         check_edit(
+ ",
+         );
+     }
+-
+     #[test]
+     fn associated_const() {
+         check_edit(
+ }
+ ",
+         );
+-
+         check_edit(
+             "const SOME_CONST",
+             r#"
+ ",
+         );
+     }
+-
+     #[test]
+     fn fn_with_lifetimes() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn complete_without_name() {
+         let test = |completion: &str, hint: &str, completed: &str, next_sibling: &str| {
+                 ),
+             )
+         };
+-
+         // Enumerate some possible next siblings.
+         for next_sibling in [
+             "",
+             test("const CONST", "const $0", "const CONST: u16 = $0;", next_sibling);
+         }
+     }
+-
+     #[test]
+     fn snippet_does_not_overwrite_comment_or_attr() {
+         let test = |completion: &str, hint: &str, completed: &str| {
+         test("type Type", "type T$0", "type Type = $0;");
+         test("const CONST", "const C$0", "const CONST: i32 = $0;");
+     }
+-
+     #[test]
+     fn generics_are_inlined_in_return_type() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn generics_are_inlined_in_parameter() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn generics_are_inlined_when_part_of_other_types() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn generics_are_inlined_complex() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn generics_are_inlined_in_associated_const() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn generics_are_inlined_in_where_clause() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn works_directly_in_impl() {
+         check_no_kw(
+         "#]],
+         );
+     }
+-
+     #[test]
+     fn fixes_up_macro_generated() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn macro_generated_assoc_item() {
+         check_edit(
+ "#,
+         );
+     }
+-
+-    // FIXME: `T` in `ty!(T)` should be replaced by `PathTransform`.
+     #[test]
+     fn macro_generated_assoc_item2() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn includes_gat_generics() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn strips_comments() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn impl_fut() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn impl_fut_resugared() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_desugared() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn async_() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn within_attr_macro() {
+         check(

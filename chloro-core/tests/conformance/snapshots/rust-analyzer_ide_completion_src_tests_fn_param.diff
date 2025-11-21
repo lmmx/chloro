@@ -1,0 +1,25 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 4730 bytes
+Chloro size:   4627 bytes
+Rustfmt size:  4730 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+             kw ref
+         "#]],
+     );
+-
+     check(
+         r#"
+ fn f(#[foo = "bar"] baz: u32,) {}
+     )
+ }
+ 
+-// doesn't complete qux due to there being no expression after
+-// see source_analyzer::adjust comment
+ #[test]
+ fn local_fn_shows_locals_for_params() {
+     check(

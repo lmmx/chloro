@@ -1,0 +1,70 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3099 bytes
+Chloro size:   2996 bytes
+Rustfmt size:  3144 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::InFile;
+ use itertools::Itertools;
+-use syntax::{ast, AstNode};
++use syntax::{AstNode, ast};
+ 
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+ 
+-// Diagnostic: trait-impl-missing-assoc_item
+-//
+-// Diagnoses missing trait items in a trait impl.
+ pub(crate) fn trait_impl_missing_assoc_item(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::TraitImplMissingAssocItems,
+         format!("not all trait items implemented, missing: {missing}"),
+         adjusted_display_range::<ast::Impl>(
+             ctx,
+-            InFile {
+-                file_id: d.file_id,
+-                value: d.impl_,
+-            },
++            InFile { file_id: d.file_id, value: d.impl_ },
+             &|impl_| impl_.trait_().map(|t| t.syntax().text_range()),
+         ),
+     )
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn trait_with_default_value() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn default() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn negative_impl() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn impl_sized_for_unsized() {
+         check_diagnostics(

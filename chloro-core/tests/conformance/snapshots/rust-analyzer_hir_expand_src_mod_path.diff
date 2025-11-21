@@ -1,0 +1,193 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 13520 bytes
+Chloro size:   13556 bytes
+Rustfmt size:  13520 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     iter,
+ };
+ 
++use base_db::Crate;
++use intern::sym;
++use smallvec::SmallVec;
++use span::{Edition, SyntaxContext};
++use syntax::{AstNode, ast};
++
++pub use crate::__path as path;
++pub use crate::__tool_path as tool_path;
++pub use crate::name as __name;
+ use crate::{
+     db::ExpandDatabase,
+     hygiene::Transparency,
+     name::{AsName, Name},
+     tt,
+ };
+-use base_db::Crate;
+-use intern::sym;
+-use smallvec::SmallVec;
+-use span::{Edition, SyntaxContext};
+-use syntax::{AstNode, ast};
+ 
+ #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+ pub struct ModPath {
+     Crate,
+     /// Absolute path (::foo)
+     Abs,
+-    // FIXME: Can we remove this somehow?
+     /// `$crate` from macro expansion
+     DollarCrate(Crate),
+ }
+ 
+ impl PathKind {
+-    pub const SELF: PathKind = PathKind::Super(0);
+ }
+ 
+ impl ModPath {
+         convert_path(db, path, span_for_range)
+     }
+ 
+-    pub fn from_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
++    pub fn from_tt(
++        db: &dyn ExpandDatabase,
++        tt: tt::TokenTreesView<'_>,
++    ) -> Option<ModPath> {
+         convert_path_tt(db, tt)
+     }
+ 
+-    pub fn from_segments(kind: PathKind, segments: impl IntoIterator<Item = Name>) -> ModPath {
++    pub fn from_segments(
++        kind: PathKind,
++        segments: impl IntoIterator<Item = Name>,
++    ) -> ModPath {
+         let mut segments: SmallVec<_> = segments.into_iter().collect();
+         segments.shrink_to_fit();
+         ModPath { kind, segments }
+         &self.segments
+     }
+ 
+-    pub fn push_segment(&mut self, segment: Name) {
++    pub fn push_segment(
++        &mut self,
++        segment: Name,
++    ) {
+         self.segments.push(segment);
+     }
+ 
+         if self.kind != PathKind::Plain {
+             return None;
+         }
+-
+         match &*self.segments {
+             [name] => Some(name),
+             _ => None,
+         }
+     }
++
+     pub fn display_verbatim<'a>(
+         &'a self,
+         db: &'a dyn crate::db::ExpandDatabase,
+ }
+ 
+ impl Extend<Name> for ModPath {
+-    fn extend<T: IntoIterator<Item = Name>>(&mut self, iter: T) {
++    fn extend<T: IntoIterator<Item = Name>>(
++        &mut self,
++        iter: T,
++    ) {
+         self.segments.extend(iter);
+     }
+ }
+ }
+ 
+ impl fmt::Display for Display<'_> {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         display_fmt_path(self.db, self.path, f, self.edition)
+     }
+ }
+     span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
+ ) -> Option<ModPath> {
+     let mut segments = path.segments();
+-
+     let segment = &segments.next()?;
+     let handle_super_kw = &mut |init_deg| {
+         let mut deg = init_deg;
+ 
+         Some(ModPath::from_segments(PathKind::Super(deg), next_segment))
+     };
+-
+     let mut mod_path = match segment.kind()? {
+         ast::PathSegmentKind::Name(name_ref) => {
+             if name_ref.text() == "$crate" {
+             return None;
+         }
+     };
+-
+     for segment in segments {
+         let name = match segment.kind()? {
+             ast::PathSegmentKind::Name(name) => name.as_name(),
+         };
+         mod_path.segments.push(name);
+     }
+-
+     // handle local_inner_macros :
+     // Basically, even in rustc it is quite hacky:
+     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
+             }
+         }
+     }
+-
+     Some(mod_path)
+ }
+ 
+-fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
++fn convert_path_tt(
++    db: &dyn ExpandDatabase,
++    tt: tt::TokenTreesView<'_>,
++) -> Option<ModPath> {
+     let mut leaves = tt.iter().filter_map(|tt| match tt {
+         tt::TtElement::Leaf(leaf) => Some(leaf),
+         tt::TtElement::Subtree(..) => None,
+     Some(ModPath { kind, segments })
+ }
+ 
+-pub fn resolve_crate_root(db: &dyn ExpandDatabase, mut ctxt: SyntaxContext) -> Option<Crate> {
++pub fn resolve_crate_root(
++    db: &dyn ExpandDatabase,
++    mut ctxt: SyntaxContext,
++) -> Option<Crate> {
+     // When resolving `$crate` from a `macro_rules!` invoked in a `macro`,
+     // we don't want to pretend that the `macro_rules!` definition is in the `macro`
+     // as described in `SyntaxContextId::apply_mark`, so we ignore prepended opaque marks.
+     while let Some((mark, Transparency::SemiTransparent)) = iter.next() {
+         result_mark = Some(mark);
+     }
+-
+     result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
+ }
+ 
+-pub use crate::name as __name;
+-
+ #[macro_export]
+ macro_rules! __known_path {
+     (core::iter::IntoIterator) => {};
+     });
+ }
+ 
+-pub use crate::__path as path;
+-
+ #[macro_export]
+ macro_rules! __tool_path {
+     ($start:ident $(:: $seg:ident)*) => ({
+         ])
+     });
+ }
+-
+-pub use crate::__tool_path as tool_path;

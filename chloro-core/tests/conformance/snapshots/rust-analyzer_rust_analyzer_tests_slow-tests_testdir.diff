@@ -1,0 +1,58 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3669 bytes
+Chloro size:   3665 bytes
+Rustfmt size:  3740 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+         // on *every* OS, as on windows `canonicalize` itself creates problems.
+         #[cfg(target_os = "macos")]
+         let temp_dir = temp_dir.canonicalize().unwrap();
+-
+         let base = temp_dir.join("testdir");
+         let pid = std::process::id();
+-
+         static CNT: AtomicUsize = AtomicUsize::new(0);
+         for _ in 0..100 {
+             let cnt = CNT.fetch_add(1, Ordering::Relaxed);
+                 };
+             }
+ 
+-            return TestDir {
+-                path: Utf8PathBuf::from_path_buf(path).unwrap(),
+-                keep: false,
+-            };
++            return TestDir { path: Utf8PathBuf::from_path_buf(path).unwrap(), keep: false };
+         }
+         panic!("Failed to create a temporary directory")
+     }
+         self.keep = true;
+         self
+     }
++
+     pub(crate) fn path(&self) -> &Utf8Path {
+         &self.path
+     }
+         if self.keep {
+             return;
+         }
+-
+         let filetype = fs::symlink_metadata(&self.path).unwrap().file_type();
+-        let actual_path = filetype
+-            .is_symlink()
+-            .then(|| fs::read_link(&self.path).unwrap());
+-
++        let actual_path = filetype.is_symlink().then(|| fs::read_link(&self.path).unwrap());
+         if let Some(actual_path) = actual_path {
+             remove_dir_all(Utf8Path::from_path(&actual_path).unwrap()).unwrap_or_else(|err| {
+                 panic!(
+                 )
+             })
+         }
+-
+         remove_dir_all(&self.path).unwrap_or_else(|err| {
+             panic!("failed to remove temporary directory {}: {err}", self.path)
+         });

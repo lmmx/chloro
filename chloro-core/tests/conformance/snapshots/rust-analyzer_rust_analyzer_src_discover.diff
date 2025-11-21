@@ -1,0 +1,134 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5655 bytes
+Chloro size:   5630 bytes
+Rustfmt size:  5830 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Infrastructure for lazy project discovery. Currently only support rust-project.json discovery
+ //! via a custom discover command.
++
+ use std::{io, path::Path};
+ 
+ use crossbeam_channel::Sender;
+ 
+ use crate::command::{CargoParser, CommandHandle};
+ 
+-pub(crate) const ARG_PLACEHOLDER: &str = "{arg}";
+ 
+ /// A command wrapper for getting a `rust-project.json`.
+ ///
+ #[derive(PartialEq, Clone, Debug, Serialize)]
+ #[serde(rename_all = "camelCase")]
+ pub(crate) enum DiscoverArgument {
+-    Path(#[serde(serialize_with = "serialize_abs_pathbuf")] AbsPathBuf),
+-    Buildfile(#[serde(serialize_with = "serialize_abs_pathbuf")] AbsPathBuf),
++    Path(AbsPathBuf),
++    Buildfile(AbsPathBuf),
+ }
+ 
+-fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
++fn serialize_abs_pathbuf<S>(
++    path: &AbsPathBuf,
++    se: S,
++) -> Result<S::Ok, S::Error>
+ where
+-    S: serde::Serializer,
+-{
++    S: serde::Serializer, {
+     let path: &Utf8Path = path.as_ref();
+     se.serialize_str(path.as_str())
+ }
+ 
+ impl DiscoverCommand {
+     /// Create a new [DiscoverCommand].
+-    pub(crate) fn new(sender: Sender<DiscoverProjectMessage>, command: Vec<String>) -> Self {
++    pub(crate) fn new(
++        sender: Sender<DiscoverProjectMessage>,
++        command: Vec<String>,
++    ) -> Self {
+         Self { sender, command }
+     }
+ 
+     ) -> io::Result<DiscoverHandle> {
+         let command = &self.command[0];
+         let args = &self.command[1..];
+-
+         let args: Vec<String> = args
+             .iter()
+             .map(|arg| {
+                 }
+             })
+             .collect();
+-
+         // TODO: are we sure the extra env should be empty?
+         let mut cmd = toolchain::command(command, current_dir, &FxHashMap::default());
+         cmd.args(args);
+-
+         Ok(DiscoverHandle {
+             _handle: CommandHandle::spawn(cmd, DiscoverProjectParser, self.sender.clone(), None)?,
+             span: info_span!("discover_command").entered(),
+ #[derive(Debug)]
+ pub(crate) struct DiscoverHandle {
+     _handle: CommandHandle<DiscoverProjectMessage>,
+-    #[allow(dead_code)] // not accessed, but used to log on drop.
++    #[allow(dead_code)]
+     span: EnteredSpan,
+ }
+ 
+ impl DiscoverProjectMessage {
+     fn new(data: DiscoverProjectData) -> Self {
+         match data {
+-            DiscoverProjectData::Finished {
+-                project, buildfile, ..
+-            } => {
++            DiscoverProjectData::Finished { project, buildfile, .. } => {
+                 let buildfile = buildfile.try_into().expect("Unable to make path absolute");
+                 DiscoverProjectMessage::Finished { project, buildfile }
+             }
+ struct DiscoverProjectParser;
+ 
+ impl CargoParser<DiscoverProjectMessage> for DiscoverProjectParser {
+-    fn from_line(&self, line: &str, _error: &mut String) -> Option<DiscoverProjectMessage> {
++    fn from_line(
++        &self,
++        line: &str,
++        _error: &mut String,
++    ) -> Option<DiscoverProjectMessage> {
+         match serde_json::from_str::<DiscoverProjectData>(line) {
+             Ok(data) => {
+                 let msg = DiscoverProjectMessage::new(data);
+                 Some(msg)
+             }
+             Err(err) => {
+-                let err = DiscoverProjectData::Error {
+-                    error: format!("{err:#?}\n{line}"),
+-                    source: None,
+-                };
++                let err =
++                    DiscoverProjectData::Error { error: format!("{err:#?}\n{line}"), source: None };
+                 Some(DiscoverProjectMessage::new(err))
+             }
+         }
+     let message: DiscoverProjectData =
+         serde_json::from_str(message).expect("Unable to deserialize message");
+     assert!(matches!(message, DiscoverProjectData::Progress { .. }));
+-
+     let message = r#"
+     {"kind": "error", "error":"failed to deserialize command output","source":"command"}
+     "#;
+-
+     let message: DiscoverProjectData =
+         serde_json::from_str(message).expect("Unable to deserialize message");
+     assert!(matches!(message, DiscoverProjectData::Error { .. }));
+-
+     let message = r#"
+     {"kind": "finished", "project": {"sysroot": "foo", "crates": [], "runnables": []}, "buildfile":"rust-analyzer/BUILD"}
+     "#;
+-
+     let message: DiscoverProjectData =
+         serde_json::from_str(message).expect("Unable to deserialize message");
+     assert!(matches!(message, DiscoverProjectData::Finished { .. }));

@@ -1,0 +1,60 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2009 bytes
+Chloro size:   1899 bytes
+Rustfmt size:  2009 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: missing-lifetime
+-//
+-// This diagnostic is triggered when a lifetime argument is missing.
+ pub(crate) fn missing_lifetime(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MissingLifetime,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn in_fields() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn bounds() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn generic_defaults() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn type_alias_type() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn const_param_ty() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn fn_traits() {
+         check_diagnostics(

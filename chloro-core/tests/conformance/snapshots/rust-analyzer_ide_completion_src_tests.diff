@@ -1,0 +1,247 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11756 bytes
+Chloro size:   10407 bytes
+Rustfmt size:  11841 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This gives this test module and its submodules here the main purpose of giving the developer an
+ //! overview of whats being completed where, not how.
+ 
+-mod attribute;
+-mod expression;
+-mod flyimport;
+-mod fn_param;
+-mod item;
+-mod item_list;
+-mod pattern;
+-mod predicate;
+-mod proc_macros;
+-mod raw_identifiers;
+-mod record;
+-mod special;
+-mod type_pos;
+-mod use_tree;
+-mod visibility;
+-
+ use base_db::SourceDatabase;
+ use expect_test::Expect;
+ use hir::db::HirDatabase;
+-use hir::{setup_tracing, PrefixKind};
++use hir::{PrefixKind, setup_tracing};
+ use ide_db::{
+-    imports::insert_use::{ImportGranularity, InsertUseConfig},
+     FilePosition, MiniCore, RootDatabase, SnippetCap,
++    imports::insert_use::{ImportGranularity, InsertUseConfig},
+ };
+ use itertools::Itertools;
+ use stdx::{format_to, trim_indent};
+ use test_utils::assert_eq_text;
+ 
+ use crate::{
+-    resolve_completion_edits, CallableSnippets, CompletionConfig, CompletionFieldsToResolve,
+-    CompletionItem, CompletionItemKind,
++    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
++    CompletionItemKind, resolve_completion_edits,
+ };
+ 
++mod attribute;
++
++mod expression;
++
++mod flyimport;
++
++mod fn_param;
++
++mod item;
++
++mod item_list;
++
++mod pattern;
++
++mod predicate;
++
++mod proc_macros;
++
++mod raw_identifiers;
++
++mod record;
++
++mod special;
++
++mod type_pos;
++
++mod use_tree;
++
++mod visibility;
++
+ /// Lots of basic item definitions
+-const BASE_ITEMS_FIXTURE: &str = r#"
+-enum Enum { TupleV(u32), RecordV { field: u32 }, UnitV }
+-use self::Enum::TupleV;
+-mod module {}
+ 
+-trait Trait {}
+-static STATIC: Unit = Unit;
+-const CONST: Unit = Unit;
+-struct Record { field: u32 }
+-struct Tuple(u32);
+-struct Unit;
+-#[macro_export]
+-macro_rules! makro {}
+-#[rustc_builtin_macro]
+-pub macro Clone {}
+-fn function() {}
+-union Union { field: i32 }
+-"#;
+-
+-pub(crate) const TEST_CONFIG: CompletionConfig<'_> = CompletionConfig {
+-    enable_postfix_completions: true,
+-    enable_imports_on_the_fly: true,
+-    enable_self_on_the_fly: true,
+-    enable_private_editable: false,
+-    enable_term_search: true,
+-    term_search_fuel: 200,
+-    full_function_signatures: false,
+-    callable: Some(CallableSnippets::FillArguments),
+-    add_semicolon_to_unit: true,
+-    snippet_cap: SnippetCap::new(true),
+-    insert_use: InsertUseConfig {
+-        granularity: ImportGranularity::Crate,
+-        prefix_kind: PrefixKind::Plain,
+-        enforce_granularity: true,
+-        group: true,
+-        skip_glob_imports: true,
+-    },
+-    prefer_no_std: false,
+-    prefer_prelude: true,
+-    prefer_absolute: false,
+-    snippets: Vec::new(),
+-    limit: None,
+-    fields_to_resolve: CompletionFieldsToResolve::empty(),
+-    exclude_flyimport: vec![],
+-    exclude_traits: &[],
+-    enable_auto_await: true,
+-    enable_auto_iter: true,
+-    minicore: MiniCore::default(),
+-};
+ 
+ pub(crate) fn completion_list(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
+     completion_list_with_config(TEST_CONFIG, ra_fixture, true, None)
+     completion_list_with_config(TEST_CONFIG, ra_fixture, false, None)
+ }
+ 
+-pub(crate) fn completion_list_no_kw_with_private_editable(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-) -> String {
++pub(crate) fn completion_list_no_kw_with_private_editable(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
+     let mut config = TEST_CONFIG;
+     config.enable_private_editable = true;
+     completion_list_with_config(config, ra_fixture, false, None)
+     trigger_character: Option<char>,
+ ) -> Vec<CompletionItem> {
+     let _tracing = setup_tracing();
+-
+     // filter out all but one built-in type completion for smaller test outputs
+     let items = get_all_items(config, ra_fixture, trigger_character);
+     items
+ }
+ 
+ /// Creates analysis from a multi-file fixture, returns positions marked with $0.
+-pub(crate) fn position(
+-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+-) -> (RootDatabase, FilePosition) {
++pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (RootDatabase, FilePosition) {
+     let mut database = RootDatabase::default();
+     let change_fixture = ChangeFixture::parse(&database, ra_fixture);
+     database.enable_proc_attr_macros();
+     database.apply_change(change_fixture.change);
+-    let (file_id, range_or_offset) = change_fixture
+-        .file_position
+-        .expect("expected a marker ($0)");
++    let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
+     let offset = range_or_offset.expect_offset();
+-    let position = FilePosition {
+-        file_id: file_id.file_id(&database),
+-        offset,
+-    };
++    let position = FilePosition { file_id: file_id.file_id(&database), offset };
+     (database, position)
+ }
+ 
+-pub(crate) fn do_completion(code: &str, kind: CompletionItemKind) -> Vec<CompletionItem> {
++pub(crate) fn do_completion(
++    code: &str,
++    kind: CompletionItemKind,
++) -> Vec<CompletionItem> {
+     do_completion_with_config(TEST_CONFIG, code, kind)
+ }
+ 
+ ) {
+     let ra_fixture_after = trim_indent(ra_fixture_after);
+     let (db, position) = position(ra_fixture_before);
+-    let completions: Vec<CompletionItem> = hir::attach_db(&db, || {
+-        crate::completions(&db, &config, position, None).unwrap()
+-    });
+-    let Some((completion,)) = completions
+-        .iter()
+-        .filter(|it| it.lookup() == what)
+-        .collect_tuple()
++    let completions: Vec<CompletionItem> =
++        hir::attach_db(&db, || crate::completions(&db, &config, position, None).unwrap());
++    let Some((completion,)) = completions.iter().filter(|it| it.lookup() == what).collect_tuple()
+     else {
+         panic!("can't find {what:?} completion in {completions:#?}")
+     };
+     let mut actual = db.file_text(position.file_id).text(&db).to_string();
+-
+     let mut combined_edit = completion.text_edit.clone();
+-
+-    resolve_completion_edits(
+-        &db,
+-        &config,
+-        position,
+-        completion.import_to_add.iter().cloned(),
+-    )
+-    .into_iter()
+-    .flatten()
+-    .for_each(|text_edit| {
+-        combined_edit.union(text_edit).expect(
+-            "Failed to apply completion resolve changes: change ranges overlap, but should not",
+-        )
+-    });
+-
++    resolve_completion_edits(&db, &config, position, completion.import_to_add.iter().cloned())
++        .into_iter()
++        .flatten()
++        .for_each(|text_edit| {
++            combined_edit.union(text_edit).expect(
++                "Failed to apply completion resolve changes: change ranges overlap, but should not",
++            )
++        });
+     combined_edit.apply(&mut actual);
+     assert_eq_text!(&ra_fixture_after, &actual)
+ }
+ 
+-pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++pub(crate) fn check(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
+     let actual = completion_list(ra_fixture);
+     expect.assert_eq(&actual);
+ }
+     check(&format!("{BASE_ITEMS_FIXTURE}{ra_fixture}"), expect)
+ }
+ 
+-pub(crate) fn check_no_kw(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++pub(crate) fn check_no_kw(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
+     let actual = completion_list_no_kw(ra_fixture);
+     expect.assert_eq(&actual)
+ }

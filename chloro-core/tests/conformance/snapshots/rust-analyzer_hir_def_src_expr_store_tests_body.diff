@@ -1,0 +1,161 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16167 bytes
+Chloro size:   16171 bytes
+Rustfmt size:  16197 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-mod block;
+-
+-use crate::{hir::MatchArm, nameres::crate_def_map, test_db::TestDB, DefWithBodyId, ModuleDefId};
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use la_arena::RawIdx;
+ use test_fixture::WithFixture;
+ use triomphe::Arc;
+ 
++use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
+ use super::super::*;
+ 
++mod block;
++
+ fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {
+     let db = TestDB::with_files(ra_fixture);
+-
+     let krate = db.fetch_test_crate();
+     let def_map = crate_def_map(&db, krate);
+     let mut fn_def = None;
+         }
+     }
+     let fn_def = fn_def.unwrap().into();
+-
+     let body = db.body(fn_def);
+     (db, body, fn_def)
+ }
+ 
+ fn def_map_at(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
+     let (db, position) = TestDB::with_position(ra_fixture);
+-
+     let module = db.module_at_position(position);
+     module.def_map(&db).dump(&db)
+ }
+ 
+-fn check_block_scopes_at(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++fn check_block_scopes_at(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
+     let (db, position) = TestDB::with_position(ra_fixture);
+-
+     let module = db.module_at_position(position);
+     let actual = module.def_map(&db).dump_block_scopes(&db);
+     expect.assert_eq(&actual);
+ }
+ 
+-fn check_at(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++fn check_at(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
+     let actual = def_map_at(ra_fixture);
+     expect.assert_eq(&actual);
+ }
+ }
+ "#,
+     );
+-
+     expect![[r#"
+         fn main() {
+             match builtin#lang(into_iter)(
+ }
+ "#,
+     );
+-
+     expect![[r#"
+         fn main() {
+             let are = "are";
+ }
+ "#,
+     );
+-
+     expect![[r#"
+         fn main() {
+             let are = "are";
+ }
+ "##,
+     );
+-
+     assert_eq!(db.body_with_source_map(def).1.diagnostics(), &[]);
+     expect![[r#"
+         fn main() {
+ }
+ "#,
+     );
+-
+     let (_, source_map) = db.body_with_source_map(def);
+     assert_eq!(source_map.diagnostics(), &[]);
+-
+     for (_, def_map) in body.blocks(&db) {
+         assert_eq!(def_map.diagnostics(), &[]);
+     }
+-
+     expect![[r#"
+         fn f(a, b) {
+             {
+     // This is a funny one. `let m!()() = Bar()` is an error in rustc, because `m!()()` isn't a valid pattern,
+     // but in destructuring assignment it is valid, because `m!()()` is a valid expression, and destructuring
+     // assignments start their lives as expressions. So we have to do the same.
+-
+     let (db, body, def) = lower(
+         r#"
+ struct Bar();
+ }
+ "#,
+     );
+-
+     let (_, source_map) = db.body_with_source_map(def);
+     assert_eq!(source_map.diagnostics(), &[]);
+-
+     for (_, def_map) in body.blocks(&db) {
+         assert_eq!(def_map.diagnostics(), &[]);
+     }
+-
+     expect![[r#"
+         fn foo() {
+             Bar() = Bar();
+ }
+     "#,
+     );
+-    assert_eq!(
+-        body.assert_expr_only().bindings.len(),
+-        1,
+-        "should have a binding for `B`"
+-    );
++    assert_eq!(body.assert_expr_only().bindings.len(), 1, "should have a binding for `B`");
+     assert_eq!(
+         body[BindingId::from_raw(RawIdx::from_u32(0))].name.as_str(),
+         "B",
+ "#,
+     );
+     let printed = body.pretty_print(&db, owner, Edition::CURRENT);
+-
+     expect![[r#"
+         fn foo() {
+             let v @ u = 123;
+     }
+ }"#,
+     );
+-
+     let mtch_arms = body
+         .assert_expr_only()
+         .exprs
+             None
+         })
+         .unwrap();
+-
+     let MatchArm { pat, .. } = mtch_arms[1];
+     match body[pat] {
+         Pat::Range { start, end } => {

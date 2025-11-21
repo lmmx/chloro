@@ -1,0 +1,72 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 9973 bytes
+Chloro size:   9176 bytes
+Rustfmt size:  10039 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Utility module for converting between hir_def ids and code_model wrappers.
+ //!
+ //! It's unclear if we need this long-term, but it's definitely useful while we
+ //! are splitting the hir.
+ 
+ use hir_def::{
+-    hir::{BindingId, LabelId},
+     AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
+     ModuleDefId, VariantId,
++    hir::{BindingId, LabelId},
+ };
+ 
+ use crate::{
+         }
+     )*}
+ }
+-
+-from_id![
+-    (base_db::Crate, crate::Crate),
+-    (hir_def::ModuleId, crate::Module),
+-    (hir_def::StructId, crate::Struct),
+-    (hir_def::UnionId, crate::Union),
+-    (hir_def::EnumId, crate::Enum),
+-    (hir_def::TypeAliasId, crate::TypeAlias),
+-    (hir_def::TraitId, crate::Trait),
+-    (hir_def::StaticId, crate::Static),
+-    (hir_def::ConstId, crate::Const),
+-    (hir_def::FunctionId, crate::Function),
+-    (hir_def::ImplId, crate::Impl),
+-    (hir_def::TypeOrConstParamId, crate::TypeOrConstParam),
+-    (hir_def::TypeParamId, crate::TypeParam),
+-    (hir_def::ConstParamId, crate::ConstParam),
+-    (hir_def::LifetimeParamId, crate::LifetimeParam),
+-    (hir_def::MacroId, crate::Macro),
+-    (hir_def::ExternCrateId, crate::ExternCrateDecl),
+-    (hir_def::ExternBlockId, crate::ExternBlock),
+-];
+-
+ impl From<AdtId> for Adt {
+     fn from(id: AdtId) -> Self {
+         match id {
+ 
+ impl From<Field> for FieldId {
+     fn from(def: Field) -> Self {
+-        FieldId {
+-            parent: def.parent.into(),
+-            local_id: def.id,
+-        }
++        FieldId { parent: def.parent.into(), local_id: def.id }
+     }
+ }
+ 
+ impl From<FieldId> for Field {
+     fn from(def: FieldId) -> Self {
+-        Field {
+-            parent: def.parent.into(),
+-            id: def.local_id,
+-        }
++        Field { parent: def.parent.into(), id: def.local_id }
+     }
+ }
+ 

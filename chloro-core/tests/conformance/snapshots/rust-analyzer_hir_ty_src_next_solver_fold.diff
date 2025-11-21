@@ -1,0 +1,160 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5559 bytes
+Chloro size:   5719 bytes
+Rustfmt size:  5644 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Fold impls for the next-trait-solver.
+ 
+ use rustc_type_ir::{
+-    inherent::IntoKind, BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder,
+-    TypeSuperFoldable, TypeVisitableExt,
++    BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
++    TypeVisitableExt, inherent::IntoKind,
+ };
+ 
+ use crate::next_solver::BoundConst;
+-
+ use super::{
+     Binder, BoundRegion, BoundTy, Const, ConstKind, DbInterner, Predicate, Region, Ty, TyKind,
+ };
+ /// Any implementation must make sure that each bound variable always
+ /// gets mapped to the same result. `BoundVarReplacer` caches by using
+ /// a `DelayedMap` which does not cache the first few types it encounters.
+-pub trait BoundVarReplacerDelegate<'db> {
+-    fn replace_region(&mut self, br: BoundRegion) -> Region<'db>;
+-    fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db>;
+-    fn replace_const(&mut self, bv: BoundConst) -> Const<'db>;
+-}
++fn replace_region(
++    &mut self,
++    br: BoundRegion,
++) -> Region<'db>;
++fn replace_ty(
++    &mut self,
++    bt: BoundTy,
++) -> Ty<'db>;
++fn replace_const(
++    &mut self,
++    bv: BoundConst,
++) -> Const<'db>;
+ 
+ /// A simple delegate taking 3 mutable functions. The used functions must
+ /// always return the same result for each bound variable, no matter how
+ }
+ 
+ impl<'db, 'a> BoundVarReplacerDelegate<'db> for FnMutDelegate<'db, 'a> {
+-    fn replace_region(&mut self, br: BoundRegion) -> Region<'db> {
++    fn replace_region(
++        &mut self,
++        br: BoundRegion,
++    ) -> Region<'db> {
+         (self.regions)(br)
+     }
+-    fn replace_ty(&mut self, bt: BoundTy) -> Ty<'db> {
++
++    fn replace_ty(
++        &mut self,
++        bt: BoundTy,
++    ) -> Ty<'db> {
+         (self.types)(bt)
+     }
+-    fn replace_const(&mut self, bv: BoundConst) -> Const<'db> {
++
++    fn replace_const(
++        &mut self,
++        bv: BoundConst,
++    ) -> Const<'db> {
+         (self.consts)(bv)
+     }
+ }
+     /// As with `RegionFolder`, represents the index of a binder *just outside*
+     /// the ones we have visited.
+     current_index: DebruijnIndex,
+-
+     delegate: D,
+ }
+ 
+ impl<'db, D: BoundVarReplacerDelegate<'db>> BoundVarReplacer<'db, D> {
+-    pub(crate) fn new(tcx: DbInterner<'db>, delegate: D) -> Self {
+-        BoundVarReplacer {
+-            interner: tcx,
+-            current_index: DebruijnIndex::ZERO,
+-            delegate,
+-        }
++    pub(crate) fn new(
++        tcx: DbInterner<'db>,
++        delegate: D,
++    ) -> Self {
++        BoundVarReplacer { interner: tcx, current_index: DebruijnIndex::ZERO, delegate }
+     }
+ }
+ 
+ impl<'db, D> TypeFolder<DbInterner<'db>> for BoundVarReplacer<'db, D>
+ where
+-    D: BoundVarReplacerDelegate<'db>,
+-{
++    D: BoundVarReplacerDelegate<'db>, {
+     fn cx(&self) -> DbInterner<'db> {
+         self.interner
+     }
+         t
+     }
+ 
+-    fn fold_ty(&mut self, t: Ty<'db>) -> Ty<'db> {
++    fn fold_ty(
++        &mut self,
++        t: Ty<'db>,
++    ) -> Ty<'db> {
+         match t.kind() {
+             TyKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_ty)
+                 if debruijn == self.current_index =>
+         }
+     }
+ 
+-    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
++    fn fold_region(
++        &mut self,
++        r: Region<'db>,
++    ) -> Region<'db> {
+         match r.kind() {
+             RegionKind::ReBound(BoundVarIndexKind::Bound(debruijn), br)
+                 if debruijn == self.current_index =>
+         }
+     }
+ 
+-    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
++    fn fold_const(
++        &mut self,
++        ct: Const<'db>,
++    ) -> Const<'db> {
+         match ct.kind() {
+             ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), bound_const)
+                 if debruijn == self.current_index =>
+         }
+     }
+ 
+-    fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {
+-        if p.has_vars_bound_at_or_above(self.current_index) {
+-            p.super_fold_with(self)
+-        } else {
+-            p
+-        }
++    fn fold_predicate(
++        &mut self,
++        p: Predicate<'db>,
++    ) -> Predicate<'db> {
++        if p.has_vars_bound_at_or_above(self.current_index) { p.super_fold_with(self) } else { p }
+     }
+ }
+ 
+             (self.callback)(t)
+         }
+     }
+-
+     t.fold_with(&mut Folder { interner, callback })
+ }

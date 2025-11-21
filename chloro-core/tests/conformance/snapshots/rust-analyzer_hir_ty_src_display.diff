@@ -1,0 +1,690 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 99713 bytes
+Chloro size:   99203 bytes
+Rustfmt size:  99713 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     utils::{self, detect_variant_from_bytes},
+ };
+ 
+-pub trait HirWrite: fmt::Write {
+-    fn start_location_link(&mut self, _location: ModuleDefId) {}
+-    fn end_location_link(&mut self) {}
++fn start_location_link(
++    &mut self,
++    _location: ModuleDefId,
++) {
++}
++fn end_location_link(&mut self) {
+ }
+ 
+-// String will ignore link metadata
+-impl HirWrite for String {}
++impl HirWrite for String {
++}
+ 
+-// `core::Formatter` will ignore metadata
+-impl HirWrite for fmt::Formatter<'_> {}
++impl HirWrite for fmt::Formatter<'_> {
++}
+ 
+ pub struct HirFormatter<'a, 'db> {
+     /// The database handle
+     bounds_formatting_ctx: BoundsFormattingCtx<'db>,
+ }
+ 
+-// FIXME: To consider, ref and dyn trait lifetimes can be omitted if they are `'_`, path args should
+-// not be when in signatures
+-// So this enum does not encode this well enough
+-// Also 'static can be omitted for ref and dyn trait lifetimes in static/const item types
+-// FIXME: Also named lifetimes may be rendered in places where their name is not in scope?
+ #[derive(Copy, Clone)]
+ pub enum DisplayLifetime {
+     Always,
+         ///     T::FooAssoc: Baz<<T::FooAssoc as Bar>::BarAssoc> + Bar
+         /// ```
+         /// So, record the projection types met while formatting bounds and
+-        //. prevent recursing into their bounds to avoid infinite loops.
+         projection_tys_met: FxHashSet<AliasTy<'db>>,
+     },
+     #[default]
+ }
+ 
+ impl<'db> BoundsFormattingCtx<'db> {
+-    fn contains(&self, proj: &AliasTy<'db>) -> bool {
++    fn contains(
++        &self,
++        proj: &AliasTy<'db>,
++    ) -> bool {
+         match self {
+             BoundsFormattingCtx::Entered { projection_tys_met } => {
+                 projection_tys_met.contains(proj)
+ }
+ 
+ impl<'db> HirFormatter<'_, 'db> {
+-    fn start_location_link(&mut self, location: ModuleDefId) {
++    fn start_location_link(
++        &mut self,
++        location: ModuleDefId,
++    ) {
+         self.fmt.start_location_link(location);
+     }
+ 
+         }
+     }
+ 
+-    fn render_region(&self, lifetime: Region<'db>) -> bool {
++    fn render_region(
++        &self,
++        lifetime: Region<'db>,
++    ) -> bool {
+         match self.display_lifetimes {
+             DisplayLifetime::Always => true,
+             DisplayLifetime::OnlyStatic => matches!(lifetime.kind(), RegionKind::ReStatic),
+     }
+ }
+ 
+-pub trait HirDisplay<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>;
+-
+-    /// Returns a `Display`able type that is human-readable.
+-    fn into_displayable<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        max_size: Option<usize>,
+-        limited_size: Option<usize>,
+-        omit_verbose_types: bool,
+-        display_target: DisplayTarget,
+-        display_kind: DisplayKind,
+-        closure_style: ClosureStyle,
+-        show_container_bounds: bool,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        assert!(
++fn hir_fmt(
++    &self,
++    f: &mut HirFormatter<'_, 'db>,
++) -> Result<(), HirDisplayError>;
++/// Returns a `Display`able type that is human-readable.
++fn into_displayable<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    max_size: Option<usize>,
++    limited_size: Option<usize>,
++    omit_verbose_types: bool,
++    display_target: DisplayTarget,
++    display_kind: DisplayKind,
++    closure_style: ClosureStyle,
++    show_container_bounds: bool,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    assert!(
+             !matches!(display_kind, DisplayKind::SourceCode { .. }),
+             "HirDisplayWrapper cannot fail with DisplaySourceCodeError, use HirDisplay::hir_fmt directly instead"
+         );
+-        HirDisplayWrapper {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size,
+             show_container_bounds,
+             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
+         }
+-    }
+-
+-    /// Returns a `Display`able type that is human-readable.
+-    /// Use this for showing types to the user (e.g. diagnostics)
+-    fn display<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        display_target: DisplayTarget,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        HirDisplayWrapper {
++}
++/// Returns a `Display`able type that is human-readable.
++/// Use this for showing types to the user (e.g. diagnostics)
++fn display<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    display_target: DisplayTarget,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size: None,
+             show_container_bounds: false,
+             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
+         }
+-    }
+-
+-    /// Returns a `Display`able type that is human-readable and tries to be succinct.
+-    /// Use this for showing types to the user where space is constrained (e.g. doc popups)
+-    fn display_truncated<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        max_size: Option<usize>,
+-        display_target: DisplayTarget,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        HirDisplayWrapper {
++}
++/// Returns a `Display`able type that is human-readable and tries to be succinct.
++/// Use this for showing types to the user where space is constrained (e.g. doc popups)
++fn display_truncated<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    max_size: Option<usize>,
++    display_target: DisplayTarget,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size,
+             show_container_bounds: false,
+             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
+         }
+-    }
+-
+-    /// Returns a `Display`able type that is human-readable and tries to limit the number of items inside.
+-    /// Use this for showing definitions which may contain too many items, like `trait`, `struct`, `enum`
+-    fn display_limited<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        limited_size: Option<usize>,
+-        display_target: DisplayTarget,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        HirDisplayWrapper {
++}
++/// Returns a `Display`able type that is human-readable and tries to limit the number of items inside.
++/// Use this for showing definitions which may contain too many items, like `trait`, `struct`, `enum`
++fn display_limited<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    limited_size: Option<usize>,
++    display_target: DisplayTarget,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size: None,
+             show_container_bounds: false,
+             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
+         }
+-    }
+-
+-    /// Returns a String representation of `self` that can be inserted into the given module.
+-    /// Use this when generating code (e.g. assists)
+-    fn display_source_code<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        module_id: ModuleId,
+-        allow_opaque: bool,
+-    ) -> Result<String, DisplaySourceCodeError> {
+-        let mut result = String::new();
+-        let interner =
++}
++/// Returns a String representation of `self` that can be inserted into the given module.
++/// Use this when generating code (e.g. assists)
++fn display_source_code<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    module_id: ModuleId,
++    allow_opaque: bool,
++) -> Result<String, DisplaySourceCodeError> {
++    let mut result = String::new();
++    let interner =
+             DbInterner::new_with(db, Some(module_id.krate()), module_id.containing_block());
+-        match self.hir_fmt(&mut HirFormatter {
++    match self.hir_fmt(&mut HirFormatter {
+             db,
+             interner,
+             fmt: &mut result,
+             Err(HirDisplayError::FmtError) => panic!("Writing to String can't fail!"),
+             Err(HirDisplayError::DisplaySourceCodeError(e)) => return Err(e),
+         };
+-        Ok(result)
+-    }
+-
+-    /// Returns a String representation of `self` for test purposes
+-    fn display_test<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        display_target: DisplayTarget,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        HirDisplayWrapper {
++    Ok(result)
++}
++/// Returns a String representation of `self` for test purposes
++fn display_test<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    display_target: DisplayTarget,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size: None,
+             show_container_bounds: false,
+             display_lifetimes: DisplayLifetime::Always,
+         }
+-    }
+-
+-    /// Returns a String representation of `self` that shows the constraint from
+-    /// the container for functions
+-    fn display_with_container_bounds<'a>(
+-        &'a self,
+-        db: &'db dyn HirDatabase,
+-        show_container_bounds: bool,
+-        display_target: DisplayTarget,
+-    ) -> HirDisplayWrapper<'a, 'db, Self>
+-    where
+-        Self: Sized,
+-    {
+-        HirDisplayWrapper {
++}
++/// Returns a String representation of `self` that shows the constraint from
++/// the container for functions
++fn display_with_container_bounds<'a>(
++    &'a self,
++    db: &'db dyn HirDatabase,
++    show_container_bounds: bool,
++    display_target: DisplayTarget,
++) -> HirDisplayWrapper<'a, 'db, Self>
++where
++        Self: Sized, {
++    HirDisplayWrapper {
+             db,
+             t: self,
+             max_size: None,
+             show_container_bounds,
+             display_lifetimes: DisplayLifetime::OnlyNamedOrStatic,
+         }
+-    }
+ }
+ 
+ impl<'db> HirFormatter<'_, 'db> {
+     }
+ 
+     /// This allows using the `write!` macro directly with a `HirFormatter`.
+-    pub fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<(), HirDisplayError> {
++    pub fn write_fmt(
++        &mut self,
++        args: fmt::Arguments<'_>,
++    ) -> Result<(), HirDisplayError> {
+         // We write to a buffer first to track output size
+         self.buf.clear();
+         fmt::write(&mut self.buf, args)?;
+         self.curr_size += self.buf.len();
+-
+         // Then we write to the internal formatter from the buffer
+         self.fmt.write_str(&self.buf).map_err(HirDisplayError::from)
+     }
+ 
+-    pub fn write_str(&mut self, s: &str) -> Result<(), HirDisplayError> {
++    pub fn write_str(
++        &mut self,
++        s: &str,
++    ) -> Result<(), HirDisplayError> {
+         self.fmt.write_str(s)?;
+         Ok(())
+     }
+ 
+-    pub fn write_char(&mut self, c: char) -> Result<(), HirDisplayError> {
++    pub fn write_char(
++        &mut self,
++        c: char,
++    ) -> Result<(), HirDisplayError> {
+         self.fmt.write_char(c)?;
+         Ok(())
+     }
+ }
+ 
+ impl DisplayTarget {
+-    pub fn from_crate(db: &dyn HirDatabase, krate: Crate) -> Self {
++    pub fn from_crate(
++        db: &dyn HirDatabase,
++        krate: Crate,
++    ) -> Self {
+         let edition = krate.data(db).edition;
+         Self { krate, edition }
+     }
+     Diagnostics,
+     /// Display types for inserting them in source files.
+     /// The generated code should compile, so paths need to be qualified.
+-    SourceCode { target_module_id: ModuleId, allow_opaque: bool },
++    SourceCode {
++        target_module_id: ModuleId,
++        allow_opaque: bool,
++    },
+     /// Only for test purpose to keep real types
+     Test,
+ }
+     /// `FmtError` is required to be compatible with std::fmt::Display
+     FmtError,
+ }
++
+ impl From<fmt::Error> for HirDisplayError {
+     fn from(_: fmt::Error) -> Self {
+         Self::FmtError
+ }
+ 
+ impl<'db, T: HirDisplay<'db>> HirDisplayWrapper<'_, 'db, T> {
+-    pub fn write_to<F: HirWrite>(&self, f: &mut F) -> Result<(), HirDisplayError> {
++    pub fn write_to<F: HirWrite>(
++        &self,
++        f: &mut F,
++    ) -> Result<(), HirDisplayError> {
+         let krate = self.display_target.krate;
+         let block = match self.display_kind {
+             DisplayKind::SourceCode { target_module_id, .. } => target_module_id.containing_block(),
+         })
+     }
+ 
+-    pub fn with_closure_style(mut self, c: ClosureStyle) -> Self {
++    pub fn with_closure_style(
++        mut self,
++        c: ClosureStyle,
++    ) -> Self {
+         self.closure_style = c;
+         self
+     }
+ 
+-    pub fn with_lifetime_display(mut self, l: DisplayLifetime) -> Self {
++    pub fn with_lifetime_display(
++        mut self,
++        l: DisplayLifetime,
++    ) -> Self {
+         self.display_lifetimes = l;
+         self
+     }
+ 
+ impl<'db, T> fmt::Display for HirDisplayWrapper<'_, 'db, T>
+ where
+-    T: HirDisplay<'db>,
+-{
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    T: HirDisplay<'db>, {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         match self.write_to(f) {
+             Ok(()) => Ok(()),
+             Err(HirDisplayError::FmtError) => Err(fmt::Error),
+     }
+ }
+ 
+-const TYPE_HINT_TRUNCATION: &str = "…";
+ 
+ impl<'db, T: HirDisplay<'db>> HirDisplay<'db> for &T {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         HirDisplay::hir_fmt(*self, f)
+     }
+ }
+ 
+ impl<'db, T: HirDisplay<'db> + Internable> HirDisplay<'db> for Interned<T> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         HirDisplay::hir_fmt(self.as_ref(), f)
+     }
+ }
+     }
+     let trait_ref = alias.trait_ref(f.interner);
+     let self_ty = trait_ref.self_ty();
+-
+     // if we are projection on a type parameter, check if the projection target has bounds
+     // itself, if so, we render them directly as `impl Bound` instead of the less useful
+     // `<Param as Trait>::Assoc`
+             });
+         }
+     }
+-
+     write!(f, "<")?;
+     self_ty.hir_fmt(f)?;
+     write!(f, " as ")?;
+ }
+ 
+ impl<'db> HirDisplay<'db> for GenericArg<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         match self {
+             GenericArg::Ty(ty) => ty.hir_fmt(f),
+             GenericArg::Lifetime(lt) => lt.hir_fmt(f),
+ }
+ 
+ impl<'db> HirDisplay<'db> for Const<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         match self.kind() {
+             ConstKind::Placeholder(_) => write!(f, "<placeholder>"),
+             ConstKind::Bound(BoundVarIndexKind::Bound(db), bound_const) => {
+         if f.should_truncate() {
+             return write!(f, "{TYPE_HINT_TRUNCATION}");
+         }
+-
+         use TyKind;
+         match self.kind() {
+             TyKind::Never => write!(f, "!")?,
+     if parameters.is_empty() {
+         return Ok(());
+     }
+-
+     let parameters_to_write = generic_args_sans_defaults(f, generic_def, parameters);
+-
+     if !parameters_to_write.is_empty() {
+         write!(f, "<")?;
+         hir_fmt_generic_arguments(f, parameters_to_write, self_)?;
+         write!(f, ">")?;
+     }
+-
+     Ok(())
+ }
+ 
+     if parameters.is_empty() {
+         return Ok(());
+     }
+-
+     let parameters_to_write = generic_args_sans_defaults(f, generic_def, parameters);
+-
+     if !parameters_to_write.is_empty() {
+         write!(f, "<")?;
+         hir_fmt_generic_arguments(f, parameters_to_write, self_)?;
+         write!(f, ">")?;
+     }
+-
+     Ok(())
+ }
+ 
+ ) -> Result<(), HirDisplayError> {
+     let mut first = true;
+     let lifetime_offset = parameters.iter().position(|arg| arg.region().is_some());
+-
+     let (ty_or_const, lifetimes) = match lifetime_offset {
+         Some(offset) => parameters.split_at(offset),
+         None => (parameters, &[][..]),
+     self_: Option<Ty<'db>>,
+ ) -> Result<(), HirDisplayError> {
+     let mut first = true;
+-
+     for ty in tys {
+         if !mem::take(&mut first) {
+             write!(f, ", ")?;
+ }
+ 
+ impl<'db> HirDisplay<'db> for PolyFnSig<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         let FnSig { inputs_and_output, c_variadic, safety, abi: _ } = self.skip_binder();
+         if let Safety::Unsafe = safety {
+             write!(f, "unsafe ")?;
+ }
+ 
+ impl<'db> HirDisplay<'db> for Term<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         match self {
+             Term::Ty(it) => it.hir_fmt(f),
+             Term::Const(it) => it.hir_fmt(f),
+     }
+ }
+ 
+-fn fn_traits(db: &dyn DefDatabase, trait_: TraitId) -> impl Iterator<Item = TraitId> + '_ {
++fn fn_traits(
++    db: &dyn DefDatabase,
++    trait_: TraitId,
++) -> impl Iterator<Item = TraitId> + '_ {
+     let krate = trait_.lookup(db).container.krate();
+     utils::fn_traits(db, krate)
+ }
+ #[derive(Clone, Copy, PartialEq, Eq)]
+ pub enum SizedByDefault {
+     NotSized,
+-    Sized { anchor: Crate },
++    Sized {
++        anchor: Crate,
++    },
+ }
+ 
+ impl SizedByDefault {
+-    fn is_sized_trait(self, trait_: TraitId, db: &dyn DefDatabase) -> bool {
++    fn is_sized_trait(
++        self,
++        trait_: TraitId,
++        db: &dyn DefDatabase,
++    ) -> bool {
+         match self {
+             Self::NotSized => false,
+             Self::Sized { anchor } => {
+ }
+ 
+ impl<'db> HirDisplay<'db> for TraitRef<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         let trait_ = self.def_id.0;
+         f.start_location_link(trait_.into());
+         write!(f, "{}", f.db.trait_signature(trait_).name.display(f.db, f.edition()))?;
+ }
+ 
+ impl<'db> HirDisplay<'db> for Region<'db> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         match self.kind() {
+             RegionKind::ReEarlyParam(param) => {
+                 let generics = generics(f.db, param.id.parent);
+     }
+ }
+ 
+-pub trait HirDisplayWithExpressionStore<'db> {
+-    fn hir_fmt(
+-        &self,
+-        f: &mut HirFormatter<'_, 'db>,
+-        store: &ExpressionStore,
+-    ) -> Result<(), HirDisplayError>;
+-}
++fn hir_fmt(
++    &self,
++    f: &mut HirFormatter<'_, 'db>,
++    store: &ExpressionStore,
++) -> Result<(), HirDisplayError>;
+ 
+-impl<'db, T: ?Sized + HirDisplayWithExpressionStore<'db>> HirDisplayWithExpressionStore<'db>
+-    for &'_ T
+-{
++impl<'db, T: ?Sized + HirDisplayWithExpressionStore<'db>> HirDisplayWithExpressionStore<'db> for &'_ T {
+     fn hir_fmt(
+         &self,
+         f: &mut HirFormatter<'_, 'db>,
+ }
+ 
+ impl<'db, T: HirDisplayWithExpressionStore<'db>> HirDisplay<'db> for ExpressionStoreAdapter<'_, T> {
+-    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
++    fn hir_fmt(
++        &self,
++        f: &mut HirFormatter<'_, 'db>,
++    ) -> Result<(), HirDisplayError> {
+         T::hir_fmt(&self.0, f, self.1)
+     }
+ }
++
+ impl<'db> HirDisplayWithExpressionStore<'db> for LifetimeRefId {
+     fn hir_fmt(
+         &self,
+     ) -> Result<(), HirDisplayError> {
+         // FIXME
+         write!(f, "{{const}}")?;
+-
+         Ok(())
+     }
+ }
+                 write!(f, "{name}")?
+             }
+         }
+-
+         // Convert trait's `Self` bound back to the surface syntax. Note there is no associated
+         // trait, so there can only be one path segment that `has_self_type`. The `Self` type
+         // itself can contain further qualified path through, which will be handled by recursive
+             write!(f, " as ")?;
+             // Now format the path of the trait...
+         }
+-
+         for (seg_idx, segment) in self.segments().iter().enumerate() {
+             if !matches!(self.kind(), PathKind::Plain) || seg_idx > 0 {
+                 write!(f, "::")?;
+                 }
+             }
+         }
+-
+         Ok(())
+     }
+ }

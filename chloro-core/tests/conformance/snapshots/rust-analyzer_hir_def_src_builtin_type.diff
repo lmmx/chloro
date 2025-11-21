@@ -1,0 +1,98 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8029 bytes
+Chloro size:   8073 bytes
+Rustfmt size:  8029 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::fmt;
+ 
+ use hir_expand::name::{AsName, Name};
+-use intern::{sym, Symbol};
++use intern::{Symbol, sym};
++
+ /// Different signed int types.
+ #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+ pub enum BuiltinInt {
+ }
+ 
+ impl fmt::Display for BuiltinType {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         match self {
+             BuiltinType::Char => f.write_str("char"),
+             BuiltinType::Bool => f.write_str("bool"),
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinInt {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinInt> {
+         let res = match suffix {
+         };
+         Some(res)
+     }
++
+     pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinInt> {
+         let res = match suffix {
+             s if *s == sym::isize => Self::Isize,
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinUint {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinUint> {
+         let res = match suffix {
+         };
+         Some(res)
+     }
++
+     pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinUint> {
+         let res = match suffix {
+             s if *s == sym::usize => Self::Usize,
+     }
+ }
+ 
+-#[rustfmt::skip]
+ impl BuiltinFloat {
+     pub fn from_suffix(suffix: &str) -> Option<BuiltinFloat> {
+         let res = match suffix {
+ }
+ 
+ impl fmt::Display for BuiltinInt {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         f.write_str(match self {
+             BuiltinInt::Isize => "isize",
+             BuiltinInt::I8 => "i8",
+ }
+ 
+ impl fmt::Display for BuiltinUint {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         f.write_str(match self {
+             BuiltinUint::Usize => "usize",
+             BuiltinUint::U8 => "u8",
+ }
+ 
+ impl fmt::Display for BuiltinFloat {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         f.write_str(match self {
+             BuiltinFloat::F16 => "f16",
+             BuiltinFloat::F32 => "f32",

@@ -1,0 +1,67 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3679 bytes
+Chloro size:   3593 bytes
+Rustfmt size:  3832 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ #[derive(Debug, PartialEq, Eq)]
+ pub enum ProcMacroKind {
+-    Derive { helpers: Box<[Name]> },
++    Derive {
++        helpers: Box<[Name]>,
++    },
+     Bang,
+     Attr,
+ }
+ }
+ 
+ impl Attrs {
+-    pub fn parse_proc_macro_decl(&self, func_name: &Name) -> Option<ProcMacroDef> {
++    pub fn parse_proc_macro_decl(
++        &self,
++        func_name: &Name,
++    ) -> Option<ProcMacroDef> {
+         if self.is_proc_macro() {
+-            Some(ProcMacroDef {
+-                name: func_name.clone(),
+-                kind: ProcMacroKind::Bang,
+-            })
++            Some(ProcMacroDef { name: func_name.clone(), kind: ProcMacroKind::Bang })
+         } else if self.is_proc_macro_attribute() {
+-            Some(ProcMacroDef {
+-                name: func_name.clone(),
+-                kind: ProcMacroKind::Attr,
+-            })
++            Some(ProcMacroDef { name: func_name.clone(), kind: ProcMacroKind::Attr })
+         } else if self.by_key(sym::proc_macro_derive).exists() {
+             let derive = self.parse_proc_macro_derive();
+             Some(match derive {
+-                Some((name, helpers)) => ProcMacroDef {
+-                    name,
+-                    kind: ProcMacroKind::Derive { helpers },
+-                },
++                Some((name, helpers)) => {
++                    ProcMacroDef { name, kind: ProcMacroKind::Derive { helpers } }
++                }
+                 None => ProcMacroDef {
+                     name: func_name.clone(),
+-                    kind: ProcMacroKind::Derive {
+-                        helpers: Box::default(),
+-                    },
++                    kind: ProcMacroKind::Derive { helpers: Box::default() },
+                 },
+             })
+         } else {
+     }
+ }
+ 
+-// This fn is intended for `#[proc_macro_derive(..)]` and `#[rustc_builtin_macro(..)]`, which have
+-// the same structure.
+ #[rustfmt::skip]
+ pub(crate) fn parse_macro_name_and_helper_attrs(tt: &TopSubtree) -> Option<(Name, Box<[Name]>)> {
+     match tt.token_trees().flat_tokens() {

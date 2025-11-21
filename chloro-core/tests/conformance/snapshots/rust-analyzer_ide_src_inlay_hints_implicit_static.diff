@@ -1,0 +1,46 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2153 bytes
+Chloro size:   2150 bytes
+Rustfmt size:  2153 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Implementation of "implicit static" inlay hints:
+ //! ```no_run
+ //! static S: &/* 'static */str = "";
+ //! ```
++
+ use either::Either;
+ use ide_db::famous_defs::FamousDefs;
+ use ide_db::text_edit::TextEdit;
+     if config.lifetime_elision_hints != LifetimeElisionHints::Always {
+         return None;
+     }
+-
+     if let Either::Right(it) = &statik_or_const
+         && ast::AssocItemList::can_cast(
+             it.syntax().parent().map_or(SyntaxKind::EOF, |it| it.kind()),
+     {
+         return None;
+     }
+-
+     if let Some(ast::Type::RefType(ty)) = statik_or_const.either(|it| it.ty(), |it| it.ty())
+         && ty.lifetime().is_none()
+     {
+             resolve_parent: None,
+         });
+     }
+-
+     Some(())
+ }
+ 
+         InlayHintsConfig, LifetimeElisionHints,
+         inlay_hints::tests::{TEST_CONFIG, check_with_config},
+     };
+-
+     #[test]
+     fn hints_lifetimes_static() {
+         check_with_config(

@@ -1,0 +1,88 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10586 bytes
+Chloro size:   10314 bytes
+Rustfmt size:  10586 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Constant evaluation details
+ 
+-#[cfg(test)]
+-mod tests;
+-
+ use base_db::Crate;
+ use hir_def::{
+     EnumVariantId, GeneralConstId, HasModule, StaticId,
+         SolverDefId, Ty, ValueConst,
+     },
+ };
+-
+ use super::mir::{interpret_mir, lower_to_mir, pad16};
+ 
++#[cfg(test)]
++mod tests;
++
+ pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
+     Const::new(DbInterner::conjure(), rustc_type_ir::ConstKind::Error(ErrorGuaranteed))
+ }
+ }
+ 
+ /// Interns a possibly-unknown target usize
+-pub fn usize_const<'db>(db: &'db dyn HirDatabase, value: Option<u128>, krate: Crate) -> Const<'db> {
++pub fn usize_const<'db>(
++    db: &'db dyn HirDatabase,
++    value: Option<u128>,
++    krate: Crate,
++) -> Const<'db> {
+     intern_const_ref(
+         db,
+         &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
+     )
+ }
+ 
+-pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u128> {
++pub fn try_const_usize<'db>(
++    db: &'db dyn HirDatabase,
++    c: Const<'db>,
++) -> Option<u128> {
+     match c.kind() {
+         ConstKind::Param(_) => None,
+         ConstKind::Infer(_) => None,
+     }
+ }
+ 
+-pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<i128> {
++pub fn try_const_isize<'db>(
++    db: &'db dyn HirDatabase,
++    c: &Const<'db>,
++) -> Option<i128> {
+     match (*c).kind() {
+         ConstKind::Param(_) => None,
+         ConstKind::Infer(_) => None,
+         };
+         return Ok(value);
+     }
+-
+     let repr = db.enum_signature(loc.parent).repr;
+     let is_signed = repr.and_then(|repr| repr.int).is_none_or(|int| int.is_signed());
+-
+     let mir_body = db.monomorphized_mir_body(
+         def,
+         GenericArgs::new_from_iter(interner, []),
+     Ok(c)
+ }
+ 
+-// FIXME: Ideally constants in const eval should have separate body (issue #7434), and this function should
+-// get an `InferenceResult` instead of an `InferenceContext`. And we should remove `ctx.clone().resolve_all()` here
+-// and make this function private. See the fixme comment on `InferenceContext::resolve_all`.
+-pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
++pub(crate) fn eval_to_const<'db>(
++    expr: ExprId,
++    ctx: &mut InferenceContext<'_, 'db>,
++) -> Const<'db> {
+     let infer = ctx.fixme_resolve_all_clone();
+     fn has_closure(body: &Body, expr: ExprId) -> bool {
+         if matches!(body[expr], Expr::Closure { .. }) {

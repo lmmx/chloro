@@ -1,0 +1,52 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5162 bytes
+Chloro size:   5157 bytes
+Rustfmt size:  5162 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Removes markdown from strings.
++
+ use pulldown_cmark::{Event, Parser, Tag};
+ 
+ /// Removes all markdown, keeping the text and code blocks
+     let mut out = String::new();
+     out.reserve_exact(markdown.len());
+     let parser = Parser::new(markdown);
+-
+     for event in parser {
+         match event {
+             Event::Text(text) | Event::Code(text) => out.push_str(&text),
+             | Event::TaskListMarker(_) => (),
+         }
+     }
+-
+     if let Some(mut p) = out.rfind(|c| c != '\n') {
+         while !out.is_char_boundary(p + 1) {
+             p += 1;
+         }
+         out.drain(p + 1..);
+     }
+-
+     out
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use super::*;
+-
+     #[test]
+     fn smoke_test() {
+         let res = remove_markdown(
+ 
+             For more information on the various types of functions and how they're used, consult the Rust book or the Reference."#]].assert_eq(&res);
+     }
+-
+     #[test]
+     fn on_char_boundary() {
+         expect!["a┘"].assert_eq(&remove_markdown("```text\na┘\n```"));

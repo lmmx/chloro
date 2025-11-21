@@ -1,0 +1,300 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 18737 bytes
+Chloro size:   18200 bytes
+Rustfmt size:  18737 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
++use std::iter::successors;
++
+ use hir::Type;
+ use ide_db::FxHashMap;
+-use std::iter::successors;
+ use syntax::{
++    Direction,
+     algo::neighbor,
+     ast::{self, AstNode, HasName},
+-    Direction,
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists, TextRange};
+ 
+-// Assist: merge_match_arms
+-//
+-// Merges the current match arm with the following if their bodies are identical.
+-//
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         $0Action::Move(..) => foo(),
+-//         Action::Stop => foo(),
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move(..) | Action::Stop => foo(),
+-//     }
+-// }
+-// ```
+-pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn merge_match_arms(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let current_arm = ctx.find_node_at_trimmed_offset::<ast::MatchArm>()?;
+     // Don't try to handle arms with guards for now - can add support for this later
+     if current_arm.guard().is_some() {
+     let current_arm_types = get_arm_types(ctx, &current_arm);
+     let multi_arm_selection = !ctx.has_empty_selection()
+         && ctx.selection_trimmed().end() > current_arm.syntax().text_range().end();
+-
+     // We check if the following match arms match this one. We could, but don't,
+     // compare to the previous match arm as well.
+     let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
+             _ => false,
+         })
+         .collect::<Vec<_>>();
+-
+     if arms_to_merge.len() <= 1 {
+         return None;
+     }
+-
+     acc.add(
+         AssistId::refactor_rewrite("merge_match_arms"),
+         "Merge match arms",
+             _ => return false,
+         }
+     }
+-
+     true
+ }
+ 
+     arm: &ast::MatchArm,
+ ) -> FxHashMap<String, Option<Type<'db>>> {
+     let mut mapping: FxHashMap<String, Option<Type<'db>>> = FxHashMap::default();
+-
+     fn recurse<'db>(
+         map: &mut FxHashMap<String, Option<Type<'db>>>,
+         ctx: &AssistContext<'db>,
+             }
+         }
+     }
+-
+     recurse(&mut mapping, context, &arm.pat());
+     mapping
+ }
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn merge_match_arms_single_patterns() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_multiple_patterns() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_placeholder_pattern() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merges_all_subsequent_arms() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_selection_has_leading_whitespace() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_stops_at_end_of_selection() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_works_despite_accidental_selection() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_rejects_guards() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_different_type() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_different_type_multiple_fields() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_same_type_multiple_fields() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_same_type_subsequent_arm_with_different_type_in_other() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_same_type_skip_arm_with_different_type_in_between() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_same_type_different_number_of_fields() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_same_destructuring_different_types() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_range() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_without_field() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_destructuring_different_types() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_destructuring_same_types() {
+         check_assist(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_destructuring_same_types_different_name() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_nested_pattern_different_names() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_nested_pattern_same_names() {
+         check_assist(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_enum_destructuring_with_ignore() {
+         check_assist(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_nested_with_conflicting_identifier() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_tuple() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_parentheses() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_refpat() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_slice() {
+         check_assist_not_applicable(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn merge_match_arms_slice_identical() {
+         check_assist(

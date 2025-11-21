@@ -1,0 +1,259 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15380 bytes
+Chloro size:   12131 bytes
+Rustfmt size:  15488 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! See [`import_on_the_fly`].
++
+ use hir::{ItemInNs, ModuleDef};
+ use ide_db::imports::{
+     import_assets::{ImportAssets, LocatedImport},
+     insert_use::ImportScope,
+ };
+ use itertools::Itertools;
+-use syntax::{ast, AstNode, SyntaxNode};
++use syntax::{AstNode, SyntaxNode, ast};
+ 
+ use crate::{
++    Completions,
+     config::AutoImportExclusionType,
+     context::{
+         CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
+         TypeLocation,
+     },
+-    render::{render_resolution_with_import, render_resolution_with_import_pat, RenderContext},
+-    Completions,
++    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
+ };
+ 
+-// Feature: Completion With Autoimport
+-//
+-// When completing names in the current scope, proposes additional imports from other modules or crates,
+-// if they can be qualified in the scope, and their name contains all symbols from the completion input.
+-//
+-// To be considered applicable, the name must contain all input symbols in the given order, not necessarily adjacent.
+-// If any input symbol is not lowercased, the name must contain all symbols in exact case; otherwise the containing is checked case-insensitively.
+-//
+-// ```
+-// fn main() {
+-//     pda$0
+-// }
+-// # pub mod std { pub mod marker { pub struct PhantomData { } } }
+-// ```
+-// ->
+-// ```
+-// use std::marker::PhantomData;
+-//
+-// fn main() {
+-//     PhantomData
+-// }
+-// # pub mod std { pub mod marker { pub struct PhantomData { } } }
+-// ```
+-//
+-// Also completes associated items, that require trait imports.
+-// If any unresolved and/or partially-qualified path precedes the input, it will be taken into account.
+-// Currently, only the imports with their import path ending with the whole qualifier will be proposed
+-// (no fuzzy matching for qualifier).
+-//
+-// ```
+-// mod foo {
+-//     pub mod bar {
+-//         pub struct Item;
+-//
+-//         impl Item {
+-//             pub const TEST_ASSOC: usize = 3;
+-//         }
+-//     }
+-// }
+-//
+-// fn main() {
+-//     bar::Item::TEST_A$0
+-// }
+-// ```
+-// ->
+-// ```
+-// use foo::bar;
+-//
+-// mod foo {
+-//     pub mod bar {
+-//         pub struct Item;
+-//
+-//         impl Item {
+-//             pub const TEST_ASSOC: usize = 3;
+-//         }
+-//     }
+-// }
+-//
+-// fn main() {
+-//     bar::Item::TEST_ASSOC
+-// }
+-// ```
+-//
+-// NOTE: currently, if an assoc item comes from a trait that's not currently imported, and it also has an unresolved and/or partially-qualified path,
+-// no imports will be proposed.
+-//
+-// #### Fuzzy search details
+-//
+-// To avoid an excessive amount of the results returned, completion input is checked for inclusion in the names only
+-// (i.e. in `HashMap` in the `std::collections::HashMap` path).
+-// For the same reasons, avoids searching for any path imports for inputs with their length less than 2 symbols
+-// (but shows all associated items for any input length).
+-//
+-// #### Import configuration
+-//
+-// It is possible to configure how use-trees are merged with the `imports.granularity.group` setting.
+-// Mimics the corresponding behavior of the `Auto Import` feature.
+-//
+-// #### LSP and performance implications
+-//
+-// The feature is enabled only if the LSP client supports LSP protocol version 3.16+ and reports the `additionalTextEdits`
+-// (case-sensitive) resolve client capability in its client capabilities.
+-// This way the server is able to defer the costly computations, doing them for a selected completion item only.
+-// For clients with no such support, all edits have to be calculated on the completion request, including the fuzzy search completion ones,
+-// which might be slow ergo the feature is automatically disabled.
+-//
+-// #### Feature toggle
+-//
+-// The feature can be forcefully turned off in the settings with the `rust-analyzer.completion.autoimport.enable` flag.
+-// Note that having this flag set to `true` does not guarantee that the feature is enabled: your client needs to have the corresponding
+-// capability enabled.
+ pub(crate) fn import_on_the_fly_path(
+     acc: &mut Completions,
+     ctx: &CompletionContext<'_>,
+         _ => None,
+     };
+     let import_assets = import_assets_for_path(ctx, &potential_import_name, qualifier.clone())?;
+-
+     import_on_the_fly(
+         acc,
+         ctx,
+         path_ctx,
+         import_assets,
+-        qualifier
+-            .map(|it| it.syntax().clone())
+-            .or_else(|| ctx.original_token.parent())?,
++        qualifier.map(|it| it.syntax().clone()).or_else(|| ctx.original_token.parent())?,
+         potential_import_name,
+     )
+ }
+     if !ctx.config.enable_imports_on_the_fly {
+         return None;
+     }
+-    if let PatternContext {
+-        record_pat: Some(_),
+-        ..
+-    } = pattern_ctx
+-    {
++    if let PatternContext { record_pat: Some(_), .. } = pattern_ctx {
+         return None;
+     }
+-
+     let potential_import_name = import_name(ctx);
+     let import_assets = import_assets_for_path(ctx, &potential_import_name, None)?;
+-
+     import_on_the_fly_pat_(
+         acc,
+         ctx,
+         potential_import_name.clone(),
+         receiver.syntax().clone(),
+     )?;
+-
+     import_on_the_fly_method(
+         acc,
+         ctx,
+     potential_import_name: String,
+ ) -> Option<()> {
+     let _p = tracing::info_span!("import_on_the_fly", ?potential_import_name).entered();
+-
+     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+-
+     let ns_filter = |import: &LocatedImport| {
+         match (kind, import.original_item) {
+             // Aren't handled in flyimport
+         }
+     };
+     let user_input_lowercased = potential_import_name.to_lowercase();
+-
+     let import_cfg = ctx.config.import_path_config();
+-
+     import_assets
+         .search_for_imports(&ctx.sema, import_cfg, ctx.config.insert_use.prefix_kind)
+         .filter(ns_filter)
+     potential_import_name: String,
+ ) -> Option<()> {
+     let _p = tracing::info_span!("import_on_the_fly_pat_", ?potential_import_name).entered();
+-
+     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+-
+     let ns_filter = |import: &LocatedImport| match import.original_item {
+         ItemInNs::Macros(mac) => mac.is_fn_like(ctx.db),
+         ItemInNs::Types(_) => true,
+     };
+     let user_input_lowercased = potential_import_name.to_lowercase();
+     let cfg = ctx.config.import_path_config();
+-
+     import_assets
+         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
+         .filter(ns_filter)
+     potential_import_name: String,
+ ) -> Option<()> {
+     let _p = tracing::info_span!("import_on_the_fly_method", ?potential_import_name).entered();
+-
+     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+-
+     let user_input_lowercased = potential_import_name.to_lowercase();
+-
+     let cfg = ctx.config.import_path_config();
+-
+     import_assets
+         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
+         .filter(|import| {
+     Some(())
+ }
+ 
+-fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
++fn filter_excluded_flyimport(
++    ctx: &CompletionContext<'_>,
++    import: &LocatedImport,
++) -> bool {
+     let def = import.item_to_import.into_module_def();
+     let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
+-
+     if matches!(is_exclude_flyimport, Some(AutoImportExclusionType::Always))
+         || !import.complete_in_flyimport.0
+     {
+     let method_imported = import.item_to_import != import.original_item;
+     if method_imported
+         && (is_exclude_flyimport.is_some()
+-            || ctx
+-                .exclude_flyimport
+-                .contains_key(&import.original_item.into_module_def()))
++            || ctx.exclude_flyimport.contains_key(&import.original_item.into_module_def()))
+     {
+         // If this is a method, exclude it either if it was excluded itself (which may not be caught above,
+         // because `item_to_import` is the trait), or if its trait was excluded. We don't need to check
+ 
+ fn import_name(ctx: &CompletionContext<'_>) -> String {
+     let token_kind = ctx.token.kind();
+-
+-    if token_kind.is_any_identifier() {
+-        ctx.token.to_string()
+-    } else {
+-        String::new()
+-    }
++    if token_kind.is_any_identifier() { ctx.token.to_string() } else { String::new() }
+ }
+ 
+ fn import_assets_for_path<'db>(
+ ) -> Option<ImportAssets<'db>> {
+     let _p =
+         tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
+-
+     let fuzzy_name_length = potential_import_name.len();
+     let mut assets_for_path = ImportAssets::for_fuzzy_path(
+         ctx.module,

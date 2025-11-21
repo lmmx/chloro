@@ -1,0 +1,139 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7226 bytes
+Chloro size:   6791 bytes
+Rustfmt size:  7244 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::next_solver::{DbInterner, TypingMode};
+-use ide_db::{famous_defs::FamousDefs, RootDatabase};
++use ide_db::{RootDatabase, famous_defs::FamousDefs};
+ use syntax::ast::{self, AstNode, HasName};
+ 
+-use crate::{utils::generate_trait_impl_text_intransitive, AssistContext, AssistId, Assists};
++use crate::{AssistContext, AssistId, Assists, utils::generate_trait_impl_text_intransitive};
+ 
+-// Assist: generate_from_impl_for_enum
+-//
+-// Adds a From impl for this enum variant with one tuple field.
+-//
+-// ```
+-// enum A { $0One(u32) }
+-// ```
+-// ->
+-// ```
+-// enum A { One(u32) }
+-//
+-// impl From<u32> for A {
+-//     fn from(v: u32) -> Self {
+-//         Self::One(v)
+-//     }
+-// }
+-// ```
+ pub(crate) fn generate_from_impl_for_enum(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+         }
+         ast::StructKind::Unit => return None,
+     };
+-
+     if existing_from_impl(&ctx.sema, &variant).is_some() {
+         cov_mark::hit!(test_add_from_impl_already_exists);
+         return None;
+     }
+-
+     let target = variant.syntax().text_range();
+     acc.add(
+         AssistId::generate("generate_from_impl_for_enum"),
+     let interner = DbInterner::new_with(db, Some(krate.base()), None);
+     use hir::next_solver::infer::DbInternerInferExt;
+     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+-
+     let variant = variant.instantiate_infer(&infcx);
+     let enum_ = variant.parent_enum(sema.db);
+     let field_ty = variant.fields(sema.db).first()?.ty(sema.db);
+     let enum_ty = enum_.ty(sema.db);
+     tracing::debug!(?enum_, ?field_ty, ?enum_ty);
+-    enum_ty
+-        .impls_trait(infcx, from_trait, &[field_ty])
+-        .then_some(())
++    enum_ty.impls_trait(infcx, from_trait, &[field_ty]).then_some(())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_generate_from_impl_for_enum() {
+         check_assist(
+ "#,
+         );
+     }
+-
+-    // FIXME(next-solver): it would be nice to not be *required* to resolve the
+-    // path in order to properly generate assists
+     #[test]
+     fn test_generate_from_impl_for_enum_complicated_path() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_no_element() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_more_than_one_element_in_tuple() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_struct_variant() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_already_exists() {
+         cov_mark::check!(test_add_from_impl_already_exists);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_different_variant_impl_exists() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_static_str() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_generic_enum() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_add_from_impl_with_lifetime() {
+         check_assist(

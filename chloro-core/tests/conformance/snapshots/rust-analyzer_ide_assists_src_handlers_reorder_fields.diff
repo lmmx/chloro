@@ -1,0 +1,123 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5686 bytes
+Chloro size:   5358 bytes
+Rustfmt size:  5758 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use ide_db::FxHashMap;
+ use itertools::Itertools;
+-use syntax::{ast, syntax_editor::SyntaxEditor, AstNode, SmolStr, SyntaxElement, ToSmolStr};
++use syntax::{AstNode, SmolStr, SyntaxElement, ToSmolStr, ast, syntax_editor::SyntaxEditor};
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: reorder_fields
+-//
+-// Reorder the fields of record literals and record patterns in the same order as in
+-// the definition.
+-//
+-// ```
+-// struct Foo {foo: i32, bar: i32};
+-// const test: Foo = $0Foo {bar: 0, foo: 1}
+-// ```
+-// ->
+-// ```
+-// struct Foo {foo: i32, bar: i32};
+-// const test: Foo = Foo {foo: 1, bar: 0}
+-// ```
+-pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn reorder_fields(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let path = ctx.find_node_at_offset::<ast::Path>()?;
+-    let record = path
+-        .syntax()
+-        .parent()
+-        .and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+-
++    let record =
++        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+     let parent_node = match ctx.covering_element() {
+         SyntaxElement::Node(n) => n,
+         SyntaxElement::Token(t) => t.parent()?,
+     };
+-
+     let ranks = compute_fields_ranks(&path, ctx)?;
+     let get_rank_of_field = |of: Option<SmolStr>| {
+-        *ranks
+-            .get(of.unwrap_or_default().trim_start_matches("r#"))
+-            .unwrap_or(&usize::MAX)
++        *ranks.get(of.unwrap_or_default().trim_start_matches("r#")).unwrap_or(&usize::MAX)
+     };
+-
+     let field_list = match &record {
+         Either::Left(it) => Either::Left(it.record_expr_field_list()?),
+         Either::Right(it) => Either::Right(it.record_pat_field_list()?),
+             it,
+         )),
+     };
+-
+     let is_sorted = fields.as_ref().either(
+         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
+         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
+         cov_mark::hit!(reorder_sorted_fields);
+         return None;
+     }
+-    let target = record
+-        .as_ref()
+-        .either(AstNode::syntax, AstNode::syntax)
+-        .text_range();
++    let target = record.as_ref().either(AstNode::syntax, AstNode::syntax).text_range();
+     acc.add(
+         AssistId::refactor_rewrite("reorder_fields"),
+         "Reorder record fields",
+         Some(hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Struct(it)))) => it,
+         _ => return None,
+     };
+-
+     let res = strukt
+         .fields(ctx.db())
+         .into_iter()
+         .enumerate()
+         .map(|(idx, field)| (field.name(ctx.db()).as_str().to_owned(), idx))
+         .collect();
+-
+     Some(res)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn reorder_sorted_fields() {
+         cov_mark::check!(reorder_sorted_fields);
+ "#,
+         )
+     }
+-
+     #[test]
+     fn trivial_empty_fields() {
+         check_assist_not_applicable(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn reorder_struct_fields() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn reorder_with_extra_field() {
+         check_assist(

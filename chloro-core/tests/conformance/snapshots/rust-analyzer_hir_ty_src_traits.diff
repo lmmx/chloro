@@ -1,0 +1,152 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8324 bytes
+Chloro size:   8204 bytes
+Rustfmt size:  8412 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Trait solving using next trait solver.
+ 
+ use core::fmt;
+ use std::hash::Hash;
+ 
+ use base_db::Crate;
+-use hir_def::{lang_item::LangItem, BlockId, TraitId};
++use hir_def::{BlockId, TraitId, lang_item::LangItem};
+ use hir_expand::name::Name;
+ use intern::sym;
+ use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};
+ use rustc_type_ir::{
++    TypingMode,
+     inherent::{IntoKind, Span as _},
+     solve::Certainty,
+-    TypingMode,
+ };
+ use triomphe::Arc;
+ 
+ use crate::{
+     db::HirDatabase,
+     next_solver::{
+-        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
+-        obligation_ctxt::ObligationCtxt,
+         Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
+         TyKind,
++        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+ };
+ 
+ pub struct TraitEnvironment<'db> {
+     pub krate: Crate,
+     pub block: Option<BlockId>,
+-    // FIXME make this a BTreeMap
+     traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
+     pub env: ParamEnv<'db>,
+ }
+         traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
+         env: ParamEnv<'db>,
+     ) -> Arc<Self> {
+-        Arc::new(TraitEnvironment {
+-            krate,
+-            block,
+-            traits_from_clauses,
+-            env,
+-        })
++        Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
+     }
+ 
+-    // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
+-    pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
++    pub fn with_block(
++        this: &mut Arc<Self>,
++        block: BlockId,
++    ) {
+         Arc::make_mut(this).block = Some(block);
+     }
+ 
+-    pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
++    pub fn traits_in_scope_from_clauses(
++        &self,
++        ty: Ty<'db>,
++    ) -> impl Iterator<Item = TraitId> + '_ {
+         self.traits_from_clauses
+             .iter()
+             .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
+     ty: Ty<'db>,
+     env: Arc<TraitEnvironment<'db>>,
+ ) -> Ty<'db> {
+-    let TyKind::Alias(..) = ty.kind() else {
+-        return ty;
+-    };
++    let TyKind::Alias(..) = ty.kind() else { return ty };
+     let mut ocx = ObligationCtxt::new(infcx);
+-    let ty = ocx
+-        .structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty)
+-        .unwrap_or(ty);
++    let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+     ty.replace_infer_with_error(infcx.interner)
+ }
+ 
+     goal: Goal<'db, Predicate<'db>>,
+ ) -> Result<(HasChanged, Certainty), rustc_type_ir::solve::NoSolution> {
+     tracing::info!(?goal);
+-
+     let context = <&SolverContext<'db>>::from(infer_ctxt);
+-
+     let res = context.evaluate_root_goal(goal, Span::dummy(), None);
+-
+     let res = res.map(|r| (r.has_changed, r.certainty));
+-
+     tracing::debug!("solve_nextsolver({:?}) => {:?}", goal, res);
+-
+     res
+ }
+ 
+ #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ pub enum FnTrait {
+-    // Warning: Order is important. If something implements `x` it should also implement
+-    // `y` if `y <= x`.
+     FnOnce,
+     FnMut,
+     Fn,
+-
+     AsyncFnOnce,
+     AsyncFnMut,
+     AsyncFn,
+ }
+ 
+ impl fmt::Display for FnTrait {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         match self {
+             FnTrait::FnOnce => write!(f, "FnOnce"),
+             FnTrait::FnMut => write!(f, "FnMut"),
+         }
+     }
+ 
+-    pub fn get_id(self, db: &dyn HirDatabase, krate: Crate) -> Option<TraitId> {
++    pub fn get_id(
++        self,
++        db: &dyn HirDatabase,
++        krate: Crate,
++    ) -> Option<TraitId> {
+         self.lang_item().resolve_trait(db, krate)
+     }
+ }
+     let interner = DbInterner::new_with(db, Some(env.krate), env.block);
+     // FIXME(next-solver): I believe this should be `PostAnalysis`.
+     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+-
+     let args = create_args(&infcx);
+     let trait_ref = rustc_type_ir::TraitRef::new_from_args(interner, trait_.into(), args);
+     let goal = Goal::new(interner, env.env, trait_ref);
+-
+     let result = crate::traits::next_trait_solve_in_ctxt(&infcx, goal);
+     matches!(result, Ok((_, Certainty::Yes)))
+ }

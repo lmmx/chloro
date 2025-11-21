@@ -1,0 +1,993 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 75023 bytes
+Chloro size:   74492 bytes
+Rustfmt size:  75023 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     utils::{convert_reference_type, find_struct_impl},
+ };
+ 
+-// Assist: generate_function
+-//
+-// Adds a stub function with a signature matching the function under the cursor.
+-//
+-// ```
+-// struct Baz;
+-// fn baz() -> Baz { Baz }
+-// fn foo() {
+-//     bar$0("", baz());
+-// }
+-//
+-// ```
+-// ->
+-// ```
+-// struct Baz;
+-// fn baz() -> Baz { Baz }
+-// fn foo() {
+-//     bar("", baz());
+-// }
+-//
+-// fn bar(arg: &'static str, baz: Baz) ${0:-> _} {
+-//     todo!()
+-// }
+-//
+-// ```
+-pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_function(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
+ }
+ 
+-fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++fn gen_fn(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let path_expr: ast::PathExpr = ctx.find_node_at_offset()?;
+     let call = path_expr.syntax().parent().and_then(ast::CallExpr::cast)?;
+     let path = path_expr.path()?;
+         // The function call already resolves, no need to add a function
+         return None;
+     }
+-
+     let fn_name = &*name_ref.text();
+     let TargetInfo { target_module, adt_info, target, file } =
+         fn_target_info(ctx, path, &call, fn_name)?;
+-
+     if let Some(m) = target_module
+         && !is_editable_crate(m.krate(), ctx.db())
+     {
+         return None;
+     }
+-
+     let function_builder =
+         FunctionBuilder::from_call(ctx, &call, fn_name, target_module, target, &adt_info)?;
+     let text_range = call.syntax().text_range();
+     }
+ }
+ 
+-fn gen_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++fn gen_method(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
+     if ctx.sema.resolve_method_call(&call).is_some() {
+         return None;
+     }
+-
+     let fn_name = call.name_ref()?;
+     let receiver_ty = ctx.sema.type_of_expr(&call.receiver()?)?.original().strip_references();
+     let adt = receiver_ty.as_adt()?;
+-
+     let target_module = adt.module(ctx.sema.db);
+     if !is_editable_crate(target_module.krate(), ctx.db()) {
+         return None;
+     }
+-
+     let (impl_, file) = get_adt_source(ctx, &adt, fn_name.text().as_str())?;
+     let target = get_method_target(ctx, &impl_, &adt)?;
+-
+     let function_builder = FunctionBuilder::from_method_call(
+         ctx,
+         &call,
+     fn_name: &str,
+ ) -> Option<(Option<ast::Impl>, FileId)> {
+     let range = adt.source(ctx.sema.db)?.syntax().original_file_range_rooted(ctx.sema.db);
+-
+     let file = ctx.sema.parse(range.file_id);
+     let adt_source =
+         ctx.sema.find_node_at_offset_with_macros(file.syntax(), range.range.start())?;
+         let target_module =
+             target_module.or_else(|| ctx.sema.scope(target.syntax()).map(|it| it.module()))?;
+         let target_edition = target_module.krate().edition(ctx.db());
+-
+         let current_module = ctx.sema.scope(call.syntax())?.module();
+         let visibility = calculate_necessary_visibility(current_module, target_module, ctx);
+         let fn_name = make::name(fn_name);
+             ast::CallableExpr::Call(call.clone()),
+             &mut necessary_generic_params,
+         )?;
+-
+         let await_expr = call.syntax().parent().and_then(ast::AwaitExpr::cast);
+         let is_async = await_expr.is_some();
+-
+         let ret_type;
+         let should_focus_return_type;
+         let fn_body;
+-
+         // If generated function has the name "new" and is an associated function, we generate fn body
+         // as a constructor and assume a "Self" return type.
+         if let Some(body) =
+             };
+             fn_body = make::block_expr(vec![], Some(placeholder_expr));
+         };
+-
+         let (generic_param_list, where_clause) =
+             fn_generic_params(ctx, necessary_generic_params, &target)?;
+-
+         Some(Self {
+             target,
+             fn_name,
+         target: GeneratedFunctionTarget,
+     ) -> Option<Self> {
+         let target_edition = target_module.krate().edition(ctx.db());
+-
+         let current_module = ctx.sema.scope(call.syntax())?.module();
+         let visibility = calculate_necessary_visibility(current_module, target_module, ctx);
+-
+         let fn_name = make::name(name.ident_token()?.text());
+         let mut necessary_generic_params = FxHashSet::default();
+         necessary_generic_params.extend(receiver_ty.generic_params(ctx.db()));
+             ast::CallableExpr::MethodCall(call.clone()),
+             &mut necessary_generic_params,
+         )?;
+-
+         let await_expr = call.syntax().parent().and_then(ast::AwaitExpr::cast);
+         let is_async = await_expr.is_some();
+-
+         let expr_for_ret_ty = await_expr.map_or_else(|| call.clone().into(), |it| it.into());
+         let (ret_type, should_focus_return_type) =
+             make_return_type(ctx, &expr_for_ret_ty, target_module, &mut necessary_generic_params);
+-
+         let (generic_param_list, where_clause) =
+             fn_generic_params(ctx, necessary_generic_params, &target)?;
+-
+         let placeholder_expr = match ctx.config.expr_fill_default {
+             ExprFillDefaultMode::Todo => make::ext::expr_todo(),
+             ExprFillDefaultMode::Underscore => make::ext::expr_underscore(),
+             ExprFillDefaultMode::Default => make::ext::expr_todo(),
+         };
+         let fn_body = make::block_expr(vec![], Some(placeholder_expr));
+-
+         Some(Self {
+             target,
+             fn_name,
+         })
+     }
+ 
+-    fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
++    fn render(
++        self,
++        cap: Option<SnippetCap>,
++        edit: &mut SourceChangeBuilder,
++    ) -> ast::Fn {
+         let visibility = match self.visibility {
+             Visibility::None => None,
+             Visibility::Crate => Some(make::visibility_pub_crate()),
+             false,
+         )
+         .clone_for_update();
+-
+         let ret_type = fn_def.ret_type();
+         // PANIC: we guarantee we always create a function body with a tail expr
+         let tail_expr = fn_def
+             .expect("generated function should have a body")
+             .tail_expr()
+             .expect("function body should have a tail expression");
+-
+         if let Some(cap) = cap {
+             if self.should_focus_return_type {
+                 // Focus the return type if there is one
+                 edit.add_placeholder_snippet(cap, tail_expr);
+             }
+         }
+-
+         fn_def
+     }
+ }
+         return None;
+     };
+     let adt_info = adt_info.as_ref()?;
+-
+     let path_self = make::ext::ident_path("Self");
+     let placeholder_expr = match ctx.config.expr_fill_default {
+         ExprFillDefaultMode::Todo => make::ext::expr_todo(),
+     } else {
+         placeholder_expr
+     };
+-
+     let fn_body = make::block_expr(vec![], Some(tail_expr));
+     Some(fn_body)
+ }
+         }
+     }
+ 
+-    fn insert_impl_at(&self, edit: &mut SourceChangeBuilder, impl_: ast::Impl) {
++    fn insert_impl_at(
++        &self,
++        edit: &mut SourceChangeBuilder,
++        impl_: ast::Impl,
++    ) {
+         match self {
+             GeneratedFunctionTarget::AfterItem(item) => {
+                 let item = edit.make_syntax_mut(item.clone());
+         }
+     }
+ 
+-    fn insert_fn_at(&self, edit: &mut SourceChangeBuilder, func: ast::Fn) {
++    fn insert_fn_at(
++        &self,
++        edit: &mut SourceChangeBuilder,
++        func: ast::Fn,
++    ) {
+         match self {
+             GeneratedFunctionTarget::AfterItem(item) => {
+                 let item = edit.make_syntax_mut(item.clone());
+ }
+ 
+ impl AdtInfo {
+-    fn new(adt: Adt, impl_exists: bool) -> Self {
++    fn new(
++        adt: Adt,
++        impl_exists: bool,
++    ) -> Self {
+         Self { adt, impl_exists }
+     }
+ }
+     let params = arg_names.into_iter().zip(arg_types).map(|(name, ty)| {
+         make::param(make::ext::simple_ident_pat(make::name(&name)).into(), make::ty(&ty))
+     });
+-
+     Some(make::param_list(
+         match call {
+             ast::CallableExpr::Call(_) => None,
+         // Not really needed but fast path.
+         return Some((None, None));
+     }
+-
+     // 1. Get generic parameters (with bounds) and where predicates in scope.
+     let (generic_params, where_preds) = params_and_where_preds_in_scope(ctx);
+-
+     // 2. Extract type parameters included in each bound.
+     let mut generic_params = generic_params
+         .into_iter()
+         .into_iter()
+         .filter_map(|it| compute_contained_params_in_where_pred(ctx, it))
+         .collect();
+-
+     // 3. Filter out unnecessary bounds.
+     filter_unnecessary_bounds(&mut generic_params, &mut where_preds, necessary_params);
+     filter_bounds_in_scope(&mut generic_params, &mut where_preds, ctx, target);
+-
+     let generic_params: Vec<ast::GenericParam> =
+         generic_params.into_iter().map(|it| it.node.clone_for_update()).collect();
+     let where_preds: Vec<ast::WherePred> =
+         where_preds.into_iter().map(|it| it.node.clone_for_update()).collect();
+-
+     let (generic_params, where_preds): (Vec<ast::GenericParam>, Vec<ast::WherePred>) =
+         if let Some(param) = generic_params.first()
+             && let source_scope = ctx.sema.scope(param.syntax())?
+         } else {
+             (generic_params, where_preds)
+         };
+-
+     let generic_param_list = make::generic_param_list(generic_params);
+     let where_clause =
+         if where_preds.is_empty() { None } else { Some(make::where_clause(where_preds)) };
+-
+     Some((Some(generic_param_list), where_clause))
+ }
+ 
+-fn params_and_where_preds_in_scope(
+-    ctx: &AssistContext<'_>,
+-) -> (Vec<ast::GenericParam>, Vec<ast::WherePred>) {
++fn params_and_where_preds_in_scope(ctx: &AssistContext<'_>) -> (Vec<ast::GenericParam>, Vec<ast::WherePred>) {
+     let Some(body) = containing_body(ctx) else {
+         return Default::default();
+     };
+-
+     let mut generic_params = Vec::new();
+     let mut where_clauses = Vec::new();
+-
+     // There are two items where generic parameters currently in scope may be declared: the item
+     // the cursor is at, and its parent (if any).
+     //
+             }
+         }
+     }
+-
+     // Other defs with body may inherit generic parameters from its parent, but never have their
+     // own generic parameters.
+     if let hir::DefWithBody::Function(it) = body {
+         generic_params.extend(params);
+         where_clauses.extend(clauses);
+     }
+-
+     (generic_params, where_clauses)
+ }
+ 
+ ) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
+ where
+     D: HasSource,
+-    D::Ast: HasGenericParams,
+-{
++    D::Ast: HasGenericParams, {
+     // This function should be only called with `Impl`, `Trait`, or `Function`, for which it's
+     // infallible to get source ast.
+     let node = ctx.sema.source(def).expect("definition's source couldn't be found").value;
+ ) -> Option<WherePredWithParams> {
+     let self_ty = node.ty()?;
+     let bound_list = node.type_bound_list()?;
+-
+     let self_ty_params = self_ty
+         .syntax()
+         .descendants()
+         .filter_map(|node| filter_generic_params(ctx, node))
+         .collect();
+-
+     let other_params = bound_list
+         .bounds()
+         .flat_map(|bound| bound.syntax().descendants())
+         .filter_map(|node| filter_generic_params(ctx, node))
+         .collect();
+-
+     Some(WherePredWithParams { node, self_ty_params, other_params })
+ }
+ 
+-fn filter_generic_params(ctx: &AssistContext<'_>, node: SyntaxNode) -> Option<hir::GenericParam> {
++fn filter_generic_params(
++    ctx: &AssistContext<'_>,
++    node: SyntaxNode,
++) -> Option<hir::GenericParam> {
+     let path = ast::Path::cast(node)?;
+     match ctx.sema.resolve_path(&path)? {
+         PathResolution::TypeParam(it) => Some(it.into()),
+     let param_count = param_map.len();
+     let generic_params_upper_bound = param_count + generic_params.len();
+     let node_count = generic_params_upper_bound + where_preds.len();
+-
+     // | node index range                        | what the node represents |
+     // |-----------------------------------------|--------------------------|
+     // | 0..param_count                          | generic parameter        |
+             graph.add_edge(pred_idx, param_idx);
+         }
+     }
+-
+     let starting_nodes = necessary_params.iter().flat_map(|param| param_map.get(param).copied());
+     let reachable = graph.compute_reachable_nodes(starting_nodes);
+-
+     // Not pretty, but effective. If only there were `Vec::retain_index()`...
+     let mut idx = param_count;
+     generic_params.retain(|_| {
+     if def != hir::GenericDef::Impl(target_impl) {
+         return None;
+     }
+-
+     // Now we know every element that belongs to an impl would be in scope at `target`, we can
+     // filter them out just by looking at their parent.
+     generic_params.retain(|it| !matches!(it.self_ty_param.parent(), hir::GenericDef::Impl(_)));
+     where_preds.retain(|it| {
+         it.node.syntax().parent().and_then(|it| it.parent()).and_then(ast::Impl::cast).is_none()
+     });
+-
+     Some(())
+ }
+ 
+         .filter(|(_, count)| *count >= 2)
+         .map(|(name, _)| name.clone())
+         .collect();
+-
+     let mut counter_per_name = FxHashMap::default();
+     for arg_name in arg_names.iter_mut() {
+         if duplicate_arg_names.contains(arg_name) {
+     }
+ }
+ 
+-fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> String {
++fn fn_arg_name(
++    sema: &Semantics<'_, RootDatabase>,
++    arg_expr: &ast::Expr,
++) -> String {
+     let name = (|| match arg_expr {
+         ast::Expr::CastExpr(cast_expr) => Some(fn_arg_name(sema, &cast_expr.expr()?)),
+         expr => {
+             ty.display_source_code(ctx.db(), target_module.into(), true).ok()
+         }
+     }
+-
+     maybe_displayed_type(ctx, target_module, fn_arg, generic_params)
+         .unwrap_or_else(|| String::from("_"))
+ }
+             }
+         }
+     };
+-
+     (file.file_id(db), assist_item)
+ }
+ 
+     let db = ctx.db();
+     let current_module = current_module.nearest_non_block_module(db);
+     let target_module = target_module.nearest_non_block_module(db);
+-
+     if target_module.krate() != current_module.krate() {
+         Visibility::Pub
+     } else if current_module.path_to_root(db).contains(&target_module) {
+     }
+ }
+ 
+-// This is never intended to be used as a generic graph structure. If there's ever another need of
+-// graph algorithm, consider adding a library for that (and replace the following).
+ /// Minimally implemented directed graph structure represented by adjacency list.
+ struct Graph {
+     edges: Vec<Vec<usize>>,
+         Self { edges: vec![Vec::new(); node_count] }
+     }
+ 
+-    fn add_edge(&mut self, from: usize, to: usize) {
++    fn add_edge(
++        &mut self,
++        from: usize,
++        to: usize,
++    ) {
+         self.edges[from].push(to);
+     }
+ 
+-    fn edges_for(&self, node_idx: usize) -> &[usize] {
++    fn edges_for(
++        &self,
++        node_idx: usize,
++    ) -> &[usize] {
+         &self.edges[node_idx]
+     }
+ 
+ struct Visitor<'g> {
+     graph: &'g Graph,
+     visited: Vec<bool>,
+-    // Stack is held in this struct so we can reuse its buffer.
+     stack: Vec<usize>,
+ }
+ 
+         Self { graph, visited, stack: Vec::new() }
+     }
+ 
+-    fn mark_reachable(&mut self, start_idx: usize) {
++    fn mark_reachable(
++        &mut self,
++        start_idx: usize,
++    ) {
+         // non-recursive DFS
+         stdx::always!(self.stack.is_empty());
+-
+         self.stack.push(start_idx);
+         while let Some(idx) = self.stack.pop() {
+             if !self.visited[idx] {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn add_function_with_no_args() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_from_method() {
+         // This ensures that the function is correctly generated
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_directly_after_current_block() {
+         // The new fn should not be created at the end of the file or module
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_no_args_in_same_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_upper_camel_case_arg() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn add_function_with_upper_camel_case_arg_as_cast() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn add_function_with_function_call_arg() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn add_function_with_method_call_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_string_literal_arg() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_function_with_char_literal_arg() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_function_with_int_literal_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_cast_int_literal_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn name_of_cast_variable_is_used() {
+         // Ensures that the name of the cast type isn't used
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_variable_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_impl_trait_arg() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn borrowed_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_qualified_path_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn generate_function_with_generic_param() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn generate_function_with_parent_generic_param() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn generic_param_in_receiver_type() {
+         // FIXME: Generic parameter `T` should be part of impl, not method.
+ ",
+         )
+     }
+-
+     #[test]
+     fn generic_param_in_return_type() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn generate_fn_with_bounds() {
+         // FIXME: where predicates should be on next lines.
+ ",
+         )
+     }
+-
+     #[test]
+     fn include_transitive_param_dependency() {
+         // FIXME: where predicates should be on next lines.
+ ",
+         )
+     }
+-
+     #[test]
+     fn irrelevant_bounds_are_filtered_out() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn params_in_trait_arg_are_not_dependency() {
+         // Even though `bar` depends on `U` and `I`, we don't have to copy these bounds:
+ ",
+         )
+     }
+-
+     #[test]
+     fn dont_copy_bounds_already_in_scope() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_fn_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_closure_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn unresolvable_types_default_to_placeholder() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn arg_names_dont_overlap() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn arg_name_counters_start_at_1_per_name() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_function_in_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn qualified_path_uses_correct_scope() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn qualified_path_in_generic_bounds_uses_correct_scope() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_in_nested_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_in_another_file() {
+         check_assist(
+ }",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_return_type() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_not_applicable_if_function_already_exists() {
+         check_assist_not_applicable(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_not_applicable_if_unresolved_variable_in_call_is_selected() {
+         check_assist_not_applicable(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn create_method_with_no_args() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn create_method_with_unused_generics() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn create_function_with_async() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn return_type_for_async_fn() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn create_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_method_within_an_impl() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_method_from_different_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_method_from_descendant_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_method_with_cursor_anywhere_on_call_expression() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_async_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_static_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_async_static_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_generic_static_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_static_method_within_an_impl() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_static_method_from_different_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_static_method_with_cursor_anywhere_on_call_expression() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn create_static_method_within_an_impl_with_self_syntax() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn no_panic_on_invalid_global_path() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn handle_tuple_indexing() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_const_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_static_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn add_function_with_static_mut_arg() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn not_applicable_for_enum_variant() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn applicable_for_enum_method() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn applicable_in_different_local_crate() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn applicable_in_different_local_crate_method() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn not_applicable_in_different_library_crate() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn not_applicable_in_different_library_crate_method() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn new_function_assume_self_type() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn new_function_assume_self_type_for_tuple_struct() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn new_function_assume_self_type_for_unit_struct() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn new_function_assume_self_type_for_enum() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn new_function_assume_self_type_with_args() {
+         check_assist(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn no_generate_method_by_keyword() {
+         check_assist_not_applicable(

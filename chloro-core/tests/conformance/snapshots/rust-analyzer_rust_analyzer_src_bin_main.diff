@@ -1,0 +1,189 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12893 bytes
+Chloro size:   12673 bytes
+Rustfmt size:  12893 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Driver for rust-analyzer.
+ //!
+ //! Based on cli flags, either spawns an LSP server, or runs a batch analysis
+ 
+-#![allow(clippy::print_stdout, clippy::print_stderr)]
+-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+-
+-#[cfg(feature = "in-rust-tree")]
+-extern crate rustc_driver as _;
+-
+-mod rustc_wrapper;
+-
+ use std::{env, fs, path::PathBuf, process::ExitCode, sync::Arc};
+ 
+ use anyhow::Context;
+ use tracing_subscriber::fmt::writer::BoxMakeWriter;
+ use vfs::AbsPathBuf;
+ 
++#![allow(clippy::print_stdout, clippy::print_stderr)]
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
++#[cfg(feature = "in-rust-tree")]
++mod rustc_wrapper;
++
+ #[cfg(feature = "mimalloc")]
+ #[global_allocator]
+-static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+ 
+ #[cfg(all(feature = "jemalloc", not(target_env = "msvc")))]
+ #[global_allocator]
+-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+ 
+ fn main() -> anyhow::Result<ExitCode> {
+     if std::env::var("RA_RUSTC_WRAPPER").is_ok() {
+ 
+ fn actual_main() -> anyhow::Result<ExitCode> {
+     let flags = flags::RustAnalyzer::from_env_or_exit();
+-
+     #[cfg(debug_assertions)]
+     if flags.wait_dbg || env::var("RA_WAIT_DBG").is_ok() {
+         wait_for_debugger();
+     }
+-
+     if let Err(e) = setup_logging(flags.log_file.clone()) {
+         eprintln!("Failed to setup logging: {e:#}");
+     }
+-
+     let verbosity = flags.verbosity();
+-
+     match flags.subcommand {
+         flags::RustAnalyzerCmd::LspServer(cmd) => 'lsp_server: {
+             if cmd.print_config_schema {
+             }
+         }
+     }
+-
+     if env::var("RUST_BACKTRACE").is_err() {
+         // SAFETY: This is safe because this is single-threaded.
+         unsafe {
+             env::set_var("RUST_BACKTRACE", "short");
+         }
+     }
+-
+     let log_file = env::var("RA_LOG_FILE").ok().map(PathBuf::from).or(log_file_flag);
+     let log_file = match log_file {
+         Some(path) => {
+         }
+         None => None,
+     };
+-
+     let writer = match log_file {
+         Some(file) => BoxMakeWriter::new(Arc::new(file)),
+         None => BoxMakeWriter::new(std::io::stderr),
+     };
+-
+     rust_analyzer::tracing::Config {
+         writer,
+         // Deliberately enable all `warn` logs if the user has not set RA_LOG, as there is usually
+         json_profile_filter: std::env::var("RA_PROFILE_JSON").ok(),
+     }
+     .init()?;
+-
+     Ok(())
+ }
+ 
+-const STACK_SIZE: usize = 1024 * 1024 * 8;
+ 
+ /// Parts of rust-analyzer can use a lot of stack space, and some operating systems only give us
+ /// 1 MB by default (eg. Windows), so this spawns a new thread with hopefully sufficient stack
+ ) -> anyhow::Result<()> {
+     let handle =
+         stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
+-
+     handle.join()?;
+-
+     Ok(())
+ }
+ 
+ fn run_server() -> anyhow::Result<()> {
+     tracing::info!("server version {} will start", rust_analyzer::version());
+-
+     let (connection, io_threads) = Connection::stdio();
+-
+     let (initialize_id, initialize_params) = match connection.initialize_start() {
+         Ok(it) => it,
+         Err(e) => {
+             return Err(e.into());
+         }
+     };
+-
+     tracing::info!("InitializeParams: {}", initialize_params);
+     let lsp_types::InitializeParams {
+         root_uri,
+         client_info,
+         ..
+     } = from_json::<lsp_types::InitializeParams>("InitializeParams", &initialize_params)?;
+-
+     // lsp-types has a typo in the `/capabilities/workspace/diagnostics` field, its typoed as `diagnostic`
+     if let Some(val) = initialize_params.pointer("/capabilities/workspace/diagnostics")
+         && let Ok(diag_caps) = from_json::<lsp_types::DiagnosticWorkspaceClientCapabilities>(
+         tracing::info!("Patching lsp-types workspace diagnostics capabilities: {diag_caps:#?}");
+         capabilities.workspace.get_or_insert_default().diagnostic.get_or_insert(diag_caps);
+     }
+-
+     let root_path = match root_uri
+         .and_then(|it| it.to_file_path().ok())
+         .map(patch_path_prefix)
+             AbsPathBuf::assert_utf8(cwd)
+         }
+     };
+-
+     if let Some(client_info) = &client_info {
+         tracing::info!(
+             "Client '{}' {}",
+             client_info.version.as_deref().unwrap_or_default()
+         );
+     }
+-
+     let workspace_roots = workspace_folders
+         .map(|workspaces| {
+             workspaces
+             connection.sender.send(lsp_server::Message::Notification(not)).unwrap();
+         }
+     }
+-
+     let server_capabilities = rust_analyzer::server_capabilities(&config);
+-
+     let initialize_result = lsp_types::InitializeResult {
+         capabilities: server_capabilities,
+         server_info: Some(lsp_types::ServerInfo {
+         }),
+         offset_encoding: None,
+     };
+-
+     let initialize_result = serde_json::to_value(initialize_result).unwrap();
+-
+     if let Err(e) = connection.initialize_finish(initialize_id, initialize_result) {
+         if e.channel_is_disconnected() {
+             io_threads.join()?;
+         }
+         return Err(e.into());
+     }
+-
+     if config.discover_workspace_config().is_none()
+         && !config.has_linked_projects()
+         && config.detached_files().is_empty()
+     {
+         config.rediscover_workspaces();
+     }
+-
+     // If the io_threads have an error, there's usually an error on the main
+     // loop too because the channels are closed. Ensure we report both errors.
+     match (rust_analyzer::main_loop(config, connection), io_threads.join()) {
+         (Err(loop_e), Ok(_)) => anyhow::bail!("{loop_e}"),
+         (Ok(_), Ok(_)) => {}
+     }
+-
+     tracing::info!("server did shut down");
+     Ok(())
+ }

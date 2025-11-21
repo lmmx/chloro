@@ -1,0 +1,84 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3407 bytes
+Chloro size:   2994 bytes
+Rustfmt size:  3410 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::ty_filter::TryEnum;
+ use syntax::{
+-    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+     AstNode, T,
++    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: replace_let_with_if_let
+-//
+-// Replaces `let` with an `if let`.
+-//
+-// ```
+-// # enum Option<T> { Some(T), None }
+-//
+-// fn main(action: Action) {
+-//     $0let x = compute();
+-// }
+-//
+-// fn compute() -> Option<i32> { None }
+-// ```
+-// ->
+-// ```
+-// # enum Option<T> { Some(T), None }
+-//
+-// fn main(action: Action) {
+-//     if let Some(x) = compute() {
+-//     }
+-// }
+-//
+-// fn compute() -> Option<i32> { None }
+-// ```
+-pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn replace_let_with_if_let(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
+     let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
+     let init = let_stmt.initializer()?;
+     let original_pat = let_stmt.pat()?;
+-
+     let target = let_kw.text_range();
+     acc.add(
+         AssistId::refactor_rewrite("replace_let_with_if_let"),
+                     .map(|it| it.happy_case());
+                 match happy_variant {
+                     None => original_pat,
+-                    Some(var_name) => make
+-                        .tuple_struct_pat(make.ident_path(var_name), [original_pat])
+-                        .into(),
++                    Some(var_name) => {
++                        make.tuple_struct_pat(make.ident_path(var_name), [original_pat]).into()
++                    }
+                 }
+             };
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_assist;
+-
+     use super::*;
+-
+     #[test]
+     fn replace_let_unknown_enum() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn replace_let_else() {
+         check_assist(

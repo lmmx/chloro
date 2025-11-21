@@ -1,0 +1,256 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 25726 bytes
+Chloro size:   26063 bytes
+Rustfmt size:  25726 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This module defines an accumulator for completions which are going to be presented to user.
+ 
+-pub(crate) mod attribute;
+-pub(crate) mod dot;
+-pub(crate) mod env_vars;
+-pub(crate) mod expr;
+-pub(crate) mod extern_abi;
+-pub(crate) mod extern_crate;
+-pub(crate) mod field;
+-pub(crate) mod flyimport;
+-pub(crate) mod fn_param;
+-pub(crate) mod format_string;
+-pub(crate) mod item_list;
+-pub(crate) mod keyword;
+-pub(crate) mod lifetime;
+-pub(crate) mod mod_;
+-pub(crate) mod pattern;
+-pub(crate) mod postfix;
+-pub(crate) mod ra_fixture;
+-pub(crate) mod record;
+-pub(crate) mod snippet;
+-pub(crate) mod r#type;
+-pub(crate) mod use_;
+-pub(crate) mod vis;
+-
+ use std::iter;
+ 
+ use hir::{HasAttrs, Name, ScopeDef, Variant, sym};
+     },
+ };
+ 
++pub(crate) mod attribute;
++
++pub(crate) mod dot;
++
++pub(crate) mod env_vars;
++
++pub(crate) mod expr;
++
++pub(crate) mod extern_abi;
++
++pub(crate) mod extern_crate;
++
++pub(crate) mod field;
++
++pub(crate) mod flyimport;
++
++pub(crate) mod fn_param;
++
++pub(crate) mod format_string;
++
++pub(crate) mod item_list;
++
++pub(crate) mod keyword;
++
++pub(crate) mod lifetime;
++
++pub(crate) mod mod_;
++
++pub(crate) mod pattern;
++
++pub(crate) mod postfix;
++
++pub(crate) mod ra_fixture;
++
++pub(crate) mod record;
++
++pub(crate) mod snippet;
++
++pub(crate) mod r#type;
++
++pub(crate) mod use_;
++
++pub(crate) mod vis;
++
+ /// Represents an in-progress set of completions being built.
+ #[derive(Debug, Default)]
+ pub struct Completions {
+ impl Builder {
+     /// Convenience method, which allows to add a freshly created completion into accumulator
+     /// without binding it to the variable.
+-    pub(crate) fn add_to(self, acc: &mut Completions, db: &RootDatabase) {
++    pub(crate) fn add_to(
++        self,
++        acc: &mut Completions,
++        db: &RootDatabase,
++    ) {
+         acc.add(self.build(db))
+     }
+ }
+ 
+ impl Completions {
+-    fn add(&mut self, item: CompletionItem) {
++    fn add(
++        &mut self,
++        item: CompletionItem,
++    ) {
+         self.buf.push(item)
+     }
+ 
+-    fn add_many(&mut self, items: impl IntoIterator<Item = CompletionItem>) {
++    fn add_many(
++        &mut self,
++        items: impl IntoIterator<Item = CompletionItem>,
++    ) {
+         self.buf.extend(items)
+     }
+ 
+-    fn add_opt(&mut self, item: Option<CompletionItem>) {
++    fn add_opt(
++        &mut self,
++        item: Option<CompletionItem>,
++    ) {
+         if let Some(item) = item {
+             self.buf.push(item)
+         }
+     }
+ 
+-    pub(crate) fn add_keyword(&mut self, ctx: &CompletionContext<'_>, keyword: &'static str) {
++    pub(crate) fn add_keyword(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++        keyword: &'static str,
++    ) {
+         let item = CompletionItem::new(
+             CompletionItemKind::Keyword,
+             ctx.source_range(),
+         item.add_to(self, ctx.db);
+     }
+ 
+-    pub(crate) fn add_nameref_keywords_with_colon(&mut self, ctx: &CompletionContext<'_>) {
++    pub(crate) fn add_nameref_keywords_with_colon(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++    ) {
+         ["self::", "crate::"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+-
+         if ctx.depth_from_crate_root > 0 {
+             self.add_keyword(ctx, "super::");
+         }
+     }
+ 
+-    pub(crate) fn add_nameref_keywords(&mut self, ctx: &CompletionContext<'_>) {
++    pub(crate) fn add_nameref_keywords(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++    ) {
+         ["self", "crate"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+-
+         if ctx.depth_from_crate_root > 0 {
+             self.add_keyword(ctx, "super");
+         }
+     }
+ 
+-    pub(crate) fn add_type_keywords(&mut self, ctx: &CompletionContext<'_>) {
++    pub(crate) fn add_type_keywords(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++    ) {
+         self.add_keyword_snippet(ctx, "fn", "fn($1)");
+         self.add_keyword_snippet(ctx, "dyn", "dyn $0");
+         self.add_keyword_snippet(ctx, "impl", "impl $0");
+     ) {
+         let mut item =
+             CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+-
+         match ctx.config.snippet_cap {
+             Some(cap) => {
+                 if incomplete_let && snippet.ends_with('}') {
+     ) {
+         let mut item =
+             CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+-
+         match ctx.config.snippet_cap {
+             Some(cap) => item.insert_snippet(cap, snippet),
+             None => item.insert_text(if snippet.contains('$') { kw } else { snippet }),
+         );
+     }
+ 
+-    pub(crate) fn add_const(&mut self, ctx: &CompletionContext<'_>, konst: hir::Const) {
++    pub(crate) fn add_const(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++        konst: hir::Const,
++    ) {
+         let is_private_editable = match ctx.is_visible(&konst) {
+             Visible::Yes => false,
+             Visible::Editable => true,
+             self.add_variant_pat(ctx, pat_ctx, Some(path_ctx), variant, local_name);
+             return;
+         }
+-
+         if let Some(builder) =
+             render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None)
+         {
+         self.add(item);
+     }
+ 
+-    pub(crate) fn add_lifetime(&mut self, ctx: &CompletionContext<'_>, name: hir::Name) {
++    pub(crate) fn add_lifetime(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++        name: hir::Name,
++    ) {
+         CompletionItem::new(
+             SymbolKind::LifetimeParam,
+             ctx.source_range(),
+         .add_to(self, ctx.db)
+     }
+ 
+-    pub(crate) fn add_label(&mut self, ctx: &CompletionContext<'_>, name: hir::Name) {
++    pub(crate) fn add_label(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++        name: hir::Name,
++    ) {
+         CompletionItem::new(
+             SymbolKind::Label,
+             ctx.source_range(),
+         ));
+     }
+ 
+-    pub(crate) fn suggest_name(&mut self, ctx: &CompletionContext<'_>, name: &str) {
++    pub(crate) fn suggest_name(
++        &mut self,
++        ctx: &CompletionContext<'_>,
++        name: &str,
++    ) {
+         let item = CompletionItem::new(
+             CompletionItemKind::Binding,
+             ctx.source_range(),
+ 
+         cb(acc, ctx, variant, self_path);
+     };
+-
+     let variants = enum_.variants(ctx.db);
+-
+     if let Some(impl_) = impl_.and_then(|impl_| ctx.sema.to_def(impl_))
+         && impl_.self_ty(ctx.db).as_adt() == Some(hir::Adt::Enum(enum_))
+     {
+         variants.iter().for_each(|variant| process_variant(*variant));
+     }
+-
+     for variant in variants {
+         if let Some(path) = ctx.module.find_path(
+             ctx.db,

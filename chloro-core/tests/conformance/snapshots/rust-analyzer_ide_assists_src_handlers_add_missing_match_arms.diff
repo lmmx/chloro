@@ -1,0 +1,833 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 51270 bytes
+Chloro size:   50418 bytes
+Rustfmt size:  51735 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::iter::{self, Peekable};
+ 
+ use either::Either;
+-use hir::{sym, Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics};
++use hir::{Adt, AsAssocItem, Crate, FindPathConfig, HasAttrs, ModuleDef, Semantics, sym};
++use ide_db::RootDatabase;
+ use ide_db::assists::ExprFillDefaultMode;
+ use ide_db::syntax_helpers::suggest_name;
+-use ide_db::RootDatabase;
+ use ide_db::{famous_defs::FamousDefs, helpers::mod_path_to_ast};
+ use itertools::Itertools;
++use syntax::ToSmolStr;
+ use syntax::ast::edit::{AstNodeEdit, IndentLevel};
+ use syntax::ast::syntax_factory::SyntaxFactory;
+-use syntax::ast::{self, make, AstNode, MatchArmList, MatchExpr, Pat};
+-use syntax::ToSmolStr;
++use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
+ 
+-use crate::{utils, AssistContext, AssistId, Assists};
++use crate::{AssistContext, AssistId, Assists, utils};
+ 
+-// Assist: add_missing_match_arms
+-//
+-// Adds missing clauses to a `match` expression.
+-//
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         $0
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// enum Action { Move { distance: u32 }, Stop }
+-//
+-// fn handle(action: Action) {
+-//     match action {
+-//         Action::Move { distance } => ${1:todo!()},
+-//         Action::Stop => ${2:todo!()},$0
+-//     }
+-// }
+-// ```
+-pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_missing_match_arms(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
+     let match_arm_list = match_expr.match_arm_list()?;
+     let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
+-
+     if cursor_at_trivial_match_arm_list(ctx, &match_expr, &match_arm_list).is_none() {
+         let arm_list_range = ctx.sema.original_range(match_arm_list.syntax()).range;
+         let cursor_in_range = arm_list_range.contains_range(ctx.selection_trimmed());
+             return None;
+         }
+     }
+-
+     let expr = match_expr.expr()?;
+-
+     let mut has_catch_all_arm = false;
+-
+     let top_lvl_pats: Vec<_> = match_arm_list
+         .arms()
+         .filter_map(|arm| Some((arm.pat()?, arm.guard().is_some())))
+         // Exclude top level wildcards so that they are expanded by this assist, retains status quo in #8129.
+         .filter(|pat| !matches!(pat, Pat::WildcardPat(_)))
+         .collect();
+-
+     let make = SyntaxFactory::with_mappings();
+-
+     let scope = ctx.sema.scope(expr.syntax())?;
+     let module = scope.module();
+-    let cfg = ctx
+-        .config
+-        .find_path_config(ctx.sema.is_nightly(scope.krate()));
++    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(scope.krate()));
+     let self_ty = if ctx.config.prefer_self_ty {
+         scope
+             .containing_function()
+ 
+         let variants = enum_def.variants(ctx.db());
+ 
+-        let has_hidden_variants = variants
+-            .iter()
+-            .any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
++        let has_hidden_variants =
++            variants.iter().any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
+ 
+         let missing_pats = variants
+             .into_iter()
+         } else {
+             Box::new(missing_pats)
+         };
+-        (
+-            missing_pats.peekable(),
+-            is_non_exhaustive,
+-            has_hidden_variants,
+-        )
++        (missing_pats.peekable(), is_non_exhaustive, has_hidden_variants)
+     } else if let Some(enum_defs) = resolve_tuple_of_enum_def(&ctx.sema, &expr, self_ty.as_ref()) {
+-        let is_non_exhaustive = enum_defs
+-            .iter()
+-            .any(|enum_def| enum_def.is_non_exhaustive(ctx.db(), module.krate()));
++        let is_non_exhaustive =
++            enum_defs.iter().any(|enum_def| enum_def.is_non_exhaustive(ctx.db(), module.krate()));
+ 
+         let mut n_arms = 1;
+         let variants_of_enums: Vec<Vec<ExtendedVariant>> = enum_defs
+             return None;
+         }
+ 
+-        let has_hidden_variants = variants
+-            .iter()
+-            .any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
++        let has_hidden_variants =
++            variants.iter().any(|variant| variant.should_be_hidden(ctx.db(), module.krate()));
+ 
+         let variants_of_enums = vec![variants; len];
+ 
+     } else {
+         return None;
+     };
+-
+     let mut needs_catch_all_arm = is_non_exhaustive && !has_catch_all_arm;
+-
+     if !needs_catch_all_arm
+         && ((has_hidden_variants && has_catch_all_arm) || missing_pats.peek().is_none())
+     {
+         return None;
+     }
+-
+     acc.add(
+         AssistId::quick_fix("add_missing_match_arms"),
+         "Fill match arms",
+         cov_mark::hit!(add_missing_match_arms_empty_body);
+         return Some(());
+     }
+-
+     // match x {
+     //     bar => baz,
+     //     $0
+             return Some(());
+         }
+     }
+-
+     // match { _$0 => {...} }
+     let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
+     let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;
+-    let arm_match_expr = arm
+-        .syntax()
+-        .ancestors()
+-        .nth(2)
+-        .and_then(ast::MatchExpr::cast)?;
++    let arm_match_expr = arm.syntax().ancestors().nth(2).and_then(ast::MatchExpr::cast)?;
+     if arm_match_expr == *match_expr {
+         cov_mark::hit!(add_missing_match_arms_trivial_arm);
+         return Some(());
+     }
+-
+     None
+ }
+ 
+-fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
+-    !existing_pats
+-        .iter()
+-        .any(|pat| does_pat_match_variant(pat, var))
++fn is_variant_missing(
++    existing_pats: &[Pat],
++    var: &Pat,
++) -> bool {
++    !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
+ }
+ 
+-// Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
+-fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
++fn does_pat_match_variant(
++    pat: &Pat,
++    var: &Pat,
++) -> bool {
+     match (pat, var) {
+         (Pat::WildcardPat(_), _) => true,
+-        (Pat::SlicePat(spat), Pat::SlicePat(svar)) => spat
+-            .pats()
+-            .zip(svar.pats())
+-            .all(|(p, v)| does_pat_match_variant(&p, &v)),
+-        (Pat::TuplePat(tpat), Pat::TuplePat(tvar)) => tpat
+-            .fields()
+-            .zip(tvar.fields())
+-            .all(|(p, v)| does_pat_match_variant(&p, &v)),
++        (Pat::SlicePat(spat), Pat::SlicePat(svar)) => {
++            spat.pats().zip(svar.pats()).all(|(p, v)| does_pat_match_variant(&p, &v))
++        }
++        (Pat::TuplePat(tpat), Pat::TuplePat(tvar)) => {
++            tpat.fields().zip(tvar.fields()).all(|(p, v)| does_pat_match_variant(&p, &v))
++        }
+         (Pat::OrPat(opat), _) => opat.pats().any(|p| does_pat_match_variant(&p, var)),
+         _ => utils::does_pat_match_variant(pat, var),
+     }
+ #[derive(Eq, PartialEq, Clone)]
+ enum ExtendedEnum {
+     Bool,
+-    Enum { enum_: hir::Enum, use_self: bool },
++    Enum {
++        enum_: hir::Enum,
++        use_self: bool,
++    },
+ }
+ 
+ #[derive(Eq, PartialEq, Clone, Copy, Debug)]
+ }
+ 
+ impl ExtendedVariant {
+-    fn should_be_hidden(self, db: &RootDatabase, krate: Crate) -> bool {
++    fn should_be_hidden(
++        self,
++        db: &RootDatabase,
++        krate: Crate,
++    ) -> bool {
+         match self {
+             ExtendedVariant::Variant { variant: var, .. } => {
+                 var.attrs(db).has_doc_hidden() && var.module(db).krate() != krate
+         }
+     }
+ 
+-    fn is_non_exhaustive(&self, db: &RootDatabase, krate: Crate) -> bool {
++    fn is_non_exhaustive(
++        &self,
++        db: &RootDatabase,
++        krate: Crate,
++    ) -> bool {
+         match self {
+             ExtendedEnum::Enum { enum_: e, .. } => {
+                 e.attrs(db).by_key(sym::non_exhaustive).exists() && e.module(db).krate() != krate
+         }
+     }
+ 
+-    fn variants(&self, db: &RootDatabase) -> Vec<ExtendedVariant> {
++    fn variants(
++        &self,
++        db: &RootDatabase,
++    ) -> Vec<ExtendedVariant> {
+         match *self {
+             ExtendedEnum::Enum { enum_: e, use_self } => e
+                 .variants(db)
+     expr: &ast::Expr,
+     self_ty: Option<&hir::Type<'_>>,
+ ) -> Option<ExtendedEnum> {
+-    sema.type_of_expr(expr)?
+-        .adjusted()
+-        .autoderef(sema.db)
+-        .find_map(|ty| match ty.as_adt() {
+-            Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
+-            _ => ty.is_bool().then_some(ExtendedEnum::Bool),
+-        })
++    sema.type_of_expr(expr)?.adjusted().autoderef(sema.db).find_map(|ty| match ty.as_adt() {
++        Some(Adt::Enum(e)) => Some(ExtendedEnum::enum_(sema.db, e, &ty, self_ty)),
++        _ => ty.is_bool().then_some(ExtendedEnum::Bool),
++    })
+ }
+ 
+ fn resolve_tuple_of_enum_def(
+     expr: &ast::Expr,
+     self_ty: Option<&hir::Type<'_>>,
+ ) -> Option<(ExtendedEnum, usize)> {
+-    sema.type_of_expr(expr)?
+-        .adjusted()
+-        .as_array(sema.db)
+-        .and_then(|(ty, len)| {
+-            ty.autoderef(sema.db).find_map(|ty| match ty.as_adt() {
+-                Some(Adt::Enum(e)) => Some((ExtendedEnum::enum_(sema.db, e, &ty, self_ty), len)),
+-                _ => ty.is_bool().then_some((ExtendedEnum::Bool, len)),
+-            })
++    sema.type_of_expr(expr)?.adjusted().as_array(sema.db).and_then(|(ty, len)| {
++        ty.autoderef(sema.db).find_map(|ty| match ty.as_adt() {
++            Some(Adt::Enum(e)) => Some((ExtendedEnum::enum_(sema.db, e, &ty, self_ty), len)),
++            _ => ty.is_bool().then_some((ExtendedEnum::Bool, len)),
+         })
++    })
+ }
+ 
+ fn build_pat(
+ ) -> Option<ast::Pat> {
+     let db = ctx.db();
+     match var {
+-        ExtendedVariant::Variant {
+-            variant: var,
+-            use_self,
+-        } => {
++        ExtendedVariant::Variant { variant: var, use_self } => {
+             let edition = module.krate().edition(db);
+             let path = if use_self {
+                 make::path_from_segments(
+ 
+ #[cfg(test)]
+ mod tests {
+-    use crate::tests::{
+-        check_assist, check_assist_not_applicable, check_assist_target, check_assist_unresolved,
+-        check_assist_with_config, TEST_CONFIG,
+-    };
+     use crate::AssistConfig;
+-
++    use crate::tests::{
++        TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_target,
++        check_assist_unresolved, check_assist_with_config,
++    };
+     use super::add_missing_match_arms;
+-
+     #[test]
+     fn all_match_arms_provided() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_outside_of_range_left() {
+         check_assist_not_applicable(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_outside_of_range_right() {
+         cov_mark::check!(not_applicable_outside_of_range_right);
+         "#,
+         );
+     }
+-
+     #[test]
+     fn all_boolean_match_arms_provided() {
+         check_assist_not_applicable(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn tuple_of_non_enum() {
+         // for now this case is not handled, although it potentially could be
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_boolean() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn partial_fill_boolean() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn all_boolean_tuple_arms_provided() {
+         check_assist_not_applicable(
+ }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             add_missing_match_arms,
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn fill_boolean_tuple() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn fill_boolean_array() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn partial_fill_boolean_tuple() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn partial_fill_record_tuple() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn partial_fill_option() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn partial_fill_option_with_indentation() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn partial_fill_or_pat() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn partial_fill() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn partial_fill_bind_pat() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_empty_body() {
+         cov_mark::check!(add_missing_match_arms_empty_body);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_end_of_last_arm() {
+         cov_mark::check!(add_missing_match_arms_end_of_last_arm);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_tuple_of_enum() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_tuple_of_enum_ref() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_tuple_of_enum_partial() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ "#,
+         )
+     }
+-
+     #[test]
+     fn add_missing_match_arms_tuple_of_enum_partial_with_wildcards() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_partial_with_deep_pattern() {
+         // Fixme: cannot handle deep patterns
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_tuple_of_enum_not_applicable() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_single_element_tuple_of_enum() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_fill_match_arm_refs() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             add_missing_match_arms,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_target_simple() {
+         check_assist_target(
+             "match E::X {}",
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_target_complex() {
+         check_assist_target(
+     }",
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_trivial_arm() {
+         cov_mark::check!(add_missing_match_arms_trivial_arm);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn wildcard_inside_expression_not_applicable() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_qualifies_path() {
+         check_assist(
+ "#,
+         );
+     }
+-
+-    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+-    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
+     #[ignore]
+     #[test]
+     fn add_missing_match_arms_preserves_comments() {
+ "#,
+         );
+     }
+-
+-    // FIXME: Preserving comments is quite hard in the current transitional syntax editing model.
+-    // Once we migrate to new trivia model addressed in #6854, remove the ignore attribute.
+     #[ignore]
+     #[test]
+     fn add_missing_match_arms_preserves_comments_empty() {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn add_missing_match_arms_placeholder() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn option_order() {
+         cov_mark::check!(option_order);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn works_inside_macro_call() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn lazy_computation() {
+         // Computing a single missing arm is enough to determine applicability of the assist.
+ "#,
+         );
+     }
+-
+     #[test]
+     fn adds_comma_before_new_arms() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn does_not_add_extra_comma() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn does_not_remove_catch_all_with_non_empty_expr() {
+         cov_mark::check!(add_missing_match_arms_empty_expr);
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn does_not_fill_hidden_variants() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_fill_hidden_variants_tuple() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fills_wildcard_with_only_hidden_variants() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_fill_wildcard_when_hidden_variants_are_explicit() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_fill_wildcard_with_wildcard() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fills_wildcard_on_non_exhaustive_with_explicit_matches() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fills_wildcard_on_non_exhaustive_without_matches() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fills_wildcard_on_non_exhaustive_with_doc_hidden() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fills_wildcard_on_non_exhaustive_with_doc_hidden_with_explicit_arms() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fill_wildcard_with_partial_wildcard() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_fill_wildcard_with_partial_wildcard_and_wildcard() {
+         check_assist_not_applicable(
+ pub enum E { #[doc(hidden)] A, }"#,
+         );
+     }
+-
+     #[test]
+     fn non_exhaustive_doc_hidden_tuple_fills_wildcard() {
+         cov_mark::check!(added_wildcard_pattern);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn ignores_doc_hidden_for_crate_local_enums() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn ignores_non_exhaustive_for_crate_local_enums() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn ignores_doc_hidden_and_non_exhaustive_for_crate_local_enums() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_when_match_arm_list_cannot_be_upmapped() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     /// See [`discussion`](https://github.com/rust-lang/rust-analyzer/pull/15594#discussion_r1322960614)
+     #[test]
+     fn missing_field_name() {
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn suggest_name_for_tuple_struct_patterns() {
+         // single tuple struct
+ }
+ "#,
+         );
+-
+         // multiple tuple struct patterns
+         check_assist(
+             add_missing_match_arms,
+ "#,
+         );
+     }
+-
+     #[test]
+     fn prefer_self() {
+         check_assist_with_config(
+             add_missing_match_arms,
+-            AssistConfig {
+-                prefer_self_ty: true,
+-                ..TEST_CONFIG
+-            },
++            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+             r#"
+ enum Foo {
+     Bar,
+             "#,
+         );
+     }
+-
+     #[test]
+     fn prefer_self_with_generics() {
+         check_assist_with_config(
+             add_missing_match_arms,
+-            AssistConfig {
+-                prefer_self_ty: true,
+-                ..TEST_CONFIG
+-            },
++            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+             r#"
+ enum Foo<T> {
+     Bar(T),
+         );
+         check_assist_with_config(
+             add_missing_match_arms,
+-            AssistConfig {
+-                prefer_self_ty: true,
+-                ..TEST_CONFIG
+-            },
++            AssistConfig { prefer_self_ty: true, ..TEST_CONFIG },
+             r#"
+ enum Foo<T> {
+     Bar(T),

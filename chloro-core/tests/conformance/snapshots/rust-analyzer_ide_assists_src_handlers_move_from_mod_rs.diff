@@ -1,0 +1,86 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2862 bytes
+Chloro size:   2695 bytes
+Rustfmt size:  2883 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::{assists::AssistId, base_db::AnchoredPathBuf};
+-use syntax::{ast, AstNode, ToSmolStr};
++use syntax::{AstNode, ToSmolStr, ast};
+ 
+ use crate::{
+     assist_context::{AssistContext, Assists},
+     utils::trimmed_text_range,
+ };
+ 
+-// Assist: move_from_mod_rs
+-//
+-// Moves xxx/mod.rs to xxx.rs.
+-//
+-// ```
+-// //- /main.rs
+-// mod a;
+-// //- /a/mod.rs
+-// $0fn t() {}$0
+-// ```
+-// ->
+-// ```
+-// fn t() {}
+-// ```
+-pub(crate) fn move_from_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn move_from_mod_rs(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let source_file = ctx.find_node_at_offset::<ast::SourceFile>()?;
+     let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;
+     // Enable this assist if the user select all "meaningful" content in the source file
+         cov_mark::hit!(not_all_selected);
+         return None;
+     }
+-
+     let target = source_file.syntax().text_range();
+     let module_name = module.name(ctx.db())?.as_str().to_smolstr();
+     let path = format!("../{module_name}.rs");
+-    let dst = AnchoredPathBuf {
+-        anchor: ctx.vfs_file_id(),
+-        path,
+-    };
++    let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+     acc.add(
+         AssistId::refactor("move_from_mod_rs"),
+         format!("Convert {module_name}/mod.rs to {module_name}.rs"),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn trivial() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn must_select_all_file() {
+         cov_mark::check!(not_all_selected);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn cannot_move_not_mod_rs() {
+         cov_mark::check!(not_mod_rs);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn cannot_downgrade_main_and_lib_rs() {
+         check_assist_not_applicable(

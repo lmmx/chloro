@@ -1,0 +1,142 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6275 bytes
+Chloro size:   6386 bytes
+Rustfmt size:  6621 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Span maps for real files and macro expansions.
+ 
++pub use span::RealSpanMap;
+ use span::{Span, SyntaxContext};
+ use stdx::TupleExt;
+-use syntax::{ast, AstNode, TextRange};
++use syntax::{AstNode, TextRange, ast};
+ use triomphe::Arc;
+ 
+-pub use span::RealSpanMap;
+-
+-use crate::{attrs::collect_attrs, db::ExpandDatabase, HirFileId, MacroCallId};
++use crate::{HirFileId, MacroCallId, attrs::collect_attrs, db::ExpandDatabase};
+ 
+ pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
+ 
+ }
+ 
+ impl syntax_bridge::SpanMapper<Span> for SpanMap {
+-    fn span_for(&self, range: TextRange) -> Span {
++    fn span_for(
++        &self,
++        range: TextRange,
++    ) -> Span {
+         self.span_for_range(range)
+     }
+ }
+ 
+ impl syntax_bridge::SpanMapper<Span> for SpanMapRef<'_> {
+-    fn span_for(&self, range: TextRange) -> Span {
++    fn span_for(
++        &self,
++        range: TextRange,
++    ) -> Span {
+         self.span_for_range(range)
+     }
+ }
+ 
+ impl SpanMap {
+-    pub fn span_for_range(&self, range: TextRange) -> Span {
++    pub fn span_for_range(
++        &self,
++        range: TextRange,
++    ) -> Span {
+         match self {
+             // FIXME: Is it correct for us to only take the span at the start? This feels somewhat
+             // wrong. The context will be right, but the range could be considered wrong. See
+     }
+ 
+     #[inline]
+-    pub(crate) fn new(db: &dyn ExpandDatabase, file_id: HirFileId) -> SpanMap {
++    pub(crate) fn new(
++        db: &dyn ExpandDatabase,
++        file_id: HirFileId,
++    ) -> SpanMap {
+         match file_id {
+             HirFileId::FileId(file_id) => SpanMap::RealSpanMap(db.real_span_map(file_id)),
+             HirFileId::MacroFile(m) => {
+ }
+ 
+ impl SpanMapRef<'_> {
+-    pub fn span_for_range(self, range: TextRange) -> Span {
++    pub fn span_for_range(
++        self,
++        range: TextRange,
++    ) -> Span {
+         match self {
+             Self::ExpansionSpanMap(span_map) => span_map.span_at(range.start()),
+             Self::RealSpanMap(span_map) => span_map.span_for_range(range),
+     use syntax::ast::HasModuleItem;
+     let mut pairs = vec![(syntax::TextSize::new(0), span::ROOT_ERASED_FILE_AST_ID)];
+     let ast_id_map = db.ast_id_map(editioned_file_id.into());
+-
+     let tree = db.parse(editioned_file_id).tree();
+     // This is an incrementality layer. Basically we can't use absolute ranges for our spans as that
+     // would mean we'd invalidate everything whenever we type. So instead we make the text ranges
+     // them again, something we might get access to in the future. But even then, proc-macros doing
+     // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
+     // every input of the file)…
+-
+-    let item_to_entry = |item: ast::Item| {
+-        (
+-            item.syntax().text_range().start(),
+-            ast_id_map.ast_id(&item).erase(),
+-        )
+-    };
++    let item_to_entry =
++        |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
+     // Top level items make for great anchors as they are the most stable and a decent boundary
+     pairs.extend(tree.items().map(item_to_entry));
+     // Unfortunately, assoc items are very common in Rust, so descend into those as well and make
+         {
+             if let Some(extern_item_list) = it.extern_item_list() {
+                 pairs.extend(
+-                    extern_item_list
+-                        .extern_items()
+-                        .map(ast::Item::from)
+-                        .map(item_to_entry),
++                    extern_item_list.extern_items().map(ast::Item::from).map(item_to_entry),
+                 );
+             }
+         }
+         ast::Item::Impl(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
+             if let Some(assoc_item_list) = it.assoc_item_list() {
+-                pairs.extend(
+-                    assoc_item_list
+-                        .assoc_items()
+-                        .map(ast::Item::from)
+-                        .map(item_to_entry),
+-                );
++                pairs.extend(assoc_item_list.assoc_items().map(ast::Item::from).map(item_to_entry));
+             }
+         }
+         ast::Item::Module(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
+         }
+         ast::Item::Trait(it) if !collect_attrs(it).map(TupleExt::tail).any(|it| it.is_left()) => {
+             if let Some(assoc_item_list) = it.assoc_item_list() {
+-                pairs.extend(
+-                    assoc_item_list
+-                        .assoc_items()
+-                        .map(ast::Item::from)
+-                        .map(item_to_entry),
+-                );
++                pairs.extend(assoc_item_list.assoc_items().map(ast::Item::from).map(item_to_entry));
+             }
+         }
+         _ => (),
+     });
+-
+     Arc::new(RealSpanMap::from_file(
+         editioned_file_id.editioned_file_id(db),
+         pairs.into_boxed_slice(),

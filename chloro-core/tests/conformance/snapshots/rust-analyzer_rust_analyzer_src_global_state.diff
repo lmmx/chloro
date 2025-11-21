@@ -1,0 +1,398 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 37899 bytes
+Chloro size:   37577 bytes
+Rustfmt size:  37899 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
+ }
+ 
+-// Enforces drop order
+ pub(crate) struct Handle<H, C> {
+     pub(crate) handle: H,
+     pub(crate) receiver: C,
+ }
+ 
+-pub(crate) type ReqHandler = fn(&mut GlobalState, lsp_server::Response);
++pub(crate) type ReqHandler =
++    fn(
++        &mut GlobalState,
++        lsp_server::Response,
++    );
++
+ type ReqQueue = lsp_server::ReqQueue<(String, Instant), ReqHandler>;
+ 
+ /// `GlobalState` is the primary mutable state of the language server
+ pub(crate) struct GlobalState {
+     sender: Sender<lsp_server::Message>,
+     req_queue: ReqQueue,
+-
+     pub(crate) task_pool: Handle<TaskPool<Task>, Receiver<Task>>,
+     pub(crate) fmt_pool: Handle<TaskPool<Task>, Receiver<Task>>,
+     pub(crate) cancellation_pool: thread::Pool,
+-
+     pub(crate) config: Arc<Config>,
+     pub(crate) config_errors: Option<ConfigErrors>,
+     pub(crate) analysis_host: AnalysisHost,
+     /// A mapping that maps a local source root's `SourceRootId` to it parent's `SourceRootId`, if it has one.
+     pub(crate) local_roots_parent_map: Arc<FxHashMap<SourceRootId, SourceRootId>>,
+     pub(crate) semantic_tokens_cache: Arc<Mutex<FxHashMap<Url, SemanticTokens>>>,
+-
+-    // status
+     pub(crate) shutdown_requested: bool,
+     pub(crate) last_reported_status: lsp_ext::ServerStatusParams,
+-
+-    // proc macros
+     pub(crate) proc_macro_clients: Arc<[Option<anyhow::Result<ProcMacroClient>>]>,
+     pub(crate) build_deps_changed: bool,
+-
+-    // Flycheck
+     pub(crate) flycheck: Arc<[FlycheckHandle]>,
+     pub(crate) flycheck_sender: Sender<FlycheckMessage>,
+     pub(crate) flycheck_receiver: Receiver<FlycheckMessage>,
+     pub(crate) last_flycheck_error: Option<String>,
+-
+-    // Test explorer
+     pub(crate) test_run_session: Option<Vec<CargoTestHandle>>,
+     pub(crate) test_run_sender: Sender<CargoTestMessage>,
+     pub(crate) test_run_receiver: Receiver<CargoTestMessage>,
+     pub(crate) test_run_remaining_jobs: usize,
+-
+-    // Project loading
+     pub(crate) discover_handle: Option<discover::DiscoverHandle>,
+     pub(crate) discover_sender: Sender<discover::DiscoverProjectMessage>,
+     pub(crate) discover_receiver: Receiver<discover::DiscoverProjectMessage>,
+-
+-    // Debouncing channel for fetching the workspace
+-    // we want to delay it until the VFS looks stable-ish (and thus is not currently in the middle
+-    // of a VCS operation like `git switch`)
+     pub(crate) fetch_ws_receiver: Option<(Receiver<Instant>, FetchWorkspaceRequest)>,
+-
+-    // VFS
+     pub(crate) loader: Handle<Box<dyn vfs::loader::Handle>, Receiver<vfs::loader::Message>>,
+     pub(crate) vfs: Arc<RwLock<(vfs::Vfs, FxHashMap<FileId, LineEndings>)>>,
+     pub(crate) vfs_config_version: u32,
+     pub(crate) vfs_progress_config_version: u32,
+     pub(crate) vfs_done: bool,
+-    // used to track how long VFS loading takes. this can't be on `vfs::loader::Handle`,
+-    // as that handle's lifetime is the same as `GlobalState` itself.
+     pub(crate) vfs_span: Option<tracing::span::EnteredSpan>,
+     pub(crate) wants_to_switch: Option<Cause>,
+-
+     /// `workspaces` field stores the data we actually use, while the `OpQueue`
+     /// stores the result of the last fetch.
+     ///
+     pub(crate) workspaces: Arc<Vec<ProjectWorkspace>>,
+     pub(crate) crate_graph_file_dependencies: FxHashSet<vfs::VfsPath>,
+     pub(crate) detached_files: FxHashSet<ManifestPath>,
+-
+-    // op queues
+     pub(crate) fetch_workspaces_queue: OpQueue<FetchWorkspaceRequest, FetchWorkspaceResponse>,
+     pub(crate) fetch_build_data_queue: OpQueue<(), FetchBuildDataResponse>,
+     pub(crate) fetch_proc_macros_queue: OpQueue<(ChangeWithProcMacros, Vec<ProcMacroPaths>), bool>,
+     pub(crate) prime_caches_queue: OpQueue,
+     pub(crate) discover_workspace_queue: OpQueue,
+-
+     /// A deferred task queue.
+     ///
+     /// This queue is used for doing database-dependent work inside of sync
+     /// This is marked true if we failed to load a crate root file at crate graph creation,
+     /// which will usually end up causing a bunch of incorrect diagnostics on startup.
+     pub(crate) incomplete_crate_graph: bool,
+-
+     pub(crate) minicore: MiniCoreRustAnalyzerInternalOnly,
+ }
+ 
+-// FIXME: This should move to the VFS once the rewrite is done.
+ #[derive(Debug, Clone, Default)]
+ pub(crate) struct MiniCoreRustAnalyzerInternalOnly {
+     pub(crate) minicore_text: Option<String>,
+     pub(crate) semantic_tokens_cache: Arc<Mutex<FxHashMap<Url, SemanticTokens>>>,
+     vfs: Arc<RwLock<(vfs::Vfs, FxHashMap<FileId, LineEndings>)>>,
+     pub(crate) workspaces: Arc<Vec<ProjectWorkspace>>,
+-    // used to signal semantic highlighting to fall back to syntax based highlighting until
+-    // proc-macros have been loaded
+-    // FIXME: Can we derive this from somewhere else?
+     pub(crate) proc_macros_loaded: bool,
+     pub(crate) flycheck: Arc<[FlycheckHandle]>,
+     minicore: MiniCoreRustAnalyzerInternalOnly,
+ }
+ 
+-impl std::panic::UnwindSafe for GlobalStateSnapshot {}
++impl std::panic::UnwindSafe for GlobalStateSnapshot {
++}
+ 
+ impl GlobalState {
+-    pub(crate) fn new(sender: Sender<lsp_server::Message>, config: Config) -> GlobalState {
++    pub(crate) fn new(
++        sender: Sender<lsp_server::Message>,
++        config: Config,
++    ) -> GlobalState {
+         let loader = {
+             let (sender, receiver) = unbounded::<vfs::loader::Message>();
+             let handle: vfs_notify::NotifyHandle = vfs::loader::Handle::spawn(sender);
+             let handle = Box::new(handle) as Box<dyn vfs::loader::Handle>;
+             Handle { handle, receiver }
+         };
+-
+         let task_pool = {
+             let (sender, receiver) = unbounded();
+             let handle = TaskPool::new_with_threads(sender, config.main_loop_num_threads());
+             Handle { handle, receiver }
+         };
+         let cancellation_pool = thread::Pool::new(1);
+-
+         let task_queue = {
+             let (sender, receiver) = unbounded();
+             TaskQueue { sender, receiver }
+         };
+-
+         let mut analysis_host = AnalysisHost::new(config.lru_parse_query_capacity());
+         if let Some(capacities) = config.lru_query_capacities_config() {
+             analysis_host.update_lru_capacities(capacities);
+         }
+         let (flycheck_sender, flycheck_receiver) = unbounded();
+         let (test_run_sender, test_run_receiver) = unbounded();
+-
+         let (discover_sender, discover_receiver) = unbounded();
+-
+         let mut this = GlobalState {
+             sender,
+             req_queue: ReqQueue::default(),
+         // mapping is not ready until `AnalysisHost::apply_changes` has been called.
+         let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> =
+             FxHashMap::default();
+-
+         let mut change = ChangeWithProcMacros::default();
+         let mut guard = self.vfs.write();
+         let changed_files = guard.0.take_changes();
+         if changed_files.is_empty() {
+             return false;
+         }
+-
+         let (change, modified_rust_files, workspace_structure_change) =
+             self.cancellation_pool.scoped(|s| {
+                 // start cancellation in parallel, this will kick off lru eviction
+                 }
+                 (change, modified_rust_files, workspace_structure_change)
+             });
+-
+         self.analysis_host.apply_change(change);
+         if !modified_ratoml_files.is_empty()
+             || !self.config.same_source_root_parent_map(&self.local_roots_parent_map)
+                 self.config = Arc::new(config);
+             }
+         }
+-
+         // FIXME: `workspace_structure_change` is computed from `should_refresh_for_change` which is
+         // path syntax based. That is not sufficient for all cases so we should lift that check out
+         // into a `QueuedTask`, see `handle_did_save_text_document`.
+                 self.enqueue_workspace_fetch(path, force_crate_graph_reload);
+             }
+         }
+-
+         true
+     }
+ 
+         self.send(request.into());
+     }
+ 
+-    pub(crate) fn complete_request(&mut self, response: lsp_server::Response) {
++    pub(crate) fn complete_request(
++        &mut self,
++        response: lsp_server::Response,
++    ) {
+         let handler = self
+             .req_queue
+             .outgoing
+             .register(request.id.clone(), (request.method.clone(), request_received));
+     }
+ 
+-    pub(crate) fn respond(&mut self, response: lsp_server::Response) {
++    pub(crate) fn respond(
++        &mut self,
++        response: lsp_server::Response,
++    ) {
+         if let Some((method, start)) = self.req_queue.incoming.complete(&response.id) {
+             if let Some(err) = &response.error
+                 && err.message.starts_with("server panicked")
+         }
+     }
+ 
+-    pub(crate) fn cancel(&mut self, request_id: lsp_server::RequestId) {
++    pub(crate) fn cancel(
++        &mut self,
++        request_id: lsp_server::RequestId,
++    ) {
+         if let Some(response) = self.req_queue.incoming.cancel(request_id) {
+             self.send(response.into());
+         }
+     }
+ 
+-    pub(crate) fn is_completed(&self, request: &lsp_server::Request) -> bool {
++    pub(crate) fn is_completed(
++        &self,
++        request: &lsp_server::Request,
++    ) -> bool {
+         self.req_queue.incoming.is_completed(&request.id)
+     }
+ 
+     #[track_caller]
+-    fn send(&self, message: lsp_server::Message) {
++    fn send(
++        &self,
++        message: lsp_server::Message,
++    ) {
+         self.sender.send(message).unwrap();
+     }
+ 
+         })
+     }
+ 
+-    fn enqueue_workspace_fetch(&mut self, path: AbsPathBuf, force_crate_graph_reload: bool) {
++    fn enqueue_workspace_fetch(
++        &mut self,
++        path: AbsPathBuf,
++        force_crate_graph_reload: bool,
++    ) {
+         let already_requested = self.fetch_workspaces_queue.op_requested()
+             && !self.fetch_workspaces_queue.op_in_progress();
+         if self.fetch_ws_receiver.is_none() && already_requested {
+             // FIXME: We should cancel the in-progress fetch here
+             return;
+         }
+-
+         self.fetch_ws_receiver = Some((
+             crossbeam_channel::after(Duration::from_millis(100)),
+             FetchWorkspaceRequest { path: Some(path), force_crate_graph_reload },
+     }
+ 
+     /// Returns `None` if the file was excluded.
+-    pub(crate) fn url_to_file_id(&self, url: &Url) -> anyhow::Result<Option<FileId>> {
++    pub(crate) fn url_to_file_id(
++        &self,
++        url: &Url,
++    ) -> anyhow::Result<Option<FileId>> {
+         url_to_file_id(&self.vfs_read(), url)
+     }
+ 
+-    pub(crate) fn file_id_to_url(&self, id: FileId) -> Url {
++    pub(crate) fn file_id_to_url(
++        &self,
++        id: FileId,
++    ) -> Url {
+         file_id_to_url(&self.vfs_read(), id)
+     }
+ 
+     /// Returns `None` if the file was excluded.
+-    pub(crate) fn vfs_path_to_file_id(&self, vfs_path: &VfsPath) -> anyhow::Result<Option<FileId>> {
++    pub(crate) fn vfs_path_to_file_id(
++        &self,
++        vfs_path: &VfsPath,
++    ) -> anyhow::Result<Option<FileId>> {
+         vfs_path_to_file_id(&self.vfs_read(), vfs_path)
+     }
+ 
+-    pub(crate) fn file_line_index(&self, file_id: FileId) -> Cancellable<LineIndex> {
++    pub(crate) fn file_line_index(
++        &self,
++        file_id: FileId,
++    ) -> Cancellable<LineIndex> {
+         let endings = self.vfs.read().1[&file_id];
+         let index = self.analysis.file_line_index(file_id)?;
+         let res = LineIndex { index, endings, encoding: self.config.caps().negotiated_encoding() };
+         Ok(res)
+     }
+ 
+-    pub(crate) fn file_version(&self, file_id: FileId) -> Option<i32> {
++    pub(crate) fn file_version(
++        &self,
++        file_id: FileId,
++    ) -> Option<i32> {
+         Some(self.mem_docs.get(self.vfs_read().file_path(file_id))?.version)
+     }
+ 
+-    pub(crate) fn url_file_version(&self, url: &Url) -> Option<i32> {
++    pub(crate) fn url_file_version(
++        &self,
++        url: &Url,
++    ) -> Option<i32> {
+         let path = from_proto::vfs_path(url).ok()?;
+         Some(self.mem_docs.get(&path)?.version)
+     }
+ 
+-    pub(crate) fn anchored_path(&self, path: &AnchoredPathBuf) -> Url {
++    pub(crate) fn anchored_path(
++        &self,
++        path: &AnchoredPathBuf,
++    ) -> Url {
+         let mut base = self.vfs_read().file_path(path.anchor).clone();
+         base.pop();
+         let path = base.join(&path.path).unwrap();
+         url_from_abs_path(path)
+     }
+ 
+-    pub(crate) fn file_id_to_file_path(&self, file_id: FileId) -> vfs::VfsPath {
++    pub(crate) fn file_id_to_file_path(
++        &self,
++        file_id: FileId,
++    ) -> vfs::VfsPath {
+         self.vfs_read().file_path(file_id).clone()
+     }
+ 
+-    pub(crate) fn target_spec_for_crate(&self, crate_id: Crate) -> Option<TargetSpec> {
++    pub(crate) fn target_spec_for_crate(
++        &self,
++        crate_id: Crate,
++    ) -> Option<TargetSpec> {
+         let file_id = self.analysis.crate_root(crate_id).ok()?;
+         let path = self.vfs_read().file_path(file_id).clone();
+         let path = path.as_path()?;
+-
+         for workspace in self.workspaces.iter() {
+             match &workspace.kind {
+                 ProjectWorkspaceKind::Cargo { cargo, .. }
+                 ProjectWorkspaceKind::DetachedFile { .. } => {}
+             };
+         }
+-
+         None
+     }
+ 
+         None
+     }
+ 
+-    pub(crate) fn file_exists(&self, file_id: FileId) -> bool {
++    pub(crate) fn file_exists(
++        &self,
++        file_id: FileId,
++    ) -> bool {
+         self.vfs.read().0.exists(file_id)
+     }
+ 
+     }
+ }
+ 
+-pub(crate) fn file_id_to_url(vfs: &vfs::Vfs, id: FileId) -> Url {
++pub(crate) fn file_id_to_url(
++    vfs: &vfs::Vfs,
++    id: FileId,
++) -> Url {
+     let path = vfs.file_path(id);
+     let path = path.as_path().unwrap();
+     url_from_abs_path(path)
+ }
+ 
+ /// Returns `None` if the file was excluded.
+-pub(crate) fn url_to_file_id(vfs: &vfs::Vfs, url: &Url) -> anyhow::Result<Option<FileId>> {
++pub(crate) fn url_to_file_id(
++    vfs: &vfs::Vfs,
++    url: &Url,
++) -> anyhow::Result<Option<FileId>> {
+     let path = from_proto::vfs_path(url)?;
+     vfs_path_to_file_id(vfs, &path)
+ }

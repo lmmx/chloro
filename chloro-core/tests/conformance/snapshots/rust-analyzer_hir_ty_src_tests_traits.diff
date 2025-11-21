@@ -1,0 +1,68 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 107313 bytes
+Chloro size:   107121 bytes
+Rustfmt size:  107313 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use cov_mark::check;
+ use expect_test::expect;
+ 
+ use crate::tests::infer_with_mismatches;
+-
+ use super::{check, check_infer, check_infer_with_mismatches, check_no_mismatches, check_types};
+ 
+ #[test]
+             165..172 'z.foo()': u64
+         "#]],
+     );
+-
+     check_infer_with_mismatches(
+         r#"
+ //- minicore: fn, coerce_unsized, dispatch_from_dyn
+ }
+         "#,
+     );
+-
+     check_no_mismatches(
+         r#"
+ auto trait Send {}
+ }
+         "#,
+     );
+-
+     check_infer_with_mismatches(
+         r#"
+ auto trait Send {}
+             150..151 't': &'? {unknown}
+         "#]],
+     );
+-
+     check_no_mismatches(
+         r#"
+ auto trait Send {}
+ }
+         "#,
+     );
+-
+     check_types(
+         r#"
+ trait Trait {
+ }
+         "#,
+     );
+-
+     check_no_mismatches(
+         r#"
+ auto trait Send {}
+     );
+ }
+ 
+-// FIXME(next-solver): Was `<D as Deserializer<'de>>::Error` but now getting error lifetime.
+-// This might be fixed once we migrate into next-solver fully without chalk-ir in lowering.
+ #[test]
+ fn new_solver_crash_1() {
+     check_infer(

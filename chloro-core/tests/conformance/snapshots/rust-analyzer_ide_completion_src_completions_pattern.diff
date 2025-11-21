@@ -1,0 +1,50 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8413 bytes
+Chloro size:   8406 bytes
+Rustfmt size:  8413 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     pattern_ctx: &PatternContext,
+ ) {
+     let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
+-
+     match pattern_ctx.parent_pat.as_ref() {
+         Some(Pat::RangePat(_) | Pat::BoxPat(_)) => (),
+         Some(Pat::RefPat(r)) => {
+             }
+         }
+     }
+-
+     if pattern_ctx.after_if_expr {
+         add_keyword("else", "else {\n    $0\n}");
+         add_keyword("else if", "else if $1 {\n    $0\n}");
+     }
+-
+     if pattern_ctx.record_pat.is_some() {
+         return;
+     }
+-
+     // Suggest name only in let-stmt and fn param
+     if pattern_ctx.should_suggest_name {
+         let mut name_generator = suggest_name::NameGenerator::default();
+             acc.suggest_name(ctx, &suggested);
+         }
+     }
+-
+     let refutable = pattern_ctx.refutability == PatternRefutability::Refutable;
+     let single_variant_enum = |enum_: hir::Enum| enum_.num_variants(ctx.db) == 1;
+-
+     if let Some(hir::Adt::Enum(e)) =
+         ctx.expected_type.as_ref().and_then(|ty| ty.strip_references().as_adt())
+         && (refutable || single_variant_enum(e))
+             },
+         );
+     }
+-
+     // FIXME: ideally, we should look at the type we are matching against and
+     // suggest variants + auto-imports
+     ctx.process_all_names(&mut |name, res, _| {

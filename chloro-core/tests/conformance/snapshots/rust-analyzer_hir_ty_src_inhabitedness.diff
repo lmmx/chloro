@@ -1,0 +1,127 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6415 bytes
+Chloro size:   6069 bytes
+Rustfmt size:  6524 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Type inhabitedness logic.
++
+ use std::ops::ControlFlow::{self, Break, Continue};
+ 
+-use hir_def::{visibility::Visibility, AdtId, EnumVariantId, ModuleId, VariantId};
++use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
+ use rustc_hash::FxHashSet;
+ use rustc_type_ir::{
+-    inherent::{AdtDef, IntoKind},
+     TypeSuperVisitable, TypeVisitable, TypeVisitor,
++    inherent::{AdtDef, IntoKind},
+ };
+ use triomphe::Arc;
+ 
+ use crate::{
++    TraitEnvironment,
+     consteval::try_const_usize,
+     db::HirDatabase,
+     next_solver::{
+-        infer::{traits::ObligationCause, InferCtxt},
+-        obligation_ctxt::ObligationCtxt,
+         DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+-    TraitEnvironment,
+ };
+ 
+-// FIXME: Turn this into a query, it can be quite slow
+ /// Checks whether a type is visibly uninhabited from a particular module.
+ pub(crate) fn is_ty_uninhabited_from<'db>(
+     infcx: &InferCtxt<'db>,
+     inhabitedness == BREAK_VISIBLY_UNINHABITED
+ }
+ 
+-// FIXME: Turn this into a query, it can be quite slow
+ /// Checks whether a variant is visibly uninhabited from a particular module.
+ pub(crate) fn is_enum_variant_uninhabited_from<'db>(
+     infcx: &InferCtxt<'db>,
+     env: Arc<TraitEnvironment<'db>>,
+ ) -> bool {
+     let _p = tracing::info_span!("is_enum_variant_uninhabited_from").entered();
+-
+     let mut uninhabited_from = UninhabitedFrom::new(infcx, target_mod, env);
+     let inhabitedness = uninhabited_from.visit_variant(variant.into(), subst);
+     inhabitedness == BREAK_VISIBLY_UNINHABITED
+ struct UninhabitedFrom<'a, 'db> {
+     target_mod: ModuleId,
+     recursive_ty: FxHashSet<Ty<'db>>,
+-    // guard for preventing stack overflow in non trivial non terminating types
+     max_depth: usize,
+     infcx: &'a InferCtxt<'db>,
+     env: Arc<TraitEnvironment<'db>>,
+ }
+ 
+-const CONTINUE_OPAQUELY_INHABITED: ControlFlow<VisiblyUninhabited> = Continue(());
+-const BREAK_VISIBLY_UNINHABITED: ControlFlow<VisiblyUninhabited> = Break(VisiblyUninhabited);
++
++
+ #[derive(PartialEq, Eq)]
+ struct VisiblyUninhabited;
+ 
+ impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
+     type Result = ControlFlow<VisiblyUninhabited>;
+ 
+-    fn visit_ty(&mut self, mut ty: Ty<'db>) -> ControlFlow<VisiblyUninhabited> {
++    fn visit_ty(
++        &mut self,
++        mut ty: Ty<'db>,
++    ) -> ControlFlow<VisiblyUninhabited> {
+         if self.recursive_ty.contains(&ty) || self.max_depth == 0 {
+             // rustc considers recursive types always inhabited. I think it is valid to consider
+             // recursive types as always uninhabited, but we should do what rustc is doing.
+         }
+         self.recursive_ty.insert(ty);
+         self.max_depth -= 1;
+-
+         if matches!(ty.kind(), TyKind::Alias(..)) {
+             let mut ocx = ObligationCtxt::new(self.infcx);
+             match ocx.structurally_normalize_ty(&ObligationCause::dummy(), self.env.env, ty) {
+                 Err(_) => return CONTINUE_OPAQUELY_INHABITED,
+             }
+         }
+-
+         let r = match ty.kind() {
+             TyKind::Adt(adt, subst) => self.visit_adt(adt.def_id().0, subst),
+             TyKind::Never => BREAK_VISIBLY_UNINHABITED,
+         target_mod: ModuleId,
+         env: Arc<TraitEnvironment<'db>>,
+     ) -> Self {
+-        Self {
+-            target_mod,
+-            recursive_ty: FxHashSet::default(),
+-            max_depth: 500,
+-            infcx,
+-            env,
+-        }
++        Self { target_mod, recursive_ty: FxHashSet::default(), max_depth: 500, infcx, env }
+     }
+ 
+     #[inline]
+         if fields.is_empty() {
+             return CONTINUE_OPAQUELY_INHABITED;
+         }
+-
+         let is_enum = matches!(variant, VariantId::EnumVariantId(..));
+         let field_tys = self.db().field_types(variant);
+-        let field_vis = if is_enum {
+-            None
+-        } else {
+-            Some(self.db().field_visibilities(variant))
+-        };
+-
++        let field_vis = if is_enum { None } else { Some(self.db().field_visibilities(variant)) };
+         for (fid, _) in fields.iter() {
+             self.visit_field(field_vis.as_ref().map(|it| it[fid]), &field_tys[fid], subst)?;
+         }

@@ -1,0 +1,25 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1147 bytes
+Chloro size:   1067 bytes
+Rustfmt size:  1147 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Injected inlay hints for `#[rust_analyzer::rust_fixture]`.
+ 
+ use hir::{EditionedFileId, Semantics};
+-use ide_db::{impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture, RootDatabase};
+-use syntax::{ast, AstToken};
++use ide_db::{RootDatabase, impl_empty_upmap_from_ra_fixture, ra_fixture::UpmapFromRaFixture};
++use syntax::{AstToken, ast};
+ 
+ use crate::{Analysis, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip};
+ 
+     }
+     Some(())
+ }
+-
+-impl_empty_upmap_from_ra_fixture!(InlayHintPosition, InlayKind, InlayTooltip);

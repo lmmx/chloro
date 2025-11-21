@@ -1,0 +1,29 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3948 bytes
+Chloro size:   3947 bytes
+Rustfmt size:  3948 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Extern block hints
++
+ use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
+ use syntax::{AstNode, SyntaxToken, ast};
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::inlay_hints::tests::{DISABLED_CONFIG, check_with_config};
+-
+     #[test]
+     fn unadorned() {
+         check_with_config(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn adorned() {
+         check_with_config(

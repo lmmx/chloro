@@ -1,0 +1,1553 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 71259 bytes
+Chloro size:   70445 bytes
+Rustfmt size:  71259 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::{iter, mem::discriminant};
+ 
+-use crate::Analysis;
+-use crate::{
+-    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
+-    doc_links::token_as_doc_comment,
+-    navigation_target::{self, ToNav},
+-};
+ use hir::{
+     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
+ };
+-use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
+ use ide_db::{
+     RootDatabase, SymbolKind,
+     base_db::{AnchoredPath, SourceDatabase},
+     famous_defs::FamousDefs,
+     helpers::pick_best_token,
+ };
++use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
+ use itertools::Itertools;
+ use span::{Edition, FileId};
+ use syntax::{
+     match_ast,
+ };
+ 
++use crate::Analysis;
++use crate::{
++    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
++    doc_links::token_as_doc_comment,
++    navigation_target::{self, ToNav},
++};
++
+ #[derive(Debug)]
+ pub struct GotoDefinitionConfig<'a> {
+     pub minicore: MiniCore<'a>,
+ }
+ 
+-// Feature: Go to Definition
+-//
+-// Navigates to the definition of an identifier.
+-//
+-// For outline modules, this will navigate to the source file of the module.
+-//
+-// | Editor  | Shortcut |
+-// |---------|----------|
+-// | VS Code | <kbd>F12</kbd> |
+-//
+-// ![Go to Definition](https://user-images.githubusercontent.com/48062697/113065563-025fbe00-91b1-11eb-83e4-a5a703610b23.gif)
+ pub(crate) fn goto_definition(
+     db: &RootDatabase,
+     FilePosition { file_id, offset }: FilePosition,
+             Some(RangeInfo::new(link_range, nav.collect()))
+         });
+     }
+-
+     if let Some((range, _, _, resolution)) =
+         sema.check_for_format_args_template(original_token.clone(), offset)
+     {
+             },
+         ));
+     }
+-
+     if let Some(navs) = handle_control_flow_keywords(sema, &original_token) {
+         return Some(RangeInfo::new(original_token.text_range(), navs));
+     }
+-
+     let tokens = sema.descend_into_macros_no_opaque(original_token.clone(), false);
+     let mut navs = Vec::new();
+     for token in tokens {
+         }));
+     }
+     let navs = navs.into_iter().unique().collect();
+-
+     Some(RangeInfo::new(original_token.text_range(), navs))
+ }
+ 
+-// If the token is into(), try_into(), search the definition of From, TryFrom.
+ fn find_definition_for_known_blanket_dual_impls(
+     sema: &Semantics<'_, RootDatabase>,
+     original_token: &SyntaxToken,
+     let callable = sema.resolve_method_call_as_callable(&method_call)?;
+     let CallableKind::Function(f) = callable.kind() else { return None };
+     let assoc = f.as_assoc_item(sema.db)?;
+-
+     let return_type = callable.return_type();
+     let fd = FamousDefs(sema, return_type.krate(sema.db));
+-
+     let t = match assoc.container(sema.db) {
+         hir::AssocItemContainer::Trait(t) => t,
+         hir::AssocItemContainer::Impl(impl_)
+         }
+         hir::AssocItemContainer::Impl(_) => return None,
+     };
+-
+     let fn_name = f.name(sema.db);
+     let f = if fn_name == sym::into && fd.core_convert_Into() == Some(t) {
+         let dual = fd.core_convert_From()?;
+     file_id: FileId,
+ ) -> Option<NavigationTarget> {
+     let file = token.file_id.macro_file()?;
+-
+     // Check that we are in the eager argument expansion of an include macro
+     // that is we are the string input of it
+     if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
+         return None;
+     }
+     let path = token.value.value().ok()?;
+-
+     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
+     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
+     Some(NavigationTarget {
+     let extern_crate = token.parent()?.ancestors().find_map(ast::ExternCrate::cast)?;
+     let extern_crate = sema.to_def(&extern_crate)?;
+     let krate = extern_crate.resolved_crate(sema.db)?;
+-
+     for mod_def in krate.root_module().declarations(sema.db) {
+         if let ModuleDef::Macro(mac) = mod_def
+             && mac.name(sema.db).as_str() == token.text()
+             return Some(nav.call_site);
+         }
+     }
+-
+     None
+ }
+ 
+         }
+         None
+     };
+-
+     sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec()
+ }
+ 
+ ) -> Option<Vec<NavigationTarget>> {
+     let db = sema.db;
+     let token_kind = token.kind();
+-
+     let navs = find_fn_or_blocks(sema, token)
+         .into_iter()
+         .filter_map(|node| {
+         })
+         .flatten()
+         .collect_vec();
+-
+     Some(navs)
+ }
+ 
+             .filter_map(|token| node_filter(token.parent()?))
+             .collect_vec()
+     };
+-
+     match token.kind() {
+         T![match] => find_nodes(|node| Some(ast::MatchExpr::cast(node)?.syntax().clone())),
+         T![=>] => find_nodes(|node| Some(ast::MatchArm::cast(node)?.syntax().clone())),
+     token: &SyntaxToken,
+ ) -> Option<Vec<NavigationTarget>> {
+     let db = sema.db;
+-
+     let navs = match token.kind() {
+         T![match] => find_branch_root(sema, token)
+             .into_iter()
+ 
+         _ => return Some(Vec::new()),
+     };
+-
+     Some(navs)
+ }
+ 
+             (None, _) => true,
+             (Some(_), None) => false,
+         };
+-
+     let find_ancestors = |token: SyntaxToken| {
+         for anc in sema.token_ancestors_with_macros(token).filter_map(ast::Expr::cast) {
+             let node = match &anc {
+         }
+         None
+     };
+-
+     sema.descend_into_macros(token.clone())
+         .into_iter()
+         .filter_map(find_ancestors)
+     token: &SyntaxToken,
+ ) -> Option<Vec<NavigationTarget>> {
+     let db = sema.db;
+-
+     let navs = find_loops(sema, token)?
+         .into_iter()
+         .filter_map(|expr| {
+         })
+         .flatten()
+         .collect_vec();
+-
+     Some(navs)
+ }
+ 
+-fn def_to_nav(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Vec<NavigationTarget> {
++fn def_to_nav(
++    sema: &Semantics<'_, RootDatabase>,
++    def: Definition,
++) -> Vec<NavigationTarget> {
+     def.try_to_nav(sema).map(|it| it.collect()).unwrap_or_default()
+ }
+ 
+     focus_range: Option<TextRange>,
+ ) -> UpmappingResult<NavigationTarget> {
+     let kind = SymbolKind::Label;
+-
+     let value_range = value.syntax().text_range();
+     let navs = navigation_target::orig_range_with_focus_r(db, file_id, value_range, focus_range);
+     navs.map(|(hir::FileRangeWrapper { file_id, range }, focus_range)| {
+     use crate::{GotoDefinitionConfig, fixture};
+     use ide_db::{FileRange, MiniCore};
+     use itertools::Itertools;
+-
+-    const TEST_CONFIG: GotoDefinitionConfig<'_> =
+-        GotoDefinitionConfig { minicore: MiniCore::default() };
+-
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         let (analysis, position, expected) = fixture::annotations(ra_fixture);
+             .unwrap()
+             .expect("no definition found")
+             .info;
+-
+         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
+         let navs = navs
+             .into_iter()
+             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
+             .sorted_by_key(cmp)
+             .collect::<Vec<_>>();
+-
+         assert_eq!(expected, navs);
+     }
+-
+     fn check_unresolved(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         let (analysis, position) = fixture::position(ra_fixture);
+         let navs = analysis
+             .unwrap()
+             .expect("no definition found")
+             .info;
+-
+         assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
+     }
+-
+-    fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
++    fn check_name(
++        expected_name: &str,
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    ) {
+         let (analysis, position, _) = fixture::annotations(ra_fixture);
+         let navs = analysis
+             .goto_definition(position, &TEST_CONFIG)
+         };
+         assert_eq!(target.name, hir::Symbol::intern(expected_name));
+     }
+-
+     #[test]
+     fn goto_def_pat_range_to_inclusive() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_pat_range_to() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_pat_range() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_pat_range_inclusive() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_pat_range_from() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range_from() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range_inclusive() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range_full() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range_to() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_expr_range_to_inclusive() {
+         check_name(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_included_file() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_included_file_nested() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_included_file_inside_mod() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ //- minicore:include
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_if_items_same_name() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_extern_crate() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_renamed_extern_crate() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_in_items() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_at_start_of_item() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_resolves_correct_name() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_module_declaration() {
+         check(
+ //^file
+ "#,
+         );
+-
+         check(
+             r#"
+ //- /lib.rs
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_macros() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_macros_from_other_crates() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_macros_in_use_tree() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_macro_defined_fn_with_arg() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_macro_defined_fn_no_arg() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_works_for_macro_inside_pattern() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_works_for_macro_inside_match_arm_lhs() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_works_for_consts_inside_range_pattern() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_use_alias() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_use_alias_foo_macro() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_methods() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_fields() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_record_fields() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_record_pat_fields() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_record_fields_macros() {
+         check(
+ ",
+         );
+     }
+-
+     #[test]
+     fn goto_for_tuple_fields() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_ufcs_inherent_methods() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_ufcs_trait_methods_through_traits() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_ufcs_trait_methods_through_self() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_on_self() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ enum Foo { A }
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ enum Foo { A }
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_definition_on_self_in_trait_impl() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ struct Foo;
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_when_used_on_definition_name_itself() {
+         check(
+      //^^^
+             "#,
+         );
+-
+         check(
+             r#"
+ struct Foo {
+ } //^^^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ fn foo_test$0() { }
+  //^^^^^^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ enum Foo$0 { Variant }
+    //^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ enum Foo {
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ static INNER$0: &str = "";
+      //^^^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ const INNER$0: &str = "";
+     //^^^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ type Thing$0 = Option<()>;
+    //^^^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ trait Foo$0 { }
+     //^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ trait Foo$0 = ;
+     //^^^
+ "#,
+         );
+-
+         check(
+             r#"
+ mod bar$0 { }
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_from_macro() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_through_format() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_through_included_file() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_through_included_file_struct_with_doc_comment() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_for_type_param() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_within_macro() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ macro_rules! id {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_local_fn() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_local_macro() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_field_init_shorthand() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_enum_variant_field() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_enum_variant_self_pattern_const() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_enum_variant_self_pattern_record() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_enum_variant_self_expr_const() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_enum_variant_self_expr_record() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_type_alias_generic_parameter() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_macro_container() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_assoc_ty_in_path() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_super_assoc_ty_in_path() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_module_declaration_in_path_if_types_and_values_same_name() {
+         check(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn unknown_assoc_ty() {
+         check_unresolved(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_assoc_ty_in_path_multiple() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_assoc_ty_ufcs() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_assoc_ty_ufcs_multiple() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_self_param_ty_specified() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_self_param_on_decl() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_lifetime_param_on_decl() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_lifetime_param_decl() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_lifetime_param_decl_nested() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_lifetime_hrtb() {
+         // FIXME: requires the HIR to somehow track these hrtb lifetimes
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_lifetime_hrtb_for_type() {
+         // FIXME: requires ForTypes to be implemented
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_label() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_intra_doc_link_same_file() {
+         check(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_for_intra_doc_link_outer_same_file() {
+         check(
+      //^
+             "#,
+         );
+-
+         check(
+             r#"
+ /// [`S$0`]
+      //^
+             "#,
+         );
+-
+         check(
+             r#"
+ /// [`S$0`]
+             "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_intra_doc_link_inner_same_file() {
+         check(
+      //^
+             "#,
+         );
+-
+         check(
+             r#"
+ mod m {
+      //^
+             "#,
+         );
+-
+         check(
+             r#"
+ fn f() {
+             "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_intra_doc_link_inner() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_incomplete_field() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_proc_macro() {
+         check(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn goto_intra_doc_links() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_ident_from_pat_macro() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_include() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_include_has_eager_input() {
+         check(
+ "#,
+         );
+     }
+-
+-    // macros in this position are not yet supported
+     #[test]
+-    // FIXME
+     #[should_panic]
+     fn goto_doc_include_str() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_shadow_include() {
+         check(
+ "#,
+         );
+     }
+-
+     mod goto_impl_of_trait_fn {
+         use super::check;
+         #[test]
+ "#,
+             );
+         }
+-
+         #[test]
+         fn method_call_defaulted() {
+             check(
+         "#,
+             );
+         }
+-
+         #[test]
+         fn method_call_on_generic() {
+             check(
+             );
+         }
+     }
+-
+     #[test]
+     fn goto_def_of_trait_impl_const() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_of_trait_impl_type_alias() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_derive_input() {
+         check(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_in_macro_multi() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_await_poll() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_await_into_future_poll() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_try_op() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_index_op() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_index_mut_op() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_prefix_op() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_deref_mut() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_bin_op() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_bin_op_multiple_impl() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ //- minicore: add
+ "#,
+         );
+     }
+-
+     #[test]
+     fn path_call_multiple_trait_impl() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ trait Trait<T> {
+ "#,
+         )
+     }
+-
+     #[test]
+     fn query_impls_in_nearest_block() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ struct S1;
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ struct S1;
+ "#,
+         );
+     }
+-
+     #[test]
+     fn implicit_format_args() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_macro_def_from_macro_use() {
+         check(
+ }
+             "#,
+         );
+-
+         check(
+             r#"
+ //- /main.rs crate:main deps:mac
+             "#,
+         );
+     }
+-
+     #[test]
+     fn goto_shadowed_preludes_in_block_module() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_on_return_kw() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_return_kw_in_closure() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_break_kw() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_continue_kw() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_break_kw_for_block() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_break_with_label() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn label_inside_macro() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_on_return_in_try() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_break_in_try() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_return_in_async_block() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_for_kw() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn goto_def_on_fn_kw() {
+         check(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn shadow_builtin_macro() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn issue_18138() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn macro_label_hygiene() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn into_call_to_from_definition_within_macro() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn into_call_to_from_definition_with_trait_bounds() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_into_definition_if_exists() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn try_into_call_to_try_from_definition() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_try_into_definition_if_exists() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn parse_call_to_from_str_definition() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn to_string_call_to_display_definition() {
+         check(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn use_inside_body() {
+         check(
+     "#,
+         );
+     }
+-
+     #[test]
+     fn shadow_builtin_type_by_module() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_goto_module_because_str_is_builtin_type() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn struct_shadow_by_module() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn type_alias_shadow_by_module() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ mod foo {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn trait_shadow_by_module() {
+         check(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn const_shadow_by_module() {
+         check(
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ pub mod foo {
+ }
+ "#,
+         );
+-
+         check(
+             r#"
+ pub mod foo {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn offset_of() {
+         check(
+ }
+         "#,
+         );
+-
+         check(
+             r#"
+ //- minicore: offset_of
+ }
+         "#,
+         );
+-
+         check(
+             r#"
+ //- minicore: offset_of
+ }
+         "#,
+         );
+-
+         check(
+             r#"
+ //- minicore: offset_of
+         "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_match_keyword() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_match_arm_fat_arrow() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_if_keyword() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_match_nested_in_if() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_multiple_match_expressions() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_nested_match_expressions() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_if_else_chains() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_match_with_guards() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_def_for_match_with_macro_arm() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_const_from_match_pat_with_tuple_struct() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_const_from_match_pat() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_struct_from_match_pat() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_goto_trait_from_match_pat() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_builtin_type() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn ra_fixture() {
+         check(
+         "##,
+         );
+     }
+-
+     #[test]
+     fn regression_20038() {
+         check(

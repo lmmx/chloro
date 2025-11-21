@@ -1,0 +1,182 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10666 bytes
+Chloro size:   10242 bytes
+Rustfmt size:  10666 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: replace_qualified_name_with_use
+-//
+-// Adds a use statement for a given fully-qualified name.
+-//
+-// ```
+-// # mod std { pub mod collections { pub struct HashMap<T, U>(T, U); } }
+-// fn process(map: std::collections::$0HashMap<String, String>) {}
+-// ```
+-// ->
+-// ```
+-// use std::collections::HashMap;
+-//
+-// # mod std { pub mod collections { pub struct HashMap<T, U>(T, U); } }
+-// fn process(map: HashMap<String, String>) {}
+-// ```
+ pub(crate) fn replace_qualified_name_with_use(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+         cov_mark::hit!(not_applicable_in_use);
+         return None;
+     }
+-
+     if original_path.qualifier().is_none() {
+         original_path = original_path.parent_path()?;
+     }
+-
+     // only offer replacement for non assoc items
+     match ctx.sema.resolve_path(&original_path)? {
+         hir::PathResolution::Def(def) if def.as_assoc_item(ctx.sema.db).is_none() => (),
+         hir::PathResolution::Def(module @ hir::ModuleDef::Module(_)) => module,
+         _ => return None,
+     };
+-
+     let starts_with_name_ref = !matches!(
+         original_path.first_segment().and_then(|it| it.kind()),
+         Some(
+             mod_.find_use_path(ctx.sema.db, module, ctx.config.insert_use.prefix_kind, cfg)
+         })
+         .flatten();
+-
+     let scope = ImportScope::find_insert_use_container(original_path.syntax(), &ctx.sema)?;
+     let target = original_path.syntax().text_range();
+     acc.add(
+ }
+ 
+ /// Mutates `node` to shorten `path` in all descendants of `node`.
+-fn shorten_paths(node: &SyntaxNode, path: &ast::Path) {
++fn shorten_paths(
++    node: &SyntaxNode,
++    path: &ast::Path,
++) {
+     for child in node.children() {
+         match_ast! {
+             match child {
+     }
+ }
+ 
+-fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
++fn maybe_replace_path(
++    path: ast::Path,
++    target: ast::Path,
++) -> Option<()> {
+     if !path_eq_no_generics(path.clone(), target) {
+         return None;
+     }
+-
+     // Shorten `path`, leaving only its last segment.
+     if let Some(parent) = path.qualifier() {
+         ted::remove(parent.syntax());
+     if let Some(double_colon) = path.coloncolon_token() {
+         ted::remove(&double_colon);
+     }
+-
+     Some(())
+ }
+ 
+-fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
++fn path_eq_no_generics(
++    lhs: ast::Path,
++    rhs: ast::Path,
++) -> bool {
+     let mut lhs_curr = lhs;
+     let mut rhs_curr = rhs;
+     loop {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_replace_already_imported() {
+         check_assist(
+ }",
+         )
+     }
+-
+     #[test]
+     fn test_replace_add_use_no_anchor() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn test_replace_add_use_no_anchor_middle_segment() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn test_replace_not_applicable_in_use() {
+         cov_mark::check!(not_applicable_in_use);
+         check_assist_not_applicable(replace_qualified_name_with_use, r"use std::fmt$0;");
+     }
+-
+     #[test]
+     fn replaces_all_affected_paths() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn assist_runs_on_first_segment() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn does_not_replace_in_submodules() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn does_not_replace_in_use() {
+         check_assist(
+     ",
+         );
+     }
+-
+     #[test]
+     fn does_not_replace_assoc_item_path() {
+         check_assist_not_applicable(
+ ",
+         );
+     }
+-
+     #[test]
+     fn replace_reuses_path_qualifier() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn replace_does_not_always_try_to_replace_by_full_item_path() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn replace_should_drop_generic_args_in_use() {
+         check_assist(

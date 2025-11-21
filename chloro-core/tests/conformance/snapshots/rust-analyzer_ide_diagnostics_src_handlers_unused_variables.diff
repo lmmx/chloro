@@ -1,0 +1,127 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7192 bytes
+Chloro size:   7017 bytes
+Rustfmt size:  7216 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::Name;
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
++    FileRange, RootDatabase,
+     assists::{Assist, AssistId},
+     label::Label,
+     source_change::SourceChange,
+-    FileRange, RootDatabase,
+ };
+ use syntax::{AstNode, Edition, TextRange, ToSmolStr};
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: unused-variables
+-//
+-// This diagnostic is triggered when a local variable is not used.
+ pub(crate) fn unused_variables(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnusedVariable,
+     }
+     let name = var_name.display(db, edition).to_smolstr();
+     let name = name.strip_prefix("r#").unwrap_or(&name);
+-    let new_name = if is_shorthand_field {
+-        format!("{name}: _{name}")
+-    } else {
+-        format!("_{name}")
+-    };
+-
++    let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
+     Some(vec![Assist {
+         id: AssistId::quick_fix("unscore_unused_variable_name"),
+         label: Label::new(format!("Rename unused {name} to {new_name}")),
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix};
+-
+     #[test]
+     fn unused_variables_simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unused_self() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn allow_unused_variables_for_identifiers_starting_with_underline() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn respect_lint_attributes_for_unused_variables() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fix_unused_variable() {
+         check_fix(
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ fn main() {
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct Foo { f1: i32, f2: i64 }
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ fn main() {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_fix_for_marco() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unused_variable_in_record_field() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unused_variable_in_shorthand_record_field() {
+         check_fix(
+ "#,
+         );
+     }
+-
+-    // regression test as we used to panic in this scenario
+     #[test]
+     fn unknown_struct_pattern_param_type() {
+         check_diagnostics(

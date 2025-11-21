@@ -1,0 +1,266 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 18595 bytes
+Chloro size:   18325 bytes
+Rustfmt size:  18641 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use itertools::Itertools;
+ use syntax::{
+-    ast::{self, edit::IndentLevel, Comment, CommentPlacement, Whitespace},
+     AstToken, Direction, SyntaxElement, TextRange,
++    ast::{self, Comment, CommentPlacement, Whitespace, edit::IndentLevel},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: comment_to_doc
+-//
+-// Converts comments to documentation.
+-//
+-// ```
+-// // Wow what $0a nice module
+-// // I sure hope this shows up when I hover over it
+-// ```
+-// ->
+-// ```
+-// //! Wow what a nice module
+-// //! I sure hope this shows up when I hover over it
+-// ```
+ pub(crate) fn convert_comment_from_or_to_doc(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+ ) -> Option<()> {
+     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
+-
+     match comment.kind().doc {
+         Some(_) => doc_to_comment(acc, comment),
+         None => can_be_doc_comment(&comment).and_then(|style| comment_to_doc(acc, comment, style)),
+     }
+ }
+ 
+-fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
++fn doc_to_comment(
++    acc: &mut Assists,
++    comment: ast::Comment,
++) -> Option<()> {
+     let target = if comment.kind().shape.is_line() {
+         line_comments_text_range(&comment)?
+     } else {
+         comment.syntax().text_range()
+     };
+-
+     acc.add(
+         AssistId::refactor_rewrite("doc_to_comment"),
+         "Replace doc comment with comment",
+     )
+ }
+ 
+-fn comment_to_doc(acc: &mut Assists, comment: ast::Comment, style: CommentPlacement) -> Option<()> {
++fn comment_to_doc(
++    acc: &mut Assists,
++    comment: ast::Comment,
++    style: CommentPlacement,
++) -> Option<()> {
+     let target = if comment.kind().shape.is_line() {
+         line_comments_text_range(&comment)?
+     } else {
+         comment.syntax().text_range()
+     };
+-
+     acc.add(
+         AssistId::refactor_rewrite("comment_to_doc"),
+         "Replace comment with doc comment",
+ /// ```
+ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
+     use syntax::SyntaxKind::*;
+-
+     // if the comment is not on its own line, then we do not propose anything.
+     match comment.syntax().prev_token() {
+         Some(prev) => {
+         // There is no previous token, this is the start of the file.
+         None => return Some(CommentPlacement::Inner),
+     }
+-
+     // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
+     // `use` or `const`.
+     let parent = comment.syntax().parent();
+     let par_kind = parent.as_ref().map(|parent| parent.kind());
+-    matches!(
+-        par_kind,
+-        Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST)
+-    )
+-    .then_some(CommentPlacement::Outer)
++    matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
++        .then_some(CommentPlacement::Outer)
+ }
+ 
+ /// The line -> block assist can  be invoked from anywhere within a sequence of line comments.
+     // The prefix identifies the kind of comment we're dealing with
+     let prefix = comment.prefix();
+     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
+-
+     // These tokens are allowed to exist between comments
+     let skippable = |not: &SyntaxElement| {
+         not.clone()
+             .map(|w| !w.spans_multiple_lines())
+             .unwrap_or(false)
+     };
+-
+     // Find all preceding comments (in reverse order) that have the same prefix
+     let prev_comments = comment
+         .syntax()
+         .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
+         .take_while(|opt_com| opt_com.is_some())
+         .flatten()
+-        .skip(1); // skip the first element so we don't duplicate it in next_comments
+-
++        .skip(1);
++    // skip the first element so we don't duplicate it in next_comments
+     let next_comments = comment
+         .syntax()
+         .siblings_with_tokens(Direction::Next)
+         .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
+         .take_while(|opt_com| opt_com.is_some())
+         .flatten();
+-
+     let mut comments: Vec<_> = prev_comments.collect();
+     comments.reverse();
+     comments.extend(next_comments);
+     let comments = relevant_line_comments(comment);
+     let first = comments.first()?;
+     let indentation = IndentLevel::from_token(first.syntax());
+-    let start = first
+-        .syntax()
+-        .text_range()
+-        .start()
+-        .checked_sub((indentation.0 as u32 * 4).into())?;
++    let start =
++        first.syntax().text_range().start().checked_sub((indentation.0 as u32 * 4).into())?;
+     let end = comments.last()?.syntax().text_range().end();
+     Some(TextRange::new(start, end))
+ }
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn module_comment_to_doc() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_line_comment_to_doc() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_line_comment_to_doc() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_line_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_line_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_line_block_comment_to_doc() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_line_block_comment_to_doc() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_line_block_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_line_block_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_inner_line_comment_to_doc() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_inner_line_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_inner_line_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn single_inner_line_block_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn multi_inner_line_block_doc_to_comment() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn not_overeager() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn all_possible_items() {
+         check_assist(
+             }"#,
+         );
+     }
+-
+     #[test]
+     fn no_inner_comments() {
+         check_assist_not_applicable(

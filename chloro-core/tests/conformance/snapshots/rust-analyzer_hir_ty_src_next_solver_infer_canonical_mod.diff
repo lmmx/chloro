@@ -1,0 +1,82 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 6444 bytes
+Chloro size:   6441 bytes
+Rustfmt size:  6615 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //!
+ //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
+ 
+-use crate::next_solver::{
+-    infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
+-    PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
+-};
+ use instantiate::CanonicalExt;
+ use rustc_index::IndexVec;
+ use rustc_type_ir::inherent::IntoKind;
+-use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
++use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
++
++use crate::next_solver::{
++    Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
++    PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind, infer::InferCtxt,
++};
+ 
+ pub mod canonicalizer;
++
+ pub mod instantiate;
+ 
+ impl<'db> InferCtxt<'db> {
+         canonical: &Canonical<'db, T>,
+     ) -> (T, CanonicalVarValues<'db>)
+     where
+-        T: TypeFoldable<DbInterner<'db>>,
+-    {
++        T: TypeFoldable<DbInterner<'db>>, {
+         // For each universe that is referred to in the incoming
+         // query, create a universe in our local inference context. In
+         // practice, as of this writing, all queries have no universes
+         let universes: IndexVec<UniverseIndex, _> = std::iter::once(self.universe())
+             .chain((1..=canonical.max_universe.as_u32()).map(|_| self.create_next_universe()))
+             .collect();
+-
+         let var_values = CanonicalVarValues::instantiate(
+             self.interner,
+             canonical.variables,
+ 
+             CanonicalVarKind::PlaceholderTy(PlaceholderTy { universe, bound }) => {
+                 let universe_mapped = universe_map(universe);
+-                let placeholder_mapped = PlaceholderTy {
+-                    universe: universe_mapped,
+-                    bound,
+-                };
++                let placeholder_mapped = PlaceholderTy { universe: universe_mapped, bound };
+                 Ty::new_placeholder(self.interner, placeholder_mapped).into()
+             }
+ 
+                 let universe_mapped = universe_map(universe);
+                 let placeholder_mapped: crate::next_solver::Placeholder<
+                     crate::next_solver::BoundRegion,
+-                > = PlaceholderRegion {
+-                    universe: universe_mapped,
+-                    bound,
+-                };
++                > = PlaceholderRegion { universe: universe_mapped, bound };
+                 Region::new_placeholder(self.interner, placeholder_mapped).into()
+             }
+ 
+             CanonicalVarKind::Const(ui) => self.next_const_var_in_universe(universe_map(ui)).into(),
+             CanonicalVarKind::PlaceholderConst(PlaceholderConst { universe, bound }) => {
+                 let universe_mapped = universe_map(universe);
+-                let placeholder_mapped = PlaceholderConst {
+-                    universe: universe_mapped,
+-                    bound,
+-                };
++                let placeholder_mapped = PlaceholderConst { universe: universe_mapped, bound };
+                 Const::new_placeholder(self.interner, placeholder_mapped).into()
+             }
+         }

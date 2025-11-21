@@ -1,0 +1,37 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2095 bytes
+Chloro size:   1787 bytes
+Rustfmt size:  2157 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion for diagnostic attributes.
+ 
+ use ide_db::SymbolKind;
+ use syntax::ast;
+ 
+-use crate::{context::CompletionContext, CompletionItem, Completions};
+-
++use crate::{CompletionItem, Completions, context::CompletionContext};
+ use super::AttrCompletion;
+ 
+ pub(super) fn complete_on_unimplemented(
+     }
+ }
+ 
+-const ATTRIBUTE_ARGS: &[AttrCompletion] = &[
+-    super::attr(
+-        r#"label = "…""#,
+-        Some("label"),
+-        Some(r#"label = "${0:label}""#),
+-    ),
+-    super::attr(
+-        r#"message = "…""#,
+-        Some("message"),
+-        Some(r#"message = "${0:message}""#),
+-    ),
+-    super::attr(r#"note = "…""#, Some("note"), Some(r#"note = "${0:note}""#)),
+-];

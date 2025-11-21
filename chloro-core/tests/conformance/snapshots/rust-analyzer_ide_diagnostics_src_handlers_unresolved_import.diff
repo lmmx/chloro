@@ -1,0 +1,40 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2169 bytes
+Chloro size:   2026 bytes
+Rustfmt size:  2169 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: unresolved-import
+-//
+-// This diagnostic is triggered if rust-analyzer is unable to resolve a path in
+-// a `use` declaration.
+ pub(crate) fn unresolved_import(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::UnresolvedImport,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn unresolved_import() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unresolved_import_in_use_tree() {
+         // Only the relevant part of a nested `use` item should be highlighted.
+ "#,
+         );
+     }
+-
+     #[test]
+     fn dedup_unresolved_import_from_unresolved_crate() {
+         check_diagnostics(

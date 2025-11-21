@@ -1,0 +1,850 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 98473 bytes
+Chloro size:   98508 bytes
+Rustfmt size:  98473 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! `render` module provides utilities for rendering completion suggestions
+ //! into code pieces that will be presented to user.
+ 
+-pub(crate) mod const_;
+-pub(crate) mod function;
+-pub(crate) mod literal;
+-pub(crate) mod macro_;
+-pub(crate) mod pattern;
+-pub(crate) mod type_alias;
+-pub(crate) mod union_literal;
+-pub(crate) mod variant;
+-
+ use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
+         macro_::{render_macro, render_macro_pat},
+     },
+ };
++
++pub(crate) mod const_;
++
++pub(crate) mod function;
++
++pub(crate) mod literal;
++
++pub(crate) mod macro_;
++
++pub(crate) mod pattern;
++
++pub(crate) mod type_alias;
++
++pub(crate) mod union_literal;
++
++pub(crate) mod variant;
++
+ /// Interface for data and methods required for items rendering.
+ #[derive(Debug, Clone)]
+ pub(crate) struct RenderContext<'a> {
+         }
+     }
+ 
+-    pub(crate) fn private_editable(mut self, private_editable: bool) -> Self {
++    pub(crate) fn private_editable(
++        mut self,
++        private_editable: bool,
++    ) -> Self {
+         self.is_private_editable = private_editable;
+         self
+     }
+ 
+-    pub(crate) fn import_to_add(mut self, import_to_add: Option<LocatedImport>) -> Self {
++    pub(crate) fn import_to_add(
++        mut self,
++        import_to_add: Option<LocatedImport>,
++    ) -> Self {
+         self.import_to_add = import_to_add;
+         self
+     }
+ 
+-    pub(crate) fn doc_aliases(mut self, doc_aliases: Vec<SmolStr>) -> Self {
++    pub(crate) fn doc_aliases(
++        mut self,
++        doc_aliases: Vec<SmolStr>,
++    ) -> Self {
+         self.doc_aliases = doc_aliases;
+         self
+     }
+             && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
+     }
+ 
+-    fn is_deprecated(&self, def: impl HasAttrs) -> bool {
++    fn is_deprecated(
++        &self,
++        def: impl HasAttrs,
++    ) -> bool {
+         let attrs = def.attrs(self.db());
+         attrs.by_key(sym::deprecated).exists()
+     }
+ 
+-    fn is_deprecated_assoc_item(&self, as_assoc_item: impl AsAssocItem) -> bool {
++    fn is_deprecated_assoc_item(
++        &self,
++        as_assoc_item: impl AsAssocItem,
++    ) -> bool {
+         let db = self.db();
+         let assoc = match as_assoc_item.as_assoc_item(db) {
+             Some(assoc) => assoc,
+             None => return false,
+         };
+-
+         let is_assoc_deprecated = match assoc {
+             hir::AssocItem::Function(it) => self.is_deprecated(it),
+             hir::AssocItem::Const(it) => self.is_deprecated(it),
+                 .unwrap_or(false)
+     }
+ 
+-    // FIXME: remove this
+-    fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
++    fn docs(
++        &self,
++        def: impl HasDocs,
++    ) -> Option<Documentation> {
+         def.docs(self.db())
+     }
+ }
+         .set_documentation(field.docs(db))
+         .set_deprecated(is_deprecated)
+         .lookup_by(name);
+-
+     let is_field_access = matches!(dot_access.kind, DotAccessKind::Field { .. });
+     if !is_field_access || ty.is_fn() || ty.is_closure() {
+         let mut builder = TextEdit::builder();
+     item.build(db)
+ }
+ 
+-fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
++fn field_with_receiver(
++    receiver: Option<&str>,
++    field_name: &str,
++) -> SmolStr {
+     receiver
+         .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
+ }
+         i += 1;
+         res
+     };
+-
+     let mut label_formatter = |ty: &hir::Type<'_>| {
+         ty.as_adt()
+             .map(|adt| stdx::to_lower_snake_case(adt.name(ctx.db).as_str()))
+             .unwrap_or_else(|| String::from("..."))
+     };
+-
+     let cfg = ctx.config.find_path_config(ctx.is_nightly);
+-
+     let label =
+         expr.gen_source_code(&ctx.scope, &mut label_formatter, cfg, ctx.display_target).ok()?;
+-
+     let source_range = match ctx.original_token.parent() {
+         Some(node) => match node.ancestors().find_map(ast::Path::cast) {
+             Some(path) => path.syntax().text_range(),
+         },
+         None => ctx.source_range(),
+     };
+-
+     let mut item =
+         CompletionItem::new(CompletionItemKind::Expression, source_range, label, ctx.edition);
+-
+     let snippet = format!(
+         "{}$0",
+         expr.gen_source_code(&ctx.scope, &mut snippet_formatter, cfg, ctx.display_target).ok()?
+ 
+         item.add_import(LocatedImport::new_no_completion(path, trait_item, trait_item));
+     }
+-
+     Some(item)
+ }
+ 
+     // FIXME: Temporary workaround for handling aliased import.
+     // This should be removed after we have proper support for importing alias.
+     // <https://github.com/rust-lang/rust-analyzer/issues/14079>
+-
+     // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
+     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
+     if import_edit.item_to_import == import_edit.original_item {
+ ) -> Builder {
+     let _p = tracing::info_span!("render_resolution_pat").entered();
+     use hir::ModuleDef::*;
+-
+     if let ScopeDef::ModuleDef(Macro(mac)) = resolution {
+         let ctx = ctx.import_to_add(import_to_add);
+         render_macro_pat(ctx, pattern_ctx, local_name, mac)
+ ) -> Builder {
+     let _p = tracing::info_span!("render_resolution_path").entered();
+     use hir::ModuleDef::*;
+-
+     let krate = ctx.completion.display_target;
+-
+     match resolution {
+         ScopeDef::ModuleDef(Macro(mac)) => {
+             let ctx = ctx.import_to_add(import_to_add);
+         }
+         _ => (),
+     }
+-
+     let completion = ctx.completion;
+     let cap = ctx.snippet_cap();
+     let db = completion.db;
+     let config = completion.config;
+     let requires_import = import_to_add.is_some();
+-
+     let name = local_name.display_no_db(ctx.completion.edition).to_smolstr();
+     let mut item = render_resolution_simple_(ctx, &local_name, import_to_add, resolution);
+     if local_name.needs_escape(completion.edition) {
+                 .insert_snippet(cap, format!("{}<$0>", local_name.display(db, completion.edition)));
+         }
+     }
+-
+     let mut set_item_relevance = |ty: Type<'_>| {
+         if !ty.is_unknown() {
+             item.detail(ty.display(db, krate).to_string());
+ 
+         path_ref_match(completion, path_ctx, &ty, &mut item);
+     };
+-
+     match resolution {
+         ScopeDef::Local(local) => set_item_relevance(local.ty(db)),
+         ScopeDef::ModuleDef(ModuleDef::Adt(adt)) | ScopeDef::AdtSelfType(adt) => {
+             ModuleDef::Trait(_) | ModuleDef::Module(_) | ModuleDef::TypeAlias(_),
+         ) => (),
+     };
+-
+     item
+ }
+ 
+     resolution: ScopeDef,
+ ) -> Builder {
+     let _p = tracing::info_span!("render_resolution_simple_").entered();
+-
+     let db = ctx.db();
+     let ctx = ctx.import_to_add(import_to_add);
+     let kind = res_to_kind(resolution);
+-
+     let mut item = CompletionItem::new(
+         kind,
+         ctx.source_range(),
+     item.set_relevance(ctx.completion_relevance())
+         .set_documentation(scope_def_docs(db, resolution))
+         .set_deprecated(scope_def_is_deprecated(&ctx, resolution));
+-
+     if let Some(import_to_add) = ctx.import_to_add {
+         item.add_import(import_to_add);
+     }
+-
+     item.doc_aliases(ctx.doc_aliases);
+     item
+ }
+     }
+ }
+ 
+-fn scope_def_docs(db: &RootDatabase, resolution: ScopeDef) -> Option<Documentation> {
++fn scope_def_docs(
++    db: &RootDatabase,
++    resolution: ScopeDef,
++) -> Option<Documentation> {
+     use hir::ModuleDef::*;
+     match resolution {
+         ScopeDef::ModuleDef(Module(it)) => it.docs(db),
+     }
+ }
+ 
+-fn scope_def_is_deprecated(ctx: &RenderContext<'_>, resolution: ScopeDef) -> bool {
++fn scope_def_is_deprecated(
++    ctx: &RenderContext<'_>,
++    resolution: ScopeDef,
++) -> bool {
+     match resolution {
+         ScopeDef::ModuleDef(it) => ctx.is_deprecated_assoc_item(it),
+         ScopeDef::GenericParam(it) => ctx.is_deprecated(it),
+     }
+ }
+ 
+-// FIXME: This checks types without possible coercions which some completions might want to do
+ fn match_types(
+     ctx: &CompletionContext<'_>,
+     ty1: &hir::Type<'_>,
+     completion_ty: &hir::Type<'_>,
+ ) -> Option<CompletionRelevanceTypeMatch> {
+     let expected_type = ctx.expected_type.as_ref()?;
+-
+     // We don't ever consider unit type to be an exact type match, since
+     // nearly always this is not meaningful to the user.
+     if expected_type.is_unit() {
+         return None;
+     }
+-
+     match_types(ctx, expected_type, completion_ty)
+ }
+ 
+-fn compute_exact_name_match(ctx: &CompletionContext<'_>, completion_name: &str) -> bool {
++fn compute_exact_name_match(
++    ctx: &CompletionContext<'_>,
++    completion_name: &str,
++) -> bool {
+     ctx.expected_name.as_ref().is_some_and(|name| name.text() == completion_name)
+ }
+ 
+         };
+         return Some(CompletionItemRefMode::Reference(mutability));
+     }
+-
+     if let Some(completion_without_ref) = completion_without_ref
+         && completion_without_ref == *expected_type
+         && completion_without_ref.is_copy(ctx.db)
+         cov_mark::hit!(suggest_deref);
+         return Some(CompletionItemRefMode::Dereference);
+     }
+-
+     None
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use std::cmp;
+-
+     use expect_test::{Expect, expect};
+     use ide_db::SymbolKind;
+     use itertools::Itertools;
+-
+     use crate::{
+         CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
+         item::CompletionRelevanceTypeMatch,
+         tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
+     };
+-
+     #[track_caller]
+     fn check(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         let actual = do_completion(ra_fixture, kind.into());
+         expect.assert_debug_eq(&actual);
+     }
+-
+     #[track_caller]
+     fn check_kinds(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+             kinds.iter().flat_map(|&kind| do_completion(ra_fixture, kind)).collect();
+         expect.assert_debug_eq(&actual);
+     }
+-
+     #[track_caller]
+-    fn check_function_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check_function_relevance(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
+         let actual: Vec<_> =
+             do_completion(ra_fixture, CompletionItemKind::SymbolKind(SymbolKind::Method))
+                 .into_iter()
+                 .map(|item| (item.detail.unwrap_or_default(), item.relevance.function))
+                 .collect();
+-
+         expect.assert_debug_eq(&actual);
+     }
+-
+     #[track_caller]
+     fn check_relevance_for_kinds(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         actual.sort_by_key(|it| (cmp::Reverse(it.relevance.score()), it.label.primary.clone()));
+         check_relevance_(actual, expect);
+     }
+-
+     #[track_caller]
+-    fn check_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check_relevance(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
+         let mut actual = get_all_items(TEST_CONFIG, ra_fixture, None);
+         actual.retain(|it| it.kind != CompletionItemKind::Snippet);
+         actual.retain(|it| it.kind != CompletionItemKind::Keyword);
+         actual.sort_by_key(|it| (cmp::Reverse(it.relevance.score()), it.label.primary.clone()));
+         check_relevance_(actual, expect);
+     }
+-
+     #[track_caller]
+-    fn check_relevance_(actual: Vec<CompletionItem>, expect: Expect) {
++    fn check_relevance_(
++        actual: Vec<CompletionItem>,
++        expect: Expect,
++    ) {
+         let actual = actual
+             .into_iter()
+             .flat_map(|it| {
+                 items
+             })
+             .collect::<String>();
+-
+         expect.assert_eq(&actual);
+-
+         fn display_relevance(relevance: CompletionRelevance) -> String {
+             let relevance_factors = vec![
+                 (relevance.type_match == Some(CompletionRelevanceTypeMatch::Exact), "type"),
+             format!("[{relevance_factors}]")
+         }
+     }
+-
+     #[test]
+     fn set_struct_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_union_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_enum_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_enum_variant_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_fn_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_const_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_static_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_self_type_completion_info_with_params() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_self_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn set_builtin_type_completion_info() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn enum_detail_includes_record_fields() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn enum_detail_includes_tuple_fields() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn fn_detail_includes_args_and_return_type() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn fn_detail_includes_variadics() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn enum_detail_just_name_for_unit() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn lookup_enums_by_two_qualifiers() {
+         check_kinds(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn sets_deprecated_flag_in_items() {
+         check(
+                 ]
+             "#]],
+         );
+-
+         check(
+             r#"
+ struct A { #[deprecated] the_field: u32 }
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn renders_docs() {
+         check_kinds(
+                 ]
+             "#]],
+         );
+-
+         check_kinds(
+             r#"
+ use self::my$0;
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn dont_render_attrs() {
+         check(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn no_call_parens_if_fn_ptr_needed() {
+         cov_mark::check!(no_call_parens_if_fn_ptr_needed);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_parens_in_use_item() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_parens_in_call() {
+         check_edit(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn inserts_angle_brackets_for_generics() {
+         cov_mark::check!(inserts_angle_brackets_for_generics);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn active_param_relevance() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn record_field_relevances() {
+         check_relevance(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn tuple_field_detail() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn record_field_and_call_relevances() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn prioritize_exact_ref_match() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn too_many_arguments() {
+         cov_mark::check!(too_many_arguments);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn score_fn_type_and_name_match() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn score_method_type_and_name_match() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn score_method_name_match_only() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_avoid_redundant_suggestion() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn suggest_ref_mut() {
+         cov_mark::check!(suggest_ref);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn suggest_deref_copy() {
+         cov_mark::check!(suggest_deref);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn suggest_deref_trait() {
+         check_relevance(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn suggest_deref_mut() {
+         check_relevance(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn locals() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn enum_owned() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn enum_ref() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn suggest_deref_fn_ret() {
+         check_relevance(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn op_function_relevances() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn constructor_order_simple() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn constructor_order_kind() {
+         check_function_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn constructor_order_relevance() {
+         check_relevance(
+                 fn fn_other() fn() -> Result<u32> [type_could_unify]
+             "#]],
+         );
+-
+         //
+     }
+-
+     #[test]
+     fn function_relevance_generic_1() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn function_relevance_generic_2() {
+         // Generic 2
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn struct_field_method_ref() {
+         check_kinds(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn expected_fn_type_ref() {
+         check_kinds(
+             "#]],
+         )
+     }
+-
+     #[test]
+     fn qualified_path_ref() {
+         check_kinds(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn generic_enum() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn postfix_exact_match_is_high_priority() {
+         cov_mark::check!(postfix_exact_match_is_high_priority);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn postfix_inexact_match_is_low_priority() {
+         cov_mark::check!(postfix_inexact_match_is_low_priority);
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn flyimport_reduced_relevance() {
+         check_relevance(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn completes_struct_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_fn_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_macro_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_variant_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_field_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_const_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn completes_type_alias_with_raw_identifier() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn field_access_includes_self() {
+         check_edit(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn notable_traits_method_relevance() {
+         check_kinds(

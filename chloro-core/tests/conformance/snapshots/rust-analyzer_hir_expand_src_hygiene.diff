@@ -1,0 +1,99 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 4655 bytes
+Chloro size:   4501 bytes
+Rustfmt size:  4904 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! # The Call-site Hierarchy
+ //!
+ //! `ExpnData::call_site` in rustc, [`MacroCallLoc::call_site`] in rust-analyzer.
+-// FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
+-// which contains a bunch of unrelated things
+ 
+ use std::convert::identity;
+ 
++pub use span::Transparency;
+ use span::{Edition, MacroCallId, Span, SyntaxContext};
+ 
+ use crate::db::ExpandDatabase;
+ 
+-pub use span::Transparency;
+-
+ pub fn span_with_def_site_ctxt(
+     db: &dyn ExpandDatabase,
+     span: Span,
+     edition: Edition,
+ ) -> Span {
+     Span {
+-        ctx: apply_mark(
+-            db,
+-            SyntaxContext::root(edition),
+-            expn_id,
+-            transparency,
+-            edition,
+-        ),
++        ctx: apply_mark(db, SyntaxContext::root(edition), expn_id, transparency, edition),
+         ..span
+     }
+ }
+     if transparency == Transparency::Opaque {
+         return apply_mark_internal(db, ctxt, call_id, transparency, edition);
+     }
+-
+     let call_site_ctxt = db.lookup_intern_macro_call(call_id.into()).ctxt;
+     let mut call_site_ctxt = if transparency == Transparency::SemiTransparent {
+         call_site_ctxt.normalize_to_macros_2_0(db)
+     } else {
+         call_site_ctxt.normalize_to_macro_rules(db)
+     };
+-
+     if call_site_ctxt.is_root() {
+         return apply_mark_internal(db, ctxt, call_id, transparency, edition);
+     }
+-
+     // Otherwise, `expn_id` is a macros 1.0 definition and the call site is in a
+     // macros 2.0 expansion, i.e., a macros 1.0 invocation is in a macros 2.0 definition.
+     //
+     edition: Edition,
+ ) -> SyntaxContext {
+     let call_id = Some(call_id);
+-
+     let mut opaque = ctxt.opaque(db);
+     let mut opaque_and_semitransparent = ctxt.opaque_and_semitransparent(db);
+-
+     if transparency >= Transparency::Opaque {
+         let parent = opaque;
+-        opaque = SyntaxContext::new(
+-            db,
+-            call_id,
+-            transparency,
+-            edition,
+-            parent,
+-            identity,
+-            identity,
+-        );
++        opaque = SyntaxContext::new(db, call_id, transparency, edition, parent, identity, identity);
+     }
+-
+     if transparency >= Transparency::SemiTransparent {
+         let parent = opaque_and_semitransparent;
+-        opaque_and_semitransparent = SyntaxContext::new(
+-            db,
+-            call_id,
+-            transparency,
+-            edition,
+-            parent,
+-            |_| opaque,
+-            identity,
+-        );
++        opaque_and_semitransparent =
++            SyntaxContext::new(db, call_id, transparency, edition, parent, |_| opaque, identity);
+     }
+-
+     let parent = ctxt;
+     SyntaxContext::new(
+         db,

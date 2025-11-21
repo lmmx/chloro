@@ -1,0 +1,407 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 23406 bytes
+Chloro size:   22620 bytes
+Rustfmt size:  23406 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     assist_context::{AssistContext, Assists},
+ };
+ 
+-// Assist: expand_glob_import
+-//
+-// Expands glob imports.
+-//
+-// ```
+-// mod foo {
+-//     pub struct Bar;
+-//     pub struct Baz;
+-// }
+-//
+-// use foo::*$0;
+-//
+-// fn qux(bar: Bar, baz: Baz) {}
+-// ```
+-// ->
+-// ```
+-// mod foo {
+-//     pub struct Bar;
+-//     pub struct Baz;
+-// }
+-//
+-// use foo::{Bar, Baz};
+-//
+-// fn qux(bar: Bar, baz: Baz) {}
+-// ```
+-pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn expand_glob_import(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let star = ctx.find_token_syntax_at_offset(T![*])?;
+     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
+     let use_item = star.parent_ancestors().find_map(ast::Use::cast)?;
+         PathResolution::Def(ModuleDef::Adt(hir::Adt::Enum(e))) => Expandable::Enum(e),
+         _ => return None,
+     };
+-
+     let current_scope = ctx.sema.scope(&star.parent()?)?;
+     let current_module = current_scope.module();
+-
+     if !is_visible_from(ctx, &target_module, current_module) {
+         return None;
+     }
+-
+     let target = parent.either(|n| n.syntax().clone(), |n| n.syntax().clone());
+     acc.add(
+         AssistId::refactor_rewrite("expand_glob_import"),
+     )
+ }
+ 
+-// Assist: expand_glob_reexport
+-//
+-// Expands non-private glob imports.
+-//
+-// ```
+-// mod foo {
+-//     pub struct Bar;
+-//     pub struct Baz;
+-// }
+-//
+-// pub use foo::*$0;
+-// ```
+-// ->
+-// ```
+-// mod foo {
+-//     pub struct Bar;
+-//     pub struct Baz;
+-// }
+-//
+-// pub use foo::{Bar, Baz};
+-// ```
+-pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn expand_glob_reexport(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let star = ctx.find_token_syntax_at_offset(T![*])?;
+     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
+     let use_item = star.parent_ancestors().find_map(ast::Use::cast)?;
+         PathResolution::Def(ModuleDef::Adt(hir::Adt::Enum(e))) => Expandable::Enum(e),
+         _ => return None,
+     };
+-
+     let current_scope = ctx.sema.scope(&star.parent()?)?;
+     let current_module = current_scope.module();
+-
+     if let VisibilityKind::PubSelf = get_export_visibility_kind(&use_item) {
+         return None;
+     }
+     if !is_visible_from(ctx, &target_module, current_module) {
+         return None;
+     }
+-
+     let target = parent.either(|n| n.syntax().clone(), |n| n.syntax().clone());
+     acc.add(
+         AssistId::refactor_rewrite("expand_glob_reexport"),
+             _ => (false, current_module),
+         }
+     };
+-
+     let refs_in_target = find_refs_in_mod(ctx, target_module, visible_from, must_be_pub);
+     let imported_defs = find_imported_defs(ctx, use_item);
+-
+     let filtered_defs =
+         if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
+-
+     let names_to_import = find_names_to_import(filtered_defs, imported_defs);
+     let expanded = make::use_tree_list(names_to_import.iter().map(|n| {
+         let path = make::ext::ident_path(
+         make::use_tree(path, None, None, false)
+     }))
+     .clone_for_update();
+-
+     let mut editor = builder.make_editor(use_tree.syntax());
+     match use_tree.star_token() {
+         Some(star) => {
+     Enum(Enum),
+ }
+ 
+-fn find_parent_and_path(
+-    star: &SyntaxToken,
+-) -> Option<(Either<ast::UseTree, ast::UseTreeList>, ast::Path)> {
++fn find_parent_and_path(star: &SyntaxToken) -> Option<(Either<ast::UseTree, ast::UseTreeList>, ast::Path)> {
+     return star.parent_ancestors().find_map(|n| {
+         find_use_tree_list(n.clone())
+             .map(|(u, p)| (Either::Right(u), p))
+             .or_else(|| find_use_tree(n).map(|(u, p)| (Either::Left(u), p)))
+     });
+-
+     fn find_use_tree_list(n: SyntaxNode) -> Option<(ast::UseTreeList, ast::Path)> {
+         let use_tree_list = ast::UseTreeList::cast(n)?;
+         let path = use_tree_list.parent_use_tree().path()?;
+         Some((use_tree_list, path))
+     }
+-
+     fn find_use_tree(n: SyntaxNode) -> Option<(ast::UseTree, ast::Path)> {
+         let use_tree = ast::UseTree::cast(n)?;
+         let path = use_tree.path()?;
+     }
+ }
+ 
+-fn def_is_referenced_in(def: Definition, ctx: &AssistContext<'_>) -> bool {
++fn def_is_referenced_in(
++    def: Definition,
++    ctx: &AssistContext<'_>,
++) -> bool {
+     let search_scope = SearchScope::single_file(ctx.file_id());
+     def.usages(&ctx.sema).in_scope(&search_scope).at_least_one()
+ }
+ 
+ #[derive(Debug, Clone)]
+ struct Ref {
+-    // could be alias
+     visible_name: Name,
+     def: Definition,
+     is_pub: bool,
+ }
+ 
+ impl Ref {
+-    fn from_scope_def(ctx: &AssistContext<'_>, name: Name, scope_def: ScopeDef) -> Option<Self> {
++    fn from_scope_def(
++        ctx: &AssistContext<'_>,
++        name: Name,
++        scope_def: ScopeDef,
++    ) -> Option<Self> {
+         match scope_def {
+             ScopeDef::ModuleDef(def) => Some(Ref {
+                 visible_name: name,
+ struct Refs(Vec<Ref>);
+ 
+ impl Refs {
+-    fn used_refs(&self, ctx: &AssistContext<'_>) -> Refs {
++    fn used_refs(
++        &self,
++        ctx: &AssistContext<'_>,
++    ) -> Refs {
+         Refs(
+             self.0
+                 .clone()
+         )
+     }
+ 
+-    fn filter_out_by_defs(&self, defs: Vec<Definition>) -> Refs {
++    fn filter_out_by_defs(
++        &self,
++        defs: Vec<Definition>,
++    ) -> Refs {
+         Refs(self.0.clone().into_iter().filter(|r| !defs.contains(&r.def)).collect())
+     }
+ }
+     }
+ }
+ 
+-fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Module) -> bool {
++fn is_visible_from(
++    ctx: &AssistContext<'_>,
++    expandable: &Expandable,
++    from: Module,
++) -> bool {
+     fn is_mod_visible_from(ctx: &AssistContext<'_>, module: Module, from: Module) -> bool {
+         match module.parent(ctx.db()) {
+             Some(parent) => {
+             None => true,
+         }
+     }
+-
+     match expandable {
+         Expandable::Module(module) => match module.parent(ctx.db()) {
+             Some(parent) => {
+     }
+ }
+ 
+-// looks for name refs in parent use block's siblings
+-//
+-// mod bar {
+-//     mod qux {
+-//         struct Qux;
+-//     }
+-//
+-//     pub use qux::Qux;
+-// }
+-//
+-// ↓ ---------------
+-// use foo::*$0;
+-// use baz::Baz;
+-// ↑ ---------------
+-fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition> {
++fn find_imported_defs(
++    ctx: &AssistContext<'_>,
++    use_item: Use,
++) -> Vec<Definition> {
+     [Direction::Prev, Direction::Next]
+         .into_iter()
+         .flat_map(|dir| {
+         .collect()
+ }
+ 
+-fn find_names_to_import(refs_in_target: Refs, imported_defs: Vec<Definition>) -> Vec<Name> {
++fn find_names_to_import(
++    refs_in_target: Refs,
++    imported_defs: Vec<Definition>,
++) -> Vec<Name> {
+     let final_refs = refs_in_target.filter_out_by_defs(imported_defs);
+     final_refs.0.iter().map(|r| r.visible_name.clone()).collect()
+ }
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn expanding_glob_import() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_glob_import_unused() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_glob_import_with_existing_explicit_names() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_glob_import_with_existing_uses_in_same_module() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_nested_glob_import() {
+         check_assist(
+ }
+ ",
+         );
+-
+         check_assist(
+             expand_glob_import,
+             r"
+ }
+ ",
+         );
+-
+         check_assist(
+             expand_glob_import,
+             r"
+ }
+ ",
+         );
+-
+         check_assist(
+             expand_glob_import,
+             r"
+ }
+ ",
+         );
+-
+         check_assist(
+             expand_glob_import,
+             r"
+ ",
+         );
+     }
+-
+     #[test]
+     fn expanding_glob_import_with_macro_defs() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn expanding_glob_import_with_trait_method_uses() {
+         check_assist(
+ }
+ ",
+         );
+-
+         check_assist(
+             expand_glob_import,
+             r"
+ ",
+         );
+     }
+-
+     #[test]
+     fn expanding_is_not_applicable_if_target_module_is_not_accessible_from_current_scope() {
+         check_assist_not_applicable(
+ fn baz(bar: Bar) {}
+ ",
+         );
+-
+         check_assist_not_applicable(
+             expand_glob_import,
+             r"
+ ",
+         );
+     }
+-
+     #[test]
+     fn expanding_is_not_applicable_if_cursor_is_not_in_star_token() {
+         check_assist_not_applicable(
+     ",
+         )
+     }
+-
+     #[test]
+     fn expanding_glob_import_single_nested_glob_only() {
+         check_assist(
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_support_for_enums() {
+         check_assist(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn test_expanding_multiple_variants_at_once() {
+         check_assist(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn expanding_glob_reexport() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_recursive_glob_reexport() {
+         check_assist(
+ ",
+         )
+     }
+-
+     #[test]
+     fn expanding_reexport_is_not_applicable_for_private_import() {
+         check_assist_not_applicable(

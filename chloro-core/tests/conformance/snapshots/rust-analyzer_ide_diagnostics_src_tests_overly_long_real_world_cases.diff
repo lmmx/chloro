@@ -1,0 +1,23 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 84454 bytes
+Chloro size:   84454 bytes
+Rustfmt size:  84525 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ tracing::error!();
+ }
+     "#,
+-        &[
+-            "E0432",
+-            "inactive-code",
+-            "unresolved-macro-call",
+-            "syntax-error",
+-            "macro-error",
+-        ],
++        &["E0432", "inactive-code", "unresolved-macro-call", "syntax-error", "macro-error"],
+     );
+ }

@@ -1,0 +1,214 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 9566 bytes
+Chloro size:   9375 bytes
+Rustfmt size:  10026 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! [lattices]: https://en.wikipedia.org/wiki/Lattice_(order)
+ 
+ use rustc_type_ir::{
++    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
+     inherent::{IntoKind, Span as _},
+     relate::{
+-        combine::{super_combine_consts, super_combine_tys, PredicateEmittingRelation},
+         Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
++        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
+     },
+-    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
+ };
+ 
+ use crate::next_solver::{
+-    infer::{
+-        relate::RelateResult,
+-        traits::{Obligation, PredicateObligations},
+-        InferCtxt, TypeTrace,
+-    },
+     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
+     TyKind,
++    infer::{
++        InferCtxt, TypeTrace,
++        relate::RelateResult,
++        traits::{Obligation, PredicateObligations},
++    },
+ };
+ 
+ #[derive(Clone, Copy)]
+ /// A greatest lower bound" (common subtype) or least upper bound (common supertype).
+ pub(crate) struct LatticeOp<'infcx, 'db> {
+     infcx: &'infcx InferCtxt<'db>,
+-    // Immutable fields
+     trace: TypeTrace<'db>,
+     param_env: ParamEnv<'db>,
+-    // Mutable fields
+     kind: LatticeOpKind,
+     obligations: PredicateObligations<'db>,
+ }
+         param_env: ParamEnv<'db>,
+         kind: LatticeOpKind,
+     ) -> LatticeOp<'infcx, 'db> {
+-        LatticeOp {
+-            infcx,
+-            trace,
+-            param_env,
+-            kind,
+-            obligations: PredicateObligations::new(),
+-        }
++        LatticeOp { infcx, trace, param_env, kind, obligations: PredicateObligations::new() }
+     }
+ 
+     pub(crate) fn into_obligations(self) -> PredicateObligations<'db> {
+         match variance {
+             Variance::Invariant => {
+                 self.obligations.extend(
+-                    self.infcx
+-                        .at(&self.trace.cause, self.param_env)
+-                        .eq(a, b)?
+-                        .into_obligations(),
++                    self.infcx.at(&self.trace.cause, self.param_env).eq(a, b)?.into_obligations(),
+                 );
+                 Ok(a)
+             }
+     }
+ 
+     /// Relates two types using a given lattice.
+-    fn tys(&mut self, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
++    fn tys(
++        &mut self,
++        a: Ty<'db>,
++        b: Ty<'db>,
++    ) -> RelateResult<'db, Ty<'db>> {
+         if a == b {
+             return Ok(a);
+         }
+-
+         let infcx = self.infcx;
+-
+         let a = infcx.shallow_resolve(a);
+         let b = infcx.shallow_resolve(b);
+-
+         match (a.kind(), b.kind()) {
+             // If one side is known to be a variable and one is not,
+             // create a variable (`v`) to represent the LUB. Make sure to
+             }
+ 
+             (
+-                TyKind::Alias(
+-                    rustc_type_ir::Opaque,
+-                    AliasTy {
+-                        def_id: a_def_id, ..
+-                    },
+-                ),
+-                TyKind::Alias(
+-                    rustc_type_ir::Opaque,
+-                    AliasTy {
+-                        def_id: b_def_id, ..
+-                    },
+-                ),
++                TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: a_def_id, .. }),
++                TyKind::Alias(rustc_type_ir::Opaque, AliasTy { def_id: b_def_id, .. }),
+             ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
+ 
+             _ => super_combine_tys(infcx, self, a, b),
+         }
+     }
+ 
+-    fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
++    fn regions(
++        &mut self,
++        a: Region<'db>,
++        b: Region<'db>,
++    ) -> RelateResult<'db, Region<'db>> {
+         let mut inner = self.infcx.inner.borrow_mut();
+         let mut constraints = inner.unwrap_region_constraints();
+         Ok(match self.kind {
+         })
+     }
+ 
+-    fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {
++    fn consts(
++        &mut self,
++        a: Const<'db>,
++        b: Const<'db>,
++    ) -> RelateResult<'db, Const<'db>> {
+         super_combine_consts(self.infcx, self, a, b)
+     }
+ 
+         b: Binder<'db, T>,
+     ) -> RelateResult<'db, Binder<'db, T>>
+     where
+-        T: Relate<DbInterner<'db>>,
+-    {
++        T: Relate<DbInterner<'db>>, {
+         // GLB/LUB of a binder and itself is just itself
+         if a == b {
+             return Ok(a);
+         }
+-
+         if a.skip_binder().has_escaping_bound_vars() || b.skip_binder().has_escaping_bound_vars() {
+             // When higher-ranked types are involved, computing the GLB/LUB is
+             // very challenging, switch to invariance. This is obviously
+             self.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)?;
+             Ok(a)
+         } else {
+-            Ok(Binder::dummy(
+-                self.relate(a.skip_binder(), b.skip_binder())?,
+-            ))
++            Ok(Binder::dummy(self.relate(a.skip_binder(), b.skip_binder())?))
+         }
+     }
+ }
+ 
+ impl<'infcx, 'db> LatticeOp<'infcx, 'db> {
+-    // Relates the type `v` to `a` and `b` such that `v` represents
+-    // the LUB/GLB of `a` and `b` as appropriate.
+-    //
+-    // Subtle hack: ordering *may* be significant here. This method
+-    // relates `v` to `a` first, which may help us to avoid unnecessary
+-    // type variable obligations. See caller for details.
+-    fn relate_bound(&mut self, v: Ty<'db>, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, ()> {
++    fn relate_bound(
++        &mut self,
++        v: Ty<'db>,
++        a: Ty<'db>,
++        b: Ty<'db>,
++    ) -> RelateResult<'db, ()> {
+         let at = self.infcx.at(&self.trace.cause, self.param_env);
+         match self.kind {
+             LatticeOpKind::Glb => {
+         preds: impl IntoIterator<Item: Upcast<DbInterner<'db>, Predicate<'db>>>,
+     ) {
+         self.obligations.extend(preds.into_iter().map(|pred| {
+-            Obligation::new(
+-                self.infcx.interner,
+-                self.trace.cause.clone(),
+-                self.param_env,
+-                pred,
+-            )
++            Obligation::new(self.infcx.interner, self.trace.cause.clone(), self.param_env, pred)
+         }))
+     }
+ 
+-    fn register_goals(&mut self, goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>) {
++    fn register_goals(
++        &mut self,
++        goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>,
++    ) {
+         self.obligations.extend(goals.into_iter().map(|goal| {
+             Obligation::new(
+                 self.infcx.interner,
+         }))
+     }
+ 
+-    fn register_alias_relate_predicate(&mut self, a: Ty<'db>, b: Ty<'db>) {
++    fn register_alias_relate_predicate(
++        &mut self,
++        a: Ty<'db>,
++        b: Ty<'db>,
++    ) {
+         self.register_predicates([Binder::dummy(PredicateKind::AliasRelate(
+             a.into(),
+             b.into(),

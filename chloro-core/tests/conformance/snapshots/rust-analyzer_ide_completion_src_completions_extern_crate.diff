@@ -1,0 +1,60 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1954 bytes
+Chloro size:   1957 bytes
+Rustfmt size:  1954 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion for extern crates
+ 
+ use hir::Name;
+-use ide_db::{documentation::HasDocs, SymbolKind};
++use ide_db::{SymbolKind, documentation::HasDocs};
+ use syntax::ToSmolStr;
+ 
+-use crate::{context::CompletionContext, CompletionItem, CompletionItemKind};
+-
++use crate::{CompletionItem, CompletionItemKind, context::CompletionContext};
+ use super::Completions;
+ 
+-pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionContext<'_>) {
++pub(crate) fn complete_extern_crate(
++    acc: &mut Completions,
++    ctx: &CompletionContext<'_>,
++) {
+     let imported_extern_crates: Vec<Name> = ctx.scope.extern_crate_decls().collect();
+-
+     for (name, module) in ctx.scope.extern_crates() {
+         if imported_extern_crates.contains(&name) {
+             continue;
+ #[cfg(test)]
+ mod test {
+     use crate::tests::completion_list_no_kw;
+-
+     #[test]
+     fn can_complete_extern_crate() {
+         let case = r#"
+ extern crate oth$0
+ mod other_mod {}
+ "#;
+-
+         let completion_list = completion_list_no_kw(case);
+-
+         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
+     }
+-
+     #[test]
+     fn will_not_complete_existing_import() {
+         let case = r#"
+ extern crate oth$0
+ mod other_mod {}
+ "#;
+-
+         let completion_list = completion_list_no_kw(case);
+-
+         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
+     }
+ }

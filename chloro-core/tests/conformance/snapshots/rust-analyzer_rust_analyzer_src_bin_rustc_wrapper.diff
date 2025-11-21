@@ -1,0 +1,31 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2455 bytes
+Chloro size:   2467 bytes
+Rustfmt size:  2455 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! We setup RUSTC_WRAPPER to point to `rust-analyzer` binary itself during the
+ //! initial `cargo check`. That way, we avoid checking the actual project, and
+ //! only build proc macros and build.rs.
+ //!
+ //! Code taken from IntelliJ :0)
+ //!     https://github.com/intellij-rust/intellij-rust/blob/master/native-helper/src/main.rs
++
+ use std::{
+     ffi::OsString,
+     io,
+     }
+ }
+ 
+-fn run_rustc(rustc_executable: OsString, args: Vec<OsString>) -> io::Result<ExitCode> {
++fn run_rustc(
++    rustc_executable: OsString,
++    args: Vec<OsString>,
++) -> io::Result<ExitCode> {
+     #[allow(clippy::disallowed_methods)]
+     let mut child = Command::new(rustc_executable)
+         .args(args)

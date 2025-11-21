@@ -1,0 +1,288 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 26763 bytes
+Chloro size:   25997 bytes
+Rustfmt size:  26763 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
++use std::ops::RangeInclusive;
++
+ use either::Either;
+ use hir::FileRangeWrapper;
+ use ide_db::defs::{Definition, NameRefClass};
+-use std::ops::RangeInclusive;
+ use syntax::{
+     SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
+     ast::{
+ 
+ use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+ 
+-// Assist: convert_tuple_struct_to_named_struct
+-//
+-// Converts tuple struct to struct with named fields, and analogously for tuple enum variants.
+-//
+-// ```
+-// struct Point$0(f32, f32);
+-//
+-// impl Point {
+-//     pub fn new(x: f32, y: f32) -> Self {
+-//         Point(x, y)
+-//     }
+-//
+-//     pub fn x(&self) -> f32 {
+-//         self.0
+-//     }
+-//
+-//     pub fn y(&self) -> f32 {
+-//         self.1
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// struct Point { field1: f32, field2: f32 }
+-//
+-// impl Point {
+-//     pub fn new(x: f32, y: f32) -> Self {
+-//         Point { field1: x, field2: y }
+-//     }
+-//
+-//     pub fn x(&self) -> f32 {
+-//         self.field1
+-//     }
+-//
+-//     pub fn y(&self) -> f32 {
+-//         self.field2
+-//     }
+-// }
+-// ```
+ pub(crate) fn convert_tuple_struct_to_named_struct(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+         .map(Either::Left)
+         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
+     let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+-
+     if ctx.offset() > field_list.syntax().text_range().start() {
+         // Assist could be distracting after the braces
+         return None;
+     }
+-
+     let tuple_fields = match field_list {
+         ast::FieldList::TupleFieldList(it) => it,
+         ast::FieldList::RecordFieldList(_) => return None,
+     let make = SyntaxFactory::without_mappings();
+     let record_fields = make.record_field_list(record_fields);
+     let tuple_fields_before = Position::before(tuple_fields.syntax());
+-
+     if let Either::Left(strukt) = strukt {
+         if let Some(w) = strukt.where_clause() {
+             editor.delete(w.syntax());
+     } else {
+         editor.insert(tuple_fields_before, ast::make::tokens::single_space());
+     }
+-
+     editor.replace(tuple_fields.syntax(), record_fields.syntax());
+ }
+ 
+         Either::Right(v) => Definition::Variant(v),
+     };
+     let usages = strukt_def.usages(&ctx.sema).include_self_refs().all();
+-
+     let edit_node = |node: SyntaxNode| -> Option<SyntaxNode> {
+         let make = SyntaxFactory::without_mappings();
+         match_ast! {
+             }
+         }
+     };
+-
+     for (file_id, refs) in usages {
+         let source = ctx.sema.parse(file_id);
+         let source = source.syntax();
+         pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
+     let before_rest = pat.fields().zip(names).take(rest_idx);
+     let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);
+-
+     let fields = before_rest
+         .chain(after_rest)
+         .map(|(pat, name)| ast::make::record_pat_field(ast::make::name_ref(&name.text()), pat));
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn not_applicable_other_than_tuple_struct() {
+         check_assist_not_applicable(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_struct() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_and_rest_pat() {
+         check_assist(
+ fn foo(A { .. }: A) {}
+ "#,
+         );
+-
+         check_assist(
+             convert_tuple_struct_to_named_struct,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_struct_cursor_on_struct_keyword() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_struct_cursor_on_visibility_keyword() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_referenced_via_self_kw() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_destructured_struct() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_visibility() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_wrapped_references() {
+         check_assist(
+     }
+ }"#,
+         );
+-
+         check_assist(
+             convert_tuple_struct_to_named_struct,
+             r#"
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_multi_file_references() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_struct_with_where_clause() {
+         check_assist(
+             r#"enum Enum { Variant$0 }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_in_macro_args() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_simple_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_referenced_via_self_kw() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_destructured_variant() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_with_wrapped_references() {
+         check_assist(
+     }
+ }"#,
+         );
+-
+         check_assist(
+             convert_tuple_struct_to_named_struct,
+             r#"
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn convert_variant_with_multi_file_references() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_directly_used_variant() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn where_clause_with_trailing_comma() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fields_with_attrs() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_in_macro_pattern_args() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_in_multi_file_macro_pattern_args() {
+         check_assist(

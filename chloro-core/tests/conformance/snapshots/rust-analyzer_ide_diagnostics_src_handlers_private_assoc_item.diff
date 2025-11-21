@@ -1,0 +1,54 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3239 bytes
+Chloro size:   3088 bytes
+Rustfmt size:  3239 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: private-assoc-item
+-//
+-// This diagnostic is triggered if the referenced associated item is not visible from the current
+-// module.
+ pub(crate) fn private_assoc_item(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::PrivateAssocItem,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn private_method() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn private_func() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn private_const() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn private_but_shadowed_in_deref() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn can_see_through_top_level_anonymous_const() {
+         // regression test for #14046.

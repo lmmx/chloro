@@ -1,0 +1,55 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 2577 bytes
+Chloro size:   2600 bytes
+Rustfmt size:  2641 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use hir::FindPathConfig;
+ use ide_db::{
+-    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
+     MiniCore, SnippetCap,
++    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
+ };
+ 
+-use crate::{snippet::Snippet, CompletionFieldsToResolve};
++use crate::{CompletionFieldsToResolve, snippet::Snippet};
+ 
+ #[derive(Clone, Debug)]
+ pub struct CompletionConfig<'a> {
+ 
+ impl CompletionConfig<'_> {
+     pub fn postfix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {
+-        self.snippets.iter().flat_map(|snip| {
+-            snip.postfix_triggers
+-                .iter()
+-                .map(move |trigger| (&**trigger, snip))
+-        })
++        self.snippets
++            .iter()
++            .flat_map(|snip| snip.postfix_triggers.iter().map(move |trigger| (&**trigger, snip)))
+     }
+ 
+     pub fn prefix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {
+-        self.snippets.iter().flat_map(|snip| {
+-            snip.prefix_triggers
+-                .iter()
+-                .map(move |trigger| (&**trigger, snip))
+-        })
++        self.snippets
++            .iter()
++            .flat_map(|snip| snip.prefix_triggers.iter().map(move |trigger| (&**trigger, snip)))
+     }
+ 
+-    pub fn find_path_config(&self, allow_unstable: bool) -> FindPathConfig {
++    pub fn find_path_config(
++        &self,
++        allow_unstable: bool,
++    ) -> FindPathConfig {
+         FindPathConfig {
+             prefer_no_std: self.prefer_no_std,
+             prefer_prelude: self.prefer_prelude,

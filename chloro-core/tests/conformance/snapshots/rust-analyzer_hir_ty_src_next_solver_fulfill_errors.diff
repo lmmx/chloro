@@ -1,0 +1,301 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 50684 bytes
+Chloro size:   50273 bytes
+Rustfmt size:  50684 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     Cycle(PredicateObligations<'db>),
+     Select(SelectionError<'db>),
+     Project(MismatchedProjectionTypes<'db>),
+-    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>), // always comes from a SubtypePredicate
++    Subtype(ExpectedFound<Ty<'db>>, TypeError<'db>),
+     ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
+     Ambiguity {
+         /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation
+     root_obligation: PredicateObligation<'db>,
+ ) -> FulfillmentError<'db> {
+     let obligation = find_best_leaf_obligation(infcx, &root_obligation, false);
+-
+     let code = match obligation.predicate.kind().skip_binder() {
+         PredicateKind::Clause(ClauseKind::Projection(_)) => {
+             FulfillmentErrorCode::Project(
+             panic!("unexpected goal: {obligation:?}")
+         }
+     };
+-
+     FulfillmentError { obligation, code, root_obligation }
+ }
+ 
+             }
+         }
+     });
+-
+     FulfillmentError {
+         obligation: if refine_obligation {
+             find_best_leaf_obligation(infcx, &root_obligation, true)
+                 }
+             }
+         }
+-
+         candidates
+     }
+ 
+     ) -> ControlFlow<PredicateObligation<'db>> {
+         let infcx = candidate.goal().infcx();
+         let param_env = candidate.goal().goal().param_env;
+-
+         for obligation in wf::unnormalized_obligations(infcx, param_env, term).into_iter().flatten()
+         {
+             let nested_goal = candidate
+ 
+             self.with_derived_obligation(obligation, |this| nested_goal.visit_with(this))?;
+         }
+-
+         ControlFlow::Break(self.obligation.clone())
+     }
+ 
+     ) -> ControlFlow<PredicateObligation<'db>> {
+         let interner = goal.infcx().interner;
+         let pred_kind = goal.goal().predicate.kind();
+-
+         match pred_kind.no_bound_vars() {
+             Some(PredicateKind::Clause(ClauseKind::Trait(pred))) => {
+                 self.detect_error_in_self_ty_normalization(goal, pred.self_ty())?;
+             }
+             Some(_) | None => {}
+         }
+-
+         ControlFlow::Break(self.obligation.clone())
+     }
+ }
+     type Result = ControlFlow<PredicateObligation<'db>>;
+ 
+     #[instrument(level = "trace", skip(self, goal), fields(goal = ?goal.goal()))]
+-    fn visit_goal(&mut self, goal: &inspect::InspectGoal<'_, 'db>) -> Self::Result {
++    fn visit_goal(
++        &mut self,
++        goal: &inspect::InspectGoal<'_, 'db>,
++    ) -> Self::Result {
+         let interner = goal.infcx().interner;
+         // Skip goals that aren't the *reason* for our goal's failure.
+         match (self.consider_ambiguities, goal.result()) {
+             }
+             _ => return ControlFlow::Continue(()),
+         }
+-
+         let pred = goal.goal().predicate;
+-
+         let candidates = self.non_trivial_candidates(goal);
+         let candidate = match candidates.as_slice() {
+             [candidate] => candidate,
+             [] => return self.detect_error_from_empty_candidates(goal),
+             _ => return ControlFlow::Break(self.obligation.clone()),
+         };
+-
+         // // Don't walk into impls that have `do_not_recommend`.
+         // if let inspect::ProbeKind::TraitCandidate {
+         //     source: CandidateSource::Impl(impl_def_id),
+         //     trace!("#[do_not_recommend] -> exit");
+         //     return ControlFlow::Break(self.obligation.clone());
+         // }
+-
+         // FIXME: Also, what about considering >1 layer up the stack? May be necessary
+         // for normalizes-to.
+         let child_mode = match pred.kind().skip_binder() {
+             }
+             _ => ChildMode::PassThrough,
+         };
+-
+         let nested_goals = candidate.instantiate_nested_goals();
+-
+         // If the candidate requires some `T: FnPtr` bound which does not hold should not be treated as
+         // an actual candidate, instead we should treat them as if the impl was never considered to
+         // have potentially applied. As if `impl<A, R> Trait for for<..> fn(..A) -> R` was written
+                 return ControlFlow::Break(self.obligation.clone());
+             }
+         }
+-
+         for nested_goal in nested_goals {
+             trace!(nested_goal = ?(nested_goal.goal(), nested_goal.source(), nested_goal.result()));
+ 
+ 
+             self.with_derived_obligation(obligation, |this| nested_goal.visit_with(this))?;
+         }
+-
+         // alias-relate may fail because the lhs or rhs can't be normalized,
+         // and therefore is treated as rigid.
+         if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
+                 self,
+             )?;
+         }
+-
+         self.detect_trait_error_in_higher_ranked_projection(goal)?;
+-
+         ControlFlow::Break(self.obligation.clone())
+     }
+ }
+ 
+ #[derive(Debug, Copy, Clone)]
+ enum ChildMode<'db> {
+-    // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
+-    // and skip all `GoalSource::Misc`, which represent useless obligations
+-    // such as alias-eq which may not hold.
+     Trait(PolyTraitPredicate<'db>),
+-    // Try to derive an `ObligationCause::{ImplDerived,BuiltinDerived}`,
+-    // and skip all `GoalSource::Misc`, which represent useless obligations
+-    // such as alias-eq which may not hold.
+     Host(Binder<'db, HostEffectPredicate<DbInterner<'db>>>),
+-    // Skip trying to derive an `ObligationCause` from this obligation, and
+-    // report *all* sub-obligations as if they came directly from the parent
+-    // obligation.
+     PassThrough,
+ }
+ 
+ impl<'db> NextSolverError<'db> {
+-    pub fn to_debuggable_error(&self, infcx: &InferCtxt<'db>) -> FulfillmentError<'db> {
++    pub fn to_debuggable_error(
++        &self,
++        infcx: &InferCtxt<'db>,
++    ) -> FulfillmentError<'db> {
+         match self {
+             NextSolverError::TrueError(obligation) => {
+                 fulfillment_error_for_no_solution(infcx, obligation.clone())
+         Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
+     };
+     use tracing::{debug, instrument};
+-
+     use crate::next_solver::infer::InferCtxt;
+     use crate::next_solver::infer::traits::{Obligation, ObligationCause, PredicateObligations};
+     use crate::next_solver::{
+         Binder, ClauseKind, Const, ConstKind, Ctor, DbInterner, ExistentialPredicate, GenericArgs,
+         ParamEnv, Predicate, PredicateKind, Region, SolverDefId, Term, TraitRef, Ty, TyKind,
+     };
+-
+     /// Compute the predicates that are required for a type to be well-formed.
+     ///
+     /// This is only intended to be used in the new solver, since it does not
+         term: Term<'db>,
+     ) -> Option<PredicateObligations<'db>> {
+         debug_assert_eq!(term, infcx.resolve_vars_if_possible(term));
+-
+         // However, if `arg` IS an unresolved inference variable, returns `None`,
+         // because we are not able to make any progress at all. This is to prevent
+         // cycles where we say "?0 is WF if ?0 is WF".
+         if term.is_infer() {
+             return None;
+         }
+-
+         let mut wf =
+             WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
+         wf.add_wf_preds_for_term(term);
+         Some(wf.out)
+     }
+-
+     struct WfPredicates<'a, 'db> {
+         infcx: &'a InferCtxt<'db>,
+         param_env: ParamEnv<'db>,
+         out: PredicateObligations<'db>,
+         recursion_depth: usize,
+     }
+-
+     impl<'a, 'db> WfPredicates<'a, 'db> {
+         fn interner(&self) -> DbInterner<'db> {
+             self.infcx.interner
+         }
+ 
+-        fn require_sized(&mut self, subty: Ty<'db>) {
++        fn require_sized(
++            &mut self,
++            subty: Ty<'db>,
++        ) {
+             if !subty.has_escaping_bound_vars() {
+                 let cause = ObligationCause::new();
+                 let trait_ref = TraitRef::new(
+ 
+         /// Pushes all the predicates needed to validate that `term` is WF into `out`.
+         #[instrument(level = "debug", skip(self))]
+-        fn add_wf_preds_for_term(&mut self, term: Term<'db>) {
++        fn add_wf_preds_for_term(
++            &mut self,
++            term: Term<'db>,
++        ) {
+             term.visit_with(self);
+             debug!(?self.out);
+         }
+             {
+                 return Default::default();
+             }
+-
+             self.interner()
+                 .predicates_of(def_id)
+                 .iter_instantiated(self.interner(), args)
+             }
+         }
+     }
+-
+     impl<'a, 'db> TypeVisitor<DbInterner<'db>> for WfPredicates<'a, 'db> {
+         type Result = ();
+ 
+-        fn visit_ty(&mut self, t: Ty<'db>) -> Self::Result {
++        fn visit_ty(
++            &mut self,
++            t: Ty<'db>,
++        ) -> Self::Result {
+             debug!("wf bounds for t={:?} t.kind={:#?}", t, t.kind());
+-
+             let tcx = self.interner();
+-
+             match t.kind() {
+                 TyKind::Bool
+                 | TyKind::Char
+                     ));
+                 }
+             }
+-
+             t.super_visit_with(self)
+         }
+ 
+-        fn visit_const(&mut self, c: Const<'db>) -> Self::Result {
++        fn visit_const(
++            &mut self,
++            c: Const<'db>,
++        ) -> Self::Result {
+             let tcx = self.interner();
+-
+             match c.kind() {
+                 ConstKind::Unevaluated(uv) => {
+                     if !c.has_escaping_bound_vars() {
+                     // FIXME: Enforce that values are structurally-matchable.
+                 }
+             }
+-
+             c.super_visit_with(self)
+         }
+ 
+-        fn visit_predicate(&mut self, _p: Predicate<'db>) -> Self::Result {
++        fn visit_predicate(
++            &mut self,
++            _p: Predicate<'db>,
++        ) -> Self::Result {
+             panic!("predicate should not be checked for well-formedness");
+         }
+     }
+-
+     /// Given an object type like `SomeTrait + Send`, computes the lifetime
+     /// bounds that must hold on the elided self type. These are derived
+     /// from the declarations of `SomeTrait`, `Send`, and friends -- if
+         existential_predicates: &[Binder<'db, ExistentialPredicate<'db>>],
+     ) -> Vec<Region<'db>> {
+         let erased_self_ty = Ty::new_unit(interner);
+-
+         let predicates = existential_predicates
+             .iter()
+             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
+-
+         rustc_type_ir::elaborate::elaborate(interner, predicates)
+             .filter_map(|pred| {
+                 debug!(?pred);

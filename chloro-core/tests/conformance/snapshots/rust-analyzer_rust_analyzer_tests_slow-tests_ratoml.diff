@@ -1,0 +1,646 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 22465 bytes
+Chloro size:   18962 bytes
+Rustfmt size:  23115 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use crate::support::{Project, Server};
+-use crate::testdir::TestDir;
+ use lsp_types::{
+-    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
+     DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+     TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
+     VersionedTextDocumentIdentifier,
++    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
+ };
+ use paths::Utf8PathBuf;
+-
+ use rust_analyzer::config::Config;
+ use rust_analyzer::lsp::ext::{
+     InternalTestingFetchConfig, InternalTestingFetchConfigOption, InternalTestingFetchConfigParams,
+ use serde_json::json;
+ use test_utils::skip_slow_tests;
+ 
++use crate::support::{Project, Server};
++use crate::testdir::TestDir;
++
+ struct RatomlTest {
+     urls: Vec<Url>,
+     server: Server,
+ }
+ 
+ impl RatomlTest {
+-    const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;
+-    const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
++
+ 
+     fn new(
+         fixtures: Vec<&str>,
+     ) -> Self {
+         let tmp_dir = TestDir::new();
+         let tmp_path = tmp_dir.path().to_owned();
+-
+         let full_fixture = fixtures.join("\n");
+-
+         let mut project = Project::with_fixture(&full_fixture).tmp_dir(tmp_dir);
+-
+         for root in roots {
+             project = project.root(root);
+         }
+-
+         if let Some(client_config) = client_config {
+             project = project.with_config(client_config);
+         }
+-
+-        let server = project
+-            .server_with_lock(true)
+-            .wait_until_workspace_is_loaded();
+-
+-        let mut case = Self {
+-            urls: vec![],
+-            server,
+-            tmp_path,
+-        };
+-        let urls = fixtures
+-            .iter()
+-            .map(|fixture| case.fixture_path(fixture))
+-            .collect::<Vec<_>>();
++        let server = project.server_with_lock(true).wait_until_workspace_is_loaded();
++        let mut case = Self { urls: vec![], server, tmp_path };
++        let urls = fixtures.iter().map(|fixture| case.fixture_path(fixture)).collect::<Vec<_>>();
+         case.urls = urls;
+         case
+     }
+ 
+-    fn fixture_path(&self, fixture: &str) -> Url {
++    fn fixture_path(
++        &self,
++        fixture: &str,
++    ) -> Url {
+         let mut lines = fixture.trim().split('\n');
+-
+-        let mut path = lines
+-            .next()
+-            .expect("All files in a fixture are expected to have at least one line.");
+-
++        let mut path =
++            lines.next().expect("All files in a fixture are expected to have at least one line.");
+         if path.starts_with("//- minicore") {
+-            path = lines
+-                .next()
+-                .expect("A minicore line must be followed by a path.")
++            path = lines.next().expect("A minicore line must be followed by a path.")
+         }
+-
+-        path = path
+-            .strip_prefix("//- ")
+-            .expect("Path must be preceded by a //- prefix ");
+-
++        path = path.strip_prefix("//- ").expect("Path must be preceded by a //- prefix ");
+         let spl = path[1..].split('/');
+         let mut path = self.tmp_path.clone();
+-
+         let mut spl = spl.into_iter();
+         if let Some(first) = spl.next() {
+             if first == "$$CONFIG_DIR$$" {
+         for piece in spl {
+             path = path.join(piece);
+         }
+-
+         Url::parse(
+-            format!(
+-                "file://{}",
+-                path.into_string()
+-                    .replace("C:\\", "/c:/")
+-                    .replace('\\', "/")
+-            )
+-            .as_str(),
++            format!("file://{}", path.into_string().replace("C:\\", "/c:/").replace('\\', "/"))
++                .as_str(),
+         )
+         .unwrap()
+     }
+ 
+-    fn create(&mut self, fixture_path: &str, text: String) {
++    fn create(
++        &mut self,
++        fixture_path: &str,
++        text: String,
++    ) {
+         let url = self.fixture_path(fixture_path);
+-
+-        self.server
+-            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+-                text_document: TextDocumentItem {
+-                    uri: url.clone(),
+-                    language_id: "rust".to_owned(),
+-                    version: 0,
+-                    text: String::new(),
+-                },
+-            });
+-
+-        self.server
+-            .notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+-                text_document: VersionedTextDocumentIdentifier {
+-                    uri: url,
+-                    version: 0,
+-                },
+-                content_changes: vec![TextDocumentContentChangeEvent {
+-                    range: None,
+-                    range_length: None,
+-                    text,
+-                }],
+-            });
++        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
++            text_document: TextDocumentItem {
++                uri: url.clone(),
++                language_id: "rust".to_owned(),
++                version: 0,
++                text: String::new(),
++            },
++        });
++        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
++            text_document: VersionedTextDocumentIdentifier { uri: url, version: 0 },
++            content_changes: vec![TextDocumentContentChangeEvent {
++                range: None,
++                range_length: None,
++                text,
++            }],
++        });
+     }
+ 
+-    fn delete(&mut self, file_idx: usize) {
+-        self.server
+-            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+-                text_document: TextDocumentItem {
+-                    uri: self.urls[file_idx].clone(),
+-                    language_id: "rust".to_owned(),
+-                    version: 0,
+-                    text: "".to_owned(),
+-                },
+-            });
+-
++    fn delete(
++        &mut self,
++        file_idx: usize,
++    ) {
++        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
++            text_document: TextDocumentItem {
++                uri: self.urls[file_idx].clone(),
++                language_id: "rust".to_owned(),
++                version: 0,
++                text: "".to_owned(),
++            },
++        });
+         // See if deleting ratoml file will make the config of interest to return to its default value.
+-        self.server
+-            .notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
+-                text_document: TextDocumentIdentifier {
+-                    uri: self.urls[file_idx].clone(),
+-                },
+-                text: Some("".to_owned()),
+-            });
++        self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
++            text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
++            text: Some("".to_owned()),
++        });
+     }
+ 
+-    fn edit(&mut self, file_idx: usize, text: String) {
+-        self.server
+-            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+-                text_document: TextDocumentItem {
+-                    uri: self.urls[file_idx].clone(),
+-                    language_id: "rust".to_owned(),
+-                    version: 0,
+-                    text: String::new(),
+-                },
+-            });
+-
+-        self.server
+-            .notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+-                text_document: VersionedTextDocumentIdentifier {
+-                    uri: self.urls[file_idx].clone(),
+-                    version: 0,
+-                },
+-                content_changes: vec![TextDocumentContentChangeEvent {
+-                    range: None,
+-                    range_length: None,
+-                    text,
+-                }],
+-            });
++    fn edit(
++        &mut self,
++        file_idx: usize,
++        text: String,
++    ) {
++        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
++            text_document: TextDocumentItem {
++                uri: self.urls[file_idx].clone(),
++                language_id: "rust".to_owned(),
++                version: 0,
++                text: String::new(),
++            },
++        });
++        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
++            text_document: VersionedTextDocumentIdentifier {
++                uri: self.urls[file_idx].clone(),
++                version: 0,
++            },
++            content_changes: vec![TextDocumentContentChangeEvent {
++                range: None,
++                range_length: None,
++                text,
++            }],
++        });
+     }
+ 
+     fn query(
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+             }
+         })),
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         1,
+     );
+ }
+ 
+-/// Checks if client config can be modified.
+-/// FIXME @alibektas : This test is atm not valid.
+-/// Asking for client config from the client is a 2 way communication
+-/// which we cannot imitate with the current slow-tests infrastructure.
+-/// See rust-analyzer::handlers::notifications#197
+-//     #[test]
+-//     fn client_config_update() {
+-//         setup();
+-
+-//         let server = RatomlTest::new(
+-//             vec![
+-//                 r#"
+-// //- /p1/Cargo.toml
+-// [package]
+-// name = "p1"
+-// version = "0.1.0"
+-// edition = "2021"
+-// "#,
+-//                 r#"
+-// //- /p1/src/lib.rs
+-// enum Value {
+-//     Number(i32),
+-//     Text(String),
+-// }"#,
+-//             ],
+-//             vec!["p1"],
+-//             None,
+-//         );
+-
+-//         assert!(!server.query(QueryType::AssistEmitMustUse, 1));
+-
+-//         // a.notification::<DidChangeConfiguration>(DidChangeConfigurationParams {
+-//         //     settings: json!({
+-//         //         "assists" : {
+-//         //             "emitMustUse" : true
+-//         //         }
+-//         //     }),
+-//         // });
+-
+-//         assert!(server.query(QueryType::AssistEmitMustUse, 1));
+-//     }
+-
+-//     #[test]
+-//     fn ratoml_create_ratoml_basic() {
+-//         let server = RatomlTest::new(
+-//             vec![
+-//                 r#"
+-// //- /p1/Cargo.toml
+-// [package]
+-// name = "p1"
+-// version = "0.1.0"
+-// edition = "2021"
+-// "#,
+-//                 r#"
+-// //- /p1/rust-analyzer.toml
+-// assist.emitMustUse = true
+-// "#,
+-//                 r#"
+-// //- /p1/src/lib.rs
+-// enum Value {
+-//     Number(i32),
+-//     Text(String),
+-// }
+-// "#,
+-//             ],
+-//             vec!["p1"],
+-//             None,
+-//         );
+-
+-//         assert!(server.query(QueryType::AssistEmitMustUse, 2));
+-//     }
+-
+ #[test]
+ fn ratoml_user_config_detected() {
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         2,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         1,
+         InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
+     );
+-    server.create(
+-        "//- /$$CONFIG_DIR$$/rust-analyzer.toml",
+-        RatomlTest::EMIT_MUST_USE.to_owned(),
+-    );
++    server.create("//- /$$CONFIG_DIR$$/rust-analyzer.toml", RatomlTest::EMIT_MUST_USE.to_owned());
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         1,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         1,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         1,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+         InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
+     );
+-    server.create(
+-        "//- /p1/p2/rust-analyzer.toml",
+-        RatomlTest::EMIT_MUST_NOT_USE.to_owned(),
+-    );
++    server.create("//- /p1/p2/rust-analyzer.toml", RatomlTest::EMIT_MUST_NOT_USE.to_owned());
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1", "p2"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::AssistEmitMustUse,
+         3,
+     );
+ }
+ 
+-/// If a root is non-local, so we cannot find what its parent is
+-/// in our `config.local_root_parent_map`. So if any config should
+-/// apply, it must be looked for starting from the client level.
+-/// FIXME @alibektas : "locality" is according to ra that, which is simply in the file system.
+-/// This doesn't really help us with what we want to achieve here.
+-//     #[test]
+-//     fn ratoml_non_local_crates_start_inheriting_from_client() {
+-//         let server = RatomlTest::new(
+-//             vec![
+-//                 r#"
+-// //- /p1/Cargo.toml
+-// [package]
+-// name = "p1"
+-// version = "0.1.0"
+-// edition = "2021"
+-
+-// [dependencies]
+-// p2 = { path = "../p2" }
+-// "#,
+-//                 r#"
+-// //- /p1/src/lib.rs
+-// enum Value {
+-//     Number(i32),
+-//     Text(String),
+-// }
+-
+-// use p2;
+-
+-// pub fn add(left: usize, right: usize) -> usize {
+-//     p2::add(left, right)
+-// }
+-
+-// #[cfg(test)]
+-// mod tests {
+-//     use super::*;
+-
+-//     #[test]
+-//     fn it_works() {
+-//         let result = add(2, 2);
+-//         assert_eq!(result, 4);
+-//     }
+-// }"#,
+-//                 r#"
+-// //- /p2/Cargo.toml
+-// [package]
+-// name = "p2"
+-// version = "0.1.0"
+-// edition = "2021"
+-
+-// # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+-
+-// [dependencies]
+-// "#,
+-//                 r#"
+-// //- /p2/rust-analyzer.toml
+-// # DEF
+-// assist.emitMustUse = true
+-// "#,
+-//                 r#"
+-// //- /p2/src/lib.rs
+-// enum Value {
+-//     Number(i32),
+-//     Text(String),
+-// }"#,
+-//             ],
+-//             vec!["p1", "p2"],
+-//             None,
+-//         );
+-
+-//         assert!(!server.query(QueryType::AssistEmitMustUse, 5));
+-//     }
+-
+ #[test]
+ fn ratoml_in_root_is_workspace() {
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::CheckWorkspace,
+         2,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::CheckWorkspace,
+         2,
+     if skip_slow_tests() {
+         return;
+     }
+-
+     let mut server = RatomlTest::new(
+         vec![
+             r#"
+         vec!["p1"],
+         None,
+     );
+-
+     server.query(
+         InternalTestingFetchConfigOption::CheckWorkspace,
+         2,

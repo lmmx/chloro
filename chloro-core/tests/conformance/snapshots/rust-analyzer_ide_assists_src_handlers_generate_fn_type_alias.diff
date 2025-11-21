@@ -1,0 +1,195 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11167 bytes
+Chloro size:   10510 bytes
+Rustfmt size:  11167 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{AssistContext, Assists};
+ 
+-// Assist: generate_fn_type_alias_named
+-//
+-// Generate a type alias for the function with named parameters.
+-//
+-// ```
+-// unsafe fn fo$0o(n: i32) -> i32 { 42i32 }
+-// ```
+-// ->
+-// ```
+-// type ${0:FooFn} = unsafe fn(n: i32) -> i32;
+-//
+-// unsafe fn foo(n: i32) -> i32 { 42i32 }
+-// ```
+-
+-// Assist: generate_fn_type_alias_unnamed
+-//
+-// Generate a type alias for the function with unnamed parameters.
+-//
+-// ```
+-// unsafe fn fo$0o(n: i32) -> i32 { 42i32 }
+-// ```
+-// ->
+-// ```
+-// type ${0:FooFn} = unsafe fn(i32) -> i32;
+-//
+-// unsafe fn foo(n: i32) -> i32 { 42i32 }
+-// ```
+-
+-pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn generate_fn_type_alias(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let name = ctx.find_node_at_offset::<ast::Name>()?;
+     let func = &name.syntax().parent()?;
+     let func_node = ast::Fn::cast(func.clone())?;
+     let param_list = func_node.param_list()?;
+-
+     let assoc_owner = func.ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
+     // This is where we'll insert the type alias, since type aliases in `impl`s or `trait`s are not supported
+     let insertion_node = assoc_owner
+         .as_ref()
+         .map_or_else(|| func, |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax));
+-
+     for style in ParamStyle::ALL {
+         acc.add_group(
+             &GroupLabel("Generate a type alias for function...".into()),
+             },
+         );
+     }
+-
+     Some(())
+ }
+ 
+ }
+ 
+ impl ParamStyle {
+-    const ALL: &'static [ParamStyle] = &[ParamStyle::Named, ParamStyle::Unnamed];
+ 
+     fn assist_id(&self) -> AssistId {
+         let s = match self {
+             ParamStyle::Named => "generate_fn_type_alias_named",
+             ParamStyle::Unnamed => "generate_fn_type_alias_unnamed",
+         };
+-
+         AssistId::generate(s)
+     }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_assist_by_label;
+-
+     use super::*;
+-
+     #[test]
+     fn generate_fn_alias_unnamed_simple() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_unsafe() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_extern() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_type_unnamed_extern_abi() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_unsafe_extern_abi() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_generics() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_generics_bounds() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_unnamed_self() {
+         check_assist_by_label(
+             ParamStyle::Unnamed.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_simple() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_unsafe() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_extern() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_type_named_extern_abi() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_unsafe_extern_abi() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_generics() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_generics_bounds() {
+         check_assist_by_label(
+             ParamStyle::Named.label(),
+         );
+     }
+-
+     #[test]
+     fn generate_fn_alias_named_self() {
+         check_assist_by_label(

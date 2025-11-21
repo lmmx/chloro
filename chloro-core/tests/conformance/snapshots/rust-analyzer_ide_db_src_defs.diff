@@ -1,0 +1,237 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 44130 bytes
+Chloro size:   43845 bytes
+Rustfmt size:  44130 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! `NameDefinition` keeps information about the element we want to search references for.
+ //! The element is represented by `NameKind`. It's located inside some `container` and
+ //! has a `visibility`, which defines a search scope.
+ //! Note that the reference search is possible for not all of the classified items.
+ 
+-// FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
+-
+-use crate::RootDatabase;
+-use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
+-use crate::famous_defs::FamousDefs;
+ use arrayvec::ArrayVec;
+ use either::Either;
+ use hir::{
+     match_ast,
+ };
+ 
+-// FIXME: a more precise name would probably be `Symbol`?
++use crate::RootDatabase;
++use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
++use crate::famous_defs::FamousDefs;
++
+ #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
+ pub enum Definition {
+     Macro(Macro),
+ }
+ 
+ impl Definition {
+-    pub fn canonical_module_path(&self, db: &RootDatabase) -> Option<impl Iterator<Item = Module>> {
++    pub fn canonical_module_path(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<impl Iterator<Item = Module>> {
+         self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
+     }
+ 
+-    pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
++    pub fn krate(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<Crate> {
+         Some(match self {
+             Definition::Module(m) => m.krate(),
+             &Definition::Crate(it) => it,
+     /// Returns the module this definition resides in.
+     ///
+     /// As such, for modules themselves this will return the parent module.
+-    pub fn module(&self, db: &RootDatabase) -> Option<Module> {
++    pub fn module(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<Module> {
+         let module = match self {
+             Definition::Macro(it) => it.module(db),
+             Definition::Module(it) => it.parent(db)?,
+         Some(module)
+     }
+ 
+-    pub fn enclosing_definition(&self, db: &RootDatabase) -> Option<Definition> {
++    pub fn enclosing_definition(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<Definition> {
+         fn container_to_definition(container: ItemContainer) -> Option<Definition> {
+             match container {
+                 ItemContainer::Trait(it) => Some(it.into()),
+         }
+     }
+ 
+-    pub fn visibility(&self, db: &RootDatabase) -> Option<Visibility> {
++    pub fn visibility(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<Visibility> {
+         let vis = match self {
+             Definition::Field(sf) => sf.visibility(db),
+             Definition::Module(it) => it.visibility(db),
+         Some(vis)
+     }
+ 
+-    pub fn name(&self, db: &RootDatabase) -> Option<Name> {
++    pub fn name(
++        &self,
++        db: &RootDatabase,
++    ) -> Option<Name> {
+         let name = match self {
+             Definition::Macro(it) => it.name(db),
+             Definition::Field(it) => it.name(db),
+             Definition::TupleField(_) => None,
+             Definition::InlineAsmRegOrRegClass(_) | Definition::InlineAsmOperand(_) => None,
+         };
+-
+         docs.or_else(|| {
+             // docs are missing, for assoc items of trait impls try to fall back to the docs of the
+             // original item of the trait
+         .map(|(docs, range_map)| (docs, Some(range_map)))
+     }
+ 
+-    pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
++    pub fn label(
++        &self,
++        db: &RootDatabase,
++        display_target: DisplayTarget,
++    ) -> String {
+         match *self {
+             Definition::Macro(it) => it.display(db, display_target).to_string(),
+             Definition::Field(it) => it.display(db, display_target).to_string(),
+     })
+ }
+ 
+-// FIXME: IdentClass as a name no longer fits
+ #[derive(Debug)]
+ pub enum IdentClass<'db> {
+     NameClass(NameClass<'db>),
+         name: &ast::Name,
+     ) -> Option<NameClass<'db>> {
+         let _p = tracing::info_span!("NameClass::classify").entered();
+-
+         let parent = name.syntax().parent()?;
+         let definition = match_ast! {
+             match parent {
+             }
+         };
+         return Some(NameClass::Definition(definition));
+-
+         fn classify_item(
+             sema: &Semantics<'_, RootDatabase>,
+             item: ast::Item,
+             };
+             Some(definition)
+         }
+-
+         fn classify_ident_pat<'db>(
+             sema: &Semantics<'db, RootDatabase>,
+             ident_pat: ast::IdentPat,
+             }
+             Some(NameClass::Definition(Definition::Local(local)))
+         }
+-
+         fn classify_rename(
+             sema: &Semantics<'_, RootDatabase>,
+             rename: ast::Rename,
+     ) -> Option<NameClass<'db>> {
+         let _p = tracing::info_span!("NameClass::classify_lifetime", ?lifetime).entered();
+         let parent = lifetime.syntax().parent()?;
+-
+         if let Some(it) = ast::LifetimeParam::cast(parent.clone()) {
+             sema.to_def(&it).map(Into::into).map(Definition::GenericParam)
+         } else if let Some(it) = ast::Label::cast(parent) {
+ }
+ 
+ impl<'db> NameRefClass<'db> {
+-    // Note: we don't have unit-tests for this rather important function.
+-    // It is primarily exercised via goto definition tests in `ide`.
+     pub fn classify(
+         sema: &Semantics<'db, RootDatabase>,
+         name_ref: &ast::NameRef,
+     ) -> Option<NameRefClass<'db>> {
+         let _p = tracing::info_span!("NameRefClass::classify", ?name_ref).entered();
+-
+         let parent = name_ref.syntax().parent()?;
+-
+         if let Some(record_field) = ast::RecordExprField::for_field_name(name_ref)
+             && let Some((field, local, _, adt_subst)) =
+                 sema.resolve_record_field_with_substitution(&record_field)
+             };
+             return Some(res);
+         }
+-
+         if let Some(path) = ast::PathSegment::cast(parent.clone()).map(|it| it.parent_path()) {
+             if path.parent_path().is_none()
+                 && let Some(macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
+                 .resolve_path_with_subst(&path)
+                 .map(|(res, subst)| NameRefClass::Definition(res.into(), subst));
+         }
+-
+         match_ast! {
+             match parent {
+                 ast::MethodCallExpr(method_call) => {
+         }
+     }
+ }
+-
+-impl_from!(
+-    Field, Module, Function, Adt, Variant, Const, Static, Trait, TypeAlias, BuiltinType, Local,
+-    GenericParam, Label, Macro, ExternCrateDecl
+-    for Definition
+-);
+-
+ impl From<Impl> for Definition {
+     fn from(impl_: Impl) -> Self {
+         Definition::SelfType(impl_)
+ }
+ 
+ impl AsAssocItem for Definition {
+-    fn as_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<AssocItem> {
++    fn as_assoc_item(
++        self,
++        db: &dyn hir::db::HirDatabase,
++    ) -> Option<AssocItem> {
+         match self {
+             Definition::Function(it) => it.as_assoc_item(db),
+             Definition::Const(it) => it.as_assoc_item(db),
+ }
+ 
+ impl AsExternAssocItem for Definition {
+-    fn as_extern_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<ExternAssocItem> {
++    fn as_extern_assoc_item(
++        self,
++        db: &dyn hir::db::HirDatabase,
++    ) -> Option<ExternAssocItem> {
+         match self {
+             Definition::Function(it) => it.as_extern_assoc_item(db),
+             Definition::Static(it) => it.as_extern_assoc_item(db),
+ 
+ impl TryFrom<DefWithBody> for Definition {
+     type Error = ();
++
+     fn try_from(def: DefWithBody) -> Result<Self, Self::Error> {
+         match def {
+             DefWithBody::Function(it) => Ok(it.into()),
+ 
+ impl TryFrom<Definition> for GenericDef {
+     type Error = ();
++
+     fn try_from(def: Definition) -> Result<Self, Self::Error> {
+         match def {
+             Definition::Function(it) => Ok(it.into()),

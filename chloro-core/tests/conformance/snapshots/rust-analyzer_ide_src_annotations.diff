@@ -1,0 +1,199 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 37056 bytes
+Chloro size:   36400 bytes
+Rustfmt size:  37056 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ mod fn_references;
+ 
+-// Feature: Annotations
+-//
+-// Provides user with annotations above items for looking up references or impl blocks
+-// and running/debugging binaries.
+-//
+-// ![Annotations](https://user-images.githubusercontent.com/48062697/113020672-b7c34f00-917a-11eb-8f6e-858735660a0e.png)
+ #[derive(Debug, Hash, PartialEq, Eq)]
+ pub struct Annotation {
+     pub range: TextRange,
+ #[derive(Debug, Hash, PartialEq, Eq)]
+ pub enum AnnotationKind {
+     Runnable(Runnable),
+-    HasImpls { pos: FilePosition, data: Option<Vec<NavigationTarget>> },
+-    HasReferences { pos: FilePosition, data: Option<Vec<FileRange>> },
++    HasImpls {
++        pos: FilePosition,
++        data: Option<Vec<NavigationTarget>>,
++    },
++    HasReferences {
++        pos: FilePosition,
++        data: Option<Vec<FileRange>>,
++    },
+ }
+ 
+ pub struct AnnotationConfig<'a> {
+     file_id: FileId,
+ ) -> Vec<Annotation> {
+     let mut annotations = FxIndexSet::default();
+-
+     if config.annotate_runnables {
+         for runnable in runnables(db, file_id) {
+             if should_skip_runnable(&runnable.kind, config.binary_target) {
+             annotations.insert(Annotation { range, kind: AnnotationKind::Runnable(runnable) });
+         }
+     }
+-
+     let mk_ranges = |(range, focus): (_, Option<_>)| {
+         let cmd_target: TextRange = focus.unwrap_or(range);
+         let annotation_range = match config.location {
+         let target_pos = FilePosition { file_id, offset: cmd_target.start() };
+         (annotation_range, target_pos)
+     };
+-
+     visit_file_defs(&Semantics::new(db), file_id, &mut |def| {
+         let range = match def {
+             Definition::Const(konst) if config.annotate_references => {
+             }
+         }
+     });
+-
+     if config.annotate_method_references {
+         annotations.extend(find_all_methods(db, file_id).into_iter().map(|range| {
+             let (annotation_range, target_range) = mk_ranges(range);
+             }
+         }));
+     }
+-
+     annotations
+         .into_iter()
+         .sorted_by_key(|a| {
+         }
+         _ => {}
+     };
+-
+     annotation
+ }
+ 
+-fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
++fn should_skip_runnable(
++    kind: &RunnableKind,
++    binary_target: bool,
++) -> bool {
+     match kind {
+         RunnableKind::Bin => !binary_target,
+         _ => false,
+ mod tests {
+     use expect_test::{Expect, expect};
+     use ide_db::MiniCore;
+-
+     use crate::{Annotation, AnnotationConfig, fixture};
+-
+     use super::AnnotationLocation;
+-
+-    const DEFAULT_CONFIG: AnnotationConfig<'_> = AnnotationConfig {
+-        binary_target: true,
+-        annotate_runnables: true,
+-        annotate_impls: true,
+-        annotate_references: true,
+-        annotate_method_references: true,
+-        annotate_enum_variant_references: true,
+-        location: AnnotationLocation::AboveName,
+-        minicore: MiniCore::default(),
+-        filter_adjacent_derive_implementations: false,
+-    };
+-
+     fn check_with_config(
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+         expect: Expect,
+         config: &AnnotationConfig<'_>,
+     ) {
+         let (analysis, file_id) = fixture::file(ra_fixture);
+-
+         let annotations: Vec<Annotation> = analysis
+             .annotations(config, file_id)
+             .unwrap()
+             .into_iter()
+             .map(|annotation| analysis.resolve_annotation(&DEFAULT_CONFIG, annotation).unwrap())
+             .collect();
+-
+         expect.assert_debug_eq(&annotations);
+     }
+-
+-    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++    fn check(
++        #[rust_analyzer::rust_fixture] ra_fixture: &str,
++        expect: Expect,
++    ) {
+         check_with_config(ra_fixture, expect, &DEFAULT_CONFIG);
+     }
+-
+     #[test]
+     fn const_annotations() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn struct_references_annotations() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn struct_and_trait_impls_annotations() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn runnable_annotation() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn method_annotations() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_annotations() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_no_annotations_outside_module_tree() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_no_annotations_macro_struct_def() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_annotations_macro_struct_def_call_site() {
+         check(
+             "#]],
+         );
+     }
+-
+     #[test]
+     fn test_annotations_appear_above_whole_item_when_configured_to_do_so() {
+         check_with_config(

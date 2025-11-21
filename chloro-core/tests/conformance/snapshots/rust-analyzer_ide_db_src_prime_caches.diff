@@ -1,0 +1,124 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12112 bytes
+Chloro size:   12116 bytes
+Rustfmt size:  12243 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! rust-analyzer is lazy and doesn't compute anything unless asked. This
+ //! sometimes is counter productive when, for example, the first goto definition
+ //! request takes longer to compute. This module implements prepopulation of
+ //! various caches, it's not really advanced at the moment.
++
+ use std::panic::AssertUnwindSafe;
+ 
+-use hir::{db::DefDatabase, Symbol};
++use hir::{Symbol, db::DefDatabase};
+ use rustc_hash::FxHashMap;
+ use salsa::{Cancelled, Database};
+ 
+ use crate::{
++    FxIndexMap, RootDatabase,
+     base_db::{Crate, RootQueryDb},
+     symbol_index::SymbolIndex,
+-    FxIndexMap, RootDatabase,
+ };
+ 
+ /// We're indexing many crates.
+     cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync),
+ ) {
+     let _p = tracing::info_span!("parallel_prime_caches").entered();
+-
+     enum ParallelPrimeCacheWorkerProgress {
+         BeginCrateDefMap { crate_id: Crate, crate_name: Symbol },
+         EndCrateDefMap { crate_id: Crate },
+         EndModuleSymbols,
+         Cancelled(Cancelled),
+     }
+-
+     // The setup here is a bit complicated. We try to make best use of compute resources.
+     // The idea is that if we have a def map available to compute, we should do that first.
+     // This is because def map is a dependency of both import map and symbols. So if we have
+     // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
+     // Such def map will just block on the dependency, which is just wasted time. So better
+     // to compute the symbols/import map of an already computed def map in that time.
+-
+     let (reverse_deps, mut to_be_done_deps) = {
+         let all_crates = db.all_crates();
+         let to_be_done_deps = all_crates
+             .iter()
+             .map(|&krate| (krate, krate.data(db).dependencies.len() as u32))
+             .collect::<FxHashMap<_, _>>();
+-        let mut reverse_deps = all_crates
+-            .iter()
+-            .map(|&krate| (krate, Vec::new()))
+-            .collect::<FxHashMap<_, _>>();
++        let mut reverse_deps =
++            all_crates.iter().map(|&krate| (krate, Vec::new())).collect::<FxHashMap<_, _>>();
+         for &krate in &*all_crates {
+             for dep in &krate.data(db).dependencies {
+                 reverse_deps.get_mut(&dep.crate_id).unwrap().push(krate);
+         }
+         (reverse_deps, to_be_done_deps)
+     };
+-
+     let (def_map_work_sender, import_map_work_sender, symbols_work_sender, progress_receiver) = {
+         let (progress_sender, progress_receiver) = crossbeam_channel::unbounded();
+         let (def_map_work_sender, def_map_work_receiver) = crossbeam_channel::unbounded();
+             .expect("failed to spawn thread");
+         }
+ 
+-        (
+-            def_map_work_sender,
+-            import_map_work_sender,
+-            symbols_work_sender,
+-            progress_receiver,
+-        )
++        (def_map_work_sender, import_map_work_sender, symbols_work_sender, progress_receiver)
+     };
+-
+     let crate_def_maps_total = db.all_crates().len();
+     let mut crate_def_maps_done = 0;
+     let (mut crate_import_maps_total, mut crate_import_maps_done) = (0usize, 0usize);
+     let (mut module_symbols_total, mut module_symbols_done) = (0usize, 0usize);
+-
+     // an index map is used to preserve ordering so we can sort the progress report in order of
+     // "longest crate to index" first
+     let mut crates_currently_indexing =
+         FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
+-
+     for (&krate, &to_be_done_deps) in &to_be_done_deps {
+         if to_be_done_deps != 0 {
+             continue;
+         let name = crate_name(db, krate);
+         def_map_work_sender.send((krate, name)).ok();
+     }
+-
+     while crate_def_maps_done < crate_def_maps_total
+         || crate_import_maps_done < crate_import_maps_total
+         || module_symbols_done < module_symbols_total
+         };
+ 
+         match progress {
+-            ParallelPrimeCacheWorkerProgress::BeginCrateDefMap {
+-                crate_id,
+-                crate_name,
+-            } => {
++            ParallelPrimeCacheWorkerProgress::BeginCrateDefMap { crate_id, crate_name } => {
+                 crates_currently_indexing.insert(crate_id, crate_name);
+             }
+             ParallelPrimeCacheWorkerProgress::EndCrateDefMap { crate_id } => {
+     }
+ }
+ 
+-fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
++fn crate_name(
++    db: &RootDatabase,
++    krate: Crate,
++) -> Symbol {
+     krate
+         .extra_data(db)
+         .display_name

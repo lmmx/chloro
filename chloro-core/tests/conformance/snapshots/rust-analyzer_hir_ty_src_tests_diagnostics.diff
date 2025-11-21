@@ -1,0 +1,15 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3279 bytes
+Chloro size:   3278 bytes
+Rustfmt size:  3279 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::tests::check_no_mismatches;
+-
+ use super::check;
+ 
+ #[test]

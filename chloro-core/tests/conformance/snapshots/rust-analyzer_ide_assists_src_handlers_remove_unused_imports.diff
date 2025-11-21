@@ -1,0 +1,367 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 21087 bytes
+Chloro size:   20834 bytes
+Rustfmt size:  21244 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ use ide_db::text_edit::TextRange;
+ use ide_db::{
++    FxHashMap, RootDatabase,
+     defs::Definition,
+     search::{FileReference, ReferenceCategory, SearchScope},
+-    FxHashMap, RootDatabase,
+ };
+ use syntax::{
+-    ast::{self, Rename},
+     AstNode,
++    ast::{self, Rename},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: remove_unused_imports
+-//
+-// Removes any use statements in the current selection that are unused.
+-//
+-// ```
+-// struct X();
+-// mod foo {
+-//     use super::X$0;
+-// }
+-// ```
+-// ->
+-// ```
+-// struct X();
+-// mod foo {
+-// }
+-// ```
+-pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn remove_unused_imports(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     // First, grab the uses that intersect with the current selection.
+     let selected_el = match ctx.covering_element() {
+         syntax::NodeOrToken::Node(n) => n,
+         syntax::NodeOrToken::Token(t) => t.parent()?,
+     };
+-
+     // This applies to all uses that are selected, or are ancestors of our selection.
+     let uses_up = selected_el.ancestors().skip(1).filter_map(ast::Use::cast);
+     let uses_down = selected_el
+         .filter(|x| x.text_range().intersect(ctx.selection_trimmed()).is_some())
+         .filter_map(ast::Use::cast);
+     let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
+-
+     // Maps use nodes to the scope that we should search through to find
+     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
+-
+     // iterator over all unused use trees
+     let mut unused = uses
+         .into_iter()
+             }
+         })
+         .peekable();
+-
+     // Peek so we terminate early if an unused use is found. Only do the rest of the work if the user selects the assist.
+     if unused.peek().is_some() {
+         acc.add(
+     t: &hir::Trait,
+ ) -> bool {
+     !std::iter::once((Definition::Trait(*t), u.rename()))
+-        .chain(
+-            t.items(ctx.db())
+-                .into_iter()
+-                .map(|item| (item.into(), None)),
+-        )
++        .chain(t.items(ctx.db()).into_iter().map(|item| (item.into(), None)))
+         .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
+ }
+ 
+     scopes: &Vec<SearchScope>,
+ ) -> bool {
+     let mut found = false;
+-
+     for scope in scopes {
+         let mut search_non_import = |_, r: FileReference| {
+             // The import itself is a use; we must skip that.
+             break;
+         }
+     }
+-
+     found
+ }
+ 
+ /// Build a search scope spanning the given module but none of its submodules.
+-fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
++fn module_search_scope(
++    db: &RootDatabase,
++    module: hir::Module,
++) -> Vec<SearchScope> {
+     let (file_id, range) = {
+         let InFile { file_id, value } = module.definition_source(db);
+-        if let Some(InRealFile {
+-            file_id,
+-            value: call_source,
+-        }) = file_id.original_call_node(db)
+-        {
++        if let Some(InRealFile { file_id, value: call_source }) = file_id.original_call_node(db) {
+             (file_id, Some(call_source.text_range()))
+         } else {
+             (
+             )
+         }
+     };
+-
+     fn split_at_subrange(first: TextRange, second: TextRange) -> (TextRange, Option<TextRange>) {
+         let intersect = first.intersect(second);
+         if let Some(intersect) = intersect {
+             let start_range = TextRange::new(first.start(), intersect.start());
+ 
+             if intersect.end() < first.end() {
+-                (
+-                    start_range,
+-                    Some(TextRange::new(intersect.end(), first.end())),
+-                )
++                (start_range, Some(TextRange::new(intersect.end(), first.end())))
+             } else {
+                 (start_range, None)
+             }
+             (first, None)
+         }
+     }
+-
+     let mut scopes = Vec::new();
+     if let Some(range) = range {
+         let mut ranges = vec![range];
+     } else {
+         scopes.push(SearchScope::single_file(file_id));
+     }
+-
+     scopes
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn remove_unused() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_is_precise() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn trait_name_use_is_use() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn trait_item_use_is_use() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn renamed_trait_item_use_is_use() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn renamed_underscore_trait_item_use_is_use() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn dont_remove_used() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_in_braces() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_under_cursor() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_multi_use_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_nested_first_item() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_auto_remove_brace_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_comma_after_auto_remove_brace() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_nested_all_unused() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_glob() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_braced_glob() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn remove_unused_fixes_nested_self() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn dont_remove_used_glob() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn only_remove_from_selection() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_several_files() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn use_in_submodule_doesnt_count() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn use_in_submodule_file_doesnt_count() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn use_as_alias() {
+         check_assist_not_applicable(
+ fn test(_: Bar) {}
+ "#,
+         );
+-
+         check_assist(
+             remove_unused_imports,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_unused_macro() {
+         check_assist(
+ fn main() {}
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             remove_unused_imports,
+             r#"
+ }
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             remove_unused_imports,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_conflict_derive_macro() {
+         check_assist_not_applicable(
+ struct S;
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             remove_unused_imports,
+             r#"
+ struct S;
+ "#,
+         );
+-
+         check_assist_not_applicable(
+             remove_unused_imports,
+             r#"

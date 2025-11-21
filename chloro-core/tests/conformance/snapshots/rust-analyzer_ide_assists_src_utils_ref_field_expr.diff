@@ -1,0 +1,69 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5111 bytes
+Chloro size:   5130 bytes
+Rustfmt size:  5132 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This module contains a helper for converting a field access expression into a
+ //! path expression. This is used when destructuring a tuple or struct.
+ //!
+ //! It determines whether to deref the new expression and/or wrap it in parentheses,
+ //! based on the parent of the existing expression.
++
+ use syntax::{
+-    ast::{self, make, FieldExpr, MethodCallExpr},
+     AstNode, T,
++    ast::{self, FieldExpr, MethodCallExpr, make},
+ };
+ 
+ use crate::AssistContext;
+     field_expr: &FieldExpr,
+ ) -> (ast::Expr, RefData) {
+     let s = field_expr.syntax();
+-    let mut ref_data = RefData {
+-        needs_deref: true,
+-        needs_parentheses: true,
+-    };
++    let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
+     let mut target_node = field_expr.clone().into();
+-
+     let parent = match s.parent().map(ast::Expr::cast) {
+         Some(Some(parent)) => parent,
+         Some(None) => {
+         }
+         None => return (target_node, ref_data),
+     };
+-
+     match parent {
+         ast::Expr::ParenExpr(it) => {
+             // already parens in place -> don't replace
+             ref_data.needs_parentheses = false;
+         }
+     };
+-
+     (target_node, ref_data)
+ }
+ 
+ 
+ impl RefData {
+     /// Derefs `expr` and wraps it in parens if necessary
+-    pub(crate) fn wrap_expr(&self, mut expr: ast::Expr) -> ast::Expr {
++    pub(crate) fn wrap_expr(
++        &self,
++        mut expr: ast::Expr,
++    ) -> ast::Expr {
+         if self.needs_deref {
+             expr = make::expr_prefix(T![*], expr).into();
+         }
+-
+         if self.needs_parentheses {
+             expr = make::expr_paren(expr).into();
+         }
+-
+         expr
+     }
+ }

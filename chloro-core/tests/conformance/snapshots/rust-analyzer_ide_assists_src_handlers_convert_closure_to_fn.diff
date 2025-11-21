@@ -1,0 +1,311 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 36442 bytes
+Chloro size:   35584 bytes
+Rustfmt size:  36442 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::assist_context::{AssistContext, Assists};
+ 
+-// Assist: convert_closure_to_fn
+-//
+-// This converts a closure to a freestanding function, changing all captures to parameters.
+-//
+-// ```
+-// # //- minicore: copy
+-// # struct String;
+-// # impl String {
+-// #     fn new() -> Self {}
+-// #     fn push_str(&mut self, s: &str) {}
+-// # }
+-// fn main() {
+-//     let mut s = String::new();
+-//     let closure = |$0a| s.push_str(a);
+-//     closure("abc");
+-// }
+-// ```
+-// ->
+-// ```
+-// # struct String;
+-// # impl String {
+-// #     fn new() -> Self {}
+-// #     fn push_str(&mut self, s: &str) {}
+-// # }
+-// fn main() {
+-//     let mut s = String::new();
+-//     fn closure(a: &str, s: &mut String) {
+-//         s.push_str(a)
+-//     }
+-//     closure("abc", &mut s);
+-// }
+-// ```
+-pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_closure_to_fn(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
+     if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
+         // Not inside the parameter list.
+     let closure_ty = ctx.sema.type_of_expr(&closure.clone().into())?;
+     let callable = closure_ty.original.as_callable(ctx.db())?;
+     let closure_ty = closure_ty.original.as_closure()?;
+-
+     let mut ret_ty = callable.return_type();
+     let mut closure_mentioned_generic_params = ret_ty.generic_params(ctx.db());
+-
+     let mut params = callable
+         .params()
+         .into_iter()
+             }
+         })
+         .collect::<Option<Vec<_>>>()?;
+-
+     let mut body = closure.body()?.clone_for_update();
+     let mut is_gen = false;
+     let mut is_async = closure.async_token().is_some();
+             wrap_body_in_block = false;
+         }
+     };
+-
+     acc.add(
+         AssistId::refactor_rewrite("convert_closure_to_fn"),
+         "Convert closure to fn",
+     if mentioned_generic_params.is_empty() {
+         return (None, None);
+     }
+-
+     let mut mentioned_names = mentioned_generic_params
+         .iter()
+         .filter_map(|param| match param {
+             hir::GenericParam::LifetimeParam(_) => None,
+         })
+         .collect::<FxHashSet<_>>();
+-
+     let Some((container_params, container_where, container)) =
+         closure.syntax().ancestors().find_map(ast::AnyHasGenericParams::cast).and_then(
+             |container| {
+     } else {
+         None
+     };
+-
+     let all_params = container_params
+         .type_or_const_params()
+         .chain(containing_impl.iter().flat_map(|(param_list, _)| param_list.type_or_const_params()))
+         .filter_map(|param| Some(param.name()?.text().to_smolstr()))
+         .collect::<FxHashSet<_>>();
+-
+     // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
+     // by checking if it is mentioned by another parameter we need to include.
+     let mut reached_fixpoint = false;
+             }
+         }
+     }
+-
+     // Order matters here (for beauty). First the outer impl parameters, then the direct container's.
+     let include_params = containing_impl
+         .iter()
+         .collect::<Vec<_>>();
+     let where_clause =
+         (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
+-
+     // FIXME: Consider generic parameters that do not appear in params/return type/captures but
+     // written explicitly inside the closure.
+     (Some(make::generic_param_list(include_params)), where_clause)
+         }
+         expr
+     }
+-
+     let capture_name = make::expr_path(make::path_from_text(&capture_name.text()));
+     if capture_kind == CaptureKind::Move || is_ref {
+         return capture_name;
+     make::expr_prefix(T![*], capture_name).into()
+ }
+ 
+-fn capture_as_arg(ctx: &AssistContext<'_>, capture: &ClosureCapture<'_>) -> ast::Expr {
++fn capture_as_arg(
++    ctx: &AssistContext<'_>,
++    capture: &ClosureCapture<'_>,
++) -> ast::Expr {
+     let place = parse_expr_from_str(&capture.display_place_source_code(ctx.db()), ctx.edition())
+         .expect("`display_place_source_code()` produced an invalid expr");
+     let needs_mut = match capture.kind() {
+     if captures_as_args.is_empty() {
+         return;
+     }
+-
+     match closure_name {
+         Some(closure_name) => {
+             let Some(closure_def) = ctx.sema.to_def(closure_name) else { return };
+         skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
+     });
+     let has_existing_args = args.args().next().is_some();
+-
+     let FileRangeWrapper { file_id, range } = ctx.sema.original_range_opt(args.syntax())?;
+     let first_arg_indent = args.args().next().map(|it| it.indent_level());
+     let arg_list_indent = args.indent_level();
+     }
+     text = text[..text.len() - 1].trim_end();
+     let offset = TextSize::new(text.len().try_into().unwrap());
+-
+     let mut to_insert = String::new();
+     if has_existing_args && !has_trailing_comma {
+         to_insert.push(',');
+     if has_trailing_comma {
+         to_insert.push(',');
+     }
+-
+     builder.edit_file(file_id.file_id(ctx.db()));
+     builder.insert(offset, to_insert);
+-
+     Some(())
+ }
+ 
+     expr
+ }
+ 
+-// FIXME:
+-// Somehow handle the case of `let Struct { field, .. } = capture`.
+-// Replacing `capture` with `capture_field` won't work.
+ fn expr_of_pat(pat: ast::Pat) -> Option<ast::Expr> {
+     'find_expr: {
+         for ancestor in pat.syntax().ancestors() {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn handles_unique_captures() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn multiple_capture_usages() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn changes_names_of_place() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn self_with_fields_does_not_change_to_this() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn replaces_async_closure_with_async_fn() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn replaces_async_block_with_async_fn() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     #[ignore = "FIXME: we do not do type inference for gen blocks yet"]
+     fn replaces_gen_block_with_gen_fn() {
+ "#,
+         );
+     }
+-
+     #[test]
+     fn leaves_block_in_place() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn wraps_in_block_if_needed() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closure_in_closure() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closure_in_block() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn finds_pat_for_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn with_existing_params() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn with_existing_params_newlines() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn with_existing_params_trailing_comma() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closure_using_generic_params() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closure_in_stmt() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unique_and_imm() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn only_applicable_in_param_list() {
+         check_assist_not_applicable(

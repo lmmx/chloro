@@ -1,0 +1,32 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 13462 bytes
+Chloro size:   13472 bytes
+Rustfmt size:  13462 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use expect_test::{expect, Expect};
++use expect_test::{Expect, expect};
+ use hir_def::db::DefDatabase;
+-use hir_expand::{files::InFileWrapper, HirFileId};
++use hir_expand::{HirFileId, files::InFileWrapper};
+ use itertools::Itertools;
+ use span::TextRange;
+ use syntax::{AstNode, AstPtr};
+     mir::MirSpan,
+     test_db::TestDB,
+ };
+-
+ use super::{setup_tracing, visit_module};
+ 
+-fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
++fn check_closure_captures(
++    #[rust_analyzer::rust_fixture] ra_fixture: &str,
++    expect: Expect,
++) {
+     let _tracing = setup_tracing();
+     let (db, file_id) = TestDB::with_single_file(ra_fixture);
+     crate::attach_db(&db, || {

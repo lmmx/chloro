@@ -1,0 +1,589 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 131517 bytes
+Chloro size:   130956 bytes
+Rustfmt size:  131517 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! This module provides a MIR interpreter, which is used in const eval.
+ 
+ use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};
+ 
++use Address::*;
+ use base_db::{Crate, target::TargetLoadError};
+ use either::Either;
+ use hir_def::{
+     traits::FnTrait,
+     utils::detect_variant_from_bytes,
+ };
+-
+ use super::{
+     AggregateKind, BasicBlockId, BinOp, CastKind, LocalId, MirBody, MirLowerError, MirSpan,
+     Operand, OperandKind, Place, PlaceElem, ProjectionElem, ProjectionStore, Rvalue, StatementKind,
+ };
+ 
+ mod shim;
++
+ #[cfg(test)]
+ mod tests;
+ 
+ }
+ 
+ impl<'db> VTableMap<'db> {
+-    const OFFSET: usize = 1000; // We should add some offset to ids to make 0 (null) an invalid id.
++    // We should add some offset to ids to make 0 (null) an invalid id.
+ 
+-    fn id(&mut self, ty: Ty<'db>) -> usize {
++    fn id(
++        &mut self,
++        ty: Ty<'db>,
++    ) -> usize {
+         if let Some(it) = self.ty_to_id.get(&ty) {
+             return *it;
+         }
+         id
+     }
+ 
+-    pub(crate) fn ty(&self, id: usize) -> Result<'db, Ty<'db>> {
++    pub(crate) fn ty(
++        &self,
++        id: usize,
++    ) -> Result<'db, Ty<'db>> {
+         id.checked_sub(VTableMap::OFFSET)
+             .and_then(|id| self.id_to_ty.get(id).copied())
+             .ok_or(MirEvalError::InvalidVTableId(id))
+     }
+ 
+-    fn ty_of_bytes(&self, bytes: &[u8]) -> Result<'db, Ty<'db>> {
++    fn ty_of_bytes(
++        &self,
++        bytes: &[u8],
++    ) -> Result<'db, Ty<'db>> {
+         let id = from_bytes!(usize, bytes);
+         self.ty(id)
+     }
+         self.keys.len() - 1
+     }
+ 
+-    fn get_key(&mut self, key: usize) -> Result<'static, u128> {
++    fn get_key(
++        &mut self,
++        key: usize,
++    ) -> Result<'static, u128> {
+         let r = self.keys.get(key).ok_or_else(|| {
+             MirEvalError::UndefinedBehavior(format!("Getting invalid tls key {key}"))
+         })?;
+         Ok(*r)
+     }
+ 
+-    fn set_key(&mut self, key: usize, value: u128) -> Result<'static, ()> {
++    fn set_key(
++        &mut self,
++        key: usize,
++        value: u128,
++    ) -> Result<'static, ()> {
+         let r = self.keys.get_mut(key).ok_or_else(|| {
+             MirEvalError::UndefinedBehavior(format!("Setting invalid tls key {key}"))
+         })?;
+     cached_fn_mut_trait_func: Option<FunctionId>,
+     cached_fn_once_trait_func: Option<FunctionId>,
+     crate_id: Crate,
+-    // FIXME: This is a workaround, see the comment on `interpret_mir`
+     assert_placeholder_ty_is_unused: bool,
+     /// A general limit on execution, to prevent non terminating programs from breaking r-a main process
+     execution_limit: usize,
+     Invalid(usize),
+ }
+ 
+-use Address::*;
+-
+ #[derive(Debug, Clone, Copy)]
+ struct Interval {
+     addr: Address,
+ }
+ 
+ impl Interval {
+-    fn new(addr: Address, size: usize) -> Self {
++    fn new(
++        addr: Address,
++        size: usize,
++    ) -> Self {
+         Self { addr, size }
+     }
+ 
+-    fn get<'a, 'db>(&self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
++    fn get<'a, 'db>(
++        &self,
++        memory: &'a Evaluator<'db>,
++    ) -> Result<'db, &'a [u8]> {
+         memory.read_memory(self.addr, self.size)
+     }
+ 
+-    fn write_from_bytes<'db>(&self, memory: &mut Evaluator<'db>, bytes: &[u8]) -> Result<'db, ()> {
++    fn write_from_bytes<'db>(
++        &self,
++        memory: &mut Evaluator<'db>,
++        bytes: &[u8],
++    ) -> Result<'db, ()> {
+         memory.write_memory(self.addr, bytes)
+     }
+ 
+         memory.copy_from_interval(self.addr, interval)
+     }
+ 
+-    fn slice(self, range: Range<usize>) -> Interval {
++    fn slice(
++        self,
++        range: Range<usize>,
++    ) -> Interval {
+         Interval { addr: self.addr.offset(range.start), size: range.len() }
+     }
+ }
+ 
+ impl<'db> IntervalAndTy<'db> {
+-    fn get<'a>(&self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
++    fn get<'a>(
++        &self,
++        memory: &'a Evaluator<'db>,
++    ) -> Result<'db, &'a [u8]> {
+         memory.read_memory(self.interval.addr, self.interval.size)
+     }
+ 
+ }
+ 
+ impl IntervalOrOwned {
+-    fn get<'a, 'db>(&'a self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
++    fn get<'a, 'db>(
++        &'a self,
++        memory: &'a Evaluator<'db>,
++    ) -> Result<'db, &'a [u8]> {
+         Ok(match self {
+             IntervalOrOwned::Owned(o) => o,
+             IntervalOrOwned::Borrowed(b) => b.get(memory)?,
+ }
+ 
+ #[cfg(target_pointer_width = "64")]
+-const STACK_OFFSET: usize = 1 << 60;
++
+ #[cfg(target_pointer_width = "64")]
+-const HEAP_OFFSET: usize = 1 << 59;
+ 
+ #[cfg(target_pointer_width = "32")]
+-const STACK_OFFSET: usize = 1 << 30;
++
+ #[cfg(target_pointer_width = "32")]
+-const HEAP_OFFSET: usize = 1 << 29;
+ 
+ impl Address {
+     #[allow(clippy::double_parens)]
+         }
+     }
+ 
+-    fn map(&self, f: impl FnOnce(usize) -> usize) -> Address {
++    fn map(
++        &self,
++        f: impl FnOnce(usize) -> usize,
++    ) -> Address {
+         match self {
+             Stack(it) => Stack(f(*it)),
+             Heap(it) => Heap(f(*it)),
+         }
+     }
+ 
+-    fn offset(&self, offset: usize) -> Address {
++    fn offset(
++        &self,
++        offset: usize,
++    ) -> Address {
+         self.map(|it| it + offset)
+     }
+ }
+     /// then use this type of error.
+     UndefinedBehavior(String),
+     Panic(String),
+-    // FIXME: This should be folded into ConstEvalError?
+     MirLowerError(FunctionId, MirLowerError<'db>),
+     MirLowerErrorForClosure(InternedClosureId, MirLowerError<'db>),
+     TypeIsUnsized(Ty<'db>, &'static str),
+     NotSupported(String),
+     InvalidConst(Const<'db>),
+-    InFunction(
+-        Box<MirEvalError<'db>>,
+-        Vec<(Either<FunctionId, InternedClosureId>, MirSpan, DefWithBodyId)>,
+-    ),
++    InFunction(Box<MirEvalError<'db>>, Vec<(Either<FunctionId, InternedClosureId>, MirSpan, DefWithBodyId)>),
+     ExecutionLimitExceeded,
+     StackOverflow,
+     /// FIXME: Fold this into InternalError
+ }
+ 
+ impl std::fmt::Debug for MirEvalError<'_> {
+-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut std::fmt::Formatter<'_>,
++    ) -> std::fmt::Result {
+         match self {
+             Self::ConstEvalError(arg0, arg1) => {
+                 f.debug_tuple("ConstEvalError").field(arg0).field(arg1).finish()
+ }
+ 
+ impl<'db> DropFlags<'db> {
+-    fn add_place(&mut self, p: Place<'db>, store: &ProjectionStore<'db>) {
++    fn add_place(
++        &mut self,
++        p: Place<'db>,
++        store: &ProjectionStore<'db>,
++    ) {
+         if p.iterate_over_parents(store).any(|it| self.need_drop.contains(&it)) {
+             return;
+         }
+         self.need_drop.insert(p);
+     }
+ 
+-    fn remove_place(&mut self, p: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
++    fn remove_place(
++        &mut self,
++        p: &Place<'db>,
++        store: &ProjectionStore<'db>,
++    ) -> bool {
+         // FIXME: replace parents with parts
+         if let Some(parent) = p.iterate_over_parents(store).find(|it| self.need_drop.contains(it)) {
+             self.need_drop.remove(&parent);
+     pub fn stdout(&self) -> Cow<'_, str> {
+         String::from_utf8_lossy(&self.stdout)
+     }
++
+     pub fn stderr(&self) -> Cow<'_, str> {
+         String::from_utf8_lossy(&self.stderr)
+     }
+ pub fn interpret_mir<'db>(
+     db: &'db dyn HirDatabase,
+     body: Arc<MirBody<'db>>,
+-    // FIXME: This is workaround. Ideally, const generics should have a separate body (issue #7434), but now
+-    // they share their body with their parent, so in MIR lowering we have locals of the parent body, which
+-    // might have placeholders. With this argument, we (wrongly) assume that every placeholder type has
+-    // a zero size, hoping that they are all outside of our current body. Even without a fix for #7434, we can
+-    // (and probably should) do better here, for example by excluding bindings outside of the target expression.
+     assert_placeholder_ty_is_unused: bool,
+     trait_env: Option<Arc<TraitEnvironment<'db>>>,
+ ) -> Result<'db, (Result<'db, Const<'db>>, MirOutput)> {
+ }
+ 
+ #[cfg(test)]
+-const EXECUTION_LIMIT: usize = 100_000;
++
+ #[cfg(not(test))]
+-const EXECUTION_LIMIT: usize = 10_000_000;
+ 
+ impl<'db> Evaluator<'db> {
+     pub fn new(
+         self.infcx.interner
+     }
+ 
+-    fn place_addr(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Address> {
++    fn place_addr(
++        &self,
++        p: &Place<'db>,
++        locals: &Locals<'db>,
++    ) -> Result<'db, Address> {
+         Ok(self.place_addr_and_ty_and_metadata(p, locals)?.0)
+     }
+ 
+-    fn place_interval(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
++    fn place_interval(
++        &self,
++        p: &Place<'db>,
++        locals: &Locals<'db>,
++    ) -> Result<'db, Interval> {
+         let place_addr_and_ty = self.place_addr_and_ty_and_metadata(p, locals)?;
+         Ok(Interval {
+             addr: place_addr_and_ty.0,
+         self.cached_ptr_size
+     }
+ 
+-    fn projected_ty(&self, ty: Ty<'db>, proj: PlaceElem<'db>) -> Ty<'db> {
++    fn projected_ty(
++        &self,
++        ty: Ty<'db>,
++        proj: PlaceElem<'db>,
++    ) -> Ty<'db> {
+         let pair = (ty, proj);
+         if let Some(r) = self.projected_ty_cache.borrow().get(&pair) {
+             return *r;
+     ) -> Result<'db, (Address, Ty<'db>, Option<IntervalOrOwned>)> {
+         let mut addr = locals.ptr[p.local].addr;
+         let mut ty: Ty<'db> = locals.body.locals[p.local].ty;
+-        let mut metadata: Option<IntervalOrOwned> = None; // locals are always sized
++        let mut metadata: Option<IntervalOrOwned> = None;
++        // locals are always sized
+         for proj in p.projection.lookup(&locals.body.projection_store) {
+             let prev_ty = ty;
+             ty = self.projected_ty(ty, proj.clone());
+         Ok((addr, ty, metadata))
+     }
+ 
+-    fn layout(&self, ty: Ty<'db>) -> Result<'db, Arc<Layout>> {
++    fn layout(
++        &self,
++        ty: Ty<'db>,
++    ) -> Result<'db, Arc<Layout>> {
+         if let Some(x) = self.layout_cache.borrow().get(&ty) {
+             return Ok(x.clone());
+         }
+         Ok(r)
+     }
+ 
+-    fn layout_adt(&self, adt: AdtId, subst: GenericArgs<'db>) -> Result<'db, Arc<Layout>> {
++    fn layout_adt(
++        &self,
++        adt: AdtId,
++        subst: GenericArgs<'db>,
++    ) -> Result<'db, Arc<Layout>> {
+         self.layout(Ty::new_adt(self.interner(), adt, subst))
+     }
+ 
+-    fn place_ty<'a>(&'a self, p: &Place<'db>, locals: &'a Locals<'db>) -> Result<'db, Ty<'db>> {
++    fn place_ty<'a>(
++        &'a self,
++        p: &Place<'db>,
++        locals: &'a Locals<'db>,
++    ) -> Result<'db, Ty<'db>> {
+         Ok(self.place_addr_and_ty_and_metadata(p, locals)?.1)
+     }
+ 
+-    fn operand_ty(&self, o: &Operand<'db>, locals: &Locals<'db>) -> Result<'db, Ty<'db>> {
++    fn operand_ty(
++        &self,
++        o: &Operand<'db>,
++        locals: &Locals<'db>,
++    ) -> Result<'db, Ty<'db>> {
+         Ok(match &o.kind {
+             OperandKind::Copy(p) | OperandKind::Move(p) => self.place_ty(p, locals)?,
+             OperandKind::Constant { konst: _, ty } => *ty,
+         })
+     }
+ 
+-    fn compute_discriminant(&self, ty: Ty<'db>, bytes: &[u8]) -> Result<'db, i128> {
++    fn compute_discriminant(
++        &self,
++        ty: Ty<'db>,
++        bytes: &[u8],
++    ) -> Result<'db, i128> {
+         let layout = self.layout(ty)?;
+         let TyKind::Adt(adt_def, _) = ty.kind() else {
+             return Ok(0);
+         }
+         let target_ty = self.coerce_unsized_look_through_fields(target_ty, for_ptr)?;
+         let current_ty = self.coerce_unsized_look_through_fields(current_ty, for_ptr)?;
+-
+         self.unsizing_ptr_from_addr(target_ty, current_ty, addr)
+     }
+ 
+ 
+     fn construct_with_layout(
+         &mut self,
+-        size: usize, // Not necessarily equal to variant_layout.size
++        size: usize,
+         variant_layout: &Layout,
+         tag: Option<(usize, usize, i128)>,
+         values: impl Iterator<Item = IntervalOrOwned>,
+         Ok(Interval::new(addr, size))
+     }
+ 
+-    fn eval_place(&mut self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
++    fn eval_place(
++        &mut self,
++        p: &Place<'db>,
++        locals: &Locals<'db>,
++    ) -> Result<'db, Interval> {
+         let addr = self.place_addr(p, locals)?;
+         Ok(Interval::new(
+             addr,
+         ))
+     }
+ 
+-    fn read_memory(&self, addr: Address, size: usize) -> Result<'db, &[u8]> {
++    fn read_memory(
++        &self,
++        addr: Address,
++        size: usize,
++    ) -> Result<'db, &[u8]> {
+         if size == 0 {
+             return Ok(&[]);
+         }
+             .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory read".to_owned()))
+     }
+ 
+-    fn write_memory_using_ref(&mut self, addr: Address, size: usize) -> Result<'db, &mut [u8]> {
++    fn write_memory_using_ref(
++        &mut self,
++        addr: Address,
++        size: usize,
++    ) -> Result<'db, &mut [u8]> {
+         let (mem, pos) = match addr {
+             Stack(it) => (&mut self.stack, it),
+             Heap(it) => (&mut self.heap, it),
+             .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory write".to_owned()))
+     }
+ 
+-    fn write_memory(&mut self, addr: Address, r: &[u8]) -> Result<'db, ()> {
++    fn write_memory(
++        &mut self,
++        addr: Address,
++        r: &[u8],
++    ) -> Result<'db, ()> {
+         if r.is_empty() {
+             return Ok(());
+         }
+         }
+     }
+ 
+-    fn copy_from_interval(&mut self, addr: Address, r: Interval) -> Result<'db, ()> {
++    fn copy_from_interval(
++        &mut self,
++        addr: Address,
++        r: Interval,
++    ) -> Result<'db, ()> {
+         if r.size == 0 {
+             return Ok(());
+         }
+-
+         let oob = || MirEvalError::UndefinedBehavior("out of bounds memory write".to_owned());
+-
+         match (addr, r.addr) {
+             (Stack(dst), Stack(src)) => {
+                 if self.stack.len() < src + r.size || self.stack.len() < dst + r.size {
+                 )));
+             }
+         }
+-
+         Ok(())
+     }
+ 
+         }
+     }
+ 
+-    fn heap_allocate(&mut self, size: usize, align: usize) -> Result<'db, Address> {
++    fn heap_allocate(
++        &mut self,
++        size: usize,
++        align: usize,
++    ) -> Result<'db, Address> {
+         if !align.is_power_of_two() || align > 10000 {
+             return Err(MirEvalError::UndefinedBehavior(format!("Alignment {align} is invalid")));
+         }
+         Ok(Address::Heap(pos))
+     }
+ 
+-    fn detect_fn_trait(&self, def: FunctionId) -> Option<FnTrait> {
++    fn detect_fn_trait(
++        &self,
++        def: FunctionId,
++    ) -> Option<FnTrait> {
+         let def = Some(def);
+         if def == self.cached_fn_trait_func {
+             Some(FnTrait::Fn)
+         }
+     }
+ 
+-    fn eval_static(&mut self, st: StaticId, locals: &Locals<'db>) -> Result<'db, Address> {
++    fn eval_static(
++        &mut self,
++        st: StaticId,
++        locals: &Locals<'db>,
++    ) -> Result<'db, Address> {
+         if let Some(o) = self.static_locations.get(&st) {
+             return Ok(*o);
+         };
+         Ok(addr)
+     }
+ 
+-    fn const_eval_discriminant(&self, variant: EnumVariantId) -> Result<'db, i128> {
++    fn const_eval_discriminant(
++        &self,
++        variant: EnumVariantId,
++    ) -> Result<'db, i128> {
+         let r = self.db.const_eval_discriminant(variant);
+         match r {
+             Ok(r) => Ok(r),
+             // we can ignore drop in them.
+             return Ok(());
+         };
+-
+         let generic_args = GenericArgs::new_from_iter(self.interner(), [ty.into()]);
+         if let Ok(MirOrDynIndex::Mir(body)) =
+             self.get_mir_or_dyn_index(drop_fn, generic_args, locals, span)
+         Ok(())
+     }
+ 
+-    fn write_to_stdout(&mut self, interval: Interval) -> Result<'db, ()> {
++    fn write_to_stdout(
++        &mut self,
++        interval: Interval,
++    ) -> Result<'db, ()> {
+         self.stdout.extend(interval.get(self)?.to_vec());
+         Ok(())
+     }
+ 
+-    fn write_to_stderr(&mut self, interval: Interval) -> Result<'db, ()> {
++    fn write_to_stderr(
++        &mut self,
++        interval: Interval,
++    ) -> Result<'db, ()> {
+         self.stderr.extend(interval.get(self)?.to_vec());
+         Ok(())
+     }
+     Ok(std::string::String::from_utf8_lossy(evaluator.read_memory(addr, size)?).into_owned())
+ }
+ 
+-pub fn pad16(it: &[u8], is_signed: bool) -> [u8; 16] {
++pub fn pad16(
++    it: &[u8],
++    is_signed: bool,
++) -> [u8; 16] {
+     let is_negative = is_signed && it.last().unwrap_or(&0) > &127;
+     let mut res = [if is_negative { 255 } else { 0 }; 16];
+     res[..it.len()].copy_from_slice(it);
+ }
+ 
+ impl IntValue {
+-    fn from_bytes(bytes: &[u8], is_signed: bool) -> Self {
++    fn from_bytes(
++        bytes: &[u8],
++        is_signed: bool,
++    ) -> Self {
+         match (bytes.len(), is_signed) {
+             (1, false) => Self::U8(u8::from_le_bytes(bytes.try_into().unwrap())),
+             (1, true) => Self::I8(i8::from_le_bytes(bytes.try_into().unwrap())),
+         }
+         for_each_int_type! { m, [] }
+     }
+-
+-    for_each_int_type!(checked_int_op, [checked_add]);
+-    for_each_int_type!(checked_int_op, [checked_sub]);
+-    for_each_int_type!(checked_int_op, [checked_div]);
+-    for_each_int_type!(checked_int_op, [checked_rem]);
+-    for_each_int_type!(checked_int_op, [checked_mul]);
+-
+-    for_each_int_type!(int_bit_shifts, [checked_shl]);
+-    for_each_int_type!(int_bit_shifts, [checked_shr]);
+ }
+ 
+ impl std::ops::BitAnd for IntValue {
+     type Output = Self;
+-    for_each_int_type!(unchecked_int_op, [bitand, &]);
+ }
++
+ impl std::ops::BitOr for IntValue {
+     type Output = Self;
+-    for_each_int_type!(unchecked_int_op, [bitor, |]);
+ }
++
+ impl std::ops::BitXor for IntValue {
+     type Output = Self;
+-    for_each_int_type!(unchecked_int_op, [bitxor, ^]);
+ }

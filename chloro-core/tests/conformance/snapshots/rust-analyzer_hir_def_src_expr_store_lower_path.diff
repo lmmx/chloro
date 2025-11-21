@@ -1,0 +1,114 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 11991 bytes
+Chloro size:   11703 bytes
+Rustfmt size:  11991 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Transforms syntax into `Path` objects, ideally with accounting for hygiene
+ 
+-#[cfg(test)]
+-mod tests;
+-
+ use std::iter;
+ 
+-use crate::expr_store::{
+-    lower::{ExprCollector, generics::ImplTraitLowerFn},
+-    path::NormalPath,
+-};
+-
+ use hir_expand::{
+     mod_path::{ModPath, PathKind, resolve_crate_root},
+     name::{AsName, Name},
+     ast::{self, AstNode, HasGenericArgs},
+ };
+ 
++use crate::expr_store::{
++    lower::{ExprCollector, generics::ImplTraitLowerFn},
++    path::NormalPath,
++};
+ use crate::{
+     expr_store::path::{GenericArg, GenericArgs, Path},
+     type_ref::TypeRef,
+ };
+ 
+ #[cfg(test)]
+-thread_local! {
+-    /// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
+-    pub(super) static SEGMENT_LOWERING_MAP: std::cell::RefCell<rustc_hash::FxHashMap<ast::PathSegment, usize>> = std::cell::RefCell::default();
+-}
+-
++mod tests;
++#[cfg(test)]
++/// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
+ /// Converts an `ast::Path` to `Path`. Works with use trees.
+ /// It correctly handles `$crate` based path from macro call.
+-// If you modify the logic of the lowering, make sure to check if `hir_segment_to_ast_segment()`
+-// also needs an update.
+ pub(super) fn lower_path(
+     collector: &mut ExprCollector<'_>,
+     mut path: ast::Path,
+         generic_args.resize(segments.len(), None);
+         generic_args.reverse();
+     }
+-
+     if segments.is_empty() && kind == PathKind::Plain && type_anchor.is_none() {
+         // plain empty paths don't exist, this means we got a single `self` segment as our path
+         kind = PathKind::SELF;
+     }
+-
+     // handle local_inner_macros :
+     // Basically, even in rustc it is quite hacky:
+     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
+             }
+         }
+     }
+-
+     #[cfg(test)]
+     {
+         ast_segments.reverse();
+         SEGMENT_LOWERING_MAP
+             .with_borrow_mut(|map| map.extend(ast_segments.into_iter().zip(ast_segments_offset..)));
+     }
+-
+     if let Some(last_segment_args @ Some(GenericArgs { has_self_type: true, .. })) =
+         generic_args.last_mut()
+     {
+         // and this causes panics in hir-ty lowering.
+         *last_segment_args = None;
+     }
+-
+     let mod_path = Interned::new(ModPath::from_segments(kind, segments));
+     if type_anchor.is_none() && generic_args.is_empty() {
+         return Some(Path::BarePath(mod_path));
+             generic_args: generic_args.into_boxed_slice(),
+         })));
+     }
+-
+     fn qualifier(path: &ast::Path) -> Option<ast::Path> {
+         if let Some(q) = path.qualifier() {
+             return Some(q);
+ 
+ /// This function finds the AST segment that corresponds to the HIR segment
+ /// with index `segment_idx` on the path that is lowered from `path`.
+-pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<ast::PathSegment> {
++pub fn hir_segment_to_ast_segment(
++    path: &ast::Path,
++    segment_idx: u32,
++) -> Option<ast::PathSegment> {
+     // Too tightly coupled to `lower_path()`, but unfortunately we cannot decouple them,
+     // as keeping source maps for all paths segments will have a severe impact on memory usage.
+-
+     let mut segments = path.segments();
+     if let Some(ast::PathSegmentKind::Type { trait_ref: Some(trait_ref), .. }) =
+         segments.clone().next().and_then(|it| it.kind())
+         return find_segment(trait_ref.path()?.segments().chain(segments), segment_idx);
+     }
+     return find_segment(segments, segment_idx);
+-
+     fn find_segment(
+         segments: impl Iterator<Item = ast::PathSegment>,
+         segment_idx: u32,

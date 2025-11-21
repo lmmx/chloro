@@ -1,0 +1,188 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10817 bytes
+Chloro size:   10034 bytes
+Rustfmt size:  10923 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ pub enum HlTag {
+     Symbol(SymbolKind),
+-
+     AttributeBracket,
+     BoolLiteral,
+     BuiltinType,
+     Punctuation(HlPunct),
+     StringLiteral,
+     UnresolvedReference,
+-
+-    // For things which don't have a specific highlight.
+     None,
+ }
+ 
+-// Don't forget to adjust the feature description in crates/ide/src/syntax_highlighting.rs.
+-// And make sure to use the lsp strings used when converting to the protocol in crates\rust-analyzer\src\semantic_tokens.rs, not the names of the variants here.
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ #[repr(u8)]
+ pub enum HlMod {
+     /// Used for associated items.
+-    Associated = 0,
++    Associated,
+     /// Used with keywords like `async` and `await`.
+     Async,
+     /// Used to differentiate individual elements within attribute calls.
+     Static,
+     /// Used for items in traits and trait impls.
+     Trait,
+-    // Keep this last!
+     /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
+     Unsafe,
+ }
+ }
+ 
+ impl fmt::Display for HlTag {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(self.as_str(), f)
+     }
+ }
+ 
+ impl HlMod {
+-    const ALL: &'static [HlMod; HlMod::Unsafe as usize + 1] = &[
+-        HlMod::Associated,
+-        HlMod::Async,
+-        HlMod::Attribute,
+-        HlMod::Callable,
+-        HlMod::Const,
+-        HlMod::Consuming,
+-        HlMod::ControlFlow,
+-        HlMod::CrateRoot,
+-        HlMod::DefaultLibrary,
+-        HlMod::Definition,
+-        HlMod::Documentation,
+-        HlMod::Injected,
+-        HlMod::IntraDocLink,
+-        HlMod::Library,
+-        HlMod::Macro,
+-        HlMod::Mutable,
+-        HlMod::ProcMacro,
+-        HlMod::Public,
+-        HlMod::Reference,
+-        HlMod::Static,
+-        HlMod::Trait,
+-        HlMod::Unsafe,
+-    ];
+ 
+     fn as_str(self) -> &'static str {
+         match self {
+     }
+ 
+     fn mask(self) -> u32 {
+-        debug_assert!(
+-            Self::ALL.len() <= 32,
+-            "HlMod::mask is not enough to cover all variants"
+-        );
++        debug_assert!(Self::ALL.len() <= 32, "HlMod::mask is not enough to cover all variants");
+         1 << (self as u32)
+     }
+ }
+ 
+ impl fmt::Display for HlMod {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         fmt::Display::fmt(self.as_str(), f)
+     }
+ }
+ 
+ impl fmt::Display for Highlight {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         self.tag.fmt(f)?;
+         for modifier in self.mods.iter() {
+             f.write_char('.')?;
+ 
+ impl Highlight {
+     pub(crate) fn new(tag: HlTag) -> Highlight {
+-        Highlight {
+-            tag,
+-            mods: HlMods::default(),
+-        }
++        Highlight { tag, mods: HlMods::default() }
+     }
++
+     pub fn is_empty(&self) -> bool {
+         self.tag == HlTag::None && self.mods.is_empty()
+     }
+ impl ops::BitOr<HlMod> for HlTag {
+     type Output = Highlight;
+ 
+-    fn bitor(self, rhs: HlMod) -> Highlight {
++    fn bitor(
++        self,
++        rhs: HlMod,
++    ) -> Highlight {
+         Highlight::new(self) | rhs
+     }
+ }
+ 
+ impl ops::BitOrAssign<HlMod> for HlMods {
+-    fn bitor_assign(&mut self, rhs: HlMod) {
++    fn bitor_assign(
++        &mut self,
++        rhs: HlMod,
++    ) {
+         self.0 |= rhs.mask();
+     }
+ }
+ 
+ impl ops::BitOrAssign<HlMod> for Highlight {
+-    fn bitor_assign(&mut self, rhs: HlMod) {
++    fn bitor_assign(
++        &mut self,
++        rhs: HlMod,
++    ) {
+         self.mods |= rhs;
+     }
+ }
+ impl ops::BitOr<HlMod> for Highlight {
+     type Output = Highlight;
+ 
+-    fn bitor(mut self, rhs: HlMod) -> Highlight {
++    fn bitor(
++        mut self,
++        rhs: HlMod,
++    ) -> Highlight {
+         self |= rhs;
+         self
+     }
+         self.0 == 0
+     }
+ 
+-    pub fn contains(self, m: HlMod) -> bool {
++    pub fn contains(
++        self,
++        m: HlMod,
++    ) -> bool {
+         self.0 & m.mask() == m.mask()
+     }
+ 
+     pub fn iter(self) -> impl Iterator<Item = HlMod> {
+-        HlMod::ALL
+-            .iter()
+-            .copied()
+-            .filter(move |it| self.0 & it.mask() == it.mask())
++        HlMod::ALL.iter().copied().filter(move |it| self.0 & it.mask() == it.mask())
+     }
+ }

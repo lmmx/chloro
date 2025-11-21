@@ -1,0 +1,194 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15808 bytes
+Chloro size:   15556 bytes
+Rustfmt size:  15808 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
+ 
+-// Diagnostic: unlinked-file
+-//
+-// This diagnostic is shown for files that are not included in any crate, or files that are part of
+-// crates rust-analyzer failed to discover. The file will not have IDE features available.
+ pub(crate) fn unlinked_file(
+     ctx: &DiagnosticsContext<'_>,
+     acc: &mut Vec<Diagnostic>,
+     } else {
+         "This file is not included anywhere in the module tree, so rust-analyzer can't offer IDE services."
+     };
+-
+     let message = format!(
+         "{message}\n\nIf you're intentionally working on unowned files, you can silence this warning by adding \"unlinked-file\" to rust-analyzer.diagnostics.disabled in your settings."
+     );
+-
+     let mut unused = true;
+-
+     if fixes.is_none() {
+         // If we don't have a fix, the unlinked-file diagnostic is not
+         // actionable. This generally means that rust-analyzer hasn't
+         // since we're only highlighting a small region.
+         unused = false;
+     }
+-
+     acc.push(
+         Diagnostic::new(
+             DiagnosticCode::Ra("unlinked-file", Severity::WeakWarning),
+ ) -> Option<Vec<Assist>> {
+     // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
+     // suggest that as a fix.
+-
+     let db = ctx.sema.db;
+-
+     let source_root = ctx.sema.db.file_source_root(file_id).source_root_id(db);
+     let source_root = ctx.sema.db.source_root(source_root).source_root(db);
+-
+     let our_path = source_root.path_for_file(&file_id)?;
+     let parent = our_path.parent()?;
+     let (module_name, _) = our_path.name_and_extension()?;
+         }
+         _ => (parent, module_name.to_owned()),
+     };
+-
+     // check crate roots, i.e. main.rs, lib.rs, ...
+     let relevant_crates = db.relevant_crates(file_id);
+     'crates: for &krate in &*relevant_crates {
+             trigger_range,
+         );
+     }
+-
+     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
+-
+     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
+     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
+         let parent = path.parent()?;
+             );
+         }
+     }
+-
+     None
+ }
+ 
+     fn is_outline_mod(item: &ast::Item) -> bool {
+         matches!(item, ast::Item::Module(m) if m.item_list().is_none())
+     }
+-
+     let mod_decl = format!("mod {new_mod_name};");
+     let pub_mod_decl = format!("pub mod {new_mod_name};");
+     let pub_crate_mod_decl = format!("pub(crate) mod {new_mod_name};");
+-
+     let mut mod_decl_builder = TextEdit::builder();
+     let mut pub_mod_decl_builder = TextEdit::builder();
+     let mut pub_crate_mod_decl_builder = TextEdit::builder();
+-
+     let mut items = match &source {
+         ModuleSource::SourceFile(it) => it.items(),
+         ModuleSource::Module(it) => it.item_list()?.items(),
+         ModuleSource::BlockExpr(_) => return None,
+     };
+-
+     // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's
+     // probably `#[cfg]`d out).
+     for item in items.clone() {
+             return None;
+         }
+     }
+-
+     // If there are existing `mod m;` items, append after them (after the first group of them, rather).
+     match items.clone().skip_while(|item| !is_outline_mod(item)).take_while(is_outline_mod).last() {
+         Some(last) => {
+             }
+         }
+     }
+-
+     Some(vec![
+         fix(
+             "add_mod_declaration",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix, check_fixes, check_no_fix};
+-
+     #[test]
+     fn unlinked_file_prepend_first_item() {
+         cov_mark::check!(unlinked_file_prepend_before_first_item);
+             ],
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_append_mod() {
+         cov_mark::check!(unlinked_file_append_to_existing_mods);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_insert_in_empty_file() {
+         cov_mark::check!(unlinked_file_empty_file);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_insert_in_empty_file_mod_file() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_old_style_modrs() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_new_style_mod() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_with_cfg_off() {
+         cov_mark::check!(unlinked_file_skip_fix_when_mod_already_exists);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_with_cfg_on() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_insert_into_inline_simple() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_insert_into_inline_simple_modrs() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unlinked_file_insert_into_inline_simple_modrs_main() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn include_macro_works() {
+         check_diagnostics(

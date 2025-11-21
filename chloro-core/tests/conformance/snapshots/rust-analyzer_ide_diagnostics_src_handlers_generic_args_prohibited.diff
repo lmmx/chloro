@@ -1,0 +1,223 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 16831 bytes
+Chloro size:   16655 bytes
+Rustfmt size:  16831 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use hir::GenericArgsProhibitedReason;
+ use ide_db::assists::Assist;
+ use ide_db::source_change::SourceChange;
+ use ide_db::text_edit::TextEdit;
+-use syntax::{ast, AstNode, TextRange};
++use syntax::{AstNode, TextRange, ast};
+ 
+-use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+ 
+-// Diagnostic: generic-args-prohibited
+-//
+-// This diagnostic is shown when generic arguments are provided for a type that does not accept
+-// generic arguments.
+ pub(crate) fn generic_args_prohibited(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::GenericArgsProhibited,
+     format!("generic arguments are not allowed on {kind}")
+ }
+ 
+-fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option<Vec<Assist>> {
++fn fixes(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::GenericArgsProhibited,
++) -> Option<Vec<Assist>> {
+     let file_id = d.args.file_id.file_id()?;
+     let syntax = d.args.to_node(ctx.sema.db);
+     let range = match &syntax {
+ mod tests {
+     // This diagnostic was the first to be emitted in ty lowering, so the tests here also test
+     // diagnostics in ty lowering in general (which is why there are so many of them).
+-
+     use crate::tests::{check_diagnostics, check_fix};
+-
+     #[test]
+     fn primitives() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn modules() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn type_parameters() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn fn_like_generic_args() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn fn_signature() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn const_static_type() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn fix() {
+         check_fix(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn in_fields() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_generics() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn assoc_items() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn const_param_ty() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn generic_defaults() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn impl_self_ty() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn impl_trait() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn type_alias() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_record_expr() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_record_pat() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_tuple_struct_pat() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_path_pat() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn in_path_expr() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn const_param_and_static() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn local_variable() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn enum_variant() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn dyn_trait() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn regression_18768() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn enum_variant_type_ns() {
+         check_diagnostics(

@@ -1,0 +1,448 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 53759 bytes
+Chloro size:   53296 bytes
+Rustfmt size:  53759 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ };
+ 
+ use crate::{AssistContext, Assists};
+-
+ use super::remove_unused_param::range_to_remove;
+ 
+-// Assist: extract_module
+-//
+-// Extracts a selected region as separate module. All the references, visibility and imports are
+-// resolved.
+-//
+-// ```
+-// $0fn foo(name: i32) -> i32 {
+-//     name + 1
+-// }$0
+-//
+-// fn bar(name: i32) -> i32 {
+-//     name + 2
+-// }
+-// ```
+-// ->
+-// ```
+-// mod modname {
+-//     pub(crate) fn foo(name: i32) -> i32 {
+-//         name + 1
+-//     }
+-// }
+-//
+-// fn bar(name: i32) -> i32 {
+-//     name + 2
+-// }
+-// ```
+-pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn extract_module(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     if ctx.has_empty_selection() {
+         return None;
+     }
+-
+     let node = ctx.covering_element();
+     let node = match node {
+         syntax::NodeOrToken::Node(n) => n,
+         syntax::NodeOrToken::Token(t) => t.parent()?,
+     };
+-
+     let mut curr_parent_module: Option<ast::Module> = None;
+     if let Some(mod_syn_opt) = node.ancestors().find(|it| ast::Module::can_cast(it.kind())) {
+         curr_parent_module = ast::Module::cast(mod_syn_opt);
+     }
+-
+     let selection_range = ctx.selection_trimmed();
+     let (mut module, module_text_range) = if let Some(item) = ast::Item::cast(node.clone()) {
+         let module = extract_single_target(&item);
+     if module.body_items.is_empty() {
+         return None;
+     }
+-
+     let mut old_item_indent = module.body_items[0].indent_level();
+     let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
+-
+     // If the selection is inside impl block, we need to place new module outside impl block,
+     // as impl blocks cannot contain modules
+-
+     let mut impl_parent: Option<ast::Impl> = None;
+     let mut impl_child_count: usize = 0;
+     if let Some(parent_assoc_list) = module.body_items[0].syntax().parent()
+         old_item_indent = impl_.indent_level();
+         impl_parent = Some(impl_);
+     }
+-
+     acc.add(
+         AssistId::refactor_extract("extract_module"),
+         "Extract Module",
+     } else {
+         use_items.iter().chain(body_items).cloned().collect()
+     };
+-
+     let items = items.into_iter().map(|it| it.reset_indent().indent(IndentLevel(1))).collect_vec();
+     let module_body = make::item_list(Some(items));
+-
+     let module_name = make::name(name);
+     make::mod_(module_name, Some(module_body))
+ }
+         None,
+         make::use_tree(make::join_paths(vec![super_path, node_path]), None, None, false),
+     );
+-
+     ast::Item::from(use_)
+ }
+ 
+         &self,
+         ctx: &AssistContext<'_>,
+         replace_range: TextRange,
+-    ) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>)
+-    {
++    ) -> (FxHashMap<FileId, Vec<(TextRange, String)>>, Vec<SyntaxNode>, FxHashMap<TextSize, ast::Use>) {
+         let mut adt_fields = Vec::new();
+         let mut refs: FxHashMap<FileId, Vec<(TextRange, String)>> = FxHashMap::default();
+         // use `TextSize` as key to avoid repeated use stmts
+         let mut use_stmts_to_be_inserted = FxHashMap::default();
+-
+         //Here impl is not included as each item inside impl will be tied to the parent of
+         //implementing block(a struct, enum, etc), if the parent is in selected module, it will
+         //get updated by ADT section given below or if it is not, then we dont need to do any operation
+-
+         for item in &self.body_items {
+             match_ast! {
+                 match (item.syntax()) {
+                 }
+             }
+         }
+-
+         (refs, adt_fields, use_stmts_to_be_inserted)
+     }
+ 
+         };
+         let out_of_sel = |node: &SyntaxNode| !replace_range.contains_range(node.text_range());
+         let mut use_stmts_set = FxHashSet::default();
+-
+         for (file_id, refs) in node_def.usages(&ctx.sema).all() {
+             let source_file = ctx.sema.parse(file_id);
+             let usages = refs.into_iter().filter_map(|FileReference { range, .. }| {
+         }
+     }
+ 
+-    fn change_visibility(&mut self, record_fields: Vec<SyntaxNode>) {
++    fn change_visibility(
++        &mut self,
++        record_fields: Vec<SyntaxNode>,
++    ) {
+         let (mut replacements, record_field_parents, impls) =
+             get_replacements_for_visibility_change(&mut self.body_items, false);
+-
+         let mut impl_items = impls
+             .into_iter()
+             .flat_map(|impl_| impl_.syntax().descendants())
+             .filter_map(ast::Item::cast)
+             .collect_vec();
+-
+         let (mut impl_item_replacements, _, _) =
+             get_replacements_for_visibility_change(&mut impl_items, true);
+-
+         replacements.append(&mut impl_item_replacements);
+-
+         for (_, field_owner) in record_field_parents {
+             for desc in field_owner.descendants().filter_map(ast::RecordField::cast) {
+                 let is_record_field_present =
+                 }
+             }
+         }
+-
+         for (vis, syntax) in replacements {
+             let item = syntax.children_with_tokens().find(|node_or_token| {
+                 match node_or_token.kind() {
+     ) -> Vec<TextRange> {
+         let mut imports_to_remove = vec![];
+         let mut node_set = FxHashSet::default();
+-
+         for item in self.body_items.clone() {
+             item.syntax()
+                 .descendants()
+                     }
+                 })
+         }
+-
+         imports_to_remove
+     }
+ 
+         let selection_range = ctx.selection_trimmed();
+         let file_id = ctx.file_id();
+         let usage_res = def.usages(&ctx.sema).in_scope(&SearchScope::single_file(file_id)).all();
+-
+         let file = ctx.sema.parse(file_id);
+-
+         // track uses which does not exists in `Use`
+         let mut uses_exist_in_sel = false;
+         let mut uses_exist_out_sel = false;
+                 }
+             }
+         }
+-
+         let (def_in_mod, def_out_sel) = check_def_in_mod_and_out_sel(
+             def,
+             ctx,
+             selection_range,
+             file_id.file_id(ctx.db()),
+         );
+-
+         // Find use stmt that use def in current file
+         let use_stmt: Option<ast::Use> = usage_res
+             .into_iter()
+         let use_stmt_not_in_sel = use_stmt.as_ref().is_some_and(|use_stmt| {
+             !selection_range.contains_range(use_stmt.syntax().text_range())
+         });
+-
+         let mut use_tree_paths: Option<Vec<ast::Path>> = None;
+         //Exists inside and outside selection
+         // - Use stmt for item is present -> get the use_tree_str and reconstruct the path in new
+         //outside:
+         //- Def is inside: Nothing to import
+         //- Def is outside: Import it inside with super
+-
+         //Exists inside selection but not outside -> Check for the import of it in original module,
+         //get the use_tree_str, reconstruct the use stmt in new module
+-
+         let mut import_path_to_be_removed: Option<TextRange> = None;
+         if uses_exist_in_sel && uses_exist_out_sel {
+             //Changes to be made only inside new module
+                 self.use_items.insert(0, super_use_node);
+             }
+         }
+-
+         if let Some(mut use_tree_paths) = use_tree_paths {
+             use_tree_paths.reverse();
+ 
+                 self.use_items.insert(0, ast::Item::from(use_));
+             }
+         }
+-
+         import_path_to_be_removed
+     }
+ 
+                 return Some((use_tree_str, None));
+             }
+         }
+-
+         None
+     }
+ }
+             }
+         };
+     }
+-
+     match def {
+         Definition::Module(x) => {
+             let source = x.definition_source(ctx.db());
+         Definition::TypeAlias(x) => check_item!(x),
+         _ => {}
+     }
+-
+     (false, false)
+ }
+ 
+     let mut replacements = Vec::new();
+     let mut record_field_parents = Vec::new();
+     let mut impls = Vec::new();
+-
+     for item in items {
+         if !is_clone_for_updated {
+             *item = item.clone_for_update();
+             _ => (),
+         }
+     }
+-
+     (replacements, record_field_parents, impls)
+ }
+ 
+             }
+             None
+         })?;
+-
+     Some(use_tree_str)
+ }
+ 
+-fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
++fn add_change_vis(
++    vis: Option<ast::Visibility>,
++    node_or_token_opt: Option<syntax::SyntaxElement>,
++) {
+     if vis.is_none()
+         && let Some(node_or_token) = node_or_token_opt
+     {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_not_applicable_without_selection() {
+         check_assist_not_applicable(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_extract_module() {
+         check_assist(
+             ",
+         );
+     }
+-
+     #[test]
+     fn test_extract_module_for_function_only() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_extract_module_for_impl_having_corresponding_adt_in_selection() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_import_resolve_when_its_only_inside_selection() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_import_resolve_when_its_inside_and_outside_selection_and_source_not_in_same_mod() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_import_resolve_when_its_inside_and_outside_selection_and_source_is_in_same_mod() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+-    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection()
+-    {
++    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection() {
+         check_assist(
+             extract_module,
+             r"
+             ",
+         )
+     }
+-
+     #[test]
+-    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super()
+-     {
++    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super() {
+         check_assist(
+             extract_module,
+             r"
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_import_resolve_for_trait_bounds_on_function() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_extract_module_for_module() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_extract_module_with_multiple_files() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_extract_module_macro_rules() {
+         check_assist(
+             ",
+         );
+     }
+-
+     #[test]
+     fn test_do_not_apply_visibility_modifier_to_trait_impl_items() {
+         check_assist(
+             ",
+         )
+     }
+-
+     #[test]
+     fn test_if_inside_impl_block_generate_module_outside() {
+         check_assist(
+             }
+         ",
+         );
+-
+         check_assist(
+             extract_module,
+             r"struct A {}
+         ",
+         )
+     }
+-
+     #[test]
+     fn test_if_inside_impl_block_generate_module_outside_but_impl_block_having_one_child() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn test_issue_11766() {
+         //https://github.com/rust-lang/rust-analyzer/issues/11766
+         ",
+         )
+     }
+-
+     #[test]
+     fn test_issue_12790() {
+         check_assist(
+         ",
+         )
+     }
+-
+     #[test]
+     fn test_merge_multiple_intersections() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_remove_import_path_inside_selection() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_miss_select_item() {
+         check_assist(

@@ -1,0 +1,128 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10661 bytes
+Chloro size:   10417 bytes
+Rustfmt size:  10661 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: extract_type_alias
+-//
+-// Extracts the selected type as a type alias.
+-//
+-// ```
+-// struct S {
+-//     field: $0(u8, u8, u8)$0,
+-// }
+-// ```
+-// ->
+-// ```
+-// type $0Type = (u8, u8, u8);
+-//
+-// struct S {
+-//     field: Type,
+-// }
+-// ```
+-pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn extract_type_alias(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     if ctx.has_empty_selection() {
+         return None;
+     }
+-
+     let ty = ctx.find_node_at_range::<ast::Type>()?;
+     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
+     let assoc_owner =
+         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
+     );
+     let target = ty.syntax().text_range();
+-
+     acc.add(
+         AssistId::refactor_extract("extract_type_alias"),
+         "Extract type as type alias",
+             _ => false,
+         }
+     }
+-
+     let mut generics = Vec::new();
+     walk_ty(ty, &mut |ty| {
+         match ty {
+         ast::GenericParam::LifetimeParam(_) => 0,
+         ast::GenericParam::TypeParam(_) => 1,
+     });
+-
+     Some(generics).filter(|it| !it.is_empty())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_not_applicable_without_selection() {
+         check_assist_not_applicable(
+             ",
+         );
+     }
+-
+     #[test]
+     fn test_simple_types() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_generic_type_arg() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_inner_type_arg() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_extract_inner_type() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn extract_from_impl_or_trait() {
+         // When invoked in an impl/trait, extracted type alias should be placed next to the
+             "#,
+         );
+     }
+-
+     #[test]
+     fn indentation() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn generics() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn issue_11197() {
+         check_assist(

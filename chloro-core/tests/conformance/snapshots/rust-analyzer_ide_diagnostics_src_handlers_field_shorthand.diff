@@ -1,0 +1,90 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5746 bytes
+Chloro size:   5740 bytes
+Rustfmt size:  5860 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Suggests shortening `Foo { field: field }` to `Foo { field }` in both
+ //! expressions and patterns.
+ 
+-use ide_db::text_edit::TextEdit;
+ use ide_db::RootDatabase;
+-use ide_db::{source_change::SourceChange, EditionedFileId, FileRange};
+-use syntax::{ast, match_ast, AstNode, SyntaxNode};
++use ide_db::text_edit::TextEdit;
++use ide_db::{EditionedFileId, FileRange, source_change::SourceChange};
++use syntax::{AstNode, SyntaxNode, ast, match_ast};
+ 
+-use crate::{fix, Diagnostic, DiagnosticCode};
++use crate::{Diagnostic, DiagnosticCode, fix};
+ 
+ pub(crate) fn field_shorthand(
+     db: &RootDatabase,
+             Diagnostic::new(
+                 DiagnosticCode::Clippy("redundant_field_names"),
+                 "Shorthand struct initialization",
+-                FileRange {
+-                    file_id: vfs_file_id,
+-                    range: field_range,
+-                },
++                FileRange { file_id: vfs_file_id, range: field_range },
+             )
+             .with_fixes(Some(vec![fix(
+                 "use_expr_field_shorthand",
+             Diagnostic::new(
+                 DiagnosticCode::Clippy("redundant_field_names"),
+                 "Shorthand struct pattern",
+-                FileRange {
+-                    file_id: vfs_file_id,
+-                    range: field_range,
+-                },
++                FileRange { file_id: vfs_file_id, range: field_range },
+             )
+             .with_fixes(Some(vec![fix(
+                 "use_pat_field_shorthand",
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_fix};
+-
+     #[test]
+     fn test_check_expr_field_shorthand() {
+         check_diagnostics(
+ fn main() { A { 0: 0 }; }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct A { a: &'static str }
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct A { a: &'static str, b: &'static str }
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_check_pat_field_shorthand() {
+         check_diagnostics(
+ fn f(a: A) { let A { 0: 0 } = a; }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct A { a: &'static str }
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct A { a: &'static str, b: &'static str }

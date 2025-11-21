@@ -1,0 +1,416 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 15453 bytes
+Chloro size:   14644 bytes
+Rustfmt size:  15544 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::source_change::SourceChangeBuilder;
+ use syntax::{
+-    ast::{self, make::tokens::literal, IsString},
+     AstToken,
++    ast::{self, IsString, make::tokens::literal},
+ };
+ 
+ use crate::{
+-    utils::{required_hashes, string_prefix, string_suffix},
+     AssistContext, AssistId, Assists,
++    utils::{required_hashes, string_prefix, string_suffix},
+ };
+ 
+-// Assist: make_raw_string
+-//
+-// Adds `r#` to a plain string literal.
+-//
+-// ```
+-// fn main() {
+-//     "Hello,$0 World!";
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     r#"Hello, World!"#;
+-// }
+-// ```
+-pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn make_raw_string(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
+     if token.is_raw() {
+         return None;
+     )
+ }
+ 
+-// Assist: make_usual_string
+-//
+-// Turns a raw string into a plain string.
+-//
+-// ```
+-// fn main() {
+-//     r#"Hello,$0 "World!""#;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     "Hello, \"World!\"";
+-// }
+-// ```
+-pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn make_usual_string(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
+     if !token.is_raw() {
+         return None;
+     )
+ }
+ 
+-// Assist: add_hash
+-//
+-// Adds a hash to a raw string literal.
+-//
+-// ```
+-// fn main() {
+-//     r#"Hello,$0 World!"#;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     r##"Hello, World!"##;
+-// }
+-// ```
+-pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_hash(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
+     if !token.is_raw() {
+         return None;
+     })
+ }
+ 
+-// Assist: remove_hash
+-//
+-// Removes a hash from a raw string literal.
+-//
+-// ```
+-// fn main() {
+-//     r#"Hello,$0 World!"#;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     r"Hello, World!";
+-// }
+-// ```
+-pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn remove_hash(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
+     if !token.is_raw() {
+         return None;
+     }
+-
+     let text = token.text();
+-
+-    let existing_hashes = text
+-        .chars()
+-        .skip(token.raw_prefix().len())
+-        .take_while(|&it| it == '#')
+-        .count();
+-
++    let existing_hashes =
++        text.chars().skip(token.raw_prefix().len()).take_while(|&it| it == '#').count();
+     let text_range = token.syntax().text_range();
+     let internal_text = &text[token.text_range_between_quotes()? - text_range.start()];
+-
+     if existing_hashes == required_hashes(internal_text) {
+         cov_mark::hit!(cant_remove_required_hash);
+         return None;
+     }
+-
+-    acc.add(
+-        AssistId::refactor_rewrite("remove_hash"),
+-        "Remove #",
+-        text_range,
+-        |edit| {
+-            let suffix = string_suffix(text).unwrap_or_default();
+-            let prefix = token.raw_prefix();
+-            let wrap_range = prefix.len() + 1..text.len() - suffix.len() - 1;
+-            let new_str = [prefix, &text[wrap_range], suffix].concat();
+-            replace_literal(&token, &new_str, edit, ctx);
+-        },
+-    )
++    acc.add(AssistId::refactor_rewrite("remove_hash"), "Remove #", text_range, |edit| {
++        let suffix = string_suffix(text).unwrap_or_default();
++        let prefix = token.raw_prefix();
++        let wrap_range = prefix.len() + 1..text.len() - suffix.len() - 1;
++        let new_str = [prefix, &text[wrap_range], suffix].concat();
++        replace_literal(&token, &new_str, edit, ctx);
++    })
+ }
+ 
+ fn replace_literal(
+     let node = token.parent().expect("no parent token");
+     let mut edit = builder.make_editor(&node);
+     let new_literal = literal(new);
+-
+     edit.replace(token, mut_token(new_literal));
+-
+     builder.add_file_edits(ctx.vfs_file_id(), edit);
+ }
+ 
+ mod tests {
+     use super::*;
+     use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
+-
+     #[test]
+     fn make_raw_string_target() {
+         check_assist_target(
+             r#""random\nstring""#,
+         );
+     }
+-
+     #[test]
+     fn make_raw_string_works() {
+         check_assist(
+ "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_works_inside_macros() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_byte_string_works() {
+         check_assist(
+ "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_c_string_works() {
+         check_assist(
+ "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_hashes_inside_works() {
+         check_assist(
+ "####,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_closing_hashes_inside_works() {
+         check_assist(
+ "####,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_nothing_to_unescape_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_has_suffix() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn make_raw_string_not_works_on_partial_string() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_not_works_on_partial_string() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn add_hash_target() {
+         check_assist_target(
+             r#"r"random string""#,
+         );
+     }
+-
+     #[test]
+     fn add_hash_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn add_hash_works_for_c_str() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn add_hash_has_suffix_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn add_more_hash_works() {
+         check_assist(
+             "###,
+         )
+     }
+-
+     #[test]
+     fn add_more_hash_has_suffix_works() {
+         check_assist(
+             "###,
+         )
+     }
+-
+     #[test]
+     fn add_hash_not_works() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn remove_hash_target() {
+         check_assist_target(
+             r##"r#"random string"#"##,
+         );
+     }
+-
+     #[test]
+     fn remove_hash_works() {
+         check_assist(
+             r#"fn f() { let s = r"random string"; }"#,
+         )
+     }
+-
+     #[test]
+     fn remove_hash_works_for_c_str() {
+         check_assist(
+             r#"fn f() { let s = cr"random string"; }"#,
+         )
+     }
+-
+     #[test]
+     fn remove_hash_has_suffix_works() {
+         check_assist(
+             r#"fn f() { let s = r"random string"i32; }"#,
+         )
+     }
+-
+     #[test]
+     fn cant_remove_required_hash() {
+         cov_mark::check!(cant_remove_required_hash);
+             "##,
+         )
+     }
+-
+     #[test]
+     fn remove_more_hash_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn remove_more_hash_has_suffix_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn remove_hash_does_not_work() {
+         check_assist_not_applicable(remove_hash, r#"fn f() { let s = $0"random string"; }"#);
+     }
+-
+     #[test]
+     fn remove_hash_no_hash_does_not_work() {
+         check_assist_not_applicable(remove_hash, r#"fn f() { let s = $0r"random string"; }"#);
+     }
+-
+     #[test]
+     fn make_usual_string_target() {
+         check_assist_target(
+             r##"r#"random string"#"##,
+         );
+     }
+-
+     #[test]
+     fn make_usual_string_works() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_for_c_str() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_has_suffix_works() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_with_quote_works() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_more_hash_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_more_hash_has_suffix_works() {
+         check_assist(
+             "##,
+         )
+     }
+-
+     #[test]
+     fn make_usual_string_not_works() {
+         check_assist_not_applicable(

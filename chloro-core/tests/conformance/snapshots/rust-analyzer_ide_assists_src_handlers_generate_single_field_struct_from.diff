@@ -1,0 +1,244 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 27066 bytes
+Chloro size:   26493 bytes
+Rustfmt size:  27358 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ast::make;
+ use hir::next_solver::{DbInterner, TypingMode};
+ use hir::{HasCrate, ModuleDef, Semantics};
+ use ide_db::{
+-    famous_defs::FamousDefs, helpers::mod_path_to_ast,
++    RootDatabase, famous_defs::FamousDefs, helpers::mod_path_to_ast,
+     imports::import_assets::item_for_path_search, use_trivial_constructor::use_trivial_constructor,
+-    RootDatabase,
+ };
+ use syntax::syntax_editor::{Element, Position};
+ use syntax::{
+-    ast::{self, edit::AstNodeEdit, AstNode, HasAttrs, HasGenericParams, HasName},
+     TokenText,
++    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit},
+ };
+ 
+ use crate::{
+-    assist_context::{AssistContext, Assists},
+     AssistId,
++    assist_context::{AssistContext, Assists},
+ };
+ 
+-// Assist: generate_single_field_struct_from
+-//
+-// Implement From for a single field structure, ignore trivial types.
+-//
+-// ```
+-// # //- minicore: from, phantom_data
+-// use core::marker::PhantomData;
+-// struct $0Foo<T> {
+-//     id: i32,
+-//     _phantom_data: PhantomData<T>,
+-// }
+-// ```
+-// ->
+-// ```
+-// use core::marker::PhantomData;
+-// struct Foo<T> {
+-//     id: i32,
+-//     _phantom_data: PhantomData<T>,
+-// }
+-//
+-// impl<T> From<i32> for Foo<T> {
+-//     fn from(id: i32) -> Self {
+-//         Self { id, _phantom_data: PhantomData }
+-//     }
+-// }
+-// ```
+ pub(crate) fn generate_single_field_struct_from(
+     acc: &mut Assists,
+     ctx: &AssistContext<'_>,
+         tracing::debug!(?adt);
+         return None;
+     };
+-
+     let sema = &ctx.sema;
+     let (names, types) = get_fields(&strukt)?;
+-
+     let module = sema.scope(strukt.syntax())?.module();
+     let constructors = make_constructors(ctx, module, &types);
+-
+     if constructors.iter().filter(|expr| expr.is_none()).count() != 1 {
+         tracing::debug!(?constructors);
+         return None;
+         tracing::debug!(?strukt, ?main_field_i);
+         return None;
+     }
+-
+-    let main_field_name = names
+-        .as_ref()
+-        .map_or(TokenText::borrowed("value"), |names| {
+-            names[main_field_i].text()
+-        });
++    let main_field_name =
++        names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
+     let main_field_ty = types[main_field_i].clone();
+-
+     acc.add(
+         AssistId::generate("generate_single_field_struct_from"),
+         "Generate single field `From`",
+             let indent = strukt.indent_level();
+             let ty_where_clause = strukt.where_clause();
+             let type_gen_params = strukt.generic_param_list();
+-            let type_gen_args = type_gen_params
+-                .as_ref()
+-                .map(|params| params.to_generic_args());
++            let type_gen_args = type_gen_params.as_ref().map(|params| params.to_generic_args());
+             let trait_gen_args = Some(make::generic_arg_list([ast::GenericArg::TypeArg(
+                 make::type_arg(main_field_ty.clone()),
+             )]));
+             )
+             .indent(1.into());
+ 
+-            let cfg_attrs = strukt.attrs().filter(|attr| {
+-                attr.as_simple_call()
+-                    .is_some_and(|(name, _arg)| name == "cfg")
+-            });
++            let cfg_attrs = strukt
++                .attrs()
++                .filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
+ 
+             let impl_ = make::impl_trait(
+                 cfg_attrs,
+     types: &[ast::Type],
+ ) -> Vec<Option<ast::Expr>> {
+     let (db, sema) = (ctx.db(), &ctx.sema);
+-    let cfg = ctx
+-        .config
+-        .find_path_config(ctx.sema.is_nightly(module.krate()));
++    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+     types
+         .iter()
+         .map(|ty| {
+     Some(match strukt.kind() {
+         ast::StructKind::Unit => return None,
+         ast::StructKind::Record(fields) => {
+-            let names = fields
+-                .fields()
+-                .map(|field| field.name())
+-                .collect::<Option<_>>()?;
+-            let types = fields
+-                .fields()
+-                .map(|field| field.ty())
+-                .collect::<Option<_>>()?;
++            let names = fields.fields().map(|field| field.name()).collect::<Option<_>>()?;
++            let types = fields.fields().map(|field| field.ty()).collect::<Option<_>>()?;
+             (Some(names), types)
+         }
+-        ast::StructKind::Tuple(fields) => (
+-            None,
+-            fields
+-                .fields()
+-                .map(|field| field.ty())
+-                .collect::<Option<_>>()?,
+-        ),
++        ast::StructKind::Tuple(fields) => {
++            (None, fields.fields().map(|field| field.ty()).collect::<Option<_>>()?)
++        }
+     })
+ }
+ 
+     let interner = DbInterner::new_with(db, Some(krate.base()), None);
+     use hir::next_solver::infer::DbInternerInferExt;
+     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+-
+     let strukt = strukt.instantiate_infer(&infcx);
+     let field_ty = strukt.fields(db).get(main_field_i)?.ty(db);
+     let struct_ty = strukt.ty(db);
+     tracing::debug!(?strukt, ?field_ty, ?struct_ty);
+-    struct_ty
+-        .impls_trait(infcx, from_trait, &[field_ty])
+-        .then_some(())
++    struct_ty.impls_trait(infcx, from_trait, &[field_ty]).then_some(())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::generate_single_field_struct_from;
+-
+     #[test]
+     fn works() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn cfgs() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn indent() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn where_clause_indent() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn generics() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn tuple() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn trivial() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn unit() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn invalid_multiple_main_field() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn exists_other_from() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn exists_from() {
+         check_assist_not_applicable(

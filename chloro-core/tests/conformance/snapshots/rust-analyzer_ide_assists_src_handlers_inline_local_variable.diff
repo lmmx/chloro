@@ -1,0 +1,404 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 18781 bytes
+Chloro size:   18544 bytes
+Rustfmt size:  18858 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::{PathResolution, Semantics};
+ use ide_db::{
++    EditionedFileId, RootDatabase,
+     defs::Definition,
+     search::{FileReference, FileReferenceNode, UsageSearchResult},
+-    EditionedFileId, RootDatabase,
+ };
+ use syntax::{
+-    ast::{self, syntax_factory::SyntaxFactory, AstNode, AstToken, HasName},
+     SyntaxElement, TextRange,
++    ast::{self, AstNode, AstToken, HasName, syntax_factory::SyntaxFactory},
+ };
+ 
+ use crate::{
+-    assist_context::{AssistContext, Assists},
+     AssistId,
++    assist_context::{AssistContext, Assists},
+ };
+ 
+-// Assist: inline_local_variable
+-//
+-// Inlines a local variable.
+-//
+-// ```
+-// fn main() {
+-//     let x$0 = 1 + 2;
+-//     x * 4;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     (1 + 2) * 4;
+-// }
+-// ```
+-pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn inline_local_variable(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let file_id = ctx.file_id();
+     let range = ctx.selection_trimmed();
+-    let InlineData {
+-        let_stmt,
+-        delete_let,
+-        references,
+-        target,
+-    } = if let Some(path_expr) = ctx.find_node_at_offset::<ast::PathExpr>() {
+-        inline_usage(&ctx.sema, path_expr, range, file_id)
+-    } else if let Some(let_stmt) = ctx.find_node_at_offset::<ast::LetStmt>() {
+-        inline_let(&ctx.sema, let_stmt, range, file_id)
+-    } else {
+-        None
+-    }?;
++    let InlineData { let_stmt, delete_let, references, target } =
++        if let Some(path_expr) = ctx.find_node_at_offset::<ast::PathExpr>() {
++            inline_usage(&ctx.sema, path_expr, range, file_id)
++        } else if let Some(let_stmt) = ctx.find_node_at_offset::<ast::LetStmt>() {
++            inline_let(&ctx.sema, let_stmt, range, file_id)
++        } else {
++            None
++        }?;
+     let initializer_expr = let_stmt.initializer()?;
+-
+     let wrap_in_parens = references
+         .into_iter()
+         .filter_map(|FileReference { range, name, .. }| match name {
+                 // FIXME: This feels like a bad heuristic for macros
+                 return None;
+             }
+-            let usage_node = name_ref
+-                .syntax()
+-                .ancestors()
+-                .find(|it| ast::PathExpr::can_cast(it.kind()));
++            let usage_node =
++                name_ref.syntax().ancestors().find(|it| ast::PathExpr::can_cast(it.kind()));
+             let usage_parent_option = usage_node.as_ref().and_then(|it| it.parent());
+             let usage_parent = match usage_parent_option {
+                 Some(u) => u,
+             Some((name_ref, should_wrap))
+         })
+         .collect::<Option<Vec<_>>>()?;
+-
+     let target = match target {
+         ast::NameOrNameRef::Name(it) => it.syntax().clone(),
+         ast::NameOrNameRef::NameRef(it) => it.syntax().clone(),
+     };
+-
+     acc.add(
+         AssistId::refactor_inline("inline_local_variable"),
+         "Inline variable",
+         cov_mark::hit!(not_applicable_outside_of_bind_pat);
+         return None;
+     }
+-
+     let local = sema.to_def(&bind_pat)?;
+     let UsageSearchResult { mut references } = Definition::Local(local).usages(sema).all();
+     match references.remove(&file_id) {
+         cov_mark::hit!(test_not_inline_selection_too_broad);
+         return None;
+     }
+-
+     let local = match sema.resolve_path(&path)? {
+         PathResolution::Local(local) => local,
+         _ => return None,
+         cov_mark::hit!(test_not_inline_mut_variable_use);
+         return None;
+     }
+-
+     let sources = local.sources(sema.db);
+     let [source] = sources.as_slice() else {
+         // Not applicable with locals with multiple definitions (i.e. or patterns)
+         return None;
+     };
+-
+     let bind_pat = source.as_ident_pat()?;
+-
+     let let_stmt = ast::LetStmt::cast(bind_pat.syntax().parent()?)?;
+-
+     let UsageSearchResult { mut references } = Definition::Local(local).usages(sema).all();
+     let mut references = references.remove(&file_id)?;
+     let delete_let = references.len() == 1;
+     references.retain(|fref| fref.name.as_name_ref() == Some(&name));
+-
+-    Some(InlineData {
+-        let_stmt,
+-        delete_let,
+-        target: ast::NameOrNameRef::NameRef(name),
+-        references,
+-    })
++    Some(InlineData { let_stmt, delete_let, target: ast::NameOrNameRef::NameRef(name), references })
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn test_inline_let_bind_literal_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_bind_bin_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_bind_function_call_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_bind_cast_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_bind_block_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_bind_paren_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_not_inline_mut_variable() {
+         cov_mark::check!(test_not_inline_mut_variable);
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_not_inline_mut_variable_use() {
+         cov_mark::check!(test_not_inline_mut_variable_use);
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_call_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_index_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_method_call_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_field_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_try_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_ref_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_tuple_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_array_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_paren() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_path_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_block_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_different_expr1() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_for_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_while_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_break_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_return_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn test_used_in_match_expr() {
+         check_assist(
+ }",
+         );
+     }
+-
+     #[test]
+     fn inline_field_shorthand() {
+         cov_mark::check!(inline_field_shorthand);
+ ",
+         );
+     }
+-
+     #[test]
+     fn test_not_applicable_if_variable_unused() {
+         cov_mark::check!(test_not_applicable_if_variable_unused);
+             ",
+         )
+     }
+-
+     #[test]
+     fn not_applicable_outside_of_bind_pat() {
+         cov_mark::check!(not_applicable_outside_of_bind_pat);
+ ",
+         )
+     }
+-
+     #[test]
+     fn works_on_local_usage() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn does_not_remove_let_when_multiple_usages() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_with_non_ident_pattern() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn not_applicable_on_local_usage_in_macro() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_not_inline_selection_too_broad() {
+         cov_mark::check!(test_not_inline_selection_too_broad);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_inline_ref_in_let() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_inline_let_unit_struct() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_inline_closure() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn test_wrap_in_parens() {
+         check_assist(

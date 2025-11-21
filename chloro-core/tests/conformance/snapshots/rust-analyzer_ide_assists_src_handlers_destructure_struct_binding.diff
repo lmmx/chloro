@@ -1,0 +1,411 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 23187 bytes
+Chloro size:   22718 bytes
+Rustfmt size:  23470 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+-use hir::{sym, HasVisibility};
++use hir::{HasVisibility, sym};
+ use ide_db::{
++    FxHashMap, FxHashSet,
+     assists::AssistId,
+     defs::Definition,
+     helpers::mod_path_to_ast,
+     search::{FileReference, SearchScope},
+-    FxHashMap, FxHashSet,
+ };
+ use itertools::Itertools;
+-use syntax::ast::{syntax_factory::SyntaxFactory, HasName};
++use syntax::ast::{HasName, syntax_factory::SyntaxFactory};
+ use syntax::syntax_editor::SyntaxEditor;
+-use syntax::{ast, AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr};
++use syntax::{AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr, ast};
+ 
+ use crate::{
+     assist_context::{AssistContext, Assists, SourceChangeBuilder},
+     utils::ref_field_expr::determine_ref_and_parens,
+ };
+ 
+-// Assist: destructure_struct_binding
+-//
+-// Destructures a struct binding in place.
+-//
+-// ```
+-// struct Foo {
+-//     bar: i32,
+-//     baz: i32,
+-// }
+-// fn main() {
+-//     let $0foo = Foo { bar: 1, baz: 2 };
+-//     let bar2 = foo.bar;
+-//     let baz2 = &foo.baz;
+-// }
+-// ```
+-// ->
+-// ```
+-// struct Foo {
+-//     bar: i32,
+-//     baz: i32,
+-// }
+-// fn main() {
+-//     let Foo { bar, baz } = Foo { bar: 1, baz: 2 };
+-//     let bar2 = bar;
+-//     let baz2 = &baz;
+-// }
+-// ```
+-pub(crate) fn destructure_struct_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn destructure_struct_binding(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
+     let data = collect_data(ident_pat, ctx)?;
+-
+     acc.add(
+         AssistId::refactor_rewrite("destructure_struct_binding"),
+         "Destructure struct binding",
+         data.ident_pat.syntax().text_range(),
+         |edit| destructure_struct_binding_impl(ctx, edit, &data),
+     );
+-
+     Some(())
+ }
+ 
+     edition: Edition,
+ }
+ 
+-fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
++fn collect_data(
++    ident_pat: ast::IdentPat,
++    ctx: &AssistContext<'_>,
++) -> Option<StructEditData> {
+     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
+-    let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else {
+-        return None;
+-    };
+-
++    let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else { return None };
+     let module = ctx.sema.scope(ident_pat.syntax())?.module();
+-    let cfg = ctx
+-        .config
+-        .find_path_config(ctx.sema.is_nightly(module.krate()));
++    let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+     let struct_def = hir::ModuleDef::from(struct_type);
+     let kind = struct_type.kind(ctx.db());
+     let struct_def_path = module.find_path(ctx.db(), struct_def, cfg)?;
+-
+-    let is_non_exhaustive = struct_def
+-        .attrs(ctx.db())?
+-        .by_key(sym::non_exhaustive)
+-        .exists();
+-    let is_foreign_crate = struct_def
+-        .module(ctx.db())
+-        .is_some_and(|m| m.krate() != module.krate());
+-
++    let is_non_exhaustive = struct_def.attrs(ctx.db())?.by_key(sym::non_exhaustive).exists();
++    let is_foreign_crate = struct_def.module(ctx.db()).is_some_and(|m| m.krate() != module.krate());
+     let fields = struct_type.fields(ctx.db());
+     let n_fields = fields.len();
+-
+-    let visible_fields = fields
+-        .into_iter()
+-        .filter(|field| field.is_visible_from(ctx.db(), module))
+-        .collect_vec();
+-
++    let visible_fields =
++        fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
+     if visible_fields.is_empty() {
+         return None;
+     }
+-
+     let has_private_members =
+         (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
+-
+     // If private members are present, we can only destructure records
+     if !matches!(kind, hir::StructKind::Record) && has_private_members {
+         return None;
+     }
+-
+     let is_ref = ty.is_reference();
+     let need_record_field_name = ident_pat
+         .syntax()
+         .parent()
+         .and_then(ast::RecordPatField::cast)
+         .is_some_and(|field| field.colon_token().is_none());
+-
+     let usages = ctx
+         .sema
+         .to_def(&ident_pat)
+                 .map(|(_, refs)| refs.to_vec())
+         })
+         .unwrap_or_default();
+-
+     let names_in_scope = get_names_in_scope(ctx, &ident_pat, &usages).unwrap_or_default();
+-
+     Some(StructEditData {
+         name: ident_pat.name()?,
+         ident_pat,
+     fn last_usage(usages: &[FileReference]) -> Option<SyntaxNode> {
+         usages.last()?.name.syntax().into_node()
+     }
+-
+     // If available, find names visible to the last usage of the binding
+     // else, find names visible to the binding itself
+     let last_usage = last_usage(usages);
+     let node = last_usage.as_ref().unwrap_or(ident_pat.syntax());
+     let scope = ctx.sema.scope(node)?;
+-
+     let mut names = FxHashSet::default();
+     scope.process_all_names(&mut |name, scope| {
+         if let hir::ScopeDef::Local(_) = scope {
+ ) {
+     let ident_pat = &data.ident_pat;
+     let name = &data.name;
+-
+     let struct_path = mod_path_to_ast(&data.struct_def_path, data.edition);
+     let is_ref = ident_pat.ref_token().is_some();
+     let is_mut = ident_pat.mut_token().is_some();
+-
+     let make = SyntaxFactory::with_mappings();
+     let new_pat = match data.kind {
+         hir::StructKind::Tuple => {
+         }
+         hir::StructKind::Unit => make.path_pat(struct_path),
+     };
+-
+     // If the binding is nested inside a record, we need to wrap the new
+     // destructured pattern in a non-shorthand record field
+     let destructured_pat = if data.need_record_field_name {
+-        make.record_pat_field(make.name_ref(&name.to_string()), new_pat)
+-            .syntax()
+-            .clone()
++        make.record_pat_field(make.name_ref(&name.to_string()), new_pat).syntax().clone()
+     } else {
+         new_pat.syntax().clone()
+     };
+-
+     editor.add_mappings(make.finish_with_mappings());
+     editor.replace(data.ident_pat.syntax(), destructured_pat);
+ }
+ 
+-fn generate_field_names(ctx: &AssistContext<'_>, data: &StructEditData) -> Vec<(SmolStr, SmolStr)> {
++fn generate_field_names(
++    ctx: &AssistContext<'_>,
++    data: &StructEditData,
++) -> Vec<(SmolStr, SmolStr)> {
+     match data.kind {
+         hir::StructKind::Tuple => data
+             .visible_fields
+             .visible_fields
+             .iter()
+             .map(|field| {
+-                let field_name = field
+-                    .name(ctx.db())
+-                    .display_no_db(data.edition)
+-                    .to_smolstr();
++                let field_name = field.name(ctx.db()).display_no_db(data.edition).to_smolstr();
+                 let new_name = new_field_name(field_name.clone(), &data.names_in_scope);
+                 (field_name, new_name)
+             })
+     }
+ }
+ 
+-fn new_field_name(base_name: SmolStr, names_in_scope: &FxHashSet<SmolStr>) -> SmolStr {
++fn new_field_name(
++    base_name: SmolStr,
++    names_in_scope: &FxHashSet<SmolStr>,
++) -> SmolStr {
+     let mut name = base_name.clone();
+     let mut i = 1;
+     while names_in_scope.contains(&name) {
+     usage: &FileReference,
+     field_names: &FxHashMap<SmolStr, SmolStr>,
+ ) -> Option<(SyntaxNode, SyntaxNode)> {
+-    match usage
+-        .name
+-        .syntax()
+-        .ancestors()
+-        .find_map(ast::FieldExpr::cast)
+-    {
++    match usage.name.syntax().ancestors().find_map(ast::FieldExpr::cast) {
+         Some(field_expr) => Some({
+             let field_name: SmolStr = field_expr.name_ref()?.to_string().into();
+             let new_field_name = field_names.get(&field_name)?;
+                     ref_data.wrap_expr(new_expr).syntax().clone_for_update(),
+                 )
+             } else {
+-                (
+-                    field_expr.syntax().clone(),
+-                    new_expr.syntax().clone_for_update(),
+-                )
++                (field_expr.syntax().clone(), new_expr.syntax().clone_for_update())
+             }
+         }),
+         None => Some((
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     #[test]
+     fn record_struct() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn tuple_struct() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn unit_struct() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn in_foreign_crate() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn non_exhaustive_record_appends_rest() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn non_exhaustive_tuple_not_applicable() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn non_exhaustive_unit_not_applicable() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn record_private_fields_appends_rest() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn tuple_private_fields_not_applicable() {
+         check_assist_not_applicable(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn nested_inside_record() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn nested_inside_tuple() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn mut_record() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn mut_record_field() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn ref_record_field() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn ref_mut_record_field() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn ref_mut_record_renamed_field() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn mut_ref() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn ref_not_add_parenthesis_and_deref_record() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn ref_not_add_parenthesis_and_deref_tuple() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn record_struct_name_collision() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn tuple_struct_name_collision() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn record_struct_name_collision_nested_scope() {
+         check_assist(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn record_struct_no_public_members() {
+         check_assist_not_applicable(

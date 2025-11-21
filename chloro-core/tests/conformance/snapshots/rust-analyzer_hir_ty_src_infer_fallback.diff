@@ -1,0 +1,269 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 19964 bytes
+Chloro size:   19328 bytes
+Rustfmt size:  20619 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Fallback of infer vars to `!` and `i32`/`f64`.
+ 
+ use intern::sym;
+ use petgraph::{
+-    visit::{Dfs, Walker},
+     Graph,
++    visit::{Dfs, Walker},
+ };
+ use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
+ use rustc_type_ir::{
+-    inherent::{IntoKind, Ty as _},
+     TyVid,
++    inherent::{IntoKind, Ty as _},
+ };
+ use tracing::debug;
+ 
+             "type-inference-fallback start obligations: {:#?}",
+             self.table.fulfillment_cx.pending_obligations()
+         );
+-
+         // All type checking constraints were added, try to fallback unsolved variables.
+         self.table.select_obligations_where_possible();
+-
+         debug!(
+             "type-inference-fallback post selection obligations: {:#?}",
+             self.table.fulfillment_cx.pending_obligations()
+         );
+-
+         let fallback_occurred = self.fallback_types();
+-
+         if !fallback_occurred {
+             return;
+         }
+-
+         // We now see if we can make progress. This might cause us to
+         // unify inference variables for opaque types, since we may
+         // have unified some other type variables during the first
+         if self.krate().data(self.db).edition.at_least_2024() {
+             return DivergingFallbackBehavior::ToNever;
+         }
+-
+-        if self
+-            .resolver
+-            .def_map()
+-            .is_unstable_feature_enabled(&sym::never_type_fallback)
+-        {
++        if self.resolver.def_map().is_unstable_feature_enabled(&sym::never_type_fallback) {
+             return DivergingFallbackBehavior::ContextDependent;
+         }
+-
+         DivergingFallbackBehavior::ToUnit
+     }
+ 
+     fn fallback_types(&mut self) -> bool {
+         // Check if we have any unresolved variables. If not, no need for fallback.
+         let unresolved_variables = self.table.infer_ctxt.unresolved_variables();
+-
+         if unresolved_variables.is_empty() {
+             return false;
+         }
+-
+         let diverging_fallback_behavior = self.diverging_fallback_behavior();
+-
+         let diverging_fallback =
+             self.calculate_diverging_fallback(&unresolved_variables, diverging_fallback_behavior);
+-
+         // We do fallback in two passes, to try to generate
+         // better error messages.
+         // The first time, we do *not* replace opaque types.
+             debug!("unsolved_variable = {:?}", ty);
+             fallback_occurred |= self.fallback_if_possible(ty, &diverging_fallback);
+         }
+-
+         fallback_occurred
+     }
+ 
+-    // Tries to apply a fallback to `ty` if it is an unsolved variable.
+-    //
+-    // - Unconstrained ints are replaced with `i32`.
+-    //
+-    // - Unconstrained floats are replaced with `f64`.
+-    //
+-    // - Non-numerics may get replaced with `()` or `!`, depending on
+-    //   how they were categorized by `calculate_diverging_fallback`
+-    //   (and the setting of `#![feature(never_type_fallback)]`).
+-    //
+-    // Fallback becomes very dubious if we have encountered
+-    // type-checking errors. In that case, fallback to Error.
+-    //
+-    // Sets `FnCtxt::fallback_has_occurred` if fallback is performed
+-    // during this call.
+     fn fallback_if_possible(
+         &mut self,
+         ty: Ty<'db>,
+                 None => return false,
+             },
+         };
+-        debug!(
+-            "fallback_if_possible(ty={:?}): defaulting to `{:?}`",
+-            ty, fallback
+-        );
+-
++        debug!("fallback_if_possible(ty={:?}): defaulting to `{:?}`", ty, fallback);
+         self.demand_eqtype(ty, fallback);
+         true
+     }
+         behavior: DivergingFallbackBehavior,
+     ) -> FxHashMap<Ty<'db>, Ty<'db>> {
+         debug!("calculate_diverging_fallback({:?})", unresolved_variables);
+-
+         // Construct a coercion graph where an edge `A -> B` indicates
+         // a type variable is that is coerced
+         let coercion_graph = self.create_coercion_graph();
+-
+         // Extract the unsolved type inference variable vids; note that some
+         // unsolved variables are integer/float variables and are excluded.
+         let unsolved_vids = unresolved_variables.iter().filter_map(|ty| ty.ty_vid());
+-
+         // Compute the diverging root vids D -- that is, the root vid of
+         // those type variables that (a) are the target of a coercion from
+         // a `!` type and (b) have not yet been solved.
+             "calculate_diverging_fallback: diverging_type_vars={:?}",
+             self.table.diverging_type_vars
+         );
+-        debug!(
+-            "calculate_diverging_fallback: diverging_roots={:?}",
+-            diverging_roots
+-        );
+-
++        debug!("calculate_diverging_fallback: diverging_roots={:?}", diverging_roots);
+         // Find all type variables that are reachable from a diverging
+         // type variable. These will typically default to `!`, unless
+         // we find later that they are *also* reachable from some
+                 roots_reachable_from_diverging.move_to(root_vid.as_u32().into());
+ 
+                 // drain the iterator to visit all nodes reachable from this node
+-                while roots_reachable_from_diverging
+-                    .next(&coercion_graph)
+-                    .is_some()
+-                {}
++                while roots_reachable_from_diverging.next(&coercion_graph).is_some() {}
+             } else {
+                 non_diverging_vids.push(unsolved_vid);
+             }
+         }
+-
+         debug!(
+             "calculate_diverging_fallback: roots_reachable_from_diverging={:?}",
+             roots_reachable_from_diverging,
+         );
+-
+         // Find all type variables N0 that are not reachable from a
+         // diverging variable, and then compute the set reachable from
+         // N0, which we call N. These are the *non-diverging* type
+         let mut roots_reachable_from_non_diverging = Dfs::empty(&coercion_graph);
+         for &non_diverging_vid in &non_diverging_vids {
+             let root_vid = self.table.infer_ctxt.root_var(non_diverging_vid);
+-            if roots_reachable_from_diverging
+-                .discovered
+-                .contains(root_vid.as_usize())
+-            {
++            if roots_reachable_from_diverging.discovered.contains(root_vid.as_usize()) {
+                 continue;
+             }
+             roots_reachable_from_non_diverging.move_to(root_vid.as_u32().into());
+-            while roots_reachable_from_non_diverging
+-                .next(&coercion_graph)
+-                .is_some()
+-            {}
++            while roots_reachable_from_non_diverging.next(&coercion_graph).is_some() {}
+         }
+         debug!(
+             "calculate_diverging_fallback: roots_reachable_from_non_diverging={:?}",
+             roots_reachable_from_non_diverging,
+         );
+-
+-        debug!(
+-            "obligations: {:#?}",
+-            self.table.fulfillment_cx.pending_obligations()
+-        );
+-
++        debug!("obligations: {:#?}", self.table.fulfillment_cx.pending_obligations());
+         // For each diverging variable, figure out whether it can
+         // reach a member of N. If so, it falls back to `()`. Else
+         // `!`.
+         let mut diverging_fallback =
+             FxHashMap::with_capacity_and_hasher(diverging_vids.len(), FxBuildHasher);
+-
+         for &diverging_vid in &diverging_vids {
+             let diverging_ty = Ty::new_var(self.interner(), diverging_vid);
+             let root_vid = self.table.infer_ctxt.root_var(diverging_vid);
+             let can_reach_non_diverging = Dfs::new(&coercion_graph, root_vid.as_u32().into())
+                 .iter(&coercion_graph)
+-                .any(|n| {
+-                    roots_reachable_from_non_diverging
+-                        .discovered
+-                        .contains(n.index())
+-                });
++                .any(|n| roots_reachable_from_non_diverging.discovered.contains(n.index()));
+ 
+             let mut fallback_to = |ty| {
+                 diverging_fallback.insert(diverging_ty, ty);
+                     //     fallback_to(self.types.unit);
+                     // }
+                     if can_reach_non_diverging {
+-                        debug!(
+-                            "fallback to () - reached non-diverging: {:?}",
+-                            diverging_vid
+-                        );
++                        debug!("fallback to () - reached non-diverging: {:?}", diverging_vid);
+                         fallback_to(self.types.unit);
+                     } else {
+                         debug!("fallback to ! - all diverging: {:?}", diverging_vid);
+                 }
+             }
+         }
+-
+         diverging_fallback
+     }
+ 
+     fn create_coercion_graph(&self) -> Graph<(), ()> {
+         let pending_obligations = self.table.fulfillment_cx.pending_obligations();
+         let pending_obligations_len = pending_obligations.len();
+-        debug!(
+-            "create_coercion_graph: pending_obligations={:?}",
+-            pending_obligations
+-        );
++        debug!("create_coercion_graph: pending_obligations={:?}", pending_obligations);
+         let coercion_edges = pending_obligations
+             .into_iter()
+             .filter_map(|obligation| {
+                 // coercion and subtyping.
+                 let (a, b) = match atom {
+                     PredicateKind::Coerce(CoercePredicate { a, b }) => (a, b),
+-                    PredicateKind::Subtype(SubtypePredicate {
+-                        a_is_expected: _,
+-                        a,
+-                        b,
+-                    }) => (a, b),
++                    PredicateKind::Subtype(SubtypePredicate { a_is_expected: _, a, b }) => (a, b),
+                     _ => return None,
+                 };
+ 
+     }
+ 
+     /// If `ty` is an unresolved type variable, returns its root vid.
+-    fn root_vid(&self, ty: Ty<'db>) -> Option<TyVid> {
+-        Some(
+-            self.table
+-                .infer_ctxt
+-                .root_var(self.shallow_resolve(ty).ty_vid()?),
+-        )
++    fn root_vid(
++        &self,
++        ty: Ty<'db>,
++    ) -> Option<TyVid> {
++        Some(self.table.infer_ctxt.root_var(self.shallow_resolve(ty).ty_vid()?))
+     }
+ }

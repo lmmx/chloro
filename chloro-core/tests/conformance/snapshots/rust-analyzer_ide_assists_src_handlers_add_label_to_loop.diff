@@ -1,0 +1,100 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 4498 bytes
+Chloro size:   4215 bytes
+Rustfmt size:  4506 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use ide_db::{
+     source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
+ };
+ use syntax::{
++    SyntaxToken, T,
+     ast::{
+-        self,
++        self, AstNode, HasLoopBody,
+         make::{self, tokens},
+         syntax_factory::SyntaxFactory,
+-        AstNode, HasLoopBody,
+     },
+     syntax_editor::{Position, SyntaxEditor},
+-    SyntaxToken, T,
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: add_label_to_loop
+-//
+-// Adds a label to a loop.
+-//
+-// ```
+-// fn main() {
+-//     loop$0 {
+-//         break;
+-//         continue;
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     ${1:'l}: loop {
+-//         break ${2:'l};
+-//         continue ${0:'l};
+-//     }
+-// }
+-// ```
+-pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn add_label_to_loop(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let loop_kw = ctx.find_token_syntax_at_offset(T![loop])?;
+     let loop_expr = loop_kw.parent().and_then(ast::LoopExpr::cast)?;
+     if loop_expr.label().is_some() {
+         return None;
+     }
+-
+     acc.add(
+         AssistId::generate("add_label_to_loop"),
+         "Add Label",
+     let label = make.lifetime("'l");
+     let elements = vec![tokens::single_space().into(), label.syntax().clone().into()];
+     editor.insert_all(Position::after(token), elements);
+-
+     if let Some(cap) = ctx.config.snippet_cap {
+         editor.add_annotation(label.syntax(), builder.make_placeholder_snippet(cap));
+     }
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn add_label() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn add_label_to_outer_loop() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn add_label_to_inner_loop() {
+         check_assist(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn do_not_add_label_if_exists() {
+         check_assist_not_applicable(

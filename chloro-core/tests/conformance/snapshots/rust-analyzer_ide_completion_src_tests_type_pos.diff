@@ -1,0 +1,113 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 27572 bytes
+Chloro size:   27559 bytes
+Rustfmt size:  27572 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Completion tests for type position.
++
+ use expect_test::expect;
+ 
+ use crate::tests::{check, check_with_base_items};
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait<T, U> {
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait<T, U> {
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait<T, U = u8> {
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait<T, U = u8> {
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait {
+             kw self::
+         "#]],
+     );
+-
+     check_with_base_items(
+         r#"
+ trait MyTrait {
+             kw self::
+         "#]],
+     );
+-
+     // Method generic params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Associated type generic params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Type generic params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Type alias generic params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Enum variant params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Trait params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Trait alias params
+     check_with_base_items(
+         r#"
+             kw self::
+         "#]],
+     );
+-
+     // Omitted lifetime params
+     check_with_base_items(
+         r#"

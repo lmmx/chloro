@@ -1,0 +1,368 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 58838 bytes
+Chloro size:   59092 bytes
+Rustfmt size:  58838 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
+ };
+ 
+-pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
++pub fn main_loop(
++    config: Config,
++    connection: Connection,
++) -> anyhow::Result<()> {
+     tracing::info!("initial config: {:#?}", config);
+-
+     // Windows scheduler implements priority boosts: if thread waits for an
+     // event (like a condvar), and event fires, priority of the thread is
+     // temporary bumped. This optimization backfires in our case: each time the
+         let thread_priority_above_normal = 1;
+         SetThreadPriority(thread, thread_priority_above_normal);
+     }
+-
+     #[cfg(feature = "dhat")]
+     {
+         if let Some(dhat_output_file) = config.dhat_output_file() {
+                 Some(dhat::Profiler::builder().file_name(&dhat_output_file).build());
+         }
+     }
+-
+     GlobalState::new(connection.sender, config).run(connection.receiver)
+ }
+ 
+ }
+ 
+ impl fmt::Display for Event {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         match self {
+             Event::Lsp(_) => write!(f, "Event::Lsp"),
+             Event::Task(_) => write!(f, "Event::Task"),
+     FetchWorkspace(ProjectWorkspaceProgress),
+     FetchBuildData(BuildDataProgress),
+     LoadProcMacros(ProcMacroProgress),
+-    // FIXME: Remove this in favor of a more general QueuedTask, see `handle_did_save_text_document`
+     BuildDepsHaveChanged,
+ }
+ 
+ pub(crate) enum PrimeCachesProgress {
+     Begin,
+     Report(ide::ParallelPrimeCachesProgress),
+-    End { cancelled: bool },
++    End {
++        cancelled: bool,
++    },
+ }
+ 
+ impl fmt::Debug for Event {
+-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++    fn fmt(
++        &self,
++        f: &mut fmt::Formatter<'_>,
++    ) -> fmt::Result {
+         let debug_non_verbose = |not: &Notification, f: &mut fmt::Formatter<'_>| {
+             f.debug_struct("Notification").field("method", &not.method).finish()
+         };
+-
+         match self {
+             Event::Lsp(lsp_server::Message::Notification(not)) => {
+                 if notification_is::<lsp_types::notification::DidOpenTextDocument>(not)
+             }
+             _ => (),
+         }
+-
+         match self {
+             Event::Lsp(it) => fmt::Debug::fmt(it, f),
+             Event::Task(it) => fmt::Debug::fmt(it, f),
+ }
+ 
+ impl GlobalState {
+-    fn run(mut self, inbox: Receiver<lsp_server::Message>) -> anyhow::Result<()> {
++    fn run(
++        mut self,
++        inbox: Receiver<lsp_server::Message>,
++    ) -> anyhow::Result<()> {
+         self.update_status_or_notify();
+-
+         if self.config.did_save_text_document_dynamic_registration() {
+             let additional_patterns = self
+                 .config
+                 .map(|f| format!("**/{f}"));
+             self.register_did_save_capability(additional_patterns);
+         }
+-
+         if self.config.discover_workspace_config().is_none() {
+             self.fetch_workspaces_queue.request_op(
+                 "startup".to_owned(),
+                 self.fetch_workspaces(cause, path, force_crate_graph_reload);
+             }
+         }
+-
+         while let Ok(event) = self.next_event(&inbox) {
+             let Some(event) = event else {
+                 anyhow::bail!("client exited without proper shutdown sequence");
+             }
+             self.handle_event(event);
+         }
+-
+         Err(anyhow::anyhow!("A receiver has been dropped, something panicked!"))
+     }
+ 
+-    fn register_did_save_capability(&mut self, additional_patterns: impl Iterator<Item = String>) {
++    fn register_did_save_capability(
++        &mut self,
++        additional_patterns: impl Iterator<Item = String>,
++    ) {
+         let additional_filters = additional_patterns.map(|pattern| lsp_types::DocumentFilter {
+             language: None,
+             scheme: None,
+             pattern: (Some(pattern)),
+         });
+-
+         let mut selectors = vec![
+             lsp_types::DocumentFilter {
+                 language: None,
+             },
+         ];
+         selectors.extend(additional_filters);
+-
+         let save_registration_options = lsp_types::TextDocumentSaveRegistrationOptions {
+             include_text: Some(false),
+             text_document_registration_options: lsp_types::TextDocumentRegistrationOptions {
+                 document_selector: Some(selectors),
+             },
+         };
+-
+         let registration = lsp_types::Registration {
+             id: "textDocument/didSave".to_owned(),
+             method: "textDocument/didSave".to_owned(),
+         if let Ok(task) = self.fmt_pool.receiver.try_recv() {
+             return Ok(Some(Event::Task(task)));
+         }
+-
+         select! {
+             recv(inbox) -> msg =>
+                 return Ok(msg.ok().map(Event::Lsp)),
+         .map(Some)
+     }
+ 
+-    fn handle_event(&mut self, event: Event) {
++    fn handle_event(
++        &mut self,
++        event: Event,
++    ) {
+         let loop_start = Instant::now();
+         let _p = tracing::info_span!("GlobalState::handle_event", event = %event).entered();
+-
+         let event_dbg_msg = format!("{event:?}");
+         tracing::debug!(?loop_start, ?event, "handle_event");
+         if tracing::enabled!(tracing::Level::INFO) {
+                 tracing::info!("task queue len: {}", task_queue_len);
+             }
+         }
+-
+         let was_quiescent = self.is_quiescent();
+         match event {
+             Event::Lsp(msg) => match msg {
+         } else {
+             (false, false)
+         };
+-
+         if self.is_quiescent() {
+             let became_quiescent = !was_quiescent;
+             if became_quiescent {
+                 self.update_tests();
+             }
+         }
+-
+         if let Some(diagnostic_changes) = self.diagnostics.take_changes() {
+             for file_id in diagnostic_changes {
+                 let uri = file_id_to_url(&self.vfs.read().0, file_id);
+                 self.publish_diagnostics(uri, version, diagnostics);
+             }
+         }
+-
+         if (self.config.cargo_autoreload_config(None)
+             || self.config.discover_workspace_config().is_some())
+             && let Some((cause, FetchWorkspaceRequest { path, force_crate_graph_reload })) =
+         {
+             self.fetch_workspaces(cause, path, force_crate_graph_reload);
+         }
+-
+         if !self.fetch_workspaces_queue.op_in_progress() {
+             if let Some((cause, ())) = self.fetch_build_data_queue.should_start_op() {
+                 self.fetch_build_data(cause);
+                 self.fetch_proc_macros(cause, change, paths);
+             }
+         }
+-
+         if let Some((cause, ())) = self.prime_caches_queue.should_start_op() {
+             self.prime_caches(cause);
+         }
+-
+         self.update_status_or_notify();
+-
+         let loop_duration = loop_start.elapsed();
+         if loop_duration > Duration::from_millis(100) && was_quiescent {
+             tracing::warn!(
+         }
+     }
+ 
+-    fn prime_caches(&mut self, cause: String) {
++    fn prime_caches(
++        &mut self,
++        cause: String,
++    ) {
+         tracing::debug!(%cause, "will prime caches");
+         let num_worker_threads = self.config.prime_caches_num_threads();
+-
+         self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, {
+             let analysis = AssertUnwindSafe(self.snapshot().analysis);
+             move |sender| {
+         let max_tasks = self.config.main_loop_num_threads().div(4).max(1);
+         let chunk_length = subscriptions.len() / max_tasks;
+         let remainder = subscriptions.len() % max_tasks;
+-
+         let mut start = 0;
+         for task_idx in 0..max_tasks {
+             let extra = if task_idx < remainder { 1 } else { 0 };
+             })
+             .collect::<Vec<_>>();
+         tracing::trace!("updating tests for {:?}", subscriptions);
+-
+         // Updating tests are triggered by the user typing
+         // so we run them on a latency sensitive thread.
+         self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
+         }
+     }
+ 
+-    fn handle_task(&mut self, prime_caches_progress: &mut Vec<PrimeCachesProgress>, task: Task) {
++    fn handle_task(
++        &mut self,
++        prime_caches_progress: &mut Vec<PrimeCachesProgress>,
++        task: Task,
++    ) {
+         match task {
+             Task::Response(response) => self.respond(response),
+             // Only retry requests that haven't been cancelled. Otherwise we do unnecessary work.
+         }
+     }
+ 
+-    fn handle_vfs_msg(&mut self, message: vfs::loader::Message) {
++    fn handle_vfs_msg(
++        &mut self,
++        message: vfs::loader::Message,
++    ) {
+         let _p = tracing::info_span!("GlobalState::handle_vfs_msg").entered();
+         let is_changed = matches!(message, vfs::loader::Message::Changed { .. });
+         match message {
+         }
+     }
+ 
+-    fn handle_queued_task(&mut self, task: QueuedTask) {
++    fn handle_queued_task(
++        &mut self,
++        task: QueuedTask,
++    ) {
+         match task {
+             QueuedTask::CheckIfIndexed(uri) => {
+                 let snap = self.snapshot();
+         }
+     }
+ 
+-    fn handle_discover_msg(&mut self, message: DiscoverProjectMessage) {
++    fn handle_discover_msg(
++        &mut self,
++        message: DiscoverProjectMessage,
++    ) {
+         let title = self
+             .config
+             .discover_workspace_config()
+         }
+     }
+ 
+-    fn handle_cargo_test_msg(&mut self, message: CargoTestMessage) {
++    fn handle_cargo_test_msg(
++        &mut self,
++        message: CargoTestMessage,
++    ) {
+         match message.output {
+             CargoTestOutput::Test { name, state } => {
+                 let state = match state {
+         }
+     }
+ 
+-    fn handle_flycheck_msg(&mut self, message: FlycheckMessage) {
++    fn handle_flycheck_msg(
++        &mut self,
++        message: FlycheckMessage,
++    ) {
+         match message {
+             FlycheckMessage::AddDiagnostic {
+                 id,
+     }
+ 
+     /// Registers and handles a request. This should only be called once per incoming request.
+-    fn on_new_request(&mut self, request_received: Instant, req: Request) {
++    fn on_new_request(
++        &mut self,
++        request_received: Instant,
++        req: Request,
++    ) {
+         let _p =
+             span!(Level::INFO, "GlobalState::on_new_request", req.method = ?req.method).entered();
+         self.register_request(&req, request_received);
+     }
+ 
+     /// Handles a request.
+-    fn on_request(&mut self, req: Request) {
++    fn on_request(
++        &mut self,
++        req: Request,
++    ) {
+         let mut dispatcher = RequestDispatcher { req: Some(req), global_state: self };
+         dispatcher.on_sync_mut::<lsp_types::request::Shutdown>(|s, ()| {
+             s.shutdown_requested = true;
+             Ok(())
+         });
+-
+         match &mut dispatcher {
+             RequestDispatcher { req: Some(req), global_state: this } if this.shutdown_requested => {
+                 this.respond(lsp_server::Response::new_err(
+             }
+             _ => (),
+         }
+-
+         use crate::handlers::request as handlers;
+         use lsp_types::request as lsp_request;
+-
+         const RETRY: bool = true;
+         const NO_RETRY: bool = false;
+-
+         #[rustfmt::skip]
+         dispatcher
+             // Request handlers that must run on the main thread
+     }
+ 
+     /// Handles an incoming notification.
+-    fn on_notification(&mut self, not: Notification) {
++    fn on_notification(
++        &mut self,
++        not: Notification,
++    ) {
+         let _p =
+             span!(Level::INFO, "GlobalState::on_notification", not.method = ?not.method).entered();
+         use crate::handlers::notification as handlers;
+         use lsp_types::notification as notifs;
+-
+         NotificationDispatcher { not: Some(not), global_state: self }
+             .on_sync_mut::<notifs::Cancel>(handlers::handle_cancel)
+             .on_sync_mut::<notifs::WorkDoneProgressCancel>(

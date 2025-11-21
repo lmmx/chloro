@@ -1,0 +1,373 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 21059 bytes
+Chloro size:   20609 bytes
+Rustfmt size:  21059 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::FileRange;
+ 
+-// Feature: Expand and Shrink Selection
+-//
+-// Extends or shrinks the current selection to the encompassing syntactic construct
+-// (expression, statement, item, module, etc). It works with multiple cursors.
+-//
+-// | Editor  | Shortcut |
+-// |---------|----------|
+-// | VS Code | <kbd>Alt+Shift+→</kbd>, <kbd>Alt+Shift+←</kbd> |
+-//
+-// ![Expand and Shrink Selection](https://user-images.githubusercontent.com/48062697/113020651-b42fc800-917a-11eb-8a4f-cf1a07859fac.gif)
+-pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
++pub(crate) fn extend_selection(
++    db: &RootDatabase,
++    frange: FileRange,
++) -> TextRange {
+     let sema = Semantics::new(db);
+     let src = sema.parse_guess_edition(frange.file_id);
+     try_extend_selection(&sema, src.syntax(), frange).unwrap_or(frange.range)
+     frange: FileRange,
+ ) -> Option<TextRange> {
+     let range = frange.range;
+-
+     let string_kinds = [COMMENT, STRING, BYTE_STRING, C_STRING];
+     let list_kinds = [
+         RECORD_PAT_FIELD_LIST,
+         TUPLE_PAT,
+         WHERE_CLAUSE,
+     ];
+-
+     if range.is_empty() {
+         let offset = range.start();
+         let mut leaves = root.token_at_offset(offset);
+         }
+         NodeOrToken::Node(node) => node,
+     };
+-
+     // if we are in single token_tree, we maybe live in macro or attr
+     if node.kind() == TOKEN_TREE
+         && let Some(macro_call) = node.ancestors().find_map(ast::MacroCall::cast)
+     {
+         return Some(range);
+     }
+-
+     if node.text_range() != range {
+         return Some(node.text_range());
+     }
+-
+     let node = shallowest_node(&node);
+-
+     if node.parent().is_some_and(|n| list_kinds.contains(&n.kind()))
+         && let Some(range) = extend_list_item(&node)
+     {
+         return Some(range);
+     }
+-
+     node.parent().map(|it| it.text_range())
+ }
+ 
+         NodeOrToken::Node(it) => (it.first_token()?, it.last_token()?),
+         NodeOrToken::Token(it) => (it.clone(), it),
+     };
+-
+     let mut first_token = skip_trivia_token(first_token, Direction::Next)?;
+     let mut last_token = skip_trivia_token(last_token, Direction::Prev)?;
+-
+     while !original_range.contains_range(first_token.text_range()) {
+         first_token = skip_trivia_token(first_token.next_token()?, Direction::Next)?;
+     }
+     while !original_range.contains_range(last_token.text_range()) {
+         last_token = skip_trivia_token(last_token.prev_token()?, Direction::Prev)?;
+     }
+-
+     // compute original mapped token range
+     let extended = {
+         let fst_expanded = sema.descend_into_macros_single_exact(first_token.clone());
+         }
+         lca
+     };
+-
+     // Compute parent node range
+     let validate = || {
+         let extended = &extended;
+             algo::least_common_ancestor(extended, &parent).as_ref() == Some(extended)
+         }
+     };
+-
+     // Find the first and last text range under expanded parent
+     let first = successors(Some(first_token), |token| {
+         let token = token.prev_token()?;
+     })
+     .take_while(validate())
+     .last()?;
+-
+     let last = successors(Some(last_token), |token| {
+         let token = token.next_token()?;
+         skip_trivia_token(token, Direction::Next)
+     })
+     .take_while(validate())
+     .last()?;
+-
+     let range = first.text_range().cover(last.text_range());
+     if range.contains_range(original_range) && original_range != range { Some(range) } else { None }
+ }
+ ) -> Option<TextRange> {
+     let text: &str = leaf.text();
+     let cursor_position: u32 = (offset - leaf.text_range().start()).into();
+-
+     let (before, after) = text.split_at(cursor_position as usize);
+-
+     fn non_word_char(c: char) -> bool {
+         !(c.is_alphanumeric() || c == '_')
+     }
+-
+     let start_idx = before.rfind(non_word_char)? as u32;
+     let end_idx = after.find(non_word_char).unwrap_or(after.len()) as u32;
+-
+     // FIXME: use `ceil_char_boundary` from `std::str` when it gets stable
+     // https://github.com/rust-lang/rust/issues/93743
+     fn ceil_char_boundary(text: &str, index: u32) -> u32 {
+         (index..).find(|&index| text.is_char_boundary(index as usize)).unwrap_or(text.len() as u32)
+     }
+-
+     let from: TextSize = ceil_char_boundary(text, start_idx + 1).into();
+     let to: TextSize = (cursor_position + end_idx).into();
+-
+     let range = TextRange::new(from, to);
+     if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
+ }
+ 
+-fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
++fn extend_ws(
++    root: &SyntaxNode,
++    ws: SyntaxToken,
++    offset: TextSize,
++) -> TextRange {
+     let ws_text = ws.text();
+     let suffix = TextRange::new(offset, ws.text_range().end()) - ws.text_range().start();
+     let prefix = TextRange::new(ws.text_range().start(), offset) - ws.text_range().start();
+     ws.text_range()
+ }
+ 
+-fn pick_best(l: SyntaxToken, r: SyntaxToken) -> SyntaxToken {
++fn pick_best(
++    l: SyntaxToken,
++    r: SyntaxToken,
++) -> SyntaxToken {
+     return if priority(&r) > priority(&l) { r } else { l };
+     fn priority(n: &SyntaxToken) -> usize {
+         match n.kind() {
+     fn is_single_line_ws(node: &SyntaxToken) -> bool {
+         node.kind() == WHITESPACE && !node.text().contains('\n')
+     }
+-
+     fn nearby_delimiter(
+         delimiter_kind: SyntaxKind,
+         node: &SyntaxNode,
+             .and_then(|it| it.into_token())
+             .filter(|node| node.kind() == delimiter_kind)
+     }
+-
+     let delimiter = match node.kind() {
+         TYPE_BOUND => T![+],
+         _ => T![,],
+     };
+-
+     if let Some(delimiter_node) = nearby_delimiter(delimiter, node, Direction::Next) {
+         // Include any following whitespace when delimiter is after list item.
+         let final_node = delimiter_node
+     if let Some(delimiter_node) = nearby_delimiter(delimiter, node, Direction::Prev) {
+         return Some(TextRange::new(delimiter_node.text_range().start(), node.text_range().end()));
+     }
+-
+     None
+ }
+ 
+     }
+ }
+ 
+-fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
++fn adj_comments(
++    comment: &ast::Comment,
++    dir: Direction,
++) -> ast::Comment {
+     let mut res = comment.clone();
+     for element in comment.syntax().siblings_with_tokens(dir) {
+         let token = match element.as_token() {
+ #[cfg(test)]
+ mod tests {
+     use crate::fixture;
+-
+     use super::*;
+-
+-    fn do_check(before: &str, afters: &[&str]) {
++    fn do_check(
++        before: &str,
++        afters: &[&str],
++    ) {
+         let (analysis, position) = fixture::position(before);
+         let before = analysis.file_text(position.file_id).unwrap();
+         let range = TextRange::empty(position.offset);
+         let mut frange = FileRange { file_id: position.file_id, range };
+-
+         for &after in afters {
+             frange.range = analysis.extend_selection(frange).unwrap();
+             let actual = &before[frange.range];
+             assert_eq!(after, actual);
+         }
+     }
+-
+     #[test]
+     fn test_extend_selection_arith() {
+         do_check(r#"fn foo() { $01 + 1 }"#, &["1", "1 + 1", "{ 1 + 1 }"]);
+     }
+-
+     #[test]
+     fn test_extend_selection_list() {
+         do_check(r#"fn foo($0x: i32) {}"#, &["x", "x: i32"]);
+         do_check(r#"fn foo(x: i32, $0y: i32) {}"#, &["y", "y: i32", ", y: i32"]);
+         do_check(r#"fn foo(x: i32, $0y: i32, ) {}"#, &["y", "y: i32", "y: i32, "]);
+         do_check(r#"fn foo(x: i32,$0y: i32) {}"#, &["y", "y: i32", ",y: i32"]);
+-
+         do_check(r#"const FOO: [usize; 2] = [ 22$0 , 33];"#, &["22", "22 , "]);
+         do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0];"#, &["33", ", 33"]);
+         do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0 ,];"#, &["33", "33 ,", "[ 22 , 33 ,]"]);
+-
+         do_check(r#"fn main() { (1, 2$0) }"#, &["2", ", 2", "(1, 2)"]);
+-
+         do_check(
+             r#"
+ const FOO: [usize; 2] = [
+ ]"#,
+             &["33", "33,"],
+         );
+-
+         do_check(
+             r#"
+ const FOO: [usize; 2] = [
+             &["33", "33,"],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_start_of_the_line() {
+         do_check(
+             &["    fn foo() {\n\n    }\n"],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_doc_comments() {
+         do_check(
+             &["\n    \n", "{\n    \n}", "/// bla\n/// bla\nstruct B {\n    \n}"],
+         )
+     }
+-
+     #[test]
+     fn test_extend_selection_comments() {
+         do_check(
+     "#,
+             &["1", "// 1 + 1", "// fn foo() {\n// 1 + 1\n// }"],
+         );
+-
+         do_check(
+             r#"
+ // #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+                 "// #[derive(Debug, Clone, Copy, PartialEq, Eq)]\n// pub enum Direction {\n//     Next,\n//     Prev\n// }",
+             ],
+         );
+-
+         do_check(
+             r#"
+ /*
+ "#,
+             &["_bar1", "/*\nfoo\n_bar1*/"],
+         );
+-
+         do_check(r#"//!$0foo_2 bar"#, &["foo_2", "//!foo_2 bar"]);
+-
+         do_check(r#"/$0/foo bar"#, &["//foo bar"]);
+     }
+-
+     #[test]
+     fn test_extend_selection_prefer_idents() {
+         do_check(
+             &["bar", "foo+bar"],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_prefer_lifetimes() {
+         do_check(r#"fn foo<$0'a>() {}"#, &["'a", "<'a>"]);
+         do_check(r#"fn foo<'a$0>() {}"#, &["'a", "<'a>"]);
+     }
+-
+     #[test]
+     fn test_extend_selection_select_first_word() {
+         do_check(r#"// foo bar b$0az quxx"#, &["baz", "// foo bar baz quxx"]);
+             &["hello", "// hello world"],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_string() {
+         do_check(
+             &["foo", "\" fn foo() {\""],
+         );
+     }
+-
+     #[test]
+     fn test_extend_trait_bounds_list_in_where_clause() {
+         do_check(
+         do_check(r#"fn foo<T>() where T: Copy + $0Display + Sync"#, &["Display", "Display + "]);
+         do_check(r#"fn foo<T>() where T: Copy +$0Display"#, &["Display", "+Display"]);
+     }
+-
+     #[test]
+     fn test_extend_trait_bounds_list_inline() {
+         do_check(r#"fn foo<T: $0Copy>() {}"#, &["Copy"]);
+             ],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_on_tuple_in_type() {
+         do_check(
+             ],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_on_tuple_in_rvalue() {
+         do_check(
+             ],
+         );
+     }
+-
+     #[test]
+     fn test_extend_selection_on_tuple_pat() {
+         do_check(
+             ],
+         );
+     }
+-
+     #[test]
+     fn extend_selection_inside_macros() {
+         do_check(
+             ],
+         );
+     }
+-
+     #[test]
+     fn extend_selection_inside_recur_macros() {
+         do_check(
+             ],
+         );
+     }
+-
+     #[test]
+     fn extend_selection_inside_str_with_wide_char() {
+         // should not panic

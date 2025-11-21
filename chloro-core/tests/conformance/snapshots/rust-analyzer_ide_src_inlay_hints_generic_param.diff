@@ -1,0 +1,140 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 9092 bytes
+Chloro size:   9068 bytes
+Rustfmt size:  9092 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Implementation of inlay hints for generic parameters.
++
+ use either::Either;
+ use ide_db::{active_parameter::generic_def_for_node, famous_defs::FamousDefs};
+ use syntax::{
+     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
+     inlay_hints::{GenericParameterHints, param_name},
+ };
+-
+ use super::param_name::is_argument_similar_to_param_name;
+ 
+ pub(crate) fn hints(
+     if !(type_hints || lifetime_hints || const_hints) {
+         return None;
+     }
+-
+     let generic_arg_list = node.generic_arg_list()?;
+-
+     let (generic_def, _, _, _) =
+         generic_def_for_node(sema, &generic_arg_list, &node.syntax().first_token()?)?;
+-
+     let mut args = generic_arg_list.generic_args().peekable();
+     let start_with_lifetime = matches!(args.peek()?, ast::GenericArg::LifetimeArg(_));
+     let params = generic_def.params(sema.db).into_iter().filter(|p| {
+         }
+         true
+     });
+-
+     let hints = params.zip(args).filter_map(|(param, arg)| {
+         if matches!(arg, ast::GenericArg::AssocTypeArg(_)) {
+             return None;
+             resolve_parent: Some(node.syntax().text_range()),
+         })
+     });
+-
+     acc.extend(hints);
+     Some(())
+ }
+ 
+-fn get_segment_representation(
+-    arg: &ast::GenericArg,
+-) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
++fn get_segment_representation(arg: &ast::GenericArg) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
+     return match arg {
+         ast::GenericArg::AssocTypeArg(_) => None,
+         ast::GenericArg::ConstArg(const_arg) => {
+             type_path(&ty).map(Either::Right).map(Either::Left)
+         }
+     };
+-
+     fn type_path(ty: &ast::Type) -> Option<ast::Path> {
+         match ty {
+             ast::Type::ArrayType(it) => type_path(&it.ty()?),
+             tests::{DISABLED_CONFIG, check_with_config},
+         },
+     };
+-
+     #[track_caller]
+     fn generic_param_name_hints_always(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_with_config(
+             ra_fixture,
+         );
+     }
+-
+     #[track_caller]
+     fn generic_param_name_hints_const_only(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_with_config(
+             ra_fixture,
+         );
+     }
+-
+     #[test]
+     fn type_only() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn lifetime_and_type() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn omit_lifetime() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn const_only() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn lifetime_and_type_and_const() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn const_only_config() {
+         generic_param_name_hints_const_only(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn assoc_type() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn hide_similar() {
+         generic_param_name_hints_always(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn mismatching_args() {
+         generic_param_name_hints_always(

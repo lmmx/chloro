@@ -1,0 +1,25 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 29552 bytes
+Chloro size:   29586 bytes
+Rustfmt size:  29552 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ }
+ 
+ pub(super) enum AdtPatternShape<'a> {
+-    Tuple { args: &'a [PatId], ellipsis: Option<u32> },
+-    Record { args: &'a [RecordFieldPat] },
++    Tuple {
++        args: &'a [PatId],
++        ellipsis: Option<u32>,
++    },
++    Record {
++        args: &'a [RecordFieldPat],
++    },
+     Unit,
+ }
+ 

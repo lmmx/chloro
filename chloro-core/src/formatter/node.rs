@@ -4,8 +4,10 @@ mod doccomment;
 mod enumdef;
 mod function;
 mod implblock;
+mod imports;
 mod module;
 mod structdef;
+mod typealias;
 mod useitem;
 
 use ra_ap_syntax::{ast, AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
@@ -17,72 +19,127 @@ pub use doccomment::format_preceding_docs_and_attrs;
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;
+pub use imports::sort_and_format_imports;
 pub use module::format_module;
 pub use structdef::format_struct;
+pub use typealias::format_type_alias;
 pub use useitem::format_use;
+
+/// Determine if a blank line should be added between two items
+fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -> bool {
+    let Some(prev) = prev_kind else {
+        return false;
+    };
+
+    // No blank line between consecutive uses
+    if prev == SyntaxKind::USE && curr_kind == SyntaxKind::USE {
+        return false;
+    }
+
+    // Blank line between different top-level items
+    matches!(
+        prev,
+        SyntaxKind::FN
+            | SyntaxKind::STRUCT
+            | SyntaxKind::ENUM
+            | SyntaxKind::IMPL
+            | SyntaxKind::MODULE
+            | SyntaxKind::CONST
+            | SyntaxKind::STATIC
+            | SyntaxKind::TYPE_ALIAS
+            | SyntaxKind::TRAIT
+            | SyntaxKind::MACRO_RULES
+            | SyntaxKind::MACRO_DEF
+    ) && matches!(
+        curr_kind,
+        SyntaxKind::FN
+            | SyntaxKind::STRUCT
+            | SyntaxKind::ENUM
+            | SyntaxKind::IMPL
+            | SyntaxKind::MODULE
+            | SyntaxKind::CONST
+            | SyntaxKind::STATIC
+            | SyntaxKind::TYPE_ALIAS
+            | SyntaxKind::USE
+            | SyntaxKind::TRAIT
+            | SyntaxKind::MACRO_RULES
+            | SyntaxKind::MACRO_DEF
+    )
+}
 
 /// Main node formatting dispatcher
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            let mut last_kind: Option<SyntaxKind> = None;
-            let mut has_seen_item = false;
-            let mut just_output_module_docs = false;
+            // First pass: collect all uses and other items
+            let mut uses = Vec::new();
+            let mut other_items = Vec::new();
+            let mut module_docs = Vec::new();
 
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
-                        let current_kind = n.kind();
-                        let is_item = matches!(
-                            current_kind,
-                            SyntaxKind::FN
-                                | SyntaxKind::STRUCT
-                                | SyntaxKind::ENUM
-                                | SyntaxKind::IMPL
-                                | SyntaxKind::MODULE
-                                | SyntaxKind::USE
-                                | SyntaxKind::TYPE_ALIAS
-                                | SyntaxKind::CONST
-                                | SyntaxKind::STATIC
-                        );
-
-                        if is_item {
-                            // Add blank line before items, except:
-                            // 1. The very first item (has_seen_item is false)
-                            // 2. Between consecutive USE statements
-                            if has_seen_item {
-                                if let Some(last) = last_kind {
-                                    if !(current_kind == SyntaxKind::USE && last == SyntaxKind::USE)
-                                    {
-                                        buf.push('\n');
-                                    }
-                                }
-                            } else if just_output_module_docs {
-                                // First item after module docs needs a blank line
-                                buf.push('\n');
+                        if n.kind() == SyntaxKind::USE {
+                            if let Some(use_) = ast::Use::cast(n) {
+                                uses.push(use_);
                             }
-
-                            format_node(&n, buf, indent);
-
-                            has_seen_item = true;
-                            just_output_module_docs = false;
-                            last_kind = Some(current_kind);
                         } else {
-                            format_node(&n, buf, indent);
+                            other_items.push(n);
                         }
                     }
                     NodeOrToken::Token(t) => {
                         // Check if this is a module-level doc comment
                         if t.kind() == SyntaxKind::COMMENT {
-                            if let Some(comment) = ast::Comment::cast(t.clone()) {
+                            if let Some(comment) = ast::Comment::cast(t) {
                                 if comment.is_inner() && comment.kind().doc.is_some() {
-                                    just_output_module_docs = true;
+                                    module_docs.push(comment);
                                 }
                             }
                         }
-                        format_token(&t, buf, indent);
                     }
                 }
+            }
+
+            // Format module-level docs first
+            for doc in &module_docs {
+                buf.push_str(doc.text());
+                buf.push('\n');
+            }
+
+            let has_docs = !module_docs.is_empty();
+            let has_uses = !uses.is_empty();
+
+            // Ensure a blank line after module docs if anything follows
+            if has_docs && (has_uses || !other_items.is_empty()) {
+                buf.push('\n');
+            }
+
+            // Format sorted and grouped imports
+            if has_uses {
+                sort_and_format_imports(&uses, buf, indent);
+                // If other items follow imports, ensure a blank line between
+                if !other_items.is_empty() {
+                    buf.push('\n');
+                }
+            }
+
+            // Format other items
+            let mut last_kind: Option<SyntaxKind> = if has_uses {
+                Some(SyntaxKind::USE)
+            } else {
+                None
+            };
+
+            for node in other_items {
+                let current_kind = node.kind();
+
+                // Add blank line if needed
+                if should_add_blank_line(last_kind, current_kind) {
+                    buf.push('\n');
+                }
+
+                format_node(&node, buf, indent);
+                last_kind = Some(current_kind);
             }
         }
 
@@ -92,9 +149,17 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::IMPL => format_impl(node, buf, indent),
         SyntaxKind::USE => format_use(node, buf, indent),
         SyntaxKind::MODULE => format_module(node, buf, indent),
+        SyntaxKind::TYPE_ALIAS => format_type_alias(node, buf, indent),
 
         SyntaxKind::BLOCK_EXPR => format_block(node, buf, indent),
         SyntaxKind::STMT_LIST => format_stmt_list(node, buf, indent),
+
+        SyntaxKind::MACRO_RULES | SyntaxKind::MACRO_DEF => {
+            // Preserve macro definitions as-is for now
+            crate::formatter::write_indent(buf, indent);
+            buf.push_str(&node.text().to_string());
+            buf.push('\n');
+        }
 
         SyntaxKind::ATTR => {
             // Handle standalone attributes

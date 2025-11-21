@@ -1,0 +1,97 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 4954 bytes
+Chloro size:   4944 bytes
+Rustfmt size:  5099 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Implementation of trait bound hints.
+ //!
+ //! Currently this renders the implied `Sized` bound.
+-use ide_db::{famous_defs::FamousDefs, FileRange};
+ 
++use ide_db::{FileRange, famous_defs::FamousDefs};
+ use syntax::ast::{self, AstNode, HasTypeBounds};
+ 
+ use crate::{
+     if !config.sized_bound {
+         return None;
+     }
+-
+     let sized_trait = famous_defs.core_marker_Sized();
+-
+     for param in params.type_or_const_params() {
+         match param {
+             ast::TypeOrConstParam::Type(type_param) => {
+                 let c = type_param.colon_token().map(|it| it.text_range());
+-                let has_bounds = type_param
+-                    .type_bound_list()
+-                    .is_some_and(|it| it.bounds().next().is_some());
++                let has_bounds =
++                    type_param.type_bound_list().is_some_and(|it| it.bounds().next().is_some());
+                 acc.push(InlayHint {
+                     range: c.unwrap_or_else(|| type_param.syntax().text_range()),
+                     kind: InlayKind::Type,
+             ast::TypeOrConstParam::Const(_) => (),
+         }
+     }
+-
+     Some(())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use expect_test::expect;
+-
+     use crate::inlay_hints::InlayHintsConfig;
+-
+-    use crate::inlay_hints::tests::{check_expect, check_with_config, DISABLED_CONFIG};
+-
++    use crate::inlay_hints::tests::{DISABLED_CONFIG, check_expect, check_with_config};
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+-        check_with_config(
+-            InlayHintsConfig {
+-                sized_bound: true,
+-                ..DISABLED_CONFIG
+-            },
+-            ra_fixture,
+-        );
++        check_with_config(InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG }, ra_fixture);
+     }
+-
+     #[test]
+     fn smoke() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn with_colon() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn with_colon_and_bounds() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn location_works() {
+         check_expect(
+-            InlayHintsConfig {
+-                sized_bound: true,
+-                ..DISABLED_CONFIG
+-            },
++            InlayHintsConfig { sized_bound: true, ..DISABLED_CONFIG },
+             r#"
+ //- minicore: sized
+ fn foo<T>() {}

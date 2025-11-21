@@ -1,0 +1,176 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 17010 bytes
+Chloro size:   16809 bytes
+Rustfmt size:  17010 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use hir::{EditionedFileId, Semantics};
+ use ide_db::{RootDatabase, famous_defs::FamousDefs};
+-
+ use stdx::to_lower_snake_case;
+ use syntax::ast::{self, AstNode, HasArgList, HasName, UnaryOp};
+ 
+     if !config.parameter_hints {
+         return None;
+     }
+-
+     let (callable, arg_list) = get_callable(sema, &expr)?;
+     let unary_function = callable.n_params() == 1;
+     let function_name = match callable.kind() {
+                 resolve_parent: Some(expr.syntax().text_range()),
+             }
+         });
+-
+     acc.extend(hints);
+     Some(())
+ }
+     }
+ }
+ 
+-const INSIGNIFICANT_METHOD_NAMES: &[&str] = &["clone", "as_ref", "into"];
+-const INSIGNIFICANT_PARAMETER_NAMES: &[&str] =
+-    &["predicate", "value", "pat", "rhs", "other", "msg", "op"];
++
+ 
+ fn should_hide_param_name_hint(
+     sema: &Semantics<'_, RootDatabase>,
+     //   parameter is a prefix/suffix of argument with _ splitting it off
+     // - param starts with `ra_fixture`
+     // - param is a well known name in a unary function
+-
+     let param_name = param_name.trim_matches('_');
+     if param_name.is_empty() {
+         return true;
+     }
+-
+     if param_name.starts_with("ra_fixture") {
+         return true;
+     }
+-
+     if unary_function {
+         if let Some(function_name) = function_name
+             && is_param_name_suffix_of_fn_name(param_name, function_name)
+             return true;
+         }
+     }
+-
+     is_argument_expr_similar_to_param_name(sema, argument, param_name)
+ }
+ 
+ ///
+ /// `fn strip_suffix(suffix)` will be hidden.
+ /// `fn stripsuffix(suffix)` will not be hidden.
+-fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
++fn is_param_name_suffix_of_fn_name(
++    param_name: &str,
++    fn_name: &str,
++) -> bool {
+     fn_name == param_name
+         || fn_name
+             .len()
+     debug_assert!(!param_name.is_empty());
+     let param_name = param_name.split('_');
+     let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
+-
+     let prefix_match = zip(argument.clone(), param_name.clone())
+         .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
+     let postfix_match = || {
+     prefix_match || postfix_match()
+ }
+ 
+-pub(super) fn get_segment_representation(
+-    expr: &ast::Expr,
+-) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
++pub(super) fn get_segment_representation(expr: &ast::Expr) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
+     match expr {
+         ast::Expr::MethodCallExpr(method_call_expr) => {
+             let receiver =
+         InlayHintsConfig,
+         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+     };
+-
+     #[track_caller]
+     fn check_params(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_with_config(
+             ra_fixture,
+         );
+     }
+-
+     #[test]
+     fn param_hints_only() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn param_hints_on_closure() {
+         check_params(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn param_name_similar_to_fn_name_still_hints() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn param_name_similar_to_fn_name() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn param_name_same_as_fn_name() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn never_hide_param_when_multiple_params() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn param_hints_look_through_as_ref_and_clone() {
+         check_params(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn self_param_hints() {
+         check_params(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn param_name_hints_show_for_literals() {
+         check_params(
+ }"#,
+         )
+     }
+-
+     #[test]
+     fn function_call_parameter_hint() {
+         check_params(
+ }"#,
+         );
+     }
+-
+     #[test]
+     fn parameter_hint_heuristics() {
+         check_params(

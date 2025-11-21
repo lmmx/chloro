@@ -1,0 +1,223 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10574 bytes
+Chloro size:   10265 bytes
+Rustfmt size:  10774 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use either::Either;
+ use hir::InFile;
+ use ide_db::FileRange;
+ use syntax::{
+-    ast::{self, HasArgList},
+     AstNode, AstPtr,
++    ast::{self, HasArgList},
+ };
+ 
+-use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+ 
+-// Diagnostic: mismatched-tuple-struct-pat-arg-count
+-//
+-// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
+ pub(crate) fn mismatched_tuple_struct_pat_arg_count(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MismatchedTupleStructPatArgCount,
+     .stable()
+ }
+ 
+-// Diagnostic: mismatched-arg-count
+-//
+-// This diagnostic is triggered if a function is invoked with an incorrect amount of arguments.
+ pub(crate) fn mismatched_arg_count(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::MismatchedArgCount,
+                 (
+                     arg_list.syntax().text_range(),
+                     arg_list.r_paren_token(),
+-                    arg_list
+-                        .args()
+-                        .nth(expected)
+-                        .map(|it| it.syntax().text_range()),
++                    arg_list.args().nth(expected).map(|it| it.syntax().text_range()),
+                 )
+             }
+             Either::Left(ast::Expr::MethodCallExpr(call)) => {
+                 (
+                     arg_list.syntax().text_range(),
+                     arg_list.r_paren_token(),
+-                    arg_list
+-                        .args()
+-                        .nth(expected)
+-                        .map(|it| it.syntax().text_range()),
++                    arg_list.args().nth(expected).map(|it| it.syntax().text_range()),
+                 )
+             }
+             Either::Right(ast::Pat::TupleStructPat(pat)) => {
+                 (
+                     l_paren.text_range().cover(r_paren.text_range()),
+                     Some(r_paren),
+-                    pat.fields()
+-                        .nth(expected)
+-                        .map(|it| it.syntax().text_range()),
++                    pat.fields().nth(expected).map(|it| it.syntax().text_range()),
+                 )
+             }
+             _ => return None,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn simple_free_fn_zero() {
+         check_diagnostics(
+            //^^^ error: expected 0 arguments, found 1
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ fn zero() {}
+ "#,
+         );
+     }
+-
+     #[test]
+     fn simple_free_fn_one() {
+         check_diagnostics(
+           //^^ error: expected 1 argument, found 0
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ fn one(_arg: u8) {}
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_as_fn() {
+         check_diagnostics(
+ }          //^^ error: expected 1 argument, found 0
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ struct S;
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_with_arg() {
+         check_diagnostics(
+             }         //^^ error: expected 1 argument, found 0
+             "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ struct S;
+ "#,
+         );
+     }
+-
+     #[test]
+     fn method_unknown_receiver() {
+         // note: this is incorrect code, so there might be errors on this in the
+ "#,
+         );
+     }
+-
+     #[test]
+     fn tuple_struct() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn enum_variant() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn enum_variant_type_macro() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn rest_pat_in_macro_expansion() {
+         check_diagnostics(
+ }
+ "#,
+         );
+-
+         check_diagnostics(
+             r#"
+ #![allow(dead_code)]
+ "#,
+         );
+     }
+-
+     #[test]
+     fn varargs() {
+         check_diagnostics(
+         "#,
+         )
+     }
+-
+     #[test]
+     fn arg_count_lambda() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn cfgd_out_call_arguments() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn cfgd_out_fn_params() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn legacy_const_generics() {
+         check_diagnostics(
+             "#,
+         )
+     }
+-
+     #[test]
+     fn tuple_struct_pat() {
+         check_diagnostics(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn no_type_mismatches_when_arg_count_mismatch() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_17233() {
+         check_diagnostics(

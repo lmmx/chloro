@@ -1,0 +1,132 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 5355 bytes
+Chloro size:   5065 bytes
+Rustfmt size:  5418 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::iter;
+ 
+ use either::Either;
+ use ide_db::syntax_helpers::node_ext::is_pattern_cond;
+ use syntax::{
+-    ast::{
+-        self,
+-        edit::{AstNodeEdit, IndentLevel},
+-        make, HasLoopBody,
+-    },
+     AstNode, T,
++    ast::{
++        self, HasLoopBody,
++        edit::{AstNodeEdit, IndentLevel},
++        make,
++    },
+ };
+ 
+ use crate::{
++    AssistId,
+     assist_context::{AssistContext, Assists},
+     utils::invert_boolean_expression_legacy,
+-    AssistId,
+ };
+ 
+-// Assist: convert_while_to_loop
+-//
+-// Replace a while with a loop.
+-//
+-// ```
+-// fn main() {
+-//     $0while cond {
+-//         foo();
+-//     }
+-// }
+-// ```
+-// ->
+-// ```
+-// fn main() {
+-//     loop {
+-//         if !cond {
+-//             break;
+-//         }
+-//         foo();
+-//     }
+-// }
+-// ```
+-pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn convert_while_to_loop(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let while_kw = ctx.find_token_syntax_at_offset(T![while])?;
+     let while_expr = while_kw.parent().and_then(ast::WhileExpr::cast)?;
+     let while_body = while_expr.loop_body()?;
+     let while_cond = while_expr.condition()?;
+-
+     let target = while_expr.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("convert_while_to_loop"),
+                 make::block_expr(stmts, None)
+             } else {
+                 let if_cond = invert_boolean_expression_legacy(while_cond);
+-                let if_expr = make::expr_if(if_cond, break_block, None)
+-                    .syntax()
+-                    .clone()
+-                    .into();
++                let if_expr = make::expr_if(if_cond, break_block, None).syntax().clone().into();
+                 let elements = while_body.stmt_list().map_or_else(
+                     || Either::Left(iter::empty()),
+                     |stmts| {
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn convert_inside_fn() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_busy_wait() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_trailing_expr() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn convert_while_let() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn ignore_cursor_in_body() {
+         check_assist_not_applicable(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn preserve_comments() {
+         check_assist(
+ }
+ "#,
+         );
+-
+         check_assist(
+             convert_while_to_loop,
+             r#"

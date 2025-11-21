@@ -1,0 +1,127 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 20506 bytes
+Chloro size:   20481 bytes
+Rustfmt size:  20506 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Handle syntactic aspects of inserting a new `use` item.
+-#[cfg(test)]
+-mod tests;
+ 
+ use std::cmp::Ordering;
+ 
++pub use hir::PrefixKind;
+ use hir::Semantics;
+ use syntax::{
+     Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
+     },
+ };
+ 
+-pub use hir::PrefixKind;
++#[cfg(test)]
++mod tests;
+ 
+ /// How imports should be grouped into use statements.
+ #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+ }
+ 
+ /// Insert an import path into the given file/node. A `merge` value of none indicates that no import merging is allowed to occur.
+-pub fn insert_use(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
++pub fn insert_use(
++    scope: &ImportScope,
++    path: ast::Path,
++    cfg: &InsertUseConfig,
++) {
+     insert_use_with_alias_option(scope, path, cfg, None);
+ }
+ 
+-pub fn insert_use_as_alias(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
++pub fn insert_use_as_alias(
++    scope: &ImportScope,
++    path: ast::Path,
++    cfg: &InsertUseConfig,
++) {
+     let text: &str = "use foo as _";
+     let parse = syntax::SourceFile::parse(text, span::Edition::CURRENT_FIXME);
+     let node = parse
+         .find_map(ast::UseTree::cast)
+         .expect("Failed to make ast node `Rename`");
+     let alias = node.rename();
+-
+     insert_use_with_alias_option(scope, path, cfg, alias);
+ }
+ 
+             ImportGranularityGuess::One => Some(MergeBehavior::One),
+         };
+     }
+-
+     let mut use_tree = make::use_tree(path, None, alias, false);
+     if mb == Some(MergeBehavior::One) && use_tree.path().is_some() {
+         use_tree = use_tree.clone_for_update();
+     {
+         ted::insert(ted::Position::first_child_of(use_item.syntax()), attr);
+     }
+-
+     // merge into existing imports if possible
+     if let Some(mb) = mb {
+         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
+ 
+ #[derive(Eq, PartialEq, PartialOrd, Ord)]
+ enum ImportGroup {
+-    // the order here defines the order of new group inserts
+     Std,
+     ExternCrate,
+     ThisCrate,
+         if use_tree.path().is_none() && use_tree.use_tree_list().is_some() {
+             return ImportGroup::One;
+         }
+-
+         let Some(first_segment) = use_tree.path().as_ref().and_then(ast::Path::first_segment)
+         else {
+             return ImportGroup::ExternCrate;
+         };
+-
+         let kind = first_segment.kind().unwrap_or(PathSegmentKind::SelfKw);
+         match kind {
+             PathSegmentKind::SelfKw => ImportGroup::ThisModule,
+     .filter_map(use_stmt);
+     let mut res = ImportGranularityGuess::Unknown;
+     let Some((mut prev, mut prev_vis, mut prev_attrs)) = use_stmts.next() else { return res };
+-
+     let is_tree_one_style =
+         |use_tree: &ast::UseTree| use_tree.path().is_none() && use_tree.use_tree_list().is_some();
+     let mut seen_one_style_groups = Vec::new();
+-
+     loop {
+         if is_tree_one_style(&prev) {
+             if res != ImportGranularityGuess::One {
+     }
+ }
+ 
+-fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
++fn insert_use_(
++    scope: &ImportScope,
++    use_item: ast::Use,
++    group_imports: bool,
++) {
+     let scope_syntax = scope.as_syntax_node();
+     let insert_use_tree =
+         use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");
+             let tree = use_.use_tree()?;
+             Some((tree, node))
+         });
+-
+     if group_imports {
+         // Iterator that discards anything that's not in the required grouping
+         // This implementation allows the user to rearrange their import groups as this only takes the first group that fits
+             return;
+         }
+     }
+-
+     let l_curly = match &scope.kind {
+         ImportScopeKind::File(_) => None,
+         // don't insert the imports before the item list/block expr's opening curly brace

@@ -1,0 +1,111 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8787 bytes
+Chloro size:   8124 bytes
+Rustfmt size:  8787 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::assist_context::{AssistContext, Assists};
+ 
+-// Assist: desugar_try_expr_match
+-//
+-// Replaces a `try` expression with a `match` expression.
+-//
+-// ```
+-// # //- minicore: try, option
+-// fn handle() {
+-//     let pat = Some(true)$0?;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn handle() {
+-//     let pat = match Some(true) {
+-//         Some(it) => it,
+-//         None => return None,
+-//     };
+-// }
+-// ```
+-
+-// Assist: desugar_try_expr_let_else
+-//
+-// Replaces a `try` expression with a `let else` statement.
+-//
+-// ```
+-// # //- minicore: try, option
+-// fn handle() {
+-//     let pat = Some(true)$0?;
+-// }
+-// ```
+-// ->
+-// ```
+-// fn handle() {
+-//     let Some(pat) = Some(true) else {
+-//         return None;
+-//     };
+-// }
+-// ```
+-pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn desugar_try_expr(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let question_tok = ctx.find_token_syntax_at_offset(T![?])?;
+     let try_expr = question_tok.parent().and_then(ast::TryExpr::cast)?;
+-
+     let expr = try_expr.expr()?;
+     let expr_type_info = ctx.sema.type_of_expr(&expr)?;
+-
+     let try_enum = TryEnum::from_ty(&ctx.sema, &expr_type_info.original)?;
+-
+     let target = try_expr.syntax().text_range();
+     acc.add(
+         AssistId::refactor_rewrite("desugar_try_expr_match"),
+             edit.replace_ast::<ast::Expr>(try_expr.clone().into(), expr_match.into());
+         },
+     );
+-
+     if let Some(let_stmt) = try_expr.syntax().parent().and_then(ast::LetStmt::cast)
+         && let_stmt.let_else().is_none()
+     {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-
+     use crate::tests::{check_assist, check_assist_by_label, check_assist_not_applicable};
+-
+     #[test]
+     fn test_desugar_try_expr_not_applicable() {
+         check_assist_not_applicable(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_desugar_try_expr_option() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_desugar_try_expr_result() {
+         check_assist(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn test_desugar_try_expr_option_let_else() {
+         check_assist_by_label(
+             "Replace try expression with let else",
+         );
+     }
+-
+     #[test]
+     fn test_desugar_try_expr_result_let_else() {
+         check_assist_by_label(

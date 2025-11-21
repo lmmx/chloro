@@ -1,0 +1,35 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 937 bytes
+Chloro size:   936 bytes
+Rustfmt size:  976 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Things related to the infer context of the next-trait-solver.
+ 
+-pub(crate) mod table;
+-
++use macros::{TypeFoldable, TypeVisitable};
+ pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
+ 
+-use macros::{TypeFoldable, TypeVisitable};
++use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
+ 
+-use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
++pub(crate) mod table;
+ 
+ #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
+ pub struct OpaqueHiddenType<'db> {
+         opaque_type_key: OpaqueTypeKey<'db>,
+         hidden_ty: OpaqueHiddenType<'db>,
+     ) -> Option<Ty<'db>> {
+-        self.inner
+-            .borrow_mut()
+-            .opaque_types()
+-            .register(opaque_type_key, hidden_ty)
++        self.inner.borrow_mut().opaque_types().register(opaque_type_key, hidden_ty)
+     }
+ }

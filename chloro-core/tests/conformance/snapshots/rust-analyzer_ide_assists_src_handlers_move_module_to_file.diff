@@ -1,0 +1,195 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 8077 bytes
+Chloro size:   7894 bytes
+Rustfmt size:  8186 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use std::iter;
+ 
+ use ast::edit::IndentLevel;
+-use hir::{sym, HasAttrs};
++use hir::{HasAttrs, sym};
+ use ide_db::base_db::AnchoredPathBuf;
+ use itertools::Itertools;
+ use stdx::format_to;
+ use syntax::{
+-    ast::{self, edit::AstNodeEdit, HasName},
+     AstNode, SmolStr, TextRange,
++    ast::{self, HasName, edit::AstNodeEdit},
+ };
+ 
+ use crate::{AssistContext, AssistId, Assists};
+ 
+-// Assist: move_module_to_file
+-//
+-// Moves inline module's contents to a separate file.
+-//
+-// ```
+-// mod $0foo {
+-//     fn t() {}
+-// }
+-// ```
+-// ->
+-// ```
+-// mod foo;
+-// ```
+-pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++pub(crate) fn move_module_to_file(
++    acc: &mut Assists,
++    ctx: &AssistContext<'_>,
++) -> Option<()> {
+     let module_ast = ctx.find_node_at_offset::<ast::Module>()?;
+     let module_items = module_ast.item_list()?;
+-
+     let l_curly_offset = module_items.syntax().text_range().start();
+     if l_curly_offset <= ctx.offset() {
+         cov_mark::hit!(available_before_curly);
+         return None;
+     }
+     let target = TextRange::new(module_ast.syntax().text_range().start(), l_curly_offset);
+-
+     let module_name = module_ast.name()?;
+-
+     // get to the outermost module syntax so we can grab the module of file we are in
+     let outermost_mod_decl =
+         iter::successors(Some(module_ast.clone()), |module| module.parent()).last()?;
+     let module_def = ctx.sema.to_def(&outermost_mod_decl)?;
+     let parent_module = module_def.parent(ctx.db())?;
+-
+     acc.add(
+         AssistId::refactor_extract("move_module_to_file"),
+         "Extract module to file",
+             };
+             let contents = {
+                 let items = module_items.dedent(IndentLevel(1)).to_string();
+-                let mut items = items
+-                    .trim_start_matches('{')
+-                    .trim_end_matches('}')
+-                    .trim()
+-                    .to_owned();
++                let mut items =
++                    items.trim_start_matches('{').trim_end_matches('}').trim().to_owned();
+                 if !items.is_empty() {
+                     items.push('\n');
+                 }
+                 buf,
+             );
+ 
+-            let dst = AnchoredPathBuf {
+-                anchor: ctx.vfs_file_id(),
+-                path,
+-            };
++            let dst = AnchoredPathBuf { anchor: ctx.vfs_file_id(), path };
+             builder.create_file(dst, contents);
+         },
+     )
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_assist, check_assist_not_applicable};
+-
+     use super::*;
+-
+     #[test]
+     fn extract_with_specified_path_attr() {
+         check_assist(
+ struct A {}
+ "#,
+         );
+-
+         check_assist(
+             move_module_to_file,
+             r#"
+ struct A {}
+ "#,
+         );
+-
+         check_assist(
+             move_module_to_file,
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_from_root() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_from_submodule() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_from_mod_rs() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_public() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_public_crate() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn available_before_curly() {
+         cov_mark::check!(available_before_curly);
+         check_assist_not_applicable(move_module_to_file, r#"mod m { $0 }"#);
+     }
+-
+     #[test]
+     fn keep_outer_comments_and_attributes() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_nested() {
+         check_assist(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn extract_mod_with_raw_ident() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_r_mod() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_r_mod_from_mod_rs() {
+         check_assist(
+ "#,
+         )
+     }
+-
+     #[test]
+     fn extract_nested_r_mod() {
+         check_assist(

@@ -1,0 +1,135 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 33220 bytes
+Chloro size:   31456 bytes
+Rustfmt size:  33220 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Re-export diagnostics such that clients of `hir` don't have to depend on
+ //! low-level crates.
+ //!
+ //! This probably isn't the best way to do this -- ideally, diagnostics should
+ //! be expressed in terms of hir types themselves.
++
+ use cfg::{CfgExpr, CfgOptions};
+ use either::Either;
++pub use hir_def::VariantId;
+ use hir_def::{
+     DefWithBodyId, GenericParamId, SyntheticSyntax,
+     expr_store::{
+     db::HirDatabase,
+     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
+ };
++pub use hir_ty::{
++    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
++    diagnostics::{CaseType, IncorrectCase},
++};
+ use syntax::{
+     AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
+     ast::{self, HasGenericArgs},
+ 
+ use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
+ 
+-pub use hir_def::VariantId;
+-pub use hir_ty::{
+-    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
+-    diagnostics::{CaseType, IncorrectCase},
+-};
+-
+ macro_rules! diagnostics {
+     ($AnyDiagnostic:ident <$db:lifetime> -> $($diag:ident $(<$lt:lifetime>)?,)*) => {
+         #[derive(Debug)]
+         )*
+     };
+ }
+-// FIXME Accept something like the following in the macro call instead
+-// diagnostics![
+-// pub struct BreakOutsideOfLoop {
+-//     pub expr: InFile<AstPtr<ast::Expr>>,
+-//     pub is_break: bool,
+-//     pub bad_value_break: bool,
+-// }, ...
+-// or more concisely
+-// BreakOutsideOfLoop {
+-//     expr: InFile<AstPtr<ast::Expr>>,
+-//     is_break: bool,
+-//     bad_value_break: bool,
+-// }, ...
+-// ]
+-
+-diagnostics![AnyDiagnostic<'db> ->
+-    AwaitOutsideOfAsync,
+-    BreakOutsideOfLoop,
+-    CastToUnsized<'db>,
+-    ExpectedFunction<'db>,
+-    InactiveCode,
+-    IncoherentImpl,
+-    IncorrectCase,
+-    InvalidCast<'db>,
+-    InvalidDeriveTarget,
+-    MacroDefError,
+-    MacroError,
+-    MacroExpansionParseError,
+-    MalformedDerive,
+-    MismatchedArgCount,
+-    MismatchedTupleStructPatArgCount,
+-    MissingFields,
+-    MissingMatchArms,
+-    MissingUnsafe,
+-    MovedOutOfRef<'db>,
+-    NeedMut,
+-    NonExhaustiveLet,
+-    NoSuchField,
+-    PrivateAssocItem,
+-    PrivateField,
+-    RemoveTrailingReturn,
+-    RemoveUnnecessaryElse,
+-    ReplaceFilterMapNextWithFindMap,
+-    TraitImplIncorrectSafety,
+-    TraitImplMissingAssocItems,
+-    TraitImplOrphan,
+-    TraitImplRedundantAssocItems,
+-    TypedHole<'db>,
+-    TypeMismatch<'db>,
+-    UndeclaredLabel,
+-    UnimplementedBuiltinMacro,
+-    UnreachableLabel,
+-    UnresolvedAssocItem,
+-    UnresolvedExternCrate,
+-    UnresolvedField<'db>,
+-    UnresolvedImport,
+-    UnresolvedMacroCall,
+-    UnresolvedMethodCall<'db>,
+-    UnresolvedModule,
+-    UnresolvedIdent,
+-    UnusedMut,
+-    UnusedVariable,
+-    GenericArgsProhibited,
+-    ParenthesizedGenericArgsWithoutFnTrait,
+-    BadRtn,
+-    IncorrectGenericsLen,
+-    IncorrectGenericsOrder,
+-    MissingLifetime,
+-    ElidedLifetimesInPath,
+-];
+-
+ #[derive(Debug)]
+ pub struct BreakOutsideOfLoop {
+     pub expr: InFile<ExprOrPatPtr>,
+     pub path: ModPath,
+     pub is_bang: bool,
+ }
++
+ #[derive(Debug, Clone, Eq, PartialEq)]
+ pub struct UnreachableLabel {
+     pub node: InFile<AstPtr<ast::Lifetime>>,
+     pub impl_: AstPtr<ast::Impl>,
+ }
+ 
+-// FIXME: Split this off into the corresponding 4 rustc errors
+ #[derive(Debug, PartialEq, Eq)]
+ pub struct TraitImplIncorrectSafety {
+     pub file_id: HirFileId,

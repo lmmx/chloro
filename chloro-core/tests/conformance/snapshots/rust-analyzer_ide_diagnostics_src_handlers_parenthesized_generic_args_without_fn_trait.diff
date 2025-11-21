@@ -1,0 +1,33 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 1596 bytes
+Chloro size:   1404 bytes
+Rustfmt size:  1596 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-// Diagnostic: parenthesized-generic-args-without-fn-trait
+-//
+-// This diagnostic is shown when a `Fn`-trait-style generic parameters (`Trait(A, B) -> C`)
+-// was used on non-`Fn` trait/type.
+ pub(crate) fn parenthesized_generic_args_without_fn_trait(
+     ctx: &DiagnosticsContext<'_>,
+     d: &hir::ParenthesizedGenericArgsWithoutFnTrait,
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::check_diagnostics;
+-
+     #[test]
+     fn fn_traits_work() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn non_fn_trait() {
+         check_diagnostics(

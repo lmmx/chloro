@@ -1,0 +1,15 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 526 bytes
+Chloro size:   527 bytes
+Rustfmt size:  526 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Read Rust code on stdin, print syntax tree on stdout.
++
+ use ide::Edition;
+ use syntax::{AstNode, SourceFile};
+ 

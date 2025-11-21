@@ -1,0 +1,109 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 7526 bytes
+Chloro size:   7388 bytes
+Rustfmt size:  7585 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //!     /* drop(x) */return;
+ //! }
+ //! ```
++
+ use hir::{
++    DefWithBody,
+     db::{DefDatabase as _, HirDatabase as _},
+     mir::{MirSpan, TerminatorKind},
+-    DefWithBody,
+ };
+-use ide_db::{famous_defs::FamousDefs, FileRange};
+-
++use ide_db::{FileRange, famous_defs::FamousDefs};
+ use syntax::{
++    ToSmolStr,
+     ast::{self, AstNode},
+-    match_ast, ToSmolStr,
++    match_ast,
+ };
+ 
+ use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
+     if !config.implicit_drop_hints {
+         return None;
+     }
+-
+     let def = sema.to_def(node)?;
+     let def: DefWithBody = def.into();
+-
+     let (hir, source_map) = sema.db.body_with_source_map(def.into());
+-
+     let mir = sema.db.mir_body(def.into()).ok()?;
+-
+     let local_to_binding = mir.local_to_binding_map();
+-
+     for (_, bb) in mir.basic_blocks.iter() {
+         let terminator = bb.terminator.as_ref()?;
+         if let TerminatorKind::Drop { place, .. } = terminator.kind {
+                 MirSpan::Unknown => continue,
+             };
+             let binding = &hir[binding_idx];
+-            let name = binding
+-                .name
+-                .display_no_db(display_target.edition)
+-                .to_smolstr();
++            let name = binding.name.display_no_db(display_target.edition).to_smolstr();
+             if name.starts_with("<ra@") {
+                 continue; // Ignore desugared variables
+             }
+             })
+         }
+     }
+-
+     Some(())
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+         InlayHintsConfig,
++        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+     };
+-
+-    const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig {
+-        implicit_drop_hints: true,
+-        ..DISABLED_CONFIG
+-    };
+-
+     #[test]
+     fn basic() {
+         check_with_config(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_hint_for_copy_types_and_mutable_references() {
+         // `T: Copy` and `T = &mut U` types do nothing on drop, so we should hide drop inlay hint for them.
+ "#,
+         );
+     }
+-
+     #[test]
+     fn try_operator() {
+         // We currently show drop inlay hint for every `?` operator that may potentially drop something. We probably need to
+ "#,
+         );
+     }
+-
+     #[test]
+     fn if_let() {
+         check_with_config(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn ignore_inlay_hint_for_macro_call() {
+         check_with_config(

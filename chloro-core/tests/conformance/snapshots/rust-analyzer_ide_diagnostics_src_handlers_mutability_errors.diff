@@ -1,0 +1,338 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 28412 bytes
+Chloro size:   28137 bytes
+Rustfmt size:  28412 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ 
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+ 
+-// Diagnostic: need-mut
+-//
+-// This diagnostic is triggered on mutating an immutable variable.
+-pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option<Diagnostic> {
++pub(crate) fn need_mut(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::NeedMut,
++) -> Option<Diagnostic> {
+     let root = ctx.sema.db.parse_or_expand(d.span.file_id);
+     let node = d.span.value.to_node(&root);
+     let mut span = d.span;
+         // parent is an assignment expression.
+         span = d.span.with_value(SyntaxNodePtr::new(&parent));
+     };
+-
+     let fixes = (|| {
+         if d.local.is_ref(ctx.sema.db) {
+             // There is no simple way to add `mut` to `ref x` and `ref mut x`
+             use_range,
+         )])
+     })();
+-
+     Some(
+         Diagnostic::new_with_syntax_node_ptr(
+             ctx,
+     )
+ }
+ 
+-// Diagnostic: unused-mut
+-//
+-// This diagnostic is triggered when a mutable variable isn't actually mutated.
+-pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Option<Diagnostic> {
++pub(crate) fn unused_mut(
++    ctx: &DiagnosticsContext<'_>,
++    d: &hir::UnusedMut,
++) -> Option<Diagnostic> {
+     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
+     let fixes = (|| {
+         let file_id = ast.file_id.file_id()?;
+     )
+ }
+ 
+-pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
++pub(super) fn token(
++    parent: &SyntaxNode,
++    kind: SyntaxKind,
++) -> Option<SyntaxToken> {
+     parent.children_with_tokens().filter_map(|it| it.into_token()).find(|it| it.kind() == kind)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};
+-
+     #[test]
+     fn unused_mut_simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_false_positive_simple() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn multiple_errors_for_single_variable() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn unused_mut_fix() {
+         check_fix(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn need_mut_fix() {
+         check_fix(
+ }
+ "#,
+         );
+-
+         check_fix(
+             r#"
+ struct Foo(i32);
+ "#,
+         );
+     }
+-
+     #[test]
+     fn need_mut_fix_not_applicable_on_ref() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn field_mutate() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mutable_reference() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_14310() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn match_closure_capture() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn match_bindings() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn mutation_in_dead_code() {
+         // This one is interesting. Dead code is not represented at all in the MIR, so
+         // there would be no mutability error for locals in dead code. Rustc tries to
+         // not emit `unused_mut` in this case, but since it works without `mut`, and
+         // special casing it is not trivial, we emit it.
+-
+         // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
+         check_diagnostics(
+             r#"
+             &["remove-unnecessary-else"],
+         );
+     }
+-
+     #[test]
+     fn initialization_is_not_mutation() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn initialization_is_not_mutation_in_loop() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn function_arguments_are_initialized() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn no_diagnostics_in_case_of_multiple_bounds() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn for_loop() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn while_let() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn index() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn overloaded_index() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn overloaded_deref() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn or_pattern() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn or_pattern_no_terminator() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+-    // FIXME: We should have tests for `is_ty_uninhabited_from`
+     fn regression_14421() {
+         check_diagnostics(
+             r#"
+ "#,
+         );
+     }
+-
+     #[test]
+     fn fn_traits() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn closure() {
+         check_diagnostics(
+                     "#,
+         );
+     }
+-
+     #[test]
+     fn slice_pattern() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn boxes() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_15143() {
+         check_diagnostics(
+             "#,
+         );
+     }
+-
+     #[test]
+     fn allow_unused_mut_for_identifiers_starting_with_underline() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn respect_lint_attributes_for_unused_mut() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn regression_15099() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_15623() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_15670() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn regression_15799() {
+         check_diagnostics(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn destructuring_assignment_needs_mut() {
+         check_diagnostics(
+         "#,
+         );
+     }
+-
+     #[test]
+     fn regression_20662() {
+         check_diagnostics(

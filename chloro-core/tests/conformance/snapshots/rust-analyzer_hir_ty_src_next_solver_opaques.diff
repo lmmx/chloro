@@ -1,0 +1,54 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 3353 bytes
+Chloro size:   3283 bytes
+Rustfmt size:  3353 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Things related to opaques in the next-trait-solver.
+ 
+ use rustc_ast_ir::try_visit;
+ use rustc_type_ir::inherent::SliceLike;
+ 
+-use super::{interned_vec_db, interned_vec_nolifetime_salsa, DbInterner, SolverDefId, Ty};
++use super::{DbInterner, SolverDefId, Ty, interned_vec_db, interned_vec_nolifetime_salsa};
+ 
+ pub type OpaqueTypeKey<'db> = rustc_type_ir::OpaqueTypeKey<DbInterner<'db>>;
+ 
+ type PredefinedOpaque<'db> = (OpaqueTypeKey<'db>, Ty<'db>);
+-interned_vec_db!(PredefinedOpaques, PredefinedOpaque);
+-
+ pub type ExternalConstraintsData<'db> =
+     rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
+-
+-interned_vec_nolifetime_salsa!(SolverDefIds, SolverDefId);
+-
+ #[salsa::interned(constructor = new_, debug)]
+ pub struct ExternalConstraints<'db> {
+     #[returns(ref)]
+ }
+ 
+ impl<'db> ExternalConstraints<'db> {
+-    pub fn new(interner: DbInterner<'db>, data: ExternalConstraintsData<'db>) -> Self {
++    pub fn new(
++        interner: DbInterner<'db>,
++        data: ExternalConstraintsData<'db>,
++    ) -> Self {
+         ExternalConstraints::new_(interner.db(), data)
+     }
+ 
+             },
+         ))
+     }
+-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
++
++    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
++        self,
++        folder: &mut F,
++    ) -> Self {
+         ExternalConstraints::new(
+             folder.cx(),
+             ExternalConstraintsData {

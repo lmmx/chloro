@@ -1,0 +1,212 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 12654 bytes
+Chloro size:   12499 bytes
+Rustfmt size:  13004 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use span::Span;
+ use triomphe::Arc;
+ 
+-use crate::{db::ExpandDatabase, tt, ExpandError, ExpandErrorKind, ExpandResult};
++use crate::{ExpandError, ExpandErrorKind, ExpandResult, db::ExpandDatabase, tt};
+ 
+ #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug, Hash)]
+ pub enum ProcMacroKind {
+ }
+ 
+ /// A proc-macro expander implementation.
+-pub trait ProcMacroExpander: fmt::Debug + Send + Sync + RefUnwindSafe + Any {
+-    /// Run the expander with the given input subtree, optional attribute input subtree (for
+-    /// [`ProcMacroKind::Attr`]), environment variables, and span information.
+-    fn expand(
+-        &self,
+-        subtree: &tt::TopSubtree,
+-        attrs: Option<&tt::TopSubtree>,
+-        env: &Env,
+-        def_site: Span,
+-        call_site: Span,
+-        mixed_site: Span,
+-        current_dir: String,
+-    ) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
+-
+-    fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool;
+-}
++/// Run the expander with the given input subtree, optional attribute input subtree (for
++/// [`ProcMacroKind::Attr`]), environment variables, and span information.
++fn expand(
++    &self,
++    subtree: &tt::TopSubtree,
++    attrs: Option<&tt::TopSubtree>,
++    env: &Env,
++    def_site: Span,
++    call_site: Span,
++    mixed_site: Span,
++    current_dir: String,
++) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
++fn eq_dyn(
++    &self,
++    other: &dyn ProcMacroExpander,
++) -> bool;
+ 
+ impl PartialEq for dyn ProcMacroExpander {
+-    fn eq(&self, other: &Self) -> bool {
++    fn eq(
++        &self,
++        other: &Self,
++    ) -> bool {
+         self.eq_dyn(other)
+     }
+ }
+ 
+-impl Eq for dyn ProcMacroExpander {}
++impl Eq for dyn ProcMacroExpander {
++}
+ 
+ #[derive(Debug)]
+ pub enum ProcMacroExpansionError {
+ }
+ 
+ pub type ProcMacroLoadResult = Result<Vec<ProcMacro>, ProcMacroLoadingError>;
++
+ type StoredProcMacroLoadResult = Result<Box<[ProcMacro]>, ProcMacroLoadingError>;
+ 
+ #[derive(Default, Debug)]
+         );
+     }
+ 
+-    pub(crate) fn build(self, crates_id_map: &CratesIdMap) -> ProcMacros {
++    pub(crate) fn build(
++        self,
++        crates_id_map: &CratesIdMap,
++    ) -> ProcMacros {
+         let mut map = self
+             .0
+             .into_iter()
+ 
+ #[derive(Default, Debug)]
+ pub struct ProcMacros(FxHashMap<Crate, Arc<CrateProcMacros>>);
++
+ impl ProcMacros {
+-    fn get(&self, krate: Crate) -> Option<Arc<CrateProcMacros>> {
++    fn get(
++        &self,
++        krate: Crate,
++    ) -> Option<Arc<CrateProcMacros>> {
+         self.0.get(&krate).cloned()
+     }
+ }
+ 
+ impl CrateProcMacros {
+-    fn get(&self, idx: u32, err_span: Span) -> Result<&ProcMacro, ExpandError> {
++    fn get(
++        &self,
++        idx: u32,
++        err_span: Span,
++    ) -> Result<&ProcMacro, ExpandError> {
+         let proc_macros = match &self.0 {
+             Ok(proc_macros) => proc_macros,
+             Err(_) => {
+     pub disabled: bool,
+ }
+ 
+-// `#[derive(PartialEq)]` generates a strange "cannot move" error.
+ impl PartialEq for ProcMacro {
+-    fn eq(&self, other: &Self) -> bool {
+-        let Self {
+-            name,
+-            kind,
+-            expander,
+-            disabled,
+-        } = self;
++    fn eq(
++        &self,
++        other: &Self,
++    ) -> bool {
++        let Self { name, kind, expander, disabled } = self;
+         let Self {
+             name: other_name,
+             kind: other_kind,
+ }
+ 
+ impl CustomProcMacroExpander {
+-    const MISSING_EXPANDER: u32 = !0;
+-    const DISABLED_ID: u32 = !1;
+-    const PROC_MACRO_ATTR_DISABLED: u32 = !2;
++
++
+ 
+     pub fn new(proc_macro_id: u32) -> Self {
+         assert_ne!(proc_macro_id, Self::MISSING_EXPANDER);
+ 
+     /// An expander that always errors due to the actual proc-macro expander missing.
+     pub const fn missing_expander() -> Self {
+-        Self {
+-            proc_macro_id: Self::MISSING_EXPANDER,
+-        }
++        Self { proc_macro_id: Self::MISSING_EXPANDER }
+     }
+ 
+     /// A dummy expander that always errors. This expander is used for macros that have been disabled.
+     pub const fn disabled() -> Self {
+-        Self {
+-            proc_macro_id: Self::DISABLED_ID,
+-        }
++        Self { proc_macro_id: Self::DISABLED_ID }
+     }
+ 
+     /// A dummy expander that always errors. This expander is used for attribute macros when
+     /// proc-macro attribute expansion is disabled.
+     pub const fn disabled_proc_attr() -> Self {
+-        Self {
+-            proc_macro_id: Self::PROC_MACRO_ATTR_DISABLED,
+-        }
++        Self { proc_macro_id: Self::PROC_MACRO_ATTR_DISABLED }
+     }
+ 
+     /// The macro-expander is missing or has yet to be build.
+         self.proc_macro_id == Self::PROC_MACRO_ATTR_DISABLED
+     }
+ 
+-    pub fn as_expand_error(&self, def_crate: Crate) -> Option<ExpandErrorKind> {
++    pub fn as_expand_error(
++        &self,
++        def_crate: Crate,
++    ) -> Option<ExpandErrorKind> {
+         match self.proc_macro_id {
+             Self::PROC_MACRO_ATTR_DISABLED => Some(ExpandErrorKind::ProcMacroAttrExpansionDisabled),
+             Self::DISABLED_ID => Some(ExpandErrorKind::MacroDisabled),
+     ) -> ExpandResult<tt::TopSubtree> {
+         match self.proc_macro_id {
+             Self::PROC_MACRO_ATTR_DISABLED => ExpandResult::new(
+-                tt::TopSubtree::empty(tt::DelimSpan {
+-                    open: call_site,
+-                    close: call_site,
+-                }),
++                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                 ExpandError::new(call_site, ExpandErrorKind::ProcMacroAttrExpansionDisabled),
+             ),
+             Self::MISSING_EXPANDER => ExpandResult::new(
+-                tt::TopSubtree::empty(tt::DelimSpan {
+-                    open: call_site,
+-                    close: call_site,
+-                }),
+-                ExpandError::new(
+-                    call_site,
+-                    ExpandErrorKind::MissingProcMacroExpander(def_crate),
+-                ),
++                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
++                ExpandError::new(call_site, ExpandErrorKind::MissingProcMacroExpander(def_crate)),
+             ),
+             Self::DISABLED_ID => ExpandResult::new(
+-                tt::TopSubtree::empty(tt::DelimSpan {
+-                    open: call_site,
+-                    close: call_site,
+-                }),
++                tt::TopSubtree::empty(tt::DelimSpan { open: call_site, close: call_site }),
+                 ExpandError::new(call_site, ExpandErrorKind::MacroDisabled),
+             ),
+             id => {

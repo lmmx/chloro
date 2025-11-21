@@ -1,0 +1,181 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 17573 bytes
+Chloro size:   17525 bytes
+Rustfmt size:  17849 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ //! Parses `format_args` input.
+ 
++use PositionUsedAs::*;
+ use either::Either;
+ use hir_expand::name::Name;
+ use intern::Symbol;
+ use span::SyntaxContext;
+ use stdx::TupleExt;
+ use syntax::{
+-    ast::{self, IsString},
+     TextRange,
++    ast::{self, IsString},
+ };
+ 
+ use crate::hir::ExprId;
+     /// The `x` or `X` flag (for `Debug` only). E.g. the `x` in `{:x?}`.
+     pub debug_hex: Option<FormatDebugHex>,
+ }
++
+ #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+ pub enum FormatSign {
+     /// The `+` flag.
+     Captured(Name),
+ }
+ 
+-// Only used in parse_args and report_invalid_references,
+-// to indicate how a referred argument was used.
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ enum PositionUsedAs {
+     Placeholder(Option<TextRange>),
+     Precision,
+     Width,
+ }
+-use PositionUsedAs::*;
+ 
+ #[allow(clippy::unnecessary_lazy_evaluations)]
+ pub(crate) fn parse(
+         }
+         None => None,
+     };
+-    let mut parser = parse::Parser::new(
+-        &text,
+-        str_style,
+-        fmt_snippet,
+-        false,
+-        parse::ParseMode::Format,
+-    );
+-
++    let mut parser =
++        parse::Parser::new(&text, str_style, fmt_snippet, false, parse::ParseMode::Format);
+     let mut pieces = Vec::new();
+     while let Some(piece) = parser.next() {
+         if !parser.errors.is_empty() {
+             orphans: vec![],
+         };
+     }
+-
+     let to_span = |inner_span: std::ops::Range<usize>| {
+         is_source_literal.then(|| {
+-            TextRange::new(
+-                inner_span.start.try_into().unwrap(),
+-                inner_span.end.try_into().unwrap(),
+-            )
++            TextRange::new(inner_span.start.try_into().unwrap(), inner_span.end.try_into().unwrap())
+         })
+     };
+-
+     let mut used = vec![false; args.explicit_args().len()];
+     let mut invalid_refs = Vec::new();
+     let mut numeric_references_to_named_arg = Vec::new();
+-
+     enum ArgRef<'a> {
+         Index(usize),
+         Name(&'a str, Option<TextRange>),
+         };
+         FormatArgPosition { index, kind, span }
+     };
+-
+     let mut template = Vec::new();
+     let mut unfinished_literal = String::new();
+     let mut placeholder_index = 0;
+-
+     for piece in pieces {
+         match piece {
+             parse::Piece::Lit(s) => {
+                 unfinished_literal.push_str(s);
+             }
+             parse::Piece::NextArgument(arg) => {
+-                let parse::Argument {
+-                    position,
+-                    position_span,
+-                    format,
+-                } = *arg;
++                let parse::Argument { position, position_span, format } = *arg;
+                 if !unfinished_literal.is_empty() {
+-                    template.push(FormatArgsPiece::Literal(Symbol::intern(
+-                        &unfinished_literal,
+-                    )));
++                    template.push(FormatArgsPiece::Literal(Symbol::intern(&unfinished_literal)));
+                     unfinished_literal.clear();
+                 }
+ 
+-                let span = parser
+-                    .arg_places
+-                    .get(placeholder_index)
+-                    .and_then(|s| to_span(s.clone()));
++                let span =
++                    parser.arg_places.get(placeholder_index).and_then(|s| to_span(s.clone()));
+                 placeholder_index += 1;
+ 
+                 let position_span = to_span(position_span);
+             }
+         }
+     }
+-
+     if !unfinished_literal.is_empty() {
+-        template.push(FormatArgsPiece::Literal(Symbol::intern(
+-            &unfinished_literal,
+-        )));
++        template.push(FormatArgsPiece::Literal(Symbol::intern(&unfinished_literal)));
+     }
+-
+     if !invalid_refs.is_empty() {
+         // FIXME: Diagnose
+     }
+-
+     let unused = used
+         .iter()
+         .enumerate()
+             (args.explicit_args()[i].expr, named)
+         })
+         .collect::<Vec<_>>();
+-
+     if !unused.is_empty() {
+         // FIXME: Diagnose
+     }
+-
+     FormatArgs {
+         template: template.into_boxed_slice(),
+         arguments: args.finish(),
+         }
+     }
+ 
+-    pub fn add(&mut self, arg: FormatArgument) -> usize {
++    pub fn add(
++        &mut self,
++        arg: FormatArgument,
++    ) -> usize {
+         let index = self.arguments.len();
+         if let Some(name) = arg.kind.ident() {
+             self.names.push((name.clone(), index));
+         index
+     }
+ 
+-    pub fn by_name(&self, name: &Name) -> Option<(usize, &FormatArgument)> {
++    pub fn by_name(
++        &self,
++        name: &Name,
++    ) -> Option<(usize, &FormatArgument)> {
+         let &(_, i) = self.names.iter().find(|(n, _)| n == name)?;
+         Some((i, &self.arguments[i]))
+     }
+ 
+-    pub fn by_index(&self, i: usize) -> Option<&FormatArgument> {
++    pub fn by_index(
++        &self,
++        i: usize,
++    ) -> Option<&FormatArgument> {
+         (i < self.num_explicit_args).then(|| &self.arguments[i])
+     }
+ 

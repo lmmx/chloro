@@ -1,0 +1,226 @@
+COMPARISON DIFF
+============================================================
+
+Original size: 10632 bytes
+Chloro size:   10103 bytes
+Rustfmt size:  10803 bytes
+
+✗ Outputs DIFFER
+
+--- DIFF (- rustfmt, + chloro) ---
+ use hir::{AsAssocItem, Impl, Semantics};
+ use ide_db::{
++    RootDatabase,
+     defs::{Definition, NameClass, NameRefClass},
+     helpers::pick_best_token,
+-    RootDatabase,
+ };
+-use syntax::{ast, AstNode, SyntaxKind::*, T};
++use syntax::{AstNode, SyntaxKind::*, T, ast};
+ 
+ use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
+ 
+     pub filter_adjacent_derive_implementations: bool,
+ }
+ 
+-// Feature: Go to Implementation
+-//
+-// Navigates to the impl items of types.
+-//
+-// | Editor  | Shortcut |
+-// |---------|----------|
+-// | VS Code | <kbd>Ctrl+F12</kbd>
+-//
+-// ![Go to Implementation](https://user-images.githubusercontent.com/48062697/113065566-02f85480-91b1-11eb-9288-aaad8abd8841.gif)
+ pub(crate) fn goto_implementation(
+     db: &RootDatabase,
+     config: &GotoImplementationConfig,
+     let sema = Semantics::new(db);
+     let source_file = sema.parse_guess_edition(file_id);
+     let syntax = source_file.syntax().clone();
+-
+     let original_token = pick_best_token(syntax.token_at_offset(offset), |kind| match kind {
+         IDENT | T![self] | INT_NUMBER => 1,
+         _ => 0,
+         })
+         .flatten()
+         .collect();
+-
+     Some(RangeInfo { range, info: navs })
+ }
+ 
+-fn impls_for_ty(sema: &Semantics<'_, RootDatabase>, ty: hir::Type<'_>) -> Vec<NavigationTarget> {
++fn impls_for_ty(
++    sema: &Semantics<'_, RootDatabase>,
++    ty: hir::Type<'_>,
++) -> Vec<NavigationTarget> {
+     Impl::all_for_type(sema.db, ty)
+         .into_iter()
+         .filter_map(|imp| imp.try_to_nav(sema))
+ mod tests {
+     use ide_db::FileRange;
+     use itertools::Itertools;
+-
+-    use crate::{fixture, GotoImplementationConfig};
+-
+-    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig {
+-        filter_adjacent_derive_implementations: false,
+-    };
+-
++    use crate::{GotoImplementationConfig, fixture};
+     #[track_caller]
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+         check_with_config(TEST_CONFIG, ra_fixture);
+     }
+-
+     #[track_caller]
+     fn check_with_config(
+         config: &GotoImplementationConfig,
+         #[rust_analyzer::rust_fixture] ra_fixture: &str,
+     ) {
+         let (analysis, position, expected) = fixture::annotations(ra_fixture);
+-
+-        let navs = analysis
+-            .goto_implementation(config, position)
+-            .unwrap()
+-            .unwrap()
+-            .info;
+-
++        let navs = analysis.goto_implementation(config, position).unwrap().unwrap().info;
+         let cmp = |frange: &FileRange| (frange.file_id, frange.range.start());
+-
+         let actual = navs
+             .into_iter()
+-            .map(|nav| FileRange {
+-                file_id: nav.file_id,
+-                range: nav.focus_or_full_range(),
+-            })
+-            .sorted_by_key(cmp)
+-            .collect::<Vec<_>>();
+-        let expected = expected
+-            .into_iter()
+-            .map(|(range, _)| range)
++            .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })
+             .sorted_by_key(cmp)
+             .collect::<Vec<_>>();
++        let expected =
++            expected.into_iter().map(|(range, _)| range).sorted_by_key(cmp).collect::<Vec<_>>();
+         assert_eq!(expected, actual);
+     }
+-
+     #[test]
+     fn goto_implementation_works() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_works_multiple_blocks() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_works_multiple_mods() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_works_multiple_files() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_for_trait() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_for_trait_multiple_files() {
+         check(
+             "#,
+         );
+     }
+-
+-    // FIXME(next-solver): it would be nice to be able to also point to `&Foo`
+     #[test]
+     fn goto_implementation_all_impls() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_to_builtin_derive() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_type_alias() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_adt_generic() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_builtin() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_trait_functions() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_implementation_trait_assoc_const() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_adt_implementation_inside_block() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn goto_trait_implementation_inside_block() {
+         check(
+ "#,
+         );
+     }
+-
+     #[test]
+     fn filter_adjacent_derives() {
+         check_with_config(
+-            &GotoImplementationConfig {
+-                filter_adjacent_derive_implementations: true,
+-            },
++            &GotoImplementationConfig { filter_adjacent_derive_implementations: true },
+             r#"
+ //- minicore: clone, copy, derive
+ 
