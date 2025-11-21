@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111324 bytes
+Chloro size:   111384 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -391,13 +391,6 @@ Rustfmt size:  113494 bytes
                  None => None,
              };
              (lsp_types::InlayHintLabel::String(text), hint_tooltip)
-     Ok((label, tooltip))
- }
- 
--static TOKEN_RESULT_COUNTER: AtomicU32 = AtomicU32::new(1);
- 
- pub(crate) fn semantic_tokens(
-     text: &str,
      semantics_tokens_augments_syntax_tokens: bool,
      non_standard_tokens: bool,
  ) -> lsp_types::SemanticTokens {

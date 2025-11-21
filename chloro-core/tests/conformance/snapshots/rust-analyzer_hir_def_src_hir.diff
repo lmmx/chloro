@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   16117 bytes
+Chloro size:   16353 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
@@ -168,11 +168,11 @@ Rustfmt size:  17756 bytes
 -}
 -
  impl AsmOptions {
--    pub const COUNT: usize = Self::all().bits().count_ones() as usize;
+     pub const COUNT: usize = Self::all().bits().count_ones() as usize;
  
--    pub const GLOBAL_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW);
--    pub const NAKED_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW).union(Self::NORETURN);
+     pub const GLOBAL_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW);
 +
+     pub const NAKED_OPTIONS: Self = Self::ATT_SYNTAX.union(Self::RAW).union(Self::NORETURN);
  
      pub fn human_readable_names(&self) -> Vec<&'static str> {
          let mut options = vec![];

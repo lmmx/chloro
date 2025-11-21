@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   1787 bytes
+Chloro size:   2094 bytes
 Rustfmt size:  2157 bytes
 
 ✗ Outputs DIFFER
@@ -19,10 +19,9 @@ Rustfmt size:  2157 bytes
  use super::AttrCompletion;
  
  pub(super) fn complete_on_unimplemented(
-     }
  }
  
--const ATTRIBUTE_ARGS: &[AttrCompletion] = &[
+ const ATTRIBUTE_ARGS: &[AttrCompletion] = &[
 -    super::attr(
 -        r#"label = "…""#,
 -        Some("label"),
@@ -33,5 +32,7 @@ Rustfmt size:  2157 bytes
 -        Some("message"),
 -        Some(r#"message = "${0:message}""#),
 -    ),
--    super::attr(r#"note = "…""#, Some("note"), Some(r#"note = "${0:note}""#)),
--];
++    super::attr(r#"label = "…""#, Some("label"), Some(r#"label = "${0:label}""#)),
++    super::attr(r#"message = "…""#, Some("message"), Some(r#"message = "${0:message}""#)),
+     super::attr(r#"note = "…""#, Some("note"), Some(r#"note = "${0:note}""#)),
+ ];

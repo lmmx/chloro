@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10632 bytes
-Chloro size:   10103 bytes
+Chloro size:   10231 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -68,6 +68,7 @@ Rustfmt size:  10803 bytes
 -    };
 -
 +    use crate::{GotoImplementationConfig, fixture};
++    const TEST_CONFIG: &GotoImplementationConfig = &GotoImplementationConfig { filter_adjacent_derive_implementations: false };
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          check_with_config(TEST_CONFIG, ra_fixture);

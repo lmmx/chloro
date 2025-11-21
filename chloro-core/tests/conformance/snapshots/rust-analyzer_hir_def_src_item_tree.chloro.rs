@@ -68,9 +68,13 @@ mod tests;
 pub(crate) struct RawVisibilityId(u32);
 
 impl RawVisibilityId {
+    const PUB: Self = RawVisibilityId(u32::MAX);
 
+    const PRIV_IMPLICIT: Self = RawVisibilityId(u32::MAX - 1);
 
+    const PRIV_EXPLICIT: Self = RawVisibilityId(u32::MAX - 2);
 
+    const PUB_CRATE: Self = RawVisibilityId(u32::MAX - 3);
 }
 
 impl fmt::Debug for RawVisibilityId {
@@ -305,12 +309,11 @@ enum BigModItem {
     Use(Use),
 }
 
-// `ModItem` is stored a bunch in `ItemTree`'s so we pay the max for each item. It should stay as
-// small as possible which is why we split them in two, most common ones are 3 usize but some rarer
-// ones are 5.
 #[cfg(target_pointer_width = "64")]
+const [(); std::mem::size_of::<BigModItem>()] = [(); std::mem::size_of::<[usize; 5]>()];
 
 #[cfg(target_pointer_width = "64")]
+const [(); std::mem::size_of::<SmallModItem>()] = [(); std::mem::size_of::<[usize; 3]>()];
 
 #[derive(Default, Debug, Eq, PartialEq)]
 pub struct ItemTreeDataStats {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31478 bytes
+Chloro size:   31541 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
@@ -111,13 +111,6 @@ Rustfmt size:  31299 bytes
      generation: DiagnosticsGeneration,
      sender: Sender<FlycheckMessage>,
      config: FlycheckConfig,
-     CheckEvent(Option<CargoCheckMessage>),
- }
- 
--pub(crate) const SAVED_FILE_PLACEHOLDER: &str = "$saved_file";
- 
- impl FlycheckActor {
-     fn new(
          }
      }
  

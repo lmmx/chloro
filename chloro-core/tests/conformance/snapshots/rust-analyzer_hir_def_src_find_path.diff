@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   62151 bytes
+Chloro size:   62220 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
@@ -40,12 +40,11 @@ Rustfmt size:  62212 bytes
  }
 -use Stability::*;
  
--const MAX_PATH_LEN: usize = 15;
--const FIND_PATH_FUEL: usize = 10000;
+ const MAX_PATH_LEN: usize = 15;
 +
+ const FIND_PATH_FUEL: usize = 10000;
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub enum PrefixKind {
  }
  
  /// Attempts to find a path to refer to the given `item` visible from the `from` ModuleId

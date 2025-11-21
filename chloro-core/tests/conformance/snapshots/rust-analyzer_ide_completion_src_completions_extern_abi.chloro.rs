@@ -9,7 +9,37 @@ use crate::{
     CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
 };
 
-// Most of these are feature gated, we should filter/add feature gate completions once we have them.
+const SUPPORTED_CALLING_CONVENTIONS: &[&str] = &[
+    "Rust",
+    "C",
+    "C-unwind",
+    "cdecl",
+    "stdcall",
+    "stdcall-unwind",
+    "fastcall",
+    "vectorcall",
+    "thiscall",
+    "thiscall-unwind",
+    "aapcs",
+    "win64",
+    "sysv64",
+    "ptx-kernel",
+    "msp430-interrupt",
+    "x86-interrupt",
+    "efiapi",
+    "avr-interrupt",
+    "avr-non-blocking-interrupt",
+    "riscv-interrupt-m",
+    "riscv-interrupt-s",
+    "C-cmse-nonsecure-call",
+    "C-cmse-nonsecure-entry",
+    "wasm",
+    "system",
+    "system-unwind",
+    "rust-intrinsic",
+    "rust-call",
+    "unadjusted",
+];
 
 pub(crate) fn complete_extern_abi(
     acc: &mut Completions,

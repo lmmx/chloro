@@ -45,6 +45,7 @@ pub struct DocumentationLinks {
     pub local_url: Option<String>,
 }
 
+const MARKDOWN_OPTIONS: Options = Options::ENABLE_FOOTNOTES.union(Options::ENABLE_TABLES).union(Options::ENABLE_TASKLISTS);
 
 /// Rewrite documentation links in markdown to point to an online host (e.g. docs.rs)
 pub(crate) fn rewrite_links(

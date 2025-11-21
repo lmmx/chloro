@@ -27,12 +27,12 @@ pub enum Path {
     LangItem(LangItemTarget, Option<Name>),
 }
 
-// This type is being used a lot, make sure it doesn't grow unintentionally.
 #[cfg(all(target_arch = "x86_64", target_pointer_width = "64"))]
-{
+const () = {
     assert!(size_of::<Path>() == 24);
     assert!(size_of::<Option<Path>>() == 24);
-}
+};
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NormalPath {
     pub generic_args: Box<[Option<GenericArgs>]>,
@@ -216,6 +216,7 @@ pub struct PathSegment<'a> {
 }
 
 impl PathSegment<'_> {
+    pub const MISSING: PathSegment<'static> = PathSegment { name: &Name::missing(), args_and_bindings: None };
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -225,6 +226,7 @@ pub struct PathSegments<'a> {
 }
 
 impl<'a> PathSegments<'a> {
+    pub const EMPTY: PathSegments<'static> = PathSegments { segments: &[], generic_args: None };
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0

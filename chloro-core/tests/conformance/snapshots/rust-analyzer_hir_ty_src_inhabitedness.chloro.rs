@@ -56,7 +56,9 @@ struct UninhabitedFrom<'a, 'db> {
     env: Arc<TraitEnvironment<'db>>,
 }
 
+const CONTINUE_OPAQUELY_INHABITED: ControlFlow<VisiblyUninhabited> = Continue(());
 
+const BREAK_VISIBLY_UNINHABITED: ControlFlow<VisiblyUninhabited> = Break(VisiblyUninhabited);
 
 #[derive(PartialEq, Eq)]
 struct VisiblyUninhabited;

@@ -64,7 +64,9 @@ enum Stability {
     Stable,
 }
 
+const MAX_PATH_LEN: usize = 15;
 
+const FIND_PATH_FUEL: usize = 10000;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum PrefixKind {

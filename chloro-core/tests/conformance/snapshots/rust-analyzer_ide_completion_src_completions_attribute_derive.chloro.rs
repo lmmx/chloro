@@ -108,3 +108,9 @@ struct DeriveDependencies {
 
 /// Standard Rust derives that have dependencies
 /// (the dependencies are needed so that the main derive don't break the compilation when added)
+const DEFAULT_DERIVE_DEPENDENCIES: &[DeriveDependencies] = &[
+    DeriveDependencies { label: "Copy", dependencies: &["Clone"] },
+    DeriveDependencies { label: "Eq", dependencies: &["PartialEq"] },
+    DeriveDependencies { label: "Ord", dependencies: &["PartialOrd", "Eq", "PartialEq"] },
+    DeriveDependencies { label: "PartialOrd", dependencies: &["PartialEq"] },
+];

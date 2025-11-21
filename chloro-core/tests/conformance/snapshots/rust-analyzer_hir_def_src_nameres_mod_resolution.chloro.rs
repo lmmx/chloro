@@ -6,6 +6,7 @@ use hir_expand::{EditionedFileId, name::Name};
 
 use crate::{HirFileId, db::DefDatabase};
 
+const MOD_DEPTH_LIMIT: usize = 32;
 
 #[derive(Clone, Debug)]
 pub(super) struct ModDir {

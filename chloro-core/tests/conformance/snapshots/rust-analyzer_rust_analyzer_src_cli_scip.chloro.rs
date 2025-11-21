@@ -266,7 +266,21 @@ impl flags::Scip {
     }
 }
 
-// FIXME: Known buggy cases are described here.
+const DUPLICATE_SYMBOLS_MESSAGE: &str = "
+Encountered duplicate scip symbols, indicating an internal rust-analyzer bug. These duplicates are
+included in the output, but this causes information lookup to be ambiguous and so information about
+these symbols presented by downstream tools may be incorrect.
+
+Known rust-analyzer bugs that can cause this:
+
+  * Definitions in crate example binaries which have the same symbol as definitions in the library
+    or some other example.
+
+  * Struct/enum/const/static/impl definitions nested in a function do not mention the function name.
+    See #18771.
+
+Duplicate symbols encountered:
+";
 
 fn compute_symbol_info(
     symbol: String,

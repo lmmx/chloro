@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   149788 bytes
+Chloro size:   150219 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -1651,20 +1651,6 @@ Rustfmt size:  167117 bytes
      pub location: AnnotationLocation,
      pub filter_adjacent_derive_implementations: bool,
  }
- }
- 
- impl HoverActionsConfig {
--    pub const NO_ACTIONS: Self = Self {
--        implementations: false,
--        references: false,
--        run: false,
--        debug: false,
--        update_test: false,
--        goto_type_def: false,
--    };
- 
-     pub fn any(&self) -> bool {
-         self.implementations || self.references || self.runnable() || self.goto_type_def
  
  #[derive(Debug, Clone)]
  pub enum RustfmtConfig {
@@ -2269,6 +2255,7 @@ Rustfmt size:  167117 bytes
  impl GlobalWorkspaceLocalConfigInput {
 -    const FIELDS: &'static [&'static [&'static str]] =
 -        &[GlobalConfigInput::FIELDS, LocalConfigInput::FIELDS];
++    const FIELDS: &'static [&'static [&'static str]] = &[GlobalConfigInput::FIELDS, LocalConfigInput::FIELDS];
 +
      fn from_toml(
          toml: toml::Table,
@@ -2279,6 +2266,7 @@ Rustfmt size:  167117 bytes
 -    const FIELDS: &'static [&'static [&'static str]] =
 -        &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
 -    fn from_toml(toml: toml::Table, error_sink: &mut Vec<(String, toml::de::Error)>) -> Self {
++    const FIELDS: &'static [&'static [&'static str]] = &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
 +
 +    fn from_toml(
 +        toml: toml::Table,

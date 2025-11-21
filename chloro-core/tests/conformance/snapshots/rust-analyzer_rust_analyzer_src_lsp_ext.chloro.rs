@@ -33,6 +33,7 @@ impl Request for InternalTestingFetchConfig {
 
     type Result = Option<InternalTestingFetchConfigResponse>;
 
+    const METHOD: &'static str = "rust-analyzer-internal/internalTestingFetchConfig";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -50,6 +51,7 @@ impl Request for AnalyzerStatus {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/analyzerStatus";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -74,6 +76,7 @@ impl Request for FetchDependencyList {
 
     type Result = FetchDependencyListResult;
 
+    const METHOD: &'static str = "rust-analyzer/fetchDependencyList";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -95,6 +98,7 @@ impl Request for MemoryUsage {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/memoryUsage";
 }
 
 pub enum ReloadWorkspace {
@@ -105,6 +109,7 @@ impl Request for ReloadWorkspace {
 
     type Result = ();
 
+    const METHOD: &'static str = "rust-analyzer/reloadWorkspace";
 }
 
 pub enum RebuildProcMacros {
@@ -115,6 +120,7 @@ impl Request for RebuildProcMacros {
 
     type Result = ();
 
+    const METHOD: &'static str = "rust-analyzer/rebuildProcMacros";
 }
 
 pub enum ViewSyntaxTree {
@@ -125,6 +131,7 @@ impl Request for ViewSyntaxTree {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewSyntaxTree";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -141,6 +148,7 @@ impl Request for ViewHir {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewHir";
 }
 
 pub enum ViewMir {
@@ -151,6 +159,7 @@ impl Request for ViewMir {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewMir";
 }
 
 pub enum InterpretFunction {
@@ -161,6 +170,7 @@ impl Request for InterpretFunction {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/interpretFunction";
 }
 
 pub enum ViewFileText {
@@ -171,6 +181,7 @@ impl Request for ViewFileText {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewFileText";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -188,6 +199,7 @@ impl Request for ViewCrateGraph {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewCrateGraph";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -204,6 +216,7 @@ impl Request for ViewItemTree {
 
     type Result = String;
 
+    const METHOD: &'static str = "rust-analyzer/viewItemTree";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -249,6 +262,7 @@ impl Request for DiscoverTest {
 
     type Result = DiscoverTestResults;
 
+    const METHOD: &'static str = "experimental/discoverTest";
 }
 
 pub enum DiscoveredTests {
@@ -257,6 +271,7 @@ pub enum DiscoveredTests {
 impl Notification for DiscoveredTests {
     type Params = DiscoverTestResults;
 
+    const METHOD: &'static str = "experimental/discoveredTests";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -274,6 +289,7 @@ impl Request for RunTest {
 
     type Result = ();
 
+    const METHOD: &'static str = "experimental/runTest";
 }
 
 pub enum EndRunTest {
@@ -282,6 +298,7 @@ pub enum EndRunTest {
 impl Notification for EndRunTest {
     type Params = ();
 
+    const METHOD: &'static str = "experimental/endRunTest";
 }
 
 pub enum AppendOutputToRunTest {
@@ -290,6 +307,7 @@ pub enum AppendOutputToRunTest {
 impl Notification for AppendOutputToRunTest {
     type Params = String;
 
+    const METHOD: &'static str = "experimental/appendOutputToRunTest";
 }
 
 pub enum AbortRunTest {
@@ -298,6 +316,7 @@ pub enum AbortRunTest {
 impl Notification for AbortRunTest {
     type Params = ();
 
+    const METHOD: &'static str = "experimental/abortRunTest";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -325,6 +344,7 @@ pub enum ChangeTestState {
 impl Notification for ChangeTestState {
     type Params = ChangeTestStateParams;
 
+    const METHOD: &'static str = "experimental/changeTestState";
 }
 
 pub enum ExpandMacro {
@@ -335,6 +355,7 @@ impl Request for ExpandMacro {
 
     type Result = Option<ExpandedMacro>;
 
+    const METHOD: &'static str = "rust-analyzer/expandMacro";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -359,6 +380,7 @@ impl Request for ViewRecursiveMemoryLayout {
 
     type Result = Option<RecursiveMemoryLayout>;
 
+    const METHOD: &'static str = "rust-analyzer/viewRecursiveMemoryLayout";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -386,6 +408,7 @@ pub enum CancelFlycheck {
 impl Notification for CancelFlycheck {
     type Params = ();
 
+    const METHOD: &'static str = "rust-analyzer/cancelFlycheck";
 }
 
 pub enum RunFlycheck {
@@ -394,6 +417,7 @@ pub enum RunFlycheck {
 impl Notification for RunFlycheck {
     type Params = RunFlycheckParams;
 
+    const METHOD: &'static str = "rust-analyzer/runFlycheck";
 }
 
 pub enum ClearFlycheck {
@@ -402,6 +426,7 @@ pub enum ClearFlycheck {
 impl Notification for ClearFlycheck {
     type Params = ();
 
+    const METHOD: &'static str = "rust-analyzer/clearFlycheck";
 }
 
 pub enum OpenServerLogs {
@@ -410,6 +435,7 @@ pub enum OpenServerLogs {
 impl Notification for OpenServerLogs {
     type Params = ();
 
+    const METHOD: &'static str = "rust-analyzer/openServerLogs";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -426,6 +452,7 @@ impl Request for MatchingBrace {
 
     type Result = Vec<Position>;
 
+    const METHOD: &'static str = "experimental/matchingBrace";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -443,6 +470,7 @@ impl Request for ParentModule {
 
     type Result = Option<lsp_types::GotoDefinitionResponse>;
 
+    const METHOD: &'static str = "experimental/parentModule";
 }
 
 pub enum ChildModules {
@@ -453,6 +481,7 @@ impl Request for ChildModules {
 
     type Result = Option<lsp_types::GotoDefinitionResponse>;
 
+    const METHOD: &'static str = "experimental/childModules";
 }
 
 pub enum JoinLines {
@@ -463,6 +492,7 @@ impl Request for JoinLines {
 
     type Result = Vec<lsp_types::TextEdit>;
 
+    const METHOD: &'static str = "experimental/joinLines";
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -480,6 +510,7 @@ impl Request for OnEnter {
 
     type Result = Option<Vec<SnippetTextEdit>>;
 
+    const METHOD: &'static str = "experimental/onEnter";
 }
 
 pub enum Runnables {
@@ -490,6 +521,7 @@ impl Request for Runnables {
 
     type Result = Vec<Runnable>;
 
+    const METHOD: &'static str = "experimental/runnables";
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -556,6 +588,7 @@ impl Request for RelatedTests {
 
     type Result = Vec<TestInfo>;
 
+    const METHOD: &'static str = "rust-analyzer/relatedTests";
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -571,6 +604,7 @@ impl Request for Ssr {
 
     type Result = lsp_types::WorkspaceEdit;
 
+    const METHOD: &'static str = "experimental/ssr";
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -592,6 +626,7 @@ pub enum ServerStatusNotification {
 impl Notification for ServerStatusNotification {
     type Params = ServerStatusParams;
 
+    const METHOD: &'static str = "experimental/serverStatus";
 }
 
 #[derive(Deserialize, Serialize, PartialEq, Eq, Clone)]
@@ -631,6 +666,7 @@ impl Request for CodeActionRequest {
 
     type Result = Option<Vec<CodeAction>>;
 
+    const METHOD: &'static str = "textDocument/codeAction";
 }
 
 pub enum CodeActionResolveRequest {
@@ -641,6 +677,7 @@ impl Request for CodeActionResolveRequest {
 
     type Result = CodeAction;
 
+    const METHOD: &'static str = "codeAction/resolve";
 }
 
 #[derive(Debug, PartialEq, Clone, Default, Deserialize, Serialize)]
@@ -719,6 +756,7 @@ impl Request for HoverRequest {
 
     type Result = Option<Hover>;
 
+    const METHOD: &'static str = lsp_types::request::HoverRequest::METHOD;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
@@ -768,6 +806,7 @@ impl Request for ExternalDocs {
 
     type Result = ExternalDocsResponse;
 
+    const METHOD: &'static str = "experimental/externalDocs";
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
@@ -798,6 +837,7 @@ impl Request for OpenCargoToml {
 
     type Result = Option<lsp_types::GotoDefinitionResponse>;
 
+    const METHOD: &'static str = "experimental/openCargoToml";
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -829,6 +869,7 @@ impl Request for MoveItem {
 
     type Result = Vec<SnippetTextEdit>;
 
+    const METHOD: &'static str = "experimental/moveItem";
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -854,6 +895,7 @@ impl Request for WorkspaceSymbol {
 
     type Result = Option<lsp_types::WorkspaceSymbolResponse>;
 
+    const METHOD: &'static str = "workspace/symbol";
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Default, Deserialize, Serialize)]
@@ -896,6 +938,7 @@ impl Request for OnTypeFormatting {
 
     type Result = Option<Vec<SnippetTextEdit>>;
 
+    const METHOD: &'static str = "textDocument/onTypeFormatting";
 }
 
 #[derive(Debug, Serialize, Deserialize)]

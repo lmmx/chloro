@@ -710,6 +710,7 @@ fn inlay_hint_label(
     Ok((label, tooltip))
 }
 
+static TOKEN_RESULT_COUNTER: AtomicU32 = AtomicU32::new(1);
 
 pub(crate) fn semantic_tokens(
     text: &str,

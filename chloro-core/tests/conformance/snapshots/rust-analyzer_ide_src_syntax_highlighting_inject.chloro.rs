@@ -76,7 +76,9 @@ pub(super) fn ra_fixture(
     Some(())
 }
 
+const RUSTDOC_FENCE_LENGTH: usize = 3;
 
+const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
 
 /// Injection of syntax highlighting of doctests and intra doc links.
 pub(super) fn doc_comment(

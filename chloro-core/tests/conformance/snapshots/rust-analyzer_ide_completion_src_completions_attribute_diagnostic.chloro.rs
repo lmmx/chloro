@@ -52,3 +52,8 @@ pub(super) fn complete_on_unimplemented(
     }
 }
 
+const ATTRIBUTE_ARGS: &[AttrCompletion] = &[
+    super::attr(r#"label = "…""#, Some("label"), Some(r#"label = "${0:label}""#)),
+    super::attr(r#"message = "…""#, Some("message"), Some(r#"message = "${0:message}""#)),
+    super::attr(r#"note = "…""#, Some("note"), Some(r#"note = "${0:note}""#)),
+];

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   18962 bytes
+Chloro size:   19111 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -31,15 +31,13 @@ Rustfmt size:  23115 bytes
  struct RatomlTest {
      urls: Vec<Url>,
      server: Server,
- }
  
  impl RatomlTest {
--    const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;
--    const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
+     const EMIT_MUST_USE: &'static str = r#"assist.emitMustUse = true"#;
 +
+     const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
  
      fn new(
-         fixtures: Vec<&str>,
      ) -> Self {
          let tmp_dir = TestDir::new();
          let tmp_path = tmp_dir.path().to_owned();

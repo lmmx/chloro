@@ -93,6 +93,13 @@ pub mod proc_macro;
 #[cfg(test)]
 mod tests;
 
+const PREDEFINED_TOOLS: &[SmolStr] = &[
+    SmolStr::new_static("clippy"),
+    SmolStr::new_static("rustfmt"),
+    SmolStr::new_static("diagnostic"),
+    SmolStr::new_static("miri"),
+    SmolStr::new_static("rust_analyzer"),
+];
 
 /// Parts of the def map that are only needed when analyzing code in the same crate.
 ///
@@ -124,6 +131,7 @@ impl std::hash::Hash for LocalDefMap {
 }
 
 impl LocalDefMap {
+    pub(crate) const EMPTY: &Self = &Self { extern_prelude: FxIndexMap::with_hasher(rustc_hash::FxBuildHasher) };
 
     fn shrink_to_fit(&mut self) {
         let Self { extern_prelude } = self;
@@ -445,7 +453,8 @@ pub fn block_def_map(
 }
 
 impl DefMap {
-/// The module id of a crate or block root.
+    /// The module id of a crate or block root.
+    pub const ROOT: LocalModuleId = LocalModuleId::from_raw(la_arena::RawIdx::from_u32(0));
 
     pub fn edition(&self) -> Edition {
         self.data.edition

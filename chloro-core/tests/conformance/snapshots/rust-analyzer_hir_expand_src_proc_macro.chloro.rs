@@ -217,8 +217,11 @@ pub struct CustomProcMacroExpander {
 }
 
 impl CustomProcMacroExpander {
+    const MISSING_EXPANDER: u32 = !0;
 
+    const DISABLED_ID: u32 = !1;
 
+    const PROC_MACRO_ATTR_DISABLED: u32 = !2;
 
     pub fn new(proc_macro_id: u32) -> Self {
         assert_ne!(proc_macro_id, Self::MISSING_EXPANDER);

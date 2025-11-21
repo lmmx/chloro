@@ -208,12 +208,13 @@ struct DeriveMacroInvocation {
     derive_call_ids: SmallVec<[Option<MacroCallId>; 4]>,
 }
 
-{
+pub(crate) static BUILTIN_SCOPE: LazyLock<FxIndexMap<Name, PerNs>> = LazyLock::new(|| {
     BuiltinType::all_builtin_types()
         .iter()
         .map(|(name, ty)| (name.clone(), PerNs::types((*ty).into(), Visibility::Public, None)))
-        .collect();
-}
+        .collect()
+});
+
 /// Shadow mode for builtin type which can be shadowed by module.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub(crate) enum BuiltinShadowMode {

@@ -247,15 +247,46 @@ impl Tester {
 }
 
 /// These tests break rust-analyzer (either by panicking or hanging) so we should ignore them.
-// #15646
-// #15646
-// ../rust/tests/ui/associated-type-bounds/return-type-notation/basic.rs
-// exponential time
-// exponential time
-// unexpected free variable with depth `^1.0` with outer binder ^0
-// Huge recursion limit for macros?
-// crates/hir-ty/src/builder.rs:78:9: assertion failed: self.remaining() > 0
+const IGNORED_TESTS: &[&str] = &[
+    "trait-with-missing-associated-type-restriction.rs", // #15646
+    "trait-with-missing-associated-type-restriction-fixable.rs", // #15646
+    "resolve-self-in-impl.rs",
+    "basic.rs", // ../rust/tests/ui/associated-type-bounds/return-type-notation/basic.rs
+    "issue-26056.rs",
+    "float-field.rs",
+    "invalid_operator_trait.rs",
+    "type-alias-impl-trait-assoc-dyn.rs",
+    "deeply-nested_closures.rs",    // exponential time
+    "hang-on-deeply-nested-dyn.rs", // exponential time
+    "dyn-rpit-and-let.rs", // unexpected free variable with depth `^1.0` with outer binder ^0
+    "issue-16098.rs",      // Huge recursion limit for macros?
+    "issue-83471.rs", // crates/hir-ty/src/builder.rs:78:9: assertion failed: self.remaining() > 0
+];
 
+const SUPPORTED_DIAGNOSTICS: &[DiagnosticCode] = &[
+    DiagnosticCode::RustcHardError("E0023"),
+    DiagnosticCode::RustcHardError("E0046"),
+    DiagnosticCode::RustcHardError("E0063"),
+    DiagnosticCode::RustcHardError("E0107"),
+    DiagnosticCode::RustcHardError("E0117"),
+    DiagnosticCode::RustcHardError("E0133"),
+    DiagnosticCode::RustcHardError("E0210"),
+    DiagnosticCode::RustcHardError("E0268"),
+    DiagnosticCode::RustcHardError("E0308"),
+    DiagnosticCode::RustcHardError("E0384"),
+    DiagnosticCode::RustcHardError("E0407"),
+    DiagnosticCode::RustcHardError("E0432"),
+    DiagnosticCode::RustcHardError("E0451"),
+    DiagnosticCode::RustcHardError("E0507"),
+    DiagnosticCode::RustcHardError("E0583"),
+    DiagnosticCode::RustcHardError("E0559"),
+    DiagnosticCode::RustcHardError("E0616"),
+    DiagnosticCode::RustcHardError("E0618"),
+    DiagnosticCode::RustcHardError("E0624"),
+    DiagnosticCode::RustcHardError("E0774"),
+    DiagnosticCode::RustcHardError("E0767"),
+    DiagnosticCode::RustcHardError("E0777"),
+];
 
 impl flags::RustcTests {
     pub fn run(self) -> Result<()> {

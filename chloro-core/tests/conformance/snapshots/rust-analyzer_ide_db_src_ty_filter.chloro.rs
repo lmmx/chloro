@@ -17,6 +17,7 @@ pub enum TryEnum {
 }
 
 impl TryEnum {
+    const ALL: [TryEnum; 2] = [TryEnum::Option, TryEnum::Result];
 
     /// Returns `Some(..)` if the provided type is an enum that implements `std::ops::Try`.
     pub fn from_ty(

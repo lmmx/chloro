@@ -33,6 +33,7 @@ type MacroArgResult = (Arc<tt::TopSubtree>, SyntaxFixupUndoInfo, Span);
 /// an error will be emitted.
 ///
 /// Actual max for `analysis-stats .` at some point: 30672.
+const TOKEN_LIMIT: usize = 2_097_152;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TokenExpander {

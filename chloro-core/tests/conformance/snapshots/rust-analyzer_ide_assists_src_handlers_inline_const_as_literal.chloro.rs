@@ -80,6 +80,29 @@ fn validate_type_recursively(
 mod tests {
     use super::*;
     use crate::tests::{check_assist, check_assist_not_applicable};
+    const NUMBER: u8 = 1;
+    const BOOL: u8 = 2;
+    const STR: u8 = 4;
+    const CHAR: u8 = 8;
+    const TEST_PAIRS: &[(&str, &str, u8)] = &[
+        ("u8", "0", NUMBER),
+        ("u16", "0", NUMBER),
+        ("u32", "0", NUMBER),
+        ("u64", "0", NUMBER),
+        ("u128", "0", NUMBER),
+        ("usize", "0", NUMBER),
+        ("usize", "16", NUMBER),
+        ("i8", "0", NUMBER),
+        ("i16", "0", NUMBER),
+        ("i32", "0", NUMBER),
+        ("i64", "0", NUMBER),
+        ("i128", "0", NUMBER),
+        ("isize", "0", NUMBER),
+        ("isize", "16", NUMBER),
+        ("bool", "false", BOOL),
+        ("&str", "\"str\"", STR),
+        ("char", "'c'", CHAR),
+    ];
     #[test]
     fn inline_const_as_literal_const_fn_call_slice() {
         TEST_PAIRS.iter().for_each(|(ty, val, _)| {

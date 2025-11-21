@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48464 bytes
+Chloro size:   48517 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -239,12 +239,6 @@ Rustfmt size:  50490 bytes
          let new_id = ProjectionId(self.proj_to_id.len() as u32);
          match self.proj_to_id.entry(projection) {
              Entry::Occupied(id) => *id.get(),
- }
- 
- impl ProjectionId {
--    pub const EMPTY: ProjectionId = ProjectionId(0);
- 
-     pub fn is_empty(self) -> bool {
          self == ProjectionId::EMPTY
      }
  

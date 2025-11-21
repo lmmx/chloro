@@ -100,6 +100,7 @@ impl ops::Deref for AttrsWithOwner {
 }
 
 impl Attrs {
+    pub const EMPTY: Self = Self(RawAttrs::EMPTY);
 
     pub(crate) fn fields_attrs_query(
         db: &dyn DefDatabase,

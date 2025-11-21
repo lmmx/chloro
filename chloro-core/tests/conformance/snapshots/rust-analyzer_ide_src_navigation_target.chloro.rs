@@ -342,6 +342,7 @@ impl TryToNav for hir::ModuleDef {
     }
 }
 
+const KIND: SymbolKind;
 fn container_name(
     self,
     db: &RootDatabase,
@@ -363,6 +364,7 @@ fn container_name(
 }
 
 impl ToNavFromAst for hir::Function {
+    const KIND: SymbolKind = SymbolKind::Function;
 
     fn container_name(
         self,
@@ -373,6 +375,7 @@ impl ToNavFromAst for hir::Function {
 }
 
 impl ToNavFromAst for hir::Const {
+    const KIND: SymbolKind = SymbolKind::Const;
 
     fn container_name(
         self,
@@ -383,6 +386,7 @@ impl ToNavFromAst for hir::Const {
 }
 
 impl ToNavFromAst for hir::Static {
+    const KIND: SymbolKind = SymbolKind::Static;
 
     fn container_name(
         self,
@@ -393,6 +397,7 @@ impl ToNavFromAst for hir::Static {
 }
 
 impl ToNavFromAst for hir::Struct {
+    const KIND: SymbolKind = SymbolKind::Struct;
 
     fn container_name(
         self,
@@ -403,6 +408,7 @@ impl ToNavFromAst for hir::Struct {
 }
 
 impl ToNavFromAst for hir::Enum {
+    const KIND: SymbolKind = SymbolKind::Enum;
 
     fn container_name(
         self,
@@ -413,9 +419,11 @@ impl ToNavFromAst for hir::Enum {
 }
 
 impl ToNavFromAst for hir::Variant {
+    const KIND: SymbolKind = SymbolKind::Variant;
 }
 
 impl ToNavFromAst for hir::Union {
+    const KIND: SymbolKind = SymbolKind::Union;
 
     fn container_name(
         self,
@@ -426,6 +434,7 @@ impl ToNavFromAst for hir::Union {
 }
 
 impl ToNavFromAst for hir::TypeAlias {
+    const KIND: SymbolKind = SymbolKind::TypeAlias;
 
     fn container_name(
         self,
@@ -436,6 +445,7 @@ impl ToNavFromAst for hir::TypeAlias {
 }
 
 impl ToNavFromAst for hir::Trait {
+    const KIND: SymbolKind = SymbolKind::Trait;
 
     fn container_name(
         self,

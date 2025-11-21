@@ -233,6 +233,17 @@ mod tests {
     use intern::Symbol;
     use span::{Edition, ROOT_ERASED_FILE_AST_ID, SpanAnchor, SyntaxContext};
     use syntax::{TextRange, TextSize};
+    const DUMMY: tt::Span = tt::Span {
+        range: TextRange::empty(TextSize::new(0)),
+        anchor: SpanAnchor {
+            file_id: span::EditionedFileId::new(
+                span::FileId::from_raw(0xe4e4e),
+                span::Edition::CURRENT,
+            ),
+            ast_id: ROOT_ERASED_FILE_AST_ID,
+        },
+        ctx: SyntaxContext::root(Edition::CURRENT),
+    };
     #[test]
     fn test_quote_delimiters() {
         assert_eq!(quote!(DUMMY =>{}).to_string(), "{}");

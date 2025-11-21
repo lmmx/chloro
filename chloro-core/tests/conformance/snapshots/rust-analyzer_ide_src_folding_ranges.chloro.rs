@@ -9,7 +9,9 @@ use syntax::{
     match_ast,
 };
 
+const REGION_START: &str = "// region:";
 
+const REGION_END: &str = "// endregion";
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum FoldKind {

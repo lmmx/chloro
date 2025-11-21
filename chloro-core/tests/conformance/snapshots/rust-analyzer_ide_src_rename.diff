@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   91116 bytes
+Chloro size:   91239 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
@@ -232,6 +232,7 @@ Rustfmt size:  91697 bytes
 -    const TEST_CONFIG: RenameConfig =
 -        RenameConfig { prefer_no_std: false, prefer_prelude: true, prefer_absolute: false };
 -
++    const TEST_CONFIG: RenameConfig = RenameConfig { prefer_no_std: false, prefer_prelude: true, prefer_absolute: false };
      #[track_caller]
      fn check(
          new_name: &str,

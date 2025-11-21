@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13556 bytes
+Chloro size:   13607 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
@@ -41,12 +41,6 @@ Rustfmt size:  13520 bytes
      /// `$crate` from macro expansion
      DollarCrate(Crate),
  }
- 
- impl PathKind {
--    pub const SELF: PathKind = PathKind::Super(0);
- }
- 
- impl ModPath {
          convert_path(db, path, span_for_range)
      }
  

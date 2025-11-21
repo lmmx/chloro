@@ -91,6 +91,7 @@ pub struct VTableMap<'db> {
 }
 
 impl<'db> VTableMap<'db> {
+    const OFFSET: usize = 1000;
     // We should add some offset to ids to make 0 (null) an invalid id.
 
     fn id(
@@ -322,12 +323,16 @@ impl IntervalOrOwned {
 }
 
 #[cfg(target_pointer_width = "64")]
+const STACK_OFFSET: usize = 1 << 60;
 
 #[cfg(target_pointer_width = "64")]
+const HEAP_OFFSET: usize = 1 << 59;
 
 #[cfg(target_pointer_width = "32")]
+const STACK_OFFSET: usize = 1 << 30;
 
 #[cfg(target_pointer_width = "32")]
+const HEAP_OFFSET: usize = 1 << 29;
 
 impl Address {
     #[allow(clippy::double_parens)]
@@ -663,8 +668,10 @@ pub fn interpret_mir<'db>(
 }
 
 #[cfg(test)]
+const EXECUTION_LIMIT: usize = 100_000;
 
 #[cfg(not(test))]
+const EXECUTION_LIMIT: usize = 10_000_000;
 
 impl<'db> Evaluator<'db> {
     pub fn new(

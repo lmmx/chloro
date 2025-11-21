@@ -1382,6 +1382,7 @@ fn pwr2_to_exponent(num: u128) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    const TESTERS: [u128; 10] = [0, 1, 2, 3, 4, 255, 256, 257, u128::MAX - 1, u128::MAX];
     #[test]
     fn test_is_pwr2minus1() {
         const OUTCOMES: [bool; 10] =

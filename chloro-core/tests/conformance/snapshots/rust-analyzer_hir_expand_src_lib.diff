@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   40297 bytes
+Chloro size:   40461 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -200,11 +200,11 @@ Rustfmt size:  40650 bytes
  }
  
  impl RenderedExpandError {
--    const GENERAL_KIND: &str = "macro-error";
--    const DISABLED: &str = "proc-macro-disabled";
--    const ATTR_EXP_DISABLED: &str = "attribute-expansion-disabled";
+     const GENERAL_KIND: &str = "macro-error";
 +
+     const DISABLED: &str = "proc-macro-disabled";
 +
+     const ATTR_EXP_DISABLED: &str = "attribute-expansion-disabled";
  }
  
  impl ExpandErrorKind {

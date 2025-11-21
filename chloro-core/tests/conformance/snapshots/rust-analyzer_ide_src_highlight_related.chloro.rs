@@ -807,6 +807,14 @@ mod tests {
     use itertools::Itertools;
     use crate::fixture;
     use super::*;
+    const ENABLED_CONFIG: HighlightRelatedConfig = HighlightRelatedConfig {
+        break_points: true,
+        exit_points: true,
+        references: true,
+        closure_captures: true,
+        yield_points: true,
+        branch_exit_points: true,
+    };
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         check_with_config(ra_fixture, ENABLED_CONFIG);

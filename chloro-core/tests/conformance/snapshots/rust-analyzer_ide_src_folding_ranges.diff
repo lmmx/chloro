@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18476 bytes
+Chloro size:   18558 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,12 @@ Rustfmt size:  18809 bytes
  };
  
 -use std::hash::Hash;
- 
--const REGION_START: &str = "// region:";
--const REGION_END: &str = "// endregion";
+-
+ const REGION_START: &str = "// region:";
++
+ const REGION_END: &str = "// endregion";
  
  #[derive(Debug, PartialEq, Eq)]
- pub enum FoldKind {
      ReturnType,
      MatchArm,
      Function,

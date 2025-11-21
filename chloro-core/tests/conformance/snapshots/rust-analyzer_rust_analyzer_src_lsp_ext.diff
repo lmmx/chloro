@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   20853 bytes
+Chloro size:   23578 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -44,11 +44,10 @@ Rustfmt size:  24042 bytes
 -    // Option is solely to circumvent Default bound.
 +
      type Result = Option<InternalTestingFetchConfigResponse>;
--    const METHOD: &'static str = "rust-analyzer-internal/internalTestingFetchConfig";
 +
+     const METHOD: &'static str = "rust-analyzer-internal/internalTestingFetchConfig";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub text_document: Option<TextDocumentIdentifier>,
      pub config: InternalTestingFetchConfigOption,
  }
@@ -61,11 +60,10 @@ Rustfmt size:  24042 bytes
      type Params = AnalyzerStatusParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/analyzerStatus";
 +
+     const METHOD: &'static str = "rust-analyzer/analyzerStatus";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub version: Option<String>,
      pub path: Url,
  }
@@ -78,8 +76,8 @@ Rustfmt size:  24042 bytes
      type Params = FetchDependencyListParams;
 +
      type Result = FetchDependencyListResult;
--    const METHOD: &'static str = "rust-analyzer/fetchDependencyList";
 +
+     const METHOD: &'static str = "rust-analyzer/fetchDependencyList";
  }
  
  #[derive(Deserialize, Serialize, Debug)]
@@ -101,8 +99,8 @@ Rustfmt size:  24042 bytes
      type Params = ();
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/memoryUsage";
 +
+     const METHOD: &'static str = "rust-analyzer/memoryUsage";
  }
  
 -pub enum ReloadWorkspace {}
@@ -113,8 +111,8 @@ Rustfmt size:  24042 bytes
      type Params = ();
 +
      type Result = ();
--    const METHOD: &'static str = "rust-analyzer/reloadWorkspace";
 +
+     const METHOD: &'static str = "rust-analyzer/reloadWorkspace";
  }
  
 -pub enum RebuildProcMacros {}
@@ -125,8 +123,8 @@ Rustfmt size:  24042 bytes
      type Params = ();
 +
      type Result = ();
--    const METHOD: &'static str = "rust-analyzer/rebuildProcMacros";
 +
+     const METHOD: &'static str = "rust-analyzer/rebuildProcMacros";
  }
  
 -pub enum ViewSyntaxTree {}
@@ -137,11 +135,10 @@ Rustfmt size:  24042 bytes
      type Params = ViewSyntaxTreeParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewSyntaxTree";
 +
+     const METHOD: &'static str = "rust-analyzer/viewSyntaxTree";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub text_document: TextDocumentIdentifier,
  }
  
@@ -153,8 +150,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewHir";
 +
+     const METHOD: &'static str = "rust-analyzer/viewHir";
  }
  
 -pub enum ViewMir {}
@@ -165,8 +162,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewMir";
 +
+     const METHOD: &'static str = "rust-analyzer/viewMir";
  }
  
 -pub enum InterpretFunction {}
@@ -177,8 +174,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/interpretFunction";
 +
+     const METHOD: &'static str = "rust-analyzer/interpretFunction";
  }
  
 -pub enum ViewFileText {}
@@ -189,11 +186,10 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentIdentifier;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewFileText";
 +
+     const METHOD: &'static str = "rust-analyzer/viewFileText";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub full: bool,
  }
  
@@ -205,11 +201,10 @@ Rustfmt size:  24042 bytes
      type Params = ViewCrateGraphParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewCrateGraph";
 +
+     const METHOD: &'static str = "rust-analyzer/viewCrateGraph";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub text_document: TextDocumentIdentifier,
  }
  
@@ -221,11 +216,10 @@ Rustfmt size:  24042 bytes
      type Params = ViewItemTreeParams;
 +
      type Result = String;
--    const METHOD: &'static str = "rust-analyzer/viewItemTree";
 +
+     const METHOD: &'static str = "rust-analyzer/viewItemTree";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub scope_file: Option<Vec<TextDocumentIdentifier>>,
  }
  
@@ -237,8 +231,8 @@ Rustfmt size:  24042 bytes
      type Params = DiscoverTestParams;
 +
      type Result = DiscoverTestResults;
--    const METHOD: &'static str = "experimental/discoverTest";
 +
+     const METHOD: &'static str = "experimental/discoverTest";
  }
  
 -pub enum DiscoveredTests {}
@@ -247,11 +241,10 @@ Rustfmt size:  24042 bytes
  
  impl Notification for DiscoveredTests {
      type Params = DiscoverTestResults;
--    const METHOD: &'static str = "experimental/discoveredTests";
 +
+     const METHOD: &'static str = "experimental/discoveredTests";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub exclude: Option<Vec<String>>,
  }
  
@@ -263,8 +256,8 @@ Rustfmt size:  24042 bytes
      type Params = RunTestParams;
 +
      type Result = ();
--    const METHOD: &'static str = "experimental/runTest";
 +
+     const METHOD: &'static str = "experimental/runTest";
  }
  
 -pub enum EndRunTest {}
@@ -273,8 +266,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for EndRunTest {
      type Params = ();
--    const METHOD: &'static str = "experimental/endRunTest";
 +
+     const METHOD: &'static str = "experimental/endRunTest";
  }
  
 -pub enum AppendOutputToRunTest {}
@@ -283,8 +276,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for AppendOutputToRunTest {
      type Params = String;
--    const METHOD: &'static str = "experimental/appendOutputToRunTest";
 +
+     const METHOD: &'static str = "experimental/appendOutputToRunTest";
  }
  
 -pub enum AbortRunTest {}
@@ -293,11 +286,10 @@ Rustfmt size:  24042 bytes
  
  impl Notification for AbortRunTest {
      type Params = ();
--    const METHOD: &'static str = "experimental/abortRunTest";
 +
+     const METHOD: &'static str = "experimental/abortRunTest";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
  #[serde(rename_all = "camelCase", tag = "tag")]
  pub enum TestState {
      Passed,
@@ -317,8 +309,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for ChangeTestState {
      type Params = ChangeTestStateParams;
--    const METHOD: &'static str = "experimental/changeTestState";
 +
+     const METHOD: &'static str = "experimental/changeTestState";
  }
  
 -pub enum ExpandMacro {}
@@ -329,11 +321,10 @@ Rustfmt size:  24042 bytes
      type Params = ExpandMacroParams;
 +
      type Result = Option<ExpandedMacro>;
--    const METHOD: &'static str = "rust-analyzer/expandMacro";
 +
+     const METHOD: &'static str = "rust-analyzer/expandMacro";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub expansion: String,
  }
  
@@ -345,11 +336,10 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = Option<RecursiveMemoryLayout>;
--    const METHOD: &'static str = "rust-analyzer/viewRecursiveMemoryLayout";
 +
+     const METHOD: &'static str = "rust-analyzer/viewRecursiveMemoryLayout";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub children_len: u64,
  }
  
@@ -359,8 +349,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for CancelFlycheck {
      type Params = ();
--    const METHOD: &'static str = "rust-analyzer/cancelFlycheck";
 +
+     const METHOD: &'static str = "rust-analyzer/cancelFlycheck";
  }
  
 -pub enum RunFlycheck {}
@@ -369,8 +359,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for RunFlycheck {
      type Params = RunFlycheckParams;
--    const METHOD: &'static str = "rust-analyzer/runFlycheck";
 +
+     const METHOD: &'static str = "rust-analyzer/runFlycheck";
  }
  
 -pub enum ClearFlycheck {}
@@ -379,8 +369,8 @@ Rustfmt size:  24042 bytes
  
  impl Notification for ClearFlycheck {
      type Params = ();
--    const METHOD: &'static str = "rust-analyzer/clearFlycheck";
 +
+     const METHOD: &'static str = "rust-analyzer/clearFlycheck";
  }
  
 -pub enum OpenServerLogs {}
@@ -389,11 +379,10 @@ Rustfmt size:  24042 bytes
  
  impl Notification for OpenServerLogs {
      type Params = ();
--    const METHOD: &'static str = "rust-analyzer/openServerLogs";
 +
+     const METHOD: &'static str = "rust-analyzer/openServerLogs";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub text_document: Option<TextDocumentIdentifier>,
  }
  
@@ -405,11 +394,10 @@ Rustfmt size:  24042 bytes
      type Params = MatchingBraceParams;
 +
      type Result = Vec<Position>;
--    const METHOD: &'static str = "experimental/matchingBrace";
 +
+     const METHOD: &'static str = "experimental/matchingBrace";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub positions: Vec<Position>,
  }
  
@@ -421,8 +409,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = Option<lsp_types::GotoDefinitionResponse>;
--    const METHOD: &'static str = "experimental/parentModule";
 +
+     const METHOD: &'static str = "experimental/parentModule";
  }
  
 -pub enum ChildModules {}
@@ -433,8 +421,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = Option<lsp_types::GotoDefinitionResponse>;
--    const METHOD: &'static str = "experimental/childModules";
 +
+     const METHOD: &'static str = "experimental/childModules";
  }
  
 -pub enum JoinLines {}
@@ -445,11 +433,10 @@ Rustfmt size:  24042 bytes
      type Params = JoinLinesParams;
 +
      type Result = Vec<lsp_types::TextEdit>;
--    const METHOD: &'static str = "experimental/joinLines";
 +
+     const METHOD: &'static str = "experimental/joinLines";
  }
  
- #[derive(Deserialize, Serialize, Debug)]
      pub ranges: Vec<Range>,
  }
  
@@ -461,8 +448,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = Option<Vec<SnippetTextEdit>>;
--    const METHOD: &'static str = "experimental/onEnter";
 +
+     const METHOD: &'static str = "experimental/onEnter";
  }
  
 -pub enum Runnables {}
@@ -473,11 +460,10 @@ Rustfmt size:  24042 bytes
      type Params = RunnablesParams;
 +
      type Result = Vec<Runnable>;
--    const METHOD: &'static str = "experimental/runnables";
 +
+     const METHOD: &'static str = "experimental/runnables";
  }
  
- #[derive(Serialize, Deserialize, Debug, Clone)]
      pub override_cargo: Option<String>,
      #[serde(skip_serializing_if = "Option::is_none")]
      pub workspace_root: Option<Utf8PathBuf>,
@@ -498,11 +484,10 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = Vec<TestInfo>;
--    const METHOD: &'static str = "rust-analyzer/relatedTests";
 +
+     const METHOD: &'static str = "rust-analyzer/relatedTests";
  }
  
- #[derive(Debug, Deserialize, Serialize)]
      pub runnable: Runnable,
  }
  
@@ -514,11 +499,10 @@ Rustfmt size:  24042 bytes
      type Params = SsrParams;
 +
      type Result = lsp_types::WorkspaceEdit;
--    const METHOD: &'static str = "experimental/ssr";
 +
+     const METHOD: &'static str = "experimental/ssr";
  }
  
- #[derive(Debug, Deserialize, Serialize)]
  pub struct SsrParams {
      pub query: String,
      pub parse_only: bool,
@@ -538,11 +522,10 @@ Rustfmt size:  24042 bytes
  
  impl Notification for ServerStatusNotification {
      type Params = ServerStatusParams;
--    const METHOD: &'static str = "experimental/serverStatus";
 +
+     const METHOD: &'static str = "experimental/serverStatus";
  }
  
- #[derive(Deserialize, Serialize, PartialEq, Eq, Clone)]
  }
  
  impl ops::BitOrAssign for Health {
@@ -565,8 +548,8 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::CodeActionParams;
 +
      type Result = Option<Vec<CodeAction>>;
--    const METHOD: &'static str = "textDocument/codeAction";
 +
+     const METHOD: &'static str = "textDocument/codeAction";
  }
  
 -pub enum CodeActionResolveRequest {}
@@ -577,11 +560,10 @@ Rustfmt size:  24042 bytes
      type Params = CodeAction;
 +
      type Result = CodeAction;
--    const METHOD: &'static str = "codeAction/resolve";
 +
+     const METHOD: &'static str = "codeAction/resolve";
  }
  
- #[derive(Debug, PartialEq, Clone, Default, Deserialize, Serialize)]
      pub edit: Option<SnippetWorkspaceEdit>,
      #[serde(skip_serializing_if = "Option::is_none")]
      pub is_preferred: Option<bool>,
@@ -600,11 +582,10 @@ Rustfmt size:  24042 bytes
      type Params = HoverParams;
 +
      type Result = Option<Hover>;
--    const METHOD: &'static str = lsp_types::request::HoverRequest::METHOD;
 +
+     const METHOD: &'static str = lsp_types::request::HoverRequest::METHOD;
  }
  
- #[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
  pub struct HoverParams {
      pub text_document: TextDocumentIdentifier,
      pub position: PositionOrRange,
@@ -630,11 +611,10 @@ Rustfmt size:  24042 bytes
      type Params = lsp_types::TextDocumentPositionParams;
 +
      type Result = ExternalDocsResponse;
--    const METHOD: &'static str = "experimental/externalDocs";
 +
+     const METHOD: &'static str = "experimental/externalDocs";
  }
  
- #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
      pub local: Option<lsp_types::Url>,
  }
  
@@ -646,11 +626,10 @@ Rustfmt size:  24042 bytes
      type Params = OpenCargoTomlParams;
 +
      type Result = Option<lsp_types::GotoDefinitionResponse>;
--    const METHOD: &'static str = "experimental/openCargoToml";
 +
+     const METHOD: &'static str = "experimental/openCargoToml";
  }
  
- #[derive(Serialize, Deserialize, Debug)]
      References(lsp_types::TextDocumentPositionParams),
  }
  
@@ -662,11 +641,10 @@ Rustfmt size:  24042 bytes
      type Params = MoveItemParams;
 +
      type Result = Vec<SnippetTextEdit>;
--    const METHOD: &'static str = "experimental/moveItem";
 +
+     const METHOD: &'static str = "experimental/moveItem";
  }
  
- #[derive(Serialize, Deserialize, Debug)]
  }
  
  #[derive(Debug)]
@@ -678,11 +656,10 @@ Rustfmt size:  24042 bytes
      type Params = WorkspaceSymbolParams;
 +
      type Result = Option<lsp_types::WorkspaceSymbolResponse>;
--    const METHOD: &'static str = "workspace/symbol";
 +
+     const METHOD: &'static str = "workspace/symbol";
  }
  
- #[derive(Debug, Eq, PartialEq, Clone, Default, Deserialize, Serialize)]
  pub struct WorkspaceSymbolParams {
      #[serde(flatten)]
      pub partial_result_params: PartialResultParams,
@@ -709,11 +686,10 @@ Rustfmt size:  24042 bytes
      type Params = DocumentOnTypeFormattingParams;
 +
      type Result = Option<Vec<SnippetTextEdit>>;
--    const METHOD: &'static str = "textDocument/onTypeFormatting";
 +
+     const METHOD: &'static str = "textDocument/onTypeFormatting";
  }
  
- #[derive(Debug, Serialize, Deserialize)]
  #[derive(Debug, Serialize, Deserialize)]
  pub struct InlayHintResolveData {
      pub file_id: u32,

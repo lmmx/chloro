@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70445 bytes
+Chloro size:   70551 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -225,6 +225,7 @@ Rustfmt size:  71259 bytes
 -    const TEST_CONFIG: GotoDefinitionConfig<'_> =
 -        GotoDefinitionConfig { minicore: MiniCore::default() };
 -
++    const TEST_CONFIG: GotoDefinitionConfig<'_> = GotoDefinitionConfig { minicore: MiniCore::default() };
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);

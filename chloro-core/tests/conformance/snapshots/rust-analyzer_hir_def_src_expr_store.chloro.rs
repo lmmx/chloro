@@ -54,7 +54,7 @@ mod tests;
 pub struct HygieneId(span::SyntaxContext);
 
 impl HygieneId {
-// The edition doesn't matter here, we only use this for comparisons and to lookup the macro.
+    pub const ROOT: Self = Self(span::SyntaxContext::root(Edition::Edition2015));
 
     pub fn new(mut ctx: span::SyntaxContext) -> Self {
         // See `Name` for why we're doing that.

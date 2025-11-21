@@ -140,6 +140,7 @@ mod tests {
         InlayHintsConfig,
         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
     };
+    const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig { implicit_drop_hints: true, ..DISABLED_CONFIG };
     #[test]
     fn basic() {
         check_with_config(

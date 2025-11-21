@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29194 bytes
+Chloro size:   29632 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -56,13 +56,6 @@ Rustfmt size:  30449 bytes
 -
  pub use self::path_resolution::ResolvePathResultPrefixInfo;
  
--const PREDEFINED_TOOLS: &[SmolStr] = &[
--    SmolStr::new_static("clippy"),
--    SmolStr::new_static("rustfmt"),
--    SmolStr::new_static("diagnostic"),
--    SmolStr::new_static("miri"),
--    SmolStr::new_static("rust_analyzer"),
--];
 +pub mod assoc;
 +
 +pub mod attr_resolution;
@@ -80,9 +73,9 @@ Rustfmt size:  30449 bytes
 +#[cfg(test)]
 +mod tests;
 +
- 
- /// Parts of the def map that are only needed when analyzing code in the same crate.
- ///
+ const PREDEFINED_TOOLS: &[SmolStr] = &[
+     SmolStr::new_static("clippy"),
+     SmolStr::new_static("rustfmt"),
  /// DefMap.
  #[derive(Debug, PartialEq, Eq, Default)]
  pub struct LocalDefMap {
@@ -107,6 +100,7 @@ Rustfmt size:  30449 bytes
 -    pub(crate) const EMPTY: &Self = &Self {
 -        extern_prelude: FxIndexMap::with_hasher(rustc_hash::FxBuildHasher),
 -    };
++    pub(crate) const EMPTY: &Self = &Self { extern_prelude: FxIndexMap::with_hasher(rustc_hash::FxBuildHasher) };
  
      fn shrink_to_fit(&mut self) {
          let Self { extern_prelude } = self;
@@ -347,15 +341,6 @@ Rustfmt size:  30449 bytes
      let (def_map, _) = collector::collect_defs(
          db,
          def_map,
- }
- 
- impl DefMap {
--    /// The module id of a crate or block root.
--    pub const ROOT: LocalModuleId = LocalModuleId::from_raw(la_arena::RawIdx::from_u32(0));
-+/// The module id of a crate or block root.
- 
-     pub fn edition(&self) -> Edition {
-         self.data.edition
          let mut modules: Arena<ModuleData> = Arena::default();
          let root = modules.alloc(module_data);
          assert_eq!(root, Self::ROOT);

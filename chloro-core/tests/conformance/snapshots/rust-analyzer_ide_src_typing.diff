@@ -41,11 +41,10 @@ Rustfmt size:  36650 bytes
 -pub(crate) use on_enter::on_enter;
 +mod on_enter;
  
- // Don't forget to add new trigger characters to `server_capabilities` in `caps.rs`.
--pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
+-// Don't forget to add new trigger characters to `server_capabilities` in `caps.rs`.
+ pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
  
  struct ExtendedTextEdit {
-     edit: TextEdit,
      is_snippet: bool,
  }
  

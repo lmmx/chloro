@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11085 bytes
-Chloro size:   10497 bytes
+Chloro size:   10608 bytes
 Rustfmt size:  11546 bytes
 
 ✗ Outputs DIFFER
@@ -20,8 +20,9 @@ Rustfmt size:  11546 bytes
 -use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};
 +use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
  
--static ASSIST_NAME: &str = "introduce_named_lifetime";
--static ASSIST_LABEL: &str = "Introduce named lifetime";
+ static ASSIST_NAME: &str = "introduce_named_lifetime";
++
+ static ASSIST_LABEL: &str = "Introduce named lifetime";
  
 -// Assist: introduce_named_lifetime
 -//
@@ -47,7 +48,6 @@ Rustfmt size:  11546 bytes
 -// }
 -// ```
 -pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+
 +pub(crate) fn introduce_named_lifetime(
 +    acc: &mut Assists,
 +    ctx: &AssistContext<'_>,

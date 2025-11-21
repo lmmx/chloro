@@ -210,6 +210,30 @@ impl fmt::Display for HlTag {
 }
 
 impl HlMod {
+    const ALL: &'static [HlMod; HlMod::Unsafe as usize + 1] = &[
+        HlMod::Associated,
+        HlMod::Async,
+        HlMod::Attribute,
+        HlMod::Callable,
+        HlMod::Const,
+        HlMod::Consuming,
+        HlMod::ControlFlow,
+        HlMod::CrateRoot,
+        HlMod::DefaultLibrary,
+        HlMod::Definition,
+        HlMod::Documentation,
+        HlMod::Injected,
+        HlMod::IntraDocLink,
+        HlMod::Library,
+        HlMod::Macro,
+        HlMod::Mutable,
+        HlMod::ProcMacro,
+        HlMod::Public,
+        HlMod::Reference,
+        HlMod::Static,
+        HlMod::Trait,
+        HlMod::Unsafe,
+    ];
 
     fn as_str(self) -> &'static str {
         match self {

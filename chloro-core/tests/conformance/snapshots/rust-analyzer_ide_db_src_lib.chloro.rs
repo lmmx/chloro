@@ -373,6 +373,7 @@ pub struct Ranker<'a> {
 }
 
 impl<'a> Ranker<'a> {
+    pub const MAX_RANK: usize = 0b1110;
 
     pub fn from_token(token: &'a syntax::SyntaxToken) -> Self {
         let kind = token.kind();

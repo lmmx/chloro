@@ -765,6 +765,7 @@ mod tests {
     use test_utils::assert_eq_text;
     use crate::fixture;
     use super::{RangeInfo, RenameConfig, RenameError};
+    const TEST_CONFIG: RenameConfig = RenameConfig { prefer_no_std: false, prefer_prelude: true, prefer_absolute: false };
     #[track_caller]
     fn check(
         new_name: &str,

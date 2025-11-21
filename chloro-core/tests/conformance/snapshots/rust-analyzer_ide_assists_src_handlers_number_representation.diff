@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5483 bytes
-Chloro size:   5268 bytes
+Chloro size:   5317 bytes
 Rustfmt size:  5609 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  5609 bytes
  
  use crate::{AssistContext, AssistId, Assists, GroupLabel};
  
--const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
+ const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
  
 -// Assist: reformat_number_literal
 -//

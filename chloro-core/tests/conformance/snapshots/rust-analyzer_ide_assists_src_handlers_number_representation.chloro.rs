@@ -2,6 +2,7 @@ use syntax::{AstToken, ast, ast::Radix};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
+const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
 
 pub(crate) fn reformat_number_literal(
     acc: &mut Assists,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   11890 bytes
+Chloro size:   11930 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -260,10 +260,6 @@ Rustfmt size:  12539 bytes
      }
  }
  
- }
- 
- impl<'a> Ranker<'a> {
--    pub const MAX_RANK: usize = 0b1110;
  
      pub fn from_token(token: &'a syntax::SyntaxToken) -> Self {
          let kind = token.kind();

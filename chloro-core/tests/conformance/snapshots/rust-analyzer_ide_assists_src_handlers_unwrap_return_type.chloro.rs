@@ -151,6 +151,7 @@ enum UnwrapperKind {
 }
 
 impl UnwrapperKind {
+    const ALL: &'static [UnwrapperKind] = &[UnwrapperKind::Option, UnwrapperKind::Result];
 
     fn assist_id(&self) -> AssistId {
         let s = match self {
