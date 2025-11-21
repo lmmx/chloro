@@ -50,7 +50,7 @@ fn compare_rust_analyzer_crate(crate_name: &str) {
         let result = compare_with_rustfmt(
             &code,
             &format!(
-                "rust-analyzer_{}_{}",
+                "ra/{}/{}",
                 crate_name.replace('-', "_"),
                 name.replace('/', "_")
             ),

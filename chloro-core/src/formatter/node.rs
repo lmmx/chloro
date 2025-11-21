@@ -1,7 +1,6 @@
 mod block;
 mod const_static;
 mod debug;
-mod doccomment;
 mod enumdef;
 mod function;
 mod implblock;
@@ -18,7 +17,6 @@ pub use block::{format_block, format_block_expr_contents, format_stmt_list};
 pub use const_static::format_const_or_static;
 #[allow(unused_imports)]
 pub use debug::{debug_children_with_tokens, debug_node_siblings};
-pub use doccomment::format_preceding_docs_and_attrs;
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;
@@ -75,11 +73,12 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            // First pass: collect all uses and other items
+            // Collect all uses and other items, preserving order
             let mut uses = Vec::new();
             let mut other_items = Vec::new();
-            let mut module_docs = Vec::new();
+            let mut module_level_inner_docs = Vec::new();
 
+            // First pass: separate uses, inner docs, and other items
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
@@ -92,11 +91,11 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         }
                     }
                     NodeOrToken::Token(t) => {
-                        // Check if this is a module-level doc comment
+                        // Collect module-level inner doc comments (//! or /*! ... */)
                         if t.kind() == SyntaxKind::COMMENT {
                             if let Some(comment) = ast::Comment::cast(t) {
                                 if comment.is_inner() && comment.kind().doc.is_some() {
-                                    module_docs.push(comment);
+                                    module_level_inner_docs.push(comment);
                                 }
                             }
                         }
@@ -104,16 +103,16 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // Format module-level docs first
-            for doc in &module_docs {
+            // Format module-level inner docs first
+            for doc in &module_level_inner_docs {
                 buf.push_str(doc.text());
                 buf.push('\n');
             }
 
-            let has_docs = !module_docs.is_empty();
+            let has_docs = !module_level_inner_docs.is_empty();
             let has_uses = !uses.is_empty();
 
-            // Ensure a blank line after module docs if anything follows
+            // Blank line after module docs if anything follows
             if has_docs && (has_uses || !other_items.is_empty()) {
                 buf.push('\n');
             }
@@ -121,7 +120,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             // Format sorted and grouped imports
             if has_uses {
                 sort_and_format_imports(&uses, buf, indent);
-                // If other items follow imports, ensure a blank line between
+                // Blank line between imports and other items
                 if !other_items.is_empty() {
                     buf.push('\n');
                 }
@@ -178,7 +177,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         }
 
         _ => {
-            // Default: recurse through children AND tokens
+            // Default: recurse through children
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => format_node(&n, buf, indent),
@@ -193,20 +192,17 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 fn format_token(token: &SyntaxToken, buf: &mut String, _indent: usize) {
     match token.kind() {
         SyntaxKind::COMMENT => {
-            // Handle comments specially
+            // Handle comments specially - preserve them exactly
             if let Some(comment) = ast::Comment::cast(token.clone()) {
-                let text = comment.text();
-
-                // Preserve the comment exactly (it already has //, //!, or ///)
-                buf.push_str(text);
+                buf.push_str(comment.text());
                 buf.push('\n');
             }
         }
         SyntaxKind::WHITESPACE => {
-            // Skip whitespace entirely - let the formatter control all spacing
+            // Skip whitespace - let the formatter control all spacing
         }
         _ => {
-            // For other tokens, this shouldn't happen in SOURCE_FILE context
+            // Other tokens shouldn't appear in top-level context
         }
     }
 }

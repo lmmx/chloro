@@ -12,14 +12,14 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format doc comments using the trait
+    // Format doc comments using the HasDocComments trait
     for doc_comment in func.doc_comments() {
         write_indent(buf, indent);
-        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push_str(doc_comment.text().trim());
         buf.push('\n');
     }
 
-    // Also format attributes from the AST (like #[cfg(...)])
+    // Format attributes using the HasAttrs trait
     for attr in func.attrs() {
         write_indent(buf, indent);
         buf.push_str(&attr.syntax().text().to_string());
@@ -34,7 +34,7 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push(' ');
     }
 
-    // Const/async/unsafe modifiers
+    // Modifiers
     if func.const_token().is_some() {
         buf.push_str("const ");
     }
@@ -122,11 +122,11 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(&where_clause.syntax().text().to_string());
     }
 
-    // Body - handle tokens inside it
+    // Body
     if let Some(body) = func.body() {
         buf.push_str(" {\n");
 
-        // Process body tokens to preserve comments
+        // Process body contents, preserving inline comments
         for child in body.syntax().children_with_tokens() {
             match child {
                 NodeOrToken::Node(n) => {

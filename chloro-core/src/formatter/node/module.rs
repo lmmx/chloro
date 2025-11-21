@@ -1,9 +1,9 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasName, HasVisibility},
-    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasName, HasVisibility},
+    AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
-use super::{format_node, format_preceding_docs_and_attrs};
+use super::format_node;
 use crate::formatter::write_indent;
 
 pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -12,10 +12,14 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format preceding doc comments (/// style)
-    format_preceding_docs_and_attrs(node, buf, indent);
+    // Format doc comments using HasDocComments trait
+    for doc_comment in module.doc_comments() {
+        write_indent(buf, indent);
+        buf.push_str(doc_comment.text().trim());
+        buf.push('\n');
+    }
 
-    // Also format attributes from the AST (like #[cfg(...)])
+    // Format attributes using HasAttrs trait
     for attr in module.attrs() {
         write_indent(buf, indent);
         buf.push_str(&attr.syntax().text().to_string());
@@ -38,7 +42,7 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(item_list) = module.item_list() {
         buf.push_str(" {\n");
 
-        // Process all items AND comments within the module
+        // Process all items and comments within the module
         for child in item_list.syntax().children_with_tokens() {
             match child {
                 NodeOrToken::Node(n) => {

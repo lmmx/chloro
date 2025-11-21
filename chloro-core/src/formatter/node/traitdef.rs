@@ -12,14 +12,14 @@ pub fn format_trait(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Doc comments
+    // Format doc comments using HasDocComments trait
     for doc_comment in trait_.doc_comments() {
         write_indent(buf, indent);
-        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push_str(doc_comment.text().trim());
         buf.push('\n');
     }
 
-    // Attributes
+    // Format attributes using HasAttrs trait
     for attr in trait_.attrs() {
         write_indent(buf, indent);
         buf.push_str(&attr.syntax().text().to_string());

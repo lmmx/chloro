@@ -23,25 +23,35 @@ impl ComparisonResult {
             .join("conformance")
             .join("snapshots");
 
-        fs::create_dir_all(&output_dir).unwrap();
+        // Split the fixture name and create nested directories
+        let parts: Vec<&str> = fixture_name.split('/').collect();
+        let (dirs, filename) = if parts.len() > 1 {
+            (&parts[..parts.len() - 1], parts[parts.len() - 1])
+        } else {
+            (&[][..], fixture_name)
+        };
 
-        // Sanitize fixture name for filename
-        let safe_name = fixture_name.replace('/', "_");
+        // Build the full directory path
+        let mut full_dir = output_dir;
+        for dir in dirs {
+            full_dir = full_dir.join(dir);
+        }
+        fs::create_dir_all(&full_dir).unwrap();
 
-        // Write chloro output
-        let chloro_path = output_dir.join(format!("{}.chloro.rs", safe_name));
+        // Write files with the base filename
+        let chloro_path = full_dir.join(format!("{}.chloro.rs", filename));
         fs::write(&chloro_path, &self.chloro).unwrap();
         eprintln!("Wrote: {}", chloro_path.display());
 
         // Write rustfmt output
-        let rustfmt_path = output_dir.join(format!("{}.rustfmt.rs", safe_name));
+        let rustfmt_path = full_dir.join(format!("{}.rustfmt.rs", filename));
         fs::write(&rustfmt_path, &self.rustfmt).unwrap();
         eprintln!("Wrote: {}", rustfmt_path.display());
 
         // Generate and write diff
         let diff_content = self.generate_diff_content();
         let nohed_content = strip_hunk_headers(&diff_content);
-        let diff_path = output_dir.join(format!("{}.diff", safe_name));
+        let diff_path = full_dir.join(format!("{}.diff", filename));
         fs::write(&diff_path, nohed_content).unwrap();
         eprintln!("Wrote: {}", diff_path.display());
 
