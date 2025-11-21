@@ -42,14 +42,15 @@ impl ComparisonResult {
     }
 
     fn show_diff(&self) {
-        let input = InternedInput::new(&self.chloro[..], &self.rustfmt[..]);
+        // Reversed: rustfmt -> chloro (shows what chloro is doing wrong)
+        let input = InternedInput::new(&self.rustfmt[..], &self.chloro[..]);
         let mut diff = Diff::compute(Algorithm::Histogram, &input);
         diff.postprocess_lines(&input);
 
         if diff.count_additions() == 0 && diff.count_removals() == 0 {
             eprintln!("\n=== [IDENTICAL] ===\n");
         } else {
-            eprintln!("\n=== DIFF (chloro vs rustfmt) ===");
+            eprintln!("\n=== DIFF (- rustfmt, + chloro) ===");
 
             let config = UnifiedDiffConfig::default();
             let printer = BasicLineDiffPrinter(&input.interner);
@@ -70,7 +71,8 @@ impl ComparisonResult {
         output.push_str(&format!("Chloro size:   {} bytes\n", self.chloro.len()));
         output.push_str(&format!("Rustfmt size:  {} bytes\n\n", self.rustfmt.len()));
 
-        let input = InternedInput::new(&self.chloro[..], &self.rustfmt[..]);
+        // Reversed: rustfmt -> chloro (shows what chloro is doing wrong)
+        let input = InternedInput::new(&self.rustfmt[..], &self.chloro[..]);
         let mut diff = Diff::compute(Algorithm::Histogram, &input);
         diff.postprocess_lines(&input);
 
@@ -78,6 +80,7 @@ impl ComparisonResult {
             output.push_str("✓ Outputs are IDENTICAL\n");
         } else {
             output.push_str("✗ Outputs DIFFER\n\n");
+            output.push_str("--- DIFF (- rustfmt, + chloro) ---\n");
 
             let config = UnifiedDiffConfig::default();
             let printer = BasicLineDiffPrinter(&input.interner);
