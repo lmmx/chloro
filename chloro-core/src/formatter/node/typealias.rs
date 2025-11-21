@@ -95,7 +95,7 @@ pub fn format_type_alias(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
                     // Print keywords like `unsafe`, `extern "C"`, `fn`
                     if let Some(unsafe_tok) = fn_type.unsafe_token() {
-                        buf.push_str(&unsafe_tok.text());
+                        buf.push_str(unsafe_tok.text());
                         buf.push(' ');
                     }
                     if let Some(abi) = fn_type.abi() {
@@ -103,7 +103,7 @@ pub fn format_type_alias(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         buf.push(' ');
                     }
                     if let Some(fn_tok) = fn_type.fn_token() {
-                        buf.push_str(&fn_tok.text());
+                        buf.push_str(fn_tok.text());
                     }
 
                     buf.push_str("(\n");
