@@ -1,8 +1,9 @@
 use ra_ap_syntax::{
-    ast::{self, HasGenericParams, HasName, HasVisibility},
+    ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
     AstNode, SyntaxNode,
 };
 
+use super::comment::format_attributes;
 use crate::formatter::write_indent;
 
 pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -10,6 +11,9 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
         Some(s) => s,
         None => return,
     };
+
+    // Format attributes (including doc comments)
+    format_attributes(strukt.attrs(), buf, indent);
 
     write_indent(buf, indent);
 
@@ -33,6 +37,9 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
             ast::FieldList::RecordFieldList(fields) => {
                 buf.push_str(" {\n");
                 for field in fields.fields() {
+                    // Format field attributes
+                    format_attributes(field.attrs(), buf, indent + 4);
+
                     write_indent(buf, indent + 4);
                     if let Some(vis) = field.visibility() {
                         buf.push_str(&vis.syntax().text().to_string());
