@@ -32,10 +32,9 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
 <!-- just: conf-md -->
-
 **Summary:** +152,221 / -16,336
 
-### Top 5 Added Lines
+**Top 5 Added Lines**
 
 1. (1,157) `+ &self,`
 2. (652) `+ &mut self,`
@@ -43,7 +42,7 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 4. (463) `+ ) {`
 5. (351) `+ db: &dyn HirDatabase,`
 
-### Top 5 Removed Lines
+**Top 5 Removed Lines**
 
 1. (154) `- }`
 2. (135) `- {`
@@ -75,7 +74,6 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 | 18 | 90 | 7 | 47.7% | 558 | 1,169 | `ide/src_navigation_target` |
 | 19 | 12 | 56 | 6.0% | 196 | 3,284 | `ide_completion/src_render` |
 | 20 | 100 | 10 | 43.8% | 476 | 1,086 | `ide/src_lib` |
-
 <!-- /just: conf-md -->
 
 ## Installation

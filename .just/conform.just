@@ -105,7 +105,7 @@ conf-md:
     echo
 
     # Extract and format top added lines
-    echo "### Top 5 Added Lines"
+    echo "**Top 5 Added Lines**"
     echo
     echo "$output" | awk '/^Top 5 added lines:/,/^Top 5 removed lines:/' | \
         grep -E '^\s*[0-9]' | head -5 | nl -nln | \
@@ -113,7 +113,7 @@ conf-md:
     echo
 
     # Extract and format top removed lines
-    echo "### Top 5 Removed Lines"
+    echo "**Top 5 Removed Lines**"
     echo
     echo "$output" | awk '/^Top 5 removed lines:/,/^Top 20 most impacted/' | \
         grep -E '^\s*[0-9]' | head -5 | nl -nln | \
