@@ -38,7 +38,7 @@ conf-impact:
     RESET="\033[0m"
 
     # Header
-    echo -e "${BOLD}Score  SizeRank  DiffRank    Impact        +/-            File${RESET}"
+    echo -e "${BOLD}Score  SizeRank  DiffRank    Impact       +   / -       File${RESET}"
     echo "────────────────────────────────────────────────────────────────────────────"
 
     # Collect data with full relative path
@@ -85,14 +85,9 @@ conf-impact:
             close(cmd_diff)
             close(cmd_total)
 
-            # Build the changes string and calculate its display width (without ANSI codes)
-            changes_str = sprintf("+%s/-%s", diff_fmt, total_fmt)
-            changes_len = length(changes_str)
-            padding = int((18 - changes_len) / 2)
-
-            printf "%5d  %8d  %8d  %7.1f%%  %*s\033[32m+%s\033[0m/\033[31m-%s\033[0m%*s  %s\n",
+            printf "%5d  %8d  %8d  %7.1f%%  \033[32m%6s\033[0m  /  \033[31m%-6s\033[0m  %s\n",
                 score, size_rank, diff_rank, impact,
-                padding, "", diff_fmt, total_fmt, 18 - changes_len - padding, "",
+                diff_fmt, total_fmt,
                 filename
         }' | sort -n | head -20
     }
