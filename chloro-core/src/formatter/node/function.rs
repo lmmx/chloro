@@ -1,0 +1,85 @@
+use ra_ap_syntax::{
+    ast::{self, HasGenericParams, HasName, HasVisibility},
+    AstNode, SyntaxNode,
+};
+
+use super::format_block_expr_contents;
+use crate::formatter::write_indent;
+
+pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
+    let func = match ast::Fn::cast(node.clone()) {
+        Some(f) => f,
+        None => return,
+    };
+
+    write_indent(buf, indent);
+
+    // Visibility
+    if let Some(vis) = func.visibility() {
+        buf.push_str(&vis.syntax().text().to_string());
+        buf.push(' ');
+    }
+
+    // Const/async/unsafe modifiers
+    if func.const_token().is_some() {
+        buf.push_str("const ");
+    }
+    if func.async_token().is_some() {
+        buf.push_str("async ");
+    }
+    if func.unsafe_token().is_some() {
+        buf.push_str("unsafe ");
+    }
+
+    buf.push_str("fn ");
+
+    // Name
+    if let Some(name) = func.name() {
+        buf.push_str(&name.text());
+    }
+
+    // Generic params
+    if let Some(generics) = func.generic_param_list() {
+        buf.push_str(&generics.syntax().text().to_string());
+    }
+
+    // Parameters
+    if let Some(params) = func.param_list() {
+        buf.push('(');
+        for (idx, param) in params.params().enumerate() {
+            if idx > 0 {
+                buf.push_str(", ");
+            }
+            buf.push_str(&param.syntax().text().to_string());
+        }
+        buf.push(')');
+    } else {
+        buf.push_str("()");
+    }
+
+    // Return type
+    if let Some(ret) = func.ret_type() {
+        buf.push_str(" -> ");
+        if let Some(ty) = ret.ty() {
+            buf.push_str(&ty.syntax().text().to_string());
+        }
+    }
+
+    // Where clause
+    if let Some(where_clause) = func.where_clause() {
+        buf.push('\n');
+        write_indent(buf, indent);
+        buf.push_str(&where_clause.syntax().text().to_string());
+    }
+
+    // Body
+    if let Some(body) = func.body() {
+        buf.push_str(" {\n");
+        format_block_expr_contents(body.syntax(), buf, indent + 4);
+        write_indent(buf, indent);
+        buf.push('}');
+    } else {
+        buf.push(';');
+    }
+    buf.push('\n');
+}
