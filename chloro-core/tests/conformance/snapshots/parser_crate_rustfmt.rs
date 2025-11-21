@@ -1,0 +1,12761 @@
+mod ok {
+    use crate::tests::*;
+    #[test]
+    fn anonymous_const() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/anonymous_const.rs");
+    }
+    #[test]
+    fn arb_self_types() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/arb_self_types.rs");
+    }
+    #[test]
+    fn arg_with_attr() { run_and_expect_no_errors("test_data/parser/inline/ok/arg_with_attr.rs"); }
+    #[test]
+    fn array_attrs() { run_and_expect_no_errors("test_data/parser/inline/ok/array_attrs.rs"); }
+    #[test]
+    fn array_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/array_expr.rs"); }
+    #[test]
+    fn array_type() { run_and_expect_no_errors("test_data/parser/inline/ok/array_type.rs"); }
+    #[test]
+    fn as_precedence() { run_and_expect_no_errors("test_data/parser/inline/ok/as_precedence.rs"); }
+    #[test]
+    fn asm_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/asm_expr.rs"); }
+    #[test]
+    fn asm_kinds() { run_and_expect_no_errors("test_data/parser/inline/ok/asm_kinds.rs"); }
+    #[test]
+    fn asm_label() { run_and_expect_no_errors("test_data/parser/inline/ok/asm_label.rs"); }
+    #[test]
+    fn assoc_const_eq() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/assoc_const_eq.rs");
+    }
+    #[test]
+    fn assoc_item_list() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/assoc_item_list.rs");
+    }
+    #[test]
+    fn assoc_item_list_inner_attrs() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/assoc_item_list_inner_attrs.rs");
+    }
+    #[test]
+    fn assoc_type_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/assoc_type_bound.rs");
+    }
+    #[test]
+    fn assoc_type_eq() { run_and_expect_no_errors("test_data/parser/inline/ok/assoc_type_eq.rs"); }
+    #[test]
+    fn async_trait_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/async_trait_bound.rs");
+    }
+    #[test]
+    fn attr_on_expr_stmt() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/attr_on_expr_stmt.rs");
+    }
+    #[test]
+    fn await_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/await_expr.rs"); }
+    #[test]
+    fn bare_dyn_types_with_leading_lifetime() {
+        run_and_expect_no_errors(
+            "test_data/parser/inline/ok/bare_dyn_types_with_leading_lifetime.rs",
+        );
+    }
+    #[test]
+    fn become_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/become_expr.rs"); }
+    #[test]
+    fn bind_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/bind_pat.rs"); }
+    #[test]
+    fn binop_resets_statementness() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/binop_resets_statementness.rs");
+    }
+    #[test]
+    fn block() { run_and_expect_no_errors("test_data/parser/inline/ok/block.rs"); }
+    #[test]
+    fn block_items() { run_and_expect_no_errors("test_data/parser/inline/ok/block_items.rs"); }
+    #[test]
+    fn box_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/box_pat.rs"); }
+    #[test]
+    fn break_ambiguity() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/break_ambiguity.rs");
+    }
+    #[test]
+    fn break_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/break_expr.rs"); }
+    #[test]
+    fn builtin_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/builtin_expr.rs"); }
+    #[test]
+    fn call_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/call_expr.rs"); }
+    #[test]
+    fn cast_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/cast_expr.rs"); }
+    #[test]
+    fn closure_binder() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/closure_binder.rs");
+    }
+    #[test]
+    fn closure_body_underscore_assignment() {
+        run_and_expect_no_errors(
+            "test_data/parser/inline/ok/closure_body_underscore_assignment.rs",
+        );
+    }
+    #[test]
+    fn closure_params() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/closure_params.rs");
+    }
+    #[test]
+    fn closure_range_method_call() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/closure_range_method_call.rs");
+    }
+    #[test]
+    fn const_arg() { run_and_expect_no_errors("test_data/parser/inline/ok/const_arg.rs"); }
+    #[test]
+    fn const_arg_block() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_arg_block.rs");
+    }
+    #[test]
+    fn const_arg_bool_literal() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_arg_bool_literal.rs");
+    }
+    #[test]
+    fn const_arg_literal() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_arg_literal.rs");
+    }
+    #[test]
+    fn const_arg_negative_number() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_arg_negative_number.rs");
+    }
+    #[test]
+    fn const_block_pat() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_block_pat.rs");
+    }
+    #[test]
+    fn const_closure() { run_and_expect_no_errors("test_data/parser/inline/ok/const_closure.rs"); }
+    #[test]
+    fn const_item() { run_and_expect_no_errors("test_data/parser/inline/ok/const_item.rs"); }
+    #[test]
+    fn const_param() { run_and_expect_no_errors("test_data/parser/inline/ok/const_param.rs"); }
+    #[test]
+    fn const_param_default_expression() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_param_default_expression.rs");
+    }
+    #[test]
+    fn const_param_default_literal() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_param_default_literal.rs");
+    }
+    #[test]
+    fn const_param_default_path() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_param_default_path.rs");
+    }
+    #[test]
+    fn const_trait_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_trait_bound.rs");
+    }
+    #[test]
+    fn const_where_clause() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/const_where_clause.rs");
+    }
+    #[test]
+    fn continue_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/continue_expr.rs"); }
+    #[test]
+    fn crate_path() { run_and_expect_no_errors("test_data/parser/inline/ok/crate_path.rs"); }
+    #[test]
+    fn crate_visibility() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/crate_visibility.rs");
+    }
+    #[test]
+    fn crate_visibility_in() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/crate_visibility_in.rs");
+    }
+    #[test]
+    fn default_async_fn() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/default_async_fn.rs");
+    }
+    #[test]
+    fn default_async_unsafe_fn() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/default_async_unsafe_fn.rs");
+    }
+    #[test]
+    fn default_item() { run_and_expect_no_errors("test_data/parser/inline/ok/default_item.rs"); }
+    #[test]
+    fn default_unsafe_item() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/default_unsafe_item.rs");
+    }
+    #[test]
+    fn destructuring_assignment_struct_rest_pattern() {
+        run_and_expect_no_errors(
+            "test_data/parser/inline/ok/destructuring_assignment_struct_rest_pattern.rs",
+        );
+    }
+    #[test]
+    fn destructuring_assignment_wildcard_pat() {
+        run_and_expect_no_errors(
+            "test_data/parser/inline/ok/destructuring_assignment_wildcard_pat.rs",
+        );
+    }
+    #[test]
+    fn dot_dot_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/dot_dot_pat.rs"); }
+    #[test]
+    fn dyn_trait_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/dyn_trait_type.rs");
+    }
+    #[test]
+    fn dyn_trait_type_weak() {
+        run_and_expect_no_errors_with_edition(
+            "test_data/parser/inline/ok/dyn_trait_type_weak.rs",
+            crate::Edition::Edition2015,
+        );
+    }
+    #[test]
+    fn edition_2015_dyn_prefix_inside_generic_arg() {
+        run_and_expect_no_errors_with_edition(
+            "test_data/parser/inline/ok/edition_2015_dyn_prefix_inside_generic_arg.rs",
+            crate::Edition::Edition2015,
+        );
+    }
+    #[test]
+    fn effect_blocks() { run_and_expect_no_errors("test_data/parser/inline/ok/effect_blocks.rs"); }
+    #[test]
+    fn exclusive_range_pat() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/exclusive_range_pat.rs");
+    }
+    #[test]
+    fn expr_literals() { run_and_expect_no_errors("test_data/parser/inline/ok/expr_literals.rs"); }
+    #[test]
+    fn expression_after_block() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/expression_after_block.rs");
+    }
+    #[test]
+    fn extern_block() { run_and_expect_no_errors("test_data/parser/inline/ok/extern_block.rs"); }
+    #[test]
+    fn extern_crate() { run_and_expect_no_errors("test_data/parser/inline/ok/extern_crate.rs"); }
+    #[test]
+    fn extern_crate_rename() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/extern_crate_rename.rs");
+    }
+    #[test]
+    fn field_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/field_expr.rs"); }
+    #[test]
+    fn fn_() { run_and_expect_no_errors("test_data/parser/inline/ok/fn_.rs"); }
+    #[test]
+    fn fn_decl() { run_and_expect_no_errors("test_data/parser/inline/ok/fn_decl.rs"); }
+    #[test]
+    fn fn_def_param() { run_and_expect_no_errors("test_data/parser/inline/ok/fn_def_param.rs"); }
+    #[test]
+    fn fn_pointer_param_ident_path() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/fn_pointer_param_ident_path.rs");
+    }
+    #[test]
+    fn fn_pointer_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/fn_pointer_type.rs");
+    }
+    #[test]
+    fn fn_pointer_type_with_ret() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/fn_pointer_type_with_ret.rs");
+    }
+    #[test]
+    fn fn_pointer_unnamed_arg() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/fn_pointer_unnamed_arg.rs");
+    }
+    #[test]
+    fn for_binder_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/for_binder_bound.rs");
+    }
+    #[test]
+    fn for_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/for_expr.rs"); }
+    #[test]
+    fn for_range_from() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/for_range_from.rs");
+    }
+    #[test]
+    fn for_type() { run_and_expect_no_errors("test_data/parser/inline/ok/for_type.rs"); }
+    #[test]
+    fn frontmatter() { run_and_expect_no_errors("test_data/parser/inline/ok/frontmatter.rs"); }
+    #[test]
+    fn full_range_expr() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/full_range_expr.rs");
+    }
+    #[test]
+    fn function_ret_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/function_ret_type.rs");
+    }
+    #[test]
+    fn function_type_params() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/function_type_params.rs");
+    }
+    #[test]
+    fn function_where_clause() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/function_where_clause.rs");
+    }
+    #[test]
+    fn gen_blocks() {
+        run_and_expect_no_errors_with_edition(
+            "test_data/parser/inline/ok/gen_blocks.rs",
+            crate::Edition::Edition2024,
+        );
+    }
+    #[test]
+    fn generic_arg() { run_and_expect_no_errors("test_data/parser/inline/ok/generic_arg.rs"); }
+    #[test]
+    fn generic_arg_bounds() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/generic_arg_bounds.rs");
+    }
+    #[test]
+    fn generic_const() { run_and_expect_no_errors("test_data/parser/inline/ok/generic_const.rs"); }
+    #[test]
+    fn generic_param_attribute() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/generic_param_attribute.rs");
+    }
+    #[test]
+    fn generic_param_list() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/generic_param_list.rs");
+    }
+    #[test]
+    fn global_asm() { run_and_expect_no_errors("test_data/parser/inline/ok/global_asm.rs"); }
+    #[test]
+    fn half_open_range_pat() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/half_open_range_pat.rs");
+    }
+    #[test]
+    fn if_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/if_expr.rs"); }
+    #[test]
+    fn impl_item() { run_and_expect_no_errors("test_data/parser/inline/ok/impl_item.rs"); }
+    #[test]
+    fn impl_item_const() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/impl_item_const.rs");
+    }
+    #[test]
+    fn impl_item_neg() { run_and_expect_no_errors("test_data/parser/inline/ok/impl_item_neg.rs"); }
+    #[test]
+    fn impl_item_never_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/impl_item_never_type.rs");
+    }
+    #[test]
+    fn impl_trait_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/impl_trait_type.rs");
+    }
+    #[test]
+    fn impl_type_params() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/impl_type_params.rs");
+    }
+    #[test]
+    fn index_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/index_expr.rs"); }
+    #[test]
+    fn label() { run_and_expect_no_errors("test_data/parser/inline/ok/label.rs"); }
+    #[test]
+    fn labeled_block() { run_and_expect_no_errors("test_data/parser/inline/ok/labeled_block.rs"); }
+    #[test]
+    fn lambda_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/lambda_expr.rs"); }
+    #[test]
+    fn lambda_ret_block() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/lambda_ret_block.rs");
+    }
+    #[test]
+    fn let_else() { run_and_expect_no_errors("test_data/parser/inline/ok/let_else.rs"); }
+    #[test]
+    fn let_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/let_expr.rs"); }
+    #[test]
+    fn let_stmt() { run_and_expect_no_errors("test_data/parser/inline/ok/let_stmt.rs"); }
+    #[test]
+    fn let_stmt_ascription() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/let_stmt_ascription.rs");
+    }
+    #[test]
+    fn let_stmt_init() { run_and_expect_no_errors("test_data/parser/inline/ok/let_stmt_init.rs"); }
+    #[test]
+    fn lifetime_arg() { run_and_expect_no_errors("test_data/parser/inline/ok/lifetime_arg.rs"); }
+    #[test]
+    fn lifetime_param() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/lifetime_param.rs");
+    }
+    #[test]
+    fn literal_pattern() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/literal_pattern.rs");
+    }
+    #[test]
+    fn loop_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/loop_expr.rs"); }
+    #[test]
+    fn macro_call_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/macro_call_type.rs");
+    }
+    #[test]
+    fn macro_def() { run_and_expect_no_errors("test_data/parser/inline/ok/macro_def.rs"); }
+    #[test]
+    fn macro_def_curly() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/macro_def_curly.rs");
+    }
+    #[test]
+    fn macro_inside_generic_arg() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/macro_inside_generic_arg.rs");
+    }
+    #[test]
+    fn macro_rules_as_macro_name() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/macro_rules_as_macro_name.rs");
+    }
+    #[test]
+    fn macro_rules_non_brace() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/macro_rules_non_brace.rs");
+    }
+    #[test]
+    fn marco_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/marco_pat.rs"); }
+    #[test]
+    fn match_arm() { run_and_expect_no_errors("test_data/parser/inline/ok/match_arm.rs"); }
+    #[test]
+    fn match_arms_commas() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/match_arms_commas.rs");
+    }
+    #[test]
+    fn match_arms_inner_attribute() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/match_arms_inner_attribute.rs");
+    }
+    #[test]
+    fn match_arms_outer_attributes() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/match_arms_outer_attributes.rs");
+    }
+    #[test]
+    fn match_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/match_expr.rs"); }
+    #[test]
+    fn match_guard() { run_and_expect_no_errors("test_data/parser/inline/ok/match_guard.rs"); }
+    #[test]
+    fn maybe_const_trait_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/maybe_const_trait_bound.rs");
+    }
+    #[test]
+    fn metas() { run_and_expect_no_errors("test_data/parser/inline/ok/metas.rs"); }
+    #[test]
+    fn method_call_expr() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/method_call_expr.rs");
+    }
+    #[test]
+    fn mod_contents() { run_and_expect_no_errors("test_data/parser/inline/ok/mod_contents.rs"); }
+    #[test]
+    fn mod_item() { run_and_expect_no_errors("test_data/parser/inline/ok/mod_item.rs"); }
+    #[test]
+    fn mod_item_curly() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/mod_item_curly.rs");
+    }
+    #[test]
+    fn never_type() { run_and_expect_no_errors("test_data/parser/inline/ok/never_type.rs"); }
+    #[test]
+    fn no_dyn_trait_leading_for() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/no_dyn_trait_leading_for.rs");
+    }
+    #[test]
+    fn no_semi_after_block() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/no_semi_after_block.rs");
+    }
+    #[test]
+    fn nocontentexpr() { run_and_expect_no_errors("test_data/parser/inline/ok/nocontentexpr.rs"); }
+    #[test]
+    fn nocontentexpr_after_item() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/nocontentexpr_after_item.rs");
+    }
+    #[test]
+    fn offset_of_parens() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/offset_of_parens.rs");
+    }
+    #[test]
+    fn or_pattern() { run_and_expect_no_errors("test_data/parser/inline/ok/or_pattern.rs"); }
+    #[test]
+    fn param_list() { run_and_expect_no_errors("test_data/parser/inline/ok/param_list.rs"); }
+    #[test]
+    fn param_list_vararg() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/param_list_vararg.rs");
+    }
+    #[test]
+    fn param_outer_arg() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/param_outer_arg.rs");
+    }
+    #[test]
+    fn paren_type() { run_and_expect_no_errors("test_data/parser/inline/ok/paren_type.rs"); }
+    #[test]
+    fn path_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/path_expr.rs"); }
+    #[test]
+    fn path_fn_trait_args() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/path_fn_trait_args.rs");
+    }
+    #[test]
+    fn path_part() { run_and_expect_no_errors("test_data/parser/inline/ok/path_part.rs"); }
+    #[test]
+    fn path_type() { run_and_expect_no_errors("test_data/parser/inline/ok/path_type.rs"); }
+    #[test]
+    fn path_type_with_bounds() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/path_type_with_bounds.rs");
+    }
+    #[test]
+    fn placeholder_pat() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/placeholder_pat.rs");
+    }
+    #[test]
+    fn placeholder_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/placeholder_type.rs");
+    }
+    #[test]
+    fn pointer_type_mut() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/pointer_type_mut.rs");
+    }
+    #[test]
+    fn postfix_range() { run_and_expect_no_errors("test_data/parser/inline/ok/postfix_range.rs"); }
+    #[test]
+    fn precise_capturing() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/precise_capturing.rs");
+    }
+    #[test]
+    fn pub_parens_typepath() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/pub_parens_typepath.rs");
+    }
+    #[test]
+    fn pub_tuple_field() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/pub_tuple_field.rs");
+    }
+    #[test]
+    fn qual_paths() { run_and_expect_no_errors("test_data/parser/inline/ok/qual_paths.rs"); }
+    #[test]
+    fn question_for_type_trait_bound() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/question_for_type_trait_bound.rs");
+    }
+    #[test]
+    fn range_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/range_pat.rs"); }
+    #[test]
+    fn record_field_attrs() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_field_attrs.rs");
+    }
+    #[test]
+    fn record_field_default_values() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_field_default_values.rs");
+    }
+    #[test]
+    fn record_field_list() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_field_list.rs");
+    }
+    #[test]
+    fn record_field_pat_leading_or() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_field_pat_leading_or.rs");
+    }
+    #[test]
+    fn record_lit() { run_and_expect_no_errors("test_data/parser/inline/ok/record_lit.rs"); }
+    #[test]
+    fn record_literal_field_with_attr() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_literal_field_with_attr.rs");
+    }
+    #[test]
+    fn record_pat_field() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_pat_field.rs");
+    }
+    #[test]
+    fn record_pat_field_list() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/record_pat_field_list.rs");
+    }
+    #[test]
+    fn ref_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/ref_expr.rs"); }
+    #[test]
+    fn ref_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/ref_pat.rs"); }
+    #[test]
+    fn reference_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/reference_type.rs");
+    }
+    #[test]
+    fn return_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/return_expr.rs"); }
+    #[test]
+    fn return_type_syntax_in_path() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/return_type_syntax_in_path.rs");
+    }
+    #[test]
+    fn safe_outside_of_extern() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/safe_outside_of_extern.rs");
+    }
+    #[test]
+    fn self_param() { run_and_expect_no_errors("test_data/parser/inline/ok/self_param.rs"); }
+    #[test]
+    fn self_param_outer_attr() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/self_param_outer_attr.rs");
+    }
+    #[test]
+    fn singleton_tuple_type() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/singleton_tuple_type.rs");
+    }
+    #[test]
+    fn slice_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/slice_pat.rs"); }
+    #[test]
+    fn slice_type() { run_and_expect_no_errors("test_data/parser/inline/ok/slice_type.rs"); }
+    #[test]
+    fn stmt_bin_expr_ambiguity() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/stmt_bin_expr_ambiguity.rs");
+    }
+    #[test]
+    fn stmt_postfix_expr_ambiguity() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/stmt_postfix_expr_ambiguity.rs");
+    }
+    #[test]
+    fn struct_initializer_with_defaults() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/struct_initializer_with_defaults.rs");
+    }
+    #[test]
+    fn struct_item() { run_and_expect_no_errors("test_data/parser/inline/ok/struct_item.rs"); }
+    #[test]
+    fn trait_alias() { run_and_expect_no_errors("test_data/parser/inline/ok/trait_alias.rs"); }
+    #[test]
+    fn trait_alias_where_clause() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/trait_alias_where_clause.rs");
+    }
+    #[test]
+    fn trait_item() { run_and_expect_no_errors("test_data/parser/inline/ok/trait_item.rs"); }
+    #[test]
+    fn trait_item_bounds() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/trait_item_bounds.rs");
+    }
+    #[test]
+    fn trait_item_generic_params() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/trait_item_generic_params.rs");
+    }
+    #[test]
+    fn trait_item_where_clause() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/trait_item_where_clause.rs");
+    }
+    #[test]
+    fn try_block_expr() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/try_block_expr.rs");
+    }
+    #[test]
+    fn try_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/try_expr.rs"); }
+    #[test]
+    fn try_macro_fallback() {
+        run_and_expect_no_errors_with_edition(
+            "test_data/parser/inline/ok/try_macro_fallback.rs",
+            crate::Edition::Edition2015,
+        );
+    }
+    #[test]
+    fn try_macro_rules() {
+        run_and_expect_no_errors_with_edition(
+            "test_data/parser/inline/ok/try_macro_rules.rs",
+            crate::Edition::Edition2015,
+        );
+    }
+    #[test]
+    fn tuple_attrs() { run_and_expect_no_errors("test_data/parser/inline/ok/tuple_attrs.rs"); }
+    #[test]
+    fn tuple_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/tuple_expr.rs"); }
+    #[test]
+    fn tuple_field_attrs() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/tuple_field_attrs.rs");
+    }
+    #[test]
+    fn tuple_pat() { run_and_expect_no_errors("test_data/parser/inline/ok/tuple_pat.rs"); }
+    #[test]
+    fn tuple_pat_fields() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/tuple_pat_fields.rs");
+    }
+    #[test]
+    fn tuple_struct() { run_and_expect_no_errors("test_data/parser/inline/ok/tuple_struct.rs"); }
+    #[test]
+    fn tuple_struct_where() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/tuple_struct_where.rs");
+    }
+    #[test]
+    fn type_alias() { run_and_expect_no_errors("test_data/parser/inline/ok/type_alias.rs"); }
+    #[test]
+    fn type_item_type_params() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_item_type_params.rs");
+    }
+    #[test]
+    fn type_item_where_clause() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_item_where_clause.rs");
+    }
+    #[test]
+    fn type_item_where_clause_deprecated() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_item_where_clause_deprecated.rs");
+    }
+    #[test]
+    fn type_param() { run_and_expect_no_errors("test_data/parser/inline/ok/type_param.rs"); }
+    #[test]
+    fn type_param_bounds() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_param_bounds.rs");
+    }
+    #[test]
+    fn type_param_default() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_param_default.rs");
+    }
+    #[test]
+    fn type_path_in_pattern() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/type_path_in_pattern.rs");
+    }
+    #[test]
+    fn typepathfn_with_coloncolon() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/typepathfn_with_coloncolon.rs");
+    }
+    #[test]
+    fn unary_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/unary_expr.rs"); }
+    #[test]
+    fn union_item() { run_and_expect_no_errors("test_data/parser/inline/ok/union_item.rs"); }
+    #[test]
+    fn unit_struct() { run_and_expect_no_errors("test_data/parser/inline/ok/unit_struct.rs"); }
+    #[test]
+    fn unit_type() { run_and_expect_no_errors("test_data/parser/inline/ok/unit_type.rs"); }
+    #[test]
+    fn use_item() { run_and_expect_no_errors("test_data/parser/inline/ok/use_item.rs"); }
+    #[test]
+    fn use_tree() { run_and_expect_no_errors("test_data/parser/inline/ok/use_tree.rs"); }
+    #[test]
+    fn use_tree_abs_star() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_abs_star.rs");
+    }
+    #[test]
+    fn use_tree_alias() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_alias.rs");
+    }
+    #[test]
+    fn use_tree_list() { run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_list.rs"); }
+    #[test]
+    fn use_tree_path() { run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_path.rs"); }
+    #[test]
+    fn use_tree_path_star() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_path_star.rs");
+    }
+    #[test]
+    fn use_tree_path_use_tree() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_path_use_tree.rs");
+    }
+    #[test]
+    fn use_tree_star() { run_and_expect_no_errors("test_data/parser/inline/ok/use_tree_star.rs"); }
+    #[test]
+    fn variant_discriminant() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/variant_discriminant.rs");
+    }
+    #[test]
+    fn where_clause() { run_and_expect_no_errors("test_data/parser/inline/ok/where_clause.rs"); }
+    #[test]
+    fn where_pred_for() {
+        run_and_expect_no_errors("test_data/parser/inline/ok/where_pred_for.rs");
+    }
+    #[test]
+    fn while_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/while_expr.rs"); }
+    #[test]
+    fn yeet_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/yeet_expr.rs"); }
+    #[test]
+    fn yield_expr() { run_and_expect_no_errors("test_data/parser/inline/ok/yield_expr.rs"); }
+}
+mod err {
+    use crate::tests::*;
+    #[test]
+    fn angled_path_without_qual() {
+        run_and_expect_errors("test_data/parser/inline/err/angled_path_without_qual.rs");
+    }
+    #[test]
+    fn anonymous_static() {
+        run_and_expect_errors("test_data/parser/inline/err/anonymous_static.rs");
+    }
+    #[test]
+    fn arg_list_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/arg_list_recovery.rs");
+    }
+    #[test]
+    fn array_type_missing_semi() {
+        run_and_expect_errors("test_data/parser/inline/err/array_type_missing_semi.rs");
+    }
+    #[test]
+    fn async_without_semicolon() {
+        run_and_expect_errors("test_data/parser/inline/err/async_without_semicolon.rs");
+    }
+    #[test]
+    fn bad_asm_expr() { run_and_expect_errors("test_data/parser/inline/err/bad_asm_expr.rs"); }
+    #[test]
+    fn closure_ret_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/closure_ret_recovery.rs");
+    }
+    #[test]
+    fn comma_after_default_values_syntax() {
+        run_and_expect_errors("test_data/parser/inline/err/comma_after_default_values_syntax.rs");
+    }
+    #[test]
+    fn comma_after_functional_update_syntax() {
+        run_and_expect_errors(
+            "test_data/parser/inline/err/comma_after_functional_update_syntax.rs",
+        );
+    }
+    #[test]
+    fn crate_visibility_empty_recover() {
+        run_and_expect_errors("test_data/parser/inline/err/crate_visibility_empty_recover.rs");
+    }
+    #[test]
+    fn empty_param_slot() {
+        run_and_expect_errors("test_data/parser/inline/err/empty_param_slot.rs");
+    }
+    #[test]
+    fn empty_segment() { run_and_expect_errors("test_data/parser/inline/err/empty_segment.rs"); }
+    #[test]
+    fn fn_pointer_type_missing_fn() {
+        run_and_expect_errors("test_data/parser/inline/err/fn_pointer_type_missing_fn.rs");
+    }
+    #[test]
+    fn fn_ret_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/fn_ret_recovery.rs");
+    }
+    #[test]
+    fn gen_fn() {
+        run_and_expect_errors_with_edition(
+            "test_data/parser/inline/err/gen_fn.rs",
+            crate::Edition::Edition2021,
+        );
+    }
+    #[test]
+    fn generic_arg_list_recover() {
+        run_and_expect_errors("test_data/parser/inline/err/generic_arg_list_recover.rs");
+    }
+    #[test]
+    fn generic_arg_list_recover_expr() {
+        run_and_expect_errors("test_data/parser/inline/err/generic_arg_list_recover_expr.rs");
+    }
+    #[test]
+    fn generic_param_list_recover() {
+        run_and_expect_errors("test_data/parser/inline/err/generic_param_list_recover.rs");
+    }
+    #[test]
+    fn generic_static() { run_and_expect_errors("test_data/parser/inline/err/generic_static.rs"); }
+    #[test]
+    fn impl_type() { run_and_expect_errors("test_data/parser/inline/err/impl_type.rs"); }
+    #[test]
+    fn invalid_question_for_type_trait_bound() {
+        run_and_expect_errors(
+            "test_data/parser/inline/err/invalid_question_for_type_trait_bound.rs",
+        );
+    }
+    #[test]
+    fn let_else_right_curly_brace() {
+        run_and_expect_errors("test_data/parser/inline/err/let_else_right_curly_brace.rs");
+    }
+    #[test]
+    fn macro_rules_as_macro_name() {
+        run_and_expect_errors("test_data/parser/inline/err/macro_rules_as_macro_name.rs");
+    }
+    #[test]
+    fn match_arms_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/match_arms_recovery.rs");
+    }
+    #[test]
+    fn meta_recovery() { run_and_expect_errors("test_data/parser/inline/err/meta_recovery.rs"); }
+    #[test]
+    fn method_call_missing_argument_list() {
+        run_and_expect_errors("test_data/parser/inline/err/method_call_missing_argument_list.rs");
+    }
+    #[test]
+    fn misplaced_label_err() {
+        run_and_expect_errors("test_data/parser/inline/err/misplaced_label_err.rs");
+    }
+    #[test]
+    fn missing_const_type() {
+        run_and_expect_errors("test_data/parser/inline/err/missing_const_type.rs");
+    }
+    #[test]
+    fn missing_fn_param_type() {
+        run_and_expect_errors("test_data/parser/inline/err/missing_fn_param_type.rs");
+    }
+    #[test]
+    fn missing_static_type() {
+        run_and_expect_errors("test_data/parser/inline/err/missing_static_type.rs");
+    }
+    #[test]
+    fn path_item_without_excl() {
+        run_and_expect_errors("test_data/parser/inline/err/path_item_without_excl.rs");
+    }
+    #[test]
+    fn pointer_type_no_mutability() {
+        run_and_expect_errors("test_data/parser/inline/err/pointer_type_no_mutability.rs");
+    }
+    #[test]
+    fn postfix_dot_expr_ambiguity() {
+        run_and_expect_errors("test_data/parser/inline/err/postfix_dot_expr_ambiguity.rs");
+    }
+    #[test]
+    fn precise_capturing_invalid() {
+        run_and_expect_errors("test_data/parser/inline/err/precise_capturing_invalid.rs");
+    }
+    #[test]
+    fn pub_expr() { run_and_expect_errors("test_data/parser/inline/err/pub_expr.rs"); }
+    #[test]
+    fn record_literal_before_ellipsis_recovery() {
+        run_and_expect_errors(
+            "test_data/parser/inline/err/record_literal_before_ellipsis_recovery.rs",
+        );
+    }
+    #[test]
+    fn record_literal_field_eq_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/record_literal_field_eq_recovery.rs");
+    }
+    #[test]
+    fn record_literal_missing_ellipsis_recovery() {
+        run_and_expect_errors(
+            "test_data/parser/inline/err/record_literal_missing_ellipsis_recovery.rs",
+        );
+    }
+    #[test]
+    fn record_pat_field_eq_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/record_pat_field_eq_recovery.rs");
+    }
+    #[test]
+    fn recover_from_missing_assoc_item_binding() {
+        run_and_expect_errors(
+            "test_data/parser/inline/err/recover_from_missing_assoc_item_binding.rs",
+        );
+    }
+    #[test]
+    fn recover_from_missing_const_default() {
+        run_and_expect_errors("test_data/parser/inline/err/recover_from_missing_const_default.rs");
+    }
+    #[test]
+    fn static_where_clause() {
+        run_and_expect_errors("test_data/parser/inline/err/static_where_clause.rs");
+    }
+    #[test]
+    fn struct_field_recover() {
+        run_and_expect_errors("test_data/parser/inline/err/struct_field_recover.rs");
+    }
+    #[test]
+    fn top_level_let() { run_and_expect_errors("test_data/parser/inline/err/top_level_let.rs"); }
+    #[test]
+    fn tuple_expr_leading_comma() {
+        run_and_expect_errors("test_data/parser/inline/err/tuple_expr_leading_comma.rs");
+    }
+    #[test]
+    fn tuple_field_list_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/tuple_field_list_recovery.rs");
+    }
+    #[test]
+    fn tuple_pat_leading_comma() {
+        run_and_expect_errors("test_data/parser/inline/err/tuple_pat_leading_comma.rs");
+    }
+    #[test]
+    fn type_bounds_macro_call_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/type_bounds_macro_call_recovery.rs");
+    }
+    #[test]
+    fn type_in_array_recover() {
+        run_and_expect_errors("test_data/parser/inline/err/type_in_array_recover.rs");
+    }
+    #[test]
+    fn unsafe_block_in_mod() {
+        run_and_expect_errors("test_data/parser/inline/err/unsafe_block_in_mod.rs");
+    }
+    #[test]
+    fn use_tree_list_err_recovery() {
+        run_and_expect_errors("test_data/parser/inline/err/use_tree_list_err_recovery.rs");
+    }
+}
+
+fn main() {
+    foo! (
+        bar, "baz", 1, 2.0
+    } //~ ERROR incorrect close delimiter
+}
+
+fn foo() {
+    match () {
+        _ => (),
+        _ => (),
+        #[cfg(test)]
+    }
+}
+
+fn o() -> Result<(), ()> {
+    let foo = do yeet {
+        ()
+    } else {
+        return Ok(());
+    };
+}
+
+fn
+
+fn foo() {}
+
+extern struct Foo;
+
+fn foo(x: i32, y) {
+}
+
+struct S {
+    f: u32,
+    pub 92
+    + - *
+    pub x: u32,
+    z: f64,
+}
+
+fn f() {
+    let _ = if true {
+    } else {
+    } else {
+        return
+    };
+}
+
+impl<T: Clone>
+impl<T> OnceCell<T> {}
+
+fn f() {
+    let _ = loop {
+    } else {
+        return
+    };
+}
+
+struct X {a: i32}
+fn f() {
+    let foo = X {
+        a: 1
+    } else {
+        return;
+    };
+}
+
+impl FnScopes {
+    fn new_scope(&) -> ScopeId {
+        let res = self.scopes.len();
+        self.scopes.push(ScopeData { parent: None, entries: vec![] })
+    }
+
+    fn set_parent
+}
+
+fn foo() -> i32 {
+    [1, 2, 3].iter()
+        .map(|it|)
+        .max::<i32>();
+}
+
+fn foo(foo: i32) {
+    let bar = 92;
+    1 +
+}
+
+fn foo() {
+    foo(
+        1, 2
+    )
+    return 92;
+}
+
+unsafe async fn foo() {}
+unsafe const fn bar() {}
+
+let foo = bar = {
+    1
+} else {
+    return;
+};
+
+fn f() {
+    S::<Item::<lol>::<nope>>;
+}
+
+fn g() {
+    let _: Item::<lol>::<nope> = ();
+}
+
+fn f<T: (Copy) + (?Sized) + (for<'a> Trait<'a>)>() {}
+
+fn main() {
+    let _: Box<(Copy) + (?Sized) + (for<'a> Trait<'a>)>;
+    let _: Box<(?Sized) + (for<'a> Trait<'a>) + (Copy)>;
+    let _: Box<(for<'a> Trait<'a>) + (Copy) + (?Sized)>;
+}
+
+let foo = 1 + {
+    1
+} else {
+    return;
+};
+
+#!/use/bin/env rusti
+#!/use/bin/env rusti
+
+fn foo()
+    where for<'a>
+{}
+
+let foo = |x: i32| {
+    x
+} else {
+    return;
+};
+
+struct S {
+    a: i32,
+    b: String,
+};
+
+struct S<90 + 2> {
+    f: u32
+}
+
+struct T;
+
+fn main() {
+    let ref box i = ();
+    let mut box i = ();
+    let ref mut box i = ();
+}
+
+impl<T:
+use std;
+
+pub struct Cache(
+    RefCell<HashMap<
+        TypeId,
+        Box<@ Any>,
+    >>
+);
+
+fn f() {
+    let _ = while true {
+    } else {
+        return
+    };
+}
+
+#[foo(foo, +, 92)]
+fn foo() {
+}
+
+
+#[foo(
+fn foo() {
+}
+
+use foo::92;
+
+fn r() {
+    let ok = format_args!("") else { return; };
+
+    let bad = format_args! {""} else { return; };
+}
+
+}
+
+struct S;
+
+}
+
+fn foo(){}
+
+}
+
+struct S {
+    a: u32
+    b: u32
+}
+
+fn foo(}) {
+}
+
+let foo = 1..{
+    1
+} else {
+    return;
+};
+
+extern "C" extern "C"
+
+use foo::bar;
+use
+use crate::baz;
+use
+fn f() {}
+
+fn foo(a: A) {
+    a.
+}
+
+struct S(i32, i32);
+fn f() {
+    let s = S(1, 2);
+    let a = s.1e0;
+}
+
+fn main() {
+    { unsafe 92 }
+    { async 92 }
+    { try 92 }
+    { 'label: 92 }
+}
+
+fn foo() {
+    let foo = 11
+    let bar = 1;
+    let
+    let baz = 92;
+    let
+    if true {}
+    let
+    while true {}
+    let
+    loop {}
+}
+
+fn foo() {
+    match () {
+        _ => (),
+        #![doc("Not allowed here")]
+        _ => (),
+    }
+
+    match () {
+        _ => (),
+        _ => (),
+        #![doc("Nor here")]
+    }
+
+    match () {
+        #[cfg(test)]
+        #![doc("Nor here")]
+        _ => (),
+        _ => (),
+    }
+}
+
+fn main() {
+    enum Test {
+        Var1,
+        Var2(String),
+        Var3 {
+            abc: {}, //~ ERROR: expected type, found `{`
+        },
+    }
+
+    // recover...
+    let a = 1;
+    enum Test2 {
+        Fine,
+    }
+
+    enum Test3 {
+        StillFine {
+            def: i32,
+        },
+    }
+
+    {
+        // fail again
+        enum Test4 {
+            Nope(i32 {}) //~ ERROR: found `{`
+                         //~^ ERROR: found `{`
+        }
+    }
+    // still recover later
+    let; //~ ERROR: expected pattern
+    let _ = 0;
+}
+
+if match
+
+struct S {}
+
+fn foo<T>() where T {}
+
+fn a() { [1, 2, @, struct, let] }
+fn b() { foo(1, 2, @, impl, let) }
+fn c() { foo.bar(1, 2, @, ], trait, let) }
+
+let foo = -{
+    1
+} else {
+    return;
+};
+
+fn f() {
+    let _ = match Some(1) {
+        Some(_) => 1,
+        None => 2,
+    } else {
+        return
+    };
+}
+
+use std::{error::Error;
+use std::io;
+
+fn main() {
+    || -> () unsafe { () };
+}
+
+fn f() {
+    let _ = for _ in 0..10 {
+    } else {
+        return
+    };
+}
+
+let foo = become {
+    ()
+} else {
+    return;
+};
+
+type ForRef = for<'a> &'a u32;
+type ForTup = for<'a> (&'a u32,);
+type ForSlice = for<'a> [u32];
+type ForForFn = for<'a> for<'b> fn(&'a i32, &'b i32);
+fn for_for_for<T>()
+where
+    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
+{
+}
+
+fn foo() {
+}
+
+bar() {
+    if true {
+        1
+    } else {
+        2 + 3
+    }
+}
+
+fn baz() {
+}
+
+let foo = &{
+    1
+} else {
+    return;
+};
+
+fn foo() {
+    (,);
+}
+
+use crate::;
+
+fn main() {
+    S { field ..S::default() }
+    S { 0 ..S::default() }
+    S { field .. }
+    S { 0 .. }
+}
+
+fn f<T>() where T: ?for<> Sized {}
+
+type T = *();
+
+const _: () = T::<0, ,T>;
+const _: () = T::<0, ,T>();
+
+fn foo() -> A>]) { let x = 1; }
+fn foo() -> A>]) where T: Copy { let x = 1; }
+
+struct S { f pub g: () }
+struct S { f: pub g: () }
+
+static C: u32 = 0
+where i32: Copy;
+
+type T = [() 92];
+
+fn main() {
+    S { field = foo }
+    S { 0 = foo }
+}
+
+fn main() {
+    let S { field = foo };
+}
+
+const _: [&];
+
+fn foo() { let _ = async {} }
+
+fn foo() {
+    S { ..x, };
+    S { ..x, a: 0 }
+}
+
+type T = impl use<self, 1>;
+
+static C = 0;
+
+struct S(struct S;
+struct S(A,,B);
+
+fn foo() {
+    S { .., };
+    S { .., a: 0 }
+}
+
+fn main() {
+    foo(bar::);
+    foo(bar:);
+    foo(bar+);
+    foo(a, , b);
+}
+
+type X = <()>;
+type Y = <A as B>;
+
+fn func() {
+    foo.bar::<>
+    foo.bar::<i32>;
+}
+
+foo
+
+fn func() { let Some(_) = {Some(1)} else { panic!("h") };}
+
+impl Type {}
+impl Trait1 for T {}
+impl impl NotType {}
+impl Trait2 for impl NotType {}
+
+macro_rules! {};
+macro_rules! ()
+macro_rules! []
+
+fn foo() {
+    x.
+    ()
+}
+
+fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
+
+use {a;
+use b;
+struct T;
+fn test() {}
+use {a ,, b};
+
+fn foo(){} unsafe { } fn bar(){}
+
+fn foo() { pub 92; }
+
+fn f() -> impl Iterator<Item = , Item = > {}
+
+fn f<T: Clone,, U:, V>() {}
+
+fn main() {
+    'loop: impl
+}
+
+struct A<const N: i32 = , const M: i32 =>;
+
+let ref foo: fn() = 1 + 3;
+
+fn foo() {
+    match () {
+        _ => (),,
+        _ => ,
+        _ => (),
+         => (),
+        if true => (),
+        _ => (),
+        () if => (),
+    }
+}
+
+pub() struct S;
+
+static C<i32>: u32 = 0;
+
+type F = unsafe ();
+
+fn foo() { || -> A> { let x = 1; } }
+
+const C = 0;
+
+fn foo() {
+    let (,);
+}
+
+// 2021
+gen fn gen_fn() {}
+async gen fn async_gen_fn() {}
+
+fn main() {
+    S { S::default() };
+    S { 0::default() };
+}
+
+fn f(x y: i32, z, t: i32) {}
+
+fn foo() {
+    builtin#asm(
+        label crashy = { return; }
+    );
+}
+
+fn f(y: i32, ,t: i32) {}
+
+#![]
+#![p = ]
+#![p::]
+#![p:: =]
+#![unsafe]
+#![unsafe =]
+
+type T = T<0, ,T>;
+type T = T::<0, ,T>;
+
+static _: i32 = 5;
+
+fn foo() {
+    x.self;
+    x.Self;
+    x.foo;
+    x.0.bar;
+    x.0.1;
+    x.0. bar;
+    x.0();
+}
+
+fn a() {}
+fn b(x: i32) {}
+fn c(x: i32, ) {}
+fn d(x: i32, y: ()) {}
+
+fn foo() {
+    if true {};
+    if true {} else {};
+    if true {} else if false {} else {};
+    if S {};
+    if { true } { } else { };
+}
+
+type T = S<{90 + 2}>;
+
+fn main() { || -> i32 { 92 }(); }
+
+fn main() {
+    let .. = ();
+    //
+    // Tuples
+    //
+    let (a, ..) = ();
+    let (a, ..,) = ();
+    let Tuple(a, ..) = ();
+    let Tuple(a, ..,) = ();
+    let (.., ..) = ();
+    let Tuple(.., ..) = ();
+    let (.., a, ..) = ();
+    let Tuple(.., a, ..) = ();
+    //
+    // Slices
+    //
+    let [..] = ();
+    let [head, ..] = ();
+    let [head, tail @ ..] = ();
+    let [head, .., cons] = ();
+    let [head, mid @ .., cons] = ();
+    let [head, .., .., cons] = ();
+    let [head, .., mid, tail @ ..] = ();
+    let [head, .., mid, .., cons] = ();
+}
+
+fn foo() {
+    [];
+    [1];
+    [1, 2,];
+    [1; 2];
+}
+
+use std::collections;
+
+fn f() { let x = 92; }
+
+fn main() {
+    match 42 {
+        ..0 => {}
+        1..2 => {}
+    }
+}
+
+default impl T for Foo {}
+
+trait T where Self: Copy {}
+
+fn f() { unsafe { } }
+fn f() { const { } }
+fn f() { async { } }
+fn f() { async move { } }
+
+fn main() {
+    match 92 {
+        0 ... 100 => (),
+        101 ..= 200 => (),
+        200 .. 301 => (),
+        302 .. => (),
+        ..= 303 => (),
+    }
+
+    match Some(10 as u8) {
+        Some(0) | None => (),
+        Some(1..) => (),
+        Some(..=2) => (),
+    }
+
+    match () {
+        S { a: 0 } => (),
+        S { a: 1.. } => (),
+        S { a: ..=2 } => (),
+    }
+
+    match () {
+        [0] => (),
+        [1..] => (),
+        [..=2] => (),
+    }
+
+    match (10 as u8, 5 as u8) {
+        (0, _) => (),
+        (1.., _) => (),
+        (..=2, _) => (),
+    }
+}
+
+fn foo() {
+    builtin#offset_of(Foo, (bar.baz.0));
+}
+
+struct S<T: 'a + ?Sized + (Copy) + [const] Drop>;
+
+builtin#global_asm("")
+
+fn foo() {
+    let _ = try {};
+}
+
+fn main() {
+   let foo = |bar, baz: Baz, qux: Qux::Quux| ();
+}
+
+fn foo() {
+    let S() = ();
+    let S(_) = ();
+    let S(_,) = ();
+    let S(_, .. , x) = ();
+    let S(| a) = ();
+}
+
+fn foo() {
+    S { .. } = S {};
+}
+
+fn foo() {
+    match () { };
+    match S {};
+    match { } { _ => () };
+    match { S {} } {};
+}
+
+struct S { a: i32, b: f32, unsafe c: u8 }
+
+fn foo() {
+    builtin#asm("");
+    builtin#format_args("", 0, 1, a = 2 + 3, a + b);
+    builtin#offset_of(Foo, bar.baz.0);
+}
+
+macro m($i:ident) {}
+
+fn foo() {
+    let _ = true;
+    let _ = false;
+    let _ = 1;
+    let _ = 2.0;
+    let _ = b'a';
+    let _ = 'b';
+    let _ = "c";
+    let _ = r"d";
+    let _ = b"e";
+    let _ = br"f";
+    let _ = c"g";
+    let _ = cr"h";
+}
+
+fn foo(){
+    if break {}
+    while break {}
+    for i in break {}
+    match break {}
+}
+
+const A: (i64, i64) = (1, #[cfg(test)] 2);
+
+fn simple_function() {
+    enum LocalEnum {
+        One,
+        Two,
+    };
+    fn f() {};
+    struct S {};
+}
+
+struct S { #[attr] f: f32 }
+
+fn main() {
+    let [a, b, ..] = [];
+    let [| a, ..] = [];
+}
+
+fn foo(..., (x, y): (i32, i32)) {}
+
+fn foo() {
+    x?;
+}
+
+fn foo() {
+    match () {
+        #![doc("Inner attribute")]
+        #![doc("Can be")]
+        #![doc("Stacked")]
+        _ => (),
+    }
+}
+
+impl const Send for S {}
+
+fn main() { let cl = const || _ = 0; }
+
+impl S {
+    fn a(self) {}
+    fn b(&self,) {}
+    fn c(&'a self,) {}
+    fn d(&'a mut self, x: i32) {}
+    fn e(mut self) {}
+}
+
+type Foo where Foo: Copy = ();
+
+macro_rules! m ( ($i:ident) => {} );
+macro_rules! m [ ($i:ident) => {} ];
+
+#![simple_ident]
+#![simple::path]
+#![simple_ident_expr = ""]
+#![simple::path::Expr = ""]
+#![simple_ident_tt(a b c)]
+#![simple_ident_tt[a b c]]
+#![simple_ident_tt{a b c}]
+#![simple::path::tt(a b c)]
+#![simple::path::tt[a b c]]
+#![simple::path::tt{a b c}]
+#![unsafe(simple_ident)]
+#![unsafe(simple::path)]
+#![unsafe(simple_ident_expr = "")]
+#![unsafe(simple::path::Expr = "")]
+#![unsafe(simple_ident_tt(a b c))]
+#![unsafe(simple_ident_tt[a b c])]
+#![unsafe(simple_ident_tt{a b c})]
+#![unsafe(simple::path::tt(a b c))]
+#![unsafe(simple::path::tt[a b c])]
+#![unsafe(simple::path::tt{a b c})]
+
+macro m { ($i:ident) => {} }
+
+fn f<T>() where T: for<> ?Sized {}
+
+struct S<T>(T) where T: Clone;
+
+fn main() {
+    match () {
+        -1 => (),
+        92 => (),
+        'c' => (),
+        "hello" => (),
+    }
+}
+
+fn foo() {
+    #[A] foo();
+    #[B] bar!{}
+    #[C] #[D] {}
+    #[D] return ();
+}
+
+mod b { }
+
+impl S {}
+
+fn foo() {
+    S {};
+    S { x };
+    S { x, y: 32, };
+    S { x, y: 32, ..Default::default() };
+    S { x, y: 32, .. };
+    S { .. };
+    S { x: ::default() };
+    TupleStruct { 0: 1 };
+}
+
+type F = fn() -> ();
+
+type A = fn();
+type B = unsafe fn();
+type C = unsafe extern "C" fn();
+type D = extern "C" fn ( u8 , ... ) -> u8;
+
+fn f() { 'label: {}; }
+
+type A = for<'a> Test<'a> + Send;
+
+impl ! {}
+
+extern crate foo;
+extern crate self;
+
+type Result<T> = ();
+
+fn main() { let <_>::Foo = (); }
+
+type T = S<true>;
+
+trait X<U: Debug + Display> {}
+
+type T = StreamingIterator<Item<'a> = &'a T>;
+
+fn foo() {
+    let S { 0: 1 } = ();
+    let S { x: 1 } = ();
+    let S { #[cfg(any())] x: 1 } = ();
+}
+
+// 2015
+macro_rules! try { () => {} }
+
+use std as stdlib;
+use Trait as _;
+
+struct S(String, usize);
+
+fn foo() {
+    // reference operator
+    let _ = &1;
+    let _ = &mut &f();
+    let _ = &raw;
+    let _ = &raw.0;
+    // raw reference operator
+    let _ = &raw mut foo;
+    let _ = &raw const foo;
+    let _ = &raw foo;
+}
+
+type T = S<i32, dyn T, fn()>;
+
+// 2015
+type DynPlain = dyn Path;
+type DynRef = &dyn Path;
+type DynLt = dyn 'a + Path;
+type DynQuestion = dyn ?Path;
+type DynFor = dyn for<'a> Path;
+type DynParen = dyn(Path);
+type Path = dyn::Path;
+type Generic = dyn<Path>;
+
+fn main() { || _ = 0; }
+
+use {a, b, c};
+
+const A: &[i64] = &[1, #[cfg(test)] 2];
+
+fn foo() {
+    x[1][2];
+}
+
+fn foo() {
+    return;
+    return 92;
+}
+
+type Foo = () where Foo: Copy;
+
+type Never = !;
+
+fn foo<T>() where T: Copy {}
+
+fn foo() {
+    let _ = a;
+    let _ = a::b;
+    let _ = ::a::<b>;
+    let _ = format!();
+}
+
+fn foo() {
+    builtin#asm("");
+    builtin#global_asm("");
+    builtin#naked_asm("");
+}
+
+fn foo<T: for<'a> [const] async Trait>() {}
+
+type A = dyn Iterator<Item=Foo<'a>> + 'a;
+
+trait T { fn new() -> Self; }
+
+fn foo() {
+    let _s = S { .. };
+}
+
+// 2024
+pub fn main() {
+    gen { yield ""; };
+    async gen { yield ""; };
+    gen move { yield ""; };
+    async gen move { yield ""; };
+}
+
+fn foo() {}
+fn bar() -> () {}
+
+fn main() {
+    S { #[cfg(test)] field: 1 }
+}
+
+pub(crate) struct S;
+pub(self) struct S;
+pub(super) struct S;
+
+type Placeholder = _;
+
+fn foo() {
+    match () {
+        #[cfg(feature = "some")]
+        _ => (),
+        #[cfg(feature = "other")]
+        _ => (),
+        #[cfg(feature = "many")]
+        #[cfg(feature = "attributes")]
+        #[cfg(feature = "before")]
+        _ => (),
+    }
+}
+
+use ::*;
+use std::{::*};
+
+fn foo() {
+    if true {}
+    loop {}
+    match () {}
+    while true {}
+    for _ in () {}
+    {}
+    {}
+    macro_rules! test {
+         () => {}
+    }
+    test!{}
+}
+
+fn foo() {
+   let mut p = F{x: 5};
+   {p}.x = 10;
+}
+
+// 2015
+fn foo() { try!(Ok(())); }
+
+fn f<T: Clone>() {}
+
+fn foo() {
+    let foo::Bar = ();
+    let ::Bar = ();
+    let Bar { .. } = ();
+    let Bar(..) = ();
+}
+
+struct A<const N: i32 = { 1 }>;
+
+struct U { i: i32, f: f32 }
+
+type M = *mut ();
+type C = *mut ();
+
+impl<const N: u32> Bar<N> {}
+
+type T = [()];
+
+fn foo() {
+   for x in 0 .. {
+       break;
+   }
+}
+
+use crate::foo;
+
+struct S { f: f32 = 0.0 }
+
+fn foo() {
+    _ = 1;
+    Some(_) = None;
+}
+
+fn foo() {
+    match () {
+        _ => (),
+        _ if Test > Test{field: 0} => (),
+        X | Y if Z => (),
+        | X | Y if Z => (),
+        | X => (),
+    };
+}
+
+fn foo<T>()
+where
+    T::method(..): Send,
+    method(..): Send,
+    method::(..): Send,
+{}
+
+impl S { #![attr] }
+
+fn a() {}
+fn b() { let _ = 1; }
+fn c() { 1; 2; }
+fn d() { 1; 2 }
+
+fn foo() {
+    let _ = f();
+    let _ = f()(1)(1, 2,);
+    let _ = f(<Foo>::func());
+    f(<Foo as Trait>::func());
+}
+
+fn foo() {
+    'a: loop {}
+    'b: while true {}
+    'c: for x in () {}
+}
+
+impl T for Foo {
+    default async fn foo() {}
+}
+
+trait Z<U> = T<U>;
+
+use std::*;
+
+fn main() {
+    let &a = ();
+    let &mut b = ();
+}
+
+fn foo() {
+    let S {} = ();
+    let S { f, ref mut g } = ();
+    let S { h: _, ..} = ();
+    let S { h: _, } = ();
+    let S { #[cfg(any())] .. } = ();
+}
+
+fn foo()
+where
+   'a: 'b + 'c,
+   T: Clone + Copy + 'static,
+   Iterator::Item: 'a,
+   <T as Iterator>::Item: 'a
+{}
+
+macro_rules! {}
+macro_rules! ();
+macro_rules! [];
+fn main() {
+    let foo = macro_rules!();
+}
+
+fn f<T: Clone>() {}
+
+struct B(pub (super::A));
+struct B(pub (crate::A,));
+
+type A = 'static + Trait;
+type B = S<'static + Trait>;
+
+type A = Foo<syn::Token![_]>;
+
+fn foo<F: Foo<N=3>>() {}
+const TEST: usize = 3;
+fn bar<F: Foo<N={TEST}>>() {}
+
+type F = Start::(Middle) -> (Middle)::End;
+type GenericArg = S<Start(Middle)::End>;
+
+type T = S<92>;
+
+fn main() {
+    let const { 15 } = ();
+    let const { foo(); bar() } = ();
+
+    match 42 {
+        const { 0 } .. const { 1 } => (),
+        .. const { 0 } => (),
+        const { 2 } .. => (),
+    }
+
+    let (const { () },) = ();
+}
+
+type T = S<-92>;
+
+type T = StreamingIterator<Item<'a>: Clone>;
+type T = StreamingIterator<Item(T): Clone>;
+
+fn foo() {}
+macro_rules! foo {}
+foo::bar!();
+super::baz! {}
+struct S;
+
+struct S<T = i32>;
+
+type A = for<'a> fn() -> ();
+type B = for<'a> unsafe extern "C" fn(&'a ()) -> ();
+type Obj = for<'a> PartialEq<&'a i32>;
+
+const fn foo(_: impl [const] Trait) {}
+
+use *;
+use std::{*};
+
+const _: u32 = 0;
+
+fn foo<T: Clone + Copy>(){}
+
+fn f() { v = {1}&2; }
+
+fn foo() {
+    x.await;
+    x.0.await;
+    x.0().await?.hello();
+    x.0.0.await;
+    x.0. await;
+}
+
+fn foo() {
+    if let Some(_) = None && true {}
+    while 1 == 5 && (let None = None) {}
+}
+
+fn foo() {
+    || ();
+    || -> i32 { 92 };
+    |x| x;
+    move |x: i32,| x;
+    async || {};
+    move || {};
+    async move || {};
+    static || {};
+    static move || {};
+    static async || {};
+    static async move || {};
+    for<'a> || {};
+    for<'a> move || {};
+}
+
+default unsafe impl T for Foo {
+    default unsafe fn foo() {}
+}
+
+pub(in super::A) struct S;
+pub(in crate) struct S;
+
+type Plain = Foo<Item, Item::Item, Item: Bound, Item = Item>;
+type GenericArgs = Foo<Item<T>, Item::<T>, Item<T>: Bound, Item::<T>: Bound, Item<T> = Item, Item::<T> = Item>;
+type ParenthesizedArgs = Foo<Item(T), Item::(T), Item(T): Bound, Item::(T): Bound, Item(T) = Item, Item::(T) = Item>;
+type RTN = Foo<Item(..), Item(..), Item(..): Bound, Item(..): Bound, Item(..) = Item, Item(..) = Item>;
+
+fn foo() {
+    do yeet;
+    do yeet 1
+}
+
+struct S;
+
+fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
+
+enum E { X(i32) = 10 }
+
+// 2015
+type A = Foo<dyn T>;
+
+fn foo() { let R { a: | 1 | 2 } = 0; }
+
+type A = impl Iterator<Item=Foo<'a>> + 'a;
+
+type T = (i32,);
+
+fn foo() {
+    match () {
+        _ if foo => (),
+        _ if let foo = bar => (),
+    }
+}
+
+fn f() {
+    let _ = {1} & 2;
+    {1} &2;
+}
+
+struct A<const N: i32 = i32::MAX>;
+
+fn foo() {
+    match () {
+        _ => {}
+        () => {}
+        [] => {}
+    }
+}
+
+extern "C" { fn printf(format: *const i8, ..., _: u8) -> i32; }
+
+type T = [(); 92];
+
+use ::std;
+use std::collections;
+
+use self::m;
+use super::m;
+use crate::m;
+
+fn main() {
+    let (a, b, ..) = ();
+    let (a,) = ();
+    let (..) = ();
+    let () = ();
+    let (| a | a, | b) = ((),());
+}
+
+impl T for Foo {
+    default async unsafe fn foo() {}
+}
+
+fn foo() {
+    loop {};
+}
+
+fn foo() {
+    yield;
+    yield 1;
+}
+
+use std::{collections};
+
+type Foo = Bar;
+
+type Foo = fn(Bar::Baz);
+type Qux = fn(baz: Bar::Baz);
+
+impl S {
+    fn a(self: &Self) {}
+    fn b(mut self: Box<Self>) {}
+}
+
+fn foo() {
+    match () {
+        _ => (),
+        _ => {}
+        _ => ()
+    }
+}
+
+fn f() {
+    let 0 .. = 1u32;
+    let 0..: _ = 1u32;
+
+    match 42 {
+        0 .. if true => (),
+        _ => (),
+    }
+}
+
+fn foo() {
+    loop {
+        continue;
+        continue 'l;
+    }
+}
+
+fn f() { let x: i32; }
+
+fn main() { let _ = (); }
+
+type X = <A as B>::Output;
+fn foo() { <usize as Default>::default(); }
+
+const C<i32>: u32 = 0;
+impl Foo {
+    const C<'a>: &'a () = &();
+}
+
+const C<i32>: u32 = 0
+where i32: Copy;
+trait Foo {
+    const C: i32 where i32: Copy;
+}
+
+trait T: Hash + Clone {}
+
+fn foo() {
+    ();
+    (1);
+    (1,);
+}
+
+type A = foo!();
+type B = crate::foo!();
+
+type A = Foo;
+type B = ::Foo;
+type C = self::Foo;
+type D = super::Foo;
+
+fn foo() {
+    for x in [] {};
+}
+
+fn foo() {
+    || .. .method();
+    || .. .field;
+}
+
+fn foo() {
+    builtin#asm("", label {});
+}
+
+type F = Box<Fn(i32) -> ()>;
+type F = Box<::Fn(i32) -> ()>;
+type F = Box<Fn::(i32) -> ()>;
+type F = Box<::Fn::(i32) -> ()>;
+
+fn main() {
+    let box i = ();
+    let box Outer { box i, j: box Inner(box &x) } = ();
+    let box ref mut i = ();
+}
+
+fn main() {
+    foo(#[attr] 92)
+}
+
+const C: u32 = 92;
+
+unsafe extern "C" {}
+extern {}
+
+type T = (i32);
+
+struct MyStruct(pub (u32, u32));
+struct MyStruct(pub (u32));
+struct MyStruct(pub ());
+
+fn f() { let Some(x) = opt else { return }; }
+
+fn foo() {
+    while true {};
+    while let Some(x) = it.next() {};
+    while { true } {};
+}
+
+type T = S<"hello", 0xdeadbeef>;
+
+fn foo() {
+    x.foo();
+    y.bar::<T>(1, 2,);
+    x.0.0.call();
+    x.0. call();
+    x.0()
+}
+
+fn main() { for<'a> || (); }
+
+type Foo = fn(_: bar);
+
+fn foo() { xs[..]; }
+
+trait T { fn foo(); }
+
+fn f() { let x: i32 = 92; super let y; super::foo; }
+
+fn foo() {
+    82 as i32;
+    81 as i8 + 1;
+    79 as i16 - 1;
+    0x36 as u8 <= 0x37;
+}
+
+fn f(#[attr1] pat: Type) {}
+
+struct S (#[attr] f32);
+
+fn foo() {
+    builtin#asm(
+        "mov {tmp}, {x}",
+        "shl {tmp}, 1",
+        "shl {x}, 2",
+        "add {x}, {tmp}",
+        x = inout(reg) x,
+        tmp = out(reg) _,
+    );
+}
+
+impl !Send for S {}
+
+fn f() { let _ = &1 as *const i32; }
+
+fn for_trait<F>()
+where
+   for<'a> F: Fn(&'a str)
+{ }
+
+#!/usr/bin/env cargo
+
+---
+[dependencies]
+clap = { version = "4.2", features = ["derive"] }
+---
+
+fn main() {}
+
+fn foo() {
+    loop {
+        break;
+        break 'l;
+        break 92;
+        break 'l 92;
+    }
+}
+
+trait Z<U> = T<U> where U: Copy;
+trait Z<U> = where Self: T<U>;
+
+const fn foo(_: impl const Trait) {}
+
+fn foo() {
+    become foo();
+}
+
+use outer::tree::{inner::tree};
+
+struct A<const N: i32 = -1>;
+
+struct S {}
+
+fn foo() { safe = true; }
+
+type A = &();
+type B = &'static ();
+type C = &mut ();
+
+fn main() {
+    let a = ();
+    let mut b = ();
+    let ref c = ();
+    let ref mut d = ();
+    let e @ _ = ();
+    let ref mut f @ g @ _ = ();
+}
+
+fn foo() {
+    let x = 1..;
+    match 1.. { _ => () };
+    match a.b()..S { _ => () };
+}
+
+extern crate foo as bar;
+extern crate self as bar;
+
+fn foo(){
+    ;;;some_expr();;;;{;;;};;;;Ok(())
+}
+
+struct S<const N: u32>;
+
+fn a() { fn b() {} }
+
+fn foo() -> Box<T + 'f> {}
+fn foo() -> Box<dyn T + 'f> {}
+
+fn main() {
+    match () {
+        (_ | _) => (),
+        &(_ | _) => (),
+        (_ | _,) => (),
+        [_ | _,] => (),
+    }
+}
+
+fn async_foo(_: impl async Fn(&i32)) {}
+
+fn foo<#[lt_attr] 'a, #[t_attr] T>() {}
+
+type T = ();
+
+impl F {
+    type A = i32;
+    const B: i32 = 92;
+    fn foo() {}
+    fn bar(&self) {}
+}
+
+fn f<'a: 'b>() {}
+
+fn f(#[must_use] self) {}
+
+fn main() {
+    let m!(x) = 0;
+}
+
+mod a;
+
+fn foo() {}
+
+type T = S<'static>;
+
+fn foo() {
+    **&1;
+    !!true;
+    --1;
+}
+
+fn foo(x: i32) {}
+
+fn main() {
+    foo(loop {});
+}
+
+fn foo() { let r#struct = 92; let r#trait = r#struct * 2; }
+
+fn main() {
+    Some(for _ in [1].into_iter() {});
+    Some(loop { break; });
+    Some(while true {});
+}
+
+/// Example
+
+fn test() {}
+
+static FOO: u32 = 1;
+static mut BAR: i32 = 92;
+
+fn a() {}
+pub fn b() {}
+pub macro m($:ident) {}
+pub(crate) fn c() {}
+pub(super) fn d() {}
+pub(in foo::bar::baz) fn e() {}
+
+use ::foo::bar::baz;
+use foo::bar::baz;
+
+struct S<T: Copy> {
+    f: T,
+}
+
+enum E1 {
+}
+
+enum E2<T> {
+}
+
+enum E3 {
+    X
+}
+
+enum E4 {
+    X,
+}
+
+enum E5 {
+    A,
+    B = 92,
+    C {
+        a: u32,
+        pub b: f64,
+    },
+    F {},
+    D(u32,),
+    E(),
+}
+
+// https://github.com/rust-lang/rust-analyzer/issues/674
+
+struct Repr { raw: [u8; 1] }
+
+fn abc() {
+    Repr { raw: [0] }.raw[0] = 0;
+    Repr{raw:[0]}();
+}
+
+fn main() {
+    if 1.0f32.floor() as i64 != 1.0f32.floor() as i64 {}
+}
+
+fn main() {
+    extern fn f() {}
+}
+
+fn foo() {
+    1 + *&2 + 3;
+    *&1 as u64;
+    *x(1);
+    &x[1];
+    -1..2;
+}
+
+use self::foo;
+use super::super::bar;
+
+// https://github.com/rust-lang/rust-analyzer/issues/972
+
+fn main() {
+    match Some(-1) {
+        Some(-1) => (),
+        _ => (),
+    }
+
+    match Some((-1, -1)) {
+        Some((-1, -1)) => (),
+        _ => (),
+    }
+
+    match A::B(-1, -1) {
+        A::B(-1, -1) => (),
+        _ => (),
+    }
+
+    if let Some(-1) = Some(-1) {
+    }
+}
+
+enum A {
+    B(i8, i8)
+}
+
+fn foo(-128..=127: i8) {}
+
+fn test_serialization<SER>()
+where
+    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
+{}
+
+struct S {
+    r#foo: u32
+}
+
+extern crate foo;
+extern crate foo as bar;
+extern crate self as baz;
+
+unsafe extern {
+    // sqrt (from libm) may be called with any `f64`
+    pub safe fn sqrt(x: f64) -> f64;
+
+    // strlen (from libc) requires a valid pointer,
+    // so we mark it as being an unsafe fn
+    pub unsafe fn strlen(p: *const c_char) -> usize;
+
+    // this function doesn't say safe or unsafe, so it defaults to unsafe
+    pub fn free(p: *mut core::ffi::c_void);
+
+    pub safe static mut COUNTER: i32;
+
+    pub unsafe static IMPORTANT_BYTES: [u8; 256];
+
+    pub safe static LINES: SyncUnsafeCell<i32>;
+}
+
+extern "C" {
+    //! This is a doc comment
+    #![doc("This is also a doc comment")]
+}
+
+fn inner() {
+    #![doc("Inner attributes allowed here")]
+    //! As are ModuleDoc style comments
+    {
+        #![doc("Inner attributes are allowed in blocks used as statements")]
+        #![doc("Being validated is not affected by duplicates")]
+        //! As are ModuleDoc style comments
+    };
+    {
+        #![doc("Inner attributes are allowed in blocks when they are the last statement of another block")]
+        //! As are ModuleDoc style comments
+    }
+}
+
+fn outer() {
+    let _ = #[doc("Outer attributes are always allowed")] {};
+}
+
+// https://github.com/rust-lang/rust-analyzer/issues/689
+impl Whatever {
+    fn salsa_event(&self, event_fn: impl Fn() -> Event<Self>) {
+        #![allow(unused_variables)] // this is  `inner_attr` of the block
+    }
+}
+
+fn f() {
+    (#[a] lhs? + #[b] rhs.await)
+}
+
+/// Some docs
+#[macro_export]
+macro_rules! foo {
+    () => {};
+}
+
+fn for_trait<F>()
+where
+    for<'a> F: Fn(&'a str),
+{
+}
+fn for_ref<F>()
+where
+    for<'a> &'a F: Debug,
+{
+}
+fn for_parens<F>()
+where
+    for<'a> (&'a F): Fn(&'a str),
+{
+}
+fn for_slice<F>()
+where
+    for<'a> [&'a F]: Eq,
+{
+}
+fn for_qpath<T>(_t: &T)
+where
+    for<'a> <&'a T as Baz>::Foo: Iterator,
+{
+}
+fn for_for_fn<T>()
+where
+    for<'a> for<'b> fn(&'a T, &'b T): Copy,
+{
+}
+
+#![attr]
+#![attr(true)]
+#![attr(ident)]
+#![attr(ident, 100, true, "true", ident = 100, ident = "hello", ident(100))]
+#![attr(100)]
+#![attr(enabled = true)]
+#![enabled(true)]
+#![attr("hello")]
+#![repr(C, align = 4)]
+#![repr(C, align(4))]
+
+extern "C" {
+    fn a(_: *mut u8, ...,);
+    fn b(_: *mut u8, _: ...);
+    fn c(_: *mut u8, #[cfg(never)] [w, t, f]: ...,);
+}
+
+fn main() {
+    match .. {
+    }
+}
+
+fn binding_power() {
+    let x = 1 + 2 * 3 % 4 - 5 / 6;
+    1 + 2 * 3;
+    1 << 2 + 3;
+    1 & 2 >> 3;
+    1 ^ 2 & 3;
+    1 | 2 ^ 3;
+    1 == 2 | 3;
+    1 && 2 == 3;
+    //1 || 2 && 2;
+    //1 .. 2 || 3;
+    //1 = 2 .. 3;
+    //---&*1 - --2 * 9;
+}
+
+fn right_associative() {
+    a = b = c;
+    a = b += c -= d;
+    a = b *= c /= d %= e;
+    a = b &= c |= d ^= e;
+    a = b <<= c >>= d;
+}
+
+fn mixed_associativity() {
+    // (a + b) = (c += ((d * e) = f))
+    a + b = c += d * e = f;
+}
+
+struct A;
+struct B {}
+struct C();
+
+struct D {
+    a: u32,
+    pub b: u32
+}
+
+struct E(pub x, y,);
+
+//! Adapted from a `rustc` test, which can be found at
+//! https://github.com/rust-lang/rust/blob/6d34ec18c7d7e574553f6347ecf08e1e1c45c13d/src/test/run-pass/weird-exprs.rs.
+//!
+//! Reported to rust-analyzer in https://github.com/rust-lang/rust-analyzer/issues/290
+
+#![allow(non_camel_case_types)]
+#![allow(dead_code)]
+#![allow(unreachable_code)]
+#![allow(unused_parens)]
+
+#![recursion_limit = "128"]
+
+use std::cell::Cell;
+use std::mem::swap;
+
+// Just a grab bag of stuff that you wouldn't want to actually write.
+
+fn strange() -> bool { let _x: bool = return true; }
+
+fn funny() {
+    fn f(_x: ()) { }
+    f(return);
+}
+
+fn what() {
+    fn the(x: &Cell<bool>) {
+        return while !x.get() { x.set(true); };
+    }
+    let i = &Cell::new(false);
+    let dont = {||the(i)};
+    dont();
+    assert!((i.get()));
+}
+
+fn zombiejesus() {
+    loop {
+        while (return) {
+            if (return) {
+                match (return) {
+                    1 => {
+                        if (return) {
+                            return
+                        } else {
+                            return
+                        }
+                    }
+                    _ => { return }
+                };
+            } else if (return) {
+                return;
+            }
+        }
+        if (return) { break; }
+    }
+}
+
+fn notsure() {
+    let mut _x: isize;
+    let mut _y = (_x = 0) == (_x = 0);
+    let mut _z = (_x = 0) < (_x = 0);
+    let _a = (_x += 0) == (_x = 0);
+    let _b = swap(&mut _y, &mut _z) == swap(&mut _y, &mut _z);
+}
+
+fn canttouchthis() -> usize {
+    fn p() -> bool { true }
+    let _a = (assert!((true)) == (assert!(p())));
+    let _c = (assert!((p())) == ());
+    let _b: bool = (println!("{}", 0) == (return 0));
+}
+
+fn angrydome() {
+    loop { if break { } }
+    let mut i = 0;
+    loop { i += 1; if i == 1 { match (continue) { 1 => { }, _ => panic!("wat") } }
+      break; }
+}
+
+fn evil_lincoln() { let _evil = println!("lincoln"); }
+
+fn dots() {
+    assert_eq!(String::from(".................................................."),
+               format!("{:?}", .. .. .. .. .. .. .. .. .. .. .. .. ..
+                               .. .. .. .. .. .. .. .. .. .. .. ..));
+}
+
+fn u8(u8: u8) {
+    if u8 != 0u8 {
+        assert_eq!(8u8, {
+            macro_rules! u8 {
+                (u8) => {
+                    mod u8 {
+                        pub fn u8<'u8: 'u8 + 'u8>(u8: &'u8 u8) -> &'u8 u8 {
+                            "u8";
+                            u8
+                        }
+                    }
+                };
+            }
+
+            u8!(u8);
+            let &u8: &u8 = u8::u8(&8u8);
+            crate::u8(0u8);
+            u8
+        });
+    }
+}
+
+fn fishy() {
+    assert_eq!(String::from("><>"),
+               String::<>::from::<>("><>").chars::<>().rev::<>().collect::<String>());
+}
+
+fn union() {
+    union union<'union> { union: &'union union<'union>, }
+}
+
+fn special_characters() {
+    let val = !((|(..):(_,_),__@_|__)((&*"\\",'🤔')/**/,{})=={&[..=..][..];})//
+    ;
+    assert!(!val);
+}
+
+fn punch_card() -> impl std::fmt::Debug {
+    ..=..=.. ..    .. .. .. ..    .. .. .. ..    .. ..=.. ..
+    ..=.. ..=..    .. .. .. ..    .. .. .. ..    ..=..=..=..
+    ..=.. ..=..    ..=.. ..=..    .. ..=..=..    .. ..=.. ..
+    ..=..=.. ..    ..=.. ..=..    ..=.. .. ..    .. ..=.. ..
+    ..=.. ..=..    ..=.. ..=..    .. ..=.. ..    .. ..=.. ..
+    ..=.. ..=..    ..=.. ..=..    .. .. ..=..    .. ..=.. ..
+    ..=.. ..=..    .. ..=..=..    ..=..=.. ..    .. ..=.. ..
+}
+
+fn ktulhu() {
+    ;;;();;;;;;;;;()
+}
+
+pub fn main() {
+    strange();
+    funny();
+    what();
+    zombiejesus();
+    notsure();
+    canttouchthis();
+    angrydome();
+    evil_lincoln();
+    dots();
+    u8(8u8);
+    fishy();
+    union();
+    special_characters();
+    punch_card();
+    ktulhu();
+}
+
+use foo as bar;
+use foo::{a as b, *, ::*, ::foo as x};
+
+fn g1(#[attr1] #[attr2] pat: Type) {}
+fn g2(#[attr1] x: u8) {}
+
+extern "C" { fn printf(format: *const i8, #[attr] ...) -> i32; }
+
+trait Foo {
+    fn bar(#[attr] _: u64, # [attr] mut x: i32);
+}
+
+impl S {
+     fn f(#[must_use] self) {}
+     fn g1(#[attr] self) {}
+     fn g2(#[attr] &self) {}
+     fn g3<'a>(#[attr] &mut self) {}
+     fn g4<'a>(#[attr] &'a self) {}
+     fn g5<'a>(#[attr] &'a mut self) {}
+     fn c(#[attr] self: Self) {}
+     fn d(#[attr] self: Rc<Self>) {}
+}
+
+fn r#foo() {
+}
+
+use foo;
+use ::bar;
+
+
+struct S {
+    foo: u32
+}
+
+fn foo() {
+    async {};
+    async move {};
+}
+
+#!/use/bin/env rusti
+
+// https://github.com/rust-lang/rust-analyzer/issues/357
+
+//! docs
+// non-docs
+mod foo {}
+
+type X = ();
+
+fn main() {
+    let ():::X = ();
+}
+
+use *;
+use ::*;
+use ::{};
+use {};
+use foo::*;
+use foo::{};
+use ::foo::{a, b, c};
+
+fn foo(x: impl std::future::Future<Output = i32>) {}
+
+fn main() {
+    foo(async move { 12 })
+}
+
+struct A<T>;
+struct B<T:>;
+struct C<T: 'a>;
+struct D<T: 'a + >;
+struct E<T: 'a + 'd >;
+struct F<T: 'a + 'd + Clone>;
+struct G<T: Clone + Copy>;
+struct H<T: ::Foo + self::Bar + 'a>;
+struct I<T:, U:,>;
+struct K<'a: 'd, 'd: 'a + 'b, T: 'a + 'd + Clone>;
+
+async fn foo() {}
+extern fn foo() {}
+const fn foo() {}
+const unsafe fn foo() {}
+unsafe extern "C" fn foo() {}
+unsafe fn foo() {}
+async unsafe fn foo() {}
+const unsafe fn bar() {}
+
+unsafe trait T {}
+auto trait T {}
+unsafe auto trait T {}
+
+unsafe impl Foo {}
+default impl Foo {}
+unsafe default impl Foo {}
+
+unsafe extern "C++" {}
+
+fn main() {
+    unsafe fn f() {}
+    unsafe { 92 }
+}
+
+// https://github.com/rust-lang/rust-analyzer/issues/677
+fn main() {
+    #[cfg(feature = "backtrace")]
+    let exit_code = panic::catch_unwind(move || main());
+}
+
+fn main() {
+    make_query(crate::module_map::module_tree);
+}
+
+fn foo() {
+    ..1 + 1;
+    ..z = 2;
+    x = false..1 == 1;
+    let x = 1..;
+
+    ..=1 + 1;
+    ..=z = 2;
+    x = false..=1 == 1;
+    let x = 1..;
+}
+
+// format with label break value.
+fn main() {
+    'empty_block: {}
+
+    'block: {
+        do_thing();
+        if condition_not_met() {
+            break 'block;
+        }
+        do_next_thing();
+        if condition_not_met() {
+            break 'block;
+        }
+        do_last_thing();
+    }
+
+    let result = 'block: {
+        if foo() {
+            // comment
+            break 'block 1;
+        }
+        if bar() {
+            /* comment */
+            break 'block 2;
+        }
+        3
+    };
+}
+
+// https://github.com/rust-lang/rust-analyzer/issues/311
+
+pub fn foo<S: Iterator>() -> String
+where
+    <S as Iterator>::Item: Eq,
+{
+    "".to_owned()
+}
+
+fn main() {
+    let _ = 'c'u32;
+    let _ = "string"invalid;
+    let _ = b'b'_suff;
+    let _ = b"bs"invalid;
+}
+
+mod c {
+    fn foo() {
+    }
+    struct S {}
+}
+
+mod d {
+    #![attr]
+    mod e;
+    mod f {
+    }
+}
+
+fn test() where (u64, u64): Foo {}
+
+fn a() -> Foo<bar::Baz> {}
+
+fn b(_: impl FnMut(x::Y)) {}
+
+fn c(_: impl FnMut(&x::Y)) {}
+
+#[foo(a,)]
+fn foo() {}
+
+type Foo<'a> = &'a (dyn Send + Sync);
+type Foo = *const (dyn Send + Sync);
+type Foo = fn() -> (dyn Send + 'static);
+fn main() {
+    let b = (&a) as &(dyn Add<Other, Output = Addable> + Other);
+}
+
+fn foo() {
+    let (mut a, mut b) = (0, 1);
+    (b, a, ..) = (a, b);
+    (_) = ..;
+    struct S { a: i32 }
+    S { .. } = S { ..S::default() };
+    Some(..) = Some(0);
+    Ok(_) = 0;
+    let (a, b);
+    [a, .., b] = [1, .., 2];
+    (_, _) = (a, b);
+    (_) = (a, b);
+    _ = (a, b);
+}
+
+fn main() {
+    0 as usize ..;
+    1 + 2 as usize ..;
+}
+
+macro parse_use_trees($($s:expr),* $(,)*) {
+    vec![
+        $(parse_use_tree($s),)*
+    ]
+}
+
+#[test]
+fn test_use_tree_merge() {
+    macro test_merge([$($input:expr),* $(,)*], [$($output:expr),* $(,)*]) {
+        assert_eq!(
+            merge_use_trees(parse_use_trees!($($input,)*)),
+            parse_use_trees!($($output,)*),
+        );
+    }
+}
+
+extern {
+    pub fn socket(domain: ::c_int, ty: ::c_int, protocol: ::c_int) -> ::c_int;
+    pub fn bind(fd: ::c_int, addr: *const sockaddr, len: socklen_t) -> ::c_int;
+    pub fn connect(socket: ::c_int, address: *const sockaddr,
+                   len: socklen_t) -> ::c_int;
+    pub fn listen(socket: ::c_int, backlog: ::c_int) -> ::c_int;
+    pub fn getsockname(socket: ::c_int, address: *mut sockaddr,
+                       address_len: *mut socklen_t) -> ::c_int;
+    pub fn getsockopt(sockfd: ::c_int,
+                      level: ::c_int,
+                      optname: ::c_int,
+                      optval: *mut ::c_void,
+                      optlen: *mut ::socklen_t) -> ::c_int;
+    pub fn setsockopt(socket: ::c_int, level: ::c_int, name: ::c_int,
+                      value: *const ::c_void,
+                      option_len: socklen_t) -> ::c_int;
+    pub fn getpeername(socket: ::c_int, address: *mut sockaddr,
+                       address_len: *mut socklen_t) -> ::c_int;
+    pub fn sendto(socket: ::c_int, buf: *const ::c_void, len: ::size_t,
+                  flags: ::c_int, addr: *const sockaddr,
+                  addrlen: socklen_t) -> ::ssize_t;
+    pub fn send(socket: ::c_int, buf: *const ::c_void, len: ::size_t,
+                flags: ::c_int) -> ::ssize_t;
+    pub fn recvfrom(socket: ::c_int, buf: *mut ::c_void, len: ::size_t,
+                    flags: ::c_int, addr: *mut ::sockaddr,
+                    addrlen: *mut ::socklen_t) -> ::ssize_t;
+    pub fn recv(socket: ::c_int, buf: *mut ::c_void, len: ::size_t,
+                flags: ::c_int) -> ::ssize_t;
+}
+
+// https://github.com/rust-lang/rust-analyzer/issues/596
+
+struct Foo;
+
+impl Foo {
+    fn bar() -> bool {
+        unimplemented!()
+    }
+}
+
+fn baz(_: bool) {}
+
+fn main() {
+    baz(<Foo>::bar())
+}
+
+// https://github.com/rust-lang/rust-analyzer/pull/983
+
+fn compound_assignment() {
+    let mut a = 0;
+    a += 1;
+    a -= 2;
+    a *= 3;
+    a %= 4;
+    a /= 5;
+    a |= 6;
+    a &= 7;
+    a ^= 8;
+    a <= 9;
+    a >= 10;
+    a >>= 11;
+    a <<= 12;
+}
+
+
+fn main() {
+    const fn f() {}
+}
+
+trait T {
+    fn f1((a, b): (usize, usize)) {}
+    fn f2(S { a, b }: S) {}
+    fn f3(NewType(a): NewType) {}
+    fn f4(&&a: &&usize) {}
+    fn bar(_: u64, mut x: i32);
+}
+
+fn f<T>() where T: Fn() -> u8 + Send {}
+
+impl U {
+    fn f1((a, b): (usize, usize)) {}
+    fn f2(S { a, b }: S) {}
+    fn f3(NewType(a): NewType) {}
+    fn f4(&&a: &&usize) {}
+}
+
+trait T {
+  default type T = Bar;
+  default const f: u8 = 0;
+  default fn foo() {}
+  default unsafe fn bar() {}
+}
+
+impl T for Foo {
+  default type T = Bar;
+  default const f: u8 = 0;
+  default fn foo() {}
+  default unsafe fn bar() {}
+}
+
+default impl T for () {}
+default unsafe impl T for () {}
+
+extern {
+}
+
+extern "C" {
+}
+
+#[cfg(test)]
+#[Ignore]
+fn foo() {}
+
+#[path = "a.rs"]
+mod b;
+
+struct S1<T>;
+struct S2<T>(u32);
+struct S3<T> { u: u32 }
+
+struct S4<>;
+struct S5<'a>;
+struct S6<'a:>;
+struct S7<'a: 'b>;
+struct S8<'a: 'b + >;
+struct S9<'a: 'b + 'c>;
+struct S10<'a,>;
+struct S11<'a, 'b>;
+struct S12<'a: 'b+, 'b: 'c,>;
+
+struct S13<T>;
+struct S14<T, U>;
+struct S15<'a, T, U>;
+
+trait Runnable {
+    fn handler();
+}
+
+trait TraitWithExpr {
+    fn fn_with_expr(x: [i32; 1]);
+}
+
+fn foo() {
+}
+
+fn foo() {
+   for _x in 0 .. (0 .. {1 + 2}).sum::<u32>() {
+       break;
+   }
+}
+
+fn foo() {
+    #[A] { #[B] bar!()? }
+    #[C] &()
+}
+
+br##"
+
+b"\💩"
+b"\●"
+b"\u{_0000}"
+b"\u{0000000}"
+b"\u{FFFFFF}"
+b"\u{ffffff}"
+b"\u{ffffff}"
+b"\u{DC00}"
+b"\u{DDDD}"
+b"\u{DFFF}"
+b"\u{D800}"
+b"\u{DAAA}"
+b"\u{DBFF}"
+b"\xы"
+
+0e
+0E
+
+42e+
+42e-
+42E+
+42E-
+
+42.e+
+42.e-
+42.E+
+42.E-
+
+42.2e+
+42.2e-
+42.2E+
+42.2E-
+
+42.2e+f32
+42.2e-f32
+42.2E+f32
+42.2E-f32
+
+b"\x7f
+
+0b
+0o
+0x
+
+0b_
+0o_
+0x_
+
+0bnoDigit
+0onoDigit
+0xnoDigit
+
+0xG
+0xg
+
+0x_g
+0x_G
+
+'🦀
+
+'\
+
+r## I lack a quote!
+
+b"
+
+br##"\x7f
+
+"\💩"
+"\●"
+"\u{_0000}"
+"\u{0000000}"
+"\u{FFFFFF}"
+"\u{ffffff}"
+"\u{ffffff}"
+"\u{DC00}"
+"\u{DDDD}"
+"\u{DFFF}"
+"\u{D800}"
+"\u{DAAA}"
+"\u{DBFF}"
+"\xы"
+
+b'\
+
+r##"\x7f
+
+/* /* /*
+
+br##"\n
+
+"
+
+r##"🦀
+
+b'
+
+b"\
+
+b"
+
+/** /*! /* comment */ */
+
+fn main() {
+    hello("world);
+    // a bunch of code was here
+    env("FLAGS", "-help")
+}
+
+b'\n
+
+'
+
+b'
+
+"🦀
+
+b"\n
+
+br##"\u{20AA}
+
+b"\u{20AA}
+
+"\u{20AA}
+
+br##"🦀
+
+"\x7f
+
+r##"\
+
+b'\'
+
+b'🦀
+
+'\n
+
+br##
+
+br##"\
+
+r##"
+
+"
+
+c"\💩"
+c"\●"
+c"\u{_0000}"
+c"\u{0000000}"
+c"\u{FFFFFF}"
+c"\u{ffffff}"
+c"\u{ffffff}"
+c"\u{DC00}"
+c"\u{DDDD}"
+c"\u{DFFF}"
+c"\u{D800}"
+c"\u{DAAA}"
+c"\u{DBFF}"
+c"\xы"
+
+b"\"
+
+b'\x7f
+
+br##"
+
+'
+
+b"🦀
+
+br## I lack a quote!
+
+r##"\u{20AA}
+
+b'\u{20AA}
+
+"\"
+
+"\
+
+"\n
+
+r##"
+
+/*
+
+'hello'
+''
+'
+'
+'spam'
+'\x0ff'
+'\"a'
+'\na'
+'\ra'
+'\ta'
+'\\a'
+'\'a'
+'\0a'
+'\u{0}x'
+'\u{1F63b}}'
+'\v'
+'\💩'
+'\●'
+'\\\r'
+'\x'
+'\x0'
+'\xf'
+'\xa'
+'\xx'
+'\xы'
+'\x🦀'
+'\xtt'
+'\xff'
+'\xFF'
+'\x80'
+'\u'
+'\u[0123]'
+'\u{0x}'
+'\u{'
+'\u{0000'
+'\u{}'
+'\u{_0000}'
+'\u{0000000}'
+'\u{FFFFFF}'
+'\u{ffffff}'
+'\u{ffffff}'
+'\u{DC00}'
+'\u{DDDD}'
+'\u{DFFF}'
+'\u{D800}'
+'\u{DAAA}'
+'\u{DBFF}'
+
+'1
+'1lifetime
+
+'\'
+
+'\u{20AA}
+
+b''
+b'\'
+b'
+'
+b'spam'
+b'\x0ff'
+b'\"a'
+b'\na'
+b'\ra'
+b'\ta'
+b'\\a'
+b'\'a'
+b'\0a'
+b'\u{0}x'
+b'\u{1F63b}}'
+b'\v'
+b'\💩'
+b'\●'
+b'\\\r'
+b'\x'
+b'\x0'
+b'\xf'
+b'\xa'
+b'\xx'
+b'\xы'
+b'\x🦀'
+b'\xtt'
+b'\u'
+b'\u[0123]'
+b'\u{0x}'
+b'\u{'
+b'\u{0000'
+b'\u{}'
+b'\u{_0000}'
+b'\u{0000000}'
+b'\u{FFFFFF}'
+b'\u{ffffff}'
+b'\u{ffffff}'
+b'\u{DC00}'
+b'\u{DDDD}'
+b'\u{DFFF}'
+b'\u{D800}'
+b'\u{DAAA}'
+b'\u{DBFF}'
+
+'\x7f
+
+r##"\n
+
+r##
+
+/* comment
+
+async fn use struct trait enum impl true false as extern crate
+mod pub self super in where for loop while if match const
+static mut type ref let else move return
+
+b'x' b"foo" br""
+b""ix br""br
+b'\n' b'\\' b'\''
+
+'a 'foo 'foo_bar_baz '_
+
+'x' ' ' '0' '\x7f' '\n' '\\' '\''
+
+#!/usr/bin/env cargo
+
+---
+[dependencies]
+clap = "4"
+---
+
+fn main() {
+}
+
+"hello" r"world" "\n\"\\no escape" "multi
+line"
+
+hello world
+
+0 00 0_ 0. 0z
+01790 0b1790 0o1790 0x1790aAbBcCdDeEfF 001279 0_1279 0.1279 0e1279 0E1279
+0..2
+0.foo()
+0e+1
+0.e+1
+0.0E-2
+0___0.10000____0000e+111__
+1i64 92.0f32 11__s
+
+/* */
+/**/
+/* /* */ */
+
+a b  c
+d
+
+e	f
+
+r###"this is a r##"raw"## string"###
+
+r#raw_ident
+
+foo foo_ _foo _ __ x привет
+
+#!/usr/bin/env bash
+// hello
+//! World
+//!! Inner line doc
+/// Outer line doc
+//// Just a comment
+
+//
+//!
+//!!
+///
+////
+
+//@ edition: 2021
+
+#"foo"
+
+
+---
+[dependencies]
+clap = "4"
+---
+
+fn main() {
+}
+
+; , ( ) { } [ ] < > @ # ~ ? $ & | + * / ^ %
+. .. ... ..=
+: ::
+= =>
+! !=
+- ->
+
+//! Lexing `&str` into a sequence of Rust tokens.
+//!
+//! Note that strictly speaking the parser in this crate is not required to work
+//! on tokens which originated from text. Macros, eg, can synthesize tokens out
+//! of thin air. So, ideally, lexer should be an orthogonal crate. It is however
+//! convenient to include a text-based lexer here!
+//!
+//! Note that these tokens, unlike the tokens we feed into the parser, do
+//! include info about comments and whitespace.
+
+use std::ops;
+
+use rustc_literal_escaper::{
+    EscapeError, Mode, unescape_byte, unescape_byte_str, unescape_c_str, unescape_char,
+    unescape_str,
+};
+
+use crate::{
+    Edition,
+    SyntaxKind::{self, *},
+    T,
+};
+
+pub struct LexedStr<'a> {
+    text: &'a str,
+    kind: Vec<SyntaxKind>,
+    start: Vec<u32>,
+    error: Vec<LexError>,
+}
+
+struct LexError {
+    msg: String,
+    token: u32,
+}
+
+impl<'a> LexedStr<'a> {
+    pub fn new(edition: Edition, text: &'a str) -> LexedStr<'a> {
+        let _p = tracing::info_span!("LexedStr::new").entered();
+        let mut conv = Converter::new(edition, text);
+        if let Ok(script) = crate::frontmatter::ScriptSource::parse(text) {
+            if let Some(shebang) = script.shebang_span() {
+                conv.push(SHEBANG, shebang.end - shebang.start, Vec::new());
+            }
+            if script.frontmatter().is_some() {
+                conv.push(FRONTMATTER, script.content_span().start - conv.offset, Vec::new());
+            }
+        } else if let Some(shebang_len) = rustc_lexer::strip_shebang(text) {
+            // Leave error reporting to `rustc_lexer`
+            conv.push(SHEBANG, shebang_len, Vec::new());
+        }
+
+        // Re-create the tokenizer from scratch every token because `GuardedStrPrefix` is one token in the lexer
+        // but we want to split it to two in edition <2024.
+        while let Some(token) =
+            rustc_lexer::tokenize(&text[conv.offset..], rustc_lexer::FrontmatterAllowed::No).next()
+        {
+            let token_text = &text[conv.offset..][..token.len as usize];
+
+            conv.extend_token(&token.kind, token_text);
+        }
+
+        conv.finalize_with_eof()
+    }
+
+    pub fn single_token(edition: Edition, text: &'a str) -> Option<(SyntaxKind, Option<String>)> {
+        if text.is_empty() {
+            return None;
+        }
+
+        let token = rustc_lexer::tokenize(text, rustc_lexer::FrontmatterAllowed::No).next()?;
+        if token.len as usize != text.len() {
+            return None;
+        }
+
+        let mut conv = Converter::new(edition, text);
+        conv.extend_token(&token.kind, text);
+        match &*conv.res.kind {
+            [kind] => Some((*kind, conv.res.error.pop().map(|it| it.msg))),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.text
+    }
+
+    pub fn len(&self) -> usize {
+        self.kind.len() - 1
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn kind(&self, i: usize) -> SyntaxKind {
+        assert!(i < self.len());
+        self.kind[i]
+    }
+
+    pub fn text(&self, i: usize) -> &str {
+        self.range_text(i..i + 1)
+    }
+
+    pub fn range_text(&self, r: ops::Range<usize>) -> &str {
+        assert!(r.start < r.end && r.end <= self.len());
+        let lo = self.start[r.start] as usize;
+        let hi = self.start[r.end] as usize;
+        &self.text[lo..hi]
+    }
+
+    // Naming is hard.
+    pub fn text_range(&self, i: usize) -> ops::Range<usize> {
+        assert!(i < self.len());
+        let lo = self.start[i] as usize;
+        let hi = self.start[i + 1] as usize;
+        lo..hi
+    }
+    pub fn text_start(&self, i: usize) -> usize {
+        assert!(i <= self.len());
+        self.start[i] as usize
+    }
+    pub fn text_len(&self, i: usize) -> usize {
+        assert!(i < self.len());
+        let r = self.text_range(i);
+        r.end - r.start
+    }
+
+    pub fn error(&self, i: usize) -> Option<&str> {
+        assert!(i < self.len());
+        let err = self.error.binary_search_by_key(&(i as u32), |i| i.token).ok()?;
+        Some(self.error[err].msg.as_str())
+    }
+
+    pub fn errors(&self) -> impl Iterator<Item = (usize, &str)> + '_ {
+        self.error.iter().map(|it| (it.token as usize, it.msg.as_str()))
+    }
+
+    fn push(&mut self, kind: SyntaxKind, offset: usize) {
+        self.kind.push(kind);
+        self.start.push(offset as u32);
+    }
+}
+
+struct Converter<'a> {
+    res: LexedStr<'a>,
+    offset: usize,
+    edition: Edition,
+}
+
+impl<'a> Converter<'a> {
+    fn new(edition: Edition, text: &'a str) -> Self {
+        Self {
+            res: LexedStr { text, kind: Vec::new(), start: Vec::new(), error: Vec::new() },
+            offset: 0,
+            edition,
+        }
+    }
+
+    /// Check for likely unterminated string by analyzing STRING token content
+    fn has_likely_unterminated_string(&self) -> bool {
+        let Some(last_idx) = self.res.kind.len().checked_sub(1) else { return false };
+
+        for i in (0..=last_idx).rev().take(5) {
+            if self.res.kind[i] == STRING {
+                let start = self.res.start[i] as usize;
+                let end = self.res.start.get(i + 1).map(|&s| s as usize).unwrap_or(self.offset);
+                let content = &self.res.text[start..end];
+
+                if content.contains('(') && (content.contains("//") || content.contains(";\n")) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    fn finalize_with_eof(mut self) -> LexedStr<'a> {
+        self.res.push(EOF, self.offset);
+        self.res
+    }
+
+    fn push(&mut self, kind: SyntaxKind, len: usize, errors: Vec<String>) {
+        self.res.push(kind, self.offset);
+        self.offset += len;
+
+        for msg in errors {
+            if !msg.is_empty() {
+                self.res.error.push(LexError { msg, token: self.res.len() as u32 });
+            }
+        }
+    }
+
+    fn extend_token(&mut self, kind: &rustc_lexer::TokenKind, mut token_text: &str) {
+        // A note on an intended tradeoff:
+        // We drop some useful information here (see patterns with double dots `..`)
+        // Storing that info in `SyntaxKind` is not possible due to its layout requirements of
+        // being `u16` that come from `rowan::SyntaxKind`.
+        let mut errors: Vec<String> = vec![];
+
+        let syntax_kind = {
+            match kind {
+                rustc_lexer::TokenKind::LineComment { doc_style: _ } => COMMENT,
+                rustc_lexer::TokenKind::BlockComment { doc_style: _, terminated } => {
+                    if !terminated {
+                        errors.push(
+                            "Missing trailing `*/` symbols to terminate the block comment".into(),
+                        );
+                    }
+                    COMMENT
+                }
+
+                rustc_lexer::TokenKind::Frontmatter {
+                    has_invalid_preceding_whitespace,
+                    invalid_infostring,
+                } => {
+                    if *has_invalid_preceding_whitespace {
+                        errors.push("invalid preceding whitespace for frontmatter opening".into());
+                    } else if *invalid_infostring {
+                        errors.push("invalid infostring for frontmatter".into());
+                    }
+                    FRONTMATTER
+                }
+
+                rustc_lexer::TokenKind::Whitespace => WHITESPACE,
+
+                rustc_lexer::TokenKind::Ident if token_text == "_" => UNDERSCORE,
+                rustc_lexer::TokenKind::Ident => {
+                    SyntaxKind::from_keyword(token_text, self.edition).unwrap_or(IDENT)
+                }
+                rustc_lexer::TokenKind::InvalidIdent => {
+                    errors.push("Ident contains invalid characters".into());
+                    IDENT
+                }
+
+                rustc_lexer::TokenKind::RawIdent => IDENT,
+
+                rustc_lexer::TokenKind::GuardedStrPrefix if self.edition.at_least_2024() => {
+                    // FIXME: rustc does something better for recovery.
+                    errors.push("Invalid string literal (reserved syntax)".into());
+                    ERROR
+                }
+                rustc_lexer::TokenKind::GuardedStrPrefix => {
+                    // The token is `#"` or `##`, split it into two.
+                    token_text = &token_text[1..];
+                    POUND
+                }
+
+                rustc_lexer::TokenKind::Literal { kind, .. } => {
+                    self.extend_literal(token_text.len(), kind);
+                    return;
+                }
+
+                rustc_lexer::TokenKind::Lifetime { starts_with_number } => {
+                    if *starts_with_number {
+                        errors.push("Lifetime name cannot start with a number".into());
+                    }
+                    LIFETIME_IDENT
+                }
+                rustc_lexer::TokenKind::UnknownPrefixLifetime => {
+                    errors.push("Unknown lifetime prefix".into());
+                    LIFETIME_IDENT
+                }
+                rustc_lexer::TokenKind::RawLifetime => LIFETIME_IDENT,
+
+                rustc_lexer::TokenKind::Semi => T![;],
+                rustc_lexer::TokenKind::Comma => T![,],
+                rustc_lexer::TokenKind::Dot => T![.],
+                rustc_lexer::TokenKind::OpenParen => T!['('],
+                rustc_lexer::TokenKind::CloseParen => T![')'],
+                rustc_lexer::TokenKind::OpenBrace => T!['{'],
+                rustc_lexer::TokenKind::CloseBrace => T!['}'],
+                rustc_lexer::TokenKind::OpenBracket => T!['['],
+                rustc_lexer::TokenKind::CloseBracket => T![']'],
+                rustc_lexer::TokenKind::At => T![@],
+                rustc_lexer::TokenKind::Pound => T![#],
+                rustc_lexer::TokenKind::Tilde => T![~],
+                rustc_lexer::TokenKind::Question => T![?],
+                rustc_lexer::TokenKind::Colon => T![:],
+                rustc_lexer::TokenKind::Dollar => T![$],
+                rustc_lexer::TokenKind::Eq => T![=],
+                rustc_lexer::TokenKind::Bang => T![!],
+                rustc_lexer::TokenKind::Lt => T![<],
+                rustc_lexer::TokenKind::Gt => T![>],
+                rustc_lexer::TokenKind::Minus => T![-],
+                rustc_lexer::TokenKind::And => T![&],
+                rustc_lexer::TokenKind::Or => T![|],
+                rustc_lexer::TokenKind::Plus => T![+],
+                rustc_lexer::TokenKind::Star => T![*],
+                rustc_lexer::TokenKind::Slash => T![/],
+                rustc_lexer::TokenKind::Caret => T![^],
+                rustc_lexer::TokenKind::Percent => T![%],
+                rustc_lexer::TokenKind::Unknown => ERROR,
+                rustc_lexer::TokenKind::UnknownPrefix if token_text == "builtin" => IDENT,
+                rustc_lexer::TokenKind::UnknownPrefix => {
+                    let has_unterminated = self.has_likely_unterminated_string();
+
+                    let error_msg = if has_unterminated {
+                        format!(
+                            "unknown literal prefix `{token_text}` (note: check for unterminated string literal)"
+                        )
+                    } else {
+                        "unknown literal prefix".to_owned()
+                    };
+                    errors.push(error_msg);
+                    IDENT
+                }
+                rustc_lexer::TokenKind::Eof => EOF,
+            }
+        };
+
+        self.push(syntax_kind, token_text.len(), errors);
+    }
+
+    fn extend_literal(&mut self, len: usize, kind: &rustc_lexer::LiteralKind) {
+        let invalid_raw_msg = String::from("Invalid raw string literal");
+
+        let mut errors = vec![];
+        let mut no_end_quote = |c: char, kind: &str| {
+            errors.push(format!("Missing trailing `{c}` symbol to terminate the {kind} literal"));
+        };
+
+        let syntax_kind = match *kind {
+            rustc_lexer::LiteralKind::Int { empty_int, base: _ } => {
+                if empty_int {
+                    errors.push("Missing digits after the integer base prefix".into());
+                }
+                INT_NUMBER
+            }
+            rustc_lexer::LiteralKind::Float { empty_exponent, base: _ } => {
+                if empty_exponent {
+                    errors.push("Missing digits after the exponent symbol".into());
+                }
+                FLOAT_NUMBER
+            }
+            rustc_lexer::LiteralKind::Char { terminated } => {
+                if !terminated {
+                    no_end_quote('\'', "character");
+                } else {
+                    let text = &self.res.text[self.offset + 1..][..len - 1];
+                    let text = &text[..text.rfind('\'').unwrap()];
+                    if let Err(e) = unescape_char(text) {
+                        errors.push(err_to_msg(e, Mode::Char));
+                    }
+                }
+                CHAR
+            }
+            rustc_lexer::LiteralKind::Byte { terminated } => {
+                if !terminated {
+                    no_end_quote('\'', "byte");
+                } else {
+                    let text = &self.res.text[self.offset + 2..][..len - 2];
+                    let text = &text[..text.rfind('\'').unwrap()];
+                    if let Err(e) = unescape_byte(text) {
+                        errors.push(err_to_msg(e, Mode::Byte));
+                    }
+                }
+                BYTE
+            }
+            rustc_lexer::LiteralKind::Str { terminated } => {
+                if !terminated {
+                    no_end_quote('"', "string");
+                } else {
+                    let text = &self.res.text[self.offset + 1..][..len - 1];
+                    let text = &text[..text.rfind('"').unwrap()];
+                    unescape_str(text, |_, res| {
+                        if let Err(e) = res {
+                            errors.push(err_to_msg(e, Mode::Str));
+                        }
+                    });
+                }
+                STRING
+            }
+            rustc_lexer::LiteralKind::ByteStr { terminated } => {
+                if !terminated {
+                    no_end_quote('"', "byte string");
+                } else {
+                    let text = &self.res.text[self.offset + 2..][..len - 2];
+                    let text = &text[..text.rfind('"').unwrap()];
+                    unescape_byte_str(text, |_, res| {
+                        if let Err(e) = res {
+                            errors.push(err_to_msg(e, Mode::ByteStr));
+                        }
+                    });
+                }
+                BYTE_STRING
+            }
+            rustc_lexer::LiteralKind::CStr { terminated } => {
+                if !terminated {
+                    no_end_quote('"', "C string")
+                } else {
+                    let text = &self.res.text[self.offset + 2..][..len - 2];
+                    let text = &text[..text.rfind('"').unwrap()];
+                    unescape_c_str(text, |_, res| {
+                        if let Err(e) = res {
+                            errors.push(err_to_msg(e, Mode::CStr));
+                        }
+                    });
+                }
+                C_STRING
+            }
+            rustc_lexer::LiteralKind::RawStr { n_hashes } => {
+                if n_hashes.is_none() {
+                    errors.push(invalid_raw_msg);
+                }
+                STRING
+            }
+            rustc_lexer::LiteralKind::RawByteStr { n_hashes } => {
+                if n_hashes.is_none() {
+                    errors.push(invalid_raw_msg);
+                }
+                BYTE_STRING
+            }
+            rustc_lexer::LiteralKind::RawCStr { n_hashes } => {
+                if n_hashes.is_none() {
+                    errors.push(invalid_raw_msg);
+                }
+                C_STRING
+            }
+        };
+
+        self.push(syntax_kind, len, errors);
+    }
+}
+
+fn err_to_msg(error: EscapeError, mode: Mode) -> String {
+    match error {
+        EscapeError::ZeroChars => "empty character literal",
+        EscapeError::MoreThanOneChar => "character literal may only contain one codepoint",
+        EscapeError::LoneSlash => "",
+        EscapeError::InvalidEscape if mode == Mode::Byte || mode == Mode::ByteStr => {
+            "unknown byte escape"
+        }
+        EscapeError::InvalidEscape => "unknown character escape",
+        EscapeError::BareCarriageReturn => "",
+        EscapeError::BareCarriageReturnInRawString => "",
+        EscapeError::EscapeOnlyChar if mode == Mode::Byte => "byte constant must be escaped",
+        EscapeError::EscapeOnlyChar => "character constant must be escaped",
+        EscapeError::TooShortHexEscape => "numeric character escape is too short",
+        EscapeError::InvalidCharInHexEscape => "invalid character in numeric character escape",
+        EscapeError::OutOfRangeHexEscape => "out of range hex escape",
+        EscapeError::NoBraceInUnicodeEscape => "incorrect unicode escape sequence",
+        EscapeError::InvalidCharInUnicodeEscape => "invalid character in unicode escape",
+        EscapeError::EmptyUnicodeEscape => "empty unicode escape",
+        EscapeError::UnclosedUnicodeEscape => "unterminated unicode escape",
+        EscapeError::LeadingUnderscoreUnicodeEscape => "invalid start of unicode escape",
+        EscapeError::OverlongUnicodeEscape => "overlong unicode escape",
+        EscapeError::LoneSurrogateUnicodeEscape => "invalid unicode character escape",
+        EscapeError::OutOfRangeUnicodeEscape => "invalid unicode character escape",
+        EscapeError::UnicodeEscapeInByte => "unicode escape in byte string",
+        EscapeError::NonAsciiCharInByte if mode == Mode::Byte => {
+            "non-ASCII character in byte literal"
+        }
+        EscapeError::NonAsciiCharInByte if mode == Mode::ByteStr => {
+            "non-ASCII character in byte string literal"
+        }
+        EscapeError::NonAsciiCharInByte => "non-ASCII character in raw byte string literal",
+        EscapeError::NulInCStr => "null character in C string literal",
+        EscapeError::UnskippedWhitespaceWarning => "",
+        EscapeError::MultipleSkippedLinesWarning => "",
+    }
+    .into()
+}
+
+//! See [`Input`].
+
+use crate::SyntaxKind;
+
+#[allow(non_camel_case_types)]
+type bits = u64;
+
+/// Input for the parser -- a sequence of tokens.
+///
+/// As of now, parser doesn't have access to the *text* of the tokens, and makes
+/// decisions based solely on their classification. Unlike `LexerToken`, the
+/// `Tokens` doesn't include whitespace and comments. Main input to the parser.
+///
+/// Struct of arrays internally, but this shouldn't really matter.
+pub struct Input {
+    kind: Vec<SyntaxKind>,
+    joint: Vec<bits>,
+    contextual_kind: Vec<SyntaxKind>,
+}
+
+/// `pub` impl used by callers to create `Tokens`.
+impl Input {
+    #[inline]
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            kind: Vec::with_capacity(capacity),
+            joint: Vec::with_capacity(capacity / size_of::<bits>()),
+            contextual_kind: Vec::with_capacity(capacity),
+        }
+    }
+    #[inline]
+    pub fn push(&mut self, kind: SyntaxKind) {
+        self.push_impl(kind, SyntaxKind::EOF)
+    }
+    #[inline]
+    pub fn push_ident(&mut self, contextual_kind: SyntaxKind) {
+        self.push_impl(SyntaxKind::IDENT, contextual_kind)
+    }
+    /// Sets jointness for the last token we've pushed.
+    ///
+    /// This is a separate API rather than an argument to the `push` to make it
+    /// convenient both for textual and mbe tokens. With text, you know whether
+    /// the *previous* token was joint, with mbe, you know whether the *current*
+    /// one is joint. This API allows for styles of usage:
+    ///
+    /// ```ignore
+    /// // In text:
+    /// tokens.was_joint(prev_joint);
+    /// tokens.push(curr);
+    ///
+    /// // In MBE:
+    /// token.push(curr);
+    /// tokens.push(curr_joint)
+    /// ```
+    #[inline]
+    pub fn was_joint(&mut self) {
+        let n = self.len() - 1;
+        let (idx, b_idx) = self.bit_index(n);
+        self.joint[idx] |= 1 << b_idx;
+    }
+    #[inline]
+    fn push_impl(&mut self, kind: SyntaxKind, contextual_kind: SyntaxKind) {
+        let idx = self.len();
+        if idx.is_multiple_of(bits::BITS as usize) {
+            self.joint.push(0);
+        }
+        self.kind.push(kind);
+        self.contextual_kind.push(contextual_kind);
+    }
+}
+
+/// pub(crate) impl used by the parser to consume `Tokens`.
+impl Input {
+    pub(crate) fn kind(&self, idx: usize) -> SyntaxKind {
+        self.kind.get(idx).copied().unwrap_or(SyntaxKind::EOF)
+    }
+    pub(crate) fn contextual_kind(&self, idx: usize) -> SyntaxKind {
+        self.contextual_kind.get(idx).copied().unwrap_or(SyntaxKind::EOF)
+    }
+    pub(crate) fn is_joint(&self, n: usize) -> bool {
+        let (idx, b_idx) = self.bit_index(n);
+        self.joint[idx] & (1 << b_idx) != 0
+    }
+}
+
+impl Input {
+    fn bit_index(&self, n: usize) -> (usize, usize) {
+        let idx = n / (bits::BITS as usize);
+        let b_idx = n % (bits::BITS as usize);
+        (idx, b_idx)
+    }
+    fn len(&self) -> usize {
+        self.kind.len()
+    }
+}
+
+mod prefix_entries;
+mod top_entries;
+
+use std::{
+    fmt::Write,
+    fs,
+    path::{Path, PathBuf},
+};
+
+use expect_test::expect_file;
+
+use crate::{Edition, LexedStr, TopEntryPoint};
+
+#[rustfmt::skip]
+#[path = "../test_data/generated/runner.rs"]
+mod runner;
+
+fn infer_edition(file_path: &Path) -> Edition {
+    let file_content = std::fs::read_to_string(file_path).unwrap();
+    if let Some(edition) = file_content.strip_prefix("//@ edition: ") {
+        edition[..4].parse().expect("invalid edition directive")
+    } else {
+        Edition::CURRENT
+    }
+}
+
+#[test]
+fn lex_ok() {
+    for case in TestCase::list("lexer/ok") {
+        let _guard = stdx::panic_context::enter(format!("{:?}", case.rs));
+        let actual = lex(&case.text, infer_edition(&case.rs));
+        expect_file![case.rast].assert_eq(&actual)
+    }
+}
+
+#[test]
+fn lex_err() {
+    for case in TestCase::list("lexer/err") {
+        let _guard = stdx::panic_context::enter(format!("{:?}", case.rs));
+        let actual = lex(&case.text, infer_edition(&case.rs));
+        expect_file![case.rast].assert_eq(&actual)
+    }
+}
+
+fn lex(text: &str, edition: Edition) -> String {
+    let lexed = LexedStr::new(edition, text);
+
+    let mut res = String::new();
+    for i in 0..lexed.len() {
+        let kind = lexed.kind(i);
+        let text = lexed.text(i);
+        let error = lexed.error(i);
+
+        let error = error.map(|err| format!(" error: {err}")).unwrap_or_default();
+        writeln!(res, "{kind:?} {text:?}{error}").unwrap();
+    }
+    res
+}
+
+#[test]
+fn parse_ok() {
+    for case in TestCase::list("parser/ok") {
+        let _guard = stdx::panic_context::enter(format!("{:?}", case.rs));
+        let (actual, errors) = parse(TopEntryPoint::SourceFile, &case.text, Edition::CURRENT);
+        assert!(!errors, "errors in an OK file {}:\n{actual}", case.rs.display());
+        expect_file![case.rast].assert_eq(&actual);
+    }
+}
+
+#[test]
+fn parse_err() {
+    for case in TestCase::list("parser/err") {
+        let _guard = stdx::panic_context::enter(format!("{:?}", case.rs));
+        let (actual, errors) = parse(TopEntryPoint::SourceFile, &case.text, Edition::CURRENT);
+        assert!(errors, "no errors in an ERR file {}:\n{actual}", case.rs.display());
+        expect_file![case.rast].assert_eq(&actual)
+    }
+}
+
+fn parse(entry: TopEntryPoint, text: &str, edition: Edition) -> (String, bool) {
+    let lexed = LexedStr::new(edition, text);
+    let input = lexed.to_input(edition);
+    let output = entry.parse(&input, edition);
+
+    let mut buf = String::new();
+    let mut errors = Vec::new();
+    let mut indent = String::new();
+    let mut depth = 0;
+    let mut len = 0;
+    lexed.intersperse_trivia(&output, &mut |step| match step {
+        crate::StrStep::Token { kind, text } => {
+            assert!(depth > 0);
+            len += text.len();
+            writeln!(buf, "{indent}{kind:?} {text:?}").unwrap();
+        }
+        crate::StrStep::Enter { kind } => {
+            assert!(depth > 0 || len == 0);
+            depth += 1;
+            writeln!(buf, "{indent}{kind:?}").unwrap();
+            indent.push_str("  ");
+        }
+        crate::StrStep::Exit => {
+            assert!(depth > 0);
+            depth -= 1;
+            indent.pop();
+            indent.pop();
+        }
+        crate::StrStep::Error { msg, pos } => {
+            assert!(depth > 0);
+            errors.push(format!("error {pos}: {msg}\n"))
+        }
+    });
+    assert_eq!(
+        len,
+        text.len(),
+        "didn't parse all text.\nParsed:\n{}\n\nAll:\n{}\n",
+        &text[..len],
+        text
+    );
+
+    for (token, msg) in lexed.errors() {
+        let pos = lexed.text_start(token);
+        errors.push(format!("error {pos}: {msg}\n"));
+    }
+
+    let has_errors = !errors.is_empty();
+    for e in errors {
+        buf.push_str(&e);
+    }
+    (buf, has_errors)
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+struct TestCase {
+    rs: PathBuf,
+    rast: PathBuf,
+    text: String,
+}
+
+impl TestCase {
+    fn list(path: &'static str) -> Vec<TestCase> {
+        let crate_root_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let test_data_dir = crate_root_dir.join("test_data");
+        let dir = test_data_dir.join(path);
+
+        let mut res = Vec::new();
+        let read_dir = fs::read_dir(&dir)
+            .unwrap_or_else(|err| panic!("can't `read_dir` {}: {err}", dir.display()));
+        for file in read_dir {
+            let file = file.unwrap();
+            let path = file.path();
+            if path.extension().unwrap_or_default() == "rs" {
+                let rs = path;
+                let rast = rs.with_extension("rast");
+                let text = fs::read_to_string(&rs).unwrap();
+                res.push(TestCase { rs, rast, text });
+            }
+        }
+        res.sort();
+        res
+    }
+}
+
+#[track_caller]
+fn run_and_expect_no_errors(path: &str) {
+    run_and_expect_no_errors_with_edition(path, Edition::CURRENT)
+}
+
+#[track_caller]
+fn run_and_expect_errors(path: &str) {
+    run_and_expect_errors_with_edition(path, Edition::CURRENT)
+}
+
+#[track_caller]
+fn run_and_expect_no_errors_with_edition(path: &str, edition: Edition) {
+    let path = PathBuf::from(path);
+    let text = std::fs::read_to_string(&path).unwrap();
+    let (actual, errors) = parse(TopEntryPoint::SourceFile, &text, edition);
+    assert!(!errors, "errors in an OK file {}:\n{actual}", path.display());
+    let mut p = PathBuf::from("..");
+    p.push(path);
+    p.set_extension("rast");
+    expect_file![p].assert_eq(&actual)
+}
+
+#[track_caller]
+fn run_and_expect_errors_with_edition(path: &str, edition: Edition) {
+    let path = PathBuf::from(path);
+    let text = std::fs::read_to_string(&path).unwrap();
+    let (actual, errors) = parse(TopEntryPoint::SourceFile, &text, edition);
+    assert!(errors, "no errors in an ERR file {}:\n{actual}", path.display());
+    let mut p = PathBuf::from("..");
+    p.push(path);
+    p.set_extension("rast");
+    expect_file![p].assert_eq(&actual)
+}
+
+//! The Rust parser.
+//!
+//! NOTE: The crate is undergoing refactors, don't believe everything the docs
+//! say :-)
+//!
+//! The parser doesn't know about concrete representation of tokens and syntax
+//! trees. Abstract [`TokenSource`] and [`TreeSink`] traits are used instead. As
+//! a consequence, this crate does not contain a lexer.
+//!
+//! The [`Parser`] struct from the [`parser`] module is a cursor into the
+//! sequence of tokens.  Parsing routines use [`Parser`] to inspect current
+//! state and advance the parsing.
+//!
+//! The actual parsing happens in the [`grammar`] module.
+//!
+//! Tests for this crate live in the `syntax` crate.
+//!
+//! [`Parser`]: crate::parser::Parser
+
+#![allow(rustdoc::private_intra_doc_links)]
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+
+#[cfg(not(feature = "in-rust-tree"))]
+extern crate ra_ap_rustc_lexer as rustc_lexer;
+#[cfg(feature = "in-rust-tree")]
+extern crate rustc_lexer;
+
+mod event;
+mod frontmatter;
+mod grammar;
+mod input;
+mod lexed_str;
+mod output;
+mod parser;
+mod shortcuts;
+mod syntax_kind;
+mod token_set;
+
+pub use T_ as T;
+
+#[cfg(test)]
+mod tests;
+
+pub(crate) use token_set::TokenSet;
+
+pub use edition::Edition;
+
+pub use crate::{
+    input::Input,
+    lexed_str::LexedStr,
+    output::{Output, Step},
+    shortcuts::StrStep,
+    syntax_kind::SyntaxKind,
+};
+
+/// Parse the whole of the input as a given syntactic construct.
+///
+/// This covers two main use-cases:
+///
+///   * Parsing a Rust file.
+///   * Parsing a result of macro expansion.
+///
+/// That is, for something like
+///
+/// ```ignore
+/// quick_check! {
+///    fn prop() {}
+/// }
+/// ```
+///
+/// the input to the macro will be parsed with [`PrefixEntryPoint::Item`], and
+/// the result will be [`TopEntryPoint::MacroItems`].
+///
+/// [`TopEntryPoint::parse`] makes a guarantee that
+///   * all input is consumed
+///   * the result is a valid tree (there's one root node)
+#[derive(Debug)]
+pub enum TopEntryPoint {
+    SourceFile,
+    MacroStmts,
+    MacroItems,
+    Pattern,
+    Type,
+    Expr,
+    /// Edge case -- macros generally don't expand to attributes, with the
+    /// exception of `cfg_attr` which does!
+    MetaItem,
+}
+
+impl TopEntryPoint {
+    pub fn parse(&self, input: &Input, edition: Edition) -> Output {
+        let _p = tracing::info_span!("TopEntryPoint::parse", ?self).entered();
+        let entry_point: fn(&'_ mut parser::Parser<'_>) = match self {
+            TopEntryPoint::SourceFile => grammar::entry::top::source_file,
+            TopEntryPoint::MacroStmts => grammar::entry::top::macro_stmts,
+            TopEntryPoint::MacroItems => grammar::entry::top::macro_items,
+            TopEntryPoint::Pattern => grammar::entry::top::pattern,
+            TopEntryPoint::Type => grammar::entry::top::type_,
+            TopEntryPoint::Expr => grammar::entry::top::expr,
+            TopEntryPoint::MetaItem => grammar::entry::top::meta_item,
+        };
+        let mut p = parser::Parser::new(input, edition);
+        entry_point(&mut p);
+        let events = p.finish();
+        let res = event::process(events);
+
+        if cfg!(debug_assertions) {
+            let mut depth = 0;
+            let mut first = true;
+            for step in res.iter() {
+                assert!(depth > 0 || first);
+                first = false;
+                match step {
+                    Step::Enter { .. } => depth += 1,
+                    Step::Exit => depth -= 1,
+                    Step::FloatSplit { ends_in_dot: has_pseudo_dot } => {
+                        depth -= 1 + !has_pseudo_dot as usize
+                    }
+                    Step::Token { .. } | Step::Error { .. } => (),
+                }
+            }
+            assert!(!first, "no tree at all");
+            assert_eq!(depth, 0, "unbalanced tree");
+        }
+
+        res
+    }
+}
+
+/// Parse a prefix of the input as a given syntactic construct.
+///
+/// This is used by macro-by-example parser to implement things like `$i:item`
+/// and the naming of variants follows the naming of macro fragments.
+///
+/// Note that this is generally non-optional -- the result is intentionally not
+/// `Option<Output>`. The way MBE work, by the time we *try* to parse `$e:expr`
+/// we already commit to expression. In other words, this API by design can't be
+/// used to implement "rollback and try another alternative" logic.
+#[derive(Debug)]
+pub enum PrefixEntryPoint {
+    Vis,
+    Block,
+    Stmt,
+    Pat,
+    PatTop,
+    Ty,
+    Expr,
+    Path,
+    Item,
+    MetaItem,
+}
+
+impl PrefixEntryPoint {
+    pub fn parse(&self, input: &Input, edition: Edition) -> Output {
+        let entry_point: fn(&'_ mut parser::Parser<'_>) = match self {
+            PrefixEntryPoint::Vis => grammar::entry::prefix::vis,
+            PrefixEntryPoint::Block => grammar::entry::prefix::block,
+            PrefixEntryPoint::Stmt => grammar::entry::prefix::stmt,
+            PrefixEntryPoint::Pat => grammar::entry::prefix::pat,
+            PrefixEntryPoint::PatTop => grammar::entry::prefix::pat_top,
+            PrefixEntryPoint::Ty => grammar::entry::prefix::ty,
+            PrefixEntryPoint::Expr => grammar::entry::prefix::expr,
+            PrefixEntryPoint::Path => grammar::entry::prefix::path,
+            PrefixEntryPoint::Item => grammar::entry::prefix::item,
+            PrefixEntryPoint::MetaItem => grammar::entry::prefix::meta_item,
+        };
+        let mut p = parser::Parser::new(input, edition);
+        entry_point(&mut p);
+        let events = p.finish();
+        event::process(events)
+    }
+}
+
+/// A parsing function for a specific braced-block.
+pub struct Reparser(fn(&mut parser::Parser<'_>));
+
+impl Reparser {
+    /// If the node is a braced block, return the corresponding `Reparser`.
+    pub fn for_node(
+        node: SyntaxKind,
+        first_child: Option<SyntaxKind>,
+        parent: Option<SyntaxKind>,
+    ) -> Option<Reparser> {
+        grammar::reparser(node, first_child, parent).map(Reparser)
+    }
+
+    /// Re-parse given tokens using this `Reparser`.
+    ///
+    /// Tokens must start with `{`, end with `}` and form a valid brace
+    /// sequence.
+    pub fn parse(self, tokens: &Input, edition: Edition) -> Output {
+        let Reparser(r) = self;
+        let mut p = parser::Parser::new(tokens, edition);
+        r(&mut p);
+        let events = p.finish();
+        event::process(events)
+    }
+}
+
+//! This module provides a way to construct a `File`.
+//! It is intended to be completely decoupled from the
+//! parser, so as to allow to evolve the tree representation
+//! and the parser algorithm independently.
+use std::mem;
+
+use crate::{
+    SyntaxKind::{self, *},
+    output::Output,
+};
+
+/// `Parser` produces a flat list of `Event`s.
+/// They are converted to a tree-structure in
+/// a separate pass, via `TreeBuilder`.
+#[derive(Debug, PartialEq)]
+pub(crate) enum Event {
+    /// This event signifies the start of the node.
+    /// It should be either abandoned (in which case the
+    /// `kind` is `TOMBSTONE`, and the event is ignored),
+    /// or completed via a `Finish` event.
+    ///
+    /// All tokens between a `Start` and a `Finish` would
+    /// become the children of the respective node.
+    ///
+    /// For left-recursive syntactic constructs, the parser produces
+    /// a child node before it sees a parent. `forward_parent`
+    /// saves the position of current event's parent.
+    ///
+    /// Consider this path
+    ///
+    /// foo::bar
+    ///
+    /// The events for it would look like this:
+    ///
+    /// ```text
+    /// START(PATH) IDENT('foo') FINISH START(PATH) T![::] IDENT('bar') FINISH
+    ///       |                          /\
+    ///       |                          |
+    ///       +------forward-parent------+
+    /// ```
+    ///
+    /// And the tree would look like this
+    ///
+    /// ```text
+    ///    +--PATH---------+
+    ///    |   |           |
+    ///    |   |           |
+    ///    |  '::'       'bar'
+    ///    |
+    ///   PATH
+    ///    |
+    ///   'foo'
+    /// ```
+    ///
+    /// See also `CompletedMarker::precede`.
+    Start {
+        kind: SyntaxKind,
+        forward_parent: Option<u32>,
+    },
+
+    /// Complete the previous `Start` event
+    Finish,
+
+    /// Produce a single leaf-element.
+    /// `n_raw_tokens` is used to glue complex contextual tokens.
+    /// For example, lexer tokenizes `>>` as `>`, `>`, and
+    /// `n_raw_tokens = 2` is used to produced a single `>>`.
+    Token {
+        kind: SyntaxKind,
+        n_raw_tokens: u8,
+    },
+    /// When we parse `foo.0.0` or `foo. 0. 0` the lexer will hand us a float literal
+    /// instead of an integer literal followed by a dot as the lexer has no contextual knowledge.
+    /// This event instructs whatever consumes the events to split the float literal into
+    /// the corresponding parts.
+    FloatSplitHack {
+        ends_in_dot: bool,
+    },
+    Error {
+        msg: String,
+    },
+}
+
+impl Event {
+    pub(crate) fn tombstone() -> Self {
+        Event::Start { kind: TOMBSTONE, forward_parent: None }
+    }
+}
+
+/// Generate the syntax tree with the control of events.
+pub(super) fn process(mut events: Vec<Event>) -> Output {
+    let mut res = Output::default();
+    let mut forward_parents = Vec::new();
+
+    for i in 0..events.len() {
+        match mem::replace(&mut events[i], Event::tombstone()) {
+            Event::Start { kind, forward_parent } => {
+                // For events[A, B, C], B is A's forward_parent, C is B's forward_parent,
+                // in the normal control flow, the parent-child relation: `A -> B -> C`,
+                // while with the magic forward_parent, it writes: `C <- B <- A`.
+
+                // append `A` into parents.
+                forward_parents.push(kind);
+                let mut idx = i;
+                let mut fp = forward_parent;
+                while let Some(fwd) = fp {
+                    idx += fwd as usize;
+                    // append `A`'s forward_parent `B`
+                    fp = match mem::replace(&mut events[idx], Event::tombstone()) {
+                        Event::Start { kind, forward_parent } => {
+                            forward_parents.push(kind);
+                            forward_parent
+                        }
+                        _ => unreachable!(),
+                    };
+                    // append `B`'s forward_parent `C` in the next stage.
+                }
+
+                for kind in forward_parents.drain(..).rev() {
+                    if kind != TOMBSTONE {
+                        res.enter_node(kind);
+                    }
+                }
+            }
+            Event::Finish => res.leave_node(),
+            Event::Token { kind, n_raw_tokens } => {
+                res.token(kind, n_raw_tokens);
+            }
+            Event::FloatSplitHack { ends_in_dot } => {
+                res.float_split_hack(ends_in_dot);
+                let ev = mem::replace(&mut events[i + 1], Event::tombstone());
+                assert!(matches!(ev, Event::Finish), "{ev:?}");
+            }
+            Event::Error { msg } => res.error(msg),
+        }
+    }
+
+    res
+}
+
+//! This is the actual "grammar" of the Rust language.
+//!
+//! Each function in this module and its children corresponds
+//! to a production of the formal grammar. Submodules roughly
+//! correspond to different *areas* of the grammar. By convention,
+//! each submodule starts with `use super::*` import and exports
+//! "public" productions via `pub(super)`.
+//!
+//! See docs for [`Parser`](super::parser::Parser) to learn about API,
+//! available to the grammar, and see docs for [`Event`](super::event::Event)
+//! to learn how this actually manages to produce parse trees.
+//!
+//! Code in this module also contains inline tests, which start with
+//! `// test name-of-the-test` comment and look like this:
+//!
+//! ```text
+//! // test function_with_zero_parameters
+//! // fn foo() {}
+//! ```
+//!
+//! After adding a new inline-test, run `cargo test -p xtask` to
+//! extract it as a standalone text-fixture into
+//! `crates/syntax/test_data/parser/`, and run `cargo test` once to
+//! create the "gold" value.
+//!
+//! Coding convention: rules like `where_clause` always produce either a
+//! node or an error, rules like `opt_where_clause` may produce nothing.
+//! Non-opt rules typically start with `assert!(p.at(FIRST_TOKEN))`, the
+//! caller is responsible for branching on the first token.
+
+mod attributes;
+mod expressions;
+mod generic_args;
+mod generic_params;
+mod items;
+mod params;
+mod paths;
+mod patterns;
+mod types;
+
+use crate::{
+    SyntaxKind::{self, *},
+    T, TokenSet,
+    parser::{CompletedMarker, Marker, Parser},
+};
+
+pub(crate) mod entry {
+    use super::*;
+
+    pub(crate) mod prefix {
+        use super::*;
+
+        pub(crate) fn vis(p: &mut Parser<'_>) {
+            opt_visibility(p, false);
+        }
+
+        pub(crate) fn block(p: &mut Parser<'_>) {
+            expressions::block_expr(p);
+        }
+
+        pub(crate) fn stmt(p: &mut Parser<'_>) {
+            expressions::stmt(p, expressions::Semicolon::Forbidden);
+        }
+
+        pub(crate) fn pat(p: &mut Parser<'_>) {
+            patterns::pattern_single(p);
+        }
+
+        pub(crate) fn pat_top(p: &mut Parser<'_>) {
+            patterns::pattern(p);
+        }
+
+        pub(crate) fn ty(p: &mut Parser<'_>) {
+            types::type_(p);
+        }
+        pub(crate) fn expr(p: &mut Parser<'_>) {
+            expressions::expr(p);
+        }
+        pub(crate) fn path(p: &mut Parser<'_>) {
+            paths::type_path(p);
+        }
+        pub(crate) fn item(p: &mut Parser<'_>) {
+            // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
+            items::item_or_macro(p, true, true);
+        }
+        // Parse a meta item , which excluded [], e.g : #[ MetaItem ]
+        pub(crate) fn meta_item(p: &mut Parser<'_>) {
+            attributes::meta(p);
+        }
+    }
+
+    pub(crate) mod top {
+        use super::*;
+
+        pub(crate) fn source_file(p: &mut Parser<'_>) {
+            let m = p.start();
+            // test frontmatter
+            // #!/usr/bin/env cargo
+            //
+            // ---
+            // [dependencies]
+            // clap = { version = "4.2", features = ["derive"] }
+            // ---
+            //
+            // fn main() {}
+            p.eat(SHEBANG);
+            p.eat(FRONTMATTER);
+            items::mod_contents(p, false);
+            m.complete(p, SOURCE_FILE);
+        }
+
+        pub(crate) fn macro_stmts(p: &mut Parser<'_>) {
+            let m = p.start();
+
+            while !p.at(EOF) {
+                expressions::stmt(p, expressions::Semicolon::Optional);
+            }
+
+            m.complete(p, MACRO_STMTS);
+        }
+
+        pub(crate) fn macro_items(p: &mut Parser<'_>) {
+            let m = p.start();
+            items::mod_contents(p, false);
+            m.complete(p, MACRO_ITEMS);
+        }
+
+        pub(crate) fn pattern(p: &mut Parser<'_>) {
+            let m = p.start();
+            patterns::pattern(p);
+            if p.at(EOF) {
+                m.abandon(p);
+                return;
+            }
+            while !p.at(EOF) {
+                p.bump_any();
+            }
+            m.complete(p, ERROR);
+        }
+
+        pub(crate) fn type_(p: &mut Parser<'_>) {
+            let m = p.start();
+            types::type_(p);
+            if p.at(EOF) {
+                m.abandon(p);
+                return;
+            }
+            while !p.at(EOF) {
+                p.bump_any();
+            }
+            m.complete(p, ERROR);
+        }
+
+        pub(crate) fn expr(p: &mut Parser<'_>) {
+            let m = p.start();
+            expressions::expr(p);
+            if p.at(EOF) {
+                m.abandon(p);
+                return;
+            }
+            while !p.at(EOF) {
+                p.bump_any();
+            }
+            m.complete(p, ERROR);
+        }
+
+        pub(crate) fn meta_item(p: &mut Parser<'_>) {
+            let m = p.start();
+            attributes::meta(p);
+            if p.at(EOF) {
+                m.abandon(p);
+                return;
+            }
+            while !p.at(EOF) {
+                p.bump_any();
+            }
+            m.complete(p, ERROR);
+        }
+    }
+}
+
+pub(crate) fn reparser(
+    node: SyntaxKind,
+    first_child: Option<SyntaxKind>,
+    parent: Option<SyntaxKind>,
+) -> Option<fn(&mut Parser<'_>)> {
+    let res = match node {
+        BLOCK_EXPR => expressions::block_expr,
+        RECORD_FIELD_LIST => items::record_field_list,
+        RECORD_EXPR_FIELD_LIST => items::record_expr_field_list,
+        VARIANT_LIST => items::variant_list,
+        MATCH_ARM_LIST => items::match_arm_list,
+        USE_TREE_LIST => items::use_tree_list,
+        EXTERN_ITEM_LIST => items::extern_item_list,
+        TOKEN_TREE if first_child? == T!['{'] => items::token_tree,
+        ASSOC_ITEM_LIST => match parent? {
+            IMPL | TRAIT => items::assoc_item_list,
+            _ => return None,
+        },
+        ITEM_LIST => items::item_list,
+        _ => return None,
+    };
+    Some(res)
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BlockLike {
+    Block,
+    NotBlock,
+}
+
+impl BlockLike {
+    fn is_block(self) -> bool {
+        self == BlockLike::Block
+    }
+
+    fn is_blocklike(kind: SyntaxKind) -> bool {
+        matches!(kind, BLOCK_EXPR | IF_EXPR | WHILE_EXPR | FOR_EXPR | LOOP_EXPR | MATCH_EXPR)
+    }
+}
+
+const VISIBILITY_FIRST: TokenSet = TokenSet::new(&[T![pub]]);
+
+fn opt_visibility(p: &mut Parser<'_>, in_tuple_field: bool) -> bool {
+    if !p.at(T![pub]) {
+        return false;
+    }
+
+    let m = p.start();
+    p.bump(T![pub]);
+    if p.at(T!['(']) {
+        match p.nth(1) {
+            // test crate_visibility
+            // pub(crate) struct S;
+            // pub(self) struct S;
+            // pub(super) struct S;
+
+            // test_err crate_visibility_empty_recover
+            // pub() struct S;
+
+            // test pub_parens_typepath
+            // struct B(pub (super::A));
+            // struct B(pub (crate::A,));
+            T![crate] | T![self] | T![super] | T![ident] | T![')'] if p.nth(2) != T![:] => {
+                // If we are in a tuple struct, then the parens following `pub`
+                // might be an tuple field, not part of the visibility. So in that
+                // case we don't want to consume an identifier.
+
+                // test pub_tuple_field
+                // struct MyStruct(pub (u32, u32));
+                // struct MyStruct(pub (u32));
+                // struct MyStruct(pub ());
+                if !(in_tuple_field && matches!(p.nth(1), T![ident] | T![')'])) {
+                    p.bump(T!['(']);
+                    paths::vis_path(p);
+                    p.expect(T![')']);
+                }
+            }
+            // test crate_visibility_in
+            // pub(in super::A) struct S;
+            // pub(in crate) struct S;
+            T![in] => {
+                p.bump(T!['(']);
+                p.bump(T![in]);
+                paths::vis_path(p);
+                p.expect(T![')']);
+            }
+            _ => {}
+        }
+    }
+    m.complete(p, VISIBILITY);
+    true
+}
+
+fn opt_rename(p: &mut Parser<'_>) {
+    if p.at(T![as]) {
+        let m = p.start();
+        p.bump(T![as]);
+        if !p.eat(T![_]) {
+            name(p);
+        }
+        m.complete(p, RENAME);
+    }
+}
+
+fn abi(p: &mut Parser<'_>) {
+    assert!(p.at(T![extern]));
+    let abi = p.start();
+    p.bump(T![extern]);
+    p.eat(STRING);
+    abi.complete(p, ABI);
+}
+
+fn opt_ret_type(p: &mut Parser<'_>) -> bool {
+    if p.at(T![->]) {
+        let m = p.start();
+        p.bump(T![->]);
+        types::type_no_bounds(p);
+        m.complete(p, RET_TYPE);
+        true
+    } else {
+        false
+    }
+}
+
+fn name_r(p: &mut Parser<'_>, recovery: TokenSet) {
+    if p.at(IDENT) {
+        let m = p.start();
+        p.bump(IDENT);
+        m.complete(p, NAME);
+    } else {
+        p.err_recover("expected a name", recovery);
+    }
+}
+
+fn name(p: &mut Parser<'_>) {
+    name_r(p, TokenSet::EMPTY);
+}
+
+fn name_ref_or_self(p: &mut Parser<'_>) {
+    if matches!(p.current(), T![ident] | T![self]) {
+        let m = p.start();
+        p.bump_any();
+        m.complete(p, NAME_REF);
+    } else {
+        p.err_and_bump("expected identifier or `self`");
+    }
+}
+
+fn name_ref_or_upper_self(p: &mut Parser<'_>) {
+    if matches!(p.current(), T![ident] | T![Self]) {
+        let m = p.start();
+        p.bump_any();
+        m.complete(p, NAME_REF);
+    } else {
+        p.err_and_bump("expected identifier or `Self`");
+    }
+}
+
+const PATH_NAME_REF_KINDS: TokenSet =
+    TokenSet::new(&[IDENT, T![self], T![super], T![crate], T![Self]]);
+
+fn name_ref_mod_path(p: &mut Parser<'_>) {
+    if p.at_ts(PATH_NAME_REF_KINDS) {
+        let m = p.start();
+        p.bump_any();
+        m.complete(p, NAME_REF);
+    } else {
+        p.err_and_bump("expected identifier, `self`, `super`, `crate`, or `Self`");
+    }
+}
+
+const PATH_NAME_REF_OR_INDEX_KINDS: TokenSet =
+    PATH_NAME_REF_KINDS.union(TokenSet::new(&[INT_NUMBER]));
+
+fn name_ref_mod_path_or_index(p: &mut Parser<'_>) {
+    if p.at_ts(PATH_NAME_REF_OR_INDEX_KINDS) {
+        let m = p.start();
+        p.bump_any();
+        m.complete(p, NAME_REF);
+    } else {
+        p.err_and_bump("expected integer, identifier, `self`, `super`, `crate`, or `Self`");
+    }
+}
+
+fn name_ref_or_index(p: &mut Parser<'_>) {
+    assert!(p.at(IDENT) || p.at(INT_NUMBER));
+    let m = p.start();
+    p.bump_any();
+    m.complete(p, NAME_REF);
+}
+
+fn lifetime(p: &mut Parser<'_>) {
+    assert!(p.at(LIFETIME_IDENT));
+    let m = p.start();
+    p.bump(LIFETIME_IDENT);
+    m.complete(p, LIFETIME);
+}
+
+fn error_block(p: &mut Parser<'_>, message: &str) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.error(message);
+    p.bump(T!['{']);
+    expressions::expr_block_contents(p);
+    p.eat(T!['}']);
+    m.complete(p, ERROR);
+}
+
+// test_err top_level_let
+// let ref foo: fn() = 1 + 3;
+fn error_let_stmt(p: &mut Parser<'_>, message: &str) {
+    assert!(p.at(T![let]));
+    let m = p.start();
+    p.error(message);
+    expressions::let_stmt(p, expressions::Semicolon::Optional);
+    m.complete(p, ERROR);
+}
+
+/// The `parser` passed this is required to at least consume one token if it returns `true`.
+/// If the `parser` returns false, parsing will stop.
+fn delimited(
+    p: &mut Parser<'_>,
+    bra: SyntaxKind,
+    ket: SyntaxKind,
+    delim: SyntaxKind,
+    unexpected_delim_message: impl Fn() -> String,
+    first_set: TokenSet,
+    mut parser: impl FnMut(&mut Parser<'_>) -> bool,
+) {
+    p.bump(bra);
+    while !p.at(ket) && !p.at(EOF) {
+        if p.at(delim) {
+            // Recover if an argument is missing and only got a delimiter,
+            // e.g. `(a, , b)`.
+
+            // Wrap the erroneous delimiter in an error node so that fixup logic gets rid of it.
+            // FIXME: Ideally this should be handled in fixup in a structured way, but our list
+            // nodes currently have no concept of a missing node between two delimiters.
+            // So doing it this way is easier.
+            let m = p.start();
+            p.error(unexpected_delim_message());
+            p.bump(delim);
+            m.complete(p, ERROR);
+            continue;
+        }
+        if !parser(p) {
+            break;
+        }
+        if !p.eat(delim) {
+            if p.at_ts(first_set) {
+                p.error(format!("expected {delim:?}"));
+            } else {
+                break;
+            }
+        }
+    }
+    p.expect(ket);
+}
+
+//! See [`Parser`].
+
+use std::cell::Cell;
+
+use drop_bomb::DropBomb;
+
+use crate::{
+    Edition,
+    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
+    T, TokenSet,
+    event::Event,
+    input::Input,
+};
+
+/// `Parser` struct provides the low-level API for
+/// navigating through the stream of tokens and
+/// constructing the parse tree. The actual parsing
+/// happens in the [`grammar`](super::grammar) module.
+///
+/// However, the result of this `Parser` is not a real
+/// tree, but rather a flat stream of events of the form
+/// "start expression, consume number literal,
+/// finish expression". See `Event` docs for more.
+pub(crate) struct Parser<'t> {
+    inp: &'t Input,
+    pos: usize,
+    events: Vec<Event>,
+    steps: Cell<u32>,
+    edition: Edition,
+}
+
+const PARSER_STEP_LIMIT: usize = if cfg!(debug_assertions) { 150_000 } else { 15_000_000 };
+
+impl<'t> Parser<'t> {
+    pub(super) fn new(inp: &'t Input, edition: Edition) -> Parser<'t> {
+        Parser { inp, pos: 0, events: Vec::new(), steps: Cell::new(0), edition }
+    }
+
+    pub(crate) fn finish(self) -> Vec<Event> {
+        self.events
+    }
+
+    /// Returns the kind of the current token.
+    /// If parser has already reached the end of input,
+    /// the special `EOF` kind is returned.
+    pub(crate) fn current(&self) -> SyntaxKind {
+        self.nth(0)
+    }
+
+    /// Lookahead operation: returns the kind of the next nth
+    /// token.
+    pub(crate) fn nth(&self, n: usize) -> SyntaxKind {
+        assert!(n <= 3);
+
+        let steps = self.steps.get();
+        assert!((steps as usize) < PARSER_STEP_LIMIT, "the parser seems stuck");
+        self.steps.set(steps + 1);
+
+        self.inp.kind(self.pos + n)
+    }
+
+    /// Checks if the current token is `kind`.
+    pub(crate) fn at(&self, kind: SyntaxKind) -> bool {
+        self.nth_at(0, kind)
+    }
+
+    pub(crate) fn nth_at(&self, n: usize, kind: SyntaxKind) -> bool {
+        match kind {
+            T![-=] => self.at_composite2(n, T![-], T![=]),
+            T![->] => self.at_composite2(n, T![-], T![>]),
+            T![::] => self.at_composite2(n, T![:], T![:]),
+            T![!=] => self.at_composite2(n, T![!], T![=]),
+            T![..] => self.at_composite2(n, T![.], T![.]),
+            T![*=] => self.at_composite2(n, T![*], T![=]),
+            T![/=] => self.at_composite2(n, T![/], T![=]),
+            T![&&] => self.at_composite2(n, T![&], T![&]),
+            T![&=] => self.at_composite2(n, T![&], T![=]),
+            T![%=] => self.at_composite2(n, T![%], T![=]),
+            T![^=] => self.at_composite2(n, T![^], T![=]),
+            T![+=] => self.at_composite2(n, T![+], T![=]),
+            T![<<] => self.at_composite2(n, T![<], T![<]),
+            T![<=] => self.at_composite2(n, T![<], T![=]),
+            T![==] => self.at_composite2(n, T![=], T![=]),
+            T![=>] => self.at_composite2(n, T![=], T![>]),
+            T![>=] => self.at_composite2(n, T![>], T![=]),
+            T![>>] => self.at_composite2(n, T![>], T![>]),
+            T![|=] => self.at_composite2(n, T![|], T![=]),
+            T![||] => self.at_composite2(n, T![|], T![|]),
+
+            T![...] => self.at_composite3(n, T![.], T![.], T![.]),
+            T![..=] => self.at_composite3(n, T![.], T![.], T![=]),
+            T![<<=] => self.at_composite3(n, T![<], T![<], T![=]),
+            T![>>=] => self.at_composite3(n, T![>], T![>], T![=]),
+
+            _ => self.inp.kind(self.pos + n) == kind,
+        }
+    }
+
+    /// Consume the next token if `kind` matches.
+    pub(crate) fn eat(&mut self, kind: SyntaxKind) -> bool {
+        if !self.at(kind) {
+            return false;
+        }
+        let n_raw_tokens = match kind {
+            T![-=]
+            | T![->]
+            | T![::]
+            | T![!=]
+            | T![..]
+            | T![*=]
+            | T![/=]
+            | T![&&]
+            | T![&=]
+            | T![%=]
+            | T![^=]
+            | T![+=]
+            | T![<<]
+            | T![<=]
+            | T![==]
+            | T![=>]
+            | T![>=]
+            | T![>>]
+            | T![|=]
+            | T![||] => 2,
+
+            T![...] | T![..=] | T![<<=] | T![>>=] => 3,
+            _ => 1,
+        };
+        self.do_bump(kind, n_raw_tokens);
+        true
+    }
+
+    pub(crate) fn eat_contextual_kw(&mut self, kind: SyntaxKind) -> bool {
+        if !self.at_contextual_kw(kind) {
+            return false;
+        }
+        self.bump_remap(kind);
+        true
+    }
+
+    fn at_composite2(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind) -> bool {
+        self.inp.kind(self.pos + n) == k1
+            && self.inp.kind(self.pos + n + 1) == k2
+            && self.inp.is_joint(self.pos + n)
+    }
+
+    fn at_composite3(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind, k3: SyntaxKind) -> bool {
+        self.inp.kind(self.pos + n) == k1
+            && self.inp.kind(self.pos + n + 1) == k2
+            && self.inp.kind(self.pos + n + 2) == k3
+            && self.inp.is_joint(self.pos + n)
+            && self.inp.is_joint(self.pos + n + 1)
+    }
+
+    /// Checks if the current token is in `kinds`.
+    pub(crate) fn at_ts(&self, kinds: TokenSet) -> bool {
+        kinds.contains(self.current())
+    }
+
+    /// Checks if the current token is contextual keyword `kw`.
+    pub(crate) fn at_contextual_kw(&self, kw: SyntaxKind) -> bool {
+        self.inp.contextual_kind(self.pos) == kw
+    }
+
+    /// Checks if the nth token is contextual keyword `kw`.
+    pub(crate) fn nth_at_contextual_kw(&self, n: usize, kw: SyntaxKind) -> bool {
+        self.inp.contextual_kind(self.pos + n) == kw
+    }
+
+    /// Starts a new node in the syntax tree. All nodes and tokens
+    /// consumed between the `start` and the corresponding `Marker::complete`
+    /// belong to the same node.
+    pub(crate) fn start(&mut self) -> Marker {
+        let pos = self.events.len() as u32;
+        self.push_event(Event::tombstone());
+        Marker::new(pos)
+    }
+
+    /// Consume the next token. Panics if the parser isn't currently at `kind`.
+    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
+        assert!(self.eat(kind));
+    }
+
+    /// Advances the parser by one token
+    pub(crate) fn bump_any(&mut self) {
+        let kind = self.nth(0);
+        if kind == EOF {
+            return;
+        }
+        self.do_bump(kind, 1);
+    }
+
+    /// Advances the parser by one token
+    pub(crate) fn split_float(&mut self, mut marker: Marker) -> (bool, Marker) {
+        assert!(self.at(SyntaxKind::FLOAT_NUMBER));
+        // we have parse `<something>.`
+        // `<something>`.0.1
+        // here we need to insert an extra event
+        //
+        // `<something>`. 0. 1;
+        // here we need to change the follow up parse, the return value will cause us to emulate a dot
+        // the actual splitting happens later
+        let ends_in_dot = !self.inp.is_joint(self.pos);
+        if !ends_in_dot {
+            let new_marker = self.start();
+            let idx = marker.pos as usize;
+            match &mut self.events[idx] {
+                Event::Start { forward_parent, kind } => {
+                    *kind = SyntaxKind::FIELD_EXPR;
+                    *forward_parent = Some(new_marker.pos - marker.pos);
+                }
+                _ => unreachable!(),
+            }
+            marker.bomb.defuse();
+            marker = new_marker;
+        };
+        self.pos += 1;
+        self.push_event(Event::FloatSplitHack { ends_in_dot });
+        (ends_in_dot, marker)
+    }
+
+    /// Advances the parser by one token, remapping its kind.
+    /// This is useful to create contextual keywords from
+    /// identifiers. For example, the lexer creates a `union`
+    /// *identifier* token, but the parser remaps it to the
+    /// `union` keyword, and keyword is what ends up in the
+    /// final tree.
+    pub(crate) fn bump_remap(&mut self, kind: SyntaxKind) {
+        if self.nth(0) == EOF {
+            // FIXME: panic!?
+            return;
+        }
+        self.do_bump(kind, 1);
+    }
+
+    /// Emit error with the `message`
+    /// FIXME: this should be much more fancy and support
+    /// structured errors with spans and notes, like rustc
+    /// does.
+    pub(crate) fn error<T: Into<String>>(&mut self, message: T) {
+        let msg = message.into();
+        self.push_event(Event::Error { msg });
+    }
+
+    /// Consume the next token if it is `kind` or emit an error
+    /// otherwise.
+    pub(crate) fn expect(&mut self, kind: SyntaxKind) -> bool {
+        if self.eat(kind) {
+            return true;
+        }
+        self.error(format!("expected {kind:?}"));
+        false
+    }
+
+    /// Create an error node and consume the next token.
+    pub(crate) fn err_and_bump(&mut self, message: &str) {
+        let m = self.start();
+        self.error(message);
+        self.bump_any();
+        m.complete(self, ERROR);
+    }
+
+    /// Create an error node and consume the next token unless it is in the recovery set.
+    ///
+    /// Returns true if recovery kicked in.
+    pub(crate) fn err_recover(&mut self, message: &str, recovery: TokenSet) -> bool {
+        if matches!(self.current(), T!['{'] | T!['}']) {
+            self.error(message);
+            return true;
+        }
+
+        if self.at_ts(recovery) {
+            self.error(message);
+            return true;
+        }
+
+        let m = self.start();
+        self.error(message);
+        self.bump_any();
+        m.complete(self, ERROR);
+        false
+    }
+
+    fn do_bump(&mut self, kind: SyntaxKind, n_raw_tokens: u8) {
+        self.pos += n_raw_tokens as usize;
+        self.steps.set(0);
+        self.push_event(Event::Token { kind, n_raw_tokens });
+    }
+
+    fn push_event(&mut self, event: Event) {
+        self.events.push(event);
+    }
+
+    pub(crate) fn edition(&self) -> Edition {
+        self.edition
+    }
+}
+
+/// See [`Parser::start`].
+pub(crate) struct Marker {
+    pos: u32,
+    bomb: DropBomb,
+}
+
+impl Marker {
+    fn new(pos: u32) -> Marker {
+        Marker { pos, bomb: DropBomb::new("Marker must be either completed or abandoned") }
+    }
+
+    /// Finishes the syntax tree node and assigns `kind` to it,
+    /// and mark the create a `CompletedMarker` for possible future
+    /// operation like `.precede()` to deal with forward_parent.
+    pub(crate) fn complete(mut self, p: &mut Parser<'_>, kind: SyntaxKind) -> CompletedMarker {
+        self.bomb.defuse();
+        let idx = self.pos as usize;
+        match &mut p.events[idx] {
+            Event::Start { kind: slot, .. } => {
+                *slot = kind;
+            }
+            _ => unreachable!(),
+        }
+        p.push_event(Event::Finish);
+        let end_pos = p.events.len() as u32;
+        CompletedMarker::new(self.pos, end_pos, kind)
+    }
+
+    /// Abandons the syntax tree node. All its children
+    /// are attached to its parent instead.
+    pub(crate) fn abandon(mut self, p: &mut Parser<'_>) {
+        self.bomb.defuse();
+        let idx = self.pos as usize;
+        if idx == p.events.len() - 1 {
+            assert!(matches!(
+                p.events.pop(),
+                Some(Event::Start { kind: TOMBSTONE, forward_parent: None })
+            ));
+        }
+    }
+}
+
+pub(crate) struct CompletedMarker {
+    start_pos: u32,
+    end_pos: u32,
+    kind: SyntaxKind,
+}
+
+impl CompletedMarker {
+    fn new(start_pos: u32, end_pos: u32, kind: SyntaxKind) -> Self {
+        CompletedMarker { start_pos, end_pos, kind }
+    }
+
+    /// This method allows to create a new node which starts
+    /// *before* the current one. That is, parser could start
+    /// node `A`, then complete it, and then after parsing the
+    /// whole `A`, decide that it should have started some node
+    /// `B` before starting `A`. `precede` allows to do exactly
+    /// that. See also docs about
+    /// [`Event::Start::forward_parent`](crate::event::Event::Start::forward_parent).
+    ///
+    /// Given completed events `[START, FINISH]` and its corresponding
+    /// `CompletedMarker(pos: 0, _)`.
+    /// Append a new `START` events as `[START, FINISH, NEWSTART]`,
+    /// then mark `NEWSTART` as `START`'s parent with saving its relative
+    /// distance to `NEWSTART` into forward_parent(=2 in this case);
+    pub(crate) fn precede(self, p: &mut Parser<'_>) -> Marker {
+        let new_pos = p.start();
+        let idx = self.start_pos as usize;
+        match &mut p.events[idx] {
+            Event::Start { forward_parent, .. } => {
+                *forward_parent = Some(new_pos.pos - self.start_pos);
+            }
+            _ => unreachable!(),
+        }
+        new_pos
+    }
+
+    /// Extends this completed marker *to the left* up to `m`.
+    pub(crate) fn extend_to(self, p: &mut Parser<'_>, mut m: Marker) -> CompletedMarker {
+        m.bomb.defuse();
+        let idx = m.pos as usize;
+        match &mut p.events[idx] {
+            Event::Start { forward_parent, .. } => {
+                *forward_parent = Some(self.start_pos - m.pos);
+            }
+            _ => unreachable!(),
+        }
+        self
+    }
+
+    pub(crate) fn kind(&self) -> SyntaxKind {
+        self.kind
+    }
+
+    pub(crate) fn last_token(&self, p: &Parser<'_>) -> Option<SyntaxKind> {
+        let end_pos = self.end_pos as usize;
+        debug_assert_eq!(p.events[end_pos - 1], Event::Finish);
+        p.events[..end_pos].iter().rev().find_map(|event| match event {
+            Event::Token { kind, .. } => Some(*kind),
+            _ => None,
+        })
+    }
+}
+
+//! See [`Output`]
+
+use crate::SyntaxKind;
+
+/// Output of the parser -- a DFS traversal of a concrete syntax tree.
+///
+/// Use the [`Output::iter`] method to iterate over traversal steps and consume
+/// a syntax tree.
+///
+/// In a sense, this is just a sequence of [`SyntaxKind`]-colored parenthesis
+/// interspersed into the original [`crate::Input`]. The output is fundamentally
+/// coordinated with the input and `n_input_tokens` refers to the number of
+/// times [`crate::Input::push`] was called.
+#[derive(Default)]
+pub struct Output {
+    /// 32-bit encoding of events. If LSB is zero, then that's an index into the
+    /// error vector. Otherwise, it's one of the thee other variants, with data encoded as
+    ///
+    /// ```text
+    /// |16 bit kind|8 bit n_input_tokens|4 bit tag|4 bit leftover|
+    /// ``````
+    event: Vec<u32>,
+    error: Vec<String>,
+}
+
+#[derive(Debug)]
+pub enum Step<'a> {
+    Token { kind: SyntaxKind, n_input_tokens: u8 },
+    FloatSplit { ends_in_dot: bool },
+    Enter { kind: SyntaxKind },
+    Exit,
+    Error { msg: &'a str },
+}
+
+impl Output {
+    const EVENT_MASK: u32 = 0b1;
+    const TAG_MASK: u32 = 0x0000_00F0;
+    const N_INPUT_TOKEN_MASK: u32 = 0x0000_FF00;
+    const KIND_MASK: u32 = 0xFFFF_0000;
+
+    const ERROR_SHIFT: u32 = Self::EVENT_MASK.trailing_ones();
+    const TAG_SHIFT: u32 = Self::TAG_MASK.trailing_zeros();
+    const N_INPUT_TOKEN_SHIFT: u32 = Self::N_INPUT_TOKEN_MASK.trailing_zeros();
+    const KIND_SHIFT: u32 = Self::KIND_MASK.trailing_zeros();
+
+    const TOKEN_EVENT: u8 = 0;
+    const ENTER_EVENT: u8 = 1;
+    const EXIT_EVENT: u8 = 2;
+    const SPLIT_EVENT: u8 = 3;
+
+    pub fn iter(&self) -> impl Iterator<Item = Step<'_>> {
+        self.event.iter().map(|&event| {
+            if event & Self::EVENT_MASK == 0 {
+                return Step::Error {
+                    msg: self.error[(event as usize) >> Self::ERROR_SHIFT].as_str(),
+                };
+            }
+            let tag = ((event & Self::TAG_MASK) >> Self::TAG_SHIFT) as u8;
+            match tag {
+                Self::TOKEN_EVENT => {
+                    let kind: SyntaxKind =
+                        (((event & Self::KIND_MASK) >> Self::KIND_SHIFT) as u16).into();
+                    let n_input_tokens =
+                        ((event & Self::N_INPUT_TOKEN_MASK) >> Self::N_INPUT_TOKEN_SHIFT) as u8;
+                    Step::Token { kind, n_input_tokens }
+                }
+                Self::ENTER_EVENT => {
+                    let kind: SyntaxKind =
+                        (((event & Self::KIND_MASK) >> Self::KIND_SHIFT) as u16).into();
+                    Step::Enter { kind }
+                }
+                Self::EXIT_EVENT => Step::Exit,
+                Self::SPLIT_EVENT => {
+                    Step::FloatSplit { ends_in_dot: event & Self::N_INPUT_TOKEN_MASK != 0 }
+                }
+                _ => unreachable!(),
+            }
+        })
+    }
+
+    pub(crate) fn token(&mut self, kind: SyntaxKind, n_tokens: u8) {
+        let e = ((kind as u16 as u32) << Self::KIND_SHIFT)
+            | ((n_tokens as u32) << Self::N_INPUT_TOKEN_SHIFT)
+            | Self::EVENT_MASK;
+        self.event.push(e)
+    }
+
+    pub(crate) fn float_split_hack(&mut self, ends_in_dot: bool) {
+        let e = ((Self::SPLIT_EVENT as u32) << Self::TAG_SHIFT)
+            | ((ends_in_dot as u32) << Self::N_INPUT_TOKEN_SHIFT)
+            | Self::EVENT_MASK;
+        self.event.push(e);
+    }
+
+    pub(crate) fn enter_node(&mut self, kind: SyntaxKind) {
+        let e = ((kind as u16 as u32) << Self::KIND_SHIFT)
+            | ((Self::ENTER_EVENT as u32) << Self::TAG_SHIFT)
+            | Self::EVENT_MASK;
+        self.event.push(e)
+    }
+
+    pub(crate) fn leave_node(&mut self) {
+        let e = ((Self::EXIT_EVENT as u32) << Self::TAG_SHIFT) | Self::EVENT_MASK;
+        self.event.push(e)
+    }
+
+    pub(crate) fn error(&mut self, error: String) {
+        let idx = self.error.len();
+        self.error.push(error);
+        let e = (idx as u32) << Self::ERROR_SHIFT;
+        self.event.push(e);
+    }
+}
+
+//! Defines [`SyntaxKind`] -- a fieldless enum of all possible syntactic
+//! constructs of the Rust language.
+
+#[rustfmt::skip]
+mod generated;
+
+use crate::Edition;
+
+#[allow(unreachable_pub)]
+pub use self::generated::SyntaxKind;
+
+impl From<u16> for SyntaxKind {
+    #[inline]
+    fn from(d: u16) -> SyntaxKind {
+        assert!(d <= (SyntaxKind::__LAST as u16));
+        unsafe { std::mem::transmute::<u16, SyntaxKind>(d) }
+    }
+}
+
+impl From<SyntaxKind> for u16 {
+    #[inline]
+    fn from(k: SyntaxKind) -> u16 {
+        k as u16
+    }
+}
+
+impl SyntaxKind {
+    #[inline]
+    pub fn is_trivia(self) -> bool {
+        matches!(self, SyntaxKind::WHITESPACE | SyntaxKind::COMMENT)
+    }
+
+    /// Returns true if this is an identifier or a keyword.
+    #[inline]
+    pub fn is_any_identifier(self) -> bool {
+        // Assuming no edition removed keywords...
+        self == SyntaxKind::IDENT || self.is_keyword(Edition::LATEST)
+    }
+}
+
+use super::*;
+
+// test use_item
+// use std::collections;
+pub(super) fn use_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![use]);
+    use_tree(p, true);
+    p.expect(T![;]);
+    m.complete(p, USE);
+}
+
+// test use_tree
+// use outer::tree::{inner::tree};
+fn use_tree(p: &mut Parser<'_>, top_level: bool) -> bool {
+    let m = p.start();
+    match p.current() {
+        // test use_tree_star
+        // use *;
+        // use std::{*};
+        T![*] => p.bump(T![*]),
+        // test use_tree_abs_star
+        // use ::*;
+        // use std::{::*};
+        T![:] if p.at(T![::]) && p.nth(2) == T![*] => {
+            p.bump(T![::]);
+            p.bump(T![*]);
+        }
+        T!['{'] => use_tree_list(p),
+        T![:] if p.at(T![::]) && p.nth(2) == T!['{'] => {
+            p.bump(T![::]);
+            use_tree_list(p);
+        }
+
+        // test use_tree_path
+        // use ::std;
+        // use std::collections;
+        //
+        // use self::m;
+        // use super::m;
+        // use crate::m;
+        _ if paths::is_use_path_start(p) => {
+            paths::use_path(p);
+            match p.current() {
+                // test use_tree_alias
+                // use std as stdlib;
+                // use Trait as _;
+                T![as] => opt_rename(p),
+                T![:] if p.at(T![::]) => {
+                    p.bump(T![::]);
+                    match p.current() {
+                        // test use_tree_path_star
+                        // use std::*;
+                        T![*] => p.bump(T![*]),
+                        // test use_tree_path_use_tree
+                        // use std::{collections};
+                        T!['{'] => use_tree_list(p),
+                        _ => p.error("expected `{` or `*`"),
+                    }
+                }
+                _ => (),
+            }
+        }
+        _ => {
+            m.abandon(p);
+            let msg = "expected one of `*`, `::`, `{`, `self`, `super` or an identifier";
+            if top_level {
+                p.err_recover(msg, ITEM_RECOVERY_SET);
+            } else {
+                // if we are parsing a nested tree, we have to eat a token to
+                // main balanced `{}`
+                p.err_and_bump(msg);
+            }
+            return false;
+        }
+    }
+    m.complete(p, USE_TREE);
+    true
+}
+
+pub(super) const USE_TREE_LIST_RECOVERY_SET: TokenSet =
+    TokenSet::new(&[T![;], T![,], T![.], T![ident]]).union(ITEM_RECOVERY_SET);
+
+pub(super) const USE_TREE_LIST_FIRST_SET: TokenSet = TokenSet::new(&[T!['{'], T![ident]]);
+
+// test use_tree_list
+// use {a, b, c};
+pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+
+    // test_err use_tree_list_err_recovery
+    // use {a;
+    // use b;
+    // struct T;
+    // fn test() {}
+    // use {a ,, b};
+    delimited(
+        p,
+        T!['{'],
+        T!['}'],
+        T![,],
+        || "expected use tree".into(),
+        USE_TREE_LIST_FIRST_SET,
+        |p: &mut Parser<'_>| use_tree(p, false) || p.at_ts(USE_TREE_LIST_RECOVERY_SET),
+    );
+
+    m.complete(p, USE_TREE_LIST);
+}
+
+use super::*;
+
+// test trait_item
+// trait T { fn new() -> Self; }
+pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![trait]);
+    name_r(p, ITEM_RECOVERY_SET);
+
+    // test trait_item_generic_params
+    // trait X<U: Debug + Display> {}
+    generic_params::opt_generic_param_list(p);
+
+    if p.eat(T![=]) {
+        // test trait_alias
+        // trait Z<U> = T<U>;
+        generic_params::bounds_without_colon(p);
+
+        // test trait_alias_where_clause
+        // trait Z<U> = T<U> where U: Copy;
+        // trait Z<U> = where Self: T<U>;
+        generic_params::opt_where_clause(p);
+        p.expect(T![;]);
+        m.complete(p, TRAIT);
+        return;
+    }
+
+    if p.at(T![:]) {
+        // test trait_item_bounds
+        // trait T: Hash + Clone {}
+        generic_params::bounds(p);
+    }
+
+    // test trait_item_where_clause
+    // trait T where Self: Copy {}
+    generic_params::opt_where_clause(p);
+
+    if p.at(T!['{']) {
+        assoc_item_list(p);
+    } else {
+        p.error("expected `{`");
+    }
+    m.complete(p, TRAIT);
+}
+
+// test impl_item
+// impl S {}
+pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![impl]);
+    if p.at(T![<]) && not_a_qualified_path(p) {
+        generic_params::opt_generic_param_list(p);
+    }
+
+    // test impl_item_const
+    // impl const Send for S {}
+    p.eat(T![const]);
+
+    // test impl_item_never_type
+    // impl ! {}
+    if p.at(T![!]) && !p.nth_at(1, T!['{']) {
+        // test impl_item_neg
+        // impl !Send for S {}
+        p.eat(T![!]);
+    }
+    impl_type(p);
+    if p.eat(T![for]) {
+        impl_type(p);
+    }
+    generic_params::opt_where_clause(p);
+    if p.at(T!['{']) {
+        assoc_item_list(p);
+    } else {
+        p.error("expected `{`");
+    }
+    m.complete(p, IMPL);
+}
+
+// test assoc_item_list
+// impl F {
+//     type A = i32;
+//     const B: i32 = 92;
+//     fn foo() {}
+//     fn bar(&self) {}
+// }
+pub(crate) fn assoc_item_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+
+    let m = p.start();
+    p.bump(T!['{']);
+    // test assoc_item_list_inner_attrs
+    // impl S { #![attr] }
+    attributes::inner_attrs(p);
+
+    while !p.at(EOF) && !p.at(T!['}']) {
+        if p.at(T!['{']) {
+            error_block(p, "expected an item");
+            continue;
+        }
+        item_or_macro(p, true, false);
+    }
+    p.expect(T!['}']);
+    m.complete(p, ASSOC_ITEM_LIST);
+}
+
+// test impl_type_params
+// impl<const N: u32> Bar<N> {}
+fn not_a_qualified_path(p: &Parser<'_>) -> bool {
+    // There's an ambiguity between generic parameters and qualified paths in impls.
+    // If we see `<` it may start both, so we have to inspect some following tokens.
+    // The following combinations can only start generics,
+    // but not qualified paths (with one exception):
+    //     `<` `>` - empty generic parameters
+    //     `<` `#` - generic parameters with attributes
+    //     `<` `const` - const generic parameters
+    //     `<` (LIFETIME_IDENT|IDENT) `>` - single generic parameter
+    //     `<` (LIFETIME_IDENT|IDENT) `,` - first generic parameter in a list
+    //     `<` (LIFETIME_IDENT|IDENT) `:` - generic parameter with bounds
+    //     `<` (LIFETIME_IDENT|IDENT) `=` - generic parameter with a default
+    // The only truly ambiguous case is
+    //     `<` IDENT `>` `::` IDENT ...
+    // we disambiguate it in favor of generics (`impl<T> ::absolute::Path<T> { ... }`)
+    // because this is what almost always expected in practice, qualified paths in impls
+    // (`impl <Type>::AssocTy { ... }`) aren't even allowed by type checker at the moment.
+    if [T![#], T![>], T![const]].contains(&p.nth(1)) {
+        return true;
+    }
+    ([LIFETIME_IDENT, IDENT].contains(&p.nth(1)))
+        && ([T![>], T![,], T![:], T![=]].contains(&p.nth(2)))
+}
+
+// test_err impl_type
+// impl Type {}
+// impl Trait1 for T {}
+// impl impl NotType {}
+// impl Trait2 for impl NotType {}
+pub(crate) fn impl_type(p: &mut Parser<'_>) {
+    if p.at(T![impl]) {
+        p.error("expected trait or type");
+        return;
+    }
+    types::type_(p);
+}
+
+use super::*;
+
+// test const_item
+// const C: u32 = 92;
+pub(super) fn konst(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![const]);
+    const_or_static(p, m, true);
+}
+
+pub(super) fn static_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![static]);
+    const_or_static(p, m, false);
+}
+
+fn const_or_static(p: &mut Parser<'_>, m: Marker, is_const: bool) {
+    p.eat(T![mut]);
+
+    if is_const && p.eat(T![_]) {
+        // test anonymous_const
+        // const _: u32 = 0;
+    } else {
+        // test_err anonymous_static
+        // static _: i32 = 5;
+        name(p);
+    }
+
+    // FIXME: Recover on statics with generic params/where clause.
+    if !is_const && p.at(T![<]) {
+        // test_err generic_static
+        // static C<i32>: u32 = 0;
+        p.error("`static` may not have generic parameters");
+    }
+    // test generic_const
+    // const C<i32>: u32 = 0;
+    // impl Foo {
+    //     const C<'a>: &'a () = &();
+    // }
+    generic_params::opt_generic_param_list(p);
+
+    if p.at(T![:]) {
+        types::ascription(p);
+    } else if is_const {
+        // test_err missing_const_type
+        // const C = 0;
+        p.error("missing type for `const`");
+    } else {
+        // test_err missing_static_type
+        // static C = 0;
+        p.error("missing type for `static`");
+    }
+    if p.eat(T![=]) {
+        expressions::expr(p);
+    }
+
+    if is_const {
+        // test const_where_clause
+        // const C<i32>: u32 = 0
+        // where i32: Copy;
+        // trait Foo {
+        //     const C: i32 where i32: Copy;
+        // }
+        generic_params::opt_where_clause(p);
+    }
+    // test_err static_where_clause
+    // static C: u32 = 0
+    // where i32: Copy;
+
+    p.expect(T![;]);
+    m.complete(p, if is_const { CONST } else { STATIC });
+}
+
+use crate::grammar::attributes::ATTRIBUTE_FIRST;
+
+use super::*;
+
+// test struct_item
+// struct S {}
+pub(super) fn strukt(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![struct]);
+    struct_or_union(p, m, true);
+}
+
+// test union_item
+// struct U { i: i32, f: f32 }
+pub(super) fn union(p: &mut Parser<'_>, m: Marker) {
+    assert!(p.at_contextual_kw(T![union]));
+    p.bump_remap(T![union]);
+    struct_or_union(p, m, false);
+}
+
+fn struct_or_union(p: &mut Parser<'_>, m: Marker, is_struct: bool) {
+    name_r(p, ITEM_RECOVERY_SET);
+    generic_params::opt_generic_param_list(p);
+    match p.current() {
+        T![where] => {
+            generic_params::opt_where_clause(p);
+            match p.current() {
+                T![;] => p.bump(T![;]),
+                T!['{'] => record_field_list(p),
+                _ => {
+                    //FIXME: special case `(` error message
+                    p.error("expected `;` or `{`");
+                }
+            }
+        }
+        T!['{'] => record_field_list(p),
+        // test unit_struct
+        // struct S;
+        T![;] if is_struct => {
+            p.bump(T![;]);
+        }
+        // test tuple_struct
+        // struct S(String, usize);
+        T!['('] if is_struct => {
+            tuple_field_list(p);
+            // test tuple_struct_where
+            // struct S<T>(T) where T: Clone;
+            generic_params::opt_where_clause(p);
+            p.expect(T![;]);
+        }
+        _ => p.error(if is_struct { "expected `;`, `{`, or `(`" } else { "expected `{`" }),
+    }
+    m.complete(p, if is_struct { STRUCT } else { UNION });
+}
+
+pub(super) fn enum_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![enum]);
+    name_r(p, ITEM_RECOVERY_SET);
+    generic_params::opt_generic_param_list(p);
+    generic_params::opt_where_clause(p);
+    if p.at(T!['{']) {
+        variant_list(p);
+    } else {
+        p.error("expected `{`");
+    }
+    m.complete(p, ENUM);
+}
+
+pub(crate) fn variant_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    while !p.at(EOF) && !p.at(T!['}']) {
+        if p.at(T!['{']) {
+            error_block(p, "expected enum variant");
+            continue;
+        }
+        variant(p);
+        if !p.at(T!['}']) {
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T!['}']);
+    m.complete(p, VARIANT_LIST);
+
+    fn variant(p: &mut Parser<'_>) {
+        let m = p.start();
+        attributes::outer_attrs(p);
+        if p.at(IDENT) {
+            name(p);
+            match p.current() {
+                T!['{'] => record_field_list(p),
+                T!['('] => tuple_field_list(p),
+                _ => (),
+            }
+
+            // test variant_discriminant
+            // enum E { X(i32) = 10 }
+            if p.eat(T![=]) {
+                expressions::expr(p);
+            }
+            m.complete(p, VARIANT);
+        } else {
+            m.abandon(p);
+            p.err_and_bump("expected enum variant");
+        }
+    }
+}
+
+// test record_field_list
+// struct S { a: i32, b: f32, unsafe c: u8 }
+pub(crate) fn record_field_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    while !p.at(T!['}']) && !p.at(EOF) {
+        if p.at(T!['{']) {
+            error_block(p, "expected field");
+            continue;
+        }
+        record_field(p);
+        if !p.at(T!['}']) {
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T!['}']);
+    m.complete(p, RECORD_FIELD_LIST);
+
+    fn record_field(p: &mut Parser<'_>) {
+        let m = p.start();
+        // test record_field_attrs
+        // struct S { #[attr] f: f32 }
+        attributes::outer_attrs(p);
+        opt_visibility(p, false);
+        p.eat(T![unsafe]);
+        if p.at(IDENT) {
+            name(p);
+            p.expect(T![:]);
+            types::type_(p);
+            // test record_field_default_values
+            // struct S { f: f32 = 0.0 }
+            if p.eat(T![=]) {
+                expressions::expr(p);
+            }
+            m.complete(p, RECORD_FIELD);
+        } else {
+            m.abandon(p);
+            p.err_and_bump("expected field declaration");
+        }
+    }
+}
+
+const TUPLE_FIELD_FIRST: TokenSet =
+    types::TYPE_FIRST.union(ATTRIBUTE_FIRST).union(VISIBILITY_FIRST);
+
+// test_err tuple_field_list_recovery
+// struct S(struct S;
+// struct S(A,,B);
+fn tuple_field_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['(']));
+    let m = p.start();
+    delimited(
+        p,
+        T!['('],
+        T![')'],
+        T![,],
+        || "expected tuple field".into(),
+        TUPLE_FIELD_FIRST,
+        |p| {
+            let m = p.start();
+            // test tuple_field_attrs
+            // struct S (#[attr] f32);
+            attributes::outer_attrs(p);
+            let has_vis = opt_visibility(p, true);
+            if !p.at_ts(types::TYPE_FIRST) {
+                p.error("expected a type");
+                if has_vis {
+                    m.complete(p, ERROR);
+                } else {
+                    m.abandon(p);
+                }
+                return false;
+            }
+            types::type_(p);
+            m.complete(p, TUPLE_FIELD);
+            true
+        },
+    );
+
+    m.complete(p, TUPLE_FIELD_LIST);
+}
+
+mod adt;
+mod consts;
+mod traits;
+mod use_item;
+
+pub(crate) use self::{
+    adt::{record_field_list, variant_list},
+    expressions::{match_arm_list, record_expr_field_list},
+    traits::assoc_item_list,
+    use_item::use_tree_list,
+};
+use super::*;
+
+// test mod_contents
+// fn foo() {}
+// macro_rules! foo {}
+// foo::bar!();
+// super::baz! {}
+// struct S;
+pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
+    attributes::inner_attrs(p);
+    while !(p.at(EOF) || (p.at(T!['}']) && stop_on_r_curly)) {
+        // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
+        item_or_macro(p, stop_on_r_curly, true);
+    }
+}
+
+pub(super) const ITEM_RECOVERY_SET: TokenSet = TokenSet::new(&[
+    T![fn],
+    T![struct],
+    T![enum],
+    T![impl],
+    T![trait],
+    T![const],
+    T![async],
+    T![unsafe],
+    T![extern],
+    T![static],
+    T![let],
+    T![mod],
+    T![pub],
+    T![crate],
+    T![use],
+    T![macro],
+    T![;],
+]);
+
+pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_extern: bool) {
+    let m = p.start();
+    attributes::outer_attrs(p);
+
+    let m = match opt_item(p, m, is_in_extern) {
+        Ok(()) => {
+            if p.at(T![;]) {
+                p.err_and_bump(
+                    "expected item, found `;`\n\
+                     consider removing this semicolon",
+                );
+            }
+            return;
+        }
+        Err(m) => m,
+    };
+
+    // test macro_rules_as_macro_name
+    // macro_rules! {}
+    // macro_rules! ();
+    // macro_rules! [];
+    // fn main() {
+    //     let foo = macro_rules!();
+    // }
+
+    // test_err macro_rules_as_macro_name
+    // macro_rules! {};
+    // macro_rules! ()
+    // macro_rules! []
+    if paths::is_use_path_start(p) {
+        paths::use_path(p);
+        // Do not create a MACRO_CALL node here if this isn't a macro call, this causes problems with completion.
+
+        // test_err path_item_without_excl
+        // foo
+        if p.at(T![!]) {
+            macro_call(p, m);
+            return;
+        } else {
+            m.complete(p, ERROR);
+            p.error("expected an item");
+            return;
+        }
+    }
+
+    m.abandon(p);
+    match p.current() {
+        T!['{'] => error_block(p, "expected an item"),
+        T!['}'] if !stop_on_r_curly => {
+            let e = p.start();
+            p.error("unmatched `}`");
+            p.bump(T!['}']);
+            e.complete(p, ERROR);
+        }
+        EOF | T!['}'] => p.error("expected an item"),
+        T![let] => error_let_stmt(p, "expected an item"),
+        _ => p.err_and_bump("expected an item"),
+    }
+}
+
+/// Try to parse an item, completing `m` in case of success.
+pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Result<(), Marker> {
+    // test_err pub_expr
+    // fn foo() { pub 92; }
+    let has_visibility = opt_visibility(p, false);
+
+    let m = match opt_item_without_modifiers(p, m) {
+        Ok(()) => return Ok(()),
+        Err(m) => m,
+    };
+
+    let mut has_mods = false;
+    let mut has_extern = false;
+
+    // modifiers
+    if p.at(T![const]) && p.nth(1) != T!['{'] {
+        p.eat(T![const]);
+        has_mods = true;
+    }
+
+    // test_err async_without_semicolon
+    // fn foo() { let _ = async {} }
+    if p.at(T![async])
+        && (!matches!(p.nth(1), T!['{'] | T![gen] | T![move] | T![|])
+            || matches!((p.nth(1), p.nth(2)), (T![gen], T![fn])))
+    {
+        p.eat(T![async]);
+        has_mods = true;
+    }
+
+    // test_err gen_fn 2021
+    // gen fn gen_fn() {}
+    // async gen fn async_gen_fn() {}
+    if p.at(T![gen]) && p.nth(1) == T![fn] {
+        p.eat(T![gen]);
+        has_mods = true;
+    }
+
+    // test_err unsafe_block_in_mod
+    // fn foo(){} unsafe { } fn bar(){}
+    if p.at(T![unsafe]) && p.nth(1) != T!['{'] {
+        p.eat(T![unsafe]);
+        has_mods = true;
+    }
+
+    // test safe_outside_of_extern
+    // fn foo() { safe = true; }
+    if is_in_extern && p.at_contextual_kw(T![safe]) {
+        p.eat_contextual_kw(T![safe]);
+        has_mods = true;
+    }
+
+    if p.at(T![extern]) {
+        has_extern = true;
+        has_mods = true;
+        abi(p);
+    }
+    if p.at_contextual_kw(T![auto]) && p.nth(1) == T![trait] {
+        p.bump_remap(T![auto]);
+        has_mods = true;
+    }
+
+    // test default_item
+    // default impl T for Foo {}
+    if p.at_contextual_kw(T![default]) {
+        match p.nth(1) {
+            T![fn] | T![type] | T![const] | T![impl] => {
+                p.bump_remap(T![default]);
+                has_mods = true;
+            }
+            // test default_unsafe_item
+            // default unsafe impl T for Foo {
+            //     default unsafe fn foo() {}
+            // }
+            T![unsafe] if matches!(p.nth(2), T![impl] | T![fn]) => {
+                p.bump_remap(T![default]);
+                p.bump(T![unsafe]);
+                has_mods = true;
+            }
+            // test default_async_fn
+            // impl T for Foo {
+            //     default async fn foo() {}
+            // }
+            T![async]
+                if p.nth_at(2, T![fn]) || (p.nth_at(2, T![unsafe]) && p.nth_at(3, T![fn])) =>
+            {
+                p.bump_remap(T![default]);
+                p.bump(T![async]);
+
+                // test default_async_unsafe_fn
+                // impl T for Foo {
+                //     default async unsafe fn foo() {}
+                // }
+                p.eat(T![unsafe]);
+
+                has_mods = true;
+            }
+            _ => (),
+        }
+    }
+
+    // items
+    match p.current() {
+        T![fn] => fn_(p, m),
+
+        T![const] if p.nth(1) != T!['{'] => consts::konst(p, m),
+        T![static] if matches!(p.nth(1), IDENT | T![_] | T![mut]) => consts::static_(p, m),
+
+        T![trait] => traits::trait_(p, m),
+        T![impl] => traits::impl_(p, m),
+
+        T![type] => type_alias(p, m),
+
+        // test extern_block
+        // unsafe extern "C" {}
+        // extern {}
+        T!['{'] if has_extern => {
+            extern_item_list(p);
+            m.complete(p, EXTERN_BLOCK);
+        }
+
+        _ if has_visibility || has_mods => {
+            if has_mods {
+                p.error("expected fn, trait or impl");
+            } else {
+                p.error("expected an item");
+            }
+            m.complete(p, ERROR);
+        }
+
+        _ => return Err(m),
+    }
+    Ok(())
+}
+
+fn opt_item_without_modifiers(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
+    let la = p.nth(1);
+    match p.current() {
+        T![extern] if la == T![crate] => extern_crate(p, m),
+        T![use] => use_item::use_(p, m),
+        T![mod] => mod_item(p, m),
+
+        T![type] => type_alias(p, m),
+        T![struct] => adt::strukt(p, m),
+        T![enum] => adt::enum_(p, m),
+        IDENT if p.at_contextual_kw(T![union]) && p.nth(1) == IDENT => adt::union(p, m),
+
+        T![macro] => macro_def(p, m),
+        // check if current token is "macro_rules" followed by "!" followed by an identifier
+        IDENT if p.at_contextual_kw(T![macro_rules]) && p.nth_at(1, BANG) && p.nth_at(2, IDENT) => {
+            macro_rules(p, m)
+        }
+
+        T![const] if (la == IDENT || la == T![_] || la == T![mut]) => consts::konst(p, m),
+        T![static] if (la == IDENT || la == T![_] || la == T![mut]) => consts::static_(p, m),
+
+        IDENT
+            if p.at_contextual_kw(T![builtin])
+                && p.nth_at(1, T![#])
+                && p.nth_at_contextual_kw(2, T![global_asm]) =>
+        {
+            p.bump_remap(T![builtin]);
+            p.bump(T![#]);
+            p.bump_remap(T![global_asm]);
+            // test global_asm
+            // builtin#global_asm("")
+            expressions::parse_asm_expr(p, m);
+        }
+
+        _ => return Err(m),
+    };
+    Ok(())
+}
+
+// test extern_crate
+// extern crate foo;
+// extern crate self;
+fn extern_crate(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![extern]);
+    p.bump(T![crate]);
+
+    name_ref_or_self(p);
+
+    // test extern_crate_rename
+    // extern crate foo as bar;
+    // extern crate self as bar;
+    opt_rename(p);
+    p.expect(T![;]);
+    m.complete(p, EXTERN_CRATE);
+}
+
+// test mod_item
+// mod a;
+pub(crate) fn mod_item(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![mod]);
+    name(p);
+    if p.at(T!['{']) {
+        // test mod_item_curly
+        // mod b { }
+        item_list(p);
+    } else if !p.eat(T![;]) {
+        p.error("expected `;` or `{`");
+    }
+    m.complete(p, MODULE);
+}
+
+// test type_alias
+// type Foo = Bar;
+fn type_alias(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![type]);
+
+    name(p);
+
+    // test type_item_type_params
+    // type Result<T> = ();
+    generic_params::opt_generic_param_list(p);
+
+    if p.at(T![:]) {
+        generic_params::bounds(p);
+    }
+
+    // test type_item_where_clause_deprecated
+    // type Foo where Foo: Copy = ();
+    generic_params::opt_where_clause(p);
+    if p.eat(T![=]) {
+        types::type_(p);
+    }
+
+    // test type_item_where_clause
+    // type Foo = () where Foo: Copy;
+    generic_params::opt_where_clause(p);
+
+    p.expect(T![;]);
+    m.complete(p, TYPE_ALIAS);
+}
+
+pub(crate) fn item_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    mod_contents(p, true);
+    p.expect(T!['}']);
+    m.complete(p, ITEM_LIST);
+}
+
+pub(crate) fn extern_item_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    mod_contents(p, true);
+    p.expect(T!['}']);
+    m.complete(p, EXTERN_ITEM_LIST);
+}
+
+// test try_macro_rules 2015
+// macro_rules! try { () => {} }
+fn macro_rules(p: &mut Parser<'_>, m: Marker) {
+    assert!(p.at_contextual_kw(T![macro_rules]));
+    p.bump_remap(T![macro_rules]);
+    p.expect(T![!]);
+
+    name(p);
+
+    match p.current() {
+        // test macro_rules_non_brace
+        // macro_rules! m ( ($i:ident) => {} );
+        // macro_rules! m [ ($i:ident) => {} ];
+        T!['['] | T!['('] => {
+            token_tree(p);
+            p.expect(T![;]);
+        }
+        T!['{'] => token_tree(p),
+        _ => p.error("expected `{`, `[`, `(`"),
+    }
+    m.complete(p, MACRO_RULES);
+}
+
+// test macro_def
+// macro m($i:ident) {}
+fn macro_def(p: &mut Parser<'_>, m: Marker) {
+    p.expect(T![macro]);
+    name_r(p, ITEM_RECOVERY_SET);
+    if p.at(T!['{']) {
+        // test macro_def_curly
+        // macro m { ($i:ident) => {} }
+        token_tree(p);
+    } else if p.at(T!['(']) {
+        token_tree(p);
+        match p.current() {
+            T!['{'] | T!['['] | T!['('] => token_tree(p),
+            _ => p.error("expected `{`, `[`, `(`"),
+        }
+    } else {
+        p.error("unmatched `(`");
+    }
+
+    m.complete(p, MACRO_DEF);
+}
+
+// test fn_
+// fn foo() {}
+fn fn_(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![fn]);
+
+    name_r(p, ITEM_RECOVERY_SET);
+    // test function_type_params
+    // fn foo<T: Clone + Copy>(){}
+    generic_params::opt_generic_param_list(p);
+
+    if p.at(T!['(']) {
+        params::param_list_fn_def(p);
+    } else {
+        p.error("expected function arguments");
+    }
+    // test function_ret_type
+    // fn foo() {}
+    // fn bar() -> () {}
+    opt_ret_type(p);
+
+    // test_err fn_ret_recovery
+    // fn foo() -> A>]) { let x = 1; }
+    // fn foo() -> A>]) where T: Copy { let x = 1; }
+    while p.at(T![')']) | p.at(T![']']) | p.at(T![>]) {
+        // recover from unbalanced return type brackets
+        p.err_and_bump("expected a curly brace");
+    }
+
+    // test function_where_clause
+    // fn foo<T>() where T: Copy {}
+    generic_params::opt_where_clause(p);
+
+    // test fn_decl
+    // trait T { fn foo(); }
+    if !p.eat(T![;]) {
+        expressions::block_expr(p);
+    }
+    m.complete(p, FN);
+}
+
+fn macro_call(p: &mut Parser<'_>, m: Marker) {
+    assert!(p.at(T![!]));
+    match macro_call_after_excl(p) {
+        BlockLike::Block => (),
+        BlockLike::NotBlock => {
+            p.expect(T![;]);
+        }
+    }
+    m.complete(p, MACRO_CALL);
+}
+
+pub(super) fn macro_call_after_excl(p: &mut Parser<'_>) -> BlockLike {
+    p.expect(T![!]);
+
+    match p.current() {
+        T!['{'] => {
+            token_tree(p);
+            BlockLike::Block
+        }
+        T!['('] | T!['['] => {
+            token_tree(p);
+            BlockLike::NotBlock
+        }
+        _ => {
+            p.error("expected `{`, `[`, `(`");
+            BlockLike::NotBlock
+        }
+    }
+}
+
+pub(crate) fn token_tree(p: &mut Parser<'_>) {
+    let closing_paren_kind = match p.current() {
+        T!['{'] => T!['}'],
+        T!['('] => T![')'],
+        T!['['] => T![']'],
+        _ => unreachable!(),
+    };
+    let m = p.start();
+    p.bump_any();
+    while !p.at(EOF) && !p.at(closing_paren_kind) {
+        match p.current() {
+            T!['{'] | T!['('] | T!['['] => token_tree(p),
+            T!['}'] => {
+                p.error("unmatched `}`");
+                m.complete(p, TOKEN_TREE);
+                return;
+            }
+            T![')'] | T![']'] => p.err_and_bump("unmatched brace"),
+            _ => p.bump_any(),
+        }
+    }
+    p.expect(closing_paren_kind);
+    m.complete(p, TOKEN_TREE);
+}
+
+use crate::grammar::types::type_;
+
+use super::*;
+
+// test expr_literals
+// fn foo() {
+//     let _ = true;
+//     let _ = false;
+//     let _ = 1;
+//     let _ = 2.0;
+//     let _ = b'a';
+//     let _ = 'b';
+//     let _ = "c";
+//     let _ = r"d";
+//     let _ = b"e";
+//     let _ = br"f";
+//     let _ = c"g";
+//     let _ = cr"h";
+// }
+pub(crate) const LITERAL_FIRST: TokenSet = TokenSet::new(&[
+    T![true],
+    T![false],
+    INT_NUMBER,
+    FLOAT_NUMBER,
+    BYTE,
+    CHAR,
+    STRING,
+    BYTE_STRING,
+    C_STRING,
+]);
+
+pub(crate) fn literal(p: &mut Parser<'_>) -> Option<CompletedMarker> {
+    if !p.at_ts(LITERAL_FIRST) {
+        return None;
+    }
+    let m = p.start();
+    p.bump_any();
+    Some(m.complete(p, LITERAL))
+}
+
+// E.g. for after the break in `if break {}`, this should not match
+pub(super) const ATOM_EXPR_FIRST: TokenSet =
+    LITERAL_FIRST.union(paths::PATH_FIRST).union(TokenSet::new(&[
+        T!['('],
+        T!['{'],
+        T!['['],
+        T![|],
+        T![async],
+        T![break],
+        T![const],
+        T![continue],
+        T![do],
+        T![gen],
+        T![for],
+        T![if],
+        T![let],
+        T![loop],
+        T![match],
+        T![move],
+        T![return],
+        T![become],
+        T![static],
+        T![try],
+        T![unsafe],
+        T![while],
+        T![yield],
+        LIFETIME_IDENT,
+    ]));
+
+pub(in crate::grammar) const EXPR_RECOVERY_SET: TokenSet =
+    TokenSet::new(&[T!['}'], T![')'], T![']'], T![,]]);
+
+pub(super) fn atom_expr(
+    p: &mut Parser<'_>,
+    r: Restrictions,
+) -> Option<(CompletedMarker, BlockLike)> {
+    if let Some(m) = literal(p) {
+        return Some((m, BlockLike::NotBlock));
+    }
+    if p.at_contextual_kw(T![builtin]) && p.nth_at(1, T![#]) {
+        return Some((builtin_expr(p)?, BlockLike::NotBlock));
+    }
+    if paths::is_path_start(p) {
+        return Some(path_expr(p, r));
+    }
+    let la = p.nth(1);
+    let done = match p.current() {
+        T!['('] => tuple_expr(p),
+        T!['['] => array_expr(p),
+        T![if] => if_expr(p),
+        T![let] => let_expr(p),
+        T![_] => {
+            // test destructuring_assignment_wildcard_pat
+            // fn foo() {
+            //     _ = 1;
+            //     Some(_) = None;
+            // }
+            let m = p.start();
+            p.bump(T![_]);
+            m.complete(p, UNDERSCORE_EXPR)
+        }
+        T![loop] => loop_expr(p, None),
+        T![while] => while_expr(p, None),
+        // test try_macro_fallback 2015
+        // fn foo() { try!(Ok(())); }
+        T![try] => try_block_expr(p, None),
+        T![match] => match_expr(p),
+        T![return] => return_expr(p),
+        T![become] => become_expr(p),
+        T![yield] => yield_expr(p),
+        T![do] if p.nth_at_contextual_kw(1, T![yeet]) => yeet_expr(p),
+        T![continue] => continue_expr(p),
+        T![break] => break_expr(p, r),
+
+        LIFETIME_IDENT if la == T![:] => {
+            let m = p.start();
+            label(p);
+            match p.current() {
+                T![loop] => loop_expr(p, Some(m)),
+                T![for] => for_expr(p, Some(m)),
+                T![while] => while_expr(p, Some(m)),
+                // test labeled_block
+                // fn f() { 'label: {}; }
+                T!['{'] => {
+                    stmt_list(p);
+                    m.complete(p, BLOCK_EXPR)
+                }
+                _ => {
+                    // test_err misplaced_label_err
+                    // fn main() {
+                    //     'loop: impl
+                    // }
+                    p.error("expected a loop or block");
+                    m.complete(p, ERROR);
+                    return None;
+                }
+            }
+        }
+        // test effect_blocks
+        // fn f() { unsafe { } }
+        // fn f() { const { } }
+        // fn f() { async { } }
+        // fn f() { async move { } }
+        T![const] | T![unsafe] | T![async] | T![gen] if la == T!['{'] => {
+            let m = p.start();
+            p.bump_any();
+            stmt_list(p);
+            m.complete(p, BLOCK_EXPR)
+        }
+        // test gen_blocks 2024
+        // pub fn main() {
+        //     gen { yield ""; };
+        //     async gen { yield ""; };
+        //     gen move { yield ""; };
+        //     async gen move { yield ""; };
+        // }
+        T![async] if la == T![gen] && p.nth(2) == T!['{'] => {
+            let m = p.start();
+            p.bump(T![async]);
+            p.eat(T![gen]);
+            stmt_list(p);
+            m.complete(p, BLOCK_EXPR)
+        }
+        T![async] | T![gen] if la == T![move] && p.nth(2) == T!['{'] => {
+            let m = p.start();
+            p.bump_any();
+            p.bump(T![move]);
+            stmt_list(p);
+            m.complete(p, BLOCK_EXPR)
+        }
+        T![async] if la == T![gen] && p.nth(2) == T![move] && p.nth(3) == T!['{'] => {
+            let m = p.start();
+            p.bump(T![async]);
+            p.bump(T![gen]);
+            p.bump(T![move]);
+            stmt_list(p);
+            m.complete(p, BLOCK_EXPR)
+        }
+        T!['{'] => {
+            // test for_range_from
+            // fn foo() {
+            //    for x in 0 .. {
+            //        break;
+            //    }
+            // }
+            let m = p.start();
+            stmt_list(p);
+            m.complete(p, BLOCK_EXPR)
+        }
+
+        T![const] | T![static] | T![async] | T![move] | T![|] => closure_expr(p),
+        T![for] if la == T![<] => closure_expr(p),
+        T![for] => for_expr(p, None),
+
+        _ => {
+            p.err_and_bump("expected expression");
+            return None;
+        }
+    };
+    let blocklike =
+        if BlockLike::is_blocklike(done.kind()) { BlockLike::Block } else { BlockLike::NotBlock };
+    Some((done, blocklike))
+}
+
+// test tuple_expr
+// fn foo() {
+//     ();
+//     (1);
+//     (1,);
+// }
+fn tuple_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T!['(']));
+    let m = p.start();
+    p.expect(T!['(']);
+
+    let mut saw_comma = false;
+    let mut saw_expr = false;
+
+    // test_err tuple_expr_leading_comma
+    // fn foo() {
+    //     (,);
+    // }
+    if p.eat(T![,]) {
+        p.error("expected expression");
+        saw_comma = true;
+    }
+
+    while !p.at(EOF) && !p.at(T![')']) {
+        saw_expr = true;
+
+        // test tuple_attrs
+        // const A: (i64, i64) = (1, #[cfg(test)] 2);
+        if expr(p).is_none() {
+            break;
+        }
+
+        if !p.at(T![')']) {
+            saw_comma = true;
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T![')']);
+    m.complete(p, if saw_expr && !saw_comma { PAREN_EXPR } else { TUPLE_EXPR })
+}
+
+// test builtin_expr
+// fn foo() {
+//     builtin#asm("");
+//     builtin#format_args("", 0, 1, a = 2 + 3, a + b);
+//     builtin#offset_of(Foo, bar.baz.0);
+// }
+fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
+    let m = p.start();
+    p.bump_remap(T![builtin]);
+    p.bump(T![#]);
+    if p.eat_contextual_kw(T![offset_of]) {
+        p.expect(T!['(']);
+        type_(p);
+        p.expect(T![,]);
+        // Due to our incomplete handling of macro groups, especially
+        // those with empty delimiters, we wrap `expr` fragments in
+        // parentheses sometimes. Since `offset_of` is a macro, and takes
+        // `expr`, the field names could be wrapped in parentheses.
+        let wrapped_in_parens = p.eat(T!['(']);
+        // test offset_of_parens
+        // fn foo() {
+        //     builtin#offset_of(Foo, (bar.baz.0));
+        // }
+        while !p.at(EOF) && !p.at(T![')']) {
+            name_ref_mod_path_or_index(p);
+            if !p.at(T![')']) {
+                p.expect(T![.]);
+            }
+        }
+        p.expect(T![')']);
+        if wrapped_in_parens {
+            p.expect(T![')']);
+        }
+        Some(m.complete(p, OFFSET_OF_EXPR))
+    } else if p.eat_contextual_kw(T![format_args]) {
+        p.expect(T!['(']);
+        expr(p);
+        if p.eat(T![,]) {
+            while !p.at(EOF) && !p.at(T![')']) {
+                let m = p.start();
+                if p.at(IDENT) && p.nth_at(1, T![=]) {
+                    name(p);
+                    p.bump(T![=]);
+                }
+                if expr(p).is_none() {
+                    m.abandon(p);
+                    break;
+                }
+                m.complete(p, FORMAT_ARGS_ARG);
+
+                if !p.at(T![')']) {
+                    p.expect(T![,]);
+                }
+            }
+        }
+        p.expect(T![')']);
+        Some(m.complete(p, FORMAT_ARGS_EXPR))
+    } else if p.eat_contextual_kw(T![asm])
+        || p.eat_contextual_kw(T![global_asm])
+        || p.eat_contextual_kw(T![naked_asm])
+    {
+        // test asm_kinds
+        // fn foo() {
+        //     builtin#asm("");
+        //     builtin#global_asm("");
+        //     builtin#naked_asm("");
+        // }
+        parse_asm_expr(p, m)
+    } else {
+        m.abandon(p);
+        None
+    }
+}
+
+// test asm_expr
+// fn foo() {
+//     builtin#asm(
+//         "mov {tmp}, {x}",
+//         "shl {tmp}, 1",
+//         "shl {x}, 2",
+//         "add {x}, {tmp}",
+//         x = inout(reg) x,
+//         tmp = out(reg) _,
+//     );
+// }
+pub(crate) fn parse_asm_expr(p: &mut Parser<'_>, m: Marker) -> Option<CompletedMarker> {
+    p.expect(T!['(']);
+    if expr(p).is_none() {
+        p.err_and_bump("expected asm template");
+    }
+    let mut allow_templates = true;
+    while !p.at(EOF) && !p.at(T![')']) {
+        p.expect(T![,]);
+        // accept trailing commas
+        if p.at(T![')']) {
+            break;
+        }
+
+        let op_n = p.start();
+        // Parse clobber_abi
+        if p.eat_contextual_kw(T![clobber_abi]) {
+            parse_clobber_abi(p);
+            op_n.complete(p, ASM_CLOBBER_ABI);
+            allow_templates = false;
+            continue;
+        }
+
+        // Parse options
+        if p.eat_contextual_kw(T![options]) {
+            parse_options(p);
+            op_n.complete(p, ASM_OPTIONS);
+            allow_templates = false;
+            continue;
+        }
+
+        // Parse operand names
+        if p.at(T![ident]) && p.nth_at(1, T![=]) {
+            name(p);
+            p.bump(T![=]);
+            allow_templates = false;
+        }
+
+        let op = p.start();
+        let dir_spec = p.start();
+        if p.eat(T![in]) || p.eat_contextual_kw(T![out]) || p.eat_contextual_kw(T![lateout]) {
+            dir_spec.complete(p, ASM_DIR_SPEC);
+            parse_reg(p);
+            let op_expr = p.start();
+            expr(p);
+            op_expr.complete(p, ASM_OPERAND_EXPR);
+            op.complete(p, ASM_REG_OPERAND);
+            op_n.complete(p, ASM_OPERAND_NAMED);
+        } else if p.eat_contextual_kw(T![inout]) || p.eat_contextual_kw(T![inlateout]) {
+            dir_spec.complete(p, ASM_DIR_SPEC);
+            parse_reg(p);
+            let op_expr = p.start();
+            expr(p);
+            if p.eat(T![=>]) {
+                expr(p);
+            }
+            op_expr.complete(p, ASM_OPERAND_EXPR);
+            op.complete(p, ASM_REG_OPERAND);
+            op_n.complete(p, ASM_OPERAND_NAMED);
+        } else if p.eat_contextual_kw(T![label]) {
+            // test asm_label
+            // fn foo() {
+            //     builtin#asm("", label {});
+            // }
+            dir_spec.abandon(p);
+            block_expr(p);
+            op.complete(p, ASM_LABEL);
+            op_n.complete(p, ASM_OPERAND_NAMED);
+        } else if p.eat(T![const]) {
+            dir_spec.abandon(p);
+            expr(p);
+            op.complete(p, ASM_CONST);
+            op_n.complete(p, ASM_OPERAND_NAMED);
+        } else if p.eat_contextual_kw(T![sym]) {
+            dir_spec.abandon(p);
+            paths::type_path(p);
+            op.complete(p, ASM_SYM);
+            op_n.complete(p, ASM_OPERAND_NAMED);
+        } else if allow_templates {
+            dir_spec.abandon(p);
+            op.abandon(p);
+            op_n.abandon(p);
+            if expr(p).is_none() {
+                p.err_and_bump("expected asm template");
+            }
+            continue;
+        } else {
+            dir_spec.abandon(p);
+            op.abandon(p);
+            op_n.abandon(p);
+
+            // improves error recovery
+            if p.at(T!['{']) {
+                p.error("expected asm operand");
+                // test_err bad_asm_expr
+                // fn foo() {
+                //     builtin#asm(
+                //         label crashy = { return; }
+                //     );
+                // }
+                expr(p);
+            } else {
+                p.err_and_bump("expected asm operand");
+            }
+
+            if p.at(T!['}']) {
+                break;
+            }
+            continue;
+        };
+        allow_templates = false;
+    }
+    p.expect(T![')']);
+    Some(m.complete(p, ASM_EXPR))
+}
+
+fn parse_options(p: &mut Parser<'_>) {
+    p.expect(T!['(']);
+
+    while !p.eat(T![')']) && !p.at(EOF) {
+        const OPTIONS: &[SyntaxKind] = &[
+            T![pure],
+            T![nomem],
+            T![readonly],
+            T![preserves_flags],
+            T![noreturn],
+            T![nostack],
+            T![may_unwind],
+            T![att_syntax],
+            T![raw],
+        ];
+        let m = p.start();
+        if !OPTIONS.iter().any(|&syntax| p.eat_contextual_kw(syntax)) {
+            p.err_and_bump("expected asm option");
+            m.abandon(p);
+            continue;
+        }
+        m.complete(p, ASM_OPTION);
+
+        // Allow trailing commas
+        if p.eat(T![')']) {
+            break;
+        }
+        p.expect(T![,]);
+    }
+}
+
+fn parse_clobber_abi(p: &mut Parser<'_>) {
+    p.expect(T!['(']);
+
+    while !p.eat(T![')']) && !p.at(EOF) {
+        if !p.expect(T![string]) {
+            break;
+        }
+
+        // Allow trailing commas
+        if p.eat(T![')']) {
+            break;
+        }
+        p.expect(T![,]);
+    }
+}
+
+fn parse_reg(p: &mut Parser<'_>) {
+    p.expect(T!['(']);
+    if p.at_ts(PATH_NAME_REF_KINDS) {
+        let m = p.start();
+        name_ref_mod_path(p);
+        m.complete(p, ASM_REG_SPEC);
+    } else if p.at(T![string]) {
+        let m = p.start();
+        p.bump_any();
+        m.complete(p, ASM_REG_SPEC);
+    } else {
+        p.err_and_bump("expected register name");
+    }
+    p.expect(T![')']);
+}
+
+// test array_expr
+// fn foo() {
+//     [];
+//     [1];
+//     [1, 2,];
+//     [1; 2];
+// }
+fn array_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T!['[']));
+    let m = p.start();
+
+    let mut n_exprs = 0u32;
+    let mut has_semi = false;
+
+    p.bump(T!['[']);
+    while !p.at(EOF) && !p.at(T![']']) {
+        n_exprs += 1;
+
+        // test array_attrs
+        // const A: &[i64] = &[1, #[cfg(test)] 2];
+        if expr(p).is_none() {
+            break;
+        }
+
+        if n_exprs == 1 && p.eat(T![;]) {
+            has_semi = true;
+            continue;
+        }
+
+        if has_semi || !p.at(T![']']) && !p.expect(T![,]) {
+            break;
+        }
+    }
+    p.expect(T![']']);
+
+    m.complete(p, ARRAY_EXPR)
+}
+
+// test lambda_expr
+// fn foo() {
+//     || ();
+//     || -> i32 { 92 };
+//     |x| x;
+//     move |x: i32,| x;
+//     async || {};
+//     move || {};
+//     async move || {};
+//     static || {};
+//     static move || {};
+//     static async || {};
+//     static async move || {};
+//     for<'a> || {};
+//     for<'a> move || {};
+// }
+fn closure_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(match p.current() {
+        T![const] | T![static] | T![async] | T![move] | T![|] => true,
+        T![for] => p.nth(1) == T![<],
+        _ => false,
+    });
+
+    let m = p.start();
+
+    // test closure_binder
+    // fn main() { for<'a> || (); }
+    if p.at(T![for]) {
+        types::for_binder(p);
+    }
+    // test const_closure
+    // fn main() { let cl = const || _ = 0; }
+    p.eat(T![const]);
+    p.eat(T![static]);
+    p.eat(T![async]);
+    p.eat(T![gen]);
+    p.eat(T![move]);
+
+    if !p.at(T![|]) {
+        p.error("expected `|`");
+        return m.complete(p, CLOSURE_EXPR);
+    }
+    params::param_list_closure(p);
+    if opt_ret_type(p) {
+        // test_err closure_ret_recovery
+        // fn foo() { || -> A> { let x = 1; } }
+        while p.at(T![>]) {
+            // recover from unbalanced return type brackets
+            p.err_and_bump("expected a curly brace");
+        }
+        // test lambda_ret_block
+        // fn main() { || -> i32 { 92 }(); }
+        block_expr(p);
+    } else if p.at_ts(EXPR_FIRST) {
+        // test closure_body_underscore_assignment
+        // fn main() { || _ = 0; }
+        expr(p);
+    } else {
+        p.error("expected expression");
+    }
+    m.complete(p, CLOSURE_EXPR)
+}
+
+// test if_expr
+// fn foo() {
+//     if true {};
+//     if true {} else {};
+//     if true {} else if false {} else {};
+//     if S {};
+//     if { true } { } else { };
+// }
+fn if_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![if]));
+    let m = p.start();
+    p.bump(T![if]);
+    expr_no_struct(p);
+    block_expr(p);
+    if p.eat(T![else]) {
+        if p.at(T![if]) {
+            if_expr(p);
+        } else {
+            block_expr(p);
+        }
+    }
+    m.complete(p, IF_EXPR)
+}
+
+// test label
+// fn foo() {
+//     'a: loop {}
+//     'b: while true {}
+//     'c: for x in () {}
+// }
+fn label(p: &mut Parser<'_>) {
+    assert!(p.at(LIFETIME_IDENT) && p.nth(1) == T![:]);
+    let m = p.start();
+    lifetime(p);
+    p.bump_any();
+    m.complete(p, LABEL);
+}
+
+// test loop_expr
+// fn foo() {
+//     loop {};
+// }
+fn loop_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
+    assert!(p.at(T![loop]));
+    let m = m.unwrap_or_else(|| p.start());
+    p.bump(T![loop]);
+    block_expr(p);
+    m.complete(p, LOOP_EXPR)
+}
+
+// test while_expr
+// fn foo() {
+//     while true {};
+//     while let Some(x) = it.next() {};
+//     while { true } {};
+// }
+fn while_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
+    assert!(p.at(T![while]));
+    let m = m.unwrap_or_else(|| p.start());
+    p.bump(T![while]);
+    expr_no_struct(p);
+    block_expr(p);
+    m.complete(p, WHILE_EXPR)
+}
+
+// test for_expr
+// fn foo() {
+//     for x in [] {};
+// }
+fn for_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
+    assert!(p.at(T![for]));
+    let m = m.unwrap_or_else(|| p.start());
+    p.bump(T![for]);
+    patterns::pattern(p);
+    p.expect(T![in]);
+    expr_no_struct(p);
+    block_expr(p);
+    m.complete(p, FOR_EXPR)
+}
+
+// test let_expr
+// fn foo() {
+//     if let Some(_) = None && true {}
+//     while 1 == 5 && (let None = None) {}
+// }
+fn let_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    let m = p.start();
+    p.bump(T![let]);
+    patterns::pattern(p);
+    p.expect(T![=]);
+    expr_let(p);
+    m.complete(p, LET_EXPR)
+}
+
+// test match_expr
+// fn foo() {
+//     match () { };
+//     match S {};
+//     match { } { _ => () };
+//     match { S {} } {};
+// }
+fn match_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![match]));
+    let m = p.start();
+    p.bump(T![match]);
+    expr_no_struct(p);
+    if p.at(T!['{']) {
+        match_arm_list(p);
+    } else {
+        p.error("expected `{`");
+    }
+    m.complete(p, MATCH_EXPR)
+}
+
+// test_err match_arms_recovery
+// fn foo() {
+//     match () {
+//         _ => (),,
+//         _ => ,
+//         _ => (),
+//          => (),
+//         if true => (),
+//         _ => (),
+//         () if => (),
+//     }
+// }
+pub(crate) fn match_arm_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.eat(T!['{']);
+
+    // test match_arms_inner_attribute
+    // fn foo() {
+    //     match () {
+    //         #![doc("Inner attribute")]
+    //         #![doc("Can be")]
+    //         #![doc("Stacked")]
+    //         _ => (),
+    //     }
+    // }
+    attributes::inner_attrs(p);
+
+    while !p.at(EOF) && !p.at(T!['}']) {
+        if p.at(T!['{']) {
+            error_block(p, "expected match arm");
+            continue;
+        }
+        if p.at(T![,]) {
+            p.err_and_bump("expected pattern");
+            continue;
+        }
+        match_arm(p);
+    }
+    p.expect(T!['}']);
+    m.complete(p, MATCH_ARM_LIST);
+}
+
+// test match_arm
+// fn foo() {
+//     match () {
+//         _ => (),
+//         _ if Test > Test{field: 0} => (),
+//         X | Y if Z => (),
+//         | X | Y if Z => (),
+//         | X => (),
+//     };
+// }
+fn match_arm(p: &mut Parser<'_>) {
+    let m = p.start();
+    // test match_arms_outer_attributes
+    // fn foo() {
+    //     match () {
+    //         #[cfg(feature = "some")]
+    //         _ => (),
+    //         #[cfg(feature = "other")]
+    //         _ => (),
+    //         #[cfg(feature = "many")]
+    //         #[cfg(feature = "attributes")]
+    //         #[cfg(feature = "before")]
+    //         _ => (),
+    //     }
+    // }
+    attributes::outer_attrs(p);
+
+    patterns::pattern_top_r(p, TokenSet::new(&[T![=], T![if]]));
+    if p.at(T![if]) {
+        match_guard(p);
+    }
+    p.expect(T![=>]);
+    if p.eat(T![,]) {
+        p.error("expected expression");
+    } else {
+        let blocklike = match expr_stmt(p, None) {
+            Some((_, blocklike)) => blocklike,
+            None => BlockLike::NotBlock,
+        };
+
+        // test match_arms_commas
+        // fn foo() {
+        //     match () {
+        //         _ => (),
+        //         _ => {}
+        //         _ => ()
+        //     }
+        // }
+        if !p.eat(T![,]) && !blocklike.is_block() && !p.at(T!['}']) {
+            p.error("expected `,`");
+        }
+    }
+    m.complete(p, MATCH_ARM);
+}
+
+// test match_guard
+// fn foo() {
+//     match () {
+//         _ if foo => (),
+//         _ if let foo = bar => (),
+//     }
+// }
+fn match_guard(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![if]));
+    let m = p.start();
+    p.bump(T![if]);
+    if p.at(T![=]) {
+        p.error("expected expression");
+    } else {
+        expr(p);
+    }
+    m.complete(p, MATCH_GUARD)
+}
+
+// test block
+// fn a() {}
+// fn b() { let _ = 1; }
+// fn c() { 1; 2; }
+// fn d() { 1; 2 }
+pub(crate) fn block_expr(p: &mut Parser<'_>) {
+    if !p.at(T!['{']) {
+        p.error("expected a block");
+        return;
+    }
+    let m = p.start();
+    stmt_list(p);
+    m.complete(p, BLOCK_EXPR);
+}
+
+fn stmt_list(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    expr_block_contents(p);
+    p.expect(T!['}']);
+    m.complete(p, STMT_LIST)
+}
+
+// test return_expr
+// fn foo() {
+//     return;
+//     return 92;
+// }
+fn return_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![return]));
+    let m = p.start();
+    p.bump(T![return]);
+    if p.at_ts(EXPR_FIRST) {
+        expr(p);
+    }
+    m.complete(p, RETURN_EXPR)
+}
+
+// test become_expr
+// fn foo() {
+//     become foo();
+// }
+fn become_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![become]));
+    let m = p.start();
+    p.bump(T![become]);
+    expr(p);
+    m.complete(p, BECOME_EXPR)
+}
+
+// test yield_expr
+// fn foo() {
+//     yield;
+//     yield 1;
+// }
+fn yield_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![yield]));
+    let m = p.start();
+    p.bump(T![yield]);
+    if p.at_ts(EXPR_FIRST) {
+        expr(p);
+    }
+    m.complete(p, YIELD_EXPR)
+}
+
+// test yeet_expr
+// fn foo() {
+//     do yeet;
+//     do yeet 1
+// }
+fn yeet_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![do]));
+    assert!(p.nth_at_contextual_kw(1, T![yeet]));
+    let m = p.start();
+    p.bump(T![do]);
+    p.bump_remap(T![yeet]);
+    if p.at_ts(EXPR_FIRST) {
+        expr(p);
+    }
+    m.complete(p, YEET_EXPR)
+}
+
+// test continue_expr
+// fn foo() {
+//     loop {
+//         continue;
+//         continue 'l;
+//     }
+// }
+fn continue_expr(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![continue]));
+    let m = p.start();
+    p.bump(T![continue]);
+    if p.at(LIFETIME_IDENT) {
+        lifetime(p);
+    }
+    m.complete(p, CONTINUE_EXPR)
+}
+
+// test break_expr
+// fn foo() {
+//     loop {
+//         break;
+//         break 'l;
+//         break 92;
+//         break 'l 92;
+//     }
+// }
+fn break_expr(p: &mut Parser<'_>, r: Restrictions) -> CompletedMarker {
+    assert!(p.at(T![break]));
+    let m = p.start();
+    p.bump(T![break]);
+    if p.at(LIFETIME_IDENT) {
+        lifetime(p);
+    }
+    // test break_ambiguity
+    // fn foo(){
+    //     if break {}
+    //     while break {}
+    //     for i in break {}
+    //     match break {}
+    // }
+    if p.at_ts(EXPR_FIRST) && !(r.forbid_structs && p.at(T!['{'])) {
+        expr(p);
+    }
+    m.complete(p, BREAK_EXPR)
+}
+
+// test try_block_expr
+// fn foo() {
+//     let _ = try {};
+// }
+fn try_block_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
+    assert!(p.at(T![try]));
+    let m = m.unwrap_or_else(|| p.start());
+    p.bump(T![try]);
+    if p.at(T!['{']) {
+        stmt_list(p);
+    } else {
+        p.error("expected a block");
+    }
+    m.complete(p, BLOCK_EXPR)
+}
+
+use crate::grammar::attributes::ATTRIBUTE_FIRST;
+
+use super::*;
+
+// test param_list
+// fn a() {}
+// fn b(x: i32) {}
+// fn c(x: i32, ) {}
+// fn d(x: i32, y: ()) {}
+
+// test_err empty_param_slot
+// fn f(y: i32, ,t: i32) {}
+pub(super) fn param_list_fn_def(p: &mut Parser<'_>) {
+    list_(p, Flavor::FnDef);
+}
+
+pub(super) fn param_list_fn_ptr(p: &mut Parser<'_>) {
+    list_(p, Flavor::FnPointer);
+}
+
+pub(super) fn param_list_closure(p: &mut Parser<'_>) {
+    list_(p, Flavor::Closure);
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Flavor {
+    FnDef, // Includes trait fn params; omitted param idents are not supported
+    FnPointer,
+    Closure,
+}
+
+fn list_(p: &mut Parser<'_>, flavor: Flavor) {
+    use Flavor::*;
+
+    let (bra, ket) = match flavor {
+        Closure => (T![|], T![|]),
+        FnDef | FnPointer => (T!['('], T![')']),
+    };
+
+    let list_marker = p.start();
+    p.bump(bra);
+
+    let mut param_marker = None;
+    if let FnDef = flavor {
+        // test self_param_outer_attr
+        // fn f(#[must_use] self) {}
+        let m = p.start();
+        attributes::outer_attrs(p);
+        match opt_self_param(p, m) {
+            Ok(()) => {}
+            Err(m) => param_marker = Some(m),
+        }
+    }
+
+    while !p.at(EOF) && !p.at(ket) {
+        // test param_outer_arg
+        // fn f(#[attr1] pat: Type) {}
+        let m = match param_marker.take() {
+            Some(m) => m,
+            None => {
+                let m = p.start();
+                attributes::outer_attrs(p);
+                m
+            }
+        };
+
+        if !p.at_ts(PARAM_FIRST.union(ATTRIBUTE_FIRST)) {
+            p.error("expected value parameter");
+            m.abandon(p);
+            if p.eat(T![,]) {
+                continue;
+            }
+            break;
+        }
+        param(p, m, flavor);
+        if !p.eat(T![,]) {
+            if p.at_ts(PARAM_FIRST.union(ATTRIBUTE_FIRST)) {
+                p.error("expected `,`");
+            } else {
+                break;
+            }
+        }
+    }
+
+    if let Some(m) = param_marker {
+        m.abandon(p);
+    }
+
+    p.expect(ket);
+    list_marker.complete(p, PARAM_LIST);
+}
+
+const PARAM_FIRST: TokenSet = patterns::PATTERN_FIRST.union(types::TYPE_FIRST);
+
+fn param(p: &mut Parser<'_>, m: Marker, flavor: Flavor) {
+    match flavor {
+        // test param_list_vararg
+        // extern "C" { fn printf(format: *const i8, ..., _: u8) -> i32; }
+        Flavor::FnDef | Flavor::FnPointer if p.eat(T![...]) => {}
+
+        // test fn_def_param
+        // fn foo(..., (x, y): (i32, i32)) {}
+        Flavor::FnDef => {
+            patterns::pattern(p);
+            if !variadic_param(p) {
+                if p.at(T![:]) {
+                    types::ascription(p);
+                } else {
+                    // test_err missing_fn_param_type
+                    // fn f(x y: i32, z, t: i32) {}
+                    p.error("missing type for function parameter");
+                }
+            }
+        }
+        // test fn_pointer_param_ident_path
+        // type Foo = fn(Bar::Baz);
+        // type Qux = fn(baz: Bar::Baz);
+
+        // test fn_pointer_unnamed_arg
+        // type Foo = fn(_: bar);
+        Flavor::FnPointer => {
+            if (p.at(IDENT) || p.at(UNDERSCORE)) && p.nth(1) == T![:] && !p.nth_at(1, T![::]) {
+                patterns::pattern_single(p);
+                if !variadic_param(p) {
+                    if p.at(T![:]) {
+                        types::ascription(p);
+                    } else {
+                        p.error("missing type for function parameter");
+                    }
+                }
+            } else {
+                types::type_(p);
+            }
+        }
+        // test closure_params
+        // fn main() {
+        //    let foo = |bar, baz: Baz, qux: Qux::Quux| ();
+        // }
+        Flavor::Closure => {
+            patterns::pattern_single(p);
+            if p.at(T![:]) && !p.at(T![::]) {
+                types::ascription(p);
+            }
+        }
+    }
+    m.complete(p, PARAM);
+}
+
+fn variadic_param(p: &mut Parser<'_>) -> bool {
+    if p.at(T![:]) && p.nth_at(1, T![...]) {
+        p.bump(T![:]);
+        p.bump(T![...]);
+        true
+    } else {
+        false
+    }
+}
+
+// test self_param
+// impl S {
+//     fn a(self) {}
+//     fn b(&self,) {}
+//     fn c(&'a self,) {}
+//     fn d(&'a mut self, x: i32) {}
+//     fn e(mut self) {}
+// }
+fn opt_self_param(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
+    if p.at(T![self]) || p.at(T![mut]) && p.nth(1) == T![self] {
+        p.eat(T![mut]);
+        self_as_name(p);
+        // test arb_self_types
+        // impl S {
+        //     fn a(self: &Self) {}
+        //     fn b(mut self: Box<Self>) {}
+        // }
+        if p.at(T![:]) {
+            types::ascription(p);
+        }
+    } else {
+        let la1 = p.nth(1);
+        let la2 = p.nth(2);
+        let la3 = p.nth(3);
+        if !matches!(
+            (p.current(), la1, la2, la3),
+            (T![&], T![self], _, _)
+                | (T![&], T![mut] | LIFETIME_IDENT, T![self], _)
+                | (T![&], LIFETIME_IDENT, T![mut], T![self])
+        ) {
+            return Err(m);
+        }
+        p.bump(T![&]);
+        if p.at(LIFETIME_IDENT) {
+            lifetime(p);
+        }
+        p.eat(T![mut]);
+        self_as_name(p);
+    }
+    m.complete(p, SELF_PARAM);
+    if !p.at(T![')']) {
+        p.expect(T![,]);
+    }
+    Ok(())
+}
+
+fn self_as_name(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T![self]);
+    m.complete(p, NAME);
+}
+
+use super::*;
+
+pub(super) const ATTRIBUTE_FIRST: TokenSet = TokenSet::new(&[T![#]]);
+
+pub(super) fn inner_attrs(p: &mut Parser<'_>) {
+    while p.at(T![#]) && p.nth(1) == T![!] {
+        attr(p, true);
+    }
+}
+
+pub(super) fn outer_attrs(p: &mut Parser<'_>) {
+    while p.at(T![#]) {
+        attr(p, false);
+    }
+}
+
+fn attr(p: &mut Parser<'_>, inner: bool) {
+    assert!(p.at(T![#]));
+
+    let attr = p.start();
+    p.bump(T![#]);
+
+    if inner {
+        p.bump(T![!]);
+    }
+
+    if p.eat(T!['[']) {
+        meta(p);
+
+        if !p.eat(T![']']) {
+            p.error("expected `]`");
+        }
+    } else {
+        p.error("expected `[`");
+    }
+    attr.complete(p, ATTR);
+}
+
+// test_err meta_recovery
+// #![]
+// #![p = ]
+// #![p::]
+// #![p:: =]
+// #![unsafe]
+// #![unsafe =]
+
+// test metas
+// #![simple_ident]
+// #![simple::path]
+// #![simple_ident_expr = ""]
+// #![simple::path::Expr = ""]
+// #![simple_ident_tt(a b c)]
+// #![simple_ident_tt[a b c]]
+// #![simple_ident_tt{a b c}]
+// #![simple::path::tt(a b c)]
+// #![simple::path::tt[a b c]]
+// #![simple::path::tt{a b c}]
+// #![unsafe(simple_ident)]
+// #![unsafe(simple::path)]
+// #![unsafe(simple_ident_expr = "")]
+// #![unsafe(simple::path::Expr = "")]
+// #![unsafe(simple_ident_tt(a b c))]
+// #![unsafe(simple_ident_tt[a b c])]
+// #![unsafe(simple_ident_tt{a b c})]
+// #![unsafe(simple::path::tt(a b c))]
+// #![unsafe(simple::path::tt[a b c])]
+// #![unsafe(simple::path::tt{a b c})]
+pub(super) fn meta(p: &mut Parser<'_>) {
+    let meta = p.start();
+    let is_unsafe = p.eat(T![unsafe]);
+    if is_unsafe {
+        p.expect(T!['(']);
+    }
+    paths::attr_path(p);
+
+    match p.current() {
+        T![=] => {
+            p.bump(T![=]);
+            if expressions::expr(p).is_none() {
+                p.error("expected expression");
+            }
+        }
+        T!['('] | T!['['] | T!['{'] => items::token_tree(p),
+        _ => {}
+    }
+    if is_unsafe {
+        p.expect(T![')']);
+    }
+
+    meta.complete(p, META);
+}
+
+mod atom;
+
+use crate::grammar::attributes::ATTRIBUTE_FIRST;
+
+use super::*;
+
+pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
+pub(crate) use atom::{block_expr, match_arm_list};
+
+#[derive(PartialEq, Eq)]
+pub(super) enum Semicolon {
+    Required,
+    Optional,
+    Forbidden,
+}
+
+const EXPR_FIRST: TokenSet = LHS_FIRST;
+
+pub(super) fn expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
+    let r = Restrictions { forbid_structs: false, prefer_stmt: false };
+    expr_bp(p, None, r, 1).map(|(m, _)| m)
+}
+
+pub(super) fn expr_stmt(
+    p: &mut Parser<'_>,
+    m: Option<Marker>,
+) -> Option<(CompletedMarker, BlockLike)> {
+    let r = Restrictions { forbid_structs: false, prefer_stmt: true };
+    expr_bp(p, m, r, 1)
+}
+
+fn expr_no_struct(p: &mut Parser<'_>) {
+    let r = Restrictions { forbid_structs: true, prefer_stmt: false };
+    expr_bp(p, None, r, 1);
+}
+
+/// Parses the expression in `let pattern = expression`.
+/// It needs to be parsed with lower precedence than `&&`, so that
+/// `if let true = true && false` is parsed as `if (let true = true) && (true)`
+/// and not `if let true = (true && true)`.
+fn expr_let(p: &mut Parser<'_>) {
+    let r = Restrictions { forbid_structs: true, prefer_stmt: false };
+    expr_bp(p, None, r, 5);
+}
+
+pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
+    if p.eat(T![;]) {
+        return;
+    }
+
+    let m = p.start();
+    // test attr_on_expr_stmt
+    // fn foo() {
+    //     #[A] foo();
+    //     #[B] bar!{}
+    //     #[C] #[D] {}
+    //     #[D] return ();
+    // }
+    attributes::outer_attrs(p);
+
+    if p.at(T![let]) || (p.at(T![super]) && p.nth_at(1, T![let])) {
+        let_stmt(p, semicolon);
+        m.complete(p, LET_STMT);
+        return;
+    }
+
+    // test block_items
+    // fn a() { fn b() {} }
+    let m = match items::opt_item(p, m, false) {
+        Ok(()) => return,
+        Err(m) => m,
+    };
+
+    if !p.at_ts(EXPR_FIRST) {
+        p.err_and_bump("expected expression, item or let statement");
+        m.abandon(p);
+        return;
+    }
+
+    if let Some((cm, blocklike)) = expr_stmt(p, Some(m))
+        && !(p.at(T!['}']) || (semicolon != Semicolon::Required && p.at(EOF)))
+    {
+        // test no_semi_after_block
+        // fn foo() {
+        //     if true {}
+        //     loop {}
+        //     match () {}
+        //     while true {}
+        //     for _ in () {}
+        //     {}
+        //     {}
+        //     macro_rules! test {
+        //          () => {}
+        //     }
+        //     test!{}
+        // }
+        let m = cm.precede(p);
+        match semicolon {
+            Semicolon::Required => {
+                if blocklike.is_block() {
+                    p.eat(T![;]);
+                } else {
+                    p.expect(T![;]);
+                }
+            }
+            Semicolon::Optional => {
+                p.eat(T![;]);
+            }
+            Semicolon::Forbidden => (),
+        }
+        m.complete(p, EXPR_STMT);
+    }
+}
+
+// test let_stmt
+// fn f() { let x: i32 = 92; super let y; super::foo; }
+pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
+    p.eat(T![super]);
+    p.bump(T![let]);
+    patterns::pattern(p);
+    if p.at(T![:]) {
+        // test let_stmt_ascription
+        // fn f() { let x: i32; }
+        types::ascription(p);
+    }
+
+    let mut expr_after_eq: Option<CompletedMarker> = None;
+    if p.eat(T![=]) {
+        // test let_stmt_init
+        // fn f() { let x = 92; }
+        expr_after_eq = expressions::expr(p);
+    }
+
+    if p.at(T![else]) {
+        // test_err let_else_right_curly_brace
+        // fn func() { let Some(_) = {Some(1)} else { panic!("h") };}
+        if let Some(expr) = expr_after_eq
+            && let Some(token) = expr.last_token(p)
+            && token == T!['}']
+        {
+            p.error("right curly brace `}` before `else` in a `let...else` statement not allowed")
+        }
+
+        // test let_else
+        // fn f() { let Some(x) = opt else { return }; }
+        let m = p.start();
+        p.bump(T![else]);
+        block_expr(p);
+        m.complete(p, LET_ELSE);
+    }
+
+    match with_semi {
+        Semicolon::Forbidden => (),
+        Semicolon::Optional => {
+            p.eat(T![;]);
+        }
+        Semicolon::Required => {
+            p.expect(T![;]);
+        }
+    }
+}
+
+pub(super) fn expr_block_contents(p: &mut Parser<'_>) {
+    attributes::inner_attrs(p);
+
+    while !p.at(EOF) && !p.at(T!['}']) {
+        // test nocontentexpr
+        // fn foo(){
+        //     ;;;some_expr();;;;{;;;};;;;Ok(())
+        // }
+
+        // test nocontentexpr_after_item
+        // fn simple_function() {
+        //     enum LocalEnum {
+        //         One,
+        //         Two,
+        //     };
+        //     fn f() {};
+        //     struct S {};
+        // }
+        stmt(p, Semicolon::Required);
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Restrictions {
+    forbid_structs: bool,
+    prefer_stmt: bool,
+}
+
+enum Associativity {
+    Left,
+    Right,
+}
+
+/// Binding powers of operators for a Pratt parser.
+///
+/// See <https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html>
+///
+/// Note that Rust doesn't define associativity for some infix operators (e.g. `==` and `..`) and
+/// requires parentheses to disambiguate. We just treat them as left associative.
+#[rustfmt::skip]
+fn current_op(p: &Parser<'_>) -> (u8, SyntaxKind, Associativity) {
+    use Associativity::*;
+    const NOT_AN_OP: (u8, SyntaxKind, Associativity) = (0, T![@], Left);
+    match p.current() {
+        T![|] if p.at(T![||])  => (3,  T![||],  Left),
+        T![|] if p.at(T![|=])  => (1,  T![|=],  Right),
+        T![|]                  => (6,  T![|],   Left),
+        T![>] if p.at(T![>>=]) => (1,  T![>>=], Right),
+        T![>] if p.at(T![>>])  => (9,  T![>>],  Left),
+        T![>] if p.at(T![>=])  => (5,  T![>=],  Left),
+        T![>]                  => (5,  T![>],   Left),
+        T![=] if p.at(T![==])  => (5,  T![==],  Left),
+        T![=] if !p.at(T![=>]) => (1,  T![=],   Right),
+        T![<] if p.at(T![<=])  => (5,  T![<=],  Left),
+        T![<] if p.at(T![<<=]) => (1,  T![<<=], Right),
+        T![<] if p.at(T![<<])  => (9,  T![<<],  Left),
+        T![<]                  => (5,  T![<],   Left),
+        T![+] if p.at(T![+=])  => (1,  T![+=],  Right),
+        T![+]                  => (10, T![+],   Left),
+        T![^] if p.at(T![^=])  => (1,  T![^=],  Right),
+        T![^]                  => (7,  T![^],   Left),
+        T![%] if p.at(T![%=])  => (1,  T![%=],  Right),
+        T![%]                  => (11, T![%],   Left),
+        T![&] if p.at(T![&=])  => (1,  T![&=],  Right),
+        // If you update this, remember to update `expr_let()` too.
+        T![&] if p.at(T![&&])  => (4,  T![&&],  Left),
+        T![&]                  => (8,  T![&],   Left),
+        T![/] if p.at(T![/=])  => (1,  T![/=],  Right),
+        T![/]                  => (11, T![/],   Left),
+        T![*] if p.at(T![*=])  => (1,  T![*=],  Right),
+        T![*]                  => (11, T![*],   Left),
+        T![.] if p.at(T![..=]) => (2,  T![..=], Left),
+        T![.] if p.at(T![..])  => (2,  T![..],  Left),
+        T![!] if p.at(T![!=])  => (5,  T![!=],  Left),
+        T![-] if p.at(T![-=])  => (1,  T![-=],  Right),
+        T![-]                  => (10, T![-],   Left),
+        T![as]                 => (12, T![as],  Left),
+
+        _                      => NOT_AN_OP
+    }
+}
+
+// Parses expression with binding power of at least bp.
+fn expr_bp(
+    p: &mut Parser<'_>,
+    m: Option<Marker>,
+    r: Restrictions,
+    bp: u8,
+) -> Option<(CompletedMarker, BlockLike)> {
+    let m = m.unwrap_or_else(|| {
+        let m = p.start();
+        attributes::outer_attrs(p);
+        m
+    });
+
+    if !p.at_ts(EXPR_FIRST) {
+        p.err_recover("expected expression", atom::EXPR_RECOVERY_SET);
+        m.abandon(p);
+        return None;
+    }
+    let mut lhs = match lhs(p, r) {
+        Some((lhs, blocklike)) => {
+            let lhs = lhs.extend_to(p, m);
+            if r.prefer_stmt && blocklike.is_block() {
+                // test stmt_bin_expr_ambiguity
+                // fn f() {
+                //     let _ = {1} & 2;
+                //     {1} &2;
+                // }
+                return Some((lhs, BlockLike::Block));
+            }
+            lhs
+        }
+        None => {
+            m.abandon(p);
+            return None;
+        }
+    };
+
+    loop {
+        let is_range = p.at(T![..]) || p.at(T![..=]);
+        let (op_bp, op, associativity) = current_op(p);
+        if op_bp < bp {
+            break;
+        }
+        // test as_precedence
+        // fn f() { let _ = &1 as *const i32; }
+        if p.at(T![as]) {
+            lhs = cast_expr(p, lhs);
+            continue;
+        }
+        let m = lhs.precede(p);
+        p.bump(op);
+
+        if is_range {
+            // test postfix_range
+            // fn foo() {
+            //     let x = 1..;
+            //     match 1.. { _ => () };
+            //     match a.b()..S { _ => () };
+            // }
+            let has_trailing_expression =
+                p.at_ts(EXPR_FIRST) && !(r.forbid_structs && p.at(T!['{']));
+            if !has_trailing_expression {
+                // no RHS
+                lhs = m.complete(p, RANGE_EXPR);
+                break;
+            }
+        }
+
+        let op_bp = match associativity {
+            Associativity::Left => op_bp + 1,
+            Associativity::Right => op_bp,
+        };
+
+        // test binop_resets_statementness
+        // fn f() { v = {1}&2; }
+        expr_bp(p, None, Restrictions { prefer_stmt: false, ..r }, op_bp);
+        lhs = m.complete(p, if is_range { RANGE_EXPR } else { BIN_EXPR });
+    }
+    Some((lhs, BlockLike::NotBlock))
+}
+
+const LHS_FIRST: TokenSet =
+    atom::ATOM_EXPR_FIRST.union(TokenSet::new(&[T![&], T![*], T![!], T![.], T![-], T![_]]));
+
+fn lhs(p: &mut Parser<'_>, r: Restrictions) -> Option<(CompletedMarker, BlockLike)> {
+    let m;
+    let kind = match p.current() {
+        // test ref_expr
+        // fn foo() {
+        //     // reference operator
+        //     let _ = &1;
+        //     let _ = &mut &f();
+        //     let _ = &raw;
+        //     let _ = &raw.0;
+        //     // raw reference operator
+        //     let _ = &raw mut foo;
+        //     let _ = &raw const foo;
+        //     let _ = &raw foo;
+        // }
+        T![&] => {
+            m = p.start();
+            p.bump(T![&]);
+            if p.at_contextual_kw(T![raw]) {
+                if [T![mut], T![const]].contains(&p.nth(1)) {
+                    p.bump_remap(T![raw]);
+                    p.bump_any();
+                } else if p.nth_at(1, SyntaxKind::IDENT) {
+                    // we treat raw as keyword in this case
+                    // &raw foo;
+                    p.bump_remap(T![raw]);
+                }
+            } else {
+                p.eat(T![mut]);
+            }
+            REF_EXPR
+        }
+        // test unary_expr
+        // fn foo() {
+        //     **&1;
+        //     !!true;
+        //     --1;
+        // }
+        T![*] | T![!] | T![-] => {
+            m = p.start();
+            p.bump_any();
+            PREFIX_EXPR
+        }
+        _ => {
+            // test full_range_expr
+            // fn foo() { xs[..]; }
+            for op in [T![..=], T![..]] {
+                if p.at(op) {
+                    m = p.start();
+                    p.bump(op);
+
+                    // test closure_range_method_call
+                    // fn foo() {
+                    //     || .. .method();
+                    //     || .. .field;
+                    // }
+                    let has_access_after = p.at(T![.]) && p.nth_at(1, SyntaxKind::IDENT);
+                    let struct_forbidden = r.forbid_structs && p.at(T!['{']);
+                    if p.at_ts(EXPR_FIRST) && !has_access_after && !struct_forbidden {
+                        expr_bp(p, None, r, 2);
+                    }
+                    let cm = m.complete(p, RANGE_EXPR);
+                    return Some((cm, BlockLike::NotBlock));
+                }
+            }
+
+            // test expression_after_block
+            // fn foo() {
+            //    let mut p = F{x: 5};
+            //    {p}.x = 10;
+            // }
+            let (lhs, blocklike) = atom::atom_expr(p, r)?;
+            let (cm, block_like) =
+                postfix_expr(p, lhs, blocklike, !(r.prefer_stmt && blocklike.is_block()));
+            return Some((cm, block_like));
+        }
+    };
+    // parse the interior of the unary expression
+    expr_bp(p, None, r, 255);
+    let cm = m.complete(p, kind);
+    Some((cm, BlockLike::NotBlock))
+}
+
+fn postfix_expr(
+    p: &mut Parser<'_>,
+    mut lhs: CompletedMarker,
+    // Calls are disallowed if the type is a block and we prefer statements because the call cannot be disambiguated from a tuple
+    // E.g. `while true {break}();` is parsed as
+    // `while true {break}; ();`
+    mut block_like: BlockLike,
+    mut allow_calls: bool,
+) -> (CompletedMarker, BlockLike) {
+    loop {
+        lhs = match p.current() {
+            // test stmt_postfix_expr_ambiguity
+            // fn foo() {
+            //     match () {
+            //         _ => {}
+            //         () => {}
+            //         [] => {}
+            //     }
+            // }
+            T!['('] if allow_calls => call_expr(p, lhs),
+            T!['['] if allow_calls => index_expr(p, lhs),
+            // test_err postfix_dot_expr_ambiguity
+            // fn foo() {
+            //     x.
+            //     ()
+            // }
+            T![.] => match postfix_dot_expr::<false>(p, lhs) {
+                Ok(it) => it,
+                Err(it) => {
+                    lhs = it;
+                    break;
+                }
+            },
+            T![?] => try_expr(p, lhs),
+            _ => break,
+        };
+        allow_calls = true;
+        block_like = BlockLike::NotBlock;
+    }
+    (lhs, block_like)
+}
+
+fn postfix_dot_expr<const FLOAT_RECOVERY: bool>(
+    p: &mut Parser<'_>,
+    lhs: CompletedMarker,
+) -> Result<CompletedMarker, CompletedMarker> {
+    if !FLOAT_RECOVERY {
+        assert!(p.at(T![.]));
+    }
+    let nth1 = if FLOAT_RECOVERY { 0 } else { 1 };
+    let nth2 = if FLOAT_RECOVERY { 1 } else { 2 };
+
+    if PATH_NAME_REF_KINDS.contains(p.nth(nth1))
+        && (p.nth(nth2) == T!['('] || p.nth_at(nth2, T![::]))
+        || p.nth(nth1) == T!['(']
+    {
+        return Ok(method_call_expr::<FLOAT_RECOVERY>(p, lhs));
+    }
+
+    // test await_expr
+    // fn foo() {
+    //     x.await;
+    //     x.0.await;
+    //     x.0().await?.hello();
+    //     x.0.0.await;
+    //     x.0. await;
+    // }
+    if p.nth(nth1) == T![await] {
+        let m = lhs.precede(p);
+        if !FLOAT_RECOVERY {
+            p.bump(T![.]);
+        }
+        p.bump(T![await]);
+        return Ok(m.complete(p, AWAIT_EXPR));
+    }
+
+    if p.at(T![..=]) || p.at(T![..]) {
+        return Err(lhs);
+    }
+
+    field_expr::<FLOAT_RECOVERY>(p, lhs)
+}
+
+// test call_expr
+// fn foo() {
+//     let _ = f();
+//     let _ = f()(1)(1, 2,);
+//     let _ = f(<Foo>::func());
+//     f(<Foo as Trait>::func());
+// }
+fn call_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
+    assert!(p.at(T!['(']));
+    let m = lhs.precede(p);
+    arg_list(p);
+    m.complete(p, CALL_EXPR)
+}
+
+// test index_expr
+// fn foo() {
+//     x[1][2];
+// }
+fn index_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
+    assert!(p.at(T!['[']));
+    let m = lhs.precede(p);
+    p.bump(T!['[']);
+    expr(p);
+    p.expect(T![']']);
+    m.complete(p, INDEX_EXPR)
+}
+
+// test method_call_expr
+// fn foo() {
+//     x.foo();
+//     y.bar::<T>(1, 2,);
+//     x.0.0.call();
+//     x.0. call();
+//     x.0()
+// }
+fn method_call_expr<const FLOAT_RECOVERY: bool>(
+    p: &mut Parser<'_>,
+    lhs: CompletedMarker,
+) -> CompletedMarker {
+    if FLOAT_RECOVERY {
+        assert!(
+            p.at_ts(PATH_NAME_REF_KINDS) && (p.nth(1) == T!['('] || p.nth_at(1, T![::]))
+                || p.current() == T!['(']
+        );
+    } else {
+        assert!(p.at(T![.]));
+        assert!(
+            PATH_NAME_REF_KINDS.contains(p.nth(1)) && (p.nth(2) == T!['('] || p.nth_at(2, T![::]))
+                || p.nth(1) == T!['(']
+        );
+    }
+    let m = lhs.precede(p);
+    if !FLOAT_RECOVERY {
+        p.bump(T![.]);
+    }
+    if p.at_ts(PATH_NAME_REF_KINDS) {
+        name_ref_mod_path(p);
+    } else {
+        p.error("expected method name, field name or number");
+    }
+    generic_args::opt_generic_arg_list_expr(p);
+    if p.at(T!['(']) {
+        arg_list(p);
+    } else {
+        // emit an error when argument list is missing
+
+        // test_err method_call_missing_argument_list
+        // fn func() {
+        //     foo.bar::<>
+        //     foo.bar::<i32>;
+        // }
+        p.error("expected argument list");
+    }
+    m.complete(p, METHOD_CALL_EXPR)
+}
+
+// test field_expr
+// fn foo() {
+//     x.self;
+//     x.Self;
+//     x.foo;
+//     x.0.bar;
+//     x.0.1;
+//     x.0. bar;
+//     x.0();
+// }
+fn field_expr<const FLOAT_RECOVERY: bool>(
+    p: &mut Parser<'_>,
+    lhs: CompletedMarker,
+) -> Result<CompletedMarker, CompletedMarker> {
+    if !FLOAT_RECOVERY {
+        assert!(p.at(T![.]));
+    }
+    let m = lhs.precede(p);
+    if !FLOAT_RECOVERY {
+        p.bump(T![.]);
+    }
+    if p.at_ts(PATH_NAME_REF_OR_INDEX_KINDS) {
+        name_ref_mod_path_or_index(p);
+    } else if p.at(FLOAT_NUMBER) {
+        return match p.split_float(m) {
+            (true, m) => {
+                let lhs = m.complete(p, FIELD_EXPR);
+                postfix_dot_expr::<true>(p, lhs)
+            }
+            (false, m) => Ok(m.complete(p, FIELD_EXPR)),
+        };
+    } else {
+        p.error("expected field name or number");
+    }
+    Ok(m.complete(p, FIELD_EXPR))
+}
+
+// test try_expr
+// fn foo() {
+//     x?;
+// }
+fn try_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
+    assert!(p.at(T![?]));
+    let m = lhs.precede(p);
+    p.bump(T![?]);
+    m.complete(p, TRY_EXPR)
+}
+
+// test cast_expr
+// fn foo() {
+//     82 as i32;
+//     81 as i8 + 1;
+//     79 as i16 - 1;
+//     0x36 as u8 <= 0x37;
+// }
+fn cast_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
+    assert!(p.at(T![as]));
+    let m = lhs.precede(p);
+    p.bump(T![as]);
+    // Use type_no_bounds(), because cast expressions are not
+    // allowed to have bounds.
+    types::type_no_bounds(p);
+    m.complete(p, CAST_EXPR)
+}
+
+// test_err arg_list_recovery
+// fn main() {
+//     foo(bar::);
+//     foo(bar:);
+//     foo(bar+);
+//     foo(a, , b);
+// }
+fn arg_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['(']));
+    let m = p.start();
+    // test arg_with_attr
+    // fn main() {
+    //     foo(#[attr] 92)
+    // }
+    delimited(
+        p,
+        T!['('],
+        T![')'],
+        T![,],
+        || "expected expression".into(),
+        EXPR_FIRST.union(ATTRIBUTE_FIRST),
+        |p| expr(p).is_some(),
+    );
+    m.complete(p, ARG_LIST);
+}
+
+// test path_expr
+// fn foo() {
+//     let _ = a;
+//     let _ = a::b;
+//     let _ = ::a::<b>;
+//     let _ = format!();
+// }
+fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike) {
+    assert!(paths::is_path_start(p));
+    let m = p.start();
+    paths::expr_path(p);
+    match p.current() {
+        T!['{'] if !r.forbid_structs => {
+            record_expr_field_list(p);
+            (m.complete(p, RECORD_EXPR), BlockLike::NotBlock)
+        }
+        T![!] if !p.at(T![!=]) => {
+            let block_like = items::macro_call_after_excl(p);
+            (m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_EXPR), block_like)
+        }
+        _ => (m.complete(p, PATH_EXPR), BlockLike::NotBlock),
+    }
+}
+
+// test record_lit
+// fn foo() {
+//     S {};
+//     S { x };
+//     S { x, y: 32, };
+//     S { x, y: 32, ..Default::default() };
+//     S { x, y: 32, .. };
+//     S { .. };
+//     S { x: ::default() };
+//     TupleStruct { 0: 1 };
+// }
+pub(crate) fn record_expr_field_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    while !p.at(EOF) && !p.at(T!['}']) {
+        let m = p.start();
+        // test record_literal_field_with_attr
+        // fn main() {
+        //     S { #[cfg(test)] field: 1 }
+        // }
+        attributes::outer_attrs(p);
+
+        match p.current() {
+            IDENT | INT_NUMBER if p.nth_at(1, T![::]) => {
+                // test_err record_literal_missing_ellipsis_recovery
+                // fn main() {
+                //     S { S::default() };
+                //     S { 0::default() };
+                // }
+                m.abandon(p);
+                p.expect(T![..]);
+                expr(p);
+            }
+            IDENT | INT_NUMBER if p.nth_at(1, T![..]) => {
+                // test_err record_literal_before_ellipsis_recovery
+                // fn main() {
+                //     S { field ..S::default() }
+                //     S { 0 ..S::default() }
+                //     S { field .. }
+                //     S { 0 .. }
+                // }
+                name_ref_or_index(p);
+                p.error("expected `:`");
+                m.complete(p, RECORD_EXPR_FIELD);
+            }
+            IDENT | INT_NUMBER => {
+                // test_err record_literal_field_eq_recovery
+                // fn main() {
+                //     S { field = foo }
+                //     S { 0 = foo }
+                // }
+                if p.nth_at(1, T![:]) {
+                    name_ref_or_index(p);
+                    p.bump(T![:]);
+                } else if p.nth_at(1, T![=]) {
+                    name_ref_or_index(p);
+                    p.err_and_bump("expected `:`");
+                }
+                expr(p);
+                m.complete(p, RECORD_EXPR_FIELD);
+            }
+            T![.] if p.at(T![..]) => {
+                m.abandon(p);
+                p.bump(T![..]);
+
+                // test destructuring_assignment_struct_rest_pattern
+                // fn foo() {
+                //     S { .. } = S {};
+                // }
+
+                // test struct_initializer_with_defaults
+                // fn foo() {
+                //     let _s = S { .. };
+                // }
+
+                // We permit `.. }` on the left-hand side of a destructuring assignment
+                // or defaults values.
+                if !p.at(T!['}']) {
+                    expr(p);
+
+                    if p.at(T![,]) {
+                        // test_err comma_after_functional_update_syntax
+                        // fn foo() {
+                        //     S { ..x, };
+                        //     S { ..x, a: 0 }
+                        // }
+
+                        // test_err comma_after_default_values_syntax
+                        // fn foo() {
+                        //     S { .., };
+                        //     S { .., a: 0 }
+                        // }
+
+                        // Do not bump, so we can support additional fields after this comma.
+                        p.error("cannot use a comma after the base struct");
+                    }
+                }
+            }
+            T!['{'] => {
+                error_block(p, "expected a field");
+                m.abandon(p);
+            }
+            _ => {
+                p.err_and_bump("expected identifier");
+                m.abandon(p);
+            }
+        }
+        if !p.at(T!['}']) {
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T!['}']);
+    m.complete(p, RECORD_EXPR_FIELD_LIST);
+}
+
+use super::*;
+
+// test_err generic_arg_list_recover_expr
+// const _: () = T::<0, ,T>;
+// const _: () = T::<0, ,T>();
+pub(super) fn opt_generic_arg_list_expr(p: &mut Parser<'_>) {
+    let m;
+    if p.at(T![::]) && p.nth(2) == T![<] {
+        m = p.start();
+        p.bump(T![::]);
+    } else {
+        return;
+    }
+
+    delimited(
+        p,
+        T![<],
+        T![>],
+        T![,],
+        || "expected generic argument".into(),
+        GENERIC_ARG_FIRST,
+        generic_arg,
+    );
+    m.complete(p, GENERIC_ARG_LIST);
+}
+
+pub(crate) const GENERIC_ARG_FIRST: TokenSet = TokenSet::new(&[
+    LIFETIME_IDENT,
+    IDENT,
+    T!['{'],
+    T![true],
+    T![false],
+    T![-],
+    INT_NUMBER,
+    FLOAT_NUMBER,
+    CHAR,
+    BYTE,
+    STRING,
+    BYTE_STRING,
+    C_STRING,
+])
+.union(types::TYPE_FIRST);
+
+// Despite its name, it can also be used for generic param list.
+const GENERIC_ARG_RECOVERY_SET: TokenSet = TokenSet::new(&[T![>], T![,]]);
+
+// test generic_arg
+// type T = S<i32, dyn T, fn()>;
+pub(crate) fn generic_arg(p: &mut Parser<'_>) -> bool {
+    match p.current() {
+        LIFETIME_IDENT if !p.nth_at(1, T![+]) => lifetime_arg(p),
+        T!['{'] | T![true] | T![false] | T![-] => const_arg(p),
+        k if k.is_literal() => const_arg(p),
+        // test generic_arg_bounds
+        // type Plain = Foo<Item, Item::Item, Item: Bound, Item = Item>;
+        // type GenericArgs = Foo<Item<T>, Item::<T>, Item<T>: Bound, Item::<T>: Bound, Item<T> = Item, Item::<T> = Item>;
+        // type ParenthesizedArgs = Foo<Item(T), Item::(T), Item(T): Bound, Item::(T): Bound, Item(T) = Item, Item::(T) = Item>;
+        // type RTN = Foo<Item(..), Item(..), Item(..): Bound, Item(..): Bound, Item(..) = Item, Item(..) = Item>;
+
+        // test edition_2015_dyn_prefix_inside_generic_arg 2015
+        // type A = Foo<dyn T>;
+        T![ident] if !p.edition().at_least_2018() && types::is_dyn_weak(p) => type_arg(p),
+        // test macro_inside_generic_arg
+        // type A = Foo<syn::Token![_]>;
+        k if PATH_NAME_REF_KINDS.contains(k) => {
+            let m = p.start();
+            name_ref_mod_path(p);
+            paths::opt_path_type_args(p);
+            match p.current() {
+                T![=] => {
+                    p.bump_any();
+                    if types::TYPE_FIRST.contains(p.current()) {
+                        // test assoc_type_eq
+                        // type T = StreamingIterator<Item<'a> = &'a T>;
+                        types::type_(p);
+                    } else if p.at_ts(GENERIC_ARG_RECOVERY_SET) {
+                        // Although `const_arg()` recovers as expected, we want to
+                        // handle those here to give the following message because
+                        // we don't know whether this associated item is a type or
+                        // const at this point.
+
+                        // test_err recover_from_missing_assoc_item_binding
+                        // fn f() -> impl Iterator<Item = , Item = > {}
+                        p.error("missing associated item binding");
+                    } else {
+                        // test assoc_const_eq
+                        // fn foo<F: Foo<N=3>>() {}
+                        // const TEST: usize = 3;
+                        // fn bar<F: Foo<N={TEST}>>() {}
+                        const_arg(p);
+                    }
+                    m.complete(p, ASSOC_TYPE_ARG);
+                }
+                // test assoc_type_bound
+                // type T = StreamingIterator<Item<'a>: Clone>;
+                // type T = StreamingIterator<Item(T): Clone>;
+                T![:] if !p.at(T![::]) => {
+                    generic_params::bounds(p);
+                    m.complete(p, ASSOC_TYPE_ARG);
+                }
+                // Turned out to be just a normal path type (mirror `path_or_macro_type`)
+                _ => {
+                    let m = m.complete(p, PATH_SEGMENT).precede(p).complete(p, PATH);
+                    let m = paths::type_path_for_qualifier(p, m);
+                    let m = if p.at(T![!]) && !p.at(T![!=]) {
+                        let m = m.precede(p);
+                        items::macro_call_after_excl(p);
+                        m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_TYPE)
+                    } else {
+                        m.precede(p).complete(p, PATH_TYPE)
+                    };
+                    types::opt_type_bounds_as_dyn_trait_type(p, m).precede(p).complete(p, TYPE_ARG);
+                }
+            }
+        }
+        _ if p.at_ts(types::TYPE_FIRST) => type_arg(p),
+        _ => return false,
+    }
+    true
+}
+
+// test lifetime_arg
+// type T = S<'static>;
+fn lifetime_arg(p: &mut Parser<'_>) {
+    let m = p.start();
+    lifetime(p);
+    m.complete(p, LIFETIME_ARG);
+}
+
+pub(super) fn const_arg_expr(p: &mut Parser<'_>) {
+    // The tests in here are really for `const_arg`, which wraps the content
+    // CONST_ARG.
+    match p.current() {
+        // test const_arg_block
+        // type T = S<{90 + 2}>;
+        T!['{'] => {
+            expressions::block_expr(p);
+        }
+        // test const_arg_literal
+        // type T = S<"hello", 0xdeadbeef>;
+        k if k.is_literal() => {
+            expressions::literal(p);
+        }
+        // test const_arg_bool_literal
+        // type T = S<true>;
+        T![true] | T![false] => {
+            expressions::literal(p);
+        }
+        // test const_arg_negative_number
+        // type T = S<-92>;
+        T![-] => {
+            let lm = p.start();
+            p.bump(T![-]);
+            expressions::literal(p);
+            lm.complete(p, PREFIX_EXPR);
+        }
+        _ if paths::is_path_start(p) => {
+            // This shouldn't be hit by `const_arg`
+            let lm = p.start();
+            paths::expr_path(p);
+            lm.complete(p, PATH_EXPR);
+        }
+        _ => {
+            // test_err recover_from_missing_const_default
+            // struct A<const N: i32 = , const M: i32 =>;
+            p.err_recover("expected a generic const argument", GENERIC_ARG_RECOVERY_SET);
+        }
+    }
+}
+
+// test const_arg
+// type T = S<92>;
+pub(super) fn const_arg(p: &mut Parser<'_>) {
+    let m = p.start();
+    const_arg_expr(p);
+    m.complete(p, CONST_ARG);
+}
+
+pub(crate) fn type_arg(p: &mut Parser<'_>) {
+    let m = p.start();
+    types::type_(p);
+    m.complete(p, TYPE_ARG);
+}
+
+use crate::grammar::attributes::ATTRIBUTE_FIRST;
+
+use super::*;
+
+pub(super) fn opt_generic_param_list(p: &mut Parser<'_>) {
+    if p.at(T![<]) {
+        generic_param_list(p);
+    }
+}
+
+// test generic_param_list
+// fn f<T: Clone>() {}
+
+// test_err generic_param_list_recover
+// fn f<T: Clone,, U:, V>() {}
+pub(super) fn generic_param_list(p: &mut Parser<'_>) {
+    assert!(p.at(T![<]));
+    let m = p.start();
+    delimited(
+        p,
+        T![<],
+        T![>],
+        T![,],
+        || "expected generic parameter".into(),
+        GENERIC_PARAM_FIRST.union(ATTRIBUTE_FIRST),
+        |p| {
+            // test generic_param_attribute
+            // fn foo<#[lt_attr] 'a, #[t_attr] T>() {}
+            let m = p.start();
+            attributes::outer_attrs(p);
+            generic_param(p, m)
+        },
+    );
+
+    m.complete(p, GENERIC_PARAM_LIST);
+}
+
+const GENERIC_PARAM_FIRST: TokenSet = TokenSet::new(&[IDENT, LIFETIME_IDENT, T![const]]);
+
+fn generic_param(p: &mut Parser<'_>, m: Marker) -> bool {
+    match p.current() {
+        LIFETIME_IDENT => lifetime_param(p, m),
+        IDENT => type_param(p, m),
+        T![const] => const_param(p, m),
+        _ => {
+            m.abandon(p);
+            p.err_and_bump("expected generic parameter");
+            return false;
+        }
+    }
+    true
+}
+
+// test lifetime_param
+// fn f<'a: 'b>() {}
+fn lifetime_param(p: &mut Parser<'_>, m: Marker) {
+    assert!(p.at(LIFETIME_IDENT));
+    lifetime(p);
+    if p.eat(T![:]) {
+        lifetime_bounds(p);
+    }
+    m.complete(p, LIFETIME_PARAM);
+}
+
+// test type_param
+// fn f<T: Clone>() {}
+fn type_param(p: &mut Parser<'_>, m: Marker) {
+    assert!(p.at(IDENT));
+    name(p);
+    if p.at(T![:]) {
+        bounds(p);
+    }
+    if p.at(T![=]) {
+        // test type_param_default
+        // struct S<T = i32>;
+        p.bump(T![=]);
+        types::type_(p);
+    }
+    m.complete(p, TYPE_PARAM);
+}
+
+// test const_param
+// struct S<const N: u32>;
+fn const_param(p: &mut Parser<'_>, m: Marker) {
+    p.bump(T![const]);
+    name(p);
+    if p.at(T![:]) {
+        types::ascription(p);
+    } else {
+        p.error("missing type for const parameter");
+    }
+
+    if p.eat(T![=]) {
+        // test const_param_default_literal
+        // struct A<const N: i32 = -1>;
+
+        // test const_param_default_expression
+        // struct A<const N: i32 = { 1 }>;
+
+        // test const_param_default_path
+        // struct A<const N: i32 = i32::MAX>;
+        generic_args::const_arg(p);
+    }
+
+    m.complete(p, CONST_PARAM);
+}
+
+fn lifetime_bounds(p: &mut Parser<'_>) {
+    let marker = p.start();
+    while {
+        if !matches!(p.current(), LIFETIME_IDENT | T![>] | T![,]) {
+            p.error("expected lifetime");
+        }
+
+        type_bound(p)
+    } {
+        if !p.eat(T![+]) {
+            break;
+        }
+    }
+    marker.complete(p, TYPE_BOUND_LIST);
+}
+
+// test type_param_bounds
+// struct S<T: 'a + ?Sized + (Copy) + [const] Drop>;
+pub(super) fn bounds(p: &mut Parser<'_>) {
+    p.expect(T![:]);
+    bounds_without_colon(p);
+}
+
+pub(super) fn bounds_without_colon(p: &mut Parser<'_>) {
+    let m = p.start();
+    bounds_without_colon_m(p, m);
+}
+
+pub(super) fn bounds_without_colon_m(p: &mut Parser<'_>, marker: Marker) -> CompletedMarker {
+    while type_bound(p) {
+        if !p.eat(T![+]) {
+            break;
+        }
+    }
+    marker.complete(p, TYPE_BOUND_LIST)
+}
+
+fn type_bound(p: &mut Parser<'_>) -> bool {
+    let m = p.start();
+    let has_paren = p.eat(T!['(']);
+    match p.current() {
+        LIFETIME_IDENT => lifetime(p),
+        // test for_binder_bound
+        // fn foo<T: for<'a> [const] async Trait>() {}
+        T![for] => {
+            types::for_binder(p);
+            if path_type_bound(p).is_err() {
+                m.abandon(p);
+                return false;
+            }
+        }
+        // test precise_capturing
+        // fn captures<'a: 'a, 'b: 'b, T>() -> impl Sized + use<'b, T, Self> {}
+
+        // test_err precise_capturing_invalid
+        // type T = impl use<self, 1>;
+        T![use] if p.nth_at(1, T![<]) => {
+            p.bump_any();
+            let m = p.start();
+            delimited(
+                p,
+                T![<],
+                T![>],
+                T![,],
+                || "expected identifier or lifetime".into(),
+                TokenSet::new(&[T![Self], IDENT, LIFETIME_IDENT]),
+                |p| {
+                    if p.at(LIFETIME_IDENT) {
+                        lifetime(p);
+                    } else {
+                        name_ref_or_upper_self(p);
+                    }
+                    true
+                },
+            );
+            m.complete(p, USE_BOUND_GENERIC_ARGS);
+        }
+        _ => {
+            if path_type_bound(p).is_err() {
+                m.abandon(p);
+                return false;
+            }
+        }
+    }
+    if has_paren {
+        p.expect(T![')']);
+    }
+    m.complete(p, TYPE_BOUND);
+
+    true
+}
+
+fn path_type_bound(p: &mut Parser<'_>) -> Result<(), ()> {
+    if p.eat(T![~]) {
+        p.expect(T![const]);
+    } else if p.eat(T!['[']) {
+        // test maybe_const_trait_bound
+        // const fn foo(_: impl [const] Trait) {}
+        p.expect(T![const]);
+        p.expect(T![']']);
+    } else {
+        // test const_trait_bound
+        // const fn foo(_: impl const Trait) {}
+        p.eat(T![const]);
+    }
+    // test async_trait_bound
+    // fn async_foo(_: impl async Fn(&i32)) {}
+    p.eat(T![async]);
+    // test question_for_type_trait_bound
+    // fn f<T>() where T: for<> ?Sized {}
+    p.eat(T![?]);
+
+    // test_err invalid_question_for_type_trait_bound
+    // fn f<T>() where T: ?for<> Sized {}
+
+    if paths::is_use_path_start(p) {
+        types::path_type_bounds(p, false);
+        // test_err type_bounds_macro_call_recovery
+        // fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {}
+        if p.at(T![!]) {
+            let m = p.start();
+            p.bump(T![!]);
+            p.error("unexpected `!` in type path, macro calls are not allowed here");
+            if p.at_ts(TokenSet::new(&[T!['{'], T!['['], T!['(']])) {
+                items::token_tree(p);
+            }
+            m.complete(p, ERROR);
+        }
+        Ok(())
+    } else {
+        Err(())
+    }
+}
+
+// test where_clause
+// fn foo()
+// where
+//    'a: 'b + 'c,
+//    T: Clone + Copy + 'static,
+//    Iterator::Item: 'a,
+//    <T as Iterator>::Item: 'a
+// {}
+pub(super) fn opt_where_clause(p: &mut Parser<'_>) {
+    if !p.at(T![where]) {
+        return;
+    }
+    let m = p.start();
+    p.bump(T![where]);
+
+    while is_where_predicate(p) {
+        where_predicate(p);
+
+        let comma = p.eat(T![,]);
+
+        match p.current() {
+            T!['{'] | T![;] | T![=] => break,
+            _ => (),
+        }
+
+        if !comma {
+            p.error("expected comma");
+        }
+    }
+
+    m.complete(p, WHERE_CLAUSE);
+
+    fn is_where_predicate(p: &mut Parser<'_>) -> bool {
+        match p.current() {
+            LIFETIME_IDENT => true,
+            T![impl] => false,
+            token => types::TYPE_FIRST.contains(token),
+        }
+    }
+}
+
+fn where_predicate(p: &mut Parser<'_>) {
+    let m = p.start();
+    match p.current() {
+        LIFETIME_IDENT => {
+            lifetime(p);
+            if p.at(T![:]) {
+                bounds(p);
+            } else {
+                p.error("expected colon");
+            }
+        }
+        T![impl] => {
+            p.error("expected lifetime or type");
+        }
+        _ => {
+            if p.at(T![for]) {
+                // test where_pred_for
+                // fn for_trait<F>()
+                // where
+                //    for<'a> F: Fn(&'a str)
+                // { }
+                types::for_binder(p);
+            }
+
+            types::type_(p);
+
+            if p.at(T![:]) {
+                bounds(p);
+            } else {
+                p.error("expected colon");
+            }
+        }
+    }
+    m.complete(p, WHERE_PRED);
+}
+
+use super::*;
+
+pub(super) const TYPE_FIRST: TokenSet = paths::PATH_FIRST.union(TokenSet::new(&[
+    T!['('],
+    T!['['],
+    T![<],
+    T![!],
+    T![*],
+    T![&],
+    T![_],
+    T![fn],
+    T![unsafe],
+    T![extern],
+    T![for],
+    T![impl],
+    T![dyn],
+    T![Self],
+    LIFETIME_IDENT,
+]));
+
+pub(super) const TYPE_RECOVERY_SET: TokenSet = TokenSet::new(&[
+    T![')'],
+    // test_err type_in_array_recover
+    // const _: [&];
+    T![']'],
+    T!['}'],
+    T![>],
+    T![,],
+    // test_err struct_field_recover
+    // struct S { f pub g: () }
+    // struct S { f: pub g: () }
+    T![pub],
+]);
+
+pub(crate) fn type_(p: &mut Parser<'_>) {
+    type_with_bounds_cond(p, true);
+}
+
+pub(super) fn type_no_bounds(p: &mut Parser<'_>) {
+    type_with_bounds_cond(p, false);
+}
+
+fn type_with_bounds_cond(p: &mut Parser<'_>, allow_bounds: bool) {
+    match p.current() {
+        T!['('] => paren_or_tuple_type(p),
+        T![!] => never_type(p),
+        T![*] => ptr_type(p),
+        T!['['] => array_or_slice_type(p),
+        T![&] => ref_type(p),
+        T![_] => infer_type(p),
+        T![fn] | T![unsafe] | T![extern] => fn_ptr_type(p),
+        T![for] => for_type(p, allow_bounds),
+        T![impl] => impl_trait_type(p),
+        T![dyn] => dyn_trait_type(p),
+        // Some path types are not allowed to have bounds (no plus)
+        T![<] => path_type_bounds(p, allow_bounds),
+        T![ident] if !p.edition().at_least_2018() && is_dyn_weak(p) => dyn_trait_type_weak(p),
+        _ if paths::is_path_start(p) => path_or_macro_type(p, allow_bounds),
+        LIFETIME_IDENT if p.nth_at(1, T![+]) => bare_dyn_trait_type(p),
+        _ => {
+            p.err_recover("expected type", TYPE_RECOVERY_SET);
+        }
+    }
+}
+
+pub(crate) fn is_dyn_weak(p: &Parser<'_>) -> bool {
+    const WEAK_DYN_PATH_FIRST: TokenSet = TokenSet::new(&[
+        IDENT,
+        T![self],
+        T![super],
+        T![crate],
+        T![Self],
+        T![lifetime_ident],
+        T![?],
+        T![for],
+        T!['('],
+    ]);
+
+    p.at_contextual_kw(T![dyn]) && {
+        let la = p.nth(1);
+        WEAK_DYN_PATH_FIRST.contains(la) && (la != T![:] || la != T![<])
+    }
+}
+
+pub(super) fn ascription(p: &mut Parser<'_>) {
+    assert!(p.at(T![:]));
+    p.bump(T![:]);
+    if p.at(T![=]) {
+        // recover from `let x: = expr;`, `const X: = expr;` and similar
+        // hopefully no type starts with `=`
+        p.error("missing type");
+        return;
+    }
+    type_(p);
+}
+
+fn paren_or_tuple_type(p: &mut Parser<'_>) {
+    assert!(p.at(T!['(']));
+    let m = p.start();
+    p.bump(T!['(']);
+    let mut n_types: u32 = 0;
+    let mut trailing_comma: bool = false;
+    while !p.at(EOF) && !p.at(T![')']) {
+        n_types += 1;
+        type_(p);
+        if p.eat(T![,]) {
+            trailing_comma = true;
+        } else {
+            trailing_comma = false;
+            break;
+        }
+    }
+    p.expect(T![')']);
+
+    let kind = if n_types == 1 && !trailing_comma {
+        // test paren_type
+        // type T = (i32);
+        PAREN_TYPE
+    } else {
+        // test unit_type
+        // type T = ();
+
+        // test singleton_tuple_type
+        // type T = (i32,);
+        TUPLE_TYPE
+    };
+    m.complete(p, kind);
+}
+
+// test never_type
+// type Never = !;
+fn never_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![!]));
+    let m = p.start();
+    p.bump(T![!]);
+    m.complete(p, NEVER_TYPE);
+}
+
+fn ptr_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![*]));
+    let m = p.start();
+    p.bump(T![*]);
+
+    match p.current() {
+        // test pointer_type_mut
+        // type M = *mut ();
+        // type C = *mut ();
+        T![mut] | T![const] => p.bump_any(),
+        _ => {
+            // test_err pointer_type_no_mutability
+            // type T = *();
+            p.error(
+                "expected mut or const in raw pointer type \
+                 (use `*mut T` or `*const T` as appropriate)",
+            );
+        }
+    };
+
+    type_no_bounds(p);
+    m.complete(p, PTR_TYPE);
+}
+
+fn array_or_slice_type(p: &mut Parser<'_>) {
+    assert!(p.at(T!['[']));
+    let m = p.start();
+    p.bump(T!['[']);
+
+    type_(p);
+    let kind = match p.current() {
+        // test slice_type
+        // type T = [()];
+        T![']'] => {
+            p.bump(T![']']);
+            SLICE_TYPE
+        }
+
+        // test array_type
+        // type T = [(); 92];
+        T![;] => {
+            p.bump(T![;]);
+            let m = p.start();
+            expressions::expr(p);
+            m.complete(p, CONST_ARG);
+            p.expect(T![']']);
+            ARRAY_TYPE
+        }
+        // test_err array_type_missing_semi
+        // type T = [() 92];
+        _ => {
+            p.error("expected `;` or `]`");
+            SLICE_TYPE
+        }
+    };
+    m.complete(p, kind);
+}
+
+// test reference_type
+// type A = &();
+// type B = &'static ();
+// type C = &mut ();
+fn ref_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![&]));
+    let m = p.start();
+    p.bump(T![&]);
+    if p.at(LIFETIME_IDENT) {
+        lifetime(p);
+    }
+    p.eat(T![mut]);
+    type_no_bounds(p);
+    m.complete(p, REF_TYPE);
+}
+
+// test placeholder_type
+// type Placeholder = _;
+fn infer_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![_]));
+    let m = p.start();
+    p.bump(T![_]);
+    m.complete(p, INFER_TYPE);
+}
+
+// test fn_pointer_type
+// type A = fn();
+// type B = unsafe fn();
+// type C = unsafe extern "C" fn();
+// type D = extern "C" fn ( u8 , ... ) -> u8;
+fn fn_ptr_type(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.eat(T![unsafe]);
+    if p.at(T![extern]) {
+        abi(p);
+    }
+    // test_err fn_pointer_type_missing_fn
+    // type F = unsafe ();
+    if !p.eat(T![fn]) {
+        m.abandon(p);
+        p.error("expected `fn`");
+        return;
+    }
+    if p.at(T!['(']) {
+        params::param_list_fn_ptr(p);
+    } else {
+        p.error("expected parameters");
+    }
+    // test fn_pointer_type_with_ret
+    // type F = fn() -> ();
+    opt_ret_type(p);
+    m.complete(p, FN_PTR_TYPE);
+}
+
+pub(super) fn for_binder(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T![for]);
+    if p.at(T![<]) {
+        generic_params::generic_param_list(p);
+    } else {
+        p.error("expected `<`");
+    }
+    m.complete(p, FOR_BINDER);
+}
+
+// test for_type
+// type A = for<'a> fn() -> ();
+// type B = for<'a> unsafe extern "C" fn(&'a ()) -> ();
+// type Obj = for<'a> PartialEq<&'a i32>;
+pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
+    assert!(p.at(T![for]));
+    let m = p.start();
+    for_binder(p);
+    match p.current() {
+        T![fn] | T![unsafe] | T![extern] => {}
+        // OK: legacy trait object format
+        _ if paths::is_use_path_start(p) => {}
+        _ => {
+            p.error("expected a function pointer or path");
+        }
+    }
+    type_no_bounds(p);
+    let completed = m.complete(p, FOR_TYPE);
+
+    // test no_dyn_trait_leading_for
+    // type A = for<'a> Test<'a> + Send;
+    if allow_bounds {
+        opt_type_bounds_as_dyn_trait_type(p, completed);
+    }
+}
+
+// test impl_trait_type
+// type A = impl Iterator<Item=Foo<'a>> + 'a;
+fn impl_trait_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![impl]));
+    let m = p.start();
+    p.bump(T![impl]);
+    generic_params::bounds_without_colon(p);
+    m.complete(p, IMPL_TRAIT_TYPE);
+}
+
+// test dyn_trait_type
+// type A = dyn Iterator<Item=Foo<'a>> + 'a;
+fn dyn_trait_type(p: &mut Parser<'_>) {
+    assert!(p.at(T![dyn]));
+    let m = p.start();
+    p.bump(T![dyn]);
+    generic_params::bounds_without_colon(p);
+    m.complete(p, DYN_TRAIT_TYPE);
+}
+
+// test dyn_trait_type_weak 2015
+// type DynPlain = dyn Path;
+// type DynRef = &dyn Path;
+// type DynLt = dyn 'a + Path;
+// type DynQuestion = dyn ?Path;
+// type DynFor = dyn for<'a> Path;
+// type DynParen = dyn(Path);
+// type Path = dyn::Path;
+// type Generic = dyn<Path>;
+fn dyn_trait_type_weak(p: &mut Parser<'_>) {
+    assert!(p.at_contextual_kw(T![dyn]));
+    let m = p.start();
+    p.bump_remap(T![dyn]);
+    generic_params::bounds_without_colon(p);
+    m.complete(p, DYN_TRAIT_TYPE);
+}
+
+// test bare_dyn_types_with_leading_lifetime
+// type A = 'static + Trait;
+// type B = S<'static + Trait>;
+fn bare_dyn_trait_type(p: &mut Parser<'_>) {
+    let m = p.start();
+    generic_params::bounds_without_colon(p);
+    m.complete(p, DYN_TRAIT_TYPE);
+}
+
+// test macro_call_type
+// type A = foo!();
+// type B = crate::foo!();
+fn path_or_macro_type(p: &mut Parser<'_>, allow_bounds: bool) {
+    assert!(paths::is_path_start(p));
+    let r = p.start();
+    let m = p.start();
+
+    paths::type_path(p);
+
+    let kind = if p.at(T![!]) && !p.at(T![!=]) {
+        items::macro_call_after_excl(p);
+        m.complete(p, MACRO_CALL);
+        MACRO_TYPE
+    } else {
+        m.abandon(p);
+        PATH_TYPE
+    };
+
+    let path = r.complete(p, kind);
+
+    if allow_bounds {
+        opt_type_bounds_as_dyn_trait_type(p, path);
+    }
+}
+
+// test path_type
+// type A = Foo;
+// type B = ::Foo;
+// type C = self::Foo;
+// type D = super::Foo;
+pub(super) fn path_type_bounds(p: &mut Parser<'_>, allow_bounds: bool) {
+    assert!(paths::is_path_start(p));
+    let m = p.start();
+    paths::type_path(p);
+
+    // test path_type_with_bounds
+    // fn foo() -> Box<T + 'f> {}
+    // fn foo() -> Box<dyn T + 'f> {}
+    let path = m.complete(p, PATH_TYPE);
+    if allow_bounds {
+        opt_type_bounds_as_dyn_trait_type(p, path);
+    }
+}
+
+/// This turns a parsed PATH_TYPE or FOR_TYPE optionally into a DYN_TRAIT_TYPE
+/// with a TYPE_BOUND_LIST
+pub(super) fn opt_type_bounds_as_dyn_trait_type(
+    p: &mut Parser<'_>,
+    type_marker: CompletedMarker,
+) -> CompletedMarker {
+    assert!(matches!(
+        type_marker.kind(),
+        SyntaxKind::PATH_TYPE | SyntaxKind::FOR_TYPE | SyntaxKind::MACRO_TYPE
+    ));
+    if !p.at(T![+]) {
+        return type_marker;
+    }
+
+    // First create a TYPE_BOUND from the completed PATH_TYPE
+    let m = type_marker.precede(p).complete(p, TYPE_BOUND);
+
+    // Next setup a marker for the TYPE_BOUND_LIST
+    let m = m.precede(p);
+
+    // This gets consumed here so it gets properly set
+    // in the TYPE_BOUND_LIST
+    p.eat(T![+]);
+
+    // Parse rest of the bounds into the TYPE_BOUND_LIST
+    let m = generic_params::bounds_without_colon_m(p, m);
+
+    // Finally precede everything with DYN_TRAIT_TYPE
+    m.precede(p).complete(p, DYN_TRAIT_TYPE)
+}
+
+use super::*;
+
+pub(super) const PATTERN_FIRST: TokenSet =
+    expressions::LITERAL_FIRST.union(paths::PATH_FIRST).union(TokenSet::new(&[
+        T![box],
+        T![ref],
+        T![mut],
+        T![const],
+        T!['('],
+        T!['['],
+        T![&],
+        T![_],
+        T![-],
+        T![.],
+    ]));
+
+const PAT_TOP_FIRST: TokenSet = PATTERN_FIRST.union(TokenSet::new(&[T![|]]));
+
+/// Set of possible tokens at the start of a range pattern's end bound.
+const RANGE_PAT_END_FIRST: TokenSet =
+    expressions::LITERAL_FIRST.union(paths::PATH_FIRST).union(TokenSet::new(&[T![-], T![const]]));
+
+/// Parses a pattern list separated by pipes `|`.
+pub(crate) fn pattern(p: &mut Parser<'_>) {
+    pattern_r(p, PAT_RECOVERY_SET);
+}
+
+pub(crate) fn pattern_single(p: &mut Parser<'_>) {
+    pattern_single_r(p, PAT_RECOVERY_SET);
+}
+
+/// Parses a pattern list separated by pipes `|`
+/// using the given `recovery_set`.
+pub(super) fn pattern_top_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
+    pattern_r(p, recovery_set);
+}
+
+// test or_pattern
+// fn main() {
+//     match () {
+//         (_ | _) => (),
+//         &(_ | _) => (),
+//         (_ | _,) => (),
+//         [_ | _,] => (),
+//     }
+// }
+/// Parses a pattern list separated by pipes `|`, with no leading `|`,using the
+/// given `recovery_set`.
+fn pattern_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
+    let m = p.start();
+    let has_leading_pipe = p.eat(T![|]);
+
+    pattern_single_r(p, recovery_set);
+
+    if !p.at(T![|]) && !has_leading_pipe {
+        m.abandon(p);
+        return;
+    }
+    while p.eat(T![|]) {
+        pattern_single_r(p, recovery_set);
+    }
+    m.complete(p, OR_PAT);
+}
+
+fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
+    // test range_pat
+    // fn main() {
+    //     match 92 {
+    //         0 ... 100 => (),
+    //         101 ..= 200 => (),
+    //         200 .. 301 => (),
+    //         302 .. => (),
+    //         ..= 303 => (),
+    //     }
+    //
+    //     match Some(10 as u8) {
+    //         Some(0) | None => (),
+    //         Some(1..) => (),
+    //         Some(..=2) => (),
+    //     }
+    //
+    //     match () {
+    //         S { a: 0 } => (),
+    //         S { a: 1.. } => (),
+    //         S { a: ..=2 } => (),
+    //     }
+    //
+    //     match () {
+    //         [0] => (),
+    //         [1..] => (),
+    //         [..=2] => (),
+    //     }
+    //
+    //     match (10 as u8, 5 as u8) {
+    //         (0, _) => (),
+    //         (1.., _) => (),
+    //         (..=2, _) => (),
+    //     }
+    // }
+
+    if p.at(T![..=]) {
+        let m = p.start();
+        p.bump(T![..=]);
+        atom_pat(p, recovery_set);
+        m.complete(p, RANGE_PAT);
+        return;
+    }
+
+    // test exclusive_range_pat
+    // fn main() {
+    //     match 42 {
+    //         ..0 => {}
+    //         1..2 => {}
+    //     }
+    // }
+
+    // test dot_dot_pat
+    // fn main() {
+    //     let .. = ();
+    //     //
+    //     // Tuples
+    //     //
+    //     let (a, ..) = ();
+    //     let (a, ..,) = ();
+    //     let Tuple(a, ..) = ();
+    //     let Tuple(a, ..,) = ();
+    //     let (.., ..) = ();
+    //     let Tuple(.., ..) = ();
+    //     let (.., a, ..) = ();
+    //     let Tuple(.., a, ..) = ();
+    //     //
+    //     // Slices
+    //     //
+    //     let [..] = ();
+    //     let [head, ..] = ();
+    //     let [head, tail @ ..] = ();
+    //     let [head, .., cons] = ();
+    //     let [head, mid @ .., cons] = ();
+    //     let [head, .., .., cons] = ();
+    //     let [head, .., mid, tail @ ..] = ();
+    //     let [head, .., mid, .., cons] = ();
+    // }
+    if p.at(T![..]) {
+        let m = p.start();
+        p.bump(T![..]);
+        if p.at_ts(RANGE_PAT_END_FIRST) {
+            atom_pat(p, recovery_set);
+            m.complete(p, RANGE_PAT);
+        } else {
+            m.complete(p, REST_PAT);
+        }
+        return;
+    }
+
+    if let Some(lhs) = atom_pat(p, recovery_set) {
+        for range_op in [T![...], T![..=], T![..]] {
+            if p.at(range_op) {
+                let m = lhs.precede(p);
+                p.bump(range_op);
+
+                // testing if we're at one of the following positions:
+                // `0 .. =>`
+                //       ^
+                // `let 0 .. =`
+                //           ^
+                // `let 0..: _ =`
+                //         ^
+                // (1.., _)
+                //     ^
+                // `Some(0 .. )`
+                //            ^
+                // `S { t: 0.. }`
+                //             ^
+                // `[0..]`
+                //      ^
+                // `0 .. if`
+                //       ^
+                if matches!(
+                    p.current(),
+                    T![=] | T![,] | T![:] | T![')'] | T!['}'] | T![']'] | T![if] | EOF
+                ) {
+                    // test half_open_range_pat
+                    // fn f() {
+                    //     let 0 .. = 1u32;
+                    //     let 0..: _ = 1u32;
+                    //
+                    //     match 42 {
+                    //         0 .. if true => (),
+                    //         _ => (),
+                    //     }
+                    // }
+                } else {
+                    atom_pat(p, recovery_set);
+                }
+                m.complete(p, RANGE_PAT);
+                return;
+            }
+        }
+    }
+}
+
+const PAT_RECOVERY_SET: TokenSet = TokenSet::new(&[
+    T![let],
+    T![if],
+    T![while],
+    T![loop],
+    T![match],
+    T![')'],
+    T![']'],
+    T!['}'],
+    T![,],
+    T![=],
+    T![&],
+]);
+
+fn atom_pat(p: &mut Parser<'_>, recovery_set: TokenSet) -> Option<CompletedMarker> {
+    let m = match p.current() {
+        T![box] => box_pat(p),
+        T![ref] | T![mut] => ident_pat(p, true),
+        T![const] => const_block_pat(p),
+        IDENT => match p.nth(1) {
+            // Checks the token after an IDENT to see if a pattern is a path (Struct { .. }) or macro
+            // (T![x]).
+            T!['('] | T!['{'] | T![!] => path_or_macro_pat(p),
+            T![:] if p.nth_at(1, T![::]) => path_or_macro_pat(p),
+            _ => ident_pat(p, true),
+        },
+
+        // test type_path_in_pattern
+        // fn main() { let <_>::Foo = (); }
+        _ if paths::is_path_start(p) => path_or_macro_pat(p),
+        _ if is_literal_pat_start(p) => literal_pat(p),
+
+        T![_] => wildcard_pat(p),
+        T![&] => ref_pat(p),
+        T!['('] => tuple_pat(p),
+        T!['['] => slice_pat(p),
+
+        _ => {
+            p.err_recover("expected pattern", recovery_set);
+            return None;
+        }
+    };
+
+    Some(m)
+}
+
+fn is_literal_pat_start(p: &Parser<'_>) -> bool {
+    p.at(T![-]) && (p.nth(1) == INT_NUMBER || p.nth(1) == FLOAT_NUMBER)
+        || p.at_ts(expressions::LITERAL_FIRST)
+}
+
+// test literal_pattern
+// fn main() {
+//     match () {
+//         -1 => (),
+//         92 => (),
+//         'c' => (),
+//         "hello" => (),
+//     }
+// }
+fn literal_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(is_literal_pat_start(p));
+    let m = p.start();
+    p.eat(T![-]);
+    expressions::literal(p);
+    m.complete(p, LITERAL_PAT)
+}
+
+// test path_part
+// fn foo() {
+//     let foo::Bar = ();
+//     let ::Bar = ();
+//     let Bar { .. } = ();
+//     let Bar(..) = ();
+// }
+fn path_or_macro_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(paths::is_path_start(p));
+    let m = p.start();
+    paths::expr_path(p);
+    let kind = match p.current() {
+        T!['('] => {
+            tuple_pat_fields(p);
+            TUPLE_STRUCT_PAT
+        }
+        T!['{'] => {
+            record_pat_field_list(p);
+            RECORD_PAT
+        }
+        // test marco_pat
+        // fn main() {
+        //     let m!(x) = 0;
+        // }
+        T![!] => {
+            items::macro_call_after_excl(p);
+            return m.complete(p, MACRO_CALL).precede(p).complete(p, MACRO_PAT);
+        }
+        _ => PATH_PAT,
+    };
+    m.complete(p, kind)
+}
+
+// test tuple_pat_fields
+// fn foo() {
+//     let S() = ();
+//     let S(_) = ();
+//     let S(_,) = ();
+//     let S(_, .. , x) = ();
+//     let S(| a) = ();
+// }
+fn tuple_pat_fields(p: &mut Parser<'_>) {
+    assert!(p.at(T!['(']));
+    p.bump(T!['(']);
+    pat_list(p, T![')']);
+    p.expect(T![')']);
+}
+
+// test record_pat_field
+// fn foo() {
+//     let S { 0: 1 } = ();
+//     let S { x: 1 } = ();
+//     let S { #[cfg(any())] x: 1 } = ();
+// }
+fn record_pat_field(p: &mut Parser<'_>) {
+    match p.current() {
+        IDENT | INT_NUMBER if p.nth(1) == T![:] => {
+            name_ref_or_index(p);
+            p.bump(T![:]);
+            // test record_field_pat_leading_or
+            // fn foo() { let R { a: | 1 | 2 } = 0; }
+            pattern(p);
+        }
+        // test_err record_pat_field_eq_recovery
+        // fn main() {
+        //     let S { field = foo };
+        // }
+        IDENT | INT_NUMBER if p.nth(1) == T![=] => {
+            name_ref_or_index(p);
+            p.err_and_bump("expected `:`");
+            pattern(p);
+        }
+        T![box] => {
+            // FIXME: not all box patterns should be allowed
+            box_pat(p);
+        }
+        T![ref] | T![mut] | IDENT => {
+            ident_pat(p, false);
+        }
+        _ => {
+            p.err_and_bump("expected identifier");
+        }
+    }
+}
+
+// test record_pat_field_list
+// fn foo() {
+//     let S {} = ();
+//     let S { f, ref mut g } = ();
+//     let S { h: _, ..} = ();
+//     let S { h: _, } = ();
+//     let S { #[cfg(any())] .. } = ();
+// }
+fn record_pat_field_list(p: &mut Parser<'_>) {
+    assert!(p.at(T!['{']));
+    let m = p.start();
+    p.bump(T!['{']);
+    while !p.at(EOF) && !p.at(T!['}']) {
+        let m = p.start();
+        attributes::outer_attrs(p);
+
+        match p.current() {
+            // A trailing `..` is *not* treated as a REST_PAT.
+            T![.] if p.at(T![..]) => {
+                p.bump(T![..]);
+                m.complete(p, REST_PAT);
+            }
+            T!['{'] => {
+                error_block(p, "expected ident");
+                m.abandon(p);
+            }
+            _ => {
+                record_pat_field(p);
+                m.complete(p, RECORD_PAT_FIELD);
+            }
+        }
+        if !p.at(T!['}']) {
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T!['}']);
+    m.complete(p, RECORD_PAT_FIELD_LIST);
+}
+
+// test placeholder_pat
+// fn main() { let _ = (); }
+fn wildcard_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![_]));
+    let m = p.start();
+    p.bump(T![_]);
+    m.complete(p, WILDCARD_PAT)
+}
+
+// test ref_pat
+// fn main() {
+//     let &a = ();
+//     let &mut b = ();
+// }
+fn ref_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![&]));
+    let m = p.start();
+    p.bump(T![&]);
+    p.eat(T![mut]);
+    pattern_single(p);
+    m.complete(p, REF_PAT)
+}
+
+// test tuple_pat
+// fn main() {
+//     let (a, b, ..) = ();
+//     let (a,) = ();
+//     let (..) = ();
+//     let () = ();
+//     let (| a | a, | b) = ((),());
+// }
+fn tuple_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T!['(']));
+    let m = p.start();
+    p.bump(T!['(']);
+    let mut has_comma = false;
+    let mut has_pat = false;
+    let mut has_rest = false;
+
+    // test_err tuple_pat_leading_comma
+    // fn foo() {
+    //     let (,);
+    // }
+    if p.eat(T![,]) {
+        p.error("expected pattern");
+        has_comma = true;
+    }
+
+    while !p.at(EOF) && !p.at(T![')']) {
+        has_pat = true;
+        if !p.at_ts(PAT_TOP_FIRST) {
+            p.error("expected a pattern");
+            break;
+        }
+        has_rest |= p.at(T![..]);
+
+        pattern(p);
+        if !p.at(T![')']) {
+            has_comma = true;
+            p.expect(T![,]);
+        }
+    }
+    p.expect(T![')']);
+
+    m.complete(p, if !has_comma && !has_rest && has_pat { PAREN_PAT } else { TUPLE_PAT })
+}
+
+// test slice_pat
+// fn main() {
+//     let [a, b, ..] = [];
+//     let [| a, ..] = [];
+// }
+fn slice_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T!['[']));
+    let m = p.start();
+    p.bump(T!['[']);
+    pat_list(p, T![']']);
+    p.expect(T![']']);
+    m.complete(p, SLICE_PAT)
+}
+
+fn pat_list(p: &mut Parser<'_>, ket: SyntaxKind) {
+    while !p.at(EOF) && !p.at(ket) {
+        pattern(p);
+        if !p.eat(T![,]) {
+            if p.at_ts(PAT_TOP_FIRST) {
+                p.error(format!("expected {:?}, got {:?}", T![,], p.current()));
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+// test bind_pat
+// fn main() {
+//     let a = ();
+//     let mut b = ();
+//     let ref c = ();
+//     let ref mut d = ();
+//     let e @ _ = ();
+//     let ref mut f @ g @ _ = ();
+// }
+fn ident_pat(p: &mut Parser<'_>, with_at: bool) -> CompletedMarker {
+    assert!(matches!(p.current(), T![ref] | T![mut] | IDENT));
+    let m = p.start();
+    p.eat(T![ref]);
+    p.eat(T![mut]);
+    name_r(p, PAT_RECOVERY_SET);
+    if with_at && p.eat(T![@]) {
+        pattern_single(p);
+    }
+    m.complete(p, IDENT_PAT)
+}
+
+// test box_pat
+// fn main() {
+//     let box i = ();
+//     let box Outer { box i, j: box Inner(box &x) } = ();
+//     let box ref mut i = ();
+// }
+fn box_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![box]));
+    let m = p.start();
+    p.bump(T![box]);
+    pattern_single(p);
+    m.complete(p, BOX_PAT)
+}
+
+// test const_block_pat
+// fn main() {
+//     let const { 15 } = ();
+//     let const { foo(); bar() } = ();
+//
+//     match 42 {
+//         const { 0 } .. const { 1 } => (),
+//         .. const { 0 } => (),
+//         const { 2 } .. => (),
+//     }
+//
+//     let (const { () },) = ();
+// }
+fn const_block_pat(p: &mut Parser<'_>) -> CompletedMarker {
+    assert!(p.at(T![const]));
+    let m = p.start();
+    p.bump(T![const]);
+    expressions::block_expr(p);
+    m.complete(p, CONST_BLOCK_PAT)
+}
+
+use super::*;
+
+pub(super) const PATH_FIRST: TokenSet =
+    TokenSet::new(&[IDENT, T![self], T![super], T![crate], T![Self], T![:], T![<]]);
+
+pub(super) fn is_path_start(p: &Parser<'_>) -> bool {
+    is_use_path_start(p) || p.at(T![<]) || p.at(T![Self])
+}
+
+pub(super) fn is_use_path_start(p: &Parser<'_>) -> bool {
+    match p.current() {
+        IDENT | T![self] | T![super] | T![crate] => true,
+        T![:] if p.at(T![::]) => true,
+        _ => false,
+    }
+}
+
+pub(super) fn use_path(p: &mut Parser<'_>) {
+    path(p, Mode::Use);
+}
+
+pub(super) fn vis_path(p: &mut Parser<'_>) {
+    path(p, Mode::Vis);
+}
+
+pub(super) fn attr_path(p: &mut Parser<'_>) {
+    path(p, Mode::Attr);
+}
+
+pub(crate) fn type_path(p: &mut Parser<'_>) {
+    path(p, Mode::Type);
+}
+
+pub(super) fn expr_path(p: &mut Parser<'_>) {
+    path(p, Mode::Expr);
+}
+
+pub(crate) fn type_path_for_qualifier(
+    p: &mut Parser<'_>,
+    qual: CompletedMarker,
+) -> CompletedMarker {
+    path_for_qualifier(p, Mode::Type, qual)
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum Mode {
+    Use,
+    Attr,
+    Type,
+    Expr,
+    Vis,
+}
+
+fn path(p: &mut Parser<'_>, mode: Mode) -> Option<CompletedMarker> {
+    let path = p.start();
+    if path_segment(p, mode, true).is_none() {
+        path.abandon(p);
+        return None;
+    }
+    let qual = path.complete(p, PATH);
+    Some(path_for_qualifier(p, mode, qual))
+}
+
+fn path_for_qualifier(
+    p: &mut Parser<'_>,
+    mode: Mode,
+    mut qual: CompletedMarker,
+) -> CompletedMarker {
+    loop {
+        let use_tree = mode == Mode::Use && matches!(p.nth(2), T![*] | T!['{']);
+        if p.at(T![::]) && !use_tree {
+            let path = qual.precede(p);
+            p.bump(T![::]);
+            path_segment(p, mode, false);
+            let path = path.complete(p, PATH);
+            qual = path;
+        } else {
+            return qual;
+        }
+    }
+}
+
+const EXPR_PATH_SEGMENT_RECOVERY_SET: TokenSet =
+    expressions::EXPR_RECOVERY_SET.union(items::ITEM_RECOVERY_SET);
+const TYPE_PATH_SEGMENT_RECOVERY_SET: TokenSet = types::TYPE_RECOVERY_SET;
+
+fn path_segment(p: &mut Parser<'_>, mode: Mode, first: bool) -> Option<CompletedMarker> {
+    let m = p.start();
+    // test qual_paths
+    // type X = <A as B>::Output;
+    // fn foo() { <usize as Default>::default(); }
+    if first && p.at(T![<]) {
+        let m = p.start();
+        p.bump(T![<]);
+        // test_err angled_path_without_qual
+        // type X = <()>;
+        // type Y = <A as B>;
+        types::type_(p);
+        if p.eat(T![as]) {
+            if is_use_path_start(p) {
+                types::path_type_bounds(p, true);
+            } else {
+                p.error("expected a trait");
+            }
+        }
+        p.expect(T![>]);
+        m.complete(p, TYPE_ANCHOR);
+        if !p.at(T![::]) {
+            p.error("expected `::`");
+        }
+    } else {
+        let mut empty = if first { !p.eat(T![::]) } else { true };
+        if p.at_ts(PATH_NAME_REF_KINDS) {
+            // test crate_path
+            // use crate::foo;
+            name_ref_mod_path(p);
+            opt_path_args(p, mode);
+        } else {
+            let recover_set = match mode {
+                Mode::Use => items::ITEM_RECOVERY_SET,
+                Mode::Attr => {
+                    items::ITEM_RECOVERY_SET.union(TokenSet::new(&[T![']'], T![=], T![#]]))
+                }
+                Mode::Vis => items::ITEM_RECOVERY_SET.union(TokenSet::new(&[T![')']])),
+                Mode::Type => TYPE_PATH_SEGMENT_RECOVERY_SET,
+                Mode::Expr => EXPR_PATH_SEGMENT_RECOVERY_SET,
+            };
+            empty &= p.err_recover(
+                "expected identifier, `self`, `super`, `crate`, or `Self`",
+                recover_set,
+            );
+            if empty {
+                // test_err empty_segment
+                // use crate::;
+                m.abandon(p);
+                return None;
+            }
+        }
+    }
+    Some(m.complete(p, PATH_SEGMENT))
+}
+
+pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
+    // test typepathfn_with_coloncolon
+    // type F = Start::(Middle) -> (Middle)::End;
+    // type GenericArg = S<Start(Middle)::End>;
+    let m;
+    if p.at(T![::]) && matches!(p.nth(2), T![<] | T!['(']) {
+        m = p.start();
+        p.bump(T![::]);
+    } else if (p.current() == T![<] && p.nth(1) != T![=]) || p.current() == T!['('] {
+        m = p.start();
+    } else {
+        return;
+    }
+    let current = p.current();
+    if current == T![<] {
+        // test_err generic_arg_list_recover
+        // type T = T<0, ,T>;
+        // type T = T::<0, ,T>;
+        delimited(
+            p,
+            T![<],
+            T![>],
+            T![,],
+            || "expected generic argument".into(),
+            generic_args::GENERIC_ARG_FIRST,
+            generic_args::generic_arg,
+        );
+        m.complete(p, GENERIC_ARG_LIST);
+    } else if p.nth_at(1, T![..]) {
+        // test return_type_syntax_in_path
+        // fn foo<T>()
+        // where
+        //     T::method(..): Send,
+        //     method(..): Send,
+        //     method::(..): Send,
+        // {}
+        p.bump(T!['(']);
+        p.bump(T![..]);
+        p.expect(T![')']);
+        m.complete(p, RETURN_TYPE_SYNTAX);
+    } else {
+        // test path_fn_trait_args
+        // type F = Box<Fn(i32) -> ()>;
+        // type F = Box<::Fn(i32) -> ()>;
+        // type F = Box<Fn::(i32) -> ()>;
+        // type F = Box<::Fn::(i32) -> ()>;
+        delimited(
+            p,
+            T!['('],
+            T![')'],
+            T![,],
+            || "expected type".into(),
+            types::TYPE_FIRST,
+            |p| {
+                let progress = types::TYPE_FIRST.contains(p.current());
+                generic_args::type_arg(p);
+                progress
+            },
+        );
+        m.complete(p, PARENTHESIZED_ARG_LIST);
+        opt_ret_type(p);
+    }
+}
+
+fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
+    match mode {
+        Mode::Use | Mode::Attr | Mode::Vis => {}
+        Mode::Type => opt_path_type_args(p),
+        Mode::Expr => generic_args::opt_generic_arg_list_expr(p),
+    }
+}
+
+//! A bit-set of `SyntaxKind`s.
+
+use crate::SyntaxKind;
+
+/// A bit-set of `SyntaxKind`s
+#[derive(Clone, Copy)]
+pub(crate) struct TokenSet([u64; 3]);
+
+/// `TokenSet`s should only include token `SyntaxKind`s, so the discriminant of any passed/included
+/// `SyntaxKind` must *not* be greater than that of the last token `SyntaxKind`.
+/// See #17037.
+const LAST_TOKEN_KIND_DISCRIMINANT: usize = SyntaxKind::SHEBANG as usize;
+
+impl TokenSet {
+    pub(crate) const EMPTY: TokenSet = TokenSet([0; 3]);
+
+    pub(crate) const fn new(kinds: &[SyntaxKind]) -> TokenSet {
+        let mut res = [0; 3];
+        let mut i = 0;
+        while i < kinds.len() {
+            let discriminant = kinds[i] as usize;
+            debug_assert!(
+                discriminant <= LAST_TOKEN_KIND_DISCRIMINANT,
+                "Expected a token `SyntaxKind`"
+            );
+            let idx = discriminant / 64;
+            res[idx] |= 1 << (discriminant % 64);
+            i += 1;
+        }
+        TokenSet(res)
+    }
+
+    pub(crate) const fn union(self, other: TokenSet) -> TokenSet {
+        TokenSet([self.0[0] | other.0[0], self.0[1] | other.0[1], self.0[2] | other.0[2]])
+    }
+
+    pub(crate) const fn contains(&self, kind: SyntaxKind) -> bool {
+        let discriminant = kind as usize;
+        debug_assert!(
+            discriminant <= LAST_TOKEN_KIND_DISCRIMINANT,
+            "Expected a token `SyntaxKind`"
+        );
+        let idx = discriminant / 64;
+        let mask = 1 << (discriminant % 64);
+        self.0[idx] & mask != 0
+    }
+}
+
+#[test]
+fn token_set_works_for_tokens() {
+    use crate::SyntaxKind::*;
+    let ts = TokenSet::new(&[EOF, SHEBANG]);
+    assert!(ts.contains(EOF));
+    assert!(ts.contains(SHEBANG));
+    assert!(!ts.contains(PLUS));
+}
+
+//! Shortcuts that span lexer/parser abstraction.
+//!
+//! The way Rust works, parser doesn't necessary parse text, and you might
+//! tokenize text without parsing it further. So, it makes sense to keep
+//! abstract token parsing, and string tokenization as completely separate
+//! layers.
+//!
+//! However, often you do parse text into syntax trees and the glue code for
+//! that needs to live somewhere. Rather than putting it to lexer or parser, we
+//! use a separate shortcuts module for that.
+
+use std::mem;
+
+use crate::{
+    Edition, LexedStr, Step,
+    SyntaxKind::{self, *},
+};
+
+#[derive(Debug)]
+pub enum StrStep<'a> {
+    Token { kind: SyntaxKind, text: &'a str },
+    Enter { kind: SyntaxKind },
+    Exit,
+    Error { msg: &'a str, pos: usize },
+}
+
+impl LexedStr<'_> {
+    pub fn to_input(&self, edition: Edition) -> crate::Input {
+        let _p = tracing::info_span!("LexedStr::to_input").entered();
+        let mut res = crate::Input::with_capacity(self.len());
+        let mut was_joint = false;
+        for i in 0..self.len() {
+            let kind = self.kind(i);
+            if kind.is_trivia() {
+                was_joint = false
+            } else if kind == SyntaxKind::IDENT {
+                let token_text = self.text(i);
+                res.push_ident(
+                    SyntaxKind::from_contextual_keyword(token_text, edition)
+                        .unwrap_or(SyntaxKind::IDENT),
+                )
+            } else {
+                if was_joint {
+                    res.was_joint();
+                }
+                res.push(kind);
+                // Tag the token as joint if it is float with a fractional part
+                // we use this jointness to inform the parser about what token split
+                // event to emit when we encounter a float literal in a field access
+                if kind == SyntaxKind::FLOAT_NUMBER {
+                    if !self.text(i).ends_with('.') {
+                        res.was_joint();
+                    } else {
+                        was_joint = false;
+                    }
+                } else {
+                    was_joint = true;
+                }
+            }
+        }
+        res
+    }
+
+    /// NB: only valid to call with Output from Reparser/TopLevelEntry.
+    pub fn intersperse_trivia(
+        &self,
+        output: &crate::Output,
+        sink: &mut dyn FnMut(StrStep<'_>),
+    ) -> bool {
+        let mut builder = Builder { lexed: self, pos: 0, state: State::PendingEnter, sink };
+
+        for event in output.iter() {
+            match event {
+                Step::Token { kind, n_input_tokens: n_raw_tokens } => {
+                    builder.token(kind, n_raw_tokens)
+                }
+                Step::FloatSplit { ends_in_dot: has_pseudo_dot } => {
+                    builder.float_split(has_pseudo_dot)
+                }
+                Step::Enter { kind } => builder.enter(kind),
+                Step::Exit => builder.exit(),
+                Step::Error { msg } => {
+                    let text_pos = builder.lexed.text_start(builder.pos);
+                    (builder.sink)(StrStep::Error { msg, pos: text_pos });
+                }
+            }
+        }
+
+        match mem::replace(&mut builder.state, State::Normal) {
+            State::PendingExit => {
+                builder.eat_trivias();
+                (builder.sink)(StrStep::Exit);
+            }
+            State::PendingEnter | State::Normal => unreachable!(),
+        }
+
+        // is_eof?
+        builder.pos == builder.lexed.len()
+    }
+}
+
+struct Builder<'a, 'b> {
+    lexed: &'a LexedStr<'a>,
+    pos: usize,
+    state: State,
+    sink: &'b mut dyn FnMut(StrStep<'_>),
+}
+
+enum State {
+    PendingEnter,
+    Normal,
+    PendingExit,
+}
+
+impl Builder<'_, '_> {
+    fn token(&mut self, kind: SyntaxKind, n_tokens: u8) {
+        match mem::replace(&mut self.state, State::Normal) {
+            State::PendingEnter => unreachable!(),
+            State::PendingExit => (self.sink)(StrStep::Exit),
+            State::Normal => (),
+        }
+        self.eat_trivias();
+        self.do_token(kind, n_tokens as usize);
+    }
+
+    fn float_split(&mut self, has_pseudo_dot: bool) {
+        match mem::replace(&mut self.state, State::Normal) {
+            State::PendingEnter => unreachable!(),
+            State::PendingExit => (self.sink)(StrStep::Exit),
+            State::Normal => (),
+        }
+        self.eat_trivias();
+        self.do_float_split(has_pseudo_dot);
+    }
+
+    fn enter(&mut self, kind: SyntaxKind) {
+        match mem::replace(&mut self.state, State::Normal) {
+            State::PendingEnter => {
+                (self.sink)(StrStep::Enter { kind });
+                // No need to attach trivias to previous node: there is no
+                // previous node.
+                return;
+            }
+            State::PendingExit => (self.sink)(StrStep::Exit),
+            State::Normal => (),
+        }
+
+        let n_trivias =
+            (self.pos..self.lexed.len()).take_while(|&it| self.lexed.kind(it).is_trivia()).count();
+        let leading_trivias = self.pos..self.pos + n_trivias;
+        let n_attached_trivias = n_attached_trivias(
+            kind,
+            leading_trivias.rev().map(|it| (self.lexed.kind(it), self.lexed.text(it))),
+        );
+        self.eat_n_trivias(n_trivias - n_attached_trivias);
+        (self.sink)(StrStep::Enter { kind });
+        self.eat_n_trivias(n_attached_trivias);
+    }
+
+    fn exit(&mut self) {
+        match mem::replace(&mut self.state, State::PendingExit) {
+            State::PendingEnter => unreachable!(),
+            State::PendingExit => (self.sink)(StrStep::Exit),
+            State::Normal => (),
+        }
+    }
+
+    fn eat_trivias(&mut self) {
+        while self.pos < self.lexed.len() {
+            let kind = self.lexed.kind(self.pos);
+            if !kind.is_trivia() {
+                break;
+            }
+            self.do_token(kind, 1);
+        }
+    }
+
+    fn eat_n_trivias(&mut self, n: usize) {
+        for _ in 0..n {
+            let kind = self.lexed.kind(self.pos);
+            assert!(kind.is_trivia());
+            self.do_token(kind, 1);
+        }
+    }
+
+    fn do_token(&mut self, kind: SyntaxKind, n_tokens: usize) {
+        let text = &self.lexed.range_text(self.pos..self.pos + n_tokens);
+        self.pos += n_tokens;
+        (self.sink)(StrStep::Token { kind, text });
+    }
+
+    fn do_float_split(&mut self, has_pseudo_dot: bool) {
+        let text = &self.lexed.range_text(self.pos..self.pos + 1);
+
+        match text.split_once('.') {
+            Some((left, right)) => {
+                assert!(!left.is_empty());
+                (self.sink)(StrStep::Enter { kind: SyntaxKind::NAME_REF });
+                (self.sink)(StrStep::Token { kind: SyntaxKind::INT_NUMBER, text: left });
+                (self.sink)(StrStep::Exit);
+
+                // here we move the exit up, the original exit has been deleted in process
+                (self.sink)(StrStep::Exit);
+
+                (self.sink)(StrStep::Token { kind: SyntaxKind::DOT, text: "." });
+
+                if has_pseudo_dot {
+                    assert!(right.is_empty(), "{left}.{right}");
+                    self.state = State::Normal;
+                } else {
+                    assert!(!right.is_empty(), "{left}.{right}");
+                    (self.sink)(StrStep::Enter { kind: SyntaxKind::NAME_REF });
+                    (self.sink)(StrStep::Token { kind: SyntaxKind::INT_NUMBER, text: right });
+                    (self.sink)(StrStep::Exit);
+
+                    // the parser creates an unbalanced start node, we are required to close it here
+                    self.state = State::PendingExit;
+                }
+            }
+            None => {
+                // illegal float literal which doesn't have dot in form (like 1e0)
+                // we should emit an error node here
+                (self.sink)(StrStep::Error { msg: "illegal float literal", pos: self.pos });
+                (self.sink)(StrStep::Enter { kind: SyntaxKind::ERROR });
+                (self.sink)(StrStep::Token { kind: SyntaxKind::FLOAT_NUMBER, text });
+                (self.sink)(StrStep::Exit);
+
+                // move up
+                (self.sink)(StrStep::Exit);
+
+                self.state = if has_pseudo_dot { State::Normal } else { State::PendingExit };
+            }
+        }
+
+        self.pos += 1;
+    }
+}
+
+fn n_attached_trivias<'a>(
+    kind: SyntaxKind,
+    trivias: impl Iterator<Item = (SyntaxKind, &'a str)>,
+) -> usize {
+    match kind {
+        CONST | ENUM | FN | IMPL | MACRO_CALL | MACRO_DEF | MACRO_RULES | MODULE | RECORD_FIELD
+        | STATIC | STRUCT | TRAIT | TUPLE_FIELD | TYPE_ALIAS | UNION | USE | VARIANT
+        | EXTERN_CRATE => {
+            let mut res = 0;
+            let mut trivias = trivias.enumerate().peekable();
+
+            while let Some((i, (kind, text))) = trivias.next() {
+                match kind {
+                    WHITESPACE if text.contains("\n\n") => {
+                        // we check whether the next token is a doc-comment
+                        // and skip the whitespace in this case
+                        if let Some((COMMENT, peek_text)) = trivias.peek().map(|(_, pair)| pair)
+                            && is_outer(peek_text)
+                        {
+                            continue;
+                        }
+                        break;
+                    }
+                    COMMENT => {
+                        if is_inner(text) {
+                            break;
+                        }
+                        res = i + 1;
+                    }
+                    _ => (),
+                }
+            }
+            res
+        }
+        _ => 0,
+    }
+}
+
+fn is_outer(text: &str) -> bool {
+    if text.starts_with("////") || text.starts_with("/***") {
+        return false;
+    }
+    text.starts_with("///") || text.starts_with("/**")
+}
+
+fn is_inner(text: &str) -> bool {
+    text.starts_with("//!") || text.starts_with("/*!")
+}
+
+// Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs
+#![expect(dead_code)] // avoid editing
+#![expect(unreachable_pub)] // avoid editing
+#![expect(clippy::useless_format)] // avoid editing
+
+type Span = std::ops::Range<usize>;
+
+#[derive(Debug)]
+pub struct ScriptSource<'s> {
+    /// The full file
+    raw: &'s str,
+    /// The `#!/usr/bin/env cargo` line, if present
+    shebang: Option<Span>,
+    /// The code fence opener (`---`)
+    open: Option<Span>,
+    /// Trailing text after `ScriptSource::open` that identifies the meaning of
+    /// `ScriptSource::frontmatter`
+    info: Option<Span>,
+    /// The lines between `ScriptSource::open` and `ScriptSource::close`
+    frontmatter: Option<Span>,
+    /// The code fence closer (`---`)
+    close: Option<Span>,
+    /// All content after the frontmatter and shebang
+    content: Span,
+}
+
+impl<'s> ScriptSource<'s> {
+    pub fn parse(raw: &'s str) -> Result<Self, FrontmatterError> {
+        use winnow::stream::FindSlice as _;
+        use winnow::stream::Location as _;
+        use winnow::stream::Offset as _;
+        use winnow::stream::Stream as _;
+
+        let content_end = raw.len();
+        let mut source = Self {
+            raw,
+            shebang: None,
+            open: None,
+            info: None,
+            frontmatter: None,
+            close: None,
+            content: 0..content_end,
+        };
+
+        let mut input = winnow::stream::LocatingSlice::new(raw);
+
+        if let Some(shebang_end) = strip_shebang(input.as_ref()) {
+            let shebang_start = input.current_token_start();
+            let _ = input.next_slice(shebang_end);
+            let shebang_end = input.current_token_start();
+            source.shebang = Some(shebang_start..shebang_end);
+            source.content = shebang_end..content_end;
+        }
+
+        // Whitespace may precede a frontmatter but must end with a newline
+        if let Some(nl_end) = strip_ws_lines(input.as_ref()) {
+            let _ = input.next_slice(nl_end);
+        }
+
+        // Opens with a line that starts with 3 or more `-` followed by an optional identifier
+        const FENCE_CHAR: char = '-';
+        let fence_length = input
+            .as_ref()
+            .char_indices()
+            .find_map(|(i, c)| (c != FENCE_CHAR).then_some(i))
+            .unwrap_or_else(|| input.eof_offset());
+        let open_start = input.current_token_start();
+        let fence_pattern = input.next_slice(fence_length);
+        let open_end = input.current_token_start();
+        match fence_length {
+            0 => {
+                return Ok(source);
+            }
+            1 | 2 => {
+                // either not a frontmatter or invalid frontmatter opening
+                return Err(FrontmatterError::new(
+                    format!(
+                        "found {fence_length} `{FENCE_CHAR}` in rust frontmatter, expected at least 3"
+                    ),
+                    raw.len()..raw.len(),
+                ).push_visible_span(open_start..open_end));
+            }
+            _ => {}
+        }
+        source.open = Some(open_start..open_end);
+        let Some(info_nl) = input.find_slice("\n") else {
+            return Err(FrontmatterError::new(
+                format!("unclosed frontmatter; expected `{fence_pattern}`"),
+                raw.len()..raw.len(),
+            )
+            .push_visible_span(open_start..open_end));
+        };
+        let info = input.next_slice(info_nl.start);
+        let info = info.strip_suffix('\r').unwrap_or(info); // already excludes `\n`
+        let info = info.trim_matches(is_horizontal_whitespace);
+        if !info.is_empty() {
+            let info_start = info.offset_from(&raw);
+            let info_end = info_start + info.len();
+            source.info = Some(info_start..info_end);
+        }
+
+        // Ends with a line that starts with a matching number of `-` only followed by whitespace
+        let nl_fence_pattern = format!("\n{fence_pattern}");
+        let Some(frontmatter_nl) = input.find_slice(nl_fence_pattern.as_str()) else {
+            for len in (2..(nl_fence_pattern.len() - 1)).rev() {
+                let Some(frontmatter_nl) = input.find_slice(&nl_fence_pattern[0..len]) else {
+                    continue;
+                };
+                let _ = input.next_slice(frontmatter_nl.start + 1);
+                let close_start = input.current_token_start();
+                let _ = input.next_slice(len);
+                let close_end = input.current_token_start();
+                let fewer_dashes = fence_length - len;
+                return Err(FrontmatterError::new(
+                    format!(
+                        "closing code fence has {fewer_dashes} less `-` than the opening fence"
+                    ),
+                    close_start..close_end,
+                )
+                .push_visible_span(open_start..open_end));
+            }
+            return Err(FrontmatterError::new(
+                format!("unclosed frontmatter; expected `{fence_pattern}`"),
+                raw.len()..raw.len(),
+            )
+            .push_visible_span(open_start..open_end));
+        };
+        let frontmatter_start = input.current_token_start() + 1; // skip nl from infostring
+        let _ = input.next_slice(frontmatter_nl.start + 1);
+        let frontmatter_end = input.current_token_start();
+        source.frontmatter = Some(frontmatter_start..frontmatter_end);
+        let close_start = input.current_token_start();
+        let _ = input.next_slice(fence_length);
+        let close_end = input.current_token_start();
+        source.close = Some(close_start..close_end);
+
+        let nl = input.find_slice("\n");
+        let after_closing_fence =
+            input.next_slice(nl.map(|span| span.end).unwrap_or_else(|| input.eof_offset()));
+        let content_start = input.current_token_start();
+        let extra_dashes = after_closing_fence.chars().take_while(|b| *b == FENCE_CHAR).count();
+        if 0 < extra_dashes {
+            let extra_start = close_end;
+            let extra_end = extra_start + extra_dashes;
+            return Err(FrontmatterError::new(
+                format!("closing code fence has {extra_dashes} more `-` than the opening fence"),
+                extra_start..extra_end,
+            )
+            .push_visible_span(open_start..open_end));
+        } else {
+            let after_closing_fence = strip_newline(after_closing_fence);
+            let after_closing_fence = after_closing_fence.trim_matches(is_horizontal_whitespace);
+            if !after_closing_fence.is_empty() {
+                // extra characters beyond the original fence pattern
+                let after_start = after_closing_fence.offset_from(&raw);
+                let after_end = after_start + after_closing_fence.len();
+                return Err(FrontmatterError::new(
+                    format!("unexpected characters after frontmatter close"),
+                    after_start..after_end,
+                )
+                .push_visible_span(open_start..open_end));
+            }
+        }
+
+        source.content = content_start..content_end;
+
+        if let Some(nl_end) = strip_ws_lines(input.as_ref()) {
+            let _ = input.next_slice(nl_end);
+        }
+        let fence_length = input
+            .as_ref()
+            .char_indices()
+            .find_map(|(i, c)| (c != FENCE_CHAR).then_some(i))
+            .unwrap_or_else(|| input.eof_offset());
+        if 0 < fence_length {
+            let fence_start = input.current_token_start();
+            let fence_end = fence_start + fence_length;
+            return Err(FrontmatterError::new(
+                format!("only one frontmatter is supported"),
+                fence_start..fence_end,
+            )
+            .push_visible_span(open_start..open_end)
+            .push_visible_span(close_start..close_end));
+        }
+
+        Ok(source)
+    }
+
+    pub fn shebang(&self) -> Option<&'s str> {
+        self.shebang.clone().map(|span| &self.raw[span])
+    }
+
+    pub fn shebang_span(&self) -> Option<Span> {
+        self.shebang.clone()
+    }
+
+    pub fn open_span(&self) -> Option<Span> {
+        self.open.clone()
+    }
+
+    pub fn info(&self) -> Option<&'s str> {
+        self.info.clone().map(|span| &self.raw[span])
+    }
+
+    pub fn info_span(&self) -> Option<Span> {
+        self.info.clone()
+    }
+
+    pub fn frontmatter(&self) -> Option<&'s str> {
+        self.frontmatter.clone().map(|span| &self.raw[span])
+    }
+
+    pub fn frontmatter_span(&self) -> Option<Span> {
+        self.frontmatter.clone()
+    }
+
+    pub fn close_span(&self) -> Option<Span> {
+        self.close.clone()
+    }
+
+    pub fn content(&self) -> &'s str {
+        &self.raw[self.content.clone()]
+    }
+
+    pub fn content_span(&self) -> Span {
+        self.content.clone()
+    }
+}
+
+/// Returns the index after the shebang line, if present
+pub fn strip_shebang(input: &str) -> Option<usize> {
+    // See rust-lang/rust's compiler/rustc_lexer/src/lib.rs's `strip_shebang`
+    // Shebang must start with `#!` literally, without any preceding whitespace.
+    // For simplicity we consider any line starting with `#!` a shebang,
+    // regardless of restrictions put on shebangs by specific platforms.
+    if let Some(rest) = input.strip_prefix("#!") {
+        // Ok, this is a shebang but if the next non-whitespace token is `[`,
+        // then it may be valid Rust code, so consider it Rust code.
+        //
+        // NOTE: rustc considers line and block comments to be whitespace but to avoid
+        // any more awareness of Rust grammar, we are excluding it.
+        if !rest.trim_start().starts_with('[') {
+            // No other choice than to consider this a shebang.
+            let newline_end = input.find('\n').map(|pos| pos + 1).unwrap_or(input.len());
+            return Some(newline_end);
+        }
+    }
+    None
+}
+
+/// Returns the index after any lines with only whitespace, if present
+pub fn strip_ws_lines(input: &str) -> Option<usize> {
+    let ws_end = input.find(|c| !is_whitespace(c)).unwrap_or(input.len());
+    if ws_end == 0 {
+        return None;
+    }
+
+    let nl_start = input[0..ws_end].rfind('\n')?;
+    let nl_end = nl_start + 1;
+    Some(nl_end)
+}
+
+/// True if `c` is considered a whitespace according to Rust language definition.
+/// See [Rust language reference](https://doc.rust-lang.org/reference/whitespace.html)
+/// for definitions of these classes.
+fn is_whitespace(c: char) -> bool {
+    // This is Pattern_White_Space.
+    //
+    // Note that this set is stable (ie, it doesn't change with different
+    // Unicode versions), so it's ok to just hard-code the values.
+
+    matches!(
+        c,
+        // End-of-line characters
+        | '\u{000A}' // line feed (\n)
+        | '\u{000B}' // vertical tab
+        | '\u{000C}' // form feed
+        | '\u{000D}' // carriage return (\r)
+        | '\u{0085}' // next line (from latin1)
+        | '\u{2028}' // LINE SEPARATOR
+        | '\u{2029}' // PARAGRAPH SEPARATOR
+
+        // `Default_Ignorable_Code_Point` characters
+        | '\u{200E}' // LEFT-TO-RIGHT MARK
+        | '\u{200F}' // RIGHT-TO-LEFT MARK
+
+        // Horizontal space characters
+        | '\u{0009}'   // tab (\t)
+        | '\u{0020}' // space
+    )
+}
+
+/// True if `c` is considered horizontal whitespace according to Rust language definition.
+fn is_horizontal_whitespace(c: char) -> bool {
+    // This is Pattern_White_Space.
+    //
+    // Note that this set is stable (ie, it doesn't change with different
+    // Unicode versions), so it's ok to just hard-code the values.
+
+    matches!(
+        c,
+        // Horizontal space characters
+        '\u{0009}'   // tab (\t)
+        | '\u{0020}' // space
+    )
+}
+
+fn strip_newline(text: &str) -> &str {
+    text.strip_suffix("\r\n").or_else(|| text.strip_suffix('\n')).unwrap_or(text)
+}
+
+#[derive(Debug)]
+pub struct FrontmatterError {
+    message: String,
+    primary_span: Span,
+    visible_spans: Vec<Span>,
+}
+
+impl FrontmatterError {
+    pub fn new(message: impl Into<String>, span: Span) -> Self {
+        Self { message: message.into(), primary_span: span, visible_spans: Vec::new() }
+    }
+
+    pub fn push_visible_span(mut self, span: Span) -> Self {
+        self.visible_spans.push(span);
+        self
+    }
+
+    pub fn message(&self) -> &str {
+        self.message.as_str()
+    }
+
+    pub fn primary_span(&self) -> Span {
+        self.primary_span.clone()
+    }
+
+    pub fn visible_spans(&self) -> &[Span] {
+        &self.visible_spans
+    }
+}
+
+impl std::fmt::Display for FrontmatterError {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.message.fmt(fmt)
+    }
+}
+
+impl std::error::Error for FrontmatterError {}
+
+use crate::{Edition, LexedStr, PrefixEntryPoint, Step};
+
+#[test]
+fn vis() {
+    check(PrefixEntryPoint::Vis, "pub(crate) fn foo() {}", "pub(crate)");
+    check(PrefixEntryPoint::Vis, "fn foo() {}", "");
+    check(PrefixEntryPoint::Vis, "pub(fn foo() {}", "pub");
+    check(PrefixEntryPoint::Vis, "pub(crate fn foo() {}", "pub(crate");
+}
+
+#[test]
+fn block() {
+    check(PrefixEntryPoint::Block, "{}, 92", "{}");
+    check(PrefixEntryPoint::Block, "{, 92)", "{, 92)");
+    check(PrefixEntryPoint::Block, "()", "");
+}
+
+#[test]
+fn stmt() {
+    check(PrefixEntryPoint::Stmt, "92; fn", "92");
+    check(PrefixEntryPoint::Stmt, "let _ = 92; 1", "let _ = 92");
+    check(PrefixEntryPoint::Stmt, "pub fn f() {} = 92", "pub fn f() {}");
+    check(PrefixEntryPoint::Stmt, "struct S;;", "struct S;");
+    check(PrefixEntryPoint::Stmt, "fn f() {};", "fn f() {}");
+    check(PrefixEntryPoint::Stmt, ";;;", ";");
+    check(PrefixEntryPoint::Stmt, "+", "+");
+    check(PrefixEntryPoint::Stmt, "@", "@");
+    check(PrefixEntryPoint::Stmt, "loop {} - 1", "loop {}");
+}
+
+#[test]
+fn pat() {
+    check(PrefixEntryPoint::Pat, "x y", "x");
+    check(PrefixEntryPoint::Pat, "fn f() {}", "fn");
+    check(PrefixEntryPoint::Pat, ".. ..", "..");
+}
+
+#[test]
+fn ty() {
+    check(PrefixEntryPoint::Ty, "fn() foo", "fn()");
+    check(PrefixEntryPoint::Ty, "Clone + Copy + fn", "Clone + Copy +");
+    check(PrefixEntryPoint::Ty, "struct f", "struct");
+}
+
+#[test]
+fn expr() {
+    check(PrefixEntryPoint::Expr, "92 92", "92");
+    check(PrefixEntryPoint::Expr, "+1", "+");
+    check(PrefixEntryPoint::Expr, "-1", "-1");
+    check(PrefixEntryPoint::Expr, "fn foo() {}", "fn");
+    check(PrefixEntryPoint::Expr, "#[attr] ()", "#[attr] ()");
+    check(PrefixEntryPoint::Expr, "foo.0", "foo.0");
+    check(PrefixEntryPoint::Expr, "foo.0.1", "foo.0.1");
+    check(PrefixEntryPoint::Expr, "foo.0. foo", "foo.0. foo");
+}
+
+#[test]
+fn path() {
+    check(PrefixEntryPoint::Path, "foo::bar baz", "foo::bar");
+    check(PrefixEntryPoint::Path, "foo::<> baz", "foo::<>");
+    check(PrefixEntryPoint::Path, "foo<> baz", "foo<>");
+    check(PrefixEntryPoint::Path, "Fn() -> i32?", "Fn() -> i32");
+    // FIXME: This shouldn't be accepted as path actually.
+    check(PrefixEntryPoint::Path, "<_>::foo", "<_>::foo");
+}
+
+#[test]
+fn item() {
+    // FIXME: This shouldn't consume the semicolon.
+    check(PrefixEntryPoint::Item, "fn foo() {};", "fn foo() {};");
+    check(PrefixEntryPoint::Item, "#[attr] pub struct S {} 92", "#[attr] pub struct S {}");
+    check(PrefixEntryPoint::Item, "item!{}?", "item!{}");
+    check(PrefixEntryPoint::Item, "????", "?");
+}
+
+#[test]
+fn meta_item() {
+    check(PrefixEntryPoint::MetaItem, "attr, ", "attr");
+    check(PrefixEntryPoint::MetaItem, "attr(some token {stream});", "attr(some token {stream})");
+    check(PrefixEntryPoint::MetaItem, "path::attr = 2 * 2!", "path::attr = 2 * 2");
+}
+
+#[track_caller]
+fn check(entry: PrefixEntryPoint, input: &str, prefix: &str) {
+    let lexed = LexedStr::new(Edition::CURRENT, input);
+    let input = lexed.to_input(Edition::CURRENT);
+
+    let mut n_tokens = 0;
+    for step in entry.parse(&input, Edition::CURRENT).iter() {
+        match step {
+            Step::Token { n_input_tokens, .. } => n_tokens += n_input_tokens as usize,
+            Step::FloatSplit { .. } => n_tokens += 1,
+            Step::Enter { .. } | Step::Exit | Step::Error { .. } => (),
+        }
+    }
+
+    let mut i = 0;
+    loop {
+        if n_tokens == 0 {
+            break;
+        }
+        if !lexed.kind(i).is_trivia() {
+            n_tokens -= 1;
+        }
+        i += 1;
+    }
+    let buf = &lexed.as_str()[..lexed.text_start(i)];
+    assert_eq!(buf, prefix);
+}
+
+use expect_test::expect;
+
+use crate::TopEntryPoint;
+
+#[test]
+fn source_file() {
+    check(
+        TopEntryPoint::SourceFile,
+        "",
+        expect![[r#"
+        SOURCE_FILE
+    "#]],
+    );
+
+    check(
+        TopEntryPoint::SourceFile,
+        "struct S;",
+        expect![[r#"
+        SOURCE_FILE
+          STRUCT
+            STRUCT_KW "struct"
+            WHITESPACE " "
+            NAME
+              IDENT "S"
+            SEMICOLON ";"
+    "#]],
+    );
+
+    check(
+        TopEntryPoint::SourceFile,
+        "@error@",
+        expect![[r#"
+            SOURCE_FILE
+              ERROR
+                AT "@"
+              ERROR
+                PATH
+                  PATH_SEGMENT
+                    NAME_REF
+                      IDENT "error"
+              ERROR
+                AT "@"
+            error 0: expected an item
+            error 6: expected an item
+            error 6: expected an item
+        "#]],
+    );
+}
+
+#[test]
+fn macro_stmt() {
+    check(
+        TopEntryPoint::MacroStmts,
+        "",
+        expect![[r#"
+            MACRO_STMTS
+        "#]],
+    );
+    check(
+        TopEntryPoint::MacroStmts,
+        "#!/usr/bin/rust",
+        expect![[r##"
+            MACRO_STMTS
+              ERROR
+                SHEBANG "#!/usr/bin/rust"
+            error 0: expected expression, item or let statement
+        "##]],
+    );
+    check(
+        TopEntryPoint::MacroStmts,
+        "let x = 1 2 struct S;",
+        expect![[r#"
+            MACRO_STMTS
+              LET_STMT
+                LET_KW "let"
+                WHITESPACE " "
+                IDENT_PAT
+                  NAME
+                    IDENT "x"
+                WHITESPACE " "
+                EQ "="
+                WHITESPACE " "
+                LITERAL
+                  INT_NUMBER "1"
+              WHITESPACE " "
+              EXPR_STMT
+                LITERAL
+                  INT_NUMBER "2"
+              WHITESPACE " "
+              STRUCT
+                STRUCT_KW "struct"
+                WHITESPACE " "
+                NAME
+                  IDENT "S"
+                SEMICOLON ";"
+        "#]],
+    );
+}
+
+#[test]
+fn macro_items() {
+    check(
+        TopEntryPoint::MacroItems,
+        "",
+        expect![[r#"
+            MACRO_ITEMS
+        "#]],
+    );
+    check(
+        TopEntryPoint::MacroItems,
+        "#!/usr/bin/rust",
+        expect![[r##"
+            MACRO_ITEMS
+              ERROR
+                SHEBANG "#!/usr/bin/rust"
+            error 0: expected an item
+        "##]],
+    );
+    check(
+        TopEntryPoint::MacroItems,
+        "struct S; foo!{}",
+        expect![[r#"
+            MACRO_ITEMS
+              STRUCT
+                STRUCT_KW "struct"
+                WHITESPACE " "
+                NAME
+                  IDENT "S"
+                SEMICOLON ";"
+              WHITESPACE " "
+              MACRO_CALL
+                PATH
+                  PATH_SEGMENT
+                    NAME_REF
+                      IDENT "foo"
+                BANG "!"
+                TOKEN_TREE
+                  L_CURLY "{"
+                  R_CURLY "}"
+        "#]],
+    );
+}
+
+#[test]
+fn macro_pattern() {
+    check(
+        TopEntryPoint::Pattern,
+        "",
+        expect![[r#"
+            ERROR
+            error 0: expected pattern
+        "#]],
+    );
+    check(
+        TopEntryPoint::Pattern,
+        "Some(_)",
+        expect![[r#"
+            TUPLE_STRUCT_PAT
+              PATH
+                PATH_SEGMENT
+                  NAME_REF
+                    IDENT "Some"
+              L_PAREN "("
+              WILDCARD_PAT
+                UNDERSCORE "_"
+              R_PAREN ")"
+        "#]],
+    );
+
+    check(
+        TopEntryPoint::Pattern,
+        "None leftover tokens",
+        expect![[r#"
+            ERROR
+              IDENT_PAT
+                NAME
+                  IDENT "None"
+              WHITESPACE " "
+              IDENT "leftover"
+              WHITESPACE " "
+              IDENT "tokens"
+        "#]],
+    );
+
+    check(
+        TopEntryPoint::Pattern,
+        "@err",
+        expect![[r#"
+            ERROR
+              ERROR
+                AT "@"
+              IDENT "err"
+            error 0: expected pattern
+        "#]],
+    );
+
+    check(
+        TopEntryPoint::Pattern,
+        "| 42 | 43",
+        expect![[r#"
+            OR_PAT
+              PIPE "|"
+              WHITESPACE " "
+              LITERAL_PAT
+                LITERAL
+                  INT_NUMBER "42"
+              WHITESPACE " "
+              PIPE "|"
+              WHITESPACE " "
+              LITERAL_PAT
+                LITERAL
+                  INT_NUMBER "43"
+        "#]],
+    );
+
+    check(
+        TopEntryPoint::Pattern,
+        "| 42",
+        expect![[r#"
+            OR_PAT
+              PIPE "|"
+              WHITESPACE " "
+              LITERAL_PAT
+                LITERAL
+                  INT_NUMBER "42"
+        "#]],
+    );
+}
+
+#[test]
+fn type_() {
+    check(
+        TopEntryPoint::Type,
+        "",
+        expect![[r#"
+            ERROR
+            error 0: expected type
+        "#]],
+    );
+
+    check(
+        TopEntryPoint::Type,
+        "Option<!>",
+        expect![[r#"
+            PATH_TYPE
+              PATH
+                PATH_SEGMENT
+                  NAME_REF
+                    IDENT "Option"
+                  GENERIC_ARG_LIST
+                    L_ANGLE "<"
+                    TYPE_ARG
+                      NEVER_TYPE
+                        BANG "!"
+                    R_ANGLE ">"
+        "#]],
+    );
+    check(
+        TopEntryPoint::Type,
+        "() () ()",
+        expect![[r#"
+            ERROR
+              TUPLE_TYPE
+                L_PAREN "("
+                R_PAREN ")"
+              WHITESPACE " "
+              L_PAREN "("
+              R_PAREN ")"
+              WHITESPACE " "
+              L_PAREN "("
+              R_PAREN ")"
+        "#]],
+    );
+    check(
+        TopEntryPoint::Type,
+        "$$$",
+        expect![[r#"
+            ERROR
+              ERROR
+                DOLLAR "$"
+              DOLLAR "$"
+              DOLLAR "$"
+            error 0: expected type
+        "#]],
+    );
+}
+
+#[test]
+fn expr() {
+    check(
+        TopEntryPoint::Expr,
+        "",
+        expect![[r#"
+            ERROR
+            error 0: expected expression
+        "#]],
+    );
+    check(
+        TopEntryPoint::Expr,
+        "2 + 2 == 5",
+        expect![[r#"
+        BIN_EXPR
+          BIN_EXPR
+            LITERAL
+              INT_NUMBER "2"
+            WHITESPACE " "
+            PLUS "+"
+            WHITESPACE " "
+            LITERAL
+              INT_NUMBER "2"
+          WHITESPACE " "
+          EQ2 "=="
+          WHITESPACE " "
+          LITERAL
+            INT_NUMBER "5"
+    "#]],
+    );
+    check(
+        TopEntryPoint::Expr,
+        "let _ = 0;",
+        expect![[r#"
+            ERROR
+              LET_EXPR
+                LET_KW "let"
+                WHITESPACE " "
+                WILDCARD_PAT
+                  UNDERSCORE "_"
+                WHITESPACE " "
+                EQ "="
+                WHITESPACE " "
+                LITERAL
+                  INT_NUMBER "0"
+              SEMICOLON ";"
+        "#]],
+    );
+}
+
+#[track_caller]
+fn check(entry: TopEntryPoint, input: &str, expect: expect_test::Expect) {
+    let (parsed, _errors) = super::parse(entry, input, crate::Edition::CURRENT);
+    expect.assert_eq(&parsed)
+}
+
+//! Generated by `cargo xtask codegen grammar`, do not edit by hand.
+
+#![allow(bad_style, missing_docs, unreachable_pub)]
+use crate::Edition;
+#[doc = r" The kind of syntax node, e.g. `IDENT`, `USE_KW`, or `STRUCT`."]
+#[derive(Debug)]
+#[repr(u16)]
+pub enum SyntaxKind {
+    #[doc(hidden)]
+    TOMBSTONE,
+    #[doc(hidden)]
+    EOF,
+    DOLLAR,
+    SEMICOLON,
+    COMMA,
+    L_PAREN,
+    R_PAREN,
+    L_CURLY,
+    R_CURLY,
+    L_BRACK,
+    R_BRACK,
+    L_ANGLE,
+    R_ANGLE,
+    AT,
+    POUND,
+    TILDE,
+    QUESTION,
+    AMP,
+    PIPE,
+    PLUS,
+    STAR,
+    SLASH,
+    CARET,
+    PERCENT,
+    UNDERSCORE,
+    DOT,
+    DOT2,
+    DOT3,
+    DOT2EQ,
+    COLON,
+    COLON2,
+    EQ,
+    EQ2,
+    FAT_ARROW,
+    BANG,
+    NEQ,
+    MINUS,
+    THIN_ARROW,
+    LTEQ,
+    GTEQ,
+    PLUSEQ,
+    MINUSEQ,
+    PIPEEQ,
+    AMPEQ,
+    CARETEQ,
+    SLASHEQ,
+    STAREQ,
+    PERCENTEQ,
+    AMP2,
+    PIPE2,
+    SHL,
+    SHR,
+    SHLEQ,
+    SHREQ,
+    SELF_TYPE_KW,
+    ABSTRACT_KW,
+    AS_KW,
+    BECOME_KW,
+    BOX_KW,
+    BREAK_KW,
+    CONST_KW,
+    CONTINUE_KW,
+    CRATE_KW,
+    DO_KW,
+    ELSE_KW,
+    ENUM_KW,
+    EXTERN_KW,
+    FALSE_KW,
+    FINAL_KW,
+    FN_KW,
+    FOR_KW,
+    IF_KW,
+    IMPL_KW,
+    IN_KW,
+    LET_KW,
+    LOOP_KW,
+    MACRO_KW,
+    MATCH_KW,
+    MOD_KW,
+    MOVE_KW,
+    MUT_KW,
+    OVERRIDE_KW,
+    PRIV_KW,
+    PUB_KW,
+    REF_KW,
+    RETURN_KW,
+    SELF_KW,
+    STATIC_KW,
+    STRUCT_KW,
+    SUPER_KW,
+    TRAIT_KW,
+    TRUE_KW,
+    TYPE_KW,
+    TYPEOF_KW,
+    UNSAFE_KW,
+    UNSIZED_KW,
+    USE_KW,
+    VIRTUAL_KW,
+    WHERE_KW,
+    WHILE_KW,
+    YIELD_KW,
+    ASM_KW,
+    ASYNC_KW,
+    ATT_SYNTAX_KW,
+    AUTO_KW,
+    AWAIT_KW,
+    BUILTIN_KW,
+    CLOBBER_ABI_KW,
+    DEFAULT_KW,
+    DYN_KW,
+    FORMAT_ARGS_KW,
+    GEN_KW,
+    GLOBAL_ASM_KW,
+    INLATEOUT_KW,
+    INOUT_KW,
+    LABEL_KW,
+    LATEOUT_KW,
+    MACRO_RULES_KW,
+    MAY_UNWIND_KW,
+    NAKED_ASM_KW,
+    NOMEM_KW,
+    NORETURN_KW,
+    NOSTACK_KW,
+    OFFSET_OF_KW,
+    OPTIONS_KW,
+    OUT_KW,
+    PRESERVES_FLAGS_KW,
+    PURE_KW,
+    RAW_KW,
+    READONLY_KW,
+    SAFE_KW,
+    SYM_KW,
+    TRY_KW,
+    UNION_KW,
+    YEET_KW,
+    BYTE,
+    BYTE_STRING,
+    CHAR,
+    C_STRING,
+    FLOAT_NUMBER,
+    INT_NUMBER,
+    STRING,
+    COMMENT,
+    ERROR,
+    FRONTMATTER,
+    IDENT,
+    LIFETIME_IDENT,
+    NEWLINE,
+    SHEBANG,
+    WHITESPACE,
+    ABI,
+    ARG_LIST,
+    ARRAY_EXPR,
+    ARRAY_TYPE,
+    ASM_CLOBBER_ABI,
+    ASM_CONST,
+    ASM_DIR_SPEC,
+    ASM_EXPR,
+    ASM_LABEL,
+    ASM_OPERAND_EXPR,
+    ASM_OPERAND_NAMED,
+    ASM_OPTION,
+    ASM_OPTIONS,
+    ASM_REG_OPERAND,
+    ASM_REG_SPEC,
+    ASM_SYM,
+    ASSOC_ITEM_LIST,
+    ASSOC_TYPE_ARG,
+    ATTR,
+    AWAIT_EXPR,
+    BECOME_EXPR,
+    BIN_EXPR,
+    BLOCK_EXPR,
+    BOX_PAT,
+    BREAK_EXPR,
+    CALL_EXPR,
+    CAST_EXPR,
+    CLOSURE_EXPR,
+    CONST,
+    CONST_ARG,
+    CONST_BLOCK_PAT,
+    CONST_PARAM,
+    CONTINUE_EXPR,
+    DYN_TRAIT_TYPE,
+    ENUM,
+    EXPR_STMT,
+    EXTERN_BLOCK,
+    EXTERN_CRATE,
+    EXTERN_ITEM_LIST,
+    FIELD_EXPR,
+    FN,
+    FN_PTR_TYPE,
+    FORMAT_ARGS_ARG,
+    FORMAT_ARGS_EXPR,
+    FOR_BINDER,
+    FOR_EXPR,
+    FOR_TYPE,
+    GENERIC_ARG_LIST,
+    GENERIC_PARAM_LIST,
+    IDENT_PAT,
+    IF_EXPR,
+    IMPL,
+    IMPL_TRAIT_TYPE,
+    INDEX_EXPR,
+    INFER_TYPE,
+    ITEM_LIST,
+    LABEL,
+    LET_ELSE,
+    LET_EXPR,
+    LET_STMT,
+    LIFETIME,
+    LIFETIME_ARG,
+    LIFETIME_PARAM,
+    LITERAL,
+    LITERAL_PAT,
+    LOOP_EXPR,
+    MACRO_CALL,
+    MACRO_DEF,
+    MACRO_EXPR,
+    MACRO_ITEMS,
+    MACRO_PAT,
+    MACRO_RULES,
+    MACRO_STMTS,
+    MACRO_TYPE,
+    MATCH_ARM,
+    MATCH_ARM_LIST,
+    MATCH_EXPR,
+    MATCH_GUARD,
+    META,
+    METHOD_CALL_EXPR,
+    MODULE,
+    NAME,
+    NAME_REF,
+    NEVER_TYPE,
+    OFFSET_OF_EXPR,
+    OR_PAT,
+    PARAM,
+    PARAM_LIST,
+    PARENTHESIZED_ARG_LIST,
+    PAREN_EXPR,
+    PAREN_PAT,
+    PAREN_TYPE,
+    PATH,
+    PATH_EXPR,
+    PATH_PAT,
+    PATH_SEGMENT,
+    PATH_TYPE,
+    PREFIX_EXPR,
+    PTR_TYPE,
+    RANGE_EXPR,
+    RANGE_PAT,
+    RECORD_EXPR,
+    RECORD_EXPR_FIELD,
+    RECORD_EXPR_FIELD_LIST,
+    RECORD_FIELD,
+    RECORD_FIELD_LIST,
+    RECORD_PAT,
+    RECORD_PAT_FIELD,
+    RECORD_PAT_FIELD_LIST,
+    REF_EXPR,
+    REF_PAT,
+    REF_TYPE,
+    RENAME,
+    REST_PAT,
+    RETURN_EXPR,
+    RETURN_TYPE_SYNTAX,
+    RET_TYPE,
+    SELF_PARAM,
+    SLICE_PAT,
+    SLICE_TYPE,
+    SOURCE_FILE,
+    STATIC,
+    STMT_LIST,
+    STRUCT,
+    TOKEN_TREE,
+    TRAIT,
+    TRY_EXPR,
+    TUPLE_EXPR,
+    TUPLE_FIELD,
+    TUPLE_FIELD_LIST,
+    TUPLE_PAT,
+    TUPLE_STRUCT_PAT,
+    TUPLE_TYPE,
+    TYPE_ALIAS,
+    TYPE_ANCHOR,
+    TYPE_ARG,
+    TYPE_BOUND,
+    TYPE_BOUND_LIST,
+    TYPE_PARAM,
+    UNDERSCORE_EXPR,
+    UNION,
+    USE,
+    USE_BOUND_GENERIC_ARGS,
+    USE_TREE,
+    USE_TREE_LIST,
+    VARIANT,
+    VARIANT_LIST,
+    VISIBILITY,
+    WHERE_CLAUSE,
+    WHERE_PRED,
+    WHILE_EXPR,
+    WILDCARD_PAT,
+    YEET_EXPR,
+    YIELD_EXPR,
+    #[doc(hidden)]
+    __LAST,
+}
+use self::SyntaxKind::*;
+impl SyntaxKind {
+    #[allow(unreachable_patterns)]
+    pub const fn text(self) -> &'static str {
+        match self {
+            TOMBSTONE
+            | EOF
+            | __LAST
+            | BYTE
+            | BYTE_STRING
+            | CHAR
+            | C_STRING
+            | FLOAT_NUMBER
+            | INT_NUMBER
+            | STRING
+            | ABI
+            | ARG_LIST
+            | ARRAY_EXPR
+            | ARRAY_TYPE
+            | ASM_CLOBBER_ABI
+            | ASM_CONST
+            | ASM_DIR_SPEC
+            | ASM_EXPR
+            | ASM_LABEL
+            | ASM_OPERAND_EXPR
+            | ASM_OPERAND_NAMED
+            | ASM_OPTION
+            | ASM_OPTIONS
+            | ASM_REG_OPERAND
+            | ASM_REG_SPEC
+            | ASM_SYM
+            | ASSOC_ITEM_LIST
+            | ASSOC_TYPE_ARG
+            | ATTR
+            | AWAIT_EXPR
+            | BECOME_EXPR
+            | BIN_EXPR
+            | BLOCK_EXPR
+            | BOX_PAT
+            | BREAK_EXPR
+            | CALL_EXPR
+            | CAST_EXPR
+            | CLOSURE_EXPR
+            | CONST
+            | CONST_ARG
+            | CONST_BLOCK_PAT
+            | CONST_PARAM
+            | CONTINUE_EXPR
+            | DYN_TRAIT_TYPE
+            | ENUM
+            | EXPR_STMT
+            | EXTERN_BLOCK
+            | EXTERN_CRATE
+            | EXTERN_ITEM_LIST
+            | FIELD_EXPR
+            | FN
+            | FN_PTR_TYPE
+            | FORMAT_ARGS_ARG
+            | FORMAT_ARGS_EXPR
+            | FOR_BINDER
+            | FOR_EXPR
+            | FOR_TYPE
+            | GENERIC_ARG_LIST
+            | GENERIC_PARAM_LIST
+            | IDENT_PAT
+            | IF_EXPR
+            | IMPL
+            | IMPL_TRAIT_TYPE
+            | INDEX_EXPR
+            | INFER_TYPE
+            | ITEM_LIST
+            | LABEL
+            | LET_ELSE
+            | LET_EXPR
+            | LET_STMT
+            | LIFETIME
+            | LIFETIME_ARG
+            | LIFETIME_PARAM
+            | LITERAL
+            | LITERAL_PAT
+            | LOOP_EXPR
+            | MACRO_CALL
+            | MACRO_DEF
+            | MACRO_EXPR
+            | MACRO_ITEMS
+            | MACRO_PAT
+            | MACRO_RULES
+            | MACRO_STMTS
+            | MACRO_TYPE
+            | MATCH_ARM
+            | MATCH_ARM_LIST
+            | MATCH_EXPR
+            | MATCH_GUARD
+            | META
+            | METHOD_CALL_EXPR
+            | MODULE
+            | NAME
+            | NAME_REF
+            | NEVER_TYPE
+            | OFFSET_OF_EXPR
+            | OR_PAT
+            | PARAM
+            | PARAM_LIST
+            | PARENTHESIZED_ARG_LIST
+            | PAREN_EXPR
+            | PAREN_PAT
+            | PAREN_TYPE
+            | PATH
+            | PATH_EXPR
+            | PATH_PAT
+            | PATH_SEGMENT
+            | PATH_TYPE
+            | PREFIX_EXPR
+            | PTR_TYPE
+            | RANGE_EXPR
+            | RANGE_PAT
+            | RECORD_EXPR
+            | RECORD_EXPR_FIELD
+            | RECORD_EXPR_FIELD_LIST
+            | RECORD_FIELD
+            | RECORD_FIELD_LIST
+            | RECORD_PAT
+            | RECORD_PAT_FIELD
+            | RECORD_PAT_FIELD_LIST
+            | REF_EXPR
+            | REF_PAT
+            | REF_TYPE
+            | RENAME
+            | REST_PAT
+            | RETURN_EXPR
+            | RETURN_TYPE_SYNTAX
+            | RET_TYPE
+            | SELF_PARAM
+            | SLICE_PAT
+            | SLICE_TYPE
+            | SOURCE_FILE
+            | STATIC
+            | STMT_LIST
+            | STRUCT
+            | TOKEN_TREE
+            | TRAIT
+            | TRY_EXPR
+            | TUPLE_EXPR
+            | TUPLE_FIELD
+            | TUPLE_FIELD_LIST
+            | TUPLE_PAT
+            | TUPLE_STRUCT_PAT
+            | TUPLE_TYPE
+            | TYPE_ALIAS
+            | TYPE_ANCHOR
+            | TYPE_ARG
+            | TYPE_BOUND
+            | TYPE_BOUND_LIST
+            | TYPE_PARAM
+            | UNDERSCORE_EXPR
+            | UNION
+            | USE
+            | USE_BOUND_GENERIC_ARGS
+            | USE_TREE
+            | USE_TREE_LIST
+            | VARIANT
+            | VARIANT_LIST
+            | VISIBILITY
+            | WHERE_CLAUSE
+            | WHERE_PRED
+            | WHILE_EXPR
+            | WILDCARD_PAT
+            | YEET_EXPR
+            | YIELD_EXPR
+            | COMMENT
+            | ERROR
+            | FRONTMATTER
+            | IDENT
+            | LIFETIME_IDENT
+            | NEWLINE
+            | SHEBANG
+            | WHITESPACE => panic!("no text for these `SyntaxKind`s"),
+            DOLLAR => "$",
+            SEMICOLON => ";",
+            COMMA => ",",
+            L_PAREN => "(",
+            R_PAREN => ")",
+            L_CURLY => "{",
+            R_CURLY => "}",
+            L_BRACK => "[",
+            R_BRACK => "]",
+            L_ANGLE => "<",
+            R_ANGLE => ">",
+            AT => "@",
+            POUND => "#",
+            TILDE => "~",
+            QUESTION => "?",
+            AMP => "&",
+            PIPE => "|",
+            PLUS => "+",
+            STAR => "*",
+            SLASH => "/",
+            CARET => "^",
+            PERCENT => "%",
+            UNDERSCORE => "_",
+            DOT => ".",
+            DOT2 => "..",
+            DOT3 => "...",
+            DOT2EQ => "..=",
+            COLON => ":",
+            COLON2 => "::",
+            EQ => "=",
+            EQ2 => "==",
+            FAT_ARROW => "=>",
+            BANG => "!",
+            NEQ => "!=",
+            MINUS => "-",
+            THIN_ARROW => "->",
+            LTEQ => "<=",
+            GTEQ => ">=",
+            PLUSEQ => "+=",
+            MINUSEQ => "-=",
+            PIPEEQ => "|=",
+            AMPEQ => "&=",
+            CARETEQ => "^=",
+            SLASHEQ => "/=",
+            STAREQ => "*=",
+            PERCENTEQ => "%=",
+            AMP2 => "&&",
+            PIPE2 => "||",
+            SHL => "<<",
+            SHR => ">>",
+            SHLEQ => "<<=",
+            SHREQ => ">>=",
+            SELF_TYPE_KW => "Self",
+            ABSTRACT_KW => "abstract",
+            AS_KW => "as",
+            BECOME_KW => "become",
+            BOX_KW => "box",
+            BREAK_KW => "break",
+            CONST_KW => "const",
+            CONTINUE_KW => "continue",
+            CRATE_KW => "crate",
+            DO_KW => "do",
+            ELSE_KW => "else",
+            ENUM_KW => "enum",
+            EXTERN_KW => "extern",
+            FALSE_KW => "false",
+            FINAL_KW => "final",
+            FN_KW => "fn",
+            FOR_KW => "for",
+            IF_KW => "if",
+            IMPL_KW => "impl",
+            IN_KW => "in",
+            LET_KW => "let",
+            LOOP_KW => "loop",
+            MACRO_KW => "macro",
+            MATCH_KW => "match",
+            MOD_KW => "mod",
+            MOVE_KW => "move",
+            MUT_KW => "mut",
+            OVERRIDE_KW => "override",
+            PRIV_KW => "priv",
+            PUB_KW => "pub",
+            REF_KW => "ref",
+            RETURN_KW => "return",
+            SELF_KW => "self",
+            STATIC_KW => "static",
+            STRUCT_KW => "struct",
+            SUPER_KW => "super",
+            TRAIT_KW => "trait",
+            TRUE_KW => "true",
+            TYPE_KW => "type",
+            TYPEOF_KW => "typeof",
+            UNSAFE_KW => "unsafe",
+            UNSIZED_KW => "unsized",
+            USE_KW => "use",
+            VIRTUAL_KW => "virtual",
+            WHERE_KW => "where",
+            WHILE_KW => "while",
+            YIELD_KW => "yield",
+            ASM_KW => "asm",
+            ATT_SYNTAX_KW => "att_syntax",
+            AUTO_KW => "auto",
+            BUILTIN_KW => "builtin",
+            CLOBBER_ABI_KW => "clobber_abi",
+            DEFAULT_KW => "default",
+            DYN_KW => "dyn",
+            FORMAT_ARGS_KW => "format_args",
+            GLOBAL_ASM_KW => "global_asm",
+            INLATEOUT_KW => "inlateout",
+            INOUT_KW => "inout",
+            LABEL_KW => "label",
+            LATEOUT_KW => "lateout",
+            MACRO_RULES_KW => "macro_rules",
+            MAY_UNWIND_KW => "may_unwind",
+            NAKED_ASM_KW => "naked_asm",
+            NOMEM_KW => "nomem",
+            NORETURN_KW => "noreturn",
+            NOSTACK_KW => "nostack",
+            OFFSET_OF_KW => "offset_of",
+            OPTIONS_KW => "options",
+            OUT_KW => "out",
+            PRESERVES_FLAGS_KW => "preserves_flags",
+            PURE_KW => "pure",
+            RAW_KW => "raw",
+            READONLY_KW => "readonly",
+            SAFE_KW => "safe",
+            SYM_KW => "sym",
+            UNION_KW => "union",
+            YEET_KW => "yeet",
+            ASYNC_KW => "async",
+            AWAIT_KW => "await",
+            DYN_KW => "dyn",
+            GEN_KW => "gen",
+            TRY_KW => "try",
+        }
+    }
+    #[doc = r" Checks whether this syntax kind is a strict keyword for the given edition."]
+    #[doc = r" Strict keywords are identifiers that are always considered keywords."]
+    pub fn is_strict_keyword(self, edition: Edition) -> bool {
+        matches!(
+            self,
+            SELF_TYPE_KW
+                | ABSTRACT_KW
+                | AS_KW
+                | BECOME_KW
+                | BOX_KW
+                | BREAK_KW
+                | CONST_KW
+                | CONTINUE_KW
+                | CRATE_KW
+                | DO_KW
+                | ELSE_KW
+                | ENUM_KW
+                | EXTERN_KW
+                | FALSE_KW
+                | FINAL_KW
+                | FN_KW
+                | FOR_KW
+                | IF_KW
+                | IMPL_KW
+                | IN_KW
+                | LET_KW
+                | LOOP_KW
+                | MACRO_KW
+                | MATCH_KW
+                | MOD_KW
+                | MOVE_KW
+                | MUT_KW
+                | OVERRIDE_KW
+                | PRIV_KW
+                | PUB_KW
+                | REF_KW
+                | RETURN_KW
+                | SELF_KW
+                | STATIC_KW
+                | STRUCT_KW
+                | SUPER_KW
+                | TRAIT_KW
+                | TRUE_KW
+                | TYPE_KW
+                | TYPEOF_KW
+                | UNSAFE_KW
+                | UNSIZED_KW
+                | USE_KW
+                | VIRTUAL_KW
+                | WHERE_KW
+                | WHILE_KW
+                | YIELD_KW
+        ) || match self {
+            ASYNC_KW if Edition::Edition2018 <= edition => true,
+            AWAIT_KW if Edition::Edition2018 <= edition => true,
+            DYN_KW if Edition::Edition2018 <= edition => true,
+            GEN_KW if Edition::Edition2024 <= edition => true,
+            TRY_KW if Edition::Edition2018 <= edition => true,
+            _ => false,
+        }
+    }
+    #[doc = r" Checks whether this syntax kind is a weak keyword for the given edition."]
+    #[doc = r" Weak keywords are identifiers that are considered keywords only in certain contexts."]
+    pub fn is_contextual_keyword(self, edition: Edition) -> bool {
+        match self {
+            ASM_KW => true,
+            ATT_SYNTAX_KW => true,
+            AUTO_KW => true,
+            BUILTIN_KW => true,
+            CLOBBER_ABI_KW => true,
+            DEFAULT_KW => true,
+            DYN_KW if edition < Edition::Edition2018 => true,
+            FORMAT_ARGS_KW => true,
+            GLOBAL_ASM_KW => true,
+            INLATEOUT_KW => true,
+            INOUT_KW => true,
+            LABEL_KW => true,
+            LATEOUT_KW => true,
+            MACRO_RULES_KW => true,
+            MAY_UNWIND_KW => true,
+            NAKED_ASM_KW => true,
+            NOMEM_KW => true,
+            NORETURN_KW => true,
+            NOSTACK_KW => true,
+            OFFSET_OF_KW => true,
+            OPTIONS_KW => true,
+            OUT_KW => true,
+            PRESERVES_FLAGS_KW => true,
+            PURE_KW => true,
+            RAW_KW => true,
+            READONLY_KW => true,
+            SAFE_KW => true,
+            SYM_KW => true,
+            UNION_KW => true,
+            YEET_KW => true,
+            _ => false,
+        }
+    }
+    #[doc = r" Checks whether this syntax kind is a strict or weak keyword for the given edition."]
+    pub fn is_keyword(self, edition: Edition) -> bool {
+        matches!(
+            self,
+            SELF_TYPE_KW
+                | ABSTRACT_KW
+                | AS_KW
+                | BECOME_KW
+                | BOX_KW
+                | BREAK_KW
+                | CONST_KW
+                | CONTINUE_KW
+                | CRATE_KW
+                | DO_KW
+                | ELSE_KW
+                | ENUM_KW
+                | EXTERN_KW
+                | FALSE_KW
+                | FINAL_KW
+                | FN_KW
+                | FOR_KW
+                | IF_KW
+                | IMPL_KW
+                | IN_KW
+                | LET_KW
+                | LOOP_KW
+                | MACRO_KW
+                | MATCH_KW
+                | MOD_KW
+                | MOVE_KW
+                | MUT_KW
+                | OVERRIDE_KW
+                | PRIV_KW
+                | PUB_KW
+                | REF_KW
+                | RETURN_KW
+                | SELF_KW
+                | STATIC_KW
+                | STRUCT_KW
+                | SUPER_KW
+                | TRAIT_KW
+                | TRUE_KW
+                | TYPE_KW
+                | TYPEOF_KW
+                | UNSAFE_KW
+                | UNSIZED_KW
+                | USE_KW
+                | VIRTUAL_KW
+                | WHERE_KW
+                | WHILE_KW
+                | YIELD_KW
+        ) || match self {
+            ASYNC_KW if Edition::Edition2018 <= edition => true,
+            AWAIT_KW if Edition::Edition2018 <= edition => true,
+            DYN_KW if Edition::Edition2018 <= edition => true,
+            GEN_KW if Edition::Edition2024 <= edition => true,
+            TRY_KW if Edition::Edition2018 <= edition => true,
+            ASM_KW => true,
+            ATT_SYNTAX_KW => true,
+            AUTO_KW => true,
+            BUILTIN_KW => true,
+            CLOBBER_ABI_KW => true,
+            DEFAULT_KW => true,
+            DYN_KW if edition < Edition::Edition2018 => true,
+            FORMAT_ARGS_KW => true,
+            GLOBAL_ASM_KW => true,
+            INLATEOUT_KW => true,
+            INOUT_KW => true,
+            LABEL_KW => true,
+            LATEOUT_KW => true,
+            MACRO_RULES_KW => true,
+            MAY_UNWIND_KW => true,
+            NAKED_ASM_KW => true,
+            NOMEM_KW => true,
+            NORETURN_KW => true,
+            NOSTACK_KW => true,
+            OFFSET_OF_KW => true,
+            OPTIONS_KW => true,
+            OUT_KW => true,
+            PRESERVES_FLAGS_KW => true,
+            PURE_KW => true,
+            RAW_KW => true,
+            READONLY_KW => true,
+            SAFE_KW => true,
+            SYM_KW => true,
+            UNION_KW => true,
+            YEET_KW => true,
+            _ => false,
+        }
+    }
+    pub fn is_punct(self) -> bool {
+        matches!(
+            self,
+            DOLLAR
+                | SEMICOLON
+                | COMMA
+                | L_PAREN
+                | R_PAREN
+                | L_CURLY
+                | R_CURLY
+                | L_BRACK
+                | R_BRACK
+                | L_ANGLE
+                | R_ANGLE
+                | AT
+                | POUND
+                | TILDE
+                | QUESTION
+                | AMP
+                | PIPE
+                | PLUS
+                | STAR
+                | SLASH
+                | CARET
+                | PERCENT
+                | UNDERSCORE
+                | DOT
+                | DOT2
+                | DOT3
+                | DOT2EQ
+                | COLON
+                | COLON2
+                | EQ
+                | EQ2
+                | FAT_ARROW
+                | BANG
+                | NEQ
+                | MINUS
+                | THIN_ARROW
+                | LTEQ
+                | GTEQ
+                | PLUSEQ
+                | MINUSEQ
+                | PIPEEQ
+                | AMPEQ
+                | CARETEQ
+                | SLASHEQ
+                | STAREQ
+                | PERCENTEQ
+                | AMP2
+                | PIPE2
+                | SHL
+                | SHR
+                | SHLEQ
+                | SHREQ
+        )
+    }
+    pub fn is_literal(self) -> bool {
+        matches!(self, BYTE | BYTE_STRING | CHAR | C_STRING | FLOAT_NUMBER | INT_NUMBER | STRING)
+    }
+    pub fn from_keyword(ident: &str, edition: Edition) -> Option<SyntaxKind> {
+        let kw = match ident {
+            "Self" => SELF_TYPE_KW,
+            "abstract" => ABSTRACT_KW,
+            "as" => AS_KW,
+            "become" => BECOME_KW,
+            "box" => BOX_KW,
+            "break" => BREAK_KW,
+            "const" => CONST_KW,
+            "continue" => CONTINUE_KW,
+            "crate" => CRATE_KW,
+            "do" => DO_KW,
+            "else" => ELSE_KW,
+            "enum" => ENUM_KW,
+            "extern" => EXTERN_KW,
+            "false" => FALSE_KW,
+            "final" => FINAL_KW,
+            "fn" => FN_KW,
+            "for" => FOR_KW,
+            "if" => IF_KW,
+            "impl" => IMPL_KW,
+            "in" => IN_KW,
+            "let" => LET_KW,
+            "loop" => LOOP_KW,
+            "macro" => MACRO_KW,
+            "match" => MATCH_KW,
+            "mod" => MOD_KW,
+            "move" => MOVE_KW,
+            "mut" => MUT_KW,
+            "override" => OVERRIDE_KW,
+            "priv" => PRIV_KW,
+            "pub" => PUB_KW,
+            "ref" => REF_KW,
+            "return" => RETURN_KW,
+            "self" => SELF_KW,
+            "static" => STATIC_KW,
+            "struct" => STRUCT_KW,
+            "super" => SUPER_KW,
+            "trait" => TRAIT_KW,
+            "true" => TRUE_KW,
+            "type" => TYPE_KW,
+            "typeof" => TYPEOF_KW,
+            "unsafe" => UNSAFE_KW,
+            "unsized" => UNSIZED_KW,
+            "use" => USE_KW,
+            "virtual" => VIRTUAL_KW,
+            "where" => WHERE_KW,
+            "while" => WHILE_KW,
+            "yield" => YIELD_KW,
+            "async" if Edition::Edition2018 <= edition => ASYNC_KW,
+            "await" if Edition::Edition2018 <= edition => AWAIT_KW,
+            "dyn" if Edition::Edition2018 <= edition => DYN_KW,
+            "gen" if Edition::Edition2024 <= edition => GEN_KW,
+            "try" if Edition::Edition2018 <= edition => TRY_KW,
+            _ => return None,
+        };
+        Some(kw)
+    }
+    pub fn from_contextual_keyword(ident: &str, edition: Edition) -> Option<SyntaxKind> {
+        let kw = match ident {
+            "asm" => ASM_KW,
+            "att_syntax" => ATT_SYNTAX_KW,
+            "auto" => AUTO_KW,
+            "builtin" => BUILTIN_KW,
+            "clobber_abi" => CLOBBER_ABI_KW,
+            "default" => DEFAULT_KW,
+            "dyn" if edition < Edition::Edition2018 => DYN_KW,
+            "format_args" => FORMAT_ARGS_KW,
+            "global_asm" => GLOBAL_ASM_KW,
+            "inlateout" => INLATEOUT_KW,
+            "inout" => INOUT_KW,
+            "label" => LABEL_KW,
+            "lateout" => LATEOUT_KW,
+            "macro_rules" => MACRO_RULES_KW,
+            "may_unwind" => MAY_UNWIND_KW,
+            "naked_asm" => NAKED_ASM_KW,
+            "nomem" => NOMEM_KW,
+            "noreturn" => NORETURN_KW,
+            "nostack" => NOSTACK_KW,
+            "offset_of" => OFFSET_OF_KW,
+            "options" => OPTIONS_KW,
+            "out" => OUT_KW,
+            "preserves_flags" => PRESERVES_FLAGS_KW,
+            "pure" => PURE_KW,
+            "raw" => RAW_KW,
+            "readonly" => READONLY_KW,
+            "safe" => SAFE_KW,
+            "sym" => SYM_KW,
+            "union" => UNION_KW,
+            "yeet" => YEET_KW,
+            _ => return None,
+        };
+        Some(kw)
+    }
+    pub fn from_char(c: char) -> Option<SyntaxKind> {
+        let tok = match c {
+            '$' => DOLLAR,
+            ';' => SEMICOLON,
+            ',' => COMMA,
+            '(' => L_PAREN,
+            ')' => R_PAREN,
+            '{' => L_CURLY,
+            '}' => R_CURLY,
+            '[' => L_BRACK,
+            ']' => R_BRACK,
+            '<' => L_ANGLE,
+            '>' => R_ANGLE,
+            '@' => AT,
+            '#' => POUND,
+            '~' => TILDE,
+            '?' => QUESTION,
+            '&' => AMP,
+            '|' => PIPE,
+            '+' => PLUS,
+            '*' => STAR,
+            '/' => SLASH,
+            '^' => CARET,
+            '%' => PERCENT,
+            '_' => UNDERSCORE,
+            '.' => DOT,
+            ':' => COLON,
+            '=' => EQ,
+            '!' => BANG,
+            '-' => MINUS,
+            _ => return None,
+        };
+        Some(tok)
+    }
+}
+#[macro_export]
+macro_rules ! T_ { [$] => { $ crate :: SyntaxKind :: DOLLAR } ; [;] => { $ crate :: SyntaxKind :: SEMICOLON } ; [,] => { $ crate :: SyntaxKind :: COMMA } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; ['{'] => { $ crate :: SyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: SyntaxKind :: R_CURLY } ; ['['] => { $ crate :: SyntaxKind :: L_BRACK } ; [']'] => { $ crate :: SyntaxKind :: R_BRACK } ; [<] => { $ crate :: SyntaxKind :: L_ANGLE } ; [>] => { $ crate :: SyntaxKind :: R_ANGLE } ; [@] => { $ crate :: SyntaxKind :: AT } ; [#] => { $ crate :: SyntaxKind :: POUND } ; [~] => { $ crate :: SyntaxKind :: TILDE } ; [?] => { $ crate :: SyntaxKind :: QUESTION } ; [&] => { $ crate :: SyntaxKind :: AMP } ; [|] => { $ crate :: SyntaxKind :: PIPE } ; [+] => { $ crate :: SyntaxKind :: PLUS } ; [*] => { $ crate :: SyntaxKind :: STAR } ; [/] => { $ crate :: SyntaxKind :: SLASH } ; [^] => { $ crate :: SyntaxKind :: CARET } ; [%] => { $ crate :: SyntaxKind :: PERCENT } ; [_] => { $ crate :: SyntaxKind :: UNDERSCORE } ; [.] => { $ crate :: SyntaxKind :: DOT } ; [..] => { $ crate :: SyntaxKind :: DOT2 } ; [...] => { $ crate :: SyntaxKind :: DOT3 } ; [..=] => { $ crate :: SyntaxKind :: DOT2EQ } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [::] => { $ crate :: SyntaxKind :: COLON2 } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [==] => { $ crate :: SyntaxKind :: EQ2 } ; [=>] => { $ crate :: SyntaxKind :: FAT_ARROW } ; [!] => { $ crate :: SyntaxKind :: BANG } ; [!=] => { $ crate :: SyntaxKind :: NEQ } ; [-] => { $ crate :: SyntaxKind :: MINUS } ; [->] => { $ crate :: SyntaxKind :: THIN_ARROW } ; [<=] => { $ crate :: SyntaxKind :: LTEQ } ; [>=] => { $ crate :: SyntaxKind :: GTEQ } ; [+=] => { $ crate :: SyntaxKind :: PLUSEQ } ; [-=] => { $ crate :: SyntaxKind :: MINUSEQ } ; [|=] => { $ crate :: SyntaxKind :: PIPEEQ } ; [&=] => { $ crate :: SyntaxKind :: AMPEQ } ; [^=] => { $ crate :: SyntaxKind :: CARETEQ } ; [/=] => { $ crate :: SyntaxKind :: SLASHEQ } ; [*=] => { $ crate :: SyntaxKind :: STAREQ } ; [%=] => { $ crate :: SyntaxKind :: PERCENTEQ } ; [&&] => { $ crate :: SyntaxKind :: AMP2 } ; [||] => { $ crate :: SyntaxKind :: PIPE2 } ; [<<] => { $ crate :: SyntaxKind :: SHL } ; [>>] => { $ crate :: SyntaxKind :: SHR } ; [<<=] => { $ crate :: SyntaxKind :: SHLEQ } ; [>>=] => { $ crate :: SyntaxKind :: SHREQ } ; [Self] => { $ crate :: SyntaxKind :: SELF_TYPE_KW } ; [abstract] => { $ crate :: SyntaxKind :: ABSTRACT_KW } ; [as] => { $ crate :: SyntaxKind :: AS_KW } ; [become] => { $ crate :: SyntaxKind :: BECOME_KW } ; [box] => { $ crate :: SyntaxKind :: BOX_KW } ; [break] => { $ crate :: SyntaxKind :: BREAK_KW } ; [const] => { $ crate :: SyntaxKind :: CONST_KW } ; [continue] => { $ crate :: SyntaxKind :: CONTINUE_KW } ; [crate] => { $ crate :: SyntaxKind :: CRATE_KW } ; [do] => { $ crate :: SyntaxKind :: DO_KW } ; [else] => { $ crate :: SyntaxKind :: ELSE_KW } ; [enum] => { $ crate :: SyntaxKind :: ENUM_KW } ; [extern] => { $ crate :: SyntaxKind :: EXTERN_KW } ; [false] => { $ crate :: SyntaxKind :: FALSE_KW } ; [final] => { $ crate :: SyntaxKind :: FINAL_KW } ; [fn] => { $ crate :: SyntaxKind :: FN_KW } ; [for] => { $ crate :: SyntaxKind :: FOR_KW } ; [if] => { $ crate :: SyntaxKind :: IF_KW } ; [impl] => { $ crate :: SyntaxKind :: IMPL_KW } ; [in] => { $ crate :: SyntaxKind :: IN_KW } ; [let] => { $ crate :: SyntaxKind :: LET_KW } ; [loop] => { $ crate :: SyntaxKind :: LOOP_KW } ; [macro] => { $ crate :: SyntaxKind :: MACRO_KW } ; [match] => { $ crate :: SyntaxKind :: MATCH_KW } ; [mod] => { $ crate :: SyntaxKind :: MOD_KW } ; [move] => { $ crate :: SyntaxKind :: MOVE_KW } ; [mut] => { $ crate :: SyntaxKind :: MUT_KW } ; [override] => { $ crate :: SyntaxKind :: OVERRIDE_KW } ; [priv] => { $ crate :: SyntaxKind :: PRIV_KW } ; [pub] => { $ crate :: SyntaxKind :: PUB_KW } ; [ref] => { $ crate :: SyntaxKind :: REF_KW } ; [return] => { $ crate :: SyntaxKind :: RETURN_KW } ; [self] => { $ crate :: SyntaxKind :: SELF_KW } ; [static] => { $ crate :: SyntaxKind :: STATIC_KW } ; [struct] => { $ crate :: SyntaxKind :: STRUCT_KW } ; [super] => { $ crate :: SyntaxKind :: SUPER_KW } ; [trait] => { $ crate :: SyntaxKind :: TRAIT_KW } ; [true] => { $ crate :: SyntaxKind :: TRUE_KW } ; [type] => { $ crate :: SyntaxKind :: TYPE_KW } ; [typeof] => { $ crate :: SyntaxKind :: TYPEOF_KW } ; [unsafe] => { $ crate :: SyntaxKind :: UNSAFE_KW } ; [unsized] => { $ crate :: SyntaxKind :: UNSIZED_KW } ; [use] => { $ crate :: SyntaxKind :: USE_KW } ; [virtual] => { $ crate :: SyntaxKind :: VIRTUAL_KW } ; [where] => { $ crate :: SyntaxKind :: WHERE_KW } ; [while] => { $ crate :: SyntaxKind :: WHILE_KW } ; [yield] => { $ crate :: SyntaxKind :: YIELD_KW } ; [asm] => { $ crate :: SyntaxKind :: ASM_KW } ; [att_syntax] => { $ crate :: SyntaxKind :: ATT_SYNTAX_KW } ; [auto] => { $ crate :: SyntaxKind :: AUTO_KW } ; [builtin] => { $ crate :: SyntaxKind :: BUILTIN_KW } ; [clobber_abi] => { $ crate :: SyntaxKind :: CLOBBER_ABI_KW } ; [default] => { $ crate :: SyntaxKind :: DEFAULT_KW } ; [dyn] => { $ crate :: SyntaxKind :: DYN_KW } ; [format_args] => { $ crate :: SyntaxKind :: FORMAT_ARGS_KW } ; [global_asm] => { $ crate :: SyntaxKind :: GLOBAL_ASM_KW } ; [inlateout] => { $ crate :: SyntaxKind :: INLATEOUT_KW } ; [inout] => { $ crate :: SyntaxKind :: INOUT_KW } ; [label] => { $ crate :: SyntaxKind :: LABEL_KW } ; [lateout] => { $ crate :: SyntaxKind :: LATEOUT_KW } ; [macro_rules] => { $ crate :: SyntaxKind :: MACRO_RULES_KW } ; [may_unwind] => { $ crate :: SyntaxKind :: MAY_UNWIND_KW } ; [naked_asm] => { $ crate :: SyntaxKind :: NAKED_ASM_KW } ; [nomem] => { $ crate :: SyntaxKind :: NOMEM_KW } ; [noreturn] => { $ crate :: SyntaxKind :: NORETURN_KW } ; [nostack] => { $ crate :: SyntaxKind :: NOSTACK_KW } ; [offset_of] => { $ crate :: SyntaxKind :: OFFSET_OF_KW } ; [options] => { $ crate :: SyntaxKind :: OPTIONS_KW } ; [out] => { $ crate :: SyntaxKind :: OUT_KW } ; [preserves_flags] => { $ crate :: SyntaxKind :: PRESERVES_FLAGS_KW } ; [pure] => { $ crate :: SyntaxKind :: PURE_KW } ; [raw] => { $ crate :: SyntaxKind :: RAW_KW } ; [readonly] => { $ crate :: SyntaxKind :: READONLY_KW } ; [safe] => { $ crate :: SyntaxKind :: SAFE_KW } ; [sym] => { $ crate :: SyntaxKind :: SYM_KW } ; [union] => { $ crate :: SyntaxKind :: UNION_KW } ; [yeet] => { $ crate :: SyntaxKind :: YEET_KW } ; [async] => { $ crate :: SyntaxKind :: ASYNC_KW } ; [await] => { $ crate :: SyntaxKind :: AWAIT_KW } ; [dyn] => { $ crate :: SyntaxKind :: DYN_KW } ; [gen] => { $ crate :: SyntaxKind :: GEN_KW } ; [try] => { $ crate :: SyntaxKind :: TRY_KW } ; [lifetime_ident] => { $ crate :: SyntaxKind :: LIFETIME_IDENT } ; [int_number] => { $ crate :: SyntaxKind :: INT_NUMBER } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; [string] => { $ crate :: SyntaxKind :: STRING } ; [shebang] => { $ crate :: SyntaxKind :: SHEBANG } ; [frontmatter] => { $ crate :: SyntaxKind :: FRONTMATTER } ; }
+impl ::core::marker::Copy for SyntaxKind {}
+impl ::core::clone::Clone for SyntaxKind {
+    #[inline]
+    fn clone(&self) -> Self { *self }
+}
+impl ::core::cmp::PartialEq for SyntaxKind {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool { (*self as u16) == (*other as u16) }
+}
+impl ::core::cmp::Eq for SyntaxKind {}
+impl ::core::cmp::PartialOrd for SyntaxKind {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> core::option::Option<core::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl ::core::cmp::Ord for SyntaxKind {
+    #[inline]
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering { (*self as u16).cmp(&(*other as u16)) }
+}
+impl ::core::hash::Hash for SyntaxKind {
+    fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
+        ::core::mem::discriminant(self).hash(state);
+    }
+}
