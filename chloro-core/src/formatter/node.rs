@@ -7,7 +7,7 @@ mod module;
 mod structdef;
 mod useitem;
 
-use ra_ap_syntax::{ast, AstToken, NodeOrToken, SyntaxKind, SyntaxNode};
+use ra_ap_syntax::{ast, AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
 pub use comment::format_attributes;
@@ -33,6 +33,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 | SyntaxKind::STRUCT
                                 | SyntaxKind::ENUM
                                 | SyntaxKind::IMPL
+                                | SyntaxKind::MODULE
                         ) {
                             buf.push('\n');
                         }
@@ -54,6 +55,15 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::BLOCK_EXPR => format_block(node, buf, indent),
         SyntaxKind::STMT_LIST => format_stmt_list(node, buf, indent),
 
+        SyntaxKind::ATTR => {
+            // Handle standalone attributes
+            if let Some(attr) = ast::Attr::cast(node.clone()) {
+                crate::formatter::write_indent(buf, indent);
+                buf.push_str(attr.syntax().text().to_string().as_str());
+                buf.push('\n');
+            }
+        }
+
         _ => {
             // Default: recurse through children AND tokens
             for child in node.children_with_tokens() {
@@ -67,21 +77,21 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 }
 
 /// Format a single token (comments, whitespace, keywords, etc.)
-fn format_token(token: &ra_ap_syntax::SyntaxToken, buf: &mut String, indent: usize) {
+fn format_token(token: &SyntaxToken, buf: &mut String, indent: usize) {
     match token.kind() {
         SyntaxKind::COMMENT => {
             // Handle comments specially
             if let Some(comment) = ast::Comment::cast(token.clone()) {
-                let text = comment.text().trim();
+                let text = comment.text();
 
-                // Preserve the comment
+                // Preserve the comment exactly
                 crate::formatter::write_indent(buf, indent);
                 buf.push_str(text);
                 buf.push('\n');
             }
         }
         SyntaxKind::WHITESPACE => {
-            // Normalize whitespace - preserve newlines but not multiple ones
+            // Normalize whitespace - preserve newlines but not excessive ones
             let text = token.text();
             if text.contains('\n') {
                 let newline_count = text.matches('\n').count();
