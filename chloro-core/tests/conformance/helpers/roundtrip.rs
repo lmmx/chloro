@@ -38,14 +38,16 @@ pub fn write_snapshots(result: &RoundTripResult, name: &str) {
     fs::create_dir_all(&output_dir).unwrap();
 
     let safe_name = name.replace('/', "_");
+
     fs::write(
         output_dir.join(format!("{}_chloro.rs", safe_name)),
-        &result.chloro,
+        format!("{}\n", result.chloro),
     )
     .unwrap();
+
     fs::write(
         output_dir.join(format!("{}_rustfmt.rs", safe_name)),
-        &result.rustfmt,
+        format!("{}\n", result.rustfmt),
     )
     .unwrap();
 }
