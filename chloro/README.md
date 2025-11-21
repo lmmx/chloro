@@ -4,7 +4,9 @@
 [![documentation](https://docs.rs/chloro/badge.svg)](https://docs.rs/chloro)
 [![MIT/Apache-2.0 licensed](https://img.shields.io/crates/l/chloro.svg)](./LICENSE)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/chloro/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/chloro/master)
-[![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn)
+
+<!-- [![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn) -->
+<!-- ra_ap_syntax has tracing in -->
 
 chloro is a minimal Rust code formatter.
 
