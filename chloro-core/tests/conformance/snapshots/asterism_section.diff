@@ -2,23 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3903 bytes
-Chloro size:   3901 bytes
+Chloro size:   3903 bytes
 Rustfmt size:  3903 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
-             section_index: None,
-         }
-     }
--
-     /// Create a file node
-     #[must_use]
-     pub fn file(name: String, path: String, tree_level: usize) -> Self {
-             section_index: None,
-         }
-     }
--
-     /// Create a section node
-     #[must_use]
-     pub fn section(section: Section, tree_level: usize, section_index: usize) -> Self {
+✓ Outputs are IDENTICAL

@@ -16,15 +16,19 @@ impl MarkdownFormat {
     fn file_extension(&self) -> &'static str {
         "md"
     }
+
     fn language(&self) -> tree_sitter::Language {
         tree_sitter_md::LANGUAGE.into()
     }
+
     fn section_query(&self) -> &'static str {
         "(atx_heading) @heading"
     }
+
     fn title_query(&self) -> &'static str {
         "(atx_heading heading_content: (inline) @title)"
     }
+
     fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
         // Cycle through colors for different heading levels
         let colors = [

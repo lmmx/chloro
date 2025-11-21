@@ -104,6 +104,7 @@ impl AppState {
             moving_section_index: None,
         }
     }
+
     fn build_tree(files: &[PathBuf], sections: &[Section]) -> Vec<TreeNode> {
         let mut nodes = Vec::new();
         // Determine if this is difftastic mode by checking if multiple sections share the same file_path
@@ -209,6 +210,7 @@ impl AppState {
         }
         nodes
     }
+
     /// Rebuild tree after sections change (e.g., after save)
     pub fn rebuild_tree(&mut self) {
         self.tree_nodes = Self::build_tree(&self.files, &self.sections);
@@ -223,6 +225,7 @@ impl AppState {
             }
         }
     }
+
     /// Get the section index for the currently selected node (if it's a section)
     #[must_use]
     pub fn get_current_section_index(&self) -> Option<usize> {
@@ -232,12 +235,14 @@ impl AppState {
             None
         }
     }
+
     /// Get the current section (if on a section node)
     #[must_use]
     pub fn get_current_section(&self) -> Option<&Section> {
         self.get_current_section_index()
             .and_then(|idx| self.sections.get(idx))
     }
+
     fn rebuild_file_offsets(&mut self) {
         self.file_offsets.clear();
         if let Some(section_idx) = self.get_current_section_index() {
@@ -253,6 +258,7 @@ impl AppState {
             }
         }
     }
+
     /// Calculates total lines added before a section to determine correct write position.
     #[must_use]
     pub fn cumulative_offset(&self, index: usize) -> usize {
@@ -269,6 +275,7 @@ impl AppState {
             0
         }
     }
+
     /// Restores previously edited content from a saved edit plan.
     pub fn load_docs(&mut self, plan: EditPlan) {
         let mut doc_map: HashMap<String, Vec<String>> = HashMap::new();
@@ -300,6 +307,7 @@ impl AppState {
             }
         }
     }
+
     /// Creates a serialisable plan capturing current editor modifications.
     #[must_use]
     pub fn generate_edit_plan(&self) -> EditPlan {
@@ -321,6 +329,7 @@ impl AppState {
         }
         EditPlan { edits }
     }
+
     /// Loads selected section content into the editor buffer.
     pub fn enter_detail_view(&mut self) {
         let Some(section_idx) = self.get_current_section_index() else {
@@ -374,6 +383,7 @@ impl AppState {
         }
         self.current_view = View::Detail;
     }
+
     /// Returns to section list, optionally persisting editor changes.
     pub fn exit_detail_view(&mut self, save: bool) {
         if save {
@@ -391,6 +401,7 @@ impl AppState {
         self.editor_state = None;
         self.current_view = View::List;
     }
+
     /// Save the current section's content to disk.
     ///
     /// # Errors
@@ -463,12 +474,14 @@ impl AppState {
         self.message = Some("Saved".to_string());
         Ok(())
     }
+
     /// Navigate to next navigable node
     #[must_use]
     pub fn find_next_node(&self) -> Option<usize> {
         ((self.current_node_index + 1)..self.tree_nodes.len())
             .find(|&i| self.tree_nodes[i].navigable)
     }
+
     /// Navigate to previous navigable node
     #[must_use]
     pub fn find_prev_node(&self) -> Option<usize> {
@@ -476,6 +489,7 @@ impl AppState {
             .rev()
             .find(|&i| self.tree_nodes[i].navigable)
     }
+
     /// Moves to the containing section in the document hierarchy.
     #[must_use]
     pub fn navigate_to_parent(&self) -> Option<usize> {
@@ -486,6 +500,7 @@ impl AppState {
             .iter()
             .position(|n| n.section_index == Some(parent_section_idx))
     }
+
     /// Descends to the first child section in the document hierarchy.
     #[must_use]
     pub fn navigate_to_first_child(&self) -> Option<usize> {
@@ -495,6 +510,7 @@ impl AppState {
             .iter()
             .position(|n| n.section_index == Some(*first_child_idx))
     }
+
     /// Finds the next descendant section at any depth in the hierarchy.
     #[must_use]
     pub fn navigate_to_next_descendant(&self) -> Option<usize> {
@@ -517,6 +533,7 @@ impl AppState {
         }
         None
     }
+
     /// Finds the next section at the same hierarchy level.
     #[must_use]
     pub fn navigate_to_next_sibling(&self) -> Option<usize> {
@@ -535,6 +552,7 @@ impl AppState {
         }
         None
     }
+
     /// Finds the previous section at the same hierarchy level.
     #[must_use]
     pub fn navigate_to_prev_sibling(&self) -> Option<usize> {
@@ -553,16 +571,19 @@ impl AppState {
         }
         None
     }
+
     /// Jumps to the first navigable node.
     #[must_use]
     pub fn navigate_to_first(&self) -> Option<usize> {
         self.tree_nodes.iter().position(|n| n.navigable)
     }
+
     /// Jumps to the last navigable node.
     #[must_use]
     pub fn navigate_to_last(&self) -> Option<usize> {
         self.tree_nodes.iter().rposition(|n| n.navigable)
     }
+
     /// Finds the first section at the same hierarchy level.
     #[must_use]
     pub fn navigate_to_first_at_level(&self) -> Option<usize> {
@@ -578,6 +599,7 @@ impl AppState {
         }
         None
     }
+
     /// Finds the last section at the same hierarchy level.
     #[must_use]
     pub fn navigate_to_last_at_level(&self) -> Option<usize> {
@@ -593,6 +615,7 @@ impl AppState {
         }
         None
     }
+
     /// Calculates indentation width based on section nesting level.
     #[must_use]
     pub fn get_indent(&self) -> usize {
@@ -602,6 +625,7 @@ impl AppState {
             0
         }
     }
+
     /// Determines available width for text after accounting for indentation.
     #[must_use]
     pub fn get_max_line_width(&self) -> usize {
@@ -609,6 +633,7 @@ impl AppState {
         self.wrap_width.saturating_sub(indent)
     }
     // --- Section List Movement ---
+
     /// Start moving the current section
     pub fn start_move(&mut self) {
         if let Some(section_idx) = self.get_current_section_index() {
@@ -616,15 +641,18 @@ impl AppState {
             self.move_state = MoveState::Selected;
         }
     }
+
     /// Cancel the current move operation
     pub fn cancel_move(&mut self) {
         self.moving_section_index = None;
         self.move_state = MoveState::None;
     }
+
     /// Mark section as moved but not yet saved
     pub fn mark_moved(&mut self) {
         self.move_state = MoveState::Moved;
     }
+
     /// Move section up by one position
     pub fn move_section_up(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -648,6 +676,7 @@ impl AppState {
         }
         false
     }
+
     /// Move section down by one position
     pub fn move_section_down(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -670,6 +699,7 @@ impl AppState {
         }
         false
     }
+
     /// Move section to top of document
     pub fn move_section_to_top(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -693,6 +723,7 @@ impl AppState {
         }
         false
     }
+
     /// Move section to bottom of document
     pub fn move_section_to_bottom(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -717,6 +748,7 @@ impl AppState {
         }
         false
     }
+
     /// Increase section level (move in - lower level number)
     pub fn move_section_in(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -729,6 +761,7 @@ impl AppState {
         }
         false
     }
+
     /// Decrease section level (move out - higher level number)
     pub fn move_section_out(&mut self) -> bool {
         if let Some(moving_idx) = self.moving_section_index {
@@ -741,6 +774,7 @@ impl AppState {
         }
         false
     }
+
     /// Apply section reordering to disk
     ///
     /// # Errors
@@ -776,6 +810,7 @@ impl AppState {
         self.message = Some("Sections reordered".to_string());
         Ok(())
     }
+
     /// Rewrite an entire file with reordered sections
     fn rewrite_file_sections(file_path: &str, sections: &[&Section]) -> io::Result<()> {
         let content = fs::read_to_string(file_path)?;

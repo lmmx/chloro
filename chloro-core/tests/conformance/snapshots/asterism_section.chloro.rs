@@ -98,6 +98,7 @@ impl TreeNode {
             section_index: None,
         }
     }
+
     /// Create a file node
     #[must_use]
     pub fn file(name: String, path: String, tree_level: usize) -> Self {
@@ -108,6 +109,7 @@ impl TreeNode {
             section_index: None,
         }
     }
+
     /// Create a section node
     #[must_use]
     pub fn section(section: Section, tree_level: usize, section_index: usize) -> Self {

@@ -70,16 +70,20 @@ impl DifftasticFormat {
     fn file_extension(&self) -> &'static str {
         "diff"
     }
+
     fn language(&self) -> tree_sitter::Language {
         // Difftastic doesn't use tree-sitter parsing
         tree_sitter_md::LANGUAGE.into()
     }
+
     fn section_query(&self) -> &'static str {
         ""
     }
+
     fn title_query(&self) -> &'static str {
         ""
     }
+
     fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
         // Check if this is a hunk header with format: (N) @@ -X,Y +A,B @@
         if title.contains("@@") && title.starts_with('(') {

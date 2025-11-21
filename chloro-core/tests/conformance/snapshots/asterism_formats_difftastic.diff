@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16579 bytes
-Chloro size:   16521 bytes
+Chloro size:   16525 bytes
 Rustfmt size:  16579 bytes
 
 ✗ Outputs DIFFER
@@ -16,23 +16,6 @@ Rustfmt size:  16579 bytes
      fn file_extension(&self) -> &'static str {
          "diff"
      }
--
-     fn language(&self) -> tree_sitter::Language {
-         // Difftastic doesn't use tree-sitter parsing
-         tree_sitter_md::LANGUAGE.into()
-     }
--
-     fn section_query(&self) -> &'static str {
-         ""
-     }
--
-     fn title_query(&self) -> &'static str {
-         ""
-     }
--
-     fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
-         // Check if this is a hunk header with format: (N) @@ -X,Y +A,B @@
-         if title.contains("@@") && title.starts_with('(') {
                  return Line::from(spans);
              }
          }
