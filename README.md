@@ -26,29 +26,34 @@ with use cases of code diffing in mind.
 
 ## Rustfmt Conformance
 
+Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt, as tested on the
+[crates][ra-crates] of the rust-analyzer repo itself:
+
+[ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
+
 ```
 Score  SizeRank  DiffRank    Impact       +   / -       File
 ────────────────────────────────────────────────────────────────────────────
-    3         3         1     28.2%   2,118  /  7,503   ra/hir/src_lib
-   14         7         2     47.0%   1,819  /  3,870   ra/rust_analyzer/src_config
-   44         4        11      7.5%     462  /  6,130   ra/ide_assists/src_handlers_extract_function
-   60         2        30      2.5%     278  /  11,104  ra/ide/src_hover_tests
-  108        18         6     25.2%     689  /  2,729   ra/hir/src_semantics
-  108        27         4     31.2%     771  /  2,472   ra/hir_ty/src_next_solver_interner
-  144        16         9     16.3%     484  /  2,961   ra/rust_analyzer/src_lsp_to_proto
-  192        64         3     56.4%     838  /  1,487   ra/hir_expand/src_builtin_derive_macro
-  198        11        18      9.5%     339  /  3,579   ra/hir_def/src_expr_store_lower
-  288         8        36      6.6%     255  /  3,866   ra/ide/src_goto_definition
-  325        65         5     48.7%     712  /  1,463   ra/hir_def/src_lib
-  494        13        38      7.7%     251  /  3,268   ra/hir_ty/src_mir_eval
-  494        38        13     21.0%     440  /  2,099   ra/hir_ty/src_infer
-  504        63         8     33.7%     504  /  1,495   ra/hir_ty/src_next_solver_ty
-  540         9        60      5.1%     191  /  3,767   ra/ide/src_rename
-  545         1       545      0.1%      12  /  19,633  ra/ide_db/src_generated_lints
-  602        14        43      7.3%     224  /  3,075   ra/ide_assists/src_handlers_generate_function
-  630        90         7     47.7%     558  /  1,169   ra/ide/src_navigation_target
-  672        12        56      6.0%     196  /  3,284   ra/ide_completion/src_render
- 1000       100        10     43.8%     476  /  1,086   ra/ide/src_lib
+    3         3         1     28.2%   2,118  /  7,503   hir/src_lib
+   14         7         2     47.0%   1,819  /  3,870   rust_analyzer/src_config
+   44         4        11      7.5%     462  /  6,130   ide_assists/src_handlers_extract_function
+   60         2        30      2.5%     278  /  11,104  ide/src_hover_tests
+  108        18         6     25.2%     689  /  2,729   hir/src_semantics
+  108        27         4     31.2%     771  /  2,472   hir_ty/src_next_solver_interner
+  144        16         9     16.3%     484  /  2,961   rust_analyzer/src_lsp_to_proto
+  192        64         3     56.4%     838  /  1,487   hir_expand/src_builtin_derive_macro
+  198        11        18      9.5%     339  /  3,579   hir_def/src_expr_store_lower
+  288         8        36      6.6%     255  /  3,866   ide/src_goto_definition
+  325        65         5     48.7%     712  /  1,463   hir_def/src_lib
+  494        13        38      7.7%     251  /  3,268   hir_ty/src_mir_eval
+  494        38        13     21.0%     440  /  2,099   hir_ty/src_infer
+  504        63         8     33.7%     504  /  1,495   hir_ty/src_next_solver_ty
+  540         9        60      5.1%     191  /  3,767   ide/src_rename
+  545         1       545      0.1%      12  /  19,633  ide_db/src_generated_lints
+  602        14        43      7.3%     224  /  3,075   ide_assists/src_handlers_generate_function
+  630        90         7     47.7%     558  /  1,169   ide/src_navigation_target
+  672        12        56      6.0%     196  /  3,284   ide_completion/src_render
+ 1000       100        10     43.8%     476  /  1,086   ide/src_lib
 ```
 
 ## Installation

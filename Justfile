@@ -53,7 +53,7 @@ conf-impact:
 
             if [ "$diff_lines" -gt 0 ] && [ "$total_lines" -gt 0 ]; then
                 impact=$(awk "BEGIN {printf \"%.1f\", ($diff_lines / $total_lines) * 100}")
-                relpath="${diff_file#./chloro-core/tests/conformance/snapshots/}"
+                relpath="${diff_file#./chloro-core/tests/conformance/snapshots/ra/}"
                 echo "$total_lines $diff_lines $impact ${relpath%.diff}"
             fi
         fi
