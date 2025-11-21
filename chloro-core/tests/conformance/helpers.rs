@@ -1,6 +1,7 @@
-mod comparison;
-mod fixture;
-mod rustfmt;
+pub mod comparison;
+pub mod fixture;
+pub mod roundtrip;
+pub mod rustfmt;
 
 pub use comparison::ComparisonResult;
 pub use fixture::load_fixture;
