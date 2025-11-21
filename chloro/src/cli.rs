@@ -41,14 +41,8 @@ pub mod cli {
             std::process::exit(0);
         }
 
-        let source_path = Path::new(&args.source);
-        if !source_path.exists() {
-            eprintln!("Error: Source path does not exist: {}", args.source);
-            std::process::exit(1);
-        }
-
         if args.verbose {
-            eprintln!("Source: {}", source_path.display());
+            eprintln!("Sources: {}", args.sources.join(", "));
             eprintln!(
                 "Mode: {}",
                 if args.check {
@@ -62,22 +56,48 @@ pub mod cli {
             eprintln!();
         }
 
-        // Discover files
-        let files = if source_path.is_file() {
-            vec![source_path.to_path_buf()]
-        } else {
-            discover_rust_files(source_path)?
-        };
+        // Collect all files from all source paths
+        let mut all_files = Vec::new();
 
-        if files.is_empty() {
+        for source in &args.sources {
+            let source_path = Path::new(source);
+            if !source_path.exists() {
+                eprintln!("Error: Source path does not exist: {}", source);
+                std::process::exit(1);
+            }
+
+            if source_path.is_file() {
+                all_files.push(source_path.to_path_buf());
+            } else {
+                all_files.extend(discover_rust_files(source_path)?);
+            }
+        }
+
+        if all_files.is_empty() {
             if args.verbose {
                 eprintln!("No Rust files found.");
             }
             return Ok(());
         }
 
+        if args.verbose {
+            eprintln!("Found {} Rust file(s)", all_files.len());
+            let num_threads = std::thread::available_parallelism().map_or(1, |n| n.get());
+
+            // Calculate chunk info for display
+            let oversubscribe = 4;
+            let total_chunks = num_threads * oversubscribe;
+            let chunk_size = all_files.len().div_ceil(total_chunks);
+
+            eprintln!(
+                "Processing with {} threads ({} chunks of ~{} files)",
+                num_threads, total_chunks, chunk_size
+            );
+            eprintln!();
+        }
+
         // Format files in parallel
-        let results = format_all(&files, &args);
+        let results = format_all(&all_files, &args);
         let agg = aggregate_results(results);
 
         // Print summary

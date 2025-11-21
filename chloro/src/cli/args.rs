@@ -2,9 +2,9 @@ use facet::Facet;
 
 #[derive(Facet)]
 pub struct Args {
-    /// Path to source file or directory to format
-    #[facet(positional, default = ".".to_string())]
-    pub source: String,
+    /// Path(s) to source file(s) or directory to format
+    #[facet(positional, default = vec![".".to_string()])]
+    pub sources: Vec<String>,
 
     /// Check mode: exit with error if files need formatting
     #[facet(named, short = 'c', long, default)]
@@ -24,12 +24,12 @@ pub struct Args {
 }
 
 pub fn print_usage() {
-    println!("Usage: chloro [OPTIONS] <SOURCE>");
+    println!("Usage: chloro [OPTIONS] [SOURCES]...");
     println!();
     println!("A minimal Rust code formatter.");
     println!();
     println!("Arguments:");
-    println!("  <SOURCE>           Path to file or directory to format (default: '.')");
+    println!("  [SOURCES]...       Path(s) to file(s) or directory to format (default: 'src')");
     println!();
     println!("Options:");
     println!("  -c, --check        Check if files need formatting (exit 1 if so)");
@@ -38,8 +38,11 @@ pub fn print_usage() {
     println!("  -h, --help         Show this help message");
     println!();
     println!("Examples:");
-    println!("  # Format and print to stdout");
+    println!("  # Format a single file and print to stdout");
     println!("  chloro src/lib.rs");
+    println!();
+    println!("  # Format multiple files");
+    println!("  chloro src/*.rs");
     println!();
     println!("  # Check if files need formatting");
     println!("  chloro --check src/");
