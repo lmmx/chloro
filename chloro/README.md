@@ -36,7 +36,7 @@ Diff 'leaderboard' for how well the output of chloro conforms to that of rustfmt
 
 | **Top 5 Removed Lines** | **Top 5 Added Lines** |
 |---|---|
-| (154) `- }`<br>(135) `- {`<br>(93) `- },`<br>(87) `- );`<br>(72) `- ///`<br> | (1,157) `+ &self,`<br>(652) `+ &mut self,`<br>(518) `+ self,`<br>(463) `+ ) {`<br>(351) `+ db: &dyn HirDatabase,`<br> |
+| `- }` (154)<br>`- {` (135)<br>`- },` (93)<br>`- );` (87)<br>`- ///` (72)<br> | (1,157) `+ &self,`<br>(652) `+ &mut self,`<br>(518) `+ self,`<br>(463) `+ ) {`<br>(351) `+ db: &dyn HirDatabase,`<br> |
 
 ### Top 20 Most Impacted Files
 

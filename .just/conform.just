@@ -108,17 +108,17 @@ conf-md:
     added_block=$(
         echo "$output" | awk '/^Top 5 added lines:/,/^Top 5 removed lines:/' \
         | grep -E '^[[:space:]]*[0-9]' | head -5 \
-        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "(%s) `%s`<br>", count, line}'
+        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "`%s` × %s<br>", line, count}'
     )
 
     # Build multiline removed block with backticks per line
     removed_block=$(
         echo "$output" | awk '/^Top 5 removed lines:/,/^Top 20 most impacted/' \
         | grep -E '^[[:space:]]*[0-9]' | head -5 \
-        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "(%s) `%s`<br>", count, line}'
+        | awk '{count=$1; $1=""; line=$0; sub(/^[ \t]+/, "", line); printf "`%s` × %s<br>", line, count}'
     )
 
-    echo "| **Top 5 Removed Lines** | **Top 5 Added Lines** |"
+    echo "| **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |"
     echo "|---|---|"
     echo "| $removed_block | $added_block |"
     echo
