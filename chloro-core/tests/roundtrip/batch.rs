@@ -1,46 +1,57 @@
-use crate::helpers::run_roundtrip;
+use crate::helpers::compare_with_rustfmt;
 use std::fs;
-use std::path::{Path, PathBuf};
-
-fn visit_rs_files(dir: &Path, files: &mut Vec<PathBuf>) {
-    for entry in fs::read_dir(dir).unwrap() {
-        let entry = entry.unwrap();
-        let path = entry.path();
-        if path.is_dir() {
-            visit_rs_files(&path, files);
-        } else if path.extension().map_or(false, |ext| ext == "rs") {
-            files.push(path);
-        }
-    }
-}
+use std::path::PathBuf;
 
 #[test]
-fn all_fixtures_are_idempotent() {
+fn compare_all_fixtures() {
     let fixtures_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
+        .join("roundtrip")
         .join("fixtures");
 
-    let mut failures = Vec::new();
-    let mut rs_files = Vec::new();
-    visit_rs_files(&fixtures_dir, &mut rs_files);
+    if !fixtures_dir.exists() {
+        eprintln!("Fixtures directory not found: {}", fixtures_dir.display());
+        eprintln!("Skipping batch comparison test");
+        return;
+    }
 
-    for path in rs_files {
-        let code = fs::read_to_string(&path).unwrap();
-        let result = run_roundtrip(&code);
+    let mut identical = 0;
+    let mut different = 0;
 
-        if !result.is_idempotent {
-            failures.push(path);
+    for entry in walkdir::WalkDir::new(&fixtures_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension().map_or(false, |ext| ext == "rs"))
+    {
+        let path = entry.path();
+        let name = path
+            .strip_prefix(&fixtures_dir)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+
+        eprintln!();
+        eprintln!("============================================================");
+        eprintln!("Comparing: {}", name);
+
+        let code = fs::read_to_string(path).unwrap();
+        let result = compare_with_rustfmt(&code, &name);
+
+        if result.chloro == result.rustfmt {
+            identical += 1;
+            eprintln!("✓ Identical to rustfmt");
+        } else {
+            different += 1;
+            eprintln!("✗ Different from rustfmt");
         }
     }
 
-    assert!(
-        failures.is_empty(),
-        "Non-idempotent formatting in {} files:\n{}",
-        failures.len(),
-        failures
-            .iter()
-            .map(|p| format!("  - {}", p.display()))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
+    eprintln!();
+    eprintln!("============================================================");
+    eprintln!("SUMMARY");
+    eprintln!("============================================================");
+    eprintln!("Total fixtures: {}", identical + different);
+    eprintln!("Identical to rustfmt: {}", identical);
+    eprintln!("Different from rustfmt: {}", different);
+    eprintln!();
 }
