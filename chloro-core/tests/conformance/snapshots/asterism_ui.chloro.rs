@@ -15,6 +15,7 @@ use ratatui::{
     Frame,
 };
 
+/// Renders the active view based on current application state.
 pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
     match app.current_view {
         View::List => draw_list(f, app),
@@ -23,6 +24,7 @@ pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
     }
 }
 
+/// Generate box-drawing prefix for tree structure
 fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
     if level == 0 {
         return String::new();

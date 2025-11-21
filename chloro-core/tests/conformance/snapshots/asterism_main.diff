@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17397 bytes
-Chloro size:   17150 bytes
+Chloro size:   17358 bytes
 Rustfmt size:  17397 bytes
 
 ✗ Outputs DIFFER
@@ -14,29 +14,25 @@ Rustfmt size:  17397 bytes
  use asterism::{app_state, config, edit_plan, formats, input, ui};
  use clap::Parser;
  use edtui::EditorEventHandler;
- #[command(name = "asterism")]
- #[command(about = "Hyperbolic navigation for tree data", long_about = None)]
- struct Args {
--    /// Files or directories to edit
+     /// Files or directories to edit
      #[arg(value_name = "PATH")]
      paths: Vec<PathBuf>,
 -
--    /// Load edit plan from JSON file
+     /// Load edit plan from JSON file
      #[arg(long)]
      load_docs: Option<PathBuf>,
 -
--    /// File extensions to match
+     /// File extensions to match
      #[arg(long, short = 'e', value_name = "EXT")]
      ext: Vec<String>,
 -
--    /// Parse difftastic JSON output (from stdin or file)
+     /// Parse difftastic JSON output (from stdin or file)
      #[arg(long, short = 'd')]
      difft: bool,
 -
--    /// Read difftastic output from stdin
+     /// Read difftastic output from stdin
      #[arg(long)]
      stdin: bool,
- }
  fn main() -> io::Result<()> {
      let args = Args::parse();
      let mut cfg = config::Config::load();

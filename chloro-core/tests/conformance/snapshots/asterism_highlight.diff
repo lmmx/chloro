@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3207 bytes
-Chloro size:   2679 bytes
+Chloro size:   2966 bytes
 Rustfmt size:  3207 bytes
 
 ✗ Outputs DIFFER
@@ -14,19 +14,19 @@ Rustfmt size:  3207 bytes
 -static SYNTAX_SET: std::sync::LazyLock<SyntaxSet> =
 -    std::sync::LazyLock::new(SyntaxSet::load_defaults_newlines);
 -static THEME_SET: std::sync::LazyLock<ThemeSet> = std::sync::LazyLock::new(ThemeSet::load_defaults);
++
  
--/// Highlight source lines with syntax coloring.
--///
--/// # Panics
--///
--/// Panics if syntax highlighting fails for any line in the input.
+ /// Highlight source lines with syntax coloring.
+ ///
+ /// # Panics
+ ///
+ /// Panics if syntax highlighting fails for any line in the input.
 -pub fn highlight_source_lines(
 -    lines: &[&str],
 -    start: usize,
 -    end: usize,
 -    target_line: usize,
 -) -> Vec<Line<'static>> {
-+
 +pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_line: usize) -> Vec<Line<'static>> {
      let theme = &THEME_SET.themes["base16-eighties.dark"];
      let syntax_ref = SYNTAX_SET
@@ -46,11 +46,6 @@ Rustfmt size:  3207 bytes
      display_lines
  }
  
--/// Highlight a single line with syntax coloring for a given file extension.
--///
--/// Falls back to plain text rendering if syntax highlighting fails.
- pub fn highlight_line_with_extension(line: &str, extension: &str) -> Line<'static> {
-     let theme = &THEME_SET.themes["base16-eighties.dark"];
      let syntax_ref = SYNTAX_SET
          .find_syntax_by_extension(extension)
          .unwrap_or_else(|| SYNTAX_SET.find_syntax_plain_text());

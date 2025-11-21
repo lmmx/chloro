@@ -1,9 +1,9 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
-    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
+    AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
-use super::{format_block_expr_contents, format_preceding_docs_and_attrs};
+use super::format_block_expr_contents;
 use crate::formatter::write_indent;
 
 pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -12,8 +12,12 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format preceding doc comments (/// style)
-    format_preceding_docs_and_attrs(node, buf, indent);
+    // Format doc comments using the trait
+    for doc_comment in func.doc_comments() {
+        write_indent(buf, indent);
+        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push('\n');
+    }
 
     // Also format attributes from the AST (like #[cfg(...)])
     for attr in func.attrs() {

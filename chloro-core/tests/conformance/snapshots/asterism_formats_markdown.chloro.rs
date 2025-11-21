@@ -8,6 +8,7 @@ use ratatui::{
     text::{Line, Span},
 };
 
+/// Tree-sitter queries for ATX-style markdown headings (# syntax).
 pub struct MarkdownFormat;
 
 impl MarkdownFormat {

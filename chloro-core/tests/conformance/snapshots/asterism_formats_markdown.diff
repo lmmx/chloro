@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1436 bytes
-Chloro size:   1349 bytes
+Chloro size:   1417 bytes
 Rustfmt size:  1436 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,7 @@ Rustfmt size:  1436 bytes
  use crate::formats::Format;
  use ratatui::{
      style::{Color, Style},
-     text::{Line, Span},
- };
- 
--/// Tree-sitter queries for ATX-style markdown headings (# syntax).
+ /// Tree-sitter queries for ATX-style markdown headings (# syntax).
  pub struct MarkdownFormat;
  
 -impl Format for MarkdownFormat {

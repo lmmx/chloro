@@ -10,6 +10,14 @@ use std::path::{Path, PathBuf};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor};
 
+/// Find documents matching the given extensions.
+///
+/// If paths is empty, scans the current directory recursively.
+/// Skips common build/dependency directories.
+///
+/// # Errors
+///
+/// Returns an error if directory traversal fails.
 pub fn find_documents(paths: Vec<PathBuf>, extensions: &[String]) -> io::Result<Vec<PathBuf>> {
     if paths.is_empty() {
         find_in_directory(Path::new("."), extensions)
@@ -62,6 +70,14 @@ fn find_in_directory(dir: &Path, extensions: &[String]) -> io::Result<Vec<PathBu
     Ok(results)
 }
 
+/// Extract sections from a document using tree-sitter.
+///
+/// Parses the file with the given format and extracts all sections,
+/// building parent/child relationships based on heading levels.
+///
+/// # Errors
+///
+/// Returns an error if file reading or parsing fails.
 pub fn extract_sections<F: Format>(file_path: &Path, format: &F) -> io::Result<Vec<Section>> {
     let content = fs::read_to_string(file_path)?;
     let mut parser = Parser::new();

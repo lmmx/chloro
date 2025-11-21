@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16168 bytes
-Chloro size:   16024 bytes
+Chloro size:   16139 bytes
 Rustfmt size:  16168 bytes
 
 ✗ Outputs DIFFER
@@ -16,18 +16,6 @@ Rustfmt size:  16168 bytes
  use crate::app_state::{AppState, MoveState, View};
  use crate::config::Config;
  use crate::formats::Format;
-     Frame,
- };
- 
--/// Renders the active view based on current application state.
- pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
-     match app.current_view {
-         View::List => draw_list(f, app),
-     }
- }
- 
--/// Generate box-drawing prefix for tree structure
- fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
      if level == 0 {
          return String::new();
      }

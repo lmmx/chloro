@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31467 bytes
-Chloro size:   28317 bytes
+Chloro size:   31387 bytes
 Rustfmt size:  31467 bytes
 
 ✗ Outputs DIFFER
@@ -18,46 +18,6 @@ Rustfmt size:  31467 bytes
  use crate::edit_plan::{Edit, EditPlan};
  use crate::formats::markdown::MarkdownFormat;
  use crate::input;
-     Moved,
- }
- 
--/// Bridges document sections and the interactive editor, maintaining session state.
- pub struct AppState {
--    /// All parsed sections across loaded files.
-     pub sections: Vec<Section>,
--    /// Unified tree of directories, files, and sections for display
-     pub tree_nodes: Vec<TreeNode>,
--    /// File paths available for editing.
-     pub files: Vec<PathBuf>,
--    /// Controls navigation behavior and file tree visibility.
-     pub file_mode: FileMode,
--    /// Active UI screen determining input handling.
-     pub current_view: View,
--    /// Selected node index in the tree
-     pub current_node_index: usize,
--    /// Editor buffer content when detail view is active.
-     pub editor_state: Option<EditorState>,
--    /// Accumulates vim-style command input after ':' is pressed.
-     pub command_buffer: String,
--    /// Status feedback displayed in the help bar.
-     pub message: Option<String>,
--    /// Maximum line width for text wrapping in the editor.
-     pub wrap_width: usize,
--    /// Tracks line count changes per section to calculate write positions without re-parsing.
-     pub file_offsets: HashMap<String, HashMap<i64, usize>>,
--    /// Tracks section being moved for visual feedback
-     pub move_state: MoveState,
--    /// Index of section being moved (if any)
-     pub moving_section_index: Option<usize>,
- }
- 
- }
- 
- impl AppState {
--    /// Initialises application state with parsed sections and determines file mode.
-     #[must_use]
-     pub fn new(files: Vec<PathBuf>, sections: Vec<Section>, wrap_width: usize) -> Self {
-         let file_mode = if files.len() == 1 {
          } else {
              FileMode::Multi
          };
@@ -94,7 +54,7 @@ Rustfmt size:  31467 bytes
          nodes
      }
 -
--    /// Rebuild tree after sections change (e.g., after save)
+     /// Rebuild tree after sections change (e.g., after save)
      pub fn rebuild_tree(&mut self) {
          self.tree_nodes = Self::build_tree(&self.files, &self.sections);
 -
@@ -105,15 +65,14 @@ Rustfmt size:  31467 bytes
          }
      }
 -
--    /// Get the section index for the currently selected node (if it's a section)
+     /// Get the section index for the currently selected node (if it's a section)
      #[must_use]
      pub fn get_current_section_index(&self) -> Option<usize> {
-         if self.current_node_index < self.tree_nodes.len() {
              None
          }
      }
 -
--    /// Get the current section (if on a section node)
+     /// Get the current section (if on a section node)
      #[must_use]
      pub fn get_current_section(&self) -> Option<&Section> {
          self.get_current_section_index()
@@ -130,7 +89,7 @@ Rustfmt size:  31467 bytes
          }
      }
 -
--    /// Calculates total lines added before a section to determine correct write position.
+     /// Calculates total lines added before a section to determine correct write position.
      #[must_use]
      pub fn cumulative_offset(&self, index: usize) -> usize {
          let section = &self.sections[index];
@@ -144,10 +103,9 @@ Rustfmt size:  31467 bytes
          }
      }
 -
--    /// Restores previously edited content from a saved edit plan.
+     /// Restores previously edited content from a saved edit plan.
      pub fn load_docs(&mut self, plan: EditPlan) {
          let mut doc_map: HashMap<String, Vec<String>> = HashMap::new();
-         for edit in plan.edits {
                  .collect();
              doc_map.insert(key, lines);
          }
@@ -159,7 +117,7 @@ Rustfmt size:  31467 bytes
          }
      }
 -
--    /// Creates a serialisable plan capturing current editor modifications.
+     /// Creates a serialisable plan capturing current editor modifications.
      #[must_use]
      pub fn generate_edit_plan(&self) -> EditPlan {
          let mut edits = Vec::new();
@@ -174,7 +132,7 @@ Rustfmt size:  31467 bytes
          EditPlan { edits }
      }
 -
--    /// Loads selected section content into the editor buffer.
+     /// Loads selected section content into the editor buffer.
      pub fn enter_detail_view(&mut self) {
          let Some(section_idx) = self.get_current_section_index() else {
              return;
@@ -192,22 +150,16 @@ Rustfmt size:  31467 bytes
          self.current_view = View::Detail;
      }
 -
--    /// Returns to section list, optionally persisting editor changes.
+     /// Returns to section list, optionally persisting editor changes.
      pub fn exit_detail_view(&mut self, save: bool) {
          if save {
-             if let Some(ref editor_state) = self.editor_state {
          self.editor_state = None;
          self.current_view = View::List;
      }
 -
--    /// Save the current section's content to disk.
--    ///
--    /// # Errors
--    ///
--    /// Returns an error if writing to disk fails or if file operations cannot complete.
-     pub fn save_current(&mut self) -> io::Result<()> {
-         let editor_lines = if let Some(ref editor_state) = self.editor_state {
-             editor_state
+     /// Save the current section's content to disk.
+     ///
+     /// # Errors
          } else {
              return Ok(());
          };
@@ -246,22 +198,21 @@ Rustfmt size:  31467 bytes
          Ok(())
      }
 -
--    /// Navigate to next navigable node
+     /// Navigate to next navigable node
      #[must_use]
      pub fn find_next_node(&self) -> Option<usize> {
          ((self.current_node_index + 1)..self.tree_nodes.len())
              .find(|&i| self.tree_nodes[i].navigable)
      }
 -
--    /// Navigate to previous navigable node
+     /// Navigate to previous navigable node
      #[must_use]
      pub fn find_prev_node(&self) -> Option<usize> {
-         (0..self.current_node_index)
              .rev()
              .find(|&i| self.tree_nodes[i].navigable)
      }
 -
--    /// Moves to the containing section in the document hierarchy.
+     /// Moves to the containing section in the document hierarchy.
      #[must_use]
      pub fn navigate_to_parent(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -273,7 +224,7 @@ Rustfmt size:  31467 bytes
              .position(|n| n.section_index == Some(parent_section_idx))
      }
 -
--    /// Descends to the first child section in the document hierarchy.
+     /// Descends to the first child section in the document hierarchy.
      #[must_use]
      pub fn navigate_to_first_child(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -284,7 +235,7 @@ Rustfmt size:  31467 bytes
              .position(|n| n.section_index == Some(*first_child_idx))
      }
 -
--    /// Finds the next descendant section at any depth in the hierarchy.
+     /// Finds the next descendant section at any depth in the hierarchy.
      #[must_use]
      pub fn navigate_to_next_descendant(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -306,7 +257,7 @@ Rustfmt size:  31467 bytes
          None
      }
 -
--    /// Finds the next section at the same hierarchy level.
+     /// Finds the next section at the same hierarchy level.
      #[must_use]
      pub fn navigate_to_next_sibling(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -322,7 +273,7 @@ Rustfmt size:  31467 bytes
          None
      }
 -
--    /// Finds the previous section at the same hierarchy level.
+     /// Finds the previous section at the same hierarchy level.
      #[must_use]
      pub fn navigate_to_prev_sibling(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -338,19 +289,19 @@ Rustfmt size:  31467 bytes
          None
      }
 -
--    /// Jumps to the first navigable node.
+     /// Jumps to the first navigable node.
      #[must_use]
      pub fn navigate_to_first(&self) -> Option<usize> {
          self.tree_nodes.iter().position(|n| n.navigable)
      }
 -
--    /// Jumps to the last navigable node.
+     /// Jumps to the last navigable node.
      #[must_use]
      pub fn navigate_to_last(&self) -> Option<usize> {
          self.tree_nodes.iter().rposition(|n| n.navigable)
      }
 -
--    /// Finds the first section at the same hierarchy level.
+     /// Finds the first section at the same hierarchy level.
      #[must_use]
      pub fn navigate_to_first_at_level(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -366,7 +317,7 @@ Rustfmt size:  31467 bytes
          None
      }
 -
--    /// Finds the last section at the same hierarchy level.
+     /// Finds the last section at the same hierarchy level.
      #[must_use]
      pub fn navigate_to_last_at_level(&self) -> Option<usize> {
          let section_idx = self.get_current_section_index()?;
@@ -382,15 +333,14 @@ Rustfmt size:  31467 bytes
          None
      }
 -
--    /// Calculates indentation width based on section nesting level.
+     /// Calculates indentation width based on section nesting level.
      #[must_use]
      pub fn get_indent(&self) -> usize {
-         if let Some(section) = self.get_current_section() {
              0
          }
      }
 -
--    /// Determines available width for text after accounting for indentation.
+     /// Determines available width for text after accounting for indentation.
      #[must_use]
      pub fn get_max_line_width(&self) -> usize {
          let indent = self.get_indent();
@@ -399,79 +349,69 @@ Rustfmt size:  31467 bytes
 -
      // --- Section List Movement ---
 -
--    /// Start moving the current section
+     /// Start moving the current section
      pub fn start_move(&mut self) {
          if let Some(section_idx) = self.get_current_section_index() {
-             self.moving_section_index = Some(section_idx);
              self.move_state = MoveState::Selected;
          }
      }
 -
--    /// Cancel the current move operation
+     /// Cancel the current move operation
      pub fn cancel_move(&mut self) {
          self.moving_section_index = None;
          self.move_state = MoveState::None;
      }
 -
--    /// Mark section as moved but not yet saved
+     /// Mark section as moved but not yet saved
      pub fn mark_moved(&mut self) {
          self.move_state = MoveState::Moved;
      }
 -
--    /// Move section up by one position
+     /// Move section up by one position
      pub fn move_section_up(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             if moving_idx > 0 {
          }
          false
      }
 -
--    /// Move section down by one position
+     /// Move section down by one position
      pub fn move_section_down(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             if moving_idx < self.sections.len() - 1 {
          }
          false
      }
 -
--    /// Move section to top of document
+     /// Move section to top of document
      pub fn move_section_to_top(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             if moving_idx > 0 {
          }
          false
      }
 -
--    /// Move section to bottom of document
+     /// Move section to bottom of document
      pub fn move_section_to_bottom(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             let last_idx = self.sections.len() - 1;
          }
          false
      }
 -
--    /// Increase section level (move in - lower level number)
+     /// Increase section level (move in - lower level number)
      pub fn move_section_in(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             if self.sections[moving_idx].level > 1 {
          }
          false
      }
 -
--    /// Decrease section level (move out - higher level number)
+     /// Decrease section level (move out - higher level number)
      pub fn move_section_out(&mut self) -> bool {
          if let Some(moving_idx) = self.moving_section_index {
-             if self.sections[moving_idx].level < 6 {
          }
          false
      }
 -
--    /// Apply section reordering to disk
--    ///
--    /// # Errors
--    ///
--    /// Returns an error if writing to disk fails or if file operations cannot complete.
-     pub fn save_section_reorder(&mut self) -> io::Result<()> {
+     /// Apply section reordering to disk
+     ///
+     /// # Errors
          if self.move_state != MoveState::Moved {
              return Ok(());
          }
@@ -503,7 +443,7 @@ Rustfmt size:  31467 bytes
          Ok(())
      }
 -
--    /// Rewrite an entire file with reordered sections
+     /// Rewrite an entire file with reordered sections
      fn rewrite_file_sections(file_path: &str, sections: &[&Section]) -> io::Result<()> {
          let content = fs::read_to_string(file_path)?;
          let mut new_content = String::new();
