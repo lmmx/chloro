@@ -22,24 +22,38 @@ pub use useitem::format_use;
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
+            let mut last_was_item = false;
+
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
-                        format_node(&n, buf, indent);
-                        // Add spacing between top-level items
-                        if matches!(
+                        let is_item = matches!(
                             n.kind(),
                             SyntaxKind::FN
                                 | SyntaxKind::STRUCT
                                 | SyntaxKind::ENUM
                                 | SyntaxKind::IMPL
                                 | SyntaxKind::MODULE
-                        ) {
+                                | SyntaxKind::USE
+                                | SyntaxKind::TYPE_ALIAS
+                                | SyntaxKind::CONST
+                                | SyntaxKind::STATIC
+                        );
+
+                        // Add blank line before items (except the first one)
+                        if is_item && last_was_item {
                             buf.push('\n');
                         }
+
+                        format_node(&n, buf, indent);
+                        last_was_item = is_item;
                     }
                     NodeOrToken::Token(t) => {
                         format_token(&t, buf, indent);
+                        // Comments and attributes don't count as items
+                        if !matches!(t.kind(), SyntaxKind::WHITESPACE | SyntaxKind::COMMENT) {
+                            last_was_item = false;
+                        }
                     }
                 }
             }
@@ -77,34 +91,23 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 }
 
 /// Format a single token (comments, whitespace, keywords, etc.)
-fn format_token(token: &SyntaxToken, buf: &mut String, indent: usize) {
+fn format_token(token: &SyntaxToken, buf: &mut String, _indent: usize) {
     match token.kind() {
         SyntaxKind::COMMENT => {
             // Handle comments specially
             if let Some(comment) = ast::Comment::cast(token.clone()) {
                 let text = comment.text();
 
-                // Preserve the comment exactly
-                crate::formatter::write_indent(buf, indent);
+                // Preserve the comment exactly (it already has //, //!, or ///)
                 buf.push_str(text);
                 buf.push('\n');
             }
         }
         SyntaxKind::WHITESPACE => {
-            // Normalize whitespace - preserve newlines but not excessive ones
-            let text = token.text();
-            if text.contains('\n') {
-                let newline_count = text.matches('\n').count();
-                // Preserve up to 2 newlines (one blank line)
-                for _ in 0..newline_count.min(2) {
-                    buf.push('\n');
-                }
-            }
-            // Don't add spaces - let the formatter handle spacing
+            // Skip whitespace entirely - let the formatter control all spacing
         }
         _ => {
-            // For other tokens, just append them as-is
-            // (This shouldn't happen much since we handle nodes specially)
+            // For other tokens, this shouldn't happen in SOURCE_FILE context
         }
     }
 }
