@@ -28,15 +28,18 @@ conf:
     fd -e diff -X cat | rg '^- ' | grep -vE '^\-$' | sort | uniq -c | sort -nr | head -10 | while read count line; do
         echo -e "$(echo $count | numfmt --grouping)\t${BOLD}${RED}${line}${RESET}"
     done
+    just conf-impact
 
 conf-impact:
     #!/usr/bin/env bash
     BOLD="\033[1m"
+    GREEN="\033[32m"
+    RED="\033[31m"
     RESET="\033[0m"
 
     # Header
-    echo -e "${BOLD}Score  SizeRank  DiffRank    Impact    Changes      File${RESET}"
-    echo "────────────────────────────────────────────────────────────────────────"
+    echo -e "${BOLD}Score  SizeRank  DiffRank    Impact        +/-            File${RESET}"
+    echo "────────────────────────────────────────────────────────────────────────────"
 
     # Collect data with full relative path
     fd -e diff -x bash -c '
@@ -73,6 +76,23 @@ conf-impact:
             impact = $5
             diff_rank = $6
             score = size_rank * diff_rank
-            printf "%5d  %8d  %8d  %7.1f%%  %5d/%-5d  %s\n", score, size_rank, diff_rank, impact, diff_lines, total_lines, filename
+
+            # Format with commas
+            cmd_diff = "echo " diff_lines " | numfmt --grouping"
+            cmd_total = "echo " total_lines " | numfmt --grouping"
+            cmd_diff | getline diff_fmt
+            cmd_total | getline total_fmt
+            close(cmd_diff)
+            close(cmd_total)
+
+            # Build the changes string and calculate its display width (without ANSI codes)
+            changes_str = sprintf("+%s/-%s", diff_fmt, total_fmt)
+            changes_len = length(changes_str)
+            padding = int((18 - changes_len) / 2)
+
+            printf "%5d  %8d  %8d  %7.1f%%  %*s\033[32m+%s\033[0m/\033[31m-%s\033[0m%*s  %s\n",
+                score, size_rank, diff_rank, impact,
+                padding, "", diff_fmt, total_fmt, 18 - changes_len - padding, "",
+                filename
         }' | sort -n | head -20
     }
