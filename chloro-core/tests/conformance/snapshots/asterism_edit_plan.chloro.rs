@@ -1,0 +1,76 @@
+//! The edit plan manages document modifications using textum patches.
+//!
+//! This module defines the transformation that work in the TUI manifests as actual edits on disk.
+//! asterism uses textum for generic line-based patching that works with any text format.
+use serde::{Deserialize, Serialize};
+
+use std::collections::HashMap;
+
+use std::io;
+
+use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
+
+pub struct EditPlan {
+    pub edits: Vec<Edit>,
+}
+
+pub struct Edit {
+    pub file_name: String,
+    pub line_start: i64,
+    pub line_end: i64,
+    pub column_start: i64,
+    pub column_end: i64,
+    pub section_content: String,
+    pub item_name: String,
+}
+
+impl EditPlan {
+    pub fn apply() -> io::Result<()> {
+        let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
+        for edit in &self.edits {
+            file_groups
+                .entry(edit.file_name.clone())
+                .or_default()
+                .push(edit);
+        }
+        for (file_name, edits) in file_groups {
+            let mut patchset = PatchSet::new();
+
+            for edit in edits {
+                let line_start: usize = edit.line_start.try_into().map_err(|_| {
+                    io::Error::other(format!("Invalid line_start: {}", edit.line_start))
+                })?;
+                let line_end: usize = edit.line_end.try_into().map_err(|_| {
+                    io::Error::other(format!("Invalid line_end: {}", edit.line_end))
+                })?;
+
+                let start = Boundary::new(Target::Line(line_start), BoundaryMode::Include);
+                let end = Boundary::new(Target::Line(line_end), BoundaryMode::Exclude);
+                let snippet = Snippet::Between { start, end };
+
+                let replacement = format!("\n{}\n\n", edit.section_content.trim());
+
+                let patch = Patch {
+                    file: file_name.clone(),
+                    snippet,
+                    replacement,
+                };
+
+                patchset.add(patch);
+            }
+
+            let results = patchset
+                .apply_to_files()
+                .map_err(|e| io::Error::other(e.to_string()))?;
+
+            if let Some(new_content) = results.get(&file_name) {
+                std::fs::write(&file_name, new_content)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+#[path = "tests/edit_plan.rs"]
+mod tests;

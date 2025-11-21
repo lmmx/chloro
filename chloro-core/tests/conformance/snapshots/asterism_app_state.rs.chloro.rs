@@ -1,7 +1,3 @@
----
-source: chloro-core/tests/roundtrip/basic.rs
-expression: result.chloro
----
 //! The core state machine bridging document sections and the interactive editor.
 //!
 //! A TUI needs a single source of truth that can be interrogated and mutated as the user navigates
