@@ -1,6 +1,9 @@
 //! rust-analyzer extensions to the LSP.
 
 #![allow(clippy::disallowed_types)]
+// Note when adding new resolve payloads, add a #[serde(default)] on boolean fields as some clients
+// might strip `false` values from the JSON payload due to their reserialization logic turning false
+// into null which will then cause them to be omitted in the resolve request. See https://github.com/rust-lang/rust-analyzer/issues/18767
 
 use std::ops;
 

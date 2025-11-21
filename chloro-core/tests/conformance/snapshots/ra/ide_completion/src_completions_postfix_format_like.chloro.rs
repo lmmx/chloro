@@ -1,3 +1,21 @@
+// Feature: Format String Completion
+//
+// `"Result {result} is {2 + 2}"` is expanded to the `"Result {} is {}", result, 2 + 2`.
+//
+// The following postfix snippets are available:
+//
+// * `format` -> `format!(...)`
+// * `panic` -> `panic!(...)`
+// * `println` -> `println!(...)`
+// * `log`:
+// ** `logd` -> `log::debug!(...)`
+// ** `logt` -> `log::trace!(...)`
+// ** `logi` -> `log::info!(...)`
+// ** `logw` -> `log::warn!(...)`
+// ** `loge` -> `log::error!(...)`
+//
+// ![Format String Completion](https://user-images.githubusercontent.com/48062697/113020656-b560f500-917a-11eb-87de-02991f61beb8.gif)
+
 use ide_db::{
     SnippetCap,
     syntax_helpers::format_string_exprs::{Arg, parse_format_exprs, with_placeholders},

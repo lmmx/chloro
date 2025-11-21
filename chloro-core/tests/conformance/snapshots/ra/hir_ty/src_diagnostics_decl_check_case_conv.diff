@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5852 bytes
-Chloro size:   5582 bytes
+Chloro size:   5704 bytes
 Rustfmt size:  6228 bytes
 
 ✗ Outputs DIFFER
@@ -10,13 +10,10 @@ Rustfmt size:  6228 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Functions for string case manipulation, such as detecting the identifier case,
  //! and converting it into appropriate form.
- 
--// Code that was taken from rustc was taken at commit 89fdb30,
--// from file /compiler/rustc_lint/src/nonstandard_style.rs
 -
- /// Converts an identifier to an UpperCamelCase form.
- /// Returns `None` if the string is already in UpperCamelCase.
- pub(crate) fn to_camel_case(ident: &str) -> Option<String> {
+ // Code that was taken from rustc was taken at commit 89fdb30,
+ // from file /compiler/rustc_lint/src/nonstandard_style.rs
+ 
      if is_camel_case(ident) {
          return None;
      }
