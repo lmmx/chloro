@@ -3,20 +3,25 @@ use std::fs;
 use std::path::PathBuf;
 
 #[test]
-fn compare_all_fixtures() {
+fn compare_rust_analyzer_files() {
     let fixtures_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("conformance")
-        .join("fixtures");
+        .join("fixtures")
+        .join("rust-analyzer");
 
     if !fixtures_dir.exists() {
         eprintln!("Fixtures directory not found: {}", fixtures_dir.display());
-        eprintln!("Skipping batch comparison test");
+        eprintln!("Skipping rust-analyzer comparison test");
         return;
     }
 
     let mut identical = 0;
     let mut different = 0;
+    let mut total_bytes_original = 0;
+    let mut total_bytes_chloro = 0;
+    let mut total_bytes_rustfmt = 0;
+    let mut files_by_status: Vec<(String, bool)> = Vec::new();
 
     for entry in walkdir::WalkDir::new(&fixtures_dir)
         .into_iter()
@@ -34,12 +39,20 @@ fn compare_all_fixtures() {
 
         eprintln!();
         eprintln!("============================================================");
-        eprintln!("Comparing: {}", name);
+        eprintln!("Comparing: rust-analyzer/{}", name);
 
         let code = fs::read_to_string(path).unwrap();
-        let result = compare_with_rustfmt(&code, &name);
+        total_bytes_original += code.len();
 
-        if result.chloro == result.rustfmt {
+        let result = compare_with_rustfmt(&code, &format!("rust-analyzer/{}", name));
+
+        total_bytes_chloro += result.chloro.len();
+        total_bytes_rustfmt += result.rustfmt.len();
+
+        let is_identical = result.chloro == result.rustfmt;
+        files_by_status.push((name.clone(), is_identical));
+
+        if is_identical {
             identical += 1;
             eprintln!("✓ Identical to rustfmt");
         } else {
@@ -50,10 +63,39 @@ fn compare_all_fixtures() {
 
     eprintln!();
     eprintln!("============================================================");
-    eprintln!("SUMMARY");
+    eprintln!("RUST-ANALYZER COMPLETE SUMMARY");
     eprintln!("============================================================");
-    eprintln!("Total fixtures: {}", identical + different);
-    eprintln!("Identical to rustfmt: {}", identical);
-    eprintln!("Different from rustfmt: {}", different);
+    eprintln!("Total files: {}", identical + different);
+    eprintln!(
+        "Identical to rustfmt: {} ({:.1}%)",
+        identical,
+        100.0 * identical as f64 / (identical + different) as f64
+    );
+    eprintln!(
+        "Different from rustfmt: {} ({:.1}%)",
+        different,
+        100.0 * different as f64 / (identical + different) as f64
+    );
+    eprintln!();
+    eprintln!("Total size (original): {} bytes", total_bytes_original);
+    eprintln!("Total size (chloro):   {} bytes", total_bytes_chloro);
+    eprintln!("Total size (rustfmt):  {} bytes", total_bytes_rustfmt);
+    eprintln!();
+
+    // Print files by status
+    eprintln!("IDENTICAL FILES:");
+    for (name, is_identical) in &files_by_status {
+        if *is_identical {
+            eprintln!("  ✓ {}", name);
+        }
+    }
+
+    eprintln!();
+    eprintln!("DIFFERENT FILES:");
+    for (name, is_identical) in &files_by_status {
+        if !*is_identical {
+            eprintln!("  ✗ {}", name);
+        }
+    }
     eprintln!();
 }
