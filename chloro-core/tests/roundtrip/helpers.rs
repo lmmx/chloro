@@ -1,8 +1,6 @@
 use chloro_core::format_source;
-use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
-use tempfile::TempDir;
+use std::path::PathBuf;
 
 #[ctor::ctor]
 fn init_debug() {
