@@ -1,4 +1,5 @@
 use chloro_core::format_source;
+use imara_diff::{Algorithm, BasicLineDiffPrinter, Diff, InternedInput, UnifiedDiffConfig};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -15,51 +16,93 @@ pub struct ComparisonResult {
 }
 
 impl ComparisonResult {
-    pub fn show_diff(&self, name: &str) {
-        eprintln!();
-        eprintln!("============================================================");
-        eprintln!("COMPARISON: {}", name);
-        eprintln!("============================================================");
+    /// Write comparison files and show diff
+    pub fn write_comparison_files(&self, fixture_name: &str) {
+        let output_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("roundtrip")
+            .join("output");
 
-        eprintln!();
-        eprintln!("--- ORIGINAL ({} bytes) ---", self.original.len());
-        eprintln!("{}", &self.original[..self.original.len().min(200)]);
-        if self.original.len() > 200 {
-            eprintln!("... ({} more bytes)", self.original.len() - 200);
-        }
+        fs::create_dir_all(&output_dir).unwrap();
 
-        eprintln!();
-        eprintln!("--- CHLORO OUTPUT ({} bytes) ---", self.chloro.len());
-        eprintln!("{}", self.chloro);
+        // Sanitize fixture name for filename
+        let safe_name = fixture_name.replace('/', "_");
 
-        eprintln!();
-        eprintln!("--- RUSTFMT OUTPUT ({} bytes) ---", self.rustfmt.len());
-        eprintln!("{}", self.rustfmt);
+        // Write chloro output
+        let chloro_path = output_dir.join(format!("{}.chloro.rs", safe_name));
+        fs::write(&chloro_path, &self.chloro).unwrap();
+        eprintln!("Wrote: {}", chloro_path.display());
 
-        if self.chloro != self.rustfmt {
-            eprintln!();
-            eprintln!("--- DIFF (chloro vs rustfmt) ---");
-            let diff = similar::TextDiff::from_lines(&self.chloro, &self.rustfmt);
-            for change in diff.iter_all_changes() {
-                let sign = match change.tag() {
-                    similar::ChangeTag::Delete => "- ",
-                    similar::ChangeTag::Insert => "+ ",
-                    similar::ChangeTag::Equal => "  ",
-                };
-                eprint!("{}{}", sign, change);
-            }
-            eprintln!();
-            eprintln!("--- END DIFF ---");
+        // Write rustfmt output
+        let rustfmt_path = output_dir.join(format!("{}.rustfmt.rs", safe_name));
+        fs::write(&rustfmt_path, &self.rustfmt).unwrap();
+        eprintln!("Wrote: {}", rustfmt_path.display());
+
+        // Generate and write diff
+        let diff_content = self.generate_diff_content();
+        let diff_path = output_dir.join(format!("{}.diff", safe_name));
+        fs::write(&diff_path, &diff_content).unwrap();
+        eprintln!("Wrote: {}", diff_path.display());
+
+        // Show diff in terminal
+        self.show_diff();
+    }
+
+    fn show_diff(&self) {
+        let input = InternedInput::new(&self.chloro[..], &self.rustfmt[..]);
+        let mut diff = Diff::compute(Algorithm::Histogram, &input);
+        diff.postprocess_lines(&input);
+
+        if diff.count_additions() == 0 && diff.count_removals() == 0 {
+            eprintln!("\n=== [IDENTICAL] ===\n");
         } else {
-            eprintln!();
-            eprintln!("✓ IDENTICAL OUTPUT");
+            eprintln!("\n=== DIFF (chloro vs rustfmt) ===");
+
+            let config = UnifiedDiffConfig::default();
+            let printer = BasicLineDiffPrinter(&input.interner);
+            let unified = diff.unified_diff(&printer, config, &input);
+
+            eprintln!("{}", unified);
+            eprintln!("=== END DIFF ===\n");
+        }
+    }
+
+    fn generate_diff_content(&self) -> String {
+        let mut output = String::new();
+
+        output.push_str("COMPARISON DIFF\n");
+        output.push_str("============================================================\n\n");
+
+        output.push_str(&format!("Original size: {} bytes\n", self.original.len()));
+        output.push_str(&format!("Chloro size:   {} bytes\n", self.chloro.len()));
+        output.push_str(&format!("Rustfmt size:  {} bytes\n\n", self.rustfmt.len()));
+
+        let input = InternedInput::new(&self.chloro[..], &self.rustfmt[..]);
+        let mut diff = Diff::compute(Algorithm::Histogram, &input);
+        diff.postprocess_lines(&input);
+
+        if diff.count_additions() == 0 && diff.count_removals() == 0 {
+            output.push_str("✓ Outputs are IDENTICAL\n");
+        } else {
+            output.push_str("✗ Outputs DIFFER\n\n");
+
+            let config = UnifiedDiffConfig::default();
+            let printer = BasicLineDiffPrinter(&input.interner);
+            let unified = diff.unified_diff(&printer, config, &input);
+
+            output.push_str(&format!("{}", unified));
         }
 
-        eprintln!();
+        output
     }
 }
 
 pub fn compare_with_rustfmt(code: &str, name: &str) -> ComparisonResult {
+    eprintln!();
+    eprintln!("============================================================");
+    eprintln!("COMPARING: {}", name);
+    eprintln!("============================================================");
+
     let chloro = format_source(code);
 
     // Format with rustfmt
@@ -74,7 +117,7 @@ pub fn compare_with_rustfmt(code: &str, name: &str) -> ComparisonResult {
         rustfmt,
     };
 
-    result.show_diff(name);
+    result.write_comparison_files(name);
     result
 }
 
