@@ -2,6 +2,7 @@
 //!
 //! The draw function dispatches based on the current view (list or editor).
 //! The list view shows a unified tree with files and sections using box-drawing characters.
+
 use crate::app_state::{AppState, MoveState, View};
 use crate::config::Config;
 use crate::formats::Format;

@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16579 bytes
-Chloro size:   16520 bytes
+Chloro size:   16521 bytes
 Rustfmt size:  16579 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Difftastic format implementation for displaying structural diffs.
- //!
- //! This module provides support for parsing difftastic JSON output and
- //! converting it into sections that can be navigated and edited in asterism.
--
- use crate::formats::Format;
- use crate::section::{ChunkType, Section};
- use ratatui::{
  /// Difftastic format handler
  pub struct DifftasticFormat;
  

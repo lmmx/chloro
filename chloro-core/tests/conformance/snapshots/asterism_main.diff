@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17397 bytes
-Chloro size:   17358 bytes
+Chloro size:   17359 bytes
 Rustfmt size:  17397 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! asterism: A tree-sitter document section editor.
- #![allow(clippy::multiple_crate_versions)]
--
- use asterism::{app_state, config, edit_plan, formats, input, ui};
- use clap::Parser;
- use edtui::EditorEventHandler;
      /// Files or directories to edit
      #[arg(value_name = "PATH")]
      paths: Vec<PathBuf>,

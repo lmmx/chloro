@@ -2,6 +2,7 @@
 //!
 //! This module handles finding markdown files in the filesystem and parsing
 //! them with tree-sitter queries to extract section hierarchies.
+
 use crate::formats::Format;
 use crate::section::Section;
 use std::fs;

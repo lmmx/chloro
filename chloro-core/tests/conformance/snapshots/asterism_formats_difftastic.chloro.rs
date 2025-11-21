@@ -2,6 +2,7 @@
 //!
 //! This module provides support for parsing difftastic JSON output and
 //! converting it into sections that can be navigated and edited in asterism.
+
 use crate::formats::Format;
 use crate::section::{ChunkType, Section};
 use ratatui::{

@@ -3,6 +3,7 @@
 //! This module defines the `Format` trait which abstracts over different
 //! document formats (markdown, org-mode, restructuredtext, etc.) by providing
 //! tree-sitter queries specific to each format.
+
 pub mod difftastic;
 
 pub mod markdown;

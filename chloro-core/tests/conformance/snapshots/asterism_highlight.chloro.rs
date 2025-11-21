@@ -1,4 +1,5 @@
 //! Syntax highlighting for displaying source code with visual distinction between language elements.
+
 use ratatui::{
     style::{Color, Style},
     text::{Line, Span},

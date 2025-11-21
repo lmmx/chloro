@@ -2,6 +2,7 @@
 //!
 //! This module provides tree-sitter queries for parsing markdown documents
 //! and extracting section structure from ATX-style headings (# syntax).
+
 use crate::formats::Format;
 use ratatui::{
     style::{Color, Style},

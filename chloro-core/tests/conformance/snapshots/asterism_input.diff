@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7367 bytes
-Chloro size:   7357 bytes
+Chloro size:   7358 bytes
 Rustfmt size:  7367 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Document discovery and section extraction using tree-sitter.
- //!
- //! This module handles finding markdown files in the filesystem and parsing
- //! them with tree-sitter queries to extract section hierarchies.
--
- use crate::formats::Format;
- use crate::section::Section;
- use std::fs;
  
  fn find_in_directory(dir: &Path, extensions: &[String]) -> io::Result<Vec<PathBuf>> {
      let mut results = Vec::new();

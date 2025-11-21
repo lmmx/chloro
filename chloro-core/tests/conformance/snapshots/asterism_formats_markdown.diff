@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1436 bytes
-Chloro size:   1417 bytes
+Chloro size:   1418 bytes
 Rustfmt size:  1436 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Markdown format implementation using tree-sitter-md.
- //!
- //! This module provides tree-sitter queries for parsing markdown documents
- //! and extracting section structure from ATX-style headings (# syntax).
--
- use crate::formats::Format;
- use ratatui::{
-     style::{Color, Style},
  /// Tree-sitter queries for ATX-style markdown headings (# syntax).
  pub struct MarkdownFormat;
  

@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16168 bytes
-Chloro size:   16139 bytes
+Chloro size:   16140 bytes
 Rustfmt size:  16168 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! The UI renders the application state into something visible and vim-able.
- //!
- //! The draw function dispatches based on the current view (list or editor).
- //! The list view shows a unified tree with files and sections using box-drawing characters.
--
- use crate::app_state::{AppState, MoveState, View};
- use crate::config::Config;
- use crate::formats::Format;
      if level == 0 {
          return String::new();
      }

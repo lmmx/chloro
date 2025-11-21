@@ -3,6 +3,7 @@
 //! asterism uses ratatui to provide hierarchical navigation of markdown documents
 //! and edtui to emulate a vim editor for section content editing.
 #![allow(clippy::multiple_crate_versions)]
+
 pub mod app_state;
 
 pub mod config;

@@ -1,5 +1,6 @@
 //! asterism: A tree-sitter document section editor.
 #![allow(clippy::multiple_crate_versions)]
+
 use asterism::{app_state, config, edit_plan, formats, input, ui};
 use clap::Parser;
 use edtui::EditorEventHandler;

@@ -2,6 +2,7 @@
 //!
 //! This module defines the transformation that work in the TUI manifests as actual edits on disk.
 //! asterism uses textum for generic line-based patching that works with any text format.
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io;

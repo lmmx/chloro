@@ -27,6 +27,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::SOURCE_FILE => {
             let mut last_kind: Option<SyntaxKind> = None;
             let mut has_seen_item = false;
+            let mut just_output_module_docs = false;
 
             for child in node.children_with_tokens() {
                 match child {
@@ -56,17 +57,29 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                         buf.push('\n');
                                     }
                                 }
+                            } else if just_output_module_docs {
+                                // First item after module docs needs a blank line
+                                buf.push('\n');
                             }
 
                             format_node(&n, buf, indent);
 
                             has_seen_item = true;
+                            just_output_module_docs = false;
                             last_kind = Some(current_kind);
                         } else {
                             format_node(&n, buf, indent);
                         }
                     }
                     NodeOrToken::Token(t) => {
+                        // Check if this is a module-level doc comment
+                        if t.kind() == SyntaxKind::COMMENT {
+                            if let Some(comment) = ast::Comment::cast(t.clone()) {
+                                if comment.is_inner() && comment.kind().doc.is_some() {
+                                    just_output_module_docs = true;
+                                }
+                            }
+                        }
                         format_token(&t, buf, indent);
                     }
                 }
