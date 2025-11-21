@@ -1,4 +1,3 @@
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! `assists` crate provides a bunch of code assists, also known as code actions
 //! (in LSP) or intentions (in IntelliJ).
 //!
@@ -58,6 +57,8 @@
 //!
 //! See also this post:
 //! <https://rust-analyzer.github.io/blog/2020/09/28/how-to-make-a-light-bulb.html>
+
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 
 mod assist_config;
 mod assist_context;

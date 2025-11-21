@@ -1,8 +1,9 @@
-#![allow(clippy::print_stdout, clippy::print_stderr)]
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! Driver for rust-analyzer.
 //!
 //! Based on cli flags, either spawns an LSP server, or runs a batch analysis
+
+#![allow(clippy::print_stdout, clippy::print_stderr)]
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 
 #[cfg(feature = "in-rust-tree")]
 

@@ -2,15 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11613 bytes
-Chloro size:   7965 bytes
+Chloro size:   7966 bytes
 Rustfmt size:  11613 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--//! Grammar for the command-line arguments.
+ //! Grammar for the command-line arguments.
++
  #![allow(unreachable_pub)]
-+//! Grammar for the command-line arguments.
 +
  use std::{path::PathBuf, str::FromStr};
  

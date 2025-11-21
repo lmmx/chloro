@@ -1,5 +1,6 @@
-#![allow(clippy::print_stdout, clippy::print_stderr)]
 //! Various batch processing tasks, intended primarily for debugging.
+
+#![allow(clippy::print_stdout, clippy::print_stderr)]
 
 mod analysis_stats;
 mod diagnostics;

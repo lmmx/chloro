@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#![recursion_limit = "512"]
 //! HIR (previously known as descriptors) provides a high-level object-oriented
 //! access to Rust code.
 //!
@@ -18,6 +16,9 @@
 //! `hir` is what insulates the "we don't know how to actually write an incremental compiler"
 //! from the ide with completions, hovers, etc. It is a (soft, internal) boundary:
 //! <https://www.tedinski.com/2018/02/06/system-boundaries.html>.
+
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+#![recursion_limit = "512"]
 
 
 mod attrs;

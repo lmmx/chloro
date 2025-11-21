@@ -2,18 +2,17 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   21736 bytes
+Chloro size:   21737 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
  //! The type system. We currently use this to infer types for completion, hover
  //! information and various assists.
  
--#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
--
+ #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+ 
 -// FIXME: We used to import `rustc_*` deps from `rustc_private` with `feature = "in-rust-tree" but
 -// temporarily switched to crates.io versions due to hardships that working on them from rustc
 -// demands corresponding changes on rust-analyzer at the same time.

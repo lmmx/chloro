@@ -2,24 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38454 bytes
+Chloro size:   38455 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+#![allow(clippy::disallowed_types)]
- //! The most high-level integrated tests for rust-analyzer.
- //!
- //! This tests run a full LSP event loop, spawn cargo and process stdlib from
- //! specific JSON shapes here -- there's little value in such tests, as we can't
- //! be sure without a real client anyway.
- 
--#![allow(clippy::disallowed_types)]
--
- mod cli;
- mod ratoml;
- mod support;
  use std::{collections::HashMap, path::PathBuf, time::Instant};
  
  use lsp_types::{

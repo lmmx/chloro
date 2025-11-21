@@ -1,5 +1,6 @@
-#![allow(clippy::crate_in_macro_def)]
 //! A simplified version of quote-crate like quasi quote macro
+
+#![allow(clippy::crate_in_macro_def)]
 
 use intern::{Symbol, sym};
 pub use quote;

@@ -2,20 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23578 bytes
+Chloro size:   23579 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--//! rust-analyzer extensions to the LSP.
--
+ //! rust-analyzer extensions to the LSP.
+ 
 -// Note when adding new resolve payloads, add a #[serde(default)] on boolean fields as some clients
 -// might strip `false` values from the JSON payload due to their reserialization logic turning false
 -// into null which will then cause them to be omitted in the resolve request. See https://github.com/rust-lang/rust-analyzer/issues/18767
 -
  #![allow(clippy::disallowed_types)]
-+//! rust-analyzer extensions to the LSP.
  
  use std::ops;
  

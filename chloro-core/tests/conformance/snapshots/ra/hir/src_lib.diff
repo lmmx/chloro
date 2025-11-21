@@ -2,23 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   234231 bytes
+Chloro size:   234232 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-+#![recursion_limit = "512"]
- //! HIR (previously known as descriptors) provides a high-level object-oriented
- //! access to Rust code.
- //!
- //! from the ide with completions, hovers, etc. It is a (soft, internal) boundary:
- //! <https://www.tedinski.com/2018/02/06/system-boundaries.html>.
+ #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+ #![recursion_limit = "512"]
  
--#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
--#![recursion_limit = "512"]
--
 -extern crate ra_ap_rustc_type_ir as rustc_type_ir;
  
  mod attrs;

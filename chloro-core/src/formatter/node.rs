@@ -74,8 +74,8 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
             // Separate items by type, preserving order within each type
-            let mut inner_attrs = Vec::new();
             let mut module_inner_docs = Vec::new();
+            let mut inner_attrs = Vec::new();
             let mut extern_crates = Vec::new();
             let mut mod_decls = Vec::new();
             let mut uses = Vec::new();
@@ -132,16 +132,19 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // Format in strict order:
-            // 1. Inner attributes
-            for attr in &inner_attrs {
-                buf.push_str(attr.syntax().text().to_string().as_str());
+            // Format in strict order (rustfmt's order):
+            // 1. Module-level inner doc comments FIRST
+            for doc in &module_inner_docs {
+                buf.push_str(doc.text());
                 buf.push('\n');
             }
 
-            // 2. Module-level inner doc comments
-            for doc in &module_inner_docs {
-                buf.push_str(doc.text());
+            // 2. Then inner attributes
+            if !module_inner_docs.is_empty() && !inner_attrs.is_empty() {
+                buf.push('\n');
+            }
+            for attr in &inner_attrs {
+                buf.push_str(attr.syntax().text().to_string().as_str());
                 buf.push('\n');
             }
 
@@ -167,9 +170,8 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             }
 
             // 4. Module declarations (without blank lines between them)
-            for mod_decl in mod_decls.iter() {
+            for mod_decl in &mod_decls {
                 format_node(mod_decl, buf, indent);
-                // No blank line between consecutive mod declarations
             }
             if !mod_decls.is_empty() && (!uses.is_empty() || !other_items.is_empty()) {
                 buf.push('\n');

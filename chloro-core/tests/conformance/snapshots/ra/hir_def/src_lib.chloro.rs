@@ -1,4 +1,3 @@
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! `hir_def` crate contains everything between macro expansion and type
 //! inference.
 //!
@@ -7,6 +6,8 @@
 //!
 //! Note that `hir_def` is a work in progress, so not all of the above is
 //! actually true.
+
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 
 #[cfg(feature = "in-rust-tree")]
 #[cfg(not(feature = "in-rust-tree"))]

@@ -1,5 +1,6 @@
-#![allow(unreachable_pub)]
 //! Grammar for the command-line arguments.
+
+#![allow(unreachable_pub)]
 
 use std::{path::PathBuf, str::FromStr};
 

@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#![recursion_limit = "128"]
 //! ide crate provides "ide-centric" APIs for the rust-analyzer. That is,
 //! it generally operates with files and text ranges, and returns results as
 //! Strings, suitable for displaying to the human.
@@ -8,6 +6,9 @@
 //! database, and the `hir` crate, where majority of the analysis happens.
 //! However, IDE specific bits of the analysis (most notably completion) happen
 //! in this crate.
+
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+#![recursion_limit = "128"]
 
 #[cfg(test)]
 mod fixture;

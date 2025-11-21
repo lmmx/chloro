@@ -1,5 +1,6 @@
-#![allow(clippy::disallowed_types)]
 //! rust-analyzer extensions to the LSP.
+
+#![allow(clippy::disallowed_types)]
 
 use std::ops;
 

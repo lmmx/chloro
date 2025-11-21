@@ -2,18 +2,17 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45678 bytes
+Chloro size:   45679 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--//! A pretty-printer for HIR.
+ //! A pretty-printer for HIR.
++
  #![allow(dead_code)]
-+//! A pretty-printer for HIR.
  
  use std::{
-     fmt::{self, Write},
  };
  use crate::{LifetimeParamId, signatures::StructFlags};
  use crate::{item_tree::FieldsShape, signatures::FieldData};

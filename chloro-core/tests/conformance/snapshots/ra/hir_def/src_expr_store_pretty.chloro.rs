@@ -1,5 +1,6 @@
-#![allow(dead_code)]
 //! A pretty-printer for HIR.
+
+#![allow(dead_code)]
 
 use std::{
     fmt::{self, Write},
