@@ -1,6 +1,6 @@
 use ra_ap_syntax::{
     ast::{self, HasGenericParams},
-    AstNode, SyntaxNode,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
 use super::format_node;
@@ -38,9 +38,23 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     if let Some(assoc_items) = impl_.assoc_item_list() {
         buf.push_str(" {\n");
-        for item in assoc_items.assoc_items() {
-            format_node(item.syntax(), buf, indent + 4);
+
+        // Process all items AND comments within the impl block
+        for child in assoc_items.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Node(n) => {
+                    format_node(&n, buf, indent + 4);
+                }
+                NodeOrToken::Token(t) => {
+                    if t.kind() == SyntaxKind::COMMENT {
+                        write_indent(buf, indent + 4);
+                        buf.push_str(t.text());
+                        buf.push('\n');
+                    }
+                }
+            }
         }
+
         write_indent(buf, indent);
         buf.push('}');
     } else {

@@ -10,6 +10,7 @@ mod useitem;
 use ra_ap_syntax::{ast, AstToken, NodeOrToken, SyntaxKind, SyntaxNode};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
+pub use comment::format_attributes;
 pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;

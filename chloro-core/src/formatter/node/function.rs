@@ -1,9 +1,9 @@
 use ra_ap_syntax::{
     ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
-    AstNode, SyntaxNode,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
-use super::{comment::format_attributes, format_block_expr_contents};
+use super::{format_attributes, format_block_expr_contents};
 use crate::formatter::write_indent;
 
 pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -75,10 +75,26 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(&where_clause.syntax().text().to_string());
     }
 
-    // Body
+    // Body - handle tokens inside it
     if let Some(body) = func.body() {
         buf.push_str(" {\n");
-        format_block_expr_contents(body.syntax(), buf, indent + 4);
+
+        // Process body tokens to preserve comments
+        for child in body.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Node(n) => {
+                    format_block_expr_contents(&n, buf, indent + 4);
+                }
+                NodeOrToken::Token(t) => {
+                    if t.kind() == SyntaxKind::COMMENT {
+                        write_indent(buf, indent + 4);
+                        buf.push_str(t.text());
+                        buf.push('\n');
+                    }
+                }
+            }
+        }
+
         write_indent(buf, indent);
         buf.push('}');
     } else {

@@ -1,9 +1,9 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasModuleItem, HasName, HasVisibility},
-    AstNode, SyntaxNode,
+    ast::{self, HasAttrs, HasName, HasVisibility},
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
-use super::{comment::format_attributes, format_node};
+use super::{format_attributes, format_node};
 use crate::formatter::write_indent;
 
 pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -30,9 +30,23 @@ pub fn format_module(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     if let Some(item_list) = module.item_list() {
         buf.push_str(" {\n");
-        for item in item_list.items() {
-            format_node(item.syntax(), buf, indent + 4);
+
+        // Process all items AND comments within the module
+        for child in item_list.syntax().children_with_tokens() {
+            match child {
+                NodeOrToken::Node(n) => {
+                    format_node(&n, buf, indent + 4);
+                }
+                NodeOrToken::Token(t) => {
+                    if t.kind() == SyntaxKind::COMMENT {
+                        write_indent(buf, indent + 4);
+                        buf.push_str(t.text());
+                        buf.push('\n');
+                    }
+                }
+            }
         }
+
         write_indent(buf, indent);
         buf.push('}');
     } else {

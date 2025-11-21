@@ -21,6 +21,9 @@ clippy:
 clippy-fix:
     cargo clippy --fix --workspace --all-targets --all-features --target-dir target/clippy-all-features -- -D warnings
 
+reinstall:
+    cargo install --path chloro -F cli
+
 test *args:
     cargo nextest run {{args}} --no-fail-fast --all-features
 
