@@ -12,6 +12,7 @@ use tracing::{info_span, span::EnteredSpan};
 
 use crate::command::{CargoParser, CommandHandle};
 
+
 /// A command wrapper for getting a `rust-project.json`.
 ///
 /// This is analogous to discovering a cargo project + running `cargo-metadata` on it, but for non-Cargo build systems.

@@ -7,6 +7,7 @@ use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use project_model::{CargoConfig, RustLibSource};
 
 use crate::cli::flags;
+
 impl flags::Ssr {
     pub fn run(self) -> anyhow::Result<()> {
         let cargo_config = CargoConfig {

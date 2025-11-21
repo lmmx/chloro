@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12198 bytes
+Chloro size:   12199 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,13 @@ Rustfmt size:  12418 bytes
  use std::{mem, ops::ControlFlow};
  
  use rustc_hash::FxHashSet;
-     },
      inspect::ProofTreeVisitor,
  };
-+mod errors;
  
 -type PendingObligations<'db> =
 -    Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
++mod errors;
++
 +type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
  
  /// A trait engine using the new trait solver.

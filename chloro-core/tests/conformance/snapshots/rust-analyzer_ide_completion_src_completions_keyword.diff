@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14005 bytes
-Chloro size:   13954 bytes
+Chloro size:   13955 bytes
 Rustfmt size:  14005 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  14005 bytes
  use syntax::ast::{self, Item};
  
  use crate::{CompletionContext, Completions};
--
+ 
 -pub(crate) fn complete_for_and_where(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

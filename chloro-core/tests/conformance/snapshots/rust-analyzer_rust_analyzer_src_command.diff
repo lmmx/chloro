@@ -2,16 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   6807 bytes
+Chloro size:   6808 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use paths::Utf8PathBuf;
- use process_wrap::std::{StdChildWrapper, StdCommandWrap};
- use stdx::process::streaming_output;
--
+ 
  /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
  /// cargo output into a Rust data type
 -pub(crate) trait CargoParser<T>: Send + 'static {

@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3669 bytes
-Chloro size:   3664 bytes
+Chloro size:   3665 bytes
 Rustfmt size:  3740 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use std::{
-     fs, io,
-     sync::atomic::{AtomicUsize, Ordering},
- };
- 
- use paths::{Utf8Path, Utf8PathBuf};
--
- pub(crate) struct TestDir {
-     path: Utf8PathBuf,
-     keep: bool,
          // on *every* OS, as on windows `canonicalize` itself creates problems.
          #[cfg(target_os = "macos")]
          let temp_dir = temp_dir.canonicalize().unwrap();

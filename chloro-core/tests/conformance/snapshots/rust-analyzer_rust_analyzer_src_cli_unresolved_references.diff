@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6105 bytes
-Chloro size:   6063 bytes
+Chloro size:   6064 bytes
 Rustfmt size:  6316 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,6 @@ Rustfmt size:  6316 bytes
  use vfs::FileId;
  
  use crate::cli::flags;
--
  impl flags::UnresolvedReferences {
      pub fn run(self) -> anyhow::Result<()> {
          const STACK_SIZE: usize = 1024 * 1024 * 8;

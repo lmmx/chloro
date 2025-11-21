@@ -8,6 +8,7 @@ use crate::{
     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
     render::render_type_inference,
 };
+
 pub(crate) fn complete_type_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, location: &TypeLocation) {
     let _p = tracing::info_span!("complete_type_path").entered();
     let scope_def_applicable = |def| {

@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62523 bytes
-Chloro size:   62171 bytes
+Chloro size:   62172 bytes
 Rustfmt size:  62523 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
- 
- use crate::RootDatabase;
--
- /// Contains information about an item signature as seen from a use site.
- ///
- /// This includes the "active parameter", which is the parameter whose value is currently being
  }
  
  /// Computes parameter information for the given position.

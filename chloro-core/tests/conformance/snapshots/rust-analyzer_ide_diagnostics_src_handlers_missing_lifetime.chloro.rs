@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn missing_lifetime(ctx: &DiagnosticsContext<'_>, d: &hir::MissingLifetime) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

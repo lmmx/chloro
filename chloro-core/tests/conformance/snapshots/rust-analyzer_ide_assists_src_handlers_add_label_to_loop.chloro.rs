@@ -12,6 +12,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let loop_kw = ctx.find_token_syntax_at_offset(T![loop])?;
     let loop_expr = loop_kw.parent().and_then(ast::LoopExpr::cast)?;

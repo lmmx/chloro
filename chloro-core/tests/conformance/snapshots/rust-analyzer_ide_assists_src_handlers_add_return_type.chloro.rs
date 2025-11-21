@@ -2,6 +2,7 @@ use hir::HirDisplay;
 use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
     let module = ctx.sema.scope(tail_expr.syntax())?.module();

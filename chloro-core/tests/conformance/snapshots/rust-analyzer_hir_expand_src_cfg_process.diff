@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14552 bytes
-Chloro size:   14288 bytes
+Chloro size:   14289 bytes
 Rustfmt size:  14552 bytes
 
 ✗ Outputs DIFFER
@@ -13,13 +13,6 @@ Rustfmt size:  14552 bytes
  use std::iter::Peekable;
  
  use base_db::Crate;
- use tracing::{debug, warn};
- 
- use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
--
- fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
-     if !attr.simple_name().as_deref().map(|v| v == "cfg")? {
-         return None;
      check_cfg_attr_value(db, &attr.token_tree()?, krate)
  }
  

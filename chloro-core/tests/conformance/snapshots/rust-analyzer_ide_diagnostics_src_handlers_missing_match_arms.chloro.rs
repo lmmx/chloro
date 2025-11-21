@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn missing_match_arms(ctx: &DiagnosticsContext<'_>, d: &hir::MissingMatchArms) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

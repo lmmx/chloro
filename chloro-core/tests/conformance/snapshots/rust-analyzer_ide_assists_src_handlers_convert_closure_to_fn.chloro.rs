@@ -18,6 +18,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
     if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {

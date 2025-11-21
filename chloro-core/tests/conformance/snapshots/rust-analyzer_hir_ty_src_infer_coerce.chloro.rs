@@ -71,6 +71,7 @@ use crate::{
     },
     utils::TargetFeatureIsSafeInTarget,
 };
+
 struct Coerce<'a, 'b, 'db> {
     table: &'a mut InferenceTable<'db>,
     has_errors: &'a mut bool,

@@ -2,6 +2,7 @@
 
 use hir::TraitRef;
 use syntax::ast::{self, AstNode, BinaryOp, CmpOp, HasName, LogicOp, edit::AstNodeEdit, make};
+
 /// Generate custom trait bodies without default implementation where possible.
 ///
 /// If `func` is defined within an existing impl block, pass [`TraitRef`]. Otherwise pass `None`.

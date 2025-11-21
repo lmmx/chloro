@@ -18,6 +18,7 @@ use crate::next_solver::{
     TraitRef, Ty,
 };
 use super::InferCtxt;
+
 /// The reason why we incurred this obligation; used for error reporting.
 ///
 /// Non-misc `ObligationCauseCode`s are stored on the heap. This gives the

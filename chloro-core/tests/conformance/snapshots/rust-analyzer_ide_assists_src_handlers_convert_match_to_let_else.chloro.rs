@@ -9,6 +9,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let let_stmt: ast::LetStmt = ctx.find_node_at_offset()?;
     let pat = let_stmt.pat()?;

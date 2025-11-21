@@ -2,6 +2,7 @@
 
 
 
+
 /// Extract the specified namespace from an intra-doc-link if one exists.
 ///
 /// # Examples

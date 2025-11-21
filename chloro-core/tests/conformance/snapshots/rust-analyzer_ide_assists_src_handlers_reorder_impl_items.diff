@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6390 bytes
-Chloro size:   5811 bytes
+Chloro size:   5812 bytes
 Rustfmt size:  6460 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  6460 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: reorder_impl_items
 -//
 -// Reorder the items of an `impl Trait`. The items will be ordered

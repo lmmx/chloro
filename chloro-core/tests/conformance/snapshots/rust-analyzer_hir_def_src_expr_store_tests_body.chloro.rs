@@ -5,6 +5,7 @@ use triomphe::Arc;
 
 use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
 use super::super::*;
+
 mod block;
 
 fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {

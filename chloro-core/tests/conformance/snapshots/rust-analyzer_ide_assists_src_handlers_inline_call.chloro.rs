@@ -30,6 +30,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let def_file = ctx.file_id();
     let vfs_def_file = ctx.vfs_file_id();

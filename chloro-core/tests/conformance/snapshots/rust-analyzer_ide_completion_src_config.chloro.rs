@@ -11,6 +11,7 @@ use ide_db::{
 };
 
 use crate::{CompletionFieldsToResolve, snippet::Snippet};
+
 #[derive(Clone, Debug)]
 pub struct CompletionConfig<'a> {
     pub enable_postfix_completions: bool,

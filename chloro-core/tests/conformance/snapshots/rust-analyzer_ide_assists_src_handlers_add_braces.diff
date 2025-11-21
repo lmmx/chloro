@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5189 bytes
-Chloro size:   4633 bytes
+Chloro size:   4634 bytes
 Rustfmt size:  5232 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  5232 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: add_braces
 -//
 -// Adds braces to closure bodies, match arm expressions and assignment bodies.

@@ -9,6 +9,7 @@ use stdx::impl_from;
 
 use crate::db::{InternedClosureId, InternedCoroutineId, InternedOpaqueTyId};
 use super::DbInterner;
+
 #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa::Supertype)]
 pub enum Ctor {
     Struct(StructId),

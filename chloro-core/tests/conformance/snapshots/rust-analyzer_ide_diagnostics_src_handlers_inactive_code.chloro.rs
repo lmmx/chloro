@@ -2,6 +2,7 @@ use cfg::DnfExpr;
 use stdx::format_to;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
+
 pub(crate) fn inactive_code(ctx: &DiagnosticsContext<'_>, d: &hir::InactiveCode) -> Option<Diagnostic> {
     // If there's inactive code somewhere in a macro, don't propagate to the call-site.
     if d.node.file_id.is_macro() {

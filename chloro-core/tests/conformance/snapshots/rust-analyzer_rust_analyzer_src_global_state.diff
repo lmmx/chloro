@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37899 bytes
-Chloro size:   36970 bytes
+Chloro size:   36971 bytes
 Rustfmt size:  37899 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     task_pool::{TaskPool, TaskQueue},
-     test_runner::{CargoTestHandle, CargoTestMessage},
- };
--
- #[derive(Debug)]
- pub(crate) struct FetchWorkspaceRequest {
-     pub(crate) path: Option<AbsPathBuf>,
      pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
  }
  

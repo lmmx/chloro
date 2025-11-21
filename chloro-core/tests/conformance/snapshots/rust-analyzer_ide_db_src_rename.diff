@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29219 bytes
+Chloro size:   29220 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -26,14 +26,13 @@ Rustfmt size:  29385 bytes
      syntax_helpers::node_ext::expr_as_name_ref,
      traits::convert_to_def_in_trait,
  };
--
 +use crate::{
 +    source_change::ChangeAnnotation,
 +    text_edit::{TextEdit, TextEditBuilder},
 +};
+ 
  pub type Result<T, E = RenameError> = std::result::Result<T, E>;
  
- #[derive(Debug)]
      ($fmt:expr) => { RenameError(format!($fmt)) };
      ($fmt:expr, $($arg:tt)+) => { RenameError(format!($fmt, $($arg)+)) }
  }

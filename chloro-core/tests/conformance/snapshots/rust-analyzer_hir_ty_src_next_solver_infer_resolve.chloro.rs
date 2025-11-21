@@ -8,6 +8,7 @@ use rustc_type_ir::{
 
 use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};
 use super::InferCtxt;
+
 /// The opportunistic resolver can be used at any time. It simply replaces
 /// type/const variables that have been unified with the things they have
 /// been unified with (similar to `shallow_resolve`, but deep). This is

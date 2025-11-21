@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::macro_expansion_tests::check;
+
 #[test]
 fn well_formed_macro_rules() {
     check(

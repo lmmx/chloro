@@ -13,6 +13,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let file_id = ctx.file_id();
     let range = ctx.selection_trimmed();

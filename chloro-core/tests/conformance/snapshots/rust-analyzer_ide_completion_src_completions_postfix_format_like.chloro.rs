@@ -9,6 +9,7 @@ use crate::{
     completions::postfix::{build_postfix_snippet_builder, escape_snippet_bits},
     context::CompletionContext,
 };
+
 /// Mapping ("postfix completion item" => "macro to use")
 
 pub(crate) fn add_format_like_completions(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_receiver: &ast::Expr, cap: SnippetCap, receiver_text: &ast::String) {

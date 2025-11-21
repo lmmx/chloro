@@ -3,6 +3,7 @@ use ide_db::base_db::{BuiltCrateData, ExtraCrateData};
 use itertools::Itertools;
 use span::FileId;
 use stdx::format_to;
+
 pub(crate) fn status(db: &RootDatabase, file_id: Option<FileId>) -> String {
     let mut buf = String::new();
     // format_to!(buf, "{}\n", collect_query(CompressedFileTextQuery.in_db(db)));

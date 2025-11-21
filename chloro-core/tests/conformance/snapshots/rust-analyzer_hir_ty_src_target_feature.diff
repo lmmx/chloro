@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8872 bytes
-Chloro size:   3054 bytes
+Chloro size:   3055 bytes
 Rustfmt size:  8918 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,8 @@ Rustfmt size:  8918 bytes
 -use intern::{sym, Symbol};
 +use intern::{Symbol, sym};
  use rustc_hash::{FxHashMap, FxHashSet};
--
+ 
  #[derive(Debug, Default, Clone)]
- pub struct TargetFeatures {
-     pub(crate) enabled: FxHashSet<Symbol>,
      }
  }
  

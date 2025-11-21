@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let parent = PathParent::new(&path)?;

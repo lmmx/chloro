@@ -24,6 +24,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+
 pub(crate) fn extract_struct_from_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let field_list = extract_field_list_if_applicable(&variant)?;

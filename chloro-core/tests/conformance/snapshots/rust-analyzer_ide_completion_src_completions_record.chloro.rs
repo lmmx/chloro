@@ -11,6 +11,7 @@ use crate::{
     CompletionRelevancePostfixMatch, Completions,
     context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
 };
+
 pub(crate) fn complete_record_pattern_fields(acc: &mut Completions, ctx: &CompletionContext<'_>, pattern_ctx: &PatternContext) {
     if let PatternContext { record_pat: Some(record_pat), .. } = pattern_ctx {
         let ty = ctx.sema.type_of_pat(&ast::Pat::RecordPat(record_pat.clone()));

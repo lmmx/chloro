@@ -3,6 +3,7 @@ use expect_test::{Expect, expect};
 use itertools::Itertools;
 
 use crate::tests::{TEST_CONFIG, completion_list_with_config_raw, position};
+
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let completions = completion_list_with_config_raw(TEST_CONFIG, ra_fixture, true, None);
     let (db, position) = position(ra_fixture);

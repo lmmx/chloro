@@ -8,6 +8,7 @@ use hir_def::{
 use crate::{db::HirDatabase, generics::parent_generic_def};
 use super::DbInterner;
 use super::SolverDefId;
+
 pub(crate) fn generics(db: &dyn HirDatabase, def: SolverDefId) -> Generics {
     let mk_lt = |parent, index, local_id| {
         let id = GenericParamId::LifetimeParamId(LifetimeParamId { parent, local_id });

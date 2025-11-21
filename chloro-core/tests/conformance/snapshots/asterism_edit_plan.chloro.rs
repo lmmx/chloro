@@ -8,6 +8,7 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 use textum::{Boundary, BoundaryMode, Patch, PatchSet, Snippet, Target};
+
 /// Serialisable collection of file modifications for atomic application.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EditPlan {

@@ -12,6 +12,7 @@ use crate::{
         variant::{format_literal_label, format_literal_lookup, visible_fields},
     },
 };
+
 pub(crate) fn render_union_literal(ctx: RenderContext<'_>, un: hir::Union, path: Option<hir::ModPath>, local_name: Option<Name>) -> Option<CompletionItem> {
     let name = local_name.unwrap_or_else(|| un.name(ctx.db()));
     let (qualified_name, escaped_qualified_name) = match path {

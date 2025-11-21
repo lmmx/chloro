@@ -13,6 +13,7 @@ use crate::{
     Adt, AsAssocItem, AssocItemContainer, Const, ConstParam, Field, Function, Local, ModuleDef,
     SemanticsScope, Static, Struct, StructKind, Trait, Type, Variant,
 };
+
 /// Helper function to get path to `ModuleDef`
 fn mod_item_path(sema_scope: &SemanticsScope<'_>, def: &ModuleDef, cfg: FindPathConfig) -> Option<ModPath> {
     let db = sema_scope.db;

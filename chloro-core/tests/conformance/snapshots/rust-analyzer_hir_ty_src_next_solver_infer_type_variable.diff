@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14353 bytes
-Chloro size:   14073 bytes
+Chloro size:   14074 bytes
 Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
@@ -20,11 +20,10 @@ Rustfmt size:  14730 bytes
 -use crate::next_solver::infer::{iter_idx_range, InferCtxtUndoLogs};
  use crate::next_solver::SolverDefId;
  use crate::next_solver::Ty;
--
 +use crate::next_solver::infer::{InferCtxtUndoLogs, iter_idx_range};
+ 
  /// Represents a single undo-able action that affects a type inference variable.
  #[derive(Clone)]
- pub(crate) enum UndoLog<'tcx> {
  
  pub(crate) struct TypeVariableTable<'a, 'db> {
      storage: &'a mut TypeVariableStorage<'db>,

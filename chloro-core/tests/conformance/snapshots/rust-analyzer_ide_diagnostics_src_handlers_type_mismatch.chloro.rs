@@ -15,6 +15,7 @@ use syntax::{
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+
 pub(crate) fn type_mismatch(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Diagnostic {
     let display_range = adjusted_display_range(ctx, d.expr_or_pat, &|node| {
         let Either::Left(expr) = node else { return None };

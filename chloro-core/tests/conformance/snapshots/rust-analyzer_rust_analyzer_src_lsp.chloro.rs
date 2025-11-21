@@ -5,6 +5,7 @@ use core::fmt;
 use hir::Mutability;
 use ide::{CompletionItem, CompletionItemRefMode, CompletionRelevance};
 use tenthash::TentHash;
+
 pub mod ext;
 
 pub(crate) mod capabilities;

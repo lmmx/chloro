@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2577 bytes
-Chloro size:   2576 bytes
+Chloro size:   2577 bytes
 Rustfmt size:  2641 bytes
 
 ✗ Outputs DIFFER
@@ -17,11 +17,10 @@ Rustfmt size:  2641 bytes
  };
  
 -use crate::{snippet::Snippet, CompletionFieldsToResolve};
--
 +use crate::{CompletionFieldsToResolve, snippet::Snippet};
+ 
  #[derive(Clone, Debug)]
  pub struct CompletionConfig<'a> {
-     pub enable_postfix_completions: bool,
  
  impl CompletionConfig<'_> {
      pub fn postfix_snippets(&self) -> impl Iterator<Item = (&str, &Snippet)> {

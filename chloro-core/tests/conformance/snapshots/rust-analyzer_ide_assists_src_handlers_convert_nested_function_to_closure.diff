@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5052 bytes
-Chloro size:   4558 bytes
+Chloro size:   4559 bytes
 Rustfmt size:  5151 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  5151 bytes
  use syntax::{AstNode, SyntaxKind};
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: convert_nested_function_to_closure
 -//
 -// Converts a function that is defined within the body of another function into a closure.

@@ -13,6 +13,7 @@ use syntax::{
 use crate::{
     Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, assist_config::AssistConfig,
 };
+
 /// `AssistContext` allows to apply an assist or check if it could be applied.
 ///
 /// Assists use a somewhat over-engineered approach, given the current needs.

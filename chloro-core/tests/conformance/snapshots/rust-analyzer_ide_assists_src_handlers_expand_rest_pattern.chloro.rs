@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 fn expand_record_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>, record_pat: ast::RecordPat, rest_pat: ast::RestPat) -> Option<()> {
     let missing_fields = ctx.sema.record_pattern_missing_fields(&record_pat);
     if missing_fields.is_empty() {

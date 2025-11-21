@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 63433 bytes
-Chloro size:   63177 bytes
+Chloro size:   63178 bytes
 Rustfmt size:  63433 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,12 @@ Rustfmt size:  63433 bytes
  use expect_test::expect;
  
  use super::{check_infer, check_no_mismatches, check_types};
-+mod new_solver;
  
++mod new_solver;
++
  #[test]
  fn bug_484() {
+     check_infer(
      );
  }
  

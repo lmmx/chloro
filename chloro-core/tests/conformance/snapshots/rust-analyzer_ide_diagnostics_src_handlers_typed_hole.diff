@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9346 bytes
+Chloro size:   9347 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
@@ -22,15 +22,15 @@ Rustfmt size:  9638 bytes
      source_change::SourceChange,
  };
  use itertools::Itertools;
--
--use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
- use syntax::AstNode;
++use syntax::AstNode;
  
+ use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+ 
+-use syntax::AstNode;
+-
 -// Diagnostic: typed-hole
 -//
 -// This diagnostic is triggered when an underscore expression is used in an invalid position.
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
  pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
 -    let display_range = ctx
 -        .sema

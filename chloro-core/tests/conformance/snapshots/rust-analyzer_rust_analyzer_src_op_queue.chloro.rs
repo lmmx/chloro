@@ -1,5 +1,6 @@
 //! Bookkeeping to make sure only one long-running operation is being executed
 //! at a time.
+
 pub(crate) type Cause = String;
 
 /// A single-item queue that allows callers to request an operation to

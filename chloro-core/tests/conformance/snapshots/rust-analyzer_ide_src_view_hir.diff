@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 693 bytes
-Chloro size:   445 bytes
+Chloro size:   446 bytes
 Rustfmt size:  767 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  767 bytes
  use hir::Semantics;
  use ide_db::{FilePosition, RootDatabase};
  use syntax::AstNode;
--
+ 
 -// Feature: View Hir
 -//
 -// | Editor  | Action Name |

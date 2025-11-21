@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8687 bytes
-Chloro size:   8631 bytes
+Chloro size:   8632 bytes
 Rustfmt size:  8767 bytes
 
 ✗ Outputs DIFFER
@@ -14,13 +14,13 @@ Rustfmt size:  8767 bytes
  
  use ide_assists::{Assist, AssistId, AssistResolveStrategy, GroupLabel};
 -use ide_db::{label::Label, source_change::SourceChange, FileRange, RootDatabase};
--
++use ide_db::{FileRange, RootDatabase, label::Label, source_change::SourceChange};
+ 
 -pub(crate) fn ssr_assists(
 -    db: &RootDatabase,
 -    resolve: &AssistResolveStrategy,
 -    frange: FileRange,
 -) -> Vec<Assist> {
-+use ide_db::{FileRange, RootDatabase, label::Label, source_change::SourceChange};
 +pub(crate) fn ssr_assists(db: &RootDatabase, resolve: &AssistResolveStrategy, frange: FileRange) -> Vec<Assist> {
      let mut ssr_assists = Vec::with_capacity(2);
 -

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   5777 bytes
+Chloro size:   5778 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -30,6 +30,7 @@ Rustfmt size:  6179 bytes
 +    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
 +    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
 +};
++
 +fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
 +where
          V: TypeFoldable<DbInterner<'db>>;

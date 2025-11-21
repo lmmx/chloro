@@ -21,6 +21,7 @@ use crate::{
         tags::Highlight,
     },
 };
+
 pub(crate) mod tags;
 
 mod highlights;

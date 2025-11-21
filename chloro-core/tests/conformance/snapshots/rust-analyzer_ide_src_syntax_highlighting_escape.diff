@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2364 bytes
-Chloro size:   2361 bytes
+Chloro size:   2362 bytes
 Rustfmt size:  2422 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,7 @@ Rustfmt size:  2422 bytes
  
 +use crate::syntax_highlighting::highlights::Highlights;
 +use crate::{HlRange, HlTag};
++
  pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
      let text = string.text();
      let start = string.syntax().text_range().start();

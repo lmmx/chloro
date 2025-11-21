@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16556 bytes
+Chloro size:   16557 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     Adt, AsAssocItem, AssocItemContainer, Const, ConstParam, Field, Function, Local, ModuleDef,
-     SemanticsScope, Static, Struct, StructKind, Trait, Type, Variant,
  };
--
+ 
  /// Helper function to get path to `ModuleDef`
 -fn mod_item_path(
 -    sema_scope: &SemanticsScope<'_>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6088 bytes
-Chloro size:   6136 bytes
+Chloro size:   6137 bytes
 Rustfmt size:  6436 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  6436 bytes
 +use rustc_type_ir::{ConstVid, RegionKind, RegionVid, UniverseIndex, inherent::IntoKind};
  
  use crate::next_solver::{Const, Region};
--
+ 
  #[derive(Clone, Debug)]
  pub(crate) enum RegionVariableValue<'db> {
 -    Known { value: Region<'db> },

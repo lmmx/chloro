@@ -4,6 +4,7 @@ use ide_db::{assists::Assist, source_change::SourceChange};
 use syntax::{AstNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+
 pub(crate) fn remove_trailing_return(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Diagnostic> {
     if d.return_expr.file_id.macro_file().is_some() {
         // FIXME: Our infra can't handle allow from within macro expansions rn

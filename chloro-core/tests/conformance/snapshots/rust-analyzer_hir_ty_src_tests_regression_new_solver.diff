@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11754 bytes
-Chloro size:   11753 bytes
+Chloro size:   11754 bytes
 Rustfmt size:  11754 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- use expect_test::expect;
- 
- use crate::tests::{check_infer, check_no_mismatches, check_types};
--
- #[test]
- fn regression_20365() {
-     check_infer(
+✓ Outputs are IDENTICAL

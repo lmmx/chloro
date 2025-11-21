@@ -6,6 +6,7 @@ use span::FileId;
 use triomphe::Arc;
 
 use crate::{db::ExpandDatabase, proc_macro::ProcMacrosBuilder};
+
 #[derive(Debug, Default)]
 pub struct ChangeWithProcMacros {
     pub source_change: FileChange,

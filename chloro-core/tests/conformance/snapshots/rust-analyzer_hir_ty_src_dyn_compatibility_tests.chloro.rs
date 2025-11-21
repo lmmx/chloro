@@ -11,6 +11,7 @@ use super::{
     DynCompatibilityViolation,
     MethodViolationCode::{self, *},
 };
+
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum DynCompatibilityViolationKind {

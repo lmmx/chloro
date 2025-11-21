@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7739 bytes
-Chloro size:   7190 bytes
+Chloro size:   7191 bytes
 Rustfmt size:  7739 bytes
 
 ✗ Outputs DIFFER
@@ -12,7 +12,7 @@ Rustfmt size:  7739 bytes
  use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// FIXME: this should be a diagnostic
 -
 -// Assist: convert_into_to_from

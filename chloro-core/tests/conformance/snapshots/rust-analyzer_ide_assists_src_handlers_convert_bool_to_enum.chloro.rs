@@ -20,6 +20,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     utils,
 };
+
 pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
         find_bool_node(ctx)?;

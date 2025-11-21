@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn replace_arith_with_checked(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     replace_arith(acc, ctx, ArithKind::Checked)
 }

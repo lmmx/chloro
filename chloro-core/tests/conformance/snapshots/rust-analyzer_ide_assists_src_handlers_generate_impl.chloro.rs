@@ -7,6 +7,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{self, DefaultMethods, IgnoreAssocItems},
 };
+
 fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Indent) {
     let indent = nominal.indent_level();
     impl_.indent(indent);

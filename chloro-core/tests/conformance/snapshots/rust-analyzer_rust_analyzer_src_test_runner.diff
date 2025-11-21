@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   3949 bytes
+Chloro size:   3950 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     command::{CargoParser, CommandHandle},
-     flycheck::CargoOptions,
- };
--
- #[derive(Debug, Deserialize)]
- #[serde(tag = "event", rename_all = "camelCase")]
- pub(crate) enum TestState {
      Ok,
      Ignored,
      Failed {

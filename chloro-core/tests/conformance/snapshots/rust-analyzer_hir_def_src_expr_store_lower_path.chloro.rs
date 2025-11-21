@@ -20,6 +20,7 @@ use crate::{
     expr_store::path::{GenericArg, GenericArgs, Path},
     type_ref::TypeRef,
 };
+
 #[cfg(test)]
 mod tests;
 #[cfg(test)]

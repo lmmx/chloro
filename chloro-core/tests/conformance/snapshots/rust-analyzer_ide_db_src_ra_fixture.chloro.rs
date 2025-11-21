@@ -15,6 +15,7 @@ use crate::{
     MiniCore, RootDatabase, SymbolKind, active_parameter::ActiveParameter,
     documentation::Documentation, range_mapper::RangeMapper, search::ReferenceCategory,
 };
+
 impl RootDatabase {
     fn from_ra_fixture(text: &str, minicore: MiniCore<'_>) -> Result<(RootDatabase, Vec<(FileId, usize)>, Vec<FileId>), ()> {
         // We don't want a mistake in the fixture to crash r-a, so we wrap this in `catch_unwind()`.

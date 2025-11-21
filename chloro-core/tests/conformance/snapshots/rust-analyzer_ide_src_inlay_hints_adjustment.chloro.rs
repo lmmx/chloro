@@ -19,6 +19,7 @@ use crate::{
     AdjustmentHints, AdjustmentHintsMode, InlayHint, InlayHintLabel, InlayHintLabelPart,
     InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip,
 };
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
     if config.adjustment_hints_hide_outside_unsafe && !sema.is_inside_unsafe(expr) {
         return None;

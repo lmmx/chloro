@@ -21,6 +21,7 @@ use crate::{
     span_map::SpanMapRef,
     tt::{self, Ident, Leaf, Punct, TopSubtree},
 };
+
 /// The result of calculating fixes for a syntax node -- a bunch of changes
 /// (appending to and replacing nodes), the information that is needed to
 /// reverse those changes afterwards, and a token map.

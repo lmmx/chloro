@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6182 bytes
-Chloro size:   5712 bytes
+Chloro size:   5713 bytes
 Rustfmt size:  6332 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,8 @@ Rustfmt size:  6332 bytes
      },
 -    Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
  };
--
+ 
  /// Used if you want to have pleasant experience when dealing
- /// with obligations outside of hir or mir typeck.
- pub struct ObligationCtxt<'a, 'db> {
  
  impl<'a, 'db> ObligationCtxt<'a, 'db> {
      pub fn new(infcx: &'a InferCtxt<'db>) -> Self {

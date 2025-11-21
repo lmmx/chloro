@@ -22,6 +22,7 @@ use crate::expr_store::HygieneId;
 use crate::macro_call_as_call_id;
 use crate::nameres::DefMap;
 use crate::{MacroId, UnresolvedMacro, db::DefDatabase};
+
 #[derive(Debug)]
 pub(super) struct Expander {
     span_map: SpanMap,

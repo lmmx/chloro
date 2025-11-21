@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7279 bytes
-Chloro size:   3471 bytes
+Chloro size:   3472 bytes
 Rustfmt size:  7507 bytes
 
 ✗ Outputs DIFFER
@@ -113,12 +113,6 @@ Rustfmt size:  7507 bytes
  use hir::{ModPath, Name, Symbol};
  use ide_db::imports::import_assets::LocatedImport;
  use itertools::Itertools;
- 
- use crate::context::CompletionContext;
--
- /// A snippet scope describing where a snippet may apply to.
- /// These may differ slightly in meaning depending on the snippet trigger.
- #[derive(Clone, Debug, PartialEq, Eq)]
  }
  
  impl Snippet {

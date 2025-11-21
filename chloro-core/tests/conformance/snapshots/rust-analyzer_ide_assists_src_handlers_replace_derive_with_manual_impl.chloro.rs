@@ -16,6 +16,7 @@ use crate::{
         gen_trait_fn_body, generate_trait_impl,
     },
 };
+
 pub(crate) fn replace_derive_with_manual_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let attr = ctx.find_node_at_offset_with_descend::<ast::Attr>()?;
     let path = attr.path()?;

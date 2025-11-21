@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use super::{check, check_infer, check_no_mismatches, check_types};
+
 #[test]
 fn infer_adt_self() {
     check_types(

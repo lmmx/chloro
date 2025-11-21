@@ -1,6 +1,7 @@
 //! Removes markdown from strings.
 
 use pulldown_cmark::{Event, Parser, Tag};
+
 /// Removes all markdown, keeping the text and code blocks
 ///
 /// Currently limited in styling, i.e. no ascii tables or lists

@@ -48,6 +48,7 @@ use crate::{
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };
 pub use self::hir::type_ref;
+
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 #[cfg(feature = "in-rust-tree")]
 #[cfg(not(feature = "in-rust-tree"))]

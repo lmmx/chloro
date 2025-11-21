@@ -9,6 +9,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{add_method_to_adt, find_struct_impl},
 };
+
 pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let variant_name = variant.name()?;

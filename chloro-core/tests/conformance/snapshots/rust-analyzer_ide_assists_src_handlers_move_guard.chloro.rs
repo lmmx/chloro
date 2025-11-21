@@ -4,6 +4,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_arm = ctx.find_node_at_offset::<MatchArm>()?;
     let guard = match_arm.guard()?;

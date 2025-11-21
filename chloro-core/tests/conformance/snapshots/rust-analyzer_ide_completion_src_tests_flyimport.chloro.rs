@@ -5,6 +5,7 @@ use crate::{
     context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
     tests::{TEST_CONFIG, check_edit, check_edit_with_config},
 };
+
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     check_with_config(TEST_CONFIG, ra_fixture, expect);
 }

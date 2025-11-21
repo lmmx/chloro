@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3808 bytes
-Chloro size:   1985 bytes
+Chloro size:   1986 bytes
 Rustfmt size:  3910 bytes
 
 ✗ Outputs DIFFER
@@ -14,13 +14,13 @@ Rustfmt size:  3910 bytes
  use syntax::ast;
  
 -use crate::{context::CompletionContext, item::CompletionItem, Completions};
--
++use crate::{Completions, context::CompletionContext, item::CompletionItem};
+ 
 -pub(super) fn complete_repr(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,
 -    input: ast::TokenTree,
 -) {
-+use crate::{Completions, context::CompletionContext, item::CompletionItem};
 +pub(super) fn complete_repr(acc: &mut Completions, ctx: &CompletionContext<'_>, input: ast::TokenTree) {
      if let Some(existing_reprs) = super::parse_comma_sep_expr(input) {
 -        for &ReprCompletion {

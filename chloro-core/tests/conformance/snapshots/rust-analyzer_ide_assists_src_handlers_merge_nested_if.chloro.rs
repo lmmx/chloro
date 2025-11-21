@@ -8,6 +8,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_keyword = ctx.find_token_syntax_at_offset(T![if])?;
     let expr = ast::IfExpr::cast(if_keyword.parent()?)?;

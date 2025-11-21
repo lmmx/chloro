@@ -7,6 +7,7 @@ use ide_db::{EditionedFileId, FileRange, source_change::SourceChange};
 use syntax::{AstNode, SyntaxNode, ast, match_ast};
 
 use crate::{Diagnostic, DiagnosticCode, fix};
+
 pub(crate) fn field_shorthand(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, node: &SyntaxNode) {
     match_ast! {
         match node {

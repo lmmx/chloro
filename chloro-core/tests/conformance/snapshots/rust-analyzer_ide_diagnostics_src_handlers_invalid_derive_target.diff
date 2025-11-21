@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 940 bytes
-Chloro size:   768 bytes
+Chloro size:   769 bytes
 Rustfmt size:  940 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: invalid-derive-target
 -//
 -// This diagnostic is shown when the derive attribute is used on an item other than a `struct`,

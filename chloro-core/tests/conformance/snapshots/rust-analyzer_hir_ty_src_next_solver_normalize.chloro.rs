@@ -16,6 +16,7 @@ use crate::next_solver::{
     },
     util::PlaceholderReplacer,
 };
+
 /// Deeply normalize all aliases in `value`. This does not handle inference and expects
 /// its input to be already fully resolved.
 pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>

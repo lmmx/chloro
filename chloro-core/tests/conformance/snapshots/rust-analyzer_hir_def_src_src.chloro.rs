@@ -9,6 +9,7 @@ use crate::{
     AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
     UseId, VariantId, attr::Attrs, db::DefDatabase,
 };
+
 type Value;
 fn source(&self, db: &dyn DefDatabase) -> InFile<Self::Value> {
     let InFile { file_id, value } = self.ast_ptr(db);

@@ -24,6 +24,7 @@ use syntax::{
 };
 
 use crate::RootDatabase;
+
 /// Contains information about an item signature as seen from a use site.
 ///
 /// This includes the "active parameter", which is the parameter whose value is currently being

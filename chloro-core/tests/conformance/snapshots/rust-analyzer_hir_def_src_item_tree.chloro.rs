@@ -56,6 +56,7 @@ use triomphe::Arc;
 
 pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
+
 mod lower;
 
 mod pretty;

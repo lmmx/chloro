@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3259 bytes
-Chloro size:   3239 bytes
+Chloro size:   3240 bytes
 Rustfmt size:  3430 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  3430 bytes
 +use syntax::{SyntaxNode, ast::make};
  
  use crate::{db::ExpandDatabase, span_map::ExpansionSpanMap};
--
+ 
  /// Inserts whitespace and replaces `$crate` in macro expansions.
  #[expect(deprecated)]
 -pub fn prettify_macro_expansion(

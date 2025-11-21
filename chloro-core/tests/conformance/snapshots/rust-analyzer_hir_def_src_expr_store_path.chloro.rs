@@ -12,6 +12,7 @@ use crate::{
     lang_item::LangItemTarget,
     type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 };
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Path {
     /// `BarePath` is used when the path has neither generics nor type anchor, since the vast majority of paths

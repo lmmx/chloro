@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3042 bytes
+Chloro size:   3043 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  3226 bytes
  use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};
 -
  use super::InferCtxt;
--
+ 
 -///////////////////////////////////////////////////////////////////////////
 -// OPPORTUNISTIC VAR RESOLVER
 -

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7346 bytes
-Chloro size:   7165 bytes
+Chloro size:   7166 bytes
 Rustfmt size:  7366 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,8 @@ Rustfmt size:  7366 bytes
 +use syntax::{AstNode, ast};
  
 -use crate::{adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext};
--
++use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
+ 
 -// Diagnostic: remove-trailing-return
 -//
 -// This diagnostic is triggered when there is a redundant `return` at the end of a function
@@ -25,7 +26,6 @@ Rustfmt size:  7366 bytes
 -    ctx: &DiagnosticsContext<'_>,
 -    d: &RemoveTrailingReturn,
 -) -> Option<Diagnostic> {
-+use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};
 +pub(crate) fn remove_trailing_return(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Diagnostic> {
      if d.return_expr.file_id.macro_file().is_some() {
          // FIXME: Our infra can't handle allow from within macro expansions rn

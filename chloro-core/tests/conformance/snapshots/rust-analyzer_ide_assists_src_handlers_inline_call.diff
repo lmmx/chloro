@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41039 bytes
-Chloro size:   39340 bytes
+Chloro size:   39341 bytes
 Rustfmt size:  41039 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     AssistId,
      assist_context::{AssistContext, Assists},
  };
--
+ 
 -// Assist: inline_into_callers
 -//
 -// Inline a function or method body into all of its callers where possible, creating a `let` statement per parameter

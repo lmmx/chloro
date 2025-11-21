@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   48938 bytes
+Chloro size:   48939 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,8 @@ Rustfmt size:  49754 bytes
  use super::{
      AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,
      ErrorGuaranteed, GenericArg, GenericArgs, OpaqueTypeKey, ParamEnv, PolyCoercePredicate,
-     PolySubtypePredicate, Region, SolverDefId, SubtypePredicate, Term, TraitRef, Ty, TyKind,
-     TypingMode,
  };
--
+ 
  pub mod at;
 +
  pub mod canonical;

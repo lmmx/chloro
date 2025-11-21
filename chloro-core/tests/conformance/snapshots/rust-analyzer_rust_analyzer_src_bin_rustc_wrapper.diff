@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2455 bytes
-Chloro size:   2444 bytes
+Chloro size:   2445 bytes
 Rustfmt size:  2455 bytes
 
 ✗ Outputs DIFFER
@@ -18,12 +18,6 @@ Rustfmt size:  2455 bytes
  use std::{
      ffi::OsString,
      io,
-     process::{Command, ExitCode, Stdio},
- };
--
- pub(crate) fn main() -> io::Result<ExitCode> {
-     let mut args = std::env::args_os();
-     let _me = args.next().unwrap();
      run_rustc_skipping_cargo_checking(rustc, args.collect())
  }
  

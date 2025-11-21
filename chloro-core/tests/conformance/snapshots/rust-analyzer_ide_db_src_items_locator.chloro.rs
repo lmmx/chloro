@@ -14,6 +14,7 @@ use crate::{
     imports::import_assets::NameToImport,
     symbol_index::{self, SymbolIndex},
 };
+
 /// A value to use, when uncertain which limit to pick.
 
 /// Searches for importable items with the given name in the crate and its dependencies.

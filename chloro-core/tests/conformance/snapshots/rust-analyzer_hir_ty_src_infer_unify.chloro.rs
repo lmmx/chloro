@@ -37,6 +37,7 @@ use crate::{
         FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt,
     },
 };
+
 impl<'db> InferenceContext<'_, 'db> {
     pub(super) fn canonicalize<T>(&mut self, t: T) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
     where

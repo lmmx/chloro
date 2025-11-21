@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36225 bytes
+Chloro size:   36226 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
-     context::PathCompletionCtx,
- };
--
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- enum ImplCompletionKind {
-     All,
      Const,
  }
  

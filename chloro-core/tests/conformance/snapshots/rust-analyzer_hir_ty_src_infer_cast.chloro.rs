@@ -14,6 +14,7 @@ use crate::{
     infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
     next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
 };
+
 #[derive(Debug)]
 pub(crate) enum Int {
     I,

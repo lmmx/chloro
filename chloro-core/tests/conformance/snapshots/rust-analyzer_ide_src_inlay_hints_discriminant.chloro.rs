@@ -14,6 +14,7 @@ use crate::{
     DiscriminantHints, InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
     InlayTooltip,
 };
+
 pub(super) fn enum_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, enum_: ast::Enum) -> Option<()> {
     if let DiscriminantHints::Never = config.discriminant_hints {
         return None;

@@ -16,6 +16,7 @@ use tracing::{
     span::{Attributes, Id},
 };
 use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};
+
 struct JsonData {
     name: &'static str,
     start: std::time::Instant,

@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   97977 bytes
+Chloro size:   97978 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     primitive,
      utils::{self, detect_variant_from_bytes},
  };
--
+ 
 -pub trait HirWrite: fmt::Write {
 -    fn start_location_link(&mut self, _location: ModuleDefId) {}
 -    fn end_location_link(&mut self) {}

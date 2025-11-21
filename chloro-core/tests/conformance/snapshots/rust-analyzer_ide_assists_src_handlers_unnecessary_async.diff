@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7946 bytes
-Chloro size:   7525 bytes
+Chloro size:   7526 bytes
 Rustfmt size:  7946 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::{AssistContext, Assists};
--
+ 
 -// FIXME: This ought to be a diagnostic lint.
 -
 -// Assist: unnecessary_async

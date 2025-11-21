@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+
 pub(crate) fn mismatched_tuple_struct_pat_arg_count(ctx: &DiagnosticsContext<'_>, d: &hir::MismatchedTupleStructPatArgCount) -> Diagnostic {
     let s = if d.found == 1 { "" } else { "s" };
     let s2 = if d.expected == 1 { "" } else { "s" };

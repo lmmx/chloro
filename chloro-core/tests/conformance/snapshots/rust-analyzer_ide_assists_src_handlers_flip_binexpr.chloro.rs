@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let expr = ctx.find_node_at_offset::<BinExpr>()?;
     let lhs = expr.lhs()?;

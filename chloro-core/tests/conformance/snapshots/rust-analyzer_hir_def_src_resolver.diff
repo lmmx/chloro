@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   53525 bytes
+Chloro size:   53526 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -13,13 +13,6 @@ Rustfmt size:  54481 bytes
  use std::{fmt, mem};
  
  use base_db::Crate;
-     type_ref::LifetimeRef,
-     visibility::{RawVisibility, Visibility},
- };
--
- #[derive(Debug, Clone)]
- pub struct Resolver<'db> {
-     /// The stack of scopes, where the inner-most scope is the last item.
      BlockScope(ModuleItemMap<'db>),
      /// Brings the generic parameters of an item into scope as well as the `Self` type alias /
      /// generic for ADTs and impls.

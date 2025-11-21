@@ -7,6 +7,7 @@ use ide_db::RootDatabase;
 use syntax::{AstNode, SyntaxNode, TextRange, ast, ast::HasName};
 
 use crate::FileId;
+
 pub(super) fn find_all_methods(db: &RootDatabase, file_id: FileId) -> Vec<(TextRange, Option<TextRange>)> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(file_id);

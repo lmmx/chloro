@@ -4,6 +4,7 @@ use itertools::Itertools;
 use syntax::AstNode;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn unresolved_module(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

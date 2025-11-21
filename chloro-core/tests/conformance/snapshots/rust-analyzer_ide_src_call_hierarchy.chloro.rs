@@ -14,6 +14,7 @@ use syntax::{AstNode, SyntaxKind::IDENT, ast};
 use crate::{
     FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav, goto_definition,
 };
+
 #[derive(Debug, Clone)]
 pub struct CallItem {
     pub target: NavigationTarget,

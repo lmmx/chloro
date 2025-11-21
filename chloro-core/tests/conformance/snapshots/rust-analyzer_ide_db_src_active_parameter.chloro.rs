@@ -11,6 +11,7 @@ use syntax::{
 };
 
 use crate::RootDatabase;
+
 #[derive(Debug)]
 pub struct ActiveParameter<'db> {
     pub ty: Type<'db>,

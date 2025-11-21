@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15808 bytes
-Chloro size:   15506 bytes
+Chloro size:   15507 bytes
 Rustfmt size:  15808 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
--
+ 
 -// Diagnostic: unlinked-file
 -//
 -// This diagnostic is shown for files that are not included in any crate, or files that are part of

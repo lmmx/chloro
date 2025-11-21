@@ -7,6 +7,7 @@ use ena::unify::{NoError, UnifyKey, UnifyValue};
 use rustc_type_ir::{ConstVid, RegionKind, RegionVid, UniverseIndex, inherent::IntoKind};
 
 use crate::next_solver::{Const, Region};
+
 #[derive(Clone, Debug)]
 pub(crate) enum RegionVariableValue<'db> {
     Known {

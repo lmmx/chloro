@@ -11,6 +11,7 @@ use crate::{
     Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix,
     handlers::private_field::field_is_private_fixes,
 };
+
 pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
     let (code, message) = if d.private.is_some() {
         ("E0451", "field is private")

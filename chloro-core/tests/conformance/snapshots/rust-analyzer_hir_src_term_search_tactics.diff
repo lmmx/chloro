@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30934 bytes
-Chloro size:   30771 bytes
+Chloro size:   30772 bytes
 Rustfmt size:  32147 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,8 @@ Rustfmt size:  32147 bytes
  };
 -
  use super::{LookupTable, NewTypesKey, TermSearchCtx};
--
+ 
  /// # Trivial tactic
- ///
- /// Attempts to fulfill the goal by trying items in scope
  ///
  /// _Note that there is no use of calling this tactic in every iteration as the output does not
  /// depend on the current state of `lookup`_

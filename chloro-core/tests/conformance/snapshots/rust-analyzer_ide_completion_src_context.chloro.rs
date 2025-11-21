@@ -25,6 +25,7 @@ use crate::{
     config::AutoImportExclusionType,
     context::analysis::{AnalysisResult, expand_and_analyze},
 };
+
 mod analysis;
 
 #[cfg(test)]

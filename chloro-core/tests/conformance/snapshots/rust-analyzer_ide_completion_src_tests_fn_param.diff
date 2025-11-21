@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4730 bytes
-Chloro size:   4626 bytes
+Chloro size:   4627 bytes
 Rustfmt size:  4730 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use expect_test::expect;
- 
- use crate::tests::{check, check_with_trigger_character};
--
- #[test]
- fn only_param() {
-     check(
              kw ref
          "#]],
      );

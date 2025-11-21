@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3945 bytes
-Chloro size:   3678 bytes
+Chloro size:   3679 bytes
 Rustfmt size:  3979 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  3979 bytes
 +use syntax::{AstNode, ast};
  
  use crate::{AssistContext, Assists};
--
+ 
 -// Assist: remove_underscore_from_used_variables
 -//
 -// Removes underscore from used variables.

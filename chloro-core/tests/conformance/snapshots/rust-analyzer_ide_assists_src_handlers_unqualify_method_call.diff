@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7893 bytes
-Chloro size:   7410 bytes
+Chloro size:   7411 bytes
 Rustfmt size:  7893 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: unqualify_method_call
 -//
 -// Transforms universal function call syntax into a method call.

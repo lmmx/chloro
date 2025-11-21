@@ -10,6 +10,7 @@ use crate::{
     ClosureReturnTypeHints, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
     inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
 };
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, closure: ast::ClosureExpr) -> Option<()> {
     if config.closure_return_type_hints == ClosureReturnTypeHints::Never {
         return None;

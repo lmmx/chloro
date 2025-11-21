@@ -37,6 +37,7 @@ use crate::{
     reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
 };
+
 pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
     tracing::info!("initial config: {:#?}", config);
     // Windows scheduler implements priority boosts: if thread waits for an

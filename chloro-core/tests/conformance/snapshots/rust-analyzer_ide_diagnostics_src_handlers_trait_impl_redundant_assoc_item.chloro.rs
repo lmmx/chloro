@@ -8,6 +8,7 @@ use ide_db::{
 use syntax::ToSmolStr;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn trait_impl_redundant_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplRedundantAssocItems) -> Diagnostic {
     let db = ctx.sema.db;
     let name = d.assoc_item.0.clone();

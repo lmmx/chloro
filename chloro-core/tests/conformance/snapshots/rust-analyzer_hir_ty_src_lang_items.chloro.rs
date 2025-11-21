@@ -5,6 +5,7 @@ use hir_expand::name::Name;
 use intern::sym;
 
 use crate::db::HirDatabase;
+
 pub fn is_box(db: &dyn HirDatabase, adt: AdtId) -> bool {
     let AdtId::StructId(id) = adt else { return false };
     db.struct_signature(id).flags.contains(StructFlags::IS_BOX)

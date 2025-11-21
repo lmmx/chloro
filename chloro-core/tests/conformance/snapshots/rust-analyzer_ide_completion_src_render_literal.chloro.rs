@@ -18,6 +18,7 @@ use crate::{
         },
     },
 };
+
 pub(crate) fn render_variant_lit(ctx: RenderContext<'_>, path_ctx: &PathCompletionCtx<'_>, local_name: Option<hir::Name>, variant: hir::Variant, path: Option<hir::ModPath>) -> Option<Builder> {
     let _p = tracing::info_span!("render_variant_lit").entered();
     let db = ctx.db();

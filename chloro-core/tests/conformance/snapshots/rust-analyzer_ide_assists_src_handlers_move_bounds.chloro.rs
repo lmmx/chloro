@@ -9,6 +9,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn move_bounds_to_where_clause(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let type_param_list = ctx.find_node_at_offset::<ast::GenericParamList>()?;
     let mut type_params = type_param_list.generic_params();

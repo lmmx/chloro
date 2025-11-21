@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 enum WrapUnwrapOption {
     WrapDerive {
         derive: TextRange,

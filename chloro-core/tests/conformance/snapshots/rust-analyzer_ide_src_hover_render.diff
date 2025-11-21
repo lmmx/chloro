@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53333 bytes
+Chloro size:   53334 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,9 @@ Rustfmt size:  53876 bytes
  use std::{env, mem, ops::Not};
  
  use either::Either;
-     hover::{SubstTyLen, notable_traits, walk_and_push_ty},
      interpret::render_const_eval_error,
  };
--
+ 
 -pub(super) fn type_info_of(
 -    sema: &Semantics<'_, RootDatabase>,
 -    _config: &HoverConfig<'_>,

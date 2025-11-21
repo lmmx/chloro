@@ -19,6 +19,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     handlers::auto_import::find_importable_node,
 };
+
 pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();

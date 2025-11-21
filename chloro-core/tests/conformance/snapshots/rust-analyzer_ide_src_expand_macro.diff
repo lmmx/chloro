@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21133 bytes
-Chloro size:   20593 bytes
+Chloro size:   20594 bytes
 Rustfmt size:  21133 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
- 
- use crate::FilePosition;
--
- pub struct ExpandedMacro {
-     pub name: String,
      pub expansion: String,
  }
  

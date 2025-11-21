@@ -26,6 +26,7 @@ use crate::{
     span_map::ExpansionSpanMap,
     tt,
 };
+
 macro_rules! register_builtin {
     ( $($trait:ident => $expand:ident),* ) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

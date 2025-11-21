@@ -9,6 +9,7 @@ use project_model::{CargoConfig, RustLibSource};
 use rustc_hash::FxHashSet;
 
 use crate::cli::{flags, progress_report::ProgressReport};
+
 impl flags::Diagnostics {
     pub fn run(self) -> anyhow::Result<()> {
         const STACK_SIZE: usize = 1024 * 1024 * 8;

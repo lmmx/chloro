@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32105 bytes
-Chloro size:   8231 bytes
+Chloro size:   8232 bytes
 Rustfmt size:  32250 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- 
- use intern::Symbol;
- use rustc_hash::FxHashMap;
--
- pub struct BuiltinAttribute {
-     pub name: &'static str,
-     pub template: AttributeTemplate,
  
  macro_rules! ungated {
      ($attr:ident, $typ:expr, $tpl:expr, $duplicates:expr $(, @only_local: $only_local:expr)? $(,)?) => {

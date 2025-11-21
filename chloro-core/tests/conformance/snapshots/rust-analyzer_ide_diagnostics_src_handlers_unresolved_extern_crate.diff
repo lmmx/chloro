@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1224 bytes
-Chloro size:   1074 bytes
+Chloro size:   1075 bytes
 Rustfmt size:  1224 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: unresolved-extern-crate
 -//
 -// This diagnostic is triggered if rust-analyzer is unable to discover referred extern crate.

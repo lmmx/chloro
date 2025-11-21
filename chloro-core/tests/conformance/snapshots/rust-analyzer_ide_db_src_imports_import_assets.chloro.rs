@@ -19,6 +19,7 @@ use crate::{
     FxIndexSet, RootDatabase,
     items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT},
 };
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub struct ImportPathConfig {
     /// If true, prefer to unconditionally use imports of the `core` and `alloc` crate

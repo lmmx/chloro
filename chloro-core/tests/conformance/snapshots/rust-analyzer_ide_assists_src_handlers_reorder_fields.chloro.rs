@@ -4,6 +4,7 @@ use itertools::Itertools;
 use syntax::{AstNode, SmolStr, SyntaxElement, ToSmolStr, ast, syntax_editor::SyntaxEditor};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path = ctx.find_node_at_offset::<ast::Path>()?;
     let record =

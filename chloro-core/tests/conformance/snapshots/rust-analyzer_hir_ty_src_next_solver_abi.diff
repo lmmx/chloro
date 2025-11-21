@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1739 bytes
-Chloro size:   1676 bytes
+Chloro size:   1677 bytes
 Rustfmt size:  1801 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,8 @@ Rustfmt size:  1801 bytes
  use crate::FnAbi;
 -
  use super::interner::DbInterner;
--
+ 
  #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
- pub enum Safety {
-     Unsafe,
  }
  
  impl<'db> Relate<DbInterner<'db>> for Safety {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   50219 bytes
+Chloro size:   50220 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -61,7 +61,7 @@ Rustfmt size:  52438 bytes
      util::{FloatExt, IntegerExt},
 -    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId,
  };
--
+ 
  pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;
 +
  pub type FnHeader<'db> = rustc_type_ir::FnHeader<DbInterner<'db>>;

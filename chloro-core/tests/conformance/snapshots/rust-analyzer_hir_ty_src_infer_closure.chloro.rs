@@ -34,6 +34,7 @@ use crate::{
     traits::FnTrait,
 };
 use super::{Expectation, InferenceContext};
+
 pub(crate) mod analysis;
 
 #[derive(Debug)]

@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19856 bytes
-Chloro size:   19857 bytes
+Chloro size:   19858 bytes
 Rustfmt size:  19856 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Tests for `builtin_derive_macro.rs` from `hir_expand`.
- 
- use expect_test::expect;
- 
- use crate::macro_expansion_tests::{check, check_errors};
--
- #[test]
- fn test_copy_expand_simple() {
-     check(
  }"#]],
      );
  }

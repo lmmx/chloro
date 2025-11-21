@@ -3,6 +3,7 @@ use syntax::ast::{self, HasGenericParams, HasName};
 use syntax::{AstNode, SyntaxKind};
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn convert_nested_function_to_closure(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let function = name.syntax().parent().and_then(ast::Fn::cast)?;

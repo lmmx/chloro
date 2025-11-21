@@ -27,6 +27,7 @@ use crate::{
         VisibilityExplicitness,
     },
 };
+
 pub(super) struct Ctx<'a> {
     db: &'a dyn DefDatabase,
     tree: ItemTree,

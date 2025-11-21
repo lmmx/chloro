@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30351 bytes
-Chloro size:   30348 bytes
+Chloro size:   30349 bytes
 Rustfmt size:  30351 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,8 @@ Rustfmt size:  30351 bytes
  use crate::tests::{check_infer_with_mismatches, check_no_mismatches};
 -
  use super::{check_infer, check_types};
--
+ 
  #[test]
- fn cfg_impl_def() {
-     check_types(
  }
      "#;
      let fixture = format!("{fixture}\n//- /foo.rs\n{data}");

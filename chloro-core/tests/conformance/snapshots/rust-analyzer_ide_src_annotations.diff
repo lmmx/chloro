@@ -2,16 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36304 bytes
+Chloro size:   36305 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     references::{FindAllRefsConfig, find_all_refs},
-     runnables::{Runnable, runnables},
- };
--
+ 
  mod fn_references;
  
 -// Feature: Annotations

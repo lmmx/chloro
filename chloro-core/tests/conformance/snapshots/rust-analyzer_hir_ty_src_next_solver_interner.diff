@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   78956 bytes
+Chloro size:   78957 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -81,10 +81,8 @@ Rustfmt size:  84055 bytes
 +    },
 +    util::sizedness_constraint_for_ty,
  };
--
- #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
- pub struct InternedWrapperNoDebug<T>(pub(crate) T);
  
+ #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
                  folder: &mut F,
              ) -> Result<Self, F::Error> {
                  use rustc_type_ir::inherent::SliceLike as _;

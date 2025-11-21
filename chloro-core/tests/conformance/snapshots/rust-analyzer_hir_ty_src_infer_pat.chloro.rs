@@ -22,6 +22,7 @@ use crate::{
     lower::lower_mutability,
     next_solver::{GenericArgs, Ty, TyKind},
 };
+
 impl<'db> InferenceContext<'_, 'db> {
     /// Infers type for tuple struct pattern or its corresponding assignee expression.
     ///

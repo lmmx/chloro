@@ -27,6 +27,7 @@ use crate::{
     command::{CargoParser, CommandHandle},
     diagnostics::DiagnosticsGeneration,
 };
+
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub(crate) enum InvocationStrategy {
     Once,

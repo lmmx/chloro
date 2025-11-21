@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6386 bytes
-Chloro size:   5620 bytes
+Chloro size:   5621 bytes
 Rustfmt size:  6494 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  6494 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: replace_arith_with_checked
 -//
 -// Replaces arithmetic on integers with the `checked_*` equivalent.

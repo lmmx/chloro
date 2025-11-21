@@ -35,6 +35,7 @@ use crate::next_solver::{
         traits::{Obligation, PredicateObligations},
     },
 };
+
 #[derive(Clone, Copy)]
 pub(crate) enum LatticeOpKind {
     Glb,

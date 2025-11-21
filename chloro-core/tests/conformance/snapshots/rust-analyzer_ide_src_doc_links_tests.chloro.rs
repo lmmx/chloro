@@ -15,6 +15,7 @@ use crate::{
     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
     fixture,
 };
+
 fn check_external_docs(#[rust_analyzer::rust_fixture] ra_fixture: &str, target_dir: Option<&str>, expect_web_url: Option<Expect>, expect_local_url: Option<Expect>, sysroot: Option<&str>) {
     let (analysis, position) = fixture::position(ra_fixture);
     let links = analysis.external_docs(position, target_dir, sysroot).unwrap();

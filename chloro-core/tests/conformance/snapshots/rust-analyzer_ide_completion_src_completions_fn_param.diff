@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7296 bytes
+Chloro size:   7297 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     CompletionContext, CompletionItem, CompletionItemKind, Completions,
      context::{ParamContext, ParamKind, PatternContext},
  };
--
+ 
 -// FIXME: Make this a submodule of [`pattern`]
  /// Complete repeated parameters, both name and type. For example, if all
  /// functions in a file have a `spam: &mut Spam` parameter, a completion with

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1416 bytes
-Chloro size:   1075 bytes
+Chloro size:   1076 bytes
 Rustfmt size:  1463 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,8 @@ Rustfmt size:  1463 bytes
      FileId, FxIndexSet, RootDatabase,
 +    base_db::{CrateOrigin, RootQueryDb},
  };
--
+ 
  #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
- pub struct CrateInfo {
-     pub name: Option<String>,
      pub root_file_id: FileId,
  }
  

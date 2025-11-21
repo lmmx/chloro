@@ -10,6 +10,7 @@ use crate::{
         infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
     },
 };
+
 impl<'db> InferenceContext<'_, 'db> {
     /// This takes all the opaque type uses during HIR typeck. It first computes
     /// the concrete hidden type by iterating over all defining uses.

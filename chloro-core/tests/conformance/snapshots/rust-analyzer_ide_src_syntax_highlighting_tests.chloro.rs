@@ -7,6 +7,7 @@ use test_utils::{AssertLinear, bench, bench_fixture, skip_slow_tests};
 
 use crate::{FileRange, HighlightConfig, HlTag, TextRange, fixture};
 
+
 #[test]
 fn attributes() {
     check_highlighting(

@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2243 bytes
-Chloro size:   2069 bytes
+Chloro size:   2070 bytes
 Rustfmt size:  2277 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: unresolved-macro-call
 -//
 -// This diagnostic is triggered if rust-analyzer is unable to resolve the path

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3507 bytes
-Chloro size:   3506 bytes
+Chloro size:   3507 bytes
 Rustfmt size:  3539 bytes
 
 ✗ Outputs DIFFER
@@ -19,10 +19,6 @@ Rustfmt size:  3539 bytes
  use project_model::{CargoConfig, RustLibSource};
  
  use crate::cli::flags;
--
- impl flags::Ssr {
-     pub fn run(self) -> anyhow::Result<()> {
-         let cargo_config = CargoConfig {
      /// for much else.
      pub fn run(self) -> anyhow::Result<()> {
          use ide_db::base_db::SourceDatabase;

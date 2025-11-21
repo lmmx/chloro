@@ -15,6 +15,7 @@ use crate::{
     assist_context::{AssistContext, Assists, SourceChangeBuilder},
     utils::ref_field_expr::determine_ref_and_parens,
 };
+
 pub(crate) fn destructure_struct_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;

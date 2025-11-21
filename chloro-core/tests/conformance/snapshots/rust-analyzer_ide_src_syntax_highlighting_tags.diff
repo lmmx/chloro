@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10817 bytes
-Chloro size:   9849 bytes
+Chloro size:   9850 bytes
 Rustfmt size:  10923 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
- 
- use ide_db::SymbolKind;
--
- #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
- pub struct Highlight {
-     pub tag: HlTag,
  #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
  pub enum HlTag {
      Symbol(SymbolKind),

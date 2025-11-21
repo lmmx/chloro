@@ -34,6 +34,7 @@ use syntax::{
 use triomphe::Arc;
 
 use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
+
 macro_rules! diagnostics {
     ($AnyDiagnostic:ident <$db:lifetime> -> $($diag:ident $(<$lt:lifetime>)?,)*) => {
         #[derive(Debug)]

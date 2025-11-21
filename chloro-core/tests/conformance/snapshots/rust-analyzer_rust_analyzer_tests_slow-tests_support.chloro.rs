@@ -23,6 +23,7 @@ use tracing_subscriber::fmt::TestWriter;
 use vfs::AbsPathBuf;
 
 use crate::testdir::TestDir;
+
 pub(crate) struct Project<'a> {
     fixture: &'a str,
     tmp_dir: Option<TestDir>,

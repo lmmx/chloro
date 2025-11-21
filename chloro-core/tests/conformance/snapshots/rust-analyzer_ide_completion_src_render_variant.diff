@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4854 bytes
-Chloro size:   4782 bytes
+Chloro size:   4783 bytes
 Rustfmt size:  4854 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,7 @@ Rustfmt size:  4854 bytes
  use syntax::SmolStr;
  
 +use crate::context::CompletionContext;
++
  /// A rendered struct, union, or enum variant, split into fields for actual
  /// auto-completion (`literal`, using `field: ()`) and display in the
  /// completions menu (`detail`, using `field: type`).

@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9425 bytes
-Chloro size:   9363 bytes
+Chloro size:   9364 bytes
 Rustfmt size:  9425 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use syntax::{AstNode, SyntaxKind, ast};
- 
  use crate::{CompletionItem, Completions, context::CompletionContext};
--
+ 
  /// Complete mod declaration, i.e. `mod $0;`
 -pub(crate) fn complete_mod(
 -    acc: &mut Completions,

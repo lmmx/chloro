@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   39284 bytes
+Chloro size:   39285 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -71,11 +71,12 @@ Rustfmt size:  40650 bytes
      files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
      prettify_macro_expansion_::prettify_macro_expansion,
  };
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-+pub mod attrs;
  
 -pub use base_db::EditionedFileId;
 -pub use mbe::{DeclarativeMacro, ValueResult};
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
++pub mod attrs;
++
 +pub mod builtin;
 +
 +pub mod change;

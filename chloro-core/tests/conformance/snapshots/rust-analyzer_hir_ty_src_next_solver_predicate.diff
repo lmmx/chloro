@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   31342 bytes
+Chloro size:   31343 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -30,8 +30,8 @@ Rustfmt size:  32663 bytes
  use crate::next_solver::{InternedWrapperNoDebug, TraitIdWrapper};
 -
 -use super::{interned_vec_db, Binder, BoundVarKinds, DbInterner, Region, Ty};
--
 +use super::{Binder, BoundVarKinds, DbInterner, Region, Ty, interned_vec_db};
+ 
  pub type BoundExistentialPredicate<'db> = Binder<'db, ExistentialPredicate<'db>>;
  
  pub type TraitRef<'db> = ty::TraitRef<DbInterner<'db>>;

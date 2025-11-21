@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2328 bytes
-Chloro size:   2165 bytes
+Chloro size:   2166 bytes
 Rustfmt size:  2328 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,7 @@ Rustfmt size:  2328 bytes
 -    d: &hir::IncorrectGenericsOrder,
 -) -> Diagnostic {
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
++
 +pub(crate) fn incorrect_generics_order(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectGenericsOrder) -> Diagnostic {
      let provided_description = match d.provided_arg.value.kind() {
          SyntaxKind::CONST_ARG => "constant",

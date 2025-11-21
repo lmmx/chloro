@@ -4,6 +4,7 @@ use ide_db::SymbolKind;
 use syntax::ast;
 
 use crate::{Completions, context::CompletionContext, item::CompletionItem};
+
 pub(super) fn complete_repr(acc: &mut Completions, ctx: &CompletionContext<'_>, input: ast::TokenTree) {
     if let Some(existing_reprs) = super::parse_comma_sep_expr(input) {
         for &ReprCompletion { label, snippet, lookup, collides } in REPR_COMPLETIONS {

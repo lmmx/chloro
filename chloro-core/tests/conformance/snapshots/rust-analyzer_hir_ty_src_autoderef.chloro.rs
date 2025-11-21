@@ -24,6 +24,7 @@ use crate::{
     },
 };
 
+
 /// Returns types that `ty` transitively dereferences to. This function is only meant to be used
 /// outside `hir-ty`.
 ///

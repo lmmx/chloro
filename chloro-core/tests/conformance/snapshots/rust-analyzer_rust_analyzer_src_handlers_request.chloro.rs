@@ -55,6 +55,7 @@ use crate::{
     test_runner::{CargoTestHandle, TestTarget},
     try_default,
 };
+
 pub(crate) fn handle_workspace_reload(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     state.proc_macro_clients = Arc::from_iter([]);
     state.build_deps_changed = false;

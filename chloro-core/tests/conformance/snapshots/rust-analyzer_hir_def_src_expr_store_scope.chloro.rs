@@ -10,6 +10,7 @@ use crate::{
     expr_store::{Body, ExpressionStore, HygieneId},
     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
 };
+
 pub type ScopeId = Idx<ScopeData>;
 
 #[derive(Debug, PartialEq, Eq)]

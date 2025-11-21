@@ -22,6 +22,7 @@ use crate::{
     per_ns::{Item, MacrosItem, PerNs, TypesItem, ValuesItem},
     visibility::Visibility,
 };
+
 #[derive(Debug, Default)]
 pub struct PerNsGlobImports {
     types: FxHashSet<(LocalModuleId, Name)>,

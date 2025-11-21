@@ -4,6 +4,7 @@ use stdx::format_to;
 use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_two_arm_bool_match_to_matches_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     use ArmBodyExpression::*;
     let match_expr = ctx.find_node_at_offset::<ast::MatchExpr>()?;

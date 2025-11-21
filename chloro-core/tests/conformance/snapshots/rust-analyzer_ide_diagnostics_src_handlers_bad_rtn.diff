@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1132 bytes
-Chloro size:   982 bytes
+Chloro size:   983 bytes
 Rustfmt size:  1132 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  1132 bytes
  use ide_db::Severity;
  
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: bad-rtn
 -//
 -// This diagnostic is shown when a RTN (Return Type Notation, `Type::method(..): Send`) is written in an improper place.

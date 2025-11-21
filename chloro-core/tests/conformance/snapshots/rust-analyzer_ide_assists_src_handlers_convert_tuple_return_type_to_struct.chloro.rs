@@ -17,6 +17,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn convert_tuple_return_type_to_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let type_ref = ret_type.ty()?;

@@ -8,6 +8,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assist_id = AssistId::refactor_rewrite("unwrap_block");
     let assist_label = "Unwrap block";

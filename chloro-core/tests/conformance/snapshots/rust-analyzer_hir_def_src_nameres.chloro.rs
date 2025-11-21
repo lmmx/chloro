@@ -75,6 +75,7 @@ use crate::{
     visibility::{Visibility, VisibilityExplicitness},
 };
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
+
 pub mod assoc;
 
 pub mod attr_resolution;

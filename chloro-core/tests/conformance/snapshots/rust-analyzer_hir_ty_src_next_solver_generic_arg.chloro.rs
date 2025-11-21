@@ -15,6 +15,7 @@ use super::{
     Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
     generics::Generics,
 };
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]
 pub enum GenericArg<'db> {
     Ty(Ty<'db>),

@@ -20,6 +20,7 @@ use syntax::{
 use crate::imports::insert_use::{ImportScope, ImportScopeKind};
 use crate::text_edit::{TextEdit, TextEditBuilder};
 use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
+
 /// An annotation ID associated with an indel, to describe changes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, UpmapFromRaFixture)]
 pub struct ChangeAnnotationId(u32);

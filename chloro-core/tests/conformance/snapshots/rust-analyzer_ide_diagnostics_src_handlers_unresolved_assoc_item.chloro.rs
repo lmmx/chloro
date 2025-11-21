@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn unresolved_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedAssocItem) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

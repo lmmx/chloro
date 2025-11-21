@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1043 bytes
-Chloro size:   1043 bytes
+Chloro size:   1044 bytes
 Rustfmt size:  1043 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,3 @@ Rustfmt size:  1043 bytes
  use std::fmt;
  
  use stdx::always;
--
- /// A type to specify UI label, like an entry in the list of assists. Enforces
- /// proper casing:
- ///

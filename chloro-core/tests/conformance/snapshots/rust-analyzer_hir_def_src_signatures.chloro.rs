@@ -35,6 +35,7 @@ use crate::{
     src::HasSource,
     type_ref::{TraitRef, TypeBound, TypeRefId},
 };
+
 #[inline]
 fn as_name_opt(name: Option<ast::Name>) -> Name {
     name.map_or_else(Name::missing, |it| it.as_name())

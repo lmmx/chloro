@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11544 bytes
-Chloro size:   11408 bytes
+Chloro size:   11409 bytes
 Rustfmt size:  11544 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,7 @@ Rustfmt size:  11544 bytes
      AstNode, AstToken, TextRange, TextSize,
      ast::{self, IsString},
  };
--
+ 
 -// FIXME: This can probably be re-implemented via the HIR?
  pub fn is_format_string(string: &ast::String) -> bool {
      // Check if `string` is a format string argument of a macro invocation.

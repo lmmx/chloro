@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36432 bytes
+Chloro size:   36433 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -20,10 +20,12 @@ Rustfmt size:  36953 bytes
  };
 -
  use super::{Expectation, InferenceContext};
-+pub(crate) mod analysis;
  
++pub(crate) mod analysis;
++
  #[derive(Debug)]
  struct ClosureSignatures<'db> {
+     /// The signature users of the closure see.
  }
  
  impl<'db> InferenceContext<'_, 'db> {

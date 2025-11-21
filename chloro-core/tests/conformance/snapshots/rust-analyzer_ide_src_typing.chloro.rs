@@ -28,6 +28,7 @@ use syntax::{
 };
 
 use crate::SourceChange;
+
 mod on_enter;
 
 // Don't forget to add new trigger characters to `server_capabilities` in `caps.rs`.

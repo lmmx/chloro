@@ -15,6 +15,7 @@ use itertools::Itertools;
 use syntax::AstNode;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     let (message, fixes) = if d.expected.is_unknown() {

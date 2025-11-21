@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12569 bytes
-Chloro size:   12155 bytes
+Chloro size:   12156 bytes
 Rustfmt size:  12721 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  12721 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: fix_visibility
 -//
 -// Note that there is some duplication between this and the no_such_field diagnostic.

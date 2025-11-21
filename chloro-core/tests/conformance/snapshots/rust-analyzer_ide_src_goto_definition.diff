@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70255 bytes
+Chloro size:   70256 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -39,6 +39,7 @@ Rustfmt size:  71259 bytes
 +    doc_links::token_as_doc_comment,
 +    navigation_target::{self, ToNav},
 +};
++
  #[derive(Debug)]
  pub struct GotoDefinitionConfig<'a> {
      pub minicore: MiniCore<'a>,

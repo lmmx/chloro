@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2543 bytes
-Chloro size:   2476 bytes
+Chloro size:   2477 bytes
 Rustfmt size:  2543 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,7 @@ Rustfmt size:  2543 bytes
 +use syntax::ast::{self, Pat, make};
  
  use crate::RootDatabase;
--
- /// Enum types that implement `std::ops::Try` trait.
- #[derive(Clone, Copy, Debug)]
- pub enum TryEnum {
+ 
  }
  
  impl TryEnum {

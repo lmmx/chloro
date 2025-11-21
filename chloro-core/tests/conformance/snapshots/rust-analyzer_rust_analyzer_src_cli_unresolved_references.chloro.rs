@@ -11,6 +11,7 @@ use syntax::{AstNode, WalkEvent, ast};
 use vfs::FileId;
 
 use crate::cli::flags;
+
 impl flags::UnresolvedReferences {
     pub fn run(self) -> anyhow::Result<()> {
         const STACK_SIZE: usize = 1024 * 1024 * 8;

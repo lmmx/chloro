@@ -6,6 +6,7 @@ use syntax::NodeOrToken;
 use syntax::{SyntaxNode, ast::make};
 
 use crate::{db::ExpandDatabase, span_map::ExpansionSpanMap};
+
 /// Inserts whitespace and replaces `$crate` in macro expansions.
 #[expect(deprecated)]
 pub fn prettify_macro_expansion(db: &dyn ExpandDatabase, syn: SyntaxNode, span_map: &ExpansionSpanMap, target_crate_id: Crate) -> SyntaxNode {

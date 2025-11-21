@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     add_vis_to_referenced_module_def(acc, ctx)
 }

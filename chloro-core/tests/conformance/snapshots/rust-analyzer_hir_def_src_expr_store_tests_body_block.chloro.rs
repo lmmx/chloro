@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use super::*;
+
 #[test]
 fn inner_item_smoke() {
     check_at(

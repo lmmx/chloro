@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31419 bytes
-Chloro size:   31387 bytes
+Chloro size:   31388 bytes
 Rustfmt size:  31419 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,6 @@ Rustfmt size:  31419 bytes
  use expect_test::expect;
  
  use crate::tests::{check, check_edit};
--
- #[test]
- fn derive_helpers() {
-     check(
  "#,
          expect![[r#""#]],
      );

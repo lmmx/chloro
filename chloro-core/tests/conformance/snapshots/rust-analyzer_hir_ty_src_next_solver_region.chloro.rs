@@ -14,6 +14,7 @@ use super::{
     ErrorGuaranteed, SolverDefId, interned_vec_db,
     interner::{BoundVarKind, DbInterner, Placeholder},
 };
+
 pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;
 
 #[salsa::interned(constructor = new_)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8070 bytes
-Chloro size:   7734 bytes
+Chloro size:   7735 bytes
 Rustfmt size:  8070 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,10 @@ Rustfmt size:  8070 bytes
  
 -use super::interner::DbInterner;
  use super::SolverDefId;
--
 +use super::interner::DbInterner;
+ 
  impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
      fn print(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-         Self::print_debug(t, fmt)
          })
      }
  }

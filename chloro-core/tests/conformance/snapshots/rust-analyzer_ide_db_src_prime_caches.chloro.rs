@@ -14,6 +14,7 @@ use crate::{
     base_db::{Crate, RootQueryDb},
     symbol_index::SymbolIndex,
 };
+
 /// We're indexing many crates.
 #[derive(Debug)]
 pub struct ParallelPrimeCachesProgress {

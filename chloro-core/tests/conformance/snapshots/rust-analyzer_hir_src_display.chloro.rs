@@ -27,6 +27,7 @@ use crate::{
     Macro, Module, SelfParam, Static, Struct, StructKind, Trait, TraitRef, TupleField, Type,
     TypeAlias, TypeNs, TypeOrConstParam, TypeParam, Union, Variant,
 };
+
 impl<'db> HirDisplay<'db> for Function {
     fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
         let db = f.db;

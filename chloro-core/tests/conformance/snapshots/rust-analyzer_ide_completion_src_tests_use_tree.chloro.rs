@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::check;
+
 #[test]
 fn use_tree_completion() {
     check(

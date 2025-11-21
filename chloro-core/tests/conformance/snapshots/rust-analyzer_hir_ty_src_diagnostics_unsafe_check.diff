@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17194 bytes
-Chloro size:   17009 bytes
+Chloro size:   17010 bytes
 Rustfmt size:  17194 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     next_solver::{CallableIdWrapper, TyKind, abi::Safety},
-     utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
- };
--
- #[derive(Debug, Default)]
- pub struct MissingUnsafeResult {
-     pub unsafe_exprs: Vec<(ExprOrPatId, UnsafetyReason)>,
  
  pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafeResult {
      let _p = tracing::info_span!("missing_unsafe").entered();

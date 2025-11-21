@@ -12,6 +12,7 @@ use crate::{
     db::DefDatabase,
     nameres::{crate_def_map, tests::TestDB},
 };
+
 fn check_def_map_is_not_recomputed(#[rust_analyzer::rust_fixture] ra_fixture_initial: &str, #[rust_analyzer::rust_fixture] ra_fixture_change: &str, expecta: Expect, expectb: Expect) {
     let (mut db, pos) = TestDB::with_position(ra_fixture_initial);
     let krate = db.fetch_test_crate();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18328 bytes
-Chloro size:   18205 bytes
+Chloro size:   18206 bytes
 Rustfmt size:  18564 bytes
 
 ✗ Outputs DIFFER
@@ -27,10 +27,8 @@ Rustfmt size:  18564 bytes
 -    goto_definition, FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav,
 +    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav, goto_definition,
  };
--
+ 
  #[derive(Debug, Clone)]
- pub struct CallItem {
-     pub target: NavigationTarget,
      pub minicore: MiniCore<'a>,
  }
  

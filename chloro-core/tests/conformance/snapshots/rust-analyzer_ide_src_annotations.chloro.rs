@@ -14,6 +14,7 @@ use crate::{
     references::{FindAllRefsConfig, find_all_refs},
     runnables::{Runnable, runnables},
 };
+
 mod fn_references;
 
 #[derive(Debug, Hash, PartialEq, Eq)]

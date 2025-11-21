@@ -16,6 +16,7 @@ use crate::{
     InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
     inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
 };
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, pat: &ast::IdentPat) -> Option<()> {
     if !config.type_hints {
         return None;

@@ -36,6 +36,7 @@ use crate::{
     assist_context::{AssistContext, Assists, TreeMutator},
     utils::generate_impl,
 };
+
 pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let range = ctx.selection_trimmed();
     if range.is_empty() {

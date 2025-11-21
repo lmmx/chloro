@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     let items = impl_ast.assoc_item_list()?;

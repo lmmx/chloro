@@ -12,6 +12,7 @@ use std::sync::OnceLock;
 
 use intern::Symbol;
 use rustc_hash::FxHashMap;
+
 pub struct BuiltinAttribute {
     pub name: &'static str,
     pub template: AttributeTemplate,

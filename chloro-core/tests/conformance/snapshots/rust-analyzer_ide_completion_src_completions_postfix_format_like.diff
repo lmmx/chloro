@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   2629 bytes
+Chloro size:   2630 bytes
 Rustfmt size:  3554 bytes
 
 ✗ Outputs DIFFER
@@ -40,7 +40,7 @@ Rustfmt size:  3554 bytes
      context::CompletionContext,
 -    Completions,
  };
--
+ 
  /// Mapping ("postfix completion item" => "macro to use")
 -static KINDS: &[(&str, &str)] = &[
 -    ("format", "format!"),

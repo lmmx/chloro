@@ -9,6 +9,7 @@ use crate::{
     item::{Builder, CompletionItem},
     render::RenderContext,
 };
+
 pub(crate) fn render_macro(ctx: RenderContext<'_>, PathCompletionCtx { kind, has_macro_bang, has_call_parens, .. }: &PathCompletionCtx<'_>, name: hir::Name, macro_: hir::Macro) -> Builder {
     let _p = tracing::info_span!("render_macro").entered();
     render(ctx, *kind == PathKind::Use, *has_macro_bang, *has_call_parens, name, macro_)

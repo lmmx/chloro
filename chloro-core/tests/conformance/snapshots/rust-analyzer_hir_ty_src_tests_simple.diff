@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 88820 bytes
-Chloro size:   88465 bytes
+Chloro size:   88466 bytes
 Rustfmt size:  88820 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use expect_test::expect;
- 
- use super::{check, check_infer, check_no_mismatches, check_types};
--
- #[test]
- fn infer_adt_self() {
-     check_types(
  }
  
  #[test]

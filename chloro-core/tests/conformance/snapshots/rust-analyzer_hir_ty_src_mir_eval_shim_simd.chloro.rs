@@ -4,6 +4,7 @@ use std::cmp::Ordering;
 
 use crate::consteval::try_const_usize;
 use super::*;
+
 macro_rules! from_bytes {
     ($ty:tt, $value:expr) => {
         ($ty::from_le_bytes(match ($value).try_into() {

@@ -3,6 +3,7 @@ use itertools::Itertools;
 use span::Edition;
 
 use super::*;
+
 #[test]
 fn macro_rules_are_globally_visible() {
     check(

@@ -23,6 +23,7 @@ use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use project_model::CargoConfig;
 use test_utils::project_root;
 use vfs::{AbsPathBuf, VfsPath};
+
 #[track_caller]
 fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
     match vfs.file_id(path) {

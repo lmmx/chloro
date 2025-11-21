@@ -13,6 +13,7 @@ use crate::{
         gen_trait_fn_body,
     },
 };
+
 pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     add_missing_impl_members_inner(
         acc,

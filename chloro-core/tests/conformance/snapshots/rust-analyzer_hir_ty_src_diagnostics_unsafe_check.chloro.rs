@@ -21,6 +21,7 @@ use crate::{
     next_solver::{CallableIdWrapper, TyKind, abi::Safety},
     utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
 };
+
 #[derive(Debug, Default)]
 pub struct MissingUnsafeResult {
     pub unsafe_exprs: Vec<(ExprOrPatId, UnsafetyReason)>,

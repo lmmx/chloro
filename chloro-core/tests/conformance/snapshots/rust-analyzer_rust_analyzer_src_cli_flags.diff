@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11613 bytes
-Chloro size:   7964 bytes
+Chloro size:   7965 bytes
 Rustfmt size:  11613 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  11613 bytes
  use ide_ssr::{SsrPattern, SsrRule};
  
  use crate::cli::Verbosity;
--
+ 
 -xflags::xflags! {
 -    src "./src/cli/flags.rs"
 -

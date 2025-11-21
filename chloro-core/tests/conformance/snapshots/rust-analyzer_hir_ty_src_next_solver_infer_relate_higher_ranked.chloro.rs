@@ -10,6 +10,7 @@ use crate::next_solver::{
     Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst,
     PlaceholderRegion, PlaceholderTy, Region, Ty,
 };
+
 impl<'db> InferCtxt<'db> {
     /// Replaces all bound variables (lifetimes, types, and constants) bound by
     /// `binder` with placeholder variables in a new universe. This means that the

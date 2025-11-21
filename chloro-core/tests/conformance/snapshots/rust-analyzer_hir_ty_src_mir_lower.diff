@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   93828 bytes
+Chloro size:   93829 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  95826 bytes
  };
 -
  use super::OperandKind;
--
+ 
  mod as_place;
 +
  mod pattern_matching;

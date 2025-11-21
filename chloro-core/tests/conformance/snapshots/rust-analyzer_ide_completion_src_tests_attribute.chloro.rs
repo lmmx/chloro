@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_edit};
+
 #[test]
 fn derive_helpers() {
     check(

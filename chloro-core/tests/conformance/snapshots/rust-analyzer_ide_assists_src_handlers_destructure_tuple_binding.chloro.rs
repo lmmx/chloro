@@ -16,6 +16,7 @@ use crate::{
     assist_context::{AssistContext, Assists, SourceChangeBuilder},
     utils::ref_field_expr::determine_ref_and_parens,
 };
+
 pub(crate) fn destructure_tuple_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     destructure_tuple_binding_impl(acc, ctx, false)
 }

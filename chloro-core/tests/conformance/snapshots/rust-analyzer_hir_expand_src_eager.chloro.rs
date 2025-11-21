@@ -32,6 +32,7 @@ use crate::{
     db::ExpandDatabase,
     mod_path::ModPath,
 };
+
 pub type EagerCallBackFn<'a> = &'a mut dyn FnMut(
     InFile<(syntax::AstPtr<ast::MacroCall>, span::FileAstId<ast::MacroCall>)>,
     MacroCallId,

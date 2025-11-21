@@ -57,6 +57,7 @@ use crate::{
 };
 
 
+
 pub(super) fn collect_defs(db: &dyn DefDatabase, def_map: DefMap, tree_id: TreeId, crate_local_def_map: Option<&LocalDefMap>) -> (DefMap, LocalDefMap) {
     let krate = &def_map.krate.data(db);
     let cfg_options = def_map.krate.cfg_options(db);

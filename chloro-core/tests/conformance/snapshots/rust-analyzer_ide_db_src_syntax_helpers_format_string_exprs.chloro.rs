@@ -1,5 +1,6 @@
 //! Tools to work with expressions present in format string literals for the `format_args!` family of macros.
 //! Primarily meant for assists and completions.
+
 /// Enum for representing extracted format string args.
 /// Can either be extracted expressions (which includes identifiers),
 /// or placeholders `{}`.

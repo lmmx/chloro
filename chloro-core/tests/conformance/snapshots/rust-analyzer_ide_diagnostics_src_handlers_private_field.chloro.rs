@@ -3,6 +3,7 @@ use ide_db::{RootDatabase, assists::Assist, source_change::SourceChange, text_ed
 use syntax::{AstNode, TextRange, TextSize, ast::HasVisibility};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn private_field(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateField) -> Diagnostic {
     // FIXME: add quickfix
     Diagnostic::new_with_syntax_node_ptr(

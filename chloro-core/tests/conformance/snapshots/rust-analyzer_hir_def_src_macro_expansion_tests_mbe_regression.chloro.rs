@@ -7,6 +7,7 @@
 use expect_test::expect;
 
 use crate::macro_expansion_tests::check;
+
 #[test]
 fn test_vec() {
     check(

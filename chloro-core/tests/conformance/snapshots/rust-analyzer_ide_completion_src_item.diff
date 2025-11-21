@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27207 bytes
+Chloro size:   27208 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     context::{CompletionContext, PathCompletionCtx},
-     render::{RenderContext, render_path_resolution},
- };
--
- /// `CompletionItem` describes a single completion entity which expands to 1 or more entries in the
- /// editor pop-up.
- ///
  pub struct CompletionItem {
      /// Label in the completion pop up which identifies completion.
      pub label: CompletionItemLabel,

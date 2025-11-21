@@ -113,6 +113,7 @@ use syntax::{
 use tt::TextRange;
 
 use crate::{InFile, InlineAsmOperand, db::HirDatabase, semantics::child_by_source::ChildBySource};
+
 #[derive(Default)]
 pub(super) struct SourceToDefCache {
     pub(super) dynmap_cache: FxHashMap<(ChildContainer, HirFileId), DynMap>,

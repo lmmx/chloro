@@ -23,6 +23,7 @@ use syntax::{
 };
 
 use crate::{FilePosition, RangeInfo, SourceChange};
+
 type RenameResult<T> = Result<T, RenameError>;
 
 pub struct RenameConfig {

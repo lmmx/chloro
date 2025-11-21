@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   37575 bytes
+Chloro size:   37576 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -52,6 +52,7 @@ Rustfmt size:  45085 bytes
 +    signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 +};
 +pub use self::hir::type_ref;
++
  #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 -
  #[cfg(feature = "in-rust-tree")]

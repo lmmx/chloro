@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4748 bytes
-Chloro size:   4445 bytes
+Chloro size:   4446 bytes
 Rustfmt size:  4748 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  4748 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: move_bounds_to_where_clause
 -//
 -// Moves inline type bounds to a where clause.

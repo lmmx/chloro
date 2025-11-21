@@ -17,6 +17,7 @@ use crate::{
     },
     render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
 };
+
 pub(crate) fn import_on_the_fly_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>) -> Option<()> {
     if !ctx.config.enable_imports_on_the_fly {
         return None;

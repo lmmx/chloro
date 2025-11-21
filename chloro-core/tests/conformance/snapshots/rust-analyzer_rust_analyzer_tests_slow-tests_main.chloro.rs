@@ -30,6 +30,7 @@ use test_utils::skip_slow_tests;
 use testdir::TestDir;
 
 use crate::support::{Project, project};
+
 #![allow(clippy::disallowed_types)]
 mod cli;
 

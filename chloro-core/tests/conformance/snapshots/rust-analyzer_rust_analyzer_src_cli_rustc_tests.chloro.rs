@@ -21,6 +21,7 @@ use vfs::{AbsPathBuf, FileId};
 use walkdir::WalkDir;
 
 use crate::cli::{Result, flags, report_metric};
+
 struct Tester {
     host: AnalysisHost,
     root_file: FileId,

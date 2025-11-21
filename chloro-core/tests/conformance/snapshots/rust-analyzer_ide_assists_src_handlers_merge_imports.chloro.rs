@@ -17,6 +17,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     utils::next_prev,
 };
+
 pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (target, edits) = if ctx.has_empty_selection() {
         // Merge a neighbor

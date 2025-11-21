@@ -29,6 +29,7 @@ use syntax::{
 };
 
 use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq, UpmapFromRaFixture)]
 pub struct Runnable {
     pub use_name_in_title: bool,

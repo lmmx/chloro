@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 210028 bytes
-Chloro size:   208994 bytes
+Chloro size:   208995 bytes
 Rustfmt size:  210967 bytes
 
 ✗ Outputs DIFFER
@@ -17,8 +17,9 @@ Rustfmt size:  210967 bytes
  
  use crate::{
 -    fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
--};
--
++    HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
+ };
+ 
 -use hir::setup_tracing;
 -
 -const HOVER_BASE_CONFIG: HoverConfig<'_> = HoverConfig {
@@ -39,8 +40,7 @@ Rustfmt size:  210967 bytes
 -    max_subst_ty_len: super::SubstTyLen::Unlimited,
 -    show_drop_glue: true,
 -    minicore: MiniCore::default(),
-+    HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
- };
+-};
  
  fn check_hover_no_result(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
      let (analysis, position) = fixture::position(ra_fixture);

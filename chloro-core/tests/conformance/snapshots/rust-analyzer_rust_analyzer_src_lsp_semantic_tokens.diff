@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11108 bytes
-Chloro size:   8246 bytes
+Chloro size:   8247 bytes
 Rustfmt size:  11838 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     Range, SemanticToken, SemanticTokenModifier, SemanticTokenType, SemanticTokens,
-     SemanticTokensEdit,
- };
--
- macro_rules! define_semantic_token_types {
-     (
-         standard {
          }
      };
  }

@@ -13,6 +13,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+
 pub(crate) fn convert_tuple_struct_to_named_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt_or_variant = ctx
         .find_node_at_offset::<ast::Struct>()

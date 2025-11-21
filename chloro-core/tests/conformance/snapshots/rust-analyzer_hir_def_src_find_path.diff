@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   61578 bytes
+Chloro size:   61579 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,7 @@ Rustfmt size:  62212 bytes
  use base_db::{Crate, CrateOrigin, LangCrateOrigin};
  use hir_expand::{
      Lookup,
-     nameres::DefMap,
-     visibility::{Visibility, VisibilityExplicitness},
- };
--
+ 
  /// Find a path that can be used to refer to a certain item. This can depend on
  /// *from where* you're referring to the item, hence the `from` parameter.
 -pub fn find_path(

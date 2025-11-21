@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10179 bytes
-Chloro size:   9938 bytes
+Chloro size:   9939 bytes
 Rustfmt size:  10254 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,7 @@ Rustfmt size:  10254 bytes
 -    adjusted_display_range, fix, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity,
 +    Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
  };
--
+ 
 -// Diagnostic: remove-unnecessary-else
 -//
 -// This diagnostic is triggered when there is an `else` block for an `if` expression whose

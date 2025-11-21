@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43214 bytes
+Chloro size:   43215 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -28,6 +28,7 @@ Rustfmt size:  44130 bytes
 +use crate::RootDatabase;
 +use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
 +use crate::famous_defs::FamousDefs;
++
  #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
  pub enum Definition {
      Macro(Macro),

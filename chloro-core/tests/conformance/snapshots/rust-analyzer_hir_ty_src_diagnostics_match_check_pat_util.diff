@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1313 bytes
-Chloro size:   1190 bytes
+Chloro size:   1191 bytes
 Rustfmt size:  1430 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Pattern utilities.
- //!
- //! Originates from `rustc_hir::pat_util`
- 
- use std::iter::Enumerate;
--
- pub(crate) struct EnumerateAndAdjust<I> {
-     enumerate: Enumerate<I>,
-     gap_pos: usize,
  
  impl<I> Iterator for EnumerateAndAdjust<I>
  where

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30402 bytes
+Chloro size:   30403 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -43,13 +43,15 @@ Rustfmt size:  31554 bytes
      FilePosition, Semantics,
      doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
  };
+ 
 +#[cfg(test)]
 +mod tests;
 +
 +mod intra_doc_links;
- 
++
  /// Web and local links to an item's documentation.
  #[derive(Default, Debug, Clone, PartialEq, Eq)]
+ pub struct DocumentationLinks {
      pub local_url: Option<String>,
  }
  

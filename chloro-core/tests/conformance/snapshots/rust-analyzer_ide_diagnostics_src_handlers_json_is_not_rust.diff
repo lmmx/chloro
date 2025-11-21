@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11256 bytes
-Chloro size:   11191 bytes
+Chloro size:   11192 bytes
 Rustfmt size:  11337 bytes
 
 ✗ Outputs DIFFER
@@ -31,11 +31,10 @@ Rustfmt size:  11337 bytes
  };
  
 -use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity};
--
 +use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};
+ 
  #[derive(Default)]
  struct State {
-     result: String,
          }
      }
  

@@ -12,6 +12,7 @@ use crate::{
     command::{CargoParser, CommandHandle},
     flycheck::CargoOptions,
 };
+
 #[derive(Debug, Deserialize)]
 #[serde(tag = "event", rename_all = "camelCase")]
 pub(crate) enum TestState {

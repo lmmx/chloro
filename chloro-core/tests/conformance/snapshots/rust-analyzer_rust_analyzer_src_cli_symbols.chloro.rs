@@ -3,6 +3,7 @@
 use ide::{Analysis, FileStructureConfig};
 
 use crate::cli::{flags, read_stdin};
+
 impl flags::Symbols {
     pub fn run(self) -> anyhow::Result<()> {
         let text = read_stdin()?;

@@ -22,6 +22,7 @@ use crate::{
     line_index::PositionEncoding,
     lsp::{ext, semantic_tokens},
 };
+
 pub fn server_capabilities(config: &Config) -> ServerCapabilities {
     ServerCapabilities {
         position_encoding: match config.caps().negotiated_encoding() {

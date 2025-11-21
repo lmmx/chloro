@@ -6,6 +6,7 @@ use lsp_types::{
     Range, SemanticToken, SemanticTokenModifier, SemanticTokenType, SemanticTokens,
     SemanticTokensEdit,
 };
+
 macro_rules! define_semantic_token_types {
     (
         standard {

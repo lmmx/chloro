@@ -4,6 +4,7 @@
 
 use ide_assists::{Assist, AssistId, AssistResolveStrategy, GroupLabel};
 use ide_db::{FileRange, RootDatabase, label::Label, source_change::SourceChange};
+
 pub(crate) fn ssr_assists(db: &RootDatabase, resolve: &AssistResolveStrategy, frange: FileRange) -> Vec<Assist> {
     let mut ssr_assists = Vec::with_capacity(2);
     let (match_finder, comment_range) = match ide_ssr::ssr_from_comment(db, frange) {

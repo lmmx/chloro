@@ -7,6 +7,7 @@ use syntax::{AstNode, TextRange, ast};
 use triomphe::Arc;
 
 use crate::{HirFileId, MacroCallId, attrs::collect_attrs, db::ExpandDatabase};
+
 pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
 
 /// Spanmap for a macro file or a real file

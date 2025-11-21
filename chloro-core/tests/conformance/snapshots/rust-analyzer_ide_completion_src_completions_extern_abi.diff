@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2212 bytes
-Chloro size:   1595 bytes
+Chloro size:   1596 bytes
 Rustfmt size:  2243 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  2243 bytes
 -    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
 +    CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
  };
--
+ 
  // Most of these are feature gated, we should filter/add feature gate completions once we have them.
 -const SUPPORTED_CALLING_CONVENTIONS: &[&str] = &[
 -    "Rust",

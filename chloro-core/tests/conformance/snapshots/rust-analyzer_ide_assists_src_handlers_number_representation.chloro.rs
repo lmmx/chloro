@@ -2,6 +2,7 @@ use syntax::{AstToken, ast, ast::Radix};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
+
 pub(crate) fn reformat_number_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let literal = ctx.find_node_at_offset::<ast::Literal>()?;
     let literal = match literal.kind() {

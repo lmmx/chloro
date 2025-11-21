@@ -15,6 +15,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
 };
+
 fn specializes_query_cycle(_db: &dyn HirDatabase, _specializing_impl_def_id: ImplId, _parent_impl_def_id: ImplId) -> bool {
     false
 }

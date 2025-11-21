@@ -19,6 +19,7 @@ use crate::{
     config::ConfigChange,
     line_index::{LineEndings, LineIndex, PositionEncoding},
 };
+
 impl flags::Scip {
     pub fn run(self) -> anyhow::Result<()> {
         eprintln!("Generating SCIP start...");

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26739 bytes
+Chloro size:   26740 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  27018 bytes
 +    // references::rename::rename_with_semantics,
 +    unresolved_fix,
  };
--
+ 
 -// Diagnostic: incorrect-ident-case
 -//
 -// This diagnostic is triggered if an item name doesn't follow [Rust naming convention](https://doc.rust-lang.org/1.0.0/style/style/naming/README.html).

@@ -9,6 +9,7 @@ use syntax::{
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
 use super::label_of_ty;
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, expr: &ast::Expr) -> Option<()> {
     if !config.chaining_hints {
         return None;

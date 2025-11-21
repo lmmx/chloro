@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43124 bytes
+Chloro size:   43125 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -19,10 +19,9 @@ Rustfmt size:  44616 bytes
  };
  
  use crate::{
-     assist_context::{AssistContext, Assists, SourceChangeBuilder},
      utils::ref_field_expr::determine_ref_and_parens,
  };
--
+ 
 -// Assist: destructure_tuple_binding
 -//
 -// Destructures a tuple binding in place.

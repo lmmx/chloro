@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, Assists};
+
 pub(crate) fn sugar_impl_future_into_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type: ast::RetType = ctx.find_node_at_offset()?;
     let function = ret_type.syntax().parent().and_then(ast::Fn::cast)?;

@@ -43,6 +43,7 @@ use super::{
     ImplTraitLoweringMode, TyLoweringContext, associated_type_by_name_including_super_traits,
     const_param_ty_query, ty_query,
 };
+
 type CallbackData<'a, 'db> = Either<
     PathDiagnosticCallbackData,
     crate::infer::diagnostics::PathDiagnosticCallbackData<'a, 'db>,

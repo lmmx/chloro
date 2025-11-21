@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4260 bytes
-Chloro size:   4258 bytes
+Chloro size:   4259 bytes
 Rustfmt size:  4260 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use super::check_types_source_code;
--
- #[test]
- fn qualify_path_to_submodule() {
-     check_types_source_code(
  } //^^^ Foo
  "#,
      );

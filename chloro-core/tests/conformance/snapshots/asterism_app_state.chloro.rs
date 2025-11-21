@@ -16,6 +16,7 @@ use crate::formats::markdown::MarkdownFormat;
 use crate::input;
 use crate::section::ChunkType;
 use crate::section::{Section, TreeNode};
+
 /// Determines navigation scope and quit behavior based on project size.
 #[derive(PartialEq)]
 pub enum FileMode {

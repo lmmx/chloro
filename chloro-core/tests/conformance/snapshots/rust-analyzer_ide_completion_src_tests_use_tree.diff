@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7025 bytes
-Chloro size:   7020 bytes
+Chloro size:   7021 bytes
 Rustfmt size:  7025 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,6 @@ Rustfmt size:  7025 bytes
  use expect_test::expect;
  
  use crate::tests::check;
--
- #[test]
- fn use_tree_completion() {
-     check(
              kw self
          "#]],
      );

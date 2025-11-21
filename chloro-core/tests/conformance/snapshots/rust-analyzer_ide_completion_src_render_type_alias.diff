@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1934 bytes
-Chloro size:   1892 bytes
+Chloro size:   1893 bytes
 Rustfmt size:  1934 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use syntax::{SmolStr, ToSmolStr};
  
  use crate::{item::CompletionItem, render::RenderContext};
--
+ 
 -pub(crate) fn render_type_alias(
 -    ctx: RenderContext<'_>,
 -    type_alias: hir::TypeAlias,

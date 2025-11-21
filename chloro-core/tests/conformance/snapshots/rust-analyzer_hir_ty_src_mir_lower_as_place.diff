@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15480 bytes
-Chloro size:   15150 bytes
+Chloro size:   15151 bytes
 Rustfmt size:  15480 bytes
 
 ✗ Outputs DIFFER
@@ -19,11 +19,10 @@ Rustfmt size:  15480 bytes
      mir::{MutBorrowKind, Operand, OperandKind},
      next_solver::Region,
  };
--
 +use super::*;
+ 
  macro_rules! not_supported {
      ($it: expr) => {
-         return Err(MirLowerError::NotSupported(format!($it)))
  }
  
  impl<'db> MirLowerCtx<'_, 'db> {

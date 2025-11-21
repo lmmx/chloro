@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101181 bytes
-Chloro size:   99693 bytes
+Chloro size:   99694 bytes
 Rustfmt size:  101181 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,6 @@ Rustfmt size:  101181 bytes
  use base64::{Engine, prelude::BASE64_STANDARD};
  use ide::{
      AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,
-     test_runner::{CargoTestHandle, TestTarget},
-     try_default,
- };
--
  pub(crate) fn handle_workspace_reload(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
      state.proc_macro_clients = Arc::from_iter([]);
      state.build_deps_changed = false;

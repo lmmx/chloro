@@ -16,6 +16,7 @@ use crate::{
     InlineAsmOperand, Label, LifetimeParam, LocalSource, Macro, Module, Param, SelfParam, Static,
     Struct, Trait, TypeAlias, TypeOrConstParam, Union, Variant, VariantDef, db::HirDatabase,
 };
+
 type Ast;
 /// Fetches the definition's source node.
 /// Using [`crate::Semantics::source`] is preferred when working with [`crate::Semantics`],

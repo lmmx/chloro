@@ -21,6 +21,7 @@ use crate::{
     lower::lower_mutability,
     next_solver::TyKind,
 };
+
 impl<'db> InferenceContext<'_, 'db> {
     pub(crate) fn infer_mut_body(&mut self) {
         self.infer_mut_expr(self.body.body_expr, Mutability::Not);

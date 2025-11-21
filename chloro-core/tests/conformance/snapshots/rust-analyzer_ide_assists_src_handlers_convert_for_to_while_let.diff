@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10170 bytes
-Chloro size:   9726 bytes
+Chloro size:   9727 bytes
 Rustfmt size:  10229 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,7 @@ Rustfmt size:  10229 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: convert_for_loop_to_while_let
 -//
 -// Converts a for loop into a while let on the Iterator.

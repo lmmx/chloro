@@ -21,6 +21,7 @@ use crate::next_solver::{
     Binder, Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, GenericArg,
     ParamEnvAnd, Placeholder, Region, Ty, TyKind,
 };
+
 /// When we canonicalize a value to form a query, we wind up replacing
 /// various parts of it with canonical variables. This struct stores
 /// those replaced bits to remember for when we process the query

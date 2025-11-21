@@ -15,6 +15,7 @@ use crate::{
     hygiene::{Transparency, apply_mark},
     tt,
 };
+
 /// Old-style `macro_rules` or the new macros 2.0
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeclarativeMacroExpander {

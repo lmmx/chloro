@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow comments which are alone on their line

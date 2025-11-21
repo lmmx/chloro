@@ -2,6 +2,7 @@ use ide_db::{
     FileId, FxIndexSet, RootDatabase,
     base_db::{CrateOrigin, RootQueryDb},
 };
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CrateInfo {
     pub name: Option<String>,

@@ -7,6 +7,7 @@ use std::{
 };
 
 use ide_db::SymbolKind;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Highlight {
     pub tag: HlTag,

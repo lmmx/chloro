@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7452 bytes
+Chloro size:   7453 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,8 @@ Rustfmt size:  7718 bytes
      registry::LookupSpan,
 -    Layer, Registry,
  };
--
+ 
  pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {
-     let subscriber = Registry::default().with(SpanTree::new(spec));
-     tracing::subscriber::set_default(subscriber)
  
  impl<S> SpanTree<S>
  where

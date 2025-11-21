@@ -41,6 +41,7 @@ use crate::{
     type_ref::LifetimeRef,
     visibility::{RawVisibility, Visibility},
 };
+
 #[derive(Debug, Clone)]
 pub struct Resolver<'db> {
     /// The stack of scopes, where the inner-most scope is the last item.

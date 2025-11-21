@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   70203 bytes
+Chloro size:   70204 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  72179 bytes
  use std::iter::{self, once};
  
  use either::Either;
-     db::HirDatabase,
-     semantics::{PathResolution, PathResolutionPerNs},
- };
--
- /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of
- /// original source files. It should not be used inside the HIR itself.
- #[derive(Debug)]
          source_map: Arc<BodySourceMap>,
          infer: Option<Arc<InferenceResult<'db>>>,
      },

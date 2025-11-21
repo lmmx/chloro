@@ -13,6 +13,7 @@ use crate::{
     lsp::to_proto::url_from_abs_path, lsp_ext,
 };
 use super::{DiagnosticsMapConfig, Fix};
+
 /// Determines the LSP severity from a diagnostic
 fn diagnostic_severity(config: &DiagnosticsMapConfig, level: crate::flycheck::DiagnosticLevel, code: Option<&crate::flycheck::DiagnosticCode>) -> Option<lsp_types::DiagnosticSeverity> {
     let res = match level {

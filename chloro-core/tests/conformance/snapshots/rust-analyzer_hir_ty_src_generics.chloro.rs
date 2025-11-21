@@ -22,6 +22,7 @@ use hir_def::{
 };
 use itertools::chain;
 use triomphe::Arc;
+
 pub fn generics(db: &dyn DefDatabase, def: GenericDefId) -> Generics {
     let parent_generics = parent_generic_def(db, def).map(|def| Box::new(generics(db, def)));
     let (params, store) = db.generic_params_and_store(def);

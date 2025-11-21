@@ -10,6 +10,7 @@ use crate::{
     AssistContext, AssistId, Assists, GroupLabel,
     utils::{convert_reference_type, find_struct_impl, generate_impl},
 };
+
 pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // This if condition denotes two modes this assist can work in:
     // - First is acting upon selection of record fields

@@ -13,6 +13,7 @@ use crate::{
     AssocItemId, HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId,
     VariantId, db::DefDatabase, nameres::DefMap, resolver::HasResolver, src::HasSource,
 };
+
 /// Visibility of an item, with the path resolved.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Visibility {

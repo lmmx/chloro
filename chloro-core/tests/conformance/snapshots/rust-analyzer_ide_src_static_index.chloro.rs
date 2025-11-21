@@ -21,6 +21,7 @@ use crate::{
     moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
     parent_module::crates_for,
 };
+
 /// A static representation of fully analyzed source code.
 ///
 /// The intended use-case is powering read-only code browsers and emitting LSIF/SCIP.

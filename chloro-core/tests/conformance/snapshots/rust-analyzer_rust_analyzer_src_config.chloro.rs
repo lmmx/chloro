@@ -46,6 +46,7 @@ use crate::{
     lsp::capabilities::ClientCapabilities,
     lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
 };
+
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
 
 mod patch_old_style;

@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20081 bytes
-Chloro size:   19416 bytes
+Chloro size:   19417 bytes
 Rustfmt size:  20081 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: convert_tuple_return_type_to_struct
 -//
 -// This converts the return type of a function from a tuple type

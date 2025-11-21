@@ -41,6 +41,7 @@ use crate::{
     main_loop::{DiscoverProjectParam, Task},
     op_queue::Cause,
 };
+
 #[derive(Debug)]
 pub(crate) enum ProjectWorkspaceProgress {
     Begin,

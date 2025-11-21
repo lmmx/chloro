@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticsContext, adjusted_display_range};
+
 pub(crate) fn await_outside_of_async(ctx: &DiagnosticsContext<'_>, d: &hir::AwaitOutsideOfAsync) -> Diagnostic {
     let display_range =
         adjusted_display_range(ctx, d.node, &|node| Some(node.await_token()?.text_range()));

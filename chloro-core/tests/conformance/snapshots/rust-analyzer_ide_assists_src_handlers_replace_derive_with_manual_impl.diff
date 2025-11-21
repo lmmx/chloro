@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30915 bytes
-Chloro size:   30251 bytes
+Chloro size:   30252 bytes
 Rustfmt size:  30915 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-         gen_trait_fn_body, generate_trait_impl,
      },
  };
--
+ 
 -// Assist: replace_derive_with_manual_impl
 -//
 -// Converts a `derive` impl into a manual one.

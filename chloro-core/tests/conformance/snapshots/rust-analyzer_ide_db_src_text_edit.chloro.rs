@@ -11,6 +11,7 @@ use macros::UpmapFromRaFixture;
 pub use span::{TextRange, TextSize};
 
 use crate::source_change::ChangeAnnotationId;
+
 /// `InsertDelete` -- a single "atomic" change to text
 ///
 /// Must not overlap with other `InDel`s

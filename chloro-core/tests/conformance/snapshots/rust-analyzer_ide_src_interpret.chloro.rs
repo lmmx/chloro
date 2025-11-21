@@ -4,6 +4,7 @@ use hir::{ConstEvalError, DefWithBody, DisplayTarget, Semantics};
 use ide_db::{FilePosition, LineIndexDatabase, RootDatabase, base_db::SourceDatabase};
 use stdx::format_to;
 use syntax::{AstNode, TextRange, algo::ancestors_at_offset, ast};
+
 pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
     match find_and_interpret(db, position) {
         Some((duration, mut result)) => {

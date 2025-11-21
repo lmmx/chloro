@@ -15,6 +15,7 @@ use crate::{
     expr_store::path::Path,
     nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map},
 };
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LangItemTarget {
     EnumId(EnumId),

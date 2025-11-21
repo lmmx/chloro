@@ -10,6 +10,7 @@ use crate::{
     FileId, RootDatabase,
     syntax_highlighting::{HighlightConfig, highlight},
 };
+
 pub(crate) fn highlight_as_html_with_config(db: &RootDatabase, config: &HighlightConfig<'_>, file_id: FileId, rainbow: bool) -> String {
     let sema = Semantics::new(db);
     let file_id = sema

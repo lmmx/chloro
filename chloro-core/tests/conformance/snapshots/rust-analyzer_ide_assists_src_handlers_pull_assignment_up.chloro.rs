@@ -10,6 +10,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assign_expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
     let op_kind = assign_expr.op_kind()?;

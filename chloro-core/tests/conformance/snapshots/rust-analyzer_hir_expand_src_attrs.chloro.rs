@@ -22,6 +22,7 @@ use crate::{
     span_map::SpanMapRef,
     tt::{self, TopSubtree, token_to_literal},
 };
+
 /// Syntactical attributes, without filtering of `cfg_attr`s.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct RawAttrs {

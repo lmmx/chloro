@@ -12,6 +12,7 @@ use crate::{
     HlRange, HlTag,
     syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
 };
+
 pub(super) fn highlight_format_string(stack: &mut Highlights, sema: &hir::Semantics<'_, ide_db::RootDatabase>, krate: Option<hir::Crate>, string: &ast::String, expanded_string: &ast::String, edition: Edition) {
     if is_format_string(expanded_string) {
         let start = string.syntax().text_range().start();

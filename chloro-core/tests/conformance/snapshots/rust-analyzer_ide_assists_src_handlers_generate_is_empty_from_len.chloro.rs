@@ -8,6 +8,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn generate_is_empty_from_len(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;

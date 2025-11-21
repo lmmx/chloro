@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7323 bytes
-Chloro size:   7297 bytes
+Chloro size:   7298 bytes
 Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! See [`FamousDefs`].
- 
- use base_db::{CrateOrigin, LangCrateOrigin};
- use hir::{Crate, Enum, Function, Macro, Module, ScopeDef, Semantics, Trait};
- 
- use crate::RootDatabase;
--
- /// Helps with finding well-know things inside the standard library. This is
- /// somewhat similar to the known paths infra inside hir, but it different; We
- /// want to make sure that IDE specific paths don't become interesting inside
  /// ```
  pub struct FamousDefs<'a, 'b>(pub &'a Semantics<'b, RootDatabase>, pub Crate);
  

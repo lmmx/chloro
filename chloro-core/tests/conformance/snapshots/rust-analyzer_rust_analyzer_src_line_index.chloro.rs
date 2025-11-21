@@ -8,6 +8,7 @@
 use ide_db::line_index::WideEncoding;
 use memchr::memmem;
 use triomphe::Arc;
+
 #[derive(Clone, Copy)]
 pub enum PositionEncoding {
     Utf8,

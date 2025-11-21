@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4226 bytes
+Chloro size:   4227 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     defs::{Definition, IdentClass},
-     generated,
- };
--
- pub fn item_name(db: &RootDatabase, item: ItemInNs) -> Option<Name> {
-     match item {
-         ItemInNs::Types(module_def_id) => module_def_id.name(db),
  }
  
  /// Picks the token with the highest rank returned by the passed in function.

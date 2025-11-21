@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   50177 bytes
+Chloro size:   50178 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,8 @@ Rustfmt size:  51735 bytes
 +use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
  
 -use crate::{utils, AssistContext, AssistId, Assists};
--
++use crate::{AssistContext, AssistId, Assists, utils};
+ 
 -// Assist: add_missing_match_arms
 -//
 -// Adds missing clauses to a `match` expression.
@@ -52,7 +53,6 @@ Rustfmt size:  51735 bytes
 -//     }
 -// }
 -// ```
-+use crate::{AssistContext, AssistId, Assists, utils};
  pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
      let match_arm_list = match_expr.match_arm_list()?;

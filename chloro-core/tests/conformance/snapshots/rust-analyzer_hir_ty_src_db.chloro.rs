@@ -24,6 +24,7 @@ use crate::{
     mir::{BorrowckResult, MirBody, MirLowerError},
     next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
 };
+
 #[query_group::query_group]
 #[salsa::invoke(crate::infer::infer_query)]
 #[salsa::cycle(cycle_result = crate::infer::infer_cycle_result)]

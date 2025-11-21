@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   10996 bytes
+Chloro size:   10997 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,7 @@ Rustfmt size:  11215 bytes
 +    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix,
 +    handlers::private_field::field_is_private_fixes,
  };
--
+ 
 -// Diagnostic: no-such-field
 -//
 -// This diagnostic is triggered if created structure does not have field provided in record.

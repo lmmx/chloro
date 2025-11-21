@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   21785 bytes
+Chloro size:   21786 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -42,6 +42,7 @@ Rustfmt size:  23685 bytes
 -
  pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 +use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
++
 +mod lower;
 +
 +mod pretty;

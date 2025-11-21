@@ -10,6 +10,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_for_loop_to_while_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let for_loop = ctx.find_node_at_offset::<ast::ForExpr>()?;
     let iterable = for_loop.iterable()?;

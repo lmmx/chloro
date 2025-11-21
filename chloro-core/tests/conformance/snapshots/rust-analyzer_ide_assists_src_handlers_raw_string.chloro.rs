@@ -8,6 +8,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{required_hashes, string_prefix, string_suffix},
 };
+
 pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if token.is_raw() {

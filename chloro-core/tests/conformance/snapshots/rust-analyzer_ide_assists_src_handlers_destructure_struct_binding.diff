@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23187 bytes
-Chloro size:   22582 bytes
+Chloro size:   22583 bytes
 Rustfmt size:  23470 bytes
 
 ✗ Outputs DIFFER
@@ -29,7 +29,7 @@ Rustfmt size:  23470 bytes
      assist_context::{AssistContext, Assists, SourceChangeBuilder},
      utils::ref_field_expr::determine_ref_and_parens,
  };
--
+ 
 -// Assist: destructure_struct_binding
 -//
 -// Destructures a struct binding in place.

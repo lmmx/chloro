@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   44921 bytes
+Chloro size:   44922 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
@@ -55,7 +55,7 @@ Rustfmt size:  47157 bytes
 -    ted::{self, Position},
 -    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
 -};
--
+ 
 -// Assist: generate_delegate_trait
 -//
 -// Generate delegate trait implementation for `StructField`s.

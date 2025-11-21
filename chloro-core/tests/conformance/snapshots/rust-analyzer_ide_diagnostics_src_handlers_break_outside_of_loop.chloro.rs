@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn break_outside_of_loop(ctx: &DiagnosticsContext<'_>, d: &hir::BreakOutsideOfLoop) -> Diagnostic {
     let message = if d.bad_value_break {
         "can't break with a value in this position".to_owned()

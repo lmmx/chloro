@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45100 bytes
+Chloro size:   45101 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  45518 bytes
  use crate::{item_tree::FieldsShape, signatures::FieldData};
 -
  use super::*;
--
+ 
 +#![allow(dead_code)]
  macro_rules! w {
      ($dst:expr, $($arg:tt)*) => {

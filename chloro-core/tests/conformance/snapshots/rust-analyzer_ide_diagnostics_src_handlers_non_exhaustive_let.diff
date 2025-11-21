@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3698 bytes
-Chloro size:   3528 bytes
+Chloro size:   3529 bytes
 Rustfmt size:  3698 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: non-exhaustive-let
 -//
 -// This diagnostic is triggered if a `let` statement without an `else` branch has a non-exhaustive

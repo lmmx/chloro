@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6298 bytes
-Chloro size:   6237 bytes
+Chloro size:   6238 bytes
 Rustfmt size:  6451 bytes
 
 ✗ Outputs DIFFER
@@ -30,7 +30,7 @@ Rustfmt size:  6451 bytes
 +    layout::{Layout, LayoutCx, LayoutError, field_ty},
 +    next_solver::GenericArgs,
  };
--
+ 
 -pub fn layout_of_adt_query<'db>(
 -    db: &'db dyn HirDatabase,
 -    def: AdtId,

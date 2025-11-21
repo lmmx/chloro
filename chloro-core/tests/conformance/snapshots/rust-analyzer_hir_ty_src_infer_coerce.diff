@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   68110 bytes
+Chloro size:   68111 bytes
 Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     },
-     utils::TargetFeatureIsSafeInTarget,
- };
--
- struct Coerce<'a, 'b, 'db> {
-     table: &'a mut InferenceTable<'db>,
-     has_errors: &'a mut bool,
  }
  
  /// This always returns `Ok(...)`.

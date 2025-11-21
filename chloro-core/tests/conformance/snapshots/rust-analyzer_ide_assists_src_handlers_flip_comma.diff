@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5629 bytes
-Chloro size:   5421 bytes
+Chloro size:   5422 bytes
 Rustfmt size:  5831 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  5831 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: flip_comma
 -//
 -// Flips two comma-separated items.

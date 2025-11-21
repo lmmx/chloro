@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13646 bytes
-Chloro size:   13244 bytes
+Chloro size:   13245 bytes
 Rustfmt size:  13995 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  13995 bytes
      type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 -    AdtId, ConstParamId, GenericDefId, LifetimeParamId, TypeOrConstParamId, TypeParamId,
  };
--
+ 
  pub type LocalTypeOrConstParamId = Idx<TypeOrConstParamData>;
 +
  pub type LocalLifetimeParamId = Idx<LifetimeParamData>;

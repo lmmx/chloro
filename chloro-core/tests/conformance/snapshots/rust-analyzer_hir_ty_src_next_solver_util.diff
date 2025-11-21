@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   27963 bytes
+Chloro size:   27964 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  28638 bytes
  use super::{
      Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
      GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
-     TyKind,
-     fold::{BoundVarReplacer, FnMutDelegate},
- };
--
- #[derive(Clone, Debug)]
- pub struct Discr<'db> {
-     /// Bit representation of the discriminant (e.g., `-128i8` is `0xFF_u128`).
      pub fn wrap_incr(self, interner: DbInterner<'db>) -> Self {
          self.checked_add(interner, 1).0
      }

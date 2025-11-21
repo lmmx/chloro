@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3260 bytes
-Chloro size:   2945 bytes
+Chloro size:   2946 bytes
 Rustfmt size:  3367 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,7 @@ Rustfmt size:  3367 bytes
  use itertools::Itertools;
  use span::FileId;
  use stdx::format_to;
--
+ 
 -// Feature: Status
 -//
 -// Shows internal statistic about memory usage of rust-analyzer.

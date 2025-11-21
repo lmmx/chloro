@@ -10,6 +10,7 @@ use syntax::{
 };
 
 
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum FoldKind {
     Comment,

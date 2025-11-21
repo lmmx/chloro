@@ -14,6 +14,7 @@ use rust_analyzer::{
 };
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use vfs::AbsPathBuf;
+
 #![allow(clippy::print_stdout, clippy::print_stderr)]
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 #[cfg(feature = "in-rust-tree")]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10117 bytes
+Chloro size:   10118 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -21,11 +21,13 @@ Rustfmt size:  10586 bytes
  };
 -
  use super::mir::{interpret_mir, lower_to_mir, pad16};
+ 
 +#[cfg(test)]
 +mod tests;
- 
++
  pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
      Const::new(DbInterner::conjure(), rustc_type_ir::ConstKind::Error(ErrorGuaranteed))
+ }
  }
  
  impl ConstEvalError<'_> {

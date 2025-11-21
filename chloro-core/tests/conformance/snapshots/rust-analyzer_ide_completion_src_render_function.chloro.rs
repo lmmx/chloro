@@ -19,6 +19,7 @@ use crate::{
         RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
     },
 };
+
 #[derive(Debug)]
 enum FuncKind<'ctx> {
     Function(&'ctx PathCompletionCtx<'ctx>),

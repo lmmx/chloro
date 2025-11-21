@@ -1,6 +1,7 @@
 //! Code for representing rust-analyzer's release version number.
 
 use std::fmt;
+
 /// Information about the git repository where rust-analyzer was built from.
 pub struct CommitInfo {
     pub short_commit_hash: &'static str,

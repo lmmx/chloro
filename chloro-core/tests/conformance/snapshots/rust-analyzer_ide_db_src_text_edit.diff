@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9629 bytes
-Chloro size:   9618 bytes
+Chloro size:   9619 bytes
 Rustfmt size:  9801 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,7 @@ Rustfmt size:  9801 bytes
 -use std::cmp::max;
  
  use crate::source_change::ChangeAnnotationId;
--
- /// `InsertDelete` -- a single "atomic" change to text
- ///
- /// Must not overlap with other `InDel`s
+ 
      pub fn insert(offset: TextSize, text: String) -> Indel {
          Indel::replace(TextRange::empty(offset), text)
      }

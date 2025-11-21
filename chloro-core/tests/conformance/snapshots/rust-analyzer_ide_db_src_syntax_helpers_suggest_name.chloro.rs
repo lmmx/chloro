@@ -13,6 +13,7 @@ use syntax::{
 };
 
 use crate::RootDatabase;
+
 /// Trait names, that will be ignored when in `impl Trait` and `dyn Trait`
 
 /// Identifier names that won't be suggested, ever

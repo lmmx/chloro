@@ -10,6 +10,7 @@ pub use crate::diagnostics::{
         unsafe_operations_for_body,
     },
 };
+
 mod decl_check;
 
 mod expr;

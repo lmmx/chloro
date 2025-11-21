@@ -18,6 +18,7 @@ use crate::{
     doc_links::{doc_attributes, extract_definitions_from_docs, resolve_doc_path_for_def},
     syntax_highlighting::{HighlightConfig, highlights::Highlights},
 };
+
 pub(super) fn ra_fixture(hl: &mut Highlights, sema: &Semantics<'_, RootDatabase>, config: &HighlightConfig<'_>, literal: &ast::String, expanded: &ast::String) -> Option<()> {
     let (analysis, fixture_analysis) = Analysis::from_ra_fixture_with_on_cursor(
         sema,

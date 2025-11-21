@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57300 bytes
+Chloro size:   57301 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     defs::{Definition, NameClass, NameRefClass},
-     traits::{as_trait_assoc_def, convert_to_def_in_trait},
- };
--
- #[derive(Debug, Default, Clone)]
- pub struct UsageSearchResult {
-     pub references: FxHashMap<EditionedFileId, Vec<FileReference>>,
  
  impl IntoIterator for UsageSearchResult {
      type Item = (EditionedFileId, Vec<FileReference>);

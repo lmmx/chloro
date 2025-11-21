@@ -19,6 +19,7 @@ use super::{
     AggregateKind, BasicBlockId, BorrowKind, LocalId, MirBody, MutBorrowKind, Operand, OperandKind,
     Place, Rvalue, UnOp,
 };
+
 macro_rules! w {
     ($dst:expr, $($arg:tt)*) => {
         { let _ = write!($dst, $($arg)*); }

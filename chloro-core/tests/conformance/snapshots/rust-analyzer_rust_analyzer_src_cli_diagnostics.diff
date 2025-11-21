@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5110 bytes
-Chloro size:   5099 bytes
+Chloro size:   5100 bytes
 Rustfmt size:  5354 bytes
 
 ✗ Outputs DIFFER
@@ -24,7 +24,7 @@ Rustfmt size:  5354 bytes
 -use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 -
  use crate::cli::{flags, progress_report::ProgressReport};
--
+ 
  impl flags::Diagnostics {
      pub fn run(self) -> anyhow::Result<()> {
          const STACK_SIZE: usize = 1024 * 1024 * 8;

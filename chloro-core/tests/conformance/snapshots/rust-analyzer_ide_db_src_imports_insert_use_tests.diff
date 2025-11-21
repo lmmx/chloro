@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29142 bytes
+Chloro size:   29143 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,7 @@ Rustfmt size:  29734 bytes
 +use test_utils::{CURSOR_MARKER, assert_eq_text};
  
  use super::*;
--
- #[test]
- fn trailing_comment_in_empty_file() {
-     check(
+ 
  #[test]
  fn insert_empty_file() {
      cov_mark::check_count!(insert_empty_file, 2);

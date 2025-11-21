@@ -17,6 +17,7 @@ use crate::{
     },
     hir::{ExprId, Literal},
 };
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Mutability {
     Shared,

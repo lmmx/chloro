@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31153 bytes
+Chloro size:   31154 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -34,10 +34,8 @@ Rustfmt size:  32318 bytes
      FxIndexSet, RootDatabase,
 +    items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT},
  };
--
+ 
  #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
- pub struct ImportPathConfig {
-     /// If true, prefer to unconditionally use imports of the `core` and `alloc` crate
  }
  
  impl<'db> ImportAssets<'db> {

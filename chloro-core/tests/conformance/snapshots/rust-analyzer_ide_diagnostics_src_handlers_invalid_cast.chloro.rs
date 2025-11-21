@@ -1,6 +1,7 @@
 use hir::{CastError, ClosureStyle, HirDisplay};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 macro_rules! format_ty {
     ($ctx:expr, $fmt:literal, $($arg:expr),* $(,)?) => {{
         std::format!(

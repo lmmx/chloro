@@ -23,6 +23,7 @@ use syntax::{
 };
 
 use crate::{FileId, navigation_target::TryToNav};
+
 mod adjustment;
 
 mod bind_pat;

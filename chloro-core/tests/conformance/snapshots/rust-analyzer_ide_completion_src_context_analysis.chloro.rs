@@ -30,6 +30,7 @@ use crate::{
         TypeAscriptionTarget, TypeLocation,
     },
 };
+
 #[derive(Debug)]
 struct ExpansionResult {
     original_file: SyntaxNode,

@@ -56,6 +56,7 @@ use super::{
     Operand, OperandKind, Place, PlaceElem, ProjectionElem, ProjectionStore, Rvalue, StatementKind,
     TerminatorKind, UnOp, return_slot,
 };
+
 mod shim;
 
 #[cfg(test)]

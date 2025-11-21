@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9744 bytes
-Chloro size:   9548 bytes
+Chloro size:   9549 bytes
 Rustfmt size:  10260 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,8 @@ Rustfmt size:  10260 bytes
  };
  
 -use crate::{utils::vis_offset, AssistContext, AssistId, Assists};
--
++use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
+ 
 -// Assist: change_visibility
 -//
 -// Adds or changes existing visibility specifier.
@@ -32,7 +33,6 @@ Rustfmt size:  10260 bytes
 -// ```
 -// pub(crate) fn frobnicate() {}
 -// ```
-+use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
  pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {
          return change_vis(acc, vis);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6444 bytes
-Chloro size:   6378 bytes
+Chloro size:   6379 bytes
 Rustfmt size:  6615 bytes
 
 ✗ Outputs DIFFER
@@ -20,11 +20,12 @@ Rustfmt size:  6615 bytes
  use rustc_type_ir::inherent::IntoKind;
 -use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
 +use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
- 
++
 +use crate::next_solver::{
 +    Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
 +    PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind, infer::InferCtxt,
 +};
+ 
  pub mod canonicalizer;
 +
  pub mod instantiate;

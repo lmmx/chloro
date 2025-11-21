@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   20382 bytes
+Chloro size:   20383 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
@@ -31,10 +31,8 @@ Rustfmt size:  21200 bytes
 +    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
 +    generics::Generics,
  };
--
+ 
  #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]
- pub enum GenericArg<'db> {
-     Ty(Ty<'db>),
  }
  
  impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {

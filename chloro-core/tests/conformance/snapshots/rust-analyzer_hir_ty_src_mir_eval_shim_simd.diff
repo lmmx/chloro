@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7864 bytes
-Chloro size:   7799 bytes
+Chloro size:   7800 bytes
 Rustfmt size:  7864 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,8 @@ Rustfmt size:  7864 bytes
  use crate::consteval::try_const_usize;
 -
  use super::*;
--
+ 
  macro_rules! from_bytes {
-     ($ty:tt, $value:expr) => {
-         ($ty::from_le_bytes(match ($value).try_into() {
          }
      }
  

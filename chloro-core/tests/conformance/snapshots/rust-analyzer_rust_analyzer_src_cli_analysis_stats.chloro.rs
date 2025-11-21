@@ -46,6 +46,7 @@ use crate::cli::{
     progress_report::ProgressReport,
     report_metric,
 };
+
 impl flags::AnalysisStats {
     pub fn run(self, verbosity: Verbosity) -> anyhow::Result<()> {
         let mut rng = {

@@ -6,6 +6,7 @@ use hir_expand::{EditionedFileId, name::Name};
 
 use crate::{HirFileId, db::DefDatabase};
 
+
 #[derive(Clone, Debug)]
 pub(super) struct ModDir {
     /// `` for `mod.rs`, `lib.rs`

@@ -22,6 +22,7 @@ use crate::{
     },
     type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
 };
+
 pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(
     &'ec mut ExprCollector<'db>,
     TypePtr,

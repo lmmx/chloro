@@ -25,6 +25,7 @@ use crate::{
     },
 };
 use super::{FieldPat, Pat, PatKind};
+
 pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
 
 pub(crate) type MatchArm<'a, 'b, 'db> = rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;

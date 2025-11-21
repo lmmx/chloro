@@ -67,6 +67,7 @@ use ide_db::{EditionedFileId, RootDatabase};
 use syntax::{Edition, TextRange};
 
 pub(crate) use crate::assist_context::{AssistContext, Assists};
+
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 mod assist_config;
 

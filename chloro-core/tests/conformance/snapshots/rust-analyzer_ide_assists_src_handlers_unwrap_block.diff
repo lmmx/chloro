@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15704 bytes
+Chloro size:   15705 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,7 @@ Rustfmt size:  16309 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: unwrap_block
 -//
 -// This assist removes if...else, for, while and loop control statements to just keep the body.

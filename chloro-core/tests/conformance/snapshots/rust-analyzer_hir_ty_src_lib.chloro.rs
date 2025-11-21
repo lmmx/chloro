@@ -47,6 +47,7 @@ use crate::{
         Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
     },
 };
+
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 mod infer;
 

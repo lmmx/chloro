@@ -1,6 +1,7 @@
 use test_fixture::WithFixture;
 
 use crate::{db::HirDatabase, setup_tracing, test_db::TestDB};
+
 fn lower_mir(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     let _tracing = setup_tracing();
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);

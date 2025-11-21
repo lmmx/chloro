@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5432 bytes
+Chloro size:   5433 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -17,11 +17,10 @@ Rustfmt size:  5891 bytes
      FxIndexMap, OpaqueTypeKey, Ty,
 +    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
  };
--
 +use super::OpaqueHiddenType;
+ 
  #[derive(Default, Debug, Clone)]
  pub(crate) struct OpaqueTypeStorage<'db> {
-     opaque_types: FxIndexMap<OpaqueTypeKey<'db>, OpaqueHiddenType<'db>>,
      }
  
      pub(crate) fn is_empty(&self) -> bool {

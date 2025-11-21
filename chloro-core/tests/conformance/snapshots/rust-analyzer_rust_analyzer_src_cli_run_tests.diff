@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3378 bytes
-Chloro size:   3373 bytes
+Chloro size:   3374 bytes
 Rustfmt size:  3378 bytes
 
 ✗ Outputs DIFFER
@@ -22,11 +22,10 @@ Rustfmt size:  3378 bytes
 -use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 -
 -use crate::cli::{flags, full_name_of_item, Result};
--
 +use crate::cli::{Result, flags, full_name_of_item};
+ 
  impl flags::RunTests {
      pub fn run(self) -> Result<()> {
-         let cargo_config = CargoConfig {
          };
          let (ref db, _vfs, _proc_macro) =
              load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;

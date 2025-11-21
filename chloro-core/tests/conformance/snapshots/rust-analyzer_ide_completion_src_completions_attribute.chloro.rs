@@ -23,6 +23,7 @@ use crate::{
     item::CompletionItem,
 };
 pub(crate) use self::derive::complete_derive_path;
+
 mod cfg;
 
 mod derive;

@@ -4,6 +4,7 @@ use crate::{
     CompletionContext, Completions,
     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
 };
+
 pub(crate) mod trait_impl;
 
 pub(crate) fn complete_item_list_in_expr(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, expr_ctx: &PathExprCtx<'_>) {

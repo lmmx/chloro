@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3759 bytes
-Chloro size:   3758 bytes
+Chloro size:   3759 bytes
 Rustfmt size:  3774 bytes
 
 ✗ Outputs DIFFER
@@ -28,8 +28,6 @@ Rustfmt size:  3774 bytes
      },
      nameres::crate_def_map,
      test_db::TestDB,
- };
--
  fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
      let (db, file_id) = TestDB::with_single_file("");
      let krate = db.fetch_test_crate();

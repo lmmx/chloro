@@ -9,6 +9,7 @@ use ide_db::{
 use syntax::{AstNode, Edition, TextRange, ToSmolStr};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn unused_variables(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedVariable) -> Option<Diagnostic> {
     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
     if ast.file_id.macro_file().is_some() {

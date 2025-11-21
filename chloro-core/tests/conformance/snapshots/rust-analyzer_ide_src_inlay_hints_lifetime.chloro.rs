@@ -17,6 +17,7 @@ use crate::{
     InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
     inlay_hints::InlayHintCtx,
 };
+
 pub(super) fn fn_hints(acc: &mut Vec<InlayHint>, ctx: &mut InlayHintCtx, fd: &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, func: ast::Fn) -> Option<()> {
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;

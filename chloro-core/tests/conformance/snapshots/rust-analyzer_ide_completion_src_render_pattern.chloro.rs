@@ -13,6 +13,7 @@ use crate::{
         variant::{format_literal_label, format_literal_lookup, visible_fields},
     },
 };
+
 pub(crate) fn render_struct_pat(ctx: RenderContext<'_>, pattern_ctx: &PatternContext, strukt: hir::Struct, local_name: Option<Name>) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_struct_pat").entered();
     let fields = strukt.fields(ctx.db());

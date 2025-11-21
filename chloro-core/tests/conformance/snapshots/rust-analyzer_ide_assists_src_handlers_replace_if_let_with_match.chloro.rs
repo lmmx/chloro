@@ -11,6 +11,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{does_pat_match_variant, does_pat_variant_nested_or_literal, unwrap_trivial_block},
 };
+
 pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_expr: ast::IfExpr = ctx.find_node_at_offset()?;
     let available_range = TextRange::new(

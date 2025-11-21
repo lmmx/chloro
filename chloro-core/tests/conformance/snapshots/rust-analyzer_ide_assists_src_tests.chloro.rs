@@ -16,6 +16,7 @@ use crate::{
     Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
     handlers::Handler,
 };
+
 mod generated;
 
 

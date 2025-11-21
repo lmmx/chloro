@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   8348 bytes
+Chloro size:   8349 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  9185 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: line_to_block
 -//
 -// Converts comments between block and single-line form.

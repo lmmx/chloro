@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_edit, check_with_base_items};
+
 #[test]
 fn in_mod_item_list() {
     check_with_base_items(

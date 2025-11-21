@@ -52,6 +52,7 @@ use super::{
     },
     util::sizedness_constraint_for_ty,
 };
+
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
 pub struct InternedWrapperNoDebug<T>(pub(crate) T);
 

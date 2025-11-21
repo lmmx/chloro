@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comma = ctx.find_token_syntax_at_offset(T![,])?;
     let prev = non_trivia_sibling(comma.clone().into(), Direction::Prev)?;

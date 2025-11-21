@@ -13,6 +13,7 @@ use syntax::ast::syntax_factory::SyntaxFactory;
 use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
 
 use crate::{AssistContext, AssistId, Assists, utils};
+
 pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;

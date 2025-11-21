@@ -16,6 +16,7 @@ use crate::{
     infer::InferenceContext,
     next_solver::{CoercePredicate, PredicateKind, SubtypePredicate, Ty, TyKind},
 };
+
 #[derive(Copy, Clone)]
 pub(crate) enum DivergingFallbackBehavior {
     /// Always fallback to `()` (aka "always spontaneous decay")

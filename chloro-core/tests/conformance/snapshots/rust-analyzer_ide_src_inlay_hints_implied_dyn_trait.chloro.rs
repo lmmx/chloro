@@ -7,6 +7,7 @@ use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
 use syntax::ast::{self, AstNode};
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, path: Either<ast::PathType, ast::DynTraitType>) -> Option<()> {
     let parent = path.syntax().parent()?;
     let range = match path {

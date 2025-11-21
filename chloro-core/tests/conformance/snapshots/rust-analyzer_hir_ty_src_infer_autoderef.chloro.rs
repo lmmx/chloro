@@ -13,6 +13,7 @@ use crate::{
         infer::{InferOk, traits::PredicateObligations},
     },
 };
+
 impl<'db> InferenceTable<'db> {
     pub(crate) fn autoderef(&mut self, base_ty: Ty<'db>) -> Autoderef<'_, 'db> {
         Autoderef::new(self, base_ty)

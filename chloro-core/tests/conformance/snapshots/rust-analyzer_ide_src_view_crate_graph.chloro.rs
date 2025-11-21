@@ -6,6 +6,7 @@ use ide_db::{
         BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase,
     },
 };
+
 pub(crate) fn view_crate_graph(db: &RootDatabase, full: bool) -> Result<String, String> {
     let all_crates = db.all_crates();
     let crates_to_render = all_crates

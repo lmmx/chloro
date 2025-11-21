@@ -7,6 +7,7 @@ use ide_db::{
 use syntax::{AstNode, SyntaxKind::*, T, ast};
 
 use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
+
 pub struct GotoImplementationConfig {
     pub filter_adjacent_derive_implementations: bool,
 }

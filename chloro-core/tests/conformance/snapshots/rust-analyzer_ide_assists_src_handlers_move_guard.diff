@@ -2,19 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21223 bytes
-Chloro size:   19956 bytes
+Chloro size:   19957 bytes
 Rustfmt size:  21223 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use syntax::{
-     SyntaxKind::WHITESPACE,
-     ast::{AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat, edit::AstNodeEdit, make},
- };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: move_guard_to_arm_body
 -//
 -// Moves match guard into match arm body.

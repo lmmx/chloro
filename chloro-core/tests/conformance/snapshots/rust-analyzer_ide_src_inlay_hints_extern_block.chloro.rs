@@ -4,6 +4,7 @@ use ide_db::{famous_defs::FamousDefs, text_edit::TextEdit};
 use syntax::{AstNode, SyntaxToken, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
+
 pub(super) fn extern_block_hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, extern_block: ast::ExternBlock) -> Option<()> {
     if extern_block.unsafe_token().is_some() {
         return None;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   29951 bytes
+Chloro size:   29952 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -16,11 +16,6 @@ Rustfmt size:  31747 bytes
  use rustc_hash::{FxHashMap, FxHashSet};
  use scip::types::{self as scip_types, SymbolInformation};
  use tracing::error;
-     config::ConfigChange,
-     line_index::{LineEndings, LineIndex, PositionEncoding},
- };
--
- impl flags::Scip {
      pub fn run(self) -> anyhow::Result<()> {
          eprintln!("Generating SCIP start...");
          let now = Instant::now();

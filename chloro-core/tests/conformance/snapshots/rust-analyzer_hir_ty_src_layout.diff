@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14289 bytes
+Chloro size:   14290 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -45,7 +45,7 @@ Rustfmt size:  14808 bytes
 -
  pub(crate) use self::adt::layout_of_adt_cycle_result;
  pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
--
+ 
  pub(crate) mod adt;
 +
  pub(crate) mod target;

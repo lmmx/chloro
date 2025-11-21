@@ -3,6 +3,7 @@ use ide_db::syntax_helpers::prettify_macro_expansion;
 use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
     let macro_call = ctx.sema.to_def(&unexpanded)?;

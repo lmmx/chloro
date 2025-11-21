@@ -1,4 +1,5 @@
 use super::*;
+
 #[test]
 fn name_res_works_for_broken_modules() {
     cov_mark::check!(name_res_works_for_broken_modules);

@@ -12,6 +12,7 @@ use crate::{
     lsp::{LspError, from_proto},
     lsp_ext,
 };
+
 pub(crate) fn invalid_params_error(message: String) -> LspError {
     LspError { code: lsp_server::ErrorCode::InvalidParams as i32, message }
 }

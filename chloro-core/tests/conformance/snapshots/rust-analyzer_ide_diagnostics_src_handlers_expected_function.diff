@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1336 bytes
-Chloro size:   1201 bytes
+Chloro size:   1202 bytes
 Rustfmt size:  1370 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  1370 bytes
  use hir::HirDisplay;
  
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: expected-function
 -//
 -// This diagnostic is triggered if a call is made on something that is not callable.

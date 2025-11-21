@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6079 bytes
-Chloro size:   5870 bytes
+Chloro size:   5871 bytes
 Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  6079 bytes
      utils::required_hashes,
 -    AssistContext, AssistId, Assists,
  };
--
+ 
 -// Assist: desugar_doc_comment
 -//
 -// Desugars doc-comments to the attribute form.

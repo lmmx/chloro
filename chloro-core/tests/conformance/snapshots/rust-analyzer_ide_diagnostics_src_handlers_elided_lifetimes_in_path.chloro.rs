@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn elided_lifetimes_in_path(ctx: &DiagnosticsContext<'_>, d: &hir::ElidedLifetimesInPath) -> Diagnostic {
     if d.hard_error {
         Diagnostic::new_with_syntax_node_ptr(

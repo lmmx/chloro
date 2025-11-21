@@ -9,6 +9,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
+
 pub(crate) fn convert_named_struct_to_tuple_struct(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // XXX: We don't currently provide this assist for struct definitions inside macros, but if we
     // are to lift this limitation, don't forget to make `edit_struct_def()` consider macro files

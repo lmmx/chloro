@@ -42,6 +42,7 @@ use crate::{
         infer::{DbInternerInferExt, InferCtxt},
     },
 };
+
 pub enum BodyValidationDiagnostic {
     RecordMissingFields {
         record: Either<ExprId, PatId>,

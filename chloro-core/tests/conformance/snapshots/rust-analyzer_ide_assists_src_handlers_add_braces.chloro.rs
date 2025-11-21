@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (expr_type, expr) = get_replacement_node(ctx)?;
     acc.add(

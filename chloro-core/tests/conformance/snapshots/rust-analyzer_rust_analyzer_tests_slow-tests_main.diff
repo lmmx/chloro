@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38456 bytes
+Chloro size:   38457 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
@@ -47,6 +47,7 @@ Rustfmt size:  39488 bytes
  
 -use crate::support::{project, Project};
 +use crate::support::{Project, project};
++
 +#![allow(clippy::disallowed_types)]
 +mod cli;
 +

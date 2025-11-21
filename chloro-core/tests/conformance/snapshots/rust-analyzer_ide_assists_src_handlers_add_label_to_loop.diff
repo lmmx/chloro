@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4498 bytes
-Chloro size:   4180 bytes
+Chloro size:   4181 bytes
 Rustfmt size:  4506 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,7 @@ Rustfmt size:  4506 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: add_label_to_loop
 -//
 -// Adds a label to a loop.

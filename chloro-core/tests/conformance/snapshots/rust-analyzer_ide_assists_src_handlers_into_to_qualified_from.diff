@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5102 bytes
-Chloro size:   4581 bytes
+Chloro size:   4582 bytes
 Rustfmt size:  5128 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,7 @@ Rustfmt size:  5128 bytes
 +use syntax::{AstNode, ast};
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: into_to_qualified_from
 -//
 -// Convert an `into` method call to a fully qualified `from` call.

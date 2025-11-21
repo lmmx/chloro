@@ -16,6 +16,7 @@ use crate::{
     InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
     inlay_hints::LazyProperty,
 };
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, sema: &Semantics<'_, RootDatabase>, config: &InlayHintsConfig<'_>, display_target: DisplayTarget, InRealFile { file_id, value: node }: InRealFile<SyntaxNode>) -> Option<()> {
     let min_lines = config.closing_brace_hints_min_lines?;
     let name = |it: ast::Name| it.syntax().text_range();

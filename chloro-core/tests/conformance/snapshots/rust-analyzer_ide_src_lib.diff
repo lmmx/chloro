@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   31728 bytes
+Chloro size:   31729 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -155,6 +155,7 @@ Rustfmt size:  33868 bytes
 -pub use ide_ssr::SsrError;
 -pub use span::Edition;
 -pub use syntax::{TextRange, TextSize};
++
 +#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 +#![recursion_limit = "128"]
 +#[cfg(test)]

@@ -9,6 +9,7 @@ use crate::{
     context::{CompletionContext, PathCompletionCtx, Qualified},
     item::Builder,
 };
+
 pub(crate) fn complete_use_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, use_tree_parent, .. }: &PathCompletionCtx<'_>, name_ref: &Option<ast::NameRef>) {
     match qualified {
         Qualified::With { path, resolution: Some(resolution), super_chain_len } => {

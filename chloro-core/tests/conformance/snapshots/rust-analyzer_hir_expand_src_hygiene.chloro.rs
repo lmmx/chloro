@@ -26,6 +26,7 @@ pub use span::Transparency;
 use span::{Edition, MacroCallId, Span, SyntaxContext};
 
 use crate::db::ExpandDatabase;
+
 pub fn span_with_def_site_ctxt(db: &dyn ExpandDatabase, span: Span, expn_id: MacroCallId, edition: Edition) -> Span {
     span_with_ctxt_from_mark(db, span, expn_id, Transparency::Opaque, edition)
 }

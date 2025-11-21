@@ -6,6 +6,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();
     let indent = impl_def.indent_level();

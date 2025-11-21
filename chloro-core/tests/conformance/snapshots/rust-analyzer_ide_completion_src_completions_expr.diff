@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   20918 bytes
+Chloro size:   20919 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,8 @@ Rustfmt size:  21861 bytes
      context::{PathCompletionCtx, PathExprCtx, Qualified},
 -    CompletionContext, Completions,
  };
--
+ 
  struct PathCallback<'a, F> {
-     ctx: &'a CompletionContext<'a>,
-     acc: &'a mut Completions,
  
  impl<F> PathCandidateCallback for PathCallback<'_, F>
  where

@@ -24,6 +24,7 @@ pub use crate::{
     },
     snippet::{Snippet, SnippetScope},
 };
+
 mod completions;
 
 mod config;

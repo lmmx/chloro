@@ -47,6 +47,7 @@ use crate::{
     source_change::ChangeAnnotation,
     text_edit::{TextEdit, TextEditBuilder},
 };
+
 pub type Result<T, E = RenameError> = std::result::Result<T, E>;
 
 #[derive(Debug)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   18778 bytes
+Chloro size:   18779 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
@@ -36,10 +36,7 @@ Rustfmt size:  19198 bytes
 +use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr, ast::HasName};
  
  use crate::{HasCrate, Module, ModuleDef, Semantics};
--
- /// The actual data that is stored in the index. It should be as compact as
- /// possible.
- #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+ 
          }
      }
  

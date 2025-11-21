@@ -24,6 +24,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
 };
+
 /// A set of clauses that we assume to be true. E.g. if we are inside this function:
 /// ```rust
 /// fn foo<T: Default>(t: T) {}

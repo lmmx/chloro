@@ -5,6 +5,7 @@ use syntax::{AstToken, TextRange, TextSize};
 
 use crate::syntax_highlighting::highlights::Highlights;
 use crate::{HlRange, HlTag};
+
 pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
     let text = string.text();
     let start = string.syntax().text_range().start();

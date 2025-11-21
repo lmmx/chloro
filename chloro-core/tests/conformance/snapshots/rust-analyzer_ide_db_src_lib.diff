@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   11558 bytes
+Chloro size:   11559 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,7 @@ Rustfmt size:  12539 bytes
  
 -extern crate self as ide_db;
 +use std::{fmt, mem::ManuallyDrop};
- 
++
 +pub use ::line_index;
 +use base_db::{
 +    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce, RootQueryDb,
@@ -32,6 +32,7 @@ Rustfmt size:  12539 bytes
 +use triomphe::Arc;
 +
 +use crate::line_index::LineIndex;
+ 
  mod apply_change;
  
  pub mod active_parameter;

@@ -11,6 +11,7 @@ use crate::{
     completions::record::add_default_update,
     context::{PathCompletionCtx, PathExprCtx, Qualified},
 };
+
 struct PathCallback<'a, F> {
     ctx: &'a CompletionContext<'a>,
     acc: &'a mut Completions,

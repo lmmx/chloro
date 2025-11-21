@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6860 bytes
-Chloro size:   4986 bytes
+Chloro size:   4987 bytes
 Rustfmt size:  6980 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,7 @@ Rustfmt size:  6980 bytes
 +
 +use rustc_hash::FxHashMap;
 +use stdx::anymap::Map;
++
  pub mod keys {
      use std::marker::PhantomData;
 -

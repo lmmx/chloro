@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20372 bytes
-Chloro size:   20250 bytes
+Chloro size:   20251 bytes
 Rustfmt size:  20372 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-         VisibilityExplicitness,
-     },
- };
--
- pub(super) struct Ctx<'a> {
-     db: &'a dyn DefDatabase,
-     tree: ItemTree,
              })
              .flat_map(|item| self.lower_mod_item(&item))
              .collect();

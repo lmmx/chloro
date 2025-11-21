@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6084 bytes
+Chloro size:   6085 bytes
 Rustfmt size:  6902 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  6902 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: flip_binexpr
 -//
 -// Flips operands of a binary expression.

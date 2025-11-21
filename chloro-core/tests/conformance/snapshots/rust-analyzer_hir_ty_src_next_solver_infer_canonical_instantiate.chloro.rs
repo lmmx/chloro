@@ -17,6 +17,7 @@ use crate::next_solver::{
     BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
     DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind, fold::FnMutDelegate,
 };
+
 fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
 where
         V: TypeFoldable<DbInterner<'db>>;

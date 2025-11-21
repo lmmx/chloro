@@ -3,6 +3,7 @@ use test_fixture::WithFixture;
 use test_utils::{CURSOR_MARKER, assert_eq_text};
 
 use super::*;
+
 #[test]
 fn trailing_comment_in_empty_file() {
     check(

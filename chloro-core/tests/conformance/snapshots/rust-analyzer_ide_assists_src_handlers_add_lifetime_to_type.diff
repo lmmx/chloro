@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6466 bytes
-Chloro size:   6205 bytes
+Chloro size:   6206 bytes
 Rustfmt size:  6466 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  6466 bytes
  use syntax::ast::{self, AstNode, HasGenericParams, HasName};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: add_lifetime_to_type
 -//
 -// Adds a new lifetime to a struct, enum or union.

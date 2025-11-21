@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   142366 bytes
+Chloro size:   142367 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,6 @@ Rustfmt size:  144317 bytes
  };
 -
  pub use self::path::hir_segment_to_ast_segment;
-+mod asm;
  
 -pub(super) fn lower_body(
 -    db: &dyn DefDatabase,
@@ -34,6 +33,8 @@ Rustfmt size:  144317 bytes
 -    body: Option<ast::Expr>,
 -    is_async_fn: bool,
 -) -> (Body, BodySourceMap) {
++mod asm;
++
 +mod generics;
 +
 +mod path;

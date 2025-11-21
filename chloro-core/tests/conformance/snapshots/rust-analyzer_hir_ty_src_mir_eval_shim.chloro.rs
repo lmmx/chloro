@@ -20,6 +20,7 @@ use crate::{
     },
     next_solver::Region,
 };
+
 mod simd;
 
 macro_rules! from_bytes {

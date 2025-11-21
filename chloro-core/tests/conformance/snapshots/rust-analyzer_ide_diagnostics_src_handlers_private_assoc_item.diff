@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3239 bytes
-Chloro size:   3076 bytes
+Chloro size:   3077 bytes
 Rustfmt size:  3239 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: private-assoc-item
 -//
 -// This diagnostic is triggered if the referenced associated item is not visible from the current

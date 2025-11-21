@@ -15,6 +15,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn generate_single_field_struct_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt_name = ctx.find_node_at_offset::<ast::Name>()?;
     let adt = ast::Adt::cast(strukt_name.syntax().parent()?)?;

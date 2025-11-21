@@ -7,6 +7,7 @@ use crate::{
     HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
 };
 
+
 fn check_hover_no_result(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     let (analysis, position) = fixture::position(ra_fixture);
     let hover = analysis

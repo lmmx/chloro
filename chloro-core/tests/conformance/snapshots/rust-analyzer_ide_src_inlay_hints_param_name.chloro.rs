@@ -13,6 +13,7 @@ use stdx::to_lower_snake_case;
 use syntax::ast::{self, AstNode, HasArgList, HasName, UnaryOp};
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, krate): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, file_id: EditionedFileId, expr: ast::Expr) -> Option<()> {
     if !config.parameter_hints {
         return None;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   223735 bytes
+Chloro size:   223736 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -101,6 +101,7 @@ Rustfmt size:  227843 bytes
 +        VisibleTraits,
 +    },
 +};
++
 +#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 +#![recursion_limit = "512"]
 +mod attrs;

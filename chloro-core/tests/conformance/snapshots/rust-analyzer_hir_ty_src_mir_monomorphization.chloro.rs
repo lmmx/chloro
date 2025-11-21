@@ -26,6 +26,7 @@ use crate::{
     },
 };
 use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
+
 struct Filler<'db> {
     infcx: InferCtxt<'db>,
     trait_env: Arc<TraitEnvironment<'db>>,

@@ -2,6 +2,7 @@ use ide_db::{famous_defs::FamousDefs, helpers::mod_path_to_ast, traits::resolve_
 use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let src_type = impl_.self_ty()?;

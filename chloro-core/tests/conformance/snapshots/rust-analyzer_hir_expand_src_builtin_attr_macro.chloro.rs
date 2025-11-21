@@ -5,6 +5,7 @@ use span::Span;
 
 use crate::{ExpandResult, MacroCallId, MacroCallKind, db::ExpandDatabase, name, tt};
 use super::quote;
+
 macro_rules! register_builtin {
     ($(($name:ident, $variant:ident) => $expand:ident),* ) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

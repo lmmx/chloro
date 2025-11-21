@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::get_methods};
+
 pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         cov_mark::hit!(not_applicable_if_no_selection);

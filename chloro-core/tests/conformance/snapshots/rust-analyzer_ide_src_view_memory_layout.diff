@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11061 bytes
-Chloro size:   10668 bytes
+Chloro size:   10669 bytes
 Rustfmt size:  11278 bytes
 
 ✗ Outputs DIFFER
@@ -19,11 +19,6 @@ Rustfmt size:  11278 bytes
  };
  use syntax::{AstNode, SyntaxKind};
  
- use crate::FilePosition;
--
- pub struct MemoryLayoutNode {
-     pub item_name: String,
-     pub typename: String,
      pub nodes: Vec<MemoryLayoutNode>,
  }
  

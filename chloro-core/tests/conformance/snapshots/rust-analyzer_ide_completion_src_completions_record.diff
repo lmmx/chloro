@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11037 bytes
-Chloro size:   10961 bytes
+Chloro size:   10962 bytes
 Rustfmt size:  11348 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,7 @@ Rustfmt size:  11348 bytes
      CompletionRelevancePostfixMatch, Completions,
 +    context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
  };
--
+ 
 -pub(crate) fn complete_record_pattern_fields(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

@@ -11,6 +11,7 @@ use crate::{
     CompletionItemKind, CompletionItemRefMode, CompletionRelevance, completions::Completions,
     context::CompletionContext, item::CompletionItemLabel,
 };
+
 pub(crate) fn complete_ra_fixture(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) -> Option<()> {
     let analysis = RaFixtureAnalysis::analyze_ra_fixture(
         &ctx.sema,

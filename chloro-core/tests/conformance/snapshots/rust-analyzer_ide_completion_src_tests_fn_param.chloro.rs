@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_with_trigger_character};
+
 #[test]
 fn only_param() {
     check(

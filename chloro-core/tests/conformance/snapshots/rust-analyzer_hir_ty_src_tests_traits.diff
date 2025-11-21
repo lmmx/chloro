@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 107313 bytes
-Chloro size:   107120 bytes
+Chloro size:   107121 bytes
 Rustfmt size:  107313 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,8 @@ Rustfmt size:  107313 bytes
  use crate::tests::infer_with_mismatches;
 -
  use super::{check, check_infer, check_infer_with_mismatches, check_no_mismatches, check_types};
--
+ 
  #[test]
- fn infer_await() {
-     check_types(
              165..172 'z.foo()': u64
          "#]],
      );

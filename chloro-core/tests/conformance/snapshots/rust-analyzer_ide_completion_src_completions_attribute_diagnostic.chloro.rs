@@ -5,6 +5,7 @@ use syntax::ast;
 
 use crate::{CompletionItem, Completions, context::CompletionContext};
 use super::AttrCompletion;
+
 pub(super) fn complete_on_unimplemented(acc: &mut Completions, ctx: &CompletionContext<'_>, input: ast::TokenTree) {
     if let Some(existing_keys) = super::parse_comma_sep_expr(input) {
         for attr in ATTRIBUTE_ARGS {

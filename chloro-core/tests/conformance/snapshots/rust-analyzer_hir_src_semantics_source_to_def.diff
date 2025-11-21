@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   31253 bytes
+Chloro size:   31254 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -46,11 +46,10 @@ Rustfmt size:  33070 bytes
  use tt::TextRange;
  
 -use crate::{db::HirDatabase, semantics::child_by_source::ChildBySource, InFile, InlineAsmOperand};
--
 +use crate::{InFile, InlineAsmOperand, db::HirDatabase, semantics::child_by_source::ChildBySource};
+ 
  #[derive(Default)]
  pub(super) struct SourceToDefCache {
-     pub(super) dynmap_cache: FxHashMap<(ChildContainer, HirFileId), DynMap>,
  }
  
  impl SourceToDefCache {

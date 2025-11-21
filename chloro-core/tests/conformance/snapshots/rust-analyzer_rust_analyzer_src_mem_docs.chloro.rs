@@ -4,6 +4,7 @@ use std::mem;
 
 use rustc_hash::FxHashMap;
 use vfs::VfsPath;
+
 /// Holds the set of in-memory documents.
 ///
 /// For these document, their true contents is maintained by the client. It

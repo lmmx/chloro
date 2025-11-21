@@ -5,6 +5,7 @@ use rustc_hash::FxHashSet;
 use syntax::{AstNode, ast};
 
 use crate::{RootDatabase, defs::Definition};
+
 /// Given the `impl` block, attempts to find the trait this `impl` corresponds to.
 pub fn resolve_target_trait(sema: &Semantics<'_, RootDatabase>, impl_def: &ast::Impl) -> Option<hir::Trait> {
     let ast_path =

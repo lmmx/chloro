@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn unresolved_extern_crate(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedExternCrate) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

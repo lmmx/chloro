@@ -1,6 +1,7 @@
 //! Construct version in the `commit-hash date channel` format
 
 use std::{env, path::PathBuf, process::Command};
+
 fn main() {
     set_rerun();
     set_commit_info();

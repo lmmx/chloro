@@ -17,6 +17,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 use super::inline_call::split_refs_and_uses;
+
 pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;

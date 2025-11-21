@@ -16,6 +16,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
 };
+
 fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {
     let module = match adt {
         AdtId::EnumId(id) => db.lookup_intern_enum(id).container,

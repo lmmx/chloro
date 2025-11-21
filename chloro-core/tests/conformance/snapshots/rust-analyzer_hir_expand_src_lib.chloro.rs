@@ -39,6 +39,7 @@ pub use crate::{
     files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
     prettify_macro_expansion_::prettify_macro_expansion,
 };
+
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 pub mod attrs;
 

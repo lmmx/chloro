@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20553 bytes
-Chloro size:   20368 bytes
+Chloro size:   20369 bytes
 Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
@@ -21,11 +21,10 @@ Rustfmt size:  21116 bytes
  use syntax::{AstNode, SyntaxKind::*, T};
  
 -use crate::{doc_links::token_as_doc_comment, parent_module::crates_for, RangeInfo};
--
 +use crate::{RangeInfo, doc_links::token_as_doc_comment, parent_module::crates_for};
+ 
  #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub enum MonikerDescriptorKind {
-     Namespace,
      Meta,
  }
  

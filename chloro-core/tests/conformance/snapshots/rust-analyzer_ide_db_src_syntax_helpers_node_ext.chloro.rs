@@ -9,6 +9,7 @@ use syntax::{
     AstNode, AstToken, Preorder, RustLanguage, WalkEvent,
     ast::{self, HasLoopBody, MacroCall, PathSegmentKind, VisibilityKind},
 };
+
 pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {
     if let ast::Expr::PathExpr(expr) = expr {
         let path = expr.path()?;

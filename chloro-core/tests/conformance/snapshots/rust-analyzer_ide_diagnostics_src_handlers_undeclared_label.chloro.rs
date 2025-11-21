@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn undeclared_label(ctx: &DiagnosticsContext<'_>, d: &hir::UndeclaredLabel) -> Diagnostic {
     let name = &d.name;
     Diagnostic::new_with_syntax_node_ptr(

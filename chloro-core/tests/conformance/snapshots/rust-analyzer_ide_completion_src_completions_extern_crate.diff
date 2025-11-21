@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1954 bytes
-Chloro size:   1945 bytes
+Chloro size:   1946 bytes
 Rustfmt size:  1954 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,7 @@ Rustfmt size:  1954 bytes
 -
 +use crate::{CompletionItem, CompletionItemKind, context::CompletionContext};
  use super::Completions;
--
+ 
  pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionContext<'_>) {
      let imported_extern_crates: Vec<Name> = ctx.scope.extern_crate_decls().collect();
 -

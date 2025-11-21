@@ -12,6 +12,7 @@ use crate::{
     line_index::{LineIndex, PositionEncoding},
     lsp_ext, try_default,
 };
+
 pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {
     let path = url.to_file_path().map_err(|()| anyhow::format_err!("url is not a file"))?;
     Ok(AbsPathBuf::try_from(Utf8PathBuf::from_path_buf(path).unwrap()).unwrap())

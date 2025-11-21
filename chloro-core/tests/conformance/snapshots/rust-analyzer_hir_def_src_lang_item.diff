@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   12400 bytes
+Chloro size:   12401 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -16,13 +16,6 @@ Rustfmt size:  32624 bytes
  use hir_expand::name::Name;
  use intern::{Symbol, sym};
  use rustc_hash::FxHashMap;
-     expr_store::path::Path,
-     nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map},
- };
--
- #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
- pub enum LangItemTarget {
-     EnumId(EnumId),
  #[salsa_macros::tracked(returns(ref))]
  pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangItems>> {
      let _p = tracing::info_span!("crate_lang_items_query").entered();

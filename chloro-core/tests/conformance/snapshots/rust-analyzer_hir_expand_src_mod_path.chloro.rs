@@ -20,6 +20,7 @@ use crate::{
     name::{AsName, Name},
     tt,
 };
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ModPath {
     pub kind: PathKind,

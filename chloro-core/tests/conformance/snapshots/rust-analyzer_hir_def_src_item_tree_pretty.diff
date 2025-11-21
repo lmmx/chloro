@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12076 bytes
-Chloro size:   12069 bytes
+Chloro size:   12070 bytes
 Rustfmt size:  12861 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     },
-     visibility::RawVisibility,
  };
--
+ 
  pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {
 -    let mut p = Printer {
 -        db,

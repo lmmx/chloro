@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
     let Some(ast::Pat::IdentPat(ident_pat)) = param.pat() else { return None };

@@ -7,6 +7,7 @@ use crossbeam_channel::Sender;
 use stdx::thread::{Pool, ThreadIntent};
 
 use crate::main_loop::QueuedTask;
+
 pub(crate) struct TaskPool<T> {
     sender: Sender<T>,
     pool: Pool,

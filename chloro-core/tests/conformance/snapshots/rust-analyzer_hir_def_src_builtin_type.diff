@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8029 bytes
-Chloro size:   7980 bytes
+Chloro size:   7981 bytes
 Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
@@ -13,6 +13,7 @@ Rustfmt size:  8029 bytes
  use hir_expand::name::{AsName, Name};
 -use intern::{sym, Symbol};
 +use intern::{Symbol, sym};
++
  /// Different signed int types.
  #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub enum BuiltinInt {

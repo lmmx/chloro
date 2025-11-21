@@ -15,6 +15,7 @@ use syntax::{
 };
 
 use crate::helpers::mod_path_to_ast;
+
 #[derive(Default, Debug)]
 struct AstSubsts {
     types_and_consts: Vec<TypeOrConst>,

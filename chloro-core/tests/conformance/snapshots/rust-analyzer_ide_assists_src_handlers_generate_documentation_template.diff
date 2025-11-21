@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33414 bytes
-Chloro size:   32277 bytes
+Chloro size:   32278 bytes
 Rustfmt size:  33414 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: generate_documentation_template
 -//
 -// Adds a documentation template above a function definition / declaration.

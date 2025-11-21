@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5682 bytes
-Chloro size:   5676 bytes
+Chloro size:   5677 bytes
 Rustfmt size:  5682 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,8 @@ Rustfmt size:  5682 bytes
  use crate::tests::check;
 -
  use super::check_edit;
--
+ 
  #[test]
- fn without_default_impl() {
-     check(
              kw ref
          "#]],
      );

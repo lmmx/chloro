@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6722 bytes
-Chloro size:   6718 bytes
+Chloro size:   6719 bytes
 Rustfmt size:  6722 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,6 @@ Rustfmt size:  6722 bytes
  use expect_test::expect;
  
  use crate::tests::{check, check_edit, check_with_base_items};
--
- #[test]
- fn target_type_or_trait_in_impl_block() {
-     check_with_base_items(
  pub(crate) $0
  "#,
      );

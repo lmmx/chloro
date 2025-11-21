@@ -21,6 +21,7 @@ use crate::{
     },
 };
 use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};
+
 impl<'db> InferenceContext<'_, 'db> {
     pub(super) fn infer_path(&mut self, path: &Path, id: ExprOrPatId) -> Option<Ty<'db>> {
         let (value_def, generic_def, substs) = match self.resolve_value_path(path, id)? {

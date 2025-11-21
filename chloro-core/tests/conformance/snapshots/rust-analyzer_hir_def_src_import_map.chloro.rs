@@ -19,6 +19,7 @@ use crate::{
     nameres::{DefMap, assoc::TraitItems, crate_def_map},
     visibility::Visibility,
 };
+
 /// Item import details stored in the `ImportMap`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ImportInfo {

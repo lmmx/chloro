@@ -34,6 +34,7 @@ use crate::{
     AssistConfig,
     assist_context::{AssistContext, SourceChangeBuilder},
 };
+
 mod gen_trait_fn_body;
 
 pub(crate) mod ref_field_expr;

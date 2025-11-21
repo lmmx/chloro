@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use super::{check_infer_with_mismatches, check_no_mismatches, check_types};
+
 #[test]
 fn infer_never1() {
     check_types(

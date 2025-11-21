@@ -48,6 +48,7 @@ use crate::{
     task_pool::{TaskPool, TaskQueue},
     test_runner::{CargoTestHandle, CargoTestMessage},
 };
+
 #[derive(Debug)]
 pub(crate) struct FetchWorkspaceRequest {
     pub(crate) path: Option<AbsPathBuf>,

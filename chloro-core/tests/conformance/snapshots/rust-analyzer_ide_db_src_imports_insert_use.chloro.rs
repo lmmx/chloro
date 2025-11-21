@@ -20,6 +20,7 @@ use crate::{
         try_merge_imports, use_tree_cmp,
     },
 };
+
 #[cfg(test)]
 mod tests;
 

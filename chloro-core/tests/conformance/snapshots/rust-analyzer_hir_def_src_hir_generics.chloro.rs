@@ -14,6 +14,7 @@ use crate::{
     expr_store::{ExpressionStore, ExpressionStoreSourceMap},
     type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 };
+
 pub type LocalTypeOrConstParamId = Idx<TypeOrConstParamData>;
 
 pub type LocalLifetimeParamId = Idx<LifetimeParamData>;

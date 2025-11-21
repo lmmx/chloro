@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8930 bytes
-Chloro size:   8602 bytes
+Chloro size:   8603 bytes
 Rustfmt size:  8981 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  8981 bytes
      AssistId,
 +    assist_context::{AssistContext, Assists},
  };
--
+ 
 -// Assist: replace_turbofish_with_explicit_type
 -//
 -// Converts `::<_>` to an explicit type assignment.

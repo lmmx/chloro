@@ -17,6 +17,7 @@ pub use crate::{
     version::version,
 };
 use self::lsp::ext as lsp_ext;
+
 /// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
 
 pub mod cli;

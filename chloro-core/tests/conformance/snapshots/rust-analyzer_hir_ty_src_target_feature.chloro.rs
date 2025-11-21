@@ -6,6 +6,7 @@ use hir_def::attr::Attrs;
 use hir_def::tt;
 use intern::{Symbol, sym};
 use rustc_hash::{FxHashMap, FxHashSet};
+
 #[derive(Debug, Default, Clone)]
 pub struct TargetFeatures {
     pub(crate) enabled: FxHashSet<Symbol>,

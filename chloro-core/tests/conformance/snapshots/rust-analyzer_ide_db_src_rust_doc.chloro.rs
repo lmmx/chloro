@@ -1,6 +1,7 @@
 //! Rustdoc specific doc comment handling
 
 use crate::documentation::Documentation;
+
 pub fn is_rust_fence(s: &str) -> bool {
     let mut seen_rust_tags = false;
     let mut seen_other_tags = false;

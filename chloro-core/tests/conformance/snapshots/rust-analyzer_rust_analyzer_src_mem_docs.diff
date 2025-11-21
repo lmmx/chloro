@@ -2,19 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2014 bytes
-Chloro size:   2013 bytes
+Chloro size:   2014 bytes
 Rustfmt size:  2014 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- //! In-memory document information.
- 
- use std::mem;
- 
- use rustc_hash::FxHashMap;
- use vfs::VfsPath;
--
- /// Holds the set of in-memory documents.
- ///
- /// For these document, their true contents is maintained by the client. It
+✓ Outputs are IDENTICAL

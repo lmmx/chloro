@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25852 bytes
-Chloro size:   25564 bytes
+Chloro size:   25565 bytes
 Rustfmt size:  25852 bytes
 
 ✗ Outputs DIFFER
@@ -24,7 +24,7 @@ Rustfmt size:  25852 bytes
      BasicBlockId, BorrowKind, LocalId, MirBody, MirLowerError, MirSpan, MutBorrowKind, Operand,
      Place, ProjectionElem, Rvalue, StatementKind, TerminatorKind,
  };
--
+ 
 -#[derive(Debug, Clone, PartialEq, Eq)]
  /// Stores spans which implies that the local should be mutable.
 +#[derive(Debug, Clone, PartialEq, Eq)]

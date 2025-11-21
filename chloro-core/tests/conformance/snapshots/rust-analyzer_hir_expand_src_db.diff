@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   31354 bytes
+Chloro size:   31355 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -34,6 +34,7 @@ Rustfmt size:  33429 bytes
 -    MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
 +    tt,
  };
++
  /// This is just to ensure the types of smart_macro_arg and macro_arg are the same
  type MacroArgResult = (Arc<tt::TopSubtree>, SyntaxFixupUndoInfo, Span);
 +

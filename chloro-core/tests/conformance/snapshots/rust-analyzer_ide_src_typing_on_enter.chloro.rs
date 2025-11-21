@@ -11,6 +11,7 @@ use syntax::{
     algo::find_node_at_offset,
     ast::{self, AstToken, edit::IndentLevel},
 };
+
 pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
     let editioned_file_id_wrapper =
         ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);

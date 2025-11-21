@@ -26,6 +26,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{convert_reference_type, find_struct_impl},
 };
+
 pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
 }

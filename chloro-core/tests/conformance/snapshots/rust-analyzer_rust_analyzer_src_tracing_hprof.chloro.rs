@@ -50,6 +50,7 @@ use tracing_subscriber::{
     layer::{Context, SubscriberExt},
     registry::LookupSpan,
 };
+
 pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {
     let subscriber = Registry::default().with(SpanTree::new(spec));
     tracing::subscriber::set_default(subscriber)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30582 bytes
+Chloro size:   30583 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -30,13 +30,6 @@ Rustfmt size:  31432 bytes
      },
      next_solver::ClauseKind,
  };
-     Macro, Module, SelfParam, Static, Struct, StructKind, Trait, TraitRef, TupleField, Type,
-     TypeAlias, TypeNs, TypeOrConstParam, TypeParam, Union, Variant,
- };
--
- impl<'db> HirDisplay<'db> for Function {
-     fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
-         let db = f.db;
          let data = db.function_signature(self.id);
          let container = self.as_assoc_item(db).map(|it| it.container(db));
          let mut module = self.module(db);

@@ -16,6 +16,7 @@ use crate::{
     nameres::crate_def_map,
     test_db::TestDB,
 };
+
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {
     let (db, file_id) = TestDB::with_single_file("");
     let krate = db.fetch_test_crate();

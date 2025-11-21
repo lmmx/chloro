@@ -5,6 +5,7 @@ use crate::next_solver::{
     fulfill::{FulfillmentCtxt, NextSolverError},
     infer::{at::At, traits::Obligation},
 };
+
 impl<'db> At<'_, 'db> {
     pub(crate) fn structurally_normalize_ty(&self, ty: Ty<'db>, fulfill_cx: &mut FulfillmentCtxt<'db>) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {
         self.structurally_normalize_term(ty.into(), fulfill_cx).map(|term| term.expect_type())

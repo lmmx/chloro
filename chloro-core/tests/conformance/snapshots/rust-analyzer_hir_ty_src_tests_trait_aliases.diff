@@ -2,14 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 242 bytes
-Chloro size:   241 bytes
+Chloro size:   242 bytes
 Rustfmt size:  242 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- use crate::tests::check_types;
--
- #[test]
- fn projection() {
-     check_types(
+✓ Outputs are IDENTICAL

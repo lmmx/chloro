@@ -2,14 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7715 bytes
-Chloro size:   7714 bytes
+Chloro size:   7715 bytes
 Rustfmt size:  7715 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- use super::*;
--
- #[test]
- fn glob_1() {
-     check(
+✓ Outputs are IDENTICAL

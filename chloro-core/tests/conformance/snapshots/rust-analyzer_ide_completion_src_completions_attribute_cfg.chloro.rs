@@ -5,6 +5,7 @@ use itertools::Itertools;
 use syntax::{AstToken, Direction, NodeOrToken, SyntaxKind, algo, ast::Ident};
 
 use crate::{CompletionItem, completions::Completions, context::CompletionContext};
+
 pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let add_completion = |item: &str| {
         let mut completion =

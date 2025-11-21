@@ -14,6 +14,7 @@ use span::FileId;
 use syntax::TextRange;
 use test_utils::extract_annotations;
 use triomphe::Arc;
+
 #[salsa_macros::db]
 pub(crate) struct TestDB {
     storage: salsa::Storage<Self>,

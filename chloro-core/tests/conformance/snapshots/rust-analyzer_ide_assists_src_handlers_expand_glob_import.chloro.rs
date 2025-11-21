@@ -15,6 +15,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let star = ctx.find_token_syntax_at_offset(T![*])?;
     let use_tree = star.parent().and_then(ast::UseTree::cast)?;

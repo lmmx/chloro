@@ -4,6 +4,7 @@ use syntax::{
     AstNode, AstToken, TextRange, TextSize,
     ast::{self, IsString},
 };
+
 pub fn is_format_string(string: &ast::String) -> bool {
     // Check if `string` is a format string argument of a macro invocation.
     // `string` is a string literal, mapped down into the innermost macro expansion.

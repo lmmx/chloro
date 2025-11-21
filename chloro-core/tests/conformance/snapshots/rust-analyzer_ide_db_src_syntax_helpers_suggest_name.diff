@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   25528 bytes
+Chloro size:   25529 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  26702 bytes
  };
  
  use crate::RootDatabase;
--
+ 
  /// Trait names, that will be ignored when in `impl Trait` and `dyn Trait`
 -const USELESS_TRAITS: &[&str] = &["Send", "Sync", "Copy", "Clone", "Eq", "PartialEq"];
  

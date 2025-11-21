@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10157 bytes
-Chloro size:   9754 bytes
+Chloro size:   9755 bytes
 Rustfmt size:  10267 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,7 @@ Rustfmt size:  10267 bytes
  };
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: generate_enum_variant
 -//
 -// Adds a variant to an enum.

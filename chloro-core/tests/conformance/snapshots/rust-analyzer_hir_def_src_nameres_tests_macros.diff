@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27466 bytes
-Chloro size:   27457 bytes
+Chloro size:   27458 bytes
 Rustfmt size:  27512 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,6 @@ Rustfmt size:  27512 bytes
  use itertools::Itertools;
  use span::Edition;
  
- use super::*;
--
- #[test]
- fn macro_rules_are_globally_visible() {
-     check(
  fn unresolved_attributes_fall_back_track_per_file_moditems() {
      // Tests that we track per-file ModItems when ignoring an unresolved attribute.
      // Just tracking the `ModItem` leads to `Foo` getting ignored.

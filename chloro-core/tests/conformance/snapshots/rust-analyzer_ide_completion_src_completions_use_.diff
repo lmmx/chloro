@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5785 bytes
-Chloro size:   5765 bytes
+Chloro size:   5766 bytes
 Rustfmt size:  5785 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     context::{CompletionContext, PathCompletionCtx, Qualified},
      item::Builder,
  };
--
+ 
 -pub(crate) fn complete_use_path(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

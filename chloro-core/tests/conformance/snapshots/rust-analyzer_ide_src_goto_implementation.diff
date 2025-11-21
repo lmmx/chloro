@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10632 bytes
-Chloro size:   10027 bytes
+Chloro size:   10028 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -19,8 +19,7 @@ Rustfmt size:  10803 bytes
 +use syntax::{AstNode, SyntaxKind::*, T, ast};
  
  use crate::{FilePosition, NavigationTarget, RangeInfo, TryToNav};
--
- pub struct GotoImplementationConfig {
+ 
      pub filter_adjacent_derive_implementations: bool,
  }
  

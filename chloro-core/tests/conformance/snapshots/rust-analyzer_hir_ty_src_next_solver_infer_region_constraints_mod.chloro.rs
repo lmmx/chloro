@@ -18,6 +18,7 @@ use self::CombineMapType::*;
 use self::UndoLog::*;
 use super::MemberConstraint;
 use super::unify_key::RegionVidKey;
+
 #[derive(Debug, Clone, Default)]
 pub struct RegionConstraintStorage<'db> {
     /// For each `RegionVid`, the corresponding `RegionVariableOrigin`.

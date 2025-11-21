@@ -10,6 +10,7 @@ use syntax::{
     ast::{self, IsString},
 };
 use triomphe::Arc;
+
 pub(crate) fn view_syntax_tree(db: &RootDatabase, file_id: FileId) -> String {
     let sema = Semantics::new(db);
     let line_index = db.line_index(file_id);

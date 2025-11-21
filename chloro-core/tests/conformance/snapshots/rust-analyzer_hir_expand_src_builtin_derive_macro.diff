@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   53102 bytes
+Chloro size:   53103 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -36,19 +36,17 @@ Rustfmt size:  56860 bytes
      name::{self, AsName, Name},
      span_map::ExpansionSpanMap,
 -    tt, ExpandError, ExpandResult, MacroCallId,
-+    tt,
- };
+-};
 -use syntax::{
 -    ast::{
 -        self, edit_in_place::GenericParamsOwnerEdit, make, AstNode, FieldList, HasAttrs,
 -        HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds,
 -    },
 -    ted,
--};
--
++    tt,
+ };
+ 
  macro_rules! register_builtin {
-     ( $($trait:ident => $expand:ident),* ) => {
-         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  }
  
  impl BuiltinDeriveExpander {

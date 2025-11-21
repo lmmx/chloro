@@ -30,6 +30,7 @@ use crate::{
         diagnostics::{DefDiagnostic, DefDiagnostics},
     },
 };
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TraitItems {
     pub items: Box<[(Name, AssocItemId)]>,

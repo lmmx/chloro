@@ -35,6 +35,7 @@ use crate::{
     tt,
     visibility::{self, Visibility},
 };
+
 #[query_group::query_group(InternDatabaseStorage)]
 #[salsa::interned]
 fn intern_use(&self, loc: UseLoc) -> UseId;

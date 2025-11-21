@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25726 bytes
-Chloro size:   24590 bytes
+Chloro size:   24591 bytes
 Rustfmt size:  25726 bytes
 
 ✗ Outputs DIFFER
@@ -36,9 +36,9 @@ Rustfmt size:  25726 bytes
  use std::iter;
  
  use hir::{HasAttrs, Name, ScopeDef, Variant, sym};
-         union_literal::render_union_literal,
      },
  };
+ 
 +pub(crate) mod attribute;
 +
 +pub(crate) mod dot;
@@ -82,9 +82,10 @@ Rustfmt size:  25726 bytes
 +pub(crate) mod use_;
 +
 +pub(crate) mod vis;
- 
++
  /// Represents an in-progress set of completions being built.
  #[derive(Debug, Default)]
+ pub struct Completions {
  
      pub(crate) fn add_nameref_keywords_with_colon(&mut self, ctx: &CompletionContext<'_>) {
          ["self::", "crate::"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));

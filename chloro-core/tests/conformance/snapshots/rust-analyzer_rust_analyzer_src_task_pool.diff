@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1586 bytes
-Chloro size:   1577 bytes
+Chloro size:   1578 bytes
 Rustfmt size:  1619 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use stdx::thread::{Pool, ThreadIntent};
- 
- use crate::main_loop::QueuedTask;
--
- pub(crate) struct TaskPool<T> {
-     sender: Sender<T>,
-     pool: Pool,
  
  impl<T> TaskPool<T> {
      pub(crate) fn new_with_threads(sender: Sender<T>, threads: usize) -> TaskPool<T> {

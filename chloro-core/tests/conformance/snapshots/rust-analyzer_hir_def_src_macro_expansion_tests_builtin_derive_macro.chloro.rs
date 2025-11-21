@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::macro_expansion_tests::{check, check_errors};
+
 #[test]
 fn test_copy_expand_simple() {
     check(

@@ -63,6 +63,7 @@ use crate::{
     db::HirDatabase,
     semantics::{PathResolution, PathResolutionPerNs},
 };
+
 /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of
 /// original source files. It should not be used inside the HIR itself.
 #[derive(Debug)]

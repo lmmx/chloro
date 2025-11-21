@@ -17,6 +17,7 @@ use syntax::{
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};
+
 #[derive(Default)]
 struct State {
     result: String,

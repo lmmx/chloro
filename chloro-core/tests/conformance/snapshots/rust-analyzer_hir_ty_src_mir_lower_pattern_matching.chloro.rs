@@ -16,6 +16,7 @@ use crate::{
         },
     },
 };
+
 macro_rules! not_supported {
     ($x: expr) => {
         return Err(MirLowerError::NotSupported(format!($x)))

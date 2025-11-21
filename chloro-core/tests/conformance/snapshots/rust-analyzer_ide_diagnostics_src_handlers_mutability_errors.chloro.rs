@@ -4,6 +4,7 @@ use ide_db::text_edit::TextEdit;
 use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option<Diagnostic> {
     let root = ctx.sema.db.parse_or_expand(d.span.file_id);
     let node = d.span.value.to_node(&root);

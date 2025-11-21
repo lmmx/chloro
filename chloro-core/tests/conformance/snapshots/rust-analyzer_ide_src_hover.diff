@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25435 bytes
-Chloro size:   24798 bytes
+Chloro size:   24799 bytes
 Rustfmt size:  25435 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,17 @@ Rustfmt size:  25435 bytes
  use std::{iter, ops::Not};
  
  use either::Either;
-     navigation_target::UpmappingResult,
      runnables::{runnable_fn, runnable_mod},
  };
+ 
 +mod render;
 +
 +#[cfg(test)]
 +mod tests;
- 
++
  #[derive(Clone, Debug)]
  pub struct HoverConfig<'a> {
+     pub links_in_hover: bool,
  }
  
  impl HoverAction {

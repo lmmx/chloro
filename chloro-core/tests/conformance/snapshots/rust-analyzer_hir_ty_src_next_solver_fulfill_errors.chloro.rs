@@ -27,6 +27,7 @@ use crate::next_solver::{
     inspect::{self, ProofTreeVisitor},
     normalize::deeply_normalize_for_diagnostics,
 };
+
 #[derive(Debug)]
 pub struct FulfillmentError<'db> {
     pub obligation: PredicateObligation<'db>,

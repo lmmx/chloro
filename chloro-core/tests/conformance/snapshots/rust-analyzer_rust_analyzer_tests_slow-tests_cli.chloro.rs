@@ -2,6 +2,7 @@ use expect_test::expect;
 use test_utils::skip_slow_tests;
 
 use crate::support::Project;
+
 #[test]
 fn lsif_contains_generated_constant() {
     if skip_slow_tests() {

@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 84454 bytes
-Chloro size:   84453 bytes
+Chloro size:   84454 bytes
 Rustfmt size:  84525 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Overly long excerpts of failures from real world cases, that I was too lazy to minimize.
- 
- use crate::tests::check_diagnostics_with_disabled;
--
- #[test]
- fn tracing_infinite_repeat() {
-     check_diagnostics_with_disabled(
  tracing::error!();
  }
      "#,

@@ -9,6 +9,7 @@ use stdx::format_to;
 use syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T, ast, ted};
 
 use crate::FilePosition;
+
 pub struct ExpandedMacro {
     pub name: String,
     pub expansion: String,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8495 bytes
-Chloro size:   8298 bytes
+Chloro size:   8299 bytes
 Rustfmt size:  8873 bytes
 
 ✗ Outputs DIFFER
@@ -31,11 +31,10 @@ Rustfmt size:  8873 bytes
  use crate::macro_call_as_call_id;
  use crate::nameres::DefMap;
 -use crate::{db::DefDatabase, MacroId, UnresolvedMacro};
--
 +use crate::{MacroId, UnresolvedMacro, db::DefDatabase};
+ 
  #[derive(Debug)]
  pub(super) struct Expander {
-     span_map: SpanMap,
  }
  
  impl Expander {

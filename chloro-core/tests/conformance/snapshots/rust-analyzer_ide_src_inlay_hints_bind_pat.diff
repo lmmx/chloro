@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28332 bytes
-Chloro size:   28239 bytes
+Chloro size:   28240 bytes
 Rustfmt size:  28759 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  28759 bytes
      InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
 +    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
  };
--
+ 
 -pub(super) fn hints(
 -    acc: &mut Vec<InlayHint>,
 -    famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>,

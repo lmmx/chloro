@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2009 bytes
-Chloro size:   1887 bytes
+Chloro size:   1888 bytes
 Rustfmt size:  2009 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: missing-lifetime
 -//
 -// This diagnostic is triggered when a lifetime argument is missing.

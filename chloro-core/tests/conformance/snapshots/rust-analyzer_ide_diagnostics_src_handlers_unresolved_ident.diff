@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1496 bytes
-Chloro size:   1375 bytes
+Chloro size:   1376 bytes
 Rustfmt size:  1537 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: unresolved-ident
 -//
 -// This diagnostic is triggered if an expr-position ident is invalid.

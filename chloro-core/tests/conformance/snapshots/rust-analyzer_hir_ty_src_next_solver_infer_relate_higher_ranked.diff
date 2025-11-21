@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3643 bytes
-Chloro size:   3631 bytes
+Chloro size:   3632 bytes
 Rustfmt size:  3850 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst,
-     PlaceholderRegion, PlaceholderTy, Region, Ty,
- };
--
- impl<'db> InferCtxt<'db> {
-     /// Replaces all bound variables (lifetimes, types, and constants) bound by
-     /// `binder` with placeholder variables in a new universe. This means that the
      #[instrument(level = "debug", skip(self), ret)]
      pub fn enter_forall_and_leak_universe<T>(&self, binder: Binder<'db, T>) -> T
      where

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75833 bytes
-Chloro size:   75802 bytes
+Chloro size:   75803 bytes
 Rustfmt size:  76019 bytes
 
 ✗ Outputs DIFFER
@@ -24,7 +24,7 @@ Rustfmt size:  76019 bytes
      },
 -    CompletionConfig,
  };
--
+ 
 -fn check_with_config(
 -    config: CompletionConfig<'_>,
 -    #[rust_analyzer::rust_fixture] ra_fixture: &str,

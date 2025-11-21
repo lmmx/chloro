@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4250 bytes
-Chloro size:   2391 bytes
+Chloro size:   2392 bytes
 Rustfmt size:  4308 bytes
 
 ✗ Outputs DIFFER
@@ -15,7 +15,7 @@ Rustfmt size:  4308 bytes
      FileId, RootDatabase,
 +    syntax_highlighting::{HighlightConfig, highlight},
  };
--
+ 
 -pub(crate) fn highlight_as_html_with_config(
 -    db: &RootDatabase,
 -    config: &HighlightConfig<'_>,

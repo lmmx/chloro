@@ -11,6 +11,7 @@ use crate::{
     CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
 };
 
+
 pub(crate) fn complete_cargo_env_vars(acc: &mut Completions, ctx: &CompletionContext<'_>, original: &ast::String, expanded: &ast::String) -> Option<()> {
     let is_in_env_expansion = ctx
         .sema

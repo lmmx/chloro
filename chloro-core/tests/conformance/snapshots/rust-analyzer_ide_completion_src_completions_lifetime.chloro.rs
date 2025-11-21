@@ -14,6 +14,7 @@ use crate::{
     completions::Completions,
     context::{CompletionContext, LifetimeContext, LifetimeKind},
 };
+
 /// Completes lifetimes.
 pub(crate) fn complete_lifetime(acc: &mut Completions, ctx: &CompletionContext<'_>, lifetime_ctx: &LifetimeContext) {
     let &LifetimeContext { kind: LifetimeKind::Lifetime { in_lifetime_param_bound, def }, .. } =

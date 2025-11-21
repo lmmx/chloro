@@ -18,6 +18,7 @@ use crate::{
     AssistConfig,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn generate_blanket_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let traitd = ast::Trait::cast(name.syntax().parent()?)?;

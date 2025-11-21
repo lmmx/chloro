@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2660 bytes
-Chloro size:   2648 bytes
+Chloro size:   2649 bytes
 Rustfmt size:  2660 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  2660 bytes
  use triomphe::Arc;
  
  use crate::db::HirDatabase;
--
+ 
 -pub fn target_data_layout_query(
 -    db: &dyn HirDatabase,
 -    krate: Crate,

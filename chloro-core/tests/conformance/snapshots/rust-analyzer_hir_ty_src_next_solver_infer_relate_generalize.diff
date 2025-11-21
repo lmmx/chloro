@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31093 bytes
-Chloro size:   30795 bytes
+Chloro size:   30796 bytes
 Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
@@ -23,13 +23,12 @@ Rustfmt size:  31849 bytes
      AliasTy, Binder, ClauseKind, Const, ConstKind, DbInterner, GenericArgs, PredicateKind, Region,
      SolverDefId, Term, TermVid, Ty, TyKind, TypingMode, UnevaluatedConst,
  };
--
 +use super::{
 +    PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
 +};
+ 
  impl<'db> InferCtxt<'db> {
      /// The idea is that we should ensure that the type variable `target_vid`
-     /// is equal to, a subtype of, or a supertype of `source_ty`.
      /// `TypeRelation`. Do not use this, and instead please use `At::eq`, for all
      /// other usecases (i.e. setting the value of a type var).
      #[instrument(level = "debug", skip(self, relation))]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6348 bytes
-Chloro size:   5726 bytes
+Chloro size:   5727 bytes
 Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  6412 bytes
 -        DbInterner, TypingMode,
      },
  };
--
+ 
 -// rustc does not have a cycle handling for the `specializes` query, meaning a cycle is a bug,
 -// and indeed I was unable to cause cycles even with erroneous code. However, in r-a we can
 -// create a cycle if there is an error in the impl's where clauses. I believe well formed code

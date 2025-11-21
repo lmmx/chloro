@@ -9,6 +9,7 @@ use ide_db::{
 use syntax::{AstNode, SyntaxKind};
 
 use crate::FilePosition;
+
 pub struct MemoryLayoutNode {
     pub item_name: String,
     pub typename: String,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34172 bytes
+Chloro size:   34173 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,8 @@ Rustfmt size:  34938 bytes
 -    WalkEvent,
 +    match_ast,
  };
--
+ 
  #[derive(Debug, Clone)]
- pub struct StructureNode {
-     pub parent: Option<usize>,
      pub exclude_locals: bool,
  }
  

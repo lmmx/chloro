@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5391 bytes
-Chloro size:   5156 bytes
+Chloro size:   5157 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,7 @@ Rustfmt size:  5418 bytes
 +use syntax::ast::{self, AstNode, HasGenericParams, HasName, syntax_factory::SyntaxFactory};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: introduce_named_type_parameter
 -//
 -// Replaces `impl Trait` function argument with the named generic.

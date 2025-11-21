@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   52977 bytes
+Chloro size:   52978 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  53759 bytes
  use crate::{AssistContext, Assists};
 -
  use super::remove_unused_param::range_to_remove;
--
+ 
 -// Assist: extract_module
 -//
 -// Extracts a selected region as separate module. All the references, visibility and imports are

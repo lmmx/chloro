@@ -18,6 +18,7 @@ use crate::{
     lower::path::{PathDiagnosticCallback, PathLoweringContext},
     lower::{LifetimeElisionKind, TyLoweringContext},
 };
+
 #[derive(Debug, Default, Clone)]
 pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3394 bytes
-Chloro size:   3387 bytes
+Chloro size:   3388 bytes
 Rustfmt size:  3394 bytes
 
 ✗ Outputs DIFFER
@@ -11,11 +11,10 @@ Rustfmt size:  3394 bytes
  //! A simple progress bar
  //!
  //! A single thread non-optimized progress bar
--use std::io::{self, Write};
++
+ use std::io::{self, Write};
  
-+use std::io::{self, Write};
  /// A Simple ASCII Progress Bar
- pub(crate) struct ProgressReport<'a> {
      curr: f32,
      text: String,
      hidden: bool,

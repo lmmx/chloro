@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   68787 bytes
+Chloro size:   68788 bytes
 Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  69401 bytes
  use std::cmp::{self, Ordering};
  
  use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
-     },
-     next_solver::Region,
- };
--
- mod simd;
- 
- macro_rules! from_bytes {
  }
  
  impl<'db> Evaluator<'db> {

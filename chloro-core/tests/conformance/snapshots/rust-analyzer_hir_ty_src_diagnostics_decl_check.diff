@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   22993 bytes
+Chloro size:   22994 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,12 @@ Rustfmt size:  23115 bytes
  use crate::db::HirDatabase;
 -
  use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
-+mod case_conv;
  
++mod case_conv;
++
  pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
      let _p = tracing::info_span!("incorrect_case").entered();
+     let mut validator = DeclValidator::new(db);
              CaseType::UpperSnakeCase => "UPPER_SNAKE_CASE",
              CaseType::UpperCamelCase => "UpperCamelCase",
          };

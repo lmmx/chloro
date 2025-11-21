@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3679 bytes
-Chloro size:   3569 bytes
+Chloro size:   3570 bytes
 Rustfmt size:  3832 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- 
- use crate::attr::Attrs;
- use crate::tt::{Leaf, TokenTree, TopSubtree, TtElement};
--
- #[derive(Debug, PartialEq, Eq)]
- pub struct ProcMacroDef {
-     pub name: Name,
  
  #[derive(Debug, PartialEq, Eq)]
  pub enum ProcMacroKind {

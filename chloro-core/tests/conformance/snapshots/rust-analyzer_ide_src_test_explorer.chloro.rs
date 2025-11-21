@@ -6,6 +6,7 @@ use ide_db::{FileId, RootDatabase, base_db::RootQueryDb};
 use syntax::TextRange;
 
 use crate::{NavigationTarget, Runnable, TryToNav, runnables::runnable_fn};
+
 #[derive(Debug)]
 pub enum TestItemKind {
     Crate(base_db::Crate),

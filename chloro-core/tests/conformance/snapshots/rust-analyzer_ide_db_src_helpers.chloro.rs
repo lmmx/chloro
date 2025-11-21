@@ -15,6 +15,7 @@ use crate::{
     defs::{Definition, IdentClass},
     generated,
 };
+
 pub fn item_name(db: &RootDatabase, item: ItemInNs) -> Option<Name> {
     match item {
         ItemInNs::Types(module_def_id) => module_def_id.name(db),

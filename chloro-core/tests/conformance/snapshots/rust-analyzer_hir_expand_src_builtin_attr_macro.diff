@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5345 bytes
-Chloro size:   4802 bytes
+Chloro size:   4803 bytes
 Rustfmt size:  5475 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,8 @@ Rustfmt size:  5475 bytes
 -
 +use crate::{ExpandResult, MacroCallId, MacroCallKind, db::ExpandDatabase, name, tt};
  use super::quote;
--
+ 
  macro_rules! register_builtin {
-     ($(($name:ident, $variant:ident) => $expand:ident),* ) => {
-         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  }
  
  impl BuiltinAttrExpander {

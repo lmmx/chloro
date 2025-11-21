@@ -9,6 +9,7 @@ use crate::{
     InlayHint, InlayHintLabel, InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind,
     TryToNav,
 };
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, famous_defs @ FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, params: ast::GenericParamList) -> Option<()> {
     if !config.sized_bound {
         return None;

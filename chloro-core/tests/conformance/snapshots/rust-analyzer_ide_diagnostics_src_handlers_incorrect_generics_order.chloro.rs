@@ -2,6 +2,7 @@ use hir::GenericArgKind;
 use syntax::SyntaxKind;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn incorrect_generics_order(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectGenericsOrder) -> Diagnostic {
     let provided_description = match d.provided_arg.value.kind() {
         SyntaxKind::CONST_ARG => "constant",

@@ -10,6 +10,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn replace_qualified_name_with_use(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let mut original_path: ast::Path = ctx.find_node_at_offset()?;
     // We don't want to mess with use statements

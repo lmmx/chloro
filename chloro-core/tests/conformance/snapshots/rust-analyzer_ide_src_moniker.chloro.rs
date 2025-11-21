@@ -14,6 +14,7 @@ use itertools::Itertools;
 use syntax::{AstNode, SyntaxKind::*, T};
 
 use crate::{RangeInfo, doc_links::token_as_doc_comment, parent_module::crates_for};
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum MonikerDescriptorKind {
     Namespace,

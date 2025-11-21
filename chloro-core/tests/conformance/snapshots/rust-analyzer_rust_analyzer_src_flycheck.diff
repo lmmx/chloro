@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31034 bytes
+Chloro size:   31035 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
@@ -27,13 +27,6 @@ Rustfmt size:  31299 bytes
  use toolchain::Tool;
  use triomphe::Arc;
  
-     command::{CargoParser, CommandHandle},
-     diagnostics::DiagnosticsGeneration,
- };
--
- #[derive(Clone, Debug, Default, PartialEq, Eq)]
- pub(crate) enum InvocationStrategy {
-     Once,
  /// The spawned thread is shut down when this struct is dropped.
  #[derive(Debug)]
  pub(crate) struct FlycheckHandle {

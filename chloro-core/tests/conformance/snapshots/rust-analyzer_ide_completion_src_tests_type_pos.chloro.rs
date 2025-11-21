@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_with_base_items};
+
 #[test]
 fn record_field_ty() {
     check_with_base_items(

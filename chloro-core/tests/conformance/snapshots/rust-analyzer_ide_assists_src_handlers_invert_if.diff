@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4699 bytes
-Chloro size:   4342 bytes
+Chloro size:   4343 bytes
 Rustfmt size:  4770 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  4770 bytes
      utils::invert_boolean_expression_legacy,
 -    AssistId,
  };
--
+ 
 -// Assist: invert_if
 -//
 -// This transforms if expressions of the form `if !x {A} else {B}` into `if x {B} else {A}`

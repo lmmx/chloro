@@ -39,6 +39,7 @@ use rayon::prelude::*;
 use rustc_hash::FxHashSet;
 
 use crate::RootDatabase;
+
 #[derive(Debug, Clone)]
 pub struct Query {
     query: String,

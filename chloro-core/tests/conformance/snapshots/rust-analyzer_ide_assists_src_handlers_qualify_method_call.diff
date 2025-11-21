@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10705 bytes
-Chloro size:   10311 bytes
+Chloro size:   10312 bytes
 Rustfmt size:  10723 bytes
 
 ✗ Outputs DIFFER
@@ -18,7 +18,7 @@ Rustfmt size:  10723 bytes
      assist_context::{AssistContext, Assists},
      handlers::qualify_path::QualifyCandidate,
  };
--
+ 
 -// Assist: qualify_method_call
 -//
 -// Replaces the method call with a qualified function call.

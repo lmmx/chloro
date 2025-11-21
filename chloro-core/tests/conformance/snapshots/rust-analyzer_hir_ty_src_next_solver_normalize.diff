@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9627 bytes
+Chloro size:   9628 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -34,7 +34,7 @@ Rustfmt size:  9886 bytes
 +    },
 +    util::PlaceholderReplacer,
  };
--
+ 
  /// Deeply normalize all aliases in `value`. This does not handle inference and expects
  /// its input to be already fully resolved.
  pub fn deeply_normalize<'db, T>(at: At<'_, 'db>, value: T) -> Result<T, Vec<NextSolverError<'db>>>

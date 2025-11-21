@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 573 bytes
-Chloro size:   421 bytes
+Chloro size:   422 bytes
 Rustfmt size:  573 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
--
+ 
 -// Diagnostic: unimplemented-builtin-macro
 -//
 -// This diagnostic is shown for builtin macros which are not yet implemented by rust-analyzer

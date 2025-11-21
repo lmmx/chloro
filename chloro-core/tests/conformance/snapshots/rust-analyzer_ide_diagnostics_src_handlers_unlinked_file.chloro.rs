@@ -16,6 +16,7 @@ use syntax::{
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};
+
 pub(crate) fn unlinked_file(ctx: &DiagnosticsContext<'_>, acc: &mut Vec<Diagnostic>, file_id: FileId) {
     let mut range = TextRange::up_to(ctx.sema.db.line_index(file_id).len());
     let fixes = fixes(ctx, file_id, range);

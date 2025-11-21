@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6837 bytes
-Chloro size:   6714 bytes
+Chloro size:   6715 bytes
 Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,6 @@ Rustfmt size:  6998 bytes
  };
  
  use crate::RootDatabase;
--
- #[derive(Debug)]
- pub struct ActiveParameter<'db> {
-     pub ty: Type<'db>,
      }
  
      /// Returns information about the call argument this token is part of.

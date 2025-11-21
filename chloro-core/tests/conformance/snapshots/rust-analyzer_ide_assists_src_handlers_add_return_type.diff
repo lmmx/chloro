@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11636 bytes
+Chloro size:   11637 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  12025 bytes
 +use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_ast};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: add_return_type
 -//
 -// Adds the return type to a function or closure inferred from its tail expression if it doesn't have a return

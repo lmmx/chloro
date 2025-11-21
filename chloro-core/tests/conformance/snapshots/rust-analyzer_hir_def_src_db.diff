@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   11874 bytes
+Chloro size:   11875 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -54,7 +54,7 @@ Rustfmt size:  13097 bytes
 -    ProcMacroLoc, StaticId, StaticLoc, StructId, StructLoc, TraitId, TraitLoc, TypeAliasId,
 -    TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
  };
--
+ 
 -use salsa::plumbing::AsId;
 -
  #[query_group::query_group(InternDatabaseStorage)]

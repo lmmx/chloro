@@ -2,6 +2,7 @@ use syntax::{
     SourceFile, SyntaxKind, T, TextSize,
     ast::{self, AstNode},
 };
+
 pub(crate) fn matching_brace(file: &SourceFile, offset: TextSize) -> Option<TextSize> {
     const BRACES: &[SyntaxKind] =
         &[T!['{'], T!['}'], T!['['], T![']'], T!['('], T![')'], T![<], T![>], T![|], T![|]];

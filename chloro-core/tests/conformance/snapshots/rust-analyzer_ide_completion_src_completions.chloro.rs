@@ -26,6 +26,7 @@ use crate::{
         union_literal::render_union_literal,
     },
 };
+
 pub(crate) mod attribute;
 
 pub(crate) mod dot;

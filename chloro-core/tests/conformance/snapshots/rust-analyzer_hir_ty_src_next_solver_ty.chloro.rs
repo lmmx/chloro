@@ -39,6 +39,7 @@ use super::{
     BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId, interned_vec_db,
     util::{FloatExt, IntegerExt},
 };
+
 pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;
 
 pub type FnHeader<'db> = rustc_type_ir::FnHeader<DbInterner<'db>>;

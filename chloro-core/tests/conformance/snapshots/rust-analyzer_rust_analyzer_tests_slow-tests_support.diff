@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20546 bytes
+Chloro size:   20547 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -28,12 +28,6 @@ Rustfmt size:  21158 bytes
  use test_utils::FixtureWithProjectMeta;
  use tracing_subscriber::fmt::TestWriter;
  use vfs::AbsPathBuf;
- 
- use crate::testdir::TestDir;
--
- pub(crate) struct Project<'a> {
-     fixture: &'a str,
-     tmp_dir: Option<TestDir>,
  
      pub(crate) fn run_lsif(self) -> String {
          let tmp_dir = self.tmp_dir.unwrap_or_else(|| {

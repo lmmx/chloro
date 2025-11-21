@@ -1,6 +1,7 @@
 use ide_db::Severity;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn bad_rtn(ctx: &DiagnosticsContext<'_>, d: &hir::BadRtn) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

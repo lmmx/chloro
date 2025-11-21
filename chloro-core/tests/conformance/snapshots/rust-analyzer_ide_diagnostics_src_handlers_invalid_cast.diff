@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27703 bytes
-Chloro size:   27457 bytes
+Chloro size:   27458 bytes
 Rustfmt size:  27895 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- use hir::{CastError, ClosureStyle, HirDisplay};
- 
- use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
- macro_rules! format_ty {
-     ($ctx:expr, $fmt:literal, $($arg:expr),* $(,)?) => {{
-         std::format!(
      }}
  }
  

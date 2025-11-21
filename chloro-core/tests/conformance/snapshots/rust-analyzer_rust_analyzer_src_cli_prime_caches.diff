@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2604 bytes
-Chloro size:   2597 bytes
+Chloro size:   2598 bytes
 Rustfmt size:  2604 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,6 @@ Rustfmt size:  2604 bytes
  use profile::StopWatch;
  use project_model::{ProjectManifest, ProjectWorkspace};
  use vfs::AbsPathBuf;
- 
- use crate::cli::flags;
--
- impl flags::PrimeCaches {
-     pub fn run(self) -> anyhow::Result<()> {
-         let root =
              None,
          );
          let mut stop_watch = StopWatch::start();

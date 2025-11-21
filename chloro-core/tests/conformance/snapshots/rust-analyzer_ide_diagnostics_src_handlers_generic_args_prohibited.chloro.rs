@@ -6,6 +6,7 @@ use ide_db::text_edit::TextEdit;
 use syntax::{AstNode, TextRange, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn generic_args_prohibited(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

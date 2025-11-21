@@ -10,6 +10,7 @@ use test_fixture::WithFixture;
 use test_utils::{MiniCore, assert_eq_text, extract_annotations};
 
 use crate::{DiagnosticsConfig, Severity};
+
 #![allow(clippy::print_stderr)]
 mod overly_long_real_world_cases;
 

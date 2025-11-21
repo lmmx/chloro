@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7261 bytes
-Chloro size:   7122 bytes
+Chloro size:   7123 bytes
 Rustfmt size:  7430 bytes
 
 ✗ Outputs DIFFER
@@ -23,7 +23,7 @@ Rustfmt size:  7430 bytes
      },
 -    ImplTraitId,
  };
--
+ 
 -pub(crate) fn opaque_types_defined_by(
 -    db: &dyn HirDatabase,
 -    def_id: DefWithBodyId,

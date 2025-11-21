@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4500 bytes
-Chloro size:   4470 bytes
+Chloro size:   4471 bytes
 Rustfmt size:  5051 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,7 @@ Rustfmt size:  5051 bytes
 +use test_utils::{RangeOrOffset, extract_annotations};
  
  use crate::{Analysis, AnalysisHost, FileId, FilePosition, FileRange};
--
- /// Creates analysis for a single file.
- pub(crate) fn file(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FileId) {
-     let mut host = AnalysisHost::default();
+ 
  }
  
  /// Creates analysis from a multi-file fixture, returns positions marked with $0.

@@ -10,6 +10,7 @@ use std::str::FromStr;
 use syntax::TextRange;
 
 use crate::{label::Label, source_change::SourceChange};
+
 #[derive(Debug, Clone)]
 pub struct Assist {
     pub id: AssistId,

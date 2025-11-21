@@ -16,6 +16,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // First, grab the uses that intersect with the current selection.
     let selected_el = match ctx.covering_element() {

@@ -24,6 +24,7 @@ use syntax::{
 use crate::RootDatabase;
 use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
 use crate::famous_defs::FamousDefs;
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum Definition {
     Macro(Macro),

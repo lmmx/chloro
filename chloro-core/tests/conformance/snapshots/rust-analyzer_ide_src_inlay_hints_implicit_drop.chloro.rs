@@ -19,6 +19,7 @@ use syntax::{
 };
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, display_target: hir::DisplayTarget, node: &ast::Fn) -> Option<()> {
     if !config.implicit_drop_hints {
         return None;

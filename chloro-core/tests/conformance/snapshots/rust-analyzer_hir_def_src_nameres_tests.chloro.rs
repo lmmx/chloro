@@ -6,6 +6,7 @@ use crate::{
     nameres::{DefMap, crate_def_map},
     test_db::TestDB,
 };
+
 mod globs;
 
 mod incremental;

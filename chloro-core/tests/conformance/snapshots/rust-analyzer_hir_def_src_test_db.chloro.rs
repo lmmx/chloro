@@ -18,6 +18,7 @@ use crate::{
     nameres::{DefMap, ModuleSource, block_def_map, crate_def_map},
     src::HasSource,
 };
+
 #[salsa_macros::db]
 pub(crate) struct TestDB {
     storage: salsa::Storage<Self>,

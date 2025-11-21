@@ -21,6 +21,7 @@ pub use span::{self, FileId};
 use triomphe::Arc;
 
 use crate::line_index::LineIndex;
+
 mod apply_change;
 
 pub mod active_parameter;

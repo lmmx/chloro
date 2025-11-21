@@ -6,6 +6,7 @@
 use std::fs;
 
 use facet::Facet;
+
 /// User preferences loaded from asterism.toml or falling back to defaults.
 #[derive(Facet, Clone)]
 pub struct Config {

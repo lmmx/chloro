@@ -21,6 +21,7 @@ use crate::{
     Field, Function, GenericParam, HasCrate, Impl, LifetimeParam, Macro, Module, ModuleDef, Static,
     Struct, Trait, Type, TypeAlias, TypeParam, Union, Variant, VariantDef,
 };
+
 fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner;
 #[doc(hidden)]
 fn attr_id(self) -> AttrDefId;

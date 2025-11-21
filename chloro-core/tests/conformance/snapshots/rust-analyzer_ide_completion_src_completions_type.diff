@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10280 bytes
-Chloro size:   10238 bytes
+Chloro size:   10239 bytes
 Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  10776 bytes
      render::render_type_inference,
 -    CompletionContext, Completions,
  };
--
+ 
 -pub(crate) fn complete_type_path(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

@@ -6,6 +6,7 @@ use stdx::equal_range_by;
 use syntax::TextRange;
 
 use crate::{HlRange, HlTag};
+
 pub(super) struct Highlights {
     root: Node,
 }

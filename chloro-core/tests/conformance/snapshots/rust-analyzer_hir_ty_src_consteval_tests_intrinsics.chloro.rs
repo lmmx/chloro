@@ -1,4 +1,5 @@
 use super::*;
+
 #[test]
 fn size_of() {
     check_number(

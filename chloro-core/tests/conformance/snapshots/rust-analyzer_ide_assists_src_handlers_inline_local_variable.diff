@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18781 bytes
-Chloro size:   18494 bytes
+Chloro size:   18495 bytes
 Rustfmt size:  18858 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,7 @@ Rustfmt size:  18858 bytes
      AssistId,
 +    assist_context::{AssistContext, Assists},
  };
--
+ 
 -// Assist: inline_local_variable
 -//
 -// Inlines a local variable.

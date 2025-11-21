@@ -11,6 +11,7 @@ use syntax::{
 };
 
 use crate::FileRange;
+
 pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
     let sema = Semantics::new(db);
     let src = sema.parse_guess_edition(frange.file_id);

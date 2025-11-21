@@ -22,6 +22,7 @@ use hir_def::{
 use hir_expand::{HirFileId, attrs::collect_attrs};
 use span::AstIdNode;
 use syntax::{AstPtr, ast};
+
 fn child_by_source(&self, db: &dyn DefDatabase, file_id: HirFileId) -> DynMap {
     let mut res = DynMap::default();
     self.child_by_source_to(db, &mut res, file_id);

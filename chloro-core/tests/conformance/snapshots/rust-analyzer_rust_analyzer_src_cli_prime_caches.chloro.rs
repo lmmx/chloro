@@ -11,6 +11,7 @@ use project_model::{ProjectManifest, ProjectWorkspace};
 use vfs::AbsPathBuf;
 
 use crate::cli::flags;
+
 impl flags::PrimeCaches {
     pub fn run(self) -> anyhow::Result<()> {
         let root =

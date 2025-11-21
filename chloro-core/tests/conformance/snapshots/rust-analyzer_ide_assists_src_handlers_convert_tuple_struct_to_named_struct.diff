@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25917 bytes
+Chloro size:   25918 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,9 @@ Rustfmt size:  26763 bytes
  use syntax::{
      SyntaxElement, SyntaxKind, SyntaxNode, T, TextSize,
      ast::{
- };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
--
+ 
 -// Assist: convert_tuple_struct_to_named_struct
 -//
 -// Converts tuple struct to struct with named fields, and analogously for tuple enum variants.

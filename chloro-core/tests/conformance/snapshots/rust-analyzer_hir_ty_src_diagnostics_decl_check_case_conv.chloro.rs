@@ -1,5 +1,6 @@
 //! Functions for string case manipulation, such as detecting the identifier case,
 //! and converting it into appropriate form.
+
 /// Converts an identifier to an UpperCamelCase form.
 /// Returns `None` if the string is already in UpperCamelCase.
 pub(crate) fn to_camel_case(ident: &str) -> Option<String> {

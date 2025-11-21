@@ -3,6 +3,7 @@
 use ide::Analysis;
 
 use crate::cli::{flags, read_stdin};
+
 impl flags::Highlight {
     pub fn run(self) -> anyhow::Result<()> {
         let (analysis, file_id) = Analysis::from_single_file(read_stdin()?);

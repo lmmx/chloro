@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn unresolved_import(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedImport) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

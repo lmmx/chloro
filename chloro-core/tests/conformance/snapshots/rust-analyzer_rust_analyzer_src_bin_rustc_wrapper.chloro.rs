@@ -10,6 +10,7 @@ use std::{
     io,
     process::{Command, ExitCode, Stdio},
 };
+
 pub(crate) fn main() -> io::Result<ExitCode> {
     let mut args = std::env::args_os();
     let _me = args.next().unwrap();

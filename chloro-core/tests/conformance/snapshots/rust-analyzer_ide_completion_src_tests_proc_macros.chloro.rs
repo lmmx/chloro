@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::check;
+
 #[test]
 fn complete_dot_in_attr() {
     check(

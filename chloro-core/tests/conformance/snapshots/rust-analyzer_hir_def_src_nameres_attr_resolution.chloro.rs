@@ -18,6 +18,7 @@ use crate::{
     nameres::{LocalDefMap, path_resolution::ResolveMode},
 };
 use super::{DefMap, MacroSubNs};
+
 pub enum ResolvedAttr {
     /// Attribute resolved to an attribute macro.
     Macro(MacroCallId),

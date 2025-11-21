@@ -25,6 +25,7 @@ use crate::{
     Type, TypeParam, term_search::Expr,
 };
 use super::{LookupTable, NewTypesKey, TermSearchCtx};
+
 /// # Trivial tactic
 ///
 /// Attempts to fulfill the goal by trying items in scope

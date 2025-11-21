@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4719 bytes
-Chloro size:   4553 bytes
+Chloro size:   4554 bytes
 Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
@@ -27,10 +27,8 @@ Rustfmt size:  4752 bytes
      src::HasSource,
 -    DefWithBodyId, HasModule,
  };
--
+ 
  /// The body of an item (function, const etc.).
- #[derive(Debug, Eq, PartialEq)]
- pub struct Body {
  }
  
  impl Body {

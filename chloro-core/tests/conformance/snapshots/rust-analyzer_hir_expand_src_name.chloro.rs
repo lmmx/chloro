@@ -6,6 +6,7 @@ use intern::{Symbol, sym};
 use span::{Edition, SyntaxContext};
 use syntax::utils::is_raw_identifier;
 use syntax::{ast, format_smolstr};
+
 /// `Name` is a wrapper around string, which is used in hir for both references
 /// and declarations. In theory, names should also carry hygiene info, but we are
 /// not there yet!

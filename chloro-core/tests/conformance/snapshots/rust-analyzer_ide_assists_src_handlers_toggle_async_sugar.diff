@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14759 bytes
-Chloro size:   13838 bytes
+Chloro size:   13839 bytes
 Rustfmt size:  14777 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  14777 bytes
  };
  
  use crate::{AssistContext, Assists};
--
+ 
 -// Assist: sugar_impl_future_into_async
 -//
 -// Rewrites asynchronous function from `-> impl Future` into `async fn`.

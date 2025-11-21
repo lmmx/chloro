@@ -3,6 +3,7 @@ use ide_db::{RootDatabase, assists::AssistId, source_change::SourceChangeBuilder
 use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
+
 pub(crate) fn add_explicit_enum_discriminant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let enum_node = ctx.find_node_at_offset::<ast::Enum>()?;
     let enum_def = ctx.sema.to_def(&enum_node)?;

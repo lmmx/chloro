@@ -15,6 +15,7 @@ use test_utils::skip_slow_tests;
 
 use crate::support::{Project, Server};
 use crate::testdir::TestDir;
+
 struct RatomlTest {
     urls: Vec<Url>,
     server: Server,

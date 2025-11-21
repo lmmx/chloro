@@ -12,6 +12,7 @@ use crate::{
     },
     visibility::RawVisibility,
 };
+
 pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {
     let mut p =
         Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };

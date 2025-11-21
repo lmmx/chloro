@@ -43,6 +43,7 @@ use super::{
     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
     traits::{Obligation, ObligationCause},
 };
+
 #[derive(Clone, Copy)]
 pub struct At<'a, 'db> {
     pub infcx: &'a InferCtxt<'db>,

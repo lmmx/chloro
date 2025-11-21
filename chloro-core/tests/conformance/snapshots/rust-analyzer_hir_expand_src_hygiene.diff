@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4655 bytes
-Chloro size:   4374 bytes
+Chloro size:   4375 bytes
 Rustfmt size:  4904 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  4904 bytes
  use span::{Edition, MacroCallId, Span, SyntaxContext};
  
  use crate::db::ExpandDatabase;
--
+ 
 -pub use span::Transparency;
 -
 -pub fn span_with_def_site_ctxt(

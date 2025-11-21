@@ -3,6 +3,7 @@
 use span::Edition;
 
 use crate::Severity;
+
 #[derive(Clone)]
 pub struct Lint {
     pub label: &'static str,

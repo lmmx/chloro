@@ -24,6 +24,7 @@ use crate::next_solver::{
 use super::{
     PredicateEmittingRelation, Relate, RelateResult, StructurallyRelateAliases, TypeRelation,
 };
+
 impl<'db> InferCtxt<'db> {
     /// The idea is that we should ensure that the type variable `target_vid`
     /// is equal to, a subtype of, or a supertype of `source_ty`.

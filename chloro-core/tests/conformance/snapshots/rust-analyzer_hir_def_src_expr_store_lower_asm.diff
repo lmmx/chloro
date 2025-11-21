@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14081 bytes
-Chloro size:   14046 bytes
+Chloro size:   14047 bytes
 Rustfmt size:  14081 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,8 @@ Rustfmt size:  14081 bytes
  use hir_expand::name::Name;
  use intern::Symbol;
  use rustc_hash::{FxHashMap, FxHashSet};
-     expr_store::lower::{ExprCollector, FxIndexSet},
-     hir::{AsmOperand, AsmOptions, Expr, ExprId, InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
  };
--
+ 
  impl ExprCollector<'_> {
 -    pub(super) fn lower_inline_asm(
 -        &mut self,

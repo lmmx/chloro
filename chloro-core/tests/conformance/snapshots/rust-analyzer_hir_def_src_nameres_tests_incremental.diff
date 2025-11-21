@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15843 bytes
-Chloro size:   14692 bytes
+Chloro size:   14693 bytes
 Rustfmt size:  16061 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,9 @@ Rustfmt size:  16061 bytes
  use intern::Symbol;
  use span::Edition;
  use test_fixture::WithFixture;
-     db::DefDatabase,
      nameres::{crate_def_map, tests::TestDB},
  };
--
+ 
 -fn check_def_map_is_not_recomputed(
 -    #[rust_analyzer::rust_fixture] ra_fixture_initial: &str,
 -    #[rust_analyzer::rust_fixture] ra_fixture_change: &str,

@@ -10,6 +10,7 @@ use syntax::{
 };
 
 use crate::AssistContext;
+
 /// Decides whether the new path expression needs to be dereferenced and/or wrapped in parens.
 /// Returns the relevant parent expression to replace and the [RefData].
 pub(crate) fn determine_ref_and_parens(ctx: &AssistContext<'_>, field_expr: &FieldExpr) -> (ast::Expr, RefData) {

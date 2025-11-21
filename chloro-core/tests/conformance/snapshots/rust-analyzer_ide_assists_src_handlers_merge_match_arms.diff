@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18162 bytes
+Chloro size:   18163 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  18737 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists, TextRange};
--
+ 
 -// Assist: merge_match_arms
 -//
 -// Merges the current match arm with the following if their bodies are identical.

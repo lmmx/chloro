@@ -6,6 +6,7 @@ use syntax::{AstNode, match_ast};
 use syntax::{SyntaxNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
     let code = match d.lint {
         UnsafeLint::HardError => DiagnosticCode::RustcHardError("E0133"),

@@ -12,6 +12,7 @@ use ide_db::{
 };
 
 use crate::AssistKind;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AssistConfig {
     pub snippet_cap: Option<SnippetCap>,

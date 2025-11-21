@@ -13,6 +13,7 @@ use syntax::{
 use tracing::{debug, warn};
 
 use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
+
 fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
     if !attr.simple_name().as_deref().map(|v| v == "cfg")? {
         return None;

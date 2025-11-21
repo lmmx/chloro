@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12148 bytes
+Chloro size:   12149 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,13 @@ Rustfmt size:  12328 bytes
 +use test_utils::{MiniCore, assert_eq_text, extract_annotations};
  
  use crate::{DiagnosticsConfig, Severity};
+ 
 +#![allow(clippy::print_stderr)]
 +mod overly_long_real_world_cases;
- 
++
  /// Takes a multi-file input fixture with annotated cursor positions,
  /// and checks that:
+ ///  * a diagnostic is produced
  ///  * the first diagnostic fix trigger range touches the input cursor position
  ///  * that the contents of the file containing the cursor match `after` after the diagnostic fix is applied
  #[track_caller]

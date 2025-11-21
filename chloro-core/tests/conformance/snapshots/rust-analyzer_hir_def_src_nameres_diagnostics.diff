@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4245 bytes
-Chloro size:   4101 bytes
+Chloro size:   4102 bytes
 Rustfmt size:  4722 bytes
 
 ✗ Outputs DIFFER
@@ -19,11 +19,10 @@ Rustfmt size:  4722 bytes
  use syntax::ast;
  
 -use crate::{nameres::LocalModuleId, AstId};
--
 +use crate::{AstId, nameres::LocalModuleId};
+ 
  #[derive(Debug, PartialEq, Eq)]
  pub enum DefDiagnosticKind {
-     UnresolvedModule {
  }
  
  impl DefDiagnostic {

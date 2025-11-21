@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8189 bytes
+Chloro size:   8190 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,7 @@ Rustfmt size:  8697 bytes
 -    assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
 +    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel, assist_config::AssistConfig,
  };
--
+ 
 -pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 -
  /// `AssistContext` allows to apply an assist or check if it could be applied.

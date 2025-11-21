@@ -19,6 +19,7 @@ use crate::{
         inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
     },
 };
+
 #![expect(dead_code, reason = "this is used by rustc")]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SelectionError<'db> {

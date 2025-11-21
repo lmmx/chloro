@@ -7,6 +7,7 @@
 use expect_test::expect;
 
 use crate::macro_expansion_tests::{check, check_errors};
+
 #[test]
 fn attribute_macro_attr_censoring() {
     cov_mark::check!(attribute_macro_attr_censoring);

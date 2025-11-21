@@ -8,6 +8,7 @@ use syntax::{
 use crate::{
     CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
 };
+
 // Most of these are feature gated, we should filter/add feature gate completions once we have them.
 
 pub(crate) fn complete_extern_abi(acc: &mut Completions, ctx: &CompletionContext<'_>, expanded: &ast::String) -> Option<()> {

@@ -35,6 +35,7 @@ use super::{
     TyKind,
     fold::{BoundVarReplacer, FnMutDelegate},
 };
+
 #[derive(Clone, Debug)]
 pub struct Discr<'db> {
     /// Bit representation of the discriminant (e.g., `-128i8` is `0xFF_u128`).

@@ -10,6 +10,7 @@ use crate::next_solver::{
     infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
 };
 use super::OpaqueHiddenType;
+
 #[derive(Default, Debug, Clone)]
 pub(crate) struct OpaqueTypeStorage<'db> {
     opaque_types: FxIndexMap<OpaqueTypeKey<'db>, OpaqueHiddenType<'db>>,

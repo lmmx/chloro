@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8087 bytes
-Chloro size:   7721 bytes
+Chloro size:   7722 bytes
 Rustfmt size:  8281 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,8 @@ Rustfmt size:  8281 bytes
  };
 -
  use super::InferCtxt;
--
+ 
  /// The reason why we incurred this obligation; used for error reporting.
- ///
- /// Non-misc `ObligationCauseCode`s are stored on the heap. This gives the
  /// only live for a short period of time.
  #[derive(Clone, Debug, PartialEq, Eq)]
  pub struct ObligationCause {

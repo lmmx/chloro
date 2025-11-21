@@ -9,6 +9,7 @@ use crate::{
     ChangeWithProcMacros, RootDatabase,
     symbol_index::{LibraryRoots, LocalRoots},
 };
+
 impl RootDatabase {
     pub fn request_cancellation(&mut self) {
         let _p = tracing::info_span!("RootDatabase::request_cancellation").entered();

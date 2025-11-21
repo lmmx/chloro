@@ -13,6 +13,7 @@ use syntax::{
 use crate::{
     Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, adjusted_display_range, fix,
 };
+
 pub(crate) fn remove_unnecessary_else(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Diagnostic> {
     if d.if_expr.file_id.macro_file().is_some() {
         // FIXME: Our infra can't handle allow from within macro expansions rn

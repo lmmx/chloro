@@ -27,6 +27,7 @@ use crate::{
     doc_links::token_as_doc_comment,
     navigation_target::{self, ToNav},
 };
+
 #[derive(Debug)]
 pub struct GotoDefinitionConfig<'a> {
     pub minicore: MiniCore<'a>,

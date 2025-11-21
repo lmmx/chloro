@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35679 bytes
+Chloro size:   35680 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -28,10 +28,6 @@ Rustfmt size:  36357 bytes
  };
  
  use crate::syntax_helpers::node_ext::vis_eq;
--
- /// What type of merges are allowed.
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub enum MergeBehavior {
  
  /// Merge `rhs` into `lhs` keeping both intact.
  /// Returned AST is mutable.

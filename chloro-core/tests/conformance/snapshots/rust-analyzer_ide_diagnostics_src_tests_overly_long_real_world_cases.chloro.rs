@@ -1,6 +1,7 @@
 //! Overly long excerpts of failures from real world cases, that I was too lazy to minimize.
 
 use crate::tests::check_diagnostics_with_disabled;
+
 #[test]
 fn tracing_infinite_repeat() {
     check_diagnostics_with_disabled(

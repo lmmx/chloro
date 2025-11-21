@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn parenthesized_generic_args_without_fn_trait(ctx: &DiagnosticsContext<'_>, d: &hir::ParenthesizedGenericArgsWithoutFnTrait) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

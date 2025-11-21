@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 141954 bytes
-Chloro size:   140720 bytes
+Chloro size:   140721 bytes
 Rustfmt size:  141954 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     assist_context::{AssistContext, Assists, TreeMutator},
      utils::generate_impl,
  };
--
+ 
 -// Assist: extract_function
 -//
 -// Extracts selected statements and comments into new function.

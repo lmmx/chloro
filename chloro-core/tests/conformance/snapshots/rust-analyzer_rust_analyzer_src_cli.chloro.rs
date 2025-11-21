@@ -8,6 +8,7 @@ use hir_ty::db::HirDatabase;
 use ide::{AnalysisHost, Edition};
 use itertools::Itertools;
 use vfs::Vfs;
+
 #![allow(clippy::print_stdout, clippy::print_stderr)]
 mod analysis_stats;
 

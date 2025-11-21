@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   63841 bytes
+Chloro size:   63842 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,6 @@ Rustfmt size:  65944 bytes
  use std::ops::ControlFlow;
  
  use base_db::Crate;
-     traits::next_trait_solve_canonical_in_ctxt,
-     utils::all_super_traits,
- };
--
  /// This is used as a key for indexing impls.
  #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
  pub enum TyFingerprint {

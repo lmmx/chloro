@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11180 bytes
+Chloro size:   11181 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -29,10 +29,8 @@ Rustfmt size:  11829 bytes
      interner::{BoundVarKind, DbInterner, Placeholder},
 -    ErrorGuaranteed, SolverDefId,
  };
--
- pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;
  
- #[salsa::interned(constructor = new_)]
+ pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;
          })
      }
  

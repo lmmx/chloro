@@ -21,6 +21,7 @@ use crate::next_solver::{
     },
     obligation_ctxt::ObligationCtxt,
 };
+
 pub(crate) struct InspectConfig {
     pub(crate) max_depth: usize,
 }

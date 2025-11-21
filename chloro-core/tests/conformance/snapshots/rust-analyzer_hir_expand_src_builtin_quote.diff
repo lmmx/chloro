@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12531 bytes
-Chloro size:   10717 bytes
+Chloro size:   10718 bytes
 Rustfmt size:  12665 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  12665 bytes
  use tt::IdentIsRaw;
  
  use crate::{name::Name, tt::TopSubtreeBuilder};
--
+ 
 +#![allow(clippy::crate_in_macro_def)]
  pub(crate) fn dollar_crate(span: Span) -> tt::Ident<Span> {
 -    tt::Ident {

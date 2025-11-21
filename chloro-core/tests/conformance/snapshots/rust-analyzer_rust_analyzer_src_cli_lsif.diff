@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12611 bytes
-Chloro size:   12535 bytes
+Chloro size:   12536 bytes
 Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
@@ -18,13 +18,6 @@ Rustfmt size:  12892 bytes
  use lsp_types::lsif;
  use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
  use rustc_hash::FxHashMap;
-     lsp::to_proto,
-     version::version,
- };
--
- struct LsifManager<'a, 'w> {
-     count: i32,
-     token_map: FxHashMap<TokenId, Id>,
  }
  
  impl LsifManager<'_, '_> {

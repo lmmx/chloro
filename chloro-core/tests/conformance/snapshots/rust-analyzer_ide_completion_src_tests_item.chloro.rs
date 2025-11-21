@@ -6,6 +6,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_edit, check_with_base_items};
+
 #[test]
 fn target_type_or_trait_in_impl_block() {
     check_with_base_items(

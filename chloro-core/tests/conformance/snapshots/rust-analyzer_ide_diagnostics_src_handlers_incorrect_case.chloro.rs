@@ -9,6 +9,7 @@ use crate::{
     // references::rename::rename_with_semantics,
     unresolved_fix,
 };
+
 pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {
     let code = match d.expected_case {
         CaseType::LowerSnakeCase => DiagnosticCode::RustcLint("non_snake_case"),

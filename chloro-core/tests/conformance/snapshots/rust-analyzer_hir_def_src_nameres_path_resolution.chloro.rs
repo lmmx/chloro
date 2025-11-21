@@ -30,6 +30,7 @@ use crate::{
     per_ns::PerNs,
     visibility::{RawVisibility, Visibility},
 };
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum ResolveMode {
     Import,

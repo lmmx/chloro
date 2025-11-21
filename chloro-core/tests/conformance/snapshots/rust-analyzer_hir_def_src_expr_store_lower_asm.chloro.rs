@@ -13,6 +13,7 @@ use crate::{
     expr_store::lower::{ExprCollector, FxIndexSet},
     hir::{AsmOperand, AsmOptions, Expr, ExprId, InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
 };
+
 impl ExprCollector<'_> {
     pub(super) fn lower_inline_asm(&mut self, asm: ast::AsmExpr, syntax_ptr: AstPtr<ast::Expr>) -> ExprId {
         let mut clobber_abis = FxIndexSet::default();

@@ -7,6 +7,7 @@ use rustc_type_ir::{self as ty, ir_print::IrPrint};
 
 use super::SolverDefId;
 use super::interner::DbInterner;
+
 impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
     fn print(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)

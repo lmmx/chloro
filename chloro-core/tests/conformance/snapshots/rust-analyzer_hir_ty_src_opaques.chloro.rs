@@ -19,6 +19,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
 };
+
 pub(crate) fn opaque_types_defined_by(db: &dyn HirDatabase, def_id: DefWithBodyId, result: &mut Vec<SolverDefId>) {
     if let DefWithBodyId::FunctionId(func) = def_id {
         // A function may define its own RPITs.

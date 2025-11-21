@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3904 bytes
-Chloro size:   3790 bytes
+Chloro size:   3791 bytes
 Rustfmt size:  3961 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,8 @@ Rustfmt size:  3961 bytes
 +use syntax::{AstNode, SyntaxNode, SyntaxNodePtr, ast};
  
 -use crate::{fix, Diagnostic, DiagnosticCode};
--
++use crate::{Diagnostic, DiagnosticCode, fix};
+ 
 -// Diagnostic: unnecessary-braces
 -//
 -// Diagnostic for unnecessary braces in `use` items.
@@ -29,7 +30,6 @@ Rustfmt size:  3961 bytes
 -    file_id: EditionedFileId,
 -    node: &SyntaxNode,
 -) -> Option<()> {
-+use crate::{Diagnostic, DiagnosticCode, fix};
 +pub(crate) fn useless_braces(db: &RootDatabase, acc: &mut Vec<Diagnostic>, file_id: EditionedFileId, node: &SyntaxNode) -> Option<()> {
      let use_tree_list = ast::UseTreeList::cast(node.clone())?;
      if let Some((single_use_tree,)) = use_tree_list.use_trees().collect_tuple() {

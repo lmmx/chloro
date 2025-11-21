@@ -11,6 +11,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, Assists};
+
 pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let function: ast::Fn = ctx.find_node_at_offset()?;
     // Do nothing if the cursor isn't on the async token.

@@ -3,6 +3,7 @@
 use std::fmt;
 
 use stdx::always;
+
 /// A type to specify UI label, like an entry in the list of assists. Enforces
 /// proper casing:
 ///

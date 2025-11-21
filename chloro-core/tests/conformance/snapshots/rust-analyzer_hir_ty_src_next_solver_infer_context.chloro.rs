@@ -13,6 +13,7 @@ use crate::next_solver::{
     infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
 };
 use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
+
 impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
     type Interner = DbInterner<'db>;
 

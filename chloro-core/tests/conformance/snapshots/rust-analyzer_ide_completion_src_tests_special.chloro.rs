@@ -10,6 +10,7 @@ use crate::{
         do_completion_with_config,
     },
 };
+
 #[test]
 fn completes_if_prefix_is_keyword() {
     check_edit(

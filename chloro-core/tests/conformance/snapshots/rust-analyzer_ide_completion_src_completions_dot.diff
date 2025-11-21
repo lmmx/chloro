@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35715 bytes
+Chloro size:   35716 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-         PathExprCtx, Qualified,
-     },
  };
--
+ 
  /// Complete dot accesses, i.e. fields or methods.
 -pub(crate) fn complete_dot(
 -    acc: &mut Completions,

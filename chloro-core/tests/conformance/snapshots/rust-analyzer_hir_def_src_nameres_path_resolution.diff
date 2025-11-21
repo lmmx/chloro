@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   31721 bytes
+Chloro size:   31722 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -26,10 +26,8 @@ Rustfmt size:  32996 bytes
      visibility::{RawVisibility, Visibility},
 -    AdtId, LocalModuleId, ModuleDefId,
  };
--
+ 
  #[derive(Debug, Clone, Copy, PartialEq, Eq)]
- pub(super) enum ResolveMode {
-     Import,
          )
      }
  

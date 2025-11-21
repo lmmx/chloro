@@ -2,6 +2,7 @@
 
 use hir_def::type_ref::TypeRefId;
 use hir_def::{GenericDefId, GenericParamId};
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TyLoweringDiagnostic {
     pub source: TypeRefId,

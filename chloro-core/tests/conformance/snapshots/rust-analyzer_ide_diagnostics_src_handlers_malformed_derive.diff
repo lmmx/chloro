@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 948 bytes
-Chloro size:   826 bytes
+Chloro size:   827 bytes
 Rustfmt size:  948 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: malformed-derive
 -//
 -// This diagnostic is shown when the derive attribute has invalid input.

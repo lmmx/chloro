@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35485 bytes
+Chloro size:   35486 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::assist_context::{AssistContext, Assists};
--
+ 
 -// Assist: convert_closure_to_fn
 -//
 -// This converts a closure to a freestanding function, changing all captures to parameters.

@@ -33,6 +33,7 @@ use crate::{
     hover::{SubstTyLen, notable_traits, walk_and_push_ty},
     interpret::render_const_eval_error,
 };
+
 pub(super) fn type_info_of(sema: &Semantics<'_, RootDatabase>, _config: &HoverConfig<'_>, expr_or_pat: &Either<ast::Expr, ast::Pat>, edition: Edition, display_target: DisplayTarget) -> Option<HoverResult> {
     let ty_info = match expr_or_pat {
         Either::Left(expr) => sema.type_of_expr(expr)?,

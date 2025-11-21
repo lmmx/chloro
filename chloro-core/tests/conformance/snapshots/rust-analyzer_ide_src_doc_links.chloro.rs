@@ -28,6 +28,7 @@ use crate::{
     FilePosition, Semantics,
     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
 };
+
 #[cfg(test)]
 mod tests;
 

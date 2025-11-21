@@ -9,6 +9,7 @@ use project_model::{CargoConfig, RustLibSource};
 use syntax::TextRange;
 
 use crate::cli::{Result, flags, full_name_of_item};
+
 impl flags::RunTests {
     pub fn run(self) -> Result<()> {
         let cargo_config = CargoConfig {

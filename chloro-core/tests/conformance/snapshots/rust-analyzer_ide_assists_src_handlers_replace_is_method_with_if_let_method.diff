@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6668 bytes
-Chloro size:   6305 bytes
+Chloro size:   6306 bytes
 Rustfmt size:  6668 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  6668 bytes
  use syntax::ast::{self, AstNode, syntax_factory::SyntaxFactory};
  
  use crate::{AssistContext, AssistId, Assists, utils::cover_let_chain};
--
+ 
 -// Assist: replace_is_some_with_if_let_some
 -//
 -// Replace `if x.is_some()` with `if let Some(_tmp) = x` or `if x.is_ok()` with `if let Ok(_tmp) = x`.

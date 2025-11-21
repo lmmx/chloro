@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1115 bytes
-Chloro size:   1073 bytes
+Chloro size:   1074 bytes
 Rustfmt size:  1115 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,6 @@ Rustfmt size:  1115 bytes
  use std::fmt;
  
  use ide_db::impl_empty_upmap_from_ra_fixture;
--
- #[derive(Clone, Default, Debug, Hash, PartialEq, Eq)]
- pub struct Markup {
-     text: String,
      pub fn as_str(&self) -> &str {
          self.text.as_str()
      }

@@ -13,6 +13,7 @@ use crate::{
     test_db::TestDB,
 };
 use super::{MirEvalError, interpret_mir};
+
 fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
     crate::attach_db(db, || {
         let interner = DbInterner::new_with(db, None, None);

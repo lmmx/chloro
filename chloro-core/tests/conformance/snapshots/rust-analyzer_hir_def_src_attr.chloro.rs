@@ -31,6 +31,7 @@ use crate::{
     nameres::{ModuleOrigin, ModuleSource},
     src::{HasChildSource, HasSource},
 };
+
 /// Desugared attributes of an item post `cfg_attr` expansion.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct Attrs(RawAttrs);

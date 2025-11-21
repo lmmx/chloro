@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13362 bytes
-Chloro size:   12011 bytes
+Chloro size:   12012 bytes
 Rustfmt size:  13389 bytes
 
 ✗ Outputs DIFFER
@@ -36,7 +36,7 @@ Rustfmt size:  13389 bytes
      next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
 -    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
  };
--
+ 
  #[query_group::query_group]
 -pub trait HirDatabase: DefDatabase + std::fmt::Debug {
 -    #[salsa::invoke(crate::infer::infer_query)]

@@ -9,6 +9,7 @@ use crate::next_solver::BoundConst;
 use super::{
     Binder, BoundRegion, BoundTy, Const, ConstKind, DbInterner, Predicate, Region, Ty, TyKind,
 };
+
 /// A delegate used when instantiating bound vars.
 ///
 /// Any implementation must make sure that each bound variable always

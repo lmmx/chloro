@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   23461 bytes
+Chloro size:   23462 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -18,11 +18,11 @@ Rustfmt size:  24577 bytes
  use crate::next_solver::infer::snapshot::undo_log::{InferCtxtUndoLogs, Snapshot};
  use crate::next_solver::infer::unify_key::RegionVariableValue;
  use crate::next_solver::{AliasTy, Binder, DbInterner, ParamTy, PlaceholderTy, Region, Ty};
--
 +use self::CombineMapType::*;
 +use self::UndoLog::*;
 +use super::MemberConstraint;
 +use super::unify_key::RegionVidKey;
+ 
  #[derive(Debug, Clone, Default)]
  pub struct RegionConstraintStorage<'db> {
      /// For each `RegionVid`, the corresponding `RegionVariableOrigin`.

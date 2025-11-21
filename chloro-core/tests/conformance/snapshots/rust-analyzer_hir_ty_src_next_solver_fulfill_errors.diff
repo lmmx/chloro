@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   49619 bytes
+Chloro size:   49620 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     inspect::{self, ProofTreeVisitor},
-     normalize::deeply_normalize_for_diagnostics,
- };
--
- #[derive(Debug)]
- pub struct FulfillmentError<'db> {
-     pub obligation: PredicateObligation<'db>,
  }
  
  impl<'db> FulfillmentError<'db> {

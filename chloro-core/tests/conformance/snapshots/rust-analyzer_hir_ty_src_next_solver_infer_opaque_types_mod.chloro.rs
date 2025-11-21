@@ -4,6 +4,7 @@ use macros::{TypeFoldable, TypeVisitable};
 pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
 
 use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
+
 pub(crate) mod table;
 
 #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]

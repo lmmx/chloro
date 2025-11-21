@@ -1,4 +1,5 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn private_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::PrivateAssocItem) -> Diagnostic {
     // FIXME: add quickfix
     let name = d

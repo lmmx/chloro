@@ -41,6 +41,7 @@ use syntax::{
 use crate::{
     Analysis, FilePosition, HighlightedRange, NavigationTarget, TryToNav, highlight_related,
 };
+
 /// Result of a reference search operation.
 #[derive(Debug, Clone, UpmapFromRaFixture)]
 pub struct ReferenceSearchResult {

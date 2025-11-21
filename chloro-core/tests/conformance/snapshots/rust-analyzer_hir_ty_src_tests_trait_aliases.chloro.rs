@@ -1,4 +1,5 @@
 use crate::tests::check_types;
+
 #[test]
 fn projection() {
     check_types(

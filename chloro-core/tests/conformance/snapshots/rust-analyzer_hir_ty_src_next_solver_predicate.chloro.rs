@@ -15,6 +15,7 @@ use smallvec::SmallVec;
 
 use crate::next_solver::{InternedWrapperNoDebug, TraitIdWrapper};
 use super::{Binder, BoundVarKinds, DbInterner, Region, Ty, interned_vec_db};
+
 pub type BoundExistentialPredicate<'db> = Binder<'db, ExistentialPredicate<'db>>;
 
 pub type TraitRef<'db> = ty::TraitRef<DbInterner<'db>>;

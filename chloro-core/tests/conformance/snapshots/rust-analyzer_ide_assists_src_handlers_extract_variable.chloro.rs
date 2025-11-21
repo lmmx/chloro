@@ -16,6 +16,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
+
 pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let node = if ctx.has_empty_selection() {
         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {

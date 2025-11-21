@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2489 bytes
-Chloro size:   2163 bytes
+Chloro size:   2164 bytes
 Rustfmt size:  2723 bytes
 
 ✗ Outputs DIFFER
@@ -31,6 +31,7 @@ Rustfmt size:  2723 bytes
 -    &["()"],
 -);
 -const MACROS: (&[&str], &[&str]) = (&["macro", "derive"], &["!"]);
++
 +
  
  /// Extract the specified namespace from an intra-doc-link if one exists.

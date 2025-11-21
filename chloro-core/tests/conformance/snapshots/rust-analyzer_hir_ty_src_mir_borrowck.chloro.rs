@@ -22,6 +22,7 @@ use super::{
     BasicBlockId, BorrowKind, LocalId, MirBody, MirLowerError, MirSpan, MutBorrowKind, Operand,
     Place, ProjectionElem, Rvalue, StatementKind, TerminatorKind,
 };
+
 /// Stores spans which implies that the local should be mutable.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MutabilityReason {

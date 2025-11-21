@@ -25,6 +25,7 @@ use crate::{
 use crate::{LifetimeParamId, signatures::StructFlags};
 use crate::{item_tree::FieldsShape, signatures::FieldData};
 use super::*;
+
 #![allow(dead_code)]
 macro_rules! w {
     ($dst:expr, $($arg:tt)*) => {

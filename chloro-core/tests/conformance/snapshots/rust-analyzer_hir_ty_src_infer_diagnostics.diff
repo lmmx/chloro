@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   3928 bytes
+Chloro size:   3929 bytes
 Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
@@ -26,7 +26,7 @@ Rustfmt size:  4556 bytes
      lower::{LifetimeElisionKind, TyLoweringContext},
 -    InferenceDiagnostic, InferenceTyDiagnosticSource, TyLoweringDiagnostic,
  };
--
+ 
 -// Unfortunately, this struct needs to use interior mutability (but we encapsulate it)
 -// because when lowering types and paths we hold a `TyLoweringContext` that holds a reference
 -// to our resolver and so we cannot have mutable reference, but we really want to have

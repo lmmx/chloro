@@ -20,6 +20,7 @@ use syntax::{
 };
 
 use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
+
 #[derive(PartialEq, Eq, Hash)]
 pub struct HighlightedRange {
     pub range: TextRange,

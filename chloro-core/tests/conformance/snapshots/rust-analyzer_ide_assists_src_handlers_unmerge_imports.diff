@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5845 bytes
-Chloro size:   5604 bytes
+Chloro size:   5605 bytes
 Rustfmt size:  6089 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  6089 bytes
      AssistId,
 +    assist_context::{AssistContext, Assists},
  };
--
+ 
 -// Assist: unmerge_imports
 -//
 -// Extracts a use item from a use list into a standalone use list.

@@ -1,4 +1,5 @@
 use super::check_types_source_code;
+
 #[test]
 fn qualify_path_to_submodule() {
     check_types_source_code(

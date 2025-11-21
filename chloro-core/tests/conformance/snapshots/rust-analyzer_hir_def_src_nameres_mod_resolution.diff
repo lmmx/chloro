@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5229 bytes
-Chloro size:   5118 bytes
+Chloro size:   5119 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,9 @@ Rustfmt size:  5418 bytes
 +use hir_expand::{EditionedFileId, name::Name};
  
 -use crate::{db::DefDatabase, HirFileId};
--
--const MOD_DEPTH_LIMIT: usize = 32;
 +use crate::{HirFileId, db::DefDatabase};
+ 
+-const MOD_DEPTH_LIMIT: usize = 32;
  
  #[derive(Clone, Debug)]
  pub(super) struct ModDir {

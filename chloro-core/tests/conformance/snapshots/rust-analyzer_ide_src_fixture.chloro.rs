@@ -4,6 +4,7 @@ use test_fixture::ChangeFixture;
 use test_utils::{RangeOrOffset, extract_annotations};
 
 use crate::{Analysis, AnalysisHost, FileId, FilePosition, FileRange};
+
 /// Creates analysis for a single file.
 pub(crate) fn file(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FileId) {
     let mut host = AnalysisHost::default();

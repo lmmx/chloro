@@ -3,6 +3,7 @@ use itertools::Itertools;
 use syntax::{AstNode, ast};
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+
 pub(crate) fn trait_impl_missing_assoc_item(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplMissingAssocItems) -> Diagnostic {
     let missing = d.missing.iter().format_with(", ", |(name, item), f| {
         f(&match *item {

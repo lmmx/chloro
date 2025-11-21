@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   9304 bytes
+Chloro size:   9305 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -30,9 +30,9 @@ Rustfmt size:  11494 bytes
  pub use crate::{
      config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
      item::{
-     },
      snippet::{Snippet, SnippetScope},
  };
+ 
 +mod completions;
 +
 +mod config;
@@ -47,9 +47,10 @@ Rustfmt size:  11494 bytes
 +
 +#[cfg(test)]
 +mod tests;
- 
++
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub struct CompletionFieldsToResolve {
+     pub resolve_label_details: bool,
      }
  }
  

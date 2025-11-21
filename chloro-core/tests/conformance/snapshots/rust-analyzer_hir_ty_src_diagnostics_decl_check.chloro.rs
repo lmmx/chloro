@@ -32,6 +32,7 @@ use syntax::{
 
 use crate::db::HirDatabase;
 use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
+
 mod case_conv;
 
 pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {

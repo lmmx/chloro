@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18130 bytes
-Chloro size:   16622 bytes
+Chloro size:   16623 bytes
 Rustfmt size:  18477 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  18477 bytes
 +    MiniCore, RootDatabase, SymbolKind, active_parameter::ActiveParameter,
 +    documentation::Documentation, range_mapper::RangeMapper, search::ReferenceCategory,
  };
--
+ 
 -pub use span::FileId;
 -
  impl RootDatabase {

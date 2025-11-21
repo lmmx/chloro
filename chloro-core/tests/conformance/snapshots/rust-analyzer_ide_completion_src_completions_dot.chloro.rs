@@ -13,6 +13,7 @@ use crate::{
         PathExprCtx, Qualified,
     },
 };
+
 /// Complete dot accesses, i.e. fields or methods.
 pub(crate) fn complete_dot(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) {
     let receiver_ty = match dot_access {

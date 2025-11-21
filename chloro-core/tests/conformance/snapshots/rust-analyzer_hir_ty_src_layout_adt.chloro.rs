@@ -18,6 +18,7 @@ use crate::{
     layout::{Layout, LayoutCx, LayoutError, field_ty},
     next_solver::GenericArgs,
 };
+
 pub fn layout_of_adt_query<'db>(db: &'db dyn HirDatabase, def: AdtId, args: GenericArgs<'db>, trait_env: Arc<TraitEnvironment<'db>>) -> Result<Arc<Layout>, LayoutError> {
     let krate = trait_env.krate;
     let Ok(target) = db.target_data_layout(krate) else {

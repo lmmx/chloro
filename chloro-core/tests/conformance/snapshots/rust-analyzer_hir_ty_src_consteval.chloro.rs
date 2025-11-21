@@ -23,6 +23,7 @@ use crate::{
     },
 };
 use super::mir::{interpret_mir, lower_to_mir, pad16};
+
 #[cfg(test)]
 mod tests;
 

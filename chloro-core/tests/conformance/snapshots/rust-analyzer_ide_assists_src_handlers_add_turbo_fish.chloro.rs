@@ -10,6 +10,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let turbofish_target =
         ctx.find_node_at_offset::<ast::PathSegment>().map(Either::Left).or_else(|| {

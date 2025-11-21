@@ -10,6 +10,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{add_method_to_adt, find_struct_impl},
 };
+
 pub(crate) fn generate_enum_try_into_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_enum_projection_method(
         acc,

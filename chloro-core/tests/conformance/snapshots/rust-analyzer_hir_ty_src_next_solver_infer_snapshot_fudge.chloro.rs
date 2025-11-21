@@ -18,6 +18,7 @@ use crate::next_solver::{
         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
     },
 };
+
 fn vars_since_snapshot<'db, T>(table: &UnificationTable<'_, 'db, T>, snapshot_var_len: usize) -> Range<T>
 where
     T: UnifyKey,

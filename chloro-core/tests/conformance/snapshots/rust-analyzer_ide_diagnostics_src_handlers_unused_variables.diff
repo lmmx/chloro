@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7192 bytes
-Chloro size:   6974 bytes
+Chloro size:   6975 bytes
 Rustfmt size:  7216 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  7216 bytes
  use syntax::{AstNode, Edition, TextRange, ToSmolStr};
  
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: unused-variables
 -//
 -// This diagnostic is triggered when a local variable is not used.

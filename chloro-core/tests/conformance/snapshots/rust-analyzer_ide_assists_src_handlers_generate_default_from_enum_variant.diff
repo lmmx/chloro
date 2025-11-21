@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4526 bytes
-Chloro size:   4132 bytes
+Chloro size:   4133 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  4581 bytes
  use syntax::ast::{self, AstNode, HasName};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: generate_default_from_enum_variant
 -//
 -// Adds a Default impl for an enum using a variant.

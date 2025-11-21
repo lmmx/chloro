@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5665 bytes
+Chloro size:   5666 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,7 @@ Rustfmt size:  5762 bytes
 +        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
      },
  };
--
- impl<'db> InferenceContext<'_, 'db> {
-     /// This takes all the opaque type uses during HIR typeck. It first computes
-     /// the concrete hidden type by iterating over all defining uses.
+ 
          // We clone the opaques instead of stealing them here as they are still used for
          // normalization in the next generation trait solver.
          let opaque_types: Vec<_> = self.table.infer_ctxt.clone_opaque_types();

@@ -1,6 +1,7 @@
 use syntax::ast::{self, AstNode, HasGenericParams, HasName};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ref_type_focused = ctx.find_node_at_offset::<ast::RefType>()?;
     if ref_type_focused.lifetime().is_some() {

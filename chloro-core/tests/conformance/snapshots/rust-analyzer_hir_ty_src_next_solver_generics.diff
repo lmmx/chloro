@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3570 bytes
-Chloro size:   3565 bytes
+Chloro size:   3566 bytes
 Rustfmt size:  3570 bytes
 
 ✗ Outputs DIFFER
@@ -21,11 +21,10 @@ Rustfmt size:  3570 bytes
 -use super::SolverDefId;
 -
  use super::DbInterner;
--
 +use super::SolverDefId;
+ 
  pub(crate) fn generics(db: &dyn HirDatabase, def: SolverDefId) -> Generics {
      let mk_lt = |parent, index, local_id| {
-         let id = GenericParamId::LifetimeParamId(LifetimeParamId { parent, local_id });
          }));
          result
      };

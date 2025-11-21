@@ -2,6 +2,7 @@ use expect_test::expect;
 
 use crate::tests::check;
 use super::check_edit;
+
 #[test]
 fn without_default_impl() {
     check(

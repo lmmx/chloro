@@ -12,6 +12,7 @@ use syntax::{
     AstToken,
     ast::{self, IsString},
 };
+
 /// Holds documentation
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Documentation(String);

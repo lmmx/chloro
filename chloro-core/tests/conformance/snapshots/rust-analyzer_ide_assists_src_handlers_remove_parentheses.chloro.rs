@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
     let cursor_in_range =

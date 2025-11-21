@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12430 bytes
-Chloro size:   10906 bytes
+Chloro size:   10907 bytes
 Rustfmt size:  12430 bytes
 
 ✗ Outputs DIFFER
@@ -23,12 +23,6 @@ Rustfmt size:  12430 bytes
  use rustc_hash::FxHashMap;
  use vfs::{AbsPathBuf, FileId};
  use walkdir::WalkDir;
- 
- use crate::cli::{Result, flags, report_metric};
--
- struct Tester {
-     host: AnalysisHost,
-     root_file: FileId,
              set_test: true,
              ..Default::default()
          };

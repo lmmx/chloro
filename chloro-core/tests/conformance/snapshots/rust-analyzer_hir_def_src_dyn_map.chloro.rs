@@ -32,6 +32,7 @@ use std::{
 
 use rustc_hash::FxHashMap;
 use stdx::anymap::Map;
+
 pub mod keys {
     use std::marker::PhantomData;
     use hir_expand::{MacroCallId, attrs::AttrId};

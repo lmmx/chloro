@@ -106,13 +106,21 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 buf.push('\n');
             }
 
-            // Format sorted and grouped imports
+            let has_docs = !module_docs.is_empty();
             let has_uses = !uses.is_empty();
+
+            // Ensure a blank line after module docs if anything follows
+            if has_docs && (has_uses || !other_items.is_empty()) {
+                buf.push('\n');
+            }
+
+            // Format sorted and grouped imports
             if has_uses {
-                if !module_docs.is_empty() {
+                sort_and_format_imports(&uses, buf, indent);
+                // If other items follow imports, ensure a blank line between
+                if !other_items.is_empty() {
                     buf.push('\n');
                 }
-                sort_and_format_imports(&uses, buf, indent);
             }
 
             // Format other items

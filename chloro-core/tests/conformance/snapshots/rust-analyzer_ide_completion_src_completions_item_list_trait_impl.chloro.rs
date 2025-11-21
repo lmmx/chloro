@@ -48,6 +48,7 @@ use crate::{
     CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
     context::PathCompletionCtx,
 };
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum ImplCompletionKind {
     All,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   10762 bytes
+Chloro size:   10763 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,8 @@ Rustfmt size:  11350 bytes
      type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
 -    GenericDefId, TypeOrConstParamId, TypeParamId,
  };
--
+ 
  pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(
-     &'ec mut ExprCollector<'db>,
-     TypePtr,
              parent,
          }
      }

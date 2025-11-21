@@ -4,6 +4,7 @@ use std::{
 };
 
 use paths::{Utf8Path, Utf8PathBuf};
+
 pub(crate) struct TestDir {
     path: Utf8PathBuf,
     keep: bool,

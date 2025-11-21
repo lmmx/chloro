@@ -4,6 +4,7 @@ use syntax::{
     ast::{self, HasAttrs, HasGenericParams, HasName},
     match_ast,
 };
+
 #[derive(Debug, Clone)]
 pub struct StructureNode {
     pub parent: Option<usize>,

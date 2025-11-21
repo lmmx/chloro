@@ -1,6 +1,7 @@
 use expect_test::expect;
 
 use crate::tests::{check_infer, check_no_mismatches, check_types};
+
 #[test]
 fn regression_20365() {
     check_infer(

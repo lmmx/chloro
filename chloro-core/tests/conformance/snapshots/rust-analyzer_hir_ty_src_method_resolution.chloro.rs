@@ -45,6 +45,7 @@ use crate::{
     traits::next_trait_solve_canonical_in_ctxt,
     utils::all_super_traits,
 };
+
 /// This is used as a key for indexing impls.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum TyFingerprint {

@@ -5,6 +5,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_comment_from_or_to_doc(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     match comment.kind().doc {

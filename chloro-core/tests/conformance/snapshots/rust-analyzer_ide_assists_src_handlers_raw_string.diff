@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15453 bytes
-Chloro size:   14580 bytes
+Chloro size:   14581 bytes
 Rustfmt size:  15544 bytes
 
 ✗ Outputs DIFFER
@@ -20,7 +20,7 @@ Rustfmt size:  15544 bytes
      AssistContext, AssistId, Assists,
 +    utils::{required_hashes, string_prefix, string_suffix},
  };
--
+ 
 -// Assist: make_raw_string
 -//
 -// Adds `r#` to a plain string literal.

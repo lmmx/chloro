@@ -23,6 +23,7 @@ use super::{
     DbInterner, ErrorGuaranteed, GenericArg, SolverDefId, Span,
     infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt},
 };
+
 pub type Goal<'db, P> = rustc_type_ir::solve::Goal<DbInterner<'db>, P>;
 
 #[repr(transparent)]

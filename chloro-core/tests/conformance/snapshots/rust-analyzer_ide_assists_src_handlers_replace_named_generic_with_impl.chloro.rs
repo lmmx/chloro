@@ -12,6 +12,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn replace_named_generic_with_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // finds `<P: AsRef<Path>>`
     let type_param = ctx.find_node_at_offset::<ast::TypeParam>()?;

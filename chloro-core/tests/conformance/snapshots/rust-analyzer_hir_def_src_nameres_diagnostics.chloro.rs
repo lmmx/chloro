@@ -8,6 +8,7 @@ use la_arena::Idx;
 use syntax::ast;
 
 use crate::{AstId, nameres::LocalModuleId};
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum DefDiagnosticKind {
     UnresolvedModule {

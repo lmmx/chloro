@@ -30,6 +30,7 @@ use crate::next_solver::{
     Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
     PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind, infer::InferCtxt,
 };
+
 pub mod canonicalizer;
 
 pub mod instantiate;

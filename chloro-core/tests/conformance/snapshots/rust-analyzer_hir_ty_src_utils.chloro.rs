@@ -26,6 +26,7 @@ use crate::{
     layout::{Layout, TagEncoding},
     mir::pad16,
 };
+
 pub(crate) fn fn_traits(db: &dyn DefDatabase, krate: Crate) -> impl Iterator<Item = TraitId> + '_ {
     [LangItem::Fn, LangItem::FnMut, LangItem::FnOnce]
         .into_iter()

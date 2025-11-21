@@ -23,6 +23,7 @@ use crate::{
     span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
     tt,
 };
+
 /// This is just to ensure the types of smart_macro_arg and macro_arg are the same
 type MacroArgResult = (Arc<tt::TopSubtree>, SyntaxFixupUndoInfo, Span);
 

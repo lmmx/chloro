@@ -8,6 +8,7 @@ use ide_db::famous_defs::FamousDefs;
 use syntax::{SyntaxToken, T, ast};
 
 use crate::{InlayHint, InlayHintsConfig};
+
 pub(super) fn hints(acc: &mut Vec<InlayHint>, FamousDefs(_sema, _): &FamousDefs<'_, '_>, config: &InlayHintsConfig<'_>, range: impl ast::RangeItem) -> Option<()> {
     (config.range_exclusive_hints && range.end().is_some())
         .then(|| {

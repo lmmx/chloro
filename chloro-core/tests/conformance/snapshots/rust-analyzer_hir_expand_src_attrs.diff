@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16124 bytes
+Chloro size:   16125 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -37,7 +37,7 @@ Rustfmt size:  17571 bytes
 -    tt::{self, token_to_literal, TopSubtree},
 +    tt::{self, TopSubtree, token_to_literal},
  };
--
+ 
  /// Syntactical attributes, without filtering of `cfg_attr`s.
  #[derive(Default, Debug, Clone, PartialEq, Eq)]
  pub struct RawAttrs {

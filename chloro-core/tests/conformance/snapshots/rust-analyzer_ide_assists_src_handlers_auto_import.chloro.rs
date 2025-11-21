@@ -13,6 +13,7 @@ use ide_db::{
 use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
+
 pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let cfg = ctx.config.import_path_config();
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;

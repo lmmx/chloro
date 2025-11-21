@@ -8,6 +8,7 @@ use syntax::{
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
 
 
+
 pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
     // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo

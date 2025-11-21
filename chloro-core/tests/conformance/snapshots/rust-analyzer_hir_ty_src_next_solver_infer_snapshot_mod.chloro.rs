@@ -7,6 +7,7 @@ use undo_log::{Snapshot, UndoLog};
 
 use super::InferCtxt;
 use super::region_constraints::RegionSnapshot;
+
 mod fudge;
 
 pub(crate) mod undo_log;

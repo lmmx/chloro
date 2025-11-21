@@ -2,16 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8413 bytes
-Chloro size:   8375 bytes
+Chloro size:   8376 bytes
 Rustfmt size:  8413 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     CompletionContext, Completions,
-     context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
  };
--
+ 
  /// Completes constants and paths in unqualified patterns.
 -pub(crate) fn complete_pattern(
 -    acc: &mut Completions,

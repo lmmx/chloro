@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2715 bytes
-Chloro size:   2666 bytes
+Chloro size:   2667 bytes
 Rustfmt size:  2749 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: undeclared-label
 -pub(crate) fn undeclared_label(
 -    ctx: &DiagnosticsContext<'_>,

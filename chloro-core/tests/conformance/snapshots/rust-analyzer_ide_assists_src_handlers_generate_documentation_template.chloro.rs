@@ -10,6 +10,7 @@ use syntax::{
 };
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn generate_documentation_template(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_func = name.syntax().parent().and_then(ast::Fn::cast)?;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   90803 bytes
+Chloro size:   90804 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
@@ -35,7 +35,7 @@ Rustfmt size:  91697 bytes
 -use ide_db::text_edit::TextEdit;
 -
  use crate::{FilePosition, RangeInfo, SourceChange};
--
+ 
 -pub use ide_db::rename::RenameError;
 -
  type RenameResult<T> = Result<T, RenameError>;

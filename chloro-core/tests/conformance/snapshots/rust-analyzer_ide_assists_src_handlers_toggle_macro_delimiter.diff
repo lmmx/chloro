@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5732 bytes
-Chloro size:   5374 bytes
+Chloro size:   5375 bytes
 Rustfmt size:  5732 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  5732 bytes
  };
  
  use crate::{AssistContext, Assists};
--
+ 
 -// Assist: toggle_macro_delimiter
 -//
 -// Change macro delimiters in the order of `( -> { -> [ -> (`.

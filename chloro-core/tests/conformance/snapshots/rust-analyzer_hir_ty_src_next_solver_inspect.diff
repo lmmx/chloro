@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19839 bytes
-Chloro size:   19474 bytes
+Chloro size:   19475 bytes
 Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
@@ -41,10 +41,8 @@ Rustfmt size:  20426 bytes
 +    },
 +    obligation_ctxt::ObligationCtxt,
  };
--
+ 
  pub(crate) struct InspectConfig {
-     pub(crate) max_depth: usize,
- }
      /// Relate the `term` with the new `unconstrained_term` created
      /// when computing the proof tree for this `NormalizesTo` goals.
      /// This handles nested obligations.

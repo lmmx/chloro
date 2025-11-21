@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   110611 bytes
+Chloro size:   110612 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -41,11 +41,6 @@ Rustfmt size:  113494 bytes
      },
      lsp_ext::{self, SnippetTextEdit},
      target_spec::{CargoTargetSpec, TargetSpec},
- };
--
- pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::Position {
-     let line_col = line_index.index.line_col(offset);
-     match line_index.encoding {
      }
  }
  

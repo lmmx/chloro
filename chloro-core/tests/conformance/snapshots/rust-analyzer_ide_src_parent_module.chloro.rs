@@ -10,6 +10,7 @@ use syntax::{
 };
 
 use crate::NavigationTarget;
+
 /// This returns `Vec` because a module may be included from several places.
 pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
     let sema = Semantics::new(db);

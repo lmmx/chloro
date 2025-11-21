@@ -25,6 +25,7 @@ use crate::{
     CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
     CompletionItemKind, resolve_completion_edits,
 };
+
 mod attribute;
 
 mod expression;

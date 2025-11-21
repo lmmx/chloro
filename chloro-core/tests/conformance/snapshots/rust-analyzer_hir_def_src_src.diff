@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6550 bytes
+Chloro size:   6551 bytes
 Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  6876 bytes
 +    AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
 +    UseId, VariantId, attr::Attrs, db::DefDatabase,
  };
--
+ 
 -pub trait HasSource {
 -    type Value: AstNode;
 -    fn source(&self, db: &dyn DefDatabase) -> InFile<Self::Value> {

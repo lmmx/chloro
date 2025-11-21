@@ -17,6 +17,7 @@ use syntax::{
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};
+
 pub(crate) fn unresolved_field(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Diagnostic {
     let method_suffix = if d.method_with_same_name_exists {
         ", but a method with a similar name exists"

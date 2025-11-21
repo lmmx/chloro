@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9510 bytes
+Chloro size:   9511 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -39,12 +39,12 @@ Rustfmt size:  9843 bytes
 -//     print!("{var} {}"$0, x + 1);
 -// }
 -// ```
--
++use crate::{AssistContext, Assists, utils};
+ 
 -pub(crate) fn extract_expressions_from_format_string(
 -    acc: &mut Assists,
 -    ctx: &AssistContext<'_>,
 -) -> Option<()> {
-+use crate::{AssistContext, Assists, utils};
 +pub(crate) fn extract_expressions_from_format_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
 -    let tt = fmt_string

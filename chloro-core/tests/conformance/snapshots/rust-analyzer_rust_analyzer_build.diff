@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1553 bytes
-Chloro size:   1549 bytes
+Chloro size:   1550 bytes
 Rustfmt size:  1553 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- //! Construct version in the `commit-hash date channel` format
- 
- use std::{env, path::PathBuf, process::Command};
--
- fn main() {
-     set_rerun();
-     set_commit_info();
  
  fn set_rerun() {
      println!("cargo:rerun-if-env-changed=CFG_RELEASE");

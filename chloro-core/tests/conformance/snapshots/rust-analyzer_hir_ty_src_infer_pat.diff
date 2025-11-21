@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25364 bytes
-Chloro size:   24843 bytes
+Chloro size:   24844 bytes
 Rustfmt size:  25364 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     lower::lower_mutability,
-     next_solver::{GenericArgs, Ty, TyKind},
- };
--
- impl<'db> InferenceContext<'_, 'db> {
      /// Infers type for tuple struct pattern or its corresponding assignee expression.
      ///
      /// Ellipses found in the original pattern or expression must be filtered out.

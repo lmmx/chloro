@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5655 bytes
-Chloro size:   5533 bytes
+Chloro size:   5534 bytes
 Rustfmt size:  5830 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,9 @@ Rustfmt size:  5830 bytes
  use crate::command::{CargoParser, CommandHandle};
  
 -pub(crate) const ARG_PLACEHOLDER: &str = "{arg}";
--
+ 
  /// A command wrapper for getting a `rust-project.json`.
  ///
- /// This is analogous to discovering a cargo project + running `cargo-metadata` on it, but for non-Cargo build systems.
  #[derive(PartialEq, Clone, Debug, Serialize)]
  #[serde(rename_all = "camelCase")]
  pub(crate) enum DiscoverArgument {

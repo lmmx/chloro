@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   54374 bytes
+Chloro size:   54375 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,6 @@ Rustfmt size:  55742 bytes
  use super::{
      ImplTraitLoweringMode, TyLoweringContext, associated_type_by_name_including_super_traits,
      const_param_ty_query, ty_query,
- };
--
- type CallbackData<'a, 'db> = Either<
-     PathDiagnosticCallbackData,
      crate::infer::diagnostics::PathDiagnosticCallbackData<'a, 'db>,
  >;
  

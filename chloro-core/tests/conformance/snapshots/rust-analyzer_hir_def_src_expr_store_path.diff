@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   10817 bytes
+Chloro size:   10818 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -26,6 +26,7 @@ Rustfmt size:  11497 bytes
 +    lang_item::LangItemTarget,
 +    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 +};
++
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub enum Path {
      /// `BarePath` is used when the path has neither generics nor type anchor, since the vast majority of paths

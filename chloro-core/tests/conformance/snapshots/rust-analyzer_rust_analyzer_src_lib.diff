@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2169 bytes
-Chloro size:   1778 bytes
+Chloro size:   1779 bytes
 Rustfmt size:  2169 bytes
 
 ✗ Outputs DIFFER
@@ -14,20 +14,21 @@ Rustfmt size:  2169 bytes
 -extern crate ra_ap_rustc_type_ir as rustc_type_ir;
 +use serde::de::DeserializeOwned;
 +pub(crate) use try_default_ as try_default;
++
++pub use crate::{
++    lsp::capabilities::server_capabilities, main_loop::main_loop, reload::ws_to_crate_graph,
++    version::version,
++};
++use self::lsp::ext as lsp_ext;
  
--/// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
+ /// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
 -pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version {
 -    major: 1,
 -    minor: 78,
 -    patch: 0,
 -    pre: semver::Prerelease::EMPTY,
 -    build: semver::BuildMetadata::EMPTY,
-+pub use crate::{
-+    lsp::capabilities::server_capabilities, main_loop::main_loop, reload::ws_to_crate_graph,
-+    version::version,
- };
-+use self::lsp::ext as lsp_ext;
-+/// Any toolchain less than this version will likely not work with rust-analyzer built from this revision.
+-};
  
  pub mod cli;
  

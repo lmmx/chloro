@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22455 bytes
-Chloro size:   22344 bytes
+Chloro size:   22345 bytes
 Rustfmt size:  22455 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     target_spec::TargetSpec,
-     try_default,
- };
--
- pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> anyhow::Result<()> {
-     let id: lsp_server::RequestId = match params.id {
-         lsp_types::NumberOrString::Number(id) => id.into(),
      Ok(())
  }
  

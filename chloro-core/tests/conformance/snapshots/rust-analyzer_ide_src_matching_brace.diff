@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2739 bytes
-Chloro size:   2243 bytes
+Chloro size:   2244 bytes
 Rustfmt size:  2888 bytes
 
 ✗ Outputs DIFFER
@@ -13,7 +13,7 @@ Rustfmt size:  2888 bytes
      ast::{self, AstNode},
 -    SourceFile, SyntaxKind, TextSize, T,
  };
--
+ 
 -// Feature: Matching Brace
 -//
 -// If the cursor is on any brace (`<>(){}[]||`) which is a part of a brace-pair,

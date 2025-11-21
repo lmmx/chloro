@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1615 bytes
-Chloro size:   1645 bytes
+Chloro size:   1646 bytes
 Rustfmt size:  1615 bytes
 
 ✗ Outputs DIFFER
@@ -43,6 +43,7 @@ Rustfmt size:  1615 bytes
  
  pub use crate::lower::ImplTraitIdx;
 -pub use rustc_ast_ir::Mutability;
++
 +pub mod abi;
 +
 +mod consts;

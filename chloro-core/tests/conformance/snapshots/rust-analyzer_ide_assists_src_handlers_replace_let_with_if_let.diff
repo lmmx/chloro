@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3407 bytes
-Chloro size:   2982 bytes
+Chloro size:   2983 bytes
 Rustfmt size:  3410 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  3410 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: replace_let_with_if_let
 -//
 -// Replaces `let` with an `if let`.

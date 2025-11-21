@@ -1,6 +1,7 @@
 use hir::InFile;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
+
 pub(crate) fn trait_impl_orphan(ctx: &DiagnosticsContext<'_>, d: &hir::TraitImplOrphan) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

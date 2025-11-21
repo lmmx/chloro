@@ -10,6 +10,7 @@ use crate::{
         completion_list_with_config,
     },
 };
+
 fn check_with_config(config: CompletionConfig<'_>, #[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let actual = completion_list_with_config(
         config,

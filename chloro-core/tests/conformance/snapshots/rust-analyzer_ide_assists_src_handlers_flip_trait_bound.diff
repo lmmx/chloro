@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3449 bytes
-Chloro size:   3271 bytes
+Chloro size:   3272 bytes
 Rustfmt size:  3590 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  3590 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: flip_trait_bound
 -//
 -// Flips two trait bounds.

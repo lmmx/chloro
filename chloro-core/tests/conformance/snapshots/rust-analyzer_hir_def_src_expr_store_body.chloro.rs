@@ -17,6 +17,7 @@ use crate::{
     hir::{BindingId, ExprId, PatId},
     src::HasSource,
 };
+
 /// The body of an item (function, const etc.).
 #[derive(Debug, Eq, PartialEq)]
 pub struct Body {

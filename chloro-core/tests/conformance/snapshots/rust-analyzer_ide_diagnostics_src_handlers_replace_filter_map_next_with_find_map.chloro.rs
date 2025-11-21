@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
+
 pub(crate) fn replace_filter_map_next_with_find_map(ctx: &DiagnosticsContext<'_>, d: &hir::ReplaceFilterMapNextWithFindMap) -> Diagnostic {
     Diagnostic::new_with_syntax_node_ptr(
         ctx,

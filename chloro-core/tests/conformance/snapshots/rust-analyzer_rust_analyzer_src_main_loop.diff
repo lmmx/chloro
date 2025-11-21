@@ -2,16 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58838 bytes
-Chloro size:   58696 bytes
+Chloro size:   58697 bytes
 Rustfmt size:  58838 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
-     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
- };
--
+ 
  pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
      tracing::info!("initial config: {:#?}", config);
 -

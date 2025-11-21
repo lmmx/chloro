@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13249 bytes
-Chloro size:   12305 bytes
+Chloro size:   12306 bytes
 Rustfmt size:  13343 bytes
 
 ✗ Outputs DIFFER
@@ -19,7 +19,7 @@ Rustfmt size:  13343 bytes
  };
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: convert_iter_for_each_to_for
 -//
 -// Converts an Iterator::for_each function into a for loop.

@@ -14,6 +14,7 @@ use crossbeam_channel::Sender;
 use paths::Utf8PathBuf;
 use process_wrap::std::{StdChildWrapper, StdCommandWrap};
 use stdx::process::streaming_output;
+
 /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
 /// cargo output into a Rust data type
 fn from_line(&self, line: &str, error: &mut String) -> Option<T>;

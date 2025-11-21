@@ -2,14 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 289 bytes
-Chloro size:   288 bytes
+Chloro size:   289 bytes
 Rustfmt size:  289 bytes
 
-✗ Outputs DIFFER
-
---- DIFF (- rustfmt, + chloro) ---
- use super::*;
--
- #[test]
- fn primitive_reexport() {
-     check(
+✓ Outputs are IDENTICAL

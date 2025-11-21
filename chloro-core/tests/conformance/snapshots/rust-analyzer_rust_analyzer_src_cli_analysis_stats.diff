@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   57845 bytes
+Chloro size:   57846 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     progress_report::ProgressReport,
-     report_metric,
- };
--
- impl flags::AnalysisStats {
-     pub fn run(self, verbosity: Verbosity) -> anyhow::Result<()> {
-         let mut rng = {
              let seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
              Rand32::new(seed)
          };

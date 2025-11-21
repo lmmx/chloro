@@ -20,6 +20,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
 };
+
 /// Checks whether a type is visibly uninhabited from a particular module.
 pub(crate) fn is_ty_uninhabited_from<'db>(infcx: &InferCtxt<'db>, ty: Ty<'db>, target_mod: ModuleId, env: Arc<TraitEnvironment<'db>>) -> bool {
     let _p = tracing::info_span!("is_ty_uninhabited_from", ?ty).entered();

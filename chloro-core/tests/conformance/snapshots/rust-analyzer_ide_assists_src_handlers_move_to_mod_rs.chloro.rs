@@ -5,6 +5,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     utils::trimmed_text_range,
 };
+
 pub(crate) fn move_to_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let source_file = ctx.find_node_at_offset::<ast::SourceFile>()?;
     let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;

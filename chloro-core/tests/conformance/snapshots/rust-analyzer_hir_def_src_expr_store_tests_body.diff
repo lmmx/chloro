@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16167 bytes
-Chloro size:   16148 bytes
+Chloro size:   16149 bytes
 Rustfmt size:  16197 bytes
 
 ✗ Outputs DIFFER
@@ -19,8 +19,9 @@ Rustfmt size:  16197 bytes
  
 +use crate::{DefWithBodyId, ModuleDefId, hir::MatchArm, nameres::crate_def_map, test_db::TestDB};
  use super::super::*;
-+mod block;
  
++mod block;
++
  fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {
      let db = TestDB::with_files(ra_fixture);
 -

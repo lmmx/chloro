@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   39718 bytes
+Chloro size:   39719 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -30,10 +30,9 @@ Rustfmt size:  41249 bytes
  };
  
  use crate::{
-     assist_context::{AssistContext, Assists},
      utils,
  };
--
+ 
 -// Assist: convert_bool_to_enum
 -//
 -// This converts boolean local variables, fields, constants, and statics into a new

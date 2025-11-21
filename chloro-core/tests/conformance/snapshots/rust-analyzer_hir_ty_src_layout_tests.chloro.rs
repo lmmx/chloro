@@ -15,6 +15,7 @@ use crate::{
     setup_tracing,
     test_db::TestDB,
 };
+
 mod closure;
 
 fn current_machine_target_data() -> TargetData {

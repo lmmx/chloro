@@ -1,4 +1,5 @@
 use super::*;
+
 #[test]
 fn primitive_reexport() {
     check(

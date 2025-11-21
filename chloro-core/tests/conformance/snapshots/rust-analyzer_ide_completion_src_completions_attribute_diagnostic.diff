@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2095 bytes
-Chloro size:   1771 bytes
+Chloro size:   1772 bytes
 Rustfmt size:  2157 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  2157 bytes
 -
 +use crate::{CompletionItem, Completions, context::CompletionContext};
  use super::AttrCompletion;
--
+ 
 -pub(super) fn complete_on_unimplemented(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

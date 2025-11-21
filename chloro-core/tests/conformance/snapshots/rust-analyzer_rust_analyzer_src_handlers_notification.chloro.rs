@@ -27,6 +27,7 @@ use crate::{
     target_spec::TargetSpec,
     try_default,
 };
+
 pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> anyhow::Result<()> {
     let id: lsp_server::RequestId = match params.id {
         lsp_types::NumberOrString::Number(id) => id.into(),

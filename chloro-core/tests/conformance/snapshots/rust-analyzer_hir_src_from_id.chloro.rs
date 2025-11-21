@@ -13,6 +13,7 @@ use crate::{
     Adt, AssocItem, BuiltinType, DefWithBody, Field, GenericDef, GenericParam, ItemInNs, Label,
     Local, ModuleDef, Variant, VariantDef,
 };
+
 macro_rules! from_id {
     ($(($id:path, $ty:path)),* $(,)?) => {$(
         impl From<$id> for $ty {

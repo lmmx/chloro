@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8624 bytes
-Chloro size:   8608 bytes
+Chloro size:   8609 bytes
 Rustfmt size:  8816 bytes
 
 ✗ Outputs DIFFER
@@ -22,7 +22,7 @@ Rustfmt size:  8816 bytes
      DynCompatibilityViolation,
      MethodViolationCode::{self, *},
  };
--
+ 
 -use DynCompatibilityViolationKind::*;
 -
  #[allow(clippy::upper_case_acronyms)]

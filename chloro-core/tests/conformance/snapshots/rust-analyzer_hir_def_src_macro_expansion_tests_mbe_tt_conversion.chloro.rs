@@ -9,6 +9,7 @@
 use expect_test::expect;
 
 use crate::macro_expansion_tests::check;
+
 #[test]
 fn round_trips_compound_tokens() {
     check(

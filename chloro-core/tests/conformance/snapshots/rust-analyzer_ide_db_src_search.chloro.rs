@@ -30,6 +30,7 @@ use crate::{
     defs::{Definition, NameClass, NameRefClass},
     traits::{as_trait_assoc_def, convert_to_def_in_trait},
 };
+
 #[derive(Debug, Default, Clone)]
 pub struct UsageSearchResult {
     pub references: FxHashMap<EditionedFileId, Vec<FileReference>>,

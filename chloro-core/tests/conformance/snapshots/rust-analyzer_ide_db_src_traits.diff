@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   7989 bytes
+Chloro size:   7990 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -16,8 +16,9 @@ Rustfmt size:  8222 bytes
  use rustc_hash::FxHashSet;
 -use syntax::{ast, AstNode};
 +use syntax::{AstNode, ast};
- 
++
 +use crate::{RootDatabase, defs::Definition};
+ 
  /// Given the `impl` block, attempts to find the trait this `impl` corresponds to.
 -pub fn resolve_target_trait(
 -    sema: &Semantics<'_, RootDatabase>,

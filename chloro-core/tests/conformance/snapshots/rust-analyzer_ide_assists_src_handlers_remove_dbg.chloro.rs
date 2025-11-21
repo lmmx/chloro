@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let macro_calls = if ctx.has_empty_selection() {
         vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]

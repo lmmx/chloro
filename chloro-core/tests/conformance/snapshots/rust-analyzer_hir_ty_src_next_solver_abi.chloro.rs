@@ -4,6 +4,7 @@ use rustc_type_ir::{error::TypeError, relate::Relate};
 
 use crate::FnAbi;
 use super::interner::DbInterner;
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Safety {
     Unsafe,

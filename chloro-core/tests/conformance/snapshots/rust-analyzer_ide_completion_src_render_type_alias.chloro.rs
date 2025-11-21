@@ -5,6 +5,7 @@ use ide_db::SymbolKind;
 use syntax::{SmolStr, ToSmolStr};
 
 use crate::{item::CompletionItem, render::RenderContext};
+
 pub(crate) fn render_type_alias(ctx: RenderContext<'_>, type_alias: hir::TypeAlias) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_type_alias").entered();
     render(ctx, type_alias, false)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3134 bytes
-Chloro size:   2960 bytes
+Chloro size:   2961 bytes
 Rustfmt size:  3155 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  3155 bytes
      assist_context::{AssistContext, Assists},
      utils::trimmed_text_range,
  };
--
+ 
 -// Assist: move_to_mod_rs
 -//
 -// Moves xxx.rs to xxx/mod.rs.

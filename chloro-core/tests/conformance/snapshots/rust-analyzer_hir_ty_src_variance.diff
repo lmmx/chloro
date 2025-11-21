@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30221 bytes
+Chloro size:   30222 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -28,12 +28,6 @@ Rustfmt size:  30951 bytes
      next_solver::{
          Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
          RegionKind, Term, Ty, TyKind, VariancesOf,
-     },
- };
--
- pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> VariancesOf<'_> {
-     tracing::debug!("variances_of(def={:?})", def);
-     let interner = DbInterner::new_with(db, None, None);
          }
          _ => return VariancesOf::new_from_iter(interner, []),
      }

@@ -22,6 +22,7 @@ use crate::{
     lsp::to_proto,
     version::version,
 };
+
 struct LsifManager<'a, 'w> {
     count: i32,
     token_map: FxHashMap<TokenId, Id>,

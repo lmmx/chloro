@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 906 bytes
-Chloro size:   686 bytes
+Chloro size:   687 bytes
 Rustfmt size:  977 bytes
 
 ✗ Outputs DIFFER
@@ -11,7 +11,7 @@ Rustfmt size:  977 bytes
  use syntax::{SyntaxKind, T};
  
  use crate::{AssistContext, AssistId, Assists};
--
+ 
 -// Assist: remove_mut
 -//
 -// Removes the `mut` keyword.

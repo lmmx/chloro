@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   30261 bytes
+Chloro size:   30262 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     span_map::SpanMap,
-     tt::{self, DelimSpan, TtElement, TtIter},
- };
--
- macro_rules! register_builtin {
-     ( $LAZY:ident: $(($name:ident, $kind: ident) => $expand:ident),* , $EAGER:ident: $(($e_name:ident, $e_kind: ident) => $e_expand:ident),*  ) => {
-         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  }
  
  impl BuiltinFnLikeExpander {

@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2954 bytes
-Chloro size:   2812 bytes
+Chloro size:   2813 bytes
 Rustfmt size:  2954 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: break-outside-of-loop
 -//
 -// This diagnostic is triggered if the `break` keyword is used outside of a loop.

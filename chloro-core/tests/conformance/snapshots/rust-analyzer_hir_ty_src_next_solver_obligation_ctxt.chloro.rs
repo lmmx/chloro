@@ -10,6 +10,7 @@ use crate::next_solver::{
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
     },
 };
+
 /// Used if you want to have pleasant experience when dealing
 /// with obligations outside of hir or mir typeck.
 pub struct ObligationCtxt<'a, 'db> {

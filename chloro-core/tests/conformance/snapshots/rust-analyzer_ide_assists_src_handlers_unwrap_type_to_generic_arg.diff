@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3114 bytes
-Chloro size:   2872 bytes
+Chloro size:   2873 bytes
 Rustfmt size:  3114 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  3114 bytes
  };
  
  use crate::{AssistContext, Assists};
--
+ 
 -// Assist: unwrap_type_to_generic_arg
 -//
 -// This assist unwraps a type into its generic type argument.

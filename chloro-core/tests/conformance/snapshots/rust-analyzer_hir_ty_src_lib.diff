@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   21506 bytes
+Chloro size:   21507 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -117,8 +117,6 @@ Rustfmt size:  22967 bytes
 +        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
      },
  };
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-+mod infer;
  
 -pub use autoderef::autoderef;
 -pub use infer::{
@@ -140,6 +138,9 @@ Rustfmt size:  22967 bytes
 -    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
 -    TargetFeatureIsSafeInTarget, Unsafety,
 -};
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
++mod infer;
++
 +mod inhabitedness;
 +
 +mod lower;

@@ -19,6 +19,7 @@ use crate::{
     main_loop::Task,
     version::version,
 };
+
 /// A visitor for routing a raw JSON request to an appropriate handler function.
 ///
 /// Most requests are read-only and async and are handled on the threadpool

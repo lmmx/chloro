@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29011 bytes
+Chloro size:   29012 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,6 @@ Rustfmt size:  29841 bytes
  use rustc_type_ir::{
      BoundVar, BoundVarIndexKind, CanonicalQueryInput, DebruijnIndex, Flags, InferConst, RegionKind,
      TyVid, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
-     Binder, Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, GenericArg,
-     ParamEnvAnd, Placeholder, Region, Ty, TyKind,
- };
--
- /// When we canonicalize a value to form a query, we wind up replacing
- /// various parts of it with canonical variables. This struct stores
- /// those replaced bits to remember for when we process the query
      /// we only ever put ROOT values into the query, so this map is very
      /// simple.
      pub universe_map: SmallVec<[UniverseIndex; 4]>,

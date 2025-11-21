@@ -15,6 +15,7 @@ use tracing_tree::HierarchicalLayer;
 
 use crate::tracing::hprof;
 use crate::tracing::json;
+
 #[derive(Debug)]
 pub struct Config<T> {
     pub writer: T,

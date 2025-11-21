@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5111 bytes
-Chloro size:   5095 bytes
+Chloro size:   5096 bytes
 Rustfmt size:  5132 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  5132 bytes
  };
  
  use crate::AssistContext;
--
+ 
  /// Decides whether the new path expression needs to be dereferenced and/or wrapped in parens.
  /// Returns the relevant parent expression to replace and the [RefData].
 -pub(crate) fn determine_ref_and_parens(

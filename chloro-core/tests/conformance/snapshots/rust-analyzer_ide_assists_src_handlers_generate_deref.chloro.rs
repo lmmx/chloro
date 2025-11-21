@@ -12,6 +12,7 @@ use crate::{
     assist_context::{AssistContext, Assists, SourceChangeBuilder},
     utils::generate_trait_impl_text_intransitive,
 };
+
 pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_record_deref(acc, ctx).or_else(|| generate_tuple_deref(acc, ctx))
 }

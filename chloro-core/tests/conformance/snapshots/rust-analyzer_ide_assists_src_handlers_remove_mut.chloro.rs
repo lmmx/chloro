@@ -1,6 +1,7 @@
 use syntax::{SyntaxKind, T};
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let mut_token = ctx.find_token_syntax_at_offset(T![mut])?;
     let target = mut_token.text_range();

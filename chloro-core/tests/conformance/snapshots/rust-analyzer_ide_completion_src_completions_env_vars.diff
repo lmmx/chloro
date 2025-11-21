@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5700 bytes
-Chloro size:   3171 bytes
+Chloro size:   3172 bytes
 Rustfmt size:  5802 bytes
 
 ✗ Outputs DIFFER
@@ -57,7 +57,7 @@ Rustfmt size:  5802 bytes
 -        "Only set when building integration test or benchmark code. This is a path to a directory inside the target directory where integration tests or benchmarks are free to put any data needed by the tests/benches. Cargo initially creates this directory but doesn't manage its content in any way, this is the responsibility of the test code",
 -    ),
 -];
--
+ 
 -pub(crate) fn complete_cargo_env_vars(
 -    acc: &mut Completions,
 -    ctx: &CompletionContext<'_>,

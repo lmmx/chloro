@@ -24,6 +24,7 @@ use crate::{
     next_solver::{GenericArgs, Mutability, Ty, TyKind},
 };
 use self::pat_util::EnumerateAndAdjustIterator;
+
 mod pat_util;
 
 pub(crate) mod pat_analysis;

@@ -9,6 +9,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
     utils::invert_boolean_expression_legacy,
 };
+
 pub(crate) fn invert_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_keyword = ctx
         .find_token_syntax_at_offset(T![if])

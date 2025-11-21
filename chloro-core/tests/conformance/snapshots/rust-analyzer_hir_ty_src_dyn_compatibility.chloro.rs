@@ -25,6 +25,7 @@ use crate::{
     },
     traits::next_trait_solve_in_ctxt,
 };
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DynCompatibilityViolation {
     SizedSelf,

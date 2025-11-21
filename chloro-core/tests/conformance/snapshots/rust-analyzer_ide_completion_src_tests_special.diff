@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27148 bytes
-Chloro size:   27138 bytes
+Chloro size:   27139 bytes
 Rustfmt size:  27179 bytes
 
 ✗ Outputs DIFFER
@@ -25,10 +25,8 @@ Rustfmt size:  27179 bytes
 +        do_completion_with_config,
 +    },
  };
--
+ 
  #[test]
- fn completes_if_prefix_is_keyword() {
-     check_edit(
              st RightType WrongType
          "#]],
      );

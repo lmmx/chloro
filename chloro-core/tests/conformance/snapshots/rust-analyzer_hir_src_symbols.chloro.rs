@@ -21,6 +21,7 @@ use rustc_hash::FxHashMap;
 use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, ToSmolStr, ast::HasName};
 
 use crate::{HasCrate, Module, ModuleDef, Semantics};
+
 /// The actual data that is stored in the index. It should be as compact as
 /// possible.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

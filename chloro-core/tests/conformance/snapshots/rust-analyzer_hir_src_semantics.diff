@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   97333 bytes
+Chloro size:   97334 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -16,14 +16,14 @@ Rustfmt size:  101650 bytes
  use std::{
      cell::RefCell,
      convert::Infallible,
-     semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
      source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
  };
+ 
+-const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
 +mod child_by_source;
 +
 +mod source_to_def;
- 
--const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
++
  
  #[derive(Debug, Copy, Clone, PartialEq, Eq)]
  pub enum PathResolution {

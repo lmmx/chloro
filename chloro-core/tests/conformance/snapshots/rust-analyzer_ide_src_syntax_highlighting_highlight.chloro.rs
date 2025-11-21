@@ -21,6 +21,7 @@ use crate::{
     Highlight, HlMod, HlTag,
     syntax_highlighting::tags::{HlOperator, HlPunct},
 };
+
 pub(super) fn token(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken, edition: Edition, is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool, in_tt: bool) -> Option<Highlight> {
     if let Some(comment) = ast::Comment::cast(token.clone()) {
         let h = HlTag::Comment;

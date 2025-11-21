@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11005 bytes
+Chloro size:   11006 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -34,10 +34,8 @@ Rustfmt size:  11331 bytes
      InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
 +    traits::{Obligation, ObligationCause},
  };
--
+ 
  #[derive(Clone, Copy)]
- pub struct At<'a, 'db> {
-     pub infcx: &'a InferCtxt<'db>,
  impl<'db> InferCtxt<'db> {
      #[inline]
      pub fn at<'a>(&'a self, cause: &'a ObligationCause, param_env: ParamEnv<'db>) -> At<'a, 'db> {

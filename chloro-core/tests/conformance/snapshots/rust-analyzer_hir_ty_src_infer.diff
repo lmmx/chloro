@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72121 bytes
+Chloro size:   72122 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -40,10 +40,8 @@ Rustfmt size:  74236 bytes
  
  use crate::{
      ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
-     traits::FnTrait,
      utils::TargetFeatureIsSafeInTarget,
  };
-+mod autoderef;
  
 -// This lint has a false positive here. See the link below for details.
 -//
@@ -52,10 +50,12 @@ Rustfmt size:  74236 bytes
 -pub use coerce::could_coerce;
 -#[allow(unreachable_pub)]
 -pub use unify::{could_unify, could_unify_deeply};
-+pub(crate) mod cast;
++mod autoderef;
  
 -use cast::{CastCheck, CastError};
 -pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
++pub(crate) mod cast;
++
 +pub(crate) mod closure;
 +
 +mod coerce;

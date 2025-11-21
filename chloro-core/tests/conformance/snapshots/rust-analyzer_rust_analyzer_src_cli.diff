@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2201 bytes
-Chloro size:   2207 bytes
+Chloro size:   2208 bytes
 Rustfmt size:  2201 bytes
 
 ✗ Outputs DIFFER
@@ -31,9 +31,9 @@ Rustfmt size:  2201 bytes
  use std::io::Read;
  
  use anyhow::Result;
- use ide::{AnalysisHost, Edition};
  use itertools::Itertools;
  use vfs::Vfs;
+ 
 +#![allow(clippy::print_stdout, clippy::print_stderr)]
 +mod analysis_stats;
 +
@@ -62,9 +62,10 @@ Rustfmt size:  2201 bytes
 +mod unresolved_references;
 +
 +mod progress_report;
- 
++
  #[derive(Clone, Copy)]
  pub enum Verbosity {
+     Spammy,
      pub fn is_verbose(self) -> bool {
          matches!(self, Verbosity::Verbose | Verbosity::Spammy)
      }

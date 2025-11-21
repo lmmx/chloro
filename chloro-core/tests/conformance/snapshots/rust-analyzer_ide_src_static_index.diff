@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19028 bytes
-Chloro size:   18869 bytes
+Chloro size:   18870 bytes
 Rustfmt size:  19028 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
-     moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
-     parent_module::crates_for,
- };
--
- /// A static representation of fully analyzed source code.
- ///
- /// The intended use-case is powering read-only code browsers and emitting LSIF/SCIP.
      let mut worklist: Vec<_> =
          Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
      let mut modules = Vec::new();

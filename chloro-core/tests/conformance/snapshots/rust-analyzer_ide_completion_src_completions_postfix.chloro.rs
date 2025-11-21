@@ -23,6 +23,7 @@ use crate::{
     context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
     item::{Builder, CompletionRelevancePostfixMatch},
 };
+
 mod format_like;
 
 pub(crate) fn complete_postfix(acc: &mut Completions, ctx: &CompletionContext<'_>, dot_access: &DotAccess<'_>) {

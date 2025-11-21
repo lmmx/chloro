@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5855 bytes
-Chloro size:   5765 bytes
+Chloro size:   5766 bytes
 Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,8 @@ Rustfmt size:  5985 bytes
  use paths::Utf8PathBuf;
  use syntax::{TextRange, TextSize};
  use vfs::AbsPathBuf;
-     line_index::{LineIndex, PositionEncoding},
-     lsp_ext, try_default,
  };
--
+ 
  pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {
 -    let path = url
 -        .to_file_path()

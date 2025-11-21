@@ -5,6 +5,7 @@ use crate::{
     AssistId,
     assist_context::{AssistContext, Assists},
 };
+
 pub(crate) fn normalize_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let use_item = if ctx.has_empty_selection() {
         ctx.find_node_at_offset()?

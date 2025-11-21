@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12706 bytes
+Chloro size:   12707 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -35,10 +35,9 @@ Rustfmt size:  13256 bytes
  };
  
 -const AUTODEREF_RECURSION_LIMIT: usize = 20;
--
+ 
  /// Returns types that `ty` transitively dereferences to. This function is only meant to be used
  /// outside `hir-ty`.
- ///
  /// - the yielded types don't contain inference variables (but may contain `TyKind::Error`).
  /// - a type won't be yielded more than once; in other words, the returned iterator will stop if it
  ///   detects a cycle in the deref chain.

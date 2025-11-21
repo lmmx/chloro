@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3398 bytes
-Chloro size:   3397 bytes
+Chloro size:   3398 bytes
 Rustfmt size:  3608 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,7 @@ Rustfmt size:  3608 bytes
  use intern::sym;
  
  use crate::db::HirDatabase;
--
+ 
  pub fn is_box(db: &dyn HirDatabase, adt: AdtId) -> bool {
 -    let AdtId::StructId(id) = adt else {
 -        return false;

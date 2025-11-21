@@ -23,6 +23,7 @@ use super::{
     super::mir::{MirEvalError, MirLowerError},
     ConstEvalError,
 };
+
 mod intrinsics;
 
 fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {

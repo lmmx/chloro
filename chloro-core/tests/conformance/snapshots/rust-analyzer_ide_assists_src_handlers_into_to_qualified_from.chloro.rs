@@ -3,6 +3,7 @@ use ide_db::{assists::AssistId, famous_defs::FamousDefs};
 use syntax::{AstNode, ast};
 
 use crate::assist_context::{AssistContext, Assists};
+
 pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let nameref = method_call.name_ref()?;

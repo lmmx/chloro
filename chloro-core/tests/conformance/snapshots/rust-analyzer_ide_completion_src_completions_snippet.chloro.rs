@@ -7,6 +7,7 @@ use crate::{
     context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
     item::Builder,
 };
+
 pub(crate) fn complete_expr_snippet(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx: &PathCompletionCtx<'_>, &PathExprCtx { in_block_expr, .. }: &PathExprCtx<'_>) {
     if !matches!(path_ctx.qualified, Qualified::No) {
         return;

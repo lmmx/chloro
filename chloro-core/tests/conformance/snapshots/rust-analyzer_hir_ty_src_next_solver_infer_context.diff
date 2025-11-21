@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11079 bytes
-Chloro size:   10736 bytes
+Chloro size:   10737 bytes
 Rustfmt size:  11433 bytes
 
 ✗ Outputs DIFFER
@@ -27,11 +27,10 @@ Rustfmt size:  11433 bytes
  };
 -
 -use super::{relate::RelateResult, BoundRegionConversionTime, InferCtxt};
--
 +use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
+ 
  impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
      type Interner = DbInterner<'db>;
- 
      }
  
      fn universe_of_lt(&self, lt: RegionVid) -> Option<UniverseIndex> {

@@ -17,6 +17,7 @@ use crate::{
     AssistContext, AssistId, Assists,
     utils::{invert_boolean_expression, unwrap_trivial_block},
 };
+
 pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME applies to match as well
     let expr = ctx.find_node_at_offset::<ast::IfExpr>()?;

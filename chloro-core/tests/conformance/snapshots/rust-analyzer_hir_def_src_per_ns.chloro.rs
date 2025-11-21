@@ -10,6 +10,7 @@ use crate::{
     item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs},
     visibility::Visibility,
 };
+
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Namespace {
     Types,

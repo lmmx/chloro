@@ -2,14 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1596 bytes
-Chloro size:   1392 bytes
+Chloro size:   1393 bytes
 Rustfmt size:  1596 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
  use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
--
+ 
 -// Diagnostic: parenthesized-generic-args-without-fn-trait
 -//
 -// This diagnostic is shown when a `Fn`-trait-style generic parameters (`Trait(A, B) -> C`)

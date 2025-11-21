@@ -10,6 +10,7 @@ use crate::{
     context::{CompletionContext, ExistingDerives, PathCompletionCtx, Qualified},
     item::CompletionItem,
 };
+
 pub(crate) fn complete_derive_path(acc: &mut Completions, ctx: &CompletionContext<'_>, path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>, existing_derives: &ExistingDerives) {
     let core = ctx.famous_defs().core();
     match qualified {

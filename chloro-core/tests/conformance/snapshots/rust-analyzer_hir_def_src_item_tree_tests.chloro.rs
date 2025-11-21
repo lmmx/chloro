@@ -3,6 +3,7 @@ use span::Edition;
 use test_fixture::WithFixture;
 
 use crate::{db::DefDatabase, test_db::TestDB};
+
 fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (db, file_id) = TestDB::with_single_file(ra_fixture);
     let item_tree = db.file_item_tree(file_id.into());

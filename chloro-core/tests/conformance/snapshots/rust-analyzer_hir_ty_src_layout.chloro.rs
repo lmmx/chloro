@@ -29,6 +29,7 @@ use crate::{
 };
 pub(crate) use self::adt::layout_of_adt_cycle_result;
 pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
+
 pub(crate) mod adt;
 
 pub(crate) mod target;

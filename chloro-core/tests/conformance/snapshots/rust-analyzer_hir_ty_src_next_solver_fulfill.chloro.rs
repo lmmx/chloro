@@ -21,6 +21,7 @@ use crate::next_solver::{
     },
     inspect::ProofTreeVisitor,
 };
+
 mod errors;
 
 type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;

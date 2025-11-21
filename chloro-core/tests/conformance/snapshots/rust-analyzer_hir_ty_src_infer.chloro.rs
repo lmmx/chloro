@@ -64,6 +64,7 @@ use crate::{
     traits::FnTrait,
     utils::TargetFeatureIsSafeInTarget,
 };
+
 mod autoderef;
 
 pub(crate) mod cast;

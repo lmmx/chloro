@@ -7,6 +7,7 @@ use ide_db::imports::import_assets::LocatedImport;
 use itertools::Itertools;
 
 use crate::context::CompletionContext;
+
 /// A snippet scope describing where a snippet may apply to.
 /// These may differ slightly in meaning depending on the snippet trigger.
 #[derive(Clone, Debug, PartialEq, Eq)]

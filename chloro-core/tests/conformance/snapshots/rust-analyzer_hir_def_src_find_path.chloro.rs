@@ -19,6 +19,7 @@ use crate::{
     nameres::DefMap,
     visibility::{Visibility, VisibilityExplicitness},
 };
+
 /// Find a path that can be used to refer to a certain item. This can depend on
 /// *from where* you're referring to the item, hence the `from` parameter.
 pub fn find_path(db: &dyn DefDatabase, item: ItemInNs, from: ModuleId, mut prefix_kind: PrefixKind, ignore_local_imports: bool, mut cfg: FindPathConfig) -> Option<ModPath> {

@@ -2,16 +2,15 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30062 bytes
-Chloro size:   29467 bytes
+Chloro size:   29468 bytes
 Rustfmt size:  30062 bytes
 
 ✗ Outputs DIFFER
 
 --- DIFF (- rustfmt, + chloro) ---
- };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
--
+ 
 -// Assist: extract_struct_from_enum_variant
 -//
 -// Extracts a struct from enum variant.

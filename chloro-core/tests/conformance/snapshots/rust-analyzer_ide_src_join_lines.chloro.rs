@@ -8,6 +8,7 @@ use syntax::{
     SyntaxToken, T, TextRange, TextSize,
     ast::{self, AstNode, AstToken, IsString},
 };
+
 pub struct JoinLinesConfig {
     pub join_else_if: bool,
     pub remove_trailing_comma: bool,

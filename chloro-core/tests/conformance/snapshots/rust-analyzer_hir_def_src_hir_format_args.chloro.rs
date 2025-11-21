@@ -13,6 +13,7 @@ use syntax::{
 };
 
 use crate::hir::ExprId;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FormatArgs {
     pub template: Box<[FormatArgsPiece]>,

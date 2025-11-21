@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16114 bytes
-Chloro size:   15738 bytes
+Chloro size:   15739 bytes
 Rustfmt size:  16341 bytes
 
 ✗ Outputs DIFFER
@@ -35,10 +35,8 @@ Rustfmt size:  16341 bytes
  };
 -
  use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};
--
+ 
  impl<'db> InferenceContext<'_, 'db> {
-     pub(super) fn infer_path(&mut self, path: &Path, id: ExprOrPatId) -> Option<Ty<'db>> {
-         let (value_def, generic_def, substs) = match self.resolve_value_path(path, id)? {
              ValuePathResolution::NonGeneric(ty) => return Some(ty),
          };
          let args = self.process_remote_user_written_ty(substs);

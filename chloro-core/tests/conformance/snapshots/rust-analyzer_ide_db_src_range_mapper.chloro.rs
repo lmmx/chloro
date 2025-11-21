@@ -4,6 +4,7 @@ use std::cmp::Ordering;
 
 use stdx::equal_range_by;
 use syntax::{TextRange, TextSize};
+
 #[derive(Default)]
 pub struct RangeMapper {
     buf: String,

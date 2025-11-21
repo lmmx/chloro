@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12387 bytes
+Chloro size:   12388 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  13024 bytes
      AssistId,
 +    assist_context::{AssistContext, Assists},
  };
--
+ 
 -// Assist: generate_default_from_new
 -//
 -// Generates default implementation from new method.

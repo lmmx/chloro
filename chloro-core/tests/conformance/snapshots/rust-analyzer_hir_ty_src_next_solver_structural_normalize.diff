@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1878 bytes
+Chloro size:   1879 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,7 @@ Rustfmt size:  2003 bytes
      infer::{at::At, traits::Obligation},
 -    Const, PredicateKind, Term, Ty,
  };
--
+ 
  impl<'db> At<'_, 'db> {
 -    pub(crate) fn structurally_normalize_ty(
 -        &self,

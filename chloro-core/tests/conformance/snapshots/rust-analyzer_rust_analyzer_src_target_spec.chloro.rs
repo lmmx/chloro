@@ -13,6 +13,7 @@ use triomphe::Arc;
 use vfs::AbsPathBuf;
 
 use crate::global_state::GlobalStateSnapshot;
+
 /// A target represents a thing we can build or test.
 ///
 /// We use it to calculate the CLI arguments required to build, run or

@@ -31,6 +31,7 @@ use crate::{
     next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
     traits::FnTrait,
 };
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct HirPlace<'db> {
     pub(crate) local: BindingId,

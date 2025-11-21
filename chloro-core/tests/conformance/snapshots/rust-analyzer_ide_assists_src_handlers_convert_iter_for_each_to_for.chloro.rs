@@ -7,6 +7,7 @@ use syntax::{
 };
 
 use crate::{AssistContext, AssistId, Assists};
+
 pub(crate) fn convert_iter_for_each_to_for(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let method = ctx.find_node_at_offset::<ast::MethodCallExpr>()?;
     let closure = match method.arg_list()?.args().next()? {

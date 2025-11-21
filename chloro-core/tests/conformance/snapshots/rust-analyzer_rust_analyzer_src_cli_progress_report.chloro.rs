@@ -3,6 +3,7 @@
 //! A single thread non-optimized progress bar
 
 use std::io::{self, Write};
+
 /// A Simple ASCII Progress Bar
 pub(crate) struct ProgressReport<'a> {
     curr: f32,

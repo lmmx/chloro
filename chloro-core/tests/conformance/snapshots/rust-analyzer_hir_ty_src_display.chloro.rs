@@ -63,6 +63,7 @@ use crate::{
     primitive,
     utils::{self, detect_variant_from_bytes},
 };
+
 fn start_location_link(&mut self, _location: ModuleDefId) {
 }
 fn end_location_link(&mut self) {

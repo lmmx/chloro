@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 398 bytes
-Chloro size:   400 bytes
+Chloro size:   401 bytes
 Rustfmt size:  398 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,7 @@ Rustfmt size:  398 bytes
 +        BuiltinFnLikeExpander, EagerExpander, find_builtin_macro, include_input_to_file_id,
 +    },
 +};
++
  #[macro_use]
  pub mod quote;
  

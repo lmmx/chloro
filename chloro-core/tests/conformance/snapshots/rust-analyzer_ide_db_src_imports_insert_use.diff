@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20393 bytes
+Chloro size:   20394 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,9 @@ Rustfmt size:  20506 bytes
  use hir::Semantics;
  use syntax::{
      Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
-         try_merge_imports, use_tree_cmp,
      },
  };
--
+ 
 -pub use hir::PrefixKind;
 +#[cfg(test)]
 +mod tests;

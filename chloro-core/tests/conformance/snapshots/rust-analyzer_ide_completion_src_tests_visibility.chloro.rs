@@ -3,6 +3,7 @@
 use expect_test::expect;
 
 use crate::tests::{check, check_with_private_editable, check_with_trigger_character};
+
 #[test]
 fn empty_pub() {
     cov_mark::check!(kw_completion_in);

@@ -4,6 +4,7 @@ use ide::Edition;
 use syntax::{AstNode, SourceFile};
 
 use crate::cli::{flags, read_stdin};
+
 impl flags::Parse {
     pub fn run(self) -> anyhow::Result<()> {
         let _p = tracing::info_span!("flags::Parse::run").entered();

@@ -10,6 +10,7 @@ use crate::{
     handlers::convert_comment_block::{line_comment_text, relevant_line_comments},
     utils::required_hashes,
 };
+
 pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow doc comments
