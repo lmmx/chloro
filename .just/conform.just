@@ -125,8 +125,8 @@ conf-md:
 
     echo "### Top 20 Most Impacted Files"
     echo
-    echo "| Rank | Size Rank | Diff Rank | Impact | Added | Removed | File |"
+    echo "| Rank | Size Rank | Diff Rank | Impact |   +   |    -    | File |"
     echo "|------|-----------|-----------|--------|-------|---------|------|"
     echo "$output" | awk '/^────────────────────────────────────────────────────────────────────────────$/,0' \
         | tail -n +2 | grep -E '^[[:space:]]*[0-9]' | head -20 \
-        | awk '{printf "| %s | %s | %s | %s | %s | %s | `%s` |\n", $1, $2, $3, $4, $5, $7, $8}'
+        | awk '{printf "| %s | %s | %s | %s | %s | %s | [`%s`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/%s.diff) |\n", $1, $2, $3, $4, $5, $7, $8, $8}'
