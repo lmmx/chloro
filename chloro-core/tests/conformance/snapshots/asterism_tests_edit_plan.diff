@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15044 bytes
-Chloro size:   14997 bytes
+Chloro size:   14987 bytes
 Rustfmt size:  15044 bytes
 
 ✗ Outputs DIFFER
@@ -27,12 +27,6 @@ Rustfmt size:  15044 bytes
      // Just check the content exists, don't assume line positions
      assert!(content.contains("Line 1"));
      assert!(content.contains("Modified"));
-     assert!(content.contains("Line 3"));
- }
- 
-+
- #[test]
- fn test_section_replacement_with_empty_lines() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Hello\n\n?\n\n## World").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -49,12 +43,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(&path).unwrap();
-     }
- }
- 
-+
- #[test]
- fn test_boundary_mode_exclude() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "A\nB\nC\nD").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -76,13 +64,6 @@ Rustfmt size:  15044 bytes
      assert!(content.contains('A'));
      assert!(content.contains("REPLACED"));
      assert!(
-     assert!(content.contains('D'));
- }
- 
-+
- #[test]
- fn test_line_numbering_off_by_one() {
-     // Common issue: are lines 0-indexed or 1-indexed?
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "First\nSecond\nThird").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -99,12 +80,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(&path).unwrap();
-     }
- }
- 
-+
- #[test]
- fn test_extract_sections_line_numbers() {
      // This test verifies that our section extraction gives correct line numbers
      use crate::formats::markdown::MarkdownFormat;
      use crate::input::extract_sections;
@@ -133,13 +108,6 @@ Rustfmt size:  15044 bytes
      // Verify the first section's byte range
      let section = &sections[0];
      let section_content = &content.as_bytes()[section.byte_start..section.byte_end];
-     println!("{section_text:?}");
- }
- 
-+
- #[test]
- fn test_line_indexing_zero_vs_one() {
-     // This test documents whether textum uses 0-indexed or 1-indexed lines
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "Line 0\nLine 1\nLine 2\nLine 3").unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -177,8 +145,6 @@ Rustfmt size:  15044 bytes
      let content2 = fs::read_to_string(&path).unwrap();
      println!("After 1-indexed edit:\n{content2}");
  }
- 
-+
  #[test]
  fn test_app_section_to_textum_conversion() {
      use crate::input::extract_sections;
@@ -215,10 +181,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let content = fs::read_to_string(path).unwrap();
-     }
- }
- 
-+
  #[test]
  fn test_exact_scenario() {
      use crate::input::extract_sections;
@@ -269,7 +231,6 @@ Rustfmt size:  15044 bytes
      assert!(result.contains("Yeah"), "Should contain 'Yeah'");
  }
  
-+
  #[test]
  fn test_diagnose_line_numbers() {
      use crate::input::extract_sections;
@@ -314,13 +275,6 @@ Rustfmt size:  15044 bytes
      match plan.apply() {
          Ok(()) => {
              let result = fs::read_to_string(path).unwrap();
-     }
- }
- 
-+
- #[test]
- fn test_textum_line_behavior() {
-     let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "Line0\nLine1\nLine2\nLine3").unwrap();
      file.flush().unwrap();
      let path = file.path().to_string_lossy().to_string();
@@ -356,7 +310,3 @@ Rustfmt size:  15044 bytes
      let lines: Vec<&str> = result.lines().collect();
      assert_eq!(lines[0], "Line0", "Line 0 should be unchanged");
      assert_eq!(lines[1], "", "Line 1 should be padding now");
-         "Line 3 should be unchanged and budged along"
-     );
- }
-+

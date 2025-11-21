@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1158 bytes
-Chloro size:   753 bytes
+Chloro size:   750 bytes
 Rustfmt size:  1158 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,9 @@ Rustfmt size:  1158 bytes
  //! tree-sitter queries specific to each format.
 -
  pub mod difftastic;
-+
-+
- pub mod markdown;
+-pub mod markdown;
  
++pub mod markdown;
  /// Abstracts document type differences through tree-sitter queries.
  ///
  /// Enables support for markdown and other structured formats by providing format-specific parsing
@@ -40,4 +39,3 @@ Rustfmt size:  1158 bytes
 +fn section_query() -> &str;
 +fn title_query() -> &str;
 +fn format_section_display(level: usize, title: &str) -> ratatui::text::Line<'static>;
-+

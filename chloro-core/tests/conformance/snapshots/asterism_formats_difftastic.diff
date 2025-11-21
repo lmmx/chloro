@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16579 bytes
-Chloro size:   14888 bytes
+Chloro size:   14873 bytes
 Rustfmt size:  16579 bytes
 
 ✗ Outputs DIFFER
@@ -34,7 +34,6 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Represents a line in a diff chunk
-+
  #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftLine {
 -    /// Left-hand (original) side of the comparison, absent for pure additions.
@@ -46,7 +45,6 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Represents one side (left or right) of a diff line
-+
  #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftSide {
 -    /// Original line position in the source file (1-indexed).
@@ -56,7 +54,6 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Represents a change within a line
-+
  #[derive(Debug, Serialize, Deserialize)]
  pub struct DifftChange {
 -    /// Column offset where this change begins (0-indexed).
@@ -71,12 +68,10 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Difftastic format handler
-+
  pub struct DifftasticFormat;
  
 -impl Format for DifftasticFormat {
 -    fn file_extension(&self) -> &'static str {
-+
 +impl DifftasticFormat {
 +    fn file_extension() -> &'static str {
          "diff"
@@ -123,7 +118,6 @@ Rustfmt size:  16579 bytes
      }
  }
  
-+
  impl DifftasticFormat {
 -    /// Determine hunk color from the header string itself
      fn determine_hunk_color_from_header(header: &str) -> Color {
@@ -138,7 +132,6 @@ Rustfmt size:  16579 bytes
      }
  }
  
-+
  #[allow(clippy::too_many_arguments)]
 -fn create_chunk_section(
 -    file_path: &str,
@@ -164,7 +157,6 @@ Rustfmt size:  16579 bytes
 -/// # Errors
 -///
 -/// Returns an error if JSON parsing fails or if the format is invalid.
-+
  pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
      let files: Vec<DifftFile> = if let Ok(files) = serde_json::from_str::<Vec<DifftFile>>(json_str)
      {
@@ -186,7 +178,6 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Format a change as a proper git diff hunk header
-+
  fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
      let (lhs_line, rhs_line) = match (&change.lhs, &change.rhs) {
          (Some(lhs), Some(rhs)) => (lhs.line_number, rhs.line_number),
@@ -202,7 +193,6 @@ Rustfmt size:  16579 bytes
  }
  
 -/// Format a single change for display
-+
  fn format_change_content(change: &DifftLine) -> String {
      let mut output = String::new();
 -
@@ -216,14 +206,7 @@ Rustfmt size:  16579 bytes
      output
  }
  
-+
- fn extract_chunk_text(side: &Value) -> Option<String> {
-     side.get("changes")
-         .and_then(|c| c.as_array())
-         })
- }
  
-+
  fn extract_column_range(side: &Value) -> (i64, i64) {
      let changes = side.get("changes").and_then(|c| c.as_array());
 -
@@ -247,7 +230,6 @@ Rustfmt size:  16579 bytes
 -/// # Errors
 -///
 -/// Returns an error if the JSON file cannot be read from disk.
-+
  pub fn extract_difftastic_sections(json_path: &Path) -> io::Result<Vec<Section>> {
      let content = fs::read_to_string(json_path)?;
      let lines: Vec<Value> = content
@@ -267,8 +249,3 @@ Rustfmt size:  16579 bytes
      Ok(sections)
  }
  
-+
- #[cfg(test)]
- #[path = "../tests/difftastic.rs"]
- mod tests;
-+

@@ -33,7 +33,6 @@ pub fn find_documents(paths: Vec<PathBuf>, extensions: &[String]) -> io::Result<
     }
 }
 
-
 fn find_in_directory(dir: &Path, extensions: &[String]) -> io::Result<Vec<PathBuf>> {
     let mut results = Vec::new();
     if let Ok(entries) = fs::read_dir(dir) {
@@ -62,7 +61,6 @@ fn find_in_directory(dir: &Path, extensions: &[String]) -> io::Result<Vec<PathBu
     }
     Ok(results)
 }
-
 
 pub fn extract_sections<F: Format>(file_path: &Path, format: &F) -> io::Result<Vec<Section>> {
     let content = fs::read_to_string(file_path)?;
@@ -163,7 +161,6 @@ pub fn extract_sections<F: Format>(file_path: &Path, format: &F) -> io::Result<V
     Ok(sections)
 }
 
-
 fn build_hierarchy(sections: &mut [Section]) {
     let mut stack: Vec<(usize, usize)> = Vec::new();
     // (index, level)
@@ -188,8 +185,6 @@ fn build_hierarchy(sections: &mut [Section]) {
     }
 }
 
-
 #[cfg(test)]
 #[path = "tests/input.rs"]
 mod tests;
-

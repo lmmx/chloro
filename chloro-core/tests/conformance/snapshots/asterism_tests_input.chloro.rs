@@ -30,7 +30,6 @@ fn print_tree(cursor: &mut tree_sitter::TreeCursor, source: &[u8], depth: usize)
     }
 }
 
-
 #[test]
 fn test_find_documents_single_file() {
     let file = NamedTempFile::new().unwrap();
@@ -41,7 +40,6 @@ fn test_find_documents_single_file() {
     assert_eq!(results[0], path);
     fs::remove_file(path).unwrap();
 }
-
 
 #[test]
 fn test_extract_simple_sections() {
@@ -59,7 +57,6 @@ fn test_extract_simple_sections() {
     assert_eq!(sections[2].title, "Hmm");
     assert_eq!(sections[2].level, 3);
 }
-
 
 #[test]
 fn test_section_hierarchy() {
@@ -81,7 +78,6 @@ fn test_section_hierarchy() {
     assert_eq!(sections[2].parent_index, Some(0));
 }
 
-
 #[test]
 fn test_tree_sitter_parsing() {
     use tree_sitter::Parser;
@@ -97,4 +93,3 @@ fn test_tree_sitter_parsing() {
     let mut cursor = root.walk();
     print_tree(&mut cursor, markdown.as_bytes(), 0);
 }
-

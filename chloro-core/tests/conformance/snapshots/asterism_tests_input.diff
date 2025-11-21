@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3169 bytes
-Chloro size:   3156 bytes
+Chloro size:   3151 bytes
 Rustfmt size:  3169 bytes
 
 ✗ Outputs DIFFER
@@ -22,12 +22,6 @@ Rustfmt size:  3169 bytes
      if cursor.goto_first_child() {
          loop {
              print_tree(cursor, source, depth + 1);
-     }
- }
- 
-+
- #[test]
- fn test_find_documents_single_file() {
      let file = NamedTempFile::new().unwrap();
      let path = file.path().with_extension("md");
      fs::rename(file.path(), &path).unwrap();
@@ -39,9 +33,6 @@ Rustfmt size:  3169 bytes
      fs::remove_file(path).unwrap();
  }
  
-+
- #[test]
- fn test_extract_simple_sections() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Hello\n\n?\n\n## World\n\n??\n\n### Hmm\n\n???").unwrap();
      let path = file.path();
@@ -61,11 +52,6 @@ Rustfmt size:  3169 bytes
      assert_eq!(sections[2].title, "Hmm");
      assert_eq!(sections[2].level, 3);
  }
- 
-+
- #[test]
- fn test_section_hierarchy() {
-     let mut file = NamedTempFile::new().unwrap();
      )
      .unwrap();
      let path = file.path();
@@ -82,9 +68,6 @@ Rustfmt size:  3169 bytes
      // Both children have parent
      assert_eq!(sections[1].parent_index, Some(0));
      assert_eq!(sections[2].parent_index, Some(0));
- }
- 
-+
  #[test]
  fn test_tree_sitter_parsing() {
      use tree_sitter::Parser;
@@ -104,5 +87,3 @@ Rustfmt size:  3169 bytes
      // This will help us see what the actual node structure is
      let mut cursor = root.walk();
      print_tree(&mut cursor, markdown.as_bytes(), 0);
- }
-+

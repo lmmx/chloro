@@ -14,7 +14,6 @@ fn test_parse_single_file_diff() {
     assert_eq!(sections[0].parent_index, None, "Hunks have no parent");
 }
 
-
 #[test]
 fn test_parse_multi_hunk_file() {
     // Your actual test.md example with multiple changes
@@ -30,7 +29,6 @@ fn test_parse_multi_hunk_file() {
     assert_eq!(sections[0].file_path, "test.md");
     assert_eq!(sections[1].file_path, "test.md");
 }
-
 
 #[test]
 fn test_parse_ndjson_multi_file() {
@@ -48,7 +46,6 @@ fn test_parse_ndjson_multi_file() {
     assert!(sections[1].title.contains("Hunk"));
     assert_eq!(sections[1].file_path, "test.md");
 }
-
 
 #[test]
 fn test_hunk_structure() {
@@ -68,14 +65,12 @@ fn test_hunk_structure() {
     assert!(sections[1].children_indices.is_empty());
 }
 
-
 #[test]
 fn test_unchanged_file_skipped() {
     let json = r#"[{"language":"Text","path":"unchanged.md","status":"unchanged"}]"#;
     let sections = parse_difftastic_json(json).unwrap();
     assert!(sections.is_empty(), "Should skip unchanged files");
 }
-
 
 #[test]
 fn test_created_file_no_chunks() {
@@ -87,7 +82,6 @@ fn test_created_file_no_chunks() {
     assert_eq!(sections[0].file_path, "new.py");
 }
 
-
 #[test]
 fn test_deleted_file_no_chunks() {
     let json = r#"[{"language":"Python","path":"old.py","status":"deleted"}]"#;
@@ -96,7 +90,6 @@ fn test_deleted_file_no_chunks() {
     assert!(sections[0].title.contains("deleted") || sections[0].title.contains("File"));
     assert_eq!(sections[0].file_path, "old.py");
 }
-
 
 #[test]
 fn test_file_path_tracking() {
@@ -108,4 +101,3 @@ fn test_file_path_tracking() {
         "Should preserve full file path"
     );
 }
-

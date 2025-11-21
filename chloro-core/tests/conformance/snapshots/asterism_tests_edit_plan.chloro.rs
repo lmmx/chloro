@@ -27,7 +27,6 @@ fn test_single_line_replacement() {
     assert!(content.contains("Line 3"));
 }
 
-
 #[test]
 fn test_section_replacement_with_empty_lines() {
     let mut file = NamedTempFile::new().unwrap();
@@ -63,7 +62,6 @@ fn test_section_replacement_with_empty_lines() {
     }
 }
 
-
 #[test]
 fn test_boundary_mode_exclude() {
     let mut file = NamedTempFile::new().unwrap();
@@ -90,7 +88,6 @@ fn test_boundary_mode_exclude() {
     );
     assert!(content.contains('D'));
 }
-
 
 #[test]
 fn test_line_numbering_off_by_one() {
@@ -133,7 +130,6 @@ fn test_line_numbering_off_by_one() {
     }
 }
 
-
 #[test]
 fn test_extract_sections_line_numbers() {
     // This test verifies that our section extraction gives correct line numbers
@@ -171,7 +167,6 @@ fn test_extract_sections_line_numbers() {
     );
     println!("{section_text:?}");
 }
-
 
 #[test]
 fn test_line_indexing_zero_vs_one() {
@@ -213,7 +208,6 @@ fn test_line_indexing_zero_vs_one() {
     let content2 = fs::read_to_string(&path).unwrap();
     println!("After 1-indexed edit:\n{content2}");
 }
-
 
 #[test]
 fn test_app_section_to_textum_conversion() {
@@ -260,7 +254,6 @@ fn test_app_section_to_textum_conversion() {
         }
     }
 }
-
 
 #[test]
 fn test_exact_scenario() {
@@ -310,7 +303,6 @@ fn test_exact_scenario() {
     }
     assert!(result.contains("Yeah"), "Should contain 'Yeah'");
 }
-
 
 #[test]
 fn test_diagnose_line_numbers() {
@@ -381,7 +373,6 @@ fn test_diagnose_line_numbers() {
     }
 }
 
-
 #[test]
 fn test_textum_line_behavior() {
     let mut file = NamedTempFile::new().unwrap();
@@ -429,4 +420,3 @@ fn test_textum_line_behavior() {
         "Line 3 should be unchanged and budged along"
     );
 }
-

@@ -24,5 +24,5 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(&use_tree.syntax().text().to_string());
     }
 
-    buf.push_str(";");
+    buf.push_str(";\n");
 }

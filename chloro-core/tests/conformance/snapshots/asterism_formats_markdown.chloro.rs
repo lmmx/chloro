@@ -10,7 +10,6 @@ use ratatui::{
 
 pub struct MarkdownFormat;
 
-
 impl MarkdownFormat {
     fn file_extension() -> &'static str {
         "md"
@@ -44,4 +43,3 @@ impl MarkdownFormat {
         Line::from(spans)
     }
 }
-

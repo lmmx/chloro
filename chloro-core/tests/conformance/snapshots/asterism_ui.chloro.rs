@@ -23,7 +23,6 @@ pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
     }
 }
 
-
 fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
     if level == 0 {
         return String::new();
@@ -44,7 +43,6 @@ fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
     prefix.push_str("   ");
     prefix
 }
-
 
 #[allow(clippy::too_many_lines)]
 fn draw_list(f: &mut Frame, app: &AppState) {
@@ -203,7 +201,6 @@ fn draw_list(f: &mut Frame, app: &AppState) {
     f.render_widget(help_widget, chunks[1]);
 }
 
-
 #[allow(clippy::too_many_lines)]
 fn draw_list_with_command(f: &mut Frame, app: &AppState) {
     let chunks = Layout::default()
@@ -340,7 +337,6 @@ fn draw_list_with_command(f: &mut Frame, app: &AppState) {
     f.render_widget(command_widget, chunks[1]);
 }
 
-
 fn draw_detail(f: &mut Frame, app: &mut AppState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -398,4 +394,3 @@ fn draw_detail(f: &mut Frame, app: &mut AppState) {
     let help = Paragraph::new(help_text).block(Block::default().borders(Borders::ALL));
     f.render_widget(help, chunks[2]);
 }
-

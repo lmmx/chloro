@@ -23,6 +23,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
             let mut last_kind: Option<SyntaxKind> = None;
+            let mut has_seen_item = false;
 
             for child in node.children_with_tokens() {
                 match child {
@@ -42,20 +43,24 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         );
 
                         if is_item {
-                            // Add blank line between different item types
-                            if let Some(last) = last_kind {
-                                // Don't add blank line between consecutive USE statements
-                                if !(current_kind == SyntaxKind::USE && last == SyntaxKind::USE) {
-                                    buf.push('\n');
+                            // Add blank line before items, except:
+                            // 1. The very first item (has_seen_item is false)
+                            // 2. Between consecutive USE statements
+                            if has_seen_item {
+                                if let Some(last) = last_kind {
+                                    if !(current_kind == SyntaxKind::USE && last == SyntaxKind::USE)
+                                    {
+                                        buf.push('\n');
+                                    }
                                 }
                             }
-                        }
 
-                        format_node(&n, buf, indent);
-                        buf.push('\n');
+                            format_node(&n, buf, indent);
 
-                        if is_item {
+                            has_seen_item = true;
                             last_kind = Some(current_kind);
+                        } else {
+                            format_node(&n, buf, indent);
                         }
                     }
                     NodeOrToken::Token(t) => {

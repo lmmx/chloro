@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3207 bytes
-Chloro size:   2683 bytes
+Chloro size:   2679 bytes
 Rustfmt size:  3207 bytes
 
 ✗ Outputs DIFFER
@@ -27,8 +27,6 @@ Rustfmt size:  3207 bytes
 -    target_line: usize,
 -) -> Vec<Line<'static>> {
 +
-+
-+
 +pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_line: usize) -> Vec<Line<'static>> {
      let theme = &THEME_SET.themes["base16-eighties.dark"];
      let syntax_ref = SYNTAX_SET
@@ -51,7 +49,6 @@ Rustfmt size:  3207 bytes
 -/// Highlight a single line with syntax coloring for a given file extension.
 -///
 -/// Falls back to plain text rendering if syntax highlighting fails.
-+
  pub fn highlight_line_with_extension(line: &str, extension: &str) -> Line<'static> {
      let theme = &THEME_SET.themes["base16-eighties.dark"];
      let syntax_ref = SYNTAX_SET
@@ -63,7 +60,3 @@ Rustfmt size:  3207 bytes
      // Try to highlight, fall back to plain text if it fails
      match highlight_lines.highlight_line(line, &SYNTAX_SET) {
          Ok(highlighted) => {
-         }
-     }
- }
-+

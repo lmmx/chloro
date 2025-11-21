@@ -23,7 +23,6 @@ pub struct Section {
     pub rhs_content: Option<String>,
 }
 
-
 #[derive(Clone)]
 pub enum ChunkType {
     Added,
@@ -31,7 +30,6 @@ pub enum ChunkType {
     Modified,
     Unchanged,
 }
-
 
 #[derive(Clone)]
 pub enum NodeType {
@@ -46,7 +44,6 @@ pub enum NodeType {
     Section(Section),
 }
 
-
 #[derive(Clone)]
 pub struct TreeNode {
     pub node_type: NodeType,
@@ -54,7 +51,6 @@ pub struct TreeNode {
     pub navigable: bool,
     pub section_index: Option<usize>,
 }
-
 
 impl TreeNode {
     #[must_use]
@@ -85,4 +81,3 @@ impl TreeNode {
         }
     }
 }
-

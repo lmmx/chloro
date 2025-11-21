@@ -70,7 +70,6 @@ fn test_edit_persists_correctly() {
     );
 }
 
-
 #[test]
 fn test_edit_plan_captures_changes() {
     let mut file = NamedTempFile::new().unwrap();
@@ -112,7 +111,6 @@ fn test_edit_plan_captures_changes() {
     );
     assert_eq!(plan.edits[0].section_content, "\nModified\n");
 }
-
 
 #[test]
 fn test_multiple_edits_correct_offsets() {
@@ -214,7 +212,6 @@ fn test_multiple_edits_correct_offsets() {
     assert!(content.contains("## Two"), "Middle section should remain");
 }
 
-
 #[test]
 fn test_tree_structure_single_file() {
     let mut file = NamedTempFile::new().unwrap();
@@ -262,7 +259,6 @@ fn test_tree_structure_single_file() {
     assert!(app.tree_nodes[0].navigable);
     assert!(app.tree_nodes[1].navigable);
 }
-
 
 #[test]
 fn test_tree_structure_multi_file() {
@@ -325,7 +321,6 @@ fn test_tree_structure_multi_file() {
     assert_eq!(file_nodes, 2, "Should have 2 file nodes");
     assert_eq!(section_nodes, 2, "Should have 2 section nodes");
 }
-
 
 #[test]
 fn test_navigation_skips_files() {
@@ -410,4 +405,3 @@ fn test_navigation_skips_files() {
         "Should be on 'One' section"
     );
 }
-

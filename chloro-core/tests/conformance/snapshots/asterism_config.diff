@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1117 bytes
-Chloro size:   778 bytes
+Chloro size:   776 bytes
 Rustfmt size:  1117 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,6 @@ Rustfmt size:  1117 bytes
      pub file_extensions: Vec<String>,
  }
  
-+
  impl Config {
 -    /// Load configuration from asterism.toml if present.
 -    ///
@@ -37,7 +36,3 @@ Rustfmt size:  1117 bytes
      #[must_use]
      pub fn load() -> Self {
          if let Ok(contents) = fs::read_to_string("asterism.toml") {
-         facet_toml::from_str::<Self>("").unwrap()
-     }
- }
-+

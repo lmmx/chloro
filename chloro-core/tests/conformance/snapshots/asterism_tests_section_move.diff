@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6944 bytes
-Chloro size:   6917 bytes
+Chloro size:   6912 bytes
 Rustfmt size:  6944 bytes
 
 ✗ Outputs DIFFER
@@ -29,12 +29,6 @@ Rustfmt size:  6944 bytes
      app.move_section_up();
      assert_eq!(app.move_state, MoveState::Moved);
      assert_eq!(app.sections[1].title, "Three");
-     assert_eq!(app.sections[2].title, "Two");
- }
- 
-+
- #[test]
- fn test_section_move_level() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -60,12 +54,6 @@ Rustfmt size:  6944 bytes
      // Move out (increase level number)
      app.move_section_out();
      assert_eq!(app.sections[1].level, 2);
- }
- 
-+
- #[test]
- fn test_section_reorder_and_save() {
-     let mut file = NamedTempFile::new().unwrap();
      .unwrap();
      file.flush().unwrap();
      let path = file.path().to_path_buf();
@@ -116,11 +104,6 @@ Rustfmt size:  6944 bytes
      assert!(gamma_pos < alpha_pos, "Gamma should come before Alpha");
      assert!(alpha_pos < beta_pos, "Alpha should come before Beta");
  }
- 
-+
- #[test]
- fn test_section_level_change_and_save() {
-     let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Title\n\nContent\n\n## Subtitle\n\nMore content").unwrap();
      file.flush().unwrap();
      let path = file.path().to_path_buf();
@@ -145,12 +128,6 @@ Rustfmt size:  6944 bytes
      assert!(
          content.contains("# Subtitle"),
          "Should be level 1 heading now"
-     );
- }
- 
-+
- #[test]
- fn test_cancel_move() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\n## Two").unwrap();
      let path = file.path().to_path_buf();
@@ -170,6 +147,3 @@ Rustfmt size:  6944 bytes
      // Cancel should reset state
      app.cancel_move();
      assert_eq!(app.move_state, MoveState::None);
-     assert_eq!(app.moving_section_index, None);
- }
-+

@@ -9,8 +9,6 @@ use syntect::parsing::SyntaxSet;
 
 
 
-
-
 pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_line: usize) -> Vec<Line<'static>> {
     let theme = &THEME_SET.themes["base16-eighties.dark"];
     let syntax_ref = SYNTAX_SET
@@ -48,7 +46,6 @@ pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_l
     display_lines
 }
 
-
 pub fn highlight_line_with_extension(line: &str, extension: &str) -> Line<'static> {
     let theme = &THEME_SET.themes["base16-eighties.dark"];
     let syntax_ref = SYNTAX_SET
@@ -77,4 +74,3 @@ pub fn highlight_line_with_extension(line: &str, extension: &str) -> Line<'stati
         }
     }
 }
-

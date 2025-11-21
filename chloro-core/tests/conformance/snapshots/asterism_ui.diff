@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16168 bytes
-Chloro size:   16029 bytes
+Chloro size:   16024 bytes
 Rustfmt size:  16168 bytes
 
 ✗ Outputs DIFFER
@@ -27,7 +27,6 @@ Rustfmt size:  16168 bytes
  }
  
 -/// Generate box-drawing prefix for tree structure
-+
  fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
      if level == 0 {
          return String::new();
@@ -51,10 +50,6 @@ Rustfmt size:  16168 bytes
      prefix
  }
  
-+
- #[allow(clippy::too_many_lines)]
- fn draw_list(f: &mut Frame, app: &AppState) {
-     let chunks = Layout::default()
          .direction(Direction::Vertical)
          .constraints([Constraint::Min(0), Constraint::Length(3)])
          .split(f.area());
@@ -108,11 +103,6 @@ Rustfmt size:  16168 bytes
      let help_widget = Paragraph::new(help).block(Block::default().borders(Borders::ALL));
      f.render_widget(help_widget, chunks[1]);
  }
- 
-+
- #[allow(clippy::too_many_lines)]
- fn draw_list_with_command(f: &mut Frame, app: &AppState) {
-     let chunks = Layout::default()
          .direction(Direction::Vertical)
          .constraints([Constraint::Min(0), Constraint::Length(3)])
          .split(f.area());
@@ -157,13 +147,6 @@ Rustfmt size:  16168 bytes
      // Show command buffer instead of help
      let command_text = format!(":{}", app.command_buffer);
      let command_widget =
-     f.render_widget(command_widget, chunks[1]);
- }
- 
-+
- fn draw_detail(f: &mut Frame, app: &mut AppState) {
-     let chunks = Layout::default()
-         .direction(Direction::Vertical)
              Constraint::Length(3), // Help
          ])
          .split(f.area());
@@ -185,4 +168,3 @@ Rustfmt size:  16168 bytes
      let help = Paragraph::new(help_text).block(Block::default().borders(Borders::ALL));
      f.render_widget(help, chunks[2]);
  }
-+

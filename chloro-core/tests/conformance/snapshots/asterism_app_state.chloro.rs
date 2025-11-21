@@ -20,14 +20,12 @@ pub enum FileMode {
     Multi,
 }
 
-
 #[derive(Clone, PartialEq, Debug)]
 pub enum MoveState {
     None,
     Selected,
     Moved,
 }
-
 
 pub struct AppState {
     pub sections: Vec<Section>,
@@ -45,14 +43,12 @@ pub struct AppState {
     pub moving_section_index: Option<usize>,
 }
 
-
 #[derive(PartialEq)]
 pub enum View {
     List,
     Detail,
     Command,
 }
-
 
 impl AppState {
     #[must_use]
@@ -743,8 +739,6 @@ impl AppState {
     }
 }
 
-
 #[cfg(test)]
 #[path = "tests/app_state.rs"]
 mod tests;
-

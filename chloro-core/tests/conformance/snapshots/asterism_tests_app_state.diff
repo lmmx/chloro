@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12822 bytes
-Chloro size:   12789 bytes
+Chloro size:   12783 bytes
 Rustfmt size:  12822 bytes
 
 ✗ Outputs DIFFER
@@ -46,12 +46,6 @@ Rustfmt size:  12822 bytes
      assert_eq!(
          lines,
          vec!["# Hello", "", "", "Yeah", "", "## World", "", "??"]
-     );
- }
- 
-+
- #[test]
- fn test_edit_plan_captures_changes() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# Test\n\nOriginal").unwrap();
      let path = file.path().to_path_buf();
@@ -85,12 +79,6 @@ Rustfmt size:  12822 bytes
      assert!(
          !plan.edits.is_empty(),
          "Edit plan should contain the saved edit"
-     assert_eq!(plan.edits[0].section_content, "\nModified\n");
- }
- 
-+
- #[test]
- fn test_multiple_edits_correct_offsets() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB\n\n### Three\n\nC").unwrap();
      let path = file.path().to_path_buf();
@@ -127,12 +115,6 @@ Rustfmt size:  12822 bytes
      // Verify file content
      let content = fs::read_to_string(&path).unwrap();
      assert!(
-     assert!(content.contains("## Two"), "Middle section should remain");
- }
- 
-+
- #[test]
- fn test_tree_structure_single_file() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -149,11 +131,6 @@ Rustfmt size:  12822 bytes
      // Single file mode should only show sections, no file nodes
      assert_eq!(app.tree_nodes.len(), 2);
      assert!(app.tree_nodes[0].navigable);
-     assert!(app.tree_nodes[1].navigable);
- }
- 
-+
- #[test]
  fn test_tree_structure_multi_file() {
      let mut file1 = NamedTempFile::new().unwrap();
      let mut file2 = NamedTempFile::new().unwrap();
@@ -187,10 +164,6 @@ Rustfmt size:  12822 bytes
      assert_eq!(file_nodes, 2, "Should have 2 file nodes");
      assert_eq!(section_nodes, 2, "Should have 2 section nodes");
  }
- 
-+
- #[test]
- fn test_navigation_skips_files() {
      let mut file = NamedTempFile::new().unwrap();
      writeln!(file, "# One\n\nA\n\n## Two\n\nB").unwrap();
      let path = file.path().to_path_buf();
@@ -224,7 +197,3 @@ Rustfmt size:  12822 bytes
      assert!(
          app.tree_nodes[app.current_node_index].navigable,
          "Should skip to navigable node"
-         "Should be on 'One' section"
-     );
- }
-+

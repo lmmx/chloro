@@ -5,9 +5,7 @@
 //! tree-sitter queries specific to each format.
 pub mod difftastic;
 
-
 pub mod markdown;
-
 /// Abstracts document type differences through tree-sitter queries.
 ///
 /// Enables support for markdown and other structured formats by providing format-specific parsing
@@ -17,4 +15,3 @@ fn language() -> tree_sitter::Language;
 fn section_query() -> &str;
 fn title_query() -> &str;
 fn format_section_display(level: usize, title: &str) -> ratatui::text::Line<'static>;
-

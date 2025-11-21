@@ -64,7 +64,6 @@ fn test_section_move_up() {
     assert_eq!(app.sections[2].title, "Two");
 }
 
-
 #[test]
 fn test_section_move_level() {
     let mut file = NamedTempFile::new().unwrap();
@@ -112,7 +111,6 @@ fn test_section_move_level() {
     app.move_section_out();
     assert_eq!(app.sections[1].level, 2);
 }
-
 
 #[test]
 fn test_section_reorder_and_save() {
@@ -162,7 +160,6 @@ fn test_section_reorder_and_save() {
     assert!(alpha_pos < beta_pos, "Alpha should come before Beta");
 }
 
-
 #[test]
 fn test_section_level_change_and_save() {
     let mut file = NamedTempFile::new().unwrap();
@@ -186,7 +183,6 @@ fn test_section_level_change_and_save() {
     );
 }
 
-
 #[test]
 fn test_cancel_move() {
     let mut file = NamedTempFile::new().unwrap();
@@ -205,4 +201,3 @@ fn test_cancel_move() {
     assert_eq!(app.move_state, MoveState::None);
     assert_eq!(app.moving_section_index, None);
 }
-

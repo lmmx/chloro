@@ -23,7 +23,6 @@ pub struct DifftFile {
     pub status: String,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftLine {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -32,13 +31,11 @@ pub struct DifftLine {
     pub rhs: Option<DifftSide>,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftSide {
     pub line_number: u32,
     pub changes: Vec<DifftChange>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftChange {
@@ -48,9 +45,7 @@ pub struct DifftChange {
     pub highlight: String,
 }
 
-
 pub struct DifftasticFormat;
-
 
 impl DifftasticFormat {
     fn file_extension() -> &'static str {
@@ -99,7 +94,6 @@ impl DifftasticFormat {
     }
 }
 
-
 impl DifftasticFormat {
     fn determine_hunk_color_from_header(header: &str) -> Color {
         // Parse @@ -X,Y +A,B @@
@@ -143,7 +137,6 @@ impl DifftasticFormat {
     }
 }
 
-
 #[allow(clippy::too_many_arguments)]
 fn create_chunk_section(file_path: &str, title: String, line_num: i64, column_start: i64, column_end: i64, chunk_type: ChunkType, lhs_text: Option<String>, rhs_text: Option<String>) -> Section {
     Section {
@@ -164,7 +157,6 @@ fn create_chunk_section(file_path: &str, title: String, line_num: i64, column_st
         rhs_content: rhs_text,
     }
 }
-
 
 pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
     let files: Vec<DifftFile> = if let Ok(files) = serde_json::from_str::<Vec<DifftFile>>(json_str)
@@ -292,7 +284,6 @@ pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
     Ok(sections)
 }
 
-
 fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
     let (lhs_line, rhs_line) = match (&change.lhs, &change.rhs) {
         (Some(lhs), Some(rhs)) => (lhs.line_number, rhs.line_number),
@@ -305,7 +296,6 @@ fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
     let rhs_count = i32::from(change.rhs.is_some());
     format!("({hunk_num}) @@ -{lhs_line},{lhs_count} +{rhs_line},{rhs_count} @@")
 }
-
 
 fn format_change_content(change: &DifftLine) -> String {
     let mut output = String::new();
@@ -347,7 +337,6 @@ fn format_change_content(change: &DifftLine) -> String {
     output
 }
 
-
 fn extract_chunk_text(side: &Value) -> Option<String> {
     side.get("changes")
         .and_then(|c| c.as_array())
@@ -358,7 +347,6 @@ fn extract_chunk_text(side: &Value) -> Option<String> {
                 .collect::<String>()
         })
 }
-
 
 fn extract_column_range(side: &Value) -> (i64, i64) {
     let changes = side.get("changes").and_then(|c| c.as_array());
@@ -374,7 +362,6 @@ fn extract_column_range(side: &Value) -> (i64, i64) {
         .unwrap_or(0);
     (start, end)
 }
-
 
 pub fn extract_difftastic_sections(json_path: &Path) -> io::Result<Vec<Section>> {
     let content = fs::read_to_string(json_path)?;
@@ -435,8 +422,6 @@ pub fn extract_difftastic_sections(json_path: &Path) -> io::Result<Vec<Section>>
     Ok(sections)
 }
 
-
 #[cfg(test)]
 #[path = "../tests/difftastic.rs"]
 mod tests;
-

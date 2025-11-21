@@ -12,7 +12,6 @@ pub struct EditPlan {
     pub edits: Vec<Edit>,
 }
 
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Edit {
     pub file_name: String,
@@ -23,7 +22,6 @@ pub struct Edit {
     pub section_content: String,
     pub item_name: String,
 }
-
 
 impl EditPlan {
     pub fn apply() -> io::Result<()> {
@@ -72,8 +70,6 @@ impl EditPlan {
     }
 }
 
-
 #[cfg(test)]
 #[path = "tests/edit_plan.rs"]
 mod tests;
-

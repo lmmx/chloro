@@ -1,6 +1,5 @@
 //! asterism: A tree-sitter document section editor.
 #![allow(clippy::multiple_crate_versions)]
-
 use asterism::{app_state, config, edit_plan, formats, input, ui};
 use clap::Parser;
 use edtui::EditorEventHandler;
@@ -29,7 +28,6 @@ struct Args {
     #[arg(long)]
     stdin: bool,
 }
-
 
 fn main() -> io::Result<()> {
     let args = Args::parse();
@@ -98,7 +96,6 @@ fn main() -> io::Result<()> {
     run_tui(state, &cfg)
 }
 
-
 fn run_tui(mut app: app_state::AppState, cfg: &config::Config) -> io::Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -119,7 +116,6 @@ fn run_tui(mut app: app_state::AppState, cfg: &config::Config) -> io::Result<()>
     }
     Ok(())
 }
-
 
 #[allow(clippy::too_many_lines)]
 fn run_app<B: ratatui::backend::Backend>(terminal: &mut Terminal<B>, app: &mut app_state::AppState, cfg: &config::Config, editor_handler: &mut EditorEventHandler) -> io::Result<()> {
@@ -369,4 +365,3 @@ fn run_app<B: ratatui::backend::Backend>(terminal: &mut Terminal<B>, app: &mut a
         }
     }
 }
-

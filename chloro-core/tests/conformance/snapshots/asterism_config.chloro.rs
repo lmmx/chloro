@@ -13,7 +13,6 @@ pub struct Config {
     pub file_extensions: Vec<String>,
 }
 
-
 impl Config {
     #[must_use]
     pub fn load() -> Self {
@@ -25,4 +24,3 @@ impl Config {
         facet_toml::from_str::<Self>("").unwrap()
     }
 }
-
