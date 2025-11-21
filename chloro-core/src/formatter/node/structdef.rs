@@ -1,9 +1,8 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasGenericParams, HasName, HasVisibility},
-    AstNode, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
+    AstNode, AstToken, SyntaxNode,
 };
 
-use super::format_preceding_docs_and_attrs;
 use crate::formatter::write_indent;
 
 pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -12,8 +11,12 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
         None => return,
     };
 
-    // Format preceding doc comments and attributes
-    format_preceding_docs_and_attrs(node, buf, indent);
+    // Format doc comments using the trait
+    for doc_comment in strukt.doc_comments() {
+        write_indent(buf, indent);
+        buf.push_str(doc_comment.syntax().text().to_string().trim());
+        buf.push('\n');
+    }
 
     // Format attributes from the AST (like #[derive(...)])
     for attr in strukt.attrs() {
@@ -44,8 +47,12 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
             ast::FieldList::RecordFieldList(fields) => {
                 buf.push_str(" {\n");
                 for field in fields.fields() {
-                    // Format field doc comments and attributes
-                    format_preceding_docs_and_attrs(field.syntax(), buf, indent + 4);
+                    // Format field doc comments using the trait
+                    for doc_comment in field.doc_comments() {
+                        write_indent(buf, indent + 4);
+                        buf.push_str(doc_comment.syntax().text().to_string().trim());
+                        buf.push('\n');
+                    }
 
                     // Format field attributes (like #[serde(...)])
                     for attr in field.attrs() {

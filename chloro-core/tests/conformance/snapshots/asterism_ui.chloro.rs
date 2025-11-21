@@ -2,6 +2,7 @@
 //!
 //! The draw function dispatches based on the current view (list or editor).
 //! The list view shows a unified tree with files and sections using box-drawing characters.
+
 use crate::app_state::{AppState, MoveState, View};
 use crate::config::Config;
 use crate::formats::Format;
@@ -15,6 +16,7 @@ use ratatui::{
     Frame,
 };
 
+/// Renders the active view based on current application state.
 pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
     match app.current_view {
         View::List => draw_list(f, app),
@@ -23,6 +25,7 @@ pub fn draw(f: &mut Frame, app: &mut AppState, _cfg: &Config) {
     }
 }
 
+/// Generate box-drawing prefix for tree structure
 fn get_tree_prefix(level: usize, parent_states: &[bool]) -> String {
     if level == 0 {
         return String::new();

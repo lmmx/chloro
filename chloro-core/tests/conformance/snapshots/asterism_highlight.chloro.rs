@@ -1,4 +1,5 @@
 //! Syntax highlighting for displaying source code with visual distinction between language elements.
+
 use ratatui::{
     style::{Color, Style},
     text::{Line, Span},
@@ -9,6 +10,11 @@ use syntect::parsing::SyntaxSet;
 
 
 
+/// Highlight source lines with syntax coloring.
+///
+/// # Panics
+///
+/// Panics if syntax highlighting fails for any line in the input.
 pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_line: usize) -> Vec<Line<'static>> {
     let theme = &THEME_SET.themes["base16-eighties.dark"];
     let syntax_ref = SYNTAX_SET
@@ -46,6 +52,9 @@ pub fn highlight_source_lines(lines: &[&str], start: usize, end: usize, target_l
     display_lines
 }
 
+/// Highlight a single line with syntax coloring for a given file extension.
+///
+/// Falls back to plain text rendering if syntax highlighting fails.
 pub fn highlight_line_with_extension(line: &str, extension: &str) -> Line<'static> {
     let theme = &THEME_SET.themes["base16-eighties.dark"];
     let syntax_ref = SYNTAX_SET

@@ -2,6 +2,7 @@
 //!
 //! This module provides support for parsing difftastic JSON output and
 //! converting it into sections that can be navigated and edited in asterism.
+
 use crate::formats::Format;
 use crate::section::{ChunkType, Section};
 use ratatui::{
@@ -14,53 +15,75 @@ use std::fmt::Write;
 use std::path::Path;
 use std::{fs, io};
 
+/// Represents a file in difftastic output
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftFile {
+    /// Programming language identified by difftastic for syntax highlighting.
     pub language: String,
+    /// File path relative to the comparison root.
     pub path: String,
+    /// Grouped diff hunks, each containing lines that changed together.
     #[serde(default)]
     pub chunks: Option<Vec<Vec<DifftLine>>>,
+    /// Change classification: "unchanged", "changed", "created", or "deleted".
     pub status: String,
 }
 
+/// Represents a line in a diff chunk
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftLine {
+    /// Left-hand (original) side of the comparison, absent for pure additions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lhs: Option<DifftSide>,
+    /// Right-hand (modified) side of the comparison, absent for pure deletions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rhs: Option<DifftSide>,
 }
 
+/// Represents one side (left or right) of a diff line
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftSide {
+    /// Original line position in the source file (1-indexed).
     pub line_number: u32,
+    /// Structural changes within this line, ordered by column position.
     pub changes: Vec<DifftChange>,
 }
 
+/// Represents a change within a line
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifftChange {
+    /// Column offset where this change begins (0-indexed).
     pub start: u32,
+    /// Column offset where this change ends (exclusive).
     pub end: u32,
+    /// Text content of this change segment.
     pub content: String,
+    /// Syntax category for rendering: "delimiter", "string", "keyword", "comment", "type", "normal"
+    /// or "`tree_sitter_error`".
     pub highlight: String,
 }
 
+/// Difftastic format handler
 pub struct DifftasticFormat;
 
 impl DifftasticFormat {
     fn file_extension(&self) -> &'static str {
         "diff"
     }
+
     fn language(&self) -> tree_sitter::Language {
         // Difftastic doesn't use tree-sitter parsing
         tree_sitter_md::LANGUAGE.into()
     }
+
     fn section_query(&self) -> &'static str {
         ""
     }
+
     fn title_query(&self) -> &'static str {
         ""
     }
+
     fn format_section_display(&self, level: usize, title: &str) -> Line<'static> {
         // Check if this is a hunk header with format: (N) @@ -X,Y +A,B @@
         if title.contains("@@") && title.starts_with('(') {
@@ -95,6 +118,7 @@ impl DifftasticFormat {
 }
 
 impl DifftasticFormat {
+    /// Determine hunk color from the header string itself
     fn determine_hunk_color_from_header(header: &str) -> Color {
         // Parse @@ -X,Y +A,B @@
         if let Some(hunk_part) = header.strip_prefix("@@").and_then(|s| s.split("@@").next()) {
@@ -158,6 +182,13 @@ fn create_chunk_section(file_path: &str, title: String, line_num: i64, column_st
     }
 }
 
+/// Parse difftastic JSON output into sections
+///
+/// Files become non-navigable containers, hunks become navigable sections.
+///
+/// # Errors
+///
+/// Returns an error if JSON parsing fails or if the format is invalid.
 pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
     let files: Vec<DifftFile> = if let Ok(files) = serde_json::from_str::<Vec<DifftFile>>(json_str)
     {
@@ -284,6 +315,7 @@ pub fn parse_difftastic_json(json_str: &str) -> io::Result<Vec<Section>> {
     Ok(sections)
 }
 
+/// Format a change as a proper git diff hunk header
 fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
     let (lhs_line, rhs_line) = match (&change.lhs, &change.rhs) {
         (Some(lhs), Some(rhs)) => (lhs.line_number, rhs.line_number),
@@ -297,6 +329,7 @@ fn format_hunk_header(change: &DifftLine, hunk_num: usize) -> String {
     format!("({hunk_num}) @@ -{lhs_line},{lhs_count} +{rhs_line},{rhs_count} @@")
 }
 
+/// Format a single change for display
 fn format_change_content(change: &DifftLine) -> String {
     let mut output = String::new();
     match (&change.lhs, &change.rhs) {
@@ -363,6 +396,11 @@ fn extract_column_range(side: &Value) -> (i64, i64) {
     (start, end)
 }
 
+/// Extract the difftastic hunks as sections (same as sections in a markdown etc)
+///
+/// # Errors
+///
+/// Returns an error if the JSON file cannot be read from disk.
 pub fn extract_difftastic_sections(json_path: &Path) -> io::Result<Vec<Section>> {
     let content = fs::read_to_string(json_path)?;
     let lines: Vec<Value> = content

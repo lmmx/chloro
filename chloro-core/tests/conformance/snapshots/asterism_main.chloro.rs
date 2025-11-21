@@ -1,5 +1,6 @@
 //! asterism: A tree-sitter document section editor.
 #![allow(clippy::multiple_crate_versions)]
+
 use asterism::{app_state, config, edit_plan, formats, input, ui};
 use clap::Parser;
 use edtui::EditorEventHandler;
@@ -17,14 +18,19 @@ use std::path::PathBuf;
 #[command(name = "asterism")]
 #[command(about = "Hyperbolic navigation for tree data", long_about = None)]
 struct Args {
+    /// Files or directories to edit
     #[arg(value_name = "PATH")]
     paths: Vec<PathBuf>,
+    /// Load edit plan from JSON file
     #[arg(long)]
     load_docs: Option<PathBuf>,
+    /// File extensions to match
     #[arg(long, short = 'e', value_name = "EXT")]
     ext: Vec<String>,
+    /// Parse difftastic JSON output (from stdin or file)
     #[arg(long, short = 'd')]
     difft: bool,
+    /// Read difftastic output from stdin
     #[arg(long)]
     stdin: bool,
 }
