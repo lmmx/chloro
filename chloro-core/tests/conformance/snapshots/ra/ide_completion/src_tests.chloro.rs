@@ -8,6 +8,22 @@
 //! This gives this test module and its submodules here the main purpose of giving the developer an
 //! overview of whats being completed where, not how.
 
+mod attribute;
+mod expression;
+mod flyimport;
+mod fn_param;
+mod item;
+mod item_list;
+mod pattern;
+mod predicate;
+mod proc_macros;
+mod raw_identifiers;
+mod record;
+mod special;
+mod type_pos;
+mod use_tree;
+mod visibility;
+
 use base_db::SourceDatabase;
 use expect_test::Expect;
 use hir::db::HirDatabase;
@@ -25,36 +41,6 @@ use crate::{
     CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
     CompletionItemKind, resolve_completion_edits,
 };
-
-mod attribute;
-
-mod expression;
-
-mod flyimport;
-
-mod fn_param;
-
-mod item;
-
-mod item_list;
-
-mod pattern;
-
-mod predicate;
-
-mod proc_macros;
-
-mod raw_identifiers;
-
-mod record;
-
-mod special;
-
-mod type_pos;
-
-mod use_tree;
-
-mod visibility;
 
 /// Lots of basic item definitions
 const BASE_ITEMS_FIXTURE: &str = r#"

@@ -1,6 +1,15 @@
 //! `render` module provides utilities for rendering completion suggestions
 //! into code pieces that will be presented to user.
 
+pub(crate) mod const_;
+pub(crate) mod function;
+pub(crate) mod literal;
+pub(crate) mod macro_;
+pub(crate) mod pattern;
+pub(crate) mod type_alias;
+pub(crate) mod union_literal;
+pub(crate) mod variant;
+
 use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
@@ -22,22 +31,6 @@ use crate::{
         macro_::{render_macro, render_macro_pat},
     },
 };
-
-pub(crate) mod const_;
-
-pub(crate) mod function;
-
-pub(crate) mod literal;
-
-pub(crate) mod macro_;
-
-pub(crate) mod pattern;
-
-pub(crate) mod type_alias;
-
-pub(crate) mod union_literal;
-
-pub(crate) mod variant;
 
 /// Interface for data and methods required for items rendering.
 #[derive(Debug, Clone)]

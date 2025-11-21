@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   87117 bytes
+Chloro size:   87116 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -11,21 +11,10 @@ Rustfmt size:  87058 bytes
  //!  - Building the type for an item: This happens through the `ty` query.
  //!
  //! This usually involves resolving names, collecting generic arguments etc.
--pub(crate) mod diagnostics;
--pub(crate) mod path;
- 
- use std::{
-     cell::OnceCell,
-     },
- };
- 
-+pub(crate) mod diagnostics;
 +
-+pub(crate) mod path;
-+
- pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);
+ pub(crate) mod diagnostics;
+ pub(crate) mod path;
  
- #[derive(PartialEq, Eq, Debug, Hash)]
      /// bounds at the same time to get the IDs correct (without becoming too
      /// complicated).
      mode: ImplTraitLoweringMode,

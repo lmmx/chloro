@@ -1,5 +1,9 @@
 //! Extracts, resolves and rewrites links and intra-doc links in markdown documentation.
 
+#[cfg(test)]
+mod tests;
+mod intra_doc_links;
+
 use std::ops::Range;
 
 use hir::{
@@ -28,11 +32,6 @@ use crate::{
     FilePosition, Semantics,
     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
 };
-
-#[cfg(test)]
-mod tests;
-
-mod intra_doc_links;
 
 /// Web and local links to an item's documentation.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]

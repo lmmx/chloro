@@ -1,5 +1,8 @@
 //! Handle syntactic aspects of inserting a new `use` item.
 
+#[cfg(test)]
+mod tests;
+
 use std::cmp::Ordering;
 
 pub use hir::PrefixKind;
@@ -20,9 +23,6 @@ use crate::{
         try_merge_imports, use_tree_cmp,
     },
 };
-
-#[cfg(test)]
-mod tests;
 
 /// How imports should be grouped into use statements.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

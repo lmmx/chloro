@@ -2,12 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12893 bytes
-Chloro size:   12834 bytes
+Chloro size:   12835 bytes
 Rustfmt size:  12893 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
++#![allow(clippy::print_stdout, clippy::print_stderr)]
++#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
  //! Driver for rust-analyzer.
  //!
  //! Based on cli flags, either spawns an LSP server, or runs a batch analysis
@@ -15,25 +17,11 @@ Rustfmt size:  12893 bytes
 -#![allow(clippy::print_stdout, clippy::print_stderr)]
 -#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 -
--#[cfg(feature = "in-rust-tree")]
+ #[cfg(feature = "in-rust-tree")]
 -extern crate rustc_driver as _;
--
--mod rustc_wrapper;
--
- use std::{env, fs, path::PathBuf, process::ExitCode, sync::Arc};
  
- use anyhow::Context;
- use tracing_subscriber::fmt::writer::BoxMakeWriter;
- use vfs::AbsPathBuf;
+ mod rustc_wrapper;
  
-+#![allow(clippy::print_stdout, clippy::print_stderr)]
-+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-+#[cfg(feature = "in-rust-tree")]
-+mod rustc_wrapper;
-+
- #[cfg(feature = "mimalloc")]
- #[global_allocator]
- static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
  
  fn actual_main() -> anyhow::Result<ExitCode> {
      let flags = flags::RustAnalyzer::from_env_or_exit();

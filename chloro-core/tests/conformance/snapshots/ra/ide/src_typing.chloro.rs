@@ -13,6 +13,8 @@
 //! Language server executes such typing assists synchronously. That is, they
 //! block user's typing and should be pretty fast for this reason!
 
+mod on_enter;
+
 use std::iter;
 
 use either::Either;
@@ -28,8 +30,6 @@ use syntax::{
 };
 
 use crate::SourceChange;
-
-mod on_enter;
 
 pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
 

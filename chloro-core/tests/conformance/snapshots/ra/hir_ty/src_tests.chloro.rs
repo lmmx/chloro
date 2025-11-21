@@ -1,3 +1,18 @@
+mod closure_captures;
+mod coercion;
+mod diagnostics;
+mod display_source_code;
+mod incremental;
+mod macros;
+mod method_resolution;
+mod never_type;
+mod opaque_types;
+mod patterns;
+mod regression;
+mod simple;
+mod trait_aliases;
+mod traits;
+
 use base_db::{Crate, SourceDatabase};
 use expect_test::Expect;
 use hir_def::{
@@ -29,34 +44,6 @@ use crate::{
     setup_tracing,
     test_db::TestDB,
 };
-
-mod closure_captures;
-
-mod coercion;
-
-mod diagnostics;
-
-mod display_source_code;
-
-mod incremental;
-
-mod macros;
-
-mod method_resolution;
-
-mod never_type;
-
-mod opaque_types;
-
-mod patterns;
-
-mod regression;
-
-mod simple;
-
-mod trait_aliases;
-
-mod traits;
 
 #[track_caller]
 fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

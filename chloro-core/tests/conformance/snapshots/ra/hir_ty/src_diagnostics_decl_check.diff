@@ -8,14 +8,6 @@ Rustfmt size:  23115 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! - match arm bindings (e.g. `foo @ Some(_)`)
- //! - modules (e.g. `mod foo { ... }` or `mod foo;`)
- 
--mod case_conv;
--
- use std::fmt;
- 
- use hir_def::{
  };
  
  use crate::db::HirDatabase;
@@ -23,8 +15,6 @@ Rustfmt size:  23115 bytes
  use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
  
 -pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
-+mod case_conv;
-+
 +pub fn incorrect_case(
 +    db: &dyn HirDatabase,
 +    owner: ModuleDefId,

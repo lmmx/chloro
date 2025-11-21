@@ -1,5 +1,8 @@
 //! Transforms syntax into `Path` objects, ideally with accounting for hygiene
 
+#[cfg(test)]
+mod tests;
+
 use std::iter;
 
 use hir_expand::{
@@ -21,8 +24,6 @@ use crate::{
     type_ref::TypeRef,
 };
 
-#[cfg(test)]
-mod tests;
 #[cfg(test)]
 /// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
 /// Converts an `ast::Path` to `Path`. Works with use trees.

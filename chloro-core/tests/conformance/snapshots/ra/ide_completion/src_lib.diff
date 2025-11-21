@@ -2,27 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   9343 bytes
+Chloro size:   9337 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! `completions` crate provides utilities for generating completions of user input.
- 
--mod completions;
--mod config;
--mod context;
--mod item;
--mod render;
+ mod context;
+ mod item;
+ mod render;
 -
--mod snippet;
--#[cfg(test)]
--mod tests;
--
- use ide_db::{
-     FilePosition, FxHashSet, RootDatabase,
-     imports::insert_use::{self, ImportScope},
+ mod snippet;
+ #[cfg(test)]
+ mod tests;
          PathKind,
      },
  };
@@ -30,27 +22,6 @@ Rustfmt size:  11494 bytes
  pub use crate::{
      config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
      item::{
-     snippet::{Snippet, SnippetScope},
- };
- 
-+mod completions;
-+
-+mod config;
-+
-+mod context;
-+
-+mod item;
-+
-+mod render;
-+
-+mod snippet;
-+
-+#[cfg(test)]
-+mod tests;
-+
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub struct CompletionFieldsToResolve {
-     pub resolve_label_details: bool,
      }
  }
  

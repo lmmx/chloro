@@ -2,31 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11785 bytes
+Chloro size:   11771 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! This gives this test module and its submodules here the main purpose of giving the developer an
- //! overview of whats being completed where, not how.
- 
--mod attribute;
--mod expression;
--mod flyimport;
--mod fn_param;
--mod item;
--mod item_list;
--mod pattern;
--mod predicate;
--mod proc_macros;
--mod raw_identifiers;
--mod record;
--mod special;
--mod type_pos;
--mod use_tree;
--mod visibility;
--
  use base_db::SourceDatabase;
  use expect_test::Expect;
  use hir::db::HirDatabase;
@@ -48,39 +29,7 @@ Rustfmt size:  11841 bytes
 +    CompletionItemKind, resolve_completion_edits,
  };
  
-+mod attribute;
-+
-+mod expression;
-+
-+mod flyimport;
-+
-+mod fn_param;
-+
-+mod item;
-+
-+mod item_list;
-+
-+mod pattern;
-+
-+mod predicate;
-+
-+mod proc_macros;
-+
-+mod raw_identifiers;
-+
-+mod record;
-+
-+mod special;
-+
-+mod type_pos;
-+
-+mod use_tree;
-+
-+mod visibility;
-+
  /// Lots of basic item definitions
- const BASE_ITEMS_FIXTURE: &str = r#"
- enum Enum { TupleV(u32), RecordV { field: u32 }, UnitV }
      completion_list_with_config(TEST_CONFIG, ra_fixture, false, None)
  }
  

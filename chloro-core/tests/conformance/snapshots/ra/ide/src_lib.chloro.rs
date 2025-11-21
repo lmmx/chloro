@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+#![recursion_limit = "128"]
 //! ide crate provides "ide-centric" APIs for the rust-analyzer. That is,
 //! it generally operates with files and text ranges, and returns results as
 //! Strings, suitable for displaying to the human.
@@ -6,6 +8,50 @@
 //! database, and the `hir` crate, where majority of the analysis happens.
 //! However, IDE specific bits of the analysis (most notably completion) happen
 //! in this crate.
+
+#[cfg(test)]
+mod fixture;
+mod markup;
+mod navigation_target;
+mod annotations;
+mod call_hierarchy;
+mod child_modules;
+mod doc_links;
+mod expand_macro;
+mod extend_selection;
+mod fetch_crates;
+mod file_structure;
+mod folding_ranges;
+mod goto_declaration;
+mod goto_definition;
+mod goto_implementation;
+mod goto_type_definition;
+mod highlight_related;
+mod hover;
+mod inlay_hints;
+mod interpret;
+mod join_lines;
+mod markdown_remove;
+mod matching_brace;
+mod moniker;
+mod move_item;
+mod parent_module;
+mod references;
+mod rename;
+mod runnables;
+mod signature_help;
+mod ssr;
+mod static_index;
+mod status;
+mod syntax_highlighting;
+mod test_explorer;
+mod typing;
+mod view_crate_graph;
+mod view_hir;
+mod view_item_tree;
+mod view_memory_layout;
+mod view_mir;
+mod view_syntax_tree;
 
 use std::panic::{AssertUnwindSafe, UnwindSafe};
 
@@ -92,93 +138,6 @@ pub use crate::{
     },
     test_explorer::{TestItem, TestItemKind},
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#![recursion_limit = "128"]
-#[cfg(test)]
-mod fixture;
-
-mod markup;
-
-mod navigation_target;
-
-mod annotations;
-
-mod call_hierarchy;
-
-mod child_modules;
-
-mod doc_links;
-
-mod expand_macro;
-
-mod extend_selection;
-
-mod fetch_crates;
-
-mod file_structure;
-
-mod folding_ranges;
-
-mod goto_declaration;
-
-mod goto_definition;
-
-mod goto_implementation;
-
-mod goto_type_definition;
-
-mod highlight_related;
-
-mod hover;
-
-mod inlay_hints;
-
-mod interpret;
-
-mod join_lines;
-
-mod markdown_remove;
-
-mod matching_brace;
-
-mod moniker;
-
-mod move_item;
-
-mod parent_module;
-
-mod references;
-
-mod rename;
-
-mod runnables;
-
-mod signature_help;
-
-mod ssr;
-
-mod static_index;
-
-mod status;
-
-mod syntax_highlighting;
-
-mod test_explorer;
-
-mod typing;
-
-mod view_crate_graph;
-
-mod view_hir;
-
-mod view_item_tree;
-
-mod view_memory_layout;
-
-mod view_mir;
-
-mod view_syntax_tree;
 
 pub type Cancellable<T> = Result<T, Cancelled>;
 

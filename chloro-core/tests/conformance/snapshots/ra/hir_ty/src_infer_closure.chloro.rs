@@ -1,5 +1,7 @@
 //! Inference of closure parameter types based on the closure's expected type.
 
+pub(crate) mod analysis;
+
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
@@ -34,8 +36,6 @@ use crate::{
     traits::FnTrait,
 };
 use super::{Expectation, InferenceContext};
-
-pub(crate) mod analysis;
 
 #[derive(Debug)]
 struct ClosureSignatures<'db> {

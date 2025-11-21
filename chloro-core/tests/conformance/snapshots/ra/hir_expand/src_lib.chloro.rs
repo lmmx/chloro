@@ -1,8 +1,26 @@
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! `hir_expand` deals with macro expansion.
 //!
 //! Specifically, it implements a concept of `MacroFile` -- a file whose syntax
 //! tree originates not from the text of some `FileId`, but from some macro
 //! expansion.
+
+pub mod attrs;
+pub mod builtin;
+pub mod change;
+pub mod db;
+pub mod declarative;
+pub mod eager;
+pub mod files;
+pub mod hygiene;
+pub mod inert_attr_macro;
+pub mod mod_path;
+pub mod name;
+pub mod proc_macro;
+pub mod span_map;
+mod cfg_process;
+mod fixup;
+mod prettify_macro_expansion_;
 
 use core::fmt;
 use std::hash::Hash;
@@ -39,39 +57,6 @@ pub use crate::{
     files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
     prettify_macro_expansion_::prettify_macro_expansion,
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-pub mod attrs;
-
-pub mod builtin;
-
-pub mod change;
-
-pub mod db;
-
-pub mod declarative;
-
-pub mod eager;
-
-pub mod files;
-
-pub mod hygiene;
-
-pub mod inert_attr_macro;
-
-pub mod mod_path;
-
-pub mod name;
-
-pub mod proc_macro;
-
-pub mod span_map;
-
-mod cfg_process;
-
-mod fixup;
-
-mod prettify_macro_expansion_;
 
 pub mod tt {
     pub use span::Span;

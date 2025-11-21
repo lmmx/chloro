@@ -1,5 +1,14 @@
 //! `completions` crate provides utilities for generating completions of user input.
 
+mod completions;
+mod config;
+mod context;
+mod item;
+mod render;
+mod snippet;
+#[cfg(test)]
+mod tests;
+
 use ide_db::{
     FilePosition, FxHashSet, RootDatabase,
     imports::insert_use::{self, ImportScope},
@@ -24,21 +33,6 @@ pub use crate::{
     },
     snippet::{Snippet, SnippetScope},
 };
-
-mod completions;
-
-mod config;
-
-mod context;
-
-mod item;
-
-mod render;
-
-mod snippet;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CompletionFieldsToResolve {

@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30948 bytes
+Chloro size:   30947 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See [`CompletionContext`] structure.
- 
--mod analysis;
--#[cfg(test)]
--mod tests;
--
- use std::{iter, ops::ControlFlow};
- 
- use base_db::RootQueryDb as _;
      ScopeDef, Semantics, SemanticsScope, Symbol, Type, TypeInfo,
  };
  use ide_db::{
@@ -45,14 +36,7 @@ Rustfmt size:  31005 bytes
 +    context::analysis::{AnalysisResult, expand_and_analyze},
  };
  
-+mod analysis;
-+
-+#[cfg(test)]
-+mod tests;
-+
  const COMPLETION_MARKER: &str = "raCompletionMarker";
- 
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  /// Existing qualifiers for the thing we are currently completing.
  #[derive(Debug, Default)]
  pub(crate) struct QualifierCtx {

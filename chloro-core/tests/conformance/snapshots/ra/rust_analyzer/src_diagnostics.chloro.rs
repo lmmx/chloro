@@ -1,5 +1,7 @@
 //! Book keeping for keeping diagnostics easily in sync with the client.
 
+pub(crate) mod flycheck_to_proto;
+
 use std::mem;
 
 use cargo_metadata::PackageId;
@@ -12,8 +14,6 @@ use stdx::iter_eq_by;
 use triomphe::Arc;
 
 use crate::{global_state::GlobalStateSnapshot, lsp, lsp_ext, main_loop::DiagnosticsTaskKind};
-
-pub(crate) mod flycheck_to_proto;
 
 pub(crate) type CheckFixes = Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
 

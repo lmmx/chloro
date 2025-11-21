@@ -8,8 +8,9 @@ Rustfmt size:  12665 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! A simplified version of quote-crate like quasi quote macro
--#![allow(clippy::crate_in_macro_def)]
+-//! A simplified version of quote-crate like quasi quote macro
+ #![allow(clippy::crate_in_macro_def)]
++//! A simplified version of quote-crate like quasi quote macro
  
 -use intern::{sym, Symbol};
 +use intern::{Symbol, sym};
@@ -18,10 +19,8 @@ Rustfmt size:  12665 bytes
  use span::Span;
  use syntax::ToSmolStr;
  use tt::IdentIsRaw;
- 
  use crate::{name::Name, tt::TopSubtreeBuilder};
  
-+#![allow(clippy::crate_in_macro_def)]
  pub(crate) fn dollar_crate(span: Span) -> tt::Ident<Span> {
 -    tt::Ident {
 -        sym: sym::dollar_crate,

@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+#![recursion_limit = "512"]
 //! HIR (previously known as descriptors) provides a high-level object-oriented
 //! access to Rust code.
 //!
@@ -16,6 +18,18 @@
 //! `hir` is what insulates the "we don't know how to actually write an incremental compiler"
 //! from the ide with completions, hovers, etc. It is a (soft, internal) boundary:
 //! <https://www.tedinski.com/2018/02/06/system-boundaries.html>.
+
+
+mod attrs;
+mod from_id;
+mod has_source;
+mod semantics;
+mod source_analyzer;
+pub mod db;
+pub mod diagnostics;
+pub mod symbols;
+pub mod term_search;
+mod display;
 
 use std::{
     fmt,
@@ -156,28 +170,6 @@ pub use crate::{
         VisibleTraits,
     },
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#![recursion_limit = "512"]
-mod attrs;
-
-mod from_id;
-
-mod has_source;
-
-mod semantics;
-
-mod source_analyzer;
-
-pub mod db;
-
-pub mod diagnostics;
-
-pub mod symbols;
-
-pub mod term_search;
-
-mod display;
 
 /// hir::Crate describes a single crate. It's the main interface with which
 /// a crate's dependencies interact. Mostly, it should be just a proxy for the

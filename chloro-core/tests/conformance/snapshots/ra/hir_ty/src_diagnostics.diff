@@ -2,17 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 448 bytes
-Chloro size:   452 bytes
+Chloro size:   449 bytes
 Rustfmt size:  448 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  //! Type inference-based diagnostics.
--mod decl_check;
--mod expr;
--mod match_check;
--mod unsafe_check;
++
+ mod decl_check;
+ mod expr;
+ mod match_check;
+ mod unsafe_check;
  
  pub use crate::diagnostics::{
 -    decl_check::{incorrect_case, CaseType, IncorrectCase},
@@ -28,11 +29,3 @@ Rustfmt size:  448 bytes
 +        unsafe_operations_for_body,
      },
  };
-+
-+mod decl_check;
-+
-+mod expr;
-+
-+mod match_check;
-+
-+mod unsafe_check;

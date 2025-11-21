@@ -47,6 +47,16 @@
 //! path and, upon success, we run macro expansion and "collect module" phase on
 //! the result
 
+pub mod assoc;
+pub mod attr_resolution;
+mod collector;
+pub mod diagnostics;
+mod mod_resolution;
+mod path_resolution;
+pub mod proc_macro;
+#[cfg(test)]
+mod tests;
+
 use std::ops::Deref;
 
 use base_db::Crate;
@@ -75,23 +85,6 @@ use crate::{
     visibility::{Visibility, VisibilityExplicitness},
 };
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
-
-pub mod assoc;
-
-pub mod attr_resolution;
-
-mod collector;
-
-pub mod diagnostics;
-
-mod mod_resolution;
-
-mod path_resolution;
-
-pub mod proc_macro;
-
-#[cfg(test)]
-mod tests;
 
 const PREDEFINED_TOOLS: &[SmolStr] = &[
     SmolStr::new_static("clippy"),

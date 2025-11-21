@@ -8,6 +8,14 @@ Rustfmt size:  18694 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Compute the dyn-compatibility of a trait
+ 
++#[cfg(test)]
++mod tests;
++
+ use std::ops::ControlFlow;
+ 
+ use hir_def::{
      Method(FunctionId, MethodViolationCode),
      AssocConst(ConstId),
      GAT(TypeAliasId),
@@ -272,4 +280,6 @@ Rustfmt size:  18694 bytes
 -
      None
  }
- 
+-
+-#[cfg(test)]
+-mod tests;

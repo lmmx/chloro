@@ -1,3 +1,5 @@
+#![expect(dead_code, reason = "this is used by rustc")]
+
 use std::ops::ControlFlow;
 
 use hir_def::{ImplId, TraitId};
@@ -20,7 +22,6 @@ use crate::{
     },
 };
 
-#![expect(dead_code, reason = "this is used by rustc")]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SelectionError<'db> {
     /// The trait is not implemented.

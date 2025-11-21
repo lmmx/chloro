@@ -1,3 +1,5 @@
+mod fn_references;
+
 use hir::{HasSource, InFile, InRealFile, Semantics};
 use ide_db::{
     FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
@@ -14,8 +16,6 @@ use crate::{
     references::{FindAllRefsConfig, find_all_refs},
     runnables::{Runnable, runnables},
 };
-
-mod fn_references;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub struct Annotation {

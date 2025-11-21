@@ -1,5 +1,7 @@
 //! Fulfill loop for next-solver.
 
+mod errors;
+
 use std::{mem, ops::ControlFlow};
 
 use rustc_hash::FxHashSet;
@@ -21,8 +23,6 @@ use crate::next_solver::{
     },
     inspect::ProofTreeVisitor,
 };
-
-mod errors;
 
 type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;
 

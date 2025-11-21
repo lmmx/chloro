@@ -1,5 +1,8 @@
 //! See `Semantics`.
 
+mod child_by_source;
+mod source_to_def;
+
 use std::{
     cell::RefCell,
     convert::Infallible,
@@ -52,10 +55,6 @@ use crate::{
     semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
     source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
 };
-
-mod child_by_source;
-
-mod source_to_def;
 
 const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
 

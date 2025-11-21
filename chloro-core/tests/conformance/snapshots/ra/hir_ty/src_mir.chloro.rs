@@ -1,5 +1,11 @@
 //! MIR definitions and implementation
 
+mod borrowck;
+mod eval;
+mod lower;
+mod monomorphization;
+mod pretty;
+
 use std::{collections::hash_map::Entry, fmt::Display, iter};
 
 use base_db::Crate;
@@ -40,16 +46,6 @@ use crate::{
     },
 };
 use super::consteval::try_const_usize;
-
-mod borrowck;
-
-mod eval;
-
-mod lower;
-
-mod monomorphization;
-
-mod pretty;
 
 pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
 

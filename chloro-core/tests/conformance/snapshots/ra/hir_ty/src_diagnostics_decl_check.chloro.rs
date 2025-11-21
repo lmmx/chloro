@@ -11,6 +11,8 @@
 //! - match arm bindings (e.g. `foo @ Some(_)`)
 //! - modules (e.g. `mod foo { ... }` or `mod foo;`)
 
+mod case_conv;
+
 use std::fmt;
 
 use hir_def::{
@@ -32,8 +34,6 @@ use syntax::{
 
 use crate::db::HirDatabase;
 use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
-
-mod case_conv;
 
 pub fn incorrect_case(
     db: &dyn HirDatabase,

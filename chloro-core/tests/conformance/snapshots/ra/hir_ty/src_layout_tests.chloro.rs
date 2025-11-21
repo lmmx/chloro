@@ -1,3 +1,5 @@
+mod closure;
+
 use base_db::target::TargetData;
 use either::Either;
 use hir_def::db::DefDatabase;
@@ -15,8 +17,6 @@ use crate::{
     setup_tracing,
     test_db::TestDB,
 };
-
-mod closure;
 
 fn current_machine_target_data() -> TargetData {
     project_model::toolchain_info::target_data::get(

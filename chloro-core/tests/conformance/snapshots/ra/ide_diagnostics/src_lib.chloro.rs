@@ -23,6 +23,9 @@
 //! There are also a couple of ad-hoc diagnostics implemented directly here, we
 //! don't yet have a great pattern for how to do them properly.
 
+#[cfg(test)]
+mod tests;
+
 use std::{iter, sync::LazyLock};
 
 use either::Either;
@@ -99,9 +102,6 @@ mod handlers {
     pub(crate) mod unlinked_file;
     pub(crate) mod useless_braces;
 }
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum DiagnosticCode {

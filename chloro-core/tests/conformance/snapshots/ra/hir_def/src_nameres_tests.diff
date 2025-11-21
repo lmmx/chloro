@@ -2,18 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15742 bytes
-Chloro size:   15756 bytes
+Chloro size:   15752 bytes
 Rustfmt size:  15742 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--mod globs;
--mod incremental;
--mod macros;
--mod mod_resolution;
--mod primitives;
--
+ mod primitives;
+ 
  use base_db::RootQueryDb;
 -use expect_test::{expect, Expect};
 +use expect_test::{Expect, expect};
@@ -25,19 +21,6 @@ Rustfmt size:  15742 bytes
      test_db::TestDB,
  };
  
-+mod globs;
-+
-+mod incremental;
-+
-+mod macros;
-+
-+mod mod_resolution;
-+
-+mod primitives;
-+
- fn compute_crate_def_map(
-     #[rust_analyzer::rust_fixture] ra_fixture: &str,
-     cb: impl FnOnce(&DefMap),
      crate_def_map(&db, krate).dump(&db)
  }
  

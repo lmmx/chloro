@@ -1,5 +1,10 @@
 //! Type inference-based diagnostics.
 
+mod decl_check;
+mod expr;
+mod match_check;
+mod unsafe_check;
+
 pub use crate::diagnostics::{
     decl_check::{CaseType, IncorrectCase, incorrect_case},
     expr::{
@@ -10,11 +15,3 @@ pub use crate::diagnostics::{
         unsafe_operations_for_body,
     },
 };
-
-mod decl_check;
-
-mod expr;
-
-mod match_check;
-
-mod unsafe_check;

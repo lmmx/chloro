@@ -2,6 +2,13 @@
 //!
 //! This module uses a bit of static metadata to provide completions for builtin-in attributes and lints.
 
+mod cfg;
+mod derive;
+mod diagnostic;
+mod lint;
+mod macro_use;
+mod repr;
+
 use std::sync::LazyLock;
 
 use ide_db::{
@@ -23,18 +30,6 @@ use crate::{
     item::CompletionItem,
 };
 pub(crate) use self::derive::complete_derive_path;
-
-mod cfg;
-
-mod derive;
-
-mod diagnostic;
-
-mod lint;
-
-mod macro_use;
-
-mod repr;
 
 /// Complete inputs to known builtin attributes as well as derive attributes
 pub(crate) fn complete_known_attribute_input(

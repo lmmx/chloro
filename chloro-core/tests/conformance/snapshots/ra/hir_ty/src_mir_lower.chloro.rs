@@ -1,5 +1,10 @@
 //! This module generates a polymorphic MIR from a hir body
 
+mod as_place;
+mod pattern_matching;
+#[cfg(test)]
+mod tests;
+
 use std::{fmt::Write, iter, mem};
 
 use base_db::Crate;
@@ -47,13 +52,6 @@ use crate::{
     traits::FnTrait,
 };
 use super::OperandKind;
-
-mod as_place;
-
-mod pattern_matching;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug, Clone)]
 struct LoopBlocks<'db> {

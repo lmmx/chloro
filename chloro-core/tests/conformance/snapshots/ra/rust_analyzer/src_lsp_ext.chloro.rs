@@ -1,3 +1,4 @@
+#![allow(clippy::disallowed_types)]
 //! rust-analyzer extensions to the LSP.
 
 use std::ops;
@@ -12,7 +13,6 @@ use paths::Utf8PathBuf;
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 
-#![allow(clippy::disallowed_types)]
 pub enum InternalTestingFetchConfig {
 }
 

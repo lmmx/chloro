@@ -11,6 +11,9 @@ Rustfmt size:  33895 bytes
  //! There are also a couple of ad-hoc diagnostics implemented directly here, we
  //! don't yet have a great pattern for how to do them properly.
  
++#[cfg(test)]
++mod tests;
++
 +use std::{iter, sync::LazyLock};
 +
 +use either::Either;
@@ -44,9 +47,12 @@ Rustfmt size:  33895 bytes
      pub(crate) mod field_shorthand;
      pub(crate) mod json_is_not_rust;
      pub(crate) mod unlinked_file;
- #[cfg(test)]
- mod tests;
+     pub(crate) mod useless_braces;
+ }
  
+-#[cfg(test)]
+-mod tests;
+-
 -use std::{iter, sync::LazyLock};
 -
 -use either::Either;

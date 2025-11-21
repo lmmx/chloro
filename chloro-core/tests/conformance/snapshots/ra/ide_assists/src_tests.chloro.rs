@@ -1,3 +1,5 @@
+mod generated;
+
 use expect_test::expect;
 use hir::{Semantics, db::HirDatabase, setup_tracing};
 use ide_db::{
@@ -16,8 +18,6 @@ use crate::{
     Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
     handlers::Handler,
 };
-
-mod generated;
 
 pub(crate) const TEST_CONFIG: AssistConfig = AssistConfig {
     snippet_cap: SnippetCap::new(true),

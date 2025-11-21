@@ -1,5 +1,9 @@
 //! See [`CompletionContext`] structure.
 
+mod analysis;
+#[cfg(test)]
+mod tests;
+
 use std::{iter, ops::ControlFlow};
 
 use base_db::RootQueryDb as _;
@@ -25,11 +29,6 @@ use crate::{
     config::AutoImportExclusionType,
     context::analysis::{AnalysisResult, expand_and_analyze},
 };
-
-mod analysis;
-
-#[cfg(test)]
-mod tests;
 
 const COMPLETION_MARKER: &str = "raCompletionMarker";
 

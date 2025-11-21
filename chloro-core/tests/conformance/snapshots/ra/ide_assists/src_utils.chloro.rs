@@ -1,5 +1,8 @@
 //! Assorted functions shared by several assists.
 
+mod gen_trait_fn_body;
+pub(crate) mod ref_field_expr;
+
 use std::slice;
 
 pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
@@ -34,10 +37,6 @@ use crate::{
     AssistConfig,
     assist_context::{AssistContext, SourceChangeBuilder},
 };
-
-mod gen_trait_fn_body;
-
-pub(crate) mod ref_field_expr;
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
     extract_trivial_expression(&block_expr)

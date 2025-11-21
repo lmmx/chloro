@@ -6,6 +6,9 @@
 //!
 //! This usually involves resolving names, collecting generic arguments etc.
 
+pub(crate) mod diagnostics;
+pub(crate) mod path;
+
 use std::{
     cell::OnceCell,
     iter, mem,
@@ -63,10 +66,6 @@ use crate::{
         UnevaluatedConst, abi::Safety,
     },
 };
-
-pub(crate) mod diagnostics;
-
-pub(crate) mod path;
 
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);
 

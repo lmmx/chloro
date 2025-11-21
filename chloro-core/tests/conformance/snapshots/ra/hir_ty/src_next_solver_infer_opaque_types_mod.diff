@@ -10,16 +10,15 @@ Rustfmt size:  976 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Things related to the infer context of the next-trait-solver.
  
--pub(crate) mod table;
--
+ pub(crate) mod table;
+ 
 +use macros::{TypeFoldable, TypeVisitable};
  pub(crate) use table::{OpaqueTypeStorage, OpaqueTypeTable};
  
 -use macros::{TypeFoldable, TypeVisitable};
-+use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
- 
+-
 -use crate::next_solver::{infer::InferCtxt, OpaqueTypeKey, Ty};
-+pub(crate) mod table;
++use crate::next_solver::{OpaqueTypeKey, Ty, infer::InferCtxt};
  
  #[derive(Copy, Clone, Debug, TypeVisitable, TypeFoldable)]
  pub struct OpaqueHiddenType<'db> {

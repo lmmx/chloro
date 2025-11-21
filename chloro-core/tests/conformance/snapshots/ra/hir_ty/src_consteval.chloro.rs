@@ -1,5 +1,8 @@
 //! Constant evaluation details
 
+#[cfg(test)]
+mod tests;
+
 use base_db::Crate;
 use hir_def::{
     EnumVariantId, GeneralConstId, HasModule, StaticId,
@@ -23,9 +26,6 @@ use crate::{
     },
 };
 use super::mir::{interpret_mir, lower_to_mir, pad16};
-
-#[cfg(test)]
-mod tests;
 
 pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
     Const::new(DbInterner::conjure(), rustc_type_ir::ConstKind::Error(ErrorGuaranteed))

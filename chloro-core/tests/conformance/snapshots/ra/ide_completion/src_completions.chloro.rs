@@ -1,5 +1,28 @@
 //! This module defines an accumulator for completions which are going to be presented to user.
 
+pub(crate) mod attribute;
+pub(crate) mod dot;
+pub(crate) mod env_vars;
+pub(crate) mod expr;
+pub(crate) mod extern_abi;
+pub(crate) mod extern_crate;
+pub(crate) mod field;
+pub(crate) mod flyimport;
+pub(crate) mod fn_param;
+pub(crate) mod format_string;
+pub(crate) mod item_list;
+pub(crate) mod keyword;
+pub(crate) mod lifetime;
+pub(crate) mod mod_;
+pub(crate) mod pattern;
+pub(crate) mod postfix;
+pub(crate) mod ra_fixture;
+pub(crate) mod record;
+pub(crate) mod snippet;
+pub(crate) mod r#type;
+pub(crate) mod use_;
+pub(crate) mod vis;
+
 use std::iter;
 
 use hir::{HasAttrs, Name, ScopeDef, Variant, sym};
@@ -26,50 +49,6 @@ use crate::{
         union_literal::render_union_literal,
     },
 };
-
-pub(crate) mod attribute;
-
-pub(crate) mod dot;
-
-pub(crate) mod env_vars;
-
-pub(crate) mod expr;
-
-pub(crate) mod extern_abi;
-
-pub(crate) mod extern_crate;
-
-pub(crate) mod field;
-
-pub(crate) mod flyimport;
-
-pub(crate) mod fn_param;
-
-pub(crate) mod format_string;
-
-pub(crate) mod item_list;
-
-pub(crate) mod keyword;
-
-pub(crate) mod lifetime;
-
-pub(crate) mod mod_;
-
-pub(crate) mod pattern;
-
-pub(crate) mod postfix;
-
-pub(crate) mod ra_fixture;
-
-pub(crate) mod record;
-
-pub(crate) mod snippet;
-
-pub(crate) mod r#type;
-
-pub(crate) mod use_;
-
-pub(crate) mod vis;
 
 /// Represents an in-progress set of completions being built.
 #[derive(Debug, Default)]

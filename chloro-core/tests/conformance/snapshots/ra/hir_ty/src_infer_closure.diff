@@ -8,24 +8,13 @@ Rustfmt size:  36953 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Inference of closure parameter types based on the closure's expected type.
- 
--pub(crate) mod analysis;
--
- use std::{iter, mem, ops::ControlFlow};
- 
- use hir_def::{
      },
      traits::FnTrait,
  };
 -
  use super::{Expectation, InferenceContext};
  
-+pub(crate) mod analysis;
-+
  #[derive(Debug)]
- struct ClosureSignatures<'db> {
-     /// The signature users of the closure see.
          expected: &Expectation<'db>,
      ) -> Ty<'db> {
          assert_eq!(args.len(), arg_types.len());

@@ -9,6 +9,27 @@
 //! The `cli` submodule implements some batch-processing analysis, primarily as
 //! a debugging aid.
 
+
+pub mod cli;
+mod command;
+mod diagnostics;
+mod discover;
+mod flycheck;
+mod line_index;
+mod main_loop;
+mod mem_docs;
+mod op_queue;
+mod reload;
+mod target_spec;
+mod task_pool;
+mod test_runner;
+mod version;
+pub mod config;
+mod global_state;
+pub mod lsp;
+#[cfg(test)]
+mod integrated_benchmarks;
+
 use serde::de::DeserializeOwned;
 pub(crate) use try_default_ as try_default;
 
@@ -27,34 +48,6 @@ pub const MINIMUM_SUPPORTED_TOOLCHAIN_VERSION: semver::Version = semver::Version
     build: semver::BuildMetadata::EMPTY,
 };
 
-pub mod cli;
-
-mod command;
-
-mod diagnostics;
-
-mod discover;
-
-mod flycheck;
-
-mod line_index;
-
-mod main_loop;
-
-mod mem_docs;
-
-mod op_queue;
-
-mod reload;
-
-mod target_spec;
-
-mod task_pool;
-
-mod test_runner;
-
-mod version;
-
 mod handlers {
     pub(crate) mod dispatch;
     pub(crate) mod notification;
@@ -67,15 +60,6 @@ pub mod tracing {
     pub use config::Config;
     pub mod hprof;
 }
-
-pub mod config;
-
-mod global_state;
-
-pub mod lsp;
-
-#[cfg(test)]
-mod integrated_benchmarks;
 
 pub fn from_json<T: DeserializeOwned>(
     what: &'static str,

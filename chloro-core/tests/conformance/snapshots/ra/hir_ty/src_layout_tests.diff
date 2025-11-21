@@ -8,6 +8,8 @@ Rustfmt size:  15995 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
++mod closure;
++
  use base_db::target::TargetData;
  use either::Either;
  use hir_def::db::DefDatabase;
@@ -16,6 +18,14 @@ Rustfmt size:  15995 bytes
  use rustc_hash::FxHashMap;
  use rustc_type_ir::inherent::GenericArgs as _;
  use syntax::ToSmolStr;
+     test_db::TestDB,
+ };
+ 
+-mod closure;
+-
+ fn current_machine_target_data() -> TargetData {
+     project_model::toolchain_info::target_data::get(
+         QueryConfig::Rustc(&Sysroot::empty(), &std::env::current_dir().unwrap()),
      let ra_fixture = format!(
          "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\n{ra_fixture}",
      );

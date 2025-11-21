@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! `hir_def` crate contains everything between macro expansion and type
 //! inference.
 //!
@@ -6,6 +7,31 @@
 //!
 //! Note that `hir_def` is a work in progress, so not all of the above is
 //! actually true.
+
+#[cfg(feature = "in-rust-tree")]
+#[cfg(not(feature = "in-rust-tree"))]
+
+pub mod db;
+pub mod attr;
+pub mod builtin_type;
+pub mod item_scope;
+pub mod per_ns;
+pub mod signatures;
+pub mod dyn_map;
+pub mod item_tree;
+pub mod lang_item;
+pub mod hir;
+pub mod expr_store;
+pub mod resolver;
+pub mod nameres;
+pub mod src;
+pub mod find_path;
+pub mod import_map;
+pub mod visibility;
+#[cfg(test)]
+mod macro_expansion_tests;
+#[cfg(test)]
+mod test_db;
 
 use std::hash::{Hash, Hasher};
 
@@ -48,49 +74,6 @@ use crate::{
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };
 pub use self::hir::type_ref;
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#[cfg(feature = "in-rust-tree")]
-#[cfg(not(feature = "in-rust-tree"))]
-pub mod db;
-
-pub mod attr;
-
-pub mod builtin_type;
-
-pub mod item_scope;
-
-pub mod per_ns;
-
-pub mod signatures;
-
-pub mod dyn_map;
-
-pub mod item_tree;
-
-pub mod lang_item;
-
-pub mod hir;
-
-pub mod expr_store;
-
-pub mod resolver;
-
-pub mod nameres;
-
-pub mod src;
-
-pub mod find_path;
-
-pub mod import_map;
-
-pub mod visibility;
-
-#[cfg(test)]
-mod macro_expansion_tests;
-
-#[cfg(test)]
-mod test_db;
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
 

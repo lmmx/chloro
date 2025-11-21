@@ -8,8 +8,9 @@ Rustfmt size:  45518 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! A pretty-printer for HIR.
--#![allow(dead_code)]
+-//! A pretty-printer for HIR.
+ #![allow(dead_code)]
++//! A pretty-printer for HIR.
  
  use std::{
      fmt::{self, Write},
@@ -19,10 +20,7 @@ Rustfmt size:  45518 bytes
 -
  use super::*;
  
-+#![allow(dead_code)]
  macro_rules! w {
-     ($dst:expr, $($arg:tt)*) => {
-         { let _ = write!($dst, $($arg)*); }
      Indentation,
  }
  

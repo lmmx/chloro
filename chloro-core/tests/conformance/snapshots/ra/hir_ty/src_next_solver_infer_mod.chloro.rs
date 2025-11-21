@@ -1,5 +1,18 @@
 //! Infer context the next-trait-solver.
 
+pub mod at;
+pub mod canonical;
+mod context;
+pub mod opaque_types;
+pub mod region_constraints;
+pub mod relate;
+pub mod resolve;
+pub(crate) mod select;
+pub(crate) mod snapshot;
+pub(crate) mod traits;
+mod type_variable;
+mod unify_key;
+
 use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::ops::Range;
@@ -41,30 +54,6 @@ use super::{
     PolySubtypePredicate, Region, SolverDefId, SubtypePredicate, Term, TraitRef, Ty, TyKind,
     TypingMode,
 };
-
-pub mod at;
-
-pub mod canonical;
-
-mod context;
-
-pub mod opaque_types;
-
-pub mod region_constraints;
-
-pub mod relate;
-
-pub mod resolve;
-
-pub(crate) mod select;
-
-pub(crate) mod snapshot;
-
-pub(crate) mod traits;
-
-mod type_variable;
-
-mod unify_key;
 
 /// `InferOk<'db, ()>` is used a lot. It may seem like a useless wrapper
 /// around `PredicateObligations`, but it has one important property:

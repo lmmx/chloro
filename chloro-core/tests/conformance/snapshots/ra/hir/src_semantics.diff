@@ -2,30 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   101525 bytes
+Chloro size:   101524 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See `Semantics`.
- 
--mod child_by_source;
--mod source_to_def;
--
- use std::{
-     cell::RefCell,
-     convert::Infallible,
-     source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
- };
- 
-+mod child_by_source;
-+
-+mod source_to_def;
-+
- const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());
- 
- #[derive(Debug, Copy, Clone, PartialEq, Eq)]
      ) -> Self {
          PathResolutionPerNs { type_ns, value_ns, macro_ns }
      }

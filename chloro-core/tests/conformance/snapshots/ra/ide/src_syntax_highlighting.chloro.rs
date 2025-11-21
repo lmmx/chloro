@@ -1,3 +1,13 @@
+pub(crate) mod tags;
+mod highlights;
+mod escape;
+mod format;
+mod highlight;
+mod inject;
+mod html;
+#[cfg(test)]
+mod tests;
+
 use std::ops::ControlFlow;
 
 use either::Either;
@@ -21,23 +31,6 @@ use crate::{
         tags::Highlight,
     },
 };
-
-pub(crate) mod tags;
-
-mod highlights;
-
-mod escape;
-
-mod format;
-
-mod highlight;
-
-mod inject;
-
-mod html;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug, Clone, Copy)]
 pub struct HlRange {

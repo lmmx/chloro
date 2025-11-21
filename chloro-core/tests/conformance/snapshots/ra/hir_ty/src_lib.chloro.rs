@@ -1,5 +1,35 @@
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 //! The type system. We currently use this to infer types for completion, hover
 //! information and various assists.
+
+
+mod infer;
+mod inhabitedness;
+mod lower;
+pub mod next_solver;
+mod opaques;
+mod specialization;
+mod target_feature;
+mod utils;
+mod variance;
+pub mod autoderef;
+pub mod consteval;
+pub mod db;
+pub mod diagnostics;
+pub mod display;
+pub mod drop;
+pub mod dyn_compatibility;
+pub mod generics;
+pub mod lang_items;
+pub mod layout;
+pub mod method_resolution;
+pub mod mir;
+pub mod primitive;
+pub mod traits;
+#[cfg(test)]
+mod test_db;
+#[cfg(test)]
+mod tests;
 
 use std::hash::Hash;
 
@@ -47,59 +77,6 @@ use crate::{
         Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
     },
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-mod infer;
-
-mod inhabitedness;
-
-mod lower;
-
-pub mod next_solver;
-
-mod opaques;
-
-mod specialization;
-
-mod target_feature;
-
-mod utils;
-
-mod variance;
-
-pub mod autoderef;
-
-pub mod consteval;
-
-pub mod db;
-
-pub mod diagnostics;
-
-pub mod display;
-
-pub mod drop;
-
-pub mod dyn_compatibility;
-
-pub mod generics;
-
-pub mod lang_items;
-
-pub mod layout;
-
-pub mod method_resolution;
-
-pub mod mir;
-
-pub mod primitive;
-
-pub mod traits;
-
-#[cfg(test)]
-mod test_db;
-
-#[cfg(test)]
-mod tests;
 
 /// A constant can have reference to other things. Memory map job is holding
 /// the necessary bits of memory of the const eval session to keep the constant

@@ -13,6 +13,19 @@
 //! to certain types. To record this, we use the union-find implementation from
 //! the `ena` crate, which is extracted from rustc.
 
+mod autoderef;
+pub(crate) mod cast;
+pub(crate) mod closure;
+mod coerce;
+pub(crate) mod diagnostics;
+mod expr;
+mod fallback;
+mod mutability;
+mod opaques;
+mod pat;
+mod path;
+pub(crate) mod unify;
+
 use std::{cell::OnceCell, convert::identity, iter, ops::Index};
 
 use base_db::Crate;
@@ -64,30 +77,6 @@ use crate::{
     traits::FnTrait,
     utils::TargetFeatureIsSafeInTarget,
 };
-
-mod autoderef;
-
-pub(crate) mod cast;
-
-pub(crate) mod closure;
-
-mod coerce;
-
-pub(crate) mod diagnostics;
-
-mod expr;
-
-mod fallback;
-
-mod mutability;
-
-mod opaques;
-
-mod pat;
-
-mod path;
-
-pub(crate) mod unify;
 
 /// The entry point of type inference.
 pub(crate) fn infer_query(

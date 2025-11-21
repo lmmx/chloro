@@ -73,29 +73,58 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            // Collect all uses and other items, preserving order
+            // Separate items by type, preserving order within each type
+            let mut inner_attrs = Vec::new();
+            let mut module_inner_docs = Vec::new();
+            let mut extern_crates = Vec::new();
+            let mut mod_decls = Vec::new();
             let mut uses = Vec::new();
             let mut other_items = Vec::new();
-            let mut module_level_inner_docs = Vec::new();
 
-            // First pass: separate uses, inner docs, and other items
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
-                        if n.kind() == SyntaxKind::USE {
-                            if let Some(use_) = ast::Use::cast(n) {
-                                uses.push(use_);
+                        match n.kind() {
+                            SyntaxKind::ATTR => {
+                                // Check if it's an inner attribute (#![...])
+                                if let Some(attr) = ast::Attr::cast(n.clone()) {
+                                    if attr.excl_token().is_some() {
+                                        inner_attrs.push(attr);
+                                    } else {
+                                        // Outer attributes belong to the next item
+                                        other_items.push(n);
+                                    }
+                                }
                             }
-                        } else {
-                            other_items.push(n);
+                            SyntaxKind::EXTERN_CRATE => {
+                                extern_crates.push(n);
+                            }
+                            SyntaxKind::MODULE => {
+                                // Only mod declarations (not inline mod blocks)
+                                if let Some(module) = ast::Module::cast(n.clone()) {
+                                    if module.item_list().is_none() {
+                                        mod_decls.push(n);
+                                        continue;
+                                    }
+                                }
+                                other_items.push(n);
+                            }
+                            SyntaxKind::USE => {
+                                if let Some(use_) = ast::Use::cast(n) {
+                                    uses.push(use_);
+                                }
+                            }
+                            _ => {
+                                other_items.push(n);
+                            }
                         }
                     }
                     NodeOrToken::Token(t) => {
-                        // Collect module-level inner doc comments (//! or /*! ... */)
                         if t.kind() == SyntaxKind::COMMENT {
                             if let Some(comment) = ast::Comment::cast(t) {
+                                // Inner doc comments (//! or /*! ... */)
                                 if comment.is_inner() && comment.kind().doc.is_some() {
-                                    module_level_inner_docs.push(comment);
+                                    module_inner_docs.push(comment);
                                 }
                             }
                         }
@@ -103,32 +132,62 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // Format module-level inner docs first
-            for doc in &module_level_inner_docs {
+            // Format in strict order:
+            // 1. Inner attributes
+            for attr in &inner_attrs {
+                buf.push_str(attr.syntax().text().to_string().as_str());
+                buf.push('\n');
+            }
+
+            // 2. Module-level inner doc comments
+            for doc in &module_inner_docs {
                 buf.push_str(doc.text());
                 buf.push('\n');
             }
 
-            let has_docs = !module_level_inner_docs.is_empty();
-            let has_uses = !uses.is_empty();
+            // Blank line after preamble attributes/docs if we have more content
+            let has_preamble = !inner_attrs.is_empty() || !module_inner_docs.is_empty();
+            let has_content = !extern_crates.is_empty()
+                || !mod_decls.is_empty()
+                || !uses.is_empty()
+                || !other_items.is_empty();
 
-            // Blank line after module docs if anything follows
-            if has_docs && (has_uses || !other_items.is_empty()) {
+            if has_preamble && has_content {
                 buf.push('\n');
             }
 
-            // Format sorted and grouped imports
-            if has_uses {
+            // 3. Extern crate declarations
+            for extern_crate in &extern_crates {
+                format_node(extern_crate, buf, indent);
+            }
+            if !extern_crates.is_empty()
+                && (!mod_decls.is_empty() || !uses.is_empty() || !other_items.is_empty())
+            {
+                buf.push('\n');
+            }
+
+            // 4. Module declarations (without blank lines between them)
+            for mod_decl in mod_decls.iter() {
+                format_node(mod_decl, buf, indent);
+                // No blank line between consecutive mod declarations
+            }
+            if !mod_decls.is_empty() && (!uses.is_empty() || !other_items.is_empty()) {
+                buf.push('\n');
+            }
+
+            // 5. Use statements (sorted and grouped)
+            if !uses.is_empty() {
                 sort_and_format_imports(&uses, buf, indent);
-                // Blank line between imports and other items
                 if !other_items.is_empty() {
                     buf.push('\n');
                 }
             }
 
-            // Format other items
-            let mut last_kind: Option<SyntaxKind> = if has_uses {
+            // 6. Everything else with appropriate blank lines
+            let mut last_kind: Option<SyntaxKind> = if !uses.is_empty() {
                 Some(SyntaxKind::USE)
+            } else if !mod_decls.is_empty() {
+                Some(SyntaxKind::MODULE)
             } else {
                 None
             };

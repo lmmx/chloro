@@ -1,5 +1,10 @@
 //! Compute the binary representation of a type
 
+pub(crate) mod adt;
+pub(crate) mod target;
+#[cfg(test)]
+mod tests;
+
 use std::fmt;
 
 use hir_def::{
@@ -29,10 +34,6 @@ use crate::{
 };
 pub(crate) use self::adt::layout_of_adt_cycle_result;
 pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
-
-pub(crate) mod adt;
-
-pub(crate) mod target;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RustcEnumVariantIdx(pub usize);
@@ -415,6 +416,3 @@ fn scalar_unit(
 ) -> Scalar {
     Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
 }
-
-#[cfg(test)]
-mod tests;

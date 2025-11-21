@@ -1,6 +1,10 @@
 //! Transforms `ast::Expr` into an equivalent `hir_def::expr::Expr`
 //! representation.
 
+mod asm;
+mod generics;
+mod path;
+
 use std::mem;
 
 use base_db::FxIndexSet;
@@ -61,12 +65,6 @@ use crate::{
     },
 };
 pub use self::path::hir_segment_to_ast_segment;
-
-mod asm;
-
-mod generics;
-
-mod path;
 
 pub(super) fn lower_body(
     db: &dyn DefDatabase,

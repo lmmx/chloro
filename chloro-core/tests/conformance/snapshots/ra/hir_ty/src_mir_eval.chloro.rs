@@ -1,5 +1,9 @@
 //! This module provides a MIR interpreter, which is used in const eval.
 
+mod shim;
+#[cfg(test)]
+mod tests;
+
 use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};
 
 use Address::*;
@@ -56,11 +60,6 @@ use super::{
     Operand, OperandKind, Place, PlaceElem, ProjectionElem, ProjectionStore, Rvalue, StatementKind,
     TerminatorKind, UnOp, return_slot,
 };
-
-mod shim;
-
-#[cfg(test)]
-mod tests;
 
 macro_rules! from_bytes {
     ($ty:tt, $value:expr) => {

@@ -9,7 +9,8 @@ Rustfmt size:  13526 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  //! Book keeping for keeping diagnostics easily in sync with the client.
--pub(crate) mod flycheck_to_proto;
++
+ pub(crate) mod flycheck_to_proto;
  
  use std::mem;
  
@@ -25,8 +26,6 @@ Rustfmt size:  13526 bytes
  
 -pub(crate) type CheckFixes =
 -    Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
-+pub(crate) mod flycheck_to_proto;
-+
 +pub(crate) type CheckFixes = Arc<Vec<FxHashMap<Option<Arc<PackageId>>, FxHashMap<FileId, Vec<Fix>>>>>;
  
  #[derive(Debug, Default, Clone)]

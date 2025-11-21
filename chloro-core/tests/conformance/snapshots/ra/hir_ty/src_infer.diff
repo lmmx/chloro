@@ -2,28 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74102 bytes
+Chloro size:   74091 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! to certain types. To record this, we use the union-find implementation from
- //! the `ena` crate, which is extracted from rustc.
- 
--mod autoderef;
--pub(crate) mod cast;
--pub(crate) mod closure;
--mod coerce;
--pub(crate) mod diagnostics;
--mod expr;
--mod fallback;
--mod mutability;
--mod opaques;
--mod pat;
--mod path;
--pub(crate) mod unify;
--
  use std::{cell::OnceCell, convert::identity, iter, ops::Index};
  
  use base_db::Crate;
@@ -50,32 +34,10 @@ Rustfmt size:  74236 bytes
 -pub use coerce::could_coerce;
 -#[allow(unreachable_pub)]
 -pub use unify::{could_unify, could_unify_deeply};
-+mod autoderef;
- 
+-
 -use cast::{CastCheck, CastError};
 -pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
-+pub(crate) mod cast;
-+
-+pub(crate) mod closure;
-+
-+mod coerce;
-+
-+pub(crate) mod diagnostics;
-+
-+mod expr;
-+
-+mod fallback;
-+
-+mod mutability;
-+
-+mod opaques;
-+
-+mod pat;
-+
-+mod path;
-+
-+pub(crate) mod unify;
- 
+-
  /// The entry point of type inference.
 -pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<InferenceResult<'_>> {
 +pub(crate) fn infer_query(

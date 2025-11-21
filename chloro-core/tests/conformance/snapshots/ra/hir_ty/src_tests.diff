@@ -2,27 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22186 bytes
+Chloro size:   22173 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--mod closure_captures;
--mod coercion;
--mod diagnostics;
--mod display_source_code;
--mod incremental;
--mod macros;
--mod method_resolution;
--mod never_type;
--mod opaque_types;
--mod patterns;
--mod regression;
--mod simple;
--mod trait_aliases;
--mod traits;
--
  use base_db::{Crate, SourceDatabase};
  use expect_test::Expect;
  use hir_def::{
@@ -62,36 +47,10 @@ Rustfmt size:  23079 bytes
 -// These tests compare the inference results for all expressions in a file
 -// against snapshots of the expected results using expect. Use
 -// `env UPDATE_EXPECT=1 cargo test -p hir_ty` to update the snapshots.
-+mod closure_captures;
-+
-+mod coercion;
-+
-+mod diagnostics;
-+
-+mod display_source_code;
-+
-+mod incremental;
-+
-+mod macros;
-+
-+mod method_resolution;
-+
-+mod never_type;
-+
-+mod opaque_types;
-+
-+mod patterns;
-+
-+mod regression;
-+
-+mod simple;
-+
-+mod trait_aliases;
-+
-+mod traits;
- 
+-
  #[track_caller]
  fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
+     check_impl(ra_fixture, false, true, false)
  ) {
      let _tracing = setup_tracing();
      let (db, files) = TestDB::with_many_files(ra_fixture);

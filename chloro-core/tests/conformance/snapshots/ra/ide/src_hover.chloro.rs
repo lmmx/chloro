@@ -1,3 +1,7 @@
+mod render;
+#[cfg(test)]
+mod tests;
+
 use std::{iter, ops::Not};
 
 use either::Either;
@@ -29,11 +33,6 @@ use crate::{
     navigation_target::UpmappingResult,
     runnables::{runnable_fn, runnable_mod},
 };
-
-mod render;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Clone, Debug)]
 pub struct HoverConfig<'a> {

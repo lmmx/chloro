@@ -2,58 +2,66 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16227 bytes
+Chloro size:   16222 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::sync::LazyLock;
+ //! Completion for (built-in) attributes, derives and lints.
+ //!
+ //! This module uses a bit of static metadata to provide completions for builtin-in attributes and lints.
  
- use ide_db::{
-+    FxHashMap, SymbolKind,
-     generated::lints::{
+-use std::sync::LazyLock;
+-
+-use ide_db::{
+-    generated::lints::{
 -        Lint, CLIPPY_LINTS, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, FEATURES, RUSTDOC_LINTS,
-+        CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
-     },
-     syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+-    },
+-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
 -    FxHashMap, SymbolKind,
- };
- use itertools::Itertools;
- use syntax::{
+-};
+-use itertools::Itertools;
+-use syntax::{
 -    ast::{self, AttrKind},
-     AstNode, Edition, SyntaxKind, T,
-+    ast::{self, AttrKind},
- };
- 
- use crate::{
-+    Completions,
-     context::{AttrCtx, CompletionContext, PathCompletionCtx, Qualified},
-     item::CompletionItem,
+-    AstNode, Edition, SyntaxKind, T,
+-};
+-
+-use crate::{
+-    context::{AttrCtx, CompletionContext, PathCompletionCtx, Qualified},
+-    item::CompletionItem,
 -    Completions,
- };
-+pub(crate) use self::derive::complete_derive_path;
- 
+-};
+-
  mod cfg;
--mod derive;
--mod diagnostic;
--mod lint;
--mod macro_use;
--mod repr;
+ mod derive;
+ mod diagnostic;
+ mod macro_use;
+ mod repr;
  
--pub(crate) use self::derive::complete_derive_path;
-+mod derive;
++use std::sync::LazyLock;
 +
-+mod diagnostic;
++use ide_db::{
++    FxHashMap, SymbolKind,
++    generated::lints::{
++        CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
++    },
++    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
++};
++use itertools::Itertools;
++use syntax::{
++    AstNode, Edition, SyntaxKind, T,
++    ast::{self, AttrKind},
++};
 +
-+mod lint;
-+
-+mod macro_use;
-+
-+mod repr;
++use crate::{
++    Completions,
++    context::{AttrCtx, CompletionContext, PathCompletionCtx, Qualified},
++    item::CompletionItem,
++};
+ pub(crate) use self::derive::complete_derive_path;
  
  /// Complete inputs to known builtin attributes as well as derive attributes
- pub(crate) fn complete_known_attribute_input(
  ) -> Option<()> {
      let attribute = fake_attribute_under_caret;
      let path = attribute.path()?;

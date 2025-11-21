@@ -8,9 +8,16 @@ Rustfmt size:  37056 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
++mod fn_references;
++
+ use hir::{HasSource, InFile, InRealFile, Semantics};
+ use ide_db::{
+     FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
+     runnables::{Runnable, runnables},
+ };
  
- mod fn_references;
- 
+-mod fn_references;
+-
 -// Feature: Annotations
 -//
 -// Provides user with annotations above items for looking up references or impl blocks

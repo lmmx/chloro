@@ -1,5 +1,7 @@
 //! Postfix completions, like `Ok(10).ifl$0` => `if let Ok() = Ok(10) { $0 }`.
 
+mod format_like;
+
 use base_db::SourceDatabase;
 use hir::{ItemInNs, Semantics};
 use ide_db::{
@@ -23,8 +25,6 @@ use crate::{
     context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
     item::{Builder, CompletionRelevancePostfixMatch},
 };
-
-mod format_like;
 
 pub(crate) fn complete_postfix(
     acc: &mut Completions,

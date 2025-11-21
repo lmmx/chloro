@@ -12,6 +12,10 @@
 //!
 //! See also a neighboring `body` module.
 
+pub mod format_args;
+pub mod generics;
+pub mod type_ref;
+
 use std::fmt;
 
 use hir_expand::{MacroDefId, name::Name};
@@ -31,12 +35,6 @@ use crate::{
     },
     type_ref::{Mutability, Rawness},
 };
-
-pub mod format_args;
-
-pub mod generics;
-
-pub mod type_ref;
 
 pub type BindingId = Idx<Binding>;
 

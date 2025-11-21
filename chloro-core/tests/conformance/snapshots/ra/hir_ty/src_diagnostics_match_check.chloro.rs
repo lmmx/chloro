@@ -5,6 +5,9 @@
 //!
 //! It is modeled on the rustc module `rustc_mir_build::thir::pattern`.
 
+mod pat_util;
+pub(crate) mod pat_analysis;
+
 use hir_def::{
     AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
     expr_store::{Body, path::Path},
@@ -24,10 +27,6 @@ use crate::{
     next_solver::{GenericArgs, Mutability, Ty, TyKind},
 };
 use self::pat_util::EnumerateAndAdjustIterator;
-
-mod pat_util;
-
-pub(crate) mod pat_analysis;
 
 #[derive(Clone, Debug)]
 pub(crate) enum PatternError {

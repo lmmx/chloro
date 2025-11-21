@@ -12,9 +12,19 @@ Rustfmt size:  69401 bytes
  //! is not available.
  //!
 +
++mod simd;
++
  use std::cmp::{self, Ordering};
  
  use hir_def::{CrateRootModuleId, resolver::HasResolver, signatures::FunctionSignature};
+     next_solver::Region,
+ };
+ 
+-mod simd;
+-
+ macro_rules! from_bytes {
+     ($ty:tt, $value:expr) => {
+         ($ty::from_le_bytes(match ($value).try_into() {
          if self.not_special_fn_cache.borrow().contains(&def) {
              return Ok(false);
          }

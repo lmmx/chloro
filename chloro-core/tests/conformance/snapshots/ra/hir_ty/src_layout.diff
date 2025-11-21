@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14411 bytes
+Chloro size:   14409 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -10,6 +10,11 @@ Rustfmt size:  14808 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Compute the binary representation of a type
  
++pub(crate) mod adt;
++pub(crate) mod target;
++#[cfg(test)]
++mod tests;
++
  use std::fmt;
  
  use hir_def::{
@@ -46,11 +51,12 @@ Rustfmt size:  14808 bytes
  pub(crate) use self::adt::layout_of_adt_cycle_result;
  pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
  
- pub(crate) mod adt;
-+
- pub(crate) mod target;
- 
+-pub(crate) mod adt;
+-pub(crate) mod target;
+-
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+ pub struct RustcEnumVariantIdx(pub usize);
+ 
  }
  
  pub type Layout = LayoutData<RustcFieldIdx, RustcEnumVariantIdx>;
@@ -217,5 +223,6 @@ Rustfmt size:  14808 bytes
 +) -> Scalar {
 +    Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
  }
- 
- #[cfg(test)]
+-
+-#[cfg(test)]
+-mod tests;

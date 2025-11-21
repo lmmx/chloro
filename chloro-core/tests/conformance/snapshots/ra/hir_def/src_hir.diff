@@ -2,19 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   16353 bytes
+Chloro size:   16351 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //!
- //! See also a neighboring `body` module.
  
--pub mod format_args;
--pub mod generics;
--pub mod type_ref;
--
  use std::fmt;
  
 -use hir_expand::{name::Name, MacroDefId};
@@ -39,14 +33,10 @@ Rustfmt size:  17756 bytes
  };
  
 -pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
-+pub mod format_args;
-+
-+pub mod generics;
-+
-+pub mod type_ref;
- 
+-
  pub type BindingId = Idx<Binding>;
  
+ pub type ExprId = Idx<Expr>;
  
  pub type PatId = Idx<Pat>;
  

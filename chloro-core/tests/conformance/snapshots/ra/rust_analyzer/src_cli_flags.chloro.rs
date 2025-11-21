@@ -1,3 +1,4 @@
+#![allow(unreachable_pub)]
 //! Grammar for the command-line arguments.
 
 use std::{path::PathBuf, str::FromStr};
@@ -6,7 +7,6 @@ use ide_ssr::{SsrPattern, SsrRule};
 
 use crate::cli::Verbosity;
 
-#![allow(unreachable_pub)]
 /// LSP server for the Rust programming language.
 ///
 /// Subcommands and their flags do not provide any stability guarantees and may be removed or
