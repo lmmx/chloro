@@ -8,13 +8,6 @@ Rustfmt size:  7507 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! User (postfix)-snippet definitions.
- //!
- //! Actual logic is implemented in [`crate::completions::postfix`] and [`crate::completions::snippet`] respectively.
--
- // Feature: User Snippet Completions
- //
- // rust-analyzer allows the user to define custom (postfix)-snippets that may depend on items to be accessible for the current scope to be applicable.
  // * `description` is an optional description of the snippet, if unset the snippet name will be used.
  //
  // * `requires` is an optional list of item paths that have to be resolvable in the current crate where the completion is rendered.
@@ -22,6 +15,13 @@ Rustfmt size:  7507 bytes
  // On failure of resolution the snippet won't be applicable, otherwise the snippet will insert an import for the items on insertion if
  // the items aren't yet in scope.
  //
+ //     }
+ // }
+ // ````
+-
+ use hir::{ModPath, Name, Symbol};
+ use ide_db::imports::import_assets::LocatedImport;
+ use itertools::Itertools;
          }
          let (requires, snippet, description) = validate_snippet(snippet, description, requires)?;
          Some(Snippet {

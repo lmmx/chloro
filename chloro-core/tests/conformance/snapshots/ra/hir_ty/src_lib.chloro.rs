@@ -2,12 +2,12 @@
 //! information and various assists.
 
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+
 // FIXME: We used to import `rustc_*` deps from `rustc_private` with `feature = "in-rust-tree" but
 // temporarily switched to crates.io versions due to hardships that working on them from rustc
 // demands corresponding changes on rust-analyzer at the same time.
 // For details, see the zulip discussion below:
 // https://rust-lang.zulipchat.com/#narrow/channel/185405-t-compiler.2Frust-analyzer/topic/relying.20on.20in-tree.20.60rustc_type_ir.60.2F.60rustc_next_trait_solver.60/with/541055689
-
 
 mod infer;
 mod inhabitedness;

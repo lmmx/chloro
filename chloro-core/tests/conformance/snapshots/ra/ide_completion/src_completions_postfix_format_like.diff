@@ -2,14 +2,16 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   3549 bytes
+Chloro size:   3548 bytes
 Rustfmt size:  3554 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ // ** `loge` -> `log::error!(...)`
+ //
  // ![Format String Completion](https://user-images.githubusercontent.com/48062697/113020656-b560f500-917a-11eb-87de-02991f61beb8.gif)
- 
+-
  use ide_db::{
 -    syntax_helpers::format_string_exprs::{parse_format_exprs, with_placeholders, Arg},
      SnippetCap,

@@ -126,6 +126,7 @@ mod atom;
 use std::*;
 use std::cell::Cell;
 use std::cell::Cell;
+// 2021
 use std::collections;
 use std::collections;
 use std::io;
@@ -142,12 +143,14 @@ use std::{::*};
 use std::{collections};
 use std::{error::Error;
 
+//~ ERROR incorrect close delimiter
 use ;
 use ;
 use ;
 use ;
 use ;
 use *;
+// https://github.com/rust-lang/rust-analyzer/issues/357
 use *;
 use ::*;
 use ::*;
@@ -166,6 +169,7 @@ pub use edition::Edition;
 use expect_test::expect;
 use expect_test::expect_file;
 use foo;
+// Just a grab bag of stuff that you wouldn't want to actually write.
 use foo as bar;
 use foo::*;
 use foo::bar;
@@ -183,6 +187,7 @@ use {};
 use crate::;
 use crate::Edition;
 use crate::Edition;
+//") || content.contains(";\n")) {
 use crate::SyntaxKind;
 use crate::SyntaxKind;
 use crate::SyntaxKind;
@@ -222,9 +227,14 @@ pub use crate::{
     shortcuts::StrStep,
     syntax_kind::SyntaxKind,
 };
+// Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs
+// avoid editing
+// avoid editing
+// avoid editing
 use crate::{Edition, LexedStr, PrefixEntryPoint, Step};
 use crate::{Edition, LexedStr, TopEntryPoint};
 use self::SyntaxKind::*;
+// https://github.com/rust-lang/rust-analyzer/issues/674
 use self::foo;
 pub use self::generated::SyntaxKind;
 use self::m;
@@ -241,10 +251,17 @@ use super::*;
 use super::*;
 use super::*;
 use super::*;
+// test param_list
+// fn a() {}
+// fn b(x: i32) {}
+// fn c(x: i32, ) {}
+// fn d(x: i32, y: ()) {}
 use super::*;
 use super::*;
 use super::*;
 use super::*;
+// test generic_param_list
+// fn f<T: Clone>() {}
 use super::*;
 use super::*;
 use super::*;

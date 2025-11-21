@@ -1,7 +1,5 @@
 //! Functions for string case manipulation, such as detecting the identifier case,
 //! and converting it into appropriate form.
-// Code that was taken from rustc was taken at commit 89fdb30,
-// from file /compiler/rustc_lint/src/nonstandard_style.rs
 
 /// Converts an identifier to an UpperCamelCase form.
 /// Returns `None` if the string is already in UpperCamelCase.

@@ -1,7 +1,7 @@
 //! MIR borrow checker, which is used in diagnostics like `unused_mut`
+
 // Currently it is an ad-hoc implementation, only useful for mutability analysis. Feel free to remove all of these
 // if needed for implementing a proper borrow checker.
-
 use std::iter;
 
 use hir_def::{DefWithBodyId, HasModule};

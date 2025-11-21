@@ -7,9 +7,9 @@
 //! However, IDE specific bits of the analysis (most notably completion) happen
 //! in this crate.
 
+// For proving that RootDatabase is RefUnwindSafe.
 #![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
 #![recursion_limit = "128"]
-// For proving that RootDatabase is RefUnwindSafe.
 
 #[cfg(test)]
 mod fixture;

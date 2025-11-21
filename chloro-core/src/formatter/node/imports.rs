@@ -1,15 +1,15 @@
-use ra_ap_syntax::ast::{AstNode, Use};
+use ra_ap_syntax::ast::{AstNode, AstToken, Comment, Use};
 
 use crate::formatter::node::format_use;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum ImportGroup {
+pub enum ImportGroup {
     Std,
     External,
     Internal,
 }
 
-fn classify_import(use_: &Use) -> (ImportGroup, String) {
+pub fn classify_import(use_: &Use) -> (ImportGroup, String) {
     let path = if let Some(tree) = use_.use_tree() {
         tree.syntax().text().to_string()
     } else {
@@ -31,29 +31,44 @@ fn classify_import(use_: &Use) -> (ImportGroup, String) {
     (group, path)
 }
 
-pub fn sort_and_format_imports(uses: &[Use], buf: &mut String, indent: usize) {
-    // Classify and sort imports
-    let mut classified: Vec<_> = uses.iter().map(|u| (classify_import(u), u)).collect();
+pub fn sort_and_format_imports(
+    use_items: &[(Vec<Comment>, Use, Vec<Comment>)],
+    buf: &mut String,
+    indent: usize,
+) {
+    // Sort the use statements by group and path
+    let mut sorted_uses = use_items.to_vec();
+    sorted_uses.sort_by(|(_, a, _), (_, b, _)| {
+        let (group_a, path_a) = classify_import(a);
+        let (group_b, path_b) = classify_import(b);
 
-    // Sort by group first, then by path
-    classified.sort_by(|a, b| {
-        let (group_a, path_a) = &a.0;
-        let (group_b, path_b) = &b.0;
-        group_a.cmp(group_b).then_with(|| path_a.cmp(path_b))
+        group_a.cmp(&group_b).then_with(|| path_a.cmp(&path_b))
     });
 
-    // Format with blank lines between groups
     let mut last_group = None;
-
-    for ((group, _), use_) in classified {
-        // Add blank line between groups
+    for (before_comments, use_, trailing_comments) in sorted_uses {
+        // Check if we need a blank line between groups
+        let (group, _) = classify_import(&use_);
         if let Some(last) = last_group {
             if last != group {
                 buf.push('\n');
             }
         }
-
-        format_use(use_.syntax(), buf, indent);
         last_group = Some(group);
+
+        // Output preceding comments
+        for comment in &before_comments {
+            buf.push_str(comment.text());
+            buf.push('\n');
+        }
+
+        // Output the use statement
+        format_use(use_.syntax(), buf, indent);
+
+        // Output trailing comments
+        for comment in &trailing_comments {
+            buf.push_str(comment.text());
+            buf.push('\n');
+        }
     }
 }

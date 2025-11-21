@@ -1,6 +1,7 @@
 //! User (postfix)-snippet definitions.
 //!
 //! Actual logic is implemented in [`crate::completions::postfix`] and [`crate::completions::snippet`] respectively.
+
 // Feature: User Snippet Completions
 //
 // rust-analyzer allows the user to define custom (postfix)-snippets that may depend on items to be accessible for the current scope to be applicable.
@@ -97,7 +98,6 @@
 //     }
 // }
 // ````
-
 use hir::{ModPath, Name, Symbol};
 use ide_db::imports::import_assets::LocatedImport;
 use itertools::Itertools;

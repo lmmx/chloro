@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   150215 bytes
+Chloro size:   150885 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -20,6 +20,13 @@ Rustfmt size:  167117 bytes
  
 +use _config_data as config_data;
 +use _default_str as default_str;
++// Conventions for configuration keys to preserve maximal extendability without breakage:
++//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
++//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
++//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
++//  - Don't use abbreviations unless really necessary
++//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
++// Deserialization definitions
 +use _default_val as default_val;
 +use _impl_for_config_data as impl_for_config_data;
  use cfg::{CfgAtom, CfgDiff};
