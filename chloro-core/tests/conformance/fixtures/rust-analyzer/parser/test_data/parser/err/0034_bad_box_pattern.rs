@@ -3,4 +3,3 @@ fn main() {
     let mut box i = ();
     let ref mut box i = ();
 }
-

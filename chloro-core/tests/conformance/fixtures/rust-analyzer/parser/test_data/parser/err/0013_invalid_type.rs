@@ -4,4 +4,3 @@ pub struct Cache(
         Box<@ Any>,
     >>
 );
-
