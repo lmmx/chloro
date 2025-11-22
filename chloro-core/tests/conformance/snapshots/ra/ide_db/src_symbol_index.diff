@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17943 bytes
-Chloro size:   16900 bytes
+Chloro size:   16889 bytes
 Rustfmt size:  17943 bytes
 
 ✗ Outputs DIFFER
@@ -12,15 +12,11 @@ Rustfmt size:  17943 bytes
  use fst::{Automaton, Streamer, raw::IndexedValue};
  use hir::{
 -    Crate, Module,
-     db::HirDatabase,
+-    db::HirDatabase,
 -    import_map::{AssocSearchMode, SearchMode},
 -    symbols::{FileSymbol, SymbolCollector},
-+
-+    import_map::{AssocSearchMode,
-+
-+    symbols::{FileSymbol,
-+
-+    Crate, Module, SearchMode}, SymbolCollector},
++    db::HirDatabase, import_map::{AssocSearchMode, SearchMode},
++    symbols::{FileSymbol, SymbolCollector}, Crate, Module,
  };
  use rayon::prelude::*;
  use rustc_hash::FxHashSet;

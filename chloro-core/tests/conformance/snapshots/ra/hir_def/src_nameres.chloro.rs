@@ -80,23 +80,11 @@ use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    db::DefDatabase,
-
-    item_scope::{BuiltinShadowMode,
-
-    item_tree::TreeId,
-
-    nameres::{diagnostics::DefDiagnostic,
-
-    path_resolution::ResolveMode},
-
-    per_ns::PerNs,
-
-    visibility::{Visibility,
-
-    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap, ItemScope},
-    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
-    VisibilityExplicitness},
+    db::DefDatabase, item_scope::{BuiltinShadowMode, ItemScope}, item_tree::TreeId,
+    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode}, per_ns::PerNs,
+    visibility::{Visibility, VisibilityExplicitness}, AstId, BlockId, BlockLoc, CrateRootModuleId,
+    ExternCrateId, FunctionId, FxIndexMap, LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId,
+    ProcMacroId, UseId,
 };
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
 

@@ -15,11 +15,8 @@ use ide_db::{
 };
 use paths::Utf8Component;
 use syntax::{
-    ast::{self,
-
-    edit::IndentLevel},
-
-    AstNode, HasModuleItem, HasName, TextRange,
+    AstNode, TextRange,
+    ast::{self, HasModuleItem, HasName, edit::IndentLevel},
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};

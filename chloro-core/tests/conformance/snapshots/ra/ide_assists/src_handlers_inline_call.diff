@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41039 bytes
-Chloro size:   39455 bytes
+Chloro size:   39419 bytes
 Rustfmt size:  41039 bytes
 
 ✗ Outputs DIFFER
@@ -16,46 +16,30 @@ Rustfmt size:  41039 bytes
 -    FileRange, PathResolution, Semantics, TypeInfo,
 -    db::{ExpandDatabase, HirDatabase},
 -    sym,
-+    db::{ExpandDatabase,
-+
-+    sym, FileRange, HirDatabase}, PathResolution, Semantics, TypeInfo,
++    db::{ExpandDatabase, HirDatabase}, sym, FileRange, PathResolution, Semantics, TypeInfo,
  };
  use ide_db::{
 -    EditionedFileId, RootDatabase,
-     base_db::Crate,
-+
-     defs::Definition,
-+
-     imports::insert_use::remove_path_if_in_use_stmt,
-+
-     path_transform::PathTransform,
+-    base_db::Crate,
+-    defs::Definition,
+-    imports::insert_use::remove_path_if_in_use_stmt,
+-    path_transform::PathTransform,
 -    search::{FileReference, FileReferenceNode, SearchScope},
-+
-+    prettify_macro_expansion},
-+
-+    search::{FileReference,
-+
++    base_db::Crate, defs::Definition, imports::insert_use::remove_path_if_in_use_stmt,
++    path_transform::PathTransform, search::{FileReference, FileReferenceNode, SearchScope},
      source_change::SourceChangeBuilder,
 -    syntax_helpers::{node_ext::expr_as_name_ref, prettify_macro_expansion},
-+
-+    syntax_helpers::{node_ext::expr_as_name_ref,
-+
-+    EditionedFileId, FileReferenceNode, RootDatabase, SearchScope},
++    syntax_helpers::{node_ext::expr_as_name_ref, prettify_macro_expansion}, EditionedFileId,
++    RootDatabase,
  };
  use itertools::{Itertools, izip};
  use syntax::{
 -    AstNode, NodeOrToken, SyntaxKind,
      ast::{
--        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
--    },
+         self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
+     },
 -    ted,
-+        self,
-+
-+    edit::IndentLevel,
-+
-+    edit_in_place::Indent,
-+
-+    ted, AstNode, HasArgList, HasGenericArgs, NodeOrToken, Pat, PathExpr, SyntaxKind, },
++    ted, AstNode, NodeOrToken, SyntaxKind,
  };
  
  use crate::{

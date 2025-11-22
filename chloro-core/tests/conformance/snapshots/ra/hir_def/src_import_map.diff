@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33395 bytes
-Chloro size:   33660 bytes
+Chloro size:   33638 bytes
 Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
@@ -21,22 +21,14 @@ Rustfmt size:  34403 bytes
  use triomphe::Arc;
  
  use crate::{
-+    assoc::TraitItems,
-+
-+    crate_def_map},
-+
-     db::DefDatabase,
+-    db::DefDatabase,
 -    item_scope::{ImportOrExternCrate, ItemInNs},
 -    nameres::{assoc::TraitItems, crate_def_map, DefMap},
-+
-+    item_scope::{ImportOrExternCrate,
-+
-+    nameres::{DefMap,
-+
-     visibility::Visibility,
+-    visibility::Visibility,
 -    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
-+
-+    AssocItemId, AttrDefId, Complete, FxIndexMap, ItemInNs}, ModuleDefId, ModuleId, TraitId,
++    db::DefDatabase, item_scope::{ImportOrExternCrate, ItemInNs},
++    nameres::{DefMap, assoc::TraitItems, crate_def_map}, visibility::Visibility, AssocItemId,
++    AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
  };
  
  /// Item import details stored in the `ImportMap`.

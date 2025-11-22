@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   7018 bytes
+Chloro size:   6992 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
@@ -12,24 +12,15 @@ Rustfmt size:  7231 bytes
  //! and parse its stdout/stderr.
  
  use std::{
-     ffi::OsString,
-+
-     fmt,
+-    ffi::OsString,
+-    fmt,
 -    io::{self, BufWriter, Write},
-+
-+    io::{self,
-+
-     marker::PhantomData,
-+
-     path::PathBuf,
--    process::{ChildStderr, ChildStdout, Command, Stdio},
-+
-+    process::{ChildStderr,
-+
-+    BufWriter, ChildStdout, Command, Stdio}, Write},
+-    marker::PhantomData,
+-    path::PathBuf,
++    ffi::OsString, fmt, io::{self, BufWriter, Write}, marker::PhantomData, path::PathBuf,
+     process::{ChildStderr, ChildStdout, Command, Stdio},
  };
  
- use crossbeam_channel::Sender;
  
  /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
  /// cargo output into a Rust data type

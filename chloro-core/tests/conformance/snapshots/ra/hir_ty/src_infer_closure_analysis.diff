@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52977 bytes
+Chloro size:   52955 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
@@ -16,21 +16,15 @@ Rustfmt size:  52289 bytes
  use hir_def::{
 -    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
      expr_store::path::Path,
-+
      hir::{
--        Array, AsmOperand, BinaryOp, BindingId, CaptureBy, Expr, ExprId, ExprOrPatId, Pat, PatId,
--        Statement, UnaryOp,
--    },
-+        Array,
-+
-     item_tree::FieldsShape,
-+
-     lang_item::LangItem,
-+
-     resolver::ValueNs,
-+
-+    AsmOperand, BinaryOp, BindingId, CaptureBy, DefWithBodyId, Expr, ExprId, ExprOrPatId, FieldId,
-+    HasModule, Pat, PatId, Statement, TupleFieldId, TupleId, UnaryOp, VariantId, },
+         Array, AsmOperand, BinaryOp, BindingId, CaptureBy, Expr, ExprId, ExprOrPatId, Pat, PatId,
+         Statement, UnaryOp,
+     },
+-    item_tree::FieldsShape,
+-    lang_item::LangItem,
+-    resolver::ValueNs,
++    item_tree::FieldsShape, lang_item::LangItem, resolver::ValueNs, DefWithBodyId, FieldId,
++    HasModule, TupleFieldId, TupleId, VariantId,
  };
  use hir_expand::name::Name;
  use intern::sym;
@@ -40,27 +34,19 @@ Rustfmt size:  52289 bytes
 -    Adjust, Adjustment, BindingMode,
 -    db::{HirDatabase, InternedClosure, InternedClosureId},
 -    infer::InferenceContext,
--    mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
++    db::{HirDatabase, InternedClosure, InternedClosureId}, infer::InferenceContext,
+     mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
 -    next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
 -    traits::FnTrait,
--};
-+    db::{HirDatabase,
++    next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind}, traits::FnTrait, Adjust,
++    Adjustment, BindingMode,
+ };
  
 -// The below functions handle capture and closure kind (Fn, FnMut, ..)
-+    infer::InferenceContext,
-+
-+    mir::{BorrowKind,
-+
-+    next_solver::{DbInterner,
-+
-+    traits::FnTrait,
-+
-+    Adjust, Adjustment, BindingMode, EarlyBinder, GenericArgs, InternedClosure, InternedClosureId},
-+    MirSpan, MutBorrowKind, ProjectionElem}, Ty, TyKind},
-+};
- 
+-
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub(crate) struct HirPlace<'db> {
+     pub(crate) local: BindingId,
  }
  
  impl<'db> HirPlace<'db> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5855 bytes
-Chloro size:   5857 bytes
+Chloro size:   5851 bytes
 Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
@@ -19,13 +19,11 @@ Rustfmt size:  5985 bytes
  use vfs::AbsPathBuf;
  
  use crate::{
-     global_state::GlobalStateSnapshot,
+-    global_state::GlobalStateSnapshot,
 -    line_index::{LineIndex, PositionEncoding},
 -    lsp_ext, try_default,
-+
-+    line_index::{LineIndex,
-+
-+    lsp_ext, try_default, PositionEncoding},
++    global_state::GlobalStateSnapshot, line_index::{LineIndex, PositionEncoding}, lsp_ext,
++    try_default,
  };
  
  pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {

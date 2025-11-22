@@ -11,11 +11,7 @@
 use hir::{Name, ScopeDef, sym};
 
 use crate::{
-    completions::Completions,
-
-    context::{CompletionContext,
-
-    LifetimeContext, LifetimeKind},
+    completions::Completions, context::{CompletionContext, LifetimeContext, LifetimeKind},
 };
 
 /// Completes lifetimes.

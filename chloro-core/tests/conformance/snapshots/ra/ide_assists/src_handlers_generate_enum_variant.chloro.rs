@@ -1,13 +1,7 @@
 use hir::{HasSource, HirDisplay, InRealFile};
 use ide_db::assists::AssistId;
 use syntax::{
-    ast::{self,
-
-    match_ast,
-
-    syntax_factory::SyntaxFactory},
-
-    AstNode, HasArgList, SyntaxNode,
+    ast::{self, HasArgList, syntax_factory::SyntaxFactory}, match_ast, AstNode, SyntaxNode,
 };
 
 use crate::assist_context::{AssistContext, Assists};

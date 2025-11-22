@@ -7,8 +7,8 @@ use tracing::{debug, instrument};
 use crate::next_solver::fold::FnMutDelegate;
 use crate::next_solver::infer::InferCtxt;
 use crate::next_solver::{
-    Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst,
-    PlaceholderRegion, PlaceholderTy, Region, Ty,
+    Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst, PlaceholderRegion,
+    PlaceholderTy, Region, Ty,
 };
 
 impl<'db> InferCtxt<'db> {

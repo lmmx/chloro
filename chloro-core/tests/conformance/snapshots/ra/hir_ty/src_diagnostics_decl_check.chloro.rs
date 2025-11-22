@@ -36,11 +36,7 @@ use hir_expand::{
 use intern::sym;
 use stdx::{always, never};
 use syntax::{
-    ast::{self,
-
-    utils::is_raw_identifier,
-
-    AstNode, AstPtr, HasName}, ToSmolStr,
+    ast::{self, HasName}, utils::is_raw_identifier, AstNode, AstPtr, ToSmolStr,
 };
 
 use crate::db::HirDatabase;

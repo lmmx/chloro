@@ -9,6 +9,11 @@ pub mod sort;
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
 
+/// Check if an item contains nested braces (e.g., "SyntaxKind::{self, *}")
+fn has_nested_braces(item: &str) -> bool {
+    item.contains('{')
+}
+
 pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     write_indent(buf, indent);
     let use_ = match ast::Use::cast(node.clone()) {
@@ -34,8 +39,8 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     // If it fits on one line, write it directly
     if single_line_len < MAX_WIDTH {
-        // NOTE: rustfmt max_width implementation is (unfortunately) off by one.
-        // This should be `<=` but make it `<` to match behaviour of rustfmt
+        // NOTE: Should be <= but there's an off-by-one bug, so use <
+        // See: https://github.com/rust-lang/rustfmt/issues/6727
         buf.push_str(&vis_text);
         buf.push_str("use ");
         buf.push_str(&use_tree_text);
@@ -61,18 +66,24 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 buf.push_str(prefix);
                 buf.push_str("{\n");
 
-                // Parse and sort items lexicographically
-                let mut items: Vec<String> = items_str
-                    .split(',')
-                    .map(|s| s.trim().to_string())
-                    .filter(|s| !s.is_empty())
-                    .collect();
+                // Parse items carefully, respecting nested braces
+                let items = parse_items_with_nested_braces(items_str);
 
                 // Sort items using standard lexicographic ordering
-                items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+                let mut sorted_items = items;
+                sorted_items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
 
-                // Group items by their submodule prefix
-                let groups = grouping::group_by_submodule(items);
+                // Only group by submodule if no items have nested braces
+                // If any item has nested braces, treat all items as one group
+                let has_any_nested = sorted_items.iter().any(|item| has_nested_braces(item));
+
+                let groups = if has_any_nested {
+                    // Don't group - put all items in one group
+                    vec![sorted_items]
+                } else {
+                    // Group items by their submodule prefix
+                    grouping::group_by_submodule(sorted_items)
+                };
 
                 // Write out each group
                 let line_indent = indent + 4;
@@ -84,7 +95,6 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         let item_with_comma = format!("{},", item);
 
                         // Check if adding this item would exceed MAX_WIDTH
-                        // NOTE: technically whether it would *reach* MAX_WIDTH (rustfmt bug)
                         let potential_line_len =
                             line_indent + current_line.len() + item_with_comma.len();
 
@@ -92,7 +102,8 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             // First item on the line
                             current_line.push_str(&item_with_comma);
                         } else if potential_line_len < MAX_WIDTH {
-                            // NOTE: `<` not `<=` to match behaviour of rustfmt
+                            // NOTE: `<` not `<=` due to off-by-one
+                            // See https://github.com/rust-lang/rustfmt/issues/6727
                             // Add to current line with a space
                             current_line.push(' ');
                             current_line.push_str(&item_with_comma);
@@ -129,6 +140,48 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     // Fallback: just write as-is if we can't parse it
     buf.push_str(&use_tree_text);
     buf.push_str(";\n");
+}
+
+/// Parse items from a use tree, respecting nested braces.
+///
+/// This is more sophisticated than just splitting on commas because
+/// items can contain nested braces like `SyntaxKind::{self, *}`.
+fn parse_items_with_nested_braces(items_str: &str) -> Vec<String> {
+    let mut items = Vec::new();
+    let mut current_item = String::new();
+    let mut brace_depth = 0;
+
+    for ch in items_str.chars() {
+        match ch {
+            '{' => {
+                brace_depth += 1;
+                current_item.push(ch);
+            }
+            '}' => {
+                brace_depth -= 1;
+                current_item.push(ch);
+            }
+            ',' if brace_depth == 0 => {
+                // Only split on commas at the top level
+                let trimmed = current_item.trim().to_string();
+                if !trimmed.is_empty() {
+                    items.push(trimmed);
+                }
+                current_item.clear();
+            }
+            _ => {
+                current_item.push(ch);
+            }
+        }
+    }
+
+    // Don't forget the last item
+    let trimmed = current_item.trim().to_string();
+    if !trimmed.is_empty() {
+        items.push(trimmed);
+    }
+
+    items
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1480 bytes
-Chloro size:   1510 bytes
+Chloro size:   1499 bytes
 Rustfmt size:  1480 bytes
 
 ✗ Outputs DIFFER
@@ -12,14 +12,11 @@ Rustfmt size:  1480 bytes
  use ide_db::{
      assists::ExprFillDefaultMode,
 -    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
-+
-+    imports::{import_assets::ImportPathConfig,
-+
-+    insert_use::InsertUseConfig},
-+
-     SnippetCap,
+-    SnippetCap,
++    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig}, SnippetCap,
  };
  
+ use crate::AssistKind;
          }
      }
  

@@ -1,17 +1,10 @@
 use hir::{PathResolution, Semantics};
 use ide_db::{
-    defs::Definition,
-
-    search::{FileReference,
-
-    EditionedFileId, FileReferenceNode, RootDatabase, UsageSearchResult},
+    defs::Definition, search::{FileReference, FileReferenceNode, UsageSearchResult}, EditionedFileId,
+    RootDatabase,
 };
 use syntax::{
-    ast::{self,
-
-    syntax_factory::SyntaxFactory},
-
-    AstNode, AstToken, HasName, SyntaxElement, TextRange,
+    ast::{self, AstNode, AstToken, HasName, syntax_factory::SyntaxFactory}, SyntaxElement, TextRange,
 };
 
 use crate::{

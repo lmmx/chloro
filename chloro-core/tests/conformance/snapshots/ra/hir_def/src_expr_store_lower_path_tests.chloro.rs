@@ -6,21 +6,14 @@ use test_fixture::WithFixture;
 use crate::{
     expr_store::{
         ExpressionStore,
-
-    hir_segment_to_ast_segment},
-
-    lower::{
+        lower::{
             ExprCollector,
-
-    nameres::crate_def_map,
-
-    path::Path, path::{SEGMENT_LOWERING_MAP,
-
-    pretty,
-
-    test_db::TestDB,
-
-    }, },
+            path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
+        },
+        path::Path,
+        pretty,
+    },
+    nameres::crate_def_map, test_db::TestDB,
 };
 
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {

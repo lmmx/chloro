@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13159 bytes
-Chloro size:   13168 bytes
+Chloro size:   13156 bytes
 Rustfmt size:  13159 bytes
 
 ✗ Outputs DIFFER
@@ -16,44 +16,29 @@ Rustfmt size:  13159 bytes
 -    AliasTyKind, GenericArgKind, InferCtxtLike, Interner, PredicatePolarity, TypeFlags,
 -    TypeVisitableExt,
 -    inherent::{IntoKind, SliceLike, Term as _, Ty as _},
-+    inherent::{IntoKind,
-+
-     lang_items::SolverTraitLangItem,
+-    lang_items::SolverTraitLangItem,
 -    solve::{Certainty, NoSolution},
-+
-+    solve::{Certainty,
-+
-+    AliasTyKind, GenericArgKind, InferCtxtLike, Interner, NoSolution}, PredicatePolarity, SliceLike,
-+    Term as _, Ty as _}, TypeFlags, TypeVisitableExt,
++    inherent::{IntoKind, SliceLike, Term as _, Ty as _}, lang_items::SolverTraitLangItem,
++    solve::{Certainty, NoSolution}, AliasTyKind, GenericArgKind, InferCtxtLike, Interner,
++    PredicatePolarity, TypeFlags, TypeVisitableExt,
  };
  use tracing::debug;
  
  use crate::{
 -    ImplTraitId,
--    next_solver::{
--        AliasTy, CanonicalVarKind, Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper,
--        ParamEnv, Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, fold::fold_tys,
--        util::sizedness_fast_path,
--    },
--};
-+    fold::fold_tys,
- 
-+    next_solver::{
-+        AliasTy,
-+
-+    util::sizedness_fast_path,
-+
-+    CanonicalVarKind, Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper, ImplTraitId,
-+    ParamEnv, Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, },
-+};
+     next_solver::{
+         AliasTy, CanonicalVarKind, Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper,
+         ParamEnv, Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, fold::fold_tys,
+         util::sizedness_fast_path,
+     },
++    ImplTraitId,
+ };
+-
  use super::{
 -    DbInterner, ErrorGuaranteed, GenericArg, SolverDefId, Span,
 -    infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt},
-+    canonical::instantiate::CanonicalExt},
-+
-+    infer::{DbInternerInferExt,
-+
-+    DbInterner, ErrorGuaranteed, GenericArg, InferCtxt, SolverDefId, Span,
++    infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt}, DbInterner,
++    ErrorGuaranteed, GenericArg, SolverDefId, Span,
  };
  
  pub type Goal<'db, P> = rustc_type_ir::solve::Goal<DbInterner<'db>, P>;

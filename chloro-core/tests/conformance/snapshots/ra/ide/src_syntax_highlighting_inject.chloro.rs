@@ -15,23 +15,14 @@ use ide_db::{
     SymbolKind,
 };
 use syntax::{
-    ast::{self,
-
-    AstNode, AstToken, IsString, NodeOrToken, QuoteOffsets}, SyntaxNode, TextRange, TextSize,
+    ast::{self, AstNode, IsString, QuoteOffsets}, AstToken, NodeOrToken, SyntaxNode, TextRange,
+    TextSize,
 };
 
 use crate::{
-    doc_links::{doc_attributes,
-
-    extract_definitions_from_docs,
-
-    highlights::Highlights},
-
-    resolve_doc_path_for_def},
-
-    syntax_highlighting::{HighlightConfig,
-
-    Analysis, HlMod, HlRange, HlTag, RootDatabase,
+    doc_links::{doc_attributes, extract_definitions_from_docs, resolve_doc_path_for_def},
+    syntax_highlighting::{HighlightConfig, highlights::Highlights}, Analysis, HlMod, HlRange, HlTag,
+    RootDatabase,
 };
 
 pub(super) fn ra_fixture(

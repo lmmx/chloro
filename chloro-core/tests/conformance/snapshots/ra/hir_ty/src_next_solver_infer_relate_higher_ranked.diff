@@ -8,6 +8,16 @@ Rustfmt size:  3850 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use crate::next_solver::fold::FnMutDelegate;
+ use crate::next_solver::infer::InferCtxt;
+ use crate::next_solver::{
+-    Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst,
+-    PlaceholderRegion, PlaceholderTy, Region, Ty,
++    Binder, BoundConst, BoundRegion, BoundTy, Const, DbInterner, PlaceholderConst, PlaceholderRegion,
++    PlaceholderTy, Region, Ty,
+ };
+ 
+ impl<'db> InferCtxt<'db> {
      ///
      /// [rustc dev guide]: https://rustc-dev-guide.rust-lang.org/traits/hrtb.html
      #[instrument(level = "debug", skip(self), ret)]

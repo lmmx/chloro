@@ -14,10 +14,7 @@ use tracing::debug;
 
 use crate::{
     infer::InferenceContext,
-
-    next_solver::{CoercePredicate,
-
-    PredicateKind, SubtypePredicate, Ty, TyKind},
+    next_solver::{CoercePredicate, PredicateKind, SubtypePredicate, Ty, TyKind},
 };
 
 #[derive(Copy, Clone)]

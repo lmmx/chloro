@@ -388,11 +388,8 @@ fn hints_(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check, check_with_config},
-
-        inlay_hints::tests::{TEST_CONFIG,
-
-        InlayHintsConfig, LifetimeElisionHints,
+        inlay_hints::tests::{TEST_CONFIG, check, check_with_config}, InlayHintsConfig,
+        LifetimeElisionHints,
     };
     #[test]
     fn hints_lifetimes() {

@@ -16,15 +16,8 @@ use stdx::format_to;
 use vfs::{AbsPathBuf, Vfs};
 
 use crate::{
-    cli::flags,
-
-    line_index::{LineEndings,
-
-    lsp::to_proto,
-
+    cli::flags, line_index::{LineEndings, LineIndex, PositionEncoding}, lsp::to_proto,
     version::version,
-
-    LineIndex, PositionEncoding},
 };
 
 struct LsifManager<'a, 'w> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13010 bytes
-Chloro size:   12430 bytes
+Chloro size:   12429 bytes
 Rustfmt size:  13024 bytes
 
 ✗ Outputs DIFFER
@@ -12,10 +12,8 @@ Rustfmt size:  13024 bytes
  use stdx::format_to;
  use syntax::{
 -    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Impl},
--    AstNode,
-+    ast::{self,
-+
-+    make}, AstNode, HasGenericParams, HasName, HasTypeBounds, Impl,
+     AstNode,
++    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
  };
  
  use crate::{

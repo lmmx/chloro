@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36852 bytes
+Chloro size:   36834 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
@@ -29,18 +29,9 @@ Rustfmt size:  37056 bytes
 -    navigation_target,
 -    references::{FindAllRefsConfig, find_all_refs},
 -    runnables::{Runnable, runnables},
-+
-+    find_all_refs},
-+
-+    goto_implementation::{GotoImplementationConfig,
-+
-+    goto_implementation}, navigation_target,
-+
-+    references::{FindAllRefsConfig,
-+
-+    runnables::{Runnable,
-+
-+    runnables}, NavigationTarget, RunnableKind,
++    goto_implementation::{GotoImplementationConfig, goto_implementation}, navigation_target,
++    references::{FindAllRefsConfig, find_all_refs}, runnables::{Runnable, runnables},
++    NavigationTarget, RunnableKind,
  };
  
 -mod fn_references;

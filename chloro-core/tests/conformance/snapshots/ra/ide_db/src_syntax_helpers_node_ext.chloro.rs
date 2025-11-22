@@ -6,10 +6,8 @@ use itertools::Itertools;
 use parser::T;
 use span::Edition;
 use syntax::{
-    ast::{self,
-
-    AstNode, AstToken, HasLoopBody, MacroCall, PathSegmentKind, Preorder, RustLanguage,
-    VisibilityKind}, WalkEvent,
+    ast::{self, HasLoopBody, MacroCall, PathSegmentKind, VisibilityKind}, AstNode, AstToken,
+    Preorder, RustLanguage, WalkEvent,
 };
 
 pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {

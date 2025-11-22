@@ -1,10 +1,7 @@
 use hir::HirDisplay;
 use syntax::{
-    ast::{Expr,
-
-    AstNode, GenericArg, GenericArgList, HasGenericArgs, LetStmt, TextRange,
-
-    Type::InferType},
+    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType}, AstNode,
+    TextRange,
 };
 
 use crate::{

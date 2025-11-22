@@ -127,10 +127,7 @@ fn process_ret_type(ref_ty: &ast::RetType) -> Option<ast::Type> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_assist, check_assist_not_applicable, check_assist_with_config},
-
-        tests::{TEST_CONFIG,
-
+        tests::{TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_with_config},
         AssistConfig,
     };
     use super::*;

@@ -2,45 +2,30 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12483 bytes
+Chloro size:   12468 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use rustc_hash::FxHashSet;
- use rustc_next_trait_solver::{
-     delegate::SolverDelegate,
--    solve::{GoalEvaluation, GoalStalledOn, HasChanged, SolverDelegateEvalExt},
-+
-+    solve::{GoalEvaluation,
-+
-+    GoalStalledOn, HasChanged, SolverDelegateEvalExt},
+     solve::{GoalEvaluation, GoalStalledOn, HasChanged, SolverDelegateEvalExt},
  };
  use rustc_type_ir::{
 -    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
 -    inherent::{IntoKind, Span as _},
 -    solve::{Certainty, NoSolution},
-+    inherent::{IntoKind,
-+
-+    solve::{Certainty,
-+
-+    Interner, NoSolution}, Span as _}, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-+    TypeVisitor,
++    inherent::{IntoKind, Span as _}, solve::{Certainty, NoSolution}, Interner, TypeSuperVisitable,
++    TypeVisitable, TypeVisitableExt, TypeVisitor,
  };
  
  use crate::next_solver::{
 -    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
      infer::{
          InferCtxt,
--        traits::{PredicateObligation, PredicateObligations},
--    },
-+
-     inspect::ProofTreeVisitor,
-+
-+    traits::{PredicateObligation,
-+
-+    DbInterner, PredicateObligations}, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode, },
+         traits::{PredicateObligation, PredicateObligations},
+     },
+-    inspect::ProofTreeVisitor,
++    inspect::ProofTreeVisitor, DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
  };
  
 -type PendingObligations<'db> =

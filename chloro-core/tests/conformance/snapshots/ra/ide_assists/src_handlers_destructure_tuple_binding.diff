@@ -2,25 +2,20 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43708 bytes
+Chloro size:   43681 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use ide_db::{
-     assists::AssistId,
-+
-     defs::Definition,
+-    assists::AssistId,
+-    defs::Definition,
 -    search::{FileReference, SearchScope},
-+
-+    search::{FileReference,
-+
-     syntax_helpers::suggest_name,
-+
-     text_edit::TextRange,
-+
-+    SearchScope},
+-    syntax_helpers::suggest_name,
+-    text_edit::TextRange,
++    assists::AssistId, defs::Definition, search::{FileReference, SearchScope},
++    syntax_helpers::suggest_name, text_edit::TextRange,
  };
  use itertools::Itertools;
  use syntax::{
@@ -32,12 +27,7 @@ Rustfmt size:  44616 bytes
  };
  
  use crate::{
--    assist_context::{AssistContext, Assists, SourceChangeBuilder},
-+    assist_context::{AssistContext,
-+
      utils::ref_field_expr::determine_ref_and_parens,
-+
-+    Assists, SourceChangeBuilder},
  };
  
 -// Assist: destructure_tuple_binding

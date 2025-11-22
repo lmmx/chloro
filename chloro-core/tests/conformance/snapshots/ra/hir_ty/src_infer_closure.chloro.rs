@@ -5,44 +5,30 @@ pub(crate) mod analysis;
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
-    hir::{ClosureKind,
-
-    lang_item::LangItem,
-
-    type_ref::TypeRefId,
-
-    ExprId, PatId}, TraitId,
+    hir::{ClosureKind, ExprId, PatId}, lang_item::LangItem, type_ref::TypeRefId, TraitId,
 };
 use rustc_type_ir::{
-    inherent::{BoundExistentialPredicates,
-
+    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
-    CoroutineClosureArgsParts, GenericArgs as _, Interner, IntoKind, SliceLike, Ty as _},
-    TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
+    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+    TypeVisitor,
 };
 use tracing::debug;
 
 use crate::{
-    abi::Safety,
-
-    coerce::CoerceMany},
-
-    db::{InternedClosure,
-
-    infer::{
-            BoundRegionConversionTime, infer::{BreakableKind,
-
+    db::{InternedClosure, InternedCoroutine}, infer::{BreakableKind, Diverges, coerce::CoerceMany},
     next_solver::{
-        AliasTy,
-
-    traits::FnTrait, traits::{ObligationCause,
-
-    util::explicit_item_bounds,
-
-    Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner, Diverges,
-    ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult, InternedCoroutine}, PolyFnSig,
-    PolyProjectionPredicate, Predicate, PredicateKind, PredicateObligations}, SolverDefId, Ty,
-    TyKind, }, },
+        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
+        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
+        PredicateKind, SolverDefId, Ty, TyKind,
+        abi::Safety,
+        infer::{
+            BoundRegionConversionTime, InferOk, InferResult,
+            traits::{ObligationCause, PredicateObligations},
+        },
+        util::explicit_item_bounds,
+    },
+    traits::FnTrait, FnAbi,
 };
 use super::{Expectation, InferenceContext};
 

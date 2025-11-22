@@ -5,11 +5,7 @@ use syntax::{
 };
 
 use crate::{
-    assist_context::{AssistContext,
-
-    utils::invert_boolean_expression_legacy,
-
-    AssistId, Assists},
+    assist_context::{AssistContext, Assists}, utils::invert_boolean_expression_legacy, AssistId,
 };
 
 pub(crate) fn invert_if(

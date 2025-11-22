@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45518 bytes
-Chloro size:   45690 bytes
+Chloro size:   45675 bytes
 Rustfmt size:  45518 bytes
 
 ✗ Outputs DIFFER
@@ -17,31 +17,18 @@ Rustfmt size:  45518 bytes
  
  use crate::{
 -    AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
--    expr_store::path::{GenericArg, GenericArgs},
-+    expr_store::path::{GenericArg,
-+
-+    generics::{GenericParams,
-+
+     expr_store::path::{GenericArg, GenericArgs},
      hir::{
--        Array, BindingAnnotation, CaptureBy, ClosureKind, Literal, Movability, Statement,
--        generics::{GenericParams, WherePredicate},
--    },
-+        Array,
-+
-     lang_item::LangItemTarget,
+         Array, BindingAnnotation, CaptureBy, ClosureKind, Literal, Movability, Statement,
+         generics::{GenericParams, WherePredicate},
+     },
+-    lang_item::LangItemTarget,
 -    signatures::{FnFlags, FunctionSignature, StructSignature},
-+
-+    signatures::{FnFlags,
-+
++    lang_item::LangItemTarget, signatures::{FnFlags, FunctionSignature, StructSignature},
      src::HasSource,
 -    type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
-+
-+    type_ref::{ConstRef,
-+
-+    AdtId, BindingAnnotation, CaptureBy, ClosureKind, DefWithBodyId, FunctionSignature,
-+    GenericArgs}, GenericDefId, LifetimeRef, Literal, Movability, Mutability, Statement,
-+    StructSignature}, TraitBoundModifier, TypeBound, TypeParamId, UseArgRef}, VariantId,
-+    WherePredicate}, },
++    type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef}, AdtId,
++    DefWithBodyId, GenericDefId, TypeParamId, VariantId,
  };
  use crate::{LifetimeParamId, signatures::StructFlags};
  use crate::{item_tree::FieldsShape, signatures::FieldData};

@@ -5,15 +5,11 @@ use ide_db::{
 };
 use syntax::{
     ast::{
-        self,
-
-    make::{self,
-
-    syntax_editor::{Position,
-
-    syntax_factory::SyntaxFactory,
-
-    tokens}, AstNode, HasLoopBody, SyntaxEditor}, SyntaxToken, T, },
+        self, AstNode, HasLoopBody,
+        make::{self, tokens},
+        syntax_factory::SyntaxFactory,
+    },
+    syntax_editor::{Position, SyntaxEditor}, SyntaxToken, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

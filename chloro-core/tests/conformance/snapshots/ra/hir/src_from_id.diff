@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9973 bytes
-Chloro size:   9177 bytes
+Chloro size:   9172 bytes
 Rustfmt size:  10039 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,10 @@ Rustfmt size:  10039 bytes
  
  use hir_def::{
 -    hir::{BindingId, LabelId},
-+    hir::{BindingId,
-+
-     AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
+-    AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
 -    ModuleDefId, VariantId,
-+    LabelId}, ModuleDefId, VariantId,
++    hir::{BindingId, LabelId}, AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId,
++    GenericDefId, GenericParamId, ModuleDefId, VariantId,
  };
  
  use crate::{

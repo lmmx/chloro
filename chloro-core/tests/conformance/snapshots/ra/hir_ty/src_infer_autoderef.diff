@@ -13,19 +13,15 @@ Rustfmt size:  1772 bytes
  use crate::{
 -    autoderef::{Autoderef, AutoderefKind},
 -    infer::unify::InferenceTable,
-+    autoderef::{Autoderef,
-+
-+    infer::unify::InferenceTable, infer::{InferOk,
-+
++    autoderef::{Autoderef, AutoderefKind}, infer::unify::InferenceTable,
      next_solver::{
 -        infer::{traits::PredicateObligations, InferOk},
          Ty,
 -    },
 -    Adjust, Adjustment, OverloadedDeref,
-+
-+    traits::PredicateObligations},
-+
-+    Adjust, Adjustment, AutoderefKind}, OverloadedDeref, },
++        infer::{InferOk, traits::PredicateObligations},
++    }, Adjust,
++    Adjustment, OverloadedDeref,
  };
  
  impl<'db> InferenceTable<'db> {

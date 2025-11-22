@@ -7,15 +7,8 @@ use lsp_types::request::Request;
 use triomphe::Arc;
 
 use crate::{
-    from_proto},
-
-    global_state::GlobalState,
-
-    line_index::{LineEndings,
-
-    lsp::{LspError,
-
-    lsp_ext, LineIndex, PositionEncoding},
+    global_state::GlobalState, line_index::{LineEndings, LineIndex, PositionEncoding},
+    lsp::{LspError, from_proto}, lsp_ext,
 };
 
 pub(crate) fn invalid_params_error(message: String) -> LspError {

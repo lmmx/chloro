@@ -1,32 +1,14 @@
 use either::Either;
 use hir::ModuleDef;
 use ide_db::{
-    assists::AssistId,
-
-    defs::Definition,
-
-    helpers::mod_path_to_ast,
-
-    imports::insert_use::{ImportScope,
-
-    insert_use},
-
-    search::{FileReference,
-
-    source_change::SourceChangeBuilder,
-
-    syntax_helpers::node_ext::{for_each_tail_expr,
-
-    walk_expr}, FxHashSet, UsageSearchResult},
+    assists::AssistId, defs::Definition, helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use}, search::{FileReference, UsageSearchResult},
+    source_change::SourceChangeBuilder, syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
+    FxHashSet,
 };
 use syntax::{
-    ast::{self,
-
-    edit::IndentLevel,
-
-    edit_in_place::Indent,
-
-    make}, match_ast, ted, AstNode, HasName, SyntaxNode,
+    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make}, match_ast, ted, AstNode,
+    SyntaxNode,
 };
 
 use crate::assist_context::{AssistContext, Assists};

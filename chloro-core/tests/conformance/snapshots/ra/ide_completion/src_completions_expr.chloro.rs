@@ -7,11 +7,8 @@ use ide_db::FxHashSet;
 use syntax::ast;
 
 use crate::{
-    completions::record::add_default_update,
-
-    context::{PathCompletionCtx,
-
-    CompletionContext, Completions, PathExprCtx, Qualified},
+    completions::record::add_default_update, context::{PathCompletionCtx, PathExprCtx, Qualified},
+    CompletionContext, Completions,
 };
 
 struct PathCallback<'a, F> {

@@ -4,13 +4,8 @@ use std::iter;
 
 use hir::Semantics;
 use ide_db::{
-    defs::{Definition,
-
-    helpers::pick_best_token,
-
-    search::FileReference,
-
-    FileRange, FxIndexMap, MiniCore, NameClass, NameRefClass}, RootDatabase,
+    defs::{Definition, NameClass, NameRefClass}, helpers::pick_best_token, search::FileReference,
+    FileRange, FxIndexMap, MiniCore, RootDatabase,
 };
 use syntax::{AstNode, SyntaxKind::IDENT, ast};
 

@@ -3,11 +3,10 @@
 
 use hir_def::{
     hir::{
-        Array,
-
+        Array, AsmOperand, BinaryOp, BindingAnnotation, Expr, ExprId, Pat, PatId, Statement,
+        UnaryOp,
+    },
     lang_item::LangItem,
-
-    AsmOperand, BinaryOp, BindingAnnotation, Expr, ExprId, Pat, PatId, Statement, UnaryOp, },
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -17,15 +16,8 @@ use rustc_type_ir::inherent::IntoKind;
 use crate::next_solver::infer::traits::{Obligation, ObligationCause};
 use crate::next_solver::{GenericArgs, TraitRef};
 use crate::{
-    expr::ExprIsRead},
-
-    infer::{Expectation,
-
-    lower::lower_mutability,
-
-    next_solver::TyKind,
-
-    Adjust, Adjustment, AutoBorrow, InferenceContext, OverloadedDeref,
+    infer::{Expectation, InferenceContext, expr::ExprIsRead}, lower::lower_mutability,
+    next_solver::TyKind, Adjust, Adjustment, AutoBorrow, OverloadedDeref,
 };
 
 impl<'db> InferenceContext<'_, 'db> {

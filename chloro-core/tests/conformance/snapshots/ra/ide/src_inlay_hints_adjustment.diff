@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23884 bytes
-Chloro size:   23818 bytes
+Chloro size:   23808 bytes
 Rustfmt size:  23884 bytes
 
 ✗ Outputs DIFFER
@@ -122,13 +122,10 @@ Rustfmt size:  23884 bytes
      use crate::{
 -        AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
 -        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
--    };
-+        check_with_config},
- 
-+        inlay_hints::tests::{DISABLED_CONFIG,
-+
-+        AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
-+    };
++        inlay_hints::tests::{DISABLED_CONFIG, check_with_config}, AdjustmentHints,
++        AdjustmentHintsMode, InlayHintsConfig,
+     };
+-
      #[test]
      fn adjustment_hints_prefix() {
          check_with_config(

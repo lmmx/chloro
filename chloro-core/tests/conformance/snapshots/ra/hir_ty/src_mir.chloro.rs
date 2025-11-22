@@ -15,12 +15,8 @@ pub use eval::{
     interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
 };
 use hir_def::{
-    expr_store::Body,
-
-    hir::{BindingAnnotation,
-
-    BindingId, DefWithBodyId, Expr, ExprId, FieldId, Ordering, PatId}, StaticId, TupleFieldId,
-    UnionId, VariantId,
+    expr_store::Body, hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
+    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 pub(crate) use lower::mir_body_cycle_result;
@@ -36,25 +32,14 @@ use smallvec::{SmallVec, smallvec};
 use stdx::{impl_from, never};
 
 use crate::{
-    consteval::usize_const,
-
-    db::{HirDatabase,
-
-    display::{DisplayTarget,
-
-    infer::PointerCast, infer::{InferCtxt,
-
-    lang_items::is_box,
-
+    consteval::usize_const, db::{HirDatabase, InternedClosureId},
+    display::{DisplayTarget, HirDisplay}, infer::PointerCast, lang_items::is_box,
     next_solver::{
-        Const,
-
-    obligation_ctxt::ObligationCtxt,
-
-    traits::ObligationCause},
-
-    CallableDefId, DbInterner, ErrorGuaranteed, GenericArgs, HirDisplay}, InferenceResult,
-    InternedClosureId}, MemoryMap, ParamEnv, Ty, TyKind, },
+        Const, DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
+    },
+    CallableDefId, InferenceResult, MemoryMap,
 };
 use super::consteval::try_const_usize;
 

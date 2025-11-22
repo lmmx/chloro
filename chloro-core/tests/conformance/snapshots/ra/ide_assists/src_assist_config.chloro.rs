@@ -7,12 +7,7 @@
 use hir::FindPathConfig;
 use ide_db::{
     assists::ExprFillDefaultMode,
-
-    imports::{import_assets::ImportPathConfig,
-
-    insert_use::InsertUseConfig},
-
-    SnippetCap,
+    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig}, SnippetCap,
 };
 
 use crate::AssistKind;

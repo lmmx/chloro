@@ -10,35 +10,26 @@ mod snippet;
 mod tests;
 
 use ide_db::{
-    imports::insert_use::{self,
-
-    syntax_helpers::tree_diff::diff,
-
-    text_edit::TextEdit,
-
-    FilePosition, FxHashSet, ImportScope}, RootDatabase,
+    imports::insert_use::{self, ImportScope}, syntax_helpers::tree_diff::diff, text_edit::TextEdit,
+    FilePosition, FxHashSet, RootDatabase,
 };
 use syntax::ast::make;
 
 use crate::{
     completions::Completions,
-
     context::{
-        CompletionAnalysis,
-
-    CompletionContext, NameRefContext, NameRefKind, PathCompletionCtx, PathKind, },
+        CompletionAnalysis, CompletionContext, NameRefContext, NameRefKind, PathCompletionCtx,
+        PathKind,
+    },
 };
 pub use crate::{
-    config::{AutoImportExclusionType,
-
+    config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
     item::{
-        CompletionItem,
-
-    snippet::{Snippet,
-
-    CallableSnippets, CompletionConfig}, CompletionItemKind, CompletionItemRefMode,
-    CompletionRelevance, CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,
-    CompletionRelevanceTypeMatch, SnippetScope}, },
+        CompletionItem, CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
+        CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,
+        CompletionRelevanceTypeMatch,
+    },
+    snippet::{Snippet, SnippetScope},
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

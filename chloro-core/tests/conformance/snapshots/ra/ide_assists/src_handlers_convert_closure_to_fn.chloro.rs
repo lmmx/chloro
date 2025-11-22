@@ -15,17 +15,14 @@ use ide_db::{
 };
 use stdx::format_to;
 use syntax::{
-    algo::{skip_trivia_token,
-
+    algo::{skip_trivia_token, skip_whitespace_token},
     ast::{
-        self,
-
-    edit::{AstNodeEdit,
-
-    hacks::parse_expr_from_str,
-
-    make, skip_whitespace_token}, ted, AstNode, Direction, HasArgList, HasGenericParams, HasName,
-    IndentLevel}, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T, },
+        self, HasArgList, HasGenericParams, HasName,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
+    hacks::parse_expr_from_str, ted, AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr,
+    T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

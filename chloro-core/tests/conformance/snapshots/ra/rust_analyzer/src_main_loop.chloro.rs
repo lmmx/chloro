@@ -2,15 +2,7 @@
 //! requests/replies and notifications back to the client.
 
 use std::{
-    fmt,
-
-    ops::Div as _,
-
-    panic::AssertUnwindSafe,
-
-    time::{Duration,
-
-    Instant},
+    fmt, ops::Div as _, panic::AssertUnwindSafe, time::{Duration, Instant},
 };
 
 use crossbeam_channel::{Receiver, never, select};
@@ -23,40 +15,23 @@ use vfs::{AbsPathBuf, FileId, loader::LoadingProgress};
 
 use crate::{
     config::Config,
-
-    diagnostics::{DiagnosticsGeneration,
-
-    discover::{DiscoverArgument,
-
-    fetch_native_diagnostics}, file_id_to_url,
-
-    flycheck::{self,
-
+    diagnostics::{DiagnosticsGeneration, NativeDiagnosticsFetchKind, fetch_native_diagnostics},
+    discover::{DiscoverArgument, DiscoverCommand, DiscoverProjectMessage},
+    flycheck::{self, ClearDiagnosticsKind, ClearScope, FlycheckMessage},
     global_state::{
-        FetchBuildDataResponse,
-
+        FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
+        file_id_to_url, url_to_file_id,
+    },
     handlers::{
-        dispatch::{NotificationDispatcher,
-
+        dispatch::{NotificationDispatcher, RequestDispatcher},
+        request::empty_diagnostic_report,
+    },
     lsp::{
-        from_proto,
-
-    lsp_ext, notification_is},
-
-    reload::{BuildDataProgress,
-
-    request::empty_diagnostic_report,
-
-    test_runner::{CargoTestMessage,
-
-    to_proto, url_to_file_id,
-
-    utils::{Progress,
-
-    CargoTestOutput, ClearDiagnosticsKind, ClearScope, DiscoverCommand, DiscoverProjectMessage},
-    FetchWorkspaceRequest, FetchWorkspaceResponse, FlycheckMessage}, GlobalState,
-    NativeDiagnosticsFetchKind, ProcMacroProgress, ProjectWorkspaceProgress}, RequestDispatcher},
-    TestState}, }, }, },
+        from_proto, to_proto,
+        utils::{Progress, notification_is},
+    }, lsp_ext,
+    reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
+    test_runner::{CargoTestMessage, CargoTestOutput, TestState},
 };
 
 pub fn main_loop(

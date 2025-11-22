@@ -5,19 +5,13 @@ use ide_db::{
 };
 use syntax::{
     algo::ancestors_at_offset,
-
     ast::{
-        self,
-
-    edit::{AstNodeEdit,
-
-    make,
-
-    syntax_editor::Position,
-
-    syntax_factory::SyntaxFactory,
-
-    AstNode, IndentLevel}, NodeOrToken, SyntaxKind, SyntaxNode, T, },
+        self, AstNode,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+        syntax_factory::SyntaxFactory,
+    },
+    syntax_editor::Position, NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};

@@ -4,58 +4,23 @@ mod child_by_source;
 mod source_to_def;
 
 use std::{
-    cell::RefCell,
-
-    convert::Infallible,
-
-    fmt, iter, mem,
-
-    ops::{self,
-
-    ControlFlow, Not},
+    cell::RefCell, convert::Infallible, fmt, iter, mem, ops::{self, ControlFlow, Not},
 };
 
 use either::Either;
 use hir_def::{
-    crate_def_map},
-
-    expr_store::{Body,
-
-    hir::{BindingId,
-
-    nameres::{ModuleOrigin,
-
-    path::Path},
-
-    resolver::{self,
-
-    type_ref::Mutability,
-
-    DefWithBodyId, Expr, ExprId, ExprOrPatId, ExprOrPatSource, FunctionId, HasResolver, MacroId,
-    Pat}, Resolver, StructId, TraitId, TypeNs}, VariantId,
+    expr_store::{Body, ExprOrPatSource, path::Path},
+    hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat}, nameres::{ModuleOrigin, crate_def_map},
+    resolver::{self, HasResolver, Resolver, TypeNs}, type_ref::Mutability, DefWithBodyId, FunctionId,
+    MacroId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
-    attrs::collect_attrs,
-
-    builtin::{BuiltinFnLikeExpander,
-
-    db::ExpandDatabase,
-
-    files::{FileRangeWrapper,
-
-    mod_path::{ModPath,
-
-    name::AsName,
-
-    EagerExpander}, EditionedFileId, ExpandResult, FileRange, HirFileId, HirFileRange, InMacroFile,
-    InRealFile}, MacroCallId, PathKind},
+    attrs::collect_attrs, builtin::{BuiltinFnLikeExpander, EagerExpander}, db::ExpandDatabase,
+    files::{FileRangeWrapper, HirFileRange, InRealFile}, mod_path::{ModPath, PathKind}, name::AsName,
+    EditionedFileId, ExpandResult, FileRange, HirFileId, InMacroFile, MacroCallId,
 };
 use hir_ty::{
-    diagnostics::{unsafe_operations,
-
-    next_solver::DbInterner,
-
-    unsafe_operations_for_body},
+    diagnostics::{unsafe_operations, unsafe_operations_for_body}, next_solver::DbInterner,
 };
 use intern::{Interned, Symbol, sym};
 use itertools::Itertools;
@@ -64,28 +29,18 @@ use smallvec::{SmallVec, smallvec};
 use span::{Edition, FileId, SyntaxContext};
 use stdx::{TupleExt, always};
 use syntax::{
-    algo::skip_trivia_token,
-
-    ast::{self,
-
-    AstNode, AstToken, Direction, HasAttrs as _, HasGenericParams}, SyntaxKind, SyntaxNode,
-    SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
+    algo::skip_trivia_token, ast::{self, HasAttrs as _, HasGenericParams}, AstNode, AstToken,
+    Direction, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
 };
 
 use crate::{
-    db::HirDatabase,
-
-    name_hygiene, resolve_hir_path},
-
-    semantics::source_to_def::{ChildContainer,
-
-    source_analyzer::{SourceAnalyzer,
-
-    Adjust, Adjustment, Adt, AutoBorrow, BindingMode, BuiltinAttr, Callable, Const, ConstParam,
-    Crate, DefWithBody, DeriveHelper, Enum, Field, Function, GenericSubstitution, HasSource, Impl,
-    InFile, InlineAsmOperand, ItemInNs, Label, LifetimeParam, Local, Macro, Module, ModuleDef, Name,
-    OverloadedDeref, ScopeDef, SourceToDefCache, SourceToDefCtx}, Static, Struct, ToolModule, Trait,
-    TupleField, Type, TypeAlias, TypeParam, Union, Variant, VariantDef,
+    db::HirDatabase, semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
+    source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path}, Adjust, Adjustment, Adt,
+    AutoBorrow, BindingMode, BuiltinAttr, Callable, Const, ConstParam, Crate, DefWithBody,
+    DeriveHelper, Enum, Field, Function, GenericSubstitution, HasSource, Impl, InFile,
+    InlineAsmOperand, ItemInNs, Label, LifetimeParam, Local, Macro, Module, ModuleDef, Name,
+    OverloadedDeref, ScopeDef, Static, Struct, ToolModule, Trait, TupleField, Type, TypeAlias,
+    TypeParam, Union, Variant, VariantDef,
 };
 
 const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());

@@ -2,11 +2,8 @@
 
 use either::Either;
 use hir_def::{
-    nameres::{ModuleOrigin,
-
-    src::{HasChildSource,
-
-    CallableDefId, HasSource as _}, Lookup, MacroId, ModuleSource}, VariantId,
+    nameres::{ModuleOrigin, ModuleSource}, src::{HasChildSource, HasSource as _}, CallableDefId,
+    Lookup, MacroId, VariantId,
 };
 use hir_expand::{EditionedFileId, HirFileId, InFile};
 use hir_ty::db::InternedClosure;

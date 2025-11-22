@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9557 bytes
+Chloro size:   9521 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -12,29 +12,16 @@ Rustfmt size:  9843 bytes
  use ide_db::{
 -    assists::{AssistId, AssistKind},
 -    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
-+    assists::{AssistId,
-+
-+    parse_format_exprs},
-+
-+    syntax_helpers::format_string_exprs::{Arg,
-+
-+    AssistKind},
++    assists::{AssistId, AssistKind}, syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
  };
  use itertools::Itertools;
  use syntax::{
 -    ast::{self, make, syntax_factory::SyntaxFactory, TokenTree},
-+    ast::{self,
-+
-+    make,
-+
-+    syntax_factory::SyntaxFactory},
-+
-     AstNode, AstToken, NodeOrToken,
-+
-     SyntaxKind::WHITESPACE,
+-    AstNode, AstToken, NodeOrToken,
+-    SyntaxKind::WHITESPACE,
 -    SyntaxToken, T,
-+
-+    SyntaxToken, TokenTree, T,
++    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory}, AstNode, AstToken, NodeOrToken,
++    SyntaxKind::WHITESPACE, SyntaxToken, T,
  };
  
 -// Assist: extract_expressions_from_format_string

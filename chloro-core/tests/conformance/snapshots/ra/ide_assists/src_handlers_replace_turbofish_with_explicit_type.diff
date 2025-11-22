@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8930 bytes
-Chloro size:   8620 bytes
+Chloro size:   8614 bytes
 Rustfmt size:  8981 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,8 @@ Rustfmt size:  8981 bytes
  use syntax::{
 -    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
 -    AstNode, TextRange,
-+    ast::{Expr,
-+
-+    AstNode, GenericArg, GenericArgList, HasGenericArgs, LetStmt, TextRange,
-+
-+    Type::InferType},
++    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType}, AstNode,
++    TextRange,
  };
  
  use crate::{

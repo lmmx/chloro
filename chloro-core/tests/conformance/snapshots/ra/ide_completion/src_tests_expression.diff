@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75833 bytes
-Chloro size:   75813 bytes
+Chloro size:   75818 bytes
 Rustfmt size:  76019 bytes
 
 ✗ Outputs DIFFER
@@ -14,21 +14,15 @@ Rustfmt size:  76019 bytes
 +use expect_test::{Expect, expect};
  
  use crate::{
-+    check, check_edit, check_with_base_items, completion_list_with_config,
-+
      config::AutoImportExclusionType,
-+
      tests::{
 -        check, check_edit, check_with_base_items, completion_list_with_config, BASE_ITEMS_FIXTURE,
 -        TEST_CONFIG,
--    },
--    CompletionConfig,
-+        BASE_ITEMS_FIXTURE,
-+
-+    CompletionConfig, TEST_CONFIG, },
++        BASE_ITEMS_FIXTURE, TEST_CONFIG, check, check_edit, check_with_base_items,
++        completion_list_with_config,
+     },
+     CompletionConfig,
  };
- 
- fn check_with_config(
              sn ppd
          "#]],
      );

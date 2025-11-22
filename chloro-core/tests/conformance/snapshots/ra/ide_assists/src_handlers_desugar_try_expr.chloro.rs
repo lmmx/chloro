@@ -7,14 +7,11 @@ use ide_db::{
 use syntax::{
     ast::{
         self,
-
-    edit::{AstNodeEdit,
-
-    make,
-
-    syntax_factory::SyntaxFactory,
-
-    AstNode, IndentLevel}, T, },
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+        syntax_factory::SyntaxFactory,
+    },
+    AstNode, T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

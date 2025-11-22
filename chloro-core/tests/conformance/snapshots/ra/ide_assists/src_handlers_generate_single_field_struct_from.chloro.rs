@@ -14,11 +14,7 @@ use ide_db::{
 };
 use syntax::syntax_editor::{Element, Position};
 use syntax::{
-    ast::{self,
-
-    edit::AstNodeEdit},
-
-    AstNode, HasAttrs, HasGenericParams, HasName, TokenText,
+    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit}, TokenText,
 };
 
 use crate::{

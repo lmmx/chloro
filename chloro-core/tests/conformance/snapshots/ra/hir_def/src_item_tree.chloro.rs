@@ -45,13 +45,7 @@ use std::{
 use ast::{AstNode, StructKind};
 use base_db::Crate;
 use hir_expand::{
-    attrs::RawAttrs,
-
-    mod_path::{ModPath,
-
-    name::Name,
-
-    ExpandTo, HirFileId, PathKind},
+    attrs::RawAttrs, mod_path::{ModPath, PathKind}, name::Name, ExpandTo, HirFileId,
 };
 use intern::Interned;
 use la_arena::{Idx, RawIdx};

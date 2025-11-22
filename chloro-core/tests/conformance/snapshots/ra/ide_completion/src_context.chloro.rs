@@ -20,21 +20,13 @@ use ide_db::{
 };
 use itertools::Either;
 use syntax::{
-    ast::{self,
-
-    match_ast, AstNode, AttrKind, Edition, NameOrNameRef}, SmolStr,
-
-    SyntaxKind::{self,
-
-    SyntaxToken, TextRange, TextSize, *}, T,
+    ast::{self, AttrKind, NameOrNameRef}, match_ast, AstNode, Edition, SmolStr,
+    SyntaxKind::{self, *}, SyntaxToken, TextRange, TextSize, T,
 };
 
 use crate::{
-    config::AutoImportExclusionType,
-
-    context::analysis::{AnalysisResult,
-
-    expand_and_analyze}, CompletionConfig,
+    config::AutoImportExclusionType, context::analysis::{AnalysisResult, expand_and_analyze},
+    CompletionConfig,
 };
 
 const COMPLETION_MARKER: &str = "raCompletionMarker";

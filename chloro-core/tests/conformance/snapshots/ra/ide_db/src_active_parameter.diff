@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6837 bytes
-Chloro size:   6853 bytes
+Chloro size:   6852 bytes
 Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
@@ -13,9 +13,8 @@ Rustfmt size:  6998 bytes
  use syntax::{
 -    ast::{self, AstChildren, HasArgList, HasAttrs, HasName},
 -    match_ast, AstNode, NodeOrToken, SyntaxToken,
-+    ast::{self,
-+
-+    match_ast, AstChildren, AstNode, HasArgList, HasAttrs, HasName}, NodeOrToken, SyntaxToken,
++    ast::{self, AstChildren, HasArgList, HasAttrs, HasName}, match_ast, AstNode, NodeOrToken,
++    SyntaxToken,
  };
  
  use crate::RootDatabase;

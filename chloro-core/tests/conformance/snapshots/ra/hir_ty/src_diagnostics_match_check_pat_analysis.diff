@@ -2,25 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21197 bytes
+Chloro size:   21180 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir_def::{EnumId, EnumVariantId, HasModule, LocalFieldId, ModuleId, VariantId};
  use intern::sym;
  use rustc_pattern_analysis::{
--    constructor::{Constructor, ConstructorSet, VariantVisibility},
+     constructor::{Constructor, ConstructorSet, VariantVisibility},
 -    usefulness::{compute_match_usefulness, PlaceValidity, UsefulnessReport},
 -    IndexVec, PatCx, PrivateUninhabitedField,
-+    compute_match_usefulness},
-+
-+    constructor::{Constructor,
-+
-+    usefulness::{PlaceValidity,
-+
-+    ConstructorSet, IndexVec, PatCx, PrivateUninhabitedField, UsefulnessReport, VariantVisibility},
++    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness}, IndexVec, PatCx,
++    PrivateUninhabitedField,
  };
  use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 -use smallvec::{smallvec, SmallVec};
@@ -30,28 +24,17 @@ Rustfmt size:  22047 bytes
 +use Constructor::*;
  
  use crate::{
-     db::HirDatabase,
+-    db::HirDatabase,
 -    inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
--    next_solver::{
++    db::HirDatabase, inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
+     next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
--        Ty, TyKind,
--    },
--    TraitEnvironment,
--};
- 
-+    infer::{InferCtxt,
-+
-+    inhabitedness::{is_enum_variant_uninhabited_from,
-+
-+    is_ty_uninhabited_from},
-+
-+    next_solver::{
-+        Ty,
-+
-+    traits::ObligationCause},
-+
-+    TraitEnvironment, TyKind, },
-+};
+         Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause},
+     },
+     TraitEnvironment,
+ };
+-
  use super::{FieldPat, Pat, PatKind};
  
 -use Constructor::*;

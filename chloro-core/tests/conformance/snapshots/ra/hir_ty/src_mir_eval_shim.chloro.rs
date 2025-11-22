@@ -13,20 +13,13 @@ use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike, Ty as _};
 use stdx::never;
 
 use crate::{
-    display::DisplayTarget,
-
-    drop::{DropGlue,
-
-    has_drop_glue},
-
+    display::DisplayTarget, drop::{DropGlue, has_drop_glue},
     mir::eval::{
-        Address,
-
+        Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
+        InternedClosure, Interval, IntervalAndTy, IntervalOrOwned, ItemContainerId, LangItem,
+        Layout, Locals, Lookup, MirEvalError, MirSpan, Mutability, Result, Ty, TyKind, pad16,
+    },
     next_solver::Region,
-
-    pad16, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay, InternedClosure,
-    Interval, IntervalAndTy, IntervalOrOwned, ItemContainerId, LangItem, Layout, Locals, Lookup,
-    MirEvalError, MirSpan, Mutability, Result, Ty, TyKind, },
 };
 
 macro_rules! from_bytes {

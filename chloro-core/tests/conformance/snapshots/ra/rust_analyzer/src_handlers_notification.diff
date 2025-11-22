@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22455 bytes
-Chloro size:   22517 bytes
+Chloro size:   22479 bytes
 Rustfmt size:  22455 bytes
 
 ✗ Outputs DIFFER
@@ -13,30 +13,16 @@ Rustfmt size:  22455 bytes
  use crate::{
 -    config::{Config, ConfigChange},
 -    flycheck::{InvocationStrategy, Target},
--    global_state::{FetchWorkspaceRequest, GlobalState},
++    config::{Config, ConfigChange}, flycheck::{InvocationStrategy, Target},
+     global_state::{FetchWorkspaceRequest, GlobalState},
 -    lsp::{from_proto, utils::apply_document_changes},
 -    lsp_ext::{self, RunFlycheckParams},
-+    config::{Config,
-+
-+    flycheck::{InvocationStrategy,
-+
-+    global_state::{FetchWorkspaceRequest,
-+
-+    lsp::{from_proto,
-+
-+    lsp_ext::{self,
-+
-     mem_docs::DocumentData,
-+
-     reload,
-+
-     target_spec::TargetSpec,
-+
-     try_default,
-+
-+    utils::apply_document_changes},
-+
-+    ConfigChange}, GlobalState}, RunFlycheckParams}, Target},
+-    mem_docs::DocumentData,
+-    reload,
+-    target_spec::TargetSpec,
+-    try_default,
++    lsp::{from_proto, utils::apply_document_changes}, lsp_ext::{self, RunFlycheckParams},
++    mem_docs::DocumentData, reload, target_spec::TargetSpec, try_default,
  };
  
 -pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> anyhow::Result<()> {

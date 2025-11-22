@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   4102 bytes
+Chloro size:   4096 bytes
 Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
@@ -20,15 +20,13 @@ Rustfmt size:  4556 bytes
  use la_arena::{Idx, RawIdx};
  
  use crate::{
-     db::HirDatabase,
+-    db::HirDatabase,
 -    lower::path::{PathDiagnosticCallback, PathLoweringContext},
 -    lower::{LifetimeElisionKind, TyLoweringContext},
 -    InferenceDiagnostic, InferenceTyDiagnosticSource, TyLoweringDiagnostic,
-+
-+    lower::path::{PathDiagnosticCallback, lower::{LifetimeElisionKind,
-+
-+    InferenceDiagnostic, InferenceTyDiagnosticSource, PathLoweringContext}, TyLoweringContext},
-+    TyLoweringDiagnostic,
++    db::HirDatabase, lower::path::{PathDiagnosticCallback, PathLoweringContext},
++    lower::{LifetimeElisionKind, TyLoweringContext}, InferenceDiagnostic,
++    InferenceTyDiagnosticSource, TyLoweringDiagnostic,
  };
  
 -// Unfortunately, this struct needs to use interior mutability (but we encapsulate it)

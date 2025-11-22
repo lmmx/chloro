@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30954 bytes
+Chloro size:   30937 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
@@ -31,26 +31,17 @@ Rustfmt size:  31005 bytes
 -    match_ast, AstNode, Edition, SmolStr,
 -    SyntaxKind::{self, *},
 -    SyntaxToken, TextRange, TextSize, T,
-+    ast::{self,
-+
-+    match_ast, AstNode, AttrKind, Edition, NameOrNameRef}, SmolStr,
-+
-+    SyntaxKind::{self,
-+
-+    SyntaxToken, TextRange, TextSize, *}, T,
++    ast::{self, AttrKind, NameOrNameRef}, match_ast, AstNode, Edition, SmolStr,
++    SyntaxKind::{self, *}, SyntaxToken, TextRange, TextSize, T,
  };
  
  use crate::{
-     config::AutoImportExclusionType,
+-    config::AutoImportExclusionType,
 -    context::analysis::{expand_and_analyze, AnalysisResult},
--    CompletionConfig,
-+
-+    context::analysis::{AnalysisResult,
-+
-+    expand_and_analyze}, CompletionConfig,
++    config::AutoImportExclusionType, context::analysis::{AnalysisResult, expand_and_analyze},
+     CompletionConfig,
  };
  
- const COMPLETION_MARKER: &str = "raCompletionMarker";
  /// Existing qualifiers for the thing we are currently completing.
  #[derive(Debug, Default)]
  pub(crate) struct QualifierCtx {

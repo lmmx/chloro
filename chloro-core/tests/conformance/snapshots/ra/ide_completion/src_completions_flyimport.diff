@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15380 bytes
-Chloro size:   12132 bytes
+Chloro size:   12127 bytes
 Rustfmt size:  15488 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,8 @@ Rustfmt size:  15488 bytes
  use hir::{ItemInNs, ModuleDef};
  use ide_db::imports::{
 -    import_assets::{ImportAssets, LocatedImport},
-+    import_assets::{ImportAssets,
-+
-     insert_use::ImportScope,
-+
-+    LocatedImport},
+-    insert_use::ImportScope,
++    import_assets::{ImportAssets, LocatedImport}, insert_use::ImportScope,
  };
  use itertools::Itertools;
 -use syntax::{ast, AstNode, SyntaxNode};
@@ -25,19 +22,12 @@ Rustfmt size:  15488 bytes
  
  use crate::{
      config::AutoImportExclusionType,
-+
-     context::{
--        CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
--        TypeLocation,
--    },
+         CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
+         TypeLocation,
+     },
 -    render::{render_resolution_with_import, render_resolution_with_import_pat, RenderContext},
--    Completions,
-+        CompletionContext,
-+
-+    render::{RenderContext,
-+
-+    render_resolution_with_import, render_resolution_with_import_pat}, Completions, DotAccess,
-+    PathCompletionCtx, PathKind, PatternContext, Qualified, TypeLocation, },
++    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
+     Completions,
  };
  
 -// Feature: Completion With Autoimport

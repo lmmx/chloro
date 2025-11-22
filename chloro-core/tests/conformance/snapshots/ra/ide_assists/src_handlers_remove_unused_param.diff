@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10526 bytes
-Chloro size:   10284 bytes
+Chloro size:   10268 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -15,17 +15,10 @@ Rustfmt size:  10803 bytes
 -    ast::{self, HasArgList},
 -    syntax_editor::Element,
 -    AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
--};
-+    algo::{find_node_at_range,
- 
-+    ast::{self,
-+
-+    least_common_ancestor_element},
-+
-+    syntax_editor::Element,
-+
-+    AstNode, HasArgList}, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
-+};
++    algo::{find_node_at_range, least_common_ancestor_element}, ast::{self, HasArgList},
++    syntax_editor::Element, AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
+ };
+-
  use SyntaxKind::WHITESPACE;
  
  use crate::{

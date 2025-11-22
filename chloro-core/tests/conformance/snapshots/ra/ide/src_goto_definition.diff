@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70556 bytes
+Chloro size:   70523 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -21,15 +21,8 @@ Rustfmt size:  71259 bytes
 +    sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
 +};
 +use ide_db::{
-+    base_db::{AnchoredPath,
-+
-+    defs::{Definition,
-+
-+    famous_defs::FamousDefs,
-+
-+    helpers::pick_best_token,
-+
-+    IdentClass}, RootDatabase, SourceDatabase}, SymbolKind,
++    base_db::{AnchoredPath, SourceDatabase}, defs::{Definition, IdentClass}, famous_defs::FamousDefs,
++    helpers::pick_best_token, RootDatabase, SymbolKind,
  };
  use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 -use ide_db::{
@@ -43,25 +36,18 @@ Rustfmt size:  71259 bytes
  use span::{Edition, FileId};
  use syntax::{
 -    AstNode, AstToken,
-+    ast::{self,
-+
-+    match_ast, AstNode, AstToken, HasLoopBody},
-+
-     SyntaxKind::*,
+-    SyntaxKind::*,
 -    SyntaxNode, SyntaxToken, T, TextRange,
 -    ast::{self, HasLoopBody},
 -    match_ast,
-+
-+    SyntaxNode, SyntaxToken, TextRange, T,
++    ast::{self, HasLoopBody}, match_ast, AstNode, AstToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
++    TextRange, T,
 +};
 +
 +use crate::Analysis;
 +use crate::{
-+    doc_links::token_as_doc_comment,
-+
-+    navigation_target::{self,
-+
-+    FilePosition, NavigationTarget, RangeInfo, ToNav}, TryToNav, UpmappingResult,
++    doc_links::token_as_doc_comment, navigation_target::{self, ToNav}, FilePosition,
++    NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
  };
  
  #[derive(Debug)]

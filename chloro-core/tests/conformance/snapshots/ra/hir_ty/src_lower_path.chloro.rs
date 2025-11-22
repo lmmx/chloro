@@ -3,54 +3,37 @@
 use either::Either;
 use hir_def::{
     expr_store::{
-        ExpressionStore,
-
+        ExpressionStore, HygieneId,
+        path::{
+            GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, GenericArgsParentheses,
+            Path, PathSegment, PathSegments,
+        },
+    },
     hir::generics::{
-        GenericParamDataRef,
-
-    path::{
-            GenericArg as HirGenericArg,
-
-    resolver::{ResolveValueResult,
-
-    signatures::TraitFlags,
-
-    type_ref::{TypeRef,
-
-    GenericArgs as HirGenericArgs, GenericArgsParentheses, GenericDefId, GenericParamId, HygieneId,
-    Lookup, Path, PathSegment, PathSegments, TraitId, TypeAliasId, TypeNs, TypeOrConstParamData,
-    TypeParamData, TypeParamProvenance, TypeRefId}, ValueNs}, }, }, },
+        GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
+    },
+    resolver::{ResolveValueResult, TypeNs, ValueNs}, signatures::TraitFlags,
+    type_ref::{TypeRef, TypeRefId}, GenericDefId, GenericParamId, Lookup, TraitId, TypeAliasId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::{
-    inherent::{GenericArgs as _,
-
-    AliasTerm, AliasTy, AliasTyKind, Region as _, SliceLike, Ty as _},
+    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _}, AliasTerm, AliasTy, AliasTyKind,
 };
 use smallvec::SmallVec;
 use stdx::never;
 
 use crate::{
-    consteval::{unknown_const,
-
-    db::HirDatabase,
-
-    generics::{Generics,
-
-    generics},
-
+    consteval::{unknown_const, unknown_const_as_generic}, db::HirDatabase,
+    generics::{Generics, generics},
     lower::{
-        LifetimeElisionKind,
-
-    named_associated_type_shorthand_candidates,
-
+        LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
+    },
     next_solver::{
-        Binder,
-
-    unknown_const_as_generic}, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
-    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathDiagnosticCallbackData,
-    PathGenericsSource, PathLoweringDiagnostic, Predicate, ProjectionPredicate, Region, TraitRef,
-    Ty, TyDefId, ValueTyDefId, }, },
+        Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
+        ProjectionPredicate, Region, TraitRef, Ty,
+    },
+    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
+    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
 };
 use super::{
     associated_type_by_name_including_super_traits, const_param_ty_query, ty_query,

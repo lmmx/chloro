@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4757 bytes
-Chloro size:   4786 bytes
+Chloro size:   4758 bytes
 Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
@@ -15,16 +15,11 @@ Rustfmt size:  4729 bytes
  
  use crate::{
 -    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
-+    context::{ItemListKind,
-+
-     item::Builder,
--    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
-+
-+    CompletionContext, CompletionItem, CompletionItemKind, Completions, PathCompletionCtx,
-+    PathExprCtx, Qualified}, SnippetScope,
+-    item::Builder,
++    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified}, item::Builder,
+     CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
  };
  
- pub(crate) fn complete_expr_snippet(
      if !ctx.qualifier_ctx.none() {
          return;
      }
@@ -98,11 +93,8 @@ Rustfmt size:  4729 bytes
  mod tests {
      use crate::{
 -        tests::{check_edit_with_config, TEST_CONFIG},
-+        check_edit_with_config},
-+
-+        tests::{TEST_CONFIG,
-+
-         CompletionConfig, Snippet,
+-        CompletionConfig, Snippet,
++        tests::{TEST_CONFIG, check_edit_with_config}, CompletionConfig, Snippet,
      };
 -
      #[test]

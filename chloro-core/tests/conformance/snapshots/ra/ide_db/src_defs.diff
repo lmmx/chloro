@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43907 bytes
+Chloro size:   43902 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -27,9 +27,7 @@ Rustfmt size:  44130 bytes
 -    SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
 -    ast::{self, AstNode},
 -    match_ast,
-+    ast::{self,
-+
-+    match_ast, AstNode}, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
++    ast::{self, AstNode}, match_ast, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
  };
  
 -// FIXME: a more precise name would probably be `Symbol`?

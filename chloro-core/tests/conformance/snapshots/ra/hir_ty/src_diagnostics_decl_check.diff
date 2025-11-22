@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23536 bytes
+Chloro size:   23526 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -33,11 +33,8 @@ Rustfmt size:  23115 bytes
  use syntax::{
 -    AstNode, AstPtr, ToSmolStr,
 -    ast::{self, HasName},
-+    ast::{self,
-+
-     utils::is_raw_identifier,
-+
-+    AstNode, AstPtr, HasName}, ToSmolStr,
+-    utils::is_raw_identifier,
++    ast::{self, HasName}, utils::is_raw_identifier, AstNode, AstPtr, ToSmolStr,
  };
  
  use crate::db::HirDatabase;

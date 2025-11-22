@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12267 bytes
+Chloro size:   12261 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -15,12 +15,9 @@ Rustfmt size:  12328 bytes
  use hir::setup_tracing;
  use ide_db::{
 -    assists::{AssistResolveStrategy, ExprFillDefaultMode},
-+    assists::{AssistResolveStrategy,
-+
-     base_db::SourceDatabase,
--    LineIndexDatabase, RootDatabase,
-+
-+    ExprFillDefaultMode}, LineIndexDatabase, RootDatabase,
+-    base_db::SourceDatabase,
++    assists::{AssistResolveStrategy, ExprFillDefaultMode}, base_db::SourceDatabase,
+     LineIndexDatabase, RootDatabase,
  };
  use itertools::Itertools;
  use stdx::trim_indent;

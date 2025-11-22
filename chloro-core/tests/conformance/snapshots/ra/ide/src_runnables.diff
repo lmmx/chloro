@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   49715 bytes
+Chloro size:   49698 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
@@ -24,18 +24,14 @@ Rustfmt size:  50564 bytes
  use ide_db::impl_empty_upmap_from_ra_fixture;
  use ide_db::{
 -    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
-     base_db::RootQueryDb,
-+
-     defs::Definition,
-+
-     documentation::docs_from_attrs,
-+
-     helpers::visit_file_defs,
+-    base_db::RootQueryDb,
+-    defs::Definition,
+-    documentation::docs_from_attrs,
+-    helpers::visit_file_defs,
 -    search::{FileReferenceNode, SearchScope},
-+
-+    search::{FileReferenceNode,
-+
-+    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SearchScope}, SymbolKind,
++    base_db::RootQueryDb, defs::Definition, documentation::docs_from_attrs, helpers::visit_file_defs,
++    search::{FileReferenceNode, SearchScope}, FilePosition, FxHashMap, FxIndexMap, FxIndexSet,
++    RootDatabase, SymbolKind,
  };
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;

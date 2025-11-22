@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50279 bytes
+Chloro size:   50261 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -11,19 +11,13 @@ Rustfmt size:  50684 bytes
  
  use rustc_next_trait_solver::solve::{GoalEvaluation, SolverDelegateEvalExt};
  use rustc_type_ir::{
--    AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
-     error::ExpectedFound,
++    error::ExpectedFound, inherent::{IntoKind, SliceLike, Span as _},
++    lang_items::SolverTraitLangItem, solve::{Certainty, GoalSource, MaybeCause, NoSolution},
+     AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
+-    error::ExpectedFound,
 -    inherent::{IntoKind, SliceLike, Span as _},
-+
-+    inherent::{IntoKind,
-+
-     lang_items::SolverTraitLangItem,
+-    lang_items::SolverTraitLangItem,
 -    solve::{Certainty, GoalSource, MaybeCause, NoSolution},
-+
-+    solve::{Certainty,
-+
-+    AliasRelationDirection, AliasTermKind, GoalSource, HostEffectPredicate, Interner, MaybeCause,
-+    NoSolution}, PredicatePolarity, SliceLike, Span as _},
  };
  use tracing::{instrument, trace};
  
@@ -31,25 +25,16 @@ Rustfmt size:  50684 bytes
 -    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
 -    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
      fulfill::NextSolverError,
-+
      infer::{
          InferCtxt,
--        select::SelectionError,
--        traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
--    },
+         select::SelectionError,
+         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
+     },
 -    inspect::{self, ProofTreeVisitor},
-+
-+    inspect::{self,
-+
-     normalize::deeply_normalize_for_diagnostics,
-+
-+    select::SelectionError,
-+
-+    traits::{Obligation,
-+
-+    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, ObligationCause,
-+    PolyTraitPredicate, PredicateKind, PredicateObligation, PredicateObligations},
-+    ProofTreeVisitor}, SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError, },
+-    normalize::deeply_normalize_for_diagnostics,
++    inspect::{self, ProofTreeVisitor}, normalize::deeply_normalize_for_diagnostics, AliasTerm,
++    Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
++    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
  };
  
  #[derive(Debug)]

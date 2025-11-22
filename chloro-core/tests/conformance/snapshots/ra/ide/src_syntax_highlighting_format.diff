@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2269 bytes
-Chloro size:   2282 bytes
+Chloro size:   2265 bytes
 Rustfmt size:  2269 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,7 @@ Rustfmt size:  2269 bytes
  use ide_db::{
      defs::Definition,
 -    syntax_helpers::format_string::{is_format_string, lex_format_specifiers, FormatSpecifier},
-+
-+    is_format_string, lex_format_specifiers},
-+
-+    syntax_helpers::format_string::{FormatSpecifier,
-+
++    syntax_helpers::format_string::{FormatSpecifier, is_format_string, lex_format_specifiers},
      SymbolKind,
  };
  use span::Edition;
@@ -26,13 +22,11 @@ Rustfmt size:  2269 bytes
  
  use crate::{
 -    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
-+    highlights::Highlights},
-+
-+    syntax_highlighting::{highlight::highlight_def,
-+
-     HlRange, HlTag,
+-    HlRange, HlTag,
++    syntax_highlighting::{highlight::highlight_def, highlights::Highlights}, HlRange, HlTag,
  };
  
+ pub(super) fn highlight_format_string(
  
          return;
      }

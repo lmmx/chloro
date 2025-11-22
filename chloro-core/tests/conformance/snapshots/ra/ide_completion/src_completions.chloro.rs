@@ -30,34 +30,24 @@ use ide_db::{RootDatabase, SymbolKind, imports::import_assets::LocatedImport};
 use syntax::{SmolStr, ToSmolStr, ast};
 
 use crate::{
-    const_::render_const,
-
     context::{
-        DotAccess,
-
-    function::{render_fn,
-
+        DotAccess, ItemListKind, NameContext, NameKind, NameRefContext, NameRefKind,
+        PathCompletionCtx, PathKind, PatternContext, TypeLocation, Visible,
+    },
     item::Builder,
-
-    literal::{render_struct_literal,
-
-    macro_::render_macro,
-
-    pattern::{render_struct_pat,
-
     render::{
         RenderContext,
-
-    render_expr, render_field, render_method}, render_path_resolution, render_pattern_resolution,
-    render_tuple_field, render_type_alias_with_eq}, render_variant_lit}, render_variant_pat},
-
-    type_alias::{render_type_alias,
-
-    union_literal::render_union_literal,
-
-    CompletionContext, CompletionItem, CompletionItemKind, ItemListKind, NameContext, NameKind,
-    NameRefContext, NameRefKind, PathCompletionCtx, PathKind, PatternContext, TypeLocation, Visible,
-    }, },
+        const_::render_const,
+        function::{render_fn, render_method},
+        literal::{render_struct_literal, render_variant_lit},
+        macro_::render_macro,
+        pattern::{render_struct_pat, render_variant_pat},
+        render_expr, render_field, render_path_resolution, render_pattern_resolution,
+        render_tuple_field,
+        type_alias::{render_type_alias, render_type_alias_with_eq},
+        union_literal::render_union_literal,
+    },
+    CompletionContext, CompletionItem, CompletionItemKind,
 };
 
 /// Represents an in-progress set of completions being built.

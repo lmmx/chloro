@@ -1,19 +1,10 @@
 use syntax::{
-    ast::{self,
-
-    edit_in_place::Indent,
-
-    make},
-
-    syntax_editor::{Position,
-
-    AstNode, HasGenericParams, HasName, SyntaxEditor},
+    ast::{self, AstNode, HasGenericParams, HasName, edit_in_place::Indent, make},
+    syntax_editor::{Position, SyntaxEditor},
 };
 
 use crate::{
-    utils::{self,
-
-    AssistContext, AssistId, Assists, DefaultMethods, IgnoreAssocItems},
+    utils::{self, DefaultMethods, IgnoreAssocItems}, AssistContext, AssistId, Assists,
 };
 
 fn insert_impl(

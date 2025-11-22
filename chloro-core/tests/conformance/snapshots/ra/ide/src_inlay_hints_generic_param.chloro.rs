@@ -8,9 +8,8 @@ use syntax::{
 };
 
 use crate::{
-    inlay_hints::{GenericParameterHints,
-
-    param_name}, InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
+    inlay_hints::{GenericParameterHints, param_name}, InlayHint, InlayHintLabel, InlayHintsConfig,
+    InlayKind,
 };
 use super::param_name::is_argument_similar_to_param_name;
 
@@ -154,14 +153,11 @@ fn get_segment_representation(arg: &ast::GenericArg) -> Option<Either<Either<Vec
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_with_config},
-
         inlay_hints::{
             GenericParameterHints,
-
-        tests::{DISABLED_CONFIG,
-
-        InlayHintsConfig, },
+            tests::{DISABLED_CONFIG, check_with_config},
+        },
+        InlayHintsConfig,
     };
     #[track_caller]
     fn generic_param_name_hints_always(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

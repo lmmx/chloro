@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17858 bytes
-Chloro size:   18076 bytes
+Chloro size:   18065 bytes
 Rustfmt size:  18799 bytes
 
 ✗ Outputs DIFFER
@@ -18,16 +18,10 @@ Rustfmt size:  18799 bytes
  use crate::{
 -    db::{HirDatabase, InternedClosureId},
 -    display::{ClosureStyle, DisplayTarget, HirDisplay},
--    mir::{PlaceElem, ProjectionElem, StatementKind, TerminatorKind},
--};
-+    db::{HirDatabase,
- 
-+    display::{ClosureStyle,
-+
-+    mir::{PlaceElem,
-+
-+    DisplayTarget, HirDisplay}, InternedClosureId}, ProjectionElem, StatementKind, TerminatorKind},
-+};
++    db::{HirDatabase, InternedClosureId}, display::{ClosureStyle, DisplayTarget, HirDisplay},
+     mir::{PlaceElem, ProjectionElem, StatementKind, TerminatorKind},
+ };
+-
  use super::{
      AggregateKind, BasicBlockId, BorrowKind, LocalId, MirBody, MutBorrowKind, Operand, OperandKind,
      Place, Rvalue, UnOp,

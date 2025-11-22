@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13610 bytes
+Chloro size:   13607 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
@@ -11,34 +11,29 @@ Rustfmt size:  13520 bytes
      iter,
  };
  
--use crate::{
--    db::ExpandDatabase,
--    hygiene::Transparency,
--    name::{AsName, Name},
--    tt,
--};
- use base_db::Crate;
- use intern::sym;
- use smallvec::SmallVec;
- use span::{Edition, SyntaxContext};
- use syntax::{AstNode, ast};
- 
++use base_db::Crate;
++use intern::sym;
++use smallvec::SmallVec;
++use span::{Edition, SyntaxContext};
++use syntax::{AstNode, ast};
++
 +pub use crate::__path as path;
 +pub use crate::__tool_path as tool_path;
 +pub use crate::name as __name;
-+use crate::{
-+    db::ExpandDatabase,
-+
-+    hygiene::Transparency,
-+
-+    name::{AsName,
-+
-+    tt, Name},
-+};
-+
+ use crate::{
+     db::ExpandDatabase,
+     hygiene::Transparency,
+     name::{AsName, Name},
+     tt,
+ };
+-use base_db::Crate;
+-use intern::sym;
+-use smallvec::SmallVec;
+-use span::{Edition, SyntaxContext};
+-use syntax::{AstNode, ast};
+ 
  #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub struct ModPath {
-     pub kind: PathKind,
      Crate,
      /// Absolute path (::foo)
      Abs,

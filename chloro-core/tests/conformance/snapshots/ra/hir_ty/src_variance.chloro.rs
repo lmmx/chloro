@@ -22,17 +22,11 @@ use rustc_type_ir::{
 use stdx::never;
 
 use crate::{
-    db::HirDatabase,
-
-    generics::{Generics,
-
-    generics},
-
+    db::HirDatabase, generics::{Generics, generics},
     next_solver::{
-        Const,
-
-    ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region, RegionKind, Term,
-    Ty, TyKind, VariancesOf, },
+        Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
+        RegionKind, Term, Ty, TyKind, VariancesOf,
+    },
 };
 
 pub(crate) fn variances_of(

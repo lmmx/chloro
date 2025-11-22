@@ -2,23 +2,16 @@ use hir::{HasCrate, HasVisibility};
 use ide_db::{FxHashSet, path_transform::PathTransform};
 use syntax::{
     ast::{
-        self,
-
-    edit::{AstNodeEdit,
-
-    make,
-
+        self, AstNode, HasGenericParams, HasName, HasVisibility as _,
+        edit::{AstNodeEdit, IndentLevel},
+        make,
+    },
     syntax_editor::Position,
-
-    AstNode, HasGenericParams, HasName, HasVisibility as _, IndentLevel}, },
 };
 
 use crate::{
-    find_struct_impl},
-
-    utils::{convert_param_list_to_arg_list,
-
-    AssistContext, AssistId, AssistKind, Assists, GroupLabel,
+    utils::{convert_param_list_to_arg_list, find_struct_impl}, AssistContext, AssistId, AssistKind,
+    Assists, GroupLabel,
 };
 
 pub(crate) fn generate_delegate_methods(

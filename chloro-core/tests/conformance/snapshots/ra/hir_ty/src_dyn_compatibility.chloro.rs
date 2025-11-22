@@ -17,31 +17,18 @@ use hir_def::{
 };
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    elaborate,
-
-    inherent::{IntoKind,
-
-    AliasTyKind, ClauseKind, PredicatePolarity, SliceLike}, TypeSuperVisitable as _,
-    TypeVisitable as _, Upcast,
+    elaborate, inherent::{IntoKind, SliceLike}, AliasTyKind, ClauseKind, PredicatePolarity,
+    TypeSuperVisitable as _, TypeVisitable as _, Upcast,
 };
 use smallvec::SmallVec;
 
 use crate::{
-    db::{HirDatabase,
-
-    infer::DbInternerInferExt,
-
-    lower::associated_ty_item_bounds,
-
-    mk_param,
-
+    db::{HirDatabase, InternedOpaqueTyId}, lower::associated_ty_item_bounds,
     next_solver::{
-        Binder,
-
-    traits::next_trait_solve_in_ctxt,
-
-    Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ImplTraitId, InternedOpaqueTyId},
-    ParamEnv, ParamTy, SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, },
+        Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
+        SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt, mk_param,
+    },
+    traits::next_trait_solve_in_ctxt, ImplTraitId,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

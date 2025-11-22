@@ -6,11 +6,7 @@
 
 use hir::FindPathConfig;
 use ide_db::{
-    imports::{import_assets::ImportPathConfig,
-
-    insert_use::InsertUseConfig},
-
-    MiniCore, SnippetCap,
+    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig}, MiniCore, SnippetCap,
 };
 
 use crate::{CompletionFieldsToResolve, snippet::Snippet};

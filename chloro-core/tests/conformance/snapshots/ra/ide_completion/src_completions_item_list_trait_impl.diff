@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36523 bytes
+Chloro size:   36513 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
@@ -28,12 +28,8 @@ Rustfmt size:  36630 bytes
 -    AstNode, SmolStr, SyntaxElement, SyntaxKind, T, TextRange, ToSmolStr,
 -    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
 -    format_smolstr, ted,
-+    ast::{self,
-+
-+    edit_in_place::AttrsOwnerEdit,
-+
-+    format_smolstr, make}, ted, AstNode, HasGenericArgs, HasTypeBounds, SmolStr, SyntaxElement,
-+    SyntaxKind, TextRange, ToSmolStr, T,
++    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make}, format_smolstr,
++    ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
  };
  
  use crate::{

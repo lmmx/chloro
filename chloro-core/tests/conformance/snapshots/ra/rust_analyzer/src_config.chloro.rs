@@ -19,10 +19,7 @@ use ide::{
 };
 use ide_db::{
     assists::ExprFillDefaultMode,
-
-    imports::insert_use::{ImportGranularity,
-
-    InsertUseConfig, MiniCore, PrefixKind}, SnippetCap,
+    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind}, MiniCore, SnippetCap,
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};
@@ -52,15 +49,9 @@ use _default_val as default_val;
 use _impl_for_config_data as impl_for_config_data;
 
 use crate::{
-    diagnostics::DiagnosticsMapConfig,
-
-    flycheck::{CargoOptions,
-
+    diagnostics::DiagnosticsMapConfig, flycheck::{CargoOptions, FlycheckConfig},
     lsp::capabilities::ClientCapabilities,
-
-    lsp_ext::{WorkspaceSymbolSearchKind,
-
-    FlycheckConfig}, WorkspaceSymbolSearchScope},
+    lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;

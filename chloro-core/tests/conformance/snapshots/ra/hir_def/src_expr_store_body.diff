@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4719 bytes
-Chloro size:   4751 bytes
+Chloro size:   4733 bytes
 Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
@@ -14,26 +14,16 @@ Rustfmt size:  4752 bytes
  use std::ops;
  
  use hir_expand::{InFile, Lookup};
- 
  use crate::{
      db::DefDatabase,
-+
      expr_store::{
 -        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
--    },
++        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
+     },
 -    hir::{BindingId, ExprId, PatId},
-+        ExpressionStore,
-+
-+    hir::{BindingId,
-+
-+    lower::lower_body,
-+
-+    pretty,
-+
-     src::HasSource,
+-    src::HasSource,
 -    DefWithBodyId, HasModule,
-+
-+    DefWithBodyId, ExprId, ExpressionStoreSourceMap, HasModule, PatId}, SelfParamPtr, },
++    hir::{BindingId, ExprId, PatId}, src::HasSource, DefWithBodyId, HasModule,
  };
  
  /// The body of an item (function, const etc.).

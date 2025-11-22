@@ -4,36 +4,20 @@
 use arrayvec::ArrayVec;
 use hir::{Crate, Module, Semantics, db::HirDatabase};
 use ide_db::{
-    base_db::{RootQueryDb,
-
-    defs::{Definition,
-
-    documentation::Documentation,
-
-    famous_defs::FamousDefs,
-
-    FileId, FileRange, FxHashMap, FxHashSet, IdentClass}, MiniCore, RootDatabase, SourceDatabase,
-    VfsPath},
+    base_db::{RootQueryDb, SourceDatabase, VfsPath}, defs::{Definition, IdentClass},
+    documentation::Documentation, famous_defs::FamousDefs, FileId, FileRange, FxHashMap, FxHashSet,
+    MiniCore, RootDatabase,
 };
 use span::Edition;
 use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
 
 use crate::navigation_target::UpmappingResult;
 use crate::{
-    def_to_kind, def_to_moniker},
-
-    hover::{SubstTyLen,
-
-    hover_for_definition},
-
-    inlay_hints::{AdjustmentHintsMode,
-
-    moniker::{MonikerResult,
-
-    parent_module::crates_for,
-
-    Analysis, Fold, HoverConfig, HoverResult, InlayFieldsToResolve}, InlayHint, InlayHintsConfig,
-    SymbolInformationKind, TryToNav,
+    hover::{SubstTyLen, hover_for_definition},
+    inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
+    moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
+    parent_module::crates_for, Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig,
+    TryToNav,
 };
 
 /// A static representation of fully analyzed source code.

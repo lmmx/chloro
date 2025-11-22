@@ -10,19 +10,10 @@ use triomphe::Arc;
 
 use crate::{
     db::DefDatabase,
-
     expr_store::{
-        ExpressionStore,
-
-    hir::{BindingId,
-
-    lower::lower_body,
-
-    pretty,
-
-    src::HasSource,
-
-    DefWithBodyId, ExprId, ExpressionStoreSourceMap, HasModule, PatId}, SelfParamPtr, },
+        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
+    },
+    hir::{BindingId, ExprId, PatId}, src::HasSource, DefWithBodyId, HasModule,
 };
 
 /// The body of an item (function, const etc.).

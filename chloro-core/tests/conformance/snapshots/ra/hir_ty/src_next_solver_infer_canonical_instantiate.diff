@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   6106 bytes
+Chloro size:   6101 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -20,10 +20,8 @@ Rustfmt size:  6179 bytes
 -    inherent::{GenericArg as _, IntoKind, SliceLike},
 -    BoundVarIndexKind, GenericArgKind, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable,
 -    TypeVisitableExt,
-+    inherent::{GenericArg as _,
-+
-+    BoundVarIndexKind, GenericArgKind, IntoKind, SliceLike}, TypeFlags, TypeFoldable, TypeFolder,
-+    TypeSuperFoldable, TypeVisitableExt,
++    inherent::{GenericArg as _, IntoKind, SliceLike}, BoundVarIndexKind, GenericArgKind, TypeFlags,
++    TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt,
 +};
 +
 +use crate::next_solver::{

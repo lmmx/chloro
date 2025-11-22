@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18694 bytes
-Chloro size:   18387 bytes
+Chloro size:   18363 bytes
 Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
@@ -32,36 +32,22 @@ Rustfmt size:  18694 bytes
 -    AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _,
 -    Upcast, elaborate,
 -    inherent::{IntoKind, SliceLike},
-+    elaborate,
-+
-+    inherent::{IntoKind,
-+
-+    AliasTyKind, ClauseKind, PredicatePolarity, SliceLike}, TypeSuperVisitable as _,
-+    TypeVisitable as _, Upcast,
++    elaborate, inherent::{IntoKind, SliceLike}, AliasTyKind, ClauseKind, PredicatePolarity,
++    TypeSuperVisitable as _, TypeVisitable as _, Upcast,
  };
  use smallvec::SmallVec;
  
  use crate::{
 -    ImplTraitId,
 -    db::{HirDatabase, InternedOpaqueTyId},
-+    db::{HirDatabase,
-+
-+    infer::DbInternerInferExt,
-+
-     lower::associated_ty_item_bounds,
-+
-+    mk_param,
-+
+-    lower::associated_ty_item_bounds,
++    db::{HirDatabase, InternedOpaqueTyId}, lower::associated_ty_item_bounds,
      next_solver::{
--        Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
--        SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt, mk_param,
--    },
-+        Binder,
-+
-     traits::next_trait_solve_in_ctxt,
-+
-+    Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ImplTraitId, InternedOpaqueTyId},
-+    ParamEnv, ParamTy, SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, },
+         Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
+         SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt, mk_param,
+     },
+-    traits::next_trait_solve_in_ctxt,
++    traits::next_trait_solve_in_ctxt, ImplTraitId,
  };
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]

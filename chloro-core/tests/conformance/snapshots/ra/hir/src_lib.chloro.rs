@@ -43,40 +43,23 @@ use base_db::{CrateDisplayName, CrateOrigin, LangCrateOrigin};
 use either::Either;
 pub use hir_def::ModuleId;
 use hir_def::{
-    diagnostics::{DefDiagnostic,
-
-    expr_store::{ExpressionStoreDiagnostics,
-
-    generics::{LifetimeParamData,
-
+    expr_store::{ExpressionStoreDiagnostics, ExpressionStoreSourceMap},
     hir::{
-        BindingAnnotation,
-
-    item_tree::ImportAlias,
-
-    layout::{self,
-
+        BindingAnnotation, BindingId, Expr, ExprId, ExprOrPatId, LabelId, Pat,
+        generics::{LifetimeParamData, TypeOrConstParamData, TypeParamProvenance},
+    },
+    item_tree::ImportAlias, layout::{self, ReprOptions, TargetDataLayout},
     nameres::{
         assoc::TraitItems,
-
-    per_ns::PerNs,
-
-    resolver::{HasResolver,
-
-    signatures::{ImplFlags,
-
-    src::HasSource as _,
-
-    visibility::visibility_from_ast,
-
-    AdtId, AssocItemId, AssocItemLoc, AttrDefId, BindingId, CallableDefId, ConstId, ConstParamId,
-    CrateRootModuleId, DefDiagnosticKind}, DefWithBodyId, EnumId, EnumVariantId, Expr, ExprId,
-    ExprOrPatId, ExpressionStoreSourceMap}, ExternBlockId, ExternCrateId, FunctionId, GenericDefId,
-    GenericParamId, HasModule, ImplId, ItemContainerId, LabelId, LifetimeParamId, LocalFieldId,
-    Lookup, MacroExpander, MacroId, Pat, ReprOptions, Resolver}, StaticFlags, StaticId, StructFlags,
-    StructId, SyntheticSyntax, TargetDataLayout}, TraitFlags, TupleId, TypeAliasId,
-    TypeOrConstParamData, TypeOrConstParamId, TypeParamId, TypeParamProvenance}, UnionId,
-    VariantFields}, }, },
+        diagnostics::{DefDiagnostic, DefDiagnosticKind},
+    },
+    per_ns::PerNs, resolver::{HasResolver, Resolver},
+    signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
+    src::HasSource as _, visibility::visibility_from_ast, AdtId, AssocItemId, AssocItemLoc,
+    AttrDefId, CallableDefId, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
+    EnumVariantId, ExternBlockId, ExternCrateId, FunctionId, GenericDefId, GenericParamId, HasModule,
+    ImplId, ItemContainerId, LifetimeParamId, LocalFieldId, Lookup, MacroExpander, MacroId, StaticId,
+    StructId, SyntheticSyntax, TupleId, TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
 };
 use hir_expand::{
     attrs::collect_attrs,
@@ -88,165 +71,97 @@ use hir_expand::{
 pub use hir_ty::next_solver;
 pub use hir_ty::setup_tracing;
 use hir_ty::{
-    all_super_traits, autoderef, check_orphan_rules,
-
-    consteval::try_const_usize,
-
-    db::{InternedClosureId,
-
-    diagnostics::BodyValidationDiagnostic,
-
-    direct_super_traits,
-
-    infer::{DbInternerInferExt,
-
-    interpret_mir}, known_const_to_ast,
-
-    layout::{Layout as TyLayout,
-
-    method_resolution,
-
-    mir::{MutBorrowKind,
-
+    all_super_traits, autoderef, check_orphan_rules, consteval::try_const_usize,
+    db::{InternedClosureId, InternedCoroutineId}, diagnostics::BodyValidationDiagnostic,
+    direct_super_traits, known_const_to_ast,
+    layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding}, method_resolution,
+    mir::{MutBorrowKind, interpret_mir},
     next_solver::{
-        AliasTy,
-
-    structurally_normalize_ty},
-
-    traits::{self,
-
-    Canonical, ClauseKind, ConstKind, DbInterner, ErrorGuaranteed, FnTrait, GenericArg, GenericArgs,
-    InferCtxt}, InternedCoroutineId}, PolyFnSig, Region, RustcEnumVariantIdx, RustcFieldIdx,
-    SolverDefId, TagEncoding}, TraitEnvironment, Ty, TyDefId, TyKind, TyLoweringDiagnostic,
-    TypingMode, ValueTyDefId, },
+        AliasTy, Canonical, ClauseKind, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
+        GenericArgs, PolyFnSig, Region, SolverDefId, Ty, TyKind, TypingMode,
+        infer::{DbInternerInferExt, InferCtxt},
+    },
+    traits::{self, FnTrait, structurally_normalize_ty}, TraitEnvironment, TyDefId,
+    TyLoweringDiagnostic, ValueTyDefId,
 };
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef,
-
-    AliasTyKind, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _}, TypeSuperVisitable,
-    TypeVisitable, TypeVisitor,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _}, AliasTyKind,
+    TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use smallvec::SmallVec;
 use span::{AstIdNode, Edition, FileId};
 use stdx::{format_to, impl_from, never};
 use syntax::{
-    ast::{self,
-
-    format_smolstr, AstNode, AstPtr, HasAttrs as _, HasName, HasVisibility as _}, SmolStr,
-    SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
+    ast::{self, HasAttrs as _, HasName, HasVisibility as _}, format_smolstr, AstNode, AstPtr,
+    SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
 };
 use triomphe::{Arc, ThinArc};
 pub use {
-    attach_db, attach_db_allow_change,
-
-    attr::{AttrSourceMap,
-
-    attrs::{Attr,
-
-    cfg::{CfgAtom,
-
-    change::ChangeWithProcMacros,
-
-    consteval::ConstEvalError,
-
-    crate_def_map},
-
-    diagnostics::UnsafetyReason,
-
-    display::{ClosureStyle,
-
-    drop::DropGlue,
-
-    dyn_compatibility::{DynCompatibilityViolation,
-
-    files::{
-            FilePosition,
-
-    find_path::PrefixKind,
-
+    cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
         Complete,
-
-    hir_expand::{
-        EditionedFileId,
-
-    hir_ty::{
-        CastError,
-
-    import_map,
-
-    inert_attr_macro::AttributeTemplate,
-
-    intern::{Symbol,
-
-    lang_item::LangItem,
-
-    layout::LayoutError,
-
-    method_resolution::TyFingerprint,
-
-    mir::{MirEvalError,
-
-    mod_path::{ModPath,
-
-    name::Name,
-
-    nameres::{DefMap,
-
-    next_solver::abi::Safety, next_solver::clear_tls_solver_cache,
-
-    per_ns::Namespace,
-
-    prettify_macro_expansion,
-
-    proc_macro::{ProcMacros,
-
-    sym}, tool_path}, tt,
-
-    type_ref::{Mutability,
-
-    visibility::Visibility,
-
-    // FIXME: Properly encapsulate mir
-    hir_ty::mir,
-
-    // FIXME: This is here since some queries take it as input that are used
+        FindPathConfig,
+        attr::{AttrSourceMap, Attrs, AttrsWithOwner},
+        find_path::PrefixKind,
+        import_map,
+        lang_item::LangItem,
+        nameres::{DefMap, ModuleSource, crate_def_map},
+        per_ns::Namespace,
+        type_ref::{Mutability, TypeRef},
+        visibility::Visibility,
+        // FIXME: This is here since some queries take it as input that are used
         // outside of hir.
-        {ModuleDefId,
-    AttrId}, Attrs, AttrsWithOwner}, CfgExpr, CfgOptions}, DisplayTarget, ExpandResult,
-    FilePositionWrapper, FileRange, FileRangeWrapper, FindPathConfig, FnAbi, HirDisplay,
-    HirDisplayError, HirFileId, HirFilePosition, HirFileRange, HirWrite}, InFile, InFileWrapper,
-    InMacroFile, InRealFile, MacroCallId, MacroFilePosition, MacroFileRange, MacroKind,
-    MethodViolationCode}, MirLowerError}, ModuleSource, PathKind, PointerCast, ProcMacrosBuilder},
-    TraitId}, TypeRef}, }, }, }, },
+        {ModuleDefId, TraitId},
+    },
+    hir_expand::{
+        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind,
+        attrs::{Attr, AttrId},
+        change::ChangeWithProcMacros,
+        files::{
+            FilePosition, FilePositionWrapper, FileRange, FileRangeWrapper, HirFilePosition,
+            HirFileRange, InFile, InFileWrapper, InMacroFile, InRealFile, MacroFilePosition,
+            MacroFileRange,
+        },
+        inert_attr_macro::AttributeTemplate,
+        mod_path::{ModPath, PathKind, tool_path},
+        name::Name,
+        prettify_macro_expansion,
+        proc_macro::{ProcMacros, ProcMacrosBuilder},
+        tt,
+    },
+    hir_ty::{
+        CastError, FnAbi, PointerCast, attach_db, attach_db_allow_change,
+        consteval::ConstEvalError,
+        diagnostics::UnsafetyReason,
+        display::{ClosureStyle, DisplayTarget, HirDisplay, HirDisplayError, HirWrite},
+        drop::DropGlue,
+        dyn_compatibility::{DynCompatibilityViolation, MethodViolationCode},
+        layout::LayoutError,
+        method_resolution::TyFingerprint,
+        mir::{MirEvalError, MirLowerError},
+        next_solver::abi::Safety,
+        next_solver::clear_tls_solver_cache,
+    },
+    intern::{Symbol, sym}, // FIXME: Properly encapsulate mir
+    hir_ty::mir,
 };
 use {
     hir_def::expr_store::path::Path,
-
     hir_expand::{
         name::AsName,
-
-    span_map::{ExpansionSpanMap,
-
-    RealSpanMap, SpanMap, SpanMapRef}, },
+        span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
+    },
 };
 
 use crate::db::{DefDatabase, HirDatabase};
 pub use crate::{
-    attrs::{HasAttrs,
-
-    diagnostics::*,
-
-    has_source::HasSource,
-
-    resolve_doc_path_on},
-
+    attrs::{HasAttrs, resolve_doc_path_on}, diagnostics::*, has_source::HasSource,
     semantics::{
-        PathResolution,
-
-    PathResolutionPerNs, Semantics, SemanticsImpl, SemanticsScope, TypeInfo, VisibleTraits, },
+        PathResolution, PathResolutionPerNs, Semantics, SemanticsImpl, SemanticsScope, TypeInfo,
+        VisibleTraits,
+    },
 };
 
 /// hir::Crate describes a single crate. It's the main interface with which

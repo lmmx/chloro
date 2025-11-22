@@ -20,23 +20,13 @@ use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    consteval::ConstEvalError,
-
-    dyn_compatibility::DynCompatibilityViolation,
-
-    layout::{Layout,
-
-    lower::{Diagnostics,
-
-    method_resolution::{InherentImpls,
-
-    mir::{BorrowckResult,
-
-    next_solver::{Const,
-
-    EarlyBinder, GenericArgs, GenericDefaults, GenericPredicates, ImplTraitId, ImplTraits},
-    InferenceResult, LayoutError}, MirBody, MirLowerError}, PolyFnSig, TraitEnvironment, TraitImpls,
-    TraitRef, Ty, TyDefId, TyFingerprint}, ValueTyDefId, VariancesOf},
+    consteval::ConstEvalError, dyn_compatibility::DynCompatibilityViolation,
+    layout::{Layout, LayoutError},
+    lower::{Diagnostics, GenericDefaults, GenericPredicates, ImplTraits},
+    method_resolution::{InherentImpls, TraitImpls, TyFingerprint},
+    mir::{BorrowckResult, MirBody, MirLowerError},
+    next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
+    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
 };
 
 #[query_group::query_group]

@@ -8,11 +8,8 @@ use syntax::{
 };
 
 use crate::{
-    assist_context::{AssistContext,
-
-    utils::generate_trait_impl_text_intransitive,
-
-    AssistId, Assists, SourceChangeBuilder},
+    assist_context::{AssistContext, Assists, SourceChangeBuilder},
+    utils::generate_trait_impl_text_intransitive, AssistId,
 };
 
 pub(crate) fn generate_deref(

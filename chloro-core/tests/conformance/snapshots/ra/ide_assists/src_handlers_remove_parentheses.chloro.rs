@@ -1,11 +1,5 @@
 use syntax::{
-    ast::{self,
-
-    syntax_editor::Position,
-
-    syntax_factory::SyntaxFactory},
-
-    AstNode, SyntaxKind, T,
+    ast::{self, syntax_factory::SyntaxFactory}, syntax_editor::Position, AstNode, SyntaxKind, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

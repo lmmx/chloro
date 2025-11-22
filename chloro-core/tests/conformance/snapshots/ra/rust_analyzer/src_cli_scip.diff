@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30673 bytes
+Chloro size:   30658 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,13 @@ Rustfmt size:  31747 bytes
  use rustc_hash::{FxHashMap, FxHashSet};
  use scip::types::{self as scip_types, SymbolInformation};
  use tracing::error;
+ use vfs::FileId;
  
  use crate::{
-     cli::flags,
-+
-     config::ConfigChange,
+-    cli::flags,
+-    config::ConfigChange,
 -    line_index::{LineEndings, LineIndex, PositionEncoding},
-+
-+    line_index::{LineEndings,
-+
-+    LineIndex, PositionEncoding},
++    cli::flags, config::ConfigChange, line_index::{LineEndings, LineIndex, PositionEncoding},
  };
  
  impl flags::Scip {

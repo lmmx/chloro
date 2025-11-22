@@ -44,13 +44,9 @@ use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
 use hir_expand::name::Name;
 use indexmap::{IndexMap, map::Entry};
 pub use infer::{
-    cast::CastError,
-
-    closure::analysis::{CaptureKind,
-
-    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
-    CapturedItem}, InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource,
-    OverloadedDeref, PointerCast,
+    cast::CastError, closure::analysis::{CaptureKind, CapturedItem}, could_coerce, could_unify,
+    could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode, InferenceDiagnostic,
+    InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
 };
 use intern::{Symbol, sym};
 pub use lower::{
@@ -65,9 +61,8 @@ use mir::{MirEvalError, VTableMap};
 pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{IntoKind,
-
-    BoundVarIndexKind, SliceLike, Ty as _}, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
+    inherent::{IntoKind, SliceLike, Ty as _}, BoundVarIndexKind, TypeSuperVisitable,
+    TypeVisitableExt, UpcastFrom,
 };
 use syntax::ast::{ConstArg, make};
 pub use target_feature::TargetFeatures;
@@ -80,20 +75,12 @@ pub use utils::{
 };
 
 use crate::{
-    abi,
-
-    db::HirDatabase,
-
-    display::{DisplayTarget,
-
-    infer::unify::InferenceTable,
-
+    db::HirDatabase, display::{DisplayTarget, HirDisplay}, infer::unify::InferenceTable,
     next_solver::{
-        AliasTy,
-
-    Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-    CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, HirDisplay}, PolyFnSig,
-    Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys, },
+        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
+        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
+        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
+    },
 };
 
 /// A constant can have reference to other things. Memory map job is holding

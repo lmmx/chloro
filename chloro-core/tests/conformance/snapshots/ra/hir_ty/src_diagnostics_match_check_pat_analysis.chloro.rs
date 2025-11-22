@@ -5,13 +5,9 @@ use std::{cell::LazyCell, fmt};
 use hir_def::{EnumId, EnumVariantId, HasModule, LocalFieldId, ModuleId, VariantId};
 use intern::sym;
 use rustc_pattern_analysis::{
-    compute_match_usefulness},
-
-    constructor::{Constructor,
-
-    usefulness::{PlaceValidity,
-
-    ConstructorSet, IndexVec, PatCx, PrivateUninhabitedField, UsefulnessReport, VariantVisibility},
+    constructor::{Constructor, ConstructorSet, VariantVisibility},
+    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness}, IndexVec, PatCx,
+    PrivateUninhabitedField,
 };
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 use smallvec::{SmallVec, smallvec};
@@ -20,20 +16,12 @@ use triomphe::Arc;
 use Constructor::*;
 
 use crate::{
-    db::HirDatabase,
-
-    infer::{InferCtxt,
-
-    inhabitedness::{is_enum_variant_uninhabited_from,
-
-    is_ty_uninhabited_from},
-
+    db::HirDatabase, inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
     next_solver::{
-        Ty,
-
-    traits::ObligationCause},
-
-    TraitEnvironment, TyKind, },
+        Ty, TyKind,
+        infer::{InferCtxt, traits::ObligationCause},
+    },
+    TraitEnvironment,
 };
 use super::{FieldPat, Pat, PatKind};
 

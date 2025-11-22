@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19028 bytes
-Chloro size:   19106 bytes
+Chloro size:   19072 bytes
 Rustfmt size:  19028 bytes
 
 ✗ Outputs DIFFER
@@ -17,16 +17,11 @@ Rustfmt size:  19028 bytes
 -    FileId, FileRange, FxHashMap, FxHashSet, MiniCore, RootDatabase,
 -    base_db::{RootQueryDb, SourceDatabase, VfsPath},
 -    defs::{Definition, IdentClass},
-+    base_db::{RootQueryDb,
-+
-+    defs::{Definition,
-+
-     documentation::Documentation,
-+
-     famous_defs::FamousDefs,
-+
-+    FileId, FileRange, FxHashMap, FxHashSet, IdentClass}, MiniCore, RootDatabase, SourceDatabase,
-+    VfsPath},
+-    documentation::Documentation,
+-    famous_defs::FamousDefs,
++    base_db::{RootQueryDb, SourceDatabase, VfsPath}, defs::{Definition, IdentClass},
++    documentation::Documentation, famous_defs::FamousDefs, FileId, FileRange, FxHashMap, FxHashSet,
++    MiniCore, RootDatabase,
  };
  use span::Edition;
  use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
@@ -34,23 +29,12 @@ Rustfmt size:  19028 bytes
  use crate::navigation_target::UpmappingResult;
  use crate::{
 -    Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig, TryToNav,
--    hover::{SubstTyLen, hover_for_definition},
--    inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
--    moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
-+    def_to_kind, def_to_moniker},
-+
-+    hover::{SubstTyLen,
-+
-+    hover_for_definition},
-+
-+    inlay_hints::{AdjustmentHintsMode,
-+
-+    moniker::{MonikerResult,
-+
-     parent_module::crates_for,
-+
-+    Analysis, Fold, HoverConfig, HoverResult, InlayFieldsToResolve}, InlayHint, InlayHintsConfig,
-+    SymbolInformationKind, TryToNav,
+     hover::{SubstTyLen, hover_for_definition},
+     inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
+     moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
+-    parent_module::crates_for,
++    parent_module::crates_for, Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig,
++    TryToNav,
  };
  
  /// A static representation of fully analyzed source code.

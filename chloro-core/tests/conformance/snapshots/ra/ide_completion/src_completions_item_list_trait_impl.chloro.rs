@@ -46,12 +46,8 @@ use ide_db::{
 };
 use syntax::ast::HasGenericParams;
 use syntax::{
-    ast::{self,
-
-    edit_in_place::AttrsOwnerEdit,
-
-    format_smolstr, make}, ted, AstNode, HasGenericArgs, HasTypeBounds, SmolStr, SyntaxElement,
-    SyntaxKind, TextRange, ToSmolStr, T,
+    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make}, format_smolstr,
+    ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
 };
 
 use crate::{

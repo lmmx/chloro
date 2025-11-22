@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53916 bytes
+Chloro size:   53883 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -25,20 +25,12 @@ Rustfmt size:  53876 bytes
 -    RootDatabase,
 -    defs::{Definition, find_std_module},
 -    documentation::{DocsRangeMap, HasDocs},
-+    defs::{Definition,
-+
-+    documentation::{DocsRangeMap,
-+
-     famous_defs::FamousDefs,
+-    famous_defs::FamousDefs,
 -    generated::lints::{CLIPPY_LINTS, DEFAULT_LINTS, FEATURES},
-+
-+    find_std_module},
-+
-+    generated::lints::{CLIPPY_LINTS,
-+
-     syntax_helpers::prettify_macro_expansion,
-+
-+    HasDocs}, RootDatabase, DEFAULT_LINTS, FEATURES},
+-    syntax_helpers::prettify_macro_expansion,
++    defs::{Definition, find_std_module}, documentation::{DocsRangeMap, HasDocs},
++    famous_defs::FamousDefs, generated::lints::{CLIPPY_LINTS, DEFAULT_LINTS, FEATURES},
++    syntax_helpers::prettify_macro_expansion, RootDatabase,
  };
  use itertools::Itertools;
  use rustc_apfloat::{
@@ -49,14 +41,10 @@ Rustfmt size:  53876 bytes
 -    MemoryLayoutHoverRenderKind,
 -    doc_links::{remove_links, rewrite_links},
 -    hover::{SubstTyLen, notable_traits, walk_and_push_ty},
-+    doc_links::{remove_links,
-+
-+    hover::{SubstTyLen,
-+
-     interpret::render_const_eval_error,
-+
-+    notable_traits, rewrite_links}, walk_and_push_ty}, HoverAction, HoverConfig, HoverResult,
-+    Markup, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
+-    interpret::render_const_eval_error,
++    doc_links::{remove_links, rewrite_links}, hover::{SubstTyLen, notable_traits, walk_and_push_ty},
++    interpret::render_const_eval_error, HoverAction, HoverConfig, HoverResult, Markup,
++    MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
  };
  
  pub(super) fn type_info_of(

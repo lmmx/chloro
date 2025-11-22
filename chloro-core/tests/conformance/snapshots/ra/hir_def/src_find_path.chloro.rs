@@ -13,15 +13,8 @@ use rustc_hash::FxHashSet;
 use Stability::*;
 
 use crate::{
-    db::DefDatabase,
-
-    item_scope::ItemInNs,
-
-    nameres::DefMap,
-
-    visibility::{Visibility,
-
-    FindPathConfig, ModuleDefId, ModuleId, VisibilityExplicitness},
+    db::DefDatabase, item_scope::ItemInNs, nameres::DefMap,
+    visibility::{Visibility, VisibilityExplicitness}, FindPathConfig, ModuleDefId, ModuleId,
 };
 
 /// Find a path that can be used to refer to a certain item. This can depend on

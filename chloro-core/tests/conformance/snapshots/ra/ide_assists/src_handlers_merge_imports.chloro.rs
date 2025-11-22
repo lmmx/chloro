@@ -1,22 +1,10 @@
 use either::Either;
 use ide_db::imports::{
-    insert_use::{ImportGranularity,
-
-    merge_imports::{MergeBehavior,
-
-    try_merge_imports, try_merge_trees}, InsertUseConfig},
+    insert_use::{ImportGranularity, InsertUseConfig},
+    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
 };
 use syntax::{
-    algo::neighbor,
-
-    ast::{self,
-
-    match_ast,
-
-    syntax_editor::Removable,
-
-    syntax_factory::SyntaxFactory},
-
+    algo::neighbor, ast::{self, syntax_factory::SyntaxFactory}, match_ast, syntax_editor::Removable,
     AstNode, SyntaxElement, SyntaxNode,
 };
 use Edit::*;

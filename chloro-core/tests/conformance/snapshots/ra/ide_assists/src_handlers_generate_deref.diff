@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9020 bytes
-Chloro size:   8656 bytes
+Chloro size:   8650 bytes
 Rustfmt size:  9083 bytes
 
 ✗ Outputs DIFFER
@@ -20,13 +20,10 @@ Rustfmt size:  9083 bytes
  };
  
  use crate::{
--    assist_context::{AssistContext, Assists, SourceChangeBuilder},
-+    assist_context::{AssistContext,
-+
-     utils::generate_trait_impl_text_intransitive,
+     assist_context::{AssistContext, Assists, SourceChangeBuilder},
+-    utils::generate_trait_impl_text_intransitive,
 -    AssistId,
-+
-+    AssistId, Assists, SourceChangeBuilder},
++    utils::generate_trait_impl_text_intransitive, AssistId,
  };
  
 -// Assist: generate_deref

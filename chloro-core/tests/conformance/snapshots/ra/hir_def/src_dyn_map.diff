@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6860 bytes
-Chloro size:   7157 bytes
+Chloro size:   7148 bytes
 Rustfmt size:  6980 bytes
 
 ✗ Outputs DIFFER
@@ -31,13 +31,12 @@ Rustfmt size:  6980 bytes
 +    use syntax::{AstNode, AstPtr, ast};
      use crate::{
 -        dyn_map::{DynMap, Policy},
-+        dyn_map::{DynMap,
-+
-         BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
+-        BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
 -        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, ProcMacroId, StaticId, StructId, TraitId,
 -        TypeAliasId, TypeOrConstParamId, UnionId, UseId,
-+        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, Policy}, ProcMacroId, StaticId, StructId,
-+        TraitId, TypeAliasId, TypeOrConstParamId, UnionId, UseId,
++        dyn_map::{DynMap, Policy}, BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId,
++        ExternCrateId, FieldId, FunctionId, ImplId, LifetimeParamId, Macro2Id, MacroRulesId,
++        ProcMacroId, StaticId, StructId, TraitId, TypeAliasId, TypeOrConstParamId, UnionId, UseId,
      };
 -
      pub type Key<K, V> = crate::dyn_map::Key<AstPtr<K>, V, AstPtrPolicy<K, V>>;

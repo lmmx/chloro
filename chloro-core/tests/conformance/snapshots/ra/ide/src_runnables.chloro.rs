@@ -11,17 +11,9 @@ use hir::{
 use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
 use ide_db::impl_empty_upmap_from_ra_fixture;
 use ide_db::{
-    base_db::RootQueryDb,
-
-    defs::Definition,
-
-    documentation::docs_from_attrs,
-
-    helpers::visit_file_defs,
-
-    search::{FileReferenceNode,
-
-    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SearchScope}, SymbolKind,
+    base_db::RootQueryDb, defs::Definition, documentation::docs_from_attrs, helpers::visit_file_defs,
+    search::{FileReferenceNode, SearchScope}, FilePosition, FxHashMap, FxIndexMap, FxIndexSet,
+    RootDatabase, SymbolKind,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;

@@ -5,10 +5,9 @@ use itertools::Itertools;
 use syntax::{
     ast::{
         self,
-
-    edit::{AstNodeEdit,
-
-    AstNode, IndentLevel}, SyntaxToken, TextRange, },
+        edit::{AstNodeEdit, IndentLevel},
+    }, AstNode, SyntaxToken,
+    TextRange,
 };
 
 use crate::{

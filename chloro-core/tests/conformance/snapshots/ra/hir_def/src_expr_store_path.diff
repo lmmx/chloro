@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11045 bytes
-Chloro size:   11060 bytes
+Chloro size:   11050 bytes
 Rustfmt size:  11497 bytes
 
 ✗ Outputs DIFFER
@@ -23,11 +23,7 @@ Rustfmt size:  11497 bytes
  use intern::Interned;
  
 +use crate::{
-+    lang_item::LangItemTarget,
-+
-+    type_ref::{ConstRef,
-+
-+    LifetimeRefId, TypeBound, TypeRefId},
++    lang_item::LangItemTarget, type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 +};
 +
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]

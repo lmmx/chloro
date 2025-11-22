@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15552 bytes
+Chloro size:   15536 bytes
 Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
@@ -17,18 +17,12 @@ Rustfmt size:  15570 bytes
  
  use crate::{
 -    global_state::{GlobalState, GlobalStateSnapshot},
-+    global_state::{GlobalState,
-+
-     lsp::LspError,
-+
-     main_loop::Task,
-+
+-    lsp::LspError,
+-    main_loop::Task,
++    global_state::{GlobalState, GlobalStateSnapshot}, lsp::LspError, main_loop::Task,
      version::version,
-+
-+    GlobalStateSnapshot},
  };
  
- /// A visitor for routing a raw JSON request to an appropriate handler function.
      where
          R: lsp_types::request::Request,
          R::Params: DeserializeOwned + panic::UnwindSafe + fmt::Debug,

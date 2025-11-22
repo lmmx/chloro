@@ -17,11 +17,8 @@ use std::{iter, mem};
 
 use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
 use ide_db::{
-    base_db::{CrateGraphBuilder,
-
-    salsa::Durability},
-
-    FxHashMap, ProcMacroLoadingError, ProcMacroPaths,
+    base_db::{CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths, salsa::Durability},
+    FxHashMap,
 };
 use itertools::Itertools;
 use load_cargo::{ProjectFolders, load_proc_macro};
@@ -35,21 +32,11 @@ use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, ChangeKind};
 
 use crate::{
-    config::{Config,
-
-    flycheck::{FlycheckConfig,
-
+    config::{Config, FilesWatcher, LinkedProject}, flycheck::{FlycheckConfig, FlycheckHandle},
     global_state::{
-        FetchBuildDataResponse,
-
-    lsp_ext,
-
-    main_loop::{DiscoverProjectParam,
-
-    op_queue::Cause,
-
-    FetchWorkspaceRequest, FetchWorkspaceResponse, FilesWatcher, FlycheckHandle}, GlobalState,
-    LinkedProject}, Task}, },
+        FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
+    },
+    lsp_ext, main_loop::{DiscoverProjectParam, Task}, op_queue::Cause,
 };
 
 #[derive(Debug)]

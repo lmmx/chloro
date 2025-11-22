@@ -5,39 +5,18 @@ use std::mem;
 
 use either::Either;
 use hir_def::{
-    expr_store::{Body,
-
-    hir::{AsmOperand,
-
-    path::Path},
-
-    resolver::{HasResolver,
-
-    signatures::StaticFlags,
-
-    type_ref::Rawness,
-
-    AdtId, CallableDefId, DefWithBodyId, Expr, ExprId, ExprOrPatId, FieldId, FunctionId,
-    InlineAsmKind, Pat, PatId, ResolveValueResult, Resolver, Statement, UnaryOp}, ValueNs},
-    VariantId,
+    expr_store::{Body, path::Path},
+    hir::{AsmOperand, Expr, ExprId, ExprOrPatId, InlineAsmKind, Pat, PatId, Statement, UnaryOp},
+    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs}, signatures::StaticFlags,
+    type_ref::Rawness, AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
 };
 use rustc_type_ir::inherent::IntoKind;
 use span::Edition;
 
 use crate::{
-    abi::Safety},
-
-    db::HirDatabase,
-
-    is_fn_unsafe_to_call,
-
-    next_solver::{CallableIdWrapper,
-
-    target_feature_is_safe_in_target},
-
-    utils::{TargetFeatureIsSafeInTarget,
-
-    InferenceResult, TargetFeatures, TyKind,
+    db::HirDatabase, next_solver::{CallableIdWrapper, TyKind, abi::Safety},
+    utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
+    InferenceResult, TargetFeatures,
 };
 
 #[derive(Debug, Default)]

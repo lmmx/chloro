@@ -1,14 +1,7 @@
 use ide_db::{EditionedFileId, defs::Definition, search::FileReference};
 use syntax::{
-    algo::{find_node_at_range,
-
-    ast::{self,
-
-    least_common_ancestor_element},
-
-    syntax_editor::Element,
-
-    AstNode, HasArgList}, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
+    algo::{find_node_at_range, least_common_ancestor_element}, ast::{self, HasArgList},
+    syntax_editor::Element, AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
 };
 use SyntaxKind::WHITESPACE;
 

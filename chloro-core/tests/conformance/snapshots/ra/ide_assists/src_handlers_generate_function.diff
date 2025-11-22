@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74503 bytes
+Chloro size:   74468 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -13,48 +13,32 @@ Rustfmt size:  75023 bytes
      TypeInfo,
  };
  use ide_db::{
--    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
-     assists::ExprFillDefaultMode,
++    assists::ExprFillDefaultMode, defs::{Definition, NameRefClass}, famous_defs::FamousDefs,
++    helpers::is_editable_crate, path_transform::PathTransform, source_change::SourceChangeBuilder,
+     FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
+-    assists::ExprFillDefaultMode,
 -    defs::{Definition, NameRefClass},
-+
-+    defs::{Definition,
-+
-     famous_defs::FamousDefs,
-+
-     helpers::is_editable_crate,
-+
-     path_transform::PathTransform,
-+
-     source_change::SourceChangeBuilder,
-+
-+    FileId, FxHashMap, FxHashSet, NameRefClass}, RootDatabase, SnippetCap,
+-    famous_defs::FamousDefs,
+-    helpers::is_editable_crate,
+-    path_transform::PathTransform,
+-    source_change::SourceChangeBuilder,
  };
  use itertools::Itertools;
  use stdx::to_lower_snake_case;
  use syntax::{
 -    Edition, SyntaxKind, SyntaxNode, T, TextRange,
      ast::{
--        self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
--        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
--    },
+         self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
+         HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
+     },
 -    ted,
-+        self,
-+
-+    edit::IndentLevel,
-+
-+    edit_in_place::Indent,
-+
-+    make, ted, AstNode, BlockExpr, CallExpr, Edition, HasArgList, HasGenericParams, HasModuleItem,
-+    HasTypeBounds, SyntaxKind, SyntaxNode, TextRange, T, },
++    ted, Edition, SyntaxKind, SyntaxNode, TextRange, T,
  };
  
  use crate::{
-+    find_struct_impl},
-+
-+    utils::{convert_reference_type,
-+
-     AssistContext, AssistId, Assists,
+-    AssistContext, AssistId, Assists,
 -    utils::{convert_reference_type, find_struct_impl},
++    utils::{convert_reference_type, find_struct_impl}, AssistContext, AssistId, Assists,
  };
  
 -// Assist: generate_function

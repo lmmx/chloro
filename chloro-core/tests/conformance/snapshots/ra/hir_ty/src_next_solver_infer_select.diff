@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16020 bytes
-Chloro size:   16065 bytes
+Chloro size:   16077 bytes
 Rustfmt size:  16174 bytes
 
 ✗ Outputs DIFFER
@@ -13,41 +13,24 @@ Rustfmt size:  16174 bytes
  use rustc_type_ir::{
 -    solve::{inspect::ProbeKind, BuiltinImplSource, CandidateSource, Certainty},
 -    Interner,
-+    inspect::ProbeKind},
-+
-+    solve::{BuiltinImplSource,
-+
-+    CandidateSource, Certainty, Interner,
++    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind}, Interner,
  };
  
  use crate::{
      db::InternedOpaqueTyId,
--    next_solver::{
--        infer::{
--            select::EvaluationResult::*,
--            traits::{Obligation, ObligationCause, PredicateObligation, TraitObligation},
-+
-+    infer::{
-             InferCtxt,
--        },
--        inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
+     next_solver::{
++        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
+         infer::{
++            InferCtxt,
+             select::EvaluationResult::*,
+             traits::{Obligation, ObligationCause, PredicateObligation, TraitObligation},
+-            InferCtxt,
+         },
+         inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
 -        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
--    },
-+
-+    inspect::{InspectCandidate,
-+
-+    next_solver::{
-+        Const,
-+
-+    select::EvaluationResult::*,
-+
-+    traits::{Obligation,
-+
-+    ErrorGuaranteed, GenericArgs, Goal, InspectGoal, ObligationCause, PredicateObligation,
-+    ProofTreeVisitor}, TraitObligation}, TraitRef, Ty, TypeError, }, },
+     },
  };
  
- #[derive(Clone, Debug, PartialEq, Eq)]
  pub(crate) enum ImplSource<'db, N> {
      /// ImplSource identifying a particular impl.
      UserDefined(ImplSourceUserDefinedData<'db, N>),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6182 bytes
-Chloro size:   6224 bytes
+Chloro size:   6228 bytes
 Rustfmt size:  6332 bytes
 
 ✗ Outputs DIFFER
@@ -12,26 +12,15 @@ Rustfmt size:  6332 bytes
  use rustc_type_ir::{TypeFoldable, Upcast, Variance};
  
  use crate::next_solver::{
--    fulfill::{FulfillmentCtxt, NextSolverError},
-+    at::ToTrace,
-+
-+    fulfill::{FulfillmentCtxt,
-+
+     fulfill::{FulfillmentCtxt, NextSolverError},
      infer::{
--        at::ToTrace,
--        traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
++        InferCtxt, InferOk,
+         at::ToTrace,
+         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
 -        InferCtxt, InferOk,
--    },
--    Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
-+        InferCtxt,
-+
-+    traits::{Obligation,
-+
-+    Const, DbInterner, InferOk, NextSolverError}, ObligationCause, ParamEnv, PredicateObligation,
-+    PredicateObligations}, Term, TraitRef, Ty, TypeError, },
+     },
+     Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
  };
- 
- /// Used if you want to have pleasant experience when dealing
  
  impl<'a, 'db> ObligationCtxt<'a, 'db> {
      pub fn new(infcx: &'a InferCtxt<'db>) -> Self {

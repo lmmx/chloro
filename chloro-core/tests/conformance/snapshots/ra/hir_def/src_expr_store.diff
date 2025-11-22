@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35294 bytes
+Chloro size:   35280 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -32,31 +32,18 @@ Rustfmt size:  37277 bytes
  use crate::{
 -    db::DefDatabase,
 -    expr_store::path::Path,
--    hir::{
--        Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
--        PatId, RecordFieldPat, Statement,
--    },
++    db::DefDatabase, expr_store::path::Path,
+     hir::{
+         Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
+         PatId, RecordFieldPat, Statement,
+     },
 -    nameres::{block_def_map, DefMap},
 -    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
 -    BlockId, SyntheticSyntax,
--};
-+    block_def_map},
- 
-+    db::DefDatabase,
-+
-+    expr_store::path::Path,
-+
-+    hir::{
-+        Array,
-+
-+    nameres::{DefMap,
-+
-+    type_ref::{LifetimeRef,
-+
-+    AsmOperand, Binding, BindingId, BlockId, Expr, ExprId, ExprOrPatId, Label, LabelId,
-+    LifetimeRefId, Pat, PatId, PathId, RecordFieldPat, Statement, SyntheticSyntax, TypeRef,
-+    TypeRefId}, },
-+};
++    nameres::{DefMap, block_def_map},
++    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId}, BlockId, SyntheticSyntax,
+ };
+-
  pub use self::body::{Body, BodySourceMap};
  pub use self::lower::{
      hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,

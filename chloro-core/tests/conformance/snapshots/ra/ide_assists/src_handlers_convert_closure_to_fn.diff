@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35593 bytes
+Chloro size:   35601 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -28,23 +28,16 @@ Rustfmt size:  36442 bytes
  use stdx::format_to;
  use syntax::{
 -    AstNode, Direction, SyntaxKind, SyntaxNode, T, TextSize, ToSmolStr,
--    algo::{skip_trivia_token, skip_whitespace_token},
-+    algo::{skip_trivia_token,
-+
+     algo::{skip_trivia_token, skip_whitespace_token},
      ast::{
--        self, HasArgList, HasGenericParams, HasName,
--        edit::{AstNodeEdit, IndentLevel},
--        make,
--    },
-+        self,
-+
-+    edit::{AstNodeEdit,
-+
-     hacks::parse_expr_from_str,
+         self, HasArgList, HasGenericParams, HasName,
+         edit::{AstNodeEdit, IndentLevel},
+         make,
+     },
+-    hacks::parse_expr_from_str,
 -    ted,
-+
-+    make, skip_whitespace_token}, ted, AstNode, Direction, HasArgList, HasGenericParams, HasName,
-+    IndentLevel}, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T, },
++    hacks::parse_expr_from_str, ted, AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr,
++    T,
  };
  
  use crate::assist_context::{AssistContext, Assists};

@@ -15,19 +15,9 @@ use hir::{
     LocalSource, ModuleSource, Semantics, Symbol,
 };
 use ide_db::{
-    base_db::{CrateOrigin,
-
-    defs::{Definition,
-
-    documentation::{Documentation,
-
-    famous_defs::FamousDefs,
-
-    find_std_module},
-
-    ra_fixture::UpmapFromRaFixture,
-
-    FileId, FileRange, HasDocs}, LangCrateOrigin, RootDatabase, RootQueryDb}, SymbolKind,
+    base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb}, defs::{Definition, find_std_module},
+    documentation::{Documentation, HasDocs}, famous_defs::FamousDefs, ra_fixture::UpmapFromRaFixture,
+    FileId, FileRange, RootDatabase, SymbolKind,
 };
 use stdx::never;
 use syntax::{

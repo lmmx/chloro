@@ -1,9 +1,8 @@
 use lsp_types::{
-    notification::{DidChangeTextDocument,
-
-    DidChangeTextDocumentParams, DidOpenTextDocument, DidOpenTextDocumentParams,
-    DidSaveTextDocumentParams, DidSaveTextDocument}, TextDocumentContentChangeEvent,
-    TextDocumentIdentifier, TextDocumentItem, Url, VersionedTextDocumentIdentifier,
+    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
+    DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+    TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
+    VersionedTextDocumentIdentifier,
 };
 use paths::Utf8PathBuf;
 use rust_analyzer::config::Config;

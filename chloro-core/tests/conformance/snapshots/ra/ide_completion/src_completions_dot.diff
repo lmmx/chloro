@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35789 bytes
+Chloro size:   35796 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
@@ -13,13 +13,10 @@ Rustfmt size:  35861 bytes
  use crate::{
 -    CompletionItem, CompletionItemKind, Completions,
      context::{
--        CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
--        PathExprCtx, Qualified,
--    },
-+        CompletionContext,
-+
-+    CompletionItem, CompletionItemKind, Completions, DotAccess, DotAccessExprCtx, DotAccessKind,
-+    PathCompletionCtx, PathExprCtx, Qualified, },
+         CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
+         PathExprCtx, Qualified,
+     },
++    CompletionItem, CompletionItemKind, Completions,
  };
  
  /// Complete dot accesses, i.e. fields or methods.

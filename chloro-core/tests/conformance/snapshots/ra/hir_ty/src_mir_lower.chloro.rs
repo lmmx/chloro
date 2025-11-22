@@ -9,25 +9,15 @@ use std::{fmt::Write, iter, mem};
 
 use base_db::Crate;
 use hir_def::{
-    expr_store::{Body,
-
+    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
     hir::{
-        ArithOp,
-
-    item_tree::FieldsShape,
-
-    lang_item::{LangItem,
-
-    lang_item},
-
-    path::Path},
-
-    resolver::{HasResolver,
-
-    AdtId, Array, BinaryOp, BindingAnnotation, BindingId, DefWithBodyId, EnumVariantId, ExprId,
-    ExpressionStore, GeneralConstId, GenericParamId, HasModule, HygieneId, ItemContainerId, LabelId,
-    LangItemTarget, Literal, LocalFieldId, Lookup, MatchArm, Pat, PatId, RecordFieldPat,
-    RecordLitField, ResolveValueResult, Resolver, TraitId, TupleId, ValueNs}, },
+        ArithOp, Array, BinaryOp, BindingAnnotation, BindingId, ExprId, LabelId, Literal, MatchArm,
+        Pat, PatId, RecordFieldPat, RecordLitField,
+    },
+    item_tree::FieldsShape, lang_item::{LangItem, LangItemTarget, lang_item},
+    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs}, AdtId, DefWithBodyId,
+    EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId, LocalFieldId, Lookup,
+    TraitId, TupleId,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;
@@ -39,41 +29,22 @@ use syntax::TextRange;
 use triomphe::Arc;
 
 use crate::{
-    cast::CastTy},
-
-    consteval::ConstEvalError,
-
-    db::{HirDatabase,
-
-    display::{DisplayTarget,
-
-    generics::generics,
-
-    hir_display_with_store},
-
-    infer::{CaptureKind, infer::{DbInternerInferExt,
-
-    inhabitedness::is_ty_uninhabited_from,
-
-    layout::LayoutError,
-
+    consteval::ConstEvalError, db::{HirDatabase, InternedClosure, InternedClosureId},
+    display::{DisplayTarget, HirDisplay, hir_display_with_store}, generics::generics,
+    infer::{CaptureKind, CapturedItem, TypeMismatch, cast::CastTy},
+    inhabitedness::is_ty_uninhabited_from, layout::LayoutError,
     mir::{
-        AggregateKind,
-
+        AggregateKind, Arena, BasicBlock, BasicBlockId, BinOp, BorrowKind, CastKind, Either, Expr,
+        FieldId, GenericArgs, Idx, InferenceResult, Local, LocalId, MemoryMap, MirBody, MirSpan,
+        Mutability, Operand, Place, PlaceElem, PointerCast, ProjectionElem, ProjectionStore,
+        RawIdx, Rvalue, Statement, StatementKind, SwitchTargets, Terminator, TerminatorKind,
+        TupleFieldId, Ty, UnOp, VariantId, return_slot,
+    },
     next_solver::{
-        Const,
-
-    return_slot,
-
-    traits::FnTrait,
-
-    Adjust, Adjustment, Arena, AutoBorrow, BasicBlock, BasicBlockId, BinOp, BorrowKind,
-    CallableDefId, CapturedItem, CastKind, DbInterner, Either, Expr, FieldId, GenericArgs,
-    HirDisplay, Idx, InferCtxt}, InferenceResult, InternedClosure, InternedClosureId}, Local,
-    LocalId, MemoryMap, MirBody, MirSpan, Mutability, Operand, ParamConst, Place, PlaceElem,
-    PointerCast, ProjectionElem, ProjectionStore, RawIdx, Region, Rvalue, Statement, StatementKind,
-    SwitchTargets, Terminator, TerminatorKind, TraitEnvironment, TupleFieldId, Ty, TyKind,
-    TypeMismatch, TypingMode, UnOp, UnevaluatedConst, VariantId, }, },
+        Const, DbInterner, ParamConst, Region, TyKind, TypingMode, UnevaluatedConst,
+        infer::{DbInternerInferExt, InferCtxt},
+    },
+    traits::FnTrait, Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
 };
 use super::OperandKind;
 

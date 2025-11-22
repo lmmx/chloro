@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3759 bytes
-Chloro size:   3760 bytes
+Chloro size:   3777 bytes
 Rustfmt size:  3774 bytes
 
 ✗ Outputs DIFFER
@@ -16,28 +16,19 @@ Rustfmt size:  3774 bytes
  
  use crate::{
      expr_store::{
--        lower::{
--            path::{hir_segment_to_ast_segment, SEGMENT_LOWERING_MAP},
 +        ExpressionStore,
-+
-+    hir_segment_to_ast_segment},
-+
-+    lower::{
+         lower::{
+-            path::{hir_segment_to_ast_segment, SEGMENT_LOWERING_MAP},
              ExprCollector,
--        },
--        path::Path,
++            path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
+         },
+         path::Path,
 -        pretty, ExpressionStore,
--    },
-+
-     nameres::crate_def_map,
-+
-+    path::Path, path::{SEGMENT_LOWERING_MAP,
-+
-+    pretty,
-+
-     test_db::TestDB,
-+
-+    }, },
++        pretty,
+     },
+-    nameres::crate_def_map,
+-    test_db::TestDB,
++    nameres::crate_def_map, test_db::TestDB,
  };
  
  fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {

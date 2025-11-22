@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14411 bytes
+Chloro size:   14401 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -20,9 +20,7 @@ Rustfmt size:  14808 bytes
  use hir_def::{
 -    layout::{LayoutCalculatorError, LayoutData},
 -    AdtId, LocalFieldId, StructId,
-+    layout::{LayoutCalculatorError,
-+
-+    AdtId, LayoutData}, LocalFieldId, StructId,
++    layout::{LayoutCalculatorError, LayoutData}, AdtId, LocalFieldId, StructId,
  };
  use la_arena::{Idx, RawIdx};
 -
@@ -39,26 +37,17 @@ Rustfmt size:  14808 bytes
  use triomphe::Arc;
  
  use crate::{
-     consteval::try_const_usize,
+-    consteval::try_const_usize,
 -    db::HirDatabase,
--    next_solver::{
++    consteval::try_const_usize, db::HirDatabase,
+     next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt},
--        DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
--    },
--    TraitEnvironment,
--};
- 
-+    db::HirDatabase,
-+
-+    infer::{DbInternerInferExt,
-+
-+    next_solver::{
-+        DbInterner,
-+
-+    traits::ObligationCause},
-+
-+    GenericArgs, ParamEnv, TraitEnvironment, Ty, TyKind, TypingMode, },
-+};
+         DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause},
+     },
+     TraitEnvironment,
+ };
+-
  pub(crate) use self::adt::layout_of_adt_cycle_result;
  pub use self::{adt::layout_of_adt_query, target::target_data_layout_query};
  

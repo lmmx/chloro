@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10280 bytes
-Chloro size:   10279 bytes
+Chloro size:   10273 bytes
 Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,10 @@ Rustfmt size:  10776 bytes
 +use syntax::{AstNode, ast};
  
  use crate::{
--    context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
-+    context::{PathCompletionCtx,
-+
-     render::render_type_inference,
+     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
+-    render::render_type_inference,
 -    CompletionContext, Completions,
-+
-+    CompletionContext, Completions, Qualified, TypeAscriptionTarget, TypeLocation},
++    render::render_type_inference, CompletionContext, Completions,
  };
  
  pub(crate) fn complete_type_path(

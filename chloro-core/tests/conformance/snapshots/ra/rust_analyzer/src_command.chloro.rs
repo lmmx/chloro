@@ -2,19 +2,8 @@
 //! and parse its stdout/stderr.
 
 use std::{
-    ffi::OsString,
-
-    fmt,
-
-    io::{self,
-
-    marker::PhantomData,
-
-    path::PathBuf,
-
-    process::{ChildStderr,
-
-    BufWriter, ChildStdout, Command, Stdio}, Write},
+    ffi::OsString, fmt, io::{self, BufWriter, Write}, marker::PhantomData, path::PathBuf,
+    process::{ChildStderr, ChildStdout, Command, Stdio},
 };
 
 use crossbeam_channel::Sender;

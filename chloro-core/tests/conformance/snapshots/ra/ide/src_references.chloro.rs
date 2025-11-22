@@ -19,15 +19,9 @@
 
 use hir::{PathResolution, Semantics};
 use ide_db::{
-    defs::{Definition,
-
-    helpers::pick_best_token,
-
-    ra_fixture::UpmapFromRaFixture,
-
-    search::{ReferenceCategory,
-
-    FileId, MiniCore, NameClass, NameRefClass}, RootDatabase, SearchScope, UsageSearchResult},
+    defs::{Definition, NameClass, NameRefClass}, helpers::pick_best_token,
+    ra_fixture::UpmapFromRaFixture, search::{ReferenceCategory, SearchScope, UsageSearchResult},
+    FileId, MiniCore, RootDatabase,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -35,13 +29,7 @@ use nohash_hasher::IntMap;
 use span::Edition;
 use syntax::AstToken;
 use syntax::{
-    ast::{self,
-
-    match_ast, AstNode, HasName},
-
-    SyntaxKind::*,
-
-    SyntaxNode, TextRange, TextSize, T,
+    ast::{self, HasName}, match_ast, AstNode, SyntaxKind::*, SyntaxNode, TextRange, TextSize, T,
 };
 
 use crate::{

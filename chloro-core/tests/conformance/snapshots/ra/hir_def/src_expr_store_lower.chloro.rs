@@ -11,75 +11,52 @@ use base_db::FxIndexSet;
 use cfg::CfgOptions;
 use either::Either;
 use hir_expand::{
-    mod_path::tool_path,
-
-    name::{AsName,
-
-    span_map::SpanMapRef,
-
-    HirFileId, InFile, MacroDefId, Name},
+    mod_path::tool_path, name::{AsName, Name}, span_map::SpanMapRef, HirFileId, InFile, MacroDefId,
 };
 use intern::{Symbol, sym};
 use rustc_hash::FxHashMap;
 use stdx::never;
 use syntax::{
     ast::{
-        self,
-
-    ArrayExprKind, AstChildren, AstNode, AstPtr, AstToken as _, BlockExpr, HasArgList, HasAttrs,
-    HasGenericArgs, HasGenericParams, HasLoopBody, HasName, HasTypeBounds, IsString, RangeItem,
-    SlicePatComponents, SyntaxNodePtr, },
+        self, ArrayExprKind, AstChildren, BlockExpr, HasArgList, HasAttrs, HasGenericArgs,
+        HasGenericParams, HasLoopBody, HasName, HasTypeBounds, IsString, RangeItem,
+        SlicePatComponents,
+    },
+    AstNode, AstPtr, AstToken as _, SyntaxNodePtr,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    block_def_map},
-
-    builtin_type::BuiltinUint,
-
-    db::DefDatabase,
-
-    expander::Expander,
-
+    builtin_type::BuiltinUint, db::DefDatabase,
     expr_store::{
-        Body,
-
-    format_args::{
-            self,
-
-    generics::GenericParams,
-
+        Body, BodySourceMap, ExprPtr, ExpressionStore, ExpressionStoreBuilder,
+        ExpressionStoreDiagnostics, ExpressionStoreSourceMap, HygieneId, LabelPtr, LifetimePtr,
+        PatPtr, TypePtr,
+        expander::Expander,
+        lower::generics::ImplTraitLowerFn,
+        path::{AssociatedTypeBinding, GenericArg, GenericArgs, GenericArgsParentheses, Path},
+    },
     hir::{
-        Array,
-
-    item_scope::BuiltinShadowMode,
-
-    item_tree::FieldsShape,
-
-    lang_item::LangItem,
-
-    lower::generics::ImplTraitLowerFn,
-
-    nameres::{DefMap,
-
-    path::{AssociatedTypeBinding,
-
+        Array, Binding, BindingAnnotation, BindingId, BindingProblems, CaptureBy, ClosureKind,
+        Expr, ExprId, Item, Label, LabelId, Literal, MatchArm, Movability, OffsetOf, Pat, PatId,
+        RecordFieldPat, RecordLitField, Statement,
+        format_args::{
+            self, FormatAlignment, FormatArgs, FormatArgsPiece, FormatArgument, FormatArgumentKind,
+            FormatArgumentsCollector, FormatCount, FormatDebugHex, FormatOptions,
+            FormatPlaceholder, FormatSign, FormatTrait,
+        },
+        generics::GenericParams,
+    },
+    item_scope::BuiltinShadowMode, item_tree::FieldsShape, lang_item::LangItem,
+    nameres::{DefMap, LocalDefMap, MacroSubNs, block_def_map},
     type_ref::{
-        ArrayType,
-
-    AdtId, Binding, BindingAnnotation, BindingId, BindingProblems, BlockId, BlockLoc, BodySourceMap,
-    CaptureBy, ClosureKind, ConstRef, DefWithBodyId, Expr, ExprId, ExprPtr, ExpressionStore,
-    ExpressionStoreBuilder, ExpressionStoreDiagnostics, ExpressionStoreSourceMap, FnType,
-    FormatAlignment, FormatArgs, FormatArgsPiece, FormatArgument, FormatArgumentKind,
-    FormatArgumentsCollector, FormatCount, FormatDebugHex, FormatOptions, FormatPlaceholder,
-    FormatSign, FormatTrait, FunctionId, GenericArg, GenericArgs, GenericArgsParentheses,
-    GenericDefId, HygieneId, ImplId, Item, Label, LabelId, LabelPtr, LifetimePtr, LifetimeRef,
-    LifetimeRefId, Literal, LocalDefMap, MacroId, MacroSubNs, MatchArm, ModuleDefId, ModuleId,
-    Movability, Mutability, OffsetOf, Pat, PatId, PatPtr, PathId, Path}, Rawness, RecordFieldPat,
-    RecordLitField, RefType, Statement, TraitBoundModifier, TraitId, TraitRef, TypeAliasId,
-    TypeBound, TypePtr, TypeRef, TypeRefId, UnresolvedMacro, UseArgRef, }, }, }, },
+        ArrayType, ConstRef, FnType, LifetimeRef, LifetimeRefId, Mutability, PathId, Rawness,
+        RefType, TraitBoundModifier, TraitRef, TypeBound, TypeRef, TypeRefId, UseArgRef,
+    },
+    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId, ModuleDefId,
+    ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
 };
 pub use self::path::hir_segment_to_ast_segment;
 

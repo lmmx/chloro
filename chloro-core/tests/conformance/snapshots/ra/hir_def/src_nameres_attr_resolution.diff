@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4519 bytes
+Chloro size:   4496 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -13,30 +13,24 @@ Rustfmt size:  4581 bytes
  use base_db::Crate;
  use hir_expand::{
 -    attrs::{Attr, AttrId, AttrInput},
-+    attrs::{Attr,
-+
-     inert_attr_macro::find_builtin_attr_idx,
+-    inert_attr_macro::find_builtin_attr_idx,
 -    mod_path::{ModPath, PathKind},
 -    MacroCallId, MacroCallKind, MacroDefId,
-+
-+    mod_path::{ModPath,
-+
-+    AttrId, AttrInput}, MacroCallId, MacroCallKind, MacroDefId, PathKind},
++    attrs::{Attr, AttrId, AttrInput}, inert_attr_macro::find_builtin_attr_idx,
++    mod_path::{ModPath, PathKind}, MacroCallId, MacroCallKind, MacroDefId,
  };
  use span::SyntaxContext;
  use syntax::ast;
+ use triomphe::Arc;
  
  use crate::{
-     db::DefDatabase,
-+
-     item_scope::BuiltinShadowMode,
+-    db::DefDatabase,
+-    item_scope::BuiltinShadowMode,
 -    nameres::{path_resolution::ResolveMode, LocalDefMap},
-+
-+    nameres::{LocalDefMap,
-+
-+    path_resolution::ResolveMode},
-+
-     AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
+-    AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
++    db::DefDatabase, item_scope::BuiltinShadowMode,
++    nameres::{LocalDefMap, path_resolution::ResolveMode}, AstIdWithPath, LocalModuleId, MacroId,
++    UnresolvedMacro,
  };
 -
  use super::{DefMap, MacroSubNs};

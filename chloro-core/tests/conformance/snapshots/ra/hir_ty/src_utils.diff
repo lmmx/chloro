@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7506 bytes
-Chloro size:   7558 bytes
+Chloro size:   7526 bytes
 Rustfmt size:  7929 bytes
 
 ✗ Outputs DIFFER
@@ -19,20 +19,15 @@ Rustfmt size:  7929 bytes
 +    target::{self, TargetData},
  };
  use hir_def::{
-     db::DefDatabase,
-+
-     hir::generics::WherePredicate,
-+
-     lang_item::LangItem,
+-    db::DefDatabase,
+-    hir::generics::WherePredicate,
+-    lang_item::LangItem,
 -    resolver::{HasResolver, TypeNs},
 -    type_ref::{TraitBoundModifier, TypeRef},
 -    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
-+
-+    resolver::{HasResolver,
-+
-+    type_ref::{TraitBoundModifier,
-+
-+    EnumId, EnumVariantId, FunctionId, Lookup, TraitId, TypeNs}, TypeRef},
++    db::DefDatabase, hir::generics::WherePredicate, lang_item::LangItem,
++    resolver::{HasResolver, TypeNs}, type_ref::{TraitBoundModifier, TypeRef}, EnumId, EnumVariantId,
++    FunctionId, Lookup, TraitId,
  };
  use intern::sym;
  use rustc_abi::TargetDataLayout;
@@ -41,15 +36,11 @@ Rustfmt size:  7929 bytes
  use span::Edition;
  
  use crate::{
-     db::HirDatabase,
+-    db::HirDatabase,
 -    layout::{Layout, TagEncoding},
-+
-+    layout::{Layout,
-+
-     mir::pad16,
+-    mir::pad16,
 -    TargetFeatures,
-+
-+    TagEncoding}, TargetFeatures,
++    db::HirDatabase, layout::{Layout, TagEncoding}, mir::pad16, TargetFeatures,
  };
  
 -pub(crate) fn fn_traits(db: &dyn DefDatabase, krate: Crate) -> impl Iterator<Item = TraitId> + '_ {

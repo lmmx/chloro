@@ -1,14 +1,7 @@
 use either::Either;
 use syntax::{
-    algo::find_node_at_range,
-
-    ast::{self,
-
-    syntax_editor::SyntaxEditor,
-
-    syntax_factory::SyntaxFactory},
-
-    AstNode,
+    algo::find_node_at_range, ast::{self, syntax_factory::SyntaxFactory},
+    syntax_editor::SyntaxEditor, AstNode,
 };
 
 use crate::{

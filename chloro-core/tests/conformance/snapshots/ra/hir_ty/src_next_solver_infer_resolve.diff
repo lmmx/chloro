@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3160 bytes
+Chloro size:   3154 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -11,13 +11,11 @@ Rustfmt size:  3226 bytes
  //! Things for resolving vars in the infer context of the next-trait-solver.
  
  use rustc_type_ir::{
-     data_structures::DelayedMap,
+-    data_structures::DelayedMap,
 -    inherent::{Const as _, Ty as _},
 -    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
-+
-+    inherent::{Const as _,
-+
-+    Ty as _}, TypeFolder, TypeSuperFoldable, TypeVisitableExt,
++    data_structures::DelayedMap, inherent::{Const as _, Ty as _}, TypeFolder, TypeSuperFoldable,
++    TypeVisitableExt,
  };
  
  use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};

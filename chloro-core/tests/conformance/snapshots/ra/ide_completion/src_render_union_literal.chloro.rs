@@ -6,14 +6,11 @@ use itertools::Itertools;
 use syntax::ToSmolStr;
 
 use crate::{
-    format_literal_lookup,
-
     render::{
         RenderContext,
-
-    variant::{format_literal_label,
-
-    visible_fields}, CompletionItem, CompletionItemKind, },
+        variant::{format_literal_label, format_literal_lookup, visible_fields},
+    },
+    CompletionItem, CompletionItemKind,
 };
 
 pub(crate) fn render_union_literal(

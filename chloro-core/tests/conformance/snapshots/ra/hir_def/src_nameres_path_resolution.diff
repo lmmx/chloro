@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32424 bytes
+Chloro size:   32395 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -11,33 +11,20 @@ Rustfmt size:  32996 bytes
  use stdx::TupleExt;
  
  use crate::{
-+    assoc::TraitItems,
-+
-+    crate_def_map,
-+
-     db::DefDatabase,
+-    db::DefDatabase,
 -    item_scope::{ImportOrExternCrate, BUILTIN_SCOPE},
-+
-+    item_scope::{BUILTIN_SCOPE,
-+
-     item_tree::FieldsShape,
-+
+-    item_tree::FieldsShape,
++    db::DefDatabase, item_scope::{BUILTIN_SCOPE, ImportOrExternCrate}, item_tree::FieldsShape,
      nameres::{
 -        assoc::TraitItems, crate_def_map, sub_namespace_match, BlockInfo, BuiltinShadowMode,
 -        DefMap, LocalDefMap, MacroSubNs,
--    },
-+        BlockInfo,
-+
-     per_ns::PerNs,
++        BlockInfo, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, assoc::TraitItems,
++        crate_def_map, sub_namespace_match,
+     },
+-    per_ns::PerNs,
 -    visibility::{RawVisibility, Visibility},
 -    AdtId, LocalModuleId, ModuleDefId,
-+
-+    sub_namespace_match,
-+
-+    visibility::{RawVisibility,
-+
-+    AdtId, BuiltinShadowMode, DefMap, ImportOrExternCrate}, LocalDefMap, LocalModuleId, MacroSubNs,
-+    ModuleDefId, Visibility}, },
++    per_ns::PerNs, visibility::{RawVisibility, Visibility}, AdtId, LocalModuleId, ModuleDefId,
  };
  
  #[derive(Debug, Clone, Copy, PartialEq, Eq)]
