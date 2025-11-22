@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ra fixtures ([#5](https://github.com/lmmx/chloro/pull/5))
 
-## [0.5.3](https://github.com/lmmx/chloro/compare/chloro-core-v0.5.2...chloro-core-v0.5.3) - 2025-11-21
+## [0.6.0](https://github.com/lmmx/chloro/compare/chloro-core-v0.5.2...chloro-core-v0.6.0) - 2025-11-21
 
 ### <!-- 9 -->Other
 

@@ -10,7 +10,7 @@ rust-version = "1.82.0"
 
 [workspace.dependencies]
 assert_cmd = "2"
-chloro-core = { path = "chloro-core", version = "0.5.3" }
+chloro-core = { path = "chloro-core", version = "0.6.0" }
 facet = "0.30.0"
 facet-args = "0.30.0"
 insta = "1.0"
