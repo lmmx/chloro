@@ -1,21 +1,17 @@
 use hir::{AsAssocItem, Semantics, sym};
 use ide_db::{
-    RootDatabase,
-    famous_defs::FamousDefs,
+    famous_defs::FamousDefs, for_each_tail_expr, is_pattern_cond, preorder_expr,
     syntax_helpers::node_ext::{
-        block_as_lone_tail, for_each_tail_expr, is_pattern_cond, preorder_expr,
-    },
+        block_as_lone_tail, RootDatabase, },
 };
 use itertools::Itertools;
 use syntax::{
-    AstNode, SyntaxNode,
-    ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
-    syntax_editor::SyntaxEditor,
+    ast::{self, edit::AstNodeEdit, syntax_editor::SyntaxEditor, syntax_factory::SyntaxFactory},
+    AstNode, HasArgList, SyntaxNode,
 };
 
 use crate::{
-    AssistContext, AssistId, Assists,
-    utils::{invert_boolean_expression, unwrap_trivial_block},
+    unwrap_trivial_block}, utils::{invert_boolean_expression, AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn convert_if_to_bool_then(

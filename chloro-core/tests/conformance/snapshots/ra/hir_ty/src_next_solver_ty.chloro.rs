@@ -3,41 +3,33 @@
 use std::ops::ControlFlow;
 
 use hir_def::{
-    AdtId, HasModule, TypeParamId,
-    hir::generics::{TypeOrConstParamData, TypeParamProvenance},
-    lang_item::LangItem,
+    hir::generics::{TypeOrConstParamData, lang_item::LangItem, AdtId, HasModule, TypeParamId,
+    TypeParamProvenance},
 };
 use hir_def::{TraitId, type_ref::Rawness};
 use rustc_abi::{Float, Integer, Size};
 use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};
 use rustc_type_ir::{
-    AliasTyKind, BoundVar, BoundVarIndexKind, ClosureKind, CoroutineArgs, CoroutineArgsParts,
-    DebruijnIndex, FlagComputation, Flags, FloatTy, FloatVid, InferTy, IntTy, IntVid, Interner,
-    TyVid, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-    TypeVisitor, UintTy, Upcast, WithCachedTypeInfo,
     inherent::{
-        AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,
-        IntoKind, ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _,
-    },
-    relate::Relate,
-    solve::SizedTraitKind,
-    walk::TypeWalker,
+        AdtDef as _, relate::Relate, solve::SizedTraitKind, walk::TypeWalker,
+    AliasTyKind, BoundExistentialPredicates, BoundVar, BoundVarIndexKind, BoundVarLike,
+    ClosureKind, Const as _, CoroutineArgs, CoroutineArgsParts, DebruijnIndex, FlagComputation,
+    Flags, FloatTy, FloatVid, GenericArgs as _, InferTy, IntTy, IntVid, Interner, IntoKind,
+    ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _, TyVid, TypeFoldable,
+    TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor, UintTy,
+    Upcast, WithCachedTypeInfo, },
 };
 
 use crate::{
-    ImplTraitId,
-    db::{HirDatabase, InternedCoroutine},
-    next_solver::{
-        AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
-        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
-        abi::Safety,
-        interner::InternedWrapperNoDebug,
-        util::{CoroutineArgsExt, IntegerTypeExt},
-    },
+    abi::Safety, db::{HirDatabase, interner::InternedWrapperNoDebug, next_solver::{
+        AdtDef,
+    util::{CoroutineArgsExt, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind,
+    ClosureIdWrapper, Const, CoroutineIdWrapper, FnSig, GenericArg, ImplTraitId, IntegerTypeExt},
+    InternedCoroutine}, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper, },
 };
 use super::{
-    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId, interned_vec_db,
-    util::{FloatExt, IntegerExt},
+    interned_vec_db, util::{FloatExt, BoundVarKind, DbInterner, GenericArgs, IntegerExt},
+    Placeholder, SolverDefId,
 };
 
 pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;

@@ -5,17 +5,14 @@ use std::fmt;
 use arrayvec::ArrayVec;
 use either::Either;
 use hir::{
-    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
-    InFile, LocalSource, ModuleSource, Semantics, Symbol, db::ExpandDatabase, sym,
-    symbols::FileSymbol,
+    db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
+    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
+    Symbol,
 };
 use ide_db::{
-    FileId, FileRange, RootDatabase, SymbolKind,
-    base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
-    defs::{Definition, find_std_module},
-    documentation::{Documentation, HasDocs},
-    famous_defs::FamousDefs,
-    ra_fixture::UpmapFromRaFixture,
+    base_db::{CrateOrigin, defs::{Definition, documentation::{Documentation,
+    famous_defs::FamousDefs, find_std_module}, ra_fixture::UpmapFromRaFixture, FileId, FileRange,
+    HasDocs}, LangCrateOrigin, RootDatabase, RootQueryDb}, SymbolKind,
 };
 use stdx::never;
 use syntax::{

@@ -11,17 +11,11 @@ use tracing::debug;
 use triomphe::Arc;
 
 use crate::{
-    TraitEnvironment,
-    db::HirDatabase,
-    infer::unify::InferenceTable,
-    next_solver::{
-        Canonical, TraitRef, Ty, TyKind,
-        infer::{
+    db::HirDatabase, infer::unify::InferenceTable, infer::{
             InferOk,
-            traits::{Obligation, ObligationCause, PredicateObligations},
-        },
-        obligation_ctxt::ObligationCtxt,
-    },
+    next_solver::{
+        Canonical, obligation_ctxt::ObligationCtxt, traits::{Obligation,
+    ObligationCause, PredicateObligations}, TraitEnvironment, TraitRef, Ty, TyKind, }, },
 };
 
 const AUTODEREF_RECURSION_LIMIT: usize = 20;

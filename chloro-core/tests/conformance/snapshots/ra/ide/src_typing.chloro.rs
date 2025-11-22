@@ -24,9 +24,8 @@ use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
 pub(crate) use on_enter::on_enter;
 use span::Edition;
 use syntax::{
-    AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
-    algo::{ancestors_at_offset, find_node_at_offset},
-    ast::{self, AstToken, edit::IndentLevel},
+    algo::{ancestors_at_offset, ast::{self, edit::IndentLevel}, find_node_at_offset}, AstNode,
+    AstToken, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
 };
 
 use crate::SourceChange;

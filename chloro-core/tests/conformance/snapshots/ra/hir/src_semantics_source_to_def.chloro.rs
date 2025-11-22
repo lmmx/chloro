@@ -87,20 +87,16 @@
 
 use either::Either;
 use hir_def::{
-    AdtId, BlockId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId,
-    ExternCrateId, FieldId, FunctionId, GenericDefId, GenericParamId, ImplId, LifetimeParamId,
-    Lookup, MacroId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, TypeParamId, UnionId,
-    UseId, VariantId,
-    dyn_map::{
-        DynMap,
-        keys::{self, Key},
-    },
-    hir::{BindingId, Expr, LabelId},
-    nameres::{block_def_map, crate_def_map},
+    crate_def_map}, dyn_map::{
+        DynMap, hir::{BindingId, keys::{self,
+    nameres::{block_def_map, AdtId, BlockId, ConstId, ConstParamId, DefWithBodyId, EnumId,
+    EnumVariantId, Expr, ExternBlockId, ExternCrateId, FieldId, FunctionId, GenericDefId,
+    GenericParamId, ImplId, Key}, LabelId}, LifetimeParamId, Lookup, MacroId, ModuleId, StaticId,
+    StructId, TraitId, TypeAliasId, TypeParamId, UnionId, UseId, VariantId, },
 };
 use hir_expand::{
-    EditionedFileId, ExpansionInfo, HirFileId, InMacroFile, MacroCallId, attrs::AttrId,
-    name::AsName,
+    attrs::AttrId, name::AsName, EditionedFileId, ExpansionInfo, HirFileId, InMacroFile,
+    MacroCallId,
 };
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;

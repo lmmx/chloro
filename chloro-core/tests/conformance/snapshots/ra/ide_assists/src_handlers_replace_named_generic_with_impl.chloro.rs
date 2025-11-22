@@ -1,14 +1,11 @@
 use hir::{FileRange, Semantics};
 use ide_db::text_edit::TextRange;
 use ide_db::{
-    EditionedFileId, RootDatabase,
-    defs::Definition,
-    search::{SearchScope, UsageSearchResult},
+    defs::Definition, search::{SearchScope, EditionedFileId, RootDatabase, UsageSearchResult},
 };
 use syntax::{
-    AstNode,
-    ast::{self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType, make},
-    match_ast,
+    ast::{self, make}, match_ast, AstNode, HasGenericParams, HasName, HasTypeBounds, Name,
+    NameLike, PathType,
 };
 
 use crate::{AssistContext, AssistId, Assists};

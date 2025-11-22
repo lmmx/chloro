@@ -30,22 +30,20 @@ use std::{iter, sync::LazyLock};
 
 use either::Either;
 use hir::{
-    Crate, DisplayTarget, InFile, Semantics, db::ExpandDatabase, diagnostics::AnyDiagnostic,
+    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
 };
 use ide_db::{
-    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
-    assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
-    base_db::{ReleaseChannel, RootQueryDb as _},
-    generated::lints::{CLIPPY_LINT_GROUPS, DEFAULT_LINT_GROUPS, DEFAULT_LINTS, Lint, LintGroup},
-    imports::insert_use::InsertUseConfig,
-    label::Label,
-    source_change::SourceChange,
-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+    assists::{Assist, base_db::{ReleaseChannel, generated::lints::{CLIPPY_LINT_GROUPS,
+    imports::insert_use::InsertUseConfig, label::Label, source_change::SourceChange,
+    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths, AssistId, AssistResolveStrategy,
+    EditionedFileId, ExprFillDefaultMode}, FileId, FileRange, FxHashMap, FxHashSet, Lint,
+    LintGroup}, RootDatabase, RootQueryDb as _}, Severity, SnippetCap, DEFAULT_LINTS,
+    DEFAULT_LINT_GROUPS,
 };
 use itertools::Itertools;
 use syntax::{
-    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, T, TextRange,
-    ast::{self, AstNode, HasAttrs},
+    ast::{self, AstNode, AstPtr, Edition, HasAttrs}, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode,
+    SyntaxNodePtr, TextRange, T,
 };
 
 mod handlers {

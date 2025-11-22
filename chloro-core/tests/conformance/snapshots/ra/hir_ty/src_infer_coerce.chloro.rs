@@ -36,40 +36,30 @@
 //! ```
 
 use hir_def::{
-    CallableDefId,
-    hir::{ExprId, ExprOrPatId},
-    lang_item::LangItem,
-    signatures::FunctionSignature,
+    hir::{ExprId, lang_item::LangItem, signatures::FunctionSignature, CallableDefId, ExprOrPatId},
 };
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    BoundVar, TypeAndMut,
-    error::TypeError,
-    inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
+    error::TypeError, inherent::{Const as _, BoundVar, GenericArg as _, IntoKind, Safety,
+    SliceLike, Ty as _}, TypeAndMut,
 };
 use smallvec::{SmallVec, smallvec};
 use tracing::{debug, instrument};
 use triomphe::Arc;
 
 use crate::{
-    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
-    autoderef::Autoderef,
-    db::{HirDatabase, InternedClosureId},
-    infer::{AllowTwoPhase, InferenceContext, TypeMismatch, unify::InferenceTable},
+    autoderef::Autoderef, db::{HirDatabase, infer::{
+            InferCtxt, infer::{AllowTwoPhase,
     next_solver::{
-        Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper,
-        Canonical, ClauseKind, CoercePredicate, Const, ConstKind, DbInterner, ErrorGuaranteed,
-        GenericArgs, PolyFnSig, PredicateKind, Region, RegionKind, TraitRef, Ty, TyKind,
-        infer::{
-            InferCtxt, InferOk, InferResult,
-            relate::RelateResult,
-            select::{ImplSource, SelectionError},
-            traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
-        },
-        obligation_ctxt::ObligationCtxt,
-    },
-    utils::TargetFeatureIsSafeInTarget,
+        Binder, obligation_ctxt::ObligationCtxt, relate::RelateResult,
+    select::{ImplSource, traits::{Obligation, unify::InferenceTable},
+    utils::TargetFeatureIsSafeInTarget, Adjust, Adjustment, AutoBorrow, BoundConst, BoundRegion,
+    BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper, Canonical, ClauseKind,
+    CoercePredicate, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, InferOk,
+    InferResult, InferenceContext, InternedClosureId}, ObligationCause, PointerCast, PolyFnSig,
+    PredicateKind, PredicateObligation, PredicateObligations}, Region, RegionKind, SelectionError},
+    TargetFeatures, TraitEnvironment, TraitRef, Ty, TyKind, TypeMismatch, }, },
 };
 
 struct Coerce<'a, 'b, 'db> {

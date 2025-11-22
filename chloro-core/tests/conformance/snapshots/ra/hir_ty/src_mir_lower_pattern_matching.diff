@@ -2,12 +2,35 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29552 bytes
-Chloro size:   29586 bytes
+Chloro size:   29542 bytes
 Rustfmt size:  29552 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ 
+ use crate::next_solver::GenericArgs;
+ use crate::{
+-    BindingMode,
+-    mir::{
+-        LocalId, MutBorrowKind, Operand, OperandKind,
+-        lower::{
+-            BasicBlockId, BinOp, BindingId, BorrowKind, Either, Expr, FieldId, Idx, MemoryMap,
+-            MirLowerCtx, MirLowerError, MirSpan, Pat, PatId, Place, PlaceElem, ProjectionElem,
+-            RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
+-            TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId,
+-        },
+-    },
++    lower::{
++            BasicBlockId, mir::{
++        LocalId, BinOp, BindingId, BindingMode,
++    BorrowKind, Either, Expr, FieldId, Idx, MemoryMap, MirLowerCtx, MirLowerError, MirSpan,
++    MutBorrowKind, Operand, OperandKind, Pat, PatId, Place, PlaceElem, ProjectionElem,
++    RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
++    TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId, }, },
+ };
+ 
+ macro_rules! not_supported {
  }
  
  pub(super) enum AdtPatternShape<'a> {

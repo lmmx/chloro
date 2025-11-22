@@ -1,9 +1,7 @@
 use either::Either;
 use ide_db::assists::{AssistId, GroupLabel};
 use syntax::{
-    AstNode,
-    ast::{self, HasGenericParams, HasName, edit::IndentLevel, make},
-    syntax_editor,
+    ast::{self, edit::IndentLevel, make}, syntax_editor, AstNode, HasGenericParams, HasName,
 };
 
 use crate::{AssistContext, Assists};

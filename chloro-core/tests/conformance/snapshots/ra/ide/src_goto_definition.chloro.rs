@@ -1,31 +1,24 @@
 use std::{iter, mem::discriminant};
 
 use hir::{
-    AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
+    sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
 };
 use ide_db::{
-    RootDatabase, SymbolKind,
-    base_db::{AnchoredPath, SourceDatabase},
-    defs::{Definition, IdentClass},
-    famous_defs::FamousDefs,
-    helpers::pick_best_token,
+    base_db::{AnchoredPath, defs::{Definition, famous_defs::FamousDefs, helpers::pick_best_token,
+    IdentClass}, RootDatabase, SourceDatabase}, SymbolKind,
 };
 use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
-    AstNode, AstToken,
-    SyntaxKind::*,
-    SyntaxNode, SyntaxToken, T, TextRange,
-    ast::{self, HasLoopBody},
-    match_ast,
+    ast::{self, match_ast, AstNode, AstToken, HasLoopBody}, SyntaxKind::*, SyntaxNode, SyntaxToken,
+    TextRange, T,
 };
 
 use crate::Analysis;
 use crate::{
-    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
-    doc_links::token_as_doc_comment,
-    navigation_target::{self, ToNav},
+    doc_links::token_as_doc_comment, navigation_target::{self, FilePosition, NavigationTarget,
+    RangeInfo, ToNav}, TryToNav, UpmappingResult,
 };
 
 #[derive(Debug)]

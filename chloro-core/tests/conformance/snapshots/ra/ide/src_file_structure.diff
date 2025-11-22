@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34343 bytes
+Chloro size:   34339 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -10,11 +10,11 @@ Rustfmt size:  34938 bytes
 === DIFF (- rustfmt, + chloro) ===
  use ide_db::SymbolKind;
  use syntax::{
-+    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange, WalkEvent,
-     ast::{self, HasAttrs, HasGenericParams, HasName},
+-    ast::{self, HasAttrs, HasGenericParams, HasName},
 -    match_ast, AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange,
 -    WalkEvent,
-+    match_ast,
++    ast::{self, match_ast, AstNode, AstToken, HasAttrs, HasGenericParams, HasName}, NodeOrToken,
++    SourceFile, SyntaxNode, SyntaxToken, TextRange, WalkEvent,
  };
  
  #[derive(Debug, Clone)]

@@ -4,7 +4,7 @@ use ide_db::{FileRange, MiniCore, base_db::SourceDatabase};
 use syntax::TextRange;
 
 use crate::{
-    HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
+    fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
 };
 
 const HOVER_BASE_CONFIG: HoverConfig<'_> = HoverConfig {

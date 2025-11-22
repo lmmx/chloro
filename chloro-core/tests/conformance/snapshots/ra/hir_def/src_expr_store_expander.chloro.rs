@@ -8,8 +8,8 @@ use drop_bomb::DropBomb;
 use hir_expand::AstId;
 use hir_expand::span_map::SpanMapRef;
 use hir_expand::{
-    ExpandError, ExpandErrorKind, ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
-    eager::EagerCallBackFn, mod_path::ModPath, span_map::SpanMap,
+    eager::EagerCallBackFn, mod_path::ModPath, span_map::SpanMap, ExpandError, ExpandErrorKind,
+    ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
 };
 use span::{AstIdMap, Edition, SyntaxContext};
 use syntax::ast::HasAttrs;

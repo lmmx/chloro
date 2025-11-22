@@ -50,8 +50,7 @@ fn fixes(
 #[cfg(test)]
 mod tests {
     use crate::{
-        DiagnosticsConfig,
-        tests::{check_diagnostics_with_config, check_fix},
+        check_fix}, tests::{check_diagnostics_with_config, DiagnosticsConfig,
     };
     #[track_caller]
     pub(crate) fn check_diagnostics(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

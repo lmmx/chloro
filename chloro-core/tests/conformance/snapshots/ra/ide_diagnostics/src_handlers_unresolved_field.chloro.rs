@@ -2,14 +2,12 @@ use either::Either;
 use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    assists::{Assist, AssistId},
-    helpers::is_editable_crate,
-    label::Label,
-    source_change::{SourceChange, SourceChangeBuilder},
+    assists::{Assist, helpers::is_editable_crate, label::Label, source_change::{SourceChange,
+    AssistId}, SourceChangeBuilder},
 };
 use syntax::{
-    AstNode, AstPtr, Direction, SyntaxKind, TextSize, algo,
-    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
+    algo, ast::{self, edit::IndentLevel, make}, AstNode, AstPtr, Direction, FieldList, Name,
+    SyntaxKind, TextSize, Visibility,
 };
 use syntax::{
     SyntaxNode,
@@ -279,11 +277,9 @@ fn method_fix(
 #[cfg(test)]
 mod tests {
     use crate::{
-        DiagnosticsConfig,
+        check_diagnostics_with_config, check_diagnostics_with_disabled, check_fix, check_no_fix,
         tests::{
-            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
-            check_fix, check_no_fix,
-        },
+            check_diagnostics, DiagnosticsConfig, },
     };
     #[test]
     fn smoke_test() {

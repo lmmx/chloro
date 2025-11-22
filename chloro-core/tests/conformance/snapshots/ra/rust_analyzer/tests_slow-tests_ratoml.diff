@@ -12,10 +12,11 @@ Rustfmt size:  23115 bytes
 -use crate::testdir::TestDir;
  use lsp_types::{
 -    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
-     DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
+-    DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
++    notification::{DidChangeTextDocument, DidChangeTextDocumentParams, DidOpenTextDocument,
++    DidOpenTextDocumentParams, DidSaveTextDocumentParams, DidSaveTextDocument},
      TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
      VersionedTextDocumentIdentifier,
-+    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
  };
  use paths::Utf8PathBuf;
 -

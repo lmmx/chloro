@@ -7,34 +7,23 @@ use hir::{
     TypeInfo, TypeParam,
 };
 use ide_db::{
-    FxIndexSet, RootDatabase,
-    assists::GroupLabel,
-    defs::{Definition, NameRefClass},
-    famous_defs::FamousDefs,
-    helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use},
-    search::{FileReference, ReferenceCategory, SearchScope},
-    source_change::SourceChangeBuilder,
-    syntax_helpers::node_ext::{
-        for_each_tail_expr, preorder_expr, walk_expr, walk_pat, walk_patterns_in_expr,
-    },
+    assists::GroupLabel, defs::{Definition, famous_defs::FamousDefs, helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use}, preorder_expr, search::{FileReference,
+    source_change::SourceChangeBuilder, syntax_helpers::node_ext::{
+        for_each_tail_expr,
+    walk_expr, walk_pat, walk_patterns_in_expr, FxIndexSet, NameRefClass}, ReferenceCategory,
+    RootDatabase, SearchScope}, },
 };
 use itertools::Itertools;
 use syntax::{
-    Edition, SyntaxElement,
-    SyntaxKind::{self, COMMENT},
-    SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset, WalkEvent,
     ast::{
-        self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
-        edit_in_place::Indent,
-    },
-    match_ast, ted,
+        self, edit::IndentLevel, edit_in_place::Indent, match_ast, ted, AstNode,
+    AstToken, Edition, HasGenericParams, HasName, SyntaxElement, SyntaxKind::{self, SyntaxNode,
+    SyntaxToken, TextRange, TextSize, TokenAtOffset, WalkEvent, COMMENT}, T, },
 };
 
 use crate::{
-    AssistId,
-    assist_context::{AssistContext, Assists, TreeMutator},
-    utils::generate_impl,
+    assist_context::{AssistContext, utils::generate_impl, AssistId, Assists, TreeMutator},
 };
 
 pub(crate) fn extract_function(

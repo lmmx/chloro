@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29442 bytes
+Chloro size:   29430 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -18,21 +18,32 @@ Rustfmt size:  29385 bytes
 -    source_change::ChangeAnnotation,
 -    text_edit::{TextEdit, TextEditBuilder},
 -};
-+pub use _bail as bail;
-+pub use _format_err as format_err;
  use base_db::AnchoredPathBuf;
  use either::Either;
  use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
-     syntax_helpers::node_ext::expr_as_name_ref,
-     traits::convert_to_def_in_trait,
+     AstNode, SyntaxKind, T, TextRange,
+     ast::{self, HasName},
  };
++pub use _bail as bail;
++pub use _format_err as format_err;
+ 
+ use crate::{
+-    RootDatabase,
+-    defs::Definition,
+-    search::{FileReference, FileReferenceNode},
+-    source_change::{FileSystemEdit, SourceChange},
+-    syntax_helpers::node_ext::expr_as_name_ref,
+-    traits::convert_to_def_in_trait,
++    defs::Definition, search::{FileReference, source_change::{FileSystemEdit,
++    syntax_helpers::node_ext::expr_as_name_ref, traits::convert_to_def_in_trait,
++    FileReferenceNode}, RootDatabase, SourceChange},
++};
 +use crate::{
 +    source_change::ChangeAnnotation,
 +    text_edit::{TextEdit, TextEditBuilder},
-+};
+ };
  
  pub type Result<T, E = RenameError> = std::result::Result<T, E>;
- 
  pub struct RenameError(pub String);
  
  impl fmt::Display for RenameError {

@@ -1,8 +1,6 @@
 use syntax::{
-    AstNode, Direction, NodeOrToken, SyntaxKind, SyntaxToken, T,
-    algo::non_trivia_sibling,
-    ast::{self, syntax_factory::SyntaxFactory},
-    syntax_editor::SyntaxMapping,
+    algo::non_trivia_sibling, ast::{self, syntax_editor::SyntaxMapping,
+    syntax_factory::SyntaxFactory}, AstNode, Direction, NodeOrToken, SyntaxKind, SyntaxToken, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

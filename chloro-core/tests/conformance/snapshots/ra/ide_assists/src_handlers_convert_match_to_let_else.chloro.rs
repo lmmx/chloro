@@ -1,8 +1,7 @@
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    AstNode, SyntaxNode,
-    ast::{self, HasName, Name, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
-    syntax_editor::SyntaxEditor,
+    ast::{self, edit::AstNodeEdit, syntax_editor::SyntaxEditor, syntax_factory::SyntaxFactory},
+    AstNode, HasName, Name, SyntaxNode,
 };
 
 use crate::{

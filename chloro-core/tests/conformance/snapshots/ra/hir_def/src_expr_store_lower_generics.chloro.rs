@@ -14,13 +14,11 @@ use thin_vec::ThinVec;
 use triomphe::Arc;
 
 use crate::{
-    GenericDefId, TypeOrConstParamId, TypeParamId,
-    expr_store::{TypePtr, lower::ExprCollector},
-    hir::generics::{
-        ConstParamData, GenericParams, LifetimeParamData, TypeOrConstParamData, TypeParamData,
-        TypeParamProvenance, WherePredicate,
-    },
-    type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
+    expr_store::{TypePtr, hir::generics::{
+        ConstParamData, lower::ExprCollector},
+    type_ref::{LifetimeRef, GenericDefId, GenericParams, LifetimeParamData, LifetimeRefId,
+    TypeBound, TypeOrConstParamData, TypeOrConstParamId, TypeParamData, TypeParamId,
+    TypeParamProvenance, TypeRef, TypeRefId}, WherePredicate, },
 };
 
 pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(

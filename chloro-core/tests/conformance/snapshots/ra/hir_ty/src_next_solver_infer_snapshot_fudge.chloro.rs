@@ -5,18 +5,15 @@ use ena::{
     unify::{self as ut, UnifyKey},
 };
 use rustc_type_ir::{
-    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeVisitableExt, inherent::IntoKind,
+    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
+    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
 };
 
 use crate::next_solver::{
-    Const, ConstKind, DbInterner, Region, Ty, TyKind,
     infer::{
-        InferCtxt, UnificationTable, iter_idx_range,
-        snapshot::VariableLengths,
-        type_variable::TypeVariableOrigin,
-        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
-    },
+        InferCtxt, iter_idx_range, snapshot::VariableLengths,
+    type_variable::TypeVariableOrigin, unify_key::{ConstVariableOrigin, Const, ConstKind,
+    ConstVariableValue, ConstVidKey}, DbInterner, Region, Ty, TyKind, UnificationTable, },
 };
 
 fn vars_since_snapshot<'db, T>(

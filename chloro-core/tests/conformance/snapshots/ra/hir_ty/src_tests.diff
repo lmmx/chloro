@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22173 bytes
+Chloro size:   22137 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
@@ -11,14 +11,16 @@ Rustfmt size:  23079 bytes
  use base_db::{Crate, SourceDatabase};
  use expect_test::Expect;
  use hir_def::{
-+    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
-     db::DefDatabase,
-     expr_store::{Body, BodySourceMap},
-     hir::{ExprId, Pat, PatId},
-     item_scope::ItemScope,
-     nameres::DefMap,
-     src::HasSource,
+-    db::DefDatabase,
+-    expr_store::{Body, BodySourceMap},
+-    hir::{ExprId, Pat, PatId},
+-    item_scope::ItemScope,
+-    nameres::DefMap,
+-    src::HasSource,
 -    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
++    db::DefDatabase, expr_store::{Body, hir::{ExprId, item_scope::ItemScope, nameres::DefMap,
++    src::HasSource, AssocItemId, BodySourceMap}, DefWithBodyId, HasModule, LocalModuleId, Lookup,
++    ModuleDefId, Pat, PatId}, SyntheticSyntax,
  };
 -use hir_expand::{db::ExpandDatabase, FileRange, InFile};
 +use hir_expand::{FileRange, InFile, db::ExpandDatabase};
@@ -34,14 +36,15 @@ Rustfmt size:  23079 bytes
  use triomphe::Arc;
  
  use crate::{
-+    InferenceResult,
-     db::HirDatabase,
-     display::{DisplayTarget, HirDisplay},
-     infer::{Adjustment, TypeMismatch},
-     next_solver::Ty,
-     setup_tracing,
-     test_db::TestDB,
+-    db::HirDatabase,
+-    display::{DisplayTarget, HirDisplay},
+-    infer::{Adjustment, TypeMismatch},
+-    next_solver::Ty,
+-    setup_tracing,
+-    test_db::TestDB,
 -    InferenceResult,
++    db::HirDatabase, display::{DisplayTarget, infer::{Adjustment, next_solver::Ty, setup_tracing,
++    test_db::TestDB, HirDisplay}, InferenceResult, TypeMismatch},
  };
  
 -// These tests compare the inference results for all expressions in a file

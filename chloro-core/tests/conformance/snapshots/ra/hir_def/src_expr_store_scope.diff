@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19492 bytes
+Chloro size:   19484 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -16,11 +16,12 @@ Rustfmt size:  19938 bytes
  use triomphe::Arc;
  
  use crate::{
-+    BlockId, DefWithBodyId,
-     db::DefDatabase,
-     expr_store::{Body, ExpressionStore, HygieneId},
-     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
+-    db::DefDatabase,
+-    expr_store::{Body, ExpressionStore, HygieneId},
+-    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
 -    BlockId, DefWithBodyId,
++    db::DefDatabase, expr_store::{Body, hir::{Binding, BindingId, BlockId, DefWithBodyId, Expr,
++    ExprId, ExpressionStore, HygieneId}, Item, LabelId, Pat, PatId, Statement},
  };
  
  pub type ScopeId = Idx<ScopeData>;
@@ -297,8 +298,7 @@ Rustfmt size:  19938 bytes
      use test_utils::{assert_eq_text, extract_offset};
 -
      use crate::{
--        db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
-+        FunctionId, ModuleDefId, db::DefDatabase, nameres::crate_def_map, test_db::TestDB,
+         db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
      };
 -
 -    fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {

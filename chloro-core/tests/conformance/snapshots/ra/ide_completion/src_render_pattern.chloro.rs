@@ -6,12 +6,10 @@ use itertools::Itertools;
 use syntax::{Edition, SmolStr, ToSmolStr};
 
 use crate::{
-    CompletionItem, CompletionItemKind,
-    context::{ParamContext, ParamKind, PathCompletionCtx, PatternContext},
-    render::{
+    context::{ParamContext, format_literal_lookup, render::{
         RenderContext,
-        variant::{format_literal_label, format_literal_lookup, visible_fields},
-    },
+    variant::{format_literal_label, visible_fields}, CompletionItem, CompletionItemKind, ParamKind,
+    PathCompletionCtx, PatternContext}, },
 };
 
 pub(crate) fn render_struct_pat(

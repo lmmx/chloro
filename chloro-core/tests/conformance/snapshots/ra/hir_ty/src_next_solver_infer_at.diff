@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11703 bytes
+Chloro size:   11683 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -11,28 +11,29 @@ Rustfmt size:  11331 bytes
  //! things. (That system should probably be refactored.)
  
  use rustc_type_ir::{
-+    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
-     error::ExpectedFound,
-     inherent::{IntoKind, Span as _},
+-    error::ExpectedFound,
+-    inherent::{IntoKind, Span as _},
 -    relate::{solver_relating::RelateExt, Relate, TypeRelation},
 -    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
-+    relate::{Relate, TypeRelation, solver_relating::RelateExt},
++    error::ExpectedFound, inherent::{IntoKind, relate::{Relate, solver_relating::RelateExt}, FnSig,
++    GenericArgKind, Span as _}, TypeFoldable, TypeRelation, TypingMode, Variance,
  };
  
  use crate::next_solver::{
 -    fulfill::NextSolverError,
 -    infer::relate::lattice::{LatticeOp, LatticeOpKind},
-     AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
-     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
-     TraitRef, Ty,
-+    fulfill::NextSolverError,
-+    infer::relate::lattice::{LatticeOp, LatticeOpKind},
+-    AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
+-    PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
+-    TraitRef, Ty,
++    fulfill::NextSolverError, infer::relate::lattice::{LatticeOp, AliasTerm, AliasTy, Binder,
++    Const, DbInterner, GenericArg, Goal, LatticeOpKind}, ParamEnv, PolyExistentialProjection,
++    PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term, TraitRef, Ty,
  };
 -
  use super::{
 -    traits::{Obligation, ObligationCause},
-     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
-+    traits::{Obligation, ObligationCause},
+-    InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
++    traits::{Obligation, InferCtxt, InferOk, InferResult, ObligationCause}, TypeTrace, ValuePairs,
  };
  
  #[derive(Clone, Copy)]

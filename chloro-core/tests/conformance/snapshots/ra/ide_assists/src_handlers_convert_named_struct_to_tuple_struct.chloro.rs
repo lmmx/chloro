@@ -2,10 +2,8 @@ use either::Either;
 use ide_db::{defs::Definition, search::FileReference};
 use itertools::Itertools;
 use syntax::{
-    SyntaxKind,
-    ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility},
-    match_ast,
-    syntax_editor::{Position, SyntaxEditor},
+    ast::{self, match_ast, syntax_editor::{Position, AstNode, HasAttrs, HasGenericParams,
+    HasVisibility}, SyntaxEditor}, SyntaxKind,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

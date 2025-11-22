@@ -7,9 +7,9 @@ use syntax::{
 };
 
 use crate::{
-    CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
-    CompletionRelevancePostfixMatch, Completions,
-    context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
+    context::{DotAccess, CompletionContext, CompletionItem, CompletionItemKind,
+    CompletionRelevance, CompletionRelevancePostfixMatch, Completions, DotAccessExprCtx,
+    DotAccessKind, PatternContext},
 };
 
 pub(crate) fn complete_record_pattern_fields(
@@ -148,8 +148,7 @@ fn complete_fields(
 mod tests {
     use ide_db::SnippetCap;
     use crate::{
-        CompletionConfig,
-        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+        check_edit, check_edit_with_config}, tests::{TEST_CONFIG, CompletionConfig,
     };
     #[test]
     fn literal_struct_completion_edit() {

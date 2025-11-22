@@ -11,8 +11,9 @@ Rustfmt size:  9185 bytes
  use itertools::Itertools;
  use syntax::{
 -    ast::{self, edit::IndentLevel, Comment, CommentKind, CommentShape, Whitespace},
-     AstToken, Direction, SyntaxElement, TextRange,
-+    ast::{self, Comment, CommentKind, CommentShape, Whitespace, edit::IndentLevel},
+-    AstToken, Direction, SyntaxElement, TextRange,
++    ast::{self, edit::IndentLevel}, AstToken, Comment, CommentKind, CommentShape, Direction,
++    SyntaxElement, TextRange, Whitespace,
  };
  
  use crate::{AssistContext, AssistId, Assists};

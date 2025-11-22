@@ -12,8 +12,8 @@ use syntax::{
 };
 
 use crate::{
-    MiniCore, RootDatabase, SymbolKind, active_parameter::ActiveParameter,
-    documentation::Documentation, range_mapper::RangeMapper, search::ReferenceCategory,
+    active_parameter::ActiveParameter, documentation::Documentation, range_mapper::RangeMapper,
+    search::ReferenceCategory, MiniCore, RootDatabase, SymbolKind,
 };
 
 impl RootDatabase {

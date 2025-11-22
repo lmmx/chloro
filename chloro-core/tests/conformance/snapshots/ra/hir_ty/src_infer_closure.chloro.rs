@@ -5,35 +5,26 @@ pub(crate) mod analysis;
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
-    TraitId,
-    hir::{ClosureKind, ExprId, PatId},
-    lang_item::LangItem,
-    type_ref::TypeRefId,
+    hir::{ClosureKind, lang_item::LangItem, type_ref::TypeRefId, ExprId, PatId}, TraitId,
 };
 use rustc_type_ir::{
-    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
-    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+    inherent::{BoundExistentialPredicates, ClosureArgs, ClosureArgsParts, CoroutineArgs,
+    CoroutineArgsParts, CoroutineClosureArgs, CoroutineClosureArgsParts, GenericArgs as _,
+    Interner, IntoKind, SliceLike, Ty as _}, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
     TypeVisitor,
-    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
 };
 use tracing::debug;
 
 use crate::{
-    FnAbi,
-    db::{InternedClosure, InternedCoroutine},
-    infer::{BreakableKind, Diverges, coerce::CoerceMany},
+    abi::Safety, coerce::CoerceMany}, db::{InternedClosure,
+    infer::{
+            BoundRegionConversionTime, infer::{BreakableKind,
     next_solver::{
-        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
-        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
-        PredicateKind, SolverDefId, Ty, TyKind,
-        abi::Safety,
-        infer::{
-            BoundRegionConversionTime, InferOk, InferResult,
-            traits::{ObligationCause, PredicateObligations},
-        },
-        util::explicit_item_bounds,
-    },
-    traits::FnTrait,
+        AliasTy, traits::FnTrait, traits::{ObligationCause,
+    util::explicit_item_bounds, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind,
+    DbInterner, Diverges, ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult,
+    InternedCoroutine}, PolyFnSig, PolyProjectionPredicate, Predicate, PredicateKind,
+    PredicateObligations}, SolverDefId, Ty, TyKind, }, },
 };
 use super::{Expectation, InferenceContext};
 

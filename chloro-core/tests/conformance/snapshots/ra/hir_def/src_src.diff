@@ -17,10 +17,7 @@ Rustfmt size:  6876 bytes
 +use syntax::{AstNode, AstPtr, ast};
  
  use crate::{
--    attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
--    LocalTypeOrConstParamId, Lookup, UseId, VariantId,
-+    AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
-+    UseId, VariantId, attr::Attrs, db::DefDatabase,
+     attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
  };
  
  pub trait HasSource {

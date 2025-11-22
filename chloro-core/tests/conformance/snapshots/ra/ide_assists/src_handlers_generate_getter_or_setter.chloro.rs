@@ -1,14 +1,12 @@
 use ide_db::{famous_defs::FamousDefs, source_change::SourceChangeBuilder};
 use stdx::{format_to, to_lower_snake_case};
 use syntax::{
-    TextRange,
-    ast::{self, AstNode, HasName, HasVisibility, edit_in_place::Indent, make},
-    ted,
+    ast::{self, edit_in_place::Indent, make}, ted, AstNode, HasName, HasVisibility, TextRange,
 };
 
 use crate::{
-    AssistContext, AssistId, Assists, GroupLabel,
-    utils::{convert_reference_type, find_struct_impl, generate_impl},
+    find_struct_impl, generate_impl}, utils::{convert_reference_type, AssistContext, AssistId,
+    Assists, GroupLabel,
 };
 
 pub(crate) fn generate_setter(

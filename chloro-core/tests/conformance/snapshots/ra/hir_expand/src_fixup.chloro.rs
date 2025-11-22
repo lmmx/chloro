@@ -4,14 +4,13 @@
 use intern::sym;
 use rustc_hash::{FxHashMap, FxHashSet};
 use span::{
-    ErasedFileAstId, FIXUP_ERASED_FILE_AST_ID_MARKER, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor,
-    SyntaxContext,
+    ErasedFileAstId, Span, SpanAnchor, SyntaxContext, FIXUP_ERASED_FILE_AST_ID_MARKER,
+    ROOT_ERASED_FILE_AST_ID,
 };
 use stdx::never;
 use syntax::{
-    SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
-    ast::{self, AstNode, HasLoopBody},
-    match_ast,
+    ast::{self, match_ast, AstNode, HasLoopBody}, SyntaxElement, SyntaxKind, SyntaxNode, TextRange,
+    TextSize,
 };
 use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
@@ -474,9 +473,7 @@ mod tests {
     use syntax_bridge::DocCommentDesugarMode;
     use triomphe::Arc;
     use crate::{
-        fixup::reverse_fixups,
-        span_map::{RealSpanMap, SpanMap},
-        tt,
+        fixup::reverse_fixups, span_map::{RealSpanMap, tt, SpanMap},
     };
     fn check_leaf_eq(
         a: &tt::Leaf,

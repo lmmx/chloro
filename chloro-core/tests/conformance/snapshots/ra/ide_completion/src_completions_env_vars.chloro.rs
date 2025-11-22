@@ -8,7 +8,7 @@ use syntax::{
 };
 
 use crate::{
-    CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
+    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
 };
 
 const CARGO_DEFINED_VARS: &[(&str, &str)] = &[

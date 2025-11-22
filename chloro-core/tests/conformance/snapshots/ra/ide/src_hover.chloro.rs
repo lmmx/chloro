@@ -6,15 +6,13 @@ use std::{iter, ops::Not};
 
 use either::Either;
 use hir::{
-    DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
-    db::DefDatabase,
+    db::DefDatabase, DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem,
+    Semantics,
 };
 use ide_db::{
-    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
-    defs::{Definition, IdentClass, NameRefClass, OperatorClass},
-    famous_defs::FamousDefs,
-    helpers::pick_best_token,
-    ra_fixture::UpmapFromRaFixture,
+    defs::{Definition, famous_defs::FamousDefs, helpers::pick_best_token,
+    ra_fixture::UpmapFromRaFixture, FileRange, FxIndexSet, IdentClass, MiniCore, NameRefClass,
+    OperatorClass}, Ranker, RootDatabase,
 };
 use itertools::{Itertools, multizip};
 use macros::UpmapFromRaFixture;
@@ -26,12 +24,9 @@ use syntax::{
 };
 
 use crate::{
-    Analysis, FileId, FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
-    doc_links::token_as_doc_comment,
-    markdown_remove::remove_markdown,
-    markup::Markup,
-    navigation_target::UpmappingResult,
-    runnables::{runnable_fn, runnable_mod},
+    doc_links::token_as_doc_comment, markdown_remove::remove_markdown, markup::Markup,
+    navigation_target::UpmappingResult, runnable_mod}, runnables::{runnable_fn, Analysis, FileId,
+    FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
 };
 
 #[derive(Clone, Debug)]

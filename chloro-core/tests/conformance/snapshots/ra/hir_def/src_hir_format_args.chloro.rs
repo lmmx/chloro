@@ -1,6 +1,5 @@
 //! Parses `format_args` input.
 
-use PositionUsedAs::*;
 use either::Either;
 use hir_expand::name::Name;
 use intern::Symbol;
@@ -11,6 +10,7 @@ use syntax::{
     TextRange,
     ast::{self, IsString},
 };
+use PositionUsedAs::*;
 
 use crate::hir::ExprId;
 

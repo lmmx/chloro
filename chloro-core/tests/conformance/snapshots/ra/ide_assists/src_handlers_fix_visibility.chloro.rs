@@ -1,8 +1,7 @@
 use hir::{HasSource, HasVisibility, ModuleDef, PathResolution, ScopeDef, db::HirDatabase};
 use ide_db::FileId;
 use syntax::{
-    AstNode, TextRange,
-    ast::{self, HasVisibility as _, edit_in_place::HasVisibilityEdit, make},
+    ast::{self, edit_in_place::HasVisibilityEdit, make}, AstNode, HasVisibility as _, TextRange,
 };
 
 use crate::{AssistContext, AssistId, Assists};

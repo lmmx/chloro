@@ -1,17 +1,13 @@
 use either::Either;
 use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
 use ide_db::{
-    famous_defs::FamousDefs,
-    source_change::{SourceChange, SourceChangeBuilder},
-    text_edit::TextEdit,
+    famous_defs::FamousDefs, source_change::{SourceChange, text_edit::TextEdit,
+    SourceChangeBuilder},
 };
 use syntax::{
-    AstNode, AstPtr, TextSize,
     ast::{
-        self, BlockExpr, Expr, ExprStmt, HasArgList,
-        edit::{AstNodeEdit, IndentLevel},
-        syntax_factory::SyntaxFactory,
-    },
+        self, edit::{AstNodeEdit, syntax_factory::SyntaxFactory, AstNode, AstPtr,
+    BlockExpr, Expr, ExprStmt, HasArgList, IndentLevel}, TextSize, },
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};

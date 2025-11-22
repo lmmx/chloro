@@ -69,25 +69,17 @@ pub use ide_completion::{
     CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
 };
 pub use ide_db::{
-    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
-    assists::ExprFillDefaultMode,
-    base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
-    documentation::Documentation,
-    label::Label,
-    line_index::{LineCol, LineIndex},
-    prime_caches::ParallelPrimeCachesProgress,
-    search::{ReferenceCategory, SearchScope},
-    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
-    symbol_index::Query,
-    text_edit::{Indel, TextEdit},
+    assists::ExprFillDefaultMode, base_db::{Crate, documentation::Documentation, label::Label,
+    line_index::{LineCol, prime_caches::ParallelPrimeCachesProgress, search::{ReferenceCategory,
+    source_change::{FileSystemEdit, symbol_index::Query, text_edit::{Indel, CrateGraphBuilder,
+    FileChange, FileId, FilePosition, FileRange, LineIndex}, RootDatabase, SearchScope}, Severity,
+    SnippetEdit, SourceChange}, SourceRoot, SourceRootId}, SymbolKind, TextEdit},
 };
 use ide_db::{
-    FxHashMap, FxIndexSet, LineIndexDatabase,
     base_db::{
-        CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
-        salsa::Cancelled,
-    },
-    prime_caches, symbol_index,
+        CrateOrigin, prime_caches, salsa::Cancelled, symbol_index,
+    CrateWorkspaceData, Env, FileSet, FxHashMap, FxIndexSet, LineIndexDatabase, RootQueryDb,
+    SourceDatabase, VfsPath, },
 };
 use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
@@ -101,44 +93,31 @@ use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
 
 use crate::navigation_target::ToNav;
 pub use crate::{
-    annotations::{Annotation, AnnotationConfig, AnnotationKind, AnnotationLocation},
-    call_hierarchy::{CallHierarchyConfig, CallItem},
-    expand_macro::ExpandedMacro,
-    file_structure::{FileStructureConfig, StructureNode, StructureNodeKind},
-    folding_ranges::{Fold, FoldKind},
-    goto_definition::GotoDefinitionConfig,
-    goto_implementation::GotoImplementationConfig,
-    highlight_related::{HighlightRelatedConfig, HighlightedRange},
-    hover::{
-        HoverAction, HoverConfig, HoverDocFormat, HoverGotoTypeData, HoverResult,
-        MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, SubstTyLen,
-    },
+    annotations::{Annotation, call_hierarchy::{CallHierarchyConfig, expand_macro::ExpandedMacro,
+    file_structure::{FileStructureConfig, folding_ranges::{Fold,
+    goto_definition::GotoDefinitionConfig, goto_implementation::GotoImplementationConfig,
+    highlight_related::{HighlightRelatedConfig, hover::{
+        HoverAction,
     inlay_hints::{
-        AdjustmentHints, AdjustmentHintsMode, ClosureReturnTypeHints, DiscriminantHints,
-        GenericParameterHints, InlayFieldsToResolve, InlayHint, InlayHintLabel, InlayHintLabelPart,
-        InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip, LazyProperty,
-        LifetimeElisionHints,
-    },
-    join_lines::JoinLinesConfig,
-    markup::Markup,
+        AdjustmentHints, join_lines::JoinLinesConfig, markup::Markup,
     moniker::{
-        Moniker, MonikerDescriptorKind, MonikerIdentifier, MonikerKind, MonikerResult,
-        PackageInformation, SymbolInformationKind,
-    },
-    move_item::Direction,
-    navigation_target::{NavigationTarget, TryToNav, UpmappingResult},
-    references::{FindAllRefsConfig, ReferenceSearchResult},
-    rename::{RenameConfig, RenameError},
-    runnables::{Runnable, RunnableKind, TestId, UpdateTest},
-    signature_help::SignatureHelp,
-    static_index::{
-        StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
-    },
+        Moniker, move_item::Direction, navigation_target::{NavigationTarget,
+    references::{FindAllRefsConfig, rename::{RenameConfig, runnables::{Runnable,
+    signature_help::SignatureHelp, static_index::{
+        StaticIndex,
     syntax_highlighting::{
-        HighlightConfig, HlRange,
-        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
+        HighlightConfig, tags::{Highlight, test_explorer::{TestItem,
+    AdjustmentHintsMode, AnnotationConfig, AnnotationKind, AnnotationLocation}, CallItem},
+    ClosureReturnTypeHints, DiscriminantHints, FoldKind}, GenericParameterHints, HighlightedRange},
+    HlMod, HlMods, HlOperator, HlPunct, HlRange, HlTag}, HoverConfig, HoverDocFormat,
+    HoverGotoTypeData, HoverResult, InlayFieldsToResolve, InlayHint, InlayHintLabel,
+    InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip, LazyProperty,
+    LifetimeElisionHints, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
+    MonikerDescriptorKind, MonikerIdentifier, MonikerKind, MonikerResult, PackageInformation,
+    ReferenceSearchResult}, RenameError}, RunnableKind, StaticIndexedFile, StructureNode,
+    StructureNodeKind}, SubstTyLen, SymbolInformationKind, TestId, TestItemKind}, TokenId,
+    TokenStaticData, TryToNav, UpdateTest}, UpmappingResult}, VendoredLibrariesConfig, }, }, }, },
     },
-    test_explorer::{TestItem, TestItemKind},
 };
 
 pub type Cancellable<T> = Result<T, Cancelled>;

@@ -8,6 +8,26 @@ Rustfmt size:  27860 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use hir::Mutability;
+ use ide_db::text_edit::TextEdit;
+ use ide_db::{
+-    RootDatabase, SnippetCap, SymbolKind, documentation::Documentation,
+-    imports::import_assets::LocatedImport,
++    documentation::Documentation, imports::import_assets::LocatedImport, RootDatabase, SnippetCap,
++    SymbolKind,
+ };
+ use itertools::Itertools;
+ use macros::UpmapFromRaFixture;
+ use syntax::{Edition, SmolStr, TextRange, TextSize, format_smolstr};
+ 
+ use crate::{
+-    context::{CompletionContext, PathCompletionCtx},
+-    render::{RenderContext, render_path_resolution},
++    context::{CompletionContext, render::{RenderContext, render_path_resolution},
++    PathCompletionCtx},
+ };
+ 
+ /// `CompletionItem` describes a single completion entity which expands to 1 or more entries in the
  pub struct CompletionItem {
      /// Label in the completion pop up which identifies completion.
      pub label: CompletionItemLabel,

@@ -6,18 +6,12 @@
 
 use either::Either;
 use hir_def::{
-    AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
+    db::DefDatabase, dyn_map::{
+        DynMap, hir::generics::GenericParams,
+    item_scope::ItemScope, keys::{self, nameres::DefMap, src::{HasChildSource, AdtId, AssocItemId,
+    AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, HasSource}, ImplId, Key},
     LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
-    VariantId,
-    db::DefDatabase,
-    dyn_map::{
-        DynMap,
-        keys::{self, Key},
-    },
-    hir::generics::GenericParams,
-    item_scope::ItemScope,
-    nameres::DefMap,
-    src::{HasChildSource, HasSource},
+    VariantId, },
 };
 use hir_expand::{HirFileId, attrs::collect_attrs};
 use span::AstIdNode;

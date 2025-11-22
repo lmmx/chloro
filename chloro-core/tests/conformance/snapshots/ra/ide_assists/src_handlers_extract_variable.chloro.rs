@@ -4,15 +4,10 @@ use ide_db::{
     syntax_helpers::{LexedStr, suggest_name},
 };
 use syntax::{
-    NodeOrToken, SyntaxKind, SyntaxNode, T,
-    algo::ancestors_at_offset,
-    ast::{
-        self, AstNode,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
-        syntax_factory::SyntaxFactory,
-    },
-    syntax_editor::Position,
+    algo::ancestors_at_offset, ast::{
+        self, edit::{AstNodeEdit, make,
+    syntax_editor::Position, syntax_factory::SyntaxFactory, AstNode, IndentLevel}, NodeOrToken,
+    SyntaxKind, SyntaxNode, T, },
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};

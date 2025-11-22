@@ -10,8 +10,8 @@ use std::ops;
 use lsp_types::Url;
 use lsp_types::request::Request;
 use lsp_types::{
-    CodeActionKind, DocumentOnTypeFormattingParams, PartialResultParams, Position, Range,
-    TextDocumentIdentifier, WorkDoneProgressParams, notification::Notification,
+    notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
+    PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
 };
 use paths::Utf8PathBuf;
 use rustc_hash::FxHashMap;

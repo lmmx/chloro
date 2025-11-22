@@ -117,8 +117,13 @@ Rustfmt size:  23884 bytes
      let prec = expr.precedence();
      if postfix {
          let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);
-         AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
-         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
+-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
++        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, AdjustmentHints,
++        AdjustmentHintsMode, InlayHintsConfig,
      };
 -
      #[test]

@@ -6,8 +6,7 @@ use ena::undo_log::UndoLogs;
 use tracing::instrument;
 
 use crate::next_solver::{
-    FxIndexMap, OpaqueTypeKey, Ty,
-    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
+    infer::snapshot::undo_log::{InferCtxtUndoLogs, FxIndexMap, OpaqueTypeKey, Ty, UndoLog},
 };
 use super::OpaqueHiddenType;
 

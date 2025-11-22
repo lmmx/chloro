@@ -13,8 +13,8 @@ use rustc_hash::FxHashMap;
 use span::FileId;
 use stdx::never;
 use syntax::{
-    AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
-    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
+    syntax_editor::{SyntaxAnnotation, AstNode, SyntaxEditor}, SyntaxElement, SyntaxNode,
+    SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
 };
 
 use crate::imports::insert_use::{ImportScope, ImportScopeKind};

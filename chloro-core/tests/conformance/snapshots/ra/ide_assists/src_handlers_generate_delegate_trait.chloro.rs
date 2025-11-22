@@ -3,27 +3,20 @@ use std::ops::Not;
 use either::Either;
 use hir::{HasVisibility, db::HirDatabase};
 use ide_db::{
-    FxHashMap, FxHashSet,
-    assists::{AssistId, GroupLabel},
-    path_transform::PathTransform,
-    syntax_helpers::suggest_name,
+    assists::{AssistId, path_transform::PathTransform, syntax_helpers::suggest_name, FxHashMap,
+    FxHashSet, GroupLabel},
 };
 use itertools::Itertools;
 use syntax::{
-    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
     ast::{
-        self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
-        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
-        WherePred,
-        edit::{self, AstNodeEdit},
-        make,
-    },
-    ted::{self, Position},
+        self, edit::{self, make, ted::{self, AssocItem, AstNode, AstNodeEdit}, Edition,
+    GenericArgList, GenericParamList, HasAttrs, HasGenericArgs, HasGenericParams, HasName,
+    HasTypeBounds, HasVisibility as astHasVisibility, NodeOrToken, Path, Position}, SmolStr,
+    SyntaxKind, ToSmolStr, WherePred, },
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists},
-    utils::convert_param_list_to_arg_list,
+    assist_context::{AssistContext, utils::convert_param_list_to_arg_list, Assists},
 };
 
 pub(crate) fn generate_delegate_trait(

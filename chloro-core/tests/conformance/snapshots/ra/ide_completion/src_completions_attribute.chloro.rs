@@ -12,11 +12,10 @@ mod repr;
 use std::sync::LazyLock;
 
 use ide_db::{
-    FxHashMap, SymbolKind,
     generated::lints::{
-        CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
-    },
-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+        CLIPPY_LINT_GROUPS,
+    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths, FxHashMap, Lint, SymbolKind,
+    CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, RUSTDOC_LINTS, },
 };
 use itertools::Itertools;
 use syntax::{
@@ -25,9 +24,8 @@ use syntax::{
 };
 
 use crate::{
-    Completions,
-    context::{AttrCtx, CompletionContext, PathCompletionCtx, Qualified},
-    item::CompletionItem,
+    context::{AttrCtx, item::CompletionItem, CompletionContext, Completions, PathCompletionCtx,
+    Qualified},
 };
 pub(crate) use self::derive::complete_derive_path;
 

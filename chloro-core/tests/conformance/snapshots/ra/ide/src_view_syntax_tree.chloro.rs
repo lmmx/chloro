@@ -6,8 +6,8 @@ use ide_db::{
 use span::{TextRange, TextSize};
 use stdx::format_to;
 use syntax::{
-    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, WalkEvent,
-    ast::{self, IsString},
+    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken,
+    WalkEvent,
 };
 use triomphe::Arc;
 

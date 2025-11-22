@@ -28,10 +28,9 @@ pub mod use_trivial_constructor;
 
 use std::{fmt, mem::ManuallyDrop};
 
-pub use ::line_index;
 use base_db::{
-    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce, RootQueryDb,
-    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput, query_group,
+    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
+    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
 };
 pub use base_db::{self, FxIndexMap, FxIndexSet};
 use hir::{
@@ -43,6 +42,7 @@ pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use salsa::Durability;
 pub use span::{self, FileId};
 use triomphe::Arc;
+pub use ::line_index;
 
 use crate::line_index::LineIndex;
 

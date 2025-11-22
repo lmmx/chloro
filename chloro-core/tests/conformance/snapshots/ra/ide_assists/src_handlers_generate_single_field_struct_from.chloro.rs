@@ -2,13 +2,13 @@ use ast::make;
 use hir::next_solver::{DbInterner, TypingMode};
 use hir::{HasCrate, ModuleDef, Semantics};
 use ide_db::{
-    RootDatabase, famous_defs::FamousDefs, helpers::mod_path_to_ast,
+    famous_defs::FamousDefs, helpers::mod_path_to_ast,
     imports::import_assets::item_for_path_search, use_trivial_constructor::use_trivial_constructor,
+    RootDatabase,
 };
 use syntax::syntax_editor::{Element, Position};
 use syntax::{
-    TokenText,
-    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit},
+    ast::{self, edit::AstNodeEdit}, AstNode, HasAttrs, HasGenericParams, HasName, TokenText,
 };
 
 use crate::{

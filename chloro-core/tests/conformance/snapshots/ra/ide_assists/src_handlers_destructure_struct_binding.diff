@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23187 bytes
-Chloro size:   22718 bytes
+Chloro size:   22706 bytes
 Rustfmt size:  23470 bytes
 
 ✗ Outputs DIFFER
@@ -11,12 +11,13 @@ Rustfmt size:  23470 bytes
 -use hir::{sym, HasVisibility};
 +use hir::{HasVisibility, sym};
  use ide_db::{
-+    FxHashMap, FxHashSet,
-     assists::AssistId,
-     defs::Definition,
-     helpers::mod_path_to_ast,
-     search::{FileReference, SearchScope},
+-    assists::AssistId,
+-    defs::Definition,
+-    helpers::mod_path_to_ast,
+-    search::{FileReference, SearchScope},
 -    FxHashMap, FxHashSet,
++    assists::AssistId, defs::Definition, helpers::mod_path_to_ast, search::{FileReference,
++    FxHashMap, FxHashSet, SearchScope},
  };
  use itertools::Itertools;
 -use syntax::ast::{syntax_factory::SyntaxFactory, HasName};
@@ -26,8 +27,10 @@ Rustfmt size:  23470 bytes
 +use syntax::{AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr, ast};
  
  use crate::{
-     assist_context::{AssistContext, Assists, SourceChangeBuilder},
-     utils::ref_field_expr::determine_ref_and_parens,
+-    assist_context::{AssistContext, Assists, SourceChangeBuilder},
+-    utils::ref_field_expr::determine_ref_and_parens,
++    assist_context::{AssistContext, utils::ref_field_expr::determine_ref_and_parens, Assists,
++    SourceChangeBuilder},
  };
  
 -// Assist: destructure_struct_binding

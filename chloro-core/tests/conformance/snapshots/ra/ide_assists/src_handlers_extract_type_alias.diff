@@ -8,6 +8,14 @@ Rustfmt size:  10661 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use either::Either;
+ use ide_db::syntax_helpers::node_ext::walk_ty;
+ use syntax::{
+-    ast::{self, AstNode, HasGenericArgs, HasGenericParams, HasName, edit::IndentLevel, make},
+-    syntax_editor,
++    ast::{self, edit::IndentLevel, make}, syntax_editor, AstNode, HasGenericArgs, HasGenericParams,
++    HasName,
+ };
  
  use crate::{AssistContext, AssistId, Assists};
  

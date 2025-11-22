@@ -5,13 +5,10 @@ use std::iter;
 use rustc_ast_ir::Mutability;
 
 use crate::{
-    Adjust, Adjustment, OverloadedDeref,
-    autoderef::{Autoderef, AutoderefKind},
-    infer::unify::InferenceTable,
+    autoderef::{Autoderef, infer::unify::InferenceTable, infer::{InferOk,
     next_solver::{
-        Ty,
-        infer::{InferOk, traits::PredicateObligations},
-    },
+        Ty, traits::PredicateObligations}, Adjust, Adjustment, AutoderefKind},
+    OverloadedDeref, },
 };
 
 impl<'db> InferenceTable<'db> {

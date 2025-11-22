@@ -6,8 +6,8 @@ use la_arena::{Arena, ArenaMap, Idx};
 use syntax::{AstNode, AstPtr, ast};
 
 use crate::{
-    AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
-    UseId, VariantId, attr::Attrs, db::DefDatabase,
+    attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
+    LocalTypeOrConstParamId, Lookup, UseId, VariantId,
 };
 
 pub trait HasSource {

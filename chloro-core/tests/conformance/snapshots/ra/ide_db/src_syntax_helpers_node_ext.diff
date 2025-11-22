@@ -13,6 +13,16 @@ Rustfmt size:  18749 bytes
  use std::ops::ControlFlow;
  
  use itertools::Itertools;
+ use parser::T;
+ use span::Edition;
+ use syntax::{
+-    AstNode, AstToken, Preorder, RustLanguage, WalkEvent,
+-    ast::{self, HasLoopBody, MacroCall, PathSegmentKind, VisibilityKind},
++    ast::{self, AstNode, AstToken, HasLoopBody, MacroCall, PathSegmentKind, Preorder, RustLanguage,
++    VisibilityKind}, WalkEvent,
+ };
+ 
+ pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {
  
  pub fn full_path_of_name_ref(name_ref: &ast::NameRef) -> Option<ast::Path> {
      let mut ancestors = name_ref.syntax().ancestors();

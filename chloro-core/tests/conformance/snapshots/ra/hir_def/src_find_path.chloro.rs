@@ -2,7 +2,6 @@
 
 use std::{cell::Cell, cmp::Ordering, iter};
 
-use Stability::*;
 use base_db::{Crate, CrateOrigin, LangCrateOrigin};
 use hir_expand::{
     Lookup,
@@ -11,13 +10,11 @@ use hir_expand::{
 };
 use intern::sym;
 use rustc_hash::FxHashSet;
+use Stability::*;
 
 use crate::{
-    FindPathConfig, ModuleDefId, ModuleId,
-    db::DefDatabase,
-    item_scope::ItemInNs,
-    nameres::DefMap,
-    visibility::{Visibility, VisibilityExplicitness},
+    db::DefDatabase, item_scope::ItemInNs, nameres::DefMap, visibility::{Visibility,
+    FindPathConfig, ModuleDefId, ModuleId, VisibilityExplicitness},
 };
 
 /// Find a path that can be used to refer to a certain item. This can depend on

@@ -1,10 +1,7 @@
 use hir::Name;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    FileRange, RootDatabase,
-    assists::{Assist, AssistId},
-    label::Label,
-    source_change::SourceChange,
+    assists::{Assist, label::Label, source_change::SourceChange, AssistId}, FileRange, RootDatabase,
 };
 use syntax::{AstNode, Edition, TextRange, ToSmolStr};
 

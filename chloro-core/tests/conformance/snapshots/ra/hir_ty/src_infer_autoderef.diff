@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1618 bytes
+Chloro size:   1602 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
@@ -11,15 +11,16 @@ Rustfmt size:  1772 bytes
  use rustc_ast_ir::Mutability;
  
  use crate::{
-+    Adjust, Adjustment, OverloadedDeref,
-     autoderef::{Autoderef, AutoderefKind},
-     infer::unify::InferenceTable,
+-    autoderef::{Autoderef, AutoderefKind},
+-    infer::unify::InferenceTable,
++    autoderef::{Autoderef, infer::unify::InferenceTable, infer::{InferOk,
      next_solver::{
 -        infer::{traits::PredicateObligations, InferOk},
-         Ty,
-+        infer::{InferOk, traits::PredicateObligations},
-     },
+-        Ty,
+-    },
 -    Adjust, Adjustment, OverloadedDeref,
++        Ty, traits::PredicateObligations}, Adjust, Adjustment, AutoderefKind},
++    OverloadedDeref, },
  };
  
  impl<'db> InferenceTable<'db> {

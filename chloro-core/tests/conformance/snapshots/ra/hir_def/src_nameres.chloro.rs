@@ -61,8 +61,8 @@ use std::ops::Deref;
 
 use base_db::Crate;
 use hir_expand::{
-    EditionedFileId, ErasedAstId, HirFileId, InFile, MacroCallId, mod_path::ModPath, name::Name,
-    proc_macro::ProcMacroKind,
+    mod_path::ModPath, name::Name, proc_macro::ProcMacroKind, EditionedFileId, ErasedAstId,
+    HirFileId, InFile, MacroCallId,
 };
 use intern::Symbol;
 use itertools::Itertools;
@@ -75,14 +75,11 @@ use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
-    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
-    db::DefDatabase,
-    item_scope::{BuiltinShadowMode, ItemScope},
-    item_tree::TreeId,
-    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
-    per_ns::PerNs,
-    visibility::{Visibility, VisibilityExplicitness},
+    db::DefDatabase, item_scope::{BuiltinShadowMode, item_tree::TreeId,
+    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode}, per_ns::PerNs,
+    visibility::{Visibility, AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId,
+    FunctionId, FxIndexMap, ItemScope}, LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId,
+    ProcMacroId, UseId, VisibilityExplicitness},
 };
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
 

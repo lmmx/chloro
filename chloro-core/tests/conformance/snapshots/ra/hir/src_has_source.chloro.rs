@@ -2,9 +2,8 @@
 
 use either::Either;
 use hir_def::{
-    CallableDefId, Lookup, MacroId, VariantId,
-    nameres::{ModuleOrigin, ModuleSource},
-    src::{HasChildSource, HasSource as _},
+    nameres::{ModuleOrigin, src::{HasChildSource, CallableDefId, HasSource as _}, Lookup, MacroId,
+    ModuleSource}, VariantId,
 };
 use hir_expand::{EditionedFileId, HirFileId, InFile};
 use hir_ty::db::InternedClosure;
@@ -12,9 +11,9 @@ use syntax::ast;
 use tt::TextRange;
 
 use crate::{
-    Adt, Callee, Const, Enum, ExternCrateDecl, Field, FieldSource, Function, Impl,
+    db::HirDatabase, Adt, Callee, Const, Enum, ExternCrateDecl, Field, FieldSource, Function, Impl,
     InlineAsmOperand, Label, LifetimeParam, LocalSource, Macro, Module, Param, SelfParam, Static,
-    Struct, Trait, TypeAlias, TypeOrConstParam, Union, Variant, VariantDef, db::HirDatabase,
+    Struct, Trait, TypeAlias, TypeOrConstParam, Union, Variant, VariantDef,
 };
 
 pub trait HasSource {

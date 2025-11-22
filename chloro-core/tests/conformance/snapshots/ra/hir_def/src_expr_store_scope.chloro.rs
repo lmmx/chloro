@@ -5,10 +5,8 @@ use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
 use triomphe::Arc;
 
 use crate::{
-    BlockId, DefWithBodyId,
-    db::DefDatabase,
-    expr_store::{Body, ExpressionStore, HygieneId},
-    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
+    db::DefDatabase, expr_store::{Body, hir::{Binding, BindingId, BlockId, DefWithBodyId, Expr,
+    ExprId, ExpressionStore, HygieneId}, Item, LabelId, Pat, PatId, Statement},
 };
 
 pub type ScopeId = Idx<ScopeData>;
@@ -373,7 +371,7 @@ mod tests {
     use test_fixture::WithFixture;
     use test_utils::{assert_eq_text, extract_offset};
     use crate::{
-        FunctionId, ModuleDefId, db::DefDatabase, nameres::crate_def_map, test_db::TestDB,
+        db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
     };
     fn find_function(
         db: &TestDB,

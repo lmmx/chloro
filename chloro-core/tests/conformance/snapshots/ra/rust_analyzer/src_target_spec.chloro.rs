@@ -273,9 +273,8 @@ mod tests {
         ast::{self, AstNode},
     };
     use syntax_bridge::{
-        DocCommentDesugarMode,
-        dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
-        syntax_node_to_token_tree,
+        dummy_test_span_utils::{DUMMY, syntax_node_to_token_tree, DocCommentDesugarMode,
+        DummyTestSpanMap},
     };
     fn check(
         cfg: &str,

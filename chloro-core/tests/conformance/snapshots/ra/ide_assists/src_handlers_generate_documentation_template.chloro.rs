@@ -3,10 +3,8 @@ use ide_db::assists::AssistId;
 use itertools::Itertools;
 use stdx::{format_to, to_lower_snake_case};
 use syntax::{
-    AstNode, AstToken, Edition,
-    algo::skip_whitespace_token,
-    ast::{self, HasDocComments, HasGenericArgs, HasName, edit::IndentLevel},
-    match_ast,
+    algo::skip_whitespace_token, ast::{self, edit::IndentLevel}, match_ast, AstNode, AstToken,
+    Edition, HasDocComments, HasGenericArgs, HasName,
 };
 
 use crate::assist_context::{AssistContext, Assists};

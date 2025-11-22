@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   12116 bytes
+Chloro size:   12108 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,10 @@ Rustfmt size:  12243 bytes
  use salsa::{Cancelled, Database};
  
  use crate::{
-+    FxIndexMap, RootDatabase,
-     base_db::{Crate, RootQueryDb},
-     symbol_index::SymbolIndex,
+-    base_db::{Crate, RootQueryDb},
+-    symbol_index::SymbolIndex,
 -    FxIndexMap, RootDatabase,
++    base_db::{Crate, symbol_index::SymbolIndex, FxIndexMap, RootDatabase, RootQueryDb},
  };
  
  /// We're indexing many crates.

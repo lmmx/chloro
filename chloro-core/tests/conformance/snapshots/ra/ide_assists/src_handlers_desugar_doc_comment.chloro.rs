@@ -1,14 +1,12 @@
 use either::Either;
 use itertools::Itertools;
 use syntax::{
-    AstToken, TextRange,
-    ast::{self, CommentPlacement, Whitespace, edit::IndentLevel},
+    ast::{self, edit::IndentLevel}, AstToken, CommentPlacement, TextRange, Whitespace,
 };
 
 use crate::{
-    AssistContext, AssistId, Assists,
     handlers::convert_comment_block::{line_comment_text, relevant_line_comments},
-    utils::required_hashes,
+    utils::required_hashes, AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn desugar_doc_comment(

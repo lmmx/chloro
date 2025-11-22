@@ -44,24 +44,22 @@ use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
 use hir_expand::name::Name;
 use indexmap::{IndexMap, map::Entry};
 pub use infer::{
-    Adjust, Adjustment, AutoBorrow, BindingMode, InferenceDiagnostic, InferenceResult,
-    InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
-    cast::CastError,
-    closure::analysis::{CaptureKind, CapturedItem},
-    could_coerce, could_unify, could_unify_deeply,
+    cast::CastError, closure::analysis::{CaptureKind, could_coerce, could_unify,
+    could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode, CapturedItem},
+    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
 };
 use intern::{Symbol, sym};
 pub use lower::{
-    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
-    associated_type_shorthand_candidates, diagnostics::*,
+    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
+    TyLoweringContext, ValueTyDefId,
 };
 pub use method_resolution::check_orphan_rules;
 use mir::{MirEvalError, VTableMap};
 pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
-    inherent::{IntoKind, SliceLike, Ty as _},
+    inherent::{IntoKind, BoundVarIndexKind, SliceLike, Ty as _}, TypeSuperVisitable,
+    TypeVisitableExt, UpcastFrom,
 };
 use syntax::ast::{ConstArg, make};
 pub use target_feature::TargetFeatures;
@@ -69,19 +67,16 @@ use traits::FnTrait;
 pub use traits::TraitEnvironment;
 use triomphe::Arc;
 pub use utils::{
-    TargetFeatureIsSafeInTarget, Unsafety, all_super_traits, direct_super_traits,
-    is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+    TargetFeatureIsSafeInTarget, Unsafety,
 };
 
 use crate::{
-    db::HirDatabase,
-    display::{DisplayTarget, HirDisplay},
-    infer::unify::InferenceTable,
+    abi, db::HirDatabase, display::{DisplayTarget, infer::unify::InferenceTable,
     next_solver::{
-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
-        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
-    },
+        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy,
+    BoundTyKind, Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
+    HirDisplay}, PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys, },
 };
 
 /// A constant can have reference to other things. Memory map job is holding

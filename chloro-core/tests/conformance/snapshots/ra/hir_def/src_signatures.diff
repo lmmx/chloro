@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33467 bytes
-Chloro size:   30641 bytes
+Chloro size:   30605 bytes
 Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
@@ -21,35 +21,37 @@ Rustfmt size:  34530 bytes
  use rustc_abi::{IntegerType, ReprOptions};
  use syntax::{
 -    ast::{self, HasGenericParams, HasName, HasVisibility, IsString},
-     NodeOrToken, SyntaxNodePtr, T,
-+    ast::{self, HasGenericParams, HasName, HasVisibility, IsString},
+-    NodeOrToken, SyntaxNodePtr, T,
++    ast::{self, HasGenericParams, HasName, HasVisibility, IsString}, NodeOrToken, SyntaxNodePtr, T,
  };
  use thin_vec::ThinVec;
  use triomphe::Arc;
  
  use crate::{
-+    ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExternBlockId, FunctionId, HasModule, ImplId,
-+    ItemContainerId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, UnionId, VariantId,
-     attr::Attrs,
-     db::DefDatabase,
-     expr_store::{
+-    attr::Attrs,
+-    db::DefDatabase,
+-    expr_store::{
 -        lower::{
 -            lower_function, lower_generic_params, lower_trait, lower_type_alias, ExprCollector,
 -        },
-         ExpressionStore, ExpressionStoreSourceMap,
-+        lower::{
-+            ExprCollector, lower_function, lower_generic_params, lower_trait, lower_type_alias,
-+        },
-     },
+-        ExpressionStore, ExpressionStoreSourceMap,
+-    },
 -    hir::{generics::GenericParams, ExprId, PatId},
 -    item_tree::{visibility_from_ast, FieldsShape, RawVisibility},
-+    hir::{ExprId, PatId, generics::GenericParams},
-+    item_tree::{FieldsShape, RawVisibility, visibility_from_ast},
-     lang_item::LangItem,
-     src::HasSource,
-     type_ref::{TraitRef, TypeBound, TypeRefId},
+-    lang_item::LangItem,
+-    src::HasSource,
+-    type_ref::{TraitRef, TypeBound, TypeRefId},
 -    ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExternBlockId, FunctionId, HasModule, ImplId,
 -    ItemContainerId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, UnionId, VariantId,
++    attr::Attrs, db::DefDatabase, expr_store::{
++        ExpressionStore, generics::GenericParams},
++    hir::{ExprId, item_tree::{FieldsShape, lang_item::LangItem, lower::{
++            ExprCollector,
++    lower_function, lower_generic_params, lower_trait, lower_type_alias, src::HasSource,
++    type_ref::{TraitRef, visibility_from_ast}, ConstId, EnumId, EnumVariantId, EnumVariantLoc,
++    ExpressionStoreSourceMap, ExternBlockId, FunctionId, HasModule, ImplId, ItemContainerId,
++    ModuleId, PatId, RawVisibility, StaticId, StructId, TraitId, TypeAliasId, TypeBound,
++    TypeRefId}, UnionId, VariantId, }, },
  };
  
  #[inline]

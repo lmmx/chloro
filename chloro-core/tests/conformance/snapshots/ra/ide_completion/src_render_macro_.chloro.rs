@@ -5,9 +5,8 @@ use ide_db::{SymbolKind, documentation::Documentation};
 use syntax::{SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
-    context::{PathCompletionCtx, PathKind, PatternContext},
-    item::{Builder, CompletionItem},
-    render::RenderContext,
+    context::{PathCompletionCtx, item::{Builder, render::RenderContext, CompletionItem}, PathKind,
+    PatternContext},
 };
 
 pub(crate) fn render_macro(

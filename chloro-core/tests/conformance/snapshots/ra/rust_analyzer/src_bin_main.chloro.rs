@@ -15,9 +15,7 @@ use anyhow::Context;
 use lsp_server::Connection;
 use paths::Utf8PathBuf;
 use rust_analyzer::{
-    cli::flags,
-    config::{Config, ConfigChange, ConfigErrors},
-    from_json,
+    cli::flags, config::{Config, from_json, ConfigChange, ConfigErrors},
 };
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use vfs::AbsPathBuf;

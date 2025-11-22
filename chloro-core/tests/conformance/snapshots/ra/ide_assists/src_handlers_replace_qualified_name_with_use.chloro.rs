@@ -4,9 +4,7 @@ use ide_db::{
     imports::insert_use::{ImportScope, insert_use},
 };
 use syntax::{
-    AstNode, Edition, SyntaxNode,
-    ast::{self, HasGenericArgs, make},
-    match_ast, ted,
+    ast::{self, make}, match_ast, ted, AstNode, Edition, HasGenericArgs, SyntaxNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

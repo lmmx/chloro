@@ -11,25 +11,25 @@ Rustfmt size:  6615 bytes
  //!
  //! [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html
  
--use crate::next_solver::{
--    infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
--    PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
--};
 +pub mod canonicalizer;
 +pub mod instantiate;
 +
- use instantiate::CanonicalExt;
- use rustc_index::IndexVec;
- use rustc_type_ir::inherent::IntoKind;
--use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
++use instantiate::CanonicalExt;
++use rustc_index::IndexVec;
++use rustc_type_ir::inherent::IntoKind;
 +use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
- 
++
+ use crate::next_solver::{
+     infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
+     PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
+ };
+-use instantiate::CanonicalExt;
+-use rustc_index::IndexVec;
+-use rustc_type_ir::inherent::IntoKind;
+-use rustc_type_ir::{inherent::Ty as _, CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex};
+-
 -pub mod canonicalizer;
 -pub mod instantiate;
-+use crate::next_solver::{
-+    Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
-+    PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind, infer::InferCtxt,
-+};
  
  impl<'db> InferCtxt<'db> {
      /// Creates an instantiation S for the canonical value with fresh inference

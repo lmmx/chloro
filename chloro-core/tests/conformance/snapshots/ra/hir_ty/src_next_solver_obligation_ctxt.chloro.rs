@@ -2,13 +2,10 @@ use hir_def::TraitId;
 use rustc_type_ir::{TypeFoldable, Upcast, Variance};
 
 use crate::next_solver::{
-    Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
-    fulfill::{FulfillmentCtxt, NextSolverError},
-    infer::{
-        InferCtxt, InferOk,
-        at::ToTrace,
-        traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
-    },
+    at::ToTrace, fulfill::{FulfillmentCtxt, infer::{
+        InferCtxt, traits::{Obligation, Const,
+    DbInterner, InferOk, NextSolverError}, ObligationCause, ParamEnv, PredicateObligation,
+    PredicateObligations}, Term, TraitRef, Ty, TypeError, },
 };
 
 /// Used if you want to have pleasant experience when dealing

@@ -13,23 +13,17 @@ pub(crate) mod variant;
 use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    RootDatabase, SnippetCap, SymbolKind,
-    documentation::{Documentation, HasDocs},
-    helpers::item_name,
-    imports::import_assets::LocatedImport,
+    documentation::{Documentation, helpers::item_name, imports::import_assets::LocatedImport,
+    HasDocs}, RootDatabase, SnippetCap, SymbolKind,
 };
 use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
 
 use crate::{
-    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
-    CompletionRelevance,
-    context::{DotAccess, DotAccessKind, PathCompletionCtx, PathKind, PatternContext},
-    item::{Builder, CompletionRelevanceTypeMatch},
+    context::{DotAccess, item::{Builder, literal::render_variant_lit, macro_::{render_macro,
     render::{
-        function::render_fn,
-        literal::render_variant_lit,
-        macro_::{render_macro, render_macro_pat},
-    },
+        function::render_fn, render_macro_pat}, CompletionContext, CompletionItem,
+    CompletionItemKind, CompletionItemRefMode, CompletionRelevance, CompletionRelevanceTypeMatch},
+    DotAccessKind, PathCompletionCtx, PathKind, PatternContext}, },
 };
 
 /// Interface for data and methods required for items rendering.
@@ -676,9 +670,9 @@ mod tests {
     use ide_db::SymbolKind;
     use itertools::Itertools;
     use crate::{
-        CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
-        item::CompletionRelevanceTypeMatch,
-        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
+        check_edit, do_completion, get_all_items}, item::CompletionRelevanceTypeMatch,
+        tests::{TEST_CONFIG, CompletionItem, CompletionItemKind, CompletionRelevance,
+        CompletionRelevancePostfixMatch,
     };
     #[track_caller]
     fn check(

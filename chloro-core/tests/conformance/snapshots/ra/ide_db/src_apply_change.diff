@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10358 bytes
-Chloro size:   10251 bytes
+Chloro size:   10247 bytes
 Rustfmt size:  10358 bytes
 
 ✗ Outputs DIFFER
@@ -12,8 +12,8 @@ Rustfmt size:  10358 bytes
  
  use crate::{
 -    symbol_index::{LibraryRoots, LocalRoots},
-     ChangeWithProcMacros, RootDatabase,
-+    symbol_index::{LibraryRoots, LocalRoots},
+-    ChangeWithProcMacros, RootDatabase,
++    symbol_index::{LibraryRoots, ChangeWithProcMacros, LocalRoots}, RootDatabase,
  };
  
  impl RootDatabase {

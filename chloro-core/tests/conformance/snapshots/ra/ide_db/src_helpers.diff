@@ -2,12 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4308 bytes
+Chloro size:   4304 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use hir::{Crate, ItemInNs, ModuleDef, Name, Semantics};
+ use span::{Edition, FileId};
+ use syntax::{
+-    AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
+-    ast::{self, make},
++    ast::{self, make}, AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
+ };
+ 
+ use crate::{
      generated,
  };
  

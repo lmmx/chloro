@@ -9,18 +9,15 @@ use hir::{
     Semantics, Trait,
 };
 use ide_db::{
-    FilePosition, FxIndexMap,
-    active_parameter::{callable_for_arg_list, generic_def_for_node},
-    documentation::{Documentation, HasDocs},
+    active_parameter::{callable_for_arg_list, documentation::{Documentation, generic_def_for_node},
+    FilePosition, FxIndexMap, HasDocs},
 };
 use itertools::Itertools;
 use span::Edition;
 use stdx::format_to;
 use syntax::{
-    AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken, T, TextRange,
-    TextSize, ToSmolStr, algo,
-    ast::{self, AstChildren},
-    match_ast,
+    algo, ast::{self, match_ast, AstChildren}, AstNode, Direction, NodeOrToken,
+    SyntaxElementChildren, SyntaxNode, SyntaxToken, TextRange, TextSize, ToSmolStr, T,
 };
 
 use crate::RootDatabase;

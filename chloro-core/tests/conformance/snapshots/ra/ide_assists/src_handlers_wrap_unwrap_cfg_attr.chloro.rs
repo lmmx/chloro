@@ -1,8 +1,8 @@
 use ide_db::source_change::SourceChangeBuilder;
 use itertools::Itertools;
 use syntax::{
-    NodeOrToken, SyntaxToken, T, TextRange, algo,
-    ast::{self, AstNode, make, syntax_factory::SyntaxFactory},
+    algo, ast::{self, make, syntax_factory::SyntaxFactory}, AstNode, NodeOrToken, SyntaxToken,
+    TextRange, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

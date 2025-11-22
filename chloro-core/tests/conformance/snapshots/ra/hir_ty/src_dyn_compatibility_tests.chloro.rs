@@ -1,10 +1,10 @@
 use std::ops::ControlFlow;
 
-use DynCompatibilityViolationKind::*;
 use hir_def::db::DefDatabase;
 use rustc_hash::{FxHashMap, FxHashSet};
 use syntax::ToSmolStr;
 use test_fixture::WithFixture;
+use DynCompatibilityViolationKind::*;
 
 use crate::{dyn_compatibility::dyn_compatibility_with_callback, test_db::TestDB};
 use super::{

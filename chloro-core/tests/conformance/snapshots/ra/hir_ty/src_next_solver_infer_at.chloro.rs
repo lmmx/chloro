@@ -26,22 +26,17 @@
 //! things. (That system should probably be refactored.)
 
 use rustc_type_ir::{
-    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
-    error::ExpectedFound,
-    inherent::{IntoKind, Span as _},
-    relate::{Relate, TypeRelation, solver_relating::RelateExt},
+    error::ExpectedFound, inherent::{IntoKind, relate::{Relate, solver_relating::RelateExt}, FnSig,
+    GenericArgKind, Span as _}, TypeFoldable, TypeRelation, TypingMode, Variance,
 };
 
 use crate::next_solver::{
-    AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
-    PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
-    TraitRef, Ty,
-    fulfill::NextSolverError,
-    infer::relate::lattice::{LatticeOp, LatticeOpKind},
+    fulfill::NextSolverError, infer::relate::lattice::{LatticeOp, AliasTerm, AliasTy, Binder,
+    Const, DbInterner, GenericArg, Goal, LatticeOpKind}, ParamEnv, PolyExistentialProjection,
+    PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term, TraitRef, Ty,
 };
 use super::{
-    InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
-    traits::{Obligation, ObligationCause},
+    traits::{Obligation, InferCtxt, InferOk, InferResult, ObligationCause}, TypeTrace, ValuePairs,
 };
 
 #[derive(Clone, Copy)]

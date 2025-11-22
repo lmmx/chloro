@@ -101,8 +101,8 @@ fn variant_hints(
 mod tests {
     use expect_test::expect;
     use crate::inlay_hints::{
-        DiscriminantHints, InlayHintsConfig,
-        tests::{DISABLED_CONFIG, check_edit, check_with_config},
+        check_edit, check_with_config}, tests::{DISABLED_CONFIG, DiscriminantHints,
+        InlayHintsConfig,
     };
     #[track_caller]
     fn check_discriminants(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

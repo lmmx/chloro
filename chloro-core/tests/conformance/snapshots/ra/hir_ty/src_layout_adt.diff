@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6298 bytes
-Chloro size:   6306 bytes
+Chloro size:   6298 bytes
 Rustfmt size:  6451 bytes
 
 ✗ Outputs DIFFER
@@ -25,13 +25,10 @@ Rustfmt size:  6451 bytes
 -    db::HirDatabase,
 -    layout::{field_ty, Layout, LayoutCx, LayoutError},
 -    next_solver::GenericArgs,
++    db::HirDatabase, field_ty}, layout::{Layout, next_solver::GenericArgs, LayoutCx, LayoutError,
      TraitEnvironment,
-+    db::HirDatabase,
-+    layout::{Layout, LayoutCx, LayoutError, field_ty},
-+    next_solver::GenericArgs,
  };
  
- pub fn layout_of_adt_query<'db>(
              (
                  r,
                  sig.repr.unwrap_or_default(),

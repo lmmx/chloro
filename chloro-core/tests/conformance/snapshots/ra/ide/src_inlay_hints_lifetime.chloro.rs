@@ -14,8 +14,8 @@ use syntax::{
 use syntax::{SmolStr, format_smolstr};
 
 use crate::{
-    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
-    inlay_hints::InlayHintCtx,
+    inlay_hints::InlayHintCtx, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+    LifetimeElisionHints,
 };
 
 pub(super) fn fn_hints(
@@ -387,8 +387,8 @@ fn hints_(
 #[cfg(test)]
 mod tests {
     use crate::{
-        InlayHintsConfig, LifetimeElisionHints,
-        inlay_hints::tests::{TEST_CONFIG, check, check_with_config},
+        check, check_with_config}, inlay_hints::tests::{TEST_CONFIG, InlayHintsConfig,
+        LifetimeElisionHints,
     };
     #[test]
     fn hints_lifetimes() {

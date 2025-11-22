@@ -1,8 +1,7 @@
 use ide_db::assists::AssistId;
 use syntax::{
-    AstNode, SyntaxKind, T,
-    ast::{self, HasGenericParams, HasName, HasVisibility, edit_in_place::Indent, make},
-    syntax_editor::{Position, SyntaxEditor},
+    ast::{self, edit_in_place::Indent, make}, syntax_editor::{Position, AstNode, HasGenericParams,
+    HasName, HasVisibility, SyntaxEditor}, SyntaxKind, T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

@@ -29,8 +29,8 @@ use expect_test::Expect;
 use hir::db::HirDatabase;
 use hir::{PrefixKind, setup_tracing};
 use ide_db::{
-    FilePosition, MiniCore, RootDatabase, SnippetCap,
-    imports::insert_use::{ImportGranularity, InsertUseConfig},
+    imports::insert_use::{ImportGranularity, FilePosition, InsertUseConfig}, MiniCore,
+    RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::{format_to, trim_indent};
@@ -38,8 +38,8 @@ use test_fixture::ChangeFixture;
 use test_utils::assert_eq_text;
 
 use crate::{
-    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
-    CompletionItemKind, resolve_completion_edits,
+    resolve_completion_edits, CallableSnippets, CompletionConfig, CompletionFieldsToResolve,
+    CompletionItem, CompletionItemKind,
 };
 
 /// Lots of basic item definitions

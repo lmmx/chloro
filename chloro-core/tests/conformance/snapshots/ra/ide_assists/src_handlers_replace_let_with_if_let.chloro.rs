@@ -1,7 +1,7 @@
 use ide_db::ty_filter::TryEnum;
 use syntax::{
-    AstNode, T,
-    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory}, AstNode,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   31456 bytes
+Chloro size:   31428 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -18,18 +18,36 @@ Rustfmt size:  33220 bytes
  use either::Either;
 +pub use hir_def::VariantId;
  use hir_def::{
-     DefWithBodyId, GenericParamId, SyntheticSyntax,
+-    DefWithBodyId, GenericParamId, SyntheticSyntax,
      expr_store::{
-     db::HirDatabase,
-     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
+-        ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
+-        hir_generic_arg_to_ast, hir_segment_to_ast_segment,
+-    },
+-    hir::ExprOrPatId,
++        ExprOrPatPtr, hir::ExprOrPatId, hir_assoc_type_binding_to_ast,
++    hir_generic_arg_to_ast, hir_segment_to_ast_segment, DefWithBodyId, ExpressionStoreSourceMap,
++    GenericParamId, SyntheticSyntax, },
  };
-+pub use hir_ty::{
-+    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
-+    diagnostics::{CaseType, IncorrectCase},
+ use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
+ use hir_ty::{
+-    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
+-    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
+-    db::HirDatabase,
+-    diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
++    db::HirDatabase, diagnostics::{BodyValidationDiagnostic, CastError, InferenceDiagnostic,
++    InferenceTyDiagnosticSource, PathGenericsSource, PathLoweringDiagnostic, TyLoweringDiagnostic,
++    TyLoweringDiagnosticKind, UnsafetyReason},
 +};
++pub use hir_ty::{
++    diagnostics::{CaseType, GenericArgsProhibitedReason, IncorrectCase}, IncorrectGenericsLenKind,
+ };
  use syntax::{
-     AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
-     ast::{self, HasGenericArgs},
+-    AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
+-    ast::{self, HasGenericArgs},
+-    match_ast,
++    ast::{self, match_ast, AstNode, AstPtr, HasGenericArgs}, SyntaxError, SyntaxNodePtr, TextRange,
+ };
+ use triomphe::Arc;
  
  use crate::{AssocItem, Field, Function, GenericDef, Local, Trait, Type};
  

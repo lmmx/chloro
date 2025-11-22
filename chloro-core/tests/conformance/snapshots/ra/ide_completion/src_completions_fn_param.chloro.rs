@@ -4,14 +4,13 @@ use hir::HirDisplay;
 use ide_db::FxHashMap;
 use itertools::Either;
 use syntax::{
-    AstNode, Direction, SyntaxKind, TextRange, TextSize, algo,
-    ast::{self, HasModuleItem},
-    match_ast,
+    algo, ast::{self, match_ast, AstNode, Direction, HasModuleItem}, SyntaxKind, TextRange,
+    TextSize,
 };
 
 use crate::{
-    CompletionContext, CompletionItem, CompletionItemKind, Completions,
-    context::{ParamContext, ParamKind, PatternContext},
+    context::{ParamContext, CompletionContext, CompletionItem, CompletionItemKind, Completions,
+    ParamKind, PatternContext},
 };
 
 /// Complete repeated parameters, both name and type. For example, if all

@@ -3,16 +3,14 @@
 use hir_def::LifetimeParamId;
 use intern::Symbol;
 use rustc_type_ir::{
-    BoundVar, BoundVarIndexKind, DebruijnIndex, Flags, INNERMOST, RegionVid, TypeFlags,
-    TypeFoldable, TypeVisitable,
-    inherent::{IntoKind, PlaceholderLike, SliceLike},
-    relate::Relate,
+    inherent::{IntoKind, relate::Relate, BoundVar, BoundVarIndexKind, DebruijnIndex, Flags,
+    PlaceholderLike, RegionVid, SliceLike}, TypeFlags, TypeFoldable, TypeVisitable, INNERMOST,
 };
 
 use crate::next_solver::{GenericArg, OutlivesPredicate};
 use super::{
-    ErrorGuaranteed, SolverDefId, interned_vec_db,
-    interner::{BoundVarKind, DbInterner, Placeholder},
+    interned_vec_db, interner::{BoundVarKind, DbInterner, ErrorGuaranteed, Placeholder},
+    SolverDefId,
 };
 
 pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;

@@ -8,12 +8,9 @@ use base_db::{
     target::{self, TargetData},
 };
 use hir_def::{
-    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
-    db::DefDatabase,
-    hir::generics::WherePredicate,
-    lang_item::LangItem,
-    resolver::{HasResolver, TypeNs},
-    type_ref::{TraitBoundModifier, TypeRef},
+    db::DefDatabase, hir::generics::WherePredicate, lang_item::LangItem, resolver::{HasResolver,
+    type_ref::{TraitBoundModifier, EnumId, EnumVariantId, FunctionId, Lookup, TraitId, TypeNs},
+    TypeRef},
 };
 use intern::sym;
 use rustc_abi::TargetDataLayout;
@@ -21,10 +18,7 @@ use smallvec::{SmallVec, smallvec};
 use span::Edition;
 
 use crate::{
-    TargetFeatures,
-    db::HirDatabase,
-    layout::{Layout, TagEncoding},
-    mir::pad16,
+    db::HirDatabase, layout::{Layout, mir::pad16, TagEncoding}, TargetFeatures,
 };
 
 pub(crate) fn fn_traits(

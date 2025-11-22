@@ -143,24 +143,6 @@ use std::{::*};
 use std::{collections};
 use std::{error::Error;
 
-//~ ERROR incorrect close delimiter
-use ;
-use ;
-use ;
-use ;
-use ;
-use *;
-// https://github.com/rust-lang/rust-analyzer/issues/357
-use *;
-use ::*;
-use ::*;
-use ::bar;
-use ::foo::bar::baz;
-use ::foo::{a, b, c};
-use ::std;
-use ::{};
-pub use T_ as T;
-use Trait as _;
 pub(super) use atom::{EXPR_RECOVERY_SET, LITERAL_FIRST, literal, parse_asm_expr};
 pub(crate) use atom::{block_expr, match_arm_list};
 use b;
@@ -179,9 +161,27 @@ use foo::{};
 use outer::tree::{inner::tree};
 use std as stdlib;
 pub(crate) use token_set::TokenSet;
+use ::bar;
+use ::foo::bar::baz;
+use ::foo::{a, b, c};
+use ::std;
+pub use T_ as T;
+use Trait as _;
 use {a;
 use {a ,, b};
 use {a, b, c};
+//~ ERROR incorrect close delimiter
+use ;
+use ;
+use ;
+use ;
+use ;
+use *;
+// https://github.com/rust-lang/rust-analyzer/issues/357
+use *;
+use ::*;
+use ::*;
+use ::{};
 use {};
 
 use crate::;
@@ -201,31 +201,22 @@ use crate::grammar::attributes::ATTRIBUTE_FIRST;
 use crate::grammar::types::type_;
 use crate::m;
 use crate::{
-    Edition,
-    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-    T, TokenSet,
-    event::Event,
-    input::Input,
+    event::Event, input::Input, Edition, SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
 };
 use crate::{
     Edition, LexedStr, Step,
     SyntaxKind::{self, *},
 };
 use crate::{
-    SyntaxKind::{self, *},
-    T, TokenSet,
-    parser::{CompletedMarker, Marker, Parser},
+    parser::{CompletedMarker, Marker, Parser}, SyntaxKind::{self, TokenSet, *}, T,
 };
 use crate::{
     SyntaxKind::{self, *},
     output::Output,
 };
 pub use crate::{
-    input::Input,
-    lexed_str::LexedStr,
-    output::{Output, Step},
-    shortcuts::StrStep,
-    syntax_kind::SyntaxKind,
+    input::Input, lexed_str::LexedStr, output::{Output, shortcuts::StrStep,
+    syntax_kind::SyntaxKind, Step},
 };
 // Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs
 // avoid editing
@@ -239,10 +230,8 @@ use self::foo;
 pub use self::generated::SyntaxKind;
 use self::m;
 pub(crate) use self::{
-    adt::{record_field_list, variant_list},
-    expressions::{match_arm_list, record_expr_field_list},
-    traits::assoc_item_list,
-    use_item::use_tree_list,
+    adt::{record_field_list, expressions::{match_arm_list, record_expr_field_list},
+    traits::assoc_item_list, use_item::use_tree_list, variant_list},
 };
 use super::*;
 use super::*;
