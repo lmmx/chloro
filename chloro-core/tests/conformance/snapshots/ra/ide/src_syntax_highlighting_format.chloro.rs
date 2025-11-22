@@ -9,7 +9,9 @@ use span::Edition;
 use syntax::{AstToken, ast};
 
 use crate::{
-    syntax_highlighting::{highlight::highlight_def, highlights::Highlights}, HlRange, HlTag,
+    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
+    HlRange,
+    HlTag,
 };
 
 pub(super) fn highlight_format_string(

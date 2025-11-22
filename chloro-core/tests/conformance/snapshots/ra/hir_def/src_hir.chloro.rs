@@ -32,7 +32,8 @@ use crate::{
         HygieneId,
         path::{GenericArgs, Path},
     },
-    type_ref::{Mutability, Rawness}, BlockId,
+    type_ref::{Mutability, Rawness},
+    BlockId,
 };
 
 pub type BindingId = Idx<Binding>;

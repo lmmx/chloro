@@ -10,7 +10,10 @@ use rustc_hash::FxHashMap;
 use salsa::{Cancelled, Database};
 
 use crate::{
-    base_db::{Crate, RootQueryDb}, symbol_index::SymbolIndex, FxIndexMap, RootDatabase,
+    base_db::{Crate, RootQueryDb},
+    symbol_index::SymbolIndex,
+    FxIndexMap,
+    RootDatabase,
 };
 
 /// We're indexing many crates.

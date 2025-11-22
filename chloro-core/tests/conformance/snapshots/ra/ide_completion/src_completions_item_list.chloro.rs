@@ -3,7 +3,8 @@
 pub(crate) mod trait_impl;
 
 use crate::{
-    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified}, CompletionContext,
+    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
+    CompletionContext,
     Completions,
 };
 

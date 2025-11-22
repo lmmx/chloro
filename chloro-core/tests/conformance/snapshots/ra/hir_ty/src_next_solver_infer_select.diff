@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16020 bytes
-Chloro size:   16077 bytes
+Chloro size:   16081 bytes
 Rustfmt size:  16174 bytes
 
 ✗ Outputs DIFFER
@@ -12,8 +12,8 @@ Rustfmt size:  16174 bytes
  use macros::{TypeFoldable, TypeVisitable};
  use rustc_type_ir::{
 -    solve::{inspect::ProbeKind, BuiltinImplSource, CandidateSource, Certainty},
--    Interner,
-+    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind}, Interner,
++    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind},
+     Interner,
  };
  
  use crate::{

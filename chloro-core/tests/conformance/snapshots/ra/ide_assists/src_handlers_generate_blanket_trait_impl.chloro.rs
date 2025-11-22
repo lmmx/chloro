@@ -1,14 +1,17 @@
 use hir::{HasCrate, Semantics};
 use ide_db::{
-    assists::{AssistId, AssistKind, ExprFillDefaultMode}, famous_defs::FamousDefs,
-    syntax_helpers::suggest_name, RootDatabase,
+    assists::{AssistId, AssistKind, ExprFillDefaultMode},
+    famous_defs::FamousDefs,
+    syntax_helpers::suggest_name,
+    RootDatabase,
 };
 use syntax::{
     ast::{
         self, AssocItem, BlockExpr, GenericParam, HasAttrs, HasGenericParams, HasName,
         HasTypeBounds, HasVisibility, edit::AstNodeEdit, make,
     },
-    syntax_editor::Position, AstNode,
+    syntax_editor::Position,
+    AstNode,
 };
 
 use crate::{

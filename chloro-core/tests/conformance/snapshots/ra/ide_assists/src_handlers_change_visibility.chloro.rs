@@ -1,10 +1,12 @@
 use syntax::{
-    ast::{self, HasName, HasVisibility}, AstNode,
+    ast::{self, HasName, HasVisibility},
+    AstNode,
     SyntaxKind::{
         self, ASSOC_ITEM_LIST, CONST, ENUM, FN, MACRO_DEF, MODULE, SOURCE_FILE, STATIC, STRUCT,
         TRAIT, TYPE_ALIAS, USE, VISIBILITY,
     },
-    SyntaxNode, T,
+    SyntaxNode,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::vis_offset};

@@ -16,9 +16,19 @@ mod traits;
 use base_db::{Crate, SourceDatabase};
 use expect_test::Expect;
 use hir_def::{
-    db::DefDatabase, expr_store::{Body, BodySourceMap}, hir::{ExprId, Pat, PatId},
-    item_scope::ItemScope, nameres::DefMap, src::HasSource, AssocItemId, DefWithBodyId, HasModule,
-    LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
+    db::DefDatabase,
+    expr_store::{Body, BodySourceMap},
+    hir::{ExprId, Pat, PatId},
+    item_scope::ItemScope,
+    nameres::DefMap,
+    src::HasSource,
+    AssocItemId,
+    DefWithBodyId,
+    HasModule,
+    LocalModuleId,
+    Lookup,
+    ModuleDefId,
+    SyntheticSyntax,
 };
 use hir_expand::{FileRange, InFile, db::ExpandDatabase};
 use itertools::Itertools;
@@ -32,8 +42,13 @@ use test_fixture::WithFixture;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, display::{DisplayTarget, HirDisplay}, infer::{Adjustment, TypeMismatch},
-    next_solver::Ty, setup_tracing, test_db::TestDB, InferenceResult,
+    db::HirDatabase,
+    display::{DisplayTarget, HirDisplay},
+    infer::{Adjustment, TypeMismatch},
+    next_solver::Ty,
+    setup_tracing,
+    test_db::TestDB,
+    InferenceResult,
 };
 
 #[track_caller]

@@ -2,24 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14069 bytes
-Chloro size:   14117 bytes
+Chloro size:   14205 bytes
 Rustfmt size:  14657 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Expansion of associated items
- 
- use std::mem;
- 
- use cfg::CfgOptions;
- use hir_expand::{
--    mod_path::ModPath,
--    name::{AsName, Name},
--    span_map::SpanMap,
+     mod_path::ModPath,
+     name::{AsName, Name},
+     span_map::SpanMap,
 -    AstId, ExpandTo, HirFileId, InFile, Intern, Lookup, MacroCallKind, MacroDefKind,
-+    mod_path::ModPath, name::{AsName, Name}, span_map::SpanMap, AstId, ExpandTo, HirFileId, InFile,
-+    Intern, Lookup, MacroCallKind, MacroDefKind,
++    AstId,
++    ExpandTo,
++    HirFileId,
++    InFile,
++    Intern,
++    Lookup,
++    MacroCallKind,
++    MacroDefKind,
  };
  use intern::Interned;
  use span::AstIdMap;
@@ -30,12 +30,8 @@ Rustfmt size:  14657 bytes
  };
  use thin_vec::ThinVec;
  use triomphe::Arc;
- 
- use crate::{
--    attr::Attrs,
--    db::DefDatabase,
--    macro_call_as_call_id,
-+    attr::Attrs, db::DefDatabase, macro_call_as_call_id,
+     db::DefDatabase,
+     macro_call_as_call_id,
      nameres::{
 +        DefMap, LocalDefMap, MacroSubNs,
          attr_resolution::ResolvedAttr,
@@ -44,8 +40,19 @@ Rustfmt size:  14657 bytes
      },
 -    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
 -    ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
-+    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId, ItemLoc,
-+    MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
++    AssocItemId,
++    AstIdWithPath,
++    ConstLoc,
++    FunctionId,
++    FunctionLoc,
++    ImplId,
++    ItemContainerId,
++    ItemLoc,
++    MacroCallId,
++    ModuleId,
++    TraitId,
++    TypeAliasId,
++    TypeAliasLoc,
  };
  
  #[derive(Debug, Clone, PartialEq, Eq)]

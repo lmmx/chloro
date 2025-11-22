@@ -5,20 +5,32 @@ mod format_like;
 use base_db::SourceDatabase;
 use hir::{ItemInNs, Semantics};
 use ide_db::{
-    documentation::{Documentation, HasDocs}, imports::insert_use::ImportScope, text_edit::TextEdit,
-    ty_filter::TryEnum, RootDatabase, SnippetCap,
+    documentation::{Documentation, HasDocs},
+    imports::insert_use::ImportScope,
+    text_edit::TextEdit,
+    ty_filter::TryEnum,
+    RootDatabase,
+    SnippetCap,
 };
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, AstToken}, match_ast, SyntaxKind::{EXPR_STMT, STMT_LIST}, TextRange,
-    TextSize, T,
+    ast::{self, AstNode, AstToken},
+    match_ast,
+    SyntaxKind::{EXPR_STMT, STMT_LIST},
+    TextRange,
+    TextSize,
+    T,
 };
 
 use crate::{
     completions::postfix::format_like::add_format_like_completions,
     context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
-    item::{Builder, CompletionRelevancePostfixMatch}, CompletionItem, CompletionItemKind,
-    CompletionRelevance, Completions, SnippetScope,
+    item::{Builder, CompletionRelevancePostfixMatch},
+    CompletionItem,
+    CompletionItemKind,
+    CompletionRelevance,
+    Completions,
+    SnippetScope,
 };
 
 pub(crate) fn complete_postfix(
@@ -439,7 +451,9 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
 mod tests {
     use expect_test::expect;
     use crate::{
-        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config}, CompletionConfig, Snippet,
+        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
+        CompletionConfig,
+        Snippet,
     };
     #[test]
     fn postfix_completion_works_for_trivial_path_expression() {

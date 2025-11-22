@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11606 bytes
+Chloro size:   11630 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -12,10 +12,15 @@ Rustfmt size:  12398 bytes
 +
  use either::Either;
  use hir::{
--    db::{DefDatabase, HirDatabase},
+     db::{DefDatabase, HirDatabase},
 -    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
-+    db::{DefDatabase, HirDatabase}, resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner,
-+    HasAttrs, InFile,
++    resolve_doc_path_on,
++    sym,
++    AttrId,
++    AttrSourceMap,
++    AttrsWithOwner,
++    HasAttrs,
++    InFile,
  };
  use itertools::Itertools;
  use span::{TextRange, TextSize};

@@ -11,7 +11,9 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    db::{HirDatabase, InternedClosure, InternedClosureId}, display::DisplayTarget, mir::OperandKind,
+    db::{HirDatabase, InternedClosure, InternedClosureId},
+    display::DisplayTarget,
+    mir::OperandKind,
     next_solver::{
         DbInterner, GenericArgs, Ty, TypingMode,
         infer::{DbInternerInferExt, InferCtxt},

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65722 bytes
+Chloro size:   65786 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -20,10 +20,19 @@ Rustfmt size:  65944 bytes
 -    AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
 -    ModuleId, TraitId, TypeAliasId,
      nameres::{DefMap, block_def_map, crate_def_map},
--    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
-+    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags}, AdtId,
-+    AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup, ModuleId,
-+    TraitId, TypeAliasId,
+     signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
++    AdtId,
++    AssocItemId,
++    BlockId,
++    ConstId,
++    FunctionId,
++    HasModule,
++    ImplId,
++    ItemContainerId,
++    Lookup,
++    ModuleId,
++    TraitId,
++    TypeAliasId,
  };
  use hir_expand::name::Name;
  use intern::sym;
@@ -34,7 +43,10 @@ Rustfmt size:  65944 bytes
      inherent::{
          AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
      },
-+    FloatTy, IntTy, TypeVisitableExt, UintTy,
++    FloatTy,
++    IntTy,
++    TypeVisitableExt,
++    UintTy,
  };
  use smallvec::{SmallVec, smallvec};
  use stdx::never;
@@ -42,18 +54,13 @@ Rustfmt size:  65944 bytes
  
  use crate::{
 -    TraitEnvironment,
--    autoderef::{self, AutoderefKind},
--    db::HirDatabase,
-+    autoderef::{self, AutoderefKind}, db::HirDatabase,
+     autoderef::{self, AutoderefKind},
+     db::HirDatabase,
      infer::{Adjust, Adjustment, OverloadedDeref, PointerCast, unify::InferenceTable},
-     lang_items::is_box,
-     next_solver::{
-         },
-         obligation_ctxt::ObligationCtxt,
      },
--    traits::next_trait_solve_canonical_in_ctxt,
--    utils::all_super_traits,
-+    traits::next_trait_solve_canonical_in_ctxt, utils::all_super_traits, TraitEnvironment,
+     traits::next_trait_solve_canonical_in_ctxt,
+     utils::all_super_traits,
++    TraitEnvironment,
  };
  
  /// This is used as a key for indexing impls.

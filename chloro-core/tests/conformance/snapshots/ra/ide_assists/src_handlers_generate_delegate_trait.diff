@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   45217 bytes
+Chloro size:   45257 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
@@ -18,11 +18,12 @@ Rustfmt size:  47157 bytes
 -use hir::{db::HirDatabase, HasVisibility};
 +use hir::{HasVisibility, db::HirDatabase};
  use ide_db::{
--    assists::{AssistId, GroupLabel},
--    path_transform::PathTransform,
--    syntax_helpers::suggest_name,
-+    assists::{AssistId, GroupLabel}, path_transform::PathTransform, syntax_helpers::suggest_name,
-     FxHashMap, FxHashSet,
+     assists::{AssistId, GroupLabel},
+     path_transform::PathTransform,
+     syntax_helpers::suggest_name,
+-    FxHashMap, FxHashSet,
++    FxHashMap,
++    FxHashSet,
  };
  use itertools::Itertools;
  use syntax::{
@@ -36,9 +37,14 @@ Rustfmt size:  47157 bytes
 +        edit::{self, AstNodeEdit},
 +        make,
      },
--    ted::{self, Position},
+     ted::{self, Position},
 -    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
-+    ted::{self, Position}, AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
++    AstNode,
++    Edition,
++    NodeOrToken,
++    SmolStr,
++    SyntaxKind,
++    ToSmolStr,
  };
  
 -// Assist: generate_delegate_trait
@@ -104,7 +110,8 @@ Rustfmt size:  47157 bytes
 -// ```
 -pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 +use crate::{
-+    assist_context::{AssistContext, Assists}, utils::convert_param_list_to_arg_list,
++    assist_context::{AssistContext, Assists},
++    utils::convert_param_list_to_arg_list,
 +};
 +
 +pub(crate) fn generate_delegate_trait(

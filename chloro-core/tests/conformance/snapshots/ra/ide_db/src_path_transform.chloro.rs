@@ -9,8 +9,10 @@ use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use span::Edition;
 use syntax::{
-    ast::{self, AstNode, HasGenericArgs, HasName, make}, syntax_editor::{self, SyntaxEditor},
-    NodeOrToken, SyntaxNode,
+    ast::{self, AstNode, HasGenericArgs, HasName, make},
+    syntax_editor::{self, SyntaxEditor},
+    NodeOrToken,
+    SyntaxNode,
 };
 
 use crate::helpers::mod_path_to_ast;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   32428 bytes
+Chloro size:   32524 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -13,19 +13,40 @@ Rustfmt size:  33070 bytes
      dyn_map::{
 -        keys::{self, Key},
          DynMap,
--    },
--    hir::{BindingId, Expr, LabelId},
--    nameres::{block_def_map, crate_def_map},
++        keys::{self, Key},
+     },
+     hir::{BindingId, Expr, LabelId},
+     nameres::{block_def_map, crate_def_map},
 -    AdtId, BlockId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId,
 -    ExternCrateId, FieldId, FunctionId, GenericDefId, GenericParamId, ImplId, LifetimeParamId,
 -    Lookup, MacroId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, TypeParamId, UnionId,
 -    UseId, VariantId,
-+        keys::{self, Key},
-+    }, hir::{BindingId, Expr, LabelId},
-+    nameres::{block_def_map, crate_def_map}, AdtId, BlockId, ConstId, ConstParamId, DefWithBodyId,
-+    EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId, GenericDefId,
-+    GenericParamId, ImplId, LifetimeParamId, Lookup, MacroId, ModuleId, StaticId, StructId, TraitId,
-+    TypeAliasId, TypeParamId, UnionId, UseId, VariantId,
++    AdtId,
++    BlockId,
++    ConstId,
++    ConstParamId,
++    DefWithBodyId,
++    EnumId,
++    EnumVariantId,
++    ExternBlockId,
++    ExternCrateId,
++    FieldId,
++    FunctionId,
++    GenericDefId,
++    GenericParamId,
++    ImplId,
++    LifetimeParamId,
++    Lookup,
++    MacroId,
++    ModuleId,
++    StaticId,
++    StructId,
++    TraitId,
++    TypeAliasId,
++    TypeParamId,
++    UnionId,
++    UseId,
++    VariantId,
  };
  use hir_expand::{
 -    attrs::AttrId, name::AsName, EditionedFileId, ExpansionInfo, HirFileId, InMacroFile,

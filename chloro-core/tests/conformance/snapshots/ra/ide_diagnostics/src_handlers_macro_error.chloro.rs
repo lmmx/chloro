@@ -32,7 +32,8 @@ pub(crate) fn macro_def_error(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_diagnostics, check_diagnostics_with_config}, DiagnosticsConfig,
+        tests::{check_diagnostics, check_diagnostics_with_config},
+        DiagnosticsConfig,
     };
     #[test]
     fn builtin_macro_fails_expansion() {

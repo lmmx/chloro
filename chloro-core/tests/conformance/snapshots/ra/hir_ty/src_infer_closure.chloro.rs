@@ -5,18 +5,30 @@ pub(crate) mod analysis;
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
-    hir::{ClosureKind, ExprId, PatId}, lang_item::LangItem, type_ref::TypeRefId, TraitId,
+    hir::{ClosureKind, ExprId, PatId},
+    lang_item::LangItem,
+    type_ref::TypeRefId,
+    TraitId,
 };
 use rustc_type_ir::{
     inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
-    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
-    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+    ClosureArgs,
+    ClosureArgsParts,
+    CoroutineArgs,
+    CoroutineArgsParts,
+    CoroutineClosureArgs,
+    CoroutineClosureArgsParts,
+    Interner,
+    TypeSuperVisitable,
+    TypeVisitable,
+    TypeVisitableExt,
     TypeVisitor,
 };
 use tracing::debug;
 
 use crate::{
-    db::{InternedClosure, InternedCoroutine}, infer::{BreakableKind, Diverges, coerce::CoerceMany},
+    db::{InternedClosure, InternedCoroutine},
+    infer::{BreakableKind, Diverges, coerce::CoerceMany},
     next_solver::{
         AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
         ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
@@ -28,7 +40,8 @@ use crate::{
         },
         util::explicit_item_bounds,
     },
-    traits::FnTrait, FnAbi,
+    traits::FnTrait,
+    FnAbi,
 };
 use super::{Expectation, InferenceContext};
 

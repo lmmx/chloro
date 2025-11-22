@@ -5,8 +5,17 @@ pub(crate) use ide_db::source_change::{SourceChangeBuilder, TreeMutator};
 use ide_db::{FileId, RootDatabase, label::Label};
 use syntax::Edition;
 use syntax::{
-    algo::{self, find_node_at_offset, find_node_at_range}, AstNode, AstToken, Direction, SourceFile,
-    SyntaxElement, SyntaxKind, SyntaxToken, TextRange, TextSize, TokenAtOffset,
+    algo::{self, find_node_at_offset, find_node_at_range},
+    AstNode,
+    AstToken,
+    Direction,
+    SourceFile,
+    SyntaxElement,
+    SyntaxKind,
+    SyntaxToken,
+    TextRange,
+    TextSize,
+    TokenAtOffset,
 };
 
 use crate::{

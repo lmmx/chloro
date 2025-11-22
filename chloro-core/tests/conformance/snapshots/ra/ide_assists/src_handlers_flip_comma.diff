@@ -2,19 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5629 bytes
-Chloro size:   5436 bytes
+Chloro size:   5464 bytes
 Rustfmt size:  5831 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
--    algo::non_trivia_sibling,
--    ast::{self, syntax_factory::SyntaxFactory},
--    syntax_editor::SyntaxMapping,
+     algo::non_trivia_sibling,
+     ast::{self, syntax_factory::SyntaxFactory},
+     syntax_editor::SyntaxMapping,
 -    AstNode, Direction, NodeOrToken, SyntaxKind, SyntaxToken, T,
-+    algo::non_trivia_sibling, ast::{self, syntax_factory::SyntaxFactory},
-+    syntax_editor::SyntaxMapping, AstNode, Direction, NodeOrToken, SyntaxKind, SyntaxToken, T,
++    AstNode,
++    Direction,
++    NodeOrToken,
++    SyntaxKind,
++    SyntaxToken,
++    T,
  };
  
  use crate::{AssistContext, AssistId, Assists};

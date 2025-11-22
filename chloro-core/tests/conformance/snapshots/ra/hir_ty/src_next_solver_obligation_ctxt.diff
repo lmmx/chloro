@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6182 bytes
-Chloro size:   6228 bytes
+Chloro size:   6252 bytes
 Rustfmt size:  6332 bytes
 
 ✗ Outputs DIFFER
@@ -19,8 +19,17 @@ Rustfmt size:  6332 bytes
          traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
 -        InferCtxt, InferOk,
      },
-     Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
+-    Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
++    Const,
++    DbInterner,
++    ParamEnv,
++    Term,
++    TraitRef,
++    Ty,
++    TypeError,
  };
+ 
+ /// Used if you want to have pleasant experience when dealing
  
  impl<'a, 'db> ObligationCtxt<'a, 'db> {
      pub fn new(infcx: &'a InferCtxt<'db>) -> Self {

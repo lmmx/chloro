@@ -16,7 +16,9 @@ use crate::{
             render_tuple_lit, visible_fields,
         },
     },
-    CompletionItemKind, CompletionRelevance, CompletionRelevanceReturnType,
+    CompletionItemKind,
+    CompletionRelevance,
+    CompletionRelevanceReturnType,
 };
 
 pub(crate) fn render_variant_lit(

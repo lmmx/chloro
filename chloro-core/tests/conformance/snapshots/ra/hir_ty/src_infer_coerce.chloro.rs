@@ -36,20 +36,26 @@
 //! ```
 
 use hir_def::{
-    hir::{ExprId, ExprOrPatId}, lang_item::LangItem, signatures::FunctionSignature, CallableDefId,
+    hir::{ExprId, ExprOrPatId},
+    lang_item::LangItem,
+    signatures::FunctionSignature,
+    CallableDefId,
 };
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    error::TypeError, inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-    BoundVar, TypeAndMut,
+    error::TypeError,
+    inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
+    BoundVar,
+    TypeAndMut,
 };
 use smallvec::{SmallVec, smallvec};
 use tracing::{debug, instrument};
 use triomphe::Arc;
 
 use crate::{
-    autoderef::Autoderef, db::{HirDatabase, InternedClosureId},
+    autoderef::Autoderef,
+    db::{HirDatabase, InternedClosureId},
     infer::{AllowTwoPhase, InferenceContext, TypeMismatch, unify::InferenceTable},
     next_solver::{
         Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper,
@@ -63,7 +69,12 @@ use crate::{
         },
         obligation_ctxt::ObligationCtxt,
     },
-    utils::TargetFeatureIsSafeInTarget, Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures,
+    utils::TargetFeatureIsSafeInTarget,
+    Adjust,
+    Adjustment,
+    AutoBorrow,
+    PointerCast,
+    TargetFeatures,
     TraitEnvironment,
 };
 

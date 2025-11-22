@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   58406 bytes
+Chloro size:   58486 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
@@ -13,20 +13,28 @@ Rustfmt size:  58546 bytes
  
  use std::{
 -    env, fmt,
--    ops::AddAssign,
--    panic::{AssertUnwindSafe, catch_unwind},
-+    env, fmt, ops::AddAssign, panic::{AssertUnwindSafe, catch_unwind},
++    env,
++    fmt,
+     ops::AddAssign,
+     panic::{AssertUnwindSafe, catch_unwind},
      time::{SystemTime, UNIX_EPOCH},
- };
  
  use cfg::{CfgAtom, CfgDiff};
  use hir::{
 -    Adt, AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef,
 -    Name,
--    db::{DefDatabase, ExpandDatabase, HirDatabase},
--    next_solver::{DbInterner, GenericArgs},
-+    db::{DefDatabase, ExpandDatabase, HirDatabase}, next_solver::{DbInterner, GenericArgs}, Adt,
-+    AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef, Name,
+     db::{DefDatabase, ExpandDatabase, HirDatabase},
+     next_solver::{DbInterner, GenericArgs},
++    Adt,
++    AssocItem,
++    Crate,
++    DefWithBody,
++    FindPathConfig,
++    HasCrate,
++    HasSource,
++    HirDisplay,
++    ModuleDef,
++    Name,
  };
  use hir_def::{
      SyntheticSyntax,
@@ -34,8 +42,10 @@ Rustfmt size:  58546 bytes
  };
  use ide_db::{
 -    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
--    base_db::{SourceDatabase, salsa::Database},
-+    base_db::{SourceDatabase, salsa::Database}, EditionedFileId, LineIndexDatabase, MiniCore,
+     base_db::{SourceDatabase, salsa::Database},
++    EditionedFileId,
++    LineIndexDatabase,
++    MiniCore,
 +    SnippetCap,
  };
  use itertools::Itertools;
@@ -44,12 +54,13 @@ Rustfmt size:  58546 bytes
  
  use crate::cli::{
 -    Verbosity,
--    flags::{self, OutputFormat},
+     flags::{self, OutputFormat},
 -    full_name_of_item, print_memory_usage,
--    progress_report::ProgressReport,
--    report_metric,
-+    flags::{self, OutputFormat}, full_name_of_item, print_memory_usage,
-+    progress_report::ProgressReport, report_metric, Verbosity,
++    full_name_of_item,
++    print_memory_usage,
+     progress_report::ProgressReport,
+     report_metric,
++    Verbosity,
  };
  
  impl flags::AnalysisStats {

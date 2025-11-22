@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35981 bytes
+Chloro size:   35989 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -21,9 +21,10 @@ Rustfmt size:  36357 bytes
 +        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
 +        make,
      },
--    ted::{self, Position},
+     ted::{self, Position},
 -    Direction, SyntaxElement,
-+    ted::{self, Position}, Direction, SyntaxElement,
++    Direction,
++    SyntaxElement,
  };
  
  use crate::syntax_helpers::node_ext::vis_eq;

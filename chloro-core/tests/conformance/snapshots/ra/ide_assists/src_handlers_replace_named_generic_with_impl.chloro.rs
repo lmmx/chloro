@@ -1,10 +1,14 @@
 use hir::{FileRange, Semantics};
 use ide_db::text_edit::TextRange;
 use ide_db::{
-    defs::Definition, search::{SearchScope, UsageSearchResult}, EditionedFileId, RootDatabase,
+    defs::Definition,
+    search::{SearchScope, UsageSearchResult},
+    EditionedFileId,
+    RootDatabase,
 };
 use syntax::{
-    ast::{self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType, make}, match_ast,
+    ast::{self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType, make},
+    match_ast,
     AstNode,
 };
 

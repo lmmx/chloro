@@ -3,8 +3,11 @@ use std::ops::Not;
 use either::Either;
 use hir::{HasVisibility, db::HirDatabase};
 use ide_db::{
-    assists::{AssistId, GroupLabel}, path_transform::PathTransform, syntax_helpers::suggest_name,
-    FxHashMap, FxHashSet,
+    assists::{AssistId, GroupLabel},
+    path_transform::PathTransform,
+    syntax_helpers::suggest_name,
+    FxHashMap,
+    FxHashSet,
 };
 use itertools::Itertools;
 use syntax::{
@@ -15,11 +18,18 @@ use syntax::{
         edit::{self, AstNodeEdit},
         make,
     },
-    ted::{self, Position}, AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
+    ted::{self, Position},
+    AstNode,
+    Edition,
+    NodeOrToken,
+    SmolStr,
+    SyntaxKind,
+    ToSmolStr,
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists}, utils::convert_param_list_to_arg_list,
+    assist_context::{AssistContext, Assists},
+    utils::convert_param_list_to_arg_list,
 };
 
 pub(crate) fn generate_delegate_trait(

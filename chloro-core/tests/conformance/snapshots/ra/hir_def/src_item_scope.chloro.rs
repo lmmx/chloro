@@ -16,9 +16,24 @@ use syntax::ast;
 use thin_vec::ThinVec;
 
 use crate::{
-    db::DefDatabase, per_ns::{Item, MacrosItem, PerNs, TypesItem, ValuesItem},
-    visibility::Visibility, AdtId, BuiltinType, ConstId, ExternBlockId, ExternCrateId, FxIndexMap,
-    HasModule, ImplId, LocalModuleId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, UseId,
+    db::DefDatabase,
+    per_ns::{Item, MacrosItem, PerNs, TypesItem, ValuesItem},
+    visibility::Visibility,
+    AdtId,
+    BuiltinType,
+    ConstId,
+    ExternBlockId,
+    ExternCrateId,
+    FxIndexMap,
+    HasModule,
+    ImplId,
+    LocalModuleId,
+    Lookup,
+    MacroId,
+    ModuleDefId,
+    ModuleId,
+    TraitId,
+    UseId,
 };
 
 #[derive(Debug, Default)]

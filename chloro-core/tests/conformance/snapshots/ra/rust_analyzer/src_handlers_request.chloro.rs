@@ -8,8 +8,8 @@ use base64::{Engine, prelude::BASE64_STANDARD};
 use ide::{
     AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,
     FileRange, FileStructureConfig, FindAllRefsConfig, HoverAction, HoverGotoTypeData,
-    InlayFieldsToResolve, Query, RangeInfo, ReferenceCategory, Runnable, RunnableKind, SingleResolve,
-    SourceChange, TextEdit,
+    InlayFieldsToResolve, Query, RangeInfo, ReferenceCategory, Runnable, RunnableKind,
+    SingleResolve, SourceChange, TextEdit,
 };
 use ide_db::{FxHashMap, SymbolKind};
 use itertools::Itertools;
@@ -20,8 +20,8 @@ use lsp_types::{
     CodeLens, CompletionItem, FoldingRange, FoldingRangeParams, HoverContents, InlayHint,
     InlayHintParams, Location, LocationLink, Position, PrepareRenameResponse, Range, RenameParams,
     ResourceOp, ResourceOperationKind, SemanticTokensDeltaParams, SemanticTokensFullDeltaResult,
-    SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult,
-    SymbolInformation, SymbolTag, TextDocumentIdentifier, Url, WorkspaceEdit,
+    SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+    SemanticTokensResult, SymbolInformation, SymbolTag, TextDocumentIdentifier, Url, WorkspaceEdit,
 };
 use paths::Utf8PathBuf;
 use project_model::{CargoWorkspace, ManifestPath, ProjectWorkspaceKind, TargetKind};
@@ -36,7 +36,8 @@ use crate::{
         ClientCommandsConfig, Config, HoverActionsConfig, RustfmtConfig, WorkspaceSymbolConfig,
     },
     diagnostics::convert_diagnostic,
-    global_state::{FetchWorkspaceRequest, GlobalState, GlobalStateSnapshot}, line_index::LineEndings,
+    global_state::{FetchWorkspaceRequest, GlobalState, GlobalStateSnapshot},
+    line_index::LineEndings,
     lsp::{
         LspError, completion_item_hash,
         ext::{
@@ -50,7 +51,8 @@ use crate::{
         self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
         FetchDependencyListResult, PositionOrRange, ViewCrateGraphParams, WorkspaceSymbolParams,
     },
-    target_spec::{CargoTargetSpec, TargetSpec}, test_runner::{CargoTestHandle, TestTarget},
+    target_spec::{CargoTargetSpec, TargetSpec},
+    test_runner::{CargoTestHandle, TestTarget},
     try_default,
 };
 

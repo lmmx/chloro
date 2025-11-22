@@ -5,7 +5,8 @@ use std::ops::ControlFlow;
 use hir_def::{ImplId, TraitId};
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_type_ir::{
-    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind}, Interner,
+    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind},
+    Interner,
 };
 
 use crate::{

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 66636 bytes
-Chloro size:   65327 bytes
+Chloro size:   65371 bytes
 Rustfmt size:  66636 bytes
 
 ✗ Outputs DIFFER
@@ -11,13 +11,14 @@ Rustfmt size:  66636 bytes
  
  use hir::{PathResolution, Semantics};
  use ide_db::{
-+    defs::{Definition, NameClass, NameRefClass}, helpers::pick_best_token,
-+    ra_fixture::UpmapFromRaFixture, search::{ReferenceCategory, SearchScope, UsageSearchResult},
-     FileId, MiniCore, RootDatabase,
--    defs::{Definition, NameClass, NameRefClass},
--    helpers::pick_best_token,
--    ra_fixture::UpmapFromRaFixture,
--    search::{ReferenceCategory, SearchScope, UsageSearchResult},
+-    FileId, MiniCore, RootDatabase,
+     defs::{Definition, NameClass, NameRefClass},
+     helpers::pick_best_token,
+     ra_fixture::UpmapFromRaFixture,
+     search::{ReferenceCategory, SearchScope, UsageSearchResult},
++    FileId,
++    MiniCore,
++    RootDatabase,
  };
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;
@@ -27,9 +28,14 @@ Rustfmt size:  66636 bytes
 -    AstNode,
 -    SyntaxKind::*,
 -    SyntaxNode, T, TextRange, TextSize,
--    ast::{self, HasName},
--    match_ast,
-+    ast::{self, HasName}, match_ast, AstNode, SyntaxKind::*, SyntaxNode, TextRange, TextSize, T,
+     ast::{self, HasName},
+     match_ast,
++    AstNode,
++    SyntaxKind::*,
++    SyntaxNode,
++    TextRange,
++    TextSize,
++    T,
  };
  
  use crate::{

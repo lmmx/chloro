@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15319 bytes
-Chloro size:   14672 bytes
+Chloro size:   14692 bytes
 Rustfmt size:  15319 bytes
 
 ✗ Outputs DIFFER
@@ -21,14 +21,17 @@ Rustfmt size:  15319 bytes
  use syntax::{
 -    AstNode, SyntaxNode,
      ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
--    syntax_editor::SyntaxEditor,
-+    syntax_editor::SyntaxEditor, AstNode, SyntaxNode,
+     syntax_editor::SyntaxEditor,
++    AstNode,
++    SyntaxNode,
  };
  
  use crate::{
 -    AssistContext, AssistId, Assists,
--    utils::{invert_boolean_expression, unwrap_trivial_block},
-+    utils::{invert_boolean_expression, unwrap_trivial_block}, AssistContext, AssistId, Assists,
+     utils::{invert_boolean_expression, unwrap_trivial_block},
++    AssistContext,
++    AssistId,
++    Assists,
  };
  
 -// Assist: convert_if_to_bool_then

@@ -7,11 +7,20 @@ use std::fmt;
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    lang_item::LangItem, resolver::{HasResolver, ValueNs}, AdtId, AssocItemId, DefWithBodyId,
-    HasModule, ItemContainerId, Lookup,
+    lang_item::LangItem,
+    resolver::{HasResolver, ValueNs},
+    AdtId,
+    AssocItemId,
+    DefWithBodyId,
+    HasModule,
+    ItemContainerId,
+    Lookup,
 };
 pub(crate) use hir_def::{
-    expr_store::Body, hir::{Expr, ExprId, MatchArm, Pat, PatId, Statement}, LocalFieldId, VariantId,
+    expr_store::Body,
+    hir::{Expr, ExprId, MatchArm, Pat, PatId, Statement},
+    LocalFieldId,
+    VariantId,
 };
 use intern::sym;
 use itertools::Itertools;
@@ -37,7 +46,9 @@ use crate::{
         DbInterner, Ty, TyKind, TypingMode,
         infer::{DbInternerInferExt, InferCtxt},
     },
-    Adjust, InferenceResult, TraitEnvironment,
+    Adjust,
+    InferenceResult,
+    TraitEnvironment,
 };
 
 pub enum BodyValidationDiagnostic {

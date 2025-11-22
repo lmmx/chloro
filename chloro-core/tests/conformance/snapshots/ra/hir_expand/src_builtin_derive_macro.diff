@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53967 bytes
-Chloro size:   53641 bytes
+Chloro size:   53665 bytes
 Rustfmt size:  56860 bytes
 
 ✗ Outputs DIFFER
@@ -28,12 +28,9 @@ Rustfmt size:  56860 bytes
  use syntax_bridge::DocCommentDesugarMode;
  use tracing::debug;
  
- use crate::{
--    builtin::quote::dollar_crate,
--    db::ExpandDatabase,
--    hygiene::span_with_def_site_ctxt,
--    name::{self, AsName, Name},
--    span_map::ExpansionSpanMap,
+     hygiene::span_with_def_site_ctxt,
+     name::{self, AsName, Name},
+     span_map::ExpansionSpanMap,
 -    tt, ExpandError, ExpandResult, MacroCallId,
 -};
 -use syntax::{
@@ -42,8 +39,9 @@ Rustfmt size:  56860 bytes
 -        HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds,
 -    },
 -    ted,
-+    builtin::quote::dollar_crate, db::ExpandDatabase, hygiene::span_with_def_site_ctxt,
-+    name::{self, AsName, Name}, span_map::ExpansionSpanMap, tt, ExpandError, ExpandResult,
++    tt,
++    ExpandError,
++    ExpandResult,
 +    MacroCallId,
  };
  

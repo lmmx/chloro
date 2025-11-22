@@ -4,7 +4,8 @@ use std::iter;
 use hir::AsAssocItem;
 use ide_db::RootDatabase;
 use ide_db::{
-    helpers::mod_path_to_ast, imports::import_assets::{ImportCandidate, LocatedImport},
+    helpers::mod_path_to_ast,
+    imports::import_assets::{ImportCandidate, LocatedImport},
 };
 use syntax::Edition;
 use syntax::ast::HasGenericArgs;
@@ -14,7 +15,9 @@ use syntax::{
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists}, handlers::auto_import::find_importable_node, AssistId,
+    assist_context::{AssistContext, Assists},
+    handlers::auto_import::find_importable_node,
+    AssistId,
     GroupLabel,
 };
 

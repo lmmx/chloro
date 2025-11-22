@@ -5,8 +5,10 @@ use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
 use triomphe::Arc;
 
 use crate::{
-    db::DefDatabase, expr_store::{Body, ExpressionStore, HygieneId},
-    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement}, BlockId,
+    db::DefDatabase,
+    expr_store::{Body, ExpressionStore, HygieneId},
+    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
+    BlockId,
     DefWithBodyId,
 };
 

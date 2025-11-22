@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29430 bytes
+Chloro size:   29442 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -29,14 +29,12 @@ Rustfmt size:  29385 bytes
  
  use crate::{
 -    RootDatabase,
--    defs::Definition,
--    search::{FileReference, FileReferenceNode},
--    source_change::{FileSystemEdit, SourceChange},
--    syntax_helpers::node_ext::expr_as_name_ref,
--    traits::convert_to_def_in_trait,
-+    defs::Definition, search::{FileReference, FileReferenceNode},
-+    source_change::{FileSystemEdit, SourceChange}, syntax_helpers::node_ext::expr_as_name_ref,
-+    traits::convert_to_def_in_trait, RootDatabase,
+     defs::Definition,
+     search::{FileReference, FileReferenceNode},
+     source_change::{FileSystemEdit, SourceChange},
+     syntax_helpers::node_ext::expr_as_name_ref,
+     traits::convert_to_def_in_trait,
++    RootDatabase,
 +};
 +use crate::{
 +    source_change::ChangeAnnotation,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   35280 bytes
+Chloro size:   35292 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -28,20 +28,15 @@ Rustfmt size:  37277 bytes
  use thin_vec::ThinVec;
  use triomphe::Arc;
  use tt::TextRange;
- 
- use crate::{
--    db::DefDatabase,
--    expr_store::path::Path,
-+    db::DefDatabase, expr_store::path::Path,
-     hir::{
          Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
          PatId, RecordFieldPat, Statement,
      },
 -    nameres::{block_def_map, DefMap},
--    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
--    BlockId, SyntheticSyntax,
 +    nameres::{DefMap, block_def_map},
-+    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId}, BlockId, SyntheticSyntax,
+     type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
+-    BlockId, SyntheticSyntax,
++    BlockId,
++    SyntheticSyntax,
  };
 -
  pub use self::body::{Body, BodySourceMap};

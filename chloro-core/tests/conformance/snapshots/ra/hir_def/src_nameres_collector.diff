@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 108302 bytes
-Chloro size:   107915 bytes
+Chloro size:   108095 bytes
 Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
@@ -11,15 +11,22 @@ Rustfmt size:  108302 bytes
  use cfg::{CfgAtom, CfgExpr, CfgOptions};
  use either::Either;
  use hir_expand::{
-+    attrs::{Attr, AttrId}, builtin::{find_builtin_attr, find_builtin_derive, find_builtin_macro},
-+    mod_path::{ModPath, PathKind}, name::{AsName, Name}, proc_macro::CustomProcMacroExpander,
-     EditionedFileId, ErasedAstId, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind,
-     MacroDefId, MacroDefKind,
--    attrs::{Attr, AttrId},
--    builtin::{find_builtin_attr, find_builtin_derive, find_builtin_macro},
--    mod_path::{ModPath, PathKind},
--    name::{AsName, Name},
--    proc_macro::CustomProcMacroExpander,
+-    EditionedFileId, ErasedAstId, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind,
+-    MacroDefId, MacroDefKind,
+     attrs::{Attr, AttrId},
+     builtin::{find_builtin_attr, find_builtin_derive, find_builtin_macro},
+     mod_path::{ModPath, PathKind},
+     name::{AsName, Name},
+     proc_macro::CustomProcMacroExpander,
++    EditionedFileId,
++    ErasedAstId,
++    ExpandTo,
++    HirFileId,
++    InFile,
++    MacroCallId,
++    MacroCallKind,
++    MacroDefId,
++    MacroDefKind,
  };
  use intern::{Interned, sym};
  use itertools::{Itertools, izip};
@@ -32,24 +39,49 @@ Rustfmt size:  108302 bytes
 -    MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ModuleDefId, ModuleId, ProcMacroId,
 -    ProcMacroLoc, StaticLoc, StructLoc, TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId,
 -    UseLoc,
--    attr::Attrs,
--    db::DefDatabase,
-+    attr::Attrs, db::DefDatabase,
+     attr::Attrs,
+     db::DefDatabase,
      item_scope::{GlobId, ImportId, ImportOrExternCrate, PerNsGlobImports},
-     item_tree::{
-         self, FieldsShape, ImportAlias, ImportKind, ItemTree, ItemTreeAstId, Macro2, MacroCall,
-         proc_macro::{ProcMacroDef, ProcMacroKind, parse_macro_name_and_helper_attrs},
-         sub_namespace_match,
-     },
--    per_ns::{Item, PerNs},
--    tt,
--    visibility::{RawVisibility, Visibility},
-+    per_ns::{Item, PerNs}, tt, visibility::{RawVisibility, Visibility}, AdtId, AssocItemId, AstId,
-+    AstIdWithPath, ConstLoc, CrateRootModuleId, EnumLoc, ExternBlockLoc, ExternCrateId,
-+    ExternCrateLoc, FunctionId, FunctionLoc, FxIndexMap, ImplLoc, Intern, ItemContainerId,
-+    LocalModuleId, Lookup, Macro2Id, Macro2Loc, MacroExpander, MacroId, MacroRulesId, MacroRulesLoc,
-+    MacroRulesLocFlags, ModuleDefId, ModuleId, ProcMacroId, ProcMacroLoc, StaticLoc, StructLoc,
-+    TraitLoc, TypeAliasLoc, UnionLoc, UnresolvedMacro, UseId, UseLoc,
+     per_ns::{Item, PerNs},
+     tt,
+     visibility::{RawVisibility, Visibility},
++    AdtId,
++    AssocItemId,
++    AstId,
++    AstIdWithPath,
++    ConstLoc,
++    CrateRootModuleId,
++    EnumLoc,
++    ExternBlockLoc,
++    ExternCrateId,
++    ExternCrateLoc,
++    FunctionId,
++    FunctionLoc,
++    FxIndexMap,
++    ImplLoc,
++    Intern,
++    ItemContainerId,
++    LocalModuleId,
++    Lookup,
++    Macro2Id,
++    Macro2Loc,
++    MacroExpander,
++    MacroId,
++    MacroRulesId,
++    MacroRulesLoc,
++    MacroRulesLocFlags,
++    ModuleDefId,
++    ModuleId,
++    ProcMacroId,
++    ProcMacroLoc,
++    StaticLoc,
++    StructLoc,
++    TraitLoc,
++    TypeAliasLoc,
++    UnionLoc,
++    UnresolvedMacro,
++    UseId,
++    UseLoc,
  };
  
  const GLOB_RECURSION_LIMIT: usize = 100;

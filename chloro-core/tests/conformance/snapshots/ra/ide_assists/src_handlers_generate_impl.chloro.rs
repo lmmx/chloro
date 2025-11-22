@@ -4,7 +4,10 @@ use syntax::{
 };
 
 use crate::{
-    utils::{self, DefaultMethods, IgnoreAssocItems}, AssistContext, AssistId, Assists,
+    utils::{self, DefaultMethods, IgnoreAssocItems},
+    AssistContext,
+    AssistId,
+    Assists,
 };
 
 fn insert_impl(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20372 bytes
-Chloro size:   20837 bytes
+Chloro size:   20849 bytes
 Rustfmt size:  20372 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,10 @@ Rustfmt size:  20372 bytes
  use base_db::FxIndexSet;
  use hir_expand::{
 -    HirFileId,
--    mod_path::PathKind,
--    name::AsName,
--    span_map::{SpanMap, SpanMapRef},
-+    mod_path::PathKind, name::AsName, span_map::{SpanMap, SpanMapRef}, HirFileId,
+     mod_path::PathKind,
+     name::AsName,
+     span_map::{SpanMap, SpanMapRef},
++    HirFileId,
  };
  use la_arena::Arena;
  use span::{AstIdMap, FileAstId, SyntaxContext};

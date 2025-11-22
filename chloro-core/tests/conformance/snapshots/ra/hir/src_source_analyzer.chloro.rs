@@ -16,25 +16,47 @@ use hir_def::{
         path::Path,
         scope::{ExprScopes, ScopeId},
     },
-    hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat}, lang_item::LangItem, nameres::MacroSubNs,
+    hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
+    lang_item::LangItem,
+    nameres::MacroSubNs,
     resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
-    type_ref::{Mutability, TypeRefId}, AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId,
-    FieldId, FunctionId, GenericDefId, LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
+    type_ref::{Mutability, TypeRefId},
+    AdtId,
+    AssocItemId,
+    CallableDefId,
+    ConstId,
+    DefWithBodyId,
+    FieldId,
+    FunctionId,
+    GenericDefId,
+    LocalFieldId,
+    ModuleDefId,
+    StructId,
+    TraitId,
+    VariantId,
 };
 use hir_expand::{
-    mod_path::{ModPath, PathKind, path}, name::{AsName, Name}, HirFileId, InFile,
+    mod_path::{ModPath, PathKind, path},
+    name::{AsName, Name},
+    HirFileId,
+    InFile,
 };
 use hir_ty::{
     diagnostics::{
         InsideUnsafeBlock, record_literal_missing_fields, record_pattern_missing_fields,
         unsafe_operations,
     },
-    lang_items::lang_items_for_bin_op, method_resolution,
+    lang_items::lang_items_for_bin_op,
+    method_resolution,
     next_solver::{
         DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode, infer::DbInternerInferExt,
     },
-    traits::structurally_normalize_ty, Adjustment, InferenceResult, LifetimeElisionKind,
-    TraitEnvironment, TyLoweringContext,
+    traits::structurally_normalize_ty,
+    Adjustment,
+    InferenceResult,
+    LifetimeElisionKind,
+    TraitEnvironment,
+    TyLoweringContext,
 };
 use intern::sym;
 use itertools::Itertools;
@@ -45,14 +67,39 @@ use rustc_type_ir::{
 use smallvec::SmallVec;
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, RangeItem, RangeOp}, SyntaxKind, SyntaxNode, TextRange, TextSize,
+    ast::{self, AstNode, RangeItem, RangeOp},
+    SyntaxKind,
+    SyntaxNode,
+    TextRange,
+    TextSize,
 };
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, semantics::{PathResolution, PathResolutionPerNs}, Adt, AssocItem, BindingMode,
-    BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field, Function, GenericSubstitution,
-    Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait, TupleField, Type, TypeAlias, Variant,
+    db::HirDatabase,
+    semantics::{PathResolution, PathResolutionPerNs},
+    Adt,
+    AssocItem,
+    BindingMode,
+    BuiltinAttr,
+    BuiltinType,
+    Callable,
+    Const,
+    DeriveHelper,
+    Field,
+    Function,
+    GenericSubstitution,
+    Local,
+    Macro,
+    ModuleDef,
+    Static,
+    Struct,
+    ToolModule,
+    Trait,
+    TupleField,
+    Type,
+    TypeAlias,
+    Variant,
 };
 
 /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of

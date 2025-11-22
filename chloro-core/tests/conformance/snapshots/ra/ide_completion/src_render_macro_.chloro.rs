@@ -5,7 +5,8 @@ use ide_db::{SymbolKind, documentation::Documentation};
 use syntax::{SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
-    context::{PathCompletionCtx, PathKind, PatternContext}, item::{Builder, CompletionItem},
+    context::{PathCompletionCtx, PathKind, PatternContext},
+    item::{Builder, CompletionItem},
     render::RenderContext,
 };
 

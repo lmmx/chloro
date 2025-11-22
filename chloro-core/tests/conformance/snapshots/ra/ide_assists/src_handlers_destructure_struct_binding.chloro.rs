@@ -1,7 +1,11 @@
 use hir::{HasVisibility, sym};
 use ide_db::{
-    assists::AssistId, defs::Definition, helpers::mod_path_to_ast,
-    search::{FileReference, SearchScope}, FxHashMap, FxHashSet,
+    assists::AssistId,
+    defs::Definition,
+    helpers::mod_path_to_ast,
+    search::{FileReference, SearchScope},
+    FxHashMap,
+    FxHashSet,
 };
 use itertools::Itertools;
 use syntax::ast::{HasName, syntax_factory::SyntaxFactory};

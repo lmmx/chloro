@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18486 bytes
-Chloro size:   17356 bytes
+Chloro size:   17372 bytes
 Rustfmt size:  18486 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::collections::VecDeque;
- 
- use ide_db::{
--    assists::GroupLabel,
--    famous_defs::FamousDefs,
-+    assists::GroupLabel, famous_defs::FamousDefs,
      syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
  };
  use syntax::{
@@ -21,11 +15,12 @@ Rustfmt size:  18486 bytes
      ast::{
          self, AstNode,
          Expr::BinExpr,
-         prec::{ExprPrecedence, precedence},
          syntax_factory::SyntaxFactory,
      },
--    syntax_editor::{Position, SyntaxEditor},
-+    syntax_editor::{Position, SyntaxEditor}, NodeOrToken, SyntaxKind, T,
+     syntax_editor::{Position, SyntaxEditor},
++    NodeOrToken,
++    SyntaxKind,
++    T,
  };
  
  use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};

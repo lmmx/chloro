@@ -8,9 +8,19 @@ use std::ops::ControlFlow;
 use base_db::Crate;
 use hir_def::{
     nameres::{DefMap, block_def_map, crate_def_map},
-    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags}, AdtId,
-    AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup, ModuleId,
-    TraitId, TypeAliasId,
+    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
+    AdtId,
+    AssocItemId,
+    BlockId,
+    ConstId,
+    FunctionId,
+    HasModule,
+    ImplId,
+    ItemContainerId,
+    Lookup,
+    ModuleId,
+    TraitId,
+    TypeAliasId,
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -20,14 +30,18 @@ use rustc_type_ir::{
     inherent::{
         AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
     },
-    FloatTy, IntTy, TypeVisitableExt, UintTy,
+    FloatTy,
+    IntTy,
+    TypeVisitableExt,
+    UintTy,
 };
 use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    autoderef::{self, AutoderefKind}, db::HirDatabase,
+    autoderef::{self, AutoderefKind},
+    db::HirDatabase,
     infer::{Adjust, Adjustment, OverloadedDeref, PointerCast, unify::InferenceTable},
     lang_items::is_box,
     next_solver::{
@@ -40,7 +54,9 @@ use crate::{
         },
         obligation_ctxt::ObligationCtxt,
     },
-    traits::next_trait_solve_canonical_in_ctxt, utils::all_super_traits, TraitEnvironment,
+    traits::next_trait_solve_canonical_in_ctxt,
+    utils::all_super_traits,
+    TraitEnvironment,
 };
 
 /// This is used as a key for indexing impls.

@@ -9,8 +9,15 @@ use hir_def::{
         Array, AsmOperand, BinaryOp, BindingId, CaptureBy, Expr, ExprId, ExprOrPatId, Pat, PatId,
         Statement, UnaryOp,
     },
-    item_tree::FieldsShape, lang_item::LangItem, resolver::ValueNs, DefWithBodyId, FieldId,
-    HasModule, TupleFieldId, TupleId, VariantId,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
+    resolver::ValueNs,
+    DefWithBodyId,
+    FieldId,
+    HasModule,
+    TupleFieldId,
+    TupleId,
+    VariantId,
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -22,10 +29,14 @@ use stdx::{format_to, never};
 use syntax::utils::is_raw_identifier;
 
 use crate::{
-    db::{HirDatabase, InternedClosure, InternedClosureId}, infer::InferenceContext,
+    db::{HirDatabase, InternedClosure, InternedClosureId},
+    infer::InferenceContext,
     mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
-    next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind}, traits::FnTrait, Adjust,
-    Adjustment, BindingMode,
+    next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
+    traits::FnTrait,
+    Adjust,
+    Adjustment,
+    BindingMode,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -1,7 +1,9 @@
 use either::Either;
 use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
 use ide_db::{
-    famous_defs::FamousDefs, source_change::{SourceChange, SourceChangeBuilder}, text_edit::TextEdit,
+    famous_defs::FamousDefs,
+    source_change::{SourceChange, SourceChangeBuilder},
+    text_edit::TextEdit,
 };
 use syntax::{
     ast::{
@@ -9,7 +11,9 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         syntax_factory::SyntaxFactory,
     },
-    AstNode, AstPtr, TextSize,
+    AstNode,
+    AstPtr,
+    TextSize,
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};

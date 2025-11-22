@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21912 bytes
-Chloro size:   21602 bytes
+Chloro size:   21614 bytes
 Rustfmt size:  21912 bytes
 
 ✗ Outputs DIFFER
@@ -21,8 +21,10 @@ Rustfmt size:  21912 bytes
  
  use crate::{
 -    AssistContext, AssistId, Assists,
--    utils::{find_struct_impl, generate_impl_with_item},
-+    utils::{find_struct_impl, generate_impl_with_item}, AssistContext, AssistId, Assists,
+     utils::{find_struct_impl, generate_impl_with_item},
++    AssistContext,
++    AssistId,
++    Assists,
  };
  
 -// Assist: generate_new

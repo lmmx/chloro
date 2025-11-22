@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27827 bytes
+Chloro size:   27831 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
@@ -20,15 +20,6 @@ Rustfmt size:  27860 bytes
  };
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;
- use syntax::{Edition, SmolStr, TextRange, TextSize, format_smolstr};
- 
- use crate::{
--    context::{CompletionContext, PathCompletionCtx},
--    render::{RenderContext, render_path_resolution},
-+    context::{CompletionContext, PathCompletionCtx}, render::{RenderContext, render_path_resolution},
- };
- 
- /// `CompletionItem` describes a single completion entity which expands to 1 or more entries in the
  pub struct CompletionItem {
      /// Label in the completion pop up which identifies completion.
      pub label: CompletionItemLabel,

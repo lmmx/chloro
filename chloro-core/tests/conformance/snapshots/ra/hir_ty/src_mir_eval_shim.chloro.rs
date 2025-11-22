@@ -13,7 +13,8 @@ use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike, Ty as _};
 use stdx::never;
 
 use crate::{
-    display::DisplayTarget, drop::{DropGlue, has_drop_glue},
+    display::DisplayTarget,
+    drop::{DropGlue, has_drop_glue},
     mir::eval::{
         Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
         InternedClosure, Interval, IntervalAndTy, IntervalOrOwned, ItemContainerId, LangItem,

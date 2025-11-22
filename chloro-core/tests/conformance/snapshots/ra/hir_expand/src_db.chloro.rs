@@ -10,14 +10,31 @@ use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
 use triomphe::Arc;
 
 use crate::{
-    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs}, builtin::pseudo_derive_attr_expansion,
-    cfg_process, declarative::DeclarativeMacroExpander, fixup::{self, SyntaxFixupUndoInfo},
+    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs},
+    builtin::pseudo_derive_attr_expansion,
+    cfg_process,
+    declarative::DeclarativeMacroExpander,
+    fixup::{self, SyntaxFixupUndoInfo},
     hygiene::{span_with_call_site_ctxt, span_with_def_site_ctxt, span_with_mixed_site_ctxt},
     proc_macro::{CrateProcMacros, CustomProcMacroExpander, ProcMacros},
-    span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef}, tt, AstId, BuiltinAttrExpander,
-    BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerCallInfo, EagerExpander, EditionedFileId,
-    ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId, MacroCallKind, MacroCallLoc,
-    MacroDefId, MacroDefKind,
+    span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
+    tt,
+    AstId,
+    BuiltinAttrExpander,
+    BuiltinDeriveExpander,
+    BuiltinFnLikeExpander,
+    EagerCallInfo,
+    EagerExpander,
+    EditionedFileId,
+    ExpandError,
+    ExpandResult,
+    ExpandTo,
+    HirFileId,
+    MacroCallId,
+    MacroCallKind,
+    MacroCallLoc,
+    MacroDefId,
+    MacroDefKind,
 };
 
 /// This is just to ensure the types of smart_macro_arg and macro_arg are the same

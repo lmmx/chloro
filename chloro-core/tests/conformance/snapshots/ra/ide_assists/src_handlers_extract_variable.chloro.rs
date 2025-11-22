@@ -11,7 +11,11 @@ use syntax::{
         make,
         syntax_factory::SyntaxFactory,
     },
-    syntax_editor::Position, NodeOrToken, SyntaxKind, SyntaxNode, T,
+    syntax_editor::Position,
+    NodeOrToken,
+    SyntaxKind,
+    SyntaxNode,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};

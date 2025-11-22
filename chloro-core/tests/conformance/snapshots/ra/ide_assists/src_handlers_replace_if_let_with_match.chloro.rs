@@ -3,12 +3,19 @@ use std::iter::successors;
 use ide_db::{RootDatabase, defs::NameClass, ty_filter::TryEnum};
 use syntax::{
     ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
-    syntax_editor::SyntaxEditor, AstNode, Edition, SyntaxKind, TextRange, T,
+    syntax_editor::SyntaxEditor,
+    AstNode,
+    Edition,
+    SyntaxKind,
+    TextRange,
+    T,
 };
 
 use crate::{
     utils::{does_pat_match_variant, does_pat_variant_nested_or_literal, unwrap_trivial_block},
-    AssistContext, AssistId, Assists,
+    AssistContext,
+    AssistId,
+    Assists,
 };
 
 pub(crate) fn replace_if_let_with_match(

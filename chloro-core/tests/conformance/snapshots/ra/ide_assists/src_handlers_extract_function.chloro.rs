@@ -7,13 +7,18 @@ use hir::{
     TypeInfo, TypeParam,
 };
 use ide_db::{
-    assists::GroupLabel, defs::{Definition, NameRefClass}, famous_defs::FamousDefs,
-    helpers::mod_path_to_ast, imports::insert_use::{ImportScope, insert_use},
-    search::{FileReference, ReferenceCategory, SearchScope}, source_change::SourceChangeBuilder,
+    assists::GroupLabel,
+    defs::{Definition, NameRefClass},
+    famous_defs::FamousDefs,
+    helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use},
+    search::{FileReference, ReferenceCategory, SearchScope},
+    source_change::SourceChangeBuilder,
     syntax_helpers::node_ext::{
         for_each_tail_expr, preorder_expr, walk_expr, walk_pat, walk_patterns_in_expr,
     },
-    FxIndexSet, RootDatabase,
+    FxIndexSet,
+    RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{
@@ -21,12 +26,24 @@ use syntax::{
         self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
         edit_in_place::Indent,
     },
-    match_ast, ted, Edition, SyntaxElement, SyntaxKind::{self, COMMENT}, SyntaxNode, SyntaxToken,
-    TextRange, TextSize, TokenAtOffset, WalkEvent, T,
+    match_ast,
+    ted,
+    Edition,
+    SyntaxElement,
+    SyntaxKind::{self, COMMENT},
+    SyntaxNode,
+    SyntaxToken,
+    TextRange,
+    TextSize,
+    TokenAtOffset,
+    WalkEvent,
+    T,
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists, TreeMutator}, utils::generate_impl, AssistId,
+    assist_context::{AssistContext, Assists, TreeMutator},
+    utils::generate_impl,
+    AssistId,
 };
 
 pub(crate) fn extract_function(

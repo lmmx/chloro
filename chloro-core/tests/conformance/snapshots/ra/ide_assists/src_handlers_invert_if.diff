@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4699 bytes
-Chloro size:   4346 bytes
+Chloro size:   4354 bytes
 Rustfmt size:  4770 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,7 @@ Rustfmt size:  4770 bytes
  };
  
  use crate::{
--    assist_context::{AssistContext, Assists},
--    utils::invert_boolean_expression_legacy,
--    AssistId,
-+    assist_context::{AssistContext, Assists}, utils::invert_boolean_expression_legacy, AssistId,
+     AssistId,
  };
  
 -// Assist: invert_if

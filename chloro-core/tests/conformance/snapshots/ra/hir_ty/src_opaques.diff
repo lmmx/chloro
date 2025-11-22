@@ -2,18 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7261 bytes
-Chloro size:   7167 bytes
+Chloro size:   7171 bytes
 Rustfmt size:  7430 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use triomphe::Arc;
- 
- use crate::{
--    db::{HirDatabase, InternedOpaqueTyId},
--    lower::{ImplTraitIdx, ImplTraits},
-+    db::{HirDatabase, InternedOpaqueTyId}, lower::{ImplTraitIdx, ImplTraits},
+     db::{HirDatabase, InternedOpaqueTyId},
+     lower::{ImplTraitIdx, ImplTraits},
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt},
 -        obligation_ctxt::ObligationCtxt,

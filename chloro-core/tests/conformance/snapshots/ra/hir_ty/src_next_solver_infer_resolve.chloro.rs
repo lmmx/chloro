@@ -1,7 +1,10 @@
 //! Things for resolving vars in the infer context of the next-trait-solver.
 
 use rustc_type_ir::{
-    data_structures::DelayedMap, inherent::{Const as _, Ty as _}, TypeFolder, TypeSuperFoldable,
+    data_structures::DelayedMap,
+    inherent::{Const as _, Ty as _},
+    TypeFolder,
+    TypeSuperFoldable,
     TypeVisitableExt,
 };
 

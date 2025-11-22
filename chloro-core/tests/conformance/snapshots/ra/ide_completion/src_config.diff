@@ -2,18 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2577 bytes
-Chloro size:   2596 bytes
+Chloro size:   2604 bytes
 Rustfmt size:  2641 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
  use hir::FindPathConfig;
  use ide_db::{
--    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
+     imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig},
 -    MiniCore, SnippetCap,
-+    imports::{import_assets::ImportPathConfig, insert_use::InsertUseConfig}, MiniCore, SnippetCap,
++    MiniCore,
++    SnippetCap,
  };
  
 -use crate::{snippet::Snippet, CompletionFieldsToResolve};

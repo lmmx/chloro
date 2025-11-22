@@ -18,20 +18,42 @@ use std::{
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    builtin_type::BuiltinType, expr_store::{ExpressionStore, HygieneId, path::Path},
+    builtin_type::BuiltinType,
+    expr_store::{ExpressionStore, HygieneId, path::Path},
     hir::generics::{
         GenericParamDataRef, TypeOrConstParamData, TypeParamProvenance, WherePredicate,
     },
-    item_tree::FieldsShape, lang_item::LangItem,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
     resolver::{HasResolver, LifetimeNs, Resolver, TypeNs, ValueNs},
     signatures::{FunctionSignature, TraitFlags, TypeAliasFlags},
     type_ref::{
         ConstRef, LifetimeRefId, LiteralConstRef, PathId, TraitBoundModifier,
         TraitRef as HirTraitRef, TypeBound, TypeRef, TypeRefId,
     },
-    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
-    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
-    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
+    AdtId,
+    AssocItemId,
+    CallableDefId,
+    ConstId,
+    ConstParamId,
+    DefWithBodyId,
+    EnumId,
+    EnumVariantId,
+    FunctionId,
+    GenericDefId,
+    GenericParamId,
+    HasModule,
+    ImplId,
+    ItemContainerId,
+    LifetimeParamId,
+    LocalFieldId,
+    Lookup,
+    StaticId,
+    StructId,
+    TypeAliasId,
+    TypeOrConstParamId,
+    TypeParamId,
+    UnionId,
     VariantId,
 };
 use hir_expand::name::Name;
@@ -42,8 +64,16 @@ use rustc_hash::FxHashSet;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
     inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
-    AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
-    ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate, TyKind::{self},
+    AliasTyKind,
+    BoundVarIndexKind,
+    ConstKind,
+    DebruijnIndex,
+    ExistentialPredicate,
+    ExistentialProjection,
+    ExistentialTraitRef,
+    FnSig,
+    OutlivesPredicate,
+    TyKind::{self},
     TypeVisitableExt,
 };
 use salsa::plumbing::AsId;
@@ -52,7 +82,8 @@ use stdx::{impl_from, never};
 use triomphe::{Arc, ThinArc};
 
 use crate::{
-    consteval::intern_const_ref, db::HirDatabase,
+    consteval::intern_const_ref,
+    db::HirDatabase,
     generics::{Generics, generics, trait_self_param_idx},
     next_solver::{
         AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
@@ -60,7 +91,11 @@ use crate::{
         ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef, Ty, Tys,
         UnevaluatedConst, abi::Safety,
     },
-    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
+    FnAbi,
+    ImplTraitId,
+    TraitEnvironment,
+    TyLoweringDiagnostic,
+    TyLoweringDiagnosticKind,
 };
 
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

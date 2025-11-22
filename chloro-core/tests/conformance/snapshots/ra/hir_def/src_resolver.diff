@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   55247 bytes
+Chloro size:   55379 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -21,25 +21,46 @@ Rustfmt size:  54481 bytes
 -    GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup,
 -    Macro2Id, MacroId, MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId,
 -    TraitId, TypeAliasId, TypeOrConstParamId, TypeParamId, UseId, VariantId,
--    builtin_type::BuiltinType,
--    db::DefDatabase,
-+    builtin_type::BuiltinType, db::DefDatabase,
+     builtin_type::BuiltinType,
+     db::DefDatabase,
      expr_store::{
-         HygieneId,
-         path::Path,
-     item_scope::{BUILTIN_SCOPE, BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope},
-     lang_item::LangItemTarget,
-     nameres::{DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo, block_def_map},
--    per_ns::PerNs,
--    src::HasSource,
--    type_ref::LifetimeRef,
--    visibility::{RawVisibility, Visibility},
-+    per_ns::PerNs, src::HasSource, type_ref::LifetimeRef, visibility::{RawVisibility, Visibility},
-+    AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId,
-+    ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId, GenericParamId, HasModule,
-+    ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup, Macro2Id, MacroId, MacroRulesId,
-+    ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId, TraitId, TypeAliasId, TypeOrConstParamId,
-+    TypeParamId, UseId, VariantId,
+     src::HasSource,
+     type_ref::LifetimeRef,
+     visibility::{RawVisibility, Visibility},
++    AdtId,
++    AstIdLoc,
++    ConstId,
++    ConstParamId,
++    CrateRootModuleId,
++    DefWithBodyId,
++    EnumId,
++    EnumVariantId,
++    ExternBlockId,
++    ExternCrateId,
++    FunctionId,
++    FxIndexMap,
++    GenericDefId,
++    GenericParamId,
++    HasModule,
++    ImplId,
++    ItemContainerId,
++    LifetimeParamId,
++    LocalModuleId,
++    Lookup,
++    Macro2Id,
++    MacroId,
++    MacroRulesId,
++    ModuleDefId,
++    ModuleId,
++    ProcMacroId,
++    StaticId,
++    StructId,
++    TraitId,
++    TypeAliasId,
++    TypeOrConstParamId,
++    TypeParamId,
++    UseId,
++    VariantId,
  };
  
  #[derive(Debug, Clone)]

@@ -6,7 +6,8 @@ mod tests;
 use std::iter;
 
 use hir_expand::{
-    mod_path::{ModPath, PathKind, resolve_crate_root}, name::{AsName, Name},
+    mod_path::{ModPath, PathKind, resolve_crate_root},
+    name::{AsName, Name},
 };
 use intern::{Interned, sym};
 use syntax::{
@@ -15,7 +16,8 @@ use syntax::{
 };
 
 use crate::expr_store::{
-    lower::{ExprCollector, generics::ImplTraitLowerFn}, path::NormalPath,
+    lower::{ExprCollector, generics::ImplTraitLowerFn},
+    path::NormalPath,
 };
 use crate::{
     expr_store::path::{GenericArg, GenericArgs, Path},

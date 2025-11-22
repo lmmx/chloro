@@ -2,17 +2,26 @@ use std::iter;
 
 use hir::{EditionedFileId, FilePosition, FileRange, HirFileId, InFile, Semantics, db};
 use ide_db::{
-    defs::{Definition, IdentClass}, helpers::pick_best_token,
+    defs::{Definition, IdentClass},
+    helpers::pick_best_token,
     search::{FileReference, ReferenceCategory, SearchScope},
     syntax_helpers::node_ext::{
         eq_label_lt, for_each_tail_expr, full_path_of_name_ref, is_closure_or_blk_with_modif,
         preorder_expr_with_ctx_checker,
     },
-    FxHashMap, FxHashSet, RootDatabase,
+    FxHashMap,
+    FxHashSet,
+    RootDatabase,
 };
 use syntax::{
-    ast::{self, HasLoopBody}, match_ast, AstNode, SyntaxKind::{self, IDENT, INT_NUMBER}, SyntaxToken,
-    TextRange, WalkEvent, T,
+    ast::{self, HasLoopBody},
+    match_ast,
+    AstNode,
+    SyntaxKind::{self, IDENT, INT_NUMBER},
+    SyntaxToken,
+    TextRange,
+    WalkEvent,
+    T,
 };
 
 use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};

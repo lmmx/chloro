@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12638 bytes
-Chloro size:   12761 bytes
+Chloro size:   12781 bytes
 Rustfmt size:  12638 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,13 @@ Rustfmt size:  12638 bytes
  use crate::next_solver::{GenericArgs, TraitRef};
  use crate::{
 -    Adjust, Adjustment, AutoBorrow, OverloadedDeref,
--    infer::{Expectation, InferenceContext, expr::ExprIsRead},
--    lower::lower_mutability,
--    next_solver::TyKind,
-+    infer::{Expectation, InferenceContext, expr::ExprIsRead}, lower::lower_mutability,
-+    next_solver::TyKind, Adjust, Adjustment, AutoBorrow, OverloadedDeref,
+     infer::{Expectation, InferenceContext, expr::ExprIsRead},
+     lower::lower_mutability,
+     next_solver::TyKind,
++    Adjust,
++    Adjustment,
++    AutoBorrow,
++    OverloadedDeref,
  };
  
  impl<'db> InferenceContext<'_, 'db> {

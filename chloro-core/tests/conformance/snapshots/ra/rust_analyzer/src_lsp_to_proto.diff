@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111375 bytes
+Chloro size:   111399 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -35,12 +35,7 @@ Rustfmt size:  113494 bytes
  };
  use itertools::Itertools;
  use paths::{Utf8Component, Utf8Prefix};
- use vfs::AbsPath;
- 
- use crate::{
--    config::{CallInfoConfig, ClientCommandsConfig, Config},
--    global_state::GlobalStateSnapshot,
-+    config::{CallInfoConfig, ClientCommandsConfig, Config}, global_state::GlobalStateSnapshot,
+     global_state::GlobalStateSnapshot,
      line_index::{LineEndings, LineIndex, PositionEncoding},
      lsp::{
 -        completion_item_hash,
@@ -50,9 +45,8 @@ Rustfmt size:  113494 bytes
          utils::invalid_params_error,
 -        LspError,
      },
--    lsp_ext::{self, SnippetTextEdit},
--    target_spec::{CargoTargetSpec, TargetSpec},
-+    lsp_ext::{self, SnippetTextEdit}, target_spec::{CargoTargetSpec, TargetSpec},
+     lsp_ext::{self, SnippetTextEdit},
+     target_spec::{CargoTargetSpec, TargetSpec},
  };
  
 -pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::Position {
@@ -848,10 +842,9 @@ Rustfmt size:  113494 bytes
      use serde_json::to_value;
 -
      use crate::{
--        global_state::GlobalStateSnapshot,
--        lsp::to_proto::{location, location_link},
--        lsp_ext,
-+        global_state::GlobalStateSnapshot, lsp::to_proto::{location, location_link}, lsp_ext,
+         global_state::GlobalStateSnapshot,
+         lsp::to_proto::{location, location_link},
+         lsp_ext,
      };
 -
      pub(crate) fn show_references(

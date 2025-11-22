@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22055 bytes
-Chloro size:   21496 bytes
+Chloro size:   21524 bytes
 Rustfmt size:  22055 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,15 @@ Rustfmt size:  22055 bytes
 -    NodeOrToken, SourceFile, SyntaxElement,
 -    SyntaxKind::{self, USE_TREE, WHITESPACE},
 -    SyntaxToken, T, TextRange, TextSize,
--    ast::{self, AstNode, AstToken, IsString},
-+    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SourceFile, SyntaxElement,
-+    SyntaxKind::{self, USE_TREE, WHITESPACE}, SyntaxToken, TextRange, TextSize, T,
+     ast::{self, AstNode, AstToken, IsString},
++    NodeOrToken,
++    SourceFile,
++    SyntaxElement,
++    SyntaxKind::{self, USE_TREE, WHITESPACE},
++    SyntaxToken,
++    TextRange,
++    TextSize,
++    T,
  };
  
 -use ide_db::text_edit::{TextEdit, TextEditBuilder};

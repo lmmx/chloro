@@ -1,7 +1,9 @@
 use ide_db::FxHashSet;
 use syntax::{
     ast::{self, HasGenericParams, edit_in_place::GenericParamsOwnerEdit, make},
-    ted::{self, Position}, AstNode, TextRange,
+    ted::{self, Position},
+    AstNode,
+    TextRange,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

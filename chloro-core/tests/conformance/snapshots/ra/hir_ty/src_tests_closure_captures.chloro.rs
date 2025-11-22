@@ -7,7 +7,10 @@ use syntax::{AstNode, AstPtr};
 use test_fixture::WithFixture;
 
 use crate::{
-    db::HirDatabase, display::{DisplayTarget, HirDisplay}, mir::MirSpan, test_db::TestDB,
+    db::HirDatabase,
+    display::{DisplayTarget, HirDisplay},
+    mir::MirSpan,
+    test_db::TestDB,
 };
 use super::{setup_tracing, visit_module};
 

@@ -7,8 +7,13 @@ use syntax::{
     ast::{
         self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory,
     },
-    match_ast, syntax_editor::{Element, Position, SyntaxEditor}, SyntaxElement, SyntaxKind,
-    SyntaxNode, TextSize, T,
+    match_ast,
+    syntax_editor::{Element, Position, SyntaxEditor},
+    SyntaxElement,
+    SyntaxKind,
+    SyntaxNode,
+    TextSize,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

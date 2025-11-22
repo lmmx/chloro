@@ -21,7 +21,14 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    hacks::parse_expr_from_str, ted, AstNode, Direction, SyntaxKind, SyntaxNode, TextSize, ToSmolStr,
+    hacks::parse_expr_from_str,
+    ted,
+    AstNode,
+    Direction,
+    SyntaxKind,
+    SyntaxNode,
+    TextSize,
+    ToSmolStr,
     T,
 };
 

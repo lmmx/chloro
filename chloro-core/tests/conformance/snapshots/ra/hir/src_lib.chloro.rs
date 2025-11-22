@@ -48,18 +48,49 @@ use hir_def::{
         BindingAnnotation, BindingId, Expr, ExprId, ExprOrPatId, LabelId, Pat,
         generics::{LifetimeParamData, TypeOrConstParamData, TypeParamProvenance},
     },
-    item_tree::ImportAlias, layout::{self, ReprOptions, TargetDataLayout},
+    item_tree::ImportAlias,
+    layout::{self, ReprOptions, TargetDataLayout},
     nameres::{
         assoc::TraitItems,
         diagnostics::{DefDiagnostic, DefDiagnosticKind},
     },
-    per_ns::PerNs, resolver::{HasResolver, Resolver},
+    per_ns::PerNs,
+    resolver::{HasResolver, Resolver},
     signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
-    src::HasSource as _, visibility::visibility_from_ast, AdtId, AssocItemId, AssocItemLoc,
-    AttrDefId, CallableDefId, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
-    EnumVariantId, ExternBlockId, ExternCrateId, FunctionId, GenericDefId, GenericParamId, HasModule,
-    ImplId, ItemContainerId, LifetimeParamId, LocalFieldId, Lookup, MacroExpander, MacroId, StaticId,
-    StructId, SyntheticSyntax, TupleId, TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
+    src::HasSource as _,
+    visibility::visibility_from_ast,
+    AdtId,
+    AssocItemId,
+    AssocItemLoc,
+    AttrDefId,
+    CallableDefId,
+    ConstId,
+    ConstParamId,
+    CrateRootModuleId,
+    DefWithBodyId,
+    EnumId,
+    EnumVariantId,
+    ExternBlockId,
+    ExternCrateId,
+    FunctionId,
+    GenericDefId,
+    GenericParamId,
+    HasModule,
+    ImplId,
+    ItemContainerId,
+    LifetimeParamId,
+    LocalFieldId,
+    Lookup,
+    MacroExpander,
+    MacroId,
+    StaticId,
+    StructId,
+    SyntheticSyntax,
+    TupleId,
+    TypeAliasId,
+    TypeOrConstParamId,
+    TypeParamId,
+    UnionId,
 };
 use hir_expand::{
     attrs::collect_attrs,
@@ -71,31 +102,51 @@ use hir_expand::{
 pub use hir_ty::next_solver;
 pub use hir_ty::setup_tracing;
 use hir_ty::{
-    all_super_traits, autoderef, check_orphan_rules, consteval::try_const_usize,
-    db::{InternedClosureId, InternedCoroutineId}, diagnostics::BodyValidationDiagnostic,
-    direct_super_traits, known_const_to_ast,
-    layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding}, method_resolution,
+    all_super_traits,
+    autoderef,
+    check_orphan_rules,
+    consteval::try_const_usize,
+    db::{InternedClosureId, InternedCoroutineId},
+    diagnostics::BodyValidationDiagnostic,
+    direct_super_traits,
+    known_const_to_ast,
+    layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding},
+    method_resolution,
     mir::{MutBorrowKind, interpret_mir},
     next_solver::{
         AliasTy, Canonical, ClauseKind, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
         GenericArgs, PolyFnSig, Region, SolverDefId, Ty, TyKind, TypingMode,
         infer::{DbInternerInferExt, InferCtxt},
     },
-    traits::{self, FnTrait, structurally_normalize_ty}, TraitEnvironment, TyDefId,
-    TyLoweringDiagnostic, ValueTyDefId,
+    traits::{self, FnTrait, structurally_normalize_ty},
+    TraitEnvironment,
+    TyDefId,
+    TyLoweringDiagnostic,
+    ValueTyDefId,
 };
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _}, AliasTyKind,
-    TypeSuperVisitable, TypeVisitable, TypeVisitor,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _},
+    AliasTyKind,
+    TypeSuperVisitable,
+    TypeVisitable,
+    TypeVisitor,
 };
 use smallvec::SmallVec;
 use span::{AstIdNode, Edition, FileId};
 use stdx::{format_to, impl_from, never};
 use syntax::{
-    ast::{self, HasAttrs as _, HasName, HasVisibility as _}, format_smolstr, AstNode, AstPtr,
-    SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
+    ast::{self, HasAttrs as _, HasName, HasVisibility as _},
+    format_smolstr,
+    AstNode,
+    AstPtr,
+    SmolStr,
+    SyntaxNode,
+    SyntaxNodePtr,
+    TextRange,
+    ToSmolStr,
+    T,
 };
 use triomphe::{Arc, ThinArc};
 pub use {
@@ -144,7 +195,8 @@ pub use {
         next_solver::abi::Safety,
         next_solver::clear_tls_solver_cache,
     },
-    intern::{Symbol, sym}, // FIXME: Properly encapsulate mir
+    intern::{Symbol, sym},
+    // FIXME: Properly encapsulate mir
     hir_ty::mir,
 };
 use {
@@ -157,7 +209,9 @@ use {
 
 use crate::db::{DefDatabase, HirDatabase};
 pub use crate::{
-    attrs::{HasAttrs, resolve_doc_path_on}, diagnostics::*, has_source::HasSource,
+    attrs::{HasAttrs, resolve_doc_path_on},
+    diagnostics::*,
+    has_source::HasSource,
     semantics::{
         PathResolution, PathResolutionPerNs, Semantics, SemanticsImpl, SemanticsScope, TypeInfo,
         VisibleTraits,

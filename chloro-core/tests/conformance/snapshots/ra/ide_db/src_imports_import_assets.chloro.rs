@@ -18,7 +18,9 @@ use syntax::{
 };
 
 use crate::{
-    items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT}, FxIndexSet, RootDatabase,
+    items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT},
+    FxIndexSet,
+    RootDatabase,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]

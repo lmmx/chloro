@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5355 bytes
-Chloro size:   5057 bytes
+Chloro size:   5069 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -20,14 +20,13 @@ Rustfmt size:  5418 bytes
 -        make, HasLoopBody,
 +        make,
      },
-     AstNode, T,
+-    AstNode, T,
++    AstNode,
++    T,
  };
  
  use crate::{
--    assist_context::{AssistContext, Assists},
--    utils::invert_boolean_expression_legacy,
--    AssistId,
-+    assist_context::{AssistContext, Assists}, utils::invert_boolean_expression_legacy, AssistId,
+     AssistId,
  };
  
 -// Assist: convert_while_to_loop

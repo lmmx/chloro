@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7434 bytes
-Chloro size:   7368 bytes
+Chloro size:   7408 bytes
 Rustfmt size:  7434 bytes
 
 ✗ Outputs DIFFER
@@ -15,16 +15,23 @@ Rustfmt size:  7434 bytes
  use itertools::Either;
  use syntax::{
 -    AstNode, Direction, SyntaxKind, TextRange, TextSize, algo,
--    ast::{self, HasModuleItem},
--    match_ast,
-+    algo, ast::{self, HasModuleItem}, match_ast, AstNode, Direction, SyntaxKind, TextRange, TextSize,
++    algo,
+     ast::{self, HasModuleItem},
+     match_ast,
++    AstNode,
++    Direction,
++    SyntaxKind,
++    TextRange,
++    TextSize,
  };
  
  use crate::{
 -    CompletionContext, CompletionItem, CompletionItemKind, Completions,
--    context::{ParamContext, ParamKind, PatternContext},
-+    context::{ParamContext, ParamKind, PatternContext}, CompletionContext, CompletionItem,
-+    CompletionItemKind, Completions,
+     context::{ParamContext, ParamKind, PatternContext},
++    CompletionContext,
++    CompletionItem,
++    CompletionItemKind,
++    Completions,
  };
  
 -// FIXME: Make this a submodule of [`pattern`]

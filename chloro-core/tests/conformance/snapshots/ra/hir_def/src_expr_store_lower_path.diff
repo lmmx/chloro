@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11991 bytes
-Chloro size:   11696 bytes
+Chloro size:   11704 bytes
 Rustfmt size:  11991 bytes
 
 ✗ Outputs DIFFER
@@ -17,17 +17,14 @@ Rustfmt size:  11991 bytes
 -};
 -
  use hir_expand::{
--    mod_path::{ModPath, PathKind, resolve_crate_root},
--    name::{AsName, Name},
-+    mod_path::{ModPath, PathKind, resolve_crate_root}, name::{AsName, Name},
- };
- use intern::{Interned, sym};
- use syntax::{
+     mod_path::{ModPath, PathKind, resolve_crate_root},
+     name::{AsName, Name},
      ast::{self, AstNode, HasGenericArgs},
  };
  
 +use crate::expr_store::{
-+    lower::{ExprCollector, generics::ImplTraitLowerFn}, path::NormalPath,
++    lower::{ExprCollector, generics::ImplTraitLowerFn},
++    path::NormalPath,
 +};
  use crate::{
      expr_store::path::{GenericArg, GenericArgs, Path},

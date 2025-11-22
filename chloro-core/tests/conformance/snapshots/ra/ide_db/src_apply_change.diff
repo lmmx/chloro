@@ -2,18 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10358 bytes
-Chloro size:   10247 bytes
+Chloro size:   10255 bytes
 Rustfmt size:  10358 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use salsa::{Database as _, Durability, Setter as _};
  
  use crate::{
--    symbol_index::{LibraryRoots, LocalRoots},
+     symbol_index::{LibraryRoots, LocalRoots},
 -    ChangeWithProcMacros, RootDatabase,
-+    symbol_index::{LibraryRoots, LocalRoots}, ChangeWithProcMacros, RootDatabase,
++    ChangeWithProcMacros,
++    RootDatabase,
  };
  
  impl RootDatabase {

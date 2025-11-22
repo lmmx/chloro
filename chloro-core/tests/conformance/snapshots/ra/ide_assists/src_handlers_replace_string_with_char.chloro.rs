@@ -1,5 +1,10 @@
 use syntax::{
-    ast, ast::IsString, AstToken, SyntaxKind::{CHAR, STRING}, TextRange, TextSize,
+    ast,
+    ast::IsString,
+    AstToken,
+    SyntaxKind::{CHAR, STRING},
+    TextRange,
+    TextSize,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::string_suffix};

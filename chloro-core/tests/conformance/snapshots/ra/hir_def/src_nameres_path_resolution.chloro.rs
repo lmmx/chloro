@@ -19,12 +19,18 @@ use span::Edition;
 use stdx::TupleExt;
 
 use crate::{
-    db::DefDatabase, item_scope::{BUILTIN_SCOPE, ImportOrExternCrate}, item_tree::FieldsShape,
+    db::DefDatabase,
+    item_scope::{BUILTIN_SCOPE, ImportOrExternCrate},
+    item_tree::FieldsShape,
     nameres::{
         BlockInfo, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, assoc::TraitItems,
         crate_def_map, sub_namespace_match,
     },
-    per_ns::PerNs, visibility::{RawVisibility, Visibility}, AdtId, LocalModuleId, ModuleDefId,
+    per_ns::PerNs,
+    visibility::{RawVisibility, Visibility},
+    AdtId,
+    LocalModuleId,
+    ModuleDefId,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

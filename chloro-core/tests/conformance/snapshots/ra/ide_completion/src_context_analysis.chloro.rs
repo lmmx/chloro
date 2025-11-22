@@ -15,8 +15,18 @@ use syntax::{
         self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,
         NameOrNameRef,
     },
-    match_ast, AstNode, AstToken, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode,
-    SyntaxToken, TextRange, TextSize, T,
+    match_ast,
+    AstNode,
+    AstToken,
+    Direction,
+    NodeOrToken,
+    SyntaxElement,
+    SyntaxKind,
+    SyntaxNode,
+    SyntaxToken,
+    TextRange,
+    TextSize,
+    T,
 };
 
 use crate::{

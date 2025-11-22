@@ -2,7 +2,8 @@
 
 use hir::{ItemInNs, ModuleDef};
 use ide_db::imports::{
-    import_assets::{ImportAssets, LocatedImport}, insert_use::ImportScope,
+    import_assets::{ImportAssets, LocatedImport},
+    insert_use::ImportScope,
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxNode, ast};

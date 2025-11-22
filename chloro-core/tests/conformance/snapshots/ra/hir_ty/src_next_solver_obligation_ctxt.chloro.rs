@@ -8,7 +8,13 @@ use crate::next_solver::{
         at::ToTrace,
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
     },
-    Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
+    Const,
+    DbInterner,
+    ParamEnv,
+    Term,
+    TraitRef,
+    Ty,
+    TypeError,
 };
 
 /// Used if you want to have pleasant experience when dealing

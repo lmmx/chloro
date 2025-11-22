@@ -6,7 +6,12 @@ use base_db::SourceDatabase;
 use hir::{Crate, ItemInNs, ModuleDef, Name, Semantics};
 use span::{Edition, FileId};
 use syntax::{
-    ast::{self, make}, AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
+    ast::{self, make},
+    AstToken,
+    SyntaxKind,
+    SyntaxToken,
+    ToSmolStr,
+    TokenAtOffset,
 };
 
 use crate::{

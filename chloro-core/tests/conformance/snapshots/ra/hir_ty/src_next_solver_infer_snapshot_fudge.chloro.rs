@@ -18,7 +18,12 @@ use crate::next_solver::{
         type_variable::TypeVariableOrigin,
         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
     },
-    Const, ConstKind, DbInterner, Region, Ty, TyKind,
+    Const,
+    ConstKind,
+    DbInterner,
+    Region,
+    Ty,
+    TyKind,
 };
 
 fn vars_since_snapshot<'db, T>(

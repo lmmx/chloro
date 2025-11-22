@@ -1,6 +1,9 @@
 use ide_db::{
-    assists::AssistId, defs::Definition, search::{FileReference, SearchScope},
-    syntax_helpers::suggest_name, text_edit::TextRange,
+    assists::AssistId,
+    defs::Definition,
+    search::{FileReference, SearchScope},
+    syntax_helpers::suggest_name,
+    text_edit::TextRange,
 };
 use itertools::Itertools;
 use syntax::{

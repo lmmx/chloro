@@ -9,7 +9,9 @@ use syntax::{
         make::{self, tokens},
         syntax_factory::SyntaxFactory,
     },
-    syntax_editor::{Position, SyntaxEditor}, SyntaxToken, T,
+    syntax_editor::{Position, SyntaxEditor},
+    SyntaxToken,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

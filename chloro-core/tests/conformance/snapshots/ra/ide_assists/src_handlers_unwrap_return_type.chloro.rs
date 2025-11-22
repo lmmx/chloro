@@ -1,10 +1,14 @@
 use either::Either;
 use ide_db::{
-    famous_defs::FamousDefs, syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
+    famous_defs::FamousDefs,
+    syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
-    ast::{self, HasArgList, HasGenericArgs, syntax_factory::SyntaxFactory}, match_ast, AstNode,
-    NodeOrToken, SyntaxKind,
+    ast::{self, HasArgList, HasGenericArgs, syntax_factory::SyntaxFactory},
+    match_ast,
+    AstNode,
+    NodeOrToken,
+    SyntaxKind,
 };
 
 use crate::{AssistContext, AssistId, Assists};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19748 bytes
+Chloro size:   19772 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,18 @@ Rustfmt size:  20465 bytes
  use std::borrow::Borrow;
  
  use either::Either;
- use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize};
  
  use crate::{
--    db::{self, ExpandDatabase},
+     db::{self, ExpandDatabase},
 -    map_node_range_up, map_node_range_up_rooted, span_for_offset, EditionedFileId, HirFileId,
 -    MacroCallId, MacroKind,
-+    db::{self, ExpandDatabase}, map_node_range_up, map_node_range_up_rooted, span_for_offset,
-+    EditionedFileId, HirFileId, MacroCallId, MacroKind,
++    map_node_range_up,
++    map_node_range_up_rooted,
++    span_for_offset,
++    EditionedFileId,
++    HirFileId,
++    MacroCallId,
++    MacroKind,
  };
  
  /// `InFile<T>` stores a value of `T` inside a particular file/syntax tree.

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11436 bytes
-Chloro size:   12181 bytes
+Chloro size:   12197 bytes
 Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,13 @@ Rustfmt size:  11695 bytes
  
  use either::Either;
  use hir_def::{
--    nameres::{ModuleOrigin, ModuleSource},
--    src::{HasChildSource, HasSource as _},
+     nameres::{ModuleOrigin, ModuleSource},
+     src::{HasChildSource, HasSource as _},
 -    CallableDefId, Lookup, MacroId, VariantId,
-+    nameres::{ModuleOrigin, ModuleSource}, src::{HasChildSource, HasSource as _}, CallableDefId,
-+    Lookup, MacroId, VariantId,
++    CallableDefId,
++    Lookup,
++    MacroId,
++    VariantId,
  };
  use hir_expand::{EditionedFileId, HirFileId, InFile};
  use hir_ty::db::InternedClosure;

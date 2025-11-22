@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19515 bytes
+Chloro size:   19523 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,11 @@ Rustfmt size:  19938 bytes
  use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
  use triomphe::Arc;
  
- use crate::{
--    db::DefDatabase,
--    expr_store::{Body, ExpressionStore, HygieneId},
--    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
+     db::DefDatabase,
+     expr_store::{Body, ExpressionStore, HygieneId},
+     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
 -    BlockId, DefWithBodyId,
-+    db::DefDatabase, expr_store::{Body, ExpressionStore, HygieneId},
-+    hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement}, BlockId,
++    BlockId,
 +    DefWithBodyId,
  };
  

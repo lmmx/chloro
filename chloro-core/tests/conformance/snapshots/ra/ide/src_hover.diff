@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25435 bytes
-Chloro size:   25008 bytes
+Chloro size:   25068 bytes
 Rustfmt size:  25435 bytes
 
 ✗ Outputs DIFFER
@@ -23,13 +23,15 @@ Rustfmt size:  25435 bytes
  };
  use ide_db::{
 -    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
--    defs::{Definition, IdentClass, NameRefClass, OperatorClass},
--    famous_defs::FamousDefs,
--    helpers::pick_best_token,
--    ra_fixture::UpmapFromRaFixture,
-+    defs::{Definition, IdentClass, NameRefClass, OperatorClass}, famous_defs::FamousDefs,
-+    helpers::pick_best_token, ra_fixture::UpmapFromRaFixture, FileRange, FxIndexSet, MiniCore,
-+    Ranker, RootDatabase,
+     defs::{Definition, IdentClass, NameRefClass, OperatorClass},
+     famous_defs::FamousDefs,
+     helpers::pick_best_token,
+     ra_fixture::UpmapFromRaFixture,
++    FileRange,
++    FxIndexSet,
++    MiniCore,
++    Ranker,
++    RootDatabase,
  };
  use itertools::{Itertools, multizip};
  use macros::UpmapFromRaFixture;
@@ -37,14 +39,18 @@ Rustfmt size:  25435 bytes
  
  use crate::{
 -    Analysis, FileId, FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
--    doc_links::token_as_doc_comment,
--    markdown_remove::remove_markdown,
--    markup::Markup,
--    navigation_target::UpmappingResult,
--    runnables::{runnable_fn, runnable_mod},
-+    doc_links::token_as_doc_comment, markdown_remove::remove_markdown, markup::Markup,
-+    navigation_target::UpmappingResult, runnables::{runnable_fn, runnable_mod}, Analysis, FileId,
-+    FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
+     doc_links::token_as_doc_comment,
+     markdown_remove::remove_markdown,
+     markup::Markup,
+     navigation_target::UpmappingResult,
+     runnables::{runnable_fn, runnable_mod},
++    Analysis,
++    FileId,
++    FilePosition,
++    NavigationTarget,
++    RangeInfo,
++    Runnable,
++    TryToNav,
  };
  
  #[derive(Clone, Debug)]

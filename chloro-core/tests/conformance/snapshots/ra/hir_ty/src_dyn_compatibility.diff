@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18694 bytes
-Chloro size:   18363 bytes
+Chloro size:   18395 bytes
 Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
@@ -31,23 +31,26 @@ Rustfmt size:  18694 bytes
  use rustc_type_ir::{
 -    AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _,
 -    Upcast, elaborate,
--    inherent::{IntoKind, SliceLike},
-+    elaborate, inherent::{IntoKind, SliceLike}, AliasTyKind, ClauseKind, PredicatePolarity,
-+    TypeSuperVisitable as _, TypeVisitable as _, Upcast,
++    elaborate,
+     inherent::{IntoKind, SliceLike},
++    AliasTyKind,
++    ClauseKind,
++    PredicatePolarity,
++    TypeSuperVisitable as _,
++    TypeVisitable as _,
++    Upcast,
  };
  use smallvec::SmallVec;
  
  use crate::{
 -    ImplTraitId,
--    db::{HirDatabase, InternedOpaqueTyId},
--    lower::associated_ty_item_bounds,
-+    db::{HirDatabase, InternedOpaqueTyId}, lower::associated_ty_item_bounds,
+     db::{HirDatabase, InternedOpaqueTyId},
+     lower::associated_ty_item_bounds,
      next_solver::{
-         Binder, Clause, Clauses, DbInterner, EarlyBinder, GenericArgs, Goal, ParamEnv, ParamTy,
          SolverDefId, TraitPredicate, TraitRef, Ty, TypingMode, infer::DbInternerInferExt, mk_param,
      },
--    traits::next_trait_solve_in_ctxt,
-+    traits::next_trait_solve_in_ctxt, ImplTraitId,
+     traits::next_trait_solve_in_ctxt,
++    ImplTraitId,
  };
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]

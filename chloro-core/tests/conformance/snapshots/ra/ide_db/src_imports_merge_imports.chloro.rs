@@ -10,7 +10,9 @@ use syntax::{
         self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
         make,
     },
-    ted::{self, Position}, Direction, SyntaxElement,
+    ted::{self, Position},
+    Direction,
+    SyntaxElement,
 };
 
 use crate::syntax_helpers::node_ext::vis_eq;

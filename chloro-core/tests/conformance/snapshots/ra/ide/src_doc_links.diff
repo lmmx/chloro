@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30781 bytes
+Chloro size:   30821 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -33,8 +33,8 @@ Rustfmt size:  31554 bytes
      base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
      defs::{Definition, NameClass, NameRefClass},
      documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
--    helpers::pick_best_token,
-+    helpers::pick_best_token, RootDatabase,
+     helpers::pick_best_token,
++    RootDatabase,
  };
 +use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
 +use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
@@ -43,17 +43,23 @@ Rustfmt size:  31554 bytes
 -    AstNode, AstToken,
 -    SyntaxKind::*,
 -    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
--    ast::{self, IsString},
--    match_ast,
-+    ast::{self, IsString}, match_ast, AstNode, AstToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
-+    TextRange, TextSize, T,
+     ast::{self, IsString},
+     match_ast,
++    AstNode,
++    AstToken,
++    SyntaxKind::*,
++    SyntaxNode,
++    SyntaxToken,
++    TextRange,
++    TextSize,
++    T,
  };
 +use url::Url;
  
  use crate::{
 -    FilePosition, Semantics,
--    doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
-+    doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes}, FilePosition,
+     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
++    FilePosition,
 +    Semantics,
  };
  

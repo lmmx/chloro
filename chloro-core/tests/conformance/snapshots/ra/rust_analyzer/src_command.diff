@@ -2,25 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   6992 bytes
+Chloro size:   7008 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Utilities for running a cargo command like `cargo check` or `cargo test` in a separate thread
- //! and parse its stdout/stderr.
- 
- use std::{
--    ffi::OsString,
--    fmt,
--    io::{self, BufWriter, Write},
--    marker::PhantomData,
--    path::PathBuf,
-+    ffi::OsString, fmt, io::{self, BufWriter, Write}, marker::PhantomData, path::PathBuf,
-     process::{ChildStderr, ChildStdout, Command, Stdio},
- };
- 
  
  /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
  /// cargo output into a Rust data type

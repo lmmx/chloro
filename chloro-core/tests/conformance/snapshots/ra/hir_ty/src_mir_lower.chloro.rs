@@ -14,10 +14,20 @@ use hir_def::{
         ArithOp, Array, BinaryOp, BindingAnnotation, BindingId, ExprId, LabelId, Literal, MatchArm,
         Pat, PatId, RecordFieldPat, RecordLitField,
     },
-    item_tree::FieldsShape, lang_item::{LangItem, LangItemTarget, lang_item},
-    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs}, AdtId, DefWithBodyId,
-    EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId, LocalFieldId, Lookup,
-    TraitId, TupleId,
+    item_tree::FieldsShape,
+    lang_item::{LangItem, LangItemTarget, lang_item},
+    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
+    AdtId,
+    DefWithBodyId,
+    EnumVariantId,
+    GeneralConstId,
+    GenericParamId,
+    HasModule,
+    ItemContainerId,
+    LocalFieldId,
+    Lookup,
+    TraitId,
+    TupleId,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;
@@ -29,10 +39,13 @@ use syntax::TextRange;
 use triomphe::Arc;
 
 use crate::{
-    consteval::ConstEvalError, db::{HirDatabase, InternedClosure, InternedClosureId},
-    display::{DisplayTarget, HirDisplay, hir_display_with_store}, generics::generics,
+    consteval::ConstEvalError,
+    db::{HirDatabase, InternedClosure, InternedClosureId},
+    display::{DisplayTarget, HirDisplay, hir_display_with_store},
+    generics::generics,
     infer::{CaptureKind, CapturedItem, TypeMismatch, cast::CastTy},
-    inhabitedness::is_ty_uninhabited_from, layout::LayoutError,
+    inhabitedness::is_ty_uninhabited_from,
+    layout::LayoutError,
     mir::{
         AggregateKind, Arena, BasicBlock, BasicBlockId, BinOp, BorrowKind, CastKind, Either, Expr,
         FieldId, GenericArgs, Idx, InferenceResult, Local, LocalId, MemoryMap, MirBody, MirSpan,
@@ -44,7 +57,12 @@ use crate::{
         Const, DbInterner, ParamConst, Region, TyKind, TypingMode, UnevaluatedConst,
         infer::{DbInternerInferExt, InferCtxt},
     },
-    traits::FnTrait, Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
+    traits::FnTrait,
+    Adjust,
+    Adjustment,
+    AutoBorrow,
+    CallableDefId,
+    TraitEnvironment,
 };
 use super::OperandKind;
 

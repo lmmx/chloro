@@ -11,7 +11,12 @@ use base_db::FxIndexSet;
 use cfg::CfgOptions;
 use either::Either;
 use hir_expand::{
-    mod_path::tool_path, name::{AsName, Name}, span_map::SpanMapRef, HirFileId, InFile, MacroDefId,
+    mod_path::tool_path,
+    name::{AsName, Name},
+    span_map::SpanMapRef,
+    HirFileId,
+    InFile,
+    MacroDefId,
 };
 use intern::{Symbol, sym};
 use rustc_hash::FxHashMap;
@@ -22,14 +27,18 @@ use syntax::{
         HasGenericParams, HasLoopBody, HasName, HasTypeBounds, IsString, RangeItem,
         SlicePatComponents,
     },
-    AstNode, AstPtr, AstToken as _, SyntaxNodePtr,
+    AstNode,
+    AstPtr,
+    AstToken as _,
+    SyntaxNodePtr,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    builtin_type::BuiltinUint, db::DefDatabase,
+    builtin_type::BuiltinUint,
+    db::DefDatabase,
     expr_store::{
         Body, BodySourceMap, ExprPtr, ExpressionStore, ExpressionStoreBuilder,
         ExpressionStoreDiagnostics, ExpressionStoreSourceMap, HygieneId, LabelPtr, LifetimePtr,
@@ -49,14 +58,27 @@ use crate::{
         },
         generics::GenericParams,
     },
-    item_scope::BuiltinShadowMode, item_tree::FieldsShape, lang_item::LangItem,
+    item_scope::BuiltinShadowMode,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
     nameres::{DefMap, LocalDefMap, MacroSubNs, block_def_map},
     type_ref::{
         ArrayType, ConstRef, FnType, LifetimeRef, LifetimeRefId, Mutability, PathId, Rawness,
         RefType, TraitBoundModifier, TraitRef, TypeBound, TypeRef, TypeRefId, UseArgRef,
     },
-    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId, ModuleDefId,
-    ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
+    AdtId,
+    BlockId,
+    BlockLoc,
+    DefWithBodyId,
+    FunctionId,
+    GenericDefId,
+    ImplId,
+    MacroId,
+    ModuleDefId,
+    ModuleId,
+    TraitId,
+    TypeAliasId,
+    UnresolvedMacro,
 };
 pub use self::path::hir_segment_to_ast_segment;
 

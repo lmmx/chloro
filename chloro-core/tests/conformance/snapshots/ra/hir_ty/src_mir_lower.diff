@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95483 bytes
+Chloro size:   95555 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -24,15 +24,20 @@ Rustfmt size:  95826 bytes
      expr_store::{Body, ExpressionStore, HygieneId, path::Path},
      hir::{
          ArithOp, Array, BinaryOp, BindingAnnotation, BindingId, ExprId, LabelId, Literal, MatchArm,
-         Pat, PatId, RecordFieldPat, RecordLitField,
-     },
--    item_tree::FieldsShape,
--    lang_item::{LangItem, LangItemTarget, lang_item},
--    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
-+    item_tree::FieldsShape, lang_item::{LangItem, LangItemTarget, lang_item},
-+    resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs}, AdtId, DefWithBodyId,
-+    EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId, LocalFieldId, Lookup,
-+    TraitId, TupleId,
+     item_tree::FieldsShape,
+     lang_item::{LangItem, LangItemTarget, lang_item},
+     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
++    AdtId,
++    DefWithBodyId,
++    EnumVariantId,
++    GeneralConstId,
++    GenericParamId,
++    HasModule,
++    ItemContainerId,
++    LocalFieldId,
++    Lookup,
++    TraitId,
++    TupleId,
  };
  use hir_expand::name::Name;
  use la_arena::ArenaMap;
@@ -40,24 +45,17 @@ Rustfmt size:  95826 bytes
  
  use crate::{
 -    Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
--    consteval::ConstEvalError,
--    db::{HirDatabase, InternedClosure, InternedClosureId},
--    display::{DisplayTarget, HirDisplay, hir_display_with_store},
--    generics::generics,
-+    consteval::ConstEvalError, db::{HirDatabase, InternedClosure, InternedClosureId},
-+    display::{DisplayTarget, HirDisplay, hir_display_with_store}, generics::generics,
-     infer::{CaptureKind, CapturedItem, TypeMismatch, cast::CastTy},
--    inhabitedness::is_ty_uninhabited_from,
--    layout::LayoutError,
-+    inhabitedness::is_ty_uninhabited_from, layout::LayoutError,
-     mir::{
-         AggregateKind, Arena, BasicBlock, BasicBlockId, BinOp, BorrowKind, CastKind, Either, Expr,
-         FieldId, GenericArgs, Idx, InferenceResult, Local, LocalId, MemoryMap, MirBody, MirSpan,
-         Const, DbInterner, ParamConst, Region, TyKind, TypingMode, UnevaluatedConst,
+     consteval::ConstEvalError,
+     db::{HirDatabase, InternedClosure, InternedClosureId},
+     display::{DisplayTarget, HirDisplay, hir_display_with_store},
          infer::{DbInternerInferExt, InferCtxt},
      },
--    traits::FnTrait,
-+    traits::FnTrait, Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
+     traits::FnTrait,
++    Adjust,
++    Adjustment,
++    AutoBorrow,
++    CallableDefId,
++    TraitEnvironment,
  };
 -
  use super::OperandKind;

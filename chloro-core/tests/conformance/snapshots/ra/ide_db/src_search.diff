@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58275 bytes
-Chloro size:   57934 bytes
+Chloro size:   57970 bytes
 Rustfmt size:  58275 bytes
 
 ✗ Outputs DIFFER
@@ -23,18 +23,24 @@ Rustfmt size:  58275 bytes
  use salsa::Database;
  use syntax::{
 -    AstNode, AstToken, SmolStr, SyntaxElement, SyntaxNode, TextRange, TextSize, ToSmolStr,
--    ast::{self, HasName, Rename},
--    match_ast,
-+    ast::{self, HasName, Rename}, match_ast, AstNode, AstToken, SmolStr, SyntaxElement, SyntaxNode,
-+    TextRange, TextSize, ToSmolStr,
+     ast::{self, HasName, Rename},
+     match_ast,
++    AstNode,
++    AstToken,
++    SmolStr,
++    SyntaxElement,
++    SyntaxNode,
++    TextRange,
++    TextSize,
++    ToSmolStr,
  };
  use triomphe::Arc;
  
  use crate::{
 -    RootDatabase,
      defs::{Definition, NameClass, NameRefClass},
--    traits::{as_trait_assoc_def, convert_to_def_in_trait},
-+    traits::{as_trait_assoc_def, convert_to_def_in_trait}, RootDatabase,
+     traits::{as_trait_assoc_def, convert_to_def_in_trait},
++    RootDatabase,
  };
  
  #[derive(Debug, Default, Clone)]

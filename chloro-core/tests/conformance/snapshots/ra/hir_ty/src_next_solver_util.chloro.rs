@@ -13,14 +13,30 @@ use rustc_type_ir::{
     inherent::{
         AdtDef, GenericArg as _, GenericArgs as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
     },
-    lang_items::SolverTraitLangItem, solve::SizedTraitKind, ConstKind, CoroutineArgs, DebruijnIndex,
-    FloatTy, IntTy, Interner, PredicatePolarity, RegionKind, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt, TypeVisitor, UintTy, UniverseIndex,
+    lang_items::SolverTraitLangItem,
+    solve::SizedTraitKind,
+    ConstKind,
+    CoroutineArgs,
+    DebruijnIndex,
+    FloatTy,
+    IntTy,
+    Interner,
+    PredicatePolarity,
+    RegionKind,
+    TypeFoldable,
+    TypeFolder,
+    TypeSuperFoldable,
+    TypeSuperVisitable,
+    TypeVisitableExt,
+    TypeVisitor,
+    UintTy,
+    UniverseIndex,
     INNERMOST,
 };
 
 use crate::{
-    db::HirDatabase, lower::{LifetimeElisionKind, TyLoweringContext},
+    db::HirDatabase,
+    lower::{LifetimeElisionKind, TyLoweringContext},
     method_resolution::{TraitImpls, TyFingerprint},
     next_solver::{
         BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion,
@@ -28,9 +44,25 @@ use crate::{
     },
 };
 use super::{
-    fold::{BoundVarReplacer, FnMutDelegate}, Binder, BoundRegion, BoundTy, Clause, ClauseKind,
-    Clauses, Const, DbInterner, EarlyBinder, GenericArgs, Predicate, PredicateKind, Region,
-    SolverDefId, TraitPredicate, TraitRef, Ty, TyKind,
+    fold::{BoundVarReplacer, FnMutDelegate},
+    Binder,
+    BoundRegion,
+    BoundTy,
+    Clause,
+    ClauseKind,
+    Clauses,
+    Const,
+    DbInterner,
+    EarlyBinder,
+    GenericArgs,
+    Predicate,
+    PredicateKind,
+    Region,
+    SolverDefId,
+    TraitPredicate,
+    TraitRef,
+    Ty,
+    TyKind,
 };
 
 #[derive(Clone, Debug)]

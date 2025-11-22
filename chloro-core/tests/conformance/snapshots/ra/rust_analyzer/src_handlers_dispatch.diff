@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15536 bytes
+Chloro size:   15544 bytes
 Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
@@ -13,16 +13,6 @@ Rustfmt size:  15570 bytes
  use std::{
      fmt::{self, Debug},
      panic, thread,
- use stdx::thread::ThreadIntent;
- 
- use crate::{
--    global_state::{GlobalState, GlobalStateSnapshot},
--    lsp::LspError,
--    main_loop::Task,
-+    global_state::{GlobalState, GlobalStateSnapshot}, lsp::LspError, main_loop::Task,
-     version::version,
- };
- 
      where
          R: lsp_types::request::Request,
          R::Params: DeserializeOwned + panic::UnwindSafe + fmt::Debug,

@@ -1,7 +1,8 @@
 use std::collections::VecDeque;
 
 use ide_db::{
-    assists::GroupLabel, famous_defs::FamousDefs,
+    assists::GroupLabel,
+    famous_defs::FamousDefs,
     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
@@ -12,7 +13,10 @@ use syntax::{
         prec::{ExprPrecedence, precedence},
         syntax_factory::SyntaxFactory,
     },
-    syntax_editor::{Position, SyntaxEditor}, NodeOrToken, SyntaxKind, T,
+    syntax_editor::{Position, SyntaxEditor},
+    NodeOrToken,
+    SyntaxKind,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};

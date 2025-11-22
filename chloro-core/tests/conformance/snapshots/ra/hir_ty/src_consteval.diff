@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10298 bytes
+Chloro size:   10338 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,13 @@ Rustfmt size:  10586 bytes
  use base_db::Crate;
  use hir_def::{
 -    EnumVariantId, GeneralConstId, HasModule, StaticId,
--    expr_store::Body,
--    hir::{Expr, ExprId},
--    type_ref::LiteralConstRef,
-+    expr_store::Body, hir::{Expr, ExprId}, type_ref::LiteralConstRef, EnumVariantId, GeneralConstId,
-+    HasModule, StaticId,
+     expr_store::Body,
+     hir::{Expr, ExprId},
+     type_ref::LiteralConstRef,
++    EnumVariantId,
++    GeneralConstId,
++    HasModule,
++    StaticId,
  };
  use hir_expand::Lookup;
  use rustc_type_ir::inherent::IntoKind;
@@ -24,16 +26,16 @@ Rustfmt size:  10586 bytes
  
  use crate::{
 -    LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
--    db::HirDatabase,
--    display::DisplayTarget,
--    infer::InferenceContext,
-+    db::HirDatabase, display::DisplayTarget, infer::InferenceContext,
-     mir::{MirEvalError, MirLowerError},
-     next_solver::{
+     db::HirDatabase,
+     display::DisplayTarget,
+     infer::InferenceContext,
          Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
          SolverDefId, Ty, ValueConst,
      },
-+    LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
++    LifetimeElisionKind,
++    MemoryMap,
++    TraitEnvironment,
++    TyLoweringContext,
  };
 -
  use super::mir::{interpret_mir, lower_to_mir, pad16};

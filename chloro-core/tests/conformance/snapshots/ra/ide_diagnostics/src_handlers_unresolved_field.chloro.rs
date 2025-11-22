@@ -2,12 +2,19 @@ use either::Either;
 use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    assists::{Assist, AssistId}, helpers::is_editable_crate, label::Label,
+    assists::{Assist, AssistId},
+    helpers::is_editable_crate,
+    label::Label,
     source_change::{SourceChange, SourceChangeBuilder},
 };
 use syntax::{
-    algo, ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make}, AstNode, AstPtr,
-    Direction, SyntaxKind, TextSize,
+    algo,
+    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
+    AstNode,
+    AstPtr,
+    Direction,
+    SyntaxKind,
+    TextSize,
 };
 use syntax::{
     SyntaxNode,

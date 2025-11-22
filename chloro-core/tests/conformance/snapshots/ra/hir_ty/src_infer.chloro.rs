@@ -36,11 +36,27 @@ use either::Either;
 use hir_def::{
     expr_store::{Body, ExpressionStore, HygieneId, path::Path},
     hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
-    lang_item::{LangItem, LangItemTarget, lang_item}, layout::Integer,
+    lang_item::{LangItem, LangItemTarget, lang_item},
+    layout::Integer,
     resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
-    signatures::{ConstSignature, StaticSignature}, type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
-    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
+    signatures::{ConstSignature, StaticSignature},
+    type_ref::{ConstRef, LifetimeRefId, TypeRefId},
+    AdtId,
+    AssocItemId,
+    ConstId,
+    DefWithBodyId,
+    FieldId,
+    FunctionId,
+    GenericDefId,
+    GenericParamId,
+    ItemContainerId,
+    LocalFieldId,
+    Lookup,
+    TraitId,
+    TupleFieldId,
+    TupleId,
+    TypeAliasId,
+    VariantId,
 };
 use hir_expand::{mod_path::ModPath, name::Name};
 use indexmap::IndexSet;
@@ -49,7 +65,9 @@ use la_arena::ArenaMap;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _}, AliasTyKind, TypeFoldable,
+    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
+    AliasTyKind,
+    TypeFoldable,
 };
 use stdx::never;
 use triomphe::Arc;
@@ -70,8 +88,12 @@ use crate::{
         AliasTy, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Region, Ty, TyKind,
         Tys, abi::Safety, infer::traits::ObligationCause,
     },
-    traits::FnTrait, utils::TargetFeatureIsSafeInTarget, ImplTraitId, IncorrectGenericsLenKind,
-    PathLoweringDiagnostic, TargetFeatures,
+    traits::FnTrait,
+    utils::TargetFeatureIsSafeInTarget,
+    ImplTraitId,
+    IncorrectGenericsLenKind,
+    PathLoweringDiagnostic,
+    TargetFeatures,
 };
 
 /// The entry point of type inference.

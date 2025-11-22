@@ -8,11 +8,14 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    AstNode, T,
+    AstNode,
+    T,
 };
 
 use crate::{
-    assist_context::{AssistContext, Assists}, utils::invert_boolean_expression_legacy, AssistId,
+    assist_context::{AssistContext, Assists},
+    utils::invert_boolean_expression_legacy,
+    AssistId,
 };
 
 pub(crate) fn convert_while_to_loop(

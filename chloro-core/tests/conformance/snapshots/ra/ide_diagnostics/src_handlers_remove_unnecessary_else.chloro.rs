@@ -6,7 +6,9 @@ use syntax::{
     ast::{
         self,
         edit::{AstNodeEdit, IndentLevel},
-    }, AstNode, SyntaxToken,
+    },
+    AstNode,
+    SyntaxToken,
     TextRange,
 };
 

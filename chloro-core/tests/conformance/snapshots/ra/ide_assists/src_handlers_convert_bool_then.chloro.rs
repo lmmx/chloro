@@ -9,11 +9,16 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
-    syntax_editor::SyntaxEditor, AstNode, SyntaxNode,
+    syntax_editor::SyntaxEditor,
+    AstNode,
+    SyntaxNode,
 };
 
 use crate::{
-    utils::{invert_boolean_expression, unwrap_trivial_block}, AssistContext, AssistId, Assists,
+    utils::{invert_boolean_expression, unwrap_trivial_block},
+    AssistContext,
+    AssistId,
+    Assists,
 };
 
 pub(crate) fn convert_if_to_bool_then(

@@ -2,7 +2,10 @@
 //! requests/replies and notifications back to the client.
 
 use std::{
-    fmt, ops::Div as _, panic::AssertUnwindSafe, time::{Duration, Instant},
+    fmt,
+    ops::Div as _,
+    panic::AssertUnwindSafe,
+    time::{Duration, Instant},
 };
 
 use crossbeam_channel::{Receiver, never, select};
@@ -29,7 +32,8 @@ use crate::{
     lsp::{
         from_proto, to_proto,
         utils::{Progress, notification_is},
-    }, lsp_ext,
+    },
+    lsp_ext,
     reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
     test_runner::{CargoTestMessage, CargoTestOutput, TestState},
 };

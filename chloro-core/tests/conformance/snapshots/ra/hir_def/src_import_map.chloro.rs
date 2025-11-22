@@ -13,9 +13,17 @@ use stdx::format_to;
 use triomphe::Arc;
 
 use crate::{
-    db::DefDatabase, item_scope::{ImportOrExternCrate, ItemInNs},
-    nameres::{DefMap, assoc::TraitItems, crate_def_map}, visibility::Visibility, AssocItemId,
-    AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
+    db::DefDatabase,
+    item_scope::{ImportOrExternCrate, ItemInNs},
+    nameres::{DefMap, assoc::TraitItems, crate_def_map},
+    visibility::Visibility,
+    AssocItemId,
+    AttrDefId,
+    Complete,
+    FxIndexMap,
+    ModuleDefId,
+    ModuleId,
+    TraitId,
 };
 
 /// Item import details stored in the `ImportMap`.

@@ -6,7 +6,9 @@ use syntax::{
         self, HasArgList, HasLoopBody, HasName, RangeItem, edit::AstNodeEdit, make,
         syntax_factory::SyntaxFactory,
     },
-    syntax_editor::{Element, Position}, AstNode, T,
+    syntax_editor::{Element, Position},
+    AstNode,
+    T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

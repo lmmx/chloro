@@ -14,7 +14,9 @@ use crate::{
         ExpressionStore,
         path::{GenericArg, Path},
     },
-    hir::{ExprId, Literal}, LifetimeParamId, TypeParamId,
+    hir::{ExprId, Literal},
+    LifetimeParamId,
+    TypeParamId,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

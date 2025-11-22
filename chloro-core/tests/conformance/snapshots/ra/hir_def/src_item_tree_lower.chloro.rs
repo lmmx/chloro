@@ -4,7 +4,10 @@ use std::{cell::OnceCell, collections::hash_map::Entry};
 
 use base_db::FxIndexSet;
 use hir_expand::{
-    mod_path::PathKind, name::AsName, span_map::{SpanMap, SpanMapRef}, HirFileId,
+    mod_path::PathKind,
+    name::AsName,
+    span_map::{SpanMap, SpanMapRef},
+    HirFileId,
 };
 use la_arena::Arena;
 use span::{AstIdMap, FileAstId, SyntaxContext};

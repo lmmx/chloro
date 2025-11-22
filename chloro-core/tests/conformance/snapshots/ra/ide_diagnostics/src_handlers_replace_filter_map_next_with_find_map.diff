@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5385 bytes
-Chloro size:   5191 bytes
+Chloro size:   5199 bytes
 Rustfmt size:  5400 bytes
 
 ✗ Outputs DIFFER
@@ -52,12 +52,8 @@ Rustfmt size:  5400 bytes
      Some(vec![fix(
          "replace_with_find_map",
          "Replace filter_map(..).next() with find_map()",
- #[cfg(test)]
- mod tests {
-     use crate::{
--        tests::{check_diagnostics_with_config, check_fix},
--        DiagnosticsConfig,
-+        tests::{check_diagnostics_with_config, check_fix}, DiagnosticsConfig,
+         tests::{check_diagnostics_with_config, check_fix},
+         DiagnosticsConfig,
      };
 -
      #[track_caller]

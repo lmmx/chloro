@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55423 bytes
+Chloro size:   55479 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -16,20 +16,22 @@ Rustfmt size:  55742 bytes
      expr_store::{
          ExpressionStore, HygieneId,
          path::{
-     hir::generics::{
-         GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
-     },
--    resolver::{ResolveValueResult, TypeNs, ValueNs},
--    signatures::TraitFlags,
--    type_ref::{TypeRef, TypeRefId},
-+    resolver::{ResolveValueResult, TypeNs, ValueNs}, signatures::TraitFlags,
-+    type_ref::{TypeRef, TypeRefId}, GenericDefId, GenericParamId, Lookup, TraitId, TypeAliasId,
+     resolver::{ResolveValueResult, TypeNs, ValueNs},
+     signatures::TraitFlags,
+     type_ref::{TypeRef, TypeRefId},
++    GenericDefId,
++    GenericParamId,
++    Lookup,
++    TraitId,
++    TypeAliasId,
  };
  use hir_expand::name::Name;
  use rustc_type_ir::{
 -    AliasTerm, AliasTy, AliasTyKind,
--    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _},
-+    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _}, AliasTerm, AliasTy, AliasTyKind,
+     inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _},
++    AliasTerm,
++    AliasTy,
++    AliasTyKind,
  };
  use smallvec::SmallVec;
  use stdx::never;
@@ -37,17 +39,18 @@ Rustfmt size:  55742 bytes
  use crate::{
 -    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
 -    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
--    consteval::{unknown_const, unknown_const_as_generic},
--    db::HirDatabase,
-+    consteval::{unknown_const, unknown_const_as_generic}, db::HirDatabase,
+     consteval::{unknown_const, unknown_const_as_generic},
+     db::HirDatabase,
      generics::{Generics, generics},
-     lower::{
-         LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
          Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
          ProjectionPredicate, Region, TraitRef, Ty,
      },
-+    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
-+    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
++    GenericArgsProhibitedReason,
++    IncorrectGenericsLenKind,
++    PathGenericsSource,
++    PathLoweringDiagnostic,
++    TyDefId,
++    ValueTyDefId,
  };
 -
  use super::{

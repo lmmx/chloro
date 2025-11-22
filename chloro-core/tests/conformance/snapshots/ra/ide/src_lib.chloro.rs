@@ -71,10 +71,19 @@ pub use ide_completion::{
 pub use ide_db::{
     assists::ExprFillDefaultMode,
     base_db::{Crate, CrateGraphBuilder, FileChange, SourceRoot, SourceRootId},
-    documentation::Documentation, label::Label, line_index::{LineCol, LineIndex},
-    prime_caches::ParallelPrimeCachesProgress, search::{ReferenceCategory, SearchScope},
-    source_change::{FileSystemEdit, SnippetEdit, SourceChange}, symbol_index::Query,
-    text_edit::{Indel, TextEdit}, FileId, FilePosition, FileRange, RootDatabase, Severity,
+    documentation::Documentation,
+    label::Label,
+    line_index::{LineCol, LineIndex},
+    prime_caches::ParallelPrimeCachesProgress,
+    search::{ReferenceCategory, SearchScope},
+    source_change::{FileSystemEdit, SnippetEdit, SourceChange},
+    symbol_index::Query,
+    text_edit::{Indel, TextEdit},
+    FileId,
+    FilePosition,
+    FileRange,
+    RootDatabase,
+    Severity,
     SymbolKind,
 };
 use ide_db::{
@@ -82,7 +91,11 @@ use ide_db::{
         CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
         salsa::Cancelled,
     },
-    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
+    prime_caches,
+    symbol_index,
+    FxHashMap,
+    FxIndexSet,
+    LineIndexDatabase,
 };
 use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
@@ -97,9 +110,11 @@ use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
 use crate::navigation_target::ToNav;
 pub use crate::{
     annotations::{Annotation, AnnotationConfig, AnnotationKind, AnnotationLocation},
-    call_hierarchy::{CallHierarchyConfig, CallItem}, expand_macro::ExpandedMacro,
+    call_hierarchy::{CallHierarchyConfig, CallItem},
+    expand_macro::ExpandedMacro,
     file_structure::{FileStructureConfig, StructureNode, StructureNodeKind},
-    folding_ranges::{Fold, FoldKind}, goto_definition::GotoDefinitionConfig,
+    folding_ranges::{Fold, FoldKind},
+    goto_definition::GotoDefinitionConfig,
     goto_implementation::GotoImplementationConfig,
     highlight_related::{HighlightRelatedConfig, HighlightedRange},
     hover::{
@@ -112,14 +127,18 @@ pub use crate::{
         InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip, LazyProperty,
         LifetimeElisionHints,
     },
-    join_lines::JoinLinesConfig, markup::Markup,
+    join_lines::JoinLinesConfig,
+    markup::Markup,
     moniker::{
         Moniker, MonikerDescriptorKind, MonikerIdentifier, MonikerKind, MonikerResult,
         PackageInformation, SymbolInformationKind,
     },
-    move_item::Direction, navigation_target::{NavigationTarget, TryToNav, UpmappingResult},
-    references::{FindAllRefsConfig, ReferenceSearchResult}, rename::{RenameConfig, RenameError},
-    runnables::{Runnable, RunnableKind, TestId, UpdateTest}, signature_help::SignatureHelp,
+    move_item::Direction,
+    navigation_target::{NavigationTarget, TryToNav, UpmappingResult},
+    references::{FindAllRefsConfig, ReferenceSearchResult},
+    rename::{RenameConfig, RenameError},
+    runnables::{Runnable, RunnableKind, TestId, UpdateTest},
+    signature_help::SignatureHelp,
     static_index::{
         StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
     },

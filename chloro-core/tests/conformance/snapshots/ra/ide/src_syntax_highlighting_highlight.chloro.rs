@@ -5,14 +5,26 @@ use std::ops::ControlFlow;
 use either::Either;
 use hir::{AsAssocItem, HasVisibility, Semantics};
 use ide_db::{
-    defs::{Definition, IdentClass, NameClass, NameRefClass}, syntax_helpers::node_ext::walk_pat,
-    FxHashMap, RootDatabase, SymbolKind,
+    defs::{Definition, IdentClass, NameClass, NameRefClass},
+    syntax_helpers::node_ext::walk_pat,
+    FxHashMap,
+    RootDatabase,
+    SymbolKind,
 };
 use span::Edition;
 use stdx::hash_once;
 use syntax::{
-    ast, match_ast, AstNode, AstPtr, AstToken, NodeOrToken, SyntaxKind::{self, *}, SyntaxNode,
-    SyntaxNodePtr, SyntaxToken, T,
+    ast,
+    match_ast,
+    AstNode,
+    AstPtr,
+    AstToken,
+    NodeOrToken,
+    SyntaxKind::{self, *},
+    SyntaxNode,
+    SyntaxNodePtr,
+    SyntaxToken,
+    T,
 };
 
 use crate::{

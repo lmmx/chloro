@@ -4,8 +4,13 @@
 use hir::{FindPathConfig, PathResolution, Semantics};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    helpers::mod_path_to_ast, imports::insert_use::{ImportScope, insert_use},
-    source_change::SourceChangeBuilder, EditionedFileId, FileRange, FxHashMap, RootDatabase,
+    helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use},
+    source_change::SourceChangeBuilder,
+    EditionedFileId,
+    FileRange,
+    FxHashMap,
+    RootDatabase,
 };
 use itertools::Itertools;
 use stdx::{format_to, never};
@@ -189,7 +194,8 @@ pub(crate) fn json_in_items(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{check_diagnostics_with_config, check_fix, check_no_fix}, DiagnosticsConfig,
+        tests::{check_diagnostics_with_config, check_fix, check_no_fix},
+        DiagnosticsConfig,
     };
     #[test]
     fn diagnostic_for_simple_case() {

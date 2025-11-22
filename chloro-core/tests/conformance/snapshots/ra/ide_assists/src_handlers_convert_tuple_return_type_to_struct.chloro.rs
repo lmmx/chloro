@@ -1,13 +1,20 @@
 use either::Either;
 use hir::ModuleDef;
 use ide_db::{
-    assists::AssistId, defs::Definition, helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use}, search::{FileReference, UsageSearchResult},
-    source_change::SourceChangeBuilder, syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
+    assists::AssistId,
+    defs::Definition,
+    helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, insert_use},
+    search::{FileReference, UsageSearchResult},
+    source_change::SourceChangeBuilder,
+    syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
     FxHashSet,
 };
 use syntax::{
-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make}, match_ast, ted, AstNode,
+    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
+    match_ast,
+    ted,
+    AstNode,
     SyntaxNode,
 };
 

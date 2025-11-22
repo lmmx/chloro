@@ -39,9 +39,21 @@ use std::hash::{Hash, Hasher};
 use base_db::{Crate, impl_intern_key};
 use hir_expand::{
     builtin::{BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander},
-    db::ExpandDatabase, eager::expand_eager_macro_input, impl_intern_lookup, mod_path::ModPath,
-    name::Name, proc_macro::{CustomProcMacroExpander, ProcMacroKind}, AstId, ExpandResult, ExpandTo,
-    HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId, MacroDefKind,
+    db::ExpandDatabase,
+    eager::expand_eager_macro_input,
+    impl_intern_lookup,
+    mod_path::ModPath,
+    name::Name,
+    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
+    AstId,
+    ExpandResult,
+    ExpandTo,
+    HirFileId,
+    InFile,
+    MacroCallId,
+    MacroCallKind,
+    MacroDefId,
+    MacroDefKind,
 };
 pub use hir_expand::{Intern, Lookup, tt};
 use intern::{Interned, Symbol, sym};
@@ -56,7 +68,10 @@ use triomphe::Arc;
 
 pub use crate::signatures::LocalFieldId;
 use crate::{
-    attr::Attrs, builtin_type::BuiltinType, db::DefDatabase, expr_store::ExpressionStoreSourceMap,
+    attr::Attrs,
+    builtin_type::BuiltinType,
+    db::DefDatabase,
+    expr_store::ExpressionStoreSourceMap,
     hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
     nameres::{
         LocalDefMap,

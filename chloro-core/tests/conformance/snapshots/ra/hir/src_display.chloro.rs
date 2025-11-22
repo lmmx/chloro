@@ -4,8 +4,12 @@ use either::Either;
 use hir_def::{
     expr_store::ExpressionStore,
     hir::generics::{GenericParams, TypeOrConstParamData, TypeParamProvenance, WherePredicate},
-    item_tree::FieldsShape, lang_item::LangItem, signatures::{StaticFlags, TraitFlags},
-    type_ref::{TypeBound, TypeRef, TypeRefId}, AdtId, GenericDefId,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
+    signatures::{StaticFlags, TraitFlags},
+    type_ref::{TypeBound, TypeRef, TypeRefId},
+    AdtId,
+    GenericDefId,
 };
 use hir_ty::{
     db::HirDatabase,
@@ -19,10 +23,10 @@ use itertools::Itertools;
 use rustc_type_ir::inherent::IntoKind;
 
 use crate::{
-    Adt, AsAssocItem, AssocItem, AssocItemContainer, Const, ConstParam, Crate, Enum, ExternCrateDecl,
-    Field, Function, GenericParam, HasCrate, HasVisibility, Impl, LifetimeParam, Macro, Module,
-    SelfParam, Static, Struct, StructKind, Trait, TraitRef, TupleField, Type, TypeAlias, TypeNs,
-    TypeOrConstParam, TypeParam, Union, Variant,
+    Adt, AsAssocItem, AssocItem, AssocItemContainer, Const, ConstParam, Crate, Enum,
+    ExternCrateDecl, Field, Function, GenericParam, HasCrate, HasVisibility, Impl, LifetimeParam,
+    Macro, Module, SelfParam, Static, Struct, StructKind, Trait, TraitRef, TupleField, Type,
+    TypeAlias, TypeNs, TypeOrConstParam, TypeParam, Union, Variant,
 };
 
 impl<'db> HirDisplay<'db> for Function {

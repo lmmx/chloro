@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34854 bytes
+Chloro size:   34878 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -24,10 +24,16 @@ Rustfmt size:  36650 bytes
 +pub(crate) use on_enter::on_enter;
 +use span::Edition;
  use syntax::{
--    algo::{ancestors_at_offset, find_node_at_offset},
+     algo::{ancestors_at_offset, find_node_at_offset},
 -    ast::{self, edit::IndentLevel, AstToken},
-+    algo::{ancestors_at_offset, find_node_at_offset}, ast::{self, AstToken, edit::IndentLevel},
-     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
+-    AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
++    ast::{self, AstToken, edit::IndentLevel},
++    AstNode,
++    Parse,
++    SourceFile,
++    SyntaxKind,
++    TextRange,
++    TextSize,
  };
  
 -use ide_db::text_edit::TextEdit;

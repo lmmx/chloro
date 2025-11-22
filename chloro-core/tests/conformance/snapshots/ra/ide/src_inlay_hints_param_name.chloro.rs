@@ -289,7 +289,8 @@ fn is_adt_constructor_similar_to_param_name(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config}, InlayHintsConfig,
+        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+        InlayHintsConfig,
     };
     #[track_caller]
     fn check_params(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

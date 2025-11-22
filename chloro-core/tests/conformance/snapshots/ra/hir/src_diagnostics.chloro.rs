@@ -12,19 +12,36 @@ use hir_def::{
         ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
         hir_generic_arg_to_ast, hir_segment_to_ast_segment,
     },
-    hir::ExprOrPatId, DefWithBodyId, GenericParamId, SyntheticSyntax,
+    hir::ExprOrPatId,
+    DefWithBodyId,
+    GenericParamId,
+    SyntheticSyntax,
 };
 use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
 use hir_ty::{
-    db::HirDatabase, diagnostics::{BodyValidationDiagnostic, UnsafetyReason}, CastError,
-    InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource, PathLoweringDiagnostic,
-    TyLoweringDiagnostic, TyLoweringDiagnosticKind,
+    db::HirDatabase,
+    diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
+    CastError,
+    InferenceDiagnostic,
+    InferenceTyDiagnosticSource,
+    PathGenericsSource,
+    PathLoweringDiagnostic,
+    TyLoweringDiagnostic,
+    TyLoweringDiagnosticKind,
 };
 pub use hir_ty::{
-    diagnostics::{CaseType, IncorrectCase}, GenericArgsProhibitedReason, IncorrectGenericsLenKind,
+    diagnostics::{CaseType, IncorrectCase},
+    GenericArgsProhibitedReason,
+    IncorrectGenericsLenKind,
 };
 use syntax::{
-    ast::{self, HasGenericArgs}, match_ast, AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
+    ast::{self, HasGenericArgs},
+    match_ast,
+    AstNode,
+    AstPtr,
+    SyntaxError,
+    SyntaxNodePtr,
+    TextRange,
 };
 use triomphe::Arc;
 

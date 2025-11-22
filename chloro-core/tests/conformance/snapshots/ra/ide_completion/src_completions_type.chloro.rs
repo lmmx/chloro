@@ -5,7 +5,9 @@ use syntax::{AstNode, ast};
 
 use crate::{
     context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
-    render::render_type_inference, CompletionContext, Completions,
+    render::render_type_inference,
+    CompletionContext,
+    Completions,
 };
 
 pub(crate) fn complete_type_path(

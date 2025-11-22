@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   12743 bytes
+Chloro size:   12795 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -21,13 +21,23 @@ Rustfmt size:  32624 bytes
  use crate::{
 -    AdtId, AssocItemId, AttrDefId, Crate, EnumId, EnumVariantId, FunctionId, ImplId, ModuleDefId,
 -    StaticId, StructId, TraitId, TypeAliasId, UnionId,
--    db::DefDatabase,
--    expr_store::path::Path,
--    nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map},
-+    db::DefDatabase, expr_store::path::Path,
-+    nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map}, AdtId, AssocItemId, AttrDefId,
-+    Crate, EnumId, EnumVariantId, FunctionId, ImplId, ModuleDefId, StaticId, StructId, TraitId,
-+    TypeAliasId, UnionId,
+     db::DefDatabase,
+     expr_store::path::Path,
+     nameres::{assoc::TraitItems, crate_def_map, crate_local_def_map},
++    AdtId,
++    AssocItemId,
++    AttrDefId,
++    Crate,
++    EnumId,
++    EnumVariantId,
++    FunctionId,
++    ImplId,
++    ModuleDefId,
++    StaticId,
++    StructId,
++    TraitId,
++    TypeAliasId,
++    UnionId,
  };
  
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

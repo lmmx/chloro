@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49350 bytes
-Chloro size:   48215 bytes
+Chloro size:   48243 bytes
 Rustfmt size:  49350 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,20 @@ Rustfmt size:  49350 bytes
  use syntax::{
 -    AstNode, Edition, SyntaxKind, T, TextRange,
      ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
--    syntax_editor::SyntaxEditor,
-+    syntax_editor::SyntaxEditor, AstNode, Edition, SyntaxKind, TextRange, T,
+     syntax_editor::SyntaxEditor,
++    AstNode,
++    Edition,
++    SyntaxKind,
++    TextRange,
++    T,
  };
  
  use crate::{
 -    AssistContext, AssistId, Assists,
      utils::{does_pat_match_variant, does_pat_variant_nested_or_literal, unwrap_trivial_block},
-+    AssistContext, AssistId, Assists,
++    AssistContext,
++    AssistId,
++    Assists,
  };
  
 -// Assist: replace_if_let_with_match

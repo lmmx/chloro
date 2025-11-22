@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6079 bytes
-Chloro size:   5874 bytes
+Chloro size:   5894 bytes
 Rustfmt size:  6079 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,18 @@ Rustfmt size:  6079 bytes
  use syntax::{
 -    ast::{self, edit::IndentLevel, CommentPlacement, Whitespace},
 -    AstToken, TextRange,
-+    ast::{self, CommentPlacement, Whitespace, edit::IndentLevel}, AstToken, TextRange,
++    ast::{self, CommentPlacement, Whitespace, edit::IndentLevel},
++    AstToken,
++    TextRange,
  };
  
  use crate::{
      handlers::convert_comment_block::{line_comment_text, relevant_line_comments},
--    utils::required_hashes,
+     utils::required_hashes,
 -    AssistContext, AssistId, Assists,
-+    utils::required_hashes, AssistContext, AssistId, Assists,
++    AssistContext,
++    AssistId,
++    Assists,
  };
  
 -// Assist: desugar_doc_comment

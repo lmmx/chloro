@@ -7,15 +7,25 @@ use hir_expand::name::Name;
 use intern::sym;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{Const as _, IntoKind, Ty as _}, solve::{Certainty, GoalSource}, DebruijnIndex,
-    InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder, TypeSuperFoldable,
-    TypeVisitableExt, UpcastFrom,
+    inherent::{Const as _, IntoKind, Ty as _},
+    solve::{Certainty, GoalSource},
+    DebruijnIndex,
+    InferConst,
+    InferTy,
+    RegionVid,
+    TyVid,
+    TypeFoldable,
+    TypeFolder,
+    TypeSuperFoldable,
+    TypeVisitableExt,
+    UpcastFrom,
 };
 use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, infer::InferenceContext,
+    db::HirDatabase,
+    infer::InferenceContext,
     next_solver::{
         self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
         ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,

@@ -9,10 +9,22 @@ use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};
 use base_db::{Crate, target::TargetLoadError};
 use either::Either;
 use hir_def::{
-    expr_store::HygieneId, item_tree::FieldsShape, lang_item::LangItem,
-    layout::{TagEncoding, Variants}, resolver::{HasResolver, TypeNs, ValueNs},
-    signatures::{StaticFlags, StructFlags}, AdtId, DefWithBodyId, EnumVariantId, FunctionId,
-    GeneralConstId, HasModule, ItemContainerId, Lookup, StaticId, VariantId,
+    expr_store::HygieneId,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
+    layout::{TagEncoding, Variants},
+    resolver::{HasResolver, TypeNs, ValueNs},
+    signatures::{StaticFlags, StructFlags},
+    AdtId,
+    DefWithBodyId,
+    EnumVariantId,
+    FunctionId,
+    GeneralConstId,
+    HasModule,
+    ItemContainerId,
+    Lookup,
+    StaticId,
+    VariantId,
 };
 use hir_expand::{InFile, mod_path::path, name::Name};
 use intern::sym;
@@ -25,7 +37,8 @@ use rustc_apfloat::{
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _}, AliasTyKind,
+    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
+    AliasTyKind,
 };
 use span::FileId;
 use stdx::never;
@@ -36,7 +49,8 @@ use Address::*;
 use crate::{
     consteval::{self, ConstEvalError, try_const_usize},
     db::{HirDatabase, InternedClosure, InternedClosureId},
-    display::{ClosureStyle, DisplayTarget, HirDisplay}, infer::PointerCast,
+    display::{ClosureStyle, DisplayTarget, HirDisplay},
+    infer::PointerCast,
     layout::{Layout, LayoutError, RustcEnumVariantIdx},
     method_resolution::{is_dyn_method, lookup_impl_const},
     next_solver::{
@@ -45,7 +59,11 @@ use crate::{
         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
         obligation_ctxt::ObligationCtxt,
     },
-    traits::FnTrait, utils::detect_variant_from_bytes, CallableDefId, ComplexMemoryMap, MemoryMap,
+    traits::FnTrait,
+    utils::detect_variant_from_bytes,
+    CallableDefId,
+    ComplexMemoryMap,
+    MemoryMap,
     TraitEnvironment,
 };
 use super::{

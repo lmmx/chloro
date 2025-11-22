@@ -1,5 +1,7 @@
 use ide_db::{
-    assists::AssistId, defs::{Definition, NameClass, NameRefClass}, rename::RenameDefinition,
+    assists::AssistId,
+    defs::{Definition, NameClass, NameRefClass},
+    rename::RenameDefinition,
 };
 use syntax::{AstNode, ast};
 

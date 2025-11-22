@@ -3,9 +3,16 @@
 use hir_def::{AssocItemId, GeneralConstId};
 use rustc_next_trait_solver::delegate::SolverDelegate;
 use rustc_type_ir::{
-    inherent::{IntoKind, SliceLike, Term as _, Ty as _}, lang_items::SolverTraitLangItem,
-    solve::{Certainty, NoSolution}, AliasTyKind, GenericArgKind, InferCtxtLike, Interner,
-    PredicatePolarity, TypeFlags, TypeVisitableExt,
+    inherent::{IntoKind, SliceLike, Term as _, Ty as _},
+    lang_items::SolverTraitLangItem,
+    solve::{Certainty, NoSolution},
+    AliasTyKind,
+    GenericArgKind,
+    InferCtxtLike,
+    Interner,
+    PredicatePolarity,
+    TypeFlags,
+    TypeVisitableExt,
 };
 use tracing::debug;
 
@@ -18,8 +25,12 @@ use crate::{
     ImplTraitId,
 };
 use super::{
-    infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt}, DbInterner,
-    ErrorGuaranteed, GenericArg, SolverDefId, Span,
+    infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt},
+    DbInterner,
+    ErrorGuaranteed,
+    GenericArg,
+    SolverDefId,
+    Span,
 };
 
 pub type Goal<'db, P> = rustc_type_ir::solve::Goal<DbInterner<'db>, P>;

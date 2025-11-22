@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32207 bytes
-Chloro size:   32332 bytes
+Chloro size:   32400 bytes
 Rustfmt size:  33429 bytes
 
 ✗ Outputs DIFFER
@@ -19,22 +19,33 @@ Rustfmt size:  33429 bytes
  
  use crate::{
 -    attrs::{collect_attrs, AttrId, AttrInput, RawAttrs},
--    builtin::pseudo_derive_attr_expansion,
--    cfg_process,
--    declarative::DeclarativeMacroExpander,
--    fixup::{self, SyntaxFixupUndoInfo},
-+    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs}, builtin::pseudo_derive_attr_expansion,
-+    cfg_process, declarative::DeclarativeMacroExpander, fixup::{self, SyntaxFixupUndoInfo},
++    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs},
+     builtin::pseudo_derive_attr_expansion,
+     cfg_process,
+     declarative::DeclarativeMacroExpander,
      hygiene::{span_with_call_site_ctxt, span_with_def_site_ctxt, span_with_mixed_site_ctxt},
      proc_macro::{CrateProcMacros, CustomProcMacroExpander, ProcMacros},
--    span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
+     span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
 -    tt, AstId, BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerCallInfo,
 -    EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
 -    MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
-+    span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef}, tt, AstId, BuiltinAttrExpander,
-+    BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerCallInfo, EagerExpander, EditionedFileId,
-+    ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId, MacroCallKind, MacroCallLoc,
-+    MacroDefId, MacroDefKind,
++    tt,
++    AstId,
++    BuiltinAttrExpander,
++    BuiltinDeriveExpander,
++    BuiltinFnLikeExpander,
++    EagerCallInfo,
++    EagerExpander,
++    EditionedFileId,
++    ExpandError,
++    ExpandResult,
++    ExpandTo,
++    HirFileId,
++    MacroCallId,
++    MacroCallKind,
++    MacroCallLoc,
++    MacroDefId,
++    MacroDefKind,
  };
 +
  /// This is just to ensure the types of smart_macro_arg and macro_arg are the same

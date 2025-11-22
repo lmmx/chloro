@@ -6,8 +6,10 @@
 use bitflags::bitflags;
 
 use crate::{
-    item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs}, visibility::Visibility,
-    MacroId, ModuleDefId,
+    item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs},
+    visibility::Visibility,
+    MacroId,
+    ModuleDefId,
 };
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]

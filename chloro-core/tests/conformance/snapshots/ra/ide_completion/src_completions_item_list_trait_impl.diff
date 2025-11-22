@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36630 bytes
-Chloro size:   36513 bytes
+Chloro size:   36545 bytes
 Rustfmt size:  36630 bytes
 
 ✗ Outputs DIFFER
@@ -26,10 +26,17 @@ Rustfmt size:  36630 bytes
  use syntax::ast::HasGenericParams;
  use syntax::{
 -    AstNode, SmolStr, SyntaxElement, SyntaxKind, T, TextRange, ToSmolStr,
--    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
+     ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
 -    format_smolstr, ted,
-+    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make}, format_smolstr,
-+    ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
++    format_smolstr,
++    ted,
++    AstNode,
++    SmolStr,
++    SyntaxElement,
++    SyntaxKind,
++    TextRange,
++    ToSmolStr,
++    T,
  };
  
  use crate::{

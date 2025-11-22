@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10526 bytes
-Chloro size:   10268 bytes
+Chloro size:   10300 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -11,12 +11,17 @@ Rustfmt size:  10803 bytes
 -use ide_db::{defs::Definition, search::FileReference, EditionedFileId};
 +use ide_db::{EditionedFileId, defs::Definition, search::FileReference};
  use syntax::{
--    algo::{find_node_at_range, least_common_ancestor_element},
--    ast::{self, HasArgList},
--    syntax_editor::Element,
+     algo::{find_node_at_range, least_common_ancestor_element},
+     ast::{self, HasArgList},
+     syntax_editor::Element,
 -    AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
-+    algo::{find_node_at_range, least_common_ancestor_element}, ast::{self, HasArgList},
-+    syntax_editor::Element, AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
++    AstNode,
++    SourceFile,
++    SyntaxElement,
++    SyntaxKind,
++    SyntaxNode,
++    TextRange,
++    T,
  };
 -
  use SyntaxKind::WHITESPACE;

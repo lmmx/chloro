@@ -6,7 +6,10 @@ use base_db::Crate;
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
 use hir_expand::{
-    attrs::{Attr, AttrId, RawAttrs, collect_attrs}, span_map::SpanMapRef, HirFileId, InFile,
+    attrs::{Attr, AttrId, RawAttrs, collect_attrs},
+    span_map::SpanMapRef,
+    HirFileId,
+    InFile,
 };
 use intern::{Symbol, sym};
 use la_arena::{ArenaMap, Idx, RawIdx};
@@ -21,9 +24,20 @@ use triomphe::Arc;
 use tt::iter::{TtElement, TtIter};
 
 use crate::{
-    db::DefDatabase, item_tree::block_item_tree_query, lang_item::LangItem,
-    nameres::{ModuleOrigin, ModuleSource}, src::{HasChildSource, HasSource}, AdtId, AstIdLoc,
-    AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId, VariantId,
+    db::DefDatabase,
+    item_tree::block_item_tree_query,
+    lang_item::LangItem,
+    nameres::{ModuleOrigin, ModuleSource},
+    src::{HasChildSource, HasSource},
+    AdtId,
+    AstIdLoc,
+    AttrDefId,
+    GenericParamId,
+    HasModule,
+    LocalFieldId,
+    Lookup,
+    MacroId,
+    VariantId,
 };
 
 /// Desugared attributes of an item post `cfg_attr` expansion.

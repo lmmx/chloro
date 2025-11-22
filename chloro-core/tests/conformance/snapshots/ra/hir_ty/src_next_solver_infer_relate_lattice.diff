@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9375 bytes
+Chloro size:   9427 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -15,7 +15,11 @@ Rustfmt size:  10026 bytes
          Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
 +        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
      },
-     AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
+-    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
++    AliasRelationDirection,
++    TypeVisitableExt,
++    Upcast,
++    Variance,
  };
  
  use crate::next_solver::{
@@ -25,8 +29,21 @@ Rustfmt size:  10026 bytes
          traits::{Obligation, PredicateObligations},
 -        InferCtxt, TypeTrace,
      },
-     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
+-    AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
++    AliasTy,
++    Binder,
++    Const,
++    DbInterner,
++    Goal,
++    ParamEnv,
++    Predicate,
++    PredicateKind,
++    Region,
++    Span,
++    Ty,
      TyKind,
+ };
+ 
  /// A greatest lower bound" (common subtype) or least upper bound (common supertype).
  pub(crate) struct LatticeOp<'infcx, 'db> {
      infcx: &'infcx InferCtxt<'db>,

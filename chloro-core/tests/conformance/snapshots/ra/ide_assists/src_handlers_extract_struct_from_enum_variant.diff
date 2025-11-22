@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30062 bytes
-Chloro size:   29587 bytes
+Chloro size:   29627 bytes
 Rustfmt size:  30062 bytes
 
 ✗ Outputs DIFFER
@@ -14,14 +14,13 @@ Rustfmt size:  30062 bytes
  use hir::{HasCrate, Module, ModuleDef, Name, Variant};
  use ide_db::{
 -    FxHashSet, RootDatabase,
--    defs::Definition,
--    helpers::mod_path_to_ast,
--    imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
--    path_transform::PathTransform,
--    search::FileReference,
-+    defs::Definition, helpers::mod_path_to_ast,
-+    imports::insert_use::{ImportScope, InsertUseConfig, insert_use}, path_transform::PathTransform,
-+    search::FileReference, FxHashSet, RootDatabase,
+     defs::Definition,
+     helpers::mod_path_to_ast,
+     imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
+     path_transform::PathTransform,
+     search::FileReference,
++    FxHashSet,
++    RootDatabase,
  };
  use itertools::Itertools;
  use syntax::{
@@ -34,7 +33,13 @@ Rustfmt size:  30062 bytes
          make,
      },
 -    match_ast, ted,
-+    match_ast, ted, Edition, SyntaxElement, SyntaxKind::*, SyntaxNode, T,
++    match_ast,
++    ted,
++    Edition,
++    SyntaxElement,
++    SyntaxKind::*,
++    SyntaxNode,
++    T,
  };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

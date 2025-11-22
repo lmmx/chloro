@@ -13,7 +13,9 @@ use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, layout::{Layout, LayoutCx, LayoutError, field_ty}, next_solver::GenericArgs,
+    db::HirDatabase,
+    layout::{Layout, LayoutCx, LayoutError, field_ty},
+    next_solver::GenericArgs,
     TraitEnvironment,
 };
 

@@ -8,7 +8,10 @@ mod tests;
 use std::fmt;
 
 use hir_def::{
-    layout::{LayoutCalculatorError, LayoutData}, AdtId, LocalFieldId, StructId,
+    layout::{LayoutCalculatorError, LayoutData},
+    AdtId,
+    LocalFieldId,
+    StructId,
 };
 use la_arena::{Idx, RawIdx};
 use rustc_abi::{
@@ -23,7 +26,8 @@ use rustc_type_ir::{
 use triomphe::Arc;
 
 use crate::{
-    consteval::try_const_usize, db::HirDatabase,
+    consteval::try_const_usize,
+    db::HirDatabase,
     next_solver::{
         DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
         infer::{DbInternerInferExt, traits::ObligationCause},

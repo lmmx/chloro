@@ -4,8 +4,13 @@ use ide_db::imports::{
     merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
 };
 use syntax::{
-    algo::neighbor, ast::{self, syntax_factory::SyntaxFactory}, match_ast, syntax_editor::Removable,
-    AstNode, SyntaxElement, SyntaxNode,
+    algo::neighbor,
+    ast::{self, syntax_factory::SyntaxFactory},
+    match_ast,
+    syntax_editor::Removable,
+    AstNode,
+    SyntaxElement,
+    SyntaxNode,
 };
 use Edit::*;
 

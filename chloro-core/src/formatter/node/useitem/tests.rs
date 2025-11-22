@@ -115,8 +115,11 @@ fn test_format_use_with_nested_braces() {
 
     // Should not add blank lines between items when nested braces are present
     assert_snapshot!(formatted, @r"
-use crate::{
-    event::Event, input::Input, Edition, SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
-};
-");
+    use crate::{
+        event::Event,
+        input::Input,
+        Edition,
+        SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
+    };
+    ");
 }

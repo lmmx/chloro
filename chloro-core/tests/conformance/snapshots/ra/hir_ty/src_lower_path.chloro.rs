@@ -12,18 +12,28 @@ use hir_def::{
     hir::generics::{
         GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
     },
-    resolver::{ResolveValueResult, TypeNs, ValueNs}, signatures::TraitFlags,
-    type_ref::{TypeRef, TypeRefId}, GenericDefId, GenericParamId, Lookup, TraitId, TypeAliasId,
+    resolver::{ResolveValueResult, TypeNs, ValueNs},
+    signatures::TraitFlags,
+    type_ref::{TypeRef, TypeRefId},
+    GenericDefId,
+    GenericParamId,
+    Lookup,
+    TraitId,
+    TypeAliasId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::{
-    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _}, AliasTerm, AliasTy, AliasTyKind,
+    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _},
+    AliasTerm,
+    AliasTy,
+    AliasTyKind,
 };
 use smallvec::SmallVec;
 use stdx::never;
 
 use crate::{
-    consteval::{unknown_const, unknown_const_as_generic}, db::HirDatabase,
+    consteval::{unknown_const, unknown_const_as_generic},
+    db::HirDatabase,
     generics::{Generics, generics},
     lower::{
         LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
@@ -32,8 +42,12 @@ use crate::{
         Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
         ProjectionPredicate, Region, TraitRef, Ty,
     },
-    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
-    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
+    GenericArgsProhibitedReason,
+    IncorrectGenericsLenKind,
+    PathGenericsSource,
+    PathLoweringDiagnostic,
+    TyDefId,
+    ValueTyDefId,
 };
 use super::{
     associated_type_by_name_including_super_traits, const_param_ty_query, ty_query,

@@ -29,7 +29,10 @@ use expect_test::Expect;
 use hir::db::HirDatabase;
 use hir::{PrefixKind, setup_tracing};
 use ide_db::{
-    imports::insert_use::{ImportGranularity, InsertUseConfig}, FilePosition, MiniCore, RootDatabase,
+    imports::insert_use::{ImportGranularity, InsertUseConfig},
+    FilePosition,
+    MiniCore,
+    RootDatabase,
     SnippetCap,
 };
 use itertools::Itertools;

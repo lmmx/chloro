@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9526 bytes
+Chloro size:   9534 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -15,9 +15,10 @@ Rustfmt size:  10040 bytes
          ExpressionStore,
 +        path::{GenericArg, Path},
      },
--    hir::{ExprId, Literal},
+     hir::{ExprId, Literal},
 -    LifetimeParamId, TypeParamId,
-+    hir::{ExprId, Literal}, LifetimeParamId, TypeParamId,
++    LifetimeParamId,
++    TypeParamId,
  };
  
  #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

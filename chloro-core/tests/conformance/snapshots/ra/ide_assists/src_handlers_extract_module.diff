@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53276 bytes
+Chloro size:   53316 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,12 @@ Rustfmt size:  53759 bytes
  use hir::{HasSource, ModuleSource};
  use ide_db::{
 -    FileId, FxHashMap, FxHashSet,
--    assists::AssistId,
--    defs::{Definition, NameClass, NameRefClass},
--    search::{FileReference, SearchScope},
-+    assists::AssistId, defs::{Definition, NameClass, NameRefClass},
-+    search::{FileReference, SearchScope}, FileId, FxHashMap, FxHashSet,
+     assists::AssistId,
+     defs::{Definition, NameClass, NameRefClass},
+     search::{FileReference, SearchScope},
++    FileId,
++    FxHashMap,
++    FxHashSet,
  };
  use itertools::Itertools;
  use smallvec::SmallVec;
@@ -32,7 +33,13 @@ Rustfmt size:  53759 bytes
          make,
      },
 -    match_ast, ted,
-+    match_ast, ted, AstNode, SyntaxKind::{self, WHITESPACE}, SyntaxNode, TextRange, TextSize,
++    match_ast,
++    ted,
++    AstNode,
++    SyntaxKind::{self, WHITESPACE},
++    SyntaxNode,
++    TextRange,
++    TextSize,
  };
  
  use crate::{AssistContext, Assists};

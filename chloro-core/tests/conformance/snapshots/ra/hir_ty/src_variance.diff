@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30540 bytes
+Chloro size:   30544 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -22,9 +22,9 @@ Rustfmt size:  30951 bytes
  use stdx::never;
  
  use crate::{
--    db::HirDatabase,
+     db::HirDatabase,
 -    generics::{generics, Generics},
-+    db::HirDatabase, generics::{Generics, generics},
++    generics::{Generics, generics},
      next_solver::{
          Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
          RegionKind, Term, Ty, TyKind, VariancesOf,

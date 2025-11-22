@@ -2,27 +2,29 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   19146 bytes
+Chloro size:   19198 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! File symbol extraction.
- 
- use base_db::FxIndexSet;
- use either::Either;
- use hir_def::{
--    db::DefDatabase,
--    item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob},
--    per_ns::Item,
--    src::{HasChildSource, HasSource},
--    visibility::{Visibility, VisibilityExplicitness},
+     per_ns::Item,
+     src::{HasChildSource, HasSource},
+     visibility::{Visibility, VisibilityExplicitness},
 -    AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
-+    db::DefDatabase, item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob}, per_ns::Item,
-+    src::{HasChildSource, HasSource}, visibility::{Visibility, VisibilityExplicitness}, AdtId,
-+    AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
-     ModuleDefId, ModuleId, TraitId,
+-    ModuleDefId, ModuleId, TraitId,
++    AdtId,
++    AssocItemId,
++    Complete,
++    DefWithBodyId,
++    ExternCrateId,
++    HasModule,
++    ImplId,
++    Lookup,
++    MacroId,
++    ModuleDefId,
++    ModuleId,
++    TraitId,
  };
 -use hir_expand::{name::Name, HirFileId};
 +use hir_expand::{HirFileId, name::Name};

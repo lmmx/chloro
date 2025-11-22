@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19519 bytes
-Chloro size:   19516 bytes
+Chloro size:   19532 bytes
 Rustfmt size:  20051 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,11 @@ Rustfmt size:  20051 bytes
 +use expect_test::{Expect, expect};
  use hir::Semantics;
  use ide_db::{
--    defs::Definition,
--    documentation::{DocsRangeMap, Documentation, HasDocs},
+     defs::Definition,
+     documentation::{DocsRangeMap, Documentation, HasDocs},
 -    FilePosition, FileRange, RootDatabase,
-+    defs::Definition, documentation::{DocsRangeMap, Documentation, HasDocs}, FilePosition, FileRange,
++    FilePosition,
++    FileRange,
 +    RootDatabase,
  };
  use itertools::Itertools;
@@ -25,9 +26,9 @@ Rustfmt size:  20051 bytes
 +use syntax::{AstNode, SyntaxNode, ast, match_ast};
  
  use crate::{
--    doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
+     doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links},
 -    fixture, TryToNav,
-+    doc_links::{extract_definitions_from_docs, resolve_doc_path_for_def, rewrite_links}, fixture,
++    fixture,
 +    TryToNav,
  };
  

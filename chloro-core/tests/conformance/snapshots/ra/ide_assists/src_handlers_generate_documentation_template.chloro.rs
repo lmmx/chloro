@@ -4,8 +4,11 @@ use itertools::Itertools;
 use stdx::{format_to, to_lower_snake_case};
 use syntax::{
     algo::skip_whitespace_token,
-    ast::{self, HasDocComments, HasGenericArgs, HasName, edit::IndentLevel}, match_ast, AstNode,
-    AstToken, Edition,
+    ast::{self, HasDocComments, HasGenericArgs, HasName, edit::IndentLevel},
+    match_ast,
+    AstNode,
+    AstToken,
+    Edition,
 };
 
 use crate::assist_context::{AssistContext, Assists};

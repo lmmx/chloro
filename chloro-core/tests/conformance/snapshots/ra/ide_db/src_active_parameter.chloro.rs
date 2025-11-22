@@ -5,7 +5,10 @@ use hir::{InFile, Semantics, Type};
 use parser::T;
 use span::TextSize;
 use syntax::{
-    ast::{self, AstChildren, HasArgList, HasAttrs, HasName}, match_ast, AstNode, NodeOrToken,
+    ast::{self, AstChildren, HasArgList, HasAttrs, HasName},
+    match_ast,
+    AstNode,
+    NodeOrToken,
     SyntaxToken,
 };
 

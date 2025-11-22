@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   43207 bytes
+Chloro size:   43211 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -14,9 +14,8 @@ Rustfmt size:  46663 bytes
 -use hir::{db::HirDatabase, Module, Type};
 +use hir::{Module, Type, db::HirDatabase};
  use ide_db::{
--    active_parameter::ActiveParameter,
--    helpers::mod_path_to_ast,
-+    active_parameter::ActiveParameter, helpers::mod_path_to_ast,
+     active_parameter::ActiveParameter,
+     helpers::mod_path_to_ast,
      imports::{
          import_assets::{ImportAssets, ImportCandidate, LocatedImport},
 -        insert_use::{insert_use, insert_use_as_alias, ImportScope},

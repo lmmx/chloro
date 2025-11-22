@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21468 bytes
-Chloro size:   20696 bytes
+Chloro size:   20708 bytes
 Rustfmt size:  21468 bytes
 
 ✗ Outputs DIFFER
@@ -15,8 +15,10 @@ Rustfmt size:  21468 bytes
  
  use crate::{
 -    AssistContext, AssistId, Assists,
--    utils::{self, DefaultMethods, IgnoreAssocItems},
-+    utils::{self, DefaultMethods, IgnoreAssocItems}, AssistContext, AssistId, Assists,
+     utils::{self, DefaultMethods, IgnoreAssocItems},
++    AssistContext,
++    AssistId,
++    Assists,
  };
  
 -fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Indent) {

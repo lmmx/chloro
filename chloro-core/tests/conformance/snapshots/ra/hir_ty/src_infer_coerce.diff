@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   68934 bytes
+Chloro size:   68978 bytes
 Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
@@ -12,18 +12,19 @@ Rustfmt size:  68687 bytes
  
  use hir_def::{
 -    CallableDefId,
--    hir::{ExprId, ExprOrPatId},
--    lang_item::LangItem,
--    signatures::FunctionSignature,
-+    hir::{ExprId, ExprOrPatId}, lang_item::LangItem, signatures::FunctionSignature, CallableDefId,
+     hir::{ExprId, ExprOrPatId},
+     lang_item::LangItem,
+     signatures::FunctionSignature,
++    CallableDefId,
  };
  use intern::sym;
  use rustc_ast_ir::Mutability;
  use rustc_type_ir::{
-+    error::TypeError, inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-     BoundVar, TypeAndMut,
--    error::TypeError,
--    inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
+-    BoundVar, TypeAndMut,
+     error::TypeError,
+     inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
++    BoundVar,
++    TypeAndMut,
  };
  use smallvec::{SmallVec, smallvec};
  use tracing::{debug, instrument};
@@ -31,17 +32,17 @@ Rustfmt size:  68687 bytes
  
  use crate::{
 -    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
--    autoderef::Autoderef,
--    db::{HirDatabase, InternedClosureId},
-+    autoderef::Autoderef, db::{HirDatabase, InternedClosureId},
+     autoderef::Autoderef,
+     db::{HirDatabase, InternedClosureId},
      infer::{AllowTwoPhase, InferenceContext, TypeMismatch, unify::InferenceTable},
-     next_solver::{
-         Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, CallableIdWrapper,
-         },
          obligation_ctxt::ObligationCtxt,
      },
--    utils::TargetFeatureIsSafeInTarget,
-+    utils::TargetFeatureIsSafeInTarget, Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures,
+     utils::TargetFeatureIsSafeInTarget,
++    Adjust,
++    Adjustment,
++    AutoBorrow,
++    PointerCast,
++    TargetFeatures,
 +    TraitEnvironment,
  };
  

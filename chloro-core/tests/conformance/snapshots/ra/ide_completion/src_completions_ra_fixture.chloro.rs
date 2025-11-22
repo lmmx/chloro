@@ -2,7 +2,8 @@
 
 use hir::FilePositionWrapper;
 use ide_db::{
-    impl_empty_upmap_from_ra_fixture, ra_fixture::{RaFixtureAnalysis, UpmapFromRaFixture},
+    impl_empty_upmap_from_ra_fixture,
+    ra_fixture::{RaFixtureAnalysis, UpmapFromRaFixture},
 };
 use syntax::ast;
 

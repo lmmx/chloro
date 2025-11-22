@@ -3,9 +3,13 @@ use std::iter;
 use either::Either;
 use hir::{HasCrate, Module, ModuleDef, Name, Variant};
 use ide_db::{
-    defs::Definition, helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, InsertUseConfig, insert_use}, path_transform::PathTransform,
-    search::FileReference, FxHashSet, RootDatabase,
+    defs::Definition,
+    helpers::mod_path_to_ast,
+    imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
+    path_transform::PathTransform,
+    search::FileReference,
+    FxHashSet,
+    RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{
@@ -14,7 +18,13 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    match_ast, ted, Edition, SyntaxElement, SyntaxKind::*, SyntaxNode, T,
+    match_ast,
+    ted,
+    Edition,
+    SyntaxElement,
+    SyntaxKind::*,
+    SyntaxNode,
+    T,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

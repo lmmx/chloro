@@ -40,8 +40,14 @@ use macros::UpmapFromRaFixture;
 use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, HasGenericParams}, format_smolstr, match_ast, SmolStr, SyntaxNode,
-    TextRange, TextSize, WalkEvent,
+    ast::{self, AstNode, HasGenericParams},
+    format_smolstr,
+    match_ast,
+    SmolStr,
+    SyntaxNode,
+    TextRange,
+    TextSize,
+    WalkEvent,
 };
 
 use crate::{FileId, navigation_target::TryToNav};

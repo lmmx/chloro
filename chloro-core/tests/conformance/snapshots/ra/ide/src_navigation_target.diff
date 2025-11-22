@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39405 bytes
+Chloro size:   39429 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -24,14 +24,17 @@ Rustfmt size:  42083 bytes
 +    LocalSource, ModuleSource, Semantics, Symbol,
  };
  use ide_db::{
--    base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
+     base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
 -    defs::{find_std_module, Definition},
--    documentation::{Documentation, HasDocs},
--    famous_defs::FamousDefs,
--    ra_fixture::UpmapFromRaFixture,
-+    base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb}, defs::{Definition, find_std_module},
-+    documentation::{Documentation, HasDocs}, famous_defs::FamousDefs, ra_fixture::UpmapFromRaFixture,
-     FileId, FileRange, RootDatabase, SymbolKind,
++    defs::{Definition, find_std_module},
+     documentation::{Documentation, HasDocs},
+     famous_defs::FamousDefs,
+     ra_fixture::UpmapFromRaFixture,
+-    FileId, FileRange, RootDatabase, SymbolKind,
++    FileId,
++    FileRange,
++    RootDatabase,
++    SymbolKind,
  };
  use stdx::never;
  use syntax::{

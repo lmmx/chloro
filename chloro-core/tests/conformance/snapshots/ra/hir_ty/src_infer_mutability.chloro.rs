@@ -16,8 +16,13 @@ use rustc_type_ir::inherent::IntoKind;
 use crate::next_solver::infer::traits::{Obligation, ObligationCause};
 use crate::next_solver::{GenericArgs, TraitRef};
 use crate::{
-    infer::{Expectation, InferenceContext, expr::ExprIsRead}, lower::lower_mutability,
-    next_solver::TyKind, Adjust, Adjustment, AutoBorrow, OverloadedDeref,
+    infer::{Expectation, InferenceContext, expr::ExprIsRead},
+    lower::lower_mutability,
+    next_solver::TyKind,
+    Adjust,
+    Adjustment,
+    AutoBorrow,
+    OverloadedDeref,
 };
 
 impl<'db> InferenceContext<'_, 'db> {

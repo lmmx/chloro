@@ -3,8 +3,17 @@ use std::iter::successors;
 use hir::Semantics;
 use ide_db::RootDatabase;
 use syntax::{
-    algo::{self, skip_trivia_token}, ast::{self, AstNode, AstToken}, Direction, NodeOrToken,
-    SyntaxKind::{self, *}, SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, T,
+    algo::{self, skip_trivia_token},
+    ast::{self, AstNode, AstToken},
+    Direction,
+    NodeOrToken,
+    SyntaxKind::{self, *},
+    SyntaxNode,
+    SyntaxToken,
+    TextRange,
+    TextSize,
+    TokenAtOffset,
+    T,
 };
 
 use crate::FileRange;

@@ -2,7 +2,9 @@ use std::fmt;
 
 use hir::{DisplayTarget, Field, HirDisplay, Layout, Semantics, Type};
 use ide_db::{
-    defs::Definition, helpers::{get_definition, pick_best_token}, RootDatabase,
+    defs::Definition,
+    helpers::{get_definition, pick_best_token},
+    RootDatabase,
 };
 use syntax::{AstNode, SyntaxKind};
 

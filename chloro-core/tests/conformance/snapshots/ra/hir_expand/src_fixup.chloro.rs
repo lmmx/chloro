@@ -9,7 +9,12 @@ use span::{
 };
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, HasLoopBody}, match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange,
+    ast::{self, AstNode, HasLoopBody},
+    match_ast,
+    SyntaxElement,
+    SyntaxKind,
+    SyntaxNode,
+    TextRange,
     TextSize,
 };
 use syntax_bridge::DocCommentDesugarMode;
@@ -473,7 +478,9 @@ mod tests {
     use syntax_bridge::DocCommentDesugarMode;
     use triomphe::Arc;
     use crate::{
-        fixup::reverse_fixups, span_map::{RealSpanMap, SpanMap}, tt,
+        fixup::reverse_fixups,
+        span_map::{RealSpanMap, SpanMap},
+        tt,
     };
     fn check_leaf_eq(
         a: &tt::Leaf,

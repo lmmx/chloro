@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1968 bytes
+Chloro size:   1984 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,13 @@ Rustfmt size:  2003 bytes
 +use rustc_type_ir::{AliasRelationDirection, inherent::Term as _};
  
  use crate::next_solver::{
--    fulfill::{FulfillmentCtxt, NextSolverError},
--    infer::{at::At, traits::Obligation},
+     fulfill::{FulfillmentCtxt, NextSolverError},
+     infer::{at::At, traits::Obligation},
 -    Const, PredicateKind, Term, Ty,
-+    fulfill::{FulfillmentCtxt, NextSolverError}, infer::{at::At, traits::Obligation}, Const,
-+    PredicateKind, Term, Ty,
++    Const,
++    PredicateKind,
++    Term,
++    Ty,
  };
  
  impl<'db> At<'_, 'db> {

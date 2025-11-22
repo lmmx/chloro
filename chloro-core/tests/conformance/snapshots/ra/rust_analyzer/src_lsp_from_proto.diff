@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5855 bytes
-Chloro size:   5851 bytes
+Chloro size:   5859 bytes
 Rustfmt size:  5985 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,11 @@ Rustfmt size:  5985 bytes
  use paths::Utf8PathBuf;
  use syntax::{TextRange, TextSize};
  use vfs::AbsPathBuf;
- 
  use crate::{
--    global_state::GlobalStateSnapshot,
--    line_index::{LineIndex, PositionEncoding},
+     global_state::GlobalStateSnapshot,
+     line_index::{LineIndex, PositionEncoding},
 -    lsp_ext, try_default,
-+    global_state::GlobalStateSnapshot, line_index::{LineIndex, PositionEncoding}, lsp_ext,
++    lsp_ext,
 +    try_default,
  };
  

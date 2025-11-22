@@ -33,7 +33,8 @@ use serde_json::to_value;
 use vfs::AbsPath;
 
 use crate::{
-    config::{CallInfoConfig, ClientCommandsConfig, Config}, global_state::GlobalStateSnapshot,
+    config::{CallInfoConfig, ClientCommandsConfig, Config},
+    global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
     lsp::{
         LspError, completion_item_hash,
@@ -41,7 +42,8 @@ use crate::{
         semantic_tokens::{self, standard_fallback_type},
         utils::invalid_params_error,
     },
-    lsp_ext::{self, SnippetTextEdit}, target_spec::{CargoTargetSpec, TargetSpec},
+    lsp_ext::{self, SnippetTextEdit},
+    target_spec::{CargoTargetSpec, TargetSpec},
 };
 
 pub(crate) fn position(
@@ -1814,7 +1816,9 @@ pub(crate) mod command {
     use ide::{FileRange, NavigationTarget};
     use serde_json::to_value;
     use crate::{
-        global_state::GlobalStateSnapshot, lsp::to_proto::{location, location_link}, lsp_ext,
+        global_state::GlobalStateSnapshot,
+        lsp::to_proto::{location, location_link},
+        lsp_ext,
     };
     pub(crate) fn show_references(
         title: String,

@@ -13,8 +13,12 @@ pub(crate) mod variant;
 use hir::{AsAssocItem, HasAttrs, HirDisplay, ModuleDef, ScopeDef, Type, sym};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    documentation::{Documentation, HasDocs}, helpers::item_name,
-    imports::import_assets::LocatedImport, RootDatabase, SnippetCap, SymbolKind,
+    documentation::{Documentation, HasDocs},
+    helpers::item_name,
+    imports::import_assets::LocatedImport,
+    RootDatabase,
+    SnippetCap,
+    SymbolKind,
 };
 use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
 
@@ -26,7 +30,10 @@ use crate::{
         literal::render_variant_lit,
         macro_::{render_macro, render_macro_pat},
     },
-    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
+    CompletionContext,
+    CompletionItem,
+    CompletionItemKind,
+    CompletionItemRefMode,
     CompletionRelevance,
 };
 
@@ -675,8 +682,11 @@ mod tests {
     use itertools::Itertools;
     use crate::{
         item::CompletionRelevanceTypeMatch,
-        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items}, CompletionItem,
-        CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
+        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
+        CompletionItem,
+        CompletionItemKind,
+        CompletionRelevance,
+        CompletionRelevancePostfixMatch,
     };
     #[track_caller]
     fn check(

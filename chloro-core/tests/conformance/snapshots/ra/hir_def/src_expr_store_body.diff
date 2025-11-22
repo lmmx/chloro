@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4719 bytes
-Chloro size:   4733 bytes
+Chloro size:   4745 bytes
 Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
@@ -20,10 +20,11 @@ Rustfmt size:  4752 bytes
 -        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
 +        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
      },
--    hir::{BindingId, ExprId, PatId},
--    src::HasSource,
+     hir::{BindingId, ExprId, PatId},
+     src::HasSource,
 -    DefWithBodyId, HasModule,
-+    hir::{BindingId, ExprId, PatId}, src::HasSource, DefWithBodyId, HasModule,
++    DefWithBodyId,
++    HasModule,
  };
  
  /// The body of an item (function, const etc.).

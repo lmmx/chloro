@@ -32,11 +32,14 @@ use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, ChangeKind};
 
 use crate::{
-    config::{Config, FilesWatcher, LinkedProject}, flycheck::{FlycheckConfig, FlycheckHandle},
+    config::{Config, FilesWatcher, LinkedProject},
+    flycheck::{FlycheckConfig, FlycheckHandle},
     global_state::{
         FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
     },
-    lsp_ext, main_loop::{DiscoverProjectParam, Task}, op_queue::Cause,
+    lsp_ext,
+    main_loop::{DiscoverProjectParam, Task},
+    op_queue::Cause,
 };
 
 #[derive(Debug)]

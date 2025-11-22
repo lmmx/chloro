@@ -4,21 +4,37 @@ use hir::{
     sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
 };
 use ide_db::{
-    base_db::{AnchoredPath, SourceDatabase}, defs::{Definition, IdentClass}, famous_defs::FamousDefs,
-    helpers::pick_best_token, RootDatabase, SymbolKind,
+    base_db::{AnchoredPath, SourceDatabase},
+    defs::{Definition, IdentClass},
+    famous_defs::FamousDefs,
+    helpers::pick_best_token,
+    RootDatabase,
+    SymbolKind,
 };
 use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
-    ast::{self, HasLoopBody}, match_ast, AstNode, AstToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
-    TextRange, T,
+    ast::{self, HasLoopBody},
+    match_ast,
+    AstNode,
+    AstToken,
+    SyntaxKind::*,
+    SyntaxNode,
+    SyntaxToken,
+    TextRange,
+    T,
 };
 
 use crate::Analysis;
 use crate::{
-    doc_links::token_as_doc_comment, navigation_target::{self, ToNav}, FilePosition,
-    NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
+    doc_links::token_as_doc_comment,
+    navigation_target::{self, ToNav},
+    FilePosition,
+    NavigationTarget,
+    RangeInfo,
+    TryToNav,
+    UpmappingResult,
 };
 
 #[derive(Debug)]

@@ -11,7 +11,10 @@ use syntax::{
 };
 
 use crate::{
-    utils::{find_struct_impl, generate_impl_with_item}, AssistContext, AssistId, Assists,
+    utils::{find_struct_impl, generate_impl_with_item},
+    AssistContext,
+    AssistId,
+    Assists,
 };
 
 pub(crate) fn generate_new(

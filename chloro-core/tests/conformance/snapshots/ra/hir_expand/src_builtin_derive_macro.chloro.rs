@@ -18,8 +18,14 @@ use syntax_bridge::DocCommentDesugarMode;
 use tracing::debug;
 
 use crate::{
-    builtin::quote::dollar_crate, db::ExpandDatabase, hygiene::span_with_def_site_ctxt,
-    name::{self, AsName, Name}, span_map::ExpansionSpanMap, tt, ExpandError, ExpandResult,
+    builtin::quote::dollar_crate,
+    db::ExpandDatabase,
+    hygiene::span_with_def_site_ctxt,
+    name::{self, AsName, Name},
+    span_map::ExpansionSpanMap,
+    tt,
+    ExpandError,
+    ExpandResult,
     MacroCallId,
 };
 

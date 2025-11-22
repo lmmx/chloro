@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   16347 bytes
+Chloro size:   16351 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
@@ -27,9 +27,8 @@ Rustfmt size:  17756 bytes
          HygieneId,
 +        path::{GenericArgs, Path},
      },
--    type_ref::{Mutability, Rawness},
--    BlockId,
-+    type_ref::{Mutability, Rawness}, BlockId,
+     type_ref::{Mutability, Rawness},
+     BlockId,
  };
  
 -pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};

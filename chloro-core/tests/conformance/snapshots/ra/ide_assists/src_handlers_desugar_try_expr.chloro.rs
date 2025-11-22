@@ -11,7 +11,8 @@ use syntax::{
         make,
         syntax_factory::SyntaxFactory,
     },
-    AstNode, T,
+    AstNode,
+    T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

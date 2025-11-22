@@ -2,11 +2,13 @@ use std::iter;
 
 use hir::HasSource;
 use ide_db::{
-    assists::GroupLabel, famous_defs::FamousDefs,
+    assists::GroupLabel,
+    famous_defs::FamousDefs,
     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
-    ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory}, match_ast,
+    ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
+    match_ast,
     AstNode,
 };
 

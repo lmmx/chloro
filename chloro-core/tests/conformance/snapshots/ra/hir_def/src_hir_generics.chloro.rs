@@ -9,9 +9,15 @@ use thin_vec::ThinVec;
 use triomphe::Arc;
 
 use crate::{
-    db::DefDatabase, expr_store::{ExpressionStore, ExpressionStoreSourceMap},
-    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId}, AdtId, ConstParamId, GenericDefId,
-    LifetimeParamId, TypeOrConstParamId, TypeParamId,
+    db::DefDatabase,
+    expr_store::{ExpressionStore, ExpressionStoreSourceMap},
+    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
+    AdtId,
+    ConstParamId,
+    GenericDefId,
+    LifetimeParamId,
+    TypeOrConstParamId,
+    TypeParamId,
 };
 
 pub type LocalTypeOrConstParamId = Idx<TypeOrConstParamData>;

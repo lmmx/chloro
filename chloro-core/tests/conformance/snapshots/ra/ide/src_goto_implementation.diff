@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10632 bytes
-Chloro size:   10223 bytes
+Chloro size:   10231 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -10,10 +10,9 @@ Rustfmt size:  10803 bytes
 === DIFF (- rustfmt, + chloro) ===
  use hir::{AsAssocItem, Impl, Semantics};
  use ide_db::{
--    defs::{Definition, NameClass, NameRefClass},
--    helpers::pick_best_token,
--    RootDatabase,
-+    defs::{Definition, NameClass, NameRefClass}, helpers::pick_best_token, RootDatabase,
+     defs::{Definition, NameClass, NameRefClass},
+     helpers::pick_best_token,
+     RootDatabase,
  };
 -use syntax::{ast, AstNode, SyntaxKind::*, T};
 +use syntax::{AstNode, SyntaxKind::*, T, ast};

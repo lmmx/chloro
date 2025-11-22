@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45986 bytes
-Chloro size:   44910 bytes
+Chloro size:   44918 bytes
 Rustfmt size:  45986 bytes
 
 ✗ Outputs DIFFER
@@ -11,9 +11,9 @@ Rustfmt size:  45986 bytes
  use hir::HasSource;
  use syntax::{
 -    Edition,
--    ast::{self, AstNode, make},
--    syntax_editor::{Position, SyntaxEditor},
-+    ast::{self, AstNode, make}, syntax_editor::{Position, SyntaxEditor}, Edition,
+     ast::{self, AstNode, make},
+     syntax_editor::{Position, SyntaxEditor},
++    Edition,
  };
  
  use crate::{

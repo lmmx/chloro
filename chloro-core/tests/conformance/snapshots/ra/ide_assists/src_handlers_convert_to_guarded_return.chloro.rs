@@ -8,13 +8,17 @@ use syntax::{
         self,
         edit::{AstNodeEdit, IndentLevel},
         make,
-    }, AstNode,
-    SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE}, SyntaxNode, T,
+    },
+    AstNode,
+    SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
+    SyntaxNode,
+    T,
 };
 
 use crate::{
     assist_context::{AssistContext, Assists},
-    utils::{invert_boolean_expression_legacy, is_never_block}, AssistId,
+    utils::{invert_boolean_expression_legacy, is_never_block},
+    AssistId,
 };
 
 pub(crate) fn convert_to_guarded_return(

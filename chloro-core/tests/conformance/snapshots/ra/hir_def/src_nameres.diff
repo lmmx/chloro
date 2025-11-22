@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29624 bytes
+Chloro size:   29684 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -38,20 +38,25 @@ Rustfmt size:  30449 bytes
  use triomphe::Arc;
  use tt::TextRange;
  
- use crate::{
--    db::DefDatabase,
--    item_scope::{BuiltinShadowMode, ItemScope},
--    item_tree::TreeId,
--    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
--    per_ns::PerNs,
--    visibility::{Visibility, VisibilityExplicitness},
+     nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
+     per_ns::PerNs,
+     visibility::{Visibility, VisibilityExplicitness},
 -    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
 -    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
-+    db::DefDatabase, item_scope::{BuiltinShadowMode, ItemScope}, item_tree::TreeId,
-+    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode}, per_ns::PerNs,
-+    visibility::{Visibility, VisibilityExplicitness}, AstId, BlockId, BlockLoc, CrateRootModuleId,
-+    ExternCrateId, FunctionId, FxIndexMap, LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId,
-+    ProcMacroId, UseId,
++    AstId,
++    BlockId,
++    BlockLoc,
++    CrateRootModuleId,
++    ExternCrateId,
++    FunctionId,
++    FxIndexMap,
++    LocalModuleId,
++    Lookup,
++    MacroExpander,
++    MacroId,
++    ModuleId,
++    ProcMacroId,
++    UseId,
  };
 -
  pub use self::path_resolution::ResolvePathResultPrefixInfo;

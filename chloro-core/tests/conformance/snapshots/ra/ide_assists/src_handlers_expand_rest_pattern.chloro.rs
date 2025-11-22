@@ -1,7 +1,10 @@
 use hir::{PathResolution, StructKind};
 use ide_db::syntax_helpers::suggest_name::NameGenerator;
 use syntax::{
-    ast::{self, syntax_factory::SyntaxFactory}, match_ast, AstNode, ToSmolStr,
+    ast::{self, syntax_factory::SyntaxFactory},
+    match_ast,
+    AstNode,
+    ToSmolStr,
 };
 
 use crate::{AssistContext, AssistId, Assists};

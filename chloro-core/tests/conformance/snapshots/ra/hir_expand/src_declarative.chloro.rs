@@ -9,8 +9,17 @@ use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 
 use crate::{
-    attrs::RawAttrs, db::ExpandDatabase, hygiene::{Transparency, apply_mark}, tt, AstId, ExpandError,
-    ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
+    attrs::RawAttrs,
+    db::ExpandDatabase,
+    hygiene::{Transparency, apply_mark},
+    tt,
+    AstId,
+    ExpandError,
+    ExpandErrorKind,
+    ExpandResult,
+    HirFileId,
+    Lookup,
+    MacroCallId,
 };
 
 /// Old-style `macro_rules` or the new macros 2.0

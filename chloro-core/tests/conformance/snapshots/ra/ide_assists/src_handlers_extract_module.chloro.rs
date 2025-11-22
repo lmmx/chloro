@@ -2,8 +2,12 @@ use std::{iter::once, ops::RangeInclusive};
 
 use hir::{HasSource, ModuleSource};
 use ide_db::{
-    assists::AssistId, defs::{Definition, NameClass, NameRefClass},
-    search::{FileReference, SearchScope}, FileId, FxHashMap, FxHashSet,
+    assists::AssistId,
+    defs::{Definition, NameClass, NameRefClass},
+    search::{FileReference, SearchScope},
+    FileId,
+    FxHashMap,
+    FxHashSet,
 };
 use itertools::Itertools;
 use smallvec::SmallVec;
@@ -14,7 +18,13 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    match_ast, ted, AstNode, SyntaxKind::{self, WHITESPACE}, SyntaxNode, TextRange, TextSize,
+    match_ast,
+    ted,
+    AstNode,
+    SyntaxKind::{self, WHITESPACE},
+    SyntaxNode,
+    TextRange,
+    TextSize,
 };
 
 use crate::{AssistContext, Assists};

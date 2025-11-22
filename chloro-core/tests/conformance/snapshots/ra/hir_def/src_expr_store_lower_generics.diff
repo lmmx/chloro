@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   11074 bytes
+Chloro size:   11082 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,11 @@ Rustfmt size:  11350 bytes
          ConstParamData, GenericParams, LifetimeParamData, TypeOrConstParamData, TypeParamData,
          TypeParamProvenance, WherePredicate,
      },
--    type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
+     type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
 -    GenericDefId, TypeOrConstParamId, TypeParamId,
-+    type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId}, GenericDefId,
-+    TypeOrConstParamId, TypeParamId,
++    GenericDefId,
++    TypeOrConstParamId,
++    TypeParamId,
  };
  
  pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(

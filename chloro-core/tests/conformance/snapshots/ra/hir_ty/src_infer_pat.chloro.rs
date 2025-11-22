@@ -4,7 +4,8 @@ use std::iter::repeat_with;
 
 use hir_def::{
     expr_store::{Body, path::Path},
-    hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId}, HasModule,
+    hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId},
+    HasModule,
 };
 use hir_expand::name::Name;
 use rustc_ast_ir::Mutability;
@@ -17,7 +18,10 @@ use crate::{
         AllowTwoPhase, BindingMode, Expectation, InferenceContext, TypeMismatch,
         coerce::CoerceNever, expr::ExprIsRead,
     },
-    lower::lower_mutability, next_solver::{GenericArgs, Ty, TyKind}, DeclContext, DeclOrigin,
+    lower::lower_mutability,
+    next_solver::{GenericArgs, Ty, TyKind},
+    DeclContext,
+    DeclOrigin,
     InferenceDiagnostic,
 };
 

@@ -11,7 +11,8 @@ use tracing::debug;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, infer::unify::InferenceTable,
+    db::HirDatabase,
+    infer::unify::InferenceTable,
     next_solver::{
         Canonical, TraitRef, Ty, TyKind,
         infer::{

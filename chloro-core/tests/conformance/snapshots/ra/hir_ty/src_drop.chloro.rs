@@ -7,7 +7,9 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    consteval, db::HirDatabase, method_resolution::TyFingerprint,
+    consteval,
+    db::HirDatabase,
+    method_resolution::TyFingerprint,
     next_solver::{
         Ty, TyKind,
         infer::{InferCtxt, traits::ObligationCause},

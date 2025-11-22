@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 41840 bytes
-Chloro size:   41803 bytes
+Chloro size:   41815 bytes
 Rustfmt size:  41840 bytes
 
 ✗ Outputs DIFFER
@@ -30,17 +30,8 @@ Rustfmt size:  41840 bytes
  use triomphe::Arc;
  use vfs::{AbsPath, AbsPathBuf, ChangeKind};
  
- use crate::{
--    config::{Config, FilesWatcher, LinkedProject},
--    flycheck::{FlycheckConfig, FlycheckHandle},
-+    config::{Config, FilesWatcher, LinkedProject}, flycheck::{FlycheckConfig, FlycheckHandle},
-     global_state::{
-         FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
-     },
--    lsp_ext,
--    main_loop::{DiscoverProjectParam, Task},
--    op_queue::Cause,
-+    lsp_ext, main_loop::{DiscoverProjectParam, Task}, op_queue::Cause,
+     main_loop::{DiscoverProjectParam, Task},
+     op_queue::Cause,
  };
 -use tracing::{debug, info};
  

@@ -11,7 +11,8 @@ use hir_expand::{Lookup, name::Name};
 use la_arena::ArenaMap;
 
 use crate::{
-    db::{HirDatabase, InternedClosureId}, display::{ClosureStyle, DisplayTarget, HirDisplay},
+    db::{HirDatabase, InternedClosureId},
+    display::{ClosureStyle, DisplayTarget, HirDisplay},
     mir::{PlaceElem, ProjectionElem, StatementKind, TerminatorKind},
 };
 use super::{

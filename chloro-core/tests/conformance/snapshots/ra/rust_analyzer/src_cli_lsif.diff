@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12611 bytes
-Chloro size:   12832 bytes
+Chloro size:   12840 bytes
 Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
@@ -22,16 +22,6 @@ Rustfmt size:  12892 bytes
  use lsp_types::lsif;
  use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
  use rustc_hash::FxHashMap;
- use vfs::{AbsPathBuf, Vfs};
- 
- use crate::{
--    cli::flags,
--    line_index::{LineEndings, LineIndex, PositionEncoding},
--    lsp::to_proto,
-+    cli::flags, line_index::{LineEndings, LineIndex, PositionEncoding}, lsp::to_proto,
-     version::version,
- };
- 
          }
      }
  

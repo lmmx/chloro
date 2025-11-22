@@ -11,7 +11,9 @@ use crate::{
         CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
         PathExprCtx, Qualified,
     },
-    CompletionItem, CompletionItemKind, Completions,
+    CompletionItem,
+    CompletionItemKind,
+    Completions,
 };
 
 /// Complete dot accesses, i.e. fields or methods.

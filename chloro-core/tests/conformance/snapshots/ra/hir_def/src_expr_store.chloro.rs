@@ -28,13 +28,16 @@ use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    db::DefDatabase, expr_store::path::Path,
+    db::DefDatabase,
+    expr_store::path::Path,
     hir::{
         Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
         PatId, RecordFieldPat, Statement,
     },
     nameres::{DefMap, block_def_map},
-    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId}, BlockId, SyntheticSyntax,
+    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
+    BlockId,
+    SyntheticSyntax,
 };
 pub use self::body::{Body, BodySourceMap};
 pub use self::lower::{

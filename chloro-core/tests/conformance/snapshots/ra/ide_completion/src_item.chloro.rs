@@ -18,7 +18,8 @@ use stdx::{format_to, impl_from, never};
 use syntax::{Edition, SmolStr, TextRange, TextSize, format_smolstr};
 
 use crate::{
-    context::{CompletionContext, PathCompletionCtx}, render::{RenderContext, render_path_resolution},
+    context::{CompletionContext, PathCompletionCtx},
+    render::{RenderContext, render_path_resolution},
 };
 
 /// `CompletionItem` describes a single completion entity which expands to 1 or more entries in the

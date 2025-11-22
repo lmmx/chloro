@@ -13,7 +13,8 @@ use crate::{
         path::Path,
         pretty,
     },
-    nameres::crate_def_map, test_db::TestDB,
+    nameres::crate_def_map,
+    test_db::TestDB,
 };
 
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {

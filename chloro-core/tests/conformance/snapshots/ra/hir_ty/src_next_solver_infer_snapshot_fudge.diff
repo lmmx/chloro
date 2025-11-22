@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10383 bytes
-Chloro size:   10496 bytes
+Chloro size:   10516 bytes
 Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
@@ -28,8 +28,16 @@ Rustfmt size:  10823 bytes
          unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
 -        InferCtxt, UnificationTable,
      },
-     Const, ConstKind, DbInterner, Region, Ty, TyKind,
+-    Const, ConstKind, DbInterner, Region, Ty, TyKind,
++    Const,
++    ConstKind,
++    DbInterner,
++    Region,
++    Ty,
++    TyKind,
  };
+ 
+ fn vars_since_snapshot<'db, T>(
  ) -> Range<T>
  where
      T: UnifyKey,

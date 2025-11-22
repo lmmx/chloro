@@ -4,8 +4,19 @@ use hir_def::{GenericDefId, GenericParamId};
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_type_ir::{
     inherent::{GenericArg as _, GenericsOf, IntoKind, SliceLike, Term as _, Ty as _},
-    relate::{Relate, VarianceDiagInfo}, ClosureArgs, CollectAndApply, ConstVid, CoroutineArgs,
-    CoroutineClosureArgs, FnSigTys, GenericArgKind, Interner, TermKind, TyKind, TyVid, Variance,
+    relate::{Relate, VarianceDiagInfo},
+    ClosureArgs,
+    CollectAndApply,
+    ConstVid,
+    CoroutineArgs,
+    CoroutineClosureArgs,
+    FnSigTys,
+    GenericArgKind,
+    Interner,
+    TermKind,
+    TyKind,
+    TyVid,
+    Variance,
 };
 use smallvec::SmallVec;
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3222 bytes
-Chloro size:   3211 bytes
+Chloro size:   3227 bytes
 Rustfmt size:  3222 bytes
 
 ✗ Outputs DIFFER
@@ -18,9 +18,12 @@ Rustfmt size:  3222 bytes
  
  use crate::{
 -    ClosureReturnTypeHints, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
--    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
-+    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit}, ClosureReturnTypeHints,
-+    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+     inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
++    ClosureReturnTypeHints,
++    InlayHint,
++    InlayHintPosition,
++    InlayHintsConfig,
++    InlayKind,
  };
  
  pub(super) fn hints(

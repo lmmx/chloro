@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8413 bytes
-Chloro size:   8406 bytes
+Chloro size:   8410 bytes
 Rustfmt size:  8413 bytes
 
 ✗ Outputs DIFFER
@@ -12,8 +12,8 @@ Rustfmt size:  8413 bytes
  
  use crate::{
 -    CompletionContext, Completions,
--    context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
-+    context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified}, CompletionContext,
+     context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
++    CompletionContext,
 +    Completions,
  };
  

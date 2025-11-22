@@ -89,39 +89,44 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 let line_indent = indent + 4;
 
                 for (group_idx, group) in groups.iter().enumerate() {
-                    let mut current_line = String::new();
+                    // Check if this is a root-level group (items without ::)
+                    let is_root_group = group.iter().all(|item| !item.contains("::"));
 
-                    for item in group.iter() {
-                        let item_with_comma = format!("{},", item);
+                    if is_root_group {
+                        // Root-level items can be packed on lines
+                        let mut current_line = String::new();
 
-                        // Check if adding this item would exceed MAX_WIDTH
-                        let potential_line_len =
-                            line_indent + current_line.len() + item_with_comma.len();
+                        for item in group.iter() {
+                            let item_with_comma = format!("{},", item);
+                            let potential_line_len =
+                                line_indent + current_line.len() + item_with_comma.len();
 
-                        if current_line.is_empty() {
-                            // First item on the line
-                            current_line.push_str(&item_with_comma);
-                        } else if potential_line_len < MAX_WIDTH {
-                            // NOTE: `<` not `<=` due to off-by-one
-                            // See https://github.com/rust-lang/rustfmt/issues/6727
-                            // Add to current line with a space
-                            current_line.push(' ');
-                            current_line.push_str(&item_with_comma);
-                        } else {
-                            // Write current line and start new one
+                            if current_line.is_empty() {
+                                current_line.push_str(&item_with_comma);
+                            } else if potential_line_len < MAX_WIDTH {
+                                current_line.push(' ');
+                                current_line.push_str(&item_with_comma);
+                            } else {
+                                write_indent(buf, line_indent);
+                                buf.push_str(&current_line);
+                                buf.push('\n');
+                                current_line.clear();
+                                current_line.push_str(&item_with_comma);
+                            }
+                        }
+
+                        if !current_line.is_empty() {
                             write_indent(buf, line_indent);
                             buf.push_str(&current_line);
                             buf.push('\n');
-                            current_line.clear();
-                            current_line.push_str(&item_with_comma);
                         }
-                    }
-
-                    // Write any remaining items
-                    if !current_line.is_empty() {
-                        write_indent(buf, line_indent);
-                        buf.push_str(&current_line);
-                        buf.push('\n');
+                    } else {
+                        // Submodule items: one per line
+                        for item in group.iter() {
+                            write_indent(buf, line_indent);
+                            buf.push_str(item);
+                            buf.push_str(",\n");
+                        }
                     }
 
                     // Add blank line between groups (except after the last group)

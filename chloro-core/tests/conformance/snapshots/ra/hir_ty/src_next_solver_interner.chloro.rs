@@ -4,21 +4,47 @@ use std::{fmt, ops::ControlFlow};
 
 use base_db::Crate;
 use hir_def::{
-    lang_item::LangItem, signatures::{FieldData, FnFlags, ImplFlags, StructFlags, TraitFlags}, AdtId,
-    AttrDefId, BlockId, CallableDefId, DefWithBodyId, EnumVariantId, ItemContainerId, StructId,
-    UnionId, VariantId,
+    lang_item::LangItem,
+    signatures::{FieldData, FnFlags, ImplFlags, StructFlags, TraitFlags},
+    AdtId,
+    AttrDefId,
+    BlockId,
+    CallableDefId,
+    DefWithBodyId,
+    EnumVariantId,
+    ItemContainerId,
+    StructId,
+    UnionId,
+    VariantId,
 };
 use la_arena::Idx;
 use rustc_abi::{ReprFlags, ReprOptions};
 use rustc_hash::FxHashSet;
 use rustc_index::bit_set::DenseBitSet;
 use rustc_type_ir::{
-    elaborate::elaborate, error::TypeError,
+    elaborate::elaborate,
+    error::TypeError,
     inherent::{self, GenericsOf, IntoKind, SliceLike as _, Span as _, Ty as _},
-    lang_items::{SolverAdtLangItem, SolverLangItem, SolverTraitLangItem}, solve::SizedTraitKind,
-    AliasTermKind, AliasTyKind, BoundVar, CollectAndApply, CoroutineWitnessTypes, DebruijnIndex,
-    EarlyBinder, FlagComputation, Flags, GenericArgKind, ImplPolarity, InferTy, Interner, TraitRef,
-    TypeVisitableExt, UniverseIndex, Upcast, Variance,
+    lang_items::{SolverAdtLangItem, SolverLangItem, SolverTraitLangItem},
+    solve::SizedTraitKind,
+    AliasTermKind,
+    AliasTyKind,
+    BoundVar,
+    CollectAndApply,
+    CoroutineWitnessTypes,
+    DebruijnIndex,
+    EarlyBinder,
+    FlagComputation,
+    Flags,
+    GenericArgKind,
+    ImplPolarity,
+    InferTy,
+    Interner,
+    TraitRef,
+    TypeVisitableExt,
+    UniverseIndex,
+    Upcast,
+    Variance,
 };
 pub use tls_cache::clear_tls_solver_cache;
 pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
@@ -37,15 +63,40 @@ use crate::{
     FnAbi,
 };
 use super::{
-    abi::Safety, fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
+    abi::Safety,
+    fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
     generics::{Generics, generics},
     region::{
         BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
     },
-    util::sizedness_constraint_for_ty, Binder, BoundExistentialPredicates, BoundTy, BoundTyKind,
-    Clause, ClauseKind, Clauses, Const, ErrorGuaranteed, ExprConst, ExternalConstraints, GenericArg,
-    GenericArgs, ParamConst, ParamEnv, ParamTy, PlaceholderConst, PlaceholderTy, PredefinedOpaques,
-    Predicate, SolverDefId, Term, Ty, TyKind, Tys, Valtree, ValueConst,
+    util::sizedness_constraint_for_ty,
+    Binder,
+    BoundExistentialPredicates,
+    BoundTy,
+    BoundTyKind,
+    Clause,
+    ClauseKind,
+    Clauses,
+    Const,
+    ErrorGuaranteed,
+    ExprConst,
+    ExternalConstraints,
+    GenericArg,
+    GenericArgs,
+    ParamConst,
+    ParamEnv,
+    ParamTy,
+    PlaceholderConst,
+    PlaceholderTy,
+    PredefinedOpaques,
+    Predicate,
+    SolverDefId,
+    Term,
+    Ty,
+    TyKind,
+    Tys,
+    Valtree,
+    ValueConst,
 };
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]

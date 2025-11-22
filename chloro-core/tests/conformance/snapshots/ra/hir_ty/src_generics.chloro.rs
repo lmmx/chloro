@@ -11,13 +11,20 @@
 use std::ops;
 
 use hir_def::{
-    db::DefDatabase, expr_store::ExpressionStore,
+    db::DefDatabase,
+    expr_store::ExpressionStore,
     hir::generics::{
         GenericParamDataRef, GenericParams, LifetimeParamData, LocalLifetimeParamId,
         LocalTypeOrConstParamId, TypeOrConstParamData, TypeParamProvenance, WherePredicate,
     },
-    ConstParamId, GenericDefId, GenericParamId, ItemContainerId, LifetimeParamId, Lookup,
-    TypeOrConstParamId, TypeParamId,
+    ConstParamId,
+    GenericDefId,
+    GenericParamId,
+    ItemContainerId,
+    LifetimeParamId,
+    Lookup,
+    TypeOrConstParamId,
+    TypeParamId,
 };
 use itertools::chain;
 use triomphe::Arc;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   35035 bytes
+Chloro size:   35075 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -18,21 +18,25 @@ Rustfmt size:  35032 bytes
  use intern::sym;
  use rustc_hash::FxHashSet;
  use rustc_type_ir::{
--    inherent::{Const as _, IntoKind, Ty as _},
--    solve::{Certainty, GoalSource},
+     inherent::{Const as _, IntoKind, Ty as _},
+     solve::{Certainty, GoalSource},
 -    DebruijnIndex, InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder,
 -    TypeSuperFoldable, TypeVisitableExt, UpcastFrom,
-+    inherent::{Const as _, IntoKind, Ty as _}, solve::{Certainty, GoalSource}, DebruijnIndex,
-+    InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder, TypeSuperFoldable,
-+    TypeVisitableExt, UpcastFrom,
++    DebruijnIndex,
++    InferConst,
++    InferTy,
++    RegionVid,
++    TyVid,
++    TypeFoldable,
++    TypeFolder,
++    TypeSuperFoldable,
++    TypeVisitableExt,
++    UpcastFrom,
  };
  use smallvec::SmallVec;
  use triomphe::Arc;
- 
- use crate::{
--    db::HirDatabase,
--    infer::InferenceContext,
-+    db::HirDatabase, infer::InferenceContext,
+     db::HirDatabase,
+     infer::InferenceContext,
      next_solver::{
 -        self,
 +        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,

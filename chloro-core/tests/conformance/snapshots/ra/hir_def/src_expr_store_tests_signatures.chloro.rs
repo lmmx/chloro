@@ -2,8 +2,11 @@ use expect_test::{Expect, expect};
 use test_fixture::WithFixture;
 
 use crate::{
-    expr_store::pretty::{print_function, print_struct}, nameres::crate_def_map, test_db::TestDB,
-    GenericDefId, ModuleDefId,
+    expr_store::pretty::{print_function, print_struct},
+    nameres::crate_def_map,
+    test_db::TestDB,
+    GenericDefId,
+    ModuleDefId,
 };
 use super::super::*;
 

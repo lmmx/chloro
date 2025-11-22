@@ -10,21 +10,35 @@ use hir_def::{
         ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr, ExprId, ExprOrPatId, LabelId,
         Literal, Pat, PatId, Statement, UnaryOp, generics::GenericParamDataRef,
     },
-    lang_item::{LangItem, LangItemTarget}, resolver::ValueNs, BlockId, FieldId, GenericDefId,
-    GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
+    lang_item::{LangItem, LangItemTarget},
+    resolver::ValueNs,
+    BlockId,
+    FieldId,
+    GenericDefId,
+    GenericParamId,
+    ItemContainerId,
+    Lookup,
+    TupleFieldId,
+    TupleId,
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _}, CoroutineArgs,
-    CoroutineArgsParts, InferTy, Interner,
+    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _},
+    CoroutineArgs,
+    CoroutineArgsParts,
+    InferTy,
+    Interner,
 };
 use syntax::ast::RangeOp;
 use tracing::debug;
 
 use crate::{
-    autoderef::overloaded_deref_ty, consteval, db::InternedCoroutine, generics::generics,
+    autoderef::overloaded_deref_ty,
+    consteval,
+    db::InternedCoroutine,
+    generics::generics,
     infer::{
         AllowTwoPhase, BreakableKind,
         coerce::{CoerceMany, CoerceNever},
@@ -46,8 +60,16 @@ use crate::{
         },
         obligation_ctxt::ObligationCtxt,
     },
-    traits::FnTrait, Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
-    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
+    traits::FnTrait,
+    Adjust,
+    Adjustment,
+    AutoBorrow,
+    CallableDefId,
+    DeclContext,
+    DeclOrigin,
+    IncorrectGenericsLenKind,
+    Rawness,
+    TraitEnvironment,
 };
 use super::{
     cast::CastCheck,

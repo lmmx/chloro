@@ -8,7 +8,9 @@ use syntax::{TextRange, TextSize};
 use vfs::AbsPathBuf;
 
 use crate::{
-    global_state::GlobalStateSnapshot, line_index::{LineIndex, PositionEncoding}, lsp_ext,
+    global_state::GlobalStateSnapshot,
+    line_index::{LineIndex, PositionEncoding},
+    lsp_ext,
     try_default,
 };
 

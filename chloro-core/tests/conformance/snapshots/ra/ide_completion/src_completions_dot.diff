@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35796 bytes
+Chloro size:   35804 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,9 @@ Rustfmt size:  35861 bytes
          CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
          PathExprCtx, Qualified,
      },
-+    CompletionItem, CompletionItemKind, Completions,
++    CompletionItem,
++    CompletionItemKind,
++    Completions,
  };
  
  /// Complete dot accesses, i.e. fields or methods.
