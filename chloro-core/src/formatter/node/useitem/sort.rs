@@ -12,7 +12,7 @@ pub fn sort_key(s: &str) -> (bool, bool, &str) {
     let first_is_lower = s
         .as_bytes()
         .first()
-        .map_or(false, |&b| b.is_ascii_lowercase());
+        .is_some_and(|&b| b.is_ascii_lowercase());
 
     // Skip expensive scan if first char is lowercase (guarantees it has lowercase)
     let is_all_caps = if first_is_lower {

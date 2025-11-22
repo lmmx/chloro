@@ -92,19 +92,19 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 if let Some(attr) = Attr::cast(n.clone()) {
                                     if attr.excl_token().is_some() {
                                         inner_attrs
-                                            .push((pending_comments.drain(..).collect(), attr));
+                                            .push((std::mem::take(&mut pending_comments), attr));
                                     } else {
                                         other_items.push(NodeOrToken::Node(n));
                                     }
                                 }
                             }
                             SyntaxKind::EXTERN_CRATE => {
-                                extern_crates.push((pending_comments.drain(..).collect(), n));
+                                extern_crates.push((std::mem::take(&mut pending_comments), n));
                             }
                             SyntaxKind::MODULE => {
                                 if let Some(module) = Module::cast(n.clone()) {
                                     if module.item_list().is_none() {
-                                        mod_decls.push((pending_comments.drain(..).collect(), n));
+                                        mod_decls.push((std::mem::take(&mut pending_comments), n));
                                         continue;
                                     }
                                 }
@@ -113,7 +113,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             SyntaxKind::USE => {
                                 if let Some(use_) = Use::cast(n.clone()) {
                                     // Collect comments before this use
-                                    let before: Vec<_> = pending_comments.drain(..).collect();
+                                    let before: Vec<_> = std::mem::take(&mut pending_comments);
 
                                     // Now collect trailing comments/content after this use
                                     let mut trailing = Vec::new();
