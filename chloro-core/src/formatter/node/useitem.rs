@@ -8,6 +8,7 @@ pub mod sort;
 
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
+use grouping::get_submodule_prefix;
 
 /// Check if an item contains nested braces (e.g., "SyntaxKind::{self, *}")
 fn has_nested_braces(item: &str) -> bool {
@@ -90,7 +91,9 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
                 for (group_idx, group) in groups.iter().enumerate() {
                     // Check if this is a root-level group (items without ::)
-                    let is_root_group = group.iter().all(|item| !item.contains("::"));
+                    let is_root_group = group
+                        .iter()
+                        .all(|item| get_submodule_prefix(item).is_none());
 
                     if is_root_group {
                         // Root-level items can be packed on lines

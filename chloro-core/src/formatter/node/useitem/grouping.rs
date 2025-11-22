@@ -12,7 +12,7 @@
 ///
 /// Returns `None` for root-level items like:
 /// - `AssocItemId` -> `None`
-fn get_submodule_prefix(item: &str) -> Option<String> {
+pub fn get_submodule_prefix(item: &str) -> Option<String> {
     if item.contains("::") {
         // For both nested imports like "resolver::{...}" and simple paths like "attr::Foo"
         // we extract the first component before `::`
