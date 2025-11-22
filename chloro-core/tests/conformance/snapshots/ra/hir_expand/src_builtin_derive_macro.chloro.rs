@@ -23,10 +23,7 @@ use crate::{
     hygiene::span_with_def_site_ctxt,
     name::{self, AsName, Name},
     span_map::ExpansionSpanMap,
-    tt,
-    ExpandError,
-    ExpandResult,
-    MacroCallId,
+    tt, ExpandError, ExpandResult, MacroCallId,
 };
 
 macro_rules! register_builtin {

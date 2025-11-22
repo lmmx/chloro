@@ -8,8 +8,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
-    match_ast,
-    AstNode,
+    match_ast, AstNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

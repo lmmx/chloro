@@ -8,8 +8,7 @@ use crate::{
     db::DefDatabase,
     expr_store::{Body, ExpressionStore, HygieneId},
     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
-    BlockId,
-    DefWithBodyId,
+    BlockId, DefWithBodyId,
 };
 
 pub type ScopeId = Idx<ScopeData>;
@@ -375,11 +374,8 @@ mod tests {
     use test_utils::{assert_eq_text, extract_offset};
     use crate::{
         db::DefDatabase,
-
         nameres::crate_def_map,
-
         test_db::TestDB,
-
         FunctionId, ModuleDefId,
     };
     fn find_function(

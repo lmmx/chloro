@@ -59,57 +59,25 @@ use hir_def::{
     signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
     src::HasSource as _,
     visibility::visibility_from_ast,
-    AdtId,
-    AssocItemId,
-    AssocItemLoc,
-    AttrDefId,
-    CallableDefId,
-    ConstId,
-    ConstParamId,
-    CrateRootModuleId,
-    DefWithBodyId,
-    EnumId,
-    EnumVariantId,
-    ExternBlockId,
-    ExternCrateId,
-    FunctionId,
-    GenericDefId,
-    GenericParamId,
-    HasModule,
-    ImplId,
-    ItemContainerId,
-    LifetimeParamId,
-    LocalFieldId,
-    Lookup,
-    MacroExpander,
-    MacroId,
-    StaticId,
-    StructId,
-    SyntheticSyntax,
-    TupleId,
-    TypeAliasId,
-    TypeOrConstParamId,
-    TypeParamId,
-    UnionId,
+    AdtId, AssocItemId, AssocItemLoc, AttrDefId, CallableDefId, ConstId, ConstParamId,
+    CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId,
+    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
+    LocalFieldId, Lookup, MacroExpander, MacroId, StaticId, StructId, SyntheticSyntax, TupleId,
+    TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
 };
 use hir_expand::{
     attrs::collect_attrs,
-
     proc_macro::ProcMacroKind,
-
     AstId, MacroCallKind, RenderedExpandError, ValueResult,
 };
 pub use hir_ty::next_solver;
 pub use hir_ty::setup_tracing;
 use hir_ty::{
-    all_super_traits,
-    autoderef,
-    check_orphan_rules,
+    all_super_traits, autoderef, check_orphan_rules,
     consteval::try_const_usize,
     db::{InternedClosureId, InternedCoroutineId},
     diagnostics::BodyValidationDiagnostic,
-    direct_super_traits,
-    known_const_to_ast,
+    direct_super_traits, known_const_to_ast,
     layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding},
     method_resolution,
     mir::{MutBorrowKind, interpret_mir},
@@ -119,34 +87,20 @@ use hir_ty::{
         infer::{DbInternerInferExt, InferCtxt},
     },
     traits::{self, FnTrait, structurally_normalize_ty},
-    TraitEnvironment,
-    TyDefId,
-    TyLoweringDiagnostic,
-    ValueTyDefId,
+    TraitEnvironment, TyDefId, TyLoweringDiagnostic, ValueTyDefId,
 };
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _},
-    AliasTyKind,
-    TypeSuperVisitable,
-    TypeVisitable,
-    TypeVisitor,
+    AliasTyKind, TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use smallvec::SmallVec;
 use span::{AstIdNode, Edition, FileId};
 use stdx::{format_to, impl_from, never};
 use syntax::{
     ast::{self, HasAttrs as _, HasName, HasVisibility as _},
-    format_smolstr,
-    AstNode,
-    AstPtr,
-    SmolStr,
-    SyntaxNode,
-    SyntaxNodePtr,
-    TextRange,
-    ToSmolStr,
-    T,
+    format_smolstr, AstNode, AstPtr, SmolStr, SyntaxNode, SyntaxNodePtr, TextRange, ToSmolStr, T,
 };
 use triomphe::{Arc, ThinArc};
 pub use {

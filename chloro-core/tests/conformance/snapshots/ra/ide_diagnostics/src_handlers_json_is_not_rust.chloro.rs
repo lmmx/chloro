@@ -7,10 +7,7 @@ use ide_db::{
     helpers::mod_path_to_ast,
     imports::insert_use::{ImportScope, insert_use},
     source_change::SourceChangeBuilder,
-    EditionedFileId,
-    FileRange,
-    FxHashMap,
-    RootDatabase,
+    EditionedFileId, FileRange, FxHashMap, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::{format_to, never};

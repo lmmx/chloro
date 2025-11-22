@@ -8,12 +8,7 @@ use ide_db::{
     defs::{Definition, IdentClass},
     documentation::Documentation,
     famous_defs::FamousDefs,
-    FileId,
-    FileRange,
-    FxHashMap,
-    FxHashSet,
-    MiniCore,
-    RootDatabase,
+    FileId, FileRange, FxHashMap, FxHashSet, MiniCore, RootDatabase,
 };
 use span::Edition;
 use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
@@ -24,13 +19,7 @@ use crate::{
     inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
     moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
     parent_module::crates_for,
-    Analysis,
-    Fold,
-    HoverConfig,
-    HoverResult,
-    InlayHint,
-    InlayHintsConfig,
-    TryToNav,
+    Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig, TryToNav,
 };
 
 /// A static representation of fully analyzed source code.

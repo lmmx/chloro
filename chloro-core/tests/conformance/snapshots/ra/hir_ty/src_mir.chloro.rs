@@ -17,12 +17,7 @@ pub use eval::{
 use hir_def::{
     expr_store::Body,
     hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
-    DefWithBodyId,
-    FieldId,
-    StaticId,
-    TupleFieldId,
-    UnionId,
-    VariantId,
+    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 pub(crate) use lower::mir_body_cycle_result;
@@ -48,9 +43,7 @@ use crate::{
         infer::{InferCtxt, traits::ObligationCause},
         obligation_ctxt::ObligationCtxt,
     },
-    CallableDefId,
-    InferenceResult,
-    MemoryMap,
+    CallableDefId, InferenceResult, MemoryMap,
 };
 use super::consteval::try_const_usize;
 

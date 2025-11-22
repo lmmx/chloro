@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50341 bytes
+Chloro size:   50273 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -16,11 +16,7 @@ Rustfmt size:  50684 bytes
      inherent::{IntoKind, SliceLike, Span as _},
      lang_items::SolverTraitLangItem,
      solve::{Certainty, GoalSource, MaybeCause, NoSolution},
-+    AliasRelationDirection,
-+    AliasTermKind,
-+    HostEffectPredicate,
-+    Interner,
-+    PredicatePolarity,
++    AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
  };
  use tracing::{instrument, trace};
  
@@ -33,21 +29,8 @@ Rustfmt size:  50684 bytes
      },
      inspect::{self, ProofTreeVisitor},
      normalize::deeply_normalize_for_diagnostics,
-+    AliasTerm,
-+    Binder,
-+    ClauseKind,
-+    Const,
-+    ConstKind,
-+    DbInterner,
-+    PolyTraitPredicate,
-+    PredicateKind,
-+    SolverContext,
-+    Span,
-+    Term,
-+    TraitPredicate,
-+    Ty,
-+    TyKind,
-+    TypeError,
++    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
++    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
  };
  
  #[derive(Debug)]

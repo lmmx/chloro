@@ -2,23 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3570 bytes
-Chloro size:   3597 bytes
+Chloro size:   3577 bytes
 Rustfmt size:  3570 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Things related to generics in the next-trait-solver.
- 
- use hir_def::{
-     hir::generics::{GenericParams, TypeOrConstParamData},
--    ConstParamId, GenericDefId, GenericParamId, LifetimeParamId, TypeOrConstParamId, TypeParamId,
-+    ConstParamId,
-+    GenericDefId,
-+    GenericParamId,
-+    LifetimeParamId,
-+    TypeOrConstParamId,
-+    TypeParamId,
  };
  
  use crate::{db::HirDatabase, generics::parent_generic_def};

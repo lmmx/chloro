@@ -2,25 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27753 bytes
+Chloro size:   27733 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use stdx::never;
- use syntax::{
-     ast::{self, AstNode, HasLoopBody},
--    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
-+    match_ast,
-+    SyntaxElement,
-+    SyntaxKind,
-+    SyntaxNode,
-+    TextRange,
-+    TextSize,
- };
- use syntax_bridge::DocCommentDesugarMode;
- use triomphe::Arc;
  /// This is the information needed to reverse the fixups.
  #[derive(Clone, Debug, Default, PartialEq, Eq)]
  pub struct SyntaxFixupUndoInfo {

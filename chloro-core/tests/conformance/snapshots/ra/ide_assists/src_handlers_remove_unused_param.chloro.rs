@@ -3,21 +3,13 @@ use syntax::{
     algo::{find_node_at_range, least_common_ancestor_element},
     ast::{self, HasArgList},
     syntax_editor::Element,
-    AstNode,
-    SourceFile,
-    SyntaxElement,
-    SyntaxKind,
-    SyntaxNode,
-    TextRange,
-    T,
+    AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
 };
 use SyntaxKind::WHITESPACE;
 
 use crate::{
     assist_context::SourceChangeBuilder,
-
     utils::next_prev,
-
     AssistContext, AssistId, Assists,
 };
 

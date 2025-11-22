@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34201 bytes
-Chloro size:   34270 bytes
+Chloro size:   34230 bytes
 Rustfmt size:  34201 bytes
 
 ✗ Outputs DIFFER
@@ -14,26 +14,16 @@ Rustfmt size:  34201 bytes
 -    FxHashMap, RootDatabase, SymbolKind,
      defs::{Definition, IdentClass, NameClass, NameRefClass},
      syntax_helpers::node_ext::walk_pat,
-+    FxHashMap,
-+    RootDatabase,
-+    SymbolKind,
++    FxHashMap, RootDatabase, SymbolKind,
  };
  use span::Edition;
  use stdx::hash_once;
  use syntax::{
 -    AstNode, AstPtr, AstToken, NodeOrToken,
-+    ast,
-+    match_ast,
-+    AstNode,
-+    AstPtr,
-+    AstToken,
-+    NodeOrToken,
++    ast, match_ast, AstNode, AstPtr, AstToken, NodeOrToken,
      SyntaxKind::{self, *},
 -    SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast, match_ast,
-+    SyntaxNode,
-+    SyntaxNodePtr,
-+    SyntaxToken,
-+    T,
++    SyntaxNode, SyntaxNodePtr, SyntaxToken, T,
  };
  
  use crate::{

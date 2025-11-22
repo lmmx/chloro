@@ -22,11 +22,7 @@ use crate::{
     signatures::{FnFlags, FunctionSignature, StructSignature},
     src::HasSource,
     type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
-    AdtId,
-    DefWithBodyId,
-    GenericDefId,
-    TypeParamId,
-    VariantId,
+    AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
 };
 use crate::{LifetimeParamId, signatures::StructFlags};
 use crate::{item_tree::FieldsShape, signatures::FieldData};

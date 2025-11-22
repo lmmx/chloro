@@ -8,12 +8,7 @@ use std::slice;
 pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
 use hir::{
     db::{ExpandDatabase, HirDatabase},
-    DisplayTarget,
-    HasAttrs as HirHasAttrs,
-    HirDisplay,
-    InFile,
-    ModuleDef,
-    PathResolution,
+    DisplayTarget, HasAttrs as HirHasAttrs, HirDisplay, InFile, ModuleDef, PathResolution,
     Semantics,
 };
 use ide_db::{
@@ -33,18 +28,9 @@ use syntax::{
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Removable, SyntaxEditor},
-    AstNode,
-    AstToken,
-    Direction,
-    NodeOrToken,
-    SourceFile,
+    AstNode, AstToken, Direction, NodeOrToken, SourceFile,
     SyntaxKind::*,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    WalkEvent,
-    T,
+    SyntaxNode, SyntaxToken, TextRange, TextSize, WalkEvent, T,
 };
 
 use crate::{

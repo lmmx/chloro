@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31545 bytes
+Chloro size:   31541 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Flycheck provides the functionality needed to run `cargo check` to provide
- //! LSP diagnostics based on the output of the command.
- 
- use std::{
--    fmt, io,
-+    fmt,
-+    io,
-     process::Command,
-     sync::atomic::{AtomicUsize, Ordering},
-     time::Duration,
  };
  
  use cargo_metadata::PackageId;

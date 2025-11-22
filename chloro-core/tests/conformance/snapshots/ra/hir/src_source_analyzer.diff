@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   72245 bytes
+Chloro size:   72093 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -24,26 +24,14 @@ Rustfmt size:  72179 bytes
      nameres::MacroSubNs,
      resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
      type_ref::{Mutability, TypeRefId},
-+    AdtId,
-+    AssocItemId,
-+    CallableDefId,
-+    ConstId,
-+    DefWithBodyId,
-+    FieldId,
-+    FunctionId,
-+    GenericDefId,
-+    LocalFieldId,
-+    ModuleDefId,
-+    StructId,
-+    TraitId,
-+    VariantId,
++    AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
++    LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
  };
  use hir_expand::{
 -    HirFileId, InFile,
      mod_path::{ModPath, PathKind, path},
      name::{AsName, Name},
-+    HirFileId,
-+    InFile,
++    HirFileId, InFile,
  };
  use hir_ty::{
 -    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
@@ -53,11 +41,7 @@ Rustfmt size:  72179 bytes
          DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode, infer::DbInternerInferExt,
      },
      traits::structurally_normalize_ty,
-+    Adjustment,
-+    InferenceResult,
-+    LifetimeElisionKind,
-+    TraitEnvironment,
-+    TyLoweringContext,
++    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
  };
  use intern::sym;
  use itertools::Itertools;
@@ -66,41 +50,18 @@ Rustfmt size:  72179 bytes
  use syntax::{
 -    SyntaxKind, SyntaxNode, TextRange, TextSize,
      ast::{self, AstNode, RangeItem, RangeOp},
-+    SyntaxKind,
-+    SyntaxNode,
-+    TextRange,
-+    TextSize,
++    SyntaxKind, SyntaxNode, TextRange, TextSize,
  };
  use triomphe::Arc;
  
  use crate::{
--    Adt, AssocItem, BindingMode, BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field,
--    Function, GenericSubstitution, Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait,
--    TupleField, Type, TypeAlias, Variant,
-     db::HirDatabase,
-     semantics::{PathResolution, PathResolutionPerNs},
-+    Adt,
-+    AssocItem,
-+    BindingMode,
-+    BuiltinAttr,
-+    BuiltinType,
-+    Callable,
-+    Const,
-+    DeriveHelper,
-+    Field,
-+    Function,
-+    GenericSubstitution,
-+    Local,
-+    Macro,
-+    ModuleDef,
-+    Static,
-+    Struct,
-+    ToolModule,
-+    Trait,
-+    TupleField,
-+    Type,
-+    TypeAlias,
-+    Variant,
++    db::HirDatabase,
++    semantics::{PathResolution, PathResolutionPerNs},
+     Adt, AssocItem, BindingMode, BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field,
+     Function, GenericSubstitution, Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait,
+     TupleField, Type, TypeAlias, Variant,
+-    db::HirDatabase,
+-    semantics::{PathResolution, PathResolutionPerNs},
  };
  
  /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of

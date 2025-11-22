@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74163 bytes
+Chloro size:   74091 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -24,22 +24,8 @@ Rustfmt size:  74236 bytes
      resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
      signatures::{ConstSignature, StaticSignature},
      type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-+    AdtId,
-+    AssocItemId,
-+    ConstId,
-+    DefWithBodyId,
-+    FieldId,
-+    FunctionId,
-+    GenericDefId,
-+    GenericParamId,
-+    ItemContainerId,
-+    LocalFieldId,
-+    Lookup,
-+    TraitId,
-+    TupleFieldId,
-+    TupleId,
-+    TypeAliasId,
-+    VariantId,
++    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
++    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
  };
  use hir_expand::{mod_path::ModPath, name::Name};
  use indexmap::IndexSet;
@@ -48,8 +34,7 @@ Rustfmt size:  74236 bytes
  use rustc_type_ir::{
 -    AliasTyKind, TypeFoldable,
      inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
-+    AliasTyKind,
-+    TypeFoldable,
++    AliasTyKind, TypeFoldable,
  };
  use stdx::never;
  use triomphe::Arc;
@@ -63,10 +48,7 @@ Rustfmt size:  74236 bytes
      },
      traits::FnTrait,
      utils::TargetFeatureIsSafeInTarget,
-+    ImplTraitId,
-+    IncorrectGenericsLenKind,
-+    PathLoweringDiagnostic,
-+    TargetFeatures,
++    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
  };
  
 -// This lint has a false positive here. See the link below for details.

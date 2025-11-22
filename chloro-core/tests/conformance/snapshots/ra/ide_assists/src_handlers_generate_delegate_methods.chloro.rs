@@ -11,11 +11,7 @@ use syntax::{
 
 use crate::{
     utils::{convert_param_list_to_arg_list, find_struct_impl},
-    AssistContext,
-    AssistId,
-    AssistKind,
-    Assists,
-    GroupLabel,
+    AssistContext, AssistId, AssistKind, Assists, GroupLabel,
 };
 
 pub(crate) fn generate_delegate_methods(

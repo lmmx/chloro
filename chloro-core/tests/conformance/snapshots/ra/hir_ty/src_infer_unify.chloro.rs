@@ -9,16 +9,8 @@ use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     inherent::{Const as _, IntoKind, Ty as _},
     solve::{Certainty, GoalSource},
-    DebruijnIndex,
-    InferConst,
-    InferTy,
-    RegionVid,
-    TyVid,
-    TypeFoldable,
-    TypeFolder,
-    TypeSuperFoldable,
-    TypeVisitableExt,
-    UpcastFrom,
+    DebruijnIndex, InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, UpcastFrom,
 };
 use smallvec::SmallVec;
 use triomphe::Arc;

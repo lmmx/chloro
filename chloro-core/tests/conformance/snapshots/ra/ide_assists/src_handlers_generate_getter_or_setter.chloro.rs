@@ -2,16 +2,12 @@ use ide_db::{famous_defs::FamousDefs, source_change::SourceChangeBuilder};
 use stdx::{format_to, to_lower_snake_case};
 use syntax::{
     ast::{self, AstNode, HasName, HasVisibility, edit_in_place::Indent, make},
-    ted,
-    TextRange,
+    ted, TextRange,
 };
 
 use crate::{
     utils::{convert_reference_type, find_struct_impl, generate_impl},
-    AssistContext,
-    AssistId,
-    Assists,
-    GroupLabel,
+    AssistContext, AssistId, Assists, GroupLabel,
 };
 
 pub(crate) fn generate_setter(

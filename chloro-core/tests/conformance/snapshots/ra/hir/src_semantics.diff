@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   101744 bytes
+Chloro size:   101524 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::{
-     cell::RefCell,
-     convert::Infallible,
--    fmt, iter, mem,
-+    fmt,
-+    iter,
-+    mem,
-     ops::{self, ControlFlow, Not},
- };
  
  use either::Either;
  use hir_def::{
@@ -26,12 +17,7 @@ Rustfmt size:  101650 bytes
      nameres::{ModuleOrigin, crate_def_map},
      resolver::{self, HasResolver, Resolver, TypeNs},
      type_ref::Mutability,
-+    DefWithBodyId,
-+    FunctionId,
-+    MacroId,
-+    StructId,
-+    TraitId,
-+    VariantId,
++    DefWithBodyId, FunctionId, MacroId, StructId, TraitId, VariantId,
  };
  use hir_expand::{
 -    EditionedFileId, ExpandResult, FileRange, HirFileId, InMacroFile, MacroCallId,
@@ -41,12 +27,7 @@ Rustfmt size:  101650 bytes
      files::{FileRangeWrapper, HirFileRange, InRealFile},
      mod_path::{ModPath, PathKind},
      name::AsName,
-+    EditionedFileId,
-+    ExpandResult,
-+    FileRange,
-+    HirFileId,
-+    InMacroFile,
-+    MacroCallId,
++    EditionedFileId, ExpandResult, FileRange, HirFileId, InMacroFile, MacroCallId,
  };
  use hir_ty::{
      diagnostics::{unsafe_operations, unsafe_operations_for_body},
@@ -57,14 +38,7 @@ Rustfmt size:  101650 bytes
 -    TextSize,
      algo::skip_trivia_token,
      ast::{self, HasAttrs as _, HasGenericParams},
-+    AstNode,
-+    AstToken,
-+    Direction,
-+    SyntaxKind,
-+    SyntaxNode,
-+    SyntaxNodePtr,
-+    SyntaxToken,
-+    TextRange,
++    AstNode, AstToken, Direction, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange,
 +    TextSize,
  };
  
@@ -77,47 +51,11 @@ Rustfmt size:  101650 bytes
      db::HirDatabase,
      semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
      source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
-+    Adjust,
-+    Adjustment,
-+    Adt,
-+    AutoBorrow,
-+    BindingMode,
-+    BuiltinAttr,
-+    Callable,
-+    Const,
-+    ConstParam,
-+    Crate,
-+    DefWithBody,
-+    DeriveHelper,
-+    Enum,
-+    Field,
-+    Function,
-+    GenericSubstitution,
-+    HasSource,
-+    Impl,
-+    InFile,
-+    InlineAsmOperand,
-+    ItemInNs,
-+    Label,
-+    LifetimeParam,
-+    Local,
-+    Macro,
-+    Module,
-+    ModuleDef,
-+    Name,
-+    OverloadedDeref,
-+    ScopeDef,
-+    Static,
-+    Struct,
-+    ToolModule,
-+    Trait,
-+    TupleField,
-+    Type,
-+    TypeAlias,
-+    TypeParam,
-+    Union,
-+    Variant,
-+    VariantDef,
++    Adjust, Adjustment, Adt, AutoBorrow, BindingMode, BuiltinAttr, Callable, Const, ConstParam,
++    Crate, DefWithBody, DeriveHelper, Enum, Field, Function, GenericSubstitution, HasSource, Impl,
++    InFile, InlineAsmOperand, ItemInNs, Label, LifetimeParam, Local, Macro, Module, ModuleDef, Name,
++    OverloadedDeref, ScopeDef, Static, Struct, ToolModule, Trait, TupleField, Type, TypeAlias,
++    TypeParam, Union, Variant, VariantDef,
  };
  
  const CONTINUE_NO_BREAKS: ControlFlow<Infallible, ()> = ControlFlow::Continue(());

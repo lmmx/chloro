@@ -5,15 +5,8 @@
 
 use hir_def::{
     hir::{BindingId, LabelId},
-    AdtId,
-    AssocItemId,
-    DefWithBodyId,
-    EnumVariantId,
-    FieldId,
-    GenericDefId,
-    GenericParamId,
-    ModuleDefId,
-    VariantId,
+    AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
+    ModuleDefId, VariantId,
 };
 
 use crate::{

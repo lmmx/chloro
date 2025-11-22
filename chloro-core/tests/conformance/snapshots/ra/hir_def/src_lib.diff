@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   39254 bytes
+Chloro size:   39226 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -64,18 +64,7 @@ Rustfmt size:  45085 bytes
  use hir_expand::{
      builtin::{BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander},
      db::ExpandDatabase,
-     mod_path::ModPath,
-     name::Name,
-     proc_macro::{CustomProcMacroExpander, ProcMacroKind},
--    AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
-+    AstId,
-+    ExpandResult,
-+    ExpandTo,
-+    HirFileId,
-+    InFile,
-+    MacroCallId,
-+    MacroCallKind,
-+    MacroDefId,
+     AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
      MacroDefKind,
  };
 +pub use hir_expand::{Intern, Lookup, tt};

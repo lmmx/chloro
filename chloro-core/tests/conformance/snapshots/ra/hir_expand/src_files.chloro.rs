@@ -8,13 +8,8 @@ use syntax::{AstNode, AstPtr, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange,
 
 use crate::{
     db::{self, ExpandDatabase},
-    map_node_range_up,
-    map_node_range_up_rooted,
-    span_for_offset,
-    EditionedFileId,
-    HirFileId,
-    MacroCallId,
-    MacroKind,
+    map_node_range_up, map_node_range_up_rooted, span_for_offset, EditionedFileId, HirFileId,
+    MacroCallId, MacroKind,
 };
 
 /// `InFile<T>` stores a value of `T` inside a particular file/syntax tree.

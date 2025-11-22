@@ -8,15 +8,11 @@ use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
 use ide_db::{FileRange, RootDatabase};
 use syntax::{
     ast::{self, AstNode, HasLoopBody, HasName},
-    match_ast,
-    SyntaxKind,
-    SyntaxNode,
-    T,
+    match_ast, SyntaxKind, SyntaxNode, T,
 };
 
 use crate::{
     inlay_hints::LazyProperty,
-
     InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 

@@ -6,8 +6,7 @@ use hir::setup_tracing;
 use ide_db::{
     assists::{AssistResolveStrategy, ExprFillDefaultMode},
     base_db::SourceDatabase,
-    LineIndexDatabase,
-    RootDatabase,
+    LineIndexDatabase, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::trim_indent;

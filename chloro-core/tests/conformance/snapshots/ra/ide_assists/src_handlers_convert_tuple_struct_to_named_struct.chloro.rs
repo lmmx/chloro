@@ -9,11 +9,7 @@ use syntax::{
     },
     match_ast,
     syntax_editor::{Element, Position, SyntaxEditor},
-    SyntaxElement,
-    SyntaxKind,
-    SyntaxNode,
-    TextSize,
-    T,
+    SyntaxElement, SyntaxKind, SyntaxNode, TextSize, T,
 };
 
 use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

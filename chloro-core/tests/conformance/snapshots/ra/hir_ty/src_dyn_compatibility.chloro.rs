@@ -7,11 +7,8 @@ use std::ops::ControlFlow;
 
 use hir_def::{
     hir::generics::LocalTypeOrConstParamId,
-
     lang_item::LangItem,
-
     signatures::TraitFlags,
-
     AssocItemId, ConstId, CrateRootModuleId, FunctionId, GenericDefId, HasModule, TraitId,
     TypeAliasId, TypeOrConstParamId, TypeParamId,
 };
@@ -19,12 +16,7 @@ use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     elaborate,
     inherent::{IntoKind, SliceLike},
-    AliasTyKind,
-    ClauseKind,
-    PredicatePolarity,
-    TypeSuperVisitable as _,
-    TypeVisitable as _,
-    Upcast,
+    AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _, Upcast,
 };
 use smallvec::SmallVec;
 

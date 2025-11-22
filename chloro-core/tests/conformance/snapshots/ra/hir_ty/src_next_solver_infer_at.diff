@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11791 bytes
+Chloro size:   11703 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -12,51 +12,17 @@ Rustfmt size:  11331 bytes
      error::ExpectedFound,
      inherent::{IntoKind, Span as _},
 -    relate::{solver_relating::RelateExt, Relate, TypeRelation},
--    FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
 +    relate::{Relate, TypeRelation, solver_relating::RelateExt},
-+    FnSig,
-+    GenericArgKind,
-+    TypeFoldable,
-+    TypingMode,
-+    Variance,
+     FnSig, GenericArgKind, TypeFoldable, TypingMode, Variance,
  };
  
- use crate::next_solver::{
-     fulfill::NextSolverError,
-     infer::relate::lattice::{LatticeOp, LatticeOpKind},
--    AliasTerm, AliasTy, Binder, Const, DbInterner, GenericArg, Goal, ParamEnv,
--    PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
--    TraitRef, Ty,
-+    AliasTerm,
-+    AliasTy,
-+    Binder,
-+    Const,
-+    DbInterner,
-+    GenericArg,
-+    Goal,
-+    ParamEnv,
-+    PolyExistentialProjection,
-+    PolyExistentialTraitRef,
-+    PolyFnSig,
-+    Predicate,
-+    Region,
-+    Span,
-+    Term,
-+    TraitRef,
-+    Ty,
+     PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, Predicate, Region, Span, Term,
+     TraitRef, Ty,
  };
 -
  use super::{
      traits::{Obligation, ObligationCause},
--    InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
-+    InferCtxt,
-+    InferOk,
-+    InferResult,
-+    TypeTrace,
-+    ValuePairs,
- };
- 
- #[derive(Clone, Copy)]
+     InferCtxt, InferOk, InferResult, TypeTrace, ValuePairs,
  
  impl<'db> InferCtxt<'db> {
      #[inline]

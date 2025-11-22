@@ -11,8 +11,7 @@ use crate::{
         RenderContext,
         variant::{format_literal_label, format_literal_lookup, visible_fields},
     },
-    CompletionItem,
-    CompletionItemKind,
+    CompletionItem, CompletionItemKind,
 };
 
 pub(crate) fn render_struct_pat(

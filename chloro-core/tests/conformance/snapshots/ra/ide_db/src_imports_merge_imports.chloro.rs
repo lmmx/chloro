@@ -11,8 +11,7 @@ use syntax::{
         make,
     },
     ted::{self, Position},
-    Direction,
-    SyntaxElement,
+    Direction, SyntaxElement,
 };
 
 use crate::syntax_helpers::node_ext::vis_eq;

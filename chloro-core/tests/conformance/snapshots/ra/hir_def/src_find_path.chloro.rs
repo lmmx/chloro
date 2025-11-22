@@ -17,9 +17,7 @@ use crate::{
     item_scope::ItemInNs,
     nameres::DefMap,
     visibility::{Visibility, VisibilityExplicitness},
-    FindPathConfig,
-    ModuleDefId,
-    ModuleId,
+    FindPathConfig, ModuleDefId, ModuleId,
 };
 
 /// Find a path that can be used to refer to a certain item. This can depend on

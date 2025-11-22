@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48541 bytes
+Chloro size:   48513 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -27,13 +27,7 @@ Rustfmt size:  50490 bytes
  use hir_def::{
      expr_store::Body,
      hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
--    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
-+    DefWithBodyId,
-+    FieldId,
-+    StaticId,
-+    TupleFieldId,
-+    UnionId,
-+    VariantId,
+     DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
  };
  use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 +pub(crate) use lower::mir_body_cycle_result;
@@ -59,10 +53,7 @@ Rustfmt size:  50490 bytes
 +        infer::{InferCtxt, traits::ObligationCause},
 +        obligation_ctxt::ObligationCtxt,
      },
--    CallableDefId, InferenceResult, MemoryMap,
-+    CallableDefId,
-+    InferenceResult,
-+    MemoryMap,
+     CallableDefId, InferenceResult, MemoryMap,
  };
 -
 -mod borrowck;

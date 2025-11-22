@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11608 bytes
-Chloro size:   11651 bytes
+Chloro size:   11616 bytes
 Rustfmt size:  12342 bytes
 
 ✗ Outputs DIFFER
@@ -19,36 +19,20 @@ Rustfmt size:  12342 bytes
  use ide_db::{
 -    defs::Definition, documentation::docs_with_rangemap, rust_doc::is_rust_fence, SymbolKind,
 +    defs::Definition,
-+
 +    documentation::docs_with_rangemap,
-+
 +    rust_doc::is_rust_fence,
-+
 +    SymbolKind,
  };
  use syntax::{
      ast::{self, AstNode, IsString, QuoteOffsets},
--    AstToken, NodeOrToken, SyntaxNode, TextRange, TextSize,
-+    AstToken,
-+    NodeOrToken,
-+    SyntaxNode,
-+    TextRange,
-+    TextSize,
- };
  
  use crate::{
      doc_links::{doc_attributes, extract_definitions_from_docs, resolve_doc_path_for_def},
 -    syntax_highlighting::{highlights::Highlights, HighlightConfig},
--    Analysis, HlMod, HlRange, HlTag, RootDatabase,
 +    syntax_highlighting::{HighlightConfig, highlights::Highlights},
-+    Analysis,
-+    HlMod,
-+    HlRange,
-+    HlTag,
-+    RootDatabase,
+     Analysis, HlMod, HlRange, HlTag, RootDatabase,
  };
  
- pub(super) fn ra_fixture(
              });
          },
      )?;

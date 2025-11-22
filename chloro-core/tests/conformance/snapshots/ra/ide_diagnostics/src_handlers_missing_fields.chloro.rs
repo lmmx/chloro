@@ -1,12 +1,7 @@
 use either::Either;
 use hir::{
     db::{ExpandDatabase, HirDatabase},
-    sym,
-    AssocItem,
-    FindPathConfig,
-    HirDisplay,
-    InFile,
-    Type,
+    sym, AssocItem, FindPathConfig, HirDisplay, InFile, Type,
 };
 use ide_db::{
     assists::{Assist, ExprFillDefaultMode},

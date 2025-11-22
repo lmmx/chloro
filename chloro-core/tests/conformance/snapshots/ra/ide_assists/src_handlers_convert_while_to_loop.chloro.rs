@@ -8,8 +8,7 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    AstNode,
-    T,
+    AstNode, T,
 };
 
 use crate::{

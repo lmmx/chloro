@@ -7,9 +7,7 @@ use syntax::{
         self,
         edit::{AstNodeEdit, IndentLevel},
     },
-    AstNode,
-    SyntaxToken,
-    TextRange,
+    AstNode, SyntaxToken, TextRange,
 };
 
 use crate::{

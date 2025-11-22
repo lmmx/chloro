@@ -3,9 +3,7 @@ use std::ops::Not;
 use hir::{
     db::ExpandDatabase,
     term_search::{TermSearchConfig, TermSearchCtx, term_search},
-    ClosureStyle,
-    FindPathConfig,
-    HirDisplay,
+    ClosureStyle, FindPathConfig, HirDisplay,
 };
 use ide_db::text_edit::TextEdit;
 use ide_db::{

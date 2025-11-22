@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39429 bytes
+Chloro size:   39414 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,8 @@ Rustfmt size:  42083 bytes
 -    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
 -    Symbol,
 +    db::ExpandDatabase,
-+
 +    sym,
-+
 +    symbols::FileSymbol,
-+
 +    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId, InFile,
 +    LocalSource, ModuleSource, Semantics, Symbol,
  };
@@ -30,11 +27,6 @@ Rustfmt size:  42083 bytes
      documentation::{Documentation, HasDocs},
      famous_defs::FamousDefs,
      ra_fixture::UpmapFromRaFixture,
--    FileId, FileRange, RootDatabase, SymbolKind,
-+    FileId,
-+    FileRange,
-+    RootDatabase,
-+    SymbolKind,
  };
  use stdx::never;
  use syntax::{

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12516 bytes
+Chloro size:   12476 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -14,11 +14,7 @@ Rustfmt size:  12418 bytes
 -    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
      inherent::{IntoKind, Span as _},
      solve::{Certainty, NoSolution},
-+    Interner,
-+    TypeSuperVisitable,
-+    TypeVisitable,
-+    TypeVisitableExt,
-+    TypeVisitor,
++    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
  };
  
  use crate::next_solver::{
@@ -28,13 +24,7 @@ Rustfmt size:  12418 bytes
          traits::{PredicateObligation, PredicateObligations},
      },
      inspect::ProofTreeVisitor,
-+    DbInterner,
-+    SolverContext,
-+    SolverDefId,
-+    Span,
-+    Ty,
-+    TyKind,
-+    TypingMode,
++    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
  };
  
 -type PendingObligations<'db> =

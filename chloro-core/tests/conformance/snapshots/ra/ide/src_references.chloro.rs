@@ -23,9 +23,7 @@ use ide_db::{
     helpers::pick_best_token,
     ra_fixture::UpmapFromRaFixture,
     search::{ReferenceCategory, SearchScope, UsageSearchResult},
-    FileId,
-    MiniCore,
-    RootDatabase,
+    FileId, MiniCore, RootDatabase,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;
@@ -34,13 +32,9 @@ use span::Edition;
 use syntax::AstToken;
 use syntax::{
     ast::{self, HasName},
-    match_ast,
-    AstNode,
+    match_ast, AstNode,
     SyntaxKind::*,
-    SyntaxNode,
-    TextRange,
-    TextSize,
-    T,
+    SyntaxNode, TextRange, TextSize, T,
 };
 
 use crate::{

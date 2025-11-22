@@ -10,11 +10,7 @@ use ide_db::{
 use syntax::{
     algo,
     ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
-    AstNode,
-    AstPtr,
-    Direction,
-    SyntaxKind,
-    TextSize,
+    AstNode, AstPtr, Direction, SyntaxKind, TextSize,
 };
 use syntax::{
     SyntaxNode,

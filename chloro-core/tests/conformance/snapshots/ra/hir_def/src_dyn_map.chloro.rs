@@ -40,26 +40,9 @@ pub mod keys {
     use syntax::{AstNode, AstPtr, ast};
     use crate::{
         dyn_map::{DynMap, Policy},
-        BlockId,
-        ConstId,
-        EnumId,
-        EnumVariantId,
-        ExternBlockId,
-        ExternCrateId,
-        FieldId,
-        FunctionId,
-        ImplId,
-        LifetimeParamId,
-        Macro2Id,
-        MacroRulesId,
-        ProcMacroId,
-        StaticId,
-        StructId,
-        TraitId,
-        TypeAliasId,
-        TypeOrConstParamId,
-        UnionId,
-        UseId,
+        BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
+        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, ProcMacroId, StaticId, StructId, TraitId,
+        TypeAliasId, TypeOrConstParamId, UnionId, UseId,
     };
     pub type Key<K, V> = crate::dyn_map::Key<AstPtr<K>, V, AstPtrPolicy<K, V>>;
     pub const BLOCK: Key<ast::BlockExpr, BlockId> = Key::new();

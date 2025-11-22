@@ -7,9 +7,7 @@ use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
 
 use crate::{
     goto_definition::goto_definition,
-
     navigation_target::TryToNav,
-
     FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo,
 };
 

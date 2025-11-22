@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13679 bytes
-Chloro size:   13821 bytes
+Chloro size:   13817 bytes
 Rustfmt size:  13851 bytes
 
 ✗ Outputs DIFFER
@@ -19,13 +19,9 @@ Rustfmt size:  13851 bytes
  pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
 +use crate::{
 +    db::DefDatabase,
-+
 +    nameres::DefMap,
-+
 +    resolver::HasResolver,
-+
 +    src::HasSource,
-+
 +    AssocItemId, HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId,
 +    VariantId,
 +};

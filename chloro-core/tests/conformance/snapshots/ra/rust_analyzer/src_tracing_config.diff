@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4764 bytes
-Chloro size:   4758 bytes
+Chloro size:   4754 bytes
 Rustfmt size:  4820 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,8 @@ Rustfmt size:  4820 bytes
 +    filter::{Targets, filter_fn},
 +    fmt::{MakeWriter, time},
      layer::SubscriberExt,
--    Layer, Registry,
-+    Layer,
-+    Registry,
+     Layer, Registry,
  };
- use tracing_tree::HierarchicalLayer;
- 
      /// env RA_PROFILE=*@3>10        // dump everything, up to depth 3, if it takes more than 10
      /// ```
      pub profile_filter: Option<String>,

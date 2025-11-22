@@ -2,30 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14736 bytes
+Chloro size:   14696 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use rustc_type_ir::{
-     inherent::{IntoKind, ParamEnv as _, PlaceholderLike, SliceLike},
-     relate::Relate,
--    BoundVar, BoundVarIndexKind, ConstVid, DebruijnIndex, FlagComputation, Flags, InferConst,
--    TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-+    BoundVar,
-+    BoundVarIndexKind,
-+    ConstVid,
-+    DebruijnIndex,
-+    FlagComputation,
-+    Flags,
-+    InferConst,
-+    TypeFoldable,
-+    TypeSuperFoldable,
-+    TypeSuperVisitable,
-+    TypeVisitable,
-+    TypeVisitableExt,
-     WithCachedTypeInfo,
  };
  
  use crate::{

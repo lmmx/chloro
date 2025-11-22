@@ -30,24 +30,9 @@ use rustc_type_ir::{
     inherent::{
         Const as _, GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _,
     },
-    ClosureKind,
-    ConstVid,
-    FloatVarValue,
-    FloatVid,
-    GenericArgKind,
-    InferConst,
-    InferTy,
-    IntVarValue,
-    IntVid,
-    OutlivesPredicate,
-    RegionVid,
-    TermKind,
-    TyVid,
-    TypeFoldable,
-    TypeFolder,
-    TypeSuperFoldable,
-    TypeVisitableExt,
-    UniverseIndex,
+    ClosureKind, ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy,
+    IntVarValue, IntVid, OutlivesPredicate, RegionVid, TermKind, TyVid, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
 };
 use snapshot::undo_log::InferCtxtUndoLogs;
 use tracing::{debug, instrument};
@@ -60,12 +45,7 @@ use crate::next_solver::{
     fold::BoundVarReplacerDelegate,
     infer::{select::EvaluationResult, traits::PredicateObligation},
     obligation_ctxt::ObligationCtxt,
-    BoundConst,
-    BoundRegion,
-    BoundTy,
-    BoundVarKind,
-    Goal,
-    SolverContext,
+    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
 };
 use super::{
     AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,

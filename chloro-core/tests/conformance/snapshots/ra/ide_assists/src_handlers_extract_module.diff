@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53316 bytes
+Chloro size:   53292 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,7 @@ Rustfmt size:  53759 bytes
      assists::AssistId,
      defs::{Definition, NameClass, NameRefClass},
      search::{FileReference, SearchScope},
-+    FileId,
-+    FxHashMap,
-+    FxHashSet,
++    FileId, FxHashMap, FxHashSet,
  };
  use itertools::Itertools;
  use smallvec::SmallVec;
@@ -33,13 +31,9 @@ Rustfmt size:  53759 bytes
          make,
      },
 -    match_ast, ted,
-+    match_ast,
-+    ted,
-+    AstNode,
++    match_ast, ted, AstNode,
 +    SyntaxKind::{self, WHITESPACE},
-+    SyntaxNode,
-+    TextRange,
-+    TextSize,
++    SyntaxNode, TextRange, TextSize,
  };
  
  use crate::{AssistContext, Assists};

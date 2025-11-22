@@ -12,12 +12,7 @@ use hir_def::{
     item_tree::FieldsShape,
     lang_item::LangItem,
     resolver::ValueNs,
-    DefWithBodyId,
-    FieldId,
-    HasModule,
-    TupleFieldId,
-    TupleId,
-    VariantId,
+    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -34,9 +29,7 @@ use crate::{
     mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
     next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
     traits::FnTrait,
-    Adjust,
-    Adjustment,
-    BindingMode,
+    Adjust, Adjustment, BindingMode,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

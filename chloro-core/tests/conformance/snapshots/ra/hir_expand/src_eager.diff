@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10482 bytes
-Chloro size:   10514 bytes
+Chloro size:   10474 bytes
 Rustfmt size:  10879 bytes
 
 ✗ Outputs DIFFER
@@ -19,23 +19,7 @@ Rustfmt size:  10879 bytes
  use syntax_bridge::DocCommentDesugarMode;
  use triomphe::Arc;
  
-     ast::{self, AstNode},
-     db::ExpandDatabase,
-     mod_path::ModPath,
--    AstId, EagerCallInfo, ExpandError, ExpandResult, ExpandTo, ExpansionSpanMap, InFile,
--    MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
-+    AstId,
-+    EagerCallInfo,
-+    ExpandError,
-+    ExpandResult,
-+    ExpandTo,
-+    ExpansionSpanMap,
-+    InFile,
-+    MacroCallId,
-+    MacroCallKind,
-+    MacroCallLoc,
-+    MacroDefId,
-+    MacroDefKind,
+     MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
  };
  
 -pub type EagerCallBackFn<'a> = &'a mut dyn FnMut(

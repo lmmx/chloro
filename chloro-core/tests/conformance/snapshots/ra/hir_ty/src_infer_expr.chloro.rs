@@ -12,24 +12,14 @@ use hir_def::{
     },
     lang_item::{LangItem, LangItemTarget},
     resolver::ValueNs,
-    BlockId,
-    FieldId,
-    GenericDefId,
-    GenericParamId,
-    ItemContainerId,
-    Lookup,
-    TupleFieldId,
-    TupleId,
+    BlockId, FieldId, GenericDefId, GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
     inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _},
-    CoroutineArgs,
-    CoroutineArgsParts,
-    InferTy,
-    Interner,
+    CoroutineArgs, CoroutineArgsParts, InferTy, Interner,
 };
 use syntax::ast::RangeOp;
 use tracing::debug;
@@ -61,19 +51,11 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
     traits::FnTrait,
-    Adjust,
-    Adjustment,
-    AutoBorrow,
-    CallableDefId,
-    DeclContext,
-    DeclOrigin,
-    IncorrectGenericsLenKind,
-    Rawness,
-    TraitEnvironment,
+    Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
+    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
 };
 use super::{
     cast::CastCheck,
-
     find_breakable, BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic,
     TypeMismatch,
 };

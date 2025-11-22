@@ -6,9 +6,7 @@ use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility}
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     inherent::{AdtDef, IntoKind},
-    TypeSuperVisitable,
-    TypeVisitable,
-    TypeVisitor,
+    TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use triomphe::Arc;
 

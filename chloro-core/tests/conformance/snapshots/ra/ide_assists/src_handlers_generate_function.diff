@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74532 bytes
+Chloro size:   74488 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -20,11 +20,7 @@ Rustfmt size:  75023 bytes
      helpers::is_editable_crate,
      path_transform::PathTransform,
      source_change::SourceChangeBuilder,
-+    FileId,
-+    FxHashMap,
-+    FxHashSet,
-+    RootDatabase,
-+    SnippetCap,
++    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
  };
  use itertools::Itertools;
  use stdx::to_lower_snake_case;
@@ -34,20 +30,14 @@ Rustfmt size:  75023 bytes
          self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
          HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
      },
-     ted,
-+    Edition,
-+    SyntaxKind,
-+    SyntaxNode,
-+    TextRange,
-+    T,
+-    ted,
++    ted, Edition, SyntaxKind, SyntaxNode, TextRange, T,
  };
  
  use crate::{
 -    AssistContext, AssistId, Assists,
      utils::{convert_reference_type, find_struct_impl},
-+    AssistContext,
-+    AssistId,
-+    Assists,
++    AssistContext, AssistId, Assists,
  };
  
 -// Assist: generate_function

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19839 bytes
-Chloro size:   19944 bytes
+Chloro size:   19904 bytes
 Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
@@ -28,23 +28,7 @@ Rustfmt size:  20426 bytes
 +        traits::{Obligation, ObligationCause},
      },
      obligation_ctxt::ObligationCtxt,
--    DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
--    QueryResult, SolverContext, Span, Term,
-+    DbInterner,
-+    GenericArg,
-+    GenericArgs,
-+    Goal,
-+    NormalizesTo,
-+    ParamEnv,
-+    Predicate,
-+    PredicateKind,
-+    QueryResult,
-+    SolverContext,
-+    Span,
-+    Term,
- };
- 
- pub(crate) struct InspectConfig {
+     DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
  }
  
  impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {

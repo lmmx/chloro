@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62523 bytes
-Chloro size:   62599 bytes
+Chloro size:   62559 bytes
 Rustfmt size:  62523 bytes
 
 ✗ Outputs DIFFER
@@ -14,8 +14,7 @@ Rustfmt size:  62523 bytes
 -    FilePosition, FxIndexMap,
      active_parameter::{callable_for_arg_list, generic_def_for_node},
      documentation::{Documentation, HasDocs},
-+    FilePosition,
-+    FxIndexMap,
++    FilePosition, FxIndexMap,
  };
  use itertools::Itertools;
  use span::Edition;
@@ -25,17 +24,9 @@ Rustfmt size:  62523 bytes
 -    TextSize, ToSmolStr, algo,
 +    algo,
      ast::{self, AstChildren},
-     match_ast,
-+    AstNode,
-+    Direction,
-+    NodeOrToken,
-+    SyntaxElementChildren,
-+    SyntaxNode,
-+    SyntaxToken,
-+    TextRange,
-+    TextSize,
-+    ToSmolStr,
-+    T,
+-    match_ast,
++    match_ast, AstNode, Direction, NodeOrToken, SyntaxElementChildren, SyntaxNode, SyntaxToken,
++    TextRange, TextSize, ToSmolStr, T,
  };
  
  use crate::RootDatabase;

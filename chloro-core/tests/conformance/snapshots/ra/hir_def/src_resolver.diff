@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   55379 bytes
+Chloro size:   55263 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -27,40 +27,11 @@ Rustfmt size:  54481 bytes
      src::HasSource,
      type_ref::LifetimeRef,
      visibility::{RawVisibility, Visibility},
-+    AdtId,
-+    AstIdLoc,
-+    ConstId,
-+    ConstParamId,
-+    CrateRootModuleId,
-+    DefWithBodyId,
-+    EnumId,
-+    EnumVariantId,
-+    ExternBlockId,
-+    ExternCrateId,
-+    FunctionId,
-+    FxIndexMap,
-+    GenericDefId,
-+    GenericParamId,
-+    HasModule,
-+    ImplId,
-+    ItemContainerId,
-+    LifetimeParamId,
-+    LocalModuleId,
-+    Lookup,
-+    Macro2Id,
-+    MacroId,
-+    MacroRulesId,
-+    ModuleDefId,
-+    ModuleId,
-+    ProcMacroId,
-+    StaticId,
-+    StructId,
-+    TraitId,
-+    TypeAliasId,
-+    TypeOrConstParamId,
-+    TypeParamId,
-+    UseId,
-+    VariantId,
++    AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId,
++    ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId, GenericParamId, HasModule,
++    ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup, Macro2Id, MacroId,
++    MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId, TraitId, TypeAliasId,
++    TypeOrConstParamId, TypeParamId, UseId, VariantId,
  };
  
  #[derive(Debug, Clone)]

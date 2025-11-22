@@ -14,13 +14,7 @@ use span::FileId;
 use stdx::never;
 use syntax::{
     syntax_editor::{SyntaxAnnotation, SyntaxEditor},
-    AstNode,
-    SyntaxElement,
-    SyntaxNode,
-    SyntaxNodePtr,
-    SyntaxToken,
-    TextRange,
-    TextSize,
+    AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
 };
 
 use crate::imports::insert_use::{ImportScope, ImportScopeKind};

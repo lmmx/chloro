@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16406 bytes
+Chloro size:   16394 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,7 @@ Rustfmt size:  16583 bytes
  use rustc_type_ir::{
 -    Flags, InferTy, TypeFlags, UintTy,
      inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},
-+    Flags,
-+    InferTy,
-+    TypeFlags,
-+    UintTy,
++    Flags, InferTy, TypeFlags, UintTy,
  };
  use stdx::never;
  

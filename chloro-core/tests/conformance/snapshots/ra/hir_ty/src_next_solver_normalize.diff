@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9890 bytes
+Chloro size:   9822 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -13,16 +13,8 @@ Rustfmt size:  9886 bytes
      inherent::{IntoKind, Term as _},
 -    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, TermKind, TypeFoldable,
 -    TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
-+    AliasRelationDirection,
-+    FallibleTypeFolder,
-+    Flags,
-+    Interner,
-+    TermKind,
-+    TypeFoldable,
-+    TypeFolder,
-+    TypeSuperFoldable,
-+    TypeVisitableExt,
-+    UniverseIndex,
++    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, TermKind, TypeFoldable, TypeFolder,
++    TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
  };
  
  use crate::next_solver::{
@@ -34,19 +26,7 @@ Rustfmt size:  9886 bytes
 -        InferCtxt,
      },
      util::PlaceholderReplacer,
--    Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
-+    Binder,
-+    Const,
-+    ConstKind,
-+    DbInterner,
-+    Goal,
-+    ParamEnv,
-+    Predicate,
-+    PredicateKind,
-+    Term,
-+    Ty,
-     TyKind,
- };
+     Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
  
  /// Deeply normalize all aliases in `value`. This does not handle inference and expects
  /// its input to be already fully resolved.

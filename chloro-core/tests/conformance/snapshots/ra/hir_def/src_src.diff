@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6868 bytes
+Chloro size:   6866 bytes
 Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
@@ -20,9 +20,7 @@ Rustfmt size:  6876 bytes
 -    attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
 -    LocalTypeOrConstParamId, Lookup, UseId, VariantId,
 +    attr::Attrs,
-+
 +    db::DefDatabase,
-+
 +    AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
 +    UseId, VariantId,
  };

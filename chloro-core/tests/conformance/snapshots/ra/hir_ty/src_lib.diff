@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22284 bytes
+Chloro size:   22230 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -55,25 +55,13 @@ Rustfmt size:  22967 bytes
 +pub use infer::{
 +    cast::CastError,
 +    closure::analysis::{CaptureKind, CapturedItem},
-+    could_coerce,
-+    could_unify,
-+    could_unify_deeply,
-+    Adjust,
-+    Adjustment,
-+    AutoBorrow,
-+    BindingMode,
-+    InferenceDiagnostic,
-+    InferenceResult,
-+    InferenceTyDiagnosticSource,
-+    OverloadedDeref,
-+    PointerCast,
++    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
++    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
 +};
 +use intern::{Symbol, sym};
 +pub use lower::{
 +    associated_type_shorthand_candidates,
-+
 +    diagnostics::*,
-+
 +    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
 +};
 +pub use method_resolution::check_orphan_rules;
@@ -82,11 +70,7 @@ Rustfmt size:  22967 bytes
  use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
  use rustc_type_ir::{
      inherent::{IntoKind, SliceLike, Ty as _},
--    BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
-+    BoundVarIndexKind,
-+    TypeSuperVisitable,
-+    TypeVisitableExt,
-+    UpcastFrom,
+     BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
  };
 -use syntax::ast::{make, ConstArg};
 +use syntax::ast::{ConstArg, make};

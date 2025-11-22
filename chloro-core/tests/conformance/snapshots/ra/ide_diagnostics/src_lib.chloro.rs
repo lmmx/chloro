@@ -31,9 +31,7 @@ use std::{iter, sync::LazyLock};
 use either::Either;
 use hir::{
     db::ExpandDatabase,
-
     diagnostics::AnyDiagnostic,
-
     Crate, DisplayTarget, InFile, Semantics,
 };
 use ide_db::{
@@ -44,27 +42,12 @@ use ide_db::{
     label::Label,
     source_change::SourceChange,
     syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
-    EditionedFileId,
-    FileId,
-    FileRange,
-    FxHashMap,
-    FxHashSet,
-    RootDatabase,
-    Severity,
-    SnippetCap,
+    EditionedFileId, FileId, FileRange, FxHashMap, FxHashSet, RootDatabase, Severity, SnippetCap,
 };
 use itertools::Itertools;
 use syntax::{
     ast::{self, AstNode, HasAttrs},
-    AstPtr,
-    Edition,
-    NodeOrToken,
-    SmolStr,
-    SyntaxKind,
-    SyntaxNode,
-    SyntaxNodePtr,
-    TextRange,
-    T,
+    AstPtr, Edition, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode, SyntaxNodePtr, TextRange, T,
 };
 
 mod handlers {

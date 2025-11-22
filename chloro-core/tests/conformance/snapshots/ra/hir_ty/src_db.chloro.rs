@@ -4,11 +4,8 @@
 use base_db::{Crate, target::TargetLoadError};
 use hir_def::{
     db::DefDatabase,
-
     hir::ExprId,
-
     layout::TargetDataLayout,
-
     AdtId, BlockId, CallableDefId, ConstParamId, DefWithBodyId, EnumVariantId, FunctionId,
     GeneralConstId, GenericDefId, ImplId, LifetimeParamId, LocalFieldId, StaticId, TraitId,
     TypeAliasId, TypeOrConstParamId, VariantId,
@@ -27,11 +24,7 @@ use crate::{
     method_resolution::{InherentImpls, TraitImpls, TyFingerprint},
     mir::{BorrowckResult, MirBody, MirLowerError},
     next_solver::{Const, EarlyBinder, GenericArgs, PolyFnSig, TraitRef, Ty, VariancesOf},
-    ImplTraitId,
-    InferenceResult,
-    TraitEnvironment,
-    TyDefId,
-    ValueTyDefId,
+    ImplTraitId, InferenceResult, TraitEnvironment, TyDefId, ValueTyDefId,
 };
 
 #[query_group::query_group]

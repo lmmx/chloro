@@ -14,9 +14,7 @@ use hir_expand::{
     mod_path::tool_path,
     name::{AsName, Name},
     span_map::SpanMapRef,
-    HirFileId,
-    InFile,
-    MacroDefId,
+    HirFileId, InFile, MacroDefId,
 };
 use intern::{Symbol, sym};
 use rustc_hash::FxHashMap;
@@ -27,10 +25,7 @@ use syntax::{
         HasGenericParams, HasLoopBody, HasName, HasTypeBounds, IsString, RangeItem,
         SlicePatComponents,
     },
-    AstNode,
-    AstPtr,
-    AstToken as _,
-    SyntaxNodePtr,
+    AstNode, AstPtr, AstToken as _, SyntaxNodePtr,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
@@ -66,19 +61,8 @@ use crate::{
         ArrayType, ConstRef, FnType, LifetimeRef, LifetimeRefId, Mutability, PathId, Rawness,
         RefType, TraitBoundModifier, TraitRef, TypeBound, TypeRef, TypeRefId, UseArgRef,
     },
-    AdtId,
-    BlockId,
-    BlockLoc,
-    DefWithBodyId,
-    FunctionId,
-    GenericDefId,
-    ImplId,
-    MacroId,
-    ModuleDefId,
-    ModuleId,
-    TraitId,
-    TypeAliasId,
-    UnresolvedMacro,
+    AdtId, BlockId, BlockLoc, DefWithBodyId, FunctionId, GenericDefId, ImplId, MacroId, ModuleDefId,
+    ModuleId, TraitId, TypeAliasId, UnresolvedMacro,
 };
 pub use self::path::hir_segment_to_ast_segment;
 

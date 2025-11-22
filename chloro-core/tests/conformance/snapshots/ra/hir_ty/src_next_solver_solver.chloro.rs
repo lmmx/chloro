@@ -6,12 +6,7 @@ use rustc_type_ir::{
     inherent::{IntoKind, SliceLike, Term as _, Ty as _},
     lang_items::SolverTraitLangItem,
     solve::{Certainty, NoSolution},
-    AliasTyKind,
-    GenericArgKind,
-    InferCtxtLike,
-    Interner,
-    PredicatePolarity,
-    TypeFlags,
+    AliasTyKind, GenericArgKind, InferCtxtLike, Interner, PredicatePolarity, TypeFlags,
     TypeVisitableExt,
 };
 use tracing::debug;
@@ -26,11 +21,7 @@ use crate::{
 };
 use super::{
     infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt},
-    DbInterner,
-    ErrorGuaranteed,
-    GenericArg,
-    SolverDefId,
-    Span,
+    DbInterner, ErrorGuaranteed, GenericArg, SolverDefId, Span,
 };
 
 pub type Goal<'db, P> = rustc_type_ir::solve::Goal<DbInterner<'db>, P>;

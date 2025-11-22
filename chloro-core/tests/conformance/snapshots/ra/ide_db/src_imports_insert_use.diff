@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20497 bytes
+Chloro size:   20481 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -24,11 +24,8 @@ Rustfmt size:  20506 bytes
          self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
          edit_in_place::Removable, make,
      },
-     ted,
-+    Direction,
-+    NodeOrToken,
-+    SyntaxKind,
-+    SyntaxNode,
+-    ted,
++    ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
  };
  
  use crate::{

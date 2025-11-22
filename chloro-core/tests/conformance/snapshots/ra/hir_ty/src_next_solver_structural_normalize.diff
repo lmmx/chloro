@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1984 bytes
+Chloro size:   1972 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -13,15 +13,6 @@ Rustfmt size:  2003 bytes
  
  use crate::next_solver::{
      fulfill::{FulfillmentCtxt, NextSolverError},
-     infer::{at::At, traits::Obligation},
--    Const, PredicateKind, Term, Ty,
-+    Const,
-+    PredicateKind,
-+    Term,
-+    Ty,
- };
- 
- impl<'db> At<'_, 'db> {
          ty: Ty<'db>,
          fulfill_cx: &mut FulfillmentCtxt<'db>,
      ) -> Result<Ty<'db>, Vec<NextSolverError<'db>>> {

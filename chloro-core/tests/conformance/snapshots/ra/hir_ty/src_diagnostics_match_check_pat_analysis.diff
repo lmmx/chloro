@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21192 bytes
+Chloro size:   21184 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,8 @@ Rustfmt size:  22047 bytes
  use rustc_pattern_analysis::{
      constructor::{Constructor, ConstructorSet, VariantVisibility},
 -    usefulness::{compute_match_usefulness, PlaceValidity, UsefulnessReport},
--    IndexVec, PatCx, PrivateUninhabitedField,
 +    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness},
-+    IndexVec,
-+    PatCx,
-+    PrivateUninhabitedField,
+     IndexVec, PatCx, PrivateUninhabitedField,
  };
  use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 -use smallvec::{smallvec, SmallVec};

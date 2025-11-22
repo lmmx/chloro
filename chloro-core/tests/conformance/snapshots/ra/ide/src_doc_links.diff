@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30821 bytes
+Chloro size:   30792 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,6 @@ Rustfmt size:  31554 bytes
  use hir::{
 -    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
 +    db::HirDatabase,
-+
 +    sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs,
  };
  use ide_db::{
@@ -44,23 +43,17 @@ Rustfmt size:  31554 bytes
 -    SyntaxKind::*,
 -    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
      ast::{self, IsString},
-     match_ast,
-+    AstNode,
-+    AstToken,
+-    match_ast,
++    match_ast, AstNode, AstToken,
 +    SyntaxKind::*,
-+    SyntaxNode,
-+    SyntaxToken,
-+    TextRange,
-+    TextSize,
-+    T,
++    SyntaxNode, SyntaxToken, TextRange, TextSize, T,
  };
 +use url::Url;
  
  use crate::{
 -    FilePosition, Semantics,
      doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
-+    FilePosition,
-+    Semantics,
++    FilePosition, Semantics,
  };
  
  /// Web and local links to an item's documentation.

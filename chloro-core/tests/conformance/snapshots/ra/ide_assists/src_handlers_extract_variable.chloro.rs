@@ -12,10 +12,7 @@ use syntax::{
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::Position,
-    NodeOrToken,
-    SyntaxKind,
-    SyntaxNode,
-    T,
+    NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};

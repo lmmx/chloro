@@ -9,8 +9,7 @@ use tracing_subscriber::{
     filter::{Targets, filter_fn},
     fmt::{MakeWriter, time},
     layer::SubscriberExt,
-    Layer,
-    Registry,
+    Layer, Registry,
 };
 use tracing_tree::HierarchicalLayer;
 

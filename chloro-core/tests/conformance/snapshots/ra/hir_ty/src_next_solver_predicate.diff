@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32662 bytes
+Chloro size:   32614 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -21,21 +21,9 @@ Rustfmt size:  32663 bytes
 -    CollectAndApply, DebruijnIndex, EarlyBinder, FlagComputation, Flags, PredicatePolarity,
 -    TypeFlags, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, Upcast,
 -    UpcastFrom, WithCachedTypeInfo,
-+    self as ty,
-+    CollectAndApply,
-+    DebruijnIndex,
-+    EarlyBinder,
-+    FlagComputation,
-+    Flags,
-+    PredicatePolarity,
-+    TypeFlags,
-+    TypeFoldable,
-+    TypeSuperFoldable,
-+    TypeSuperVisitable,
-+    TypeVisitable,
-+    Upcast,
-+    UpcastFrom,
-+    WithCachedTypeInfo,
++    self as ty, CollectAndApply, DebruijnIndex, EarlyBinder, FlagComputation, Flags,
++    PredicatePolarity, TypeFlags, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable,
++    TypeVisitable, Upcast, UpcastFrom, WithCachedTypeInfo,
  };
  use smallvec::SmallVec;
  

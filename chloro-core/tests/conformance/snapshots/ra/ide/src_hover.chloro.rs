@@ -7,7 +7,6 @@ use std::{iter, ops::Not};
 use either::Either;
 use hir::{
     db::DefDatabase,
-
     DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
 };
 use ide_db::{
@@ -15,11 +14,7 @@ use ide_db::{
     famous_defs::FamousDefs,
     helpers::pick_best_token,
     ra_fixture::UpmapFromRaFixture,
-    FileRange,
-    FxIndexSet,
-    MiniCore,
-    Ranker,
-    RootDatabase,
+    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
 };
 use itertools::{Itertools, multizip};
 use macros::UpmapFromRaFixture;
@@ -36,13 +31,7 @@ use crate::{
     markup::Markup,
     navigation_target::UpmappingResult,
     runnables::{runnable_fn, runnable_mod},
-    Analysis,
-    FileId,
-    FilePosition,
-    NavigationTarget,
-    RangeInfo,
-    Runnable,
-    TryToNav,
+    Analysis, FileId, FilePosition, NavigationTarget, RangeInfo, Runnable, TryToNav,
 };
 
 #[derive(Clone, Debug)]

@@ -16,8 +16,7 @@ use ide_db::{
         CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
     },
     syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
-    FxHashMap,
-    SymbolKind,
+    FxHashMap, SymbolKind,
 };
 use itertools::Itertools;
 use syntax::{

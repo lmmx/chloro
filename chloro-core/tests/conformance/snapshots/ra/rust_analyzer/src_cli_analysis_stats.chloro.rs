@@ -2,8 +2,7 @@
 //! errors.
 
 use std::{
-    env,
-    fmt,
+    env, fmt,
     ops::AddAssign,
     panic::{AssertUnwindSafe, catch_unwind},
     time::{SystemTime, UNIX_EPOCH},
@@ -13,15 +12,7 @@ use cfg::{CfgAtom, CfgDiff};
 use hir::{
     db::{DefDatabase, ExpandDatabase, HirDatabase},
     next_solver::{DbInterner, GenericArgs},
-    Adt,
-    AssocItem,
-    Crate,
-    DefWithBody,
-    FindPathConfig,
-    HasCrate,
-    HasSource,
-    HirDisplay,
-    ModuleDef,
+    Adt, AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef,
     Name,
 };
 use hir_def::{
@@ -35,10 +26,7 @@ use ide::{
 };
 use ide_db::{
     base_db::{SourceDatabase, salsa::Database},
-    EditionedFileId,
-    LineIndexDatabase,
-    MiniCore,
-    SnippetCap,
+    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
 };
 use itertools::Itertools;
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
@@ -53,11 +41,9 @@ use vfs::{AbsPathBuf, Vfs, VfsPath};
 
 use crate::cli::{
     flags::{self, OutputFormat},
-    full_name_of_item,
-    print_memory_usage,
+    full_name_of_item, print_memory_usage,
     progress_report::ProgressReport,
-    report_metric,
-    Verbosity,
+    report_metric, Verbosity,
 };
 
 impl flags::AnalysisStats {

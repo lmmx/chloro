@@ -2,16 +2,13 @@ use either::Either;
 use itertools::Itertools;
 use syntax::{
     ast::{self, CommentPlacement, Whitespace, edit::IndentLevel},
-    AstToken,
-    TextRange,
+    AstToken, TextRange,
 };
 
 use crate::{
     handlers::convert_comment_block::{line_comment_text, relevant_line_comments},
     utils::required_hashes,
-    AssistContext,
-    AssistId,
-    Assists,
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn desugar_doc_comment(

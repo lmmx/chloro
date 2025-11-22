@@ -20,9 +20,7 @@ use crate::{
     },
     lower::lower_mutability,
     next_solver::{GenericArgs, Ty, TyKind},
-    DeclContext,
-    DeclOrigin,
-    InferenceDiagnostic,
+    DeclContext, DeclOrigin, InferenceDiagnostic,
 };
 
 impl<'db> InferenceContext<'_, 'db> {

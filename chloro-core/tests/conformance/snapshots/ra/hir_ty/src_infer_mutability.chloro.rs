@@ -19,10 +19,7 @@ use crate::{
     infer::{Expectation, InferenceContext, expr::ExprIsRead},
     lower::lower_mutability,
     next_solver::TyKind,
-    Adjust,
-    Adjustment,
-    AutoBorrow,
-    OverloadedDeref,
+    Adjust, Adjustment, AutoBorrow, OverloadedDeref,
 };
 
 impl<'db> InferenceContext<'_, 'db> {

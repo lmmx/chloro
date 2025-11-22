@@ -7,11 +7,7 @@ use hir::{Crate, ItemInNs, ModuleDef, Name, Semantics};
 use span::{Edition, FileId};
 use syntax::{
     ast::{self, make},
-    AstToken,
-    SyntaxKind,
-    SyntaxToken,
-    ToSmolStr,
-    TokenAtOffset,
+    AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
 };
 
 use crate::{

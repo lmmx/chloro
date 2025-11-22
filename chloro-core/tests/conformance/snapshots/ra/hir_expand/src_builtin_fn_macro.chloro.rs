@@ -24,11 +24,7 @@ use crate::{
     name,
     span_map::SpanMap,
     tt::{self, DelimSpan, TtElement, TtIter},
-    EditionedFileId,
-    ExpandError,
-    ExpandResult,
-    Lookup as _,
-    MacroCallId,
+    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
 };
 
 macro_rules! register_builtin {

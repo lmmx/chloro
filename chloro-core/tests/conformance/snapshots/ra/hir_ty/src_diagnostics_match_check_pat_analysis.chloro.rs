@@ -7,9 +7,7 @@ use intern::sym;
 use rustc_pattern_analysis::{
     constructor::{Constructor, ConstructorSet, VariantVisibility},
     usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness},
-    IndexVec,
-    PatCx,
-    PrivateUninhabitedField,
+    IndexVec, PatCx, PrivateUninhabitedField,
 };
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 use smallvec::{SmallVec, smallvec};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   30930 bytes
+Chloro size:   30914 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -18,11 +18,7 @@ Rustfmt size:  32290 bytes
      name,
      span_map::SpanMap,
      tt::{self, DelimSpan, TtElement, TtIter},
-+    EditionedFileId,
-+    ExpandError,
-+    ExpandResult,
-+    Lookup as _,
-+    MacroCallId,
++    EditionedFileId, ExpandError, ExpandResult, Lookup as _, MacroCallId,
  };
  
  macro_rules! register_builtin {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52999 bytes
+Chloro size:   52971 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
@@ -21,12 +21,7 @@ Rustfmt size:  52289 bytes
      item_tree::FieldsShape,
      lang_item::LangItem,
      resolver::ValueNs,
-+    DefWithBodyId,
-+    FieldId,
-+    HasModule,
-+    TupleFieldId,
-+    TupleId,
-+    VariantId,
++    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
  };
  use hir_expand::name::Name;
  use intern::sym;
@@ -39,9 +34,7 @@ Rustfmt size:  52289 bytes
      mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
      next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
      traits::FnTrait,
-+    Adjust,
-+    Adjustment,
-+    BindingMode,
++    Adjust, Adjustment, BindingMode,
  };
  
 -// The below functions handle capture and closure kind (Fn, FnMut, ..)

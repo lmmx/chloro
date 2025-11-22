@@ -9,11 +9,8 @@ use hir_expand::AstId;
 use hir_expand::span_map::SpanMapRef;
 use hir_expand::{
     eager::EagerCallBackFn,
-
     mod_path::ModPath,
-
     span_map::SpanMap,
-
     ExpandError, ExpandErrorKind, ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
 };
 use span::{AstIdMap, Edition, SyntaxContext};

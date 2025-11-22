@@ -4,8 +4,7 @@ use ide_db::{
     assists::{Assist, AssistId},
     label::Label,
     source_change::SourceChange,
-    FileRange,
-    RootDatabase,
+    FileRange, RootDatabase,
 };
 use syntax::{AstNode, Edition, TextRange, ToSmolStr};
 

@@ -11,11 +11,7 @@ use rustc_type_ir::{
     inherent::{IntoKind, SliceLike, Span as _},
     lang_items::SolverTraitLangItem,
     solve::{Certainty, GoalSource, MaybeCause, NoSolution},
-    AliasRelationDirection,
-    AliasTermKind,
-    HostEffectPredicate,
-    Interner,
-    PredicatePolarity,
+    AliasRelationDirection, AliasTermKind, HostEffectPredicate, Interner, PredicatePolarity,
 };
 use tracing::{instrument, trace};
 
@@ -28,21 +24,8 @@ use crate::next_solver::{
     },
     inspect::{self, ProofTreeVisitor},
     normalize::deeply_normalize_for_diagnostics,
-    AliasTerm,
-    Binder,
-    ClauseKind,
-    Const,
-    ConstKind,
-    DbInterner,
-    PolyTraitPredicate,
-    PredicateKind,
-    SolverContext,
-    Span,
-    Term,
-    TraitPredicate,
-    Ty,
-    TyKind,
-    TypeError,
+    AliasTerm, Binder, ClauseKind, Const, ConstKind, DbInterner, PolyTraitPredicate, PredicateKind,
+    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
 };
 
 #[derive(Debug)]

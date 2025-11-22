@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 68687 bytes
-Chloro size:   68978 bytes
+Chloro size:   68954 bytes
 Rustfmt size:  68687 bytes
 
 ✗ Outputs DIFFER
@@ -23,8 +23,7 @@ Rustfmt size:  68687 bytes
 -    BoundVar, TypeAndMut,
      error::TypeError,
      inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-+    BoundVar,
-+    TypeAndMut,
++    BoundVar, TypeAndMut,
  };
  use smallvec::{SmallVec, smallvec};
  use tracing::{debug, instrument};
@@ -38,12 +37,7 @@ Rustfmt size:  68687 bytes
          obligation_ctxt::ObligationCtxt,
      },
      utils::TargetFeatureIsSafeInTarget,
-+    Adjust,
-+    Adjustment,
-+    AutoBorrow,
-+    PointerCast,
-+    TargetFeatures,
-+    TraitEnvironment,
++    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
  };
  
  struct Coerce<'a, 'b, 'db> {

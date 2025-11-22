@@ -5,7 +5,6 @@ use std::{env, mem, ops::Not};
 use either::Either;
 use hir::{
     db::ExpandDatabase,
-
     Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
     DynCompatibilityViolation, HasCrate, HasSource, HirDisplay, Layout, LayoutError,
     MethodViolationCode, Name, Semantics, Symbol, Trait, Type, TypeInfo, VariantDef,
@@ -31,11 +30,7 @@ use crate::{
     doc_links::{remove_links, rewrite_links},
     hover::{SubstTyLen, notable_traits, walk_and_push_ty},
     interpret::render_const_eval_error,
-    HoverAction,
-    HoverConfig,
-    HoverResult,
-    Markup,
-    MemoryLayoutHoverConfig,
+    HoverAction, HoverConfig, HoverResult, Markup, MemoryLayoutHoverConfig,
     MemoryLayoutHoverRenderKind,
 };
 

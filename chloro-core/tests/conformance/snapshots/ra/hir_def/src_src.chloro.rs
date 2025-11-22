@@ -7,9 +7,7 @@ use syntax::{AstNode, AstPtr, ast};
 
 use crate::{
     attr::Attrs,
-
     db::DefDatabase,
-
     AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
     UseId, VariantId,
 };

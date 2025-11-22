@@ -12,11 +12,7 @@ use hir_def::{
     expr_store::{Body, path::Path},
     hir::PatId,
     item_tree::FieldsShape,
-    AdtId,
-    EnumVariantId,
-    LocalFieldId,
-    Lookup,
-    VariantId,
+    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::inherent::{IntoKind, SliceLike};

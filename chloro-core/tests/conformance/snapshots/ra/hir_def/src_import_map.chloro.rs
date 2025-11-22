@@ -17,13 +17,7 @@ use crate::{
     item_scope::{ImportOrExternCrate, ItemInNs},
     nameres::{DefMap, assoc::TraitItems, crate_def_map},
     visibility::Visibility,
-    AssocItemId,
-    AttrDefId,
-    Complete,
-    FxIndexMap,
-    ModuleDefId,
-    ModuleId,
-    TraitId,
+    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
 };
 
 /// Item import details stored in the `ImportMap`.

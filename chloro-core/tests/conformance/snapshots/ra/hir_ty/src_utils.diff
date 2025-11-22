@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7506 bytes
-Chloro size:   7566 bytes
+Chloro size:   7550 bytes
 Rustfmt size:  7929 bytes
 
 ✗ Outputs DIFFER
@@ -20,15 +20,6 @@ Rustfmt size:  7929 bytes
  };
  use hir_def::{
      db::DefDatabase,
-     lang_item::LangItem,
-     resolver::{HasResolver, TypeNs},
-     type_ref::{TraitBoundModifier, TypeRef},
--    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
-+    EnumId,
-+    EnumVariantId,
-+    FunctionId,
-+    Lookup,
-+    TraitId,
  };
  use intern::sym;
  use rustc_abi::TargetDataLayout;

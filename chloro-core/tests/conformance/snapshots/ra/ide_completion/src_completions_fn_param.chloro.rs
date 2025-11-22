@@ -6,20 +6,12 @@ use itertools::Either;
 use syntax::{
     algo,
     ast::{self, HasModuleItem},
-    match_ast,
-    AstNode,
-    Direction,
-    SyntaxKind,
-    TextRange,
-    TextSize,
+    match_ast, AstNode, Direction, SyntaxKind, TextRange, TextSize,
 };
 
 use crate::{
     context::{ParamContext, ParamKind, PatternContext},
-    CompletionContext,
-    CompletionItem,
-    CompletionItemKind,
-    Completions,
+    CompletionContext, CompletionItem, CompletionItemKind, Completions,
 };
 
 /// Complete repeated parameters, both name and type. For example, if all

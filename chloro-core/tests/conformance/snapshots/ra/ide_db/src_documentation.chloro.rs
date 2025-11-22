@@ -3,13 +3,7 @@
 use either::Either;
 use hir::{
     db::{DefDatabase, HirDatabase},
-    resolve_doc_path_on,
-    sym,
-    AttrId,
-    AttrSourceMap,
-    AttrsWithOwner,
-    HasAttrs,
-    InFile,
+    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
 };
 use itertools::Itertools;
 use span::{TextRange, TextSize};

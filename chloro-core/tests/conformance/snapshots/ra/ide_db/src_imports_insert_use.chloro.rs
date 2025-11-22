@@ -13,11 +13,7 @@ use syntax::{
         self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
         edit_in_place::Removable, make,
     },
-    ted,
-    Direction,
-    NodeOrToken,
-    SyntaxKind,
-    SyntaxNode,
+    ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
 use crate::{

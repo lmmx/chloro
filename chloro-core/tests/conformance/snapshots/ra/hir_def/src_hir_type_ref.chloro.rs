@@ -15,8 +15,7 @@ use crate::{
         path::{GenericArg, Path},
     },
     hir::{ExprId, Literal},
-    LifetimeParamId,
-    TypeParamId,
+    LifetimeParamId, TypeParamId,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

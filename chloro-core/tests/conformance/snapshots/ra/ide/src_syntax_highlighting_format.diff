@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2269 bytes
-Chloro size:   2273 bytes
+Chloro size:   2269 bytes
 Rustfmt size:  2269 bytes
 
 ✗ Outputs DIFFER
@@ -22,12 +22,6 @@ Rustfmt size:  2269 bytes
  
  use crate::{
      syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
--    HlRange, HlTag,
-+    HlRange,
-+    HlTag,
- };
- 
- pub(super) fn highlight_format_string(
  
          return;
      }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25364 bytes
-Chloro size:   25466 bytes
+Chloro size:   25458 bytes
 Rustfmt size:  25364 bytes
 
 ✗ Outputs DIFFER
@@ -30,9 +30,7 @@ Rustfmt size:  25364 bytes
      },
      lower::lower_mutability,
      next_solver::{GenericArgs, Ty, TyKind},
-+    DeclContext,
-+    DeclOrigin,
-+    InferenceDiagnostic,
++    DeclContext, DeclOrigin, InferenceDiagnostic,
  };
  
  impl<'db> InferenceContext<'_, 'db> {

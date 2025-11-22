@@ -1,9 +1,7 @@
 use either::Either;
 use syntax::{
     ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
-    match_ast,
-    AstNode,
-    T,
+    match_ast, AstNode, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

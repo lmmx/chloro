@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12269 bytes
+Chloro size:   12265 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::{
-     assists::{AssistResolveStrategy, ExprFillDefaultMode},
-     base_db::SourceDatabase,
--    LineIndexDatabase, RootDatabase,
-+    LineIndexDatabase,
-+    RootDatabase,
- };
  use itertools::Itertools;
  use stdx::trim_indent;
  use test_fixture::WithFixture;

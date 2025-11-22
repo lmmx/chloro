@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11037 bytes
-Chloro size:   11042 bytes
+Chloro size:   11026 bytes
 Rustfmt size:  11348 bytes
 
 ✗ Outputs DIFFER
@@ -18,18 +18,6 @@ Rustfmt size:  11348 bytes
  };
  
  use crate::{
-     context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
--    CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
--    CompletionRelevancePostfixMatch, Completions,
-+    CompletionContext,
-+    CompletionItem,
-+    CompletionItemKind,
-+    CompletionRelevance,
-+    CompletionRelevancePostfixMatch,
-+    Completions,
- };
- 
- pub(crate) fn complete_record_pattern_fields(
      ctx: &CompletionContext<'_>,
      pattern_ctx: &PatternContext,
  ) {

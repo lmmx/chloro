@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   49730 bytes
+Chloro size:   49709 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,6 @@ Rustfmt size:  50564 bytes
 -    AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol, db::HirDatabase,
 -    sym,
 +    db::HirDatabase,
-+
 +    sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol,
  };
  use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
@@ -29,12 +28,7 @@ Rustfmt size:  50564 bytes
      documentation::docs_from_attrs,
      helpers::visit_file_defs,
      search::{FileReferenceNode, SearchScope},
-+    FilePosition,
-+    FxHashMap,
-+    FxIndexMap,
-+    FxIndexSet,
-+    RootDatabase,
-+    SymbolKind,
++    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
  };
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;

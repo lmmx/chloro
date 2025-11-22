@@ -33,8 +33,7 @@ use hir::{
     db::HirDatabase,
     import_map::{AssocSearchMode, SearchMode},
     symbols::{FileSymbol, SymbolCollector},
-    Crate,
-    Module,
+    Crate, Module,
 };
 use rayon::prelude::*;
 use rustc_hash::FxHashSet;

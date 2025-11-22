@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18749 bytes
-Chloro size:   18807 bytes
+Chloro size:   18791 bytes
 Rustfmt size:  18749 bytes
 
 ✗ Outputs DIFFER
@@ -18,11 +18,7 @@ Rustfmt size:  18749 bytes
  use syntax::{
 -    AstNode, AstToken, Preorder, RustLanguage, WalkEvent,
      ast::{self, HasLoopBody, MacroCall, PathSegmentKind, VisibilityKind},
-+    AstNode,
-+    AstToken,
-+    Preorder,
-+    RustLanguage,
-+    WalkEvent,
++    AstNode, AstToken, Preorder, RustLanguage, WalkEvent,
  };
  
  pub fn expr_as_name_ref(expr: &ast::Expr) -> Option<ast::NameRef> {

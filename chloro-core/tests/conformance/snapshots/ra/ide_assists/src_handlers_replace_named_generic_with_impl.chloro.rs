@@ -3,13 +3,11 @@ use ide_db::text_edit::TextRange;
 use ide_db::{
     defs::Definition,
     search::{SearchScope, UsageSearchResult},
-    EditionedFileId,
-    RootDatabase,
+    EditionedFileId, RootDatabase,
 };
 use syntax::{
     ast::{self, HasGenericParams, HasName, HasTypeBounds, Name, NameLike, PathType, make},
-    match_ast,
-    AstNode,
+    match_ast, AstNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

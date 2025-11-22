@@ -17,15 +17,9 @@ pub(crate) use html::highlight_as_html_with_config;
 use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
     ast::{self, IsString},
-    AstNode,
-    AstToken,
-    NodeOrToken,
+    AstNode, AstToken, NodeOrToken,
     SyntaxKind::*,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
-    WalkEvent,
-    T,
+    SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
 };
 
 use crate::{
@@ -35,11 +29,7 @@ use crate::{
         highlights::Highlights,
         tags::Highlight,
     },
-    FileId,
-    HlMod,
-    HlOperator,
-    HlPunct,
-    HlTag,
+    FileId, HlMod, HlOperator, HlPunct, HlTag,
 };
 
 #[derive(Debug, Clone, Copy)]

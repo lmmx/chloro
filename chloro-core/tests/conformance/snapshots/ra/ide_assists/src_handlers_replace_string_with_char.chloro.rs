@@ -3,8 +3,7 @@ use syntax::{
     ast::IsString,
     AstToken,
     SyntaxKind::{CHAR, STRING},
-    TextRange,
-    TextSize,
+    TextRange, TextSize,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::string_suffix};

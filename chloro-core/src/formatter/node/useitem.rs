@@ -8,12 +8,6 @@ pub mod sort;
 
 use crate::formatter::config::MAX_WIDTH;
 use crate::formatter::write_indent;
-use grouping::get_submodule_prefix;
-
-/// Check if an item contains nested braces (e.g., "SyntaxKind::{self, *}")
-fn has_nested_braces(item: &str) -> bool {
-    item.contains('{')
-}
 
 pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     write_indent(buf, indent);
@@ -74,26 +68,14 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 let mut sorted_items = items;
                 sorted_items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
 
-                // Only group by submodule if no items have nested braces
-                // If any item has nested braces, treat all items as one group
-                let has_any_nested = sorted_items.iter().any(|item| has_nested_braces(item));
-
-                let groups = if has_any_nested {
-                    // Don't group - put all items in one group
-                    vec![sorted_items]
-                } else {
-                    // Group items by their submodule prefix
-                    grouping::group_by_submodule(sorted_items)
-                };
+                // Group items by their submodule prefix
+                let groups = grouping::group_by_submodule(sorted_items);
 
                 // Write out each group
                 let line_indent = indent + 4;
 
-                for (group_idx, group) in groups.iter().enumerate() {
-                    // Check if this is a root-level group (items without ::)
-                    let is_root_group = group
-                        .iter()
-                        .all(|item| get_submodule_prefix(item).is_none());
+                for group in groups.iter() {
+                    let is_root_group = group.iter().all(|item| !item.contains("::"));
 
                     if is_root_group {
                         // Root-level items can be packed on lines
@@ -130,11 +112,6 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             buf.push_str(item);
                             buf.push_str(",\n");
                         }
-                    }
-
-                    // Add blank line between groups (except after the last group)
-                    if group_idx < groups.len() - 1 {
-                        buf.push('\n');
                     }
                 }
 

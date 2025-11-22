@@ -1,6 +1,5 @@
 use ide_db::{
     source_change::SourceChangeBuilder,
-
     syntax_helpers::node_ext::for_each_break_and_continue_expr,
 };
 use syntax::{
@@ -10,8 +9,7 @@ use syntax::{
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Position, SyntaxEditor},
-    SyntaxToken,
-    T,
+    SyntaxToken, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

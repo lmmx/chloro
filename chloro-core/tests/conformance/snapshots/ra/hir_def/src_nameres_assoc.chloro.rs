@@ -7,14 +7,7 @@ use hir_expand::{
     mod_path::ModPath,
     name::{AsName, Name},
     span_map::SpanMap,
-    AstId,
-    ExpandTo,
-    HirFileId,
-    InFile,
-    Intern,
-    Lookup,
-    MacroCallKind,
-    MacroDefKind,
+    AstId, ExpandTo, HirFileId, InFile, Intern, Lookup, MacroCallKind, MacroDefKind,
 };
 use intern::Interned;
 use span::AstIdMap;
@@ -34,19 +27,8 @@ use crate::{
         attr_resolution::ResolvedAttr,
         diagnostics::{DefDiagnostic, DefDiagnostics},
     },
-    AssocItemId,
-    AstIdWithPath,
-    ConstLoc,
-    FunctionId,
-    FunctionLoc,
-    ImplId,
-    ItemContainerId,
-    ItemLoc,
-    MacroCallId,
-    ModuleId,
-    TraitId,
-    TypeAliasId,
-    TypeAliasLoc,
+    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId, ItemLoc,
+    MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

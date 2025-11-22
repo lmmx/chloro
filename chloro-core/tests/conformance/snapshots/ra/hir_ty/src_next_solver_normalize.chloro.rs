@@ -1,16 +1,8 @@
 use rustc_next_trait_solver::placeholder::BoundVarReplacer;
 use rustc_type_ir::{
     inherent::{IntoKind, Term as _},
-    AliasRelationDirection,
-    FallibleTypeFolder,
-    Flags,
-    Interner,
-    TermKind,
-    TypeFoldable,
-    TypeFolder,
-    TypeSuperFoldable,
-    TypeVisitableExt,
-    UniverseIndex,
+    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, TermKind, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
 };
 
 use crate::next_solver::{
@@ -21,16 +13,7 @@ use crate::next_solver::{
         traits::{Obligation, ObligationCause},
     },
     util::PlaceholderReplacer,
-    Binder,
-    Const,
-    ConstKind,
-    DbInterner,
-    Goal,
-    ParamEnv,
-    Predicate,
-    PredicateKind,
-    Term,
-    Ty,
+    Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
     TyKind,
 };
 

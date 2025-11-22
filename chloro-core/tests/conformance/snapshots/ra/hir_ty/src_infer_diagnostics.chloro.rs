@@ -16,9 +16,7 @@ use crate::{
     db::HirDatabase,
     lower::path::{PathDiagnosticCallback, PathLoweringContext},
     lower::{LifetimeElisionKind, TyLoweringContext},
-    InferenceDiagnostic,
-    InferenceTyDiagnosticSource,
-    TyLoweringDiagnostic,
+    InferenceDiagnostic, InferenceTyDiagnosticSource, TyLoweringDiagnostic,
 };
 
 #[derive(Debug, Default, Clone)]

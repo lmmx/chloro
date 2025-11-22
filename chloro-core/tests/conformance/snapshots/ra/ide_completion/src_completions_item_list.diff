@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6059 bytes
+Chloro size:   6055 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -14,9 +14,7 @@ Rustfmt size:  6074 bytes
 +
  use crate::{
      context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
--    CompletionContext, Completions,
-+    CompletionContext,
-+    Completions,
+     CompletionContext, Completions,
  };
  
 -pub(crate) mod trait_impl;

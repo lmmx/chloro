@@ -15,8 +15,7 @@ use crate::{
     },
     hir::{BindingId, ExprId, PatId},
     src::HasSource,
-    DefWithBodyId,
-    HasModule,
+    DefWithBodyId, HasModule,
 };
 
 /// The body of an item (function, const etc.).

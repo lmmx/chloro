@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11783 bytes
+Chloro size:   11771 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
@@ -15,14 +15,7 @@ Rustfmt size:  11841 bytes
 +use hir::{PrefixKind, setup_tracing};
  use ide_db::{
      imports::insert_use::{ImportGranularity, InsertUseConfig},
--    FilePosition, MiniCore, RootDatabase, SnippetCap,
-+    FilePosition,
-+    MiniCore,
-+    RootDatabase,
-+    SnippetCap,
- };
- use itertools::Itertools;
- use stdx::{format_to, trim_indent};
+     FilePosition, MiniCore, RootDatabase, SnippetCap,
      completion_list_with_config(TEST_CONFIG, ra_fixture, false, None)
  }
  

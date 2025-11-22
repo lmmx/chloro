@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   31278 bytes
+Chloro size:   31274 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     lang_item::LangItem,
-     signatures::{StaticFlags, TraitFlags},
-     type_ref::{TypeBound, TypeRef, TypeRefId},
--    AdtId, GenericDefId,
-+    AdtId,
-+    GenericDefId,
- };
  use hir_ty::{
      db::HirDatabase,
      display::{

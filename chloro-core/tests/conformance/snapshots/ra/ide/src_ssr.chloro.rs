@@ -55,9 +55,7 @@ mod tests {
     use ide_assists::{Assist, AssistResolveStrategy};
     use ide_db::{
         base_db::salsa::Setter as _,
-
         symbol_index::LocalRoots,
-
         FileRange, FxHashSet, RootDatabase,
     };
     use test_fixture::WithFixture;

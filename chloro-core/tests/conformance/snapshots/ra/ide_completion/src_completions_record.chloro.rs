@@ -8,12 +8,8 @@ use syntax::{
 
 use crate::{
     context::{DotAccess, DotAccessExprCtx, DotAccessKind, PatternContext},
-    CompletionContext,
-    CompletionItem,
-    CompletionItemKind,
-    CompletionRelevance,
-    CompletionRelevancePostfixMatch,
-    Completions,
+    CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
+    CompletionRelevancePostfixMatch, Completions,
 };
 
 pub(crate) fn complete_record_pattern_fields(

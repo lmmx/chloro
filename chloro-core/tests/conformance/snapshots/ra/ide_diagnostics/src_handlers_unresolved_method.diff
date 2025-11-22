@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9921 bytes
+Chloro size:   9905 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
@@ -17,13 +17,8 @@ Rustfmt size:  10253 bytes
  };
  use syntax::{
 -    ast::{self, make, HasArgList},
--    format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
 +    ast::{self, HasArgList, make},
-+    format_smolstr,
-+    AstNode,
-+    SmolStr,
-+    TextRange,
-+    ToSmolStr,
+     format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
  };
  
 -use crate::{adjusted_display_range, Diagnostic, DiagnosticCode, DiagnosticsContext};

@@ -41,22 +41,8 @@ use hir_def::{
     resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
     signatures::{ConstSignature, StaticSignature},
     type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-    AdtId,
-    AssocItemId,
-    ConstId,
-    DefWithBodyId,
-    FieldId,
-    FunctionId,
-    GenericDefId,
-    GenericParamId,
-    ItemContainerId,
-    LocalFieldId,
-    Lookup,
-    TraitId,
-    TupleFieldId,
-    TupleId,
-    TypeAliasId,
-    VariantId,
+    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
+    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
 };
 use hir_expand::{mod_path::ModPath, name::Name};
 use indexmap::IndexSet;
@@ -66,8 +52,7 @@ use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
     inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
-    AliasTyKind,
-    TypeFoldable,
+    AliasTyKind, TypeFoldable,
 };
 use stdx::never;
 use triomphe::Arc;
@@ -90,10 +75,7 @@ use crate::{
     },
     traits::FnTrait,
     utils::TargetFeatureIsSafeInTarget,
-    ImplTraitId,
-    IncorrectGenericsLenKind,
-    PathLoweringDiagnostic,
-    TargetFeatures,
+    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
 };
 
 /// The entry point of type inference.

@@ -10,15 +10,12 @@ use itertools::Itertools;
 use syntax::{
     ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
     syntax_editor::SyntaxEditor,
-    AstNode,
-    SyntaxNode,
+    AstNode, SyntaxNode,
 };
 
 use crate::{
     utils::{invert_boolean_expression, unwrap_trivial_block},
-    AssistContext,
-    AssistId,
-    Assists,
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn convert_if_to_bool_then(

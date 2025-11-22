@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8930 bytes
-Chloro size:   8618 bytes
+Chloro size:   8614 bytes
 Rustfmt size:  8981 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir::HirDisplay;
- use syntax::{
-     ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
--    AstNode, TextRange,
-+    AstNode,
-+    TextRange,
  };
  
  use crate::{

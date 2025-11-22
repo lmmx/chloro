@@ -9,11 +9,7 @@ use ide_db::{
     helpers::is_editable_crate,
     path_transform::PathTransform,
     source_change::SourceChangeBuilder,
-    FileId,
-    FxHashMap,
-    FxHashSet,
-    RootDatabase,
-    SnippetCap,
+    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::to_lower_snake_case;
@@ -22,19 +18,12 @@ use syntax::{
         self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
         HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
     },
-    ted,
-    Edition,
-    SyntaxKind,
-    SyntaxNode,
-    TextRange,
-    T,
+    ted, Edition, SyntaxKind, SyntaxNode, TextRange, T,
 };
 
 use crate::{
     utils::{convert_reference_type, find_struct_impl},
-    AssistContext,
-    AssistId,
-    Assists,
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_function(

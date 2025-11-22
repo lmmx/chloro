@@ -3,9 +3,7 @@
 use rustc_type_ir::{
     data_structures::DelayedMap,
     inherent::{Const as _, Ty as _},
-    TypeFolder,
-    TypeSuperFoldable,
-    TypeVisitableExt,
+    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
 };
 
 use crate::next_solver::{Const, DbInterner, ErrorGuaranteed, Region, Ty};

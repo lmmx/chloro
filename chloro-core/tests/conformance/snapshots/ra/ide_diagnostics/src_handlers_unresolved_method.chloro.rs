@@ -7,11 +7,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{self, HasArgList, make},
-    format_smolstr,
-    AstNode,
-    SmolStr,
-    TextRange,
-    ToSmolStr,
+    format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};

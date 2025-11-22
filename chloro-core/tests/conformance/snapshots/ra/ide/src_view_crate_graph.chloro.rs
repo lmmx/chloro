@@ -4,8 +4,7 @@ use ide_db::{
     base_db::{
         BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase,
     },
-    FxHashMap,
-    RootDatabase,
+    FxHashMap, RootDatabase,
 };
 
 pub(crate) fn view_crate_graph(

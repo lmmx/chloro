@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32360 bytes
+Chloro size:   32324 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
@@ -16,8 +16,7 @@ Rustfmt size:  32377 bytes
      imports::insert_use::ImportScope,
      text_edit::TextEdit,
      ty_filter::TryEnum,
-+    RootDatabase,
-+    SnippetCap,
++    RootDatabase, SnippetCap,
  };
  use stdx::never;
  use syntax::{
@@ -26,9 +25,7 @@ Rustfmt size:  32377 bytes
      ast::{self, AstNode, AstToken},
      match_ast,
 +    SyntaxKind::{EXPR_STMT, STMT_LIST},
-+    TextRange,
-+    TextSize,
-+    T,
++    TextRange, TextSize, T,
  };
  
  use crate::{
@@ -36,11 +33,7 @@ Rustfmt size:  32377 bytes
      completions::postfix::format_like::add_format_like_completions,
      context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
      item::{Builder, CompletionRelevancePostfixMatch},
-+    CompletionItem,
-+    CompletionItemKind,
-+    CompletionRelevance,
-+    Completions,
-+    SnippetScope,
++    CompletionItem, CompletionItemKind, CompletionRelevance, Completions, SnippetScope,
  };
  
  pub(crate) fn complete_postfix(
@@ -199,8 +192,7 @@ Rustfmt size:  32377 bytes
      use crate::{
 -        CompletionConfig, Snippet,
          tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
-+        CompletionConfig,
-+        Snippet,
++        CompletionConfig, Snippet,
      };
 -
      #[test]

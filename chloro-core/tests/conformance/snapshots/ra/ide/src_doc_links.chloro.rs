@@ -8,7 +8,6 @@ use std::ops::Range;
 
 use hir::{
     db::HirDatabase,
-
     sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs,
 };
 use ide_db::{
@@ -23,22 +22,15 @@ use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options
 use stdx::format_to;
 use syntax::{
     ast::{self, IsString},
-    match_ast,
-    AstNode,
-    AstToken,
+    match_ast, AstNode, AstToken,
     SyntaxKind::*,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    T,
+    SyntaxNode, SyntaxToken, TextRange, TextSize, T,
 };
 use url::Url;
 
 use crate::{
     doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},
-    FilePosition,
-    Semantics,
+    FilePosition, Semantics,
 };
 
 /// Web and local links to an item's documentation.

@@ -23,11 +23,7 @@ use hir_expand::{
     db::ExpandDatabase,
     proc_macro::{ProcMacro, ProcMacroExpander, ProcMacroExpansionError, ProcMacroKind},
     span_map::SpanMapRef,
-    AstId,
-    InFile,
-    MacroCallId,
-    MacroCallKind,
-    MacroKind,
+    AstId, InFile, MacroCallId, MacroCallKind, MacroKind,
 };
 use intern::{Symbol, sym};
 use itertools::Itertools;
@@ -35,11 +31,9 @@ use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
 use stdx::{format_to, format_to_acc};
 use syntax::{
     ast::{self, edit::IndentLevel},
-    AstNode,
-    AstPtr,
+    AstNode, AstPtr,
     SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
-    SyntaxNode,
-    T,
+    SyntaxNode, T,
 };
 use syntax_bridge::token_tree_to_syntax_node;
 use test_fixture::WithFixture;
@@ -51,9 +45,7 @@ use crate::{
     src::HasSource,
     test_db::TestDB,
     tt::TopSubtree,
-    AdtId,
-    Lookup,
-    ModuleDefId,
+    AdtId, Lookup, ModuleDefId,
 };
 
 #[track_caller]

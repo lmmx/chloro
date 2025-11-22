@@ -3,11 +3,7 @@
 use hir_def::{
     expr_store::path::{Path, PathSegment},
     resolver::{ResolveValueResult, TypeNs, ValueNs},
-    AdtId,
-    AssocItemId,
-    GenericDefId,
-    ItemContainerId,
-    Lookup,
+    AdtId, AssocItemId, GenericDefId, ItemContainerId, Lookup,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::inherent::{SliceLike, Ty as _};
@@ -22,8 +18,7 @@ use crate::{
         GenericArg, GenericArgs, TraitRef, Ty,
         infer::traits::{Obligation, ObligationCause},
     },
-    InferenceDiagnostic,
-    ValueTyDefId,
+    InferenceDiagnostic, ValueTyDefId,
 };
 use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};
 

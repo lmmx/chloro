@@ -5,8 +5,7 @@ use crate::{
     expr_store::pretty::{print_function, print_struct},
     nameres::crate_def_map,
     test_db::TestDB,
-    GenericDefId,
-    ModuleDefId,
+    GenericDefId, ModuleDefId,
 };
 use super::super::*;
 

@@ -20,9 +20,7 @@ use crate::{
         TypeParamProvenance, WherePredicate,
     },
     type_ref::{LifetimeRef, LifetimeRefId, TypeBound, TypeRef, TypeRefId},
-    GenericDefId,
-    TypeOrConstParamId,
-    TypeParamId,
+    GenericDefId, TypeOrConstParamId, TypeParamId,
 };
 
 pub(crate) type ImplTraitLowerFn<'l> = &'l mut dyn for<'ec, 'db> FnMut(

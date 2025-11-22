@@ -14,8 +14,7 @@ use crate::{
         DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
         gen_trait_fn_body, generate_trait_impl,
     },
-    AssistConfig,
-    AssistId,
+    AssistConfig, AssistId,
 };
 
 pub(crate) fn replace_derive_with_manual_impl(

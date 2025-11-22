@@ -10,12 +10,7 @@ use span::{
 use stdx::never;
 use syntax::{
     ast::{self, AstNode, HasLoopBody},
-    match_ast,
-    SyntaxElement,
-    SyntaxKind,
-    SyntaxNode,
-    TextRange,
-    TextSize,
+    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;

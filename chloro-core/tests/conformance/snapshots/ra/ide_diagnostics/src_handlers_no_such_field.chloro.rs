@@ -9,9 +9,7 @@ use syntax::{
 
 use crate::{
     fix,
-
     handlers::private_field::field_is_private_fixes,
-
     Assist, Diagnostic, DiagnosticCode, DiagnosticsContext,
 };
 

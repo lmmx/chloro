@@ -13,23 +13,15 @@ use hir::{
 };
 use ide_db::{
     famous_defs::FamousDefs,
-
     helpers::is_editable_crate,
-
     FilePosition, FxHashMap, FxHashSet, RootDatabase,
 };
 use itertools::Either;
 use syntax::{
     ast::{self, AttrKind, NameOrNameRef},
-    match_ast,
-    AstNode,
-    Edition,
-    SmolStr,
+    match_ast, AstNode, Edition, SmolStr,
     SyntaxKind::{self, *},
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    T,
+    SyntaxToken, TextRange, TextSize, T,
 };
 
 use crate::{

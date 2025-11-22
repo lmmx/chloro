@@ -12,11 +12,7 @@ use rustc_next_trait_solver::{
 use rustc_type_ir::{
     inherent::{IntoKind, Span as _},
     solve::{Certainty, NoSolution},
-    Interner,
-    TypeSuperVisitable,
-    TypeVisitable,
-    TypeVisitableExt,
-    TypeVisitor,
+    Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
 };
 
 use crate::next_solver::{
@@ -25,13 +21,7 @@ use crate::next_solver::{
         traits::{PredicateObligation, PredicateObligations},
     },
     inspect::ProofTreeVisitor,
-    DbInterner,
-    SolverContext,
-    SolverDefId,
-    Span,
-    Ty,
-    TyKind,
-    TypingMode,
+    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
 };
 
 type PendingObligations<'db> = Vec<(PredicateObligation<'db>, Option<GoalStalledOn<DbInterner<'db>>>)>;

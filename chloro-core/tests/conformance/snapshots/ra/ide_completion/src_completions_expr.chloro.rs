@@ -9,8 +9,7 @@ use syntax::ast;
 use crate::{
     completions::record::add_default_update,
     context::{PathCompletionCtx, PathExprCtx, Qualified},
-    CompletionContext,
-    Completions,
+    CompletionContext, Completions,
 };
 
 struct PathCallback<'a, F> {

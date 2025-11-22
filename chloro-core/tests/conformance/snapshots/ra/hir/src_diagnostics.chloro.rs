@@ -13,35 +13,22 @@ use hir_def::{
         hir_generic_arg_to_ast, hir_segment_to_ast_segment,
     },
     hir::ExprOrPatId,
-    DefWithBodyId,
-    GenericParamId,
-    SyntheticSyntax,
+    DefWithBodyId, GenericParamId, SyntheticSyntax,
 };
 use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
 use hir_ty::{
     db::HirDatabase,
     diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
-    CastError,
-    InferenceDiagnostic,
-    InferenceTyDiagnosticSource,
-    PathGenericsSource,
-    PathLoweringDiagnostic,
-    TyLoweringDiagnostic,
-    TyLoweringDiagnosticKind,
+    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
+    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
 };
 pub use hir_ty::{
     diagnostics::{CaseType, IncorrectCase},
-    GenericArgsProhibitedReason,
-    IncorrectGenericsLenKind,
+    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
 };
 use syntax::{
     ast::{self, HasGenericArgs},
-    match_ast,
-    AstNode,
-    AstPtr,
-    SyntaxError,
-    SyntaxNodePtr,
-    TextRange,
+    match_ast, AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
 };
 use triomphe::Arc;
 

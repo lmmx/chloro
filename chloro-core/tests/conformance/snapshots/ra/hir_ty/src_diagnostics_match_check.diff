@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   16040 bytes
+Chloro size:   16024 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -19,11 +19,7 @@ Rustfmt size:  15979 bytes
      expr_store::{Body, path::Path},
      hir::PatId,
      item_tree::FieldsShape,
-+    AdtId,
-+    EnumVariantId,
-+    LocalFieldId,
-+    Lookup,
-+    VariantId,
++    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
  };
  use hir_expand::name::Name;
  use rustc_type_ir::inherent::{IntoKind, SliceLike};

@@ -15,18 +15,12 @@ use hir_def::{
     resolver::{ResolveValueResult, TypeNs, ValueNs},
     signatures::TraitFlags,
     type_ref::{TypeRef, TypeRefId},
-    GenericDefId,
-    GenericParamId,
-    Lookup,
-    TraitId,
-    TypeAliasId,
+    GenericDefId, GenericParamId, Lookup, TraitId, TypeAliasId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::{
     inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _},
-    AliasTerm,
-    AliasTy,
-    AliasTyKind,
+    AliasTerm, AliasTy, AliasTyKind,
 };
 use smallvec::SmallVec;
 use stdx::never;
@@ -42,12 +36,8 @@ use crate::{
         Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
         ProjectionPredicate, Region, TraitRef, Ty,
     },
-    GenericArgsProhibitedReason,
-    IncorrectGenericsLenKind,
-    PathGenericsSource,
-    PathLoweringDiagnostic,
-    TyDefId,
-    ValueTyDefId,
+    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
+    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
 };
 use super::{
     associated_type_by_name_including_super_traits, const_param_ty_query, ty_query,

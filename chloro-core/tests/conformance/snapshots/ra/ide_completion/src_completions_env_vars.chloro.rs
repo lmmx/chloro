@@ -9,9 +9,7 @@ use syntax::{
 
 use crate::{
     completions::Completions,
-
     context::CompletionContext,
-
     CompletionItem, CompletionItemKind,
 };
 

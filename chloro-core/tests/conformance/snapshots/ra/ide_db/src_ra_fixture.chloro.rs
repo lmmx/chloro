@@ -13,13 +13,9 @@ use syntax::{
 
 use crate::{
     active_parameter::ActiveParameter,
-
     documentation::Documentation,
-
     range_mapper::RangeMapper,
-
     search::ReferenceCategory,
-
     MiniCore, RootDatabase, SymbolKind,
 };
 

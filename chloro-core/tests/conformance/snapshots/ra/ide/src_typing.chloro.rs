@@ -26,12 +26,7 @@ use span::Edition;
 use syntax::{
     algo::{ancestors_at_offset, find_node_at_offset},
     ast::{self, AstToken, edit::IndentLevel},
-    AstNode,
-    Parse,
-    SourceFile,
-    SyntaxKind,
-    TextRange,
-    TextSize,
+    AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
 };
 
 use crate::SourceChange;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9045 bytes
-Chloro size:   8405 bytes
+Chloro size:   8393 bytes
 Rustfmt size:  9185 bytes
 
 ✗ Outputs DIFFER
@@ -11,12 +11,8 @@ Rustfmt size:  9185 bytes
  use itertools::Itertools;
  use syntax::{
 -    ast::{self, edit::IndentLevel, Comment, CommentKind, CommentShape, Whitespace},
--    AstToken, Direction, SyntaxElement, TextRange,
 +    ast::{self, Comment, CommentKind, CommentShape, Whitespace, edit::IndentLevel},
-+    AstToken,
-+    Direction,
-+    SyntaxElement,
-+    TextRange,
+     AstToken, Direction, SyntaxElement, TextRange,
  };
  
  use crate::{AssistContext, AssistId, Assists};

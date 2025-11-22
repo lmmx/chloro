@@ -9,10 +9,7 @@ use syntax::{
 
 use crate::{
     inlay_hints::{GenericParameterHints, param_name},
-    InlayHint,
-    InlayHintLabel,
-    InlayHintsConfig,
-    InlayKind,
+    InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
 };
 use super::param_name::is_argument_similar_to_param_name;
 

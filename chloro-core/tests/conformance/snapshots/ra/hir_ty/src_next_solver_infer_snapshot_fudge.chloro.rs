@@ -6,7 +6,6 @@ use ena::{
 };
 use rustc_type_ir::{
     inherent::IntoKind,
-
     ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
     TypeSuperFoldable, TypeVisitableExt,
 };
@@ -18,12 +17,7 @@ use crate::next_solver::{
         type_variable::TypeVariableOrigin,
         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
     },
-    Const,
-    ConstKind,
-    DbInterner,
-    Region,
-    Ty,
-    TyKind,
+    Const, ConstKind, DbInterner, Region, Ty, TyKind,
 };
 
 fn vars_since_snapshot<'db, T>(

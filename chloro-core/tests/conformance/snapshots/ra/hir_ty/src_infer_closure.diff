@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36993 bytes
+Chloro size:   36961 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -18,21 +18,11 @@ Rustfmt size:  36953 bytes
 +    TraitId,
  };
  use rustc_type_ir::{
--    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
--    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
--    TypeVisitor,
-     inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
-+    ClosureArgs,
-+    ClosureArgsParts,
-+    CoroutineArgs,
-+    CoroutineArgsParts,
-+    CoroutineClosureArgs,
-+    CoroutineClosureArgsParts,
-+    Interner,
-+    TypeSuperVisitable,
-+    TypeVisitable,
-+    TypeVisitableExt,
-+    TypeVisitor,
++    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
+     ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
+     CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+     TypeVisitor,
+-    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
  };
  use tracing::debug;
  

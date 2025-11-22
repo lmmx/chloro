@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8495 bytes
-Chloro size:   8597 bytes
+Chloro size:   8594 bytes
 Rustfmt size:  8873 bytes
 
 ✗ Outputs DIFFER
@@ -18,11 +18,8 @@ Rustfmt size:  8873 bytes
 -    eager::EagerCallBackFn, mod_path::ModPath, span_map::SpanMap, ExpandError, ExpandErrorKind,
 -    ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
 +    eager::EagerCallBackFn,
-+
 +    mod_path::ModPath,
-+
 +    span_map::SpanMap,
-+
 +    ExpandError, ExpandErrorKind, ExpandResult, HirFileId, InFile, Lookup, MacroCallId,
  };
  use span::{AstIdMap, Edition, SyntaxContext};

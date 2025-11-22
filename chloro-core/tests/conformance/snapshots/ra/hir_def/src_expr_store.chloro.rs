@@ -36,8 +36,7 @@ use crate::{
     },
     nameres::{DefMap, block_def_map},
     type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
-    BlockId,
-    SyntheticSyntax,
+    BlockId, SyntheticSyntax,
 };
 pub use self::body::{Body, BodySourceMap};
 pub use self::lower::{

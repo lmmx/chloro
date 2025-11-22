@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27066 bytes
-Chloro size:   26509 bytes
+Chloro size:   26505 bytes
 Rustfmt size:  27358 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,9 @@ Rustfmt size:  27358 bytes
 -    famous_defs::FamousDefs, helpers::mod_path_to_ast,
 -    imports::import_assets::item_for_path_search, use_trivial_constructor::use_trivial_constructor,
 +    famous_defs::FamousDefs,
-+
 +    helpers::mod_path_to_ast,
-+
 +    imports::import_assets::item_for_path_search,
-+
 +    use_trivial_constructor::use_trivial_constructor,
-+
      RootDatabase,
  };
  use syntax::syntax_editor::{Element, Position};

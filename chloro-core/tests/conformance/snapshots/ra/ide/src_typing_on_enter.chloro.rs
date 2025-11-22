@@ -7,15 +7,9 @@ use ide_db::{FilePosition, RootDatabase};
 use syntax::{
     algo::find_node_at_offset,
     ast::{self, AstToken, edit::IndentLevel},
-    AstNode,
-    SmolStr,
-    SourceFile,
+    AstNode, SmolStr, SourceFile,
     SyntaxKind::*,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    TokenAtOffset,
+    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,
 };
 
 pub(crate) fn on_enter(

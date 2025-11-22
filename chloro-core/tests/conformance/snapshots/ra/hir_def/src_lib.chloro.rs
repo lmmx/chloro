@@ -45,14 +45,7 @@ use hir_expand::{
     mod_path::ModPath,
     name::Name,
     proc_macro::{CustomProcMacroExpander, ProcMacroKind},
-    AstId,
-    ExpandResult,
-    ExpandTo,
-    HirFileId,
-    InFile,
-    MacroCallId,
-    MacroCallKind,
-    MacroDefId,
+    AstId, ExpandResult, ExpandTo, HirFileId, InFile, MacroCallId, MacroCallKind, MacroDefId,
     MacroDefKind,
 };
 pub use hir_expand::{Intern, Lookup, tt};

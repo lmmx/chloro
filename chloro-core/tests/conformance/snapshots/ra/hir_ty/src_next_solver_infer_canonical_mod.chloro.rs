@@ -31,7 +31,6 @@ use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inhe
 
 use crate::next_solver::{
     infer::InferCtxt,
-
     Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
     PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
 };

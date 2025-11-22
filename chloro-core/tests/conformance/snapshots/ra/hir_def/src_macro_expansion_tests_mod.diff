@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15554 bytes
-Chloro size:   15455 bytes
+Chloro size:   15423 bytes
 Rustfmt size:  15554 bytes
 
 ✗ Outputs DIFFER
@@ -16,26 +16,18 @@ Rustfmt size:  15554 bytes
      db::ExpandDatabase,
      proc_macro::{ProcMacro, ProcMacroExpander, ProcMacroExpansionError, ProcMacroKind},
      span_map::SpanMapRef,
-+    AstId,
-+    InFile,
-+    MacroCallId,
-+    MacroCallKind,
-+    MacroKind,
++    AstId, InFile, MacroCallId, MacroCallKind, MacroKind,
  };
  use intern::{Symbol, sym};
  use itertools::Itertools;
  use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
  use stdx::{format_to, format_to_acc};
  use syntax::{
--    AstNode, AstPtr,
--    SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
--    SyntaxNode, T,
-     ast::{self, edit::IndentLevel},
-+    AstNode,
-+    AstPtr,
-+    SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
-+    SyntaxNode,
-+    T,
++    ast::{self, edit::IndentLevel},
+     AstNode, AstPtr,
+     SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
+     SyntaxNode, T,
+-    ast::{self, edit::IndentLevel},
  };
  use syntax_bridge::token_tree_to_syntax_node;
  use test_fixture::WithFixture;
@@ -48,9 +40,7 @@ Rustfmt size:  15554 bytes
      src::HasSource,
      test_db::TestDB,
      tt::TopSubtree,
-+    AdtId,
-+    Lookup,
-+    ModuleDefId,
++    AdtId, Lookup, ModuleDefId,
  };
  
  #[track_caller]

@@ -29,9 +29,7 @@ use hir::{
 };
 use ide_db::{
     famous_defs::FamousDefs,
-
     text_edit::TextEditBuilder,
-
     FileRange, MiniCore, RootDatabase,
 };
 use ide_db::{FxHashSet, text_edit::TextEdit};
@@ -41,13 +39,7 @@ use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use syntax::{
     ast::{self, AstNode, HasGenericParams},
-    format_smolstr,
-    match_ast,
-    SmolStr,
-    SyntaxNode,
-    TextRange,
-    TextSize,
-    WalkEvent,
+    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
 };
 
 use crate::{FileId, navigation_target::TryToNav};

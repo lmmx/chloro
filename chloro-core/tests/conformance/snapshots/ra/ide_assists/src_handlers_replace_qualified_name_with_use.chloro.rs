@@ -5,11 +5,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{self, HasGenericArgs, make},
-    match_ast,
-    ted,
-    AstNode,
-    Edition,
-    SyntaxNode,
+    match_ast, ted, AstNode, Edition, SyntaxNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

@@ -6,10 +6,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{self, NameRef, edit::IndentLevel},
-    AstNode,
-    Direction,
-    SyntaxKind,
-    TextSize,
+    AstNode, Direction, SyntaxKind, TextSize,
 };
 
 use crate::assist_context::{AssistContext, Assists};

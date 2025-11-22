@@ -2,23 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22197 bytes
+Chloro size:   22173 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     item_scope::ItemScope,
-     nameres::DefMap,
      src::HasSource,
--    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
-+    AssocItemId,
-+    DefWithBodyId,
-+    HasModule,
-+    LocalModuleId,
-+    Lookup,
-+    ModuleDefId,
-+    SyntheticSyntax,
+     AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
  };
 -use hir_expand::{db::ExpandDatabase, FileRange, InFile};
 +use hir_expand::{FileRange, InFile, db::ExpandDatabase};

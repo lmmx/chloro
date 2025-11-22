@@ -13,9 +13,7 @@ use la_arena::{Arena, Idx};
 use rustc_abi::{IntegerType, ReprOptions};
 use syntax::{
     ast::{self, HasGenericParams, HasName, HasVisibility, IsString},
-    NodeOrToken,
-    SyntaxNodePtr,
-    T,
+    NodeOrToken, SyntaxNodePtr, T,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
@@ -34,22 +32,8 @@ use crate::{
     lang_item::LangItem,
     src::HasSource,
     type_ref::{TraitRef, TypeBound, TypeRefId},
-    ConstId,
-    EnumId,
-    EnumVariantId,
-    EnumVariantLoc,
-    ExternBlockId,
-    FunctionId,
-    HasModule,
-    ImplId,
-    ItemContainerId,
-    ModuleId,
-    StaticId,
-    StructId,
-    TraitId,
-    TypeAliasId,
-    UnionId,
-    VariantId,
+    ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExternBlockId, FunctionId, HasModule, ImplId,
+    ItemContainerId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, UnionId, VariantId,
 };
 
 #[inline]

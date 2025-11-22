@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18602 bytes
+Chloro size:   18562 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -28,29 +28,7 @@ Rustfmt size:  25118 bytes
  use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
  use syntax::{
      ast::{self, IsString},
--    AstNode, AstToken, NodeOrToken,
-+    AstNode,
-+    AstToken,
-+    NodeOrToken,
-     SyntaxKind::*,
--    SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
-+    SyntaxNode,
-+    SyntaxToken,
-+    TextRange,
-+    WalkEvent,
-+    T,
- };
- 
- use crate::{
-         highlights::Highlights,
-         tags::Highlight,
-     },
--    FileId, HlMod, HlOperator, HlPunct, HlTag,
-+    FileId,
-+    HlMod,
-+    HlOperator,
-+    HlPunct,
-+    HlTag,
+     FileId, HlMod, HlOperator, HlPunct, HlTag,
  };
  
 -pub(crate) use html::highlight_as_html;

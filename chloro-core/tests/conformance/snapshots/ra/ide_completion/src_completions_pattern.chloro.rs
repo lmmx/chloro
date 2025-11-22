@@ -6,8 +6,7 @@ use syntax::ast::Pat;
 
 use crate::{
     context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
-    CompletionContext,
-    Completions,
+    CompletionContext, Completions,
 };
 
 /// Completes constants and paths in unqualified patterns.

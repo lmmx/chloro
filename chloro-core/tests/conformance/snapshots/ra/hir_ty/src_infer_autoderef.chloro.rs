@@ -11,9 +11,7 @@ use crate::{
         Ty,
         infer::{InferOk, traits::PredicateObligations},
     },
-    Adjust,
-    Adjustment,
-    OverloadedDeref,
+    Adjust, Adjustment, OverloadedDeref,
 };
 
 impl<'db> InferenceTable<'db> {

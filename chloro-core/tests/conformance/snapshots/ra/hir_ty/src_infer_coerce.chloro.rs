@@ -46,8 +46,7 @@ use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
     error::TypeError,
     inherent::{Const as _, GenericArg as _, IntoKind, Safety, SliceLike, Ty as _},
-    BoundVar,
-    TypeAndMut,
+    BoundVar, TypeAndMut,
 };
 use smallvec::{SmallVec, smallvec};
 use tracing::{debug, instrument};
@@ -70,12 +69,7 @@ use crate::{
         obligation_ctxt::ObligationCtxt,
     },
     utils::TargetFeatureIsSafeInTarget,
-    Adjust,
-    Adjustment,
-    AutoBorrow,
-    PointerCast,
-    TargetFeatures,
-    TraitEnvironment,
+    Adjust, Adjustment, AutoBorrow, PointerCast, TargetFeatures, TraitEnvironment,
 };
 
 struct Coerce<'a, 'b, 'db> {

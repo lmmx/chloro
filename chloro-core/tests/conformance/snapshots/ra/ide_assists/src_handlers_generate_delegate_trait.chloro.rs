@@ -6,8 +6,7 @@ use ide_db::{
     assists::{AssistId, GroupLabel},
     path_transform::PathTransform,
     syntax_helpers::suggest_name,
-    FxHashMap,
-    FxHashSet,
+    FxHashMap, FxHashSet,
 };
 use itertools::Itertools;
 use syntax::{
@@ -19,12 +18,7 @@ use syntax::{
         make,
     },
     ted::{self, Position},
-    AstNode,
-    Edition,
-    NodeOrToken,
-    SmolStr,
-    SyntaxKind,
-    ToSmolStr,
+    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
 };
 
 use crate::{

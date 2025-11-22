@@ -8,11 +8,7 @@ use syntax::ast::{self, AstNode};
 
 use crate::{
     inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
-    ClosureReturnTypeHints,
-    InlayHint,
-    InlayHintPosition,
-    InlayHintsConfig,
-    InlayKind,
+    ClosureReturnTypeHints, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 
 pub(super) fn hints(

@@ -2,32 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4528 bytes
+Chloro size:   4508 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     attrs::{Attr, AttrId, AttrInput},
-     inert_attr_macro::find_builtin_attr_idx,
-     mod_path::{ModPath, PathKind},
--    MacroCallId, MacroCallKind, MacroDefId,
-+    MacroCallId,
-+    MacroCallKind,
-+    MacroDefId,
- };
- use span::SyntaxContext;
- use syntax::ast;
  use crate::{
      db::DefDatabase,
      item_scope::BuiltinShadowMode,
 -    nameres::{path_resolution::ResolveMode, LocalDefMap},
--    AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
 +    nameres::{LocalDefMap, path_resolution::ResolveMode},
-+    AstIdWithPath,
-+    LocalModuleId,
-+    MacroId,
-+    UnresolvedMacro,
+     AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
  };
 -
  use super::{DefMap, MacroSubNs};

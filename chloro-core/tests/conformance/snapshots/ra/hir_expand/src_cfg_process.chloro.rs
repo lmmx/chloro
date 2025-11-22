@@ -8,12 +8,7 @@ use intern::{Symbol, sym};
 use rustc_hash::FxHashSet;
 use syntax::{
     ast::{self, Attr, HasAttrs, Meta, TokenTree, VariantList},
-    AstNode,
-    NodeOrToken,
-    SyntaxElement,
-    SyntaxKind,
-    SyntaxNode,
-    T,
+    AstNode, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, T,
 };
 use tracing::{debug, warn};
 

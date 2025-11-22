@@ -5,7 +5,6 @@ use ast::HasName;
 use cfg::{CfgAtom, CfgExpr};
 use hir::{
     db::HirDatabase,
-
     sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol,
 };
 use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
@@ -16,12 +15,7 @@ use ide_db::{
     documentation::docs_from_attrs,
     helpers::visit_file_defs,
     search::{FileReferenceNode, SearchScope},
-    FilePosition,
-    FxHashMap,
-    FxIndexMap,
-    FxIndexSet,
-    RootDatabase,
-    SymbolKind,
+    FilePosition, FxHashMap, FxIndexMap, FxIndexSet, RootDatabase, SymbolKind,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;

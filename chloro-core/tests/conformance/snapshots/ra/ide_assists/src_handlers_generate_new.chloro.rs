@@ -1,8 +1,6 @@
 use ide_db::{
     imports::import_assets::item_for_path_search,
-
     syntax_helpers::suggest_name::NameGenerator,
-
     use_trivial_constructor::use_trivial_constructor,
 };
 use syntax::{
@@ -12,9 +10,7 @@ use syntax::{
 
 use crate::{
     utils::{find_struct_impl, generate_impl_with_item},
-    AssistContext,
-    AssistId,
-    Assists,
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_new(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98545 bytes
+Chloro size:   98501 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -15,9 +15,7 @@ Rustfmt size:  98473 bytes
      documentation::{Documentation, HasDocs},
      helpers::item_name,
      imports::import_assets::LocatedImport,
-+    RootDatabase,
-+    SnippetCap,
-+    SymbolKind,
++    RootDatabase, SnippetCap, SymbolKind,
  };
  use syntax::{AstNode, SmolStr, SyntaxKind, TextRange, ToSmolStr, ast, format_smolstr};
  
@@ -30,10 +28,7 @@ Rustfmt size:  98473 bytes
          literal::render_variant_lit,
          macro_::{render_macro, render_macro_pat},
      },
-+    CompletionContext,
-+    CompletionItem,
-+    CompletionItemKind,
-+    CompletionItemRefMode,
++    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
 +    CompletionRelevance,
  };
 +
@@ -315,10 +310,7 @@ Rustfmt size:  98473 bytes
 -        CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
          item::CompletionRelevanceTypeMatch,
          tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
-+        CompletionItem,
-+        CompletionItemKind,
-+        CompletionRelevance,
-+        CompletionRelevancePostfixMatch,
++        CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
      };
 -
      #[track_caller]

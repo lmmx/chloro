@@ -22,13 +22,7 @@ use hir_def::{
     item_scope::ItemScope,
     nameres::DefMap,
     src::HasSource,
-    AssocItemId,
-    DefWithBodyId,
-    HasModule,
-    LocalModuleId,
-    Lookup,
-    ModuleDefId,
-    SyntheticSyntax,
+    AssocItemId, DefWithBodyId, HasModule, LocalModuleId, Lookup, ModuleDefId, SyntheticSyntax,
 };
 use hir_expand::{FileRange, InFile, db::ExpandDatabase};
 use itertools::Itertools;

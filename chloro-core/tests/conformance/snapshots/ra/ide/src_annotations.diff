@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36846 bytes
+Chloro size:   36840 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
@@ -14,9 +14,7 @@ Rustfmt size:  37056 bytes
  use ide_db::{
 -    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
 +    defs::Definition,
-+
      helpers::visit_file_defs,
-+
 +    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase,
  };
  use itertools::Itertools;
@@ -29,8 +27,7 @@ Rustfmt size:  37056 bytes
      navigation_target,
      references::{FindAllRefsConfig, find_all_refs},
      runnables::{Runnable, runnables},
-+    NavigationTarget,
-+    RunnableKind,
++    NavigationTarget, RunnableKind,
  };
  
 -mod fn_references;

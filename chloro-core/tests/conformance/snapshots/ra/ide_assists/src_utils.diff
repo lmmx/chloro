@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44334 bytes
+Chloro size:   44278 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -17,16 +17,10 @@ Rustfmt size:  45288 bytes
  
  pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
  use hir::{
--    DisplayTarget, HasAttrs as HirHasAttrs, HirDisplay, InFile, ModuleDef, PathResolution,
--    Semantics,
-     db::{ExpandDatabase, HirDatabase},
-+    DisplayTarget,
-+    HasAttrs as HirHasAttrs,
-+    HirDisplay,
-+    InFile,
-+    ModuleDef,
-+    PathResolution,
-+    Semantics,
++    db::{ExpandDatabase, HirDatabase},
+     DisplayTarget, HasAttrs as HirHasAttrs, HirDisplay, InFile, ModuleDef, PathResolution,
+     Semantics,
+-    db::{ExpandDatabase, HirDatabase},
  };
  use ide_db::{
 -    RootDatabase,
@@ -47,18 +41,9 @@ Rustfmt size:  45288 bytes
          syntax_factory::SyntaxFactory,
      },
      syntax_editor::{Removable, SyntaxEditor},
-+    AstNode,
-+    AstToken,
-+    Direction,
-+    NodeOrToken,
-+    SourceFile,
++    AstNode, AstToken, Direction, NodeOrToken, SourceFile,
 +    SyntaxKind::*,
-+    SyntaxNode,
-+    SyntaxToken,
-+    TextRange,
-+    TextSize,
-+    WalkEvent,
-+    T,
++    SyntaxNode, SyntaxToken, TextRange, TextSize, WalkEvent, T,
  };
  
  use crate::{

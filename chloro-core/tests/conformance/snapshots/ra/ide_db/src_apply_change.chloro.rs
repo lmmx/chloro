@@ -7,8 +7,7 @@ use salsa::{Database as _, Durability, Setter as _};
 
 use crate::{
     symbol_index::{LibraryRoots, LocalRoots},
-    ChangeWithProcMacros,
-    RootDatabase,
+    ChangeWithProcMacros, RootDatabase,
 };
 
 impl RootDatabase {

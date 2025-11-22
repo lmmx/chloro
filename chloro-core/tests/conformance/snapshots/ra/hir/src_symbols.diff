@@ -2,29 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   19198 bytes
+Chloro size:   19158 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     per_ns::Item,
-     src::{HasChildSource, HasSource},
-     visibility::{Visibility, VisibilityExplicitness},
--    AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
--    ModuleDefId, ModuleId, TraitId,
-+    AdtId,
-+    AssocItemId,
-+    Complete,
-+    DefWithBodyId,
-+    ExternCrateId,
-+    HasModule,
-+    ImplId,
-+    Lookup,
-+    MacroId,
-+    ModuleDefId,
-+    ModuleId,
-+    TraitId,
+     AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, ImplId, Lookup, MacroId,
+     ModuleDefId, ModuleId, TraitId,
  };
 -use hir_expand::{name::Name, HirFileId};
 +use hir_expand::{HirFileId, name::Name};

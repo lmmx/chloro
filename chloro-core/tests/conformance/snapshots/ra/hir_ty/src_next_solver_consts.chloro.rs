@@ -8,18 +8,8 @@ use rustc_ast_ir::visit::VisitorResult;
 use rustc_type_ir::{
     inherent::{IntoKind, ParamEnv as _, PlaceholderLike, SliceLike},
     relate::Relate,
-    BoundVar,
-    BoundVarIndexKind,
-    ConstVid,
-    DebruijnIndex,
-    FlagComputation,
-    Flags,
-    InferConst,
-    TypeFoldable,
-    TypeSuperFoldable,
-    TypeSuperVisitable,
-    TypeVisitable,
-    TypeVisitableExt,
+    BoundVar, BoundVarIndexKind, ConstVid, DebruijnIndex, FlagComputation, Flags, InferConst,
+    TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
     WithCachedTypeInfo,
 };
 

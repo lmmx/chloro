@@ -17,8 +17,7 @@ use syntax::{
 use crate::{
     assist_context::{AssistContext, Assists},
     handlers::auto_import::find_importable_node,
-    AssistId,
-    GroupLabel,
+    AssistId, GroupLabel,
 };
 
 pub(crate) fn qualify_path(

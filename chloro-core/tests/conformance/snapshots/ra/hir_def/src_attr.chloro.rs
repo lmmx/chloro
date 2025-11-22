@@ -8,8 +8,7 @@ use either::Either;
 use hir_expand::{
     attrs::{Attr, AttrId, RawAttrs, collect_attrs},
     span_map::SpanMapRef,
-    HirFileId,
-    InFile,
+    HirFileId, InFile,
 };
 use intern::{Symbol, sym};
 use la_arena::{ArenaMap, Idx, RawIdx};
@@ -29,15 +28,7 @@ use crate::{
     lang_item::LangItem,
     nameres::{ModuleOrigin, ModuleSource},
     src::{HasChildSource, HasSource},
-    AdtId,
-    AstIdLoc,
-    AttrDefId,
-    GenericParamId,
-    HasModule,
-    LocalFieldId,
-    Lookup,
-    MacroId,
-    VariantId,
+    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId, VariantId,
 };
 
 /// Desugared attributes of an item post `cfg_attr` expansion.

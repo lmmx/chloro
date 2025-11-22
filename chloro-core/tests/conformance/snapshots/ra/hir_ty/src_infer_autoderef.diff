@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1626 bytes
+Chloro size:   1618 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
@@ -15,10 +15,7 @@ Rustfmt size:  1772 bytes
          Ty,
 +        infer::{InferOk, traits::PredicateObligations},
      },
--    Adjust, Adjustment, OverloadedDeref,
-+    Adjust,
-+    Adjustment,
-+    OverloadedDeref,
+     Adjust, Adjustment, OverloadedDeref,
  };
  
  impl<'db> InferenceTable<'db> {

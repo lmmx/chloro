@@ -11,9 +11,7 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         syntax_factory::SyntaxFactory,
     },
-    AstNode,
-    AstPtr,
-    TextSize,
+    AstNode, AstPtr, TextSize,
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range, fix};

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29406 bytes
-Chloro size:   29323 bytes
+Chloro size:   29299 bytes
 Rustfmt size:  29702 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,6 @@ Rustfmt size:  29702 bytes
  };
  use span::{TextRange, TextSize};
  use stdx::format_to;
- use syntax::{
-     ast::{self, IsString},
--    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, WalkEvent,
-+    AstNode,
-+    AstToken,
-+    NodeOrToken,
-+    SourceFile,
-+    SyntaxNode,
-+    SyntaxToken,
-+    WalkEvent,
  };
  use triomphe::Arc;
  

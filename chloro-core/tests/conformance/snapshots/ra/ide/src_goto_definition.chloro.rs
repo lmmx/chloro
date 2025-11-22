@@ -8,33 +8,23 @@ use ide_db::{
     defs::{Definition, IdentClass},
     famous_defs::FamousDefs,
     helpers::pick_best_token,
-    RootDatabase,
-    SymbolKind,
+    RootDatabase, SymbolKind,
 };
 use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
 use itertools::Itertools;
 use span::{Edition, FileId};
 use syntax::{
     ast::{self, HasLoopBody},
-    match_ast,
-    AstNode,
-    AstToken,
+    match_ast, AstNode, AstToken,
     SyntaxKind::*,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
-    T,
+    SyntaxNode, SyntaxToken, TextRange, T,
 };
 
 use crate::Analysis;
 use crate::{
     doc_links::token_as_doc_comment,
     navigation_target::{self, ToNav},
-    FilePosition,
-    NavigationTarget,
-    RangeInfo,
-    TryToNav,
-    UpmappingResult,
+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
 };
 
 #[derive(Debug)]

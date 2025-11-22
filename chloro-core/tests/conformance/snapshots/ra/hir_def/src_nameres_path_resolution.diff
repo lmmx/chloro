@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32419 bytes
+Chloro size:   32411 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -22,13 +22,6 @@ Rustfmt size:  32996 bytes
      },
      per_ns::PerNs,
      visibility::{RawVisibility, Visibility},
--    AdtId, LocalModuleId, ModuleDefId,
-+    AdtId,
-+    LocalModuleId,
-+    ModuleDefId,
- };
- 
- #[derive(Debug, Clone, Copy, PartialEq, Eq)]
          segment_index: Option<usize>,
          prefix_info: ResolvePathResultPrefixInfo,
      ) -> ResolvePathResult {

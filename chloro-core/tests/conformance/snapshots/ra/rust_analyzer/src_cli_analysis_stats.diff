@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58546 bytes
-Chloro size:   58486 bytes
+Chloro size:   58430 bytes
 Rustfmt size:  58546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Fully type-check project and print various stats, like the number of type
- //! errors.
- 
- use std::{
--    env, fmt,
-+    env,
-+    fmt,
-     ops::AddAssign,
-     panic::{AssertUnwindSafe, catch_unwind},
-     time::{SystemTime, UNIX_EPOCH},
  
  use cfg::{CfgAtom, CfgDiff};
  use hir::{
@@ -25,15 +15,7 @@ Rustfmt size:  58546 bytes
 -    Name,
      db::{DefDatabase, ExpandDatabase, HirDatabase},
      next_solver::{DbInterner, GenericArgs},
-+    Adt,
-+    AssocItem,
-+    Crate,
-+    DefWithBody,
-+    FindPathConfig,
-+    HasCrate,
-+    HasSource,
-+    HirDisplay,
-+    ModuleDef,
++    Adt, AssocItem, Crate, DefWithBody, FindPathConfig, HasCrate, HasSource, HirDisplay, ModuleDef,
 +    Name,
  };
  use hir_def::{
@@ -43,10 +25,7 @@ Rustfmt size:  58546 bytes
  use ide_db::{
 -    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
      base_db::{SourceDatabase, salsa::Database},
-+    EditionedFileId,
-+    LineIndexDatabase,
-+    MiniCore,
-+    SnippetCap,
++    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
  };
  use itertools::Itertools;
  use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
@@ -55,12 +34,10 @@ Rustfmt size:  58546 bytes
  use crate::cli::{
 -    Verbosity,
      flags::{self, OutputFormat},
--    full_name_of_item, print_memory_usage,
-+    full_name_of_item,
-+    print_memory_usage,
+     full_name_of_item, print_memory_usage,
      progress_report::ProgressReport,
-     report_metric,
-+    Verbosity,
+-    report_metric,
++    report_metric, Verbosity,
  };
  
  impl flags::AnalysisStats {

@@ -1,14 +1,7 @@
 use ide_db::SymbolKind;
 use syntax::{
     ast::{self, HasAttrs, HasGenericParams, HasName},
-    match_ast,
-    AstNode,
-    AstToken,
-    NodeOrToken,
-    SourceFile,
-    SyntaxNode,
-    SyntaxToken,
-    TextRange,
+    match_ast, AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, TextRange,
     WalkEvent,
 };
 

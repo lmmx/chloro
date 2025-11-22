@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35989 bytes
+Chloro size:   35985 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -22,12 +22,7 @@ Rustfmt size:  36357 bytes
 +        make,
      },
      ted::{self, Position},
--    Direction, SyntaxElement,
-+    Direction,
-+    SyntaxElement,
- };
- 
- use crate::syntax_helpers::node_ext::vis_eq;
+     Direction, SyntaxElement,
  }
  
  impl MergeBehavior {

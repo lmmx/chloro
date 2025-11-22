@@ -17,17 +17,8 @@ use hir_def::{
     item_tree::FieldsShape,
     lang_item::{LangItem, LangItemTarget, lang_item},
     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
-    AdtId,
-    DefWithBodyId,
-    EnumVariantId,
-    GeneralConstId,
-    GenericParamId,
-    HasModule,
-    ItemContainerId,
-    LocalFieldId,
-    Lookup,
-    TraitId,
-    TupleId,
+    AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId,
+    LocalFieldId, Lookup, TraitId, TupleId,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;
@@ -58,11 +49,7 @@ use crate::{
         infer::{DbInternerInferExt, InferCtxt},
     },
     traits::FnTrait,
-    Adjust,
-    Adjustment,
-    AutoBorrow,
-    CallableDefId,
-    TraitEnvironment,
+    Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,
 };
 use super::OperandKind;
 

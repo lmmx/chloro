@@ -5,12 +5,9 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
-    AstNode,
-    AstToken,
-    NodeOrToken,
+    AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
-    SyntaxToken,
-    T,
+    SyntaxToken, T,
 };
 
 use crate::{AssistContext, Assists, utils};

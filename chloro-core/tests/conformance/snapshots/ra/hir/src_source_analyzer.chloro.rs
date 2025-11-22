@@ -21,25 +21,13 @@ use hir_def::{
     nameres::MacroSubNs,
     resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
     type_ref::{Mutability, TypeRefId},
-    AdtId,
-    AssocItemId,
-    CallableDefId,
-    ConstId,
-    DefWithBodyId,
-    FieldId,
-    FunctionId,
-    GenericDefId,
-    LocalFieldId,
-    ModuleDefId,
-    StructId,
-    TraitId,
-    VariantId,
+    AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
+    LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
     mod_path::{ModPath, PathKind, path},
     name::{AsName, Name},
-    HirFileId,
-    InFile,
+    HirFileId, InFile,
 };
 use hir_ty::{
     diagnostics::{
@@ -52,11 +40,7 @@ use hir_ty::{
         DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode, infer::DbInternerInferExt,
     },
     traits::structurally_normalize_ty,
-    Adjustment,
-    InferenceResult,
-    LifetimeElisionKind,
-    TraitEnvironment,
-    TyLoweringContext,
+    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
 };
 use intern::sym;
 use itertools::Itertools;
@@ -68,38 +52,16 @@ use smallvec::SmallVec;
 use stdx::never;
 use syntax::{
     ast::{self, AstNode, RangeItem, RangeOp},
-    SyntaxKind,
-    SyntaxNode,
-    TextRange,
-    TextSize,
+    SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 use triomphe::Arc;
 
 use crate::{
     db::HirDatabase,
     semantics::{PathResolution, PathResolutionPerNs},
-    Adt,
-    AssocItem,
-    BindingMode,
-    BuiltinAttr,
-    BuiltinType,
-    Callable,
-    Const,
-    DeriveHelper,
-    Field,
-    Function,
-    GenericSubstitution,
-    Local,
-    Macro,
-    ModuleDef,
-    Static,
-    Struct,
-    ToolModule,
-    Trait,
-    TupleField,
-    Type,
-    TypeAlias,
-    Variant,
+    Adt, AssocItem, BindingMode, BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field,
+    Function, GenericSubstitution, Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait,
+    TupleField, Type, TypeAlias, Variant,
 };
 
 /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of

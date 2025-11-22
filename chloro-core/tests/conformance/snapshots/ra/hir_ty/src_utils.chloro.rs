@@ -13,11 +13,7 @@ use hir_def::{
     lang_item::LangItem,
     resolver::{HasResolver, TypeNs},
     type_ref::{TraitBoundModifier, TypeRef},
-    EnumId,
-    EnumVariantId,
-    FunctionId,
-    Lookup,
-    TraitId,
+    EnumId, EnumVariantId, FunctionId, Lookup, TraitId,
 };
 use intern::sym;
 use rustc_abi::TargetDataLayout;

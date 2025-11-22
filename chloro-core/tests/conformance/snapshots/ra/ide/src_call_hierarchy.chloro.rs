@@ -7,10 +7,7 @@ use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
     helpers::pick_best_token,
     search::FileReference,
-    FileRange,
-    FxIndexMap,
-    MiniCore,
-    RootDatabase,
+    FileRange, FxIndexMap, MiniCore, RootDatabase,
 };
 use syntax::{AstNode, SyntaxKind::IDENT, ast};
 

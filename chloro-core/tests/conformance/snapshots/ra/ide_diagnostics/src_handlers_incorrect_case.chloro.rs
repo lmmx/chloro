@@ -4,9 +4,7 @@ use syntax::AstNode;
 
 use crate::{
     unresolved_fix,
-
     // references::rename::rename_with_semantics,
-
     Diagnostic, DiagnosticCode, DiagnosticsContext,
 };
 

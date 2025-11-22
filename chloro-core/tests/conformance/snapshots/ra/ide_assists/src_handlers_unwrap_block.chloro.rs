@@ -4,10 +4,7 @@ use syntax::{
         edit::{AstNodeEdit, IndentLevel},
         make,
     },
-    AstNode,
-    SyntaxKind,
-    TextRange,
-    T,
+    AstNode, SyntaxKind, TextRange, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

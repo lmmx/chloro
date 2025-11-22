@@ -79,23 +79,14 @@ pub use ide_db::{
     source_change::{FileSystemEdit, SnippetEdit, SourceChange},
     symbol_index::Query,
     text_edit::{Indel, TextEdit},
-    FileId,
-    FilePosition,
-    FileRange,
-    RootDatabase,
-    Severity,
-    SymbolKind,
+    FileId, FilePosition, FileRange, RootDatabase, Severity, SymbolKind,
 };
 use ide_db::{
     base_db::{
         CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
         salsa::Cancelled,
     },
-    prime_caches,
-    symbol_index,
-    FxHashMap,
-    FxIndexSet,
-    LineIndexDatabase,
+    prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
 };
 use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};

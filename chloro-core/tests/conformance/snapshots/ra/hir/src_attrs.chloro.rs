@@ -8,9 +8,7 @@ use hir_def::{
     item_scope::ItemInNs,
     per_ns::Namespace,
     resolver::{HasResolver, Resolver, TypeNs},
-    AssocItemId,
-    AttrDefId,
-    ModuleDefId,
+    AssocItemId, AttrDefId, ModuleDefId,
 };
 use hir_expand::{
     mod_path::{ModPath, PathKind},

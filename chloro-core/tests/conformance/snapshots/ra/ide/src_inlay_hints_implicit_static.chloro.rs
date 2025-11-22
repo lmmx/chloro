@@ -54,8 +54,7 @@ pub(super) fn hints(
 mod tests {
     use crate::{
         inlay_hints::tests::{TEST_CONFIG, check_with_config},
-        InlayHintsConfig,
-        LifetimeElisionHints,
+        InlayHintsConfig, LifetimeElisionHints,
     };
     #[test]
     fn hints_lifetimes_static() {

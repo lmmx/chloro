@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9092 bytes
-Chloro size:   9080 bytes
+Chloro size:   9068 bytes
 Rustfmt size:  9092 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,7 @@ Rustfmt size:  9092 bytes
  use crate::{
 -    InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
      inlay_hints::{GenericParameterHints, param_name},
-+    InlayHint,
-+    InlayHintLabel,
-+    InlayHintsConfig,
-+    InlayKind,
++    InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
  };
 -
  use super::param_name::is_argument_similar_to_param_name;

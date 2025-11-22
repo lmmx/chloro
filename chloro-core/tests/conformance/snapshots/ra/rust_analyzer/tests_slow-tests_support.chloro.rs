@@ -14,8 +14,7 @@ use paths::{Utf8Path, Utf8PathBuf};
 use rust_analyzer::{
     cli::flags,
     config::{Config, ConfigChange, ConfigErrors},
-    lsp,
-    main_loop,
+    lsp, main_loop,
 };
 use serde::Serialize;
 use serde_json::{Value, json, to_string_pretty};

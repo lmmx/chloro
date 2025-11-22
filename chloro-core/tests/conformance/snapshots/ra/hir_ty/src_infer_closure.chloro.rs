@@ -12,16 +12,8 @@ use hir_def::{
 };
 use rustc_type_ir::{
     inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
-    ClosureArgs,
-    ClosureArgsParts,
-    CoroutineArgs,
-    CoroutineArgsParts,
-    CoroutineClosureArgs,
-    CoroutineClosureArgsParts,
-    Interner,
-    TypeSuperVisitable,
-    TypeVisitable,
-    TypeVisitableExt,
+    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
+    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
     TypeVisitor,
 };
 use tracing::debug;

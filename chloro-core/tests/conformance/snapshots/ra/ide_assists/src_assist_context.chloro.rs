@@ -6,21 +6,12 @@ use ide_db::{FileId, RootDatabase, label::Label};
 use syntax::Edition;
 use syntax::{
     algo::{self, find_node_at_offset, find_node_at_range},
-    AstNode,
-    AstToken,
-    Direction,
-    SourceFile,
-    SyntaxElement,
-    SyntaxKind,
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    TokenAtOffset,
+    AstNode, AstToken, Direction, SourceFile, SyntaxElement, SyntaxKind, SyntaxToken, TextRange,
+    TextSize, TokenAtOffset,
 };
 
 use crate::{
     assist_config::AssistConfig,
-
     Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
 };
 

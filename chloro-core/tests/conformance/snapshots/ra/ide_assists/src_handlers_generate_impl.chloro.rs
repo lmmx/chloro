@@ -5,9 +5,7 @@ use syntax::{
 
 use crate::{
     utils::{self, DefaultMethods, IgnoreAssocItems},
-    AssistContext,
-    AssistId,
-    Assists,
+    AssistContext, AssistId, Assists,
 };
 
 fn insert_impl(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5355 bytes
-Chloro size:   5069 bytes
+Chloro size:   5065 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -20,12 +20,8 @@ Rustfmt size:  5418 bytes
 -        make, HasLoopBody,
 +        make,
      },
--    AstNode, T,
-+    AstNode,
-+    T,
+     AstNode, T,
  };
- 
- use crate::{
      AssistId,
  };
  

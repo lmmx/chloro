@@ -8,8 +8,7 @@ use ide_db::{
     base_db::{CrateOrigin, LangCrateOrigin},
     defs::{Definition, IdentClass},
     helpers::pick_best_token,
-    FilePosition,
-    RootDatabase,
+    FilePosition, RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxKind::*, T};

@@ -2,29 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   21076 bytes
+Chloro size:   21035 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use rustc_type_ir::{
-     inherent::{GenericArg as _, GenericsOf, IntoKind, SliceLike, Term as _, Ty as _},
-     relate::{Relate, VarianceDiagInfo},
--    ClosureArgs, CollectAndApply, ConstVid, CoroutineArgs, CoroutineClosureArgs, FnSigTys,
--    GenericArgKind, Interner, TermKind, TyKind, TyVid, Variance,
-+    ClosureArgs,
-+    CollectAndApply,
-+    ConstVid,
-+    CoroutineArgs,
-+    CoroutineClosureArgs,
-+    FnSigTys,
-+    GenericArgKind,
-+    Interner,
-+    TermKind,
-+    TyKind,
-+    TyVid,
-+    Variance,
  };
  use smallvec::SmallVec;
  
@@ -35,7 +18,6 @@ Rustfmt size:  21200 bytes
 -    generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
 -    SolverDefId, Ty, Tys,
 +    generics::Generics,
-+
 +    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
  };
  

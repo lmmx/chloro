@@ -5,23 +5,15 @@ use intern::Symbol;
 use rustc_type_ir::{
     inherent::{IntoKind, PlaceholderLike, SliceLike},
     relate::Relate,
-    BoundVar,
-    BoundVarIndexKind,
-    DebruijnIndex,
-    Flags,
-    RegionVid,
-    TypeFlags,
-    TypeFoldable,
-    TypeVisitable,
-    INNERMOST,
+    BoundVar, BoundVarIndexKind, DebruijnIndex, Flags, RegionVid, TypeFlags, TypeFoldable,
+    TypeVisitable, INNERMOST,
 };
 
 use crate::next_solver::{GenericArg, OutlivesPredicate};
 use super::{
     interned_vec_db,
     interner::{BoundVarKind, DbInterner, Placeholder},
-    ErrorGuaranteed,
-    SolverDefId,
+    ErrorGuaranteed, SolverDefId,
 };
 
 pub type RegionKind<'db> = rustc_type_ir::RegionKind<DbInterner<'db>>;

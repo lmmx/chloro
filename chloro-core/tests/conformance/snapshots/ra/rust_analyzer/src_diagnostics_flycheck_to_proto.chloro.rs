@@ -10,11 +10,8 @@ use vfs::{AbsPath, AbsPathBuf};
 use crate::flycheck::{Applicability, DiagnosticLevel, DiagnosticSpan};
 use crate::{
     global_state::GlobalStateSnapshot,
-
     line_index::PositionEncoding,
-
     lsp::to_proto::url_from_abs_path,
-
     lsp_ext,
 };
 use super::{DiagnosticsMapConfig, Fix};

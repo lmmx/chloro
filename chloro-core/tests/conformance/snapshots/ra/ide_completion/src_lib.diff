@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   9345 bytes
+Chloro size:   9337 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -21,9 +21,7 @@ Rustfmt size:  11494 bytes
      imports::insert_use::{self, ImportScope},
      syntax_helpers::tree_diff::diff,
      text_edit::TextEdit,
-+    FilePosition,
-+    FxHashSet,
-+    RootDatabase,
++    FilePosition, FxHashSet, RootDatabase,
  };
  use syntax::ast::make;
  

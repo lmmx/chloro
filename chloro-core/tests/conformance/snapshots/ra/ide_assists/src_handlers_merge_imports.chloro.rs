@@ -8,9 +8,7 @@ use syntax::{
     ast::{self, syntax_factory::SyntaxFactory},
     match_ast,
     syntax_editor::Removable,
-    AstNode,
-    SyntaxElement,
-    SyntaxNode,
+    AstNode, SyntaxElement, SyntaxNode,
 };
 use Edit::*;
 

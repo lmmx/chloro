@@ -3,35 +3,14 @@
 use rustc_type_ir::{
     inherent::{Const as _, IntoKind, Ty as _},
     relate::combine::PredicateEmittingRelation,
-    ConstVid,
-    FloatVarValue,
-    FloatVid,
-    GenericArgKind,
-    InferConst,
-    InferTy,
-    IntVarValue,
-    IntVid,
-    RegionVid,
-    TyVid,
-    TypeFoldable,
-    TypingMode,
-    UniverseIndex,
+    ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy, IntVarValue, IntVid,
+    RegionVid, TyVid, TypeFoldable, TypingMode, UniverseIndex,
 };
 
 use crate::next_solver::{
     infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
-    Binder,
-    Const,
-    ConstKind,
-    DbInterner,
-    ErrorGuaranteed,
-    GenericArgs,
-    OpaqueTypeKey,
-    Region,
-    SolverDefId,
-    Span,
-    Ty,
-    TyKind,
+    Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
+    SolverDefId, Span, Ty, TyKind,
 };
 use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
 

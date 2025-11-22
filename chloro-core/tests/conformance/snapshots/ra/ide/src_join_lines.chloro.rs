@@ -4,14 +4,9 @@ use ide_db::text_edit::{TextEdit, TextEditBuilder};
 use itertools::Itertools;
 use syntax::{
     ast::{self, AstNode, AstToken, IsString},
-    NodeOrToken,
-    SourceFile,
-    SyntaxElement,
+    NodeOrToken, SourceFile, SyntaxElement,
     SyntaxKind::{self, USE_TREE, WHITESPACE},
-    SyntaxToken,
-    TextRange,
-    TextSize,
-    T,
+    SyntaxToken, TextRange, TextSize, T,
 };
 
 pub struct JoinLinesConfig {

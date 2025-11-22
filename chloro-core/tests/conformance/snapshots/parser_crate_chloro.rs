@@ -205,8 +205,7 @@ use crate::{
     input::Input,
     Edition,
     SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-    TokenSet,
-    T,
+    TokenSet, T,
 };
 use crate::{
     Edition, LexedStr, Step,
@@ -215,8 +214,7 @@ use crate::{
 use crate::{
     parser::{CompletedMarker, Marker, Parser},
     SyntaxKind::{self, *},
-    TokenSet,
-    T,
+    TokenSet, T,
 };
 use crate::{
     SyntaxKind::{self, *},

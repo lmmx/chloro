@@ -3,10 +3,7 @@ use itertools::Itertools;
 use syntax::{
     algo,
     ast::{self, AstNode, make, syntax_factory::SyntaxFactory},
-    NodeOrToken,
-    SyntaxToken,
-    TextRange,
-    T,
+    NodeOrToken, SyntaxToken, TextRange, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

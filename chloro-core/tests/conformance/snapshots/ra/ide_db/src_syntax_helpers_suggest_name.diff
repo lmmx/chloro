@@ -2,25 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26608 bytes
+Chloro size:   26588 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use stdx::to_lower_snake_case;
- use syntax::{
-     ast::{self, HasName},
--    match_ast, AstNode, Edition, SmolStr, SmolStrBuilder, ToSmolStr,
-+    match_ast,
-+    AstNode,
-+    Edition,
-+    SmolStr,
-+    SmolStrBuilder,
-+    ToSmolStr,
- };
- 
- use crate::RootDatabase;
  /// Identifier names that won't be suggested, ever
  ///
  /// **NOTE**: they all must be snake lower case

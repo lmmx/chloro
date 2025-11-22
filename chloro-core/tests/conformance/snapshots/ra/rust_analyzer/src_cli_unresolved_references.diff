@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6105 bytes
-Chloro size:   6104 bytes
+Chloro size:   6102 bytes
 Rustfmt size:  6316 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,7 @@ Rustfmt size:  6316 bytes
  use ide_db::{
 -    base_db::SourceDatabase, defs::NameRefClass, EditionedFileId, FxHashSet, LineIndexDatabase as _,
 +    base_db::SourceDatabase,
-+
 +    defs::NameRefClass,
-+
 +    EditionedFileId, FxHashSet, LineIndexDatabase as _,
  };
 -use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};

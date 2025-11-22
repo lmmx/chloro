@@ -274,8 +274,7 @@ mod tests {
     };
     use syntax_bridge::{
         dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
-        syntax_node_to_token_tree,
-        DocCommentDesugarMode,
+        syntax_node_to_token_tree, DocCommentDesugarMode,
     };
     fn check(
         cfg: &str,

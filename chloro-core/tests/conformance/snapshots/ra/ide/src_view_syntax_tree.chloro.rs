@@ -7,13 +7,7 @@ use span::{TextRange, TextSize};
 use stdx::format_to;
 use syntax::{
     ast::{self, IsString},
-    AstNode,
-    AstToken,
-    NodeOrToken,
-    SourceFile,
-    SyntaxNode,
-    SyntaxToken,
-    WalkEvent,
+    AstNode, AstToken, NodeOrToken, SourceFile, SyntaxNode, SyntaxToken, WalkEvent,
 };
 use triomphe::Arc;
 

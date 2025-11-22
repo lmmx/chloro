@@ -9,18 +9,8 @@ use base_db::Crate;
 use hir_def::{
     nameres::{DefMap, block_def_map, crate_def_map},
     signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
-    AdtId,
-    AssocItemId,
-    BlockId,
-    ConstId,
-    FunctionId,
-    HasModule,
-    ImplId,
-    ItemContainerId,
-    Lookup,
-    ModuleId,
-    TraitId,
-    TypeAliasId,
+    AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
+    ModuleId, TraitId, TypeAliasId,
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -30,10 +20,7 @@ use rustc_type_ir::{
     inherent::{
         AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
     },
-    FloatTy,
-    IntTy,
-    TypeVisitableExt,
-    UintTy,
+    FloatTy, IntTy, TypeVisitableExt, UintTy,
 };
 use smallvec::{SmallVec, smallvec};
 use stdx::never;

@@ -14,10 +14,7 @@ use syntax::{
 
 use crate::{
     inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
-    InlayHint,
-    InlayHintPosition,
-    InlayHintsConfig,
-    InlayKind,
+    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 
 pub(super) fn hints(

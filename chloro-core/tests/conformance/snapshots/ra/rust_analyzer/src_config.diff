@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   150889 bytes
+Chloro size:   150885 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -25,8 +25,7 @@ Rustfmt size:  167117 bytes
 -    MiniCore, SnippetCap,
      assists::ExprFillDefaultMode,
      imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-+    MiniCore,
-+    SnippetCap,
++    MiniCore, SnippetCap,
  };
  use itertools::{Either, Itertools};
  use paths::{Utf8Path, Utf8PathBuf};

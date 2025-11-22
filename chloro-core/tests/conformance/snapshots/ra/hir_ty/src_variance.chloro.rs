@@ -397,9 +397,7 @@ mod tests {
     use expect_test::{Expect, expect};
     use hir_def::{
         hir::generics::GenericParamDataRef,
-
         src::HasSource,
-
         AdtId, GenericDefId, ModuleDefId,
     };
     use itertools::Itertools;

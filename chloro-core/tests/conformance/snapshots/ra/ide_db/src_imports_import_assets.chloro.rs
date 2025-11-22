@@ -4,7 +4,6 @@ use std::{convert::Infallible, ops::ControlFlow};
 
 use hir::{
     db::HirDatabase,
-
     AsAssocItem, AssocItem, AssocItemContainer, Complete, Crate, FindPathConfig, HasCrate, ItemInNs,
     ModPath, Module, ModuleDef, Name, PathResolution, PrefixKind, ScopeDef, Semantics,
     SemanticsScope, Trait, TyFingerprint, Type,
@@ -19,8 +18,7 @@ use syntax::{
 
 use crate::{
     items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT},
-    FxIndexSet,
-    RootDatabase,
+    FxIndexSet, RootDatabase,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]

@@ -3,11 +3,7 @@ use syntax::{
     ast::{self, AstNode, make},
     match_ast,
     syntax_editor::{Position, SyntaxEditor},
-    Edition,
-    NodeOrToken,
-    SyntaxNode,
-    SyntaxToken,
-    T,
+    Edition, NodeOrToken, SyntaxNode, SyntaxToken, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

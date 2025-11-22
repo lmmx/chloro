@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65786 bytes
+Chloro size:   65734 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -21,18 +21,8 @@ Rustfmt size:  65944 bytes
 -    ModuleId, TraitId, TypeAliasId,
      nameres::{DefMap, block_def_map, crate_def_map},
      signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
-+    AdtId,
-+    AssocItemId,
-+    BlockId,
-+    ConstId,
-+    FunctionId,
-+    HasModule,
-+    ImplId,
-+    ItemContainerId,
-+    Lookup,
-+    ModuleId,
-+    TraitId,
-+    TypeAliasId,
++    AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
++    ModuleId, TraitId, TypeAliasId,
  };
  use hir_expand::name::Name;
  use intern::sym;
@@ -43,10 +33,7 @@ Rustfmt size:  65944 bytes
      inherent::{
          AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
      },
-+    FloatTy,
-+    IntTy,
-+    TypeVisitableExt,
-+    UintTy,
++    FloatTy, IntTy, TypeVisitableExt, UintTy,
  };
  use smallvec::{SmallVec, smallvec};
  use stdx::never;

@@ -19,11 +19,8 @@ use ide::{
 };
 use ide_db::{
     assists,
-
     rust_doc::format_docs,
-
     source_change::ChangeAnnotationId,
-
     FxHasher, MiniCore,
 };
 use itertools::Itertools;

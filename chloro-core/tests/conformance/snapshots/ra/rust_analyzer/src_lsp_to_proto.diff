@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111399 bytes
+Chloro size:   111396 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,8 @@ Rustfmt size:  113494 bytes
  use ide_db::{
 -    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
 +    assists,
-+
 +    rust_doc::format_docs,
-+
 +    source_change::ChangeAnnotationId,
-+
 +    FxHasher, MiniCore,
  };
  use itertools::Itertools;

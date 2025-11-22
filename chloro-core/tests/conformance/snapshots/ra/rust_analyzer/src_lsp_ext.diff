@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23923 bytes
+Chloro size:   23922 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,6 @@ Rustfmt size:  24042 bytes
 -    notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
 -    PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
 +    notification::Notification,
-+
 +    CodeActionKind, DocumentOnTypeFormattingParams, PartialResultParams, Position, Range,
 +    TextDocumentIdentifier, WorkDoneProgressParams,
  };

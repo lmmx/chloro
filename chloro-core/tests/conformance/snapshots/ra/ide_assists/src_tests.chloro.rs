@@ -7,10 +7,7 @@ use ide_db::{
     base_db::SourceDatabase,
     imports::insert_use::{ImportGranularity, InsertUseConfig},
     source_change::FileSystemEdit,
-    EditionedFileId,
-    FileRange,
-    RootDatabase,
-    SnippetCap,
+    EditionedFileId, FileRange, RootDatabase, SnippetCap,
 };
 use stdx::{format_to, trim_indent};
 use syntax::TextRange;
@@ -19,7 +16,6 @@ use test_utils::{assert_eq_text, extract_offset};
 
 use crate::{
     handlers::Handler,
-
     Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
 };
 

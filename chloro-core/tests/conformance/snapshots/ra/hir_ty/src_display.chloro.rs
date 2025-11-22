@@ -24,15 +24,8 @@ use hir_def::{
         UseArgRef,
     },
     visibility::Visibility,
-    FindPathConfig,
-    GeneralConstId,
-    GenericDefId,
-    HasModule,
-    LocalFieldId,
-    Lookup,
-    ModuleDefId,
-    ModuleId,
-    TraitId,
+    FindPathConfig, GeneralConstId, GenericDefId, HasModule, LocalFieldId, Lookup, ModuleDefId,
+    ModuleId, TraitId,
 };
 use hir_expand::{mod_path::PathKind, name::Name};
 use intern::{Internable, Interned, sym};
@@ -46,11 +39,7 @@ use rustc_ast_ir::FloatTy;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
     inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _, Tys as _},
-    AliasTyKind,
-    BoundVarIndexKind,
-    CoroutineArgsParts,
-    CoroutineClosureArgsParts,
-    RegionKind,
+    AliasTyKind, BoundVarIndexKind, CoroutineArgsParts, CoroutineClosureArgsParts, RegionKind,
     Upcast,
 };
 use smallvec::SmallVec;
@@ -73,11 +62,7 @@ use crate::{
     },
     primitive,
     utils::{self, detect_variant_from_bytes},
-    CallableDefId,
-    FnAbi,
-    ImplTraitId,
-    MemoryMap,
-    TraitEnvironment,
+    CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
 };
 
 pub trait HirWrite {

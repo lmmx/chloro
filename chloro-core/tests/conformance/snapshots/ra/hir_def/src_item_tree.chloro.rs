@@ -48,8 +48,7 @@ use hir_expand::{
     attrs::RawAttrs,
     mod_path::{ModPath, PathKind},
     name::Name,
-    ExpandTo,
-    HirFileId,
+    ExpandTo, HirFileId,
 };
 use intern::Interned;
 use la_arena::{Idx, RawIdx};

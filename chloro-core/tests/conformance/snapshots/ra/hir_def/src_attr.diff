@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32850 bytes
-Chloro size:   33147 bytes
+Chloro size:   33111 bytes
 Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
@@ -14,8 +14,7 @@ Rustfmt size:  32850 bytes
 -    HirFileId, InFile,
      attrs::{Attr, AttrId, RawAttrs, collect_attrs},
      span_map::SpanMapRef,
-+    HirFileId,
-+    InFile,
++    HirFileId, InFile,
  };
  use intern::{Symbol, sym};
  use la_arena::{ArenaMap, Idx, RawIdx};
@@ -29,15 +28,7 @@ Rustfmt size:  32850 bytes
      lang_item::LangItem,
      nameres::{ModuleOrigin, ModuleSource},
      src::{HasChildSource, HasSource},
-+    AdtId,
-+    AstIdLoc,
-+    AttrDefId,
-+    GenericParamId,
-+    HasModule,
-+    LocalFieldId,
-+    Lookup,
-+    MacroId,
-+    VariantId,
++    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId, VariantId,
  };
  
  /// Desugared attributes of an item post `cfg_attr` expansion.

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   19131 bytes
+Chloro size:   19111 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -12,15 +12,7 @@ Rustfmt size:  23115 bytes
 -use crate::testdir::TestDir;
  use lsp_types::{
      notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
--    DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
--    TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
-+    DidChangeTextDocumentParams,
-+    DidOpenTextDocumentParams,
-+    DidSaveTextDocumentParams,
-+    TextDocumentContentChangeEvent,
-+    TextDocumentIdentifier,
-+    TextDocumentItem,
-+    Url,
+     DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
      VersionedTextDocumentIdentifier,
  };
  use paths::Utf8PathBuf;

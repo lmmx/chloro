@@ -17,11 +17,7 @@ use span::Edition;
 use stdx::{format_to, impl_from};
 use syntax::{
     ast::{self, AstNode},
-    match_ast,
-    SyntaxKind,
-    SyntaxNode,
-    SyntaxToken,
-    TextSize,
+    match_ast, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
 };
 
 // FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).

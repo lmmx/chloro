@@ -9,9 +9,7 @@ use std::fmt;
 
 use hir_def::{
     layout::{LayoutCalculatorError, LayoutData},
-    AdtId,
-    LocalFieldId,
-    StructId,
+    AdtId, LocalFieldId, StructId,
 };
 use la_arena::{Idx, RawIdx};
 use rustc_abi::{

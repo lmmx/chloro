@@ -11,8 +11,7 @@ use syntax::{
     },
     AstNode,
     SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
-    SyntaxNode,
-    T,
+    SyntaxNode, T,
 };
 
 use crate::{

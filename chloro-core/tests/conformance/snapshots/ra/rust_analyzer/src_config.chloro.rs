@@ -20,8 +20,7 @@ use ide::{
 use ide_db::{
     assists::ExprFillDefaultMode,
     imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-    MiniCore,
-    SnippetCap,
+    MiniCore, SnippetCap,
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};

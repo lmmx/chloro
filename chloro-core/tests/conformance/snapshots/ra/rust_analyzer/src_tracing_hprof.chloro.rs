@@ -43,17 +43,13 @@ use rustc_hash::FxHashSet;
 use tracing::{
     field::{Field, Visit},
     span::Attributes,
-    Event,
-    Id,
-    Level,
-    Subscriber,
+    Event, Id, Level, Subscriber,
 };
 use tracing_subscriber::{
     filter,
     layer::{Context, SubscriberExt},
     registry::LookupSpan,
-    Layer,
-    Registry,
+    Layer, Registry,
 };
 
 pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {

@@ -28,9 +28,7 @@ use crate::{
     },
     per_ns::PerNs,
     visibility::{RawVisibility, Visibility},
-    AdtId,
-    LocalModuleId,
-    ModuleDefId,
+    AdtId, LocalModuleId, ModuleDefId,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

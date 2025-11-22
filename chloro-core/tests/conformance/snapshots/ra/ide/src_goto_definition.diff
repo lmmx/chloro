@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70587 bytes
+Chloro size:   70547 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -27,8 +27,7 @@ Rustfmt size:  71259 bytes
      defs::{Definition, IdentClass},
      famous_defs::FamousDefs,
      helpers::pick_best_token,
-+    RootDatabase,
-+    SymbolKind,
++    RootDatabase, SymbolKind,
  };
 +use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
  use itertools::Itertools;
@@ -38,25 +37,17 @@ Rustfmt size:  71259 bytes
 -    SyntaxKind::*,
 -    SyntaxNode, SyntaxToken, T, TextRange,
      ast::{self, HasLoopBody},
-     match_ast,
-+    AstNode,
-+    AstToken,
+-    match_ast,
++    match_ast, AstNode, AstToken,
 +    SyntaxKind::*,
-+    SyntaxNode,
-+    SyntaxToken,
-+    TextRange,
-+    T,
++    SyntaxNode, SyntaxToken, TextRange, T,
 +};
 +
 +use crate::Analysis;
 +use crate::{
 +    doc_links::token_as_doc_comment,
 +    navigation_target::{self, ToNav},
-+    FilePosition,
-+    NavigationTarget,
-+    RangeInfo,
-+    TryToNav,
-+    UpmappingResult,
++    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
  };
  
  #[derive(Debug)]

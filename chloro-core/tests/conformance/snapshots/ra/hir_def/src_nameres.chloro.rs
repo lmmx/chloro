@@ -62,11 +62,8 @@ use std::ops::Deref;
 use base_db::Crate;
 use hir_expand::{
     mod_path::ModPath,
-
     name::Name,
-
     proc_macro::ProcMacroKind,
-
     EditionedFileId, ErasedAstId, HirFileId, InFile, MacroCallId,
 };
 use intern::Symbol;
@@ -86,20 +83,8 @@ use crate::{
     nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
     per_ns::PerNs,
     visibility::{Visibility, VisibilityExplicitness},
-    AstId,
-    BlockId,
-    BlockLoc,
-    CrateRootModuleId,
-    ExternCrateId,
-    FunctionId,
-    FxIndexMap,
-    LocalModuleId,
-    Lookup,
-    MacroExpander,
-    MacroId,
-    ModuleId,
-    ProcMacroId,
-    UseId,
+    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
+    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
 };
 pub use self::path_resolution::ResolvePathResultPrefixInfo;
 

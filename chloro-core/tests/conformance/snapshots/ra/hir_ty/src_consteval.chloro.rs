@@ -8,10 +8,7 @@ use hir_def::{
     expr_store::Body,
     hir::{Expr, ExprId},
     type_ref::LiteralConstRef,
-    EnumVariantId,
-    GeneralConstId,
-    HasModule,
-    StaticId,
+    EnumVariantId, GeneralConstId, HasModule, StaticId,
 };
 use hir_expand::Lookup;
 use rustc_type_ir::inherent::IntoKind;
@@ -26,10 +23,7 @@ use crate::{
         Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
         SolverDefId, Ty, ValueConst,
     },
-    LifetimeElisionKind,
-    MemoryMap,
-    TraitEnvironment,
-    TyLoweringContext,
+    LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
 };
 use super::mir::{interpret_mir, lower_to_mir, pad16};
 

@@ -4,10 +4,7 @@ use hir_def::{AdtId, hir::ExprId, signatures::TraitFlags};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
     inherent::{AdtDef, BoundExistentialPredicates as _, IntoKind, SliceLike, Ty as _},
-    Flags,
-    InferTy,
-    TypeFlags,
-    UintTy,
+    Flags, InferTy, TypeFlags, UintTy,
 };
 use stdx::never;
 

@@ -1,9 +1,7 @@
 use syntax::{
     ast::{self, syntax_factory::SyntaxFactory},
     syntax_editor::Position,
-    AstNode,
-    SyntaxKind,
-    T,
+    AstNode, SyntaxKind, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

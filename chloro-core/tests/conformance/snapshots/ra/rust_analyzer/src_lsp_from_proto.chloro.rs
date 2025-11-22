@@ -10,8 +10,7 @@ use vfs::AbsPathBuf;
 use crate::{
     global_state::GlobalStateSnapshot,
     line_index::{LineIndex, PositionEncoding},
-    lsp_ext,
-    try_default,
+    lsp_ext, try_default,
 };
 
 pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {

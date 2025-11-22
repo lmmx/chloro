@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   29306 bytes
+Chloro size:   29190 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -19,23 +19,9 @@ Rustfmt size:  28638 bytes
      },
      lang_items::SolverTraitLangItem,
      solve::SizedTraitKind,
-+    ConstKind,
-+    CoroutineArgs,
-+    DebruijnIndex,
-+    FloatTy,
-+    IntTy,
-+    Interner,
-+    PredicatePolarity,
-+    RegionKind,
-+    TypeFoldable,
-+    TypeFolder,
-+    TypeSuperFoldable,
-+    TypeSuperVisitable,
-+    TypeVisitableExt,
-+    TypeVisitor,
-+    UintTy,
-+    UniverseIndex,
-+    INNERMOST,
++    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, IntTy, Interner, PredicatePolarity,
++    RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt,
++    TypeVisitor, UintTy, UniverseIndex, INNERMOST,
  };
  
  use crate::{
@@ -44,28 +30,11 @@ Rustfmt size:  28638 bytes
  };
 -
  use super::{
--    Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
--    GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
--    TyKind,
-     fold::{BoundVarReplacer, FnMutDelegate},
-+    Binder,
-+    BoundRegion,
-+    BoundTy,
-+    Clause,
-+    ClauseKind,
-+    Clauses,
-+    Const,
-+    DbInterner,
-+    EarlyBinder,
-+    GenericArgs,
-+    Predicate,
-+    PredicateKind,
-+    Region,
-+    SolverDefId,
-+    TraitPredicate,
-+    TraitRef,
-+    Ty,
-+    TyKind,
++    fold::{BoundVarReplacer, FnMutDelegate},
+     Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
+     GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
+     TyKind,
+-    fold::{BoundVarReplacer, FnMutDelegate},
  };
  
  #[derive(Clone, Debug)]

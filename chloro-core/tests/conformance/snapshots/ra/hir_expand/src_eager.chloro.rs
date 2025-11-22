@@ -29,18 +29,8 @@ use crate::{
     ast::{self, AstNode},
     db::ExpandDatabase,
     mod_path::ModPath,
-    AstId,
-    EagerCallInfo,
-    ExpandError,
-    ExpandResult,
-    ExpandTo,
-    ExpansionSpanMap,
-    InFile,
-    MacroCallId,
-    MacroCallKind,
-    MacroCallLoc,
-    MacroDefId,
-    MacroDefKind,
+    AstId, EagerCallInfo, ExpandError, ExpandResult, ExpandTo, ExpansionSpanMap, InFile,
+    MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
 };
 
 pub type EagerCallBackFn<'a> =

@@ -46,25 +46,13 @@ use indexmap::{IndexMap, map::Entry};
 pub use infer::{
     cast::CastError,
     closure::analysis::{CaptureKind, CapturedItem},
-    could_coerce,
-    could_unify,
-    could_unify_deeply,
-    Adjust,
-    Adjustment,
-    AutoBorrow,
-    BindingMode,
-    InferenceDiagnostic,
-    InferenceResult,
-    InferenceTyDiagnosticSource,
-    OverloadedDeref,
-    PointerCast,
+    could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
+    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
 };
 use intern::{Symbol, sym};
 pub use lower::{
     associated_type_shorthand_candidates,
-
     diagnostics::*,
-
     LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
 };
 pub use method_resolution::check_orphan_rules;
@@ -73,10 +61,7 @@ pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
     inherent::{IntoKind, SliceLike, Ty as _},
-    BoundVarIndexKind,
-    TypeSuperVisitable,
-    TypeVisitableExt,
-    UpcastFrom,
+    BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
 };
 use syntax::ast::{ConstArg, make};
 pub use target_feature::TargetFeatures;

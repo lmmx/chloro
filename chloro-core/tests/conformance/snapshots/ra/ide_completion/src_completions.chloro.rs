@@ -47,9 +47,7 @@ use crate::{
         type_alias::{render_type_alias, render_type_alias_with_eq},
         union_literal::render_union_literal,
     },
-    CompletionContext,
-    CompletionItem,
-    CompletionItemKind,
+    CompletionContext, CompletionItem, CompletionItemKind,
 };
 
 /// Represents an in-progress set of completions being built.

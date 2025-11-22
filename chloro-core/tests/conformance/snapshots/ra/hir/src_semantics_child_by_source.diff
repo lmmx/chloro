@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12477 bytes
-Chloro size:   12921 bytes
+Chloro size:   12865 bytes
 Rustfmt size:  12826 bytes
 
 ✗ Outputs DIFFER
@@ -26,24 +26,10 @@ Rustfmt size:  12826 bytes
      item_scope::ItemScope,
      nameres::DefMap,
      src::{HasChildSource, HasSource},
--    AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
+     AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
 -    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
-+    AdtId,
-+    AssocItemId,
-+    AstIdLoc,
-+    DefWithBodyId,
-+    EnumId,
-+    FieldId,
-+    GenericDefId,
-+    ImplId,
-+    LifetimeParamId,
-+    Lookup,
-+    MacroId,
-+    ModuleDefId,
-+    ModuleId,
-+    TraitId,
-+    TypeOrConstParamId,
-     VariantId,
+-    VariantId,
++    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId, VariantId,
  };
 +use hir_expand::{HirFileId, attrs::collect_attrs};
 +use span::AstIdNode;

@@ -23,10 +23,7 @@ use rustc_type_ir::{
         Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
         combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
     },
-    AliasRelationDirection,
-    TypeVisitableExt,
-    Upcast,
-    Variance,
+    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
 };
 
 use crate::next_solver::{
@@ -35,17 +32,7 @@ use crate::next_solver::{
         relate::RelateResult,
         traits::{Obligation, PredicateObligations},
     },
-    AliasTy,
-    Binder,
-    Const,
-    DbInterner,
-    Goal,
-    ParamEnv,
-    Predicate,
-    PredicateKind,
-    Region,
-    Span,
-    Ty,
+    AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
     TyKind,
 };
 

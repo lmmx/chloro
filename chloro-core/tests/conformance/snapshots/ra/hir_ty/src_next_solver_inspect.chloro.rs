@@ -18,18 +18,8 @@ use crate::next_solver::{
         traits::{Obligation, ObligationCause},
     },
     obligation_ctxt::ObligationCtxt,
-    DbInterner,
-    GenericArg,
-    GenericArgs,
-    Goal,
-    NormalizesTo,
-    ParamEnv,
-    Predicate,
-    PredicateKind,
-    QueryResult,
-    SolverContext,
-    Span,
-    Term,
+    DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
+    QueryResult, SolverContext, Span, Term,
 };
 
 pub(crate) struct InspectConfig {

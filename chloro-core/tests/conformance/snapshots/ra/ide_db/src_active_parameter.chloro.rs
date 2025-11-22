@@ -6,10 +6,7 @@ use parser::T;
 use span::TextSize;
 use syntax::{
     ast::{self, AstChildren, HasArgList, HasAttrs, HasName},
-    match_ast,
-    AstNode,
-    NodeOrToken,
-    SyntaxToken,
+    match_ast, AstNode, NodeOrToken, SyntaxToken,
 };
 
 use crate::RootDatabase;

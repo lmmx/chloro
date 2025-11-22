@@ -4,8 +4,7 @@ use ide_db::{
     defs::Definition,
     helpers::mod_path_to_ast,
     search::{FileReference, SearchScope},
-    FxHashMap,
-    FxHashSet,
+    FxHashMap, FxHashSet,
 };
 use itertools::Itertools;
 use syntax::ast::{HasName, syntax_factory::SyntaxFactory};

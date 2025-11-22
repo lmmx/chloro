@@ -2,7 +2,6 @@
 
 use rustc_type_ir::{
     inherent::IntoKind,
-
     BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
     TypeVisitableExt,
 };

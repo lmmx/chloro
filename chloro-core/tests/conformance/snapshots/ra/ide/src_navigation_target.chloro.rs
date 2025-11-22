@@ -6,11 +6,8 @@ use arrayvec::ArrayVec;
 use either::Either;
 use hir::{
     db::ExpandDatabase,
-
     sym,
-
     symbols::FileSymbol,
-
     AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId, InFile,
     LocalSource, ModuleSource, Semantics, Symbol,
 };
@@ -20,10 +17,7 @@ use ide_db::{
     documentation::{Documentation, HasDocs},
     famous_defs::FamousDefs,
     ra_fixture::UpmapFromRaFixture,
-    FileId,
-    FileRange,
-    RootDatabase,
-    SymbolKind,
+    FileId, FileRange, RootDatabase, SymbolKind,
 };
 use stdx::never;
 use syntax::{

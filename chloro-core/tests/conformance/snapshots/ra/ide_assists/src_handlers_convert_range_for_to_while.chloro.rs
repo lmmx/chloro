@@ -7,8 +7,7 @@ use syntax::{
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Element, Position},
-    AstNode,
-    T,
+    AstNode, T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

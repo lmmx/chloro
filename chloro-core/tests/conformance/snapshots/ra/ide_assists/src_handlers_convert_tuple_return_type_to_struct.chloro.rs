@@ -12,10 +12,7 @@ use ide_db::{
 };
 use syntax::{
     ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
-    match_ast,
-    ted,
-    AstNode,
-    SyntaxNode,
+    match_ast, ted, AstNode, SyntaxNode,
 };
 
 use crate::assist_context::{AssistContext, Assists};

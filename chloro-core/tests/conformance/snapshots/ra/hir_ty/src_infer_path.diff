@@ -2,26 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16114 bytes
-Chloro size:   16008 bytes
+Chloro size:   15988 bytes
 Rustfmt size:  16341 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Path expression resolution.
- 
- use hir_def::{
-     expr_store::path::{Path, PathSegment},
-     resolver::{ResolveValueResult, TypeNs, ValueNs},
--    AdtId, AssocItemId, GenericDefId, ItemContainerId, Lookup,
-+    AdtId,
-+    AssocItemId,
-+    GenericDefId,
-+    ItemContainerId,
-+    Lookup,
- };
- use hir_expand::name::Name;
- use rustc_type_ir::inherent::{SliceLike, Ty as _};
      lower::LifetimeElisionKind,
      method_resolution::{self, VisibleFromModule},
      next_solver::{
@@ -29,9 +15,7 @@ Rustfmt size:  16341 bytes
          GenericArg, GenericArgs, TraitRef, Ty,
 +        infer::traits::{Obligation, ObligationCause},
      },
--    InferenceDiagnostic, ValueTyDefId,
-+    InferenceDiagnostic,
-+    ValueTyDefId,
+     InferenceDiagnostic, ValueTyDefId,
  };
 -
  use super::{ExprOrPatId, InferenceContext, InferenceTyDiagnosticSource};

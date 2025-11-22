@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19523 bytes
+Chloro size:   19516 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -15,15 +15,6 @@ Rustfmt size:  19938 bytes
  use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
  use triomphe::Arc;
  
-     db::DefDatabase,
-     expr_store::{Body, ExpressionStore, HygieneId},
-     hir::{Binding, BindingId, Expr, ExprId, Item, LabelId, Pat, PatId, Statement},
--    BlockId, DefWithBodyId,
-+    BlockId,
-+    DefWithBodyId,
- };
- 
- pub type ScopeId = Idx<ScopeData>;
      parent: Option<ScopeId>,
      block: Option<BlockId>,
      label: Option<(LabelId, Name)>,
@@ -298,16 +289,13 @@ Rustfmt size:  19938 bytes
 -
      use crate::{
 -        db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
--    };
 +        db::DefDatabase,
- 
--    fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
 +        nameres::crate_def_map,
-+
 +        test_db::TestDB,
-+
 +        FunctionId, ModuleDefId,
-+    };
+     };
+-
+-    fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
 +    fn find_function(
 +        db: &TestDB,
 +        file_id: FileId,

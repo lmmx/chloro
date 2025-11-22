@@ -10,12 +10,7 @@ use hir_def::{
     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
     signatures::StaticFlags,
     type_ref::Rawness,
-    AdtId,
-    CallableDefId,
-    DefWithBodyId,
-    FieldId,
-    FunctionId,
-    VariantId,
+    AdtId, CallableDefId, DefWithBodyId, FieldId, FunctionId, VariantId,
 };
 use rustc_type_ir::inherent::IntoKind;
 use span::Edition;
@@ -24,8 +19,7 @@ use crate::{
     db::HirDatabase,
     next_solver::{CallableIdWrapper, TyKind, abi::Safety},
     utils::{TargetFeatureIsSafeInTarget, is_fn_unsafe_to_call, target_feature_is_safe_in_target},
-    InferenceResult,
-    TargetFeatures,
+    InferenceResult, TargetFeatures,
 };
 
 #[derive(Debug, Default)]

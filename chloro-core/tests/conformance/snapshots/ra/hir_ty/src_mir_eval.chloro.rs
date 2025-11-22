@@ -15,16 +15,8 @@ use hir_def::{
     layout::{TagEncoding, Variants},
     resolver::{HasResolver, TypeNs, ValueNs},
     signatures::{StaticFlags, StructFlags},
-    AdtId,
-    DefWithBodyId,
-    EnumVariantId,
-    FunctionId,
-    GeneralConstId,
-    HasModule,
-    ItemContainerId,
-    Lookup,
-    StaticId,
-    VariantId,
+    AdtId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, HasModule, ItemContainerId,
+    Lookup, StaticId, VariantId,
 };
 use hir_expand::{InFile, mod_path::path, name::Name};
 use intern::sym;
@@ -61,10 +53,7 @@ use crate::{
     },
     traits::FnTrait,
     utils::detect_variant_from_bytes,
-    CallableDefId,
-    ComplexMemoryMap,
-    MemoryMap,
-    TraitEnvironment,
+    CallableDefId, ComplexMemoryMap, MemoryMap, TraitEnvironment,
 };
 use super::{
     return_slot, AggregateKind, BasicBlockId, BinOp, CastKind, LocalId, MirBody, MirLowerError,

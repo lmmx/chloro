@@ -14,9 +14,7 @@ use syntax::{
         syntax_factory::SyntaxFactory,
     },
     syntax_editor::{Position, SyntaxEditor},
-    NodeOrToken,
-    SyntaxKind,
-    T,
+    NodeOrToken, SyntaxKind, T,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};

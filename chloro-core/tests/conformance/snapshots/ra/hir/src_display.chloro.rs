@@ -8,8 +8,7 @@ use hir_def::{
     lang_item::LangItem,
     signatures::{StaticFlags, TraitFlags},
     type_ref::{TypeBound, TypeRef, TypeRefId},
-    AdtId,
-    GenericDefId,
+    AdtId, GenericDefId,
 };
 use hir_ty::{
     db::HirDatabase,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21133 bytes
-Chloro size:   20750 bytes
+Chloro size:   20747 bytes
 Rustfmt size:  21133 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,8 @@ Rustfmt size:  21133 bytes
  use ide_db::{
 -    FileId, RootDatabase, base_db::Crate, helpers::pick_best_token,
 +    base_db::Crate,
-+
 +    helpers::pick_best_token,
-+
      syntax_helpers::prettify_macro_expansion,
-+
 +    FileId, RootDatabase,
  };
  use span::{SpanMap, SyntaxContext, TextRange, TextSize};

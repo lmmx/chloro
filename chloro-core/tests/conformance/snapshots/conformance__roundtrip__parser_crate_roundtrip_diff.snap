@@ -209,8 +209,7 @@ expression: cleaned_diff
 +    input::Input,
 +    Edition,
 +    SyntaxKind::{self, EOF, ERROR, TOMBSTONE},
-+    TokenSet,
-+    T,
++    TokenSet, T,
 +};
 +use crate::{
 +    Edition, LexedStr, Step,
@@ -219,8 +218,7 @@ expression: cleaned_diff
 +use crate::{
 +    parser::{CompletedMarker, Marker, Parser},
 +    SyntaxKind::{self, *},
-+    TokenSet,
-+    T,
++    TokenSet, T,
 +};
 +use crate::{
 +    SyntaxKind::{self, *},

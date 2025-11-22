@@ -22,7 +22,6 @@ use span::Edition;
 
 use crate::{
     term_search::Expr,
-
     Adt, AssocItem, GenericDef, GenericParam, HasAttrs, HasVisibility, Impl, ModuleDef, ScopeDef,
     Type, TypeParam,
 };

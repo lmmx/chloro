@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29684 bytes
+Chloro size:   29633 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -21,11 +21,8 @@ Rustfmt size:  30449 bytes
 -    mod_path::ModPath, name::Name, proc_macro::ProcMacroKind, EditionedFileId, ErasedAstId,
 -    HirFileId, InFile, MacroCallId,
 +    mod_path::ModPath,
-+
 +    name::Name,
-+
 +    proc_macro::ProcMacroKind,
-+
 +    EditionedFileId, ErasedAstId, HirFileId, InFile, MacroCallId,
  };
  use intern::Symbol;
@@ -38,25 +35,8 @@ Rustfmt size:  30449 bytes
  use triomphe::Arc;
  use tt::TextRange;
  
-     nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
-     per_ns::PerNs,
-     visibility::{Visibility, VisibilityExplicitness},
--    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
--    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
-+    AstId,
-+    BlockId,
-+    BlockLoc,
-+    CrateRootModuleId,
-+    ExternCrateId,
-+    FunctionId,
-+    FxIndexMap,
-+    LocalModuleId,
-+    Lookup,
-+    MacroExpander,
-+    MacroId,
-+    ModuleId,
-+    ProcMacroId,
-+    UseId,
+     AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
+     LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
  };
 -
  pub use self::path_resolution::ResolvePathResultPrefixInfo;

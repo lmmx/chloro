@@ -8,8 +8,7 @@ use ide_db::text_edit::TextRange;
 use ide_db::{
     defs::Definition,
     search::{FileReference, ReferenceCategory, SearchScope},
-    FxHashMap,
-    RootDatabase,
+    FxHashMap, RootDatabase,
 };
 use syntax::{
     AstNode,

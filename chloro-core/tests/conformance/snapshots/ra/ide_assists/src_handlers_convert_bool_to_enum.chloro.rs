@@ -13,11 +13,7 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
-    AstNode,
-    NodeOrToken,
-    SyntaxKind,
-    SyntaxNode,
-    T,
+    AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 
 use crate::{

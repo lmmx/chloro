@@ -30,10 +30,7 @@ use hir::db::HirDatabase;
 use hir::{PrefixKind, setup_tracing};
 use ide_db::{
     imports::insert_use::{ImportGranularity, InsertUseConfig},
-    FilePosition,
-    MiniCore,
-    RootDatabase,
-    SnippetCap,
+    FilePosition, MiniCore, RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::{format_to, trim_indent};

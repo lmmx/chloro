@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5559 bytes
-Chloro size:   5818 bytes
+Chloro size:   5817 bytes
 Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,6 @@ Rustfmt size:  5644 bytes
 -    inherent::IntoKind, BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder,
 -    TypeSuperFoldable, TypeVisitableExt,
 +    inherent::IntoKind,
-+
 +    BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
 +    TypeVisitableExt,
  };
