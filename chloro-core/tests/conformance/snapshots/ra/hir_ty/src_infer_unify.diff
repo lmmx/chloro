@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34935 bytes
+Chloro size:   35043 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -17,50 +17,32 @@ Rustfmt size:  35032 bytes
  use hir_expand::name::Name;
  use intern::sym;
  use rustc_hash::FxHashSet;
- use rustc_type_ir::{
--    inherent::{Const as _, IntoKind, Ty as _},
--    solve::{Certainty, GoalSource},
--    DebruijnIndex, InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder,
--    TypeSuperFoldable, TypeVisitableExt, UpcastFrom,
-+    inherent::{Const as _, solve::{Certainty, DebruijnIndex, GoalSource}, InferConst, InferTy,
-+    IntoKind, RegionVid, Ty as _}, TyVid, TypeFoldable, TypeFolder, TypeSuperFoldable,
-+    TypeVisitableExt, UpcastFrom,
- };
- use smallvec::SmallVec;
- use triomphe::Arc;
- 
- use crate::{
--    db::HirDatabase,
--    infer::InferenceContext,
--    next_solver::{
-+    at::ToTrace, db::HirDatabase, fulfill::{FulfillmentCtxt, infer::InferenceContext,
-+    infer::{
-+            DbInternerInferExt, inspect::{InspectConfig, next_solver::{
-         self,
--        fulfill::{FulfillmentCtxt, NextSolverError},
--        infer::{
--            at::ToTrace,
--            snapshot::CombinedSnapshot,
--            traits::{Obligation, ObligationCause, PredicateObligation},
+     db::HirDatabase,
+     infer::InferenceContext,
+     next_solver::{
+-        self,
++        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
++        ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,
++        SolverDefId, TraitRef, Ty, TyKind, TypingMode,
+         fulfill::{FulfillmentCtxt, NextSolverError},
+         infer::{
++            DbInternerInferExt, InferCtxt, InferOk, InferResult,
+             at::ToTrace,
+             snapshot::CombinedSnapshot,
+             traits::{Obligation, ObligationCause, PredicateObligation},
 -            DbInternerInferExt, InferCtxt, InferOk, InferResult,
--        },
--        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor},
--        obligation_ctxt::ObligationCtxt,
+         },
+         inspect::{InspectConfig, InspectGoal, ProofTreeVisitor},
+         obligation_ctxt::ObligationCtxt,
 -        AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner, ErrorGuaranteed,
 -        GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind, SolverDefId,
 -        TraitRef, Ty, TyKind, TypingMode,
--    },
--    traits::{
+     },
+     traits::{
 -        next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt, FnTrait, NextTraitSolveResult,
--    },
--    TraitEnvironment,
-+    next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt, obligation_ctxt::ObligationCtxt,
-+    snapshot::CombinedSnapshot, traits::{
-+        FnTrait, traits::{Obligation, AliasTy, Binder,
-+    Canonical, ClauseKind, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
-+    InferCtxt, InferOk, InferResult, InspectGoal, NextSolverError}, NextTraitSolveResult,
-+    ObligationCause, Predicate, PredicateKind, PredicateObligation}, ProofTreeVisitor}, Region,
-+    RegionKind, SolverDefId, TraitEnvironment, TraitRef, Ty, TyKind, TypingMode, }, }, },
++        FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt,
+     },
+     TraitEnvironment,
  };
  
  impl<'db> InferenceContext<'_, 'db> {
@@ -634,16 +616,13 @@ Rustfmt size:  35032 bytes
      use rustc_type_ir::{DebruijnIndex, Flags, TypeFolder, TypeSuperFoldable};
 -
      use crate::{
--        infer::unify::InferenceTable,
-+        infer::unify::InferenceTable, infer::{resolve::ReplaceInferWithError,
+         infer::unify::InferenceTable,
          next_solver::{
--            infer::{resolve::ReplaceInferWithError, traits::ObligationCause},
--            normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
++            Const, DbInterner, Goal, Predicate, Region, Term, Ty,
+             infer::{resolve::ReplaceInferWithError, traits::ObligationCause},
+             normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
 -            Const, DbInterner, Goal, Predicate, Region, Term, Ty,
--        },
-+            Const,
-+        normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
-+        traits::ObligationCause}, DbInterner, Goal, Predicate, Region, Term, Ty, },
+         },
      };
 -
      pub(super) struct Resolver<'a, 'db> {

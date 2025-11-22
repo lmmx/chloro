@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7655 bytes
-Chloro size:   7648 bytes
+Chloro size:   7652 bytes
 Rustfmt size:  7898 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,7 @@ Rustfmt size:  7898 bytes
 +use syntax::{SmolStr, ToSmolStr, format_smolstr};
  
  use crate::{
--    context::{PathCompletionCtx, PathKind, PatternContext},
--    item::{Builder, CompletionItem},
--    render::RenderContext,
-+    context::{PathCompletionCtx, item::{Builder, render::RenderContext, CompletionItem}, PathKind,
-+    PatternContext},
- };
+     context::{PathCompletionCtx, PathKind, PatternContext},
  
  pub(crate) fn render_macro(
      ctx: RenderContext<'_>,

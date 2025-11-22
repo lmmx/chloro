@@ -7,14 +7,17 @@ use stdx::{format_to, to_lower_snake_case};
 use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
-    compute_exact_name_match, compute_ref_match, compute_type_match,
     context::{
-        CompleteSemicolon, item::{
-        Builder, match_types,
+        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
+    },
+    item::{
+        Builder, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn,
+        CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
+    },
     render::{
-        RenderContext, CallableSnippets, CompletionContext, CompletionItem,
-    CompletionItemKind, CompletionRelevance, CompletionRelevanceFn, CompletionRelevanceReturnType,
-    CompletionRelevanceTraitInfo, DotAccess, DotAccessKind, PathCompletionCtx, PathKind, }, }, },
+        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
+    },
+    CallableSnippets,
 };
 
 #[derive(Debug)]
@@ -387,8 +390,8 @@ fn params<'db>(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_edit, check_edit_with_config}, tests::{TEST_CONFIG, CallableSnippets,
-        CompletionConfig,
+        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+        CallableSnippets, CompletionConfig,
     };
     #[test]
     fn inserts_parens_for_function_calls() {

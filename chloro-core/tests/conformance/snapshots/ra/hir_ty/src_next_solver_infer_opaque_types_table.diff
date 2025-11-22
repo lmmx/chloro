@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5600 bytes
-Chloro size:   5591 bytes
+Chloro size:   5595 bytes
 Rustfmt size:  5891 bytes
 
 ✗ Outputs DIFFER
@@ -13,9 +13,8 @@ Rustfmt size:  5891 bytes
  
 -use super::OpaqueHiddenType;
  use crate::next_solver::{
--    infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
--    FxIndexMap, OpaqueTypeKey, Ty,
-+    infer::snapshot::undo_log::{InferCtxtUndoLogs, FxIndexMap, OpaqueTypeKey, Ty, UndoLog},
+     infer::snapshot::undo_log::{InferCtxtUndoLogs, UndoLog},
+     FxIndexMap, OpaqueTypeKey, Ty,
  };
 +use super::OpaqueHiddenType;
  

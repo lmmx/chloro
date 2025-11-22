@@ -8,15 +8,20 @@ use std::cmp::Ordering;
 pub use hir::PrefixKind;
 use hir::Semantics;
 use syntax::{
-    algo, ast::{
-        self, edit_in_place::Removable, make, ted, AstNode, Direction, HasAttrs,
-    HasModuleItem, HasVisibility, NodeOrToken, PathSegmentKind, SyntaxKind, SyntaxNode, },
+    algo,
+    ast::{
+        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
+        edit_in_place::Removable, make,
+    },
+    ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
 use crate::{
-    common_prefix, eq_attrs, eq_visibility, imports::merge_imports::{
-        MergeBehavior,
-    try_merge_imports, use_tree_cmp, NormalizationStyle, RootDatabase, },
+    imports::merge_imports::{
+        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
+        try_merge_imports, use_tree_cmp,
+    },
+    RootDatabase,
 };
 
 /// How imports should be grouped into use statements.

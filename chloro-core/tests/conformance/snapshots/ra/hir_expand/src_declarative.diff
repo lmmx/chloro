@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6582 bytes
+Chloro size:   6590 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
@@ -20,15 +20,13 @@ Rustfmt size:  6864 bytes
  use triomphe::Arc;
  
  use crate::{
--    attrs::RawAttrs,
--    db::ExpandDatabase,
+     attrs::RawAttrs,
+     db::ExpandDatabase,
 -    hygiene::{apply_mark, Transparency},
--    tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
-+    apply_mark}, attrs::RawAttrs, db::ExpandDatabase, hygiene::{Transparency, tt, AstId,
-+    ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
++    hygiene::{Transparency, apply_mark},
+     tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
  };
  
- /// Old-style `macro_rules` or the new macros 2.0
          let loc = db.lookup_intern_macro_call(call_id);
          match self.mac.err() {
              Some(_) => ExpandResult::new(

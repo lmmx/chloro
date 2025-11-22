@@ -28,7 +28,9 @@ use hir::{
     HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
 };
 use ide_db::{
-    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
+    famous_defs::FamousDefs,
+    text_edit::TextEditBuilder,
+    FileRange, MiniCore, RootDatabase,
 };
 use ide_db::{FxHashSet, text_edit::TextEdit};
 use itertools::Itertools;
@@ -36,8 +38,8 @@ use macros::UpmapFromRaFixture;
 use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use syntax::{
-    ast::{self, format_smolstr, match_ast, AstNode, HasGenericParams}, SmolStr, SyntaxNode,
-    TextRange, TextSize, WalkEvent,
+    ast::{self, AstNode, HasGenericParams},
+    format_smolstr, match_ast, SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
 };
 
 use crate::{FileId, navigation_target::TryToNav};

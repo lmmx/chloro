@@ -18,7 +18,9 @@ use lsp_types::{
 use serde_json::json;
 
 use crate::{
-    config::{Config, line_index::PositionEncoding, lsp::{ext, semantic_tokens}, RustfmtConfig},
+    config::{Config, RustfmtConfig},
+    line_index::PositionEncoding,
+    lsp::{ext, semantic_tokens},
 };
 
 pub fn server_capabilities(config: &Config) -> ServerCapabilities {

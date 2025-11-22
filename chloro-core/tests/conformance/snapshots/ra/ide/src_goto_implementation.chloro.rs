@@ -1,6 +1,8 @@
 use hir::{AsAssocItem, Impl, Semantics};
 use ide_db::{
-    defs::{Definition, helpers::pick_best_token, NameClass, NameRefClass}, RootDatabase,
+    defs::{Definition, NameClass, NameRefClass},
+    helpers::pick_best_token,
+    RootDatabase,
 };
 use syntax::{AstNode, SyntaxKind::*, T, ast};
 

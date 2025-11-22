@@ -1,6 +1,9 @@
 use ide_db::{
-    assists::AssistId, defs::Definition, search::{FileReference, syntax_helpers::suggest_name,
-    text_edit::TextRange, SearchScope},
+    assists::AssistId,
+    defs::Definition,
+    search::{FileReference, SearchScope},
+    syntax_helpers::suggest_name,
+    text_edit::TextRange,
 };
 use itertools::Itertools;
 use syntax::{
@@ -10,8 +13,8 @@ use syntax::{
 };
 
 use crate::{
-    assist_context::{AssistContext, utils::ref_field_expr::determine_ref_and_parens, Assists,
-    SourceChangeBuilder},
+    assist_context::{AssistContext, Assists, SourceChangeBuilder},
+    utils::ref_field_expr::determine_ref_and_parens,
 };
 
 pub(crate) fn destructure_tuple_binding(

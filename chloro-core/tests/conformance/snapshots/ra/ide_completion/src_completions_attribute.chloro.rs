@@ -13,9 +13,10 @@ use std::sync::LazyLock;
 
 use ide_db::{
     generated::lints::{
-        CLIPPY_LINT_GROUPS,
-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths, FxHashMap, Lint, SymbolKind,
-    CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, RUSTDOC_LINTS, },
+        CLIPPY_LINT_GROUPS, CLIPPY_LINTS, DEFAULT_LINTS, FEATURES, Lint, RUSTDOC_LINTS,
+    },
+    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+    FxHashMap, SymbolKind,
 };
 use itertools::Itertools;
 use syntax::{
@@ -24,8 +25,9 @@ use syntax::{
 };
 
 use crate::{
-    context::{AttrCtx, item::CompletionItem, CompletionContext, Completions, PathCompletionCtx,
-    Qualified},
+    context::{AttrCtx, CompletionContext, PathCompletionCtx, Qualified},
+    item::CompletionItem,
+    Completions,
 };
 pub(crate) use self::derive::complete_derive_path;
 

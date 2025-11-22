@@ -74,9 +74,12 @@ mod tests {
     use expect_test::{Expect, expect};
     use ide_db::text_edit::{TextRange, TextSize};
     use crate::{
-        check_expect, check_with_config}, fixture, inlay_hints::{
+        fixture,
+        inlay_hints::{
             LazyProperty,
-        tests::{DISABLED_CONFIG, InlayHintsConfig, TEST_CONFIG, },
+            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
+        },
+        InlayHintsConfig,
     };
     #[track_caller]
     fn check_chains(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

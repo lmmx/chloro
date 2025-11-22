@@ -12,7 +12,9 @@ use lsp_types::{TextDocumentIdentifier, Url, notification::Exit, request::Shutdo
 use parking_lot::{Mutex, MutexGuard};
 use paths::{Utf8Path, Utf8PathBuf};
 use rust_analyzer::{
-    cli::flags, config::{Config, lsp, main_loop, ConfigChange, ConfigErrors},
+    cli::flags,
+    config::{Config, ConfigChange, ConfigErrors},
+    lsp, main_loop,
 };
 use serde::Serialize;
 use serde_json::{Value, json, to_string_pretty};

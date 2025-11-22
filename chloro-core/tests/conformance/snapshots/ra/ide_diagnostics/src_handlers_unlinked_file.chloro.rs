@@ -7,12 +7,14 @@ use hir::{DefMap, InFile, ModuleSource};
 use ide_db::base_db::RootQueryDb;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    base_db::SourceDatabase, source_change::SourceChange, FileId, FileRange, LineIndexDatabase,
+    base_db::SourceDatabase,
+    source_change::SourceChange,
+    FileId, FileRange, LineIndexDatabase,
 };
 use paths::Utf8Component;
 use syntax::{
-    AstNode, TextRange,
     ast::{self, HasModuleItem, HasName, edit::IndentLevel},
+    AstNode, TextRange,
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};

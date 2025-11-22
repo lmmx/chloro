@@ -1,10 +1,13 @@
 use ide_db::assists::AssistId;
 use itertools::Itertools;
 use syntax::{
-    algo::previous_non_trivia_token, ast::{
-        self, edit::AstNodeEdit, make,
-    syntax_editor::{Element, syntax_factory::SyntaxFactory, AstNode, HasArgList, HasLoopBody,
-    HasName, Position}, RangeItem, T, },
+    algo::previous_non_trivia_token,
+    ast::{
+        self, HasArgList, HasLoopBody, HasName, RangeItem, edit::AstNodeEdit, make,
+        syntax_factory::SyntaxFactory,
+    },
+    syntax_editor::{Element, Position},
+    AstNode, T,
 };
 
 use crate::assist_context::{AssistContext, Assists};

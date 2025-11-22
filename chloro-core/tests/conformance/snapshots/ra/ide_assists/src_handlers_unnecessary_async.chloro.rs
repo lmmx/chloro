@@ -1,6 +1,9 @@
 use ide_db::{
-    assists::AssistId, defs::Definition, search::{FileReference,
-    syntax_helpers::node_ext::full_path_of_name_ref, EditionedFileId, FileReferenceNode},
+    assists::AssistId,
+    defs::Definition,
+    search::{FileReference, FileReferenceNode},
+    syntax_helpers::node_ext::full_path_of_name_ref,
+    EditionedFileId,
 };
 use syntax::{
     AstNode, SyntaxKind, TextRange,

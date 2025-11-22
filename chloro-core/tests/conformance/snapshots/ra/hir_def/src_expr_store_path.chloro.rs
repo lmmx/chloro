@@ -9,7 +9,8 @@ use hir_expand::{
 use intern::Interned;
 
 use crate::{
-    lang_item::LangItemTarget, type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
+    lang_item::LangItemTarget,
+    type_ref::{ConstRef, LifetimeRefId, TypeBound, TypeRefId},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -2,29 +2,18 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14684 bytes
+Chloro size:   14696 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use macros::{TypeFoldable, TypeVisitable};
- use rustc_ast_ir::visit::VisitorResult;
- use rustc_type_ir::{
--    inherent::{IntoKind, ParamEnv as _, PlaceholderLike, SliceLike},
--    relate::Relate,
--    BoundVar, BoundVarIndexKind, ConstVid, DebruijnIndex, FlagComputation, Flags, InferConst,
--    TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
--    WithCachedTypeInfo,
-+    inherent::{IntoKind, relate::Relate, BoundVar, BoundVarIndexKind, ConstVid, DebruijnIndex,
-+    FlagComputation, Flags, InferConst, ParamEnv as _, PlaceholderLike, SliceLike}, TypeFoldable,
-+    TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, WithCachedTypeInfo,
  };
  
  use crate::{
 -    next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
--    MemoryMap,
-+    interner::InternedWrapperNoDebug}, next_solver::{ClauseKind, MemoryMap, ParamEnv,
++    next_solver::{ClauseKind, ParamEnv, interner::InternedWrapperNoDebug},
+     MemoryMap,
  };
 -
  use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};

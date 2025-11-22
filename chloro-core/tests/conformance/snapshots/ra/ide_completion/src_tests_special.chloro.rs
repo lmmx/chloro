@@ -4,9 +4,11 @@ use expect_test::{Expect, expect};
 use ide_db::SymbolKind;
 
 use crate::{
-    check, check_edit, check_no_kw, check_with_trigger_character, do_completion_with_config,
     tests::{
-        TEST_CONFIG, CompletionItemKind, },
+        TEST_CONFIG, check, check_edit, check_no_kw, check_with_trigger_character,
+        do_completion_with_config,
+    },
+    CompletionItemKind,
 };
 
 #[test]

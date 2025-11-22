@@ -2,22 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   52074 bytes
+Chloro size:   52130 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Things related to tys in the next-trait-solver.
- 
- use std::ops::ControlFlow;
- 
- use hir_def::{
--    hir::generics::{TypeOrConstParamData, TypeParamProvenance},
--    lang_item::LangItem,
--    AdtId, HasModule, TypeParamId,
-+    hir::generics::{TypeOrConstParamData, lang_item::LangItem, AdtId, HasModule, TypeParamId,
-+    TypeParamProvenance},
+     lang_item::LangItem,
+     AdtId, HasModule, TypeParamId,
  };
 -use hir_def::{type_ref::Rawness, TraitId};
 +use hir_def::{TraitId, type_ref::Rawness};
@@ -26,48 +18,24 @@ Rustfmt size:  52438 bytes
 +use rustc_ast_ir::{Mutability, try_visit, visit::VisitorResult};
  use rustc_type_ir::{
      inherent::{
--        AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,
--        IntoKind, ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _,
--    },
--    relate::Relate,
--    solve::SizedTraitKind,
--    walk::TypeWalker,
--    AliasTyKind, BoundVar, BoundVarIndexKind, ClosureKind, CoroutineArgs, CoroutineArgsParts,
--    DebruijnIndex, FlagComputation, Flags, FloatTy, FloatVid, InferTy, IntTy, IntVid, Interner,
--    TyVid, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
--    TypeVisitor, UintTy, Upcast, WithCachedTypeInfo,
-+        AdtDef as _, relate::Relate, solve::SizedTraitKind, walk::TypeWalker,
-+    AliasTyKind, BoundExistentialPredicates, BoundVar, BoundVarIndexKind, BoundVarLike,
-+    ClosureKind, Const as _, CoroutineArgs, CoroutineArgsParts, DebruijnIndex, FlagComputation,
-+    Flags, FloatTy, FloatVid, GenericArgs as _, InferTy, IntTy, IntVid, Interner, IntoKind,
-+    ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _, TyVid, TypeFoldable,
-+    TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor, UintTy,
-+    Upcast, WithCachedTypeInfo, },
- };
- 
+         AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,
  use crate::{
--    db::{HirDatabase, InternedCoroutine},
--    next_solver::{
--        abi::Safety,
--        interner::InternedWrapperNoDebug,
--        util::{CoroutineArgsExt, IntegerTypeExt},
+     db::{HirDatabase, InternedCoroutine},
+     next_solver::{
++        AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
++        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
+         abi::Safety,
+         interner::InternedWrapperNoDebug,
+         util::{CoroutineArgsExt, IntegerTypeExt},
 -        AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
 -        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
--    },
--    ImplTraitId,
-+    abi::Safety, db::{HirDatabase, interner::InternedWrapperNoDebug, next_solver::{
-+        AdtDef,
-+    util::{CoroutineArgsExt, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind,
-+    ClosureIdWrapper, Const, CoroutineIdWrapper, FnSig, GenericArg, ImplTraitId, IntegerTypeExt},
-+    InternedCoroutine}, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper, },
+     },
+     ImplTraitId,
  };
 -
  use super::{
--    interned_vec_db,
--    util::{FloatExt, IntegerExt},
--    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId,
-+    interned_vec_db, util::{FloatExt, BoundVarKind, DbInterner, GenericArgs, IntegerExt},
-+    Placeholder, SolverDefId,
+     interned_vec_db,
+     util::{FloatExt, IntegerExt},
  };
  
  pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;

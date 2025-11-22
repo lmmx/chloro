@@ -3,8 +3,8 @@
 use std::{fmt, panic, sync::Mutex};
 
 use base_db::{
-    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
-    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
+    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb, SourceDatabase,
+    SourceRoot, SourceRootId, SourceRootInput,
 };
 use hir_def::{ModuleId, db::DefDatabase, nameres::crate_def_map};
 use hir_expand::EditionedFileId;

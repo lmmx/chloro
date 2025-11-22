@@ -13,12 +13,16 @@ use span::Edition;
 use syntax::ast::HasName;
 
 use crate::{
-    expr_store::path::{GenericArg, generics::{GenericParams, hir::{
-        Array,
-    lang_item::LangItemTarget, signatures::{FnFlags, src::HasSource, type_ref::{ConstRef, AdtId,
-    BindingAnnotation, CaptureBy, ClosureKind, DefWithBodyId, FunctionSignature, GenericArgs},
-    GenericDefId, LifetimeRef, Literal, Movability, Mutability, Statement, StructSignature},
-    TraitBoundModifier, TypeBound, TypeParamId, UseArgRef}, VariantId, WherePredicate}, },
+    expr_store::path::{GenericArg, GenericArgs},
+    hir::{
+        Array, BindingAnnotation, CaptureBy, ClosureKind, Literal, Movability, Statement,
+        generics::{GenericParams, WherePredicate},
+    },
+    lang_item::LangItemTarget,
+    signatures::{FnFlags, FunctionSignature, StructSignature},
+    src::HasSource,
+    type_ref::{ConstRef, LifetimeRef, Mutability, TraitBoundModifier, TypeBound, UseArgRef},
+    AdtId, DefWithBodyId, GenericDefId, TypeParamId, VariantId,
 };
 use crate::{LifetimeParamId, signatures::StructFlags};
 use crate::{item_tree::FieldsShape, signatures::FieldData};

@@ -2,26 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5818 bytes
-Chloro size:   5818 bytes
+Chloro size:   5826 bytes
 Rustfmt size:  5818 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--use crate::{
--    expr_store::pretty::{print_function, print_struct},
--    nameres::crate_def_map,
--    test_db::TestDB,
--    GenericDefId, ModuleDefId,
--};
--use expect_test::{expect, Expect};
 +use expect_test::{Expect, expect};
- use test_fixture::WithFixture;
- 
-+use crate::{
-+    expr_store::pretty::{print_function, nameres::crate_def_map, print_struct}, test_db::TestDB,
-+    GenericDefId, ModuleDefId,
-+};
++use test_fixture::WithFixture;
++
+ use crate::{
+     expr_store::pretty::{print_function, print_struct},
+     nameres::crate_def_map,
+     test_db::TestDB,
+     GenericDefId, ModuleDefId,
+ };
+-use expect_test::{expect, Expect};
+-use test_fixture::WithFixture;
+-
  use super::super::*;
  
 -fn lower_and_print(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

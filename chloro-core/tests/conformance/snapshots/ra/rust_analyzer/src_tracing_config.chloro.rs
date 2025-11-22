@@ -6,7 +6,10 @@ use std::io::{self};
 use anyhow::Context;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
-    filter::{Targets, filter_fn}, fmt::{MakeWriter, layer::SubscriberExt, time}, Layer, Registry,
+    filter::{Targets, filter_fn},
+    fmt::{MakeWriter, time},
+    layer::SubscriberExt,
+    Layer, Registry,
 };
 use tracing_tree::HierarchicalLayer;
 

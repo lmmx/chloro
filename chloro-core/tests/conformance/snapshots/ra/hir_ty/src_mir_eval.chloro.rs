@@ -9,10 +9,14 @@ use std::{borrow::Cow, cell::RefCell, fmt::Write, iter, mem, ops::Range};
 use base_db::{Crate, target::TargetLoadError};
 use either::Either;
 use hir_def::{
-    expr_store::HygieneId, item_tree::FieldsShape, lang_item::LangItem, layout::{TagEncoding,
-    resolver::{HasResolver, signatures::{StaticFlags, AdtId, DefWithBodyId, EnumVariantId,
-    FunctionId, GeneralConstId, HasModule, ItemContainerId, Lookup, StaticId, StructFlags}, TypeNs,
-    ValueNs}, VariantId, Variants},
+    expr_store::HygieneId,
+    item_tree::FieldsShape,
+    lang_item::LangItem,
+    layout::{TagEncoding, Variants},
+    resolver::{HasResolver, TypeNs, ValueNs},
+    signatures::{StaticFlags, StructFlags},
+    AdtId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, HasModule, ItemContainerId,
+    Lookup, StaticId, VariantId,
 };
 use hir_expand::{InFile, mod_path::path, name::Name};
 use intern::sym;
@@ -25,7 +29,8 @@ use rustc_apfloat::{
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, AliasTyKind, IntoKind, Region as _, SliceLike, Ty as _},
+    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
+    AliasTyKind,
 };
 use span::FileId;
 use stdx::never;
@@ -34,15 +39,21 @@ use triomphe::Arc;
 use Address::*;
 
 use crate::{
-    consteval::{self, db::{HirDatabase, display::{ClosureStyle, infer::PointerCast,
-    infer::{DbInternerInferExt, layout::{Layout, lookup_impl_const},
-    method_resolution::{is_dyn_method, next_solver::{
-        Const,
-    obligation_ctxt::ObligationCtxt, traits::FnTrait, traits::ObligationCause}, try_const_usize},
-    utils::detect_variant_from_bytes, CallableDefId, ComplexMemoryMap, ConstBytes, ConstEvalError,
-    ConstKind, DbInterner, DisplayTarget, ErrorGuaranteed, GenericArgs, HirDisplay}, InferCtxt,
-    InternedClosure, InternedClosureId}, LayoutError, MemoryMap, Region, RustcEnumVariantIdx},
-    SolverDefId, TraitEnvironment, Ty, TyKind, TypingMode, UnevaluatedConst, ValueConst, },
+    consteval::{self, ConstEvalError, try_const_usize},
+    db::{HirDatabase, InternedClosure, InternedClosureId},
+    display::{ClosureStyle, DisplayTarget, HirDisplay},
+    infer::PointerCast,
+    layout::{Layout, LayoutError, RustcEnumVariantIdx},
+    method_resolution::{is_dyn_method, lookup_impl_const},
+    next_solver::{
+        Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, Region,
+        SolverDefId, Ty, TyKind, TypingMode, UnevaluatedConst, ValueConst,
+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
+    },
+    traits::FnTrait,
+    utils::detect_variant_from_bytes,
+    CallableDefId, ComplexMemoryMap, MemoryMap, TraitEnvironment,
 };
 use super::{
     return_slot, AggregateKind, BasicBlockId, BinOp, CastKind, LocalId, MirBody, MirLowerError,

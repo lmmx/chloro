@@ -4,7 +4,8 @@ mod overly_long_real_world_cases;
 
 use hir::setup_tracing;
 use ide_db::{
-    assists::{AssistResolveStrategy, base_db::SourceDatabase, ExprFillDefaultMode},
+    assists::{AssistResolveStrategy, ExprFillDefaultMode},
+    base_db::SourceDatabase,
     LineIndexDatabase, RootDatabase,
 };
 use itertools::Itertools;

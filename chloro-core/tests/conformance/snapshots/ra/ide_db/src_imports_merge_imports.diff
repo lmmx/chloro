@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35928 bytes
-Chloro size:   35965 bytes
+Chloro size:   35985 bytes
 Rustfmt size:  36357 bytes
 
 ✗ Outputs DIFFER
@@ -13,21 +13,16 @@ Rustfmt size:  36357 bytes
  use std::cmp::Ordering;
  
  use itertools::{EitherOrBoth, Itertools};
- use parser::T;
  use syntax::{
--    algo,
--    ast::{
+     algo,
+     ast::{
 -        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasName, HasVisibility,
 -        PathSegmentKind,
--    },
--    ted::{self, Position},
--    Direction, SyntaxElement,
-+    algo, ast::{
-+        self, edit_in_place::Removable, make, ted::{self, AstNode, Direction,
-+    HasAttrs, HasName, HasVisibility, PathSegmentKind, Position}, SyntaxElement, },
- };
- 
- use crate::syntax_helpers::node_ext::vis_eq;
++        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
++        make,
+     },
+     ted::{self, Position},
+     Direction, SyntaxElement,
  }
  
  impl MergeBehavior {

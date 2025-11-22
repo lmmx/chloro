@@ -2,21 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5172 bytes
-Chloro size:   5107 bytes
+Chloro size:   5111 bytes
 Rustfmt size:  5492 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use bitflags::bitflags;
- 
- use crate::{
--    item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs},
--    visibility::Visibility,
-+    item_scope::{ImportId, visibility::Visibility, ImportOrExternCrate, ImportOrGlob, ItemInNs},
-     MacroId, ModuleDefId,
- };
- 
      Values,
      Macros,
  }

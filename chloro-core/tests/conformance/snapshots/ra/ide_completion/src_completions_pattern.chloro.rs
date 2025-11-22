@@ -5,8 +5,8 @@ use ide_db::syntax_helpers::suggest_name;
 use syntax::ast::Pat;
 
 use crate::{
-    context::{PathCompletionCtx, CompletionContext, Completions, PatternContext,
-    PatternRefutability, Qualified},
+    context::{PathCompletionCtx, PatternContext, PatternRefutability, Qualified},
+    CompletionContext, Completions,
 };
 
 /// Completes constants and paths in unqualified patterns.

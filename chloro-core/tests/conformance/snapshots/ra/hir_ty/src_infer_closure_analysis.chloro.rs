@@ -4,11 +4,15 @@ use std::{cmp, convert::Infallible, mem};
 
 use either::Either;
 use hir_def::{
-    expr_store::path::Path, hir::{
-        Array, item_tree::FieldsShape, lang_item::LangItem,
-    resolver::ValueNs, AsmOperand, BinaryOp, BindingId, CaptureBy, DefWithBodyId, Expr, ExprId,
-    ExprOrPatId, FieldId, HasModule, Pat, PatId, Statement, TupleFieldId, TupleId, UnaryOp,
-    VariantId, },
+    expr_store::path::Path,
+    hir::{
+        Array, AsmOperand, BinaryOp, BindingId, CaptureBy, Expr, ExprId, ExprOrPatId, Pat, PatId,
+        Statement, UnaryOp,
+    },
+    item_tree::FieldsShape,
+    lang_item::LangItem,
+    resolver::ValueNs,
+    DefWithBodyId, FieldId, HasModule, TupleFieldId, TupleId, VariantId,
 };
 use hir_expand::name::Name;
 use intern::sym;
@@ -20,9 +24,12 @@ use stdx::{format_to, never};
 use syntax::utils::is_raw_identifier;
 
 use crate::{
-    db::{HirDatabase, infer::InferenceContext, mir::{BorrowKind, next_solver::{DbInterner,
-    traits::FnTrait, Adjust, Adjustment, BindingMode, EarlyBinder, GenericArgs, InternedClosure,
-    InternedClosureId}, MirSpan, MutBorrowKind, ProjectionElem}, Ty, TyKind},
+    db::{HirDatabase, InternedClosure, InternedClosureId},
+    infer::InferenceContext,
+    mir::{BorrowKind, MirSpan, MutBorrowKind, ProjectionElem},
+    next_solver::{DbInterner, EarlyBinder, GenericArgs, Ty, TyKind},
+    traits::FnTrait,
+    Adjust, Adjustment, BindingMode,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6718 bytes
-Chloro size:   6664 bytes
+Chloro size:   6692 bytes
 Rustfmt size:  6767 bytes
 
 ✗ Outputs DIFFER
@@ -15,21 +15,16 @@ Rustfmt size:  6767 bytes
  use rustc_hash::FxHashSet;
  use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
  use stdx::never;
- use triomphe::Arc;
- 
- use crate::{
--    consteval,
--    db::HirDatabase,
--    method_resolution::TyFingerprint,
-+    consteval, db::HirDatabase, infer::{InferCtxt, method_resolution::TyFingerprint,
+     db::HirDatabase,
+     method_resolution::TyFingerprint,
      next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
 -        obligation_ctxt::ObligationCtxt,
--        Ty, TyKind,
--    },
--    TraitEnvironment,
-+        Ty, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
-+    TraitEnvironment, TyKind, },
+         Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+     TraitEnvironment,
  };
  
 -fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {

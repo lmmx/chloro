@@ -4,14 +4,18 @@ use std::{env, mem, ops::Not};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase, Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
+    db::ExpandDatabase,
+    Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
     DynCompatibilityViolation, HasCrate, HasSource, HirDisplay, Layout, LayoutError,
     MethodViolationCode, Name, Semantics, Symbol, Trait, Type, TypeInfo, VariantDef,
 };
 use ide_db::{
-    defs::{Definition, documentation::{DocsRangeMap, famous_defs::FamousDefs, find_std_module},
-    generated::lints::{CLIPPY_LINTS, syntax_helpers::prettify_macro_expansion, HasDocs},
-    RootDatabase, DEFAULT_LINTS, FEATURES},
+    defs::{Definition, find_std_module},
+    documentation::{DocsRangeMap, HasDocs},
+    famous_defs::FamousDefs,
+    generated::lints::{CLIPPY_LINTS, DEFAULT_LINTS, FEATURES},
+    syntax_helpers::prettify_macro_expansion,
+    RootDatabase,
 };
 use itertools::Itertools;
 use rustc_apfloat::{
@@ -23,9 +27,11 @@ use stdx::format_to;
 use syntax::{AstNode, AstToken, Direction, SyntaxToken, T, algo, ast, match_ast};
 
 use crate::{
-    doc_links::{remove_links, hover::{SubstTyLen, interpret::render_const_eval_error,
-    notable_traits, rewrite_links}, walk_and_push_ty}, HoverAction, HoverConfig, HoverResult,
-    Markup, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
+    doc_links::{remove_links, rewrite_links},
+    hover::{SubstTyLen, notable_traits, walk_and_push_ty},
+    interpret::render_const_eval_error,
+    HoverAction, HoverConfig, HoverResult, Markup, MemoryLayoutHoverConfig,
+    MemoryLayoutHoverRenderKind,
 };
 
 pub(super) fn type_info_of(

@@ -24,14 +24,6 @@ Rustfmt size:  20619 bytes
  };
  use tracing::debug;
  
- use crate::{
--    infer::InferenceContext,
--    next_solver::{CoercePredicate, PredicateKind, SubtypePredicate, Ty, TyKind},
-+    infer::InferenceContext, next_solver::{CoercePredicate, PredicateKind, SubtypePredicate, Ty,
-+    TyKind},
- };
- 
- #[derive(Copy, Clone)]
              "type-inference-fallback start obligations: {:#?}",
              self.table.fulfillment_cx.pending_obligations()
          );

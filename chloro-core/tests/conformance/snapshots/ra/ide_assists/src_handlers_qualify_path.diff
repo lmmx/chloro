@@ -2,21 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26686 bytes
+Chloro size:   26694 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::cmp::Reverse;
- use std::iter;
- 
- use hir::AsAssocItem;
- use ide_db::RootDatabase;
- use ide_db::{
--    helpers::mod_path_to_ast,
--    imports::import_assets::{ImportCandidate, LocatedImport},
-+    helpers::mod_path_to_ast, imports::import_assets::{ImportCandidate, LocatedImport},
+     helpers::mod_path_to_ast,
+     imports::import_assets::{ImportCandidate, LocatedImport},
  };
 -use syntax::ast::HasGenericArgs;
  use syntax::Edition;
@@ -30,11 +23,7 @@ Rustfmt size:  27284 bytes
  };
  
  use crate::{
--    assist_context::{AssistContext, Assists},
--    handlers::auto_import::find_importable_node,
--    AssistId, GroupLabel,
-+    assist_context::{AssistContext, handlers::auto_import::find_importable_node, AssistId,
-+    Assists}, GroupLabel,
+     AssistId, GroupLabel,
  };
  
 -// Assist: qualify_path

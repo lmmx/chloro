@@ -9,9 +9,13 @@ use la_arena::Idx;
 use thin_vec::ThinVec;
 
 use crate::{
-    builtin_type::{BuiltinInt, expr_store::{
-        ExpressionStore, hir::{ExprId,
-    path::{GenericArg, BuiltinType, BuiltinUint}, LifetimeParamId, Literal}, Path}, TypeParamId, },
+    builtin_type::{BuiltinInt, BuiltinType, BuiltinUint},
+    expr_store::{
+        ExpressionStore,
+        path::{GenericArg, Path},
+    },
+    hir::{ExprId, Literal},
+    LifetimeParamId, TypeParamId,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

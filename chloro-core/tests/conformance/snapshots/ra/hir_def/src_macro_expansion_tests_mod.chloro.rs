@@ -19,25 +19,33 @@ use std::{any::TypeId, iter, ops::Range, sync};
 use base_db::RootQueryDb;
 use expect_test::Expect;
 use hir_expand::{
-    builtin::quote::quote, db::ExpandDatabase, proc_macro::{ProcMacro, span_map::SpanMapRef, AstId,
-    InFile, MacroCallId, MacroCallKind, MacroKind, ProcMacroExpander, ProcMacroExpansionError,
-    ProcMacroKind},
+    builtin::quote::quote,
+    db::ExpandDatabase,
+    proc_macro::{ProcMacro, ProcMacroExpander, ProcMacroExpansionError, ProcMacroKind},
+    span_map::SpanMapRef,
+    AstId, InFile, MacroCallId, MacroCallKind, MacroKind,
 };
 use intern::{Symbol, sym};
 use itertools::Itertools;
 use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
 use stdx::{format_to, format_to_acc};
 use syntax::{
-    ast::{self, edit::IndentLevel}, AstNode, AstPtr, SyntaxKind::{COMMENT, SyntaxNode, EOF, IDENT,
-    LIFETIME_IDENT}, T,
+    ast::{self, edit::IndentLevel},
+    AstNode, AstPtr,
+    SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
+    SyntaxNode, T,
 };
 use syntax_bridge::token_tree_to_syntax_node;
 use test_fixture::WithFixture;
 use tt::{TextRange, TextSize};
 
 use crate::{
-    crate_def_map}, db::DefDatabase, nameres::{DefMap, src::HasSource, test_db::TestDB,
-    tt::TopSubtree, AdtId, Lookup, ModuleDefId, ModuleSource,
+    db::DefDatabase,
+    nameres::{DefMap, ModuleSource, crate_def_map},
+    src::HasSource,
+    test_db::TestDB,
+    tt::TopSubtree,
+    AdtId, Lookup, ModuleDefId,
 };
 
 #[track_caller]

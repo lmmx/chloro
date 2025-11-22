@@ -1,6 +1,6 @@
 use lsp_types::{
-    notification::{DidChangeTextDocument, DidChangeTextDocumentParams, DidOpenTextDocument,
-    DidOpenTextDocumentParams, DidSaveTextDocumentParams, DidSaveTextDocument},
+    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
+    DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
     TextDocumentContentChangeEvent, TextDocumentIdentifier, TextDocumentItem, Url,
     VersionedTextDocumentIdentifier,
 };

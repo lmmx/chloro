@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20441 bytes
-Chloro size:   20463 bytes
+Chloro size:   20471 bytes
 Rustfmt size:  22031 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,6 @@ Rustfmt size:  22031 bytes
  use lsp_types::{
      CallHierarchyServerCapability, CodeActionKind, CodeActionOptions, CodeActionProviderCapability,
      CodeLensOptions, CompletionOptions, CompletionOptionsCompletionItem, DeclarationCapability,
- use serde_json::json;
- 
- use crate::{
--    config::{Config, RustfmtConfig},
--    line_index::PositionEncoding,
--    lsp::{ext, semantic_tokens},
-+    config::{Config, line_index::PositionEncoding, lsp::{ext, semantic_tokens}, RustfmtConfig},
- };
- 
- pub fn server_capabilities(config: &Config) -> ServerCapabilities {
                  _ => None,
              },
          },

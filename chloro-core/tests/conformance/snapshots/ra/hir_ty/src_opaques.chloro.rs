@@ -10,11 +10,14 @@ use syntax::ast;
 use triomphe::Arc;
 
 use crate::{
-    db::{HirDatabase, infer::{DbInternerInferExt, lower::{ImplTraitIdx,
+    db::{HirDatabase, InternedOpaqueTyId},
+    lower::{ImplTraitIdx, ImplTraits},
     next_solver::{
-        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
-    EarlyBinder, ErrorGuaranteed, ImplTraitId, ImplTraits}, InternedOpaqueTyId}, SolverDefId, Ty,
-    TypingMode, },
+        DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
+        infer::{DbInternerInferExt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
+    },
+    ImplTraitId,
 };
 
 pub(crate) fn opaque_types_defined_by(

@@ -2,28 +2,33 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10383 bytes
-Chloro size:   10467 bytes
+Chloro size:   10495 bytes
 Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+     unify::{self as ut, UnifyKey},
+ };
+ use rustc_type_ir::{
+-    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
+-    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
++    inherent::IntoKind,
++    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
++    TypeSuperFoldable, TypeVisitableExt,
+ };
  
  use crate::next_solver::{
      infer::{
 -        iter_idx_range,
--        snapshot::VariableLengths,
--        type_variable::TypeVariableOrigin,
--        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
++        InferCtxt, UnificationTable, iter_idx_range,
+         snapshot::VariableLengths,
+         type_variable::TypeVariableOrigin,
+         unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
 -        InferCtxt, UnificationTable,
--    },
--    Const, ConstKind, DbInterner, Region, Ty, TyKind,
-+        InferCtxt, iter_idx_range, snapshot::VariableLengths,
-+    type_variable::TypeVariableOrigin, unify_key::{ConstVariableOrigin, Const, ConstKind,
-+    ConstVariableValue, ConstVidKey}, DbInterner, Region, Ty, TyKind, UnificationTable, },
+     },
+     Const, ConstKind, DbInterner, Region, Ty, TyKind,
  };
- 
- fn vars_since_snapshot<'db, T>(
  ) -> Range<T>
  where
      T: UnifyKey,

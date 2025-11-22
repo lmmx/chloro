@@ -1,6 +1,7 @@
 use syntax::{
-    ast::{self, syntax_editor::Position, syntax_factory::SyntaxFactory}, AstNode, BinExpr,
-    RangeItem, SyntaxKind, T,
+    ast::{self, AstNode, BinExpr, RangeItem, syntax_factory::SyntaxFactory},
+    syntax_editor::Position,
+    SyntaxKind, T,
 };
 
 use crate::{AssistContext, AssistId, Assists};

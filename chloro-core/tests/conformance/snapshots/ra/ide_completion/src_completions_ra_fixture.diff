@@ -2,21 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2773 bytes
-Chloro size:   2626 bytes
+Chloro size:   2638 bytes
 Rustfmt size:  2828 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Injected completions for `#[rust_analyzer::rust_fixture]`.
- 
- use hir::FilePositionWrapper;
- use ide_db::{
--    impl_empty_upmap_from_ra_fixture,
--    ra_fixture::{RaFixtureAnalysis, UpmapFromRaFixture},
-+    impl_empty_upmap_from_ra_fixture, ra_fixture::{RaFixtureAnalysis, UpmapFromRaFixture},
- };
  use syntax::ast;
+ 
+ use crate::{
+-    completions::Completions, context::CompletionContext, item::CompletionItemLabel,
++    completions::Completions,
++    context::CompletionContext,
++    item::CompletionItemLabel,
+     CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
+ };
  
          crate::completions(
              &analysis.db,

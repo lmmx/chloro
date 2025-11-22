@@ -5,8 +5,10 @@ use core::fmt;
 
 use hir::{Adt, AsAssocItem, Crate, HirDisplay, MacroKind, Semantics};
 use ide_db::{
-    base_db::{CrateOrigin, defs::{Definition, helpers::pick_best_token, FilePosition, IdentClass},
-    LangCrateOrigin}, RootDatabase,
+    base_db::{CrateOrigin, LangCrateOrigin},
+    defs::{Definition, IdentClass},
+    helpers::pick_best_token,
+    FilePosition, RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxKind::*, T};

@@ -3,19 +3,25 @@ use std::collections::BTreeSet;
 use ast::make;
 use either::Either;
 use hir::{
-    db::{ExpandDatabase, sym, FileRange, HirDatabase}, PathResolution, Semantics, TypeInfo,
+    db::{ExpandDatabase, HirDatabase},
+    sym, FileRange, PathResolution, Semantics, TypeInfo,
 };
 use ide_db::{
-    base_db::Crate, defs::Definition, imports::insert_use::remove_path_if_in_use_stmt,
-    path_transform::PathTransform, prettify_macro_expansion}, search::{FileReference,
-    source_change::SourceChangeBuilder, syntax_helpers::{node_ext::expr_as_name_ref,
-    EditionedFileId, FileReferenceNode, RootDatabase, SearchScope},
+    base_db::Crate,
+    defs::Definition,
+    imports::insert_use::remove_path_if_in_use_stmt,
+    path_transform::PathTransform,
+    search::{FileReference, FileReferenceNode, SearchScope},
+    source_change::SourceChangeBuilder,
+    syntax_helpers::{node_ext::expr_as_name_ref, prettify_macro_expansion},
+    EditionedFileId, RootDatabase,
 };
 use itertools::{Itertools, izip};
 use syntax::{
     ast::{
-        self, edit::IndentLevel, edit_in_place::Indent, ted, AstNode, HasArgList,
-    HasGenericArgs, NodeOrToken, Pat, PathExpr, SyntaxKind, },
+        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
+    },
+    ted, AstNode, NodeOrToken, SyntaxKind,
 };
 
 use crate::{

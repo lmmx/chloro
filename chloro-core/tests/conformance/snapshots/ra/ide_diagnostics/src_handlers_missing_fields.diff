@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19114 bytes
-Chloro size:   18845 bytes
+Chloro size:   18869 bytes
 Rustfmt size:  19114 bytes
 
 ✗ Outputs DIFFER
@@ -11,22 +11,19 @@ Rustfmt size:  19114 bytes
  use either::Either;
  use hir::{
 -    AssocItem, FindPathConfig, HirDisplay, InFile, Type,
--    db::{ExpandDatabase, HirDatabase},
+     db::{ExpandDatabase, HirDatabase},
 -    sym,
-+    db::{ExpandDatabase, sym, AssocItem, FindPathConfig, HirDatabase}, HirDisplay, InFile, Type,
++    sym, AssocItem, FindPathConfig, HirDisplay, InFile, Type,
  };
  use ide_db::{
 -    FxHashMap,
--    assists::{Assist, ExprFillDefaultMode},
--    famous_defs::FamousDefs,
--    imports::import_assets::item_for_path_search,
--    source_change::SourceChange,
--    syntax_helpers::tree_diff::diff,
--    text_edit::TextEdit,
--    use_trivial_constructor::use_trivial_constructor,
-+    assists::{Assist, famous_defs::FamousDefs, imports::import_assets::item_for_path_search,
-+    source_change::SourceChange, syntax_helpers::tree_diff::diff, text_edit::TextEdit,
-+    use_trivial_constructor::use_trivial_constructor, ExprFillDefaultMode}, FxHashMap,
+     assists::{Assist, ExprFillDefaultMode},
+     famous_defs::FamousDefs,
+     imports::import_assets::item_for_path_search,
+     syntax_helpers::tree_diff::diff,
+     text_edit::TextEdit,
+     use_trivial_constructor::use_trivial_constructor,
++    FxHashMap,
  };
  use stdx::format_to;
  use syntax::{

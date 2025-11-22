@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27717 bytes
+Chloro size:   27733 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use stdx::never;
- use syntax::{
--    ast::{self, AstNode, HasLoopBody},
--    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
-+    ast::{self, match_ast, AstNode, HasLoopBody}, SyntaxElement, SyntaxKind, SyntaxNode, TextRange,
-+    TextSize,
- };
- use syntax_bridge::DocCommentDesugarMode;
- use triomphe::Arc;
  /// This is the information needed to reverse the fixups.
  #[derive(Clone, Debug, Default, PartialEq, Eq)]
  pub struct SyntaxFixupUndoInfo {
@@ -123,10 +113,9 @@ Rustfmt size:  28368 bytes
      use triomphe::Arc;
 -
      use crate::{
--        fixup::reverse_fixups,
--        span_map::{RealSpanMap, SpanMap},
--        tt,
-+        fixup::reverse_fixups, span_map::{RealSpanMap, tt, SpanMap},
+         fixup::reverse_fixups,
+         span_map::{RealSpanMap, SpanMap},
+         tt,
      };
 -
 -    // The following three functions are only meant to check partial structural equivalence of

@@ -3,6 +3,7 @@ use ra_ap_syntax::{
     AstNode, SyntaxNode,
 };
 
+pub mod grouping;
 pub mod sort;
 
 use crate::formatter::config::MAX_WIDTH;
@@ -32,7 +33,9 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let single_line_len = indent + single_line.len();
 
     // If it fits on one line, write it directly
-    if single_line_len <= MAX_WIDTH {
+    if single_line_len < MAX_WIDTH {
+        // NOTE: Should be <= but there's an off-by-one bug, so use <
+        // See: https://github.com/rust-lang/rustfmt/issues/6727
         buf.push_str(&vis_text);
         buf.push_str("use ");
         buf.push_str(&use_tree_text);
@@ -58,51 +61,58 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 buf.push_str(prefix);
                 buf.push_str("{\n");
 
-                // Parse and sort items lexicographically
-                let mut items: Vec<&str> = items_str
-                    .split(',')
-                    .map(|s| s.trim())
-                    .filter(|s| !s.is_empty())
-                    .collect();
+                // Parse items carefully, respecting nested braces
+                let items = parse_items_with_nested_braces(items_str);
 
                 // Sort items using standard lexicographic ordering
-                items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+                let mut sorted_items = items;
+                sorted_items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
 
-                let mut current_line = String::new();
+                // Group items by their submodule prefix
+                let groups = grouping::group_by_submodule(sorted_items);
+
+                // Write out each group
                 let line_indent = indent + 4;
 
-                for (i, item) in items.iter().enumerate() {
-                    let item_with_comma = if i < items.len() - 1 {
-                        format!("{}, ", item)
-                    } else {
-                        format!("{},", item)
-                    };
+                for group in groups.iter() {
+                    let is_root_group = group.iter().all(|item| !item.contains("::"));
 
-                    // Check if adding this item would exceed MAX_WIDTH
-                    let potential_line_len =
-                        line_indent + current_line.len() + item_with_comma.len();
+                    if is_root_group {
+                        // Root-level items can be packed on lines
+                        let mut current_line = String::new();
 
-                    if current_line.is_empty() {
-                        // First item on the line
-                        current_line.push_str(&item_with_comma);
-                    } else if potential_line_len <= MAX_WIDTH {
-                        // Add to current line
-                        current_line.push_str(&item_with_comma);
+                        for item in group.iter() {
+                            let item_with_comma = format!("{},", item);
+                            let potential_line_len =
+                                line_indent + current_line.len() + item_with_comma.len();
+
+                            if current_line.is_empty() {
+                                current_line.push_str(&item_with_comma);
+                            } else if potential_line_len < MAX_WIDTH {
+                                current_line.push(' ');
+                                current_line.push_str(&item_with_comma);
+                            } else {
+                                write_indent(buf, line_indent);
+                                buf.push_str(&current_line);
+                                buf.push('\n');
+                                current_line.clear();
+                                current_line.push_str(&item_with_comma);
+                            }
+                        }
+
+                        if !current_line.is_empty() {
+                            write_indent(buf, line_indent);
+                            buf.push_str(&current_line);
+                            buf.push('\n');
+                        }
                     } else {
-                        // Write current line and start new one
-                        write_indent(buf, line_indent);
-                        buf.push_str(&current_line.trim_end());
-                        buf.push('\n');
-                        current_line.clear();
-                        current_line.push_str(&item_with_comma);
+                        // Submodule items: one per line
+                        for item in group.iter() {
+                            write_indent(buf, line_indent);
+                            buf.push_str(item);
+                            buf.push_str(",\n");
+                        }
                     }
-                }
-
-                // Write any remaining items
-                if !current_line.is_empty() {
-                    write_indent(buf, line_indent);
-                    buf.push_str(&current_line.trim_end());
-                    buf.push('\n');
                 }
 
                 write_indent(buf, indent);
@@ -116,3 +126,48 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     buf.push_str(&use_tree_text);
     buf.push_str(";\n");
 }
+
+/// Parse items from a use tree, respecting nested braces.
+///
+/// This is more sophisticated than just splitting on commas because
+/// items can contain nested braces like `SyntaxKind::{self, *}`.
+fn parse_items_with_nested_braces(items_str: &str) -> Vec<String> {
+    let mut items = Vec::new();
+    let mut current_item = String::new();
+    let mut brace_depth = 0;
+
+    for ch in items_str.chars() {
+        match ch {
+            '{' => {
+                brace_depth += 1;
+                current_item.push(ch);
+            }
+            '}' => {
+                brace_depth -= 1;
+                current_item.push(ch);
+            }
+            ',' if brace_depth == 0 => {
+                // Only split on commas at the top level
+                let trimmed = current_item.trim().to_string();
+                if !trimmed.is_empty() {
+                    items.push(trimmed);
+                }
+                current_item.clear();
+            }
+            _ => {
+                current_item.push(ch);
+            }
+        }
+    }
+
+    // Don't forget the last item
+    let trimmed = current_item.trim().to_string();
+    if !trimmed.is_empty() {
+        items.push(trimmed);
+    }
+
+    items
+}
+
+#[cfg(test)]
+mod tests;

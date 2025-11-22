@@ -7,7 +7,8 @@ use syntax::ast::HasVisibility;
 use syntax::ast::{self, AstNode, HasName};
 
 use crate::{
-    find_struct_impl}, utils::{add_method_to_adt, AssistContext, AssistId, Assists,
+    utils::{add_method_to_adt, find_struct_impl},
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_enum_try_into_method(

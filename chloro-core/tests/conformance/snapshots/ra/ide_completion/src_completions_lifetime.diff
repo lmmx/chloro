@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6625 bytes
-Chloro size:   6606 bytes
+Chloro size:   6610 bytes
 Rustfmt size:  6782 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,7 @@ Rustfmt size:  6782 bytes
 +use hir::{Name, ScopeDef, sym};
  
  use crate::{
--    completions::Completions,
--    context::{CompletionContext, LifetimeContext, LifetimeKind},
-+    completions::Completions, context::{CompletionContext, LifetimeContext, LifetimeKind},
- };
- 
- /// Completes lifetimes.
+     completions::Completions,
      ctx: &CompletionContext<'_>,
      lifetime_ctx: &LifetimeContext,
  ) {

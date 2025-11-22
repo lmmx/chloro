@@ -4,8 +4,9 @@ use hir::{
 };
 use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
 use syntax::{
-    ast::{self, edit::IndentLevel, make, syntax_editor::Position, syntax_factory::SyntaxFactory},
-    AstNode, HasLoopBody,
+    ast::{self, HasLoopBody, edit::IndentLevel, make, syntax_factory::SyntaxFactory},
+    syntax_editor::Position,
+    AstNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

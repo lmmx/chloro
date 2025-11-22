@@ -150,9 +150,8 @@ Rustfmt size:  11050 bytes
      };
      use syntax_bridge::{
 -        dummy_test_span_utils::{DummyTestSpanMap, DUMMY},
--        syntax_node_to_token_tree, DocCommentDesugarMode,
-+        dummy_test_span_utils::{DUMMY, syntax_node_to_token_tree, DocCommentDesugarMode,
-+        DummyTestSpanMap},
++        dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
+         syntax_node_to_token_tree, DocCommentDesugarMode,
      };
 -
 -    fn check(cfg: &str, expected_features: &[&str]) {

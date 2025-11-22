@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25852 bytes
-Chloro size:   25856 bytes
+Chloro size:   25876 bytes
 Rustfmt size:  25852 bytes
 
 ✗ Outputs DIFFER
@@ -20,16 +20,13 @@ Rustfmt size:  25852 bytes
  
  use crate::{
 -    TraitEnvironment,
--    db::{HirDatabase, InternedClosure, InternedClosureId},
--    display::DisplayTarget,
--    mir::OperandKind,
-+    db::{HirDatabase, display::DisplayTarget, infer::{DbInternerInferExt, mir::OperandKind,
-     next_solver::{
--        DbInterner, GenericArgs, Ty, TypingMode,
--        infer::{DbInternerInferExt, InferCtxt},
--    },
-+        DbInterner, GenericArgs, InferCtxt}, InternedClosure,
-+    InternedClosureId}, TraitEnvironment, Ty, TypingMode, },
+     db::{HirDatabase, InternedClosure, InternedClosureId},
+     display::DisplayTarget,
+     mir::OperandKind,
+         DbInterner, GenericArgs, Ty, TypingMode,
+         infer::{DbInternerInferExt, InferCtxt},
+     },
++    TraitEnvironment,
  };
 -
  use super::{

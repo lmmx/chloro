@@ -36,9 +36,12 @@ pub use _bail as bail;
 pub use _format_err as format_err;
 
 use crate::{
-    defs::Definition, search::{FileReference, source_change::{FileSystemEdit,
-    syntax_helpers::node_ext::expr_as_name_ref, traits::convert_to_def_in_trait,
-    FileReferenceNode}, RootDatabase, SourceChange},
+    defs::Definition,
+    search::{FileReference, FileReferenceNode},
+    source_change::{FileSystemEdit, SourceChange},
+    syntax_helpers::node_ext::expr_as_name_ref,
+    traits::convert_to_def_in_trait,
+    RootDatabase,
 };
 use crate::{
     source_change::ChangeAnnotation,

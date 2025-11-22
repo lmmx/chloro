@@ -2,23 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12261 bytes
+Chloro size:   12265 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #![allow(clippy::print_stderr)]
- 
- mod overly_long_real_world_cases;
- 
- use hir::setup_tracing;
- use ide_db::{
--    assists::{AssistResolveStrategy, ExprFillDefaultMode},
--    base_db::SourceDatabase,
-+    assists::{AssistResolveStrategy, base_db::SourceDatabase, ExprFillDefaultMode},
-     LineIndexDatabase, RootDatabase,
- };
  use itertools::Itertools;
  use stdx::trim_indent;
  use test_fixture::WithFixture;

@@ -17,13 +17,7 @@ Rustfmt size:  21705 bytes
  use base_db::AnchoredPathBuf;
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;
- use span::FileId;
- use stdx::never;
- use syntax::{
--    syntax_editor::{SyntaxAnnotation, SyntaxEditor},
--    AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
-+    syntax_editor::{SyntaxAnnotation, AstNode, SyntaxEditor}, SyntaxElement, SyntaxNode,
-+    SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
+     AstNode, SyntaxElement, SyntaxNode, SyntaxNodePtr, SyntaxToken, TextRange, TextSize,
  };
  
 +use crate::imports::insert_use::{ImportScope, ImportScopeKind};

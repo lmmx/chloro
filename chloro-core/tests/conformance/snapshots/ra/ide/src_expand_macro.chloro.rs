@@ -1,8 +1,10 @@
 use hir::db::ExpandDatabase;
 use hir::{ExpandResult, InFile, Semantics};
 use ide_db::{
-    base_db::Crate, helpers::pick_best_token, syntax_helpers::prettify_macro_expansion, FileId,
-    RootDatabase,
+    base_db::Crate,
+    helpers::pick_best_token,
+    syntax_helpers::prettify_macro_expansion,
+    FileId, RootDatabase,
 };
 use span::{SpanMap, SyntaxContext, TextRange, TextSize};
 use stdx::format_to;

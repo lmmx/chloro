@@ -2,20 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20830 bytes
+Chloro size:   20834 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- use ide_db::text_edit::TextRange;
- use ide_db::{
--    defs::Definition,
--    search::{FileReference, ReferenceCategory, SearchScope},
--    FxHashMap, RootDatabase,
-+    defs::Definition, search::{FileReference, FxHashMap, ReferenceCategory, RootDatabase,
-+    SearchScope},
+     FxHashMap, RootDatabase,
  };
  use syntax::{
 -    ast::{self, Rename},

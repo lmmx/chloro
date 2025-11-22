@@ -34,12 +34,15 @@ pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithou
 pub use coerce::could_coerce;
 use either::Either;
 use hir_def::{
-    expr_store::{Body, hir::{BindingAnnotation, lang_item::{LangItem, lang_item}, layout::Integer,
-    path::Path}, resolver::{HasResolver, signatures::{ConstSignature, type_ref::{ConstRef, AdtId,
-    AssocItemId, BindingId, ConstId, DefWithBodyId, ExprId, ExprOrPatId, ExpressionStore, FieldId,
-    FunctionId, GenericDefId, GenericParamId, HygieneId, ItemContainerId, LabelId, LangItemTarget,
-    LifetimeRefId, LocalFieldId, Lookup, PatId}, ResolveValueResult, Resolver, StaticSignature},
-    TraitId, TupleFieldId, TupleId, TypeAliasId, TypeNs, TypeRefId}, ValueNs}, VariantId,
+    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
+    hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
+    lang_item::{LangItem, LangItemTarget, lang_item},
+    layout::Integer,
+    resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
+    signatures::{ConstSignature, StaticSignature},
+    type_ref::{ConstRef, LifetimeRefId, TypeRefId},
+    AdtId, AssocItemId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId, GenericParamId,
+    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleFieldId, TupleId, TypeAliasId, VariantId,
 };
 use hir_expand::{mod_path::ModPath, name::Name};
 use indexmap::IndexSet;
@@ -48,23 +51,31 @@ use la_arena::ArenaMap;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{AdtDef, AliasTyKind, IntoKind, Region as _, SliceLike, Ty as _}, TypeFoldable,
+    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
+    AliasTyKind, TypeFoldable,
 };
 use stdx::never;
 use triomphe::Arc;
 pub use unify::{could_unify, could_unify_deeply};
 
 use crate::{
-    abi::Safety, db::{HirDatabase, diagnostics::TyLoweringDiagnostic, diagnostics::{Diagnostics,
-    expr::ExprIsRead, infer::traits::ObligationCause, infer::{
-        coerce::{CoerceMany,
+    db::{HirDatabase, InternedClosureId, InternedOpaqueTyId},
+    infer::{
+        coerce::{CoerceMany, DynamicCoerceMany},
+        diagnostics::{Diagnostics, InferenceTyLoweringContext as TyLoweringContext},
+        expr::ExprIsRead,
+    },
     lower::{
-        ImplTraitIdx, mir::MirSpan, next_solver::{
-        AliasTy, traits::FnTrait,
-    utils::TargetFeatureIsSafeInTarget, Const, DbInterner, DynamicCoerceMany}, ErrorGuaranteed,
-    GenericArg, GenericArgs, ImplTraitId, ImplTraitLoweringMode, IncorrectGenericsLenKind,
-    InferenceTyLoweringContext as TyLoweringContext}, InternedClosureId, InternedOpaqueTyId},
-    LifetimeElisionKind, PathLoweringDiagnostic, Region, TargetFeatures, Ty, TyKind, Tys, }, }, },
+        ImplTraitIdx, ImplTraitLoweringMode, LifetimeElisionKind, diagnostics::TyLoweringDiagnostic,
+    },
+    mir::MirSpan,
+    next_solver::{
+        AliasTy, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Region, Ty, TyKind,
+        Tys, abi::Safety, infer::traits::ObligationCause,
+    },
+    traits::FnTrait,
+    utils::TargetFeatureIsSafeInTarget,
+    ImplTraitId, IncorrectGenericsLenKind, PathLoweringDiagnostic, TargetFeatures,
 };
 
 /// The entry point of type inference.

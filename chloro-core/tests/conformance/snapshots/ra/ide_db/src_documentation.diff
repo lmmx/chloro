@@ -12,11 +12,7 @@ Rustfmt size:  12398 bytes
 +
  use either::Either;
  use hir::{
--    db::{DefDatabase, HirDatabase},
--    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, InFile,
-+    db::{DefDatabase, resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs,
-+    HirDatabase}, InFile,
- };
+     db::{DefDatabase, HirDatabase},
  use itertools::Itertools;
  use span::{TextRange, TextSize};
  use syntax::{

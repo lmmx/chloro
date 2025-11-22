@@ -2,26 +2,21 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3185 bytes
-Chloro size:   3164 bytes
+Chloro size:   3176 bytes
 Rustfmt size:  3345 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ToSmolStr;
  
  use crate::{
--    render::{
+     render::{
 -        variant::{format_literal_label, format_literal_lookup, visible_fields},
--        RenderContext,
--    },
--    CompletionItem, CompletionItemKind,
-+    format_literal_lookup, render::{
-+        RenderContext, variant::{format_literal_label,
-+    visible_fields}, CompletionItem, CompletionItemKind, },
+         RenderContext,
++        variant::{format_literal_label, format_literal_lookup, visible_fields},
+     },
+     CompletionItem, CompletionItemKind,
  };
- 
- pub(crate) fn render_union_literal(
      local_name: Option<Name>,
  ) -> Option<CompletionItem> {
      let name = local_name.unwrap_or_else(|| un.name(ctx.db()));

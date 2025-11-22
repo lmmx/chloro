@@ -3,16 +3,17 @@
 use hir_def::{GenericDefId, GenericParamId};
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_type_ir::{
-    inherent::{GenericArg as _, relate::{Relate, ClosureArgs, CollectAndApply, ConstVid,
-    CoroutineArgs, CoroutineClosureArgs, FnSigTys, GenericArgKind, GenericsOf, Interner, IntoKind,
-    SliceLike, Term as _, TermKind, Ty as _}, TyKind, TyVid, Variance, VarianceDiagInfo},
+    inherent::{GenericArg as _, GenericsOf, IntoKind, SliceLike, Term as _, Ty as _},
+    relate::{Relate, VarianceDiagInfo},
+    ClosureArgs, CollectAndApply, ConstVid, CoroutineArgs, CoroutineClosureArgs, FnSigTys,
+    GenericArgKind, Interner, TermKind, TyKind, TyVid, Variance,
 };
 use smallvec::SmallVec;
 
 use crate::next_solver::{PolyFnSig, interned_vec_db};
 use super::{
-    generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
-    SolverDefId, Ty, Tys,
+    generics::Generics,
+    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]

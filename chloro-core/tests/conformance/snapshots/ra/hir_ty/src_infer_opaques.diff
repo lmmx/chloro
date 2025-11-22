@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5735 bytes
+Chloro size:   5743 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -15,17 +15,14 @@ Rustfmt size:  5762 bytes
  use tracing::{debug, instrument};
  
  use crate::{
--    infer::InferenceContext,
-+    infer::InferenceContext, infer::{opaque_types::OpaqueHiddenType,
+     infer::InferenceContext,
      next_solver::{
 -        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
--        EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
--    },
-+        EarlyBinder, traits::ObligationCause}, OpaqueTypeKey, SolverDefId,
-+    TypingMode, },
+         EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
++        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
+     },
  };
  
- impl<'db> InferenceContext<'_, 'db> {
          // We clone the opaques instead of stealing them here as they are still used for
          // normalization in the next generation trait solver.
          let opaque_types: Vec<_> = self.table.infer_ctxt.clone_opaque_types();

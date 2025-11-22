@@ -16,10 +16,13 @@ use rustc_type_ir::{
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, infer::{DbInternerInferExt, next_solver::{
-        Canonical,
-    obligation_ctxt::ObligationCtxt, traits::ObligationCause}, DbInterner, GenericArgs, Goal,
-    InferCtxt, ParamEnv, Predicate, SolverContext, Span, Ty, TyKind, },
+    db::HirDatabase,
+    next_solver::{
+        Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
+        TyKind,
+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
+        obligation_ctxt::ObligationCtxt,
+    },
 };
 
 /// A set of clauses that we assume to be true. E.g. if we are inside this function:

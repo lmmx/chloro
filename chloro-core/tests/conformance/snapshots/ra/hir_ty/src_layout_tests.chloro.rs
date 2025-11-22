@@ -11,8 +11,11 @@ use test_fixture::WithFixture;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, layout::{Layout, next_solver::{DbInterner, setup_tracing, test_db::TestDB,
-    GenericArgs}, LayoutError},
+    db::HirDatabase,
+    layout::{Layout, LayoutError},
+    next_solver::{DbInterner, GenericArgs},
+    setup_tracing,
+    test_db::TestDB,
 };
 
 fn current_machine_target_data() -> TargetData {

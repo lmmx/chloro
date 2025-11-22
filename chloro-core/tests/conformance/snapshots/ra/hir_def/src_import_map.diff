@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33395 bytes
-Chloro size:   33638 bytes
+Chloro size:   33646 bytes
 Rustfmt size:  34403 bytes
 
 ✗ Outputs DIFFER
@@ -18,20 +18,14 @@ Rustfmt size:  34403 bytes
  use hir_expand::name::Name;
  use itertools::Itertools;
  use rustc_hash::FxHashSet;
- use triomphe::Arc;
- 
  use crate::{
--    db::DefDatabase,
--    item_scope::{ImportOrExternCrate, ItemInNs},
+     db::DefDatabase,
+     item_scope::{ImportOrExternCrate, ItemInNs},
 -    nameres::{assoc::TraitItems, crate_def_map, DefMap},
--    visibility::Visibility,
--    AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
-+    assoc::TraitItems, crate_def_map}, db::DefDatabase, item_scope::{ImportOrExternCrate,
-+    nameres::{DefMap, visibility::Visibility, AssocItemId, AttrDefId, Complete, FxIndexMap,
-+    ItemInNs}, ModuleDefId, ModuleId, TraitId,
++    nameres::{DefMap, assoc::TraitItems, crate_def_map},
+     visibility::Visibility,
+     AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
  };
- 
- /// Item import details stored in the `ImportMap`.
  type ImportMapIndex = FxIndexMap<ItemInNs, (SmallVec<[ImportInfo; 1]>, IsTraitAssocItem)>;
  
  impl ImportMap {

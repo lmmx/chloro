@@ -22,10 +22,12 @@ use rustc_type_ir::{
 use stdx::never;
 
 use crate::{
-    db::HirDatabase, generics::{Generics, generics}, next_solver::{
-        Const, ConstKind,
-    DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region, RegionKind, Term, Ty,
-    TyKind, VariancesOf, },
+    db::HirDatabase,
+    generics::{Generics, generics},
+    next_solver::{
+        Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
+        RegionKind, Term, Ty, TyKind, VariancesOf,
+    },
 };
 
 pub(crate) fn variances_of(
@@ -394,7 +396,9 @@ impl<'db> Context<'db> {
 mod tests {
     use expect_test::{Expect, expect};
     use hir_def::{
-        hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
+        hir::generics::GenericParamDataRef,
+        src::HasSource,
+        AdtId, GenericDefId, ModuleDefId,
     };
     use itertools::Itertools;
     use rustc_type_ir::{Variance, inherent::SliceLike};

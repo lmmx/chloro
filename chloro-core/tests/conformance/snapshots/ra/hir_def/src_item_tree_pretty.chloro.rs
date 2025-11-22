@@ -6,10 +6,11 @@ use span::{Edition, ErasedFileAstId};
 
 use crate::{
     item_tree::{
-        Const, visibility::RawVisibility, DefDatabase, Enum, ExternBlock,
-    ExternCrate, FieldsShape, Function, Impl, ItemTree, Macro2, MacroCall, MacroRules, Mod,
-    ModItemId, ModKind, RawAttrs, RawVisibilityId, Static, Struct, Trait, TypeAlias, Union, Use,
-    UseTree, UseTreeKind, },
+        Const, DefDatabase, Enum, ExternBlock, ExternCrate, FieldsShape, Function, Impl, ItemTree,
+        Macro2, MacroCall, MacroRules, Mod, ModItemId, ModKind, RawAttrs, RawVisibilityId, Static,
+        Struct, Trait, TypeAlias, Union, Use, UseTree, UseTreeKind,
+    },
+    visibility::RawVisibility,
 };
 
 pub(super) fn print_item_tree(

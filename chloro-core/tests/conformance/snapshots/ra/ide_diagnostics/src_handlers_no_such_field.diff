@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11158 bytes
-Chloro size:   11034 bytes
+Chloro size:   11038 bytes
 Rustfmt size:  11215 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,11 @@ Rustfmt size:  11215 bytes
  };
  
  use crate::{
-     DiagnosticsContext,
+-    fix, handlers::private_field::field_is_private_fixes, Assist, Diagnostic, DiagnosticCode,
+-    DiagnosticsContext,
++    fix,
++    handlers::private_field::field_is_private_fixes,
++    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext,
  };
  
 -// Diagnostic: no-such-field

@@ -8,16 +8,6 @@ Rustfmt size:  6998 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use parser::T;
- use span::TextSize;
- use syntax::{
--    ast::{self, AstChildren, HasArgList, HasAttrs, HasName},
--    match_ast, AstNode, NodeOrToken, SyntaxToken,
-+    ast::{self, match_ast, AstChildren, AstNode, HasArgList, HasAttrs, HasName}, NodeOrToken,
-+    SyntaxToken,
- };
- 
- use crate::RootDatabase;
  
  impl<'db> ActiveParameter<'db> {
      /// Returns information about the call argument this token is part of.

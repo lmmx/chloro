@@ -7,21 +7,30 @@ use std::slice;
 
 pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
 use hir::{
-    db::{ExpandDatabase, DisplayTarget, HasAttrs as HirHasAttrs, HirDatabase}, HirDisplay, InFile,
-    ModuleDef, PathResolution, Semantics,
+    db::{ExpandDatabase, HirDatabase},
+    DisplayTarget, HasAttrs as HirHasAttrs, HirDisplay, InFile, ModuleDef, PathResolution,
+    Semantics,
 };
 use ide_db::{
-    assists::ExprFillDefaultMode, famous_defs::FamousDefs, path_transform::PathTransform,
-    prettify_macro_expansion}, syntax_helpers::{node_ext::preorder_expr, RootDatabase,
+    assists::ExprFillDefaultMode,
+    famous_defs::FamousDefs,
+    path_transform::PathTransform,
+    syntax_helpers::{node_ext::preorder_expr, prettify_macro_expansion},
+    RootDatabase,
 };
 use stdx::format_to;
 use syntax::{
     ast::{
-        self, edit::{AstNodeEdit, edit_in_place::AttrsOwnerEdit, make,
-    syntax_editor::{Removable, syntax_factory::SyntaxFactory, AstNode, AstToken, Direction,
-    HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, IndentLevel}, NodeOrToken,
-    SourceFile, SyntaxEditor}, SyntaxKind::*, SyntaxNode, SyntaxToken, TextRange, TextSize,
-    WalkEvent, Whitespace, T, },
+        self, HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, Whitespace,
+        edit::{AstNodeEdit, IndentLevel},
+        edit_in_place::AttrsOwnerEdit,
+        make,
+        syntax_factory::SyntaxFactory,
+    },
+    syntax_editor::{Removable, SyntaxEditor},
+    AstNode, AstToken, Direction, NodeOrToken, SourceFile,
+    SyntaxKind::*,
+    SyntaxNode, SyntaxToken, TextRange, TextSize, WalkEvent, T,
 };
 
 use crate::{

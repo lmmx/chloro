@@ -4,7 +4,8 @@
 use hir::{HasSource, PathResolution};
 use ide_db::FxHashMap;
 use ide_db::{
-    defs::Definition, imports::insert_use::ast_to_remove_for_path_in_use_stmt,
+    defs::Definition,
+    imports::insert_use::ast_to_remove_for_path_in_use_stmt,
     search::FileReference,
 };
 use itertools::Itertools;

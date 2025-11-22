@@ -2,24 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   21031 bytes
+Chloro size:   21035 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Things related to generic args in the next-trait-solver.
- 
- use hir_def::{GenericDefId, GenericParamId};
- use macros::{TypeFoldable, TypeVisitable};
- use rustc_type_ir::{
--    inherent::{GenericArg as _, GenericsOf, IntoKind, SliceLike, Term as _, Ty as _},
--    relate::{Relate, VarianceDiagInfo},
--    ClosureArgs, CollectAndApply, ConstVid, CoroutineArgs, CoroutineClosureArgs, FnSigTys,
--    GenericArgKind, Interner, TermKind, TyKind, TyVid, Variance,
-+    inherent::{GenericArg as _, relate::{Relate, ClosureArgs, CollectAndApply, ConstVid,
-+    CoroutineArgs, CoroutineClosureArgs, FnSigTys, GenericArgKind, GenericsOf, Interner, IntoKind,
-+    SliceLike, Term as _, TermKind, Ty as _}, TyKind, TyVid, Variance, VarianceDiagInfo},
  };
  use smallvec::SmallVec;
  
@@ -27,8 +15,13 @@ Rustfmt size:  21200 bytes
 -
 +use crate::next_solver::{PolyFnSig, interned_vec_db};
  use super::{
-     generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
-     SolverDefId, Ty, Tys,
+-    generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
+-    SolverDefId, Ty, Tys,
++    generics::Generics,
++    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
+ };
+ 
+ #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]
  }
  
  impl<'db> std::fmt::Debug for GenericArg<'db> {

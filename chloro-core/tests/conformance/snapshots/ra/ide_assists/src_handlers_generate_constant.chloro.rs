@@ -5,7 +5,8 @@ use ide_db::{
     defs::{Definition, NameRefClass},
 };
 use syntax::{
-    ast::{self, edit::IndentLevel}, AstNode, Direction, NameRef, SyntaxKind, TextSize,
+    ast::{self, NameRef, edit::IndentLevel},
+    AstNode, Direction, SyntaxKind, TextSize,
 };
 
 use crate::assist_context::{AssistContext, Assists};

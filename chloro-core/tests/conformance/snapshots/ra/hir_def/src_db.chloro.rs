@@ -3,8 +3,8 @@
 use base_db::{Crate, RootQueryDb, SourceDatabase};
 use either::Either;
 use hir_expand::{
-    db::ExpandDatabase, EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId,
-    MacroDefKind,
+    db::ExpandDatabase,
+    EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId, MacroDefKind,
 };
 use intern::sym;
 use la_arena::ArenaMap;
@@ -13,20 +13,27 @@ use syntax::{AstPtr, ast};
 use triomphe::Arc;
 
 use crate::{
-    attr::{Attrs, expr_store::{
-        Body, file_item_tree_query}, hir::generics::GenericParams,
-    import_map::ImportMap, item_tree::{ItemTree, lang_item::{self, nameres::crate_def_map,
-    scope::ExprScopes, signatures::{
-        ConstSignature, tt, visibility::{self, AssocItemId,
-    AttrDefId, AttrsWithOwner}, BlockId, BlockLoc, BodySourceMap, ConstId, ConstLoc, DefWithBodyId,
-    EnumId, EnumLoc, EnumSignature, EnumVariantId, EnumVariantLoc, ExpressionStore,
-    ExpressionStoreSourceMap, ExternBlockId, ExternBlockLoc, ExternCrateId, ExternCrateLoc,
-    FunctionId, FunctionLoc, FunctionSignature, GenericDefId, ImplId, ImplLoc, ImplSignature,
-    LangItem}, LocalFieldId, Macro2Id, Macro2Loc, MacroExpander, MacroId, MacroRulesId,
-    MacroRulesLoc, MacroRulesLocFlags, ProcMacroId, ProcMacroLoc, StaticId, StaticLoc,
-    StaticSignature, StructId, StructLoc, StructSignature, TraitId, TraitLoc, TraitSignature,
-    TypeAliasId, TypeAliasLoc, TypeAliasSignature, UnionId, UnionLoc, UnionSignature, UseId,
-    UseLoc, VariantId, Visibility}, }, },
+    attr::{Attrs, AttrsWithOwner},
+    expr_store::{
+        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, scope::ExprScopes,
+    },
+    hir::generics::GenericParams,
+    import_map::ImportMap,
+    item_tree::{ItemTree, file_item_tree_query},
+    lang_item::{self, LangItem},
+    nameres::crate_def_map,
+    signatures::{
+        ConstSignature, EnumSignature, FunctionSignature, ImplSignature, StaticSignature,
+        StructSignature, TraitSignature, TypeAliasSignature, UnionSignature,
+    },
+    tt,
+    visibility::{self, Visibility},
+    AssocItemId, AttrDefId, BlockId, BlockLoc, ConstId, ConstLoc, DefWithBodyId, EnumId, EnumLoc,
+    EnumVariantId, EnumVariantLoc, ExternBlockId, ExternBlockLoc, ExternCrateId, ExternCrateLoc,
+    FunctionId, FunctionLoc, GenericDefId, ImplId, ImplLoc, LocalFieldId, Macro2Id, Macro2Loc,
+    MacroExpander, MacroId, MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ProcMacroId,
+    ProcMacroLoc, StaticId, StaticLoc, StructId, StructLoc, TraitId, TraitLoc, TypeAliasId,
+    TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
 };
 
 #[query_group::query_group(InternDatabaseStorage)]

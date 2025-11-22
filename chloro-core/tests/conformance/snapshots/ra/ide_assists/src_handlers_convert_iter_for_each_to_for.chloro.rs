@@ -2,8 +2,8 @@ use hir::{Name, sym};
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    AstNode,
     ast::{self, HasArgList, HasLoopBody, edit_in_place::Indent, make},
+    AstNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

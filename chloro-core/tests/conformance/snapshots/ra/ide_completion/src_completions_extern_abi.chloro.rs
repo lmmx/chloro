@@ -6,7 +6,9 @@ use syntax::{
 };
 
 use crate::{
-    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
+    completions::Completions,
+    context::CompletionContext,
+    CompletionItem, CompletionItemKind,
 };
 
 const SUPPORTED_CALLING_CONVENTIONS: &[&str] = &[

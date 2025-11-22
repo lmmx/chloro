@@ -2,24 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11436 bytes
-Chloro size:   12176 bytes
+Chloro size:   12184 bytes
 Rustfmt size:  11695 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Provides set of implementation for hir's objects that allows get back location in file.
+ use tt::TextRange;
  
- use either::Either;
- use hir_def::{
--    nameres::{ModuleOrigin, ModuleSource},
--    src::{HasChildSource, HasSource as _},
--    CallableDefId, Lookup, MacroId, VariantId,
-+    nameres::{ModuleOrigin, src::{HasChildSource, CallableDefId, HasSource as _}, Lookup, MacroId,
-+    ModuleSource}, VariantId,
+ use crate::{
+-    db::HirDatabase, Adt, Callee, Const, Enum, ExternCrateDecl, Field, FieldSource, Function, Impl,
+-    InlineAsmOperand, Label, LifetimeParam, LocalSource, Macro, Module, Param, SelfParam, Static,
+-    Struct, Trait, TypeAlias, TypeOrConstParam, Union, Variant, VariantDef,
++    db::HirDatabase,
++    Adt, Callee, Const, Enum, ExternCrateDecl, Field, FieldSource, Function, Impl, InlineAsmOperand,
++    Label, LifetimeParam, LocalSource, Macro, Module, Param, SelfParam, Static, Struct, Trait,
++    TypeAlias, TypeOrConstParam, Union, Variant, VariantDef,
  };
- use hir_expand::{EditionedFileId, HirFileId, InFile};
- use hir_ty::db::InternedClosure;
  
  pub trait HasSource {
      type Ast;

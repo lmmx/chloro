@@ -2,30 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7261 bytes
-Chloro size:   7151 bytes
+Chloro size:   7171 bytes
 Rustfmt size:  7430 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use triomphe::Arc;
- 
- use crate::{
--    db::{HirDatabase, InternedOpaqueTyId},
--    lower::{ImplTraitIdx, ImplTraits},
-+    db::{HirDatabase, infer::{DbInternerInferExt, lower::{ImplTraitIdx,
+     db::{HirDatabase, InternedOpaqueTyId},
+     lower::{ImplTraitIdx, ImplTraits},
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt},
 -        obligation_ctxt::ObligationCtxt,
--        DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
--    },
--    ImplTraitId,
-+        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
-+    EarlyBinder, ErrorGuaranteed, ImplTraitId, ImplTraits}, InternedOpaqueTyId}, SolverDefId, Ty,
-+    TypingMode, },
+         DbInterner, EarlyBinder, ErrorGuaranteed, SolverDefId, Ty, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt,
+     },
+     ImplTraitId,
  };
- 
- pub(crate) fn opaque_types_defined_by(
              result,
          );
      }

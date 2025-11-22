@@ -14,8 +14,10 @@ use serde::{Serialize, de::DeserializeOwned};
 use stdx::thread::ThreadIntent;
 
 use crate::{
-    global_state::{GlobalState, lsp::LspError, main_loop::Task, version::version,
-    GlobalStateSnapshot},
+    global_state::{GlobalState, GlobalStateSnapshot},
+    lsp::LspError,
+    main_loop::Task,
+    version::version,
 };
 
 /// A visitor for routing a raw JSON request to an appropriate handler function.

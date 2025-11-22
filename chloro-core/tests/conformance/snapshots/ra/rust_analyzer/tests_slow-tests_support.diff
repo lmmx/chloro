@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20684 bytes
-Chloro size:   20892 bytes
+Chloro size:   20900 bytes
 Rustfmt size:  21158 bytes
 
 ✗ Outputs DIFFER
@@ -20,10 +20,7 @@ Rustfmt size:  21158 bytes
  use parking_lot::{Mutex, MutexGuard};
  use paths::{Utf8Path, Utf8PathBuf};
  use rust_analyzer::{
--    cli::flags,
--    config::{Config, ConfigChange, ConfigErrors},
--    lsp, main_loop,
-+    cli::flags, config::{Config, lsp, main_loop, ConfigChange, ConfigErrors},
+     lsp, main_loop,
  };
  use serde::Serialize;
 -use serde_json::{json, to_string_pretty, Value};

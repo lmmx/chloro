@@ -10,15 +10,16 @@ use hir::{AsAssocItem, FindPathConfig, HasContainer, HirDisplay, InFile, Name, S
 pub use ide_db::rename::RenameError;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    bail, defs::{Definition, format_err, rename::{IdentifierKind,
-    source_change::SourceChangeBuilder, source_edit_from_references}, FileId, FileRange, NameClass,
-    NameRefClass}, RenameDefinition, RootDatabase,
+    defs::{Definition, NameClass, NameRefClass},
+    rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
+    source_change::SourceChangeBuilder,
+    FileId, FileRange, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::{always, format_to, never};
 use syntax::{
-    ast::{self, prec::ExprPrecedence}, AstNode, HasArgList, SyntaxKind, SyntaxNode, TextRange,
-    TextSize,
+    ast::{self, HasArgList, prec::ExprPrecedence},
+    AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 
 use crate::{FilePosition, RangeInfo, SourceChange};

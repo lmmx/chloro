@@ -5,7 +5,8 @@ use syntax::{
 };
 
 use crate::{
-    string_prefix, string_suffix}, utils::{required_hashes, AssistContext, AssistId, Assists,
+    utils::{required_hashes, string_prefix, string_suffix},
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn make_raw_string(

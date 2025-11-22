@@ -3,7 +3,8 @@ use ide_db::assists::AssistId;
 use syntax::{AstNode, ast};
 
 use crate::{
-    assist_context::{AssistContext, handlers::qualify_path::QualifyCandidate, Assists},
+    assist_context::{AssistContext, Assists},
+    handlers::qualify_path::QualifyCandidate,
 };
 
 pub(crate) fn qualify_method_call(

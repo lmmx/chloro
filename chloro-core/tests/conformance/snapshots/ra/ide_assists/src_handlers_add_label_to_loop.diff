@@ -2,27 +2,27 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4498 bytes
-Chloro size:   4191 bytes
+Chloro size:   4219 bytes
 Rustfmt size:  4506 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
  use ide_db::{
-     source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
+-    source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
++    source_change::SourceChangeBuilder,
++    syntax_helpers::node_ext::for_each_break_and_continue_expr,
  };
  use syntax::{
      ast::{
 -        self,
--        make::{self, tokens},
--        syntax_factory::SyntaxFactory,
++        self, AstNode, HasLoopBody,
+         make::{self, tokens},
+         syntax_factory::SyntaxFactory,
 -        AstNode, HasLoopBody,
--    },
--    syntax_editor::{Position, SyntaxEditor},
--    SyntaxToken, T,
-+        self, make::{self, syntax_editor::{Position, syntax_factory::SyntaxFactory,
-+    tokens}, AstNode, HasLoopBody, SyntaxEditor}, SyntaxToken, T, },
- };
+     },
+     syntax_editor::{Position, SyntaxEditor},
+     SyntaxToken, T,
  
  use crate::{AssistContext, AssistId, Assists};
  

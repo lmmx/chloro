@@ -1,14 +1,16 @@
 //! Syntax highlighting for format macro strings.
 
 use ide_db::{
-    defs::Definition, is_format_string, lex_format_specifiers},
-    syntax_helpers::format_string::{FormatSpecifier, SymbolKind,
+    defs::Definition,
+    syntax_helpers::format_string::{FormatSpecifier, is_format_string, lex_format_specifiers},
+    SymbolKind,
 };
 use span::Edition;
 use syntax::{AstToken, ast};
 
 use crate::{
-    highlights::Highlights}, syntax_highlighting::{highlight::highlight_def, HlRange, HlTag,
+    syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
+    HlRange, HlTag,
 };
 
 pub(super) fn highlight_format_string(

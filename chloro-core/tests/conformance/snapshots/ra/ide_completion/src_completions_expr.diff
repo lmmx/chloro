@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   20991 bytes
+Chloro size:   20995 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -17,15 +17,6 @@ Rustfmt size:  21861 bytes
  use ide_db::FxHashSet;
  use syntax::ast;
  
- use crate::{
--    completions::record::add_default_update,
--    context::{PathCompletionCtx, PathExprCtx, Qualified},
--    CompletionContext, Completions,
-+    completions::record::add_default_update, context::{PathCompletionCtx, CompletionContext,
-+    Completions, PathExprCtx, Qualified},
- };
- 
- struct PathCallback<'a, F> {
  
  impl<F> PathCandidateCallback for PathCallback<'_, F>
  where

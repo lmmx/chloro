@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15972 bytes
-Chloro size:   15959 bytes
+Chloro size:   15971 bytes
 Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
@@ -18,16 +18,7 @@ Rustfmt size:  15995 bytes
  use rustc_hash::FxHashMap;
  use rustc_type_ir::inherent::GenericArgs as _;
  use syntax::ToSmolStr;
- use triomphe::Arc;
- 
- use crate::{
--    db::HirDatabase,
--    layout::{Layout, LayoutError},
--    next_solver::{DbInterner, GenericArgs},
--    setup_tracing,
--    test_db::TestDB,
-+    db::HirDatabase, layout::{Layout, next_solver::{DbInterner, setup_tracing, test_db::TestDB,
-+    GenericArgs}, LayoutError},
+     test_db::TestDB,
  };
  
 -mod closure;

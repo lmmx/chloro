@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 46739 bytes
-Chloro size:   45189 bytes
+Chloro size:   45233 bytes
 Rustfmt size:  47157 bytes
 
 ✗ Outputs DIFFER
@@ -18,28 +18,22 @@ Rustfmt size:  47157 bytes
 -use hir::{db::HirDatabase, HasVisibility};
 +use hir::{HasVisibility, db::HirDatabase};
  use ide_db::{
--    assists::{AssistId, GroupLabel},
--    path_transform::PathTransform,
--    syntax_helpers::suggest_name,
--    FxHashMap, FxHashSet,
-+    assists::{AssistId, path_transform::PathTransform, syntax_helpers::suggest_name, FxHashMap,
-+    FxHashSet, GroupLabel},
- };
+     assists::{AssistId, GroupLabel},
+     path_transform::PathTransform,
  use itertools::Itertools;
  use syntax::{
      ast::{
 -        self,
 -        edit::{self, AstNodeEdit},
 -        make, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
--        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
--        WherePred,
--    },
--    ted::{self, Position},
--    AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
-+        self, edit::{self, make, ted::{self, AssocItem, AstNode, AstNodeEdit}, Edition,
-+    GenericArgList, GenericParamList, HasAttrs, HasGenericArgs, HasGenericParams, HasName,
-+    HasTypeBounds, HasVisibility as astHasVisibility, NodeOrToken, Path, Position}, SmolStr,
-+    SyntaxKind, ToSmolStr, WherePred, },
++        self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
+         HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
+         WherePred,
++        edit::{self, AstNodeEdit},
++        make,
+     },
+     ted::{self, Position},
+     AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,
  };
  
 -// Assist: generate_delegate_trait
@@ -105,7 +99,8 @@ Rustfmt size:  47157 bytes
 -// ```
 -pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 +use crate::{
-+    assist_context::{AssistContext, utils::convert_param_list_to_arg_list, Assists},
++    assist_context::{AssistContext, Assists},
++    utils::convert_param_list_to_arg_list,
 +};
 +
 +pub(crate) fn generate_delegate_trait(

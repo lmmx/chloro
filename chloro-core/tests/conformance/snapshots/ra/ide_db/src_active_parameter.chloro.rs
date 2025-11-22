@@ -5,8 +5,8 @@ use hir::{InFile, Semantics, Type};
 use parser::T;
 use span::TextSize;
 use syntax::{
-    ast::{self, match_ast, AstChildren, AstNode, HasArgList, HasAttrs, HasName}, NodeOrToken,
-    SyntaxToken,
+    ast::{self, AstChildren, HasArgList, HasAttrs, HasName},
+    match_ast, AstNode, NodeOrToken, SyntaxToken,
 };
 
 use crate::RootDatabase;

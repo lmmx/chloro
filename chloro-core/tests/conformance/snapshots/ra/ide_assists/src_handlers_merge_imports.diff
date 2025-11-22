@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17832 bytes
-Chloro size:   17700 bytes
+Chloro size:   17712 bytes
 Rustfmt size:  18165 bytes
 
 ✗ Outputs DIFFER
@@ -10,19 +10,14 @@ Rustfmt size:  18165 bytes
 === DIFF (- rustfmt, + chloro) ===
  use either::Either;
  use ide_db::imports::{
--    insert_use::{ImportGranularity, InsertUseConfig},
+     insert_use::{ImportGranularity, InsertUseConfig},
 -    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
-+    insert_use::{ImportGranularity, merge_imports::{MergeBehavior, try_merge_imports,
-+    try_merge_trees}, InsertUseConfig},
++    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
  };
  use syntax::{
--    algo::neighbor,
--    ast::{self, syntax_factory::SyntaxFactory},
--    match_ast,
--    syntax_editor::Removable,
--    AstNode, SyntaxElement, SyntaxNode,
-+    algo::neighbor, ast::{self, match_ast, syntax_editor::Removable,
-+    syntax_factory::SyntaxFactory}, AstNode, SyntaxElement, SyntaxNode,
+     algo::neighbor,
+     syntax_editor::Removable,
+     AstNode, SyntaxElement, SyntaxNode,
  };
 -
 -use crate::{

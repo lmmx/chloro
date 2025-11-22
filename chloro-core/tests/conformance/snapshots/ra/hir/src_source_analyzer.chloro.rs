@@ -11,25 +11,36 @@ use std::iter::{self, once};
 use either::Either;
 use hir_def::{
     expr_store::{
-        Body, hir::{BindingId, lang_item::LangItem, lower::ExprCollector,
-    nameres::MacroSubNs, path::Path, resolver::{HasResolver, resolver_for_scope},
-    scope::{ExprScopes, type_ref::{Mutability, AdtId, AssocItemId, BodySourceMap, CallableDefId,
-    ConstId, DefWithBodyId, Expr, ExprId, ExprOrPatId, ExpressionStore, ExpressionStoreSourceMap,
-    FieldId, FunctionId, GenericDefId, HygieneId, LocalFieldId, ModuleDefId, Pat}, Resolver,
-    ScopeId}, StructId, TraitId, TypeNs, TypeRefId}, ValueNs, VariantId, },
+        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, HygieneId,
+        lower::ExprCollector,
+        path::Path,
+        scope::{ExprScopes, ScopeId},
+    },
+    hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
+    lang_item::LangItem,
+    nameres::MacroSubNs,
+    resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
+    type_ref::{Mutability, TypeRefId},
+    AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
+    LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
-    mod_path::{ModPath, name::{AsName, path}, HirFileId, InFile, Name}, PathKind,
+    mod_path::{ModPath, PathKind, path},
+    name::{AsName, Name},
+    HirFileId, InFile,
 };
 use hir_ty::{
     diagnostics::{
-        InsideUnsafeBlock, infer::DbInternerInferExt,
-    lang_items::lang_items_for_bin_op, method_resolution, next_solver::{
-        DbInterner,
-    record_literal_missing_fields, record_pattern_missing_fields,
-    traits::structurally_normalize_ty, unsafe_operations, Adjustment, ErrorGuaranteed, GenericArgs,
-    InferenceResult, LifetimeElisionKind, TraitEnvironment, Ty, TyKind, TyLoweringContext,
-    TypingMode, }, },
+        InsideUnsafeBlock, record_literal_missing_fields, record_pattern_missing_fields,
+        unsafe_operations,
+    },
+    lang_items::lang_items_for_bin_op,
+    method_resolution,
+    next_solver::{
+        DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode, infer::DbInternerInferExt,
+    },
+    traits::structurally_normalize_ty,
+    Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,
 };
 use intern::sym;
 use itertools::Itertools;
@@ -40,15 +51,17 @@ use rustc_type_ir::{
 use smallvec::SmallVec;
 use stdx::never;
 use syntax::{
-    ast::{self, AstNode, RangeItem, RangeOp}, SyntaxKind, SyntaxNode, TextRange, TextSize,
+    ast::{self, AstNode, RangeItem, RangeOp},
+    SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, semantics::{PathResolution, Adt, AssocItem, BindingMode, BuiltinAttr,
-    BuiltinType, Callable, Const, DeriveHelper, Field, Function, GenericSubstitution, Local, Macro,
-    ModuleDef, PathResolutionPerNs}, Static, Struct, ToolModule, Trait, TupleField, Type,
-    TypeAlias, Variant,
+    db::HirDatabase,
+    semantics::{PathResolution, PathResolutionPerNs},
+    Adt, AssocItem, BindingMode, BuiltinAttr, BuiltinType, Callable, Const, DeriveHelper, Field,
+    Function, GenericSubstitution, Local, Macro, ModuleDef, Static, Struct, ToolModule, Trait,
+    TupleField, Type, TypeAlias, Variant,
 };
 
 /// `SourceAnalyzer` is a convenience wrapper which exposes HIR API in terms of

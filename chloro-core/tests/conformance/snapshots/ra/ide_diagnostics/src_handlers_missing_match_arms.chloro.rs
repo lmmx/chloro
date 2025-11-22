@@ -16,9 +16,10 @@ pub(crate) fn missing_match_arms(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_diagnostics_with_config, check_diagnostics_with_disabled,
         tests::{
-            check_diagnostics, DiagnosticsConfig, },
+            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
+        },
+        DiagnosticsConfig,
     };
     use test_utils::skip_slow_tests;
     #[track_caller]

@@ -2,18 +2,13 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6757 bytes
-Chloro size:   6272 bytes
+Chloro size:   6276 bytes
 Rustfmt size:  6791 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ast::{self, AstNode, HasName};
- 
- use crate::{
--    utils::{add_method_to_adt, find_struct_impl},
--    AssistContext, AssistId, Assists,
-+    find_struct_impl}, utils::{add_method_to_adt, AssistContext, AssistId, Assists,
+     AssistContext, AssistId, Assists,
  };
  
 -// Assist: generate_enum_is_method

@@ -1,11 +1,17 @@
 use either::Either;
 use hir::{
-    db::{ExpandDatabase, sym, AssocItem, FindPathConfig, HirDatabase}, HirDisplay, InFile, Type,
+    db::{ExpandDatabase, HirDatabase},
+    sym, AssocItem, FindPathConfig, HirDisplay, InFile, Type,
 };
 use ide_db::{
-    assists::{Assist, famous_defs::FamousDefs, imports::import_assets::item_for_path_search,
-    source_change::SourceChange, syntax_helpers::tree_diff::diff, text_edit::TextEdit,
-    use_trivial_constructor::use_trivial_constructor, ExprFillDefaultMode}, FxHashMap,
+    assists::{Assist, ExprFillDefaultMode},
+    famous_defs::FamousDefs,
+    imports::import_assets::item_for_path_search,
+    source_change::SourceChange,
+    syntax_helpers::tree_diff::diff,
+    text_edit::TextEdit,
+    use_trivial_constructor::use_trivial_constructor,
+    FxHashMap,
 };
 use stdx::format_to;
 use syntax::{

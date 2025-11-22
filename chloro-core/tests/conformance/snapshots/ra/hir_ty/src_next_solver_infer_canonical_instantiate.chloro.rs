@@ -8,13 +8,15 @@
 
 use rustc_hash::FxHashMap;
 use rustc_type_ir::{
-    inherent::{GenericArg as _, BoundVarIndexKind, GenericArgKind, IntoKind, SliceLike}, TypeFlags,
-    TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt,
+    inherent::{GenericArg as _, IntoKind, SliceLike},
+    BoundVarIndexKind, GenericArgKind, TypeFlags, TypeFoldable, TypeFolder, TypeSuperFoldable,
+    TypeVisitableExt,
 };
 
 use crate::next_solver::{
-    fold::FnMutDelegate, BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses,
-    Const, ConstKind, DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind,
+    fold::FnMutDelegate,
+    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
+    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind,
 };
 
 pub trait CanonicalExt<'db, V> {

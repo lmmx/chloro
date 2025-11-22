@@ -1,7 +1,10 @@
 use hir::{HasVisibility, sym};
 use ide_db::{
-    assists::AssistId, defs::Definition, helpers::mod_path_to_ast, search::{FileReference,
-    FxHashMap, FxHashSet, SearchScope},
+    assists::AssistId,
+    defs::Definition,
+    helpers::mod_path_to_ast,
+    search::{FileReference, SearchScope},
+    FxHashMap, FxHashSet,
 };
 use itertools::Itertools;
 use syntax::ast::{HasName, syntax_factory::SyntaxFactory};
@@ -9,8 +12,8 @@ use syntax::syntax_editor::SyntaxEditor;
 use syntax::{AstNode, Edition, SmolStr, SyntaxNode, ToSmolStr, ast};
 
 use crate::{
-    assist_context::{AssistContext, utils::ref_field_expr::determine_ref_and_parens, Assists,
-    SourceChangeBuilder},
+    assist_context::{AssistContext, Assists, SourceChangeBuilder},
+    utils::ref_field_expr::determine_ref_and_parens,
 };
 
 pub(crate) fn destructure_struct_binding(

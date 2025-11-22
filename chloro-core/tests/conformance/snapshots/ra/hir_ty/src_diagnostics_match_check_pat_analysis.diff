@@ -2,40 +2,41 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21164 bytes
+Chloro size:   21184 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir_def::{EnumId, EnumVariantId, HasModule, LocalFieldId, ModuleId, VariantId};
  use intern::sym;
  use rustc_pattern_analysis::{
--    constructor::{Constructor, ConstructorSet, VariantVisibility},
+     constructor::{Constructor, ConstructorSet, VariantVisibility},
 -    usefulness::{compute_match_usefulness, PlaceValidity, UsefulnessReport},
--    IndexVec, PatCx, PrivateUninhabitedField,
-+    compute_match_usefulness}, constructor::{Constructor, usefulness::{PlaceValidity,
-+    ConstructorSet, IndexVec, PatCx, PrivateUninhabitedField, UsefulnessReport, VariantVisibility},
++    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness},
+     IndexVec, PatCx, PrivateUninhabitedField,
  };
  use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
 -use smallvec::{smallvec, SmallVec};
 +use smallvec::{SmallVec, smallvec};
  use stdx::never;
  use triomphe::Arc;
--
--use crate::{
--    db::HirDatabase,
--    inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
--    next_solver::{
++use Constructor::*;
+ 
+ use crate::{
+     db::HirDatabase,
+     inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
+     next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
--        Ty, TyKind,
--    },
--    TraitEnvironment,
--};
+         Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause},
+     },
+     TraitEnvironment,
+ };
 -
--use super::{FieldPat, Pat, PatKind};
--
- use Constructor::*;
+ use super::{FieldPat, Pat, PatKind};
+ 
+-use Constructor::*;
++pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
  
 -// Re-export r-a-specific versions of all these types.
 -pub(crate) type DeconstructedPat<'a, 'db> =
@@ -44,16 +45,6 @@ Rustfmt size:  22047 bytes
 -    rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
 -pub(crate) type WitnessPat<'a, 'db> =
 -    rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;
-+use crate::{
-+    db::HirDatabase, infer::{InferCtxt, inhabitedness::{is_enum_variant_uninhabited_from,
-+    is_ty_uninhabited_from}, next_solver::{
-+        Ty, traits::ObligationCause}, TraitEnvironment,
-+    TyKind, },
-+};
-+use super::{FieldPat, Pat, PatKind};
-+
-+pub(crate) type DeconstructedPat<'a, 'db> = rustc_pattern_analysis::pat::DeconstructedPat<MatchCheckCtx<'a, 'db>>;
-+
 +pub(crate) type MatchArm<'a, 'b, 'db> = rustc_pattern_analysis::MatchArm<'b, MatchCheckCtx<'a, 'db>>;
 +
 +pub(crate) type WitnessPat<'a, 'db> = rustc_pattern_analysis::pat::WitnessPat<MatchCheckCtx<'a, 'db>>;

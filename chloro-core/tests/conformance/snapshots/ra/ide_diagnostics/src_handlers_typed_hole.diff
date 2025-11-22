@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9357 bytes
+Chloro size:   9369 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
@@ -11,18 +11,13 @@ Rustfmt size:  9638 bytes
  use std::ops::Not;
  
  use hir::{
--    db::ExpandDatabase,
+     db::ExpandDatabase,
 -    term_search::{term_search, TermSearchConfig, TermSearchCtx},
--    ClosureStyle, FindPathConfig, HirDisplay,
-+    db::ExpandDatabase, term_search::{TermSearchConfig, term_search}, ClosureStyle, FindPathConfig,
-+    HirDisplay, TermSearchCtx,
++    term_search::{TermSearchConfig, TermSearchCtx, term_search},
+     ClosureStyle, FindPathConfig, HirDisplay,
  };
  use ide_db::text_edit::TextEdit;
- use ide_db::{
--    assists::{Assist, AssistId, GroupLabel},
--    label::Label,
--    source_change::SourceChange,
-+    assists::{Assist, label::Label, source_change::SourceChange, AssistId, GroupLabel},
+     source_change::SourceChange,
  };
  use itertools::Itertools;
 +use syntax::AstNode;

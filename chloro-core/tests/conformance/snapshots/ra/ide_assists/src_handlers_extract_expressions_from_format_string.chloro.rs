@@ -1,10 +1,13 @@
 use ide_db::{
-    assists::{AssistId, parse_format_exprs}, syntax_helpers::format_string_exprs::{Arg, AssistKind},
+    assists::{AssistId, AssistKind},
+    syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, make, syntax_factory::SyntaxFactory}, AstNode, AstToken, NodeOrToken,
-    SyntaxKind::WHITESPACE, SyntaxToken, TokenTree, T,
+    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
+    AstNode, AstToken, NodeOrToken,
+    SyntaxKind::WHITESPACE,
+    SyntaxToken, T,
 };
 
 use crate::{AssistContext, Assists, utils};

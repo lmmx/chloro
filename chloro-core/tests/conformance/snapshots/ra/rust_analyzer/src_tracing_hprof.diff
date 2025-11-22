@@ -2,29 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7677 bytes
+Chloro size:   7689 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use rustc_hash::FxHashSet;
- use tracing::{
-+    Event, Id, Level, Subscriber,
-     field::{Field, Visit},
-     span::Attributes,
--    Event, Id, Level, Subscriber,
- };
- use tracing_subscriber::{
--    filter,
--    layer::{Context, SubscriberExt},
--    registry::LookupSpan,
--    Layer, Registry,
-+    filter, layer::{Context, registry::LookupSpan, Layer, Registry, SubscriberExt},
- };
- 
- pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {
  
  impl<S> SpanTree<S>
  where
