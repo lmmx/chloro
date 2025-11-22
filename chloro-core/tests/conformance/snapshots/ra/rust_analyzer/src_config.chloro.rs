@@ -18,8 +18,11 @@ use ide::{
     MemoryLayoutHoverRenderKind, RenameConfig, Snippet, SnippetScope, SourceRootId,
 };
 use ide_db::{
-    assists::ExprFillDefaultMode, imports::insert_use::{ImportGranularity, InsertUseConfig,
-    MiniCore, PrefixKind}, SnippetCap,
+    assists::ExprFillDefaultMode,
+
+    imports::insert_use::{ImportGranularity,
+
+    InsertUseConfig, MiniCore, PrefixKind}, SnippetCap,
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};
@@ -49,9 +52,15 @@ use _default_val as default_val;
 use _impl_for_config_data as impl_for_config_data;
 
 use crate::{
-    diagnostics::DiagnosticsMapConfig, flycheck::{CargoOptions,
-    lsp::capabilities::ClientCapabilities, lsp_ext::{WorkspaceSymbolSearchKind, FlycheckConfig},
-    WorkspaceSymbolSearchScope},
+    diagnostics::DiagnosticsMapConfig,
+
+    flycheck::{CargoOptions,
+
+    lsp::capabilities::ClientCapabilities,
+
+    lsp_ext::{WorkspaceSymbolSearchKind,
+
+    FlycheckConfig}, WorkspaceSymbolSearchScope},
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;

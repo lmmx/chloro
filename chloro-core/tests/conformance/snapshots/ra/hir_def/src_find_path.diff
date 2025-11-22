@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   62208 bytes
+Chloro size:   62224 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,15 @@ Rustfmt size:  62212 bytes
  
  use crate::{
 -    FindPathConfig, ModuleDefId, ModuleId,
--    db::DefDatabase,
--    item_scope::ItemInNs,
--    nameres::DefMap,
+     db::DefDatabase,
++
+     item_scope::ItemInNs,
++
+     nameres::DefMap,
 -    visibility::{Visibility, VisibilityExplicitness},
-+    db::DefDatabase, item_scope::ItemInNs, nameres::DefMap, visibility::{Visibility,
++
++    visibility::{Visibility,
++
 +    FindPathConfig, ModuleDefId, ModuleId, VisibilityExplicitness},
  };
  

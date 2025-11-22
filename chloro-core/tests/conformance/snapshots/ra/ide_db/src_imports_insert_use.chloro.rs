@@ -8,14 +8,23 @@ use std::cmp::Ordering;
 pub use hir::PrefixKind;
 use hir::Semantics;
 use syntax::{
-    algo, ast::{
-        self, edit_in_place::Removable, make, ted, AstNode, Direction, HasAttrs,
-    HasModuleItem, HasVisibility, NodeOrToken, PathSegmentKind, SyntaxKind, SyntaxNode, },
+    algo,
+
+    ast::{
+        self,
+
+    edit_in_place::Removable,
+
+    make, ted, AstNode, Direction, HasAttrs, HasModuleItem, HasVisibility, NodeOrToken,
+    PathSegmentKind, SyntaxKind, SyntaxNode, },
 };
 
 use crate::{
-    common_prefix, eq_attrs, eq_visibility, imports::merge_imports::{
+    common_prefix, eq_attrs, eq_visibility,
+
+    imports::merge_imports::{
         MergeBehavior,
+
     try_merge_imports, use_tree_cmp, NormalizationStyle, RootDatabase, },
 };
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24849 bytes
-Chloro size:   18530 bytes
+Chloro size:   18558 bytes
 Rustfmt size:  25118 bytes
 
 ✗ Outputs DIFFER
@@ -29,10 +29,13 @@ Rustfmt size:  25118 bytes
  use syntax::{
 -    ast::{self, IsString},
 -    AstNode, AstToken, NodeOrToken,
--    SyntaxKind::*,
--    SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
-+    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
-+    TextRange, WalkEvent, T,
++    ast::{self,
++
++    AstNode, AstToken, IsString}, NodeOrToken,
++
+     SyntaxKind::*,
++
+     SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
  };
  
  use crate::{
@@ -43,18 +46,25 @@ Rustfmt size:  25118 bytes
 -        tags::Highlight,
 -    },
 -    FileId, HlMod, HlOperator, HlPunct, HlTag,
-+    format::highlight_format_string, highlight_escape_char, highlight_escape_string},
-+    highlights::Highlights, syntax_highlighting::{
-+        escape::{highlight_escape_byte,
-+    tags::Highlight, FileId, HlMod, HlOperator, HlPunct, HlTag, },
- };
+-};
++    format::highlight_format_string,
  
 -pub(crate) use html::highlight_as_html;
 -pub(crate) use html::highlight_as_html_with_config;
--
++    highlight_escape_char, highlight_escape_string},
++
++    highlights::Highlights,
++
++    syntax_highlighting::{
++        escape::{highlight_escape_byte,
++
++    tags::Highlight,
++
++    FileId, HlMod, HlOperator, HlPunct, HlTag, },
++};
+ 
  #[derive(Debug, Clone, Copy)]
  pub struct HlRange {
-     pub range: TextRange,
      pub minicore: MiniCore<'a>,
  }
  

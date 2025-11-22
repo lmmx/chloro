@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21606 bytes
-Chloro size:   21600 bytes
+Chloro size:   21627 bytes
 Rustfmt size:  21606 bytes
 
 ✗ Outputs DIFFER
@@ -13,21 +13,28 @@ Rustfmt size:  21606 bytes
  use crate::{
 -    CallableSnippets,
 +    compute_exact_name_match, compute_ref_match, compute_type_match,
++
      context::{
 -        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
 -    },
--    item::{
++        CompleteSemicolon,
++
+     item::{
 -        Builder, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn,
 -        CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
 -    },
-+        CompleteSemicolon, item::{
-+        Builder, match_types,
++        Builder,
++
++    match_types,
++
      render::{
 -        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
 -    },
-+        RenderContext, CallableSnippets, CompletionContext, CompletionItem,
-+    CompletionItemKind, CompletionRelevance, CompletionRelevanceFn, CompletionRelevanceReturnType,
-+    CompletionRelevanceTraitInfo, DotAccess, DotAccessKind, PathCompletionCtx, PathKind, }, }, },
++        RenderContext,
++
++    CallableSnippets, CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
++    CompletionRelevanceFn, CompletionRelevanceReturnType, CompletionRelevanceTraitInfo, DotAccess,
++    DotAccessKind, PathCompletionCtx, PathKind, }, }, },
  };
  
  #[derive(Debug)]
@@ -202,10 +209,13 @@ Rustfmt size:  21606 bytes
      use crate::{
 -        CallableSnippets, CompletionConfig,
 -        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
-+        check_edit, check_edit_with_config}, tests::{TEST_CONFIG, CallableSnippets,
-+        CompletionConfig,
-     };
--
+-    };
++        check_edit, check_edit_with_config},
+ 
++        tests::{TEST_CONFIG,
++
++        CallableSnippets, CompletionConfig,
++    };
      #[test]
      fn inserts_parens_for_function_calls() {
          cov_mark::check!(inserts_parens_for_function_calls);

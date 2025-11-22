@@ -16,9 +16,12 @@ pub use crate::__tool_path as tool_path;
 pub use crate::name as __name;
 use crate::{
     db::ExpandDatabase,
+
     hygiene::Transparency,
-    name::{AsName, Name},
-    tt,
+
+    name::{AsName,
+
+    tt, Name},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -10,8 +10,16 @@ use triomphe::Arc;
 
 pub use crate::item_tree::{RawVisibility, VisibilityExplicitness};
 use crate::{
-    db::DefDatabase, nameres::DefMap, resolver::HasResolver, src::HasSource, AssocItemId,
-    HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId, VariantId,
+    db::DefDatabase,
+
+    nameres::DefMap,
+
+    resolver::HasResolver,
+
+    src::HasSource,
+
+    AssocItemId, HasModule, ItemContainerId, LocalFieldId, LocalModuleId, ModuleId, TraitId,
+    VariantId,
 };
 
 /// Visibility of an item, with the path resolved.

@@ -4,10 +4,15 @@ use std::cmp::Ordering;
 
 use macros::{TypeFoldable, TypeVisitable};
 use rustc_type_ir::{
-    elaborate::Elaboratable, error::{ExpectedFound, inherent::{IntoKind, self as ty,
-    CollectAndApply, DebruijnIndex, EarlyBinder, FlagComputation, Flags, PredicatePolarity,
-    SliceLike}, TypeError}, TypeFlags, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable,
-    TypeVisitable, Upcast, UpcastFrom, WithCachedTypeInfo,
+    elaborate::Elaboratable,
+
+    error::{ExpectedFound,
+
+    inherent::{IntoKind,
+
+    self as ty, CollectAndApply, DebruijnIndex, EarlyBinder, FlagComputation, Flags,
+    PredicatePolarity, SliceLike}, TypeError}, TypeFlags, TypeFoldable, TypeSuperFoldable,
+    TypeSuperVisitable, TypeVisitable, Upcast, UpcastFrom, WithCachedTypeInfo,
 };
 use smallvec::SmallVec;
 

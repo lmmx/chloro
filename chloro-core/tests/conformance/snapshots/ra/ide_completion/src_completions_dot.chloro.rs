@@ -8,8 +8,10 @@ use syntax::SmolStr;
 
 use crate::{
     context::{
-        CompletionContext, CompletionItem, CompletionItemKind, Completions,
-    DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx, PathExprCtx, Qualified, },
+        CompletionContext,
+
+    CompletionItem, CompletionItemKind, Completions, DotAccess, DotAccessExprCtx, DotAccessKind,
+    PathCompletionCtx, PathExprCtx, Qualified, },
 };
 
 /// Complete dot accesses, i.e. fields or methods.

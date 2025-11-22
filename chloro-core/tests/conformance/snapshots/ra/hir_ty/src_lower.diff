@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   87064 bytes
+Chloro size:   87134 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -22,41 +22,56 @@ Rustfmt size:  87058 bytes
 -    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
 -    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
 -    UnionId, VariantId,
--    builtin_type::BuiltinType,
+     builtin_type::BuiltinType,
 -    expr_store::{ExpressionStore, HygieneId, path::Path},
-+    builtin_type::BuiltinType, expr_store::{ExpressionStore,
++
++    expr_store::{ExpressionStore,
++
      hir::generics::{
 -        GenericParamDataRef, TypeOrConstParamData, TypeParamProvenance, WherePredicate,
 -    },
--    item_tree::FieldsShape,
--    lang_item::LangItem,
++        GenericParamDataRef,
++
+     item_tree::FieldsShape,
++
+     lang_item::LangItem,
 -    resolver::{HasResolver, LifetimeNs, Resolver, TypeNs, ValueNs},
 -    signatures::{FunctionSignature, TraitFlags, TypeAliasFlags},
-+        GenericParamDataRef, item_tree::FieldsShape, lang_item::LangItem,
-+    path::Path}, resolver::{HasResolver, signatures::{FunctionSignature,
++
++    path::Path},
++
++    resolver::{HasResolver,
++
++    signatures::{FunctionSignature,
++
      type_ref::{
 -        ConstRef, LifetimeRefId, LiteralConstRef, PathId, TraitBoundModifier,
 -        TraitRef as HirTraitRef, TypeBound, TypeRef, TypeRefId,
 -    },
-+        ConstRef, AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId,
-+    DefWithBodyId, EnumId, EnumVariantId, FunctionId, GenericDefId, GenericParamId, HasModule,
-+    HygieneId, ImplId, ItemContainerId, LifetimeNs, LifetimeParamId, LifetimeRefId,
-+    LiteralConstRef, LocalFieldId, Lookup, PathId, Resolver, StaticId, StructId,
-+    TraitBoundModifier, TraitFlags, TraitRef as HirTraitRef, TypeAliasFlags}, TypeAliasId,
-+    TypeBound, TypeNs, TypeOrConstParamData, TypeOrConstParamId, TypeParamId, TypeParamProvenance,
-+    TypeRef, TypeRefId, UnionId, ValueNs}, VariantId, WherePredicate, }, },
++        ConstRef,
++
++    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
++    FunctionId, GenericDefId, GenericParamId, HasModule, HygieneId, ImplId, ItemContainerId,
++    LifetimeNs, LifetimeParamId, LifetimeRefId, LiteralConstRef, LocalFieldId, Lookup, PathId,
++    Resolver, StaticId, StructId, TraitBoundModifier, TraitFlags, TraitRef as HirTraitRef,
++    TypeAliasFlags}, TypeAliasId, TypeBound, TypeNs, TypeOrConstParamData, TypeOrConstParamId,
++    TypeParamId, TypeParamProvenance, TypeRef, TypeRefId, UnionId, ValueNs}, VariantId,
++    WherePredicate, }, },
  };
  use hir_expand::name::Name;
  use la_arena::{Arena, ArenaMap, Idx};
  use rustc_hash::FxHashSet;
  use rustc_pattern_analysis::Captures;
  use rustc_type_ir::{
--    AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
++    inherent::{GenericArg as _,
++
+     AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
 -    ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate,
--    TyKind::{self},
-+    inherent::{GenericArg as _, AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex,
-+    ExistentialPredicate, ExistentialProjection, ExistentialTraitRef, FnSig, GenericArgs as _,
-+    IntoKind as _, OutlivesPredicate, Region as _, SliceLike, Ty as _}, TyKind::{self},
++    ExistentialProjection, ExistentialTraitRef, FnSig, GenericArgs as _, IntoKind as _,
++    OutlivesPredicate, Region as _, SliceLike, Ty as _},
++
+     TyKind::{self},
++
      TypeVisitableExt,
 -    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
  };
@@ -66,21 +81,30 @@ Rustfmt size:  87058 bytes
  
  use crate::{
 -    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
--    consteval::intern_const_ref,
--    db::HirDatabase,
++    abi::Safety,
++
+     consteval::intern_const_ref,
++
+     db::HirDatabase,
 -    generics::{Generics, generics, trait_self_param_idx},
-+    abi::Safety, consteval::intern_const_ref, db::HirDatabase, generics, generics::{Generics,
++
++    generics,
++
++    generics::{Generics,
++
      next_solver::{
 -        AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
 -        EarlyBinder, EarlyParamRegion, ErrorGuaranteed, GenericArg, GenericArgs, ParamConst,
 -        ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef, Ty, Tys,
 -        UnevaluatedConst, abi::Safety,
 -    },
-+        AliasTy, trait_self_param_idx}, Binder, BoundExistentialPredicates,
-+    Clause, Clauses, Const, DbInterner, EarlyBinder, EarlyParamRegion, ErrorGuaranteed, FnAbi,
-+    GenericArg, GenericArgs, ImplTraitId, ParamConst, ParamEnv, PolyFnSig, Predicate, Region,
-+    SolverDefId, TraitEnvironment, TraitPredicate, TraitRef, Ty, TyLoweringDiagnostic,
-+    TyLoweringDiagnosticKind, Tys, UnevaluatedConst, },
++        AliasTy,
++
++    trait_self_param_idx}, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
++    EarlyBinder, EarlyParamRegion, ErrorGuaranteed, FnAbi, GenericArg, GenericArgs, ImplTraitId,
++    ParamConst, ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitEnvironment,
++    TraitPredicate, TraitRef, Ty, TyLoweringDiagnostic, TyLoweringDiagnosticKind, Tys,
++    UnevaluatedConst, },
  };
  
  pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

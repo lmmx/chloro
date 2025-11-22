@@ -10,8 +10,11 @@ use syntax::{
 use tt::TextRange;
 
 use crate::{
-    expr_store::lower::{ExprCollector, hir::{AsmOperand, AsmOptions, Expr, ExprId, FxIndexSet},
-    InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
+    expr_store::lower::{ExprCollector,
+
+    hir::{AsmOperand,
+
+    AsmOptions, Expr, ExprId, FxIndexSet}, InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
 };
 
 impl ExprCollector<'_> {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10503 bytes
-Chloro size:   10768 bytes
+Chloro size:   10784 bytes
 Rustfmt size:  10686 bytes
 
 ✗ Outputs DIFFER
@@ -20,11 +20,16 @@ Rustfmt size:  10686 bytes
  use triomphe::Arc;
  
  use crate::{
--    db::DefDatabase,
++    block_def_map, crate_def_map},
++
+     db::DefDatabase,
 -    nameres::{block_def_map, crate_def_map, DefMap, ModuleSource},
--    src::HasSource,
++
++    nameres::{DefMap,
++
+     src::HasSource,
 -    LocalModuleId, Lookup, ModuleDefId, ModuleId,
-+    block_def_map, crate_def_map}, db::DefDatabase, nameres::{DefMap, src::HasSource,
++
 +    LocalModuleId, Lookup, ModuleDefId, ModuleId, ModuleSource,
  };
  

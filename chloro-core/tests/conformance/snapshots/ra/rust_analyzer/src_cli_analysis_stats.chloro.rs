@@ -2,14 +2,25 @@
 //! errors.
 
 use std::{
-    catch_unwind}, env, fmt, ops::AddAssign, panic::{AssertUnwindSafe, time::{SystemTime,
+    catch_unwind}, env, fmt,
+
+    ops::AddAssign,
+
+    panic::{AssertUnwindSafe,
+
+    time::{SystemTime,
+
     UNIX_EPOCH},
 };
 
 use cfg::{CfgAtom, CfgDiff};
 use hir::{
-    db::{DefDatabase, next_solver::{DbInterner, Adt, AssocItem, Crate, DefWithBody, ExpandDatabase,
-    FindPathConfig, GenericArgs}, HasCrate, HasSource, HirDatabase}, HirDisplay, ModuleDef, Name,
+    db::{DefDatabase,
+
+    next_solver::{DbInterner,
+
+    Adt, AssocItem, Crate, DefWithBody, ExpandDatabase, FindPathConfig, GenericArgs}, HasCrate,
+    HasSource, HirDatabase}, HirDisplay, ModuleDef, Name,
 };
 use hir_def::{
     SyntheticSyntax,
@@ -21,8 +32,11 @@ use ide::{
     InlayHintsConfig, LineCol, RootDatabase,
 };
 use ide_db::{
-    base_db::{SourceDatabase, salsa::Database}, EditionedFileId, LineIndexDatabase, MiniCore,
-    SnippetCap,
+    base_db::{SourceDatabase,
+
+    salsa::Database},
+
+    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
 };
 use itertools::Itertools;
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
@@ -36,7 +50,12 @@ use syntax::AstNode;
 use vfs::{AbsPathBuf, Vfs, VfsPath};
 
 use crate::cli::{
-    flags::{self, full_name_of_item, print_memory_usage, progress_report::ProgressReport,
+    flags::{self,
+
+    full_name_of_item, print_memory_usage,
+
+    progress_report::ProgressReport,
+
     report_metric, OutputFormat}, Verbosity,
 };
 

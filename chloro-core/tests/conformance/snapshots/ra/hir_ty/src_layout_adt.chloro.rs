@@ -13,8 +13,15 @@ use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, field_ty}, layout::{Layout, next_solver::GenericArgs, LayoutCx, LayoutError,
-    TraitEnvironment,
+    db::HirDatabase,
+
+    field_ty},
+
+    layout::{Layout,
+
+    next_solver::GenericArgs,
+
+    LayoutCx, LayoutError, TraitEnvironment,
 };
 
 pub fn layout_of_adt_query<'db>(

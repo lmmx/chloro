@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7677 bytes
+Chloro size:   7694 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -11,17 +11,24 @@ Rustfmt size:  7718 bytes
  
  use rustc_hash::FxHashSet;
  use tracing::{
-+    Event, Id, Level, Subscriber,
-     field::{Field, Visit},
+-    field::{Field, Visit},
++    field::{Field,
++
      span::Attributes,
 -    Event, Id, Level, Subscriber,
++
++    Event, Id, Level, Subscriber, Visit},
  };
  use tracing_subscriber::{
--    filter,
+     filter,
 -    layer::{Context, SubscriberExt},
--    registry::LookupSpan,
++
++    layer::{Context,
++
+     registry::LookupSpan,
 -    Layer, Registry,
-+    filter, layer::{Context, registry::LookupSpan, Layer, Registry, SubscriberExt},
++
++    Layer, Registry, SubscriberExt},
  };
  
  pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {

@@ -6,17 +6,29 @@ use std::{mem, ops::ControlFlow};
 
 use rustc_hash::FxHashSet;
 use rustc_next_trait_solver::{
-    delegate::SolverDelegate, solve::{GoalEvaluation, GoalStalledOn, HasChanged,
-    SolverDelegateEvalExt},
+    delegate::SolverDelegate,
+
+    solve::{GoalEvaluation,
+
+    GoalStalledOn, HasChanged, SolverDelegateEvalExt},
 };
 use rustc_type_ir::{
-    inherent::{IntoKind, solve::{Certainty, Interner, NoSolution}, Span as _}, TypeSuperVisitable,
-    TypeVisitable, TypeVisitableExt, TypeVisitor,
+    inherent::{IntoKind,
+
+    solve::{Certainty,
+
+    Interner, NoSolution}, Span as _}, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
+    TypeVisitor,
 };
 
 use crate::next_solver::{
     infer::{
-        InferCtxt, inspect::ProofTreeVisitor, traits::{PredicateObligation,
+        InferCtxt,
+
+    inspect::ProofTreeVisitor,
+
+    traits::{PredicateObligation,
+
     DbInterner, PredicateObligations}, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode, },
 };
 

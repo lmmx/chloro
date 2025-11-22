@@ -3,9 +3,17 @@ use std::cmp::Reverse;
 use either::Either;
 use hir::{Module, Type, db::HirDatabase};
 use ide_db::{
-    active_parameter::ActiveParameter, helpers::mod_path_to_ast,
+    active_parameter::ActiveParameter,
+
+    helpers::mod_path_to_ast,
+
     imports::{
-        import_assets::{ImportAssets, insert_use, insert_use::{ImportScope,
+        import_assets::{ImportAssets,
+
+    insert_use,
+
+    insert_use::{ImportScope,
+
     insert_use_as_alias}, ImportCandidate, LocatedImport}, },
 };
 use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};

@@ -1,8 +1,10 @@
 use hir::ModuleDef;
 use ide_db::{assists::AssistId, famous_defs::FamousDefs};
 use syntax::{
-    ast::{self, AstNode, HasGenericArgs, HasVisibility}, NodeOrToken, SyntaxKind, SyntaxNode,
-    SyntaxToken, TextRange,
+    ast::{self,
+
+    AstNode, HasGenericArgs, HasVisibility}, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken,
+    TextRange,
 };
 
 use crate::{AssistContext, Assists};

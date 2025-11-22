@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 37056 bytes
-Chloro size:   36828 bytes
+Chloro size:   36852 bytes
 Rustfmt size:  37056 bytes
 
 ✗ Outputs DIFFER
@@ -13,24 +13,34 @@ Rustfmt size:  37056 bytes
  use hir::{HasSource, InFile, InRealFile, Semantics};
  use ide_db::{
 -    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase, defs::Definition,
--    helpers::visit_file_defs,
-+    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
-+    MiniCore, RootDatabase,
++    defs::Definition,
++
+     helpers::visit_file_defs,
++
++    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase,
  };
  use itertools::Itertools;
  use syntax::{AstNode, TextRange, ast::HasName};
  
  use crate::{
 -    NavigationTarget, RunnableKind,
--    annotations::fn_references::find_all_methods,
+     annotations::fn_references::find_all_methods,
 -    goto_implementation::{GotoImplementationConfig, goto_implementation},
 -    navigation_target,
 -    references::{FindAllRefsConfig, find_all_refs},
 -    runnables::{Runnable, runnables},
-+    annotations::fn_references::find_all_methods, find_all_refs},
-+    goto_implementation::{GotoImplementationConfig, goto_implementation}, navigation_target,
-+    references::{FindAllRefsConfig, runnables::{Runnable, runnables}, NavigationTarget,
-+    RunnableKind,
++
++    find_all_refs},
++
++    goto_implementation::{GotoImplementationConfig,
++
++    goto_implementation}, navigation_target,
++
++    references::{FindAllRefsConfig,
++
++    runnables::{Runnable,
++
++    runnables}, NavigationTarget, RunnableKind,
  };
  
 -mod fn_references;

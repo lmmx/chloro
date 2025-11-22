@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13462 bytes
-Chloro size:   13460 bytes
+Chloro size:   13480 bytes
 Rustfmt size:  13462 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,22 @@ Rustfmt size:  13462 bytes
  use itertools::Itertools;
  use span::TextRange;
  use syntax::{AstNode, AstPtr};
- use test_fixture::WithFixture;
  
  use crate::{
--    db::HirDatabase,
+     db::HirDatabase,
 -    display::{DisplayTarget, HirDisplay},
 -    mir::MirSpan,
 -    test_db::TestDB,
-+    db::HirDatabase, display::{DisplayTarget, mir::MirSpan, test_db::TestDB, HirDisplay},
- };
--
+-};
+ 
++    display::{DisplayTarget,
++
++    mir::MirSpan,
++
++    test_db::TestDB,
++
++    HirDisplay},
++};
  use super::{setup_tracing, visit_module};
  
 -fn check_closure_captures(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

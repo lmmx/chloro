@@ -8,8 +8,11 @@ use syntax::{TextRange, TextSize};
 use vfs::AbsPathBuf;
 
 use crate::{
-    global_state::GlobalStateSnapshot, line_index::{LineIndex, lsp_ext, try_default,
-    PositionEncoding},
+    global_state::GlobalStateSnapshot,
+
+    line_index::{LineIndex,
+
+    lsp_ext, try_default, PositionEncoding},
 };
 
 pub(crate) fn abs_path(url: &lsp_types::Url) -> anyhow::Result<AbsPathBuf> {

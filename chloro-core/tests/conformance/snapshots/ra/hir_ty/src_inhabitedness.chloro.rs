@@ -5,14 +5,26 @@ use std::ops::ControlFlow::{self, Break, Continue};
 use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef, IntoKind}, TypeSuperVisitable, TypeVisitable, TypeVisitor,
+    inherent::{AdtDef,
+
+    IntoKind}, TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use triomphe::Arc;
 
 use crate::{
-    consteval::try_const_usize, db::HirDatabase, infer::{InferCtxt,
+    consteval::try_const_usize,
+
+    db::HirDatabase,
+
+    infer::{InferCtxt,
+
     next_solver::{
-        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
+        DbInterner,
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::ObligationCause},
+
     EarlyBinder, GenericArgs, TraitEnvironment, Ty, TyKind, },
 };
 

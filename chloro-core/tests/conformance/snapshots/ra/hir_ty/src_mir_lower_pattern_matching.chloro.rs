@@ -6,12 +6,15 @@ use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
 use crate::next_solver::GenericArgs;
 use crate::{
     lower::{
-            BasicBlockId, mir::{
-        LocalId, BinOp, BindingId, BindingMode,
-    BorrowKind, Either, Expr, FieldId, Idx, MemoryMap, MirLowerCtx, MirLowerError, MirSpan,
-    MutBorrowKind, Operand, OperandKind, Pat, PatId, Place, PlaceElem, ProjectionElem,
-    RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
-    TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId, }, },
+            BasicBlockId,
+
+    mir::{
+        LocalId,
+
+    BinOp, BindingId, BindingMode, BorrowKind, Either, Expr, FieldId, Idx, MemoryMap, MirLowerCtx,
+    MirLowerError, MirSpan, MutBorrowKind, Operand, OperandKind, Pat, PatId, Place, PlaceElem,
+    ProjectionElem, RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets,
+    TerminatorKind, TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId, }, },
 };
 
 macro_rules! not_supported {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9213 bytes
-Chloro size:   9298 bytes
+Chloro size:   9320 bytes
 Rustfmt size:  9281 bytes
 
 ✗ Outputs DIFFER
@@ -18,12 +18,22 @@ Rustfmt size:  9281 bytes
 -        references_non_lt_error, DbInterner, GenericArgs, Ty, TyKind, TypingMode,
 -    },
 -    TraitEnvironment,
-+    db::{HirDatabase, infer::{DbInternerInferExt, next_solver::{
+-};
++    db::{HirDatabase,
+ 
++    infer::{DbInternerInferExt,
++
++    next_solver::{
 +        DbInterner,
-+    obligation_ctxt::ObligationCtxt, references_non_lt_error, traits::ObligationCause},
++
++    obligation_ctxt::ObligationCtxt,
++
++    references_non_lt_error,
++
++    traits::ObligationCause},
++
 +    GenericArgs, InferCtxt, InternedClosureId}, TraitEnvironment, Ty, TyKind, TypingMode, },
- };
--
++};
  use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
  
  struct Filler<'db> {

@@ -7,11 +7,18 @@ use std::fmt;
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    lang_item::LangItem, resolver::{HasResolver, AdtId, AssocItemId, DefWithBodyId, HasModule,
-    ItemContainerId, Lookup, ValueNs},
+    lang_item::LangItem,
+
+    resolver::{HasResolver,
+
+    AdtId, AssocItemId, DefWithBodyId, HasModule, ItemContainerId, Lookup, ValueNs},
 };
 pub(crate) use hir_def::{
-    expr_store::Body, hir::{Expr, ExprId, LocalFieldId, MatchArm, Pat, PatId, Statement}, VariantId,
+    expr_store::Body,
+
+    hir::{Expr,
+
+    ExprId, LocalFieldId, MatchArm, Pat, PatId, Statement}, VariantId,
 };
 use intern::sym;
 use itertools::Itertools;
@@ -27,12 +34,22 @@ use triomphe::Arc;
 use typed_arena::Arena;
 
 use crate::{
-    db::HirDatabase, diagnostics::match_check::{
-        self, display::{DisplayTarget,
-    infer::{DbInternerInferExt, next_solver::{
-        DbInterner, pat_analysis::{self, Adjust,
-    DeconstructedPat, HirDisplay}, InferCtxt}, InferenceResult, MatchCheckCtx, TraitEnvironment,
-    Ty, TyKind, TypingMode, WitnessPat}, }, },
+    db::HirDatabase,
+
+    diagnostics::match_check::{
+        self,
+
+    display::{DisplayTarget,
+
+    infer::{DbInternerInferExt,
+
+    next_solver::{
+        DbInterner,
+
+    pat_analysis::{self,
+
+    Adjust, DeconstructedPat, HirDisplay}, InferCtxt}, InferenceResult, MatchCheckCtx,
+    TraitEnvironment, Ty, TyKind, TypingMode, WitnessPat}, }, },
 };
 
 pub enum BodyValidationDiagnostic {

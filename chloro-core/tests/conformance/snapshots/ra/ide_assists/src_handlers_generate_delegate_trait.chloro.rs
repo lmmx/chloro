@@ -3,20 +3,36 @@ use std::ops::Not;
 use either::Either;
 use hir::{HasVisibility, db::HirDatabase};
 use ide_db::{
-    assists::{AssistId, path_transform::PathTransform, syntax_helpers::suggest_name, FxHashMap,
-    FxHashSet, GroupLabel},
+    assists::{AssistId,
+
+    path_transform::PathTransform,
+
+    syntax_helpers::suggest_name,
+
+    FxHashMap, FxHashSet, GroupLabel},
 };
 use itertools::Itertools;
 use syntax::{
     ast::{
-        self, edit::{self, make, ted::{self, AssocItem, AstNode, AstNodeEdit}, Edition,
-    GenericArgList, GenericParamList, HasAttrs, HasGenericArgs, HasGenericParams, HasName,
-    HasTypeBounds, HasVisibility as astHasVisibility, NodeOrToken, Path, Position}, SmolStr,
-    SyntaxKind, ToSmolStr, WherePred, },
+        self,
+
+    edit::{self,
+
+    make,
+
+    ted::{self,
+
+    AssocItem, AstNode, AstNodeEdit}, Edition, GenericArgList, GenericParamList, HasAttrs,
+    HasGenericArgs, HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility,
+    NodeOrToken, Path, Position}, SmolStr, SyntaxKind, ToSmolStr, WherePred, },
 };
 
 use crate::{
-    assist_context::{AssistContext, utils::convert_param_list_to_arg_list, Assists},
+    assist_context::{AssistContext,
+
+    utils::convert_param_list_to_arg_list,
+
+    Assists},
 };
 
 pub(crate) fn generate_delegate_trait(

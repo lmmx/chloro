@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23691 bytes
+Chloro size:   23710 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -47,14 +47,18 @@ Rustfmt size:  23725 bytes
 -
      use crate::{
 -        InlayHintsConfig, fixture,
--        inlay_hints::{
-+        check_expect, check_with_config}, fixture, inlay_hints::{
++        check_expect, check_with_config}, fixture,
++
+         inlay_hints::{
              LazyProperty,
 -            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
 -        },
-+        tests::{DISABLED_CONFIG, InlayHintsConfig, TEST_CONFIG, },
-     };
--
+-    };
+ 
++        tests::{DISABLED_CONFIG,
++
++        InlayHintsConfig, TEST_CONFIG, },
++    };
      #[track_caller]
      fn check_chains(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          check_with_config(InlayHintsConfig { chaining_hints: true, ..DISABLED_CONFIG }, ra_fixture);

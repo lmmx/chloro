@@ -1,13 +1,29 @@
 use either::Either;
 use hir::{CaptureKind, ClosureCapture, FileRangeWrapper, HirDisplay};
 use ide_db::{
-    assists::AssistId, base_db::SourceDatabase, defs::Definition, search::FileReferenceNode,
-    source_change::SourceChangeBuilder, FxHashSet,
+    assists::AssistId,
+
+    base_db::SourceDatabase,
+
+    defs::Definition,
+
+    search::FileReferenceNode,
+
+    source_change::SourceChangeBuilder,
+
+    FxHashSet,
 };
 use stdx::format_to;
 use syntax::{
-    algo::{skip_trivia_token, ast::{
-        self, edit::{AstNodeEdit, hacks::parse_expr_from_str,
+    algo::{skip_trivia_token,
+
+    ast::{
+        self,
+
+    edit::{AstNodeEdit,
+
+    hacks::parse_expr_from_str,
+
     make, skip_whitespace_token}, ted, AstNode, Direction, HasArgList, HasGenericParams, HasName,
     IndentLevel}, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T, },
 };

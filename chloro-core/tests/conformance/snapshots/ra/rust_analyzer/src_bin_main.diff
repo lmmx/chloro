@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12893 bytes
-Chloro size:   12828 bytes
+Chloro size:   12838 bytes
 Rustfmt size:  12893 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,15 @@ Rustfmt size:  12893 bytes
  
  mod rustc_wrapper;
  
- use lsp_server::Connection;
  use paths::Utf8PathBuf;
  use rust_analyzer::{
--    cli::flags,
+     cli::flags,
 -    config::{Config, ConfigChange, ConfigErrors},
 -    from_json,
-+    cli::flags, config::{Config, from_json, ConfigChange, ConfigErrors},
++
++    config::{Config,
++
++    from_json, ConfigChange, ConfigErrors},
  };
  use tracing_subscriber::fmt::writer::BoxMakeWriter;
  use vfs::AbsPathBuf;

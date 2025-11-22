@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5724 bytes
-Chloro size:   5735 bytes
+Chloro size:   5742 bytes
 Rustfmt size:  5762 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,16 @@ Rustfmt size:  5762 bytes
  use crate::{
 -    infer::InferenceContext,
 +    infer::InferenceContext, infer::{opaque_types::OpaqueHiddenType,
++
      next_solver::{
 -        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
 -        EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
 -    },
-+        EarlyBinder, traits::ObligationCause}, OpaqueTypeKey, SolverDefId,
-+    TypingMode, },
++        EarlyBinder,
++
++    traits::ObligationCause},
++
++    OpaqueTypeKey, SolverDefId, TypingMode, },
  };
  
  impl<'db> InferenceContext<'_, 'db> {

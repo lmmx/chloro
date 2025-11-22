@@ -7,7 +7,11 @@
 //! ```
 
 use hir::{
-    db::{DefDatabase as _, mir::{MirSpan, DefWithBody, HirDatabase as _}, TerminatorKind},
+    db::{DefDatabase as _,
+
+    mir::{MirSpan,
+
+    DefWithBody, HirDatabase as _}, TerminatorKind},
 };
 use ide_db::{FileRange, famous_defs::FamousDefs};
 use syntax::{
@@ -135,7 +139,11 @@ fn nearest_token_after_node(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, InlayHintsConfig,
+        check_with_config},
+
+        inlay_hints::tests::{DISABLED_CONFIG,
+
+        InlayHintsConfig,
     };
     const ONLY_DROP_CONFIG: InlayHintsConfig<'_> = InlayHintsConfig { implicit_drop_hints: true, ..DISABLED_CONFIG };
     #[test]

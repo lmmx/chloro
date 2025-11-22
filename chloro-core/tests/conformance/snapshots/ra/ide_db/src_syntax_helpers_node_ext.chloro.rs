@@ -6,7 +6,9 @@ use itertools::Itertools;
 use parser::T;
 use span::Edition;
 use syntax::{
-    ast::{self, AstNode, AstToken, HasLoopBody, MacroCall, PathSegmentKind, Preorder, RustLanguage,
+    ast::{self,
+
+    AstNode, AstToken, HasLoopBody, MacroCall, PathSegmentKind, Preorder, RustLanguage,
     VisibilityKind}, WalkEvent,
 };
 

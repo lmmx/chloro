@@ -11,10 +11,19 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    db::{HirDatabase, display::DisplayTarget, infer::{DbInternerInferExt, mir::OperandKind,
+    db::{HirDatabase,
+
+    display::DisplayTarget,
+
+    infer::{DbInternerInferExt,
+
+    mir::OperandKind,
+
     next_solver::{
-        DbInterner, GenericArgs, InferCtxt}, InternedClosure,
-    InternedClosureId}, TraitEnvironment, Ty, TypingMode, },
+        DbInterner,
+
+    GenericArgs, InferCtxt}, InternedClosure, InternedClosureId}, TraitEnvironment, Ty, TypingMode,
+    },
 };
 use super::{
     BasicBlockId, BorrowKind, LocalId, MirBody, MirLowerError, MirSpan, MutBorrowKind, Operand,

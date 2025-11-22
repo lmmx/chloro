@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6743 bytes
-Chloro size:   6858 bytes
+Chloro size:   6868 bytes
 Rustfmt size:  6876 bytes
 
 ✗ Outputs DIFFER
@@ -17,7 +17,14 @@ Rustfmt size:  6876 bytes
 +use syntax::{AstNode, AstPtr, ast};
  
  use crate::{
-     attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
+-    attr::Attrs, db::DefDatabase, AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId,
+-    LocalTypeOrConstParamId, Lookup, UseId, VariantId,
++    attr::Attrs,
++
++    db::DefDatabase,
++
++    AstIdLoc, GenericDefId, LocalFieldId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup,
++    UseId, VariantId,
  };
  
  pub trait HasSource {

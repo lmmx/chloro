@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12638 bytes
-Chloro size:   12749 bytes
+Chloro size:   12771 bytes
 Rustfmt size:  12638 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,11 @@ Rustfmt size:  12638 bytes
 -        Array, AsmOperand, BinaryOp, BindingAnnotation, Expr, ExprId, Pat, PatId, Statement,
 -        UnaryOp,
 -    },
--    lang_item::LangItem,
-+        Array, lang_item::LangItem, AsmOperand, BinaryOp, BindingAnnotation, Expr,
-+    ExprId, Pat, PatId, Statement, UnaryOp, },
++        Array,
++
+     lang_item::LangItem,
++
++    AsmOperand, BinaryOp, BindingAnnotation, Expr, ExprId, Pat, PatId, Statement, UnaryOp, },
  };
  use hir_expand::name::Name;
  use intern::sym;
@@ -27,10 +29,15 @@ Rustfmt size:  12638 bytes
  use crate::{
 -    Adjust, Adjustment, AutoBorrow, OverloadedDeref,
 -    infer::{Expectation, InferenceContext, expr::ExprIsRead},
--    lower::lower_mutability,
--    next_solver::TyKind,
-+    expr::ExprIsRead}, infer::{Expectation, lower::lower_mutability, next_solver::TyKind, Adjust,
-+    Adjustment, AutoBorrow, InferenceContext, OverloadedDeref,
++    expr::ExprIsRead},
++
++    infer::{Expectation,
++
+     lower::lower_mutability,
++
+     next_solver::TyKind,
++
++    Adjust, Adjustment, AutoBorrow, InferenceContext, OverloadedDeref,
  };
  
  impl<'db> InferenceContext<'_, 'db> {

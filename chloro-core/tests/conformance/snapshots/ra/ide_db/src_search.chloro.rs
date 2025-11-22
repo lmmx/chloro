@@ -19,14 +19,21 @@ use parser::SyntaxKind;
 use rustc_hash::{FxHashMap, FxHashSet};
 use salsa::Database;
 use syntax::{
-    ast::{self, match_ast, AstNode, AstToken, HasName, Rename}, SmolStr, SyntaxElement, SyntaxNode,
-    TextRange, TextSize, ToSmolStr,
+    ast::{self,
+
+    match_ast, AstNode, AstToken, HasName, Rename}, SmolStr, SyntaxElement, SyntaxNode, TextRange,
+    TextSize, ToSmolStr,
 };
 use triomphe::Arc;
 
 use crate::{
-    convert_to_def_in_trait}, defs::{Definition, traits::{as_trait_assoc_def, NameClass,
-    NameRefClass}, RootDatabase,
+    convert_to_def_in_trait},
+
+    defs::{Definition,
+
+    traits::{as_trait_assoc_def,
+
+    NameClass, NameRefClass}, RootDatabase,
 };
 
 #[derive(Debug, Default, Clone)]

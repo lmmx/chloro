@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4778 bytes
-Chloro size:   4774 bytes
+Chloro size:   4780 bytes
 Rustfmt size:  4862 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,12 @@ Rustfmt size:  4862 bytes
  
  use crate::{
 -    context::{CompletionContext, ExistingDerives, PathCompletionCtx, Qualified},
--    item::CompletionItem,
++    context::{CompletionContext,
++
+     item::CompletionItem,
 -    Completions,
-+    context::{CompletionContext, item::CompletionItem, Completions, ExistingDerives,
-+    PathCompletionCtx, Qualified},
++
++    Completions, ExistingDerives, PathCompletionCtx, Qualified},
  };
  
  pub(crate) fn complete_derive_path(

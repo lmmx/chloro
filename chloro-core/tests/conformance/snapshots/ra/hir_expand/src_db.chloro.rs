@@ -10,14 +10,27 @@ use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
 use triomphe::Arc;
 
 use crate::{
-    attrs::{AttrId, builtin::pseudo_derive_attr_expansion, cfg_process, collect_attrs},
-    declarative::DeclarativeMacroExpander, fixup::{self, hygiene::{span_with_call_site_ctxt,
-    proc_macro::{CrateProcMacros, span_map::{ExpansionSpanMap, span_with_def_site_ctxt,
-    span_with_mixed_site_ctxt}, tt, AstId, AttrInput, BuiltinAttrExpander, BuiltinDeriveExpander,
-    BuiltinFnLikeExpander, CustomProcMacroExpander, EagerCallInfo, EagerExpander, EditionedFileId,
-    ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId, MacroCallKind, MacroCallLoc,
-    MacroDefId, MacroDefKind, ProcMacros}, RawAttrs, RealSpanMap, SpanMap, SpanMapRef},
-    SyntaxFixupUndoInfo},
+    attrs::{AttrId,
+
+    builtin::pseudo_derive_attr_expansion,
+
+    cfg_process, collect_attrs},
+
+    declarative::DeclarativeMacroExpander,
+
+    fixup::{self,
+
+    hygiene::{span_with_call_site_ctxt,
+
+    proc_macro::{CrateProcMacros,
+
+    span_map::{ExpansionSpanMap,
+
+    span_with_def_site_ctxt, span_with_mixed_site_ctxt}, tt, AstId, AttrInput, BuiltinAttrExpander,
+    BuiltinDeriveExpander, BuiltinFnLikeExpander, CustomProcMacroExpander, EagerCallInfo,
+    EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
+    MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind, ProcMacros}, RawAttrs, RealSpanMap,
+    SpanMap, SpanMapRef}, SyntaxFixupUndoInfo},
 };
 
 /// This is just to ensure the types of smart_macro_arg and macro_arg are the same

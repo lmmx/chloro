@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6348 bytes
-Chloro size:   5732 bytes
+Chloro size:   5753 bytes
 Rustfmt size:  6412 bytes
 
 ✗ Outputs DIFFER
@@ -16,19 +16,26 @@ Rustfmt size:  6412 bytes
  use tracing::debug;
  
  use crate::{
--    db::HirDatabase,
+     db::HirDatabase,
 -    next_solver::{
 -        infer::{
 -            traits::{Obligation, ObligationCause},
--            DbInternerInferExt,
++
++    infer::{
+             DbInternerInferExt,
 -        },
 -        obligation_ctxt::ObligationCtxt,
 -        DbInterner, TypingMode,
 -    },
-+    db::HirDatabase, infer::{
-+            DbInternerInferExt, next_solver::{
++
++    next_solver::{
 +        DbInterner,
-+    obligation_ctxt::ObligationCtxt, traits::{Obligation, ObligationCause}, TypingMode, }, },
++
++    obligation_ctxt::ObligationCtxt,
++
++    traits::{Obligation,
++
++    ObligationCause}, TypingMode, }, },
  };
  
 -// rustc does not have a cycle handling for the `specializes` query, meaning a cycle is a bug,

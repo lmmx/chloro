@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21059 bytes
-Chloro size:   20597 bytes
+Chloro size:   20613 bytes
 Rustfmt size:  21059 bytes
 
 ✗ Outputs DIFFER
@@ -18,8 +18,15 @@ Rustfmt size:  21059 bytes
 -    SyntaxNode, SyntaxToken, T, TextRange, TextSize, TokenAtOffset,
 -    algo::{self, skip_trivia_token},
 -    ast::{self, AstNode, AstToken},
-+    algo::{self, ast::{self, skip_trivia_token}, AstNode, AstToken}, Direction, NodeOrToken,
-+    SyntaxKind::{self, SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, *}, T,
++    algo::{self,
++
++    ast::{self,
++
++    skip_trivia_token}, AstNode, AstToken}, Direction, NodeOrToken,
++
++    SyntaxKind::{self,
++
++    SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset, *}, T,
  };
  
  use crate::FileRange;

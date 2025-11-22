@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9790 bytes
+Chloro size:   9816 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -12,25 +12,32 @@ Rustfmt size:  9886 bytes
  use rustc_type_ir::{
 -    inherent::{IntoKind, Term as _},
 -    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, TermKind, TypeFoldable,
--    TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
-+    inherent::{IntoKind, AliasRelationDirection, FallibleTypeFolder, Flags, Interner, Term as _},
-+    TermKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
++    inherent::{IntoKind,
++
++    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, Term as _}, TermKind, TypeFoldable,
+     TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
  };
  
  use crate::next_solver::{
 -    fulfill::{FulfillmentCtxt, NextSolverError},
--    infer::{
++    at::At,
++
++    fulfill::{FulfillmentCtxt,
++
+     infer::{
 -        at::At,
 -        traits::{Obligation, ObligationCause},
--        InferCtxt,
+         InferCtxt,
 -    },
--    util::PlaceholderReplacer,
++
++    traits::{Obligation,
++
+     util::PlaceholderReplacer,
 -    Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
 -    TyKind,
-+    at::At, fulfill::{FulfillmentCtxt, infer::{
-+        InferCtxt, traits::{Obligation,
-+    util::PlaceholderReplacer, Binder, Const, ConstKind, DbInterner, Goal, NextSolverError},
-+    ObligationCause}, ParamEnv, Predicate, PredicateKind, Term, Ty, TyKind, },
++
++    Binder, Const, ConstKind, DbInterner, Goal, NextSolverError}, ObligationCause}, ParamEnv,
++    Predicate, PredicateKind, Term, Ty, TyKind, },
  };
  
  /// Deeply normalize all aliases in `value`. This does not handle inference and expects

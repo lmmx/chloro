@@ -1,14 +1,31 @@
 use std::collections::VecDeque;
 
 use ide_db::{
-    assists::GroupLabel, famous_defs::FamousDefs, syntax_helpers::node_ext::{for_each_tail_expr,
+    assists::GroupLabel,
+
+    famous_defs::FamousDefs,
+
+    syntax_helpers::node_ext::{for_each_tail_expr,
+
     walk_expr},
 };
 use syntax::{
     ast::{
-        self, prec::{ExprPrecedence, precedence}, syntax_editor::{Position,
-    syntax_factory::SyntaxFactory, AstNode, Expr::BinExpr, HasArgList, NodeOrToken, SyntaxEditor},
-    SyntaxKind, T, },
+        self,
+
+    prec::{ExprPrecedence,
+
+    precedence},
+
+    syntax_editor::{Position,
+
+    syntax_factory::SyntaxFactory,
+
+    AstNode,
+
+    Expr::BinExpr,
+
+    HasArgList, NodeOrToken, SyntaxEditor}, SyntaxKind, T, },
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::invert_boolean_expression};

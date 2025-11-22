@@ -1,8 +1,11 @@
 use either::Either;
 use syntax::{
     ast::{
-        self, edit_in_place::{GenericParamsOwnerEdit, make, match_ast, AstNode, HasName,
-    HasTypeBounds, Removable}, },
+        self,
+
+    edit_in_place::{GenericParamsOwnerEdit,
+
+    make, match_ast, AstNode, HasName, HasTypeBounds, Removable}, },
 };
 
 use crate::{AssistContext, AssistId, Assists};

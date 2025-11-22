@@ -11,7 +11,16 @@ use test_fixture::WithFixture;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, layout::{Layout, next_solver::{DbInterner, setup_tracing, test_db::TestDB,
+    db::HirDatabase,
+
+    layout::{Layout,
+
+    next_solver::{DbInterner,
+
+    setup_tracing,
+
+    test_db::TestDB,
+
     GenericArgs}, LayoutError},
 };
 

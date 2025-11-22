@@ -6,8 +6,11 @@ use itertools::Itertools;
 use syntax::{SmolStr, ToSmolStr};
 
 use crate::{
-    context::{CompletionContext, item::CompletionItem, Completions, ExistingDerives,
-    PathCompletionCtx, Qualified},
+    context::{CompletionContext,
+
+    item::CompletionItem,
+
+    Completions, ExistingDerives, PathCompletionCtx, Qualified},
 };
 
 pub(crate) fn complete_derive_path(

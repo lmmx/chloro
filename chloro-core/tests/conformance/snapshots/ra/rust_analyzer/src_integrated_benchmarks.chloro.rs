@@ -16,7 +16,9 @@ use ide::{
     FilePosition, TextSize,
 };
 use ide_db::{
-    imports::insert_use::{ImportGranularity, InsertUseConfig}, MiniCore, SnippetCap,
+    imports::insert_use::{ImportGranularity,
+
+    InsertUseConfig}, MiniCore, SnippetCap,
 };
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use project_model::CargoConfig;

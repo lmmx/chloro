@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   13802 bytes
+Chloro size:   13851 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -13,6 +13,11 @@ Rustfmt size:  13097 bytes
  use base_db::{Crate, RootQueryDb, SourceDatabase};
  use either::Either;
  use hir_expand::{
+-    db::ExpandDatabase, EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId,
+-    MacroDefKind,
++    db::ExpandDatabase,
++
++    EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId, MacroDefKind,
  };
  use intern::sym;
  use la_arena::ArenaMap;
@@ -23,19 +28,36 @@ Rustfmt size:  13097 bytes
  
  use crate::{
 -    attr::{Attrs, AttrsWithOwner},
--    expr_store::{
++    attr::{Attrs,
++
+     expr_store::{
 -        scope::ExprScopes, Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap,
 -    },
--    hir::generics::GenericParams,
--    import_map::ImportMap,
++        Body,
++
++    file_item_tree_query},
++
+     hir::generics::GenericParams,
++
+     import_map::ImportMap,
 -    item_tree::{file_item_tree_query, ItemTree},
 -    lang_item::{self, LangItem},
--    nameres::crate_def_map,
--    signatures::{
++
++    item_tree::{ItemTree,
++
++    lang_item::{self,
++
+     nameres::crate_def_map,
++
++    scope::ExprScopes,
++
+     signatures::{
 -        ConstSignature, EnumSignature, FunctionSignature, ImplSignature, StaticSignature,
 -        StructSignature, TraitSignature, TypeAliasSignature, UnionSignature,
 -    },
--    tt,
++        ConstSignature,
++
+     tt,
 -    visibility::{self, Visibility},
 -    AssocItemId, AttrDefId, BlockId, BlockLoc, ConstId, ConstLoc, DefWithBodyId, EnumId, EnumLoc,
 -    EnumVariantId, EnumVariantLoc, ExternBlockId, ExternBlockLoc, ExternCrateId, ExternCrateLoc,
@@ -43,20 +65,18 @@ Rustfmt size:  13097 bytes
 -    MacroExpander, MacroId, MacroRulesId, MacroRulesLoc, MacroRulesLocFlags, ProcMacroId,
 -    ProcMacroLoc, StaticId, StaticLoc, StructId, StructLoc, TraitId, TraitLoc, TypeAliasId,
 -    TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
-+    attr::{Attrs, expr_store::{
-+        Body, file_item_tree_query}, hir::generics::GenericParams,
-+    import_map::ImportMap, item_tree::{ItemTree, lang_item::{self, nameres::crate_def_map,
-+    scope::ExprScopes, signatures::{
-+        ConstSignature, tt, visibility::{self, AssocItemId,
-+    AttrDefId, AttrsWithOwner}, BlockId, BlockLoc, BodySourceMap, ConstId, ConstLoc, DefWithBodyId,
-+    EnumId, EnumLoc, EnumSignature, EnumVariantId, EnumVariantLoc, ExpressionStore,
++
++    visibility::{self,
++
++    AssocItemId, AttrDefId, AttrsWithOwner}, BlockId, BlockLoc, BodySourceMap, ConstId, ConstLoc,
++    DefWithBodyId, EnumId, EnumLoc, EnumSignature, EnumVariantId, EnumVariantLoc, ExpressionStore,
 +    ExpressionStoreSourceMap, ExternBlockId, ExternBlockLoc, ExternCrateId, ExternCrateLoc,
 +    FunctionId, FunctionLoc, FunctionSignature, GenericDefId, ImplId, ImplLoc, ImplSignature,
 +    LangItem}, LocalFieldId, Macro2Id, Macro2Loc, MacroExpander, MacroId, MacroRulesId,
 +    MacroRulesLoc, MacroRulesLocFlags, ProcMacroId, ProcMacroLoc, StaticId, StaticLoc,
 +    StaticSignature, StructId, StructLoc, StructSignature, TraitId, TraitLoc, TraitSignature,
-+    TypeAliasId, TypeAliasLoc, TypeAliasSignature, UnionId, UnionLoc, UnionSignature, UseId,
-+    UseLoc, VariantId, Visibility}, }, },
++    TypeAliasId, TypeAliasLoc, TypeAliasSignature, UnionId, UnionLoc, UnionSignature, UseId, UseLoc,
++    VariantId, Visibility}, }, },
  };
  
 -use salsa::plumbing::AsId;

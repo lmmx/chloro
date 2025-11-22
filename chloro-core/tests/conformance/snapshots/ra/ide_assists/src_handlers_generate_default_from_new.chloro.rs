@@ -1,8 +1,9 @@
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    AstNode,
-    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
+    ast::{self,
+
+    make}, AstNode, HasGenericParams, HasName, HasTypeBounds, Impl,
 };
 
 use crate::{

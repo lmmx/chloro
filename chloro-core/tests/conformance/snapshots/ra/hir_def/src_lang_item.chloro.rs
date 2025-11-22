@@ -9,9 +9,16 @@ use rustc_hash::FxHashMap;
 use triomphe::Arc;
 
 use crate::{
-    crate_def_map, crate_local_def_map}, db::DefDatabase, expr_store::path::Path,
-    nameres::{assoc::TraitItems, AdtId, AssocItemId, AttrDefId, Crate, EnumId, EnumVariantId,
-    FunctionId, ImplId, ModuleDefId, StaticId, StructId, TraitId, TypeAliasId, UnionId,
+    crate_def_map, crate_local_def_map},
+
+    db::DefDatabase,
+
+    expr_store::path::Path,
+
+    nameres::{assoc::TraitItems,
+
+    AdtId, AssocItemId, AttrDefId, Crate, EnumId, EnumVariantId, FunctionId, ImplId, ModuleDefId,
+    StaticId, StructId, TraitId, TypeAliasId, UnionId,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

@@ -2,7 +2,18 @@
 //! and parse its stdout/stderr.
 
 use std::{
-    ffi::OsString, fmt, io::{self, marker::PhantomData, path::PathBuf, process::{ChildStderr,
+    ffi::OsString,
+
+    fmt,
+
+    io::{self,
+
+    marker::PhantomData,
+
+    path::PathBuf,
+
+    process::{ChildStderr,
+
     BufWriter, ChildStdout, Command, Stdio}, Write},
 };
 

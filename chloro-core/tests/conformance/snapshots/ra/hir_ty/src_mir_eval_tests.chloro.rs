@@ -5,8 +5,19 @@ use syntax::{TextRange, TextSize};
 use test_fixture::WithFixture;
 
 use crate::{
-    db::HirDatabase, display::DisplayTarget, mir::MirLowerError, next_solver::{DbInterner,
-    setup_tracing, test_db::TestDB, GenericArgs},
+    db::HirDatabase,
+
+    display::DisplayTarget,
+
+    mir::MirLowerError,
+
+    next_solver::{DbInterner,
+
+    setup_tracing,
+
+    test_db::TestDB,
+
+    GenericArgs},
 };
 use super::{MirEvalError, interpret_mir};
 

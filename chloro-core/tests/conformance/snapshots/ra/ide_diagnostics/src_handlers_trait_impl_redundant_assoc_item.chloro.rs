@@ -1,7 +1,13 @@
 use hir::{HasSource, HirDisplay, db::ExpandDatabase};
 use ide_db::text_edit::TextRange;
 use ide_db::{
-    assists::{Assist, label::Label, source_change::SourceChangeBuilder, AssistId},
+    assists::{Assist,
+
+    label::Label,
+
+    source_change::SourceChangeBuilder,
+
+    AssistId},
 };
 use syntax::ToSmolStr;
 

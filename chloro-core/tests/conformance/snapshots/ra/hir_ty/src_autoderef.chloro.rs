@@ -11,10 +11,18 @@ use tracing::debug;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, infer::unify::InferenceTable, infer::{
+    db::HirDatabase,
+
+    infer::unify::InferenceTable, infer::{
             InferOk,
+
     next_solver::{
-        Canonical, obligation_ctxt::ObligationCtxt, traits::{Obligation,
+        Canonical,
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::{Obligation,
+
     ObligationCause, PredicateObligations}, TraitEnvironment, TraitRef, Ty, TyKind, }, },
 };
 

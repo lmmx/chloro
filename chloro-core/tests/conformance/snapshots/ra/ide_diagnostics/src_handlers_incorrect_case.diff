@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26750 bytes
+Chloro size:   26756 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,14 @@ Rustfmt size:  27018 bytes
  
  use crate::{
 -    // references::rename::rename_with_semantics,
--    unresolved_fix,
+     unresolved_fix,
 -    Diagnostic,
 -    DiagnosticCode,
-+    unresolved_fix, // references::rename::rename_with_semantics, Diagnostic, DiagnosticCode,
-     DiagnosticsContext,
+-    DiagnosticsContext,
++
++    // references::rename::rename_with_semantics,
++
++    Diagnostic, DiagnosticCode, DiagnosticsContext,
  };
  
 -// Diagnostic: incorrect-ident-case

@@ -6,8 +6,11 @@ use ide_db::{
 use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
 
 use crate::{
-    goto_definition::goto_definition, navigation_target::TryToNav, FilePosition,
-    GotoDefinitionConfig, NavigationTarget, RangeInfo,
+    goto_definition::goto_definition,
+
+    navigation_target::TryToNav,
+
+    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo,
 };
 
 pub(crate) fn goto_declaration(

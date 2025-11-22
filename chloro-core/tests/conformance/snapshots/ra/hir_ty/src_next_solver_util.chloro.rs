@@ -11,23 +11,39 @@ use la_arena::Idx;
 use rustc_abi::{Float, HasDataLayout, Integer, IntegerType, Primitive, ReprOptions};
 use rustc_type_ir::{
     inherent::{
-        AdtDef, lang_items::SolverTraitLangItem, solve::SizedTraitKind, ConstKind,
-    CoroutineArgs, DebruijnIndex, FloatTy, GenericArg as _, GenericArgs as _, IntTy, Interner,
-    IntoKind, ParamEnv as _, PredicatePolarity, RegionKind, SliceLike, Ty as _, TypeFoldable,
-    TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt, TypeVisitor, UintTy,
-    UniverseIndex, INNERMOST, },
+        AdtDef,
+
+    lang_items::SolverTraitLangItem,
+
+    solve::SizedTraitKind,
+
+    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, GenericArg as _, GenericArgs as _, IntTy,
+    Interner, IntoKind, ParamEnv as _, PredicatePolarity, RegionKind, SliceLike, Ty as _,
+    TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt, TypeVisitor,
+    UintTy, UniverseIndex, INNERMOST, },
 };
 
 use crate::{
-    db::HirDatabase, infer::InferCtxt, lower::{LifetimeElisionKind, method_resolution::{TraitImpls,
+    db::HirDatabase,
+
+    infer::InferCtxt,
+
+    lower::{LifetimeElisionKind,
+
+    method_resolution::{TraitImpls,
+
     next_solver::{
-        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst,
-    PlaceholderRegion, TyFingerprint}, TyLoweringContext}, },
+        BoundConst,
+
+    FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion, TyFingerprint},
+    TyLoweringContext}, },
 };
 use super::{
-    fold::{BoundVarReplacer, Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const,
-    DbInterner, EarlyBinder, FnMutDelegate}, GenericArgs, Predicate, PredicateKind, Region,
-    SolverDefId, TraitPredicate, TraitRef, Ty, TyKind,
+    fold::{BoundVarReplacer,
+
+    Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
+    FnMutDelegate}, GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate,
+    TraitRef, Ty, TyKind,
 };
 
 #[derive(Clone, Debug)]

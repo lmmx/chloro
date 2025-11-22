@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   150877 bytes
+Chloro size:   150895 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,12 @@ Rustfmt size:  167117 bytes
  };
  use ide_db::{
 -    MiniCore, SnippetCap,
--    assists::ExprFillDefaultMode,
+     assists::ExprFillDefaultMode,
 -    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
-+    assists::ExprFillDefaultMode, imports::insert_use::{ImportGranularity, InsertUseConfig,
-+    MiniCore, PrefixKind}, SnippetCap,
++
++    imports::insert_use::{ImportGranularity,
++
++    InsertUseConfig, MiniCore, PrefixKind}, SnippetCap,
  };
  use itertools::{Either, Itertools};
  use paths::{Utf8Path, Utf8PathBuf};
@@ -58,9 +60,15 @@ Rustfmt size:  167117 bytes
 +use _impl_for_config_data as impl_for_config_data;
 +
 +use crate::{
-+    diagnostics::DiagnosticsMapConfig, flycheck::{CargoOptions,
-+    lsp::capabilities::ClientCapabilities, lsp_ext::{WorkspaceSymbolSearchKind, FlycheckConfig},
-+    WorkspaceSymbolSearchScope},
++    diagnostics::DiagnosticsMapConfig,
++
++    flycheck::{CargoOptions,
++
++    lsp::capabilities::ClientCapabilities,
++
++    lsp_ext::{WorkspaceSymbolSearchKind,
++
++    FlycheckConfig}, WorkspaceSymbolSearchScope},
 +};
 +
 +type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;

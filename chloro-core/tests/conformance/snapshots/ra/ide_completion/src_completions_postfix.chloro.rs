@@ -5,18 +5,35 @@ mod format_like;
 use base_db::SourceDatabase;
 use hir::{ItemInNs, Semantics};
 use ide_db::{
-    documentation::{Documentation, imports::insert_use::ImportScope, text_edit::TextEdit,
-    ty_filter::TryEnum, HasDocs}, RootDatabase, SnippetCap,
+    documentation::{Documentation,
+
+    imports::insert_use::ImportScope,
+
+    text_edit::TextEdit,
+
+    ty_filter::TryEnum,
+
+    HasDocs}, RootDatabase, SnippetCap,
 };
 use stdx::never;
 use syntax::{
-    ast::{self, match_ast, AstNode, AstToken}, SyntaxKind::{EXPR_STMT, TextRange, TextSize,
-    STMT_LIST}, T,
+    ast::{self,
+
+    match_ast, AstNode, AstToken},
+
+    SyntaxKind::{EXPR_STMT,
+
+    TextRange, TextSize, STMT_LIST}, T,
 };
 
 use crate::{
-    completions::postfix::format_like::add_format_like_completions, context::{BreakableKind,
-    item::{Builder, CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
+    completions::postfix::format_like::add_format_like_completions,
+
+    context::{BreakableKind,
+
+    item::{Builder,
+
+    CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
     CompletionRelevancePostfixMatch}, Completions, DotAccess, DotAccessKind}, SnippetScope,
 };
 
@@ -438,7 +455,11 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
 mod tests {
     use expect_test::expect;
     use crate::{
-        check, check_edit, check_edit_with_config}, tests::{TEST_CONFIG, CompletionConfig, Snippet,
+        check, check_edit, check_edit_with_config},
+
+        tests::{TEST_CONFIG,
+
+        CompletionConfig, Snippet,
     };
     #[test]
     fn postfix_completion_works_for_trivial_path_expression() {

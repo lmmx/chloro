@@ -7,13 +7,24 @@ use ide_db::{
 };
 
 use crate::{
-    compute_type_match, context::{CompletionContext, format_literal_label, format_literal_lookup,
-    item::{Builder, render::{
-        RenderContext, render_record_lit, render_tuple_lit,
+    compute_type_match,
+
+    context::{CompletionContext,
+
+    format_literal_label, format_literal_lookup,
+
+    item::{Builder,
+
+    render::{
+        RenderContext,
+
+    render_record_lit, render_tuple_lit,
+
     variant::{
-            RenderedLiteral, visible_fields, CompletionItem, CompletionItemKind,
-    CompletionRelevance, CompletionRelevanceFn}, CompletionRelevanceReturnType, PathCompletionCtx,
-    PathKind}, }, },
+            RenderedLiteral,
+
+    visible_fields, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn},
+    CompletionRelevanceReturnType, PathCompletionCtx, PathKind}, }, },
 };
 
 pub(crate) fn render_variant_lit(

@@ -27,9 +27,16 @@ pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, Unar
 use type_ref::TypeRefId;
 
 use crate::{
-    builtin_type::{BuiltinFloat, expr_store::{
-        HygieneId, path::{GenericArgs,
-    type_ref::{Mutability, BlockId, BuiltinInt, BuiltinUint}, Path}, Rawness}, },
+    builtin_type::{BuiltinFloat,
+
+    expr_store::{
+        HygieneId,
+
+    path::{GenericArgs,
+
+    type_ref::{Mutability,
+
+    BlockId, BuiltinInt, BuiltinUint}, Path}, Rawness}, },
 };
 
 pub type BindingId = Idx<Binding>;

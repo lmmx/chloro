@@ -3,21 +3,40 @@ use hir::{
     TypeInfo,
 };
 use ide_db::{
-    assists::ExprFillDefaultMode, defs::{Definition, famous_defs::FamousDefs,
-    helpers::is_editable_crate, path_transform::PathTransform, source_change::SourceChangeBuilder,
+    assists::ExprFillDefaultMode,
+
+    defs::{Definition,
+
+    famous_defs::FamousDefs,
+
+    helpers::is_editable_crate,
+
+    path_transform::PathTransform,
+
+    source_change::SourceChangeBuilder,
+
     FileId, FxHashMap, FxHashSet, NameRefClass}, RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::to_lower_snake_case;
 use syntax::{
     ast::{
-        self, edit::IndentLevel, edit_in_place::Indent, make, ted, AstNode, BlockExpr,
-    CallExpr, Edition, HasArgList, HasGenericParams, HasModuleItem, HasTypeBounds, SyntaxKind,
-    SyntaxNode, TextRange, T, },
+        self,
+
+    edit::IndentLevel,
+
+    edit_in_place::Indent,
+
+    make, ted, AstNode, BlockExpr, CallExpr, Edition, HasArgList, HasGenericParams, HasModuleItem,
+    HasTypeBounds, SyntaxKind, SyntaxNode, TextRange, T, },
 };
 
 use crate::{
-    find_struct_impl}, utils::{convert_reference_type, AssistContext, AssistId, Assists,
+    find_struct_impl},
+
+    utils::{convert_reference_type,
+
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_function(

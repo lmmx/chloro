@@ -2,8 +2,9 @@
 
 use either::Either;
 use hir::{
-    db::{DefDatabase, resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs,
-    HirDatabase}, InFile,
+    db::{DefDatabase,
+
+    resolve_doc_path_on, sym, AttrId, AttrSourceMap, AttrsWithOwner, HasAttrs, HirDatabase}, InFile,
 };
 use itertools::Itertools;
 use span::{TextRange, TextSize};

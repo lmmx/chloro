@@ -17,10 +17,27 @@ use triomphe::Arc;
 use vfs::{AbsPathBuf, ChangeKind, VfsPath};
 
 use crate::{
-    config::{Config, flycheck::{InvocationStrategy, global_state::{FetchWorkspaceRequest,
-    lsp::{from_proto, lsp_ext::{self, mem_docs::DocumentData, reload, target_spec::TargetSpec,
-    try_default, utils::apply_document_changes}, ConfigChange}, GlobalState}, RunFlycheckParams},
-    Target},
+    config::{Config,
+
+    flycheck::{InvocationStrategy,
+
+    global_state::{FetchWorkspaceRequest,
+
+    lsp::{from_proto,
+
+    lsp_ext::{self,
+
+    mem_docs::DocumentData,
+
+    reload,
+
+    target_spec::TargetSpec,
+
+    try_default,
+
+    utils::apply_document_changes},
+
+    ConfigChange}, GlobalState}, RunFlycheckParams}, Target},
 };
 
 pub(crate) fn handle_cancel(

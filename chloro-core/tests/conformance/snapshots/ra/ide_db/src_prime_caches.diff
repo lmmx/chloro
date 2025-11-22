@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12112 bytes
-Chloro size:   12108 bytes
+Chloro size:   12118 bytes
 Rustfmt size:  12243 bytes
 
 ✗ Outputs DIFFER
@@ -22,9 +22,12 @@ Rustfmt size:  12243 bytes
  
  use crate::{
 -    base_db::{Crate, RootQueryDb},
--    symbol_index::SymbolIndex,
++    base_db::{Crate,
++
+     symbol_index::SymbolIndex,
 -    FxIndexMap, RootDatabase,
-+    base_db::{Crate, symbol_index::SymbolIndex, FxIndexMap, RootDatabase, RootQueryDb},
++
++    FxIndexMap, RootDatabase, RootQueryDb},
  };
  
  /// We're indexing many crates.

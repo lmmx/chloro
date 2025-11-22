@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20453 bytes
+Chloro size:   20474 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,19 @@ Rustfmt size:  20506 bytes
  use hir::Semantics;
  use syntax::{
 -    Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
--    ast::{
++    algo,
++
+     ast::{
 -        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
 -        edit_in_place::Removable, make,
 -    },
 -    ted,
-+    algo, ast::{
-+        self, edit_in_place::Removable, make, ted, AstNode, Direction, HasAttrs,
-+    HasModuleItem, HasVisibility, NodeOrToken, PathSegmentKind, SyntaxKind, SyntaxNode, },
++        self,
++
++    edit_in_place::Removable,
++
++    make, ted, AstNode, Direction, HasAttrs, HasModuleItem, HasVisibility, NodeOrToken,
++    PathSegmentKind, SyntaxKind, SyntaxNode, },
  };
  
  use crate::{
@@ -35,16 +40,18 @@ Rustfmt size:  20506 bytes
 -        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
 -        try_merge_imports, use_tree_cmp,
 -    },
-+    common_prefix, eq_attrs, eq_visibility, imports::merge_imports::{
-+        MergeBehavior,
-+    try_merge_imports, use_tree_cmp, NormalizationStyle, RootDatabase, },
- };
+-};
++    common_prefix, eq_attrs, eq_visibility,
  
 -pub use hir::PrefixKind;
--
++    imports::merge_imports::{
++        MergeBehavior,
++
++    try_merge_imports, use_tree_cmp, NormalizationStyle, RootDatabase, },
++};
+ 
  /// How imports should be grouped into use statements.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- pub enum ImportGranularity {
  }
  
  /// Insert an import path into the given file/node. A `merge` value of none indicates that no import merging is allowed to occur.

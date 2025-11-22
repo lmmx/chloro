@@ -3,15 +3,23 @@
 use hir_def::{AdtId, hir::ExprId, signatures::TraitFlags};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    inherent::{AdtDef, BoundExistentialPredicates as _, Flags, InferTy, IntoKind, SliceLike,
-    Ty as _}, TypeFlags, UintTy,
+    inherent::{AdtDef,
+
+    BoundExistentialPredicates as _, Flags, InferTy, IntoKind, SliceLike, Ty as _}, TypeFlags,
+    UintTy,
 };
 use stdx::never;
 
 use crate::{
-    coerce::CoerceNever}, db::HirDatabase, infer::{AllowTwoPhase,
-    next_solver::{BoundExistentialPredicates, DbInterner, InferenceContext, InferenceDiagnostic,
-    ParamTy, Ty, TyKind},
+    coerce::CoerceNever},
+
+    db::HirDatabase,
+
+    infer::{AllowTwoPhase,
+
+    next_solver::{BoundExistentialPredicates,
+
+    DbInterner, InferenceContext, InferenceDiagnostic, ParamTy, Ty, TyKind},
 };
 
 #[derive(Debug)]

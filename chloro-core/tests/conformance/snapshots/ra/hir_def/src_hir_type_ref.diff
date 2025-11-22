@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9510 bytes
+Chloro size:   9526 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -12,15 +12,20 @@ Rustfmt size:  10040 bytes
  
  use crate::{
 -    builtin_type::{BuiltinInt, BuiltinType, BuiltinUint},
--    expr_store::{
++    builtin_type::{BuiltinInt,
++
+     expr_store::{
 -        path::{GenericArg, Path},
--        ExpressionStore,
+         ExpressionStore,
 -    },
 -    hir::{ExprId, Literal},
 -    LifetimeParamId, TypeParamId,
-+    builtin_type::{BuiltinInt, expr_store::{
-+        ExpressionStore, hir::{ExprId,
-+    path::{GenericArg, BuiltinType, BuiltinUint}, LifetimeParamId, Literal}, Path}, TypeParamId, },
++
++    hir::{ExprId,
++
++    path::{GenericArg,
++
++    BuiltinType, BuiltinUint}, LifetimeParamId, Literal}, Path}, TypeParamId, },
  };
  
  #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

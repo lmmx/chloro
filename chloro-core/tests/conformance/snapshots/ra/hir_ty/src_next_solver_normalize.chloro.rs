@@ -1,14 +1,25 @@
 use rustc_next_trait_solver::placeholder::BoundVarReplacer;
 use rustc_type_ir::{
-    inherent::{IntoKind, AliasRelationDirection, FallibleTypeFolder, Flags, Interner, Term as _},
-    TermKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
+    inherent::{IntoKind,
+
+    AliasRelationDirection, FallibleTypeFolder, Flags, Interner, Term as _}, TermKind, TypeFoldable,
+    TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
 };
 
 use crate::next_solver::{
-    at::At, fulfill::{FulfillmentCtxt, infer::{
-        InferCtxt, traits::{Obligation,
-    util::PlaceholderReplacer, Binder, Const, ConstKind, DbInterner, Goal, NextSolverError},
-    ObligationCause}, ParamEnv, Predicate, PredicateKind, Term, Ty, TyKind, },
+    at::At,
+
+    fulfill::{FulfillmentCtxt,
+
+    infer::{
+        InferCtxt,
+
+    traits::{Obligation,
+
+    util::PlaceholderReplacer,
+
+    Binder, Const, ConstKind, DbInterner, Goal, NextSolverError}, ObligationCause}, ParamEnv,
+    Predicate, PredicateKind, Term, Ty, TyKind, },
 };
 
 /// Deeply normalize all aliases in `value`. This does not handle inference and expects

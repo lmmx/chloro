@@ -5,18 +5,32 @@ mod tests;
 
 use base_db::Crate;
 use hir_def::{
-    expr_store::Body, hir::{Expr, type_ref::LiteralConstRef, EnumVariantId, ExprId},
-    GeneralConstId, HasModule, StaticId,
+    expr_store::Body,
+
+    hir::{Expr,
+
+    type_ref::LiteralConstRef,
+
+    EnumVariantId, ExprId}, GeneralConstId, HasModule, StaticId,
 };
 use hir_expand::Lookup;
 use rustc_type_ir::inherent::IntoKind;
 use triomphe::Arc;
 
 use crate::{
-    db::HirDatabase, display::DisplayTarget, infer::InferenceContext, mir::{MirEvalError,
+    db::HirDatabase,
+
+    display::DisplayTarget,
+
+    infer::InferenceContext,
+
+    mir::{MirEvalError,
+
     next_solver::{
-        Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
-    GenericArgs, LifetimeElisionKind, MemoryMap, MirLowerError}, SolverDefId, TraitEnvironment, Ty,
+        Const,
+
+    ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
+    LifetimeElisionKind, MemoryMap, MirLowerError}, SolverDefId, TraitEnvironment, Ty,
     TyLoweringContext, ValueConst, },
 };
 use super::mir::{interpret_mir, lower_to_mir, pad16};

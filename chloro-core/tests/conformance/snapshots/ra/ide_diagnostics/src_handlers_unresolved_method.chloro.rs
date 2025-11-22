@@ -1,12 +1,18 @@
 use hir::{FileRange, HirDisplay, InFile, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    assists::{Assist, AssistId},
+    assists::{Assist,
+
     label::Label,
+
     source_change::SourceChange,
+
+    AssistId},
 };
 use syntax::{
-    ast::{self, format_smolstr, make}, AstNode, HasArgList, SmolStr, TextRange, ToSmolStr,
+    ast::{self,
+
+    format_smolstr, make}, AstNode, HasArgList, SmolStr, TextRange, ToSmolStr,
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};

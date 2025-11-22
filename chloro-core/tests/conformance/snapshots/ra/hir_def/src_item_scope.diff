@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33374 bytes
-Chloro size:   33553 bytes
+Chloro size:   33568 bytes
 Rustfmt size:  33374 bytes
 
 ✗ Outputs DIFFER
@@ -13,12 +13,16 @@ Rustfmt size:  33374 bytes
  use crate::{
 -    AdtId, BuiltinType, ConstId, ExternBlockId, ExternCrateId, FxIndexMap, HasModule, ImplId,
 -    LocalModuleId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, UseId,
--    db::DefDatabase,
+     db::DefDatabase,
 -    per_ns::{Item, MacrosItem, PerNs, TypesItem, ValuesItem},
--    visibility::Visibility,
-+    db::DefDatabase, per_ns::{Item, visibility::Visibility, AdtId, BuiltinType, ConstId,
-+    ExternBlockId, ExternCrateId, FxIndexMap, HasModule, ImplId, LocalModuleId, Lookup, MacroId,
-+    MacrosItem, ModuleDefId, ModuleId, PerNs, TraitId, TypesItem, UseId, ValuesItem},
++
++    per_ns::{Item,
++
+     visibility::Visibility,
++
++    AdtId, BuiltinType, ConstId, ExternBlockId, ExternCrateId, FxIndexMap, HasModule, ImplId,
++    LocalModuleId, Lookup, MacroId, MacrosItem, ModuleDefId, ModuleId, PerNs, TraitId, TypesItem,
++    UseId, ValuesItem},
  };
  
  #[derive(Debug, Default)]

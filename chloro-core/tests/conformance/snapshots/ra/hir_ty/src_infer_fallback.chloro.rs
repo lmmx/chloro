@@ -13,8 +13,11 @@ use rustc_type_ir::{
 use tracing::debug;
 
 use crate::{
-    infer::InferenceContext, next_solver::{CoercePredicate, PredicateKind, SubtypePredicate, Ty,
-    TyKind},
+    infer::InferenceContext,
+
+    next_solver::{CoercePredicate,
+
+    PredicateKind, SubtypePredicate, Ty, TyKind},
 };
 
 #[derive(Copy, Clone)]

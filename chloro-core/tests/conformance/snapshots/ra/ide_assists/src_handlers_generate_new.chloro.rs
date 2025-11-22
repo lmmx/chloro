@@ -1,14 +1,28 @@
 use ide_db::{
-    imports::import_assets::item_for_path_search, syntax_helpers::suggest_name::NameGenerator,
+    imports::import_assets::item_for_path_search,
+
+    syntax_helpers::suggest_name::NameGenerator,
+
     use_trivial_constructor::use_trivial_constructor,
 };
 use syntax::{
-    ast::{self, edit_in_place::Indent, make}, syntax_editor::Position, AstNode, HasName,
-    HasVisibility, StructKind,
+    ast::{self,
+
+    edit_in_place::Indent,
+
+    make},
+
+    syntax_editor::Position,
+
+    AstNode, HasName, HasVisibility, StructKind,
 };
 
 use crate::{
-    generate_impl_with_item}, utils::{find_struct_impl, AssistContext, AssistId, Assists,
+    generate_impl_with_item},
+
+    utils::{find_struct_impl,
+
+    AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_new(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16726 bytes
+Chloro size:   16736 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
@@ -13,9 +13,12 @@ Rustfmt size:  16513 bytes
  use hir_def::FindPathConfig;
  use hir_expand::mod_path::ModPath;
  use hir_ty::{
--    db::HirDatabase,
+     db::HirDatabase,
 -    display::{DisplaySourceCodeError, DisplayTarget, HirDisplay},
-+    db::HirDatabase, display::{DisplaySourceCodeError, DisplayTarget, HirDisplay},
++
++    display::{DisplaySourceCodeError,
++
++    DisplayTarget, HirDisplay},
  };
  use itertools::Itertools;
  use span::Edition;

@@ -16,9 +16,19 @@ use triomphe::Arc;
 
 use crate::next_solver::{Const, ConstKind, Region, RegionKind};
 use crate::{
-    db::{HirDatabase, infer::{DbInternerInferExt, next_solver::{
+    db::{HirDatabase,
+
+    infer::{DbInternerInferExt,
+
+    next_solver::{
         DbInterner,
-    obligation_ctxt::ObligationCtxt, references_non_lt_error, traits::ObligationCause},
+
+    obligation_ctxt::ObligationCtxt,
+
+    references_non_lt_error,
+
+    traits::ObligationCause},
+
     GenericArgs, InferCtxt, InternedClosureId}, TraitEnvironment, Ty, TyKind, TypingMode, },
 };
 use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};

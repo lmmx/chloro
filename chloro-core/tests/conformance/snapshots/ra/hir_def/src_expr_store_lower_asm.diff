@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14081 bytes
-Chloro size:   14078 bytes
+Chloro size:   14084 bytes
 Rustfmt size:  14081 bytes
 
 ✗ Outputs DIFFER
@@ -18,8 +18,11 @@ Rustfmt size:  14081 bytes
  use crate::{
 -    expr_store::lower::{ExprCollector, FxIndexSet},
 -    hir::{AsmOperand, AsmOptions, Expr, ExprId, InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
-+    expr_store::lower::{ExprCollector, hir::{AsmOperand, AsmOptions, Expr, ExprId, FxIndexSet},
-+    InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
++    expr_store::lower::{ExprCollector,
++
++    hir::{AsmOperand,
++
++    AsmOptions, Expr, ExprId, FxIndexSet}, InlineAsm, InlineAsmKind, InlineAsmRegOrRegClass},
  };
  
  impl ExprCollector<'_> {

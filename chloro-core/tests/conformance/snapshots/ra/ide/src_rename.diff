@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 91697 bytes
-Chloro size:   91235 bytes
+Chloro size:   91262 bytes
 Rustfmt size:  91697 bytes
 
 ✗ Outputs DIFFER
@@ -23,10 +23,18 @@ Rustfmt size:  91697 bytes
 -    FileId, FileRange, RootDatabase,
 -    defs::{Definition, NameClass, NameRefClass},
 -    rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
--    source_change::SourceChangeBuilder,
-+    bail, defs::{Definition, format_err, rename::{IdentifierKind,
-+    source_change::SourceChangeBuilder, source_edit_from_references}, FileId, FileRange, NameClass,
-+    NameRefClass}, RenameDefinition, RootDatabase,
++    bail,
++
++    defs::{Definition,
++
++    format_err,
++
++    rename::{IdentifierKind,
++
+     source_change::SourceChangeBuilder,
++
++    source_edit_from_references}, FileId, FileRange, NameClass, NameRefClass}, RenameDefinition,
++    RootDatabase,
  };
  use itertools::Itertools;
 -use std::fmt::Write;
@@ -34,8 +42,11 @@ Rustfmt size:  91697 bytes
  use syntax::{
 -    AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 -    ast::{self, HasArgList, prec::ExprPrecedence},
-+    ast::{self, prec::ExprPrecedence}, AstNode, HasArgList, SyntaxKind, SyntaxNode, TextRange,
-+    TextSize,
++    ast::{self,
++
++    prec::ExprPrecedence},
++
++    AstNode, HasArgList, SyntaxKind, SyntaxNode, TextRange, TextSize,
  };
  
 -use ide_db::text_edit::TextEdit;

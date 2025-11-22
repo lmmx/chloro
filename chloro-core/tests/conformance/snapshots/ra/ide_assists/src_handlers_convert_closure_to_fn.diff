@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35556 bytes
+Chloro size:   35593 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -13,22 +13,36 @@ Rustfmt size:  36442 bytes
  use ide_db::{
 -    FxHashSet, assists::AssistId, base_db::SourceDatabase, defs::Definition,
 -    search::FileReferenceNode, source_change::SourceChangeBuilder,
-+    assists::AssistId, base_db::SourceDatabase, defs::Definition, search::FileReferenceNode,
-+    source_change::SourceChangeBuilder, FxHashSet,
++    assists::AssistId,
++
++    base_db::SourceDatabase,
++
++    defs::Definition,
++
++    search::FileReferenceNode,
++
++    source_change::SourceChangeBuilder,
++
++    FxHashSet,
  };
  use stdx::format_to;
  use syntax::{
 -    AstNode, Direction, SyntaxKind, SyntaxNode, T, TextSize, ToSmolStr,
 -    algo::{skip_trivia_token, skip_whitespace_token},
--    ast::{
++    algo::{skip_trivia_token,
++
+     ast::{
 -        self, HasArgList, HasGenericParams, HasName,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -    },
--    hacks::parse_expr_from_str,
++        self,
++
++    edit::{AstNodeEdit,
++
+     hacks::parse_expr_from_str,
 -    ted,
-+    algo::{skip_trivia_token, ast::{
-+        self, edit::{AstNodeEdit, hacks::parse_expr_from_str,
++
 +    make, skip_whitespace_token}, ted, AstNode, Direction, HasArgList, HasGenericParams, HasName,
 +    IndentLevel}, SyntaxKind, SyntaxNode, TextSize, ToSmolStr, T, },
  };

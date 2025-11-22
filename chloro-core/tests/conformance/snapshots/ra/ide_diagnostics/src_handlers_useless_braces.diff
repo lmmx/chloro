@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3904 bytes
-Chloro size:   3802 bytes
+Chloro size:   3820 bytes
 Rustfmt size:  3961 bytes
 
 ✗ Outputs DIFFER
@@ -49,8 +49,11 @@ Rustfmt size:  3961 bytes
  mod tests {
      use crate::{
 -        tests::{check_diagnostics, check_diagnostics_with_config, check_fix},
--        DiagnosticsConfig,
-+        check_diagnostics_with_config, check_fix}, tests::{check_diagnostics, DiagnosticsConfig,
++        check_diagnostics_with_config, check_fix},
++
++        tests::{check_diagnostics,
++
+         DiagnosticsConfig,
      };
 -
      #[test]

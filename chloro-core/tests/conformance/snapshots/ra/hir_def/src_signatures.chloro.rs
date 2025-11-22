@@ -12,21 +12,41 @@ use intern::{Symbol, sym};
 use la_arena::{Arena, Idx};
 use rustc_abi::{IntegerType, ReprOptions};
 use syntax::{
-    ast::{self, HasGenericParams, HasName, HasVisibility, IsString}, NodeOrToken, SyntaxNodePtr, T,
+    ast::{self,
+
+    HasGenericParams, HasName, HasVisibility, IsString}, NodeOrToken, SyntaxNodePtr, T,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
 
 use crate::{
-    attr::Attrs, db::DefDatabase, expr_store::{
-        ExpressionStore, generics::GenericParams},
-    hir::{ExprId, item_tree::{FieldsShape, lang_item::LangItem, lower::{
+    attr::Attrs,
+
+    db::DefDatabase,
+
+    expr_store::{
+        ExpressionStore,
+
+    generics::GenericParams},
+
+    hir::{ExprId,
+
+    item_tree::{FieldsShape,
+
+    lang_item::LangItem,
+
+    lower::{
             ExprCollector,
-    lower_function, lower_generic_params, lower_trait, lower_type_alias, src::HasSource,
-    type_ref::{TraitRef, visibility_from_ast}, ConstId, EnumId, EnumVariantId, EnumVariantLoc,
-    ExpressionStoreSourceMap, ExternBlockId, FunctionId, HasModule, ImplId, ItemContainerId,
-    ModuleId, PatId, RawVisibility, StaticId, StructId, TraitId, TypeAliasId, TypeBound,
-    TypeRefId}, UnionId, VariantId, }, },
+
+    lower_function, lower_generic_params, lower_trait, lower_type_alias,
+
+    src::HasSource,
+
+    type_ref::{TraitRef,
+
+    visibility_from_ast}, ConstId, EnumId, EnumVariantId, EnumVariantLoc, ExpressionStoreSourceMap,
+    ExternBlockId, FunctionId, HasModule, ImplId, ItemContainerId, ModuleId, PatId, RawVisibility,
+    StaticId, StructId, TraitId, TypeAliasId, TypeBound, TypeRefId}, UnionId, VariantId, }, },
 };
 
 #[inline]

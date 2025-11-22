@@ -69,17 +69,40 @@ pub use ide_completion::{
     CompletionItemKind, CompletionItemRefMode, CompletionRelevance, Snippet, SnippetScope,
 };
 pub use ide_db::{
-    assists::ExprFillDefaultMode, base_db::{Crate, documentation::Documentation, label::Label,
-    line_index::{LineCol, prime_caches::ParallelPrimeCachesProgress, search::{ReferenceCategory,
-    source_change::{FileSystemEdit, symbol_index::Query, text_edit::{Indel, CrateGraphBuilder,
-    FileChange, FileId, FilePosition, FileRange, LineIndex}, RootDatabase, SearchScope}, Severity,
-    SnippetEdit, SourceChange}, SourceRoot, SourceRootId}, SymbolKind, TextEdit},
+    assists::ExprFillDefaultMode,
+
+    base_db::{Crate,
+
+    documentation::Documentation,
+
+    label::Label,
+
+    line_index::{LineCol,
+
+    prime_caches::ParallelPrimeCachesProgress,
+
+    search::{ReferenceCategory,
+
+    source_change::{FileSystemEdit,
+
+    symbol_index::Query,
+
+    text_edit::{Indel,
+
+    CrateGraphBuilder, FileChange, FileId, FilePosition, FileRange, LineIndex}, RootDatabase,
+    SearchScope}, Severity, SnippetEdit, SourceChange}, SourceRoot, SourceRootId}, SymbolKind,
+    TextEdit},
 };
 use ide_db::{
     base_db::{
-        CrateOrigin, prime_caches, salsa::Cancelled, symbol_index,
-    CrateWorkspaceData, Env, FileSet, FxHashMap, FxIndexSet, LineIndexDatabase, RootQueryDb,
-    SourceDatabase, VfsPath, },
+        CrateOrigin,
+
+    prime_caches,
+
+    salsa::Cancelled,
+
+    symbol_index, CrateWorkspaceData, Env, FileSet, FxHashMap, FxIndexSet, LineIndexDatabase,
+    RootQueryDb, SourceDatabase, VfsPath, },
 };
 use ide_db::{MiniCore, ra_fixture::RaFixtureAnalysis};
 pub use ide_diagnostics::{Diagnostic, DiagnosticCode, DiagnosticsConfig};
@@ -93,20 +116,57 @@ use view_memory_layout::{RecursiveMemoryLayout, view_memory_layout};
 
 use crate::navigation_target::ToNav;
 pub use crate::{
-    annotations::{Annotation, call_hierarchy::{CallHierarchyConfig, expand_macro::ExpandedMacro,
-    file_structure::{FileStructureConfig, folding_ranges::{Fold,
-    goto_definition::GotoDefinitionConfig, goto_implementation::GotoImplementationConfig,
-    highlight_related::{HighlightRelatedConfig, hover::{
+    annotations::{Annotation,
+
+    call_hierarchy::{CallHierarchyConfig,
+
+    expand_macro::ExpandedMacro,
+
+    file_structure::{FileStructureConfig,
+
+    folding_ranges::{Fold,
+
+    goto_definition::GotoDefinitionConfig,
+
+    goto_implementation::GotoImplementationConfig,
+
+    highlight_related::{HighlightRelatedConfig,
+
+    hover::{
         HoverAction,
+
     inlay_hints::{
-        AdjustmentHints, join_lines::JoinLinesConfig, markup::Markup,
+        AdjustmentHints,
+
+    join_lines::JoinLinesConfig,
+
+    markup::Markup,
+
     moniker::{
-        Moniker, move_item::Direction, navigation_target::{NavigationTarget,
-    references::{FindAllRefsConfig, rename::{RenameConfig, runnables::{Runnable,
-    signature_help::SignatureHelp, static_index::{
+        Moniker,
+
+    move_item::Direction,
+
+    navigation_target::{NavigationTarget,
+
+    references::{FindAllRefsConfig,
+
+    rename::{RenameConfig,
+
+    runnables::{Runnable,
+
+    signature_help::SignatureHelp,
+
+    static_index::{
         StaticIndex,
+
     syntax_highlighting::{
-        HighlightConfig, tags::{Highlight, test_explorer::{TestItem,
+        HighlightConfig,
+
+    tags::{Highlight,
+
+    test_explorer::{TestItem,
+
     AdjustmentHintsMode, AnnotationConfig, AnnotationKind, AnnotationLocation}, CallItem},
     ClosureReturnTypeHints, DiscriminantHints, FoldKind}, GenericParameterHints, HighlightedRange},
     HlMod, HlMods, HlOperator, HlPunct, HlRange, HlTag}, HoverConfig, HoverDocFormat,

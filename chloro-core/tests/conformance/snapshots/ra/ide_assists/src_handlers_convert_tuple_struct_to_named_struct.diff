@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26763 bytes
-Chloro size:   25989 bytes
+Chloro size:   26005 bytes
 Rustfmt size:  26763 bytes
 
 ✗ Outputs DIFFER
@@ -19,9 +19,15 @@ Rustfmt size:  26763 bytes
      ast::{
 -        self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory,
 -    },
--    match_ast,
++        self,
++
+     match_ast,
 -    syntax_editor::{Element, Position, SyntaxEditor},
-+        self, match_ast, syntax_editor::{Element, syntax_factory::SyntaxFactory,
++
++    syntax_editor::{Element,
++
++    syntax_factory::SyntaxFactory,
++
 +    AstNode, HasAttrs, HasGenericParams, HasVisibility, Position, SyntaxEditor}, SyntaxElement,
 +    SyntaxKind, SyntaxNode, TextSize, T, },
  };

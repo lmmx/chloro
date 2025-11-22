@@ -30,8 +30,10 @@ use rustc_type_ir::inherent::IntoKind;
 use rustc_type_ir::{CanonicalVarKind, InferTy, TypeFoldable, UniverseIndex, inherent::Ty as _};
 
 use crate::next_solver::{
-    infer::InferCtxt, Canonical, CanonicalVarValues, Const, DbInterner, GenericArg,
-    PlaceholderConst, PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
+    infer::InferCtxt,
+
+    Canonical, CanonicalVarValues, Const, DbInterner, GenericArg, PlaceholderConst,
+    PlaceholderRegion, PlaceholderTy, Region, Ty, TyKind,
 };
 
 impl<'db> InferCtxt<'db> {

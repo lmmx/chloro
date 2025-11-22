@@ -19,11 +19,27 @@ use span::Edition;
 use stdx::TupleExt;
 
 use crate::{
-    assoc::TraitItems, crate_def_map, db::DefDatabase, item_scope::{BUILTIN_SCOPE,
-    item_tree::FieldsShape, nameres::{
-        BlockInfo, per_ns::PerNs, sub_namespace_match,
-    visibility::{RawVisibility, AdtId, BuiltinShadowMode, DefMap, ImportOrExternCrate},
-    LocalDefMap, LocalModuleId, MacroSubNs, ModuleDefId, Visibility}, },
+    assoc::TraitItems,
+
+    crate_def_map,
+
+    db::DefDatabase,
+
+    item_scope::{BUILTIN_SCOPE,
+
+    item_tree::FieldsShape,
+
+    nameres::{
+        BlockInfo,
+
+    per_ns::PerNs,
+
+    sub_namespace_match,
+
+    visibility::{RawVisibility,
+
+    AdtId, BuiltinShadowMode, DefMap, ImportOrExternCrate}, LocalDefMap, LocalModuleId, MacroSubNs,
+    ModuleDefId, Visibility}, },
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

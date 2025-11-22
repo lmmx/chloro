@@ -5,10 +5,19 @@ use intern::sym;
 use tracing::debug;
 
 use crate::{
-    db::HirDatabase, infer::{
-            DbInternerInferExt, next_solver::{
+    db::HirDatabase,
+
+    infer::{
+            DbInternerInferExt,
+
+    next_solver::{
         DbInterner,
-    obligation_ctxt::ObligationCtxt, traits::{Obligation, ObligationCause}, TypingMode, }, },
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::{Obligation,
+
+    ObligationCause}, TypingMode, }, },
 };
 
 fn specializes_query_cycle(

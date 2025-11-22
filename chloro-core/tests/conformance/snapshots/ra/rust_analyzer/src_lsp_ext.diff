@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23918 bytes
+Chloro size:   23923 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -22,8 +22,14 @@ Rustfmt size:  24042 bytes
  use lsp_types::Url;
 +use lsp_types::request::Request;
  use lsp_types::{
-     notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
-     PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
+-    notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
+-    PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
++    notification::Notification,
++
++    CodeActionKind, DocumentOnTypeFormattingParams, PartialResultParams, Position, Range,
++    TextDocumentIdentifier, WorkDoneProgressParams,
+ };
+ use paths::Utf8PathBuf;
  use rustc_hash::FxHashMap;
  use serde::{Deserialize, Serialize};
  

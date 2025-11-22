@@ -7,12 +7,15 @@
 use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
 use ide_db::{FileRange, RootDatabase};
 use syntax::{
-    ast::{self, match_ast, AstNode, HasLoopBody, HasName}, SyntaxKind, SyntaxNode, T,
+    ast::{self,
+
+    match_ast, AstNode, HasLoopBody, HasName}, SyntaxKind, SyntaxNode, T,
 };
 
 use crate::{
-    inlay_hints::LazyProperty, InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig,
-    InlayKind,
+    inlay_hints::LazyProperty,
+
+    InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 
 pub(super) fn hints(
@@ -150,7 +153,11 @@ pub(super) fn hints(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, InlayHintsConfig,
+        check_with_config},
+
+        inlay_hints::tests::{DISABLED_CONFIG,
+
+        InlayHintsConfig,
     };
     #[test]
     fn hints_closing_brace() {

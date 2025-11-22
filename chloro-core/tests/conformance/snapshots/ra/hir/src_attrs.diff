@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11937 bytes
-Chloro size:   11495 bytes
+Chloro size:   11516 bytes
 Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
@@ -13,14 +13,19 @@ Rustfmt size:  12307 bytes
  use std::ops::ControlFlow;
  
  use hir_def::{
--    attr::AttrsWithOwner,
--    expr_store::path::Path,
--    item_scope::ItemInNs,
--    per_ns::Namespace,
+     attr::AttrsWithOwner,
++
+     expr_store::path::Path,
++
+     item_scope::ItemInNs,
++
+     per_ns::Namespace,
 -    resolver::{HasResolver, Resolver, TypeNs},
 -    AssocItemId, AttrDefId, ModuleDefId,
-+    attr::AttrsWithOwner, expr_store::path::Path, item_scope::ItemInNs, per_ns::Namespace,
-+    resolver::{HasResolver, AssocItemId, AttrDefId, ModuleDefId, Resolver, TypeNs},
++
++    resolver::{HasResolver,
++
++    AssocItemId, AttrDefId, ModuleDefId, Resolver, TypeNs},
  };
  use hir_expand::{
      mod_path::{ModPath, PathKind},

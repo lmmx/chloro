@@ -9,16 +9,28 @@ use span::{Edition, Span, SyntaxContext};
 use stdx::never;
 use syntax::{
     ast::{
-        self, edit_in_place::GenericParamsOwnerEdit, make, ted, AstNode, FieldList,
-    HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds, },
+        self,
+
+    edit_in_place::GenericParamsOwnerEdit,
+
+    make, ted, AstNode, FieldList, HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem,
+    HasName, HasTypeBounds, },
 };
 use syntax_bridge::DocCommentDesugarMode;
 use tracing::debug;
 
 use crate::{
-    builtin::quote::dollar_crate, db::ExpandDatabase, hygiene::span_with_def_site_ctxt,
-    name::{self, span_map::ExpansionSpanMap, tt, AsName, ExpandError, ExpandResult, MacroCallId,
-    Name},
+    builtin::quote::dollar_crate,
+
+    db::ExpandDatabase,
+
+    hygiene::span_with_def_site_ctxt,
+
+    name::{self,
+
+    span_map::ExpansionSpanMap,
+
+    tt, AsName, ExpandError, ExpandResult, MacroCallId, Name},
 };
 
 macro_rules! register_builtin {

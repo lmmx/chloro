@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5844 bytes
-Chloro size:   5778 bytes
+Chloro size:   5788 bytes
 Rustfmt size:  5887 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,13 @@ Rustfmt size:  5887 bytes
 +pub use import_map::AssocSearchMode;
  
  use crate::{
--    imports::import_assets::NameToImport,
+     imports::import_assets::NameToImport,
 -    symbol_index::{self, SymbolIndex},
 -    RootDatabase,
-+    imports::import_assets::NameToImport, symbol_index::{self, RootDatabase, SymbolIndex},
++
++    symbol_index::{self,
++
++    RootDatabase, SymbolIndex},
  };
  
  /// A value to use, when uncertain which limit to pick.

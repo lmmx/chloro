@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17091 bytes
-Chloro size:   16586 bytes
+Chloro size:   16608 bytes
 Rustfmt size:  17091 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,24 @@ Rustfmt size:  17091 bytes
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -    },
--    syntax_editor::Position,
-+        self, edit::{AstNodeEdit, make, syntax_editor::Position, AstNode,
-+    HasGenericParams, HasName, HasVisibility as _, IndentLevel}, },
++        self,
++
++    edit::{AstNodeEdit,
++
++    make,
++
+     syntax_editor::Position,
++
++    AstNode, HasGenericParams, HasName, HasVisibility as _, IndentLevel}, },
  };
  
  use crate::{
--    AssistContext, AssistId, AssistKind, Assists, GroupLabel,
++    find_struct_impl},
++
++    utils::{convert_param_list_to_arg_list,
++
+     AssistContext, AssistId, AssistKind, Assists, GroupLabel,
 -    utils::{convert_param_list_to_arg_list, find_struct_impl},
-+    find_struct_impl}, utils::{convert_param_list_to_arg_list, AssistContext, AssistId, AssistKind,
-+    Assists, GroupLabel,
  };
  
 -// Assist: generate_delegate_methods

@@ -11,8 +11,13 @@
 use std::ops;
 
 use hir_def::{
-    db::DefDatabase, expr_store::ExpressionStore, hir::generics::{
+    db::DefDatabase,
+
+    expr_store::ExpressionStore,
+
+    hir::generics::{
         GenericParamDataRef,
+
     ConstParamId, GenericDefId, GenericParamId, GenericParams, ItemContainerId, LifetimeParamData,
     LifetimeParamId, LocalLifetimeParamId, LocalTypeOrConstParamId, Lookup, TypeOrConstParamData,
     TypeOrConstParamId, TypeParamId, TypeParamProvenance, WherePredicate, },

@@ -10,9 +10,19 @@ use syntax::ast;
 use triomphe::Arc;
 
 use crate::{
-    db::{HirDatabase, infer::{DbInternerInferExt, lower::{ImplTraitIdx,
+    db::{HirDatabase,
+
+    infer::{DbInternerInferExt,
+
+    lower::{ImplTraitIdx,
+
     next_solver::{
-        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
+        DbInterner,
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::ObligationCause},
+
     EarlyBinder, ErrorGuaranteed, ImplTraitId, ImplTraits}, InternedOpaqueTyId}, SolverDefId, Ty,
     TypingMode, },
 };

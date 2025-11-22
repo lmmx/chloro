@@ -13,7 +13,10 @@ use hir_def::{hir::ExprOrPatId, resolver::Resolver};
 use la_arena::{Idx, RawIdx};
 
 use crate::{
-    db::HirDatabase, lower::path::{PathDiagnosticCallback, lower::{LifetimeElisionKind,
+    db::HirDatabase,
+
+    lower::path::{PathDiagnosticCallback, lower::{LifetimeElisionKind,
+
     InferenceDiagnostic, InferenceTyDiagnosticSource, PathLoweringContext}, TyLoweringContext},
     TyLoweringDiagnostic,
 };

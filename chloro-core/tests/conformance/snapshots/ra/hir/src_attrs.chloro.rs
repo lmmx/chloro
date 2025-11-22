@@ -3,8 +3,17 @@
 use std::ops::ControlFlow;
 
 use hir_def::{
-    attr::AttrsWithOwner, expr_store::path::Path, item_scope::ItemInNs, per_ns::Namespace,
-    resolver::{HasResolver, AssocItemId, AttrDefId, ModuleDefId, Resolver, TypeNs},
+    attr::AttrsWithOwner,
+
+    expr_store::path::Path,
+
+    item_scope::ItemInNs,
+
+    per_ns::Namespace,
+
+    resolver::{HasResolver,
+
+    AssocItemId, AttrDefId, ModuleDefId, Resolver, TypeNs},
 };
 use hir_expand::{
     mod_path::{ModPath, PathKind},

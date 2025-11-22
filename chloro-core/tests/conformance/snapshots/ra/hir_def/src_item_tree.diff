@@ -2,20 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22357 bytes
+Chloro size:   22372 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ast::{AstNode, StructKind};
  use base_db::Crate;
  use hir_expand::{
--    attrs::RawAttrs,
+     attrs::RawAttrs,
 -    mod_path::{ModPath, PathKind},
--    name::Name,
++
++    mod_path::{ModPath,
++
+     name::Name,
 -    ExpandTo, HirFileId,
-+    attrs::RawAttrs, mod_path::{ModPath, name::Name, ExpandTo, HirFileId, PathKind},
++
++    ExpandTo, HirFileId, PathKind},
  };
  use intern::Interned;
  use la_arena::{Idx, RawIdx};

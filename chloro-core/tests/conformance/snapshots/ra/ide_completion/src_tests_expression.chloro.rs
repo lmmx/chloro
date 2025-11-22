@@ -4,9 +4,13 @@ use expect_test::{Expect, expect};
 
 use crate::{
     check, check_edit, check_with_base_items, completion_list_with_config,
-    config::AutoImportExclusionType, tests::{
-        BASE_ITEMS_FIXTURE, CompletionConfig,
-    TEST_CONFIG, },
+
+    config::AutoImportExclusionType,
+
+    tests::{
+        BASE_ITEMS_FIXTURE,
+
+    CompletionConfig, TEST_CONFIG, },
 };
 
 fn check_with_config(

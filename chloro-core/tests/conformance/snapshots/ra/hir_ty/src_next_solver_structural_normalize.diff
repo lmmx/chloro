@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1968 bytes
+Chloro size:   1979 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -15,8 +15,13 @@ Rustfmt size:  2003 bytes
 -    fulfill::{FulfillmentCtxt, NextSolverError},
 -    infer::{at::At, traits::Obligation},
 -    Const, PredicateKind, Term, Ty,
-+    fulfill::{FulfillmentCtxt, infer::{at::At, traits::Obligation}, Const, NextSolverError},
-+    PredicateKind, Term, Ty,
++    fulfill::{FulfillmentCtxt,
++
++    infer::{at::At,
++
++    traits::Obligation},
++
++    Const, NextSolverError}, PredicateKind, Term, Ty,
  };
  
  impl<'db> At<'_, 'db> {

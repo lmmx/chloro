@@ -26,11 +26,15 @@ use region_constraints::{RegionConstraintCollector, RegionConstraintStorage};
 use rustc_next_trait_solver::solve::SolverDelegateEvalExt;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
-    error::{ExpectedFound, inherent::{
-        Const as _, ClosureKind, ConstVid, FloatVarValue,
-    FloatVid, GenericArg as _, GenericArgKind, GenericArgs as _, InferConst, InferTy, IntVarValue,
-    IntVid, IntoKind, OutlivesPredicate, RegionVid, SliceLike, Term as _, TermKind, Ty as _, TyVid,
-    TypeError}, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex, },
+    error::{ExpectedFound,
+
+    inherent::{
+        Const as _,
+
+    ClosureKind, ConstVid, FloatVarValue, FloatVid, GenericArg as _, GenericArgKind,
+    GenericArgs as _, InferConst, InferTy, IntVarValue, IntVid, IntoKind, OutlivesPredicate,
+    RegionVid, SliceLike, Term as _, TermKind, Ty as _, TyVid, TypeError}, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt, UniverseIndex, },
 };
 use snapshot::undo_log::InferCtxtUndoLogs;
 use tracing::{debug, instrument};
@@ -40,9 +44,15 @@ use unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey};
 pub use BoundRegionConversionTime::*;
 
 use crate::next_solver::{
-    fold::BoundVarReplacerDelegate, infer::{select::EvaluationResult,
-    obligation_ctxt::ObligationCtxt, traits::PredicateObligation}, BoundConst, BoundRegion,
-    BoundTy, BoundVarKind, Goal, SolverContext,
+    fold::BoundVarReplacerDelegate,
+
+    infer::{select::EvaluationResult,
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::PredicateObligation},
+
+    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
 };
 use super::{
     AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,

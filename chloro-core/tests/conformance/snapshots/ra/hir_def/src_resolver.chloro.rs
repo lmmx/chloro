@@ -17,19 +17,45 @@ use syntax::ast::HasName;
 use triomphe::Arc;
 
 use crate::{
-    block_def_map}, builtin_type::BuiltinType, db::DefDatabase, expr_store::{
+    block_def_map},
+
+    builtin_type::BuiltinType,
+
+    db::DefDatabase,
+
+    expr_store::{
         HygieneId,
-    generics::{GenericParams, hir::{
-        BindingId, item_scope::{BUILTIN_SCOPE,
-    lang_item::LangItemTarget, nameres::{DefMap, path::Path, per_ns::PerNs, scope::{ExprScopes,
-    src::HasSource, type_ref::LifetimeRef, visibility::{RawVisibility, AdtId, AstIdLoc,
-    BuiltinShadowMode, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
-    EnumVariantId, ExprId, ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId,
-    GenericParamId, HasModule, ImplId, ImportOrExternCrate, ImportOrGlob, ItemContainerId,
-    ItemScope}, LabelId, LifetimeParamId, LocalDefMap, LocalModuleId, Lookup, Macro2Id, MacroId,
-    MacroRulesId, MacroSubNs, ModuleDefId, ModuleId, ProcMacroId, ResolvePathResultPrefixInfo,
-    ScopeId}, StaticId, StructId, TraitId, TypeAliasId, TypeOrConstParamData}, TypeOrConstParamId,
-    TypeParamId, UseId, VariantId, Visibility}, }, },
+
+    generics::{GenericParams,
+
+    hir::{
+        BindingId,
+
+    item_scope::{BUILTIN_SCOPE,
+
+    lang_item::LangItemTarget,
+
+    nameres::{DefMap,
+
+    path::Path,
+
+    per_ns::PerNs,
+
+    scope::{ExprScopes,
+
+    src::HasSource,
+
+    type_ref::LifetimeRef,
+
+    visibility::{RawVisibility,
+
+    AdtId, AstIdLoc, BuiltinShadowMode, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId,
+    EnumId, EnumVariantId, ExprId, ExternBlockId, ExternCrateId, FunctionId, FxIndexMap,
+    GenericDefId, GenericParamId, HasModule, ImplId, ImportOrExternCrate, ImportOrGlob,
+    ItemContainerId, ItemScope}, LabelId, LifetimeParamId, LocalDefMap, LocalModuleId, Lookup,
+    Macro2Id, MacroId, MacroRulesId, MacroSubNs, ModuleDefId, ModuleId, ProcMacroId,
+    ResolvePathResultPrefixInfo, ScopeId}, StaticId, StructId, TraitId, TypeAliasId,
+    TypeOrConstParamData}, TypeOrConstParamId, TypeParamId, UseId, VariantId, Visibility}, }, },
 };
 
 #[derive(Debug, Clone)]

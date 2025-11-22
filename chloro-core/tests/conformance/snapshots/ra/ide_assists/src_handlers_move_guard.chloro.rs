@@ -1,5 +1,10 @@
 use syntax::{
-    ast::{AstNode, edit::AstNodeEdit, make}, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat,
+    ast::{AstNode,
+
+    edit::AstNodeEdit,
+
+    make}, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat,
+
     SyntaxKind::WHITESPACE,
 };
 

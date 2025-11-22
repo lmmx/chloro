@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10482 bytes
-Chloro size:   10466 bytes
+Chloro size:   10477 bytes
 Rustfmt size:  10879 bytes
 
 ✗ Outputs DIFFER
@@ -21,13 +21,15 @@ Rustfmt size:  10879 bytes
  
  use crate::{
 -    ast::{self, AstNode},
--    db::ExpandDatabase,
--    mod_path::ModPath,
++    ast::{self,
++
+     db::ExpandDatabase,
++
+     mod_path::ModPath,
 -    AstId, EagerCallInfo, ExpandError, ExpandResult, ExpandTo, ExpansionSpanMap, InFile,
--    MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
-+    ast::{self, db::ExpandDatabase, mod_path::ModPath, AstId, AstNode}, EagerCallInfo, ExpandError,
-+    ExpandResult, ExpandTo, ExpansionSpanMap, InFile, MacroCallId, MacroCallKind, MacroCallLoc,
-+    MacroDefId, MacroDefKind,
++
++    AstId, AstNode}, EagerCallInfo, ExpandError, ExpandResult, ExpandTo, ExpansionSpanMap, InFile,
+     MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
  };
  
 -pub type EagerCallBackFn<'a> = &'a mut dyn FnMut(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17448 bytes
-Chloro size:   17491 bytes
+Chloro size:   17507 bytes
 Rustfmt size:  17677 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,18 @@ Rustfmt size:  17677 bytes
  use triomphe::Arc;
  
  use crate::{
--    global_state::GlobalState,
++    from_proto},
++
+     global_state::GlobalState,
 -    line_index::{LineEndings, LineIndex, PositionEncoding},
 -    lsp::{from_proto, LspError},
 -    lsp_ext,
-+    from_proto}, global_state::GlobalState, line_index::{LineEndings, lsp::{LspError, lsp_ext,
-+    LineIndex, PositionEncoding},
++
++    line_index::{LineEndings,
++
++    lsp::{LspError,
++
++    lsp_ext, LineIndex, PositionEncoding},
  };
  
  pub(crate) fn invalid_params_error(message: String) -> LspError {

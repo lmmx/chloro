@@ -32,16 +32,39 @@ use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, FileId, VfsPath};
 
 use crate::{
-    completion_item_hash, config::{
-        ClientCommandsConfig, diagnostics::convert_diagnostic,
+    completion_item_hash,
+
+    config::{
+        ClientCommandsConfig,
+
+    diagnostics::convert_diagnostic,
+
     ext::{
-            InternalTestingFetchConfigOption, from_proto,
-    global_state::{FetchWorkspaceRequest, invalid_params_error}, line_index::LineEndings,
+            InternalTestingFetchConfigOption,
+
+    from_proto,
+
+    global_state::{FetchWorkspaceRequest,
+
+    invalid_params_error},
+
+    line_index::LineEndings,
+
     lsp::{
-        LspError, lsp_ext::{
-        self, target_spec::{CargoTargetSpec,
-    test_runner::{CargoTestHandle, to_proto, try_default, utils::{all_edits_are_disjoint, Config,
-    CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
+        LspError,
+
+    lsp_ext::{
+        self,
+
+    target_spec::{CargoTargetSpec,
+
+    test_runner::{CargoTestHandle,
+
+    to_proto, try_default,
+
+    utils::{all_edits_are_disjoint,
+
+    Config, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,
     FetchDependencyListResult, GlobalState, GlobalStateSnapshot}, HoverActionsConfig,
     InternalTestingFetchConfigParams, InternalTestingFetchConfigResponse, PositionOrRange,
     RustfmtConfig, TargetSpec}, TestTarget}, ViewCrateGraphParams, WorkspaceSymbolConfig,

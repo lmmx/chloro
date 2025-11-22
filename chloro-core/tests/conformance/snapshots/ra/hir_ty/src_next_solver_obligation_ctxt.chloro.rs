@@ -2,9 +2,16 @@ use hir_def::TraitId;
 use rustc_type_ir::{TypeFoldable, Upcast, Variance};
 
 use crate::next_solver::{
-    at::ToTrace, fulfill::{FulfillmentCtxt, infer::{
-        InferCtxt, traits::{Obligation, Const,
-    DbInterner, InferOk, NextSolverError}, ObligationCause, ParamEnv, PredicateObligation,
+    at::ToTrace,
+
+    fulfill::{FulfillmentCtxt,
+
+    infer::{
+        InferCtxt,
+
+    traits::{Obligation,
+
+    Const, DbInterner, InferOk, NextSolverError}, ObligationCause, ParamEnv, PredicateObligation,
     PredicateObligations}, Term, TraitRef, Ty, TypeError, },
 };
 

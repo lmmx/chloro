@@ -12,9 +12,21 @@ use test_fixture::WithFixture;
 use test_utils::skip_slow_tests;
 
 use crate::{
-    consteval::try_const_usize, db::HirDatabase, display::DisplayTarget, mir::pad16,
-    next_solver::{Const, setup_tracing, test_db::TestDB, ConstBytes, ConstKind, DbInterner,
-    GenericArgs}, MemoryMap,
+    consteval::try_const_usize,
+
+    db::HirDatabase,
+
+    display::DisplayTarget,
+
+    mir::pad16,
+
+    next_solver::{Const,
+
+    setup_tracing,
+
+    test_db::TestDB,
+
+    ConstBytes, ConstKind, DbInterner, GenericArgs}, MemoryMap,
 };
 use super::{
     super::mir::{MirEvalError, MirLowerError},

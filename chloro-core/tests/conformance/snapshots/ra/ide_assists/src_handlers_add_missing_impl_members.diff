@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45986 bytes
-Chloro size:   44894 bytes
+Chloro size:   44925 bytes
 Rustfmt size:  45986 bytes
 
 ✗ Outputs DIFFER
@@ -13,19 +13,31 @@ Rustfmt size:  45986 bytes
 -    Edition,
 -    ast::{self, AstNode, make},
 -    syntax_editor::{Position, SyntaxEditor},
-+    ast::{self, make}, syntax_editor::{Position, AstNode, Edition, SyntaxEditor},
++    ast::{self,
++
++    make},
++
++    syntax_editor::{Position,
++
++    AstNode, Edition, SyntaxEditor},
  };
  
  use crate::{
 -    AssistId,
 -    assist_context::{AssistContext, Assists},
--    utils::{
++    add_trait_assoc_items_to_impl,
++
++    assist_context::{AssistContext,
++
++    filter_assoc_items, gen_trait_fn_body,
++
+     utils::{
 -        DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
 -        gen_trait_fn_body,
 -    },
-+    add_trait_assoc_items_to_impl, assist_context::{AssistContext, filter_assoc_items,
-+    gen_trait_fn_body, utils::{
-+        DefaultMethods, AssistId, Assists}, IgnoreAssocItems, },
++        DefaultMethods,
++
++    AssistId, Assists}, IgnoreAssocItems, },
  };
  
 -// Assist: add_impl_missing_members

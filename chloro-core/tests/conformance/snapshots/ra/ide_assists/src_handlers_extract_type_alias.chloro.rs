@@ -1,8 +1,11 @@
 use either::Either;
 use ide_db::syntax_helpers::node_ext::walk_ty;
 use syntax::{
-    ast::{self, edit::IndentLevel, make}, syntax_editor, AstNode, HasGenericArgs, HasGenericParams,
-    HasName,
+    ast::{self,
+
+    edit::IndentLevel,
+
+    make}, syntax_editor, AstNode, HasGenericArgs, HasGenericParams, HasName,
 };
 
 use crate::{AssistContext, AssistId, Assists};

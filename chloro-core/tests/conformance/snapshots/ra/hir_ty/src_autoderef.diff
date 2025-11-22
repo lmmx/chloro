@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12985 bytes
+Chloro size:   13002 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -18,20 +18,27 @@ Rustfmt size:  13256 bytes
  use triomphe::Arc;
  
  use crate::{
--    db::HirDatabase,
+     db::HirDatabase,
 -    infer::unify::InferenceTable,
 -    next_solver::{
 -        infer::{
 -            traits::{Obligation, ObligationCause, PredicateObligations},
-+    db::HirDatabase, infer::unify::InferenceTable, infer::{
++
++    infer::unify::InferenceTable, infer::{
              InferOk,
 -        },
 -        obligation_ctxt::ObligationCtxt,
 -        Canonical, TraitRef, Ty, TyKind,
 -    },
 -    TraitEnvironment,
++
 +    next_solver::{
-+        Canonical, obligation_ctxt::ObligationCtxt, traits::{Obligation,
++        Canonical,
++
++    obligation_ctxt::ObligationCtxt,
++
++    traits::{Obligation,
++
 +    ObligationCause, PredicateObligations}, TraitEnvironment, TraitRef, Ty, TyKind, }, },
  };
  

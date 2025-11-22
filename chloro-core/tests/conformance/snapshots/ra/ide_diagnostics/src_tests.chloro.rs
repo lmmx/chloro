@@ -4,8 +4,11 @@ mod overly_long_real_world_cases;
 
 use hir::setup_tracing;
 use ide_db::{
-    assists::{AssistResolveStrategy, base_db::SourceDatabase, ExprFillDefaultMode},
-    LineIndexDatabase, RootDatabase,
+    assists::{AssistResolveStrategy,
+
+    base_db::SourceDatabase,
+
+    ExprFillDefaultMode}, LineIndexDatabase, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::trim_indent;

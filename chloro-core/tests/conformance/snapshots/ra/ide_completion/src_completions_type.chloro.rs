@@ -4,8 +4,11 @@ use hir::{HirDisplay, ScopeDef};
 use syntax::{AstNode, ast};
 
 use crate::{
-    context::{PathCompletionCtx, render::render_type_inference, CompletionContext, Completions,
-    Qualified, TypeAscriptionTarget, TypeLocation},
+    context::{PathCompletionCtx,
+
+    render::render_type_inference,
+
+    CompletionContext, Completions, Qualified, TypeAscriptionTarget, TypeLocation},
 };
 
 pub(crate) fn complete_type_path(

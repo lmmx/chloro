@@ -5,26 +5,44 @@ pub(crate) mod analysis;
 use std::{iter, mem, ops::ControlFlow};
 
 use hir_def::{
-    hir::{ClosureKind, lang_item::LangItem, type_ref::TypeRefId, ExprId, PatId}, TraitId,
+    hir::{ClosureKind,
+
+    lang_item::LangItem,
+
+    type_ref::TypeRefId,
+
+    ExprId, PatId}, TraitId,
 };
 use rustc_type_ir::{
-    inherent::{BoundExistentialPredicates, ClosureArgs, ClosureArgsParts, CoroutineArgs,
-    CoroutineArgsParts, CoroutineClosureArgs, CoroutineClosureArgsParts, GenericArgs as _,
-    Interner, IntoKind, SliceLike, Ty as _}, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-    TypeVisitor,
+    inherent::{BoundExistentialPredicates,
+
+    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
+    CoroutineClosureArgsParts, GenericArgs as _, Interner, IntoKind, SliceLike, Ty as _},
+    TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
 };
 use tracing::debug;
 
 use crate::{
-    abi::Safety, coerce::CoerceMany}, db::{InternedClosure,
+    abi::Safety,
+
+    coerce::CoerceMany},
+
+    db::{InternedClosure,
+
     infer::{
             BoundRegionConversionTime, infer::{BreakableKind,
+
     next_solver::{
-        AliasTy, traits::FnTrait, traits::{ObligationCause,
-    util::explicit_item_bounds, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind,
-    DbInterner, Diverges, ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult,
-    InternedCoroutine}, PolyFnSig, PolyProjectionPredicate, Predicate, PredicateKind,
-    PredicateObligations}, SolverDefId, Ty, TyKind, }, },
+        AliasTy,
+
+    traits::FnTrait, traits::{ObligationCause,
+
+    util::explicit_item_bounds,
+
+    Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner, Diverges,
+    ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult, InternedCoroutine}, PolyFnSig,
+    PolyProjectionPredicate, Predicate, PredicateKind, PredicateObligations}, SolverDefId, Ty,
+    TyKind, }, },
 };
 use super::{Expectation, InferenceContext};
 

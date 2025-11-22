@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   16331 bytes
+Chloro size:   16347 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
@@ -28,16 +28,22 @@ Rustfmt size:  17756 bytes
 -    },
 -    type_ref::{Mutability, Rawness},
 -    BlockId,
-+    builtin_type::{BuiltinFloat, expr_store::{
-+        HygieneId, path::{GenericArgs,
-+    type_ref::{Mutability, BlockId, BuiltinInt, BuiltinUint}, Path}, Rawness}, },
- };
+-};
++    builtin_type::{BuiltinFloat,
  
 -pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, UnaryOp};
--
++    expr_store::{
++        HygieneId,
++
++    path::{GenericArgs,
++
++    type_ref::{Mutability,
++
++    BlockId, BuiltinInt, BuiltinUint}, Path}, Rawness}, },
++};
+ 
  pub type BindingId = Idx<Binding>;
  
- pub type ExprId = Idx<Expr>;
  
  pub type PatId = Idx<Pat>;
  

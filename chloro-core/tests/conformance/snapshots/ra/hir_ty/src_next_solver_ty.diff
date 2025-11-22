@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   52074 bytes
+Chloro size:   52123 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,12 @@ Rustfmt size:  52438 bytes
  
  use hir_def::{
 -    hir::generics::{TypeOrConstParamData, TypeParamProvenance},
--    lang_item::LangItem,
++    hir::generics::{TypeOrConstParamData,
++
+     lang_item::LangItem,
 -    AdtId, HasModule, TypeParamId,
-+    hir::generics::{TypeOrConstParamData, lang_item::LangItem, AdtId, HasModule, TypeParamId,
-+    TypeParamProvenance},
++
++    AdtId, HasModule, TypeParamId, TypeParamProvenance},
  };
 -use hir_def::{type_ref::Rawness, TraitId};
 +use hir_def::{TraitId, type_ref::Rawness};
@@ -29,20 +31,24 @@ Rustfmt size:  52438 bytes
 -        AdtDef as _, BoundExistentialPredicates, BoundVarLike, Const as _, GenericArgs as _,
 -        IntoKind, ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _,
 -    },
--    relate::Relate,
--    solve::SizedTraitKind,
--    walk::TypeWalker,
++        AdtDef as _,
++
+     relate::Relate,
++
+     solve::SizedTraitKind,
++
+     walk::TypeWalker,
 -    AliasTyKind, BoundVar, BoundVarIndexKind, ClosureKind, CoroutineArgs, CoroutineArgsParts,
 -    DebruijnIndex, FlagComputation, Flags, FloatTy, FloatVid, InferTy, IntTy, IntVid, Interner,
 -    TyVid, TypeFoldable, TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
 -    TypeVisitor, UintTy, Upcast, WithCachedTypeInfo,
-+        AdtDef as _, relate::Relate, solve::SizedTraitKind, walk::TypeWalker,
-+    AliasTyKind, BoundExistentialPredicates, BoundVar, BoundVarIndexKind, BoundVarLike,
-+    ClosureKind, Const as _, CoroutineArgs, CoroutineArgsParts, DebruijnIndex, FlagComputation,
-+    Flags, FloatTy, FloatVid, GenericArgs as _, InferTy, IntTy, IntVid, Interner, IntoKind,
-+    ParamLike, PlaceholderLike, Safety as _, SliceLike, Ty as _, TyVid, TypeFoldable,
-+    TypeSuperFoldable, TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor, UintTy,
-+    Upcast, WithCachedTypeInfo, },
++
++    AliasTyKind, BoundExistentialPredicates, BoundVar, BoundVarIndexKind, BoundVarLike, ClosureKind,
++    Const as _, CoroutineArgs, CoroutineArgsParts, DebruijnIndex, FlagComputation, Flags, FloatTy,
++    FloatVid, GenericArgs as _, InferTy, IntTy, IntVid, Interner, IntoKind, ParamLike,
++    PlaceholderLike, Safety as _, SliceLike, Ty as _, TyVid, TypeFoldable, TypeSuperFoldable,
++    TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor, UintTy, Upcast,
++    WithCachedTypeInfo, },
  };
  
  use crate::{
@@ -55,19 +61,30 @@ Rustfmt size:  52438 bytes
 -        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
 -    },
 -    ImplTraitId,
-+    abi::Safety, db::{HirDatabase, interner::InternedWrapperNoDebug, next_solver::{
+-};
++    abi::Safety,
+ 
++    db::{HirDatabase,
++
++    interner::InternedWrapperNoDebug,
++
++    next_solver::{
 +        AdtDef,
-+    util::{CoroutineArgsExt, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind,
-+    ClosureIdWrapper, Const, CoroutineIdWrapper, FnSig, GenericArg, ImplTraitId, IntegerTypeExt},
-+    InternedCoroutine}, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper, },
- };
--
++
++    util::{CoroutineArgsExt,
++
++    AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
++    CoroutineIdWrapper, FnSig, GenericArg, ImplTraitId, IntegerTypeExt}, InternedCoroutine},
++    PolyFnSig, Region, TraitRef, TypeAliasIdWrapper, },
++};
  use super::{
--    interned_vec_db,
+     interned_vec_db,
 -    util::{FloatExt, IntegerExt},
 -    BoundVarKind, DbInterner, GenericArgs, Placeholder, SolverDefId,
-+    interned_vec_db, util::{FloatExt, BoundVarKind, DbInterner, GenericArgs, IntegerExt},
-+    Placeholder, SolverDefId,
++
++    util::{FloatExt,
++
++    BoundVarKind, DbInterner, GenericArgs, IntegerExt}, Placeholder, SolverDefId,
  };
  
  pub type TyKind<'db> = rustc_type_ir::TyKind<DbInterner<'db>>;

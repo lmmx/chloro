@@ -33,12 +33,38 @@ use triomphe::Arc;
 use vfs::{AbsPathBuf, AnchoredPathBuf, ChangeKind, Vfs, VfsPath};
 
 use crate::{
-    config::{Config, diagnostics::{CheckFixes, discover, flycheck::{FlycheckHandle,
-    line_index::{LineEndings, lsp::{from_proto, lsp_ext, main_loop::Task, mem_docs::MemDocs,
-    op_queue::{Cause, reload, target_spec::{CargoTargetSpec, task_pool::{TaskPool,
-    test_runner::{CargoTestHandle, to_proto::url_from_abs_path}, CargoTestMessage}, ConfigChange,
-    ConfigErrors, DiagnosticCollection}, FlycheckMessage}, LineIndex}, OpQueue},
-    ProjectJsonTargetSpec, RatomlFileKind}, TargetSpec}, TaskQueue},
+    config::{Config,
+
+    diagnostics::{CheckFixes,
+
+    discover,
+
+    flycheck::{FlycheckHandle,
+
+    line_index::{LineEndings,
+
+    lsp::{from_proto,
+
+    lsp_ext,
+
+    main_loop::Task,
+
+    mem_docs::MemDocs,
+
+    op_queue::{Cause,
+
+    reload,
+
+    target_spec::{CargoTargetSpec,
+
+    task_pool::{TaskPool,
+
+    test_runner::{CargoTestHandle,
+
+    to_proto::url_from_abs_path},
+
+    CargoTestMessage}, ConfigChange, ConfigErrors, DiagnosticCollection}, FlycheckMessage},
+    LineIndex}, OpQueue}, ProjectJsonTargetSpec, RatomlFileKind}, TargetSpec}, TaskQueue},
 };
 
 #[derive(Debug)]

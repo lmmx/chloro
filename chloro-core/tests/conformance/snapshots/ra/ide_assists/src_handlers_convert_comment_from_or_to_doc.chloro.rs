@@ -1,7 +1,10 @@
 use itertools::Itertools;
 use syntax::{
-    ast::{self, edit::IndentLevel}, AstToken, Comment, CommentPlacement, Direction, SyntaxElement,
-    TextRange, Whitespace,
+    ast::{self,
+
+    edit::IndentLevel},
+
+    AstToken, Comment, CommentPlacement, Direction, SyntaxElement, TextRange, Whitespace,
 };
 
 use crate::{AssistContext, AssistId, Assists};

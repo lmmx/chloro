@@ -28,11 +28,22 @@ use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    block_def_map}, db::DefDatabase, expr_store::path::Path, hir::{
+    block_def_map},
+
+    db::DefDatabase,
+
+    expr_store::path::Path,
+
+    hir::{
         Array,
-    nameres::{DefMap, type_ref::{LifetimeRef, AsmOperand, Binding, BindingId, BlockId, Expr,
-    ExprId, ExprOrPatId, Label, LabelId, LifetimeRefId, Pat, PatId, PathId, RecordFieldPat,
-    Statement, SyntheticSyntax, TypeRef, TypeRefId}, },
+
+    nameres::{DefMap,
+
+    type_ref::{LifetimeRef,
+
+    AsmOperand, Binding, BindingId, BlockId, Expr, ExprId, ExprOrPatId, Label, LabelId,
+    LifetimeRefId, Pat, PatId, PathId, RecordFieldPat, Statement, SyntheticSyntax, TypeRef,
+    TypeRefId}, },
 };
 pub use self::body::{Body, BodySourceMap};
 pub use self::lower::{

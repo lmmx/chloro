@@ -16,15 +16,28 @@ pub(crate) use html::highlight_as_html;
 pub(crate) use html::highlight_as_html_with_config;
 use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
-    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
-    TextRange, WalkEvent, T,
+    ast::{self,
+
+    AstNode, AstToken, IsString}, NodeOrToken,
+
+    SyntaxKind::*,
+
+    SyntaxNode, SyntaxToken, TextRange, WalkEvent, T,
 };
 
 use crate::{
-    format::highlight_format_string, highlight_escape_char, highlight_escape_string},
-    highlights::Highlights, syntax_highlighting::{
+    format::highlight_format_string,
+
+    highlight_escape_char, highlight_escape_string},
+
+    highlights::Highlights,
+
+    syntax_highlighting::{
         escape::{highlight_escape_byte,
-    tags::Highlight, FileId, HlMod, HlOperator, HlPunct, HlTag, },
+
+    tags::Highlight,
+
+    FileId, HlMod, HlOperator, HlPunct, HlTag, },
 };
 
 #[derive(Debug, Clone, Copy)]

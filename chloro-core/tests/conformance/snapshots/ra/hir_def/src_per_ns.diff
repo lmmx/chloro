@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5172 bytes
-Chloro size:   5107 bytes
+Chloro size:   5113 bytes
 Rustfmt size:  5492 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,15 @@ Rustfmt size:  5492 bytes
  
  use crate::{
 -    item_scope::{ImportId, ImportOrExternCrate, ImportOrGlob, ItemInNs},
--    visibility::Visibility,
-+    item_scope::{ImportId, visibility::Visibility, ImportOrExternCrate, ImportOrGlob, ItemInNs},
-     MacroId, ModuleDefId,
++    item_scope::{ImportId,
++
+     visibility::Visibility,
+-    MacroId, ModuleDefId,
++
++    ImportOrExternCrate, ImportOrGlob, ItemInNs}, MacroId, ModuleDefId,
  };
  
+ #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
      Values,
      Macros,
  }

@@ -2,16 +2,29 @@ use std::{iter::once, ops::RangeInclusive};
 
 use hir::{HasSource, ModuleSource};
 use ide_db::{
-    assists::AssistId, defs::{Definition, search::{FileReference, FileId, FxHashMap, FxHashSet,
-    NameClass, NameRefClass}, SearchScope},
+    assists::AssistId,
+
+    defs::{Definition,
+
+    search::{FileReference,
+
+    FileId, FxHashMap, FxHashSet, NameClass, NameRefClass}, SearchScope},
 };
 use itertools::Itertools;
 use smallvec::SmallVec;
 use syntax::{
-    algo::find_node_at_range, ast::{
-        self, edit::{AstNodeEdit, make, match_ast, ted,
-    AstNode, HasVisibility, IndentLevel}, SyntaxKind::{self, SyntaxNode, TextRange, TextSize,
-    WHITESPACE}, },
+    algo::find_node_at_range,
+
+    ast::{
+        self,
+
+    edit::{AstNodeEdit,
+
+    make, match_ast, ted, AstNode, HasVisibility, IndentLevel},
+
+    SyntaxKind::{self,
+
+    SyntaxNode, TextRange, TextSize, WHITESPACE}, },
 };
 
 use crate::{AssistContext, Assists};

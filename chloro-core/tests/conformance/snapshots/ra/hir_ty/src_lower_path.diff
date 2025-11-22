@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55383 bytes
+Chloro size:   55429 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -20,26 +20,35 @@ Rustfmt size:  55742 bytes
 -            Path, PathSegment, PathSegments,
 -        },
 -    },
--    hir::generics::{
++        ExpressionStore,
++
+     hir::generics::{
 -        GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
 -    },
 -    resolver::{ResolveValueResult, TypeNs, ValueNs},
--    signatures::TraitFlags,
--    type_ref::{TypeRef, TypeRefId},
-+        ExpressionStore, hir::generics::{
 +        GenericParamDataRef,
++
 +    path::{
-+            GenericArg as HirGenericArg, resolver::{ResolveValueResult,
-+    signatures::TraitFlags, type_ref::{TypeRef, GenericArgs as HirGenericArgs,
-+    GenericArgsParentheses, GenericDefId, GenericParamId, HygieneId, Lookup, Path, PathSegment,
-+    PathSegments, TraitId, TypeAliasId, TypeNs, TypeOrConstParamData, TypeParamData,
-+    TypeParamProvenance, TypeRefId}, ValueNs}, }, }, },
++            GenericArg as HirGenericArg,
++
++    resolver::{ResolveValueResult,
++
+     signatures::TraitFlags,
+-    type_ref::{TypeRef, TypeRefId},
++
++    type_ref::{TypeRef,
++
++    GenericArgs as HirGenericArgs, GenericArgsParentheses, GenericDefId, GenericParamId, HygieneId,
++    Lookup, Path, PathSegment, PathSegments, TraitId, TypeAliasId, TypeNs, TypeOrConstParamData,
++    TypeParamData, TypeParamProvenance, TypeRefId}, ValueNs}, }, }, },
  };
  use hir_expand::name::Name;
  use rustc_type_ir::{
 -    AliasTerm, AliasTy, AliasTyKind,
 -    inherent::{GenericArgs as _, Region as _, SliceLike, Ty as _},
-+    inherent::{GenericArgs as _, AliasTerm, AliasTy, AliasTyKind, Region as _, SliceLike, Ty as _},
++    inherent::{GenericArgs as _,
++
++    AliasTerm, AliasTy, AliasTyKind, Region as _, SliceLike, Ty as _},
  };
  use smallvec::SmallVec;
  use stdx::never;
@@ -48,24 +57,34 @@ Rustfmt size:  55742 bytes
 -    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathGenericsSource,
 -    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
 -    consteval::{unknown_const, unknown_const_as_generic},
--    db::HirDatabase,
++    consteval::{unknown_const,
++
+     db::HirDatabase,
 -    generics::{Generics, generics},
-+    consteval::{unknown_const, db::HirDatabase, generics::{Generics, generics},
++
++    generics::{Generics,
++
++    generics},
++
      lower::{
 -        LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
 -    },
-+        LifetimeElisionKind, named_associated_type_shorthand_candidates,
++        LifetimeElisionKind,
++
++    named_associated_type_shorthand_candidates,
++
      next_solver::{
 -        Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
 -        ProjectionPredicate, Region, TraitRef, Ty,
 -    },
-+        Binder, unknown_const_as_generic}, Clause, Const, DbInterner,
-+    ErrorGuaranteed, GenericArg, GenericArgs, GenericArgsProhibitedReason,
-+    IncorrectGenericsLenKind, PathDiagnosticCallbackData, PathGenericsSource,
-+    PathLoweringDiagnostic, Predicate, ProjectionPredicate, Region, TraitRef, Ty, TyDefId,
-+    ValueTyDefId, }, },
- };
--
+-};
++        Binder,
+ 
++    unknown_const_as_generic}, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
++    GenericArgsProhibitedReason, IncorrectGenericsLenKind, PathDiagnosticCallbackData,
++    PathGenericsSource, PathLoweringDiagnostic, Predicate, ProjectionPredicate, Region, TraitRef,
++    Ty, TyDefId, ValueTyDefId, }, },
++};
  use super::{
 -    ImplTraitLoweringMode, TyLoweringContext, associated_type_by_name_including_super_traits,
 -    const_param_ty_query, ty_query,

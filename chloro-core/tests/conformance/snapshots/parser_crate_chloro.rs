@@ -201,22 +201,45 @@ use crate::grammar::attributes::ATTRIBUTE_FIRST;
 use crate::grammar::types::type_;
 use crate::m;
 use crate::{
-    event::Event, input::Input, Edition, SyntaxKind::{self, TokenSet, EOF, ERROR, T, TOMBSTONE},
+    event::Event,
+
+    input::Input,
+
+    Edition,
+
+    SyntaxKind::{self,
+
+    TokenSet, EOF, ERROR, T, TOMBSTONE},
 };
 use crate::{
     Edition, LexedStr, Step,
     SyntaxKind::{self, *},
 };
 use crate::{
-    parser::{CompletedMarker, Marker, Parser}, SyntaxKind::{self, TokenSet, *}, T,
+    parser::{CompletedMarker,
+
+    Marker, Parser},
+
+    SyntaxKind::{self,
+
+    TokenSet, *}, T,
 };
 use crate::{
     SyntaxKind::{self, *},
     output::Output,
 };
 pub use crate::{
-    input::Input, lexed_str::LexedStr, output::{Output, shortcuts::StrStep,
-    syntax_kind::SyntaxKind, Step},
+    input::Input,
+
+    lexed_str::LexedStr,
+
+    output::{Output,
+
+    shortcuts::StrStep,
+
+    syntax_kind::SyntaxKind,
+
+    Step},
 };
 // Copied from https://github.com/rust-lang/cargo/blob/367fd9f213750cd40317803dd0a5a3ce3f0c676d/src/cargo/util/frontmatter.rs
 // avoid editing
@@ -230,8 +253,17 @@ use self::foo;
 pub use self::generated::SyntaxKind;
 use self::m;
 pub(crate) use self::{
-    adt::{record_field_list, expressions::{match_arm_list, record_expr_field_list},
-    traits::assoc_item_list, use_item::use_tree_list, variant_list},
+    adt::{record_field_list,
+
+    expressions::{match_arm_list,
+
+    record_expr_field_list},
+
+    traits::assoc_item_list,
+
+    use_item::use_tree_list,
+
+    variant_list},
 };
 use super::*;
 use super::*;

@@ -13,7 +13,14 @@ use rustc_hash::FxHashSet;
 use Stability::*;
 
 use crate::{
-    db::DefDatabase, item_scope::ItemInNs, nameres::DefMap, visibility::{Visibility,
+    db::DefDatabase,
+
+    item_scope::ItemInNs,
+
+    nameres::DefMap,
+
+    visibility::{Visibility,
+
     FindPathConfig, ModuleDefId, ModuleId, VisibilityExplicitness},
 };
 

@@ -14,7 +14,14 @@ use serde::{Serialize, de::DeserializeOwned};
 use stdx::thread::ThreadIntent;
 
 use crate::{
-    global_state::{GlobalState, lsp::LspError, main_loop::Task, version::version,
+    global_state::{GlobalState,
+
+    lsp::LspError,
+
+    main_loop::Task,
+
+    version::version,
+
     GlobalStateSnapshot},
 };
 

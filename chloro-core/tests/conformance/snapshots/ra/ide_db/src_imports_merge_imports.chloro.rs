@@ -5,9 +5,19 @@ use std::cmp::Ordering;
 use itertools::{EitherOrBoth, Itertools};
 use parser::T;
 use syntax::{
-    algo, ast::{
-        self, edit_in_place::Removable, make, ted::{self, AstNode, Direction,
-    HasAttrs, HasName, HasVisibility, PathSegmentKind, Position}, SyntaxElement, },
+    algo,
+
+    ast::{
+        self,
+
+    edit_in_place::Removable,
+
+    make,
+
+    ted::{self,
+
+    AstNode, Direction, HasAttrs, HasName, HasVisibility, PathSegmentKind, Position}, SyntaxElement,
+    },
 };
 
 use crate::syntax_helpers::node_ext::vis_eq;

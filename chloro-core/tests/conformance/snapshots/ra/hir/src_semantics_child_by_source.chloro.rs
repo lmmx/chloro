@@ -6,11 +6,23 @@
 
 use either::Either;
 use hir_def::{
-    db::DefDatabase, dyn_map::{
-        DynMap, hir::generics::GenericParams,
-    item_scope::ItemScope, keys::{self, nameres::DefMap, src::{HasChildSource, AdtId, AssocItemId,
-    AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, HasSource}, ImplId, Key},
-    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
+    db::DefDatabase,
+
+    dyn_map::{
+        DynMap,
+
+    hir::generics::GenericParams,
+
+    item_scope::ItemScope,
+
+    keys::{self,
+
+    nameres::DefMap,
+
+    src::{HasChildSource,
+
+    AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, HasSource}, ImplId,
+    Key}, LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
     VariantId, },
 };
 use hir_expand::{HirFileId, attrs::collect_attrs};

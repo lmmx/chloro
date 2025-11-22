@@ -39,9 +39,11 @@ pub mod keys {
     use rustc_hash::FxHashMap;
     use syntax::{AstNode, AstPtr, ast};
     use crate::{
-        dyn_map::{DynMap, BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId,
-        FieldId, FunctionId, ImplId, LifetimeParamId, Macro2Id, MacroRulesId, Policy}, ProcMacroId,
-        StaticId, StructId, TraitId, TypeAliasId, TypeOrConstParamId, UnionId, UseId,
+        dyn_map::{DynMap,
+
+        BlockId, ConstId, EnumId, EnumVariantId, ExternBlockId, ExternCrateId, FieldId, FunctionId,
+        ImplId, LifetimeParamId, Macro2Id, MacroRulesId, Policy}, ProcMacroId, StaticId, StructId,
+        TraitId, TypeAliasId, TypeOrConstParamId, UnionId, UseId,
     };
     pub type Key<K, V> = crate::dyn_map::Key<AstPtr<K>, V, AstPtrPolicy<K, V>>;
     pub const BLOCK: Key<ast::BlockExpr, BlockId> = Key::new();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14552 bytes
-Chloro size:   14421 bytes
+Chloro size:   14426 bytes
 Rustfmt size:  14552 bytes
 
 ✗ Outputs DIFFER
@@ -18,8 +18,10 @@ Rustfmt size:  14552 bytes
  use syntax::{
 -    AstNode, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, T,
 -    ast::{self, Attr, HasAttrs, Meta, TokenTree, VariantList},
-+    ast::{self, AstNode, Attr, HasAttrs, Meta, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode,
-+    TokenTree, VariantList}, T,
++    ast::{self,
++
++    AstNode, Attr, HasAttrs, Meta, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, TokenTree,
++    VariantList}, T,
  };
  use tracing::{debug, warn};
  

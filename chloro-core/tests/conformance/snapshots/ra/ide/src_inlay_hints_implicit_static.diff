@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2153 bytes
-Chloro size:   2150 bytes
+Chloro size:   2160 bytes
 Rustfmt size:  2153 bytes
 
 ✗ Outputs DIFFER
@@ -42,10 +42,13 @@ Rustfmt size:  2153 bytes
      use crate::{
 -        InlayHintsConfig, LifetimeElisionHints,
 -        inlay_hints::tests::{TEST_CONFIG, check_with_config},
-+        check_with_config}, inlay_hints::tests::{TEST_CONFIG, InlayHintsConfig,
-+        LifetimeElisionHints,
-     };
--
+-    };
++        check_with_config},
+ 
++        inlay_hints::tests::{TEST_CONFIG,
++
++        InlayHintsConfig, LifetimeElisionHints,
++    };
      #[test]
      fn hints_lifetimes_static() {
          check_with_config(

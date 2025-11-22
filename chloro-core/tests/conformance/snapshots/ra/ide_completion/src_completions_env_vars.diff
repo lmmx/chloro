@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5700 bytes
-Chloro size:   5691 bytes
+Chloro size:   5701 bytes
 Rustfmt size:  5802 bytes
 
 ✗ Outputs DIFFER
@@ -19,6 +19,15 @@ Rustfmt size:  5802 bytes
  };
  
  use crate::{
+-    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
++    completions::Completions,
++
++    context::CompletionContext,
++
++    CompletionItem, CompletionItemKind,
+ };
+ 
+ const CARGO_DEFINED_VARS: &[(&str, &str)] = &[
          }
      }
      let range = original.text_range_between_quotes()?;

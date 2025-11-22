@@ -1,8 +1,13 @@
 use rustc_type_ir::{AliasRelationDirection, inherent::Term as _};
 
 use crate::next_solver::{
-    fulfill::{FulfillmentCtxt, infer::{at::At, traits::Obligation}, Const, NextSolverError},
-    PredicateKind, Term, Ty,
+    fulfill::{FulfillmentCtxt,
+
+    infer::{at::At,
+
+    traits::Obligation},
+
+    Const, NextSolverError}, PredicateKind, Term, Ty,
 };
 
 impl<'db> At<'_, 'db> {

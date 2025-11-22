@@ -7,8 +7,10 @@ use cfg::{CfgAtom, CfgExpr};
 use intern::{Symbol, sym};
 use rustc_hash::FxHashSet;
 use syntax::{
-    ast::{self, AstNode, Attr, HasAttrs, Meta, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode,
-    TokenTree, VariantList}, T,
+    ast::{self,
+
+    AstNode, Attr, HasAttrs, Meta, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, TokenTree,
+    VariantList}, T,
 };
 use tracing::{debug, warn};
 

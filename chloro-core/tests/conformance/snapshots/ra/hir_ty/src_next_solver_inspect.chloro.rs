@@ -1,19 +1,34 @@
 use rustc_ast_ir::try_visit;
 pub(crate) use rustc_next_trait_solver::solve::inspect::*;
 use rustc_next_trait_solver::{
-    canonical::instantiate_canonical_state, inspect}, resolve::eager_resolve_vars,
+    canonical::instantiate_canonical_state,
+
+    inspect},
+
+    resolve::eager_resolve_vars,
+
     solve::{SolverDelegateEvalExt,
 };
 use rustc_type_ir::{
-    inherent::{IntoKind, solve::{Certainty, GoalSource, MaybeCause, NoSolution}, Span as _},
-    VisitorResult,
+    inherent::{IntoKind,
+
+    solve::{Certainty,
+
+    GoalSource, MaybeCause, NoSolution}, Span as _}, VisitorResult,
 };
 
 use crate::next_solver::{
-    fulfill::NextSolverError, infer::{
-        InferCtxt, obligation_ctxt::ObligationCtxt,
-    traits::{Obligation, DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ObligationCause},
-    ParamEnv, Predicate, PredicateKind, QueryResult, SolverContext, Span, Term, },
+    fulfill::NextSolverError,
+
+    infer::{
+        InferCtxt,
+
+    obligation_ctxt::ObligationCtxt,
+
+    traits::{Obligation,
+
+    DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ObligationCause}, ParamEnv, Predicate,
+    PredicateKind, QueryResult, SolverContext, Span, Term, },
 };
 
 pub(crate) struct InspectConfig {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   74035 bytes
+Chloro size:   74119 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -21,16 +21,32 @@ Rustfmt size:  74236 bytes
 -    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
 -    hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
 -    lang_item::{LangItem, LangItemTarget, lang_item},
--    layout::Integer,
++    expr_store::{Body,
++
++    hir::{BindingAnnotation,
++
++    lang_item::{LangItem,
++
++    lang_item},
++
+     layout::Integer,
 -    resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
 -    signatures::{ConstSignature, StaticSignature},
 -    type_ref::{ConstRef, LifetimeRefId, TypeRefId},
-+    expr_store::{Body, hir::{BindingAnnotation, lang_item::{LangItem, lang_item}, layout::Integer,
-+    path::Path}, resolver::{HasResolver, signatures::{ConstSignature, type_ref::{ConstRef, AdtId,
-+    AssocItemId, BindingId, ConstId, DefWithBodyId, ExprId, ExprOrPatId, ExpressionStore, FieldId,
-+    FunctionId, GenericDefId, GenericParamId, HygieneId, ItemContainerId, LabelId, LangItemTarget,
-+    LifetimeRefId, LocalFieldId, Lookup, PatId}, ResolveValueResult, Resolver, StaticSignature},
-+    TraitId, TupleFieldId, TupleId, TypeAliasId, TypeNs, TypeRefId}, ValueNs}, VariantId,
++
++    path::Path},
++
++    resolver::{HasResolver,
++
++    signatures::{ConstSignature,
++
++    type_ref::{ConstRef,
++
++    AdtId, AssocItemId, BindingId, ConstId, DefWithBodyId, ExprId, ExprOrPatId, ExpressionStore,
++    FieldId, FunctionId, GenericDefId, GenericParamId, HygieneId, ItemContainerId, LabelId,
++    LangItemTarget, LifetimeRefId, LocalFieldId, Lookup, PatId}, ResolveValueResult, Resolver,
++    StaticSignature}, TraitId, TupleFieldId, TupleId, TypeAliasId, TypeNs, TypeRefId}, ValueNs},
++    VariantId,
  };
  use hir_expand::{mod_path::ModPath, name::Name};
  use indexmap::IndexSet;
@@ -39,7 +55,9 @@ Rustfmt size:  74236 bytes
  use rustc_type_ir::{
 -    AliasTyKind, TypeFoldable,
 -    inherent::{AdtDef, IntoKind, Region as _, SliceLike, Ty as _},
-+    inherent::{AdtDef, AliasTyKind, IntoKind, Region as _, SliceLike, Ty as _}, TypeFoldable,
++    inherent::{AdtDef,
++
++    AliasTyKind, IntoKind, Region as _, SliceLike, Ty as _}, TypeFoldable,
  };
  use stdx::never;
  use triomphe::Arc;
@@ -75,14 +93,31 @@ Rustfmt size:  74236 bytes
 -use cast::{CastCheck, CastError};
 -pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithoutTy};
 +use crate::{
-+    abi::Safety, db::{HirDatabase, diagnostics::TyLoweringDiagnostic, diagnostics::{Diagnostics,
-+    expr::ExprIsRead, infer::traits::ObligationCause, infer::{
++    abi::Safety,
++
++    db::{HirDatabase,
++
++    diagnostics::TyLoweringDiagnostic, diagnostics::{Diagnostics,
++
++    expr::ExprIsRead,
++
++    infer::traits::ObligationCause, infer::{
 +        coerce::{CoerceMany,
++
 +    lower::{
-+        ImplTraitIdx, mir::MirSpan, next_solver::{
-+        AliasTy, traits::FnTrait,
-+    utils::TargetFeatureIsSafeInTarget, Const, DbInterner, DynamicCoerceMany}, ErrorGuaranteed,
-+    GenericArg, GenericArgs, ImplTraitId, ImplTraitLoweringMode, IncorrectGenericsLenKind,
++        ImplTraitIdx,
++
++    mir::MirSpan,
++
++    next_solver::{
++        AliasTy,
++
++    traits::FnTrait,
++
++    utils::TargetFeatureIsSafeInTarget,
++
++    Const, DbInterner, DynamicCoerceMany}, ErrorGuaranteed, GenericArg, GenericArgs, ImplTraitId,
++    ImplTraitLoweringMode, IncorrectGenericsLenKind,
 +    InferenceTyLoweringContext as TyLoweringContext}, InternedClosureId, InternedOpaqueTyId},
 +    LifetimeElisionKind, PathLoweringDiagnostic, Region, TargetFeatures, Ty, TyKind, Tys, }, }, },
 +};

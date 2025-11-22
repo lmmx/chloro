@@ -4,11 +4,19 @@ use either::Either;
 use ide_db::syntax_helpers::node_ext::is_pattern_cond;
 use syntax::{
     ast::{
-        self, edit::{AstNodeEdit, make, AstNode, HasLoopBody, IndentLevel}, T, },
+        self,
+
+    edit::{AstNodeEdit,
+
+    make, AstNode, HasLoopBody, IndentLevel}, T, },
 };
 
 use crate::{
-    assist_context::{AssistContext, utils::invert_boolean_expression_legacy, AssistId, Assists},
+    assist_context::{AssistContext,
+
+    utils::invert_boolean_expression_legacy,
+
+    AssistId, Assists},
 };
 
 pub(crate) fn convert_while_to_loop(

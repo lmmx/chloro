@@ -10,14 +10,34 @@ use std::{
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    db::DefDatabase, expr_store::{ExpressionStore, find_path::{self,
-    hir::generics::{TypeOrConstParamData, item_scope::ItemInNs, item_tree::FieldsShape,
-    lang_item::LangItem, nameres::DefMap, path::Path}, signatures::VariantFields,
+    db::DefDatabase,
+
+    expr_store::{ExpressionStore,
+
+    find_path::{self,
+
+    hir::generics::{TypeOrConstParamData,
+
+    item_scope::ItemInNs,
+
+    item_tree::FieldsShape,
+
+    lang_item::LangItem,
+
+    nameres::DefMap,
+
+    path::Path},
+
+    signatures::VariantFields,
+
     type_ref::{
-        ConstRef, visibility::Visibility, FindPathConfig, GeneralConstId,
-    GenericDefId, HasModule, LifetimeRef, LifetimeRefId, LocalFieldId, Lookup, ModuleDefId,
-    ModuleId, PrefixKind}, TraitBoundModifier, TraitId, TypeBound, TypeParamProvenance, TypeRef,
-    TypeRefId, UseArgRef, WherePredicate}, },
+        ConstRef,
+
+    visibility::Visibility,
+
+    FindPathConfig, GeneralConstId, GenericDefId, HasModule, LifetimeRef, LifetimeRefId,
+    LocalFieldId, Lookup, ModuleDefId, ModuleId, PrefixKind}, TraitBoundModifier, TraitId,
+    TypeBound, TypeParamProvenance, TypeRef, TypeRefId, UseArgRef, WherePredicate}, },
 };
 use hir_expand::{mod_path::PathKind, name::Name};
 use intern::{Internable, Interned, sym};
@@ -30,9 +50,10 @@ use rustc_apfloat::{
 use rustc_ast_ir::FloatTy;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    inherent::{AdtDef, AliasTyKind, BoundVarIndexKind, CoroutineArgsParts,
-    CoroutineClosureArgsParts, GenericArgs as _, IntoKind, RegionKind, SliceLike, Term as _,
-    Ty as _, Tys as _}, Upcast,
+    inherent::{AdtDef,
+
+    AliasTyKind, BoundVarIndexKind, CoroutineArgsParts, CoroutineClosureArgsParts, GenericArgs as _,
+    IntoKind, RegionKind, SliceLike, Term as _, Ty as _, Tys as _}, Upcast,
 };
 use smallvec::SmallVec;
 use span::Edition;
@@ -40,13 +61,35 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    abi::Safety, consteval, db::{HirDatabase, detect_variant_from_bytes}, generics::generics,
-    infer::{DbInternerInferExt, layout::Layout, mir::pad16, next_solver::{
+    abi::Safety,
+
+    consteval,
+
+    db::{HirDatabase,
+
+    detect_variant_from_bytes},
+
+    generics::generics,
+
+    infer::{DbInternerInferExt,
+
+    layout::Layout,
+
+    mir::pad16,
+
+    next_solver::{
         AliasTy,
-    primitive, traits::ObligationCause}, utils::{self, CallableDefId, Clause, ClauseKind, Const,
-    ConstKind, DbInterner, EarlyBinder, ExistentialPredicate, FnAbi, FnSig, GenericArg,
-    GenericArgs, ImplTraitId, InternedClosure, InternedCoroutine}, MemoryMap, PolyFnSig, Region,
-    SolverDefId, Term, TraitEnvironment, TraitRef, Ty, TyKind, TypingMode, },
+
+    primitive,
+
+    traits::ObligationCause},
+
+    utils::{self,
+
+    CallableDefId, Clause, ClauseKind, Const, ConstKind, DbInterner, EarlyBinder,
+    ExistentialPredicate, FnAbi, FnSig, GenericArg, GenericArgs, ImplTraitId, InternedClosure,
+    InternedCoroutine}, MemoryMap, PolyFnSig, Region, SolverDefId, Term, TraitEnvironment, TraitRef,
+    Ty, TyKind, TypingMode, },
 };
 
 pub trait HirWrite {

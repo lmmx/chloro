@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53759 bytes
-Chloro size:   53256 bytes
+Chloro size:   53284 bytes
 Rustfmt size:  53759 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,15 @@ Rustfmt size:  53759 bytes
  use hir::{HasSource, ModuleSource};
  use ide_db::{
 -    FileId, FxHashMap, FxHashSet,
--    assists::AssistId,
+     assists::AssistId,
 -    defs::{Definition, NameClass, NameRefClass},
 -    search::{FileReference, SearchScope},
-+    assists::AssistId, defs::{Definition, search::{FileReference, FileId, FxHashMap, FxHashSet,
-+    NameClass, NameRefClass}, SearchScope},
++
++    defs::{Definition,
++
++    search::{FileReference,
++
++    FileId, FxHashMap, FxHashSet, NameClass, NameRefClass}, SearchScope},
  };
  use itertools::Itertools;
  use smallvec::SmallVec;
@@ -25,17 +29,23 @@ Rustfmt size:  53759 bytes
 -    AstNode,
 -    SyntaxKind::{self, WHITESPACE},
 -    SyntaxNode, TextRange, TextSize,
--    algo::find_node_at_range,
--    ast::{
+     algo::find_node_at_range,
++
+     ast::{
 -        self, HasVisibility,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make,
 -    },
 -    match_ast, ted,
-+    algo::find_node_at_range, ast::{
-+        self, edit::{AstNodeEdit, make, match_ast, ted,
-+    AstNode, HasVisibility, IndentLevel}, SyntaxKind::{self, SyntaxNode, TextRange, TextSize,
-+    WHITESPACE}, },
++        self,
++
++    edit::{AstNodeEdit,
++
++    make, match_ast, ted, AstNode, HasVisibility, IndentLevel},
++
++    SyntaxKind::{self,
++
++    SyntaxNode, TextRange, TextSize, WHITESPACE}, },
  };
  
  use crate::{AssistContext, Assists};

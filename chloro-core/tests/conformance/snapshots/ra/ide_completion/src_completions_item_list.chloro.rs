@@ -3,8 +3,9 @@
 pub(crate) mod trait_impl;
 
 use crate::{
-    context::{ItemListKind, CompletionContext, Completions, PathCompletionCtx, PathExprCtx,
-    Qualified},
+    context::{ItemListKind,
+
+    CompletionContext, Completions, PathCompletionCtx, PathExprCtx, Qualified},
 };
 
 pub(crate) fn complete_item_list_in_expr(

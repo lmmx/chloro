@@ -18,9 +18,12 @@ mod testdir;
 use std::{collections::HashMap, path::PathBuf, time::Instant};
 
 use lsp_types::{
-    notification::DidOpenTextDocument, request::{
-        CodeActionRequest, CodeActionContext,
-    CodeActionParams, Completion, CompletionParams, DidOpenTextDocumentParams,
+    notification::DidOpenTextDocument,
+
+    request::{
+        CodeActionRequest,
+
+    CodeActionContext, CodeActionParams, Completion, CompletionParams, DidOpenTextDocumentParams,
     DocumentFormattingParams, DocumentRangeFormattingParams, FileRename, Formatting,
     FormattingOptions, GotoDefinitionParams, GotoTypeDefinition, HoverParams, HoverRequest,
     InlayHint, InlayHintLabel, InlayHintParams, InlayHintRequest, InlayHintResolveRequest,

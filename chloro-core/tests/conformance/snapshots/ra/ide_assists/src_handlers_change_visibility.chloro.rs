@@ -1,8 +1,13 @@
 use syntax::{
-    ast::{self, AstNode, HasName, HasVisibility}, SyntaxKind::{
-        self, SyntaxNode,
-    ASSOC_ITEM_LIST, CONST, ENUM, FN, MACRO_DEF, MODULE, SOURCE_FILE, STATIC, STRUCT, T, TRAIT,
-    TYPE_ALIAS, USE, VISIBILITY, },
+    ast::{self,
+
+    AstNode, HasName, HasVisibility},
+
+    SyntaxKind::{
+        self,
+
+    SyntaxNode, ASSOC_ITEM_LIST, CONST, ENUM, FN, MACRO_DEF, MODULE, SOURCE_FILE, STATIC, STRUCT, T,
+    TRAIT, TYPE_ALIAS, USE, VISIBILITY, },
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::vis_offset};

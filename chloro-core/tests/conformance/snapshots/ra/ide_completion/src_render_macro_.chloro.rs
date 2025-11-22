@@ -5,8 +5,13 @@ use ide_db::{SymbolKind, documentation::Documentation};
 use syntax::{SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
-    context::{PathCompletionCtx, item::{Builder, render::RenderContext, CompletionItem}, PathKind,
-    PatternContext},
+    context::{PathCompletionCtx,
+
+    item::{Builder,
+
+    render::RenderContext,
+
+    CompletionItem}, PathKind, PatternContext},
 };
 
 pub(crate) fn render_macro(

@@ -1,6 +1,13 @@
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, edit::AstNodeEdit, syntax_editor::SyntaxEditor, syntax_factory::SyntaxFactory},
+    ast::{self,
+
+    edit::AstNodeEdit,
+
+    syntax_editor::SyntaxEditor,
+
+    syntax_factory::SyntaxFactory},
+
     AstNode, HasName, Name, SyntaxNode,
 };
 

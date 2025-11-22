@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10598 bytes
+Chloro size:   10599 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
@@ -151,11 +151,12 @@ Rustfmt size:  11050 bytes
      use syntax_bridge::{
 -        dummy_test_span_utils::{DummyTestSpanMap, DUMMY},
 -        syntax_node_to_token_tree, DocCommentDesugarMode,
-+        dummy_test_span_utils::{DUMMY, syntax_node_to_token_tree, DocCommentDesugarMode,
-+        DummyTestSpanMap},
-     };
--
+-    };
++        dummy_test_span_utils::{DUMMY,
+ 
 -    fn check(cfg: &str, expected_features: &[&str]) {
++        syntax_node_to_token_tree, DocCommentDesugarMode, DummyTestSpanMap},
++    };
 +    fn check(
 +        cfg: &str,
 +        expected_features: &[&str],

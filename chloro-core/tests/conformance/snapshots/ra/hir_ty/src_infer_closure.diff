@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36893 bytes
+Chloro size:   36932 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -13,18 +13,23 @@ Rustfmt size:  36953 bytes
  use hir_def::{
 -    TraitId,
 -    hir::{ClosureKind, ExprId, PatId},
--    lang_item::LangItem,
--    type_ref::TypeRefId,
-+    hir::{ClosureKind, lang_item::LangItem, type_ref::TypeRefId, ExprId, PatId}, TraitId,
++    hir::{ClosureKind,
++
+     lang_item::LangItem,
++
+     type_ref::TypeRefId,
++
++    ExprId, PatId}, TraitId,
  };
  use rustc_type_ir::{
--    ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
++    inherent::{BoundExistentialPredicates,
++
+     ClosureArgs, ClosureArgsParts, CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs,
 -    CoroutineClosureArgsParts, Interner, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-+    inherent::{BoundExistentialPredicates, ClosureArgs, ClosureArgsParts, CoroutineArgs,
-+    CoroutineArgsParts, CoroutineClosureArgs, CoroutineClosureArgsParts, GenericArgs as _,
-+    Interner, IntoKind, SliceLike, Ty as _}, TypeSuperVisitable, TypeVisitable, TypeVisitableExt,
-     TypeVisitor,
+-    TypeVisitor,
 -    inherent::{BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
++    CoroutineClosureArgsParts, GenericArgs as _, Interner, IntoKind, SliceLike, Ty as _},
++    TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor,
  };
  use tracing::debug;
  
@@ -32,10 +37,7 @@ Rustfmt size:  36953 bytes
 -    FnAbi,
 -    db::{InternedClosure, InternedCoroutine},
 -    infer::{BreakableKind, Diverges, coerce::CoerceMany},
-+    abi::Safety, coerce::CoerceMany}, db::{InternedClosure,
-+    infer::{
-+            BoundRegionConversionTime, infer::{BreakableKind,
-     next_solver::{
+-    next_solver::{
 -        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
 -        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
 -        PredicateKind, SolverDefId, Ty, TyKind,
@@ -47,13 +49,28 @@ Rustfmt size:  36953 bytes
 -        util::explicit_item_bounds,
 -    },
 -    traits::FnTrait,
-+        AliasTy, traits::FnTrait, traits::{ObligationCause,
-+    util::explicit_item_bounds, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind,
-+    DbInterner, Diverges, ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult,
-+    InternedCoroutine}, PolyFnSig, PolyProjectionPredicate, Predicate, PredicateKind,
-+    PredicateObligations}, SolverDefId, Ty, TyKind, }, },
- };
--
+-};
++    abi::Safety,
+ 
++    coerce::CoerceMany},
++
++    db::{InternedClosure,
++
++    infer::{
++            BoundRegionConversionTime, infer::{BreakableKind,
++
++    next_solver::{
++        AliasTy,
++
++    traits::FnTrait, traits::{ObligationCause,
++
++    util::explicit_item_bounds,
++
++    Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner, Diverges,
++    ErrorGuaranteed, FnAbi, FnSig, GenericArgs, InferOk, InferResult, InternedCoroutine}, PolyFnSig,
++    PolyProjectionPredicate, Predicate, PredicateKind, PredicateObligations}, SolverDefId, Ty,
++    TyKind, }, },
++};
  use super::{Expectation, InferenceContext};
  
  #[derive(Debug)]

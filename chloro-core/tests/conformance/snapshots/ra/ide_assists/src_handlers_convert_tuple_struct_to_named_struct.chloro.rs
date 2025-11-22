@@ -5,7 +5,14 @@ use hir::FileRangeWrapper;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
     ast::{
-        self, match_ast, syntax_editor::{Element, syntax_factory::SyntaxFactory,
+        self,
+
+    match_ast,
+
+    syntax_editor::{Element,
+
+    syntax_factory::SyntaxFactory,
+
     AstNode, HasAttrs, HasGenericParams, HasVisibility, Position, SyntaxEditor}, SyntaxElement,
     SyntaxKind, SyntaxNode, TextSize, T, },
 };

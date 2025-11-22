@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   16004 bytes
+Chloro size:   16036 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,15 @@ Rustfmt size:  15979 bytes
  use hir_def::{
 -    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
 -    expr_store::{Body, path::Path},
--    hir::PatId,
--    item_tree::FieldsShape,
-+    expr_store::{Body, hir::PatId, item_tree::FieldsShape, path::Path}, AdtId, EnumVariantId,
-+    LocalFieldId, Lookup, VariantId,
++    expr_store::{Body,
++
+     hir::PatId,
++
+     item_tree::FieldsShape,
++
++    path::Path},
++
++    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
  };
  use hir_expand::name::Name;
  use rustc_type_ir::inherent::{IntoKind, SliceLike};
@@ -28,14 +33,20 @@ Rustfmt size:  15979 bytes
  
  use crate::{
 -    InferenceResult,
--    db::HirDatabase,
+     db::HirDatabase,
 -    display::{HirDisplay, HirDisplayError, HirFormatter},
 -    infer::BindingMode,
 -    next_solver::{GenericArgs, Mutability, Ty, TyKind},
-+    db::HirDatabase, display::{HirDisplay, infer::BindingMode, next_solver::{GenericArgs,
+-};
+ 
++    display::{HirDisplay,
++
++    infer::BindingMode,
++
++    next_solver::{GenericArgs,
++
 +    HirDisplayError, HirFormatter}, InferenceResult, Mutability, Ty, TyKind},
- };
--
++};
  use self::pat_util::EnumerateAndAdjustIterator;
  
  #[derive(Clone, Debug)]

@@ -18,18 +18,33 @@ use std::{
 use base_db::Crate;
 use either::Either;
 use hir_def::{
-    builtin_type::BuiltinType, expr_store::{ExpressionStore,
+    builtin_type::BuiltinType,
+
+    expr_store::{ExpressionStore,
+
     hir::generics::{
-        GenericParamDataRef, item_tree::FieldsShape, lang_item::LangItem,
-    path::Path}, resolver::{HasResolver, signatures::{FunctionSignature,
+        GenericParamDataRef,
+
+    item_tree::FieldsShape,
+
+    lang_item::LangItem,
+
+    path::Path},
+
+    resolver::{HasResolver,
+
+    signatures::{FunctionSignature,
+
     type_ref::{
-        ConstRef, AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId,
-    DefWithBodyId, EnumId, EnumVariantId, FunctionId, GenericDefId, GenericParamId, HasModule,
-    HygieneId, ImplId, ItemContainerId, LifetimeNs, LifetimeParamId, LifetimeRefId,
-    LiteralConstRef, LocalFieldId, Lookup, PathId, Resolver, StaticId, StructId,
-    TraitBoundModifier, TraitFlags, TraitRef as HirTraitRef, TypeAliasFlags}, TypeAliasId,
-    TypeBound, TypeNs, TypeOrConstParamData, TypeOrConstParamId, TypeParamId, TypeParamProvenance,
-    TypeRef, TypeRefId, UnionId, ValueNs}, VariantId, WherePredicate, }, },
+        ConstRef,
+
+    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
+    FunctionId, GenericDefId, GenericParamId, HasModule, HygieneId, ImplId, ItemContainerId,
+    LifetimeNs, LifetimeParamId, LifetimeRefId, LiteralConstRef, LocalFieldId, Lookup, PathId,
+    Resolver, StaticId, StructId, TraitBoundModifier, TraitFlags, TraitRef as HirTraitRef,
+    TypeAliasFlags}, TypeAliasId, TypeBound, TypeNs, TypeOrConstParamData, TypeOrConstParamId,
+    TypeParamId, TypeParamProvenance, TypeRef, TypeRefId, UnionId, ValueNs}, VariantId,
+    WherePredicate, }, },
 };
 use hir_expand::name::Name;
 use la_arena::{Arena, ArenaMap, Idx};
@@ -38,9 +53,14 @@ use rustc_ast_ir::Mutability;
 use rustc_hash::FxHashSet;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
-    inherent::{GenericArg as _, AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex,
-    ExistentialPredicate, ExistentialProjection, ExistentialTraitRef, FnSig, GenericArgs as _,
-    IntoKind as _, OutlivesPredicate, Region as _, SliceLike, Ty as _}, TyKind::{self},
+    inherent::{GenericArg as _,
+
+    AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
+    ExistentialProjection, ExistentialTraitRef, FnSig, GenericArgs as _, IntoKind as _,
+    OutlivesPredicate, Region as _, SliceLike, Ty as _},
+
+    TyKind::{self},
+
     TypeVisitableExt,
 };
 use salsa::plumbing::AsId;
@@ -49,13 +69,24 @@ use stdx::{impl_from, never};
 use triomphe::{Arc, ThinArc};
 
 use crate::{
-    abi::Safety, consteval::intern_const_ref, db::HirDatabase, generics, generics::{Generics,
+    abi::Safety,
+
+    consteval::intern_const_ref,
+
+    db::HirDatabase,
+
+    generics,
+
+    generics::{Generics,
+
     next_solver::{
-        AliasTy, trait_self_param_idx}, Binder, BoundExistentialPredicates,
-    Clause, Clauses, Const, DbInterner, EarlyBinder, EarlyParamRegion, ErrorGuaranteed, FnAbi,
-    GenericArg, GenericArgs, ImplTraitId, ParamConst, ParamEnv, PolyFnSig, Predicate, Region,
-    SolverDefId, TraitEnvironment, TraitPredicate, TraitRef, Ty, TyLoweringDiagnostic,
-    TyLoweringDiagnosticKind, Tys, UnevaluatedConst, },
+        AliasTy,
+
+    trait_self_param_idx}, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
+    EarlyBinder, EarlyParamRegion, ErrorGuaranteed, FnAbi, GenericArg, GenericArgs, ImplTraitId,
+    ParamConst, ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitEnvironment,
+    TraitPredicate, TraitRef, Ty, TyLoweringDiagnostic, TyLoweringDiagnosticKind, Tys,
+    UnevaluatedConst, },
 };
 
 pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);

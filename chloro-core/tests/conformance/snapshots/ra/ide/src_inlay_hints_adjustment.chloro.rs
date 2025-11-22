@@ -332,8 +332,11 @@ fn needs_parens_for_adjustment_hints(
 #[cfg(test)]
 mod tests {
     use crate::{
-        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, AdjustmentHints,
-        AdjustmentHintsMode, InlayHintsConfig,
+        check_with_config},
+
+        inlay_hints::tests::{DISABLED_CONFIG,
+
+        AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
     };
     #[test]
     fn adjustment_hints_prefix() {

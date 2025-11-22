@@ -30,19 +30,36 @@ use std::{iter, sync::LazyLock};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
+    db::ExpandDatabase,
+
+    diagnostics::AnyDiagnostic,
+
+    Crate, DisplayTarget, InFile, Semantics,
 };
 use ide_db::{
-    assists::{Assist, base_db::{ReleaseChannel, generated::lints::{CLIPPY_LINT_GROUPS,
-    imports::insert_use::InsertUseConfig, label::Label, source_change::SourceChange,
-    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths, AssistId, AssistResolveStrategy,
-    EditionedFileId, ExprFillDefaultMode}, FileId, FileRange, FxHashMap, FxHashSet, Lint,
-    LintGroup}, RootDatabase, RootQueryDb as _}, Severity, SnippetCap, DEFAULT_LINTS,
-    DEFAULT_LINT_GROUPS,
+    assists::{Assist,
+
+    base_db::{ReleaseChannel,
+
+    generated::lints::{CLIPPY_LINT_GROUPS,
+
+    imports::insert_use::InsertUseConfig,
+
+    label::Label,
+
+    source_change::SourceChange,
+
+    syntax_helpers::node_ext::parse_tt_as_comma_sep_paths,
+
+    AssistId, AssistResolveStrategy, EditionedFileId, ExprFillDefaultMode}, FileId, FileRange,
+    FxHashMap, FxHashSet, Lint, LintGroup}, RootDatabase, RootQueryDb as _}, Severity, SnippetCap,
+    DEFAULT_LINTS, DEFAULT_LINT_GROUPS,
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, AstNode, AstPtr, Edition, HasAttrs}, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode,
+    ast::{self,
+
+    AstNode, AstPtr, Edition, HasAttrs}, NodeOrToken, SmolStr, SyntaxKind, SyntaxNode,
     SyntaxNodePtr, TextRange, T,
 };
 

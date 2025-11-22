@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52462 bytes
+Chloro size:   52484 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -12,18 +12,25 @@ Rustfmt size:  53059 bytes
  
  use hir::HasSource;
  use ide_db::{
--    assists::GroupLabel,
--    famous_defs::FamousDefs,
+     assists::GroupLabel,
++
+     famous_defs::FamousDefs,
 -    syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
-+    assists::GroupLabel, famous_defs::FamousDefs, syntax_helpers::node_ext::{for_each_tail_expr,
++
++    syntax_helpers::node_ext::{for_each_tail_expr,
++
 +    walk_expr},
  };
  use syntax::{
 -    AstNode,
 -    ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
--    match_ast,
-+    ast::{self, match_ast, syntax_factory::SyntaxFactory}, AstNode, Expr, HasGenericArgs,
-+    HasGenericParams,
++    ast::{self,
++
+     match_ast,
++
++    syntax_factory::SyntaxFactory},
++
++    AstNode, Expr, HasGenericArgs, HasGenericParams,
  };
  
  use crate::{AssistContext, AssistId, Assists};

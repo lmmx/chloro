@@ -6,8 +6,11 @@ use hir::{
 };
 use ide_db::text_edit::TextRange;
 use ide_db::{
-    defs::Definition, search::{FileReference, FxHashMap, ReferenceCategory, RootDatabase,
-    SearchScope},
+    defs::Definition,
+
+    search::{FileReference,
+
+    FxHashMap, ReferenceCategory, RootDatabase, SearchScope},
 };
 use syntax::{
     AstNode,

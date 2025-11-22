@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27673 bytes
-Chloro size:   27454 bytes
+Chloro size:   27476 bytes
 Rustfmt size:  28292 bytes
 
 ✗ Outputs DIFFER
@@ -12,22 +12,29 @@ Rustfmt size:  28292 bytes
 -use hir::{db::ExpandDatabase, CallableKind, ClosureStyle, HirDisplay, InFile};
 +use hir::{CallableKind, ClosureStyle, HirDisplay, InFile, db::ExpandDatabase};
  use ide_db::{
--    famous_defs::FamousDefs,
+     famous_defs::FamousDefs,
 -    source_change::{SourceChange, SourceChangeBuilder},
--    text_edit::TextEdit,
-+    famous_defs::FamousDefs, source_change::{SourceChange, text_edit::TextEdit,
++
++    source_change::{SourceChange,
++
+     text_edit::TextEdit,
++
 +    SourceChangeBuilder},
  };
  use syntax::{
      ast::{
--        self,
+         self,
 -        edit::{AstNodeEdit, IndentLevel},
 -        syntax_factory::SyntaxFactory,
 -        BlockExpr, Expr, ExprStmt, HasArgList,
 -    },
 -    AstNode, AstPtr, TextSize,
-+        self, edit::{AstNodeEdit, syntax_factory::SyntaxFactory, AstNode, AstPtr,
-+    BlockExpr, Expr, ExprStmt, HasArgList, IndentLevel}, TextSize, },
++
++    edit::{AstNodeEdit,
++
++    syntax_factory::SyntaxFactory,
++
++    AstNode, AstPtr, BlockExpr, Expr, ExprStmt, HasArgList, IndentLevel}, TextSize, },
  };
  
 -use crate::{adjusted_display_range, fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};

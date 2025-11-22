@@ -2,14 +2,23 @@
 
 use hir::{ItemInNs, ModuleDef};
 use ide_db::imports::{
-    import_assets::{ImportAssets, insert_use::ImportScope, LocatedImport},
+    import_assets::{ImportAssets,
+
+    insert_use::ImportScope,
+
+    LocatedImport},
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxNode, ast};
 
 use crate::{
-    config::AutoImportExclusionType, context::{
-        CompletionContext, render::{RenderContext,
+    config::AutoImportExclusionType,
+
+    context::{
+        CompletionContext,
+
+    render::{RenderContext,
+
     render_resolution_with_import, render_resolution_with_import_pat}, Completions, DotAccess,
     PathCompletionCtx, PathKind, PatternContext, Qualified, TypeLocation, },
 };

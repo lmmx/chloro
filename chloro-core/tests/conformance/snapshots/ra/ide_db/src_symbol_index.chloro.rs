@@ -30,8 +30,13 @@ use std::{
 use base_db::{RootQueryDb, SourceRootId};
 use fst::{Automaton, Streamer, raw::IndexedValue};
 use hir::{
-    db::HirDatabase, import_map::{AssocSearchMode, symbols::{FileSymbol, Crate, Module,
-    SearchMode}, SymbolCollector},
+    db::HirDatabase,
+
+    import_map::{AssocSearchMode,
+
+    symbols::{FileSymbol,
+
+    Crate, Module, SearchMode}, SymbolCollector},
 };
 use rayon::prelude::*;
 use rustc_hash::FxHashSet;

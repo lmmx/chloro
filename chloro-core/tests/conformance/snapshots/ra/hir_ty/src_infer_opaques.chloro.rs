@@ -5,9 +5,13 @@ use tracing::{debug, instrument};
 
 use crate::{
     infer::InferenceContext, infer::{opaque_types::OpaqueHiddenType,
+
     next_solver::{
-        EarlyBinder, traits::ObligationCause}, OpaqueTypeKey, SolverDefId,
-    TypingMode, },
+        EarlyBinder,
+
+    traits::ObligationCause},
+
+    OpaqueTypeKey, SolverDefId, TypingMode, },
 };
 
 impl<'db> InferenceContext<'_, 'db> {

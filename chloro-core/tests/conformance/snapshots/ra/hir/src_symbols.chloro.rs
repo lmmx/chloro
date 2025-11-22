@@ -3,10 +3,19 @@
 use base_db::FxIndexSet;
 use either::Either;
 use hir_def::{
-    db::DefDatabase, item_scope::{ImportId, per_ns::Item, src::{HasChildSource,
-    visibility::{Visibility, AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule,
-    HasSource}, ImplId, ImportOrExternCrate, ImportOrGlob}, Lookup, MacroId, ModuleDefId, ModuleId,
-    TraitId, VisibilityExplicitness},
+    db::DefDatabase,
+
+    item_scope::{ImportId,
+
+    per_ns::Item,
+
+    src::{HasChildSource,
+
+    visibility::{Visibility,
+
+    AdtId, AssocItemId, Complete, DefWithBodyId, ExternCrateId, HasModule, HasSource}, ImplId,
+    ImportOrExternCrate, ImportOrGlob}, Lookup, MacroId, ModuleDefId, ModuleId, TraitId,
+    VisibilityExplicitness},
 };
 use hir_expand::{HirFileId, name::Name};
 use hir_ty::{

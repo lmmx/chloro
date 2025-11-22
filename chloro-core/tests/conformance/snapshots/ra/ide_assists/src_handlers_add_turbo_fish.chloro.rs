@@ -1,8 +1,15 @@
 use either::Either;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, make, syntax_editor::Position, syntax_factory::SyntaxFactory}, AstNode, HasArgList,
-    HasGenericArgs,
+    ast::{self,
+
+    make,
+
+    syntax_editor::Position,
+
+    syntax_factory::SyntaxFactory},
+
+    AstNode, HasArgList, HasGenericArgs,
 };
 
 use crate::{

@@ -29,8 +29,9 @@ use expect_test::Expect;
 use hir::db::HirDatabase;
 use hir::{PrefixKind, setup_tracing};
 use ide_db::{
-    imports::insert_use::{ImportGranularity, FilePosition, InsertUseConfig}, MiniCore,
-    RootDatabase, SnippetCap,
+    imports::insert_use::{ImportGranularity,
+
+    FilePosition, InsertUseConfig}, MiniCore, RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::{format_to, trim_indent};

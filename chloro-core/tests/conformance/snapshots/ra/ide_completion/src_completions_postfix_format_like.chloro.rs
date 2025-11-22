@@ -16,12 +16,19 @@
 //
 // ![Format String Completion](https://user-images.githubusercontent.com/48062697/113020656-b560f500-917a-11eb-87de-02991f61beb8.gif)
 use ide_db::{
-    parse_format_exprs, syntax_helpers::format_string_exprs::{Arg, with_placeholders}, SnippetCap,
+    parse_format_exprs,
+
+    syntax_helpers::format_string_exprs::{Arg,
+
+    with_placeholders}, SnippetCap,
 };
 use syntax::{AstToken, ast};
 
 use crate::{
-    completions::postfix::{build_postfix_snippet_builder, context::CompletionContext,
+    completions::postfix::{build_postfix_snippet_builder,
+
+    context::CompletionContext,
+
     escape_snippet_bits}, Completions,
 };
 

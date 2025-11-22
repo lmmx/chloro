@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12569 bytes
-Chloro size:   12185 bytes
+Chloro size:   12195 bytes
 Rustfmt size:  12721 bytes
 
 ✗ Outputs DIFFER
@@ -14,7 +14,11 @@ Rustfmt size:  12721 bytes
  use syntax::{
 -    ast::{self, edit_in_place::HasVisibilityEdit, make, HasVisibility as _},
 -    AstNode, TextRange,
-+    ast::{self, edit_in_place::HasVisibilityEdit, make}, AstNode, HasVisibility as _, TextRange,
++    ast::{self,
++
++    edit_in_place::HasVisibilityEdit,
++
++    make}, AstNode, HasVisibility as _, TextRange,
  };
  
  use crate::{AssistContext, AssistId, Assists};

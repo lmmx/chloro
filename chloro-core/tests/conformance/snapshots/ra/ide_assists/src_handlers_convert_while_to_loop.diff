@@ -2,31 +2,33 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5355 bytes
-Chloro size:   5033 bytes
+Chloro size:   5053 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use std::iter;
- 
- use either::Either;
- use ide_db::syntax_helpers::node_ext::is_pattern_cond;
  use syntax::{
      ast::{
--        self,
+         self,
 -        edit::{AstNodeEdit, IndentLevel},
 -        make, HasLoopBody,
 -    },
 -    AstNode, T,
-+        self, edit::{AstNodeEdit, make, AstNode, HasLoopBody, IndentLevel}, T, },
++
++    edit::{AstNodeEdit,
++
++    make, AstNode, HasLoopBody, IndentLevel}, T, },
  };
  
  use crate::{
 -    assist_context::{AssistContext, Assists},
--    utils::invert_boolean_expression_legacy,
++    assist_context::{AssistContext,
++
+     utils::invert_boolean_expression_legacy,
 -    AssistId,
-+    assist_context::{AssistContext, utils::invert_boolean_expression_legacy, AssistId, Assists},
++
++    AssistId, Assists},
  };
  
 -// Assist: convert_while_to_loop

@@ -2,7 +2,15 @@
 //! LSP diagnostics based on the output of the command.
 
 use std::{
-    fmt, io, process::Command, sync::atomic::{AtomicUsize, time::Duration, Ordering},
+    fmt, io,
+
+    process::Command,
+
+    sync::atomic::{AtomicUsize,
+
+    time::Duration,
+
+    Ordering},
 };
 
 use cargo_metadata::PackageId;

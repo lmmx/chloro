@@ -3,6 +3,7 @@ use ra_ap_syntax::{
     AstNode, SyntaxNode,
 };
 
+pub mod grouping;
 pub mod sort;
 
 use crate::formatter::config::MAX_WIDTH;
@@ -32,7 +33,9 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let single_line_len = indent + single_line.len();
 
     // If it fits on one line, write it directly
-    if single_line_len <= MAX_WIDTH {
+    if single_line_len < MAX_WIDTH {
+        // NOTE: rustfmt max_width implementation is (unfortunately) off by one.
+        // This should be `<=` but make it `<` to match behaviour of rustfmt
         buf.push_str(&vis_text);
         buf.push_str("use ");
         buf.push_str(&use_tree_text);
@@ -59,50 +62,61 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 buf.push_str("{\n");
 
                 // Parse and sort items lexicographically
-                let mut items: Vec<&str> = items_str
+                let mut items: Vec<String> = items_str
                     .split(',')
-                    .map(|s| s.trim())
+                    .map(|s| s.trim().to_string())
                     .filter(|s| !s.is_empty())
                     .collect();
 
                 // Sort items using standard lexicographic ordering
                 items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
 
-                let mut current_line = String::new();
+                // Group items by their submodule prefix
+                let groups = grouping::group_by_submodule(items);
+
+                // Write out each group
                 let line_indent = indent + 4;
 
-                for (i, item) in items.iter().enumerate() {
-                    let item_with_comma = if i < items.len() - 1 {
-                        format!("{}, ", item)
-                    } else {
-                        format!("{},", item)
-                    };
+                for (group_idx, group) in groups.iter().enumerate() {
+                    let mut current_line = String::new();
 
-                    // Check if adding this item would exceed MAX_WIDTH
-                    let potential_line_len =
-                        line_indent + current_line.len() + item_with_comma.len();
+                    for item in group.iter() {
+                        let item_with_comma = format!("{},", item);
 
-                    if current_line.is_empty() {
-                        // First item on the line
-                        current_line.push_str(&item_with_comma);
-                    } else if potential_line_len <= MAX_WIDTH {
-                        // Add to current line
-                        current_line.push_str(&item_with_comma);
-                    } else {
-                        // Write current line and start new one
-                        write_indent(buf, line_indent);
-                        buf.push_str(&current_line.trim_end());
-                        buf.push('\n');
-                        current_line.clear();
-                        current_line.push_str(&item_with_comma);
+                        // Check if adding this item would exceed MAX_WIDTH
+                        // NOTE: technically whether it would *reach* MAX_WIDTH (rustfmt bug)
+                        let potential_line_len =
+                            line_indent + current_line.len() + item_with_comma.len();
+
+                        if current_line.is_empty() {
+                            // First item on the line
+                            current_line.push_str(&item_with_comma);
+                        } else if potential_line_len < MAX_WIDTH {
+                            // NOTE: `<` not `<=` to match behaviour of rustfmt
+                            // Add to current line with a space
+                            current_line.push(' ');
+                            current_line.push_str(&item_with_comma);
+                        } else {
+                            // Write current line and start new one
+                            write_indent(buf, line_indent);
+                            buf.push_str(&current_line);
+                            buf.push('\n');
+                            current_line.clear();
+                            current_line.push_str(&item_with_comma);
+                        }
                     }
-                }
 
-                // Write any remaining items
-                if !current_line.is_empty() {
-                    write_indent(buf, line_indent);
-                    buf.push_str(&current_line.trim_end());
-                    buf.push('\n');
+                    // Write any remaining items
+                    if !current_line.is_empty() {
+                        write_indent(buf, line_indent);
+                        buf.push_str(&current_line);
+                        buf.push('\n');
+                    }
+
+                    // Add blank line between groups (except after the last group)
+                    if group_idx < groups.len() - 1 {
+                        buf.push('\n');
+                    }
                 }
 
                 write_indent(buf, indent);
@@ -116,3 +130,6 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     buf.push_str(&use_tree_text);
     buf.push_str(";\n");
 }
+
+#[cfg(test)]
+mod tests;

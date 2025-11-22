@@ -5,12 +5,24 @@ use hir::{Semantics, TypeInfo};
 use ide_db::{RootDatabase, ty_filter::TryEnum};
 use syntax::{
     ast::{
-        self, edit::{AstNodeEdit, make, AstNode, IndentLevel},
-    SyntaxKind::{CLOSURE_EXPR, SyntaxNode, FN, FOR_EXPR, LOOP_EXPR, T, WHILE_EXPR, WHITESPACE}, },
+        self,
+
+    edit::{AstNodeEdit,
+
+    make, AstNode, IndentLevel},
+
+    SyntaxKind::{CLOSURE_EXPR,
+
+    SyntaxNode, FN, FOR_EXPR, LOOP_EXPR, T, WHILE_EXPR, WHITESPACE}, },
 };
 
 use crate::{
-    assist_context::{AssistContext, is_never_block}, utils::{invert_boolean_expression_legacy,
+    assist_context::{AssistContext,
+
+    is_never_block},
+
+    utils::{invert_boolean_expression_legacy,
+
     AssistId, Assists},
 };
 

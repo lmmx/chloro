@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   31246 bytes
+Chloro size:   31288 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
@@ -12,28 +12,40 @@ Rustfmt size:  31432 bytes
  
  use either::Either;
  use hir_def::{
--    expr_store::ExpressionStore,
+     expr_store::ExpressionStore,
 -    hir::generics::{GenericParams, TypeOrConstParamData, TypeParamProvenance, WherePredicate},
--    item_tree::FieldsShape,
--    lang_item::LangItem,
++
++    hir::generics::{GenericParams,
++
+     item_tree::FieldsShape,
++
+     lang_item::LangItem,
 -    signatures::{StaticFlags, TraitFlags},
 -    type_ref::{TypeBound, TypeRef, TypeRefId},
 -    AdtId, GenericDefId,
-+    expr_store::ExpressionStore, hir::generics::{GenericParams, item_tree::FieldsShape,
-+    lang_item::LangItem, signatures::{StaticFlags, type_ref::{TypeBound, AdtId, GenericDefId,
-+    TraitFlags}, TypeOrConstParamData, TypeParamProvenance, TypeRef, TypeRefId}, WherePredicate},
++
++    signatures::{StaticFlags,
++
++    type_ref::{TypeBound,
++
++    AdtId, GenericDefId, TraitFlags}, TypeOrConstParamData, TypeParamProvenance, TypeRef,
++    TypeRefId}, WherePredicate},
  };
  use hir_ty::{
--    db::HirDatabase,
--    display::{
+     db::HirDatabase,
++
+     display::{
 -        hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
 -        HirDisplay, HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault,
 -    },
--    next_solver::ClauseKind,
-+    db::HirDatabase, display::{
-+        HirDisplay, hir_display_with_store,
-+    next_solver::ClauseKind, write_bounds_like_dyn_trait_with_prefix, write_visibility,
-+    HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault, },
++        HirDisplay,
++
++    hir_display_with_store,
++
+     next_solver::ClauseKind,
++
++    write_bounds_like_dyn_trait_with_prefix, write_visibility, HirDisplayError,
++    HirDisplayWithExpressionStore, HirFormatter, SizedByDefault, },
  };
  use itertools::Itertools;
  use rustc_type_ir::inherent::IntoKind;

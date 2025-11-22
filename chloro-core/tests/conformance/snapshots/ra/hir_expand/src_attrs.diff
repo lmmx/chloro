@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16574 bytes
+Chloro size:   16600 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -31,13 +31,20 @@ Rustfmt size:  17571 bytes
  use triomphe::ThinArc;
  
  use crate::{
--    db::ExpandDatabase,
--    mod_path::ModPath,
--    name::Name,
--    span_map::SpanMapRef,
+     db::ExpandDatabase,
++
+     mod_path::ModPath,
++
+     name::Name,
++
+     span_map::SpanMapRef,
 -    tt::{self, token_to_literal, TopSubtree},
-+    db::ExpandDatabase, mod_path::ModPath, name::Name, span_map::SpanMapRef, token_to_literal},
-+    tt::{self, TopSubtree,
++
++    token_to_literal},
++
++    tt::{self,
++
++    TopSubtree,
  };
  
  /// Syntactical attributes, without filtering of `cfg_attr`s.

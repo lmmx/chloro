@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29613 bytes
+Chloro size:   29651 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -15,6 +15,21 @@ Rustfmt size:  30449 bytes
  #[cfg(test)]
  mod tests;
  
+ 
+ use base_db::Crate;
+ use hir_expand::{
+-    mod_path::ModPath, name::Name, proc_macro::ProcMacroKind, EditionedFileId, ErasedAstId,
+-    HirFileId, InFile, MacroCallId,
++    mod_path::ModPath,
++
++    name::Name,
++
++    proc_macro::ProcMacroKind,
++
++    EditionedFileId, ErasedAstId, HirFileId, InFile, MacroCallId,
+ };
+ use intern::Symbol;
+ use itertools::Itertools;
  use rustc_hash::{FxHashMap, FxHashSet};
  use span::{Edition, FileAstId, FileId, ROOT_ERASED_FILE_AST_ID};
  use stdx::format_to;
@@ -24,7 +39,7 @@ Rustfmt size:  30449 bytes
  use tt::TextRange;
  
  use crate::{
--    db::DefDatabase,
+     db::DefDatabase,
 -    item_scope::{BuiltinShadowMode, ItemScope},
 -    item_tree::TreeId,
 -    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode},
@@ -32,13 +47,24 @@ Rustfmt size:  30449 bytes
 -    visibility::{Visibility, VisibilityExplicitness},
 -    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap,
 -    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
-+    db::DefDatabase, item_scope::{BuiltinShadowMode, item_tree::TreeId,
-+    nameres::{diagnostics::DefDiagnostic, path_resolution::ResolveMode}, per_ns::PerNs,
-+    visibility::{Visibility, AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId,
-+    FunctionId, FxIndexMap, ItemScope}, LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId,
-+    ProcMacroId, UseId, VisibilityExplicitness},
- };
--
+-};
+ 
++    item_scope::{BuiltinShadowMode,
++
++    item_tree::TreeId,
++
++    nameres::{diagnostics::DefDiagnostic,
++
++    path_resolution::ResolveMode},
++
++    per_ns::PerNs,
++
++    visibility::{Visibility,
++
++    AstId, BlockId, BlockLoc, CrateRootModuleId, ExternCrateId, FunctionId, FxIndexMap, ItemScope},
++    LocalModuleId, Lookup, MacroExpander, MacroId, ModuleId, ProcMacroId, UseId,
++    VisibilityExplicitness},
++};
  pub use self::path_resolution::ResolvePathResultPrefixInfo;
  
  const PREDEFINED_TOOLS: &[SmolStr] = &[

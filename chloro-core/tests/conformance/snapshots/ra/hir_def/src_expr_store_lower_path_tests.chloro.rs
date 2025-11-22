@@ -5,10 +5,22 @@ use test_fixture::WithFixture;
 
 use crate::{
     expr_store::{
-        ExpressionStore, hir_segment_to_ast_segment},
+        ExpressionStore,
+
+    hir_segment_to_ast_segment},
+
     lower::{
-            ExprCollector, nameres::crate_def_map, path::Path,
-    path::{SEGMENT_LOWERING_MAP, pretty, test_db::TestDB, }, },
+            ExprCollector,
+
+    nameres::crate_def_map,
+
+    path::Path, path::{SEGMENT_LOWERING_MAP,
+
+    pretty,
+
+    test_db::TestDB,
+
+    }, },
 };
 
 fn lower_path(path: ast::Path) -> (TestDB, ExpressionStore, Option<Path>) {

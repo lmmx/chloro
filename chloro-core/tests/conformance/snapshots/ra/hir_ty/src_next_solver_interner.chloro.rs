@@ -4,21 +4,32 @@ use std::{fmt, ops::ControlFlow};
 
 use base_db::Crate;
 use hir_def::{
-    lang_item::LangItem, signatures::{FieldData, AdtId, AttrDefId, BlockId, CallableDefId,
-    DefWithBodyId, EnumVariantId, FnFlags, ImplFlags, ItemContainerId, StructFlags, StructId,
-    TraitFlags}, UnionId, VariantId,
+    lang_item::LangItem,
+
+    signatures::{FieldData,
+
+    AdtId, AttrDefId, BlockId, CallableDefId, DefWithBodyId, EnumVariantId, FnFlags, ImplFlags,
+    ItemContainerId, StructFlags, StructId, TraitFlags}, UnionId, VariantId,
 };
 use la_arena::Idx;
 use rustc_abi::{ReprFlags, ReprOptions};
 use rustc_hash::FxHashSet;
 use rustc_index::bit_set::DenseBitSet;
 use rustc_type_ir::{
-    elaborate::elaborate, error::TypeError, inherent::{self, lang_items::{SolverAdtLangItem,
-    solve::SizedTraitKind, AliasTermKind, AliasTyKind, BoundVar, CollectAndApply,
-    CoroutineWitnessTypes, DebruijnIndex, EarlyBinder, FlagComputation, Flags, GenericArgKind,
-    GenericsOf, ImplPolarity, InferTy, Interner, IntoKind, SliceLike as _, SolverLangItem,
-    SolverTraitLangItem}, Span as _, TraitRef, Ty as _}, TypeVisitableExt, UniverseIndex, Upcast,
-    Variance,
+    elaborate::elaborate,
+
+    error::TypeError,
+
+    inherent::{self,
+
+    lang_items::{SolverAdtLangItem,
+
+    solve::SizedTraitKind,
+
+    AliasTermKind, AliasTyKind, BoundVar, CollectAndApply, CoroutineWitnessTypes, DebruijnIndex,
+    EarlyBinder, FlagComputation, Flags, GenericArgKind, GenericsOf, ImplPolarity, InferTy,
+    Interner, IntoKind, SliceLike as _, SolverLangItem, SolverTraitLangItem}, Span as _, TraitRef,
+    Ty as _}, TypeVisitableExt, UniverseIndex, Upcast, Variance,
 };
 pub use tls_cache::clear_tls_solver_cache;
 pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
@@ -26,22 +37,42 @@ pub use tls_db::{attach_db, attach_db_allow_change, with_attached_db};
 pub use crate::_interned_vec_db as interned_vec_db;
 pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
 use crate::{
-    db::{HirDatabase, explicit_item_bounds, for_trait_impls}, method_resolution::{ALL_FLOAT_FPS,
+    db::{HirDatabase,
+
+    explicit_item_bounds, for_trait_impls},
+
+    method_resolution::{ALL_FLOAT_FPS,
+
     next_solver::{
-        AdtIdWrapper, util::{ContainsTypeErrors, BoundConst, CallableIdWrapper,
-    CanonicalVarKind, ClosureIdWrapper, CoroutineIdWrapper, Ctor, FnAbi, FnSig, FxIndexMap,
-    ImplIdWrapper, InternedCoroutine, InternedCoroutineId}, OpaqueTypeKey, RegionAssumptions,
-    SolverContext, SolverDefIds, TraitIdWrapper, TyFingerprint}, TypeAliasIdWrapper, ALL_INT_FPS, },
+        AdtIdWrapper,
+
+    util::{ContainsTypeErrors,
+
+    BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper, CoroutineIdWrapper, Ctor,
+    FnAbi, FnSig, FxIndexMap, ImplIdWrapper, InternedCoroutine, InternedCoroutineId}, OpaqueTypeKey,
+    RegionAssumptions, SolverContext, SolverDefIds, TraitIdWrapper, TyFingerprint},
+    TypeAliasIdWrapper, ALL_INT_FPS, },
 };
 use super::{
-    abi::Safety, fold::{BoundVarReplacer, generics::{Generics, generics},
+    abi::Safety,
+
+    fold::{BoundVarReplacer,
+
+    generics::{Generics,
+
+    generics},
+
     region::{
-        BoundRegion, util::sizedness_constraint_for_ty, Binder,
-    BoundExistentialPredicates, BoundRegionKind, BoundTy, BoundTyKind, BoundVarReplacerDelegate,
-    Clause, ClauseKind, Clauses, Const, EarlyParamRegion, ErrorGuaranteed, ExprConst,
-    ExternalConstraints, FnMutDelegate}, GenericArg, GenericArgs, LateParamRegion, ParamConst,
-    ParamEnv, ParamTy, PlaceholderConst, PlaceholderRegion, PlaceholderTy, PredefinedOpaques,
-    Predicate, Region, SolverDefId, Term, Ty, TyKind, Tys, Valtree, ValueConst, },
+        BoundRegion,
+
+    util::sizedness_constraint_for_ty,
+
+    Binder, BoundExistentialPredicates, BoundRegionKind, BoundTy, BoundTyKind,
+    BoundVarReplacerDelegate, Clause, ClauseKind, Clauses, Const, EarlyParamRegion, ErrorGuaranteed,
+    ExprConst, ExternalConstraints, FnMutDelegate}, GenericArg, GenericArgs, LateParamRegion,
+    ParamConst, ParamEnv, ParamTy, PlaceholderConst, PlaceholderRegion, PlaceholderTy,
+    PredefinedOpaques, Predicate, Region, SolverDefId, Term, Ty, TyKind, Tys, Valtree, ValueConst,
+    },
 };
 
 #[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]

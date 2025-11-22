@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23615 bytes
-Chloro size:   22858 bytes
+Chloro size:   22869 bytes
 Rustfmt size:  23945 bytes
 
 ✗ Outputs DIFFER
@@ -13,11 +13,15 @@ Rustfmt size:  23945 bytes
  use itertools::Itertools;
  use syntax::{
 -    ast::{self, AstNode, HasAttrs, HasGenericParams, HasVisibility},
--    match_ast,
++    ast::{self,
++
+     match_ast,
 -    syntax_editor::{Position, SyntaxEditor},
 -    SyntaxKind,
-+    ast::{self, match_ast, syntax_editor::{Position, AstNode, HasAttrs, HasGenericParams,
-+    HasVisibility}, SyntaxEditor}, SyntaxKind,
++
++    syntax_editor::{Position,
++
++    AstNode, HasAttrs, HasGenericParams, HasVisibility}, SyntaxEditor}, SyntaxKind,
  };
  
 -use crate::{assist_context::SourceChangeBuilder, AssistContext, AssistId, Assists};

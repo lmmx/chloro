@@ -3,21 +3,34 @@
 use hir_def::{AssocItemId, GeneralConstId};
 use rustc_next_trait_solver::delegate::SolverDelegate;
 use rustc_type_ir::{
-    inherent::{IntoKind, lang_items::SolverTraitLangItem, solve::{Certainty, AliasTyKind,
-    GenericArgKind, InferCtxtLike, Interner, NoSolution}, PredicatePolarity, SliceLike, Term as _,
-    Ty as _}, TypeFlags, TypeVisitableExt,
+    inherent::{IntoKind,
+
+    lang_items::SolverTraitLangItem,
+
+    solve::{Certainty,
+
+    AliasTyKind, GenericArgKind, InferCtxtLike, Interner, NoSolution}, PredicatePolarity, SliceLike,
+    Term as _, Ty as _}, TypeFlags, TypeVisitableExt,
 };
 use tracing::debug;
 
 use crate::{
-    fold::fold_tys, next_solver::{
-        AliasTy, util::sizedness_fast_path, CanonicalVarKind,
-    Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper, ImplTraitId, ParamEnv,
-    Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, },
+    fold::fold_tys,
+
+    next_solver::{
+        AliasTy,
+
+    util::sizedness_fast_path,
+
+    CanonicalVarKind, Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper, ImplTraitId,
+    ParamEnv, Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, },
 };
 use super::{
-    canonical::instantiate::CanonicalExt}, infer::{DbInternerInferExt, DbInterner, ErrorGuaranteed,
-    GenericArg, InferCtxt, SolverDefId, Span,
+    canonical::instantiate::CanonicalExt},
+
+    infer::{DbInternerInferExt,
+
+    DbInterner, ErrorGuaranteed, GenericArg, InferCtxt, SolverDefId, Span,
 };
 
 pub type Goal<'db, P> = rustc_type_ir::solve::Goal<DbInterner<'db>, P>;

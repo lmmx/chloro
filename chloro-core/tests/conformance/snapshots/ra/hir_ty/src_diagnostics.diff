@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 448 bytes
-Chloro size:   437 bytes
+Chloro size:   445 bytes
 Rustfmt size:  448 bytes
 
 ✗ Outputs DIFFER
@@ -17,16 +17,20 @@ Rustfmt size:  448 bytes
  
  pub use crate::diagnostics::{
 -    decl_check::{incorrect_case, CaseType, IncorrectCase},
--    expr::{
++    decl_check::{CaseType,
++
+     expr::{
 -        record_literal_missing_fields, record_pattern_missing_fields, BodyValidationDiagnostic,
 -    },
-+    decl_check::{CaseType, expr::{
-+        BodyValidationDiagnostic, incorrect_case},
-+    missing_unsafe, record_literal_missing_fields, record_pattern_missing_fields,
++        BodyValidationDiagnostic,
++
++    incorrect_case}, missing_unsafe, record_literal_missing_fields, record_pattern_missing_fields,
++
      unsafe_check::{
 -        missing_unsafe, unsafe_operations, unsafe_operations_for_body, InsideUnsafeBlock,
 -        UnsafetyReason,
 -    },
-+        InsideUnsafeBlock, unsafe_operations, unsafe_operations_for_body,
-+    IncorrectCase, UnsafetyReason, }, },
++        InsideUnsafeBlock,
++
++    unsafe_operations, unsafe_operations_for_body, IncorrectCase, UnsafetyReason, }, },
  };
