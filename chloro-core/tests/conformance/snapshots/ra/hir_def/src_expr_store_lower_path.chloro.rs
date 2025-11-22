@@ -1,10 +1,12 @@
 //! Transforms syntax into `Path` objects, ideally with accounting for hygiene
 
+#[cfg(test)]
+mod tests;
+
 use std::iter;
 
 use hir_expand::{
-    mod_path::{ModPath, PathKind, resolve_crate_root},
-    name::{AsName, Name},
+    mod_path::{ModPath, name::{AsName, resolve_crate_root}, Name}, PathKind,
 };
 use intern::{Interned, sym};
 use syntax::{
@@ -13,16 +15,13 @@ use syntax::{
 };
 
 use crate::expr_store::{
-    lower::{ExprCollector, generics::ImplTraitLowerFn},
-    path::NormalPath,
+    generics::ImplTraitLowerFn}, lower::{ExprCollector, path::NormalPath,
 };
 use crate::{
     expr_store::path::{GenericArg, GenericArgs, Path},
     type_ref::TypeRef,
 };
 
-#[cfg(test)]
-mod tests;
 #[cfg(test)]
 /// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
 /// Converts an `ast::Path` to `Path`. Works with use trees.

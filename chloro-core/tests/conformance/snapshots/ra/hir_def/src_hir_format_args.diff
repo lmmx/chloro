@@ -8,12 +8,6 @@ Rustfmt size:  17849 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Parses `format_args` input.
- 
-+use PositionUsedAs::*;
- use either::Either;
- use hir_expand::name::Name;
- use intern::Symbol;
  use span::SyntaxContext;
  use stdx::TupleExt;
  use syntax::{
@@ -21,8 +15,10 @@ Rustfmt size:  17849 bytes
      TextRange,
 +    ast::{self, IsString},
  };
++use PositionUsedAs::*;
  
  use crate::hir::ExprId;
+ 
      /// The `x` or `X` flag (for `Debug` only). E.g. the `x` in `{:x?}`.
      pub debug_hex: Option<FormatDebugHex>,
  }

@@ -7,11 +7,9 @@ use ide_db::FxHashSet;
 use syntax::SmolStr;
 
 use crate::{
-    CompletionItem, CompletionItemKind, Completions,
     context::{
-        CompletionContext, DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx,
-        PathExprCtx, Qualified,
-    },
+        CompletionContext, CompletionItem, CompletionItemKind, Completions,
+    DotAccess, DotAccessExprCtx, DotAccessKind, PathCompletionCtx, PathExprCtx, Qualified, },
 };
 
 /// Complete dot accesses, i.e. fields or methods.

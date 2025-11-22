@@ -1,3 +1,22 @@
+mod adjustment;
+mod bind_pat;
+mod binding_mode;
+mod bounds;
+mod chaining;
+mod closing_brace;
+mod closure_captures;
+mod closure_ret;
+mod discriminant;
+mod extern_block;
+mod generic_param;
+mod implicit_drop;
+mod implicit_static;
+mod implied_dyn_trait;
+mod lifetime;
+mod param_name;
+mod ra_fixture;
+mod range_exclusive;
+
 use std::{
     fmt::{self, Write},
     mem::{self, take},
@@ -5,11 +24,11 @@ use std::{
 
 use either::Either;
 use hir::{
-    ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
-    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics, sym,
+    sym, ClosureStyle, DisplayTarget, EditionedFileId, HasVisibility, HirDisplay, HirDisplayError,
+    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
 };
 use ide_db::{
-    FileRange, MiniCore, RootDatabase, famous_defs::FamousDefs, text_edit::TextEditBuilder,
+    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
 };
 use ide_db::{FxHashSet, text_edit::TextEdit};
 use itertools::Itertools;
@@ -17,48 +36,11 @@ use macros::UpmapFromRaFixture;
 use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use syntax::{
-    SmolStr, SyntaxNode, TextRange, TextSize, WalkEvent,
-    ast::{self, AstNode, HasGenericParams},
-    format_smolstr, match_ast,
+    ast::{self, format_smolstr, match_ast, AstNode, HasGenericParams}, SmolStr, SyntaxNode,
+    TextRange, TextSize, WalkEvent,
 };
 
 use crate::{FileId, navigation_target::TryToNav};
-
-mod adjustment;
-
-mod bind_pat;
-
-mod binding_mode;
-
-mod bounds;
-
-mod chaining;
-
-mod closing_brace;
-
-mod closure_captures;
-
-mod closure_ret;
-
-mod discriminant;
-
-mod extern_block;
-
-mod generic_param;
-
-mod implicit_drop;
-
-mod implicit_static;
-
-mod implied_dyn_trait;
-
-mod lifetime;
-
-mod param_name;
-
-mod ra_fixture;
-
-mod range_exclusive;
 
 pub(crate) fn inlay_hints(
     db: &RootDatabase,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12405 bytes
-Chloro size:   12022 bytes
+Chloro size:   12002 bytes
 Rustfmt size:  12539 bytes
 
 ✗ Outputs DIFFER
@@ -13,12 +13,20 @@ Rustfmt size:  12539 bytes
  //! It is mainly a `HirDatabase` for semantic analysis, plus a `SymbolsDatabase`, for fuzzy search.
  
 -extern crate self as ide_db;
+ 
+ mod apply_change;
+-
+ pub mod active_parameter;
+ pub mod assists;
+ pub mod defs;
+ pub mod ty_filter;
+ pub mod use_trivial_constructor;
+ 
 +use std::{fmt, mem::ManuallyDrop};
 +
-+pub use ::line_index;
 +use base_db::{
-+    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce, RootQueryDb,
-+    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput, query_group,
++    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
++    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
 +};
 +pub use base_db::{self, FxIndexMap, FxIndexSet};
 +use hir::{
@@ -30,54 +38,13 @@ Rustfmt size:  12539 bytes
 +use salsa::Durability;
 +pub use span::{self, FileId};
 +use triomphe::Arc;
++pub use ::line_index;
 +
 +use crate::line_index::LineIndex;
- 
- mod apply_change;
- 
- pub mod active_parameter;
 +
- pub mod assists;
-+
- pub mod defs;
-+
- pub mod documentation;
-+
- pub mod famous_defs;
-+
- pub mod helpers;
-+
- pub mod items_locator;
-+
- pub mod label;
-+
- pub mod path_transform;
-+
- pub mod prime_caches;
-+
- pub mod ra_fixture;
-+
- pub mod range_mapper;
-+
- pub mod rename;
-+
- pub mod rust_doc;
-+
- pub mod search;
-+
- pub mod source_change;
-+
- pub mod symbol_index;
-+
- pub mod text_edit;
-+
- pub mod traits;
-+
- pub mod ty_filter;
-+
- pub mod use_trivial_constructor;
- 
  pub mod imports {
+     pub mod import_assets;
+     pub mod insert_use;
      pub use hir::prettify_macro_expansion;
      pub mod node_ext;
      pub mod suggest_name;

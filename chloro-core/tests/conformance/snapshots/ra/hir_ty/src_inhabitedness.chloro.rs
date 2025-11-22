@@ -5,20 +5,15 @@ use std::ops::ControlFlow::{self, Break, Continue};
 use hir_def::{AdtId, EnumVariantId, ModuleId, VariantId, visibility::Visibility};
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    TypeSuperVisitable, TypeVisitable, TypeVisitor,
-    inherent::{AdtDef, IntoKind},
+    inherent::{AdtDef, IntoKind}, TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use triomphe::Arc;
 
 use crate::{
-    TraitEnvironment,
-    consteval::try_const_usize,
-    db::HirDatabase,
+    consteval::try_const_usize, db::HirDatabase, infer::{InferCtxt,
     next_solver::{
-        DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
-    },
+        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
+    EarlyBinder, GenericArgs, TraitEnvironment, Ty, TyKind, },
 };
 
 /// Checks whether a type is visibly uninhabited from a particular module.

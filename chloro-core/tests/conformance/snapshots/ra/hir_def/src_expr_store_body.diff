@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4719 bytes
-Chloro size:   4741 bytes
+Chloro size:   4729 bytes
 Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
@@ -17,15 +17,17 @@ Rustfmt size:  4752 bytes
  use triomphe::Arc;
  
  use crate::{
-+    DefWithBodyId, HasModule,
-     db::DefDatabase,
-     expr_store::{
+-    db::DefDatabase,
+-    expr_store::{
 -        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
-+        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
-     },
-     hir::{BindingId, ExprId, PatId},
-     src::HasSource,
+-    },
+-    hir::{BindingId, ExprId, PatId},
+-    src::HasSource,
 -    DefWithBodyId, HasModule,
++    db::DefDatabase, expr_store::{
++        ExpressionStore, hir::{BindingId, lower::lower_body,
++    pretty, src::HasSource, DefWithBodyId, ExprId, ExpressionStoreSourceMap, HasModule, PatId},
++    SelfParamPtr, },
  };
  
  /// The body of an item (function, const etc.).

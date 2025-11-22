@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23578 bytes
+Chloro size:   23918 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -10,29 +10,24 @@ Rustfmt size:  24042 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! rust-analyzer extensions to the LSP.
  
--// Note when adding new resolve payloads, add a #[serde(default)] on boolean fields as some clients
--// might strip `false` values from the JSON payload due to their reserialization logic turning false
--// into null which will then cause them to be omitted in the resolve request. See https://github.com/rust-lang/rust-analyzer/issues/18767
+ // Note when adding new resolve payloads, add a #[serde(default)] on boolean fields as some clients
+ // might strip `false` values from the JSON payload due to their reserialization logic turning false
+ // into null which will then cause them to be omitted in the resolve request. See https://github.com/rust-lang/rust-analyzer/issues/18767
 -
--#![allow(clippy::disallowed_types)]
--
+ #![allow(clippy::disallowed_types)]
+ 
  use std::ops;
  
 -use lsp_types::request::Request;
  use lsp_types::Url;
 +use lsp_types::request::Request;
  use lsp_types::{
--    notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
--    PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
-+    CodeActionKind, DocumentOnTypeFormattingParams, PartialResultParams, Position, Range,
-+    TextDocumentIdentifier, WorkDoneProgressParams, notification::Notification,
- };
- use paths::Utf8PathBuf;
+     notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
+     PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
  use rustc_hash::FxHashMap;
  use serde::{Deserialize, Serialize};
  
 -pub enum InternalTestingFetchConfig {}
-+#![allow(clippy::disallowed_types)]
 +pub enum InternalTestingFetchConfig {
 +}
  

@@ -1,16 +1,15 @@
 //! Definition of `InferCtxtLike` from the librarified type layer.
 
 use rustc_type_ir::{
-    ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy, IntVarValue, IntVid,
-    RegionVid, TyVid, TypeFoldable, TypingMode, UniverseIndex,
-    inherent::{Const as _, IntoKind, Ty as _},
-    relate::combine::PredicateEmittingRelation,
+    inherent::{Const as _, relate::combine::PredicateEmittingRelation, ConstVid, FloatVarValue,
+    FloatVid, GenericArgKind, InferConst, InferTy, IntVarValue, IntVid, IntoKind, RegionVid,
+    Ty as _}, TyVid, TypeFoldable, TypingMode, UniverseIndex,
 };
 
 use crate::next_solver::{
-    Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
-    SolverDefId, Span, Ty, TyKind,
-    infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
+    infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries}, Binder, Const,
+    ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region, SolverDefId, Span,
+    Ty, TyKind,
 };
 use super::{BoundRegionConversionTime, InferCtxt, relate::RelateResult};
 

@@ -1,3 +1,13 @@
+pub(crate) mod tags;
+mod highlights;
+mod escape;
+mod format;
+mod highlight;
+mod inject;
+mod html;
+#[cfg(test)]
+mod tests;
+
 use std::ops::ControlFlow;
 
 use either::Either;
@@ -6,38 +16,16 @@ pub(crate) use html::highlight_as_html;
 pub(crate) use html::highlight_as_html_with_config;
 use ide_db::{FxHashMap, FxHashSet, MiniCore, Ranker, RootDatabase, SymbolKind};
 use syntax::{
-    AstNode, AstToken, NodeOrToken,
-    SyntaxKind::*,
-    SyntaxNode, SyntaxToken, T, TextRange, WalkEvent,
-    ast::{self, IsString},
+    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SyntaxKind::*, SyntaxNode, SyntaxToken,
+    TextRange, WalkEvent, T,
 };
 
 use crate::{
-    FileId, HlMod, HlOperator, HlPunct, HlTag,
-    syntax_highlighting::{
-        escape::{highlight_escape_byte, highlight_escape_char, highlight_escape_string},
-        format::highlight_format_string,
-        highlights::Highlights,
-        tags::Highlight,
-    },
+    format::highlight_format_string, highlight_escape_char, highlight_escape_string},
+    highlights::Highlights, syntax_highlighting::{
+        escape::{highlight_escape_byte,
+    tags::Highlight, FileId, HlMod, HlOperator, HlPunct, HlTag, },
 };
-
-pub(crate) mod tags;
-
-mod highlights;
-
-mod escape;
-
-mod format;
-
-mod highlight;
-
-mod inject;
-
-mod html;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug, Clone, Copy)]
 pub struct HlRange {

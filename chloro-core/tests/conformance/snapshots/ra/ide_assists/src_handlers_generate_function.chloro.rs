@@ -3,28 +3,21 @@ use hir::{
     TypeInfo,
 };
 use ide_db::{
-    FileId, FxHashMap, FxHashSet, RootDatabase, SnippetCap,
-    assists::ExprFillDefaultMode,
-    defs::{Definition, NameRefClass},
-    famous_defs::FamousDefs,
-    helpers::is_editable_crate,
-    path_transform::PathTransform,
-    source_change::SourceChangeBuilder,
+    assists::ExprFillDefaultMode, defs::{Definition, famous_defs::FamousDefs,
+    helpers::is_editable_crate, path_transform::PathTransform, source_change::SourceChangeBuilder,
+    FileId, FxHashMap, FxHashSet, NameRefClass}, RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::to_lower_snake_case;
 use syntax::{
-    Edition, SyntaxKind, SyntaxNode, T, TextRange,
     ast::{
-        self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
-        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
-    },
-    ted,
+        self, edit::IndentLevel, edit_in_place::Indent, make, ted, AstNode, BlockExpr,
+    CallExpr, Edition, HasArgList, HasGenericParams, HasModuleItem, HasTypeBounds, SyntaxKind,
+    SyntaxNode, TextRange, T, },
 };
 
 use crate::{
-    AssistContext, AssistId, Assists,
-    utils::{convert_reference_type, find_struct_impl},
+    find_struct_impl}, utils::{convert_reference_type, AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn generate_function(

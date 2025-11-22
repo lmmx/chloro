@@ -2,20 +2,16 @@
 
 use hir::{ItemInNs, ModuleDef};
 use ide_db::imports::{
-    import_assets::{ImportAssets, LocatedImport},
-    insert_use::ImportScope,
+    import_assets::{ImportAssets, insert_use::ImportScope, LocatedImport},
 };
 use itertools::Itertools;
 use syntax::{AstNode, SyntaxNode, ast};
 
 use crate::{
-    Completions,
-    config::AutoImportExclusionType,
-    context::{
-        CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
-        TypeLocation,
-    },
-    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
+    config::AutoImportExclusionType, context::{
+        CompletionContext, render::{RenderContext,
+    render_resolution_with_import, render_resolution_with_import_pat}, Completions, DotAccess,
+    PathCompletionCtx, PathKind, PatternContext, Qualified, TypeLocation, },
 };
 
 pub(crate) fn import_on_the_fly_path(

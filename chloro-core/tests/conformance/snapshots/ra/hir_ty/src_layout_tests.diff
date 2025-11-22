@@ -2,12 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15972 bytes
-Chloro size:   15971 bytes
+Chloro size:   15959 bytes
 Rustfmt size:  15995 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
++mod closure;
++
  use base_db::target::TargetData;
  use either::Either;
  use hir_def::db::DefDatabase;
@@ -16,6 +18,23 @@ Rustfmt size:  15995 bytes
  use rustc_hash::FxHashMap;
  use rustc_type_ir::inherent::GenericArgs as _;
  use syntax::ToSmolStr;
+ use triomphe::Arc;
+ 
+ use crate::{
+-    db::HirDatabase,
+-    layout::{Layout, LayoutError},
+-    next_solver::{DbInterner, GenericArgs},
+-    setup_tracing,
+-    test_db::TestDB,
++    db::HirDatabase, layout::{Layout, next_solver::{DbInterner, setup_tracing, test_db::TestDB,
++    GenericArgs}, LayoutError},
+ };
+ 
+-mod closure;
+-
+ fn current_machine_target_data() -> TargetData {
+     project_model::toolchain_info::target_data::get(
+         QueryConfig::Rustc(&Sysroot::empty(), &std::env::current_dir().unwrap()),
      let ra_fixture = format!(
          "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\n{ra_fixture}",
      );

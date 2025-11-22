@@ -1,6 +1,42 @@
 //! The type system. We currently use this to infer types for completion, hover
 //! information and various assists.
 
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+
+// FIXME: We used to import `rustc_*` deps from `rustc_private` with `feature = "in-rust-tree" but
+// temporarily switched to crates.io versions due to hardships that working on them from rustc
+// demands corresponding changes on rust-analyzer at the same time.
+// For details, see the zulip discussion below:
+// https://rust-lang.zulipchat.com/#narrow/channel/185405-t-compiler.2Frust-analyzer/topic/relying.20on.20in-tree.20.60rustc_type_ir.60.2F.60rustc_next_trait_solver.60/with/541055689
+
+mod infer;
+mod inhabitedness;
+mod lower;
+pub mod next_solver;
+mod opaques;
+mod specialization;
+mod target_feature;
+mod utils;
+mod variance;
+pub mod autoderef;
+pub mod consteval;
+pub mod db;
+pub mod diagnostics;
+pub mod display;
+pub mod drop;
+pub mod dyn_compatibility;
+pub mod generics;
+pub mod lang_items;
+pub mod layout;
+pub mod method_resolution;
+pub mod mir;
+pub mod primitive;
+pub mod traits;
+#[cfg(test)]
+mod test_db;
+#[cfg(test)]
+mod tests;
+
 use std::hash::Hash;
 
 pub use autoderef::autoderef;
@@ -8,24 +44,22 @@ use hir_def::{CallableDefId, TypeOrConstParamId, type_ref::Rawness};
 use hir_expand::name::Name;
 use indexmap::{IndexMap, map::Entry};
 pub use infer::{
-    Adjust, Adjustment, AutoBorrow, BindingMode, InferenceDiagnostic, InferenceResult,
-    InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
-    cast::CastError,
-    closure::analysis::{CaptureKind, CapturedItem},
-    could_coerce, could_unify, could_unify_deeply,
+    cast::CastError, closure::analysis::{CaptureKind, could_coerce, could_unify,
+    could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode, CapturedItem},
+    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
 };
 use intern::{Symbol, sym};
 pub use lower::{
-    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
-    associated_type_shorthand_candidates, diagnostics::*,
+    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
+    TyLoweringContext, ValueTyDefId,
 };
 pub use method_resolution::check_orphan_rules;
 use mir::{MirEvalError, VTableMap};
 pub use next_solver::interner::{attach_db, attach_db_allow_change, with_attached_db};
 use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    BoundVarIndexKind, TypeSuperVisitable, TypeVisitableExt, UpcastFrom,
-    inherent::{IntoKind, SliceLike, Ty as _},
+    inherent::{IntoKind, BoundVarIndexKind, SliceLike, Ty as _}, TypeSuperVisitable,
+    TypeVisitableExt, UpcastFrom,
 };
 use syntax::ast::{ConstArg, make};
 pub use target_feature::TargetFeatures;
@@ -33,73 +67,17 @@ use traits::FnTrait;
 pub use traits::TraitEnvironment;
 use triomphe::Arc;
 pub use utils::{
-    TargetFeatureIsSafeInTarget, Unsafety, all_super_traits, direct_super_traits,
-    is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+    all_super_traits, direct_super_traits, is_fn_unsafe_to_call, target_feature_is_safe_in_target,
+    TargetFeatureIsSafeInTarget, Unsafety,
 };
 
 use crate::{
-    db::HirDatabase,
-    display::{DisplayTarget, HirDisplay},
-    infer::unify::InferenceTable,
+    abi, db::HirDatabase, display::{DisplayTarget, infer::unify::InferenceTable,
     next_solver::{
-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
-        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
-    },
+        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy,
+    BoundTyKind, Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
+    HirDisplay}, PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys, },
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-mod infer;
-
-mod inhabitedness;
-
-mod lower;
-
-pub mod next_solver;
-
-mod opaques;
-
-mod specialization;
-
-mod target_feature;
-
-mod utils;
-
-mod variance;
-
-pub mod autoderef;
-
-pub mod consteval;
-
-pub mod db;
-
-pub mod diagnostics;
-
-pub mod display;
-
-pub mod drop;
-
-pub mod dyn_compatibility;
-
-pub mod generics;
-
-pub mod lang_items;
-
-pub mod layout;
-
-pub mod method_resolution;
-
-pub mod mir;
-
-pub mod primitive;
-
-pub mod traits;
-
-#[cfg(test)]
-mod test_db;
-
-#[cfg(test)]
-mod tests;
 
 /// A constant can have reference to other things. Memory map job is holding
 /// the necessary bits of memory of the const eval session to keep the constant

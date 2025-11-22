@@ -1,5 +1,8 @@
 //! Snapshotting in the infer ctxt of the next-trait-solver.
 
+mod fudge;
+pub(crate) mod undo_log;
+
 use ena::undo_log::UndoLogs;
 use rustc_type_ir::UniverseIndex;
 use tracing::{debug, instrument};
@@ -7,10 +10,6 @@ use undo_log::{Snapshot, UndoLog};
 
 use super::InferCtxt;
 use super::region_constraints::RegionSnapshot;
-
-mod fudge;
-
-pub(crate) mod undo_log;
 
 #[must_use = "once you start a snapshot, you should always consume it"]
 pub struct CombinedSnapshot {

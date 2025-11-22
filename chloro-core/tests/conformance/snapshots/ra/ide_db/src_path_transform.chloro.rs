@@ -2,16 +2,15 @@
 
 use either::Either;
 use hir::{
-    AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
-    prettify_macro_expansion,
+    prettify_macro_expansion, AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef,
+    SemanticsScope,
 };
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use span::Edition;
 use syntax::{
-    NodeOrToken, SyntaxNode,
-    ast::{self, AstNode, HasGenericArgs, HasName, make},
-    syntax_editor::{self, SyntaxEditor},
+    ast::{self, make}, syntax_editor::{self, AstNode, HasGenericArgs, HasName, NodeOrToken,
+    SyntaxEditor}, SyntaxNode,
 };
 
 use crate::helpers::mod_path_to_ast;

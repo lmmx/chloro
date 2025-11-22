@@ -5,11 +5,12 @@
 //!
 //! It is modeled on the rustc module `rustc_mir_build::thir::pattern`.
 
+mod pat_util;
+pub(crate) mod pat_analysis;
+
 use hir_def::{
-    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
-    expr_store::{Body, path::Path},
-    hir::PatId,
-    item_tree::FieldsShape,
+    expr_store::{Body, hir::PatId, item_tree::FieldsShape, path::Path}, AdtId, EnumVariantId,
+    LocalFieldId, Lookup, VariantId,
 };
 use hir_expand::name::Name;
 use rustc_type_ir::inherent::{IntoKind, SliceLike};
@@ -17,17 +18,10 @@ use span::Edition;
 use stdx::{always, never, variance::PhantomCovariantLifetime};
 
 use crate::{
-    InferenceResult,
-    db::HirDatabase,
-    display::{HirDisplay, HirDisplayError, HirFormatter},
-    infer::BindingMode,
-    next_solver::{GenericArgs, Mutability, Ty, TyKind},
+    db::HirDatabase, display::{HirDisplay, infer::BindingMode, next_solver::{GenericArgs,
+    HirDisplayError, HirFormatter}, InferenceResult, Mutability, Ty, TyKind},
 };
 use self::pat_util::EnumerateAndAdjustIterator;
-
-mod pat_util;
-
-pub(crate) mod pat_analysis;
 
 #[derive(Clone, Debug)]
 pub(crate) enum PatternError {

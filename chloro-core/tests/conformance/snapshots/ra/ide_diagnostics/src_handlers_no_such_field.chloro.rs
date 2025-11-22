@@ -8,8 +8,8 @@ use syntax::{
 };
 
 use crate::{
-    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix,
-    handlers::private_field::field_is_private_fixes,
+    fix, handlers::private_field::field_is_private_fixes, Assist, Diagnostic, DiagnosticCode,
+    DiagnosticsContext,
 };
 
 pub(crate) fn no_such_field(

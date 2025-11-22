@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4655 bytes
-Chloro size:   4501 bytes
+Chloro size:   4647 bytes
 Rustfmt size:  4904 bytes
 
 ✗ Outputs DIFFER
@@ -11,9 +11,10 @@ Rustfmt size:  4904 bytes
  //! # The Call-site Hierarchy
  //!
  //! `ExpnData::call_site` in rustc, [`MacroCallLoc::call_site`] in rust-analyzer.
--// FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
--// which contains a bunch of unrelated things
- 
++
+ // FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
+ // which contains a bunch of unrelated things
+-
  use std::convert::identity;
  
 +pub use span::Transparency;

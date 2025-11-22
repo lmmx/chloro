@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23711 bytes
+Chloro size:   23691 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -46,10 +46,13 @@ Rustfmt size:  23725 bytes
      use ide_db::text_edit::{TextRange, TextSize};
 -
      use crate::{
-         InlayHintsConfig, fixture,
-         inlay_hints::{
-             tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
-         },
+-        InlayHintsConfig, fixture,
+-        inlay_hints::{
++        check_expect, check_with_config}, fixture, inlay_hints::{
+             LazyProperty,
+-            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
+-        },
++        tests::{DISABLED_CONFIG, InlayHintsConfig, TEST_CONFIG, },
      };
 -
      #[track_caller]

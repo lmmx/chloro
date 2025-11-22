@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7685 bytes
+Chloro size:   7677 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -18,10 +18,10 @@ Rustfmt size:  7718 bytes
  };
  use tracing_subscriber::{
 -    filter,
-+    Layer, Registry, filter,
-     layer::{Context, SubscriberExt},
-     registry::LookupSpan,
+-    layer::{Context, SubscriberExt},
+-    registry::LookupSpan,
 -    Layer, Registry,
++    filter, layer::{Context, registry::LookupSpan, Layer, Registry, SubscriberExt},
  };
  
  pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {

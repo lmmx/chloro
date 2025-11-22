@@ -7,9 +7,7 @@ use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use stdx::to_lower_snake_case;
 use syntax::{
-    AstNode, Edition, SmolStr, SmolStrBuilder, ToSmolStr,
-    ast::{self, HasName},
-    match_ast,
+    ast::{self, match_ast, AstNode, Edition, HasName}, SmolStr, SmolStrBuilder, ToSmolStr,
 };
 
 use crate::RootDatabase;

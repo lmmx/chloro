@@ -2,57 +2,30 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30948 bytes
+Chloro size:   30931 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! See [`CompletionContext`] structure.
- 
--mod analysis;
--#[cfg(test)]
--mod tests;
--
- use std::{iter, ops::ControlFlow};
- 
- use base_db::RootQueryDb as _;
-     ScopeDef, Semantics, SemanticsScope, Symbol, Type, TypeInfo,
- };
- use ide_db::{
--    famous_defs::FamousDefs, helpers::is_editable_crate, FilePosition, FxHashMap, FxHashSet,
--    RootDatabase,
-+    FilePosition, FxHashMap, FxHashSet, RootDatabase, famous_defs::FamousDefs,
-+    helpers::is_editable_crate,
  };
  use itertools::Either;
  use syntax::{
 -    ast::{self, AttrKind, NameOrNameRef},
 -    match_ast, AstNode, Edition, SmolStr,
-+    AstNode, Edition, SmolStr,
-     SyntaxKind::{self, *},
+-    SyntaxKind::{self, *},
 -    SyntaxToken, TextRange, TextSize, T,
-+    SyntaxToken, T, TextRange, TextSize,
-+    ast::{self, AttrKind, NameOrNameRef},
-+    match_ast,
++    ast::{self, match_ast, AstNode, AttrKind, Edition, NameOrNameRef}, SmolStr, SyntaxKind::{self,
++    SyntaxToken, TextRange, TextSize, *}, T,
  };
  
  use crate::{
 -    config::AutoImportExclusionType,
 -    context::analysis::{expand_and_analyze, AnalysisResult},
++    config::AutoImportExclusionType, context::analysis::{AnalysisResult, expand_and_analyze},
      CompletionConfig,
-+    config::AutoImportExclusionType,
-+    context::analysis::{AnalysisResult, expand_and_analyze},
  };
  
-+mod analysis;
-+
-+#[cfg(test)]
-+mod tests;
-+
- const COMPLETION_MARKER: &str = "raCompletionMarker";
- 
- #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  /// Existing qualifiers for the thing we are currently completing.
  #[derive(Debug, Default)]
  pub(crate) struct QualifierCtx {

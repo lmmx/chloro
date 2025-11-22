@@ -5,6 +5,10 @@
 //! track of the cumulative total number of lines that have been added to the file during the
 //! session so that we can determine the correct offset to insert content at without re-parsing.
 
+#[cfg(test)]
+#[path = "tests/app_state.rs"]
+mod tests;
+
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{fs, io};
@@ -862,7 +866,3 @@ impl AppState {
         Ok(())
     }
 }
-
-#[cfg(test)]
-#[path = "tests/app_state.rs"]
-mod tests;

@@ -1,19 +1,15 @@
 //! Tests specific to declarative macros, aka macros by example. This covers
 //! both stable `macro_rules!` macros as well as unstable `macro` macros.
 
+mod matching;
+mod meta_syntax;
+mod metavar_expr;
+mod regression;
+mod tt_conversion;
+
 use expect_test::expect;
 
 use crate::macro_expansion_tests::check;
-
-mod matching;
-
-mod meta_syntax;
-
-mod metavar_expr;
-
-mod regression;
-
-mod tt_conversion;
 
 #[test]
 fn token_mapping_smoke_test() {

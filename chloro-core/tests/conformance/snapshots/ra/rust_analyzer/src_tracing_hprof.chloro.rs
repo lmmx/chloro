@@ -46,9 +46,7 @@ use tracing::{
     span::Attributes,
 };
 use tracing_subscriber::{
-    Layer, Registry, filter,
-    layer::{Context, SubscriberExt},
-    registry::LookupSpan,
+    filter, layer::{Context, registry::LookupSpan, Layer, Registry, SubscriberExt},
 };
 
 pub fn init(spec: &str) -> tracing::subscriber::DefaultGuard {

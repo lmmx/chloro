@@ -3,9 +3,8 @@
 use ide_db::{SnippetCap, documentation::Documentation, imports::insert_use::ImportScope};
 
 use crate::{
-    CompletionContext, CompletionItem, CompletionItemKind, Completions, SnippetScope,
-    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
-    item::Builder,
+    context::{ItemListKind, item::Builder, CompletionContext, CompletionItem, CompletionItemKind,
+    Completions, PathCompletionCtx, PathExprCtx, Qualified}, SnippetScope,
 };
 
 pub(crate) fn complete_expr_snippet(
@@ -153,8 +152,7 @@ fn add_custom_completions(
 #[cfg(test)]
 mod tests {
     use crate::{
-        CompletionConfig, Snippet,
-        tests::{TEST_CONFIG, check_edit_with_config},
+        check_edit_with_config}, tests::{TEST_CONFIG, CompletionConfig, Snippet,
     };
     #[test]
     fn custom_snippet_completion() {

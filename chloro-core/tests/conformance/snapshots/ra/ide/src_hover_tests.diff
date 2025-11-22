@@ -16,8 +16,7 @@ Rustfmt size:  210967 bytes
  use syntax::TextRange;
  
  use crate::{
--    fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
-+    HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind, fixture,
+     fixture, HoverConfig, HoverDocFormat, MemoryLayoutHoverConfig, MemoryLayoutHoverRenderKind,
  };
  
 -use hir::setup_tracing;

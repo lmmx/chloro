@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25826 bytes
-Chloro size:   25788 bytes
+Chloro size:   25784 bytes
 Rustfmt size:  25826 bytes
 
 ✗ Outputs DIFFER
@@ -13,8 +13,20 @@ Rustfmt size:  25826 bytes
 -use crate::helpers::mod_path_to_ast;
  use either::Either;
  use hir::{
-     AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
-     syntax_editor::{self, SyntaxEditor},
+-    AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef, SemanticsScope,
+-    prettify_macro_expansion,
++    prettify_macro_expansion, AsAssocItem, FindPathConfig, HirDisplay, HirFileId, ModuleDef,
++    SemanticsScope,
+ };
+ use itertools::Itertools;
+ use rustc_hash::FxHashMap;
+ use span::Edition;
+ use syntax::{
+-    NodeOrToken, SyntaxNode,
+-    ast::{self, AstNode, HasGenericArgs, HasName, make},
+-    syntax_editor::{self, SyntaxEditor},
++    ast::{self, make}, syntax_editor::{self, AstNode, HasGenericArgs, HasName, NodeOrToken,
++    SyntaxEditor}, SyntaxNode,
  };
  
 +use crate::helpers::mod_path_to_ast;

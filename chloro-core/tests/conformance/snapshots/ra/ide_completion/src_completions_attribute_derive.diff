@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4778 bytes
-Chloro size:   4778 bytes
+Chloro size:   4774 bytes
 Rustfmt size:  4862 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,11 @@ Rustfmt size:  4862 bytes
  use syntax::{SmolStr, ToSmolStr};
  
  use crate::{
-+    Completions,
-     context::{CompletionContext, ExistingDerives, PathCompletionCtx, Qualified},
-     item::CompletionItem,
+-    context::{CompletionContext, ExistingDerives, PathCompletionCtx, Qualified},
+-    item::CompletionItem,
 -    Completions,
++    context::{CompletionContext, item::CompletionItem, Completions, ExistingDerives,
++    PathCompletionCtx, Qualified},
  };
  
  pub(crate) fn complete_derive_path(

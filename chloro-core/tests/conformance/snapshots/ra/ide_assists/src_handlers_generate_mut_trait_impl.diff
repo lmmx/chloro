@@ -178,8 +178,8 @@ Rustfmt size:  11741 bytes
  mod tests {
      use crate::{
 -        tests::{check_assist, check_assist_not_applicable, check_assist_with_config, TEST_CONFIG},
++        check_assist, check_assist_not_applicable, check_assist_with_config}, tests::{TEST_CONFIG,
          AssistConfig,
-+        tests::{TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_with_config},
      };
 -
      use super::*;

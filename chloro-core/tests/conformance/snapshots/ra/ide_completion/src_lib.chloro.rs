@@ -1,44 +1,32 @@
 //! `completions` crate provides utilities for generating completions of user input.
 
+mod completions;
+mod config;
+mod context;
+mod item;
+mod render;
+mod snippet;
+#[cfg(test)]
+mod tests;
+
 use ide_db::{
-    FilePosition, FxHashSet, RootDatabase,
-    imports::insert_use::{self, ImportScope},
-    syntax_helpers::tree_diff::diff,
-    text_edit::TextEdit,
+    imports::insert_use::{self, syntax_helpers::tree_diff::diff, text_edit::TextEdit, FilePosition,
+    FxHashSet, ImportScope}, RootDatabase,
 };
 use syntax::ast::make;
 
 use crate::{
-    completions::Completions,
-    context::{
-        CompletionAnalysis, CompletionContext, NameRefContext, NameRefKind, PathCompletionCtx,
-        PathKind,
-    },
+    completions::Completions, context::{
+        CompletionAnalysis, CompletionContext,
+    NameRefContext, NameRefKind, PathCompletionCtx, PathKind, },
 };
 pub use crate::{
-    config::{AutoImportExclusionType, CallableSnippets, CompletionConfig},
-    item::{
-        CompletionItem, CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
-        CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,
-        CompletionRelevanceTypeMatch,
-    },
-    snippet::{Snippet, SnippetScope},
+    config::{AutoImportExclusionType, item::{
+        CompletionItem, snippet::{Snippet,
+    CallableSnippets, CompletionConfig}, CompletionItemKind, CompletionItemRefMode,
+    CompletionRelevance, CompletionRelevancePostfixMatch, CompletionRelevanceReturnType,
+    CompletionRelevanceTypeMatch, SnippetScope}, },
 };
-
-mod completions;
-
-mod config;
-
-mod context;
-
-mod item;
-
-mod render;
-
-mod snippet;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CompletionFieldsToResolve {

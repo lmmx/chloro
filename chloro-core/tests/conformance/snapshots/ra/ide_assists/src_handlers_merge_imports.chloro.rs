@@ -1,16 +1,13 @@
-use Edit::*;
 use either::Either;
 use ide_db::imports::{
-    insert_use::{ImportGranularity, InsertUseConfig},
-    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
+    insert_use::{ImportGranularity, merge_imports::{MergeBehavior, try_merge_imports,
+    try_merge_trees}, InsertUseConfig},
 };
 use syntax::{
-    AstNode, SyntaxElement, SyntaxNode,
-    algo::neighbor,
-    ast::{self, syntax_factory::SyntaxFactory},
-    match_ast,
-    syntax_editor::Removable,
+    algo::neighbor, ast::{self, match_ast, syntax_editor::Removable,
+    syntax_factory::SyntaxFactory}, AstNode, SyntaxElement, SyntaxNode,
 };
+use Edit::*;
 
 use crate::{
     AssistId,

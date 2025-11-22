@@ -13,10 +13,8 @@ use syntax::{AstNode, algo, ast};
 use triomphe::Arc;
 
 use crate::{
-    LocalModuleId, Lookup, ModuleDefId, ModuleId,
-    db::DefDatabase,
-    nameres::{DefMap, ModuleSource, block_def_map, crate_def_map},
-    src::HasSource,
+    block_def_map, crate_def_map}, db::DefDatabase, nameres::{DefMap, src::HasSource,
+    LocalModuleId, Lookup, ModuleDefId, ModuleId, ModuleSource,
 };
 
 #[salsa_macros::db]

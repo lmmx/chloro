@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16991 bytes
+Chloro size:   16983 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -90,8 +90,12 @@ Rustfmt size:  17010 bytes
      match expr {
          ast::Expr::MethodCallExpr(method_call_expr) => {
              let receiver =
-         InlayHintsConfig,
-         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        InlayHintsConfig,
+-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
++        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, InlayHintsConfig,
      };
 -
      #[track_caller]

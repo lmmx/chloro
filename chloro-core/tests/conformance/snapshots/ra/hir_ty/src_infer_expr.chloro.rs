@@ -5,58 +5,42 @@ use std::{iter::repeat_with, mem};
 use either::Either;
 use hir_def::hir::ClosureKind;
 use hir_def::{
-    BlockId, FieldId, GenericDefId, GenericParamId, ItemContainerId, Lookup, TupleFieldId, TupleId,
-    expr_store::path::{GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, Path},
+    expr_store::path::{GenericArg as HirGenericArg, generics::GenericParamDataRef,
     hir::{
-        ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr, ExprId, ExprOrPatId, LabelId,
-        Literal, Pat, PatId, Statement, UnaryOp, generics::GenericParamDataRef,
-    },
-    lang_item::{LangItem, LangItemTarget},
-    resolver::ValueNs,
+        ArithOp, lang_item::{LangItem, resolver::ValueNs, Array, AsmOperand, AsmOptions,
+    BinaryOp, BlockId, Expr, ExprId, ExprOrPatId, FieldId, GenericArgs as HirGenericArgs,
+    GenericDefId, GenericParamId, ItemContainerId, LabelId, LangItemTarget}, Literal, Lookup, Pat,
+    PatId, Path}, Statement, TupleFieldId, TupleId, UnaryOp, },
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    CoroutineArgs, CoroutineArgsParts, InferTy, Interner,
-    inherent::{AdtDef, GenericArgs as _, IntoKind, SliceLike, Ty as _},
+    inherent::{AdtDef, CoroutineArgs, CoroutineArgsParts, GenericArgs as _, InferTy, Interner,
+    IntoKind, SliceLike, Ty as _},
 };
 use syntax::ast::RangeOp;
 use tracing::debug;
 
 use crate::{
-    Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,
-    IncorrectGenericsLenKind, Rawness, TraitEnvironment,
-    autoderef::overloaded_deref_ty,
-    consteval,
-    db::InternedCoroutine,
-    generics::generics,
-    infer::{
-        AllowTwoPhase, BreakableKind,
-        coerce::{CoerceMany, CoerceNever},
-        find_continuable,
-        pat::contains_explicit_ref_binding,
-    },
-    lang_items::lang_items_for_bin_op,
-    lower::{
-        LifetimeElisionKind, lower_mutability,
-        path::{GenericArgsLowerer, TypeLikeConst, substs_from_args_and_bindings},
-    },
-    method_resolution::{self, VisibleFromModule},
-    next_solver::{
-        Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, TraitRef, Ty, TyKind,
-        TypeError,
-        infer::{
+    autoderef::overloaded_deref_ty, coerce::{CoerceMany, consteval, db::InternedCoroutine,
+    find_continuable, generics::generics, infer::{
             InferOk,
-            traits::{Obligation, ObligationCause},
-        },
-        obligation_ctxt::ObligationCtxt,
-    },
-    traits::FnTrait,
+    infer::{
+        AllowTwoPhase, lang_items::lang_items_for_bin_op,
+    lower::{
+        LifetimeElisionKind, lower_mutability, method_resolution::{self,
+    next_solver::{
+        Const, obligation_ctxt::ObligationCtxt,
+    pat::contains_explicit_ref_binding, path::{GenericArgsLowerer, substs_from_args_and_bindings},
+    traits::FnTrait, traits::{Obligation, Adjust, Adjustment, AutoBorrow, BreakableKind,
+    CallableDefId, CoerceNever}, DbInterner, DeclContext, DeclOrigin, ErrorGuaranteed, GenericArg,
+    GenericArgs, IncorrectGenericsLenKind, ObligationCause}, Rawness, TraitEnvironment, TraitRef,
+    Ty, TyKind, TypeError, TypeLikeConst, VisibleFromModule}, }, }, }, },
 };
 use super::{
-    BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic, TypeMismatch,
-    cast::CastCheck, find_breakable,
+    cast::CastCheck, find_breakable, BreakableContext, Diverges, Expectation, InferenceContext,
+    InferenceDiagnostic, TypeMismatch,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]

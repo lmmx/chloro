@@ -1,3 +1,9 @@
+mod globs;
+mod incremental;
+mod macros;
+mod mod_resolution;
+mod primitives;
+
 use base_db::RootQueryDb;
 use expect_test::{Expect, expect};
 use test_fixture::WithFixture;
@@ -6,16 +12,6 @@ use crate::{
     nameres::{DefMap, crate_def_map},
     test_db::TestDB,
 };
-
-mod globs;
-
-mod incremental;
-
-mod macros;
-
-mod mod_resolution;
-
-mod primitives;
 
 fn compute_crate_def_map(
     #[rust_analyzer::rust_fixture] ra_fixture: &str,

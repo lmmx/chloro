@@ -2,29 +2,19 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27737 bytes
+Chloro size:   27717 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! To make attribute macros work reliably when typing, we need to take care to
- //! fix up syntax errors in the code we're passing to them.
- 
- use intern::sym;
- use rustc_hash::{FxHashMap, FxHashSet};
- use span::{
--    ErasedFileAstId, Span, SpanAnchor, SyntaxContext, FIXUP_ERASED_FILE_AST_ID_MARKER,
--    ROOT_ERASED_FILE_AST_ID,
-+    ErasedFileAstId, FIXUP_ERASED_FILE_AST_ID_MARKER, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor,
-+    SyntaxContext,
  };
  use stdx::never;
  use syntax::{
-+    SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
-     ast::{self, AstNode, HasLoopBody},
+-    ast::{self, AstNode, HasLoopBody},
 -    match_ast, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, TextSize,
-+    match_ast,
++    ast::{self, match_ast, AstNode, HasLoopBody}, SyntaxElement, SyntaxKind, SyntaxNode, TextRange,
++    TextSize,
  };
  use syntax_bridge::DocCommentDesugarMode;
  use triomphe::Arc;
@@ -133,9 +123,10 @@ Rustfmt size:  28368 bytes
      use triomphe::Arc;
 -
      use crate::{
-         fixup::reverse_fixups,
-         span_map::{RealSpanMap, SpanMap},
-         tt,
+-        fixup::reverse_fixups,
+-        span_map::{RealSpanMap, SpanMap},
+-        tt,
++        fixup::reverse_fixups, span_map::{RealSpanMap, tt, SpanMap},
      };
 -
 -    // The following three functions are only meant to check partial structural equivalence of

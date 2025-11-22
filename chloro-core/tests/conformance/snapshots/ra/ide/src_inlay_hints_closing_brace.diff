@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6951 bytes
-Chloro size:   6944 bytes
+Chloro size:   6928 bytes
 Rustfmt size:  6951 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,20 @@ Rustfmt size:  6951 bytes
  use hir::{DisplayTarget, HirDisplay, InRealFile, Semantics};
  use ide_db::{FileRange, RootDatabase};
  use syntax::{
+-    SyntaxKind, SyntaxNode, T,
+-    ast::{self, AstNode, HasLoopBody, HasName},
+-    match_ast,
++    ast::{self, match_ast, AstNode, HasLoopBody, HasName}, SyntaxKind, SyntaxNode, T,
+ };
+ 
+ use crate::{
+-    InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
+-    inlay_hints::LazyProperty,
++    inlay_hints::LazyProperty, InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig,
++    InlayKind,
+ };
+ 
+ pub(super) fn hints(
      InRealFile { file_id, value: node }: InRealFile<SyntaxNode>,
  ) -> Option<()> {
      let min_lines = config.closing_brace_hints_min_lines?;
@@ -53,8 +67,12 @@ Rustfmt size:  6951 bytes
      None
  }
  
-         InlayHintsConfig,
-         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        InlayHintsConfig,
+-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
++        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, InlayHintsConfig,
      };
 -
      #[test]

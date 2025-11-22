@@ -11,7 +11,8 @@ mod traitdef;
 mod typealias;
 mod useitem;
 
-use ra_ap_syntax::{ast, AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
+use ra_ap_syntax::ast::{Attr, Comment, Module, Use};
+use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken};
 
 pub use block::{format_block, format_block_expr_contents, format_stmt_list};
 pub use const_static::format_const_or_static;
@@ -73,29 +74,91 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
         SyntaxKind::SOURCE_FILE => {
-            // Collect all uses and other items, preserving order
-            let mut uses = Vec::new();
-            let mut other_items = Vec::new();
-            let mut module_level_inner_docs = Vec::new();
+            let mut module_inner_docs = Vec::new();
+            let mut inner_attrs: Vec<(Vec<Comment>, Attr)> = Vec::new();
+            let mut extern_crates: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
+            let mut mod_decls: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
+            let mut use_items_with_comments = Vec::new();
+            let mut other_items: Vec<ra_ap_syntax::NodeOrToken<SyntaxNode, SyntaxToken>> =
+                Vec::new();
 
-            // First pass: separate uses, inner docs, and other items
+            let mut pending_comments = Vec::new();
+
             for child in node.children_with_tokens() {
                 match child {
                     NodeOrToken::Node(n) => {
-                        if n.kind() == SyntaxKind::USE {
-                            if let Some(use_) = ast::Use::cast(n) {
-                                uses.push(use_);
+                        match n.kind() {
+                            SyntaxKind::ATTR => {
+                                if let Some(attr) = Attr::cast(n.clone()) {
+                                    if attr.excl_token().is_some() {
+                                        inner_attrs
+                                            .push((pending_comments.drain(..).collect(), attr));
+                                    } else {
+                                        other_items.push(NodeOrToken::Node(n));
+                                    }
+                                }
                             }
-                        } else {
-                            other_items.push(n);
+                            SyntaxKind::EXTERN_CRATE => {
+                                extern_crates.push((pending_comments.drain(..).collect(), n));
+                            }
+                            SyntaxKind::MODULE => {
+                                if let Some(module) = Module::cast(n.clone()) {
+                                    if module.item_list().is_none() {
+                                        mod_decls.push((pending_comments.drain(..).collect(), n));
+                                        continue;
+                                    }
+                                }
+                                other_items.push(NodeOrToken::Node(n));
+                            }
+                            SyntaxKind::USE => {
+                                if let Some(use_) = Use::cast(n.clone()) {
+                                    // Collect comments before this use
+                                    let before: Vec<_> = pending_comments.drain(..).collect();
+
+                                    // Now collect trailing comments/content after this use
+                                    let mut trailing = Vec::new();
+                                    let mut next = use_.syntax().next_sibling_or_token();
+
+                                    while let Some(sibling) = next {
+                                        match sibling {
+                                            NodeOrToken::Token(t)
+                                                if t.kind() == SyntaxKind::COMMENT =>
+                                            {
+                                                if let Some(comment) = Comment::cast(t.clone()) {
+                                                    trailing.push(comment);
+                                                }
+                                                next = t.next_sibling_or_token();
+                                            }
+                                            NodeOrToken::Token(t)
+                                                if t.kind() == SyntaxKind::WHITESPACE =>
+                                            {
+                                                // Check if this is just a newline or contains multiple newlines
+                                                let text = t.text();
+                                                if text.matches('\n').count() >= 2 {
+                                                    // Double newline = end of comment block
+                                                    break;
+                                                }
+                                                next = t.next_sibling_or_token();
+                                            }
+                                            _ => break,
+                                        }
+                                    }
+
+                                    use_items_with_comments.push((before, use_, trailing));
+                                }
+                            }
+                            _ => {
+                                other_items.push(NodeOrToken::Node(n));
+                            }
                         }
                     }
                     NodeOrToken::Token(t) => {
-                        // Collect module-level inner doc comments (//! or /*! ... */)
                         if t.kind() == SyntaxKind::COMMENT {
-                            if let Some(comment) = ast::Comment::cast(t) {
+                            if let Some(comment) = Comment::cast(t) {
                                 if comment.is_inner() && comment.kind().doc.is_some() {
-                                    module_level_inner_docs.push(comment);
+                                    module_inner_docs.push(comment);
+                                } else {
+                                    pending_comments.push(comment);
                                 }
                             }
                         }
@@ -103,46 +166,97 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
             }
 
-            // Format module-level inner docs first
-            for doc in &module_level_inner_docs {
+            // 1. Module-level inner doc comments
+            for doc in &module_inner_docs {
                 buf.push_str(doc.text());
                 buf.push('\n');
             }
 
-            let has_docs = !module_level_inner_docs.is_empty();
-            let has_uses = !uses.is_empty();
-
-            // Blank line after module docs if anything follows
-            if has_docs && (has_uses || !other_items.is_empty()) {
+            // 2. Inner attributes
+            if !module_inner_docs.is_empty() && !inner_attrs.is_empty() {
+                buf.push('\n');
+            }
+            for (comments, attr) in &inner_attrs {
+                for comment in comments {
+                    buf.push_str(comment.text());
+                    buf.push('\n');
+                }
+                buf.push_str(attr.syntax().text().to_string().as_str());
                 buf.push('\n');
             }
 
-            // Format sorted and grouped imports
-            if has_uses {
-                sort_and_format_imports(&uses, buf, indent);
-                // Blank line between imports and other items
+            let has_preamble = !inner_attrs.is_empty() || !module_inner_docs.is_empty();
+            let has_content = !extern_crates.is_empty()
+                || !mod_decls.is_empty()
+                || !use_items_with_comments.is_empty()
+                || !other_items.is_empty();
+
+            if has_preamble && has_content {
+                buf.push('\n');
+            }
+
+            // 3. Extern crate declarations
+            for (comments, extern_crate) in &extern_crates {
+                for comment in comments {
+                    buf.push_str(comment.text());
+                    buf.push('\n');
+                }
+                format_node(extern_crate, buf, indent);
+            }
+            if !extern_crates.is_empty()
+                && (!mod_decls.is_empty()
+                    || !use_items_with_comments.is_empty()
+                    || !other_items.is_empty())
+            {
+                buf.push('\n');
+            }
+
+            // 4. Module declarations
+            for (comments, mod_decl) in &mod_decls {
+                for comment in comments {
+                    buf.push_str(comment.text());
+                    buf.push('\n');
+                }
+                format_node(mod_decl, buf, indent);
+            }
+            if !mod_decls.is_empty()
+                && (!use_items_with_comments.is_empty() || !other_items.is_empty())
+            {
+                buf.push('\n');
+            }
+
+            // 5. Use statements with their trailing comments (SORTED)
+            if !use_items_with_comments.is_empty() {
+                sort_and_format_imports(&use_items_with_comments, buf, indent);
+
                 if !other_items.is_empty() {
                     buf.push('\n');
                 }
             }
 
-            // Format other items
-            let mut last_kind: Option<SyntaxKind> = if has_uses {
+            // 6. Everything else
+            let mut last_kind: Option<SyntaxKind> = if !use_items_with_comments.is_empty() {
                 Some(SyntaxKind::USE)
+            } else if !mod_decls.is_empty() {
+                Some(SyntaxKind::MODULE)
             } else {
                 None
             };
 
-            for node in other_items {
-                let current_kind = node.kind();
-
-                // Add blank line if needed
-                if should_add_blank_line(last_kind, current_kind) {
-                    buf.push('\n');
+            for item in other_items {
+                match item {
+                    NodeOrToken::Node(n) => {
+                        let current_kind = n.kind();
+                        if should_add_blank_line(last_kind, current_kind) {
+                            buf.push('\n');
+                        }
+                        format_node(&n, buf, indent);
+                        last_kind = Some(current_kind);
+                    }
+                    NodeOrToken::Token(t) => {
+                        buf.push_str(t.text());
+                    }
                 }
-
-                format_node(&node, buf, indent);
-                last_kind = Some(current_kind);
             }
         }
 
@@ -169,7 +283,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
         SyntaxKind::ATTR => {
             // Handle standalone attributes
-            if let Some(attr) = ast::Attr::cast(node.clone()) {
+            if let Some(attr) = Attr::cast(node.clone()) {
                 crate::formatter::write_indent(buf, indent);
                 buf.push_str(attr.syntax().text().to_string().as_str());
                 buf.push('\n');
@@ -193,7 +307,7 @@ fn format_token(token: &SyntaxToken, buf: &mut String, _indent: usize) {
     match token.kind() {
         SyntaxKind::COMMENT => {
             // Handle comments specially - preserve them exactly
-            if let Some(comment) = ast::Comment::cast(token.clone()) {
+            if let Some(comment) = Comment::cast(token.clone()) {
                 buf.push_str(comment.text());
                 buf.push('\n');
             }

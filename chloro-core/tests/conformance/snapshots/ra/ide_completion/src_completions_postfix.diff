@@ -2,27 +2,44 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32324 bytes
+Chloro size:   32292 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Postfix completions, like `Ok(10).ifl$0` => `if let Ok() = Ok(10) { $0 }`.
- 
--mod format_like;
--
  use base_db::SourceDatabase;
  use hir::{ItemInNs, Semantics};
  use ide_db::{
-     item::{Builder, CompletionRelevancePostfixMatch},
+-    RootDatabase, SnippetCap,
+-    documentation::{Documentation, HasDocs},
+-    imports::insert_use::ImportScope,
+-    text_edit::TextEdit,
+-    ty_filter::TryEnum,
++    documentation::{Documentation, imports::insert_use::ImportScope, text_edit::TextEdit,
++    ty_filter::TryEnum, HasDocs}, RootDatabase, SnippetCap,
+ };
+ use stdx::never;
+ use syntax::{
+-    SyntaxKind::{EXPR_STMT, STMT_LIST},
+-    T, TextRange, TextSize,
+-    ast::{self, AstNode, AstToken},
+-    match_ast,
++    ast::{self, match_ast, AstNode, AstToken}, SyntaxKind::{EXPR_STMT, TextRange, TextSize,
++    STMT_LIST}, T,
  };
  
-+mod format_like;
-+
+ use crate::{
+-    CompletionItem, CompletionItemKind, CompletionRelevance, Completions, SnippetScope,
+-    completions::postfix::format_like::add_format_like_completions,
+-    context::{BreakableKind, CompletionContext, DotAccess, DotAccessKind},
+-    item::{Builder, CompletionRelevancePostfixMatch},
++    completions::postfix::format_like::add_format_like_completions, context::{BreakableKind,
++    item::{Builder, CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance,
++    CompletionRelevancePostfixMatch}, Completions, DotAccess, DotAccessKind}, SnippetScope,
+ };
+ 
  pub(crate) fn complete_postfix(
-     acc: &mut Completions,
-     ctx: &CompletionContext<'_>,
      if !ctx.config.enable_postfix_completions {
          return;
      }
@@ -176,8 +193,9 @@ Rustfmt size:  32377 bytes
      use expect_test::expect;
 -
      use crate::{
-         CompletionConfig, Snippet,
-         tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
+-        CompletionConfig, Snippet,
+-        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
++        check, check_edit, check_edit_with_config}, tests::{TEST_CONFIG, CompletionConfig, Snippet,
      };
 -
      #[test]

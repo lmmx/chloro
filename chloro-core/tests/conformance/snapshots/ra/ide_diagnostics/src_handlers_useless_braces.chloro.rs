@@ -54,8 +54,7 @@ pub(crate) fn useless_braces(
 #[cfg(test)]
 mod tests {
     use crate::{
-        DiagnosticsConfig,
-        tests::{check_diagnostics, check_diagnostics_with_config, check_fix},
+        check_diagnostics_with_config, check_fix}, tests::{check_diagnostics, DiagnosticsConfig,
     };
     #[test]
     fn test_check_unnecessary_braces_in_use_statement() {

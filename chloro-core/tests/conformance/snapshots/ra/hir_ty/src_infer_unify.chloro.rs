@@ -7,35 +7,25 @@ use hir_expand::name::Name;
 use intern::sym;
 use rustc_hash::FxHashSet;
 use rustc_type_ir::{
-    DebruijnIndex, InferConst, InferTy, RegionVid, TyVid, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeVisitableExt, UpcastFrom,
-    inherent::{Const as _, IntoKind, Ty as _},
-    solve::{Certainty, GoalSource},
+    inherent::{Const as _, solve::{Certainty, DebruijnIndex, GoalSource}, InferConst, InferTy,
+    IntoKind, RegionVid, Ty as _}, TyVid, TypeFoldable, TypeFolder, TypeSuperFoldable,
+    TypeVisitableExt, UpcastFrom,
 };
 use smallvec::SmallVec;
 use triomphe::Arc;
 
 use crate::{
-    TraitEnvironment,
-    db::HirDatabase,
-    infer::InferenceContext,
-    next_solver::{
-        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
-        ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,
-        SolverDefId, TraitRef, Ty, TyKind, TypingMode,
-        fulfill::{FulfillmentCtxt, NextSolverError},
-        infer::{
-            DbInternerInferExt, InferCtxt, InferOk, InferResult,
-            at::ToTrace,
-            snapshot::CombinedSnapshot,
-            traits::{Obligation, ObligationCause, PredicateObligation},
-        },
-        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor},
-        obligation_ctxt::ObligationCtxt,
-    },
-    traits::{
-        FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt,
-    },
+    at::ToTrace, db::HirDatabase, fulfill::{FulfillmentCtxt, infer::InferenceContext,
+    infer::{
+            DbInternerInferExt, inspect::{InspectConfig, next_solver::{
+        self,
+    next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt, obligation_ctxt::ObligationCtxt,
+    snapshot::CombinedSnapshot, traits::{
+        FnTrait, traits::{Obligation, AliasTy, Binder,
+    Canonical, ClauseKind, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
+    InferCtxt, InferOk, InferResult, InspectGoal, NextSolverError}, NextTraitSolveResult,
+    ObligationCause, Predicate, PredicateKind, PredicateObligation}, ProofTreeVisitor}, Region,
+    RegionKind, SolverDefId, TraitEnvironment, TraitRef, Ty, TyKind, TypingMode, }, }, },
 };
 
 impl<'db> InferenceContext<'_, 'db> {
@@ -889,12 +879,11 @@ impl fmt::Debug for InferenceTable<'_> {
 mod resolve_completely {
     use rustc_type_ir::{DebruijnIndex, Flags, TypeFolder, TypeSuperFoldable};
     use crate::{
-        infer::unify::InferenceTable,
+        infer::unify::InferenceTable, infer::{resolve::ReplaceInferWithError,
         next_solver::{
-            Const, DbInterner, Goal, Predicate, Region, Term, Ty,
-            infer::{resolve::ReplaceInferWithError, traits::ObligationCause},
-            normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
-        },
+            Const,
+        normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
+        traits::ObligationCause}, DbInterner, Goal, Predicate, Region, Term, Ty, },
     };
     pub(super) struct Resolver<'a, 'db> {
         ctx: &'a mut InferenceTable<'db>,

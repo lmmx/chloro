@@ -20,6 +20,8 @@
 //!
 //! `ExpnData::call_site` in rustc, [`MacroCallLoc::call_site`] in rust-analyzer.
 
+// FIXME: Move this into the span crate? Not quite possible today as that depends on `MacroCallLoc`
+// which contains a bunch of unrelated things
 use std::convert::identity;
 
 pub use span::Transparency;

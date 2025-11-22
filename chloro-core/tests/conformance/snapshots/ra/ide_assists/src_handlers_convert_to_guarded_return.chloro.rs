@@ -4,20 +4,14 @@ use either::Either;
 use hir::{Semantics, TypeInfo};
 use ide_db::{RootDatabase, ty_filter::TryEnum};
 use syntax::{
-    AstNode,
-    SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
-    SyntaxNode, T,
     ast::{
-        self,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
-    },
+        self, edit::{AstNodeEdit, make, AstNode, IndentLevel},
+    SyntaxKind::{CLOSURE_EXPR, SyntaxNode, FN, FOR_EXPR, LOOP_EXPR, T, WHILE_EXPR, WHITESPACE}, },
 };
 
 use crate::{
-    AssistId,
-    assist_context::{AssistContext, Assists},
-    utils::{invert_boolean_expression_legacy, is_never_block},
+    assist_context::{AssistContext, is_never_block}, utils::{invert_boolean_expression_legacy,
+    AssistId, Assists},
 };
 
 pub(crate) fn convert_to_guarded_return(

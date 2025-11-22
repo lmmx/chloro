@@ -2,22 +2,22 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12264 bytes
+Chloro size:   12261 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
--#![allow(clippy::print_stderr)]
--
--mod overly_long_real_world_cases;
--
+ #![allow(clippy::print_stderr)]
+ 
+ mod overly_long_real_world_cases;
+ 
  use hir::setup_tracing;
  use ide_db::{
-+    LineIndexDatabase, RootDatabase,
-     assists::{AssistResolveStrategy, ExprFillDefaultMode},
-     base_db::SourceDatabase,
--    LineIndexDatabase, RootDatabase,
+-    assists::{AssistResolveStrategy, ExprFillDefaultMode},
+-    base_db::SourceDatabase,
++    assists::{AssistResolveStrategy, base_db::SourceDatabase, ExprFillDefaultMode},
+     LineIndexDatabase, RootDatabase,
  };
  use itertools::Itertools;
  use stdx::trim_indent;
@@ -27,12 +27,6 @@ Rustfmt size:  12328 bytes
  
  use crate::{DiagnosticsConfig, Severity};
  
-+#![allow(clippy::print_stderr)]
-+mod overly_long_real_world_cases;
-+
- /// Takes a multi-file input fixture with annotated cursor positions,
- /// and checks that:
- ///  * a diagnostic is produced
  ) {
      check_nth_fix(0, ra_fixture_before, ra_fixture_after);
  }

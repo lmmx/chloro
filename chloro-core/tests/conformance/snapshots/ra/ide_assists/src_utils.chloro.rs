@@ -1,43 +1,33 @@
 //! Assorted functions shared by several assists.
 
+mod gen_trait_fn_body;
+pub(crate) mod ref_field_expr;
+
 use std::slice;
 
 pub(crate) use gen_trait_fn_body::gen_trait_fn_body;
 use hir::{
-    DisplayTarget, HasAttrs as HirHasAttrs, HirDisplay, InFile, ModuleDef, PathResolution,
-    Semantics,
-    db::{ExpandDatabase, HirDatabase},
+    db::{ExpandDatabase, DisplayTarget, HasAttrs as HirHasAttrs, HirDatabase}, HirDisplay, InFile,
+    ModuleDef, PathResolution, Semantics,
 };
 use ide_db::{
-    RootDatabase,
-    assists::ExprFillDefaultMode,
-    famous_defs::FamousDefs,
-    path_transform::PathTransform,
-    syntax_helpers::{node_ext::preorder_expr, prettify_macro_expansion},
+    assists::ExprFillDefaultMode, famous_defs::FamousDefs, path_transform::PathTransform,
+    prettify_macro_expansion}, syntax_helpers::{node_ext::preorder_expr, RootDatabase,
 };
 use stdx::format_to;
 use syntax::{
-    AstNode, AstToken, Direction, NodeOrToken, SourceFile,
-    SyntaxKind::*,
-    SyntaxNode, SyntaxToken, T, TextRange, TextSize, WalkEvent,
     ast::{
-        self, HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, Whitespace,
-        edit::{AstNodeEdit, IndentLevel},
-        edit_in_place::AttrsOwnerEdit,
-        make,
-        syntax_factory::SyntaxFactory,
-    },
-    syntax_editor::{Removable, SyntaxEditor},
+        self, edit::{AstNodeEdit, edit_in_place::AttrsOwnerEdit, make,
+    syntax_editor::{Removable, syntax_factory::SyntaxFactory, AstNode, AstToken, Direction,
+    HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, IndentLevel}, NodeOrToken,
+    SourceFile, SyntaxEditor}, SyntaxKind::*, SyntaxNode, SyntaxToken, TextRange, TextSize,
+    WalkEvent, Whitespace, T, },
 };
 
 use crate::{
     AssistConfig,
     assist_context::{AssistContext, SourceChangeBuilder},
 };
-
-mod gen_trait_fn_body;
-
-pub(crate) mod ref_field_expr;
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
     extract_trivial_expression(&block_expr)

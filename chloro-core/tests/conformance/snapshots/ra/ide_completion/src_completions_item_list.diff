@@ -10,13 +10,21 @@ Rustfmt size:  6074 bytes
 === DIFF (- rustfmt, + chloro) ===
  //! Completion of paths and keywords at item list position.
  
- use crate::{
+-use crate::{
 -    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
-     CompletionContext, Completions,
-+    context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
- };
- 
+-    CompletionContext, Completions,
+-};
+-
  pub(crate) mod trait_impl;
+ 
++use crate::{
++    context::{ItemListKind, CompletionContext, Completions, PathCompletionCtx, PathExprCtx,
++    Qualified},
++};
++
+ pub(crate) fn complete_item_list_in_expr(
+     acc: &mut Completions,
+     ctx: &CompletionContext<'_>,
      kind: &ItemListKind,
  ) {
      let _p = tracing::info_span!("complete_item_list").entered();

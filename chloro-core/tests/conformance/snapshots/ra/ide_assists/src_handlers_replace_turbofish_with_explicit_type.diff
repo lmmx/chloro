@@ -11,8 +11,9 @@ Rustfmt size:  8981 bytes
  use hir::HirDisplay;
  use syntax::{
 -    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
-     AstNode, TextRange,
-+    ast::{Expr, GenericArg, GenericArgList, HasGenericArgs, LetStmt, Type::InferType},
+-    AstNode, TextRange,
++    ast::{Expr, AstNode, GenericArg, GenericArgList, HasGenericArgs, LetStmt, TextRange,
++    Type::InferType},
  };
  
  use crate::{

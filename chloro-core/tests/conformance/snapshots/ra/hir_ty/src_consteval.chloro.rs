@@ -1,31 +1,25 @@
 //! Constant evaluation details
 
+#[cfg(test)]
+mod tests;
+
 use base_db::Crate;
 use hir_def::{
-    EnumVariantId, GeneralConstId, HasModule, StaticId,
-    expr_store::Body,
-    hir::{Expr, ExprId},
-    type_ref::LiteralConstRef,
+    expr_store::Body, hir::{Expr, type_ref::LiteralConstRef, EnumVariantId, ExprId},
+    GeneralConstId, HasModule, StaticId,
 };
 use hir_expand::Lookup;
 use rustc_type_ir::inherent::IntoKind;
 use triomphe::Arc;
 
 use crate::{
-    LifetimeElisionKind, MemoryMap, TraitEnvironment, TyLoweringContext,
-    db::HirDatabase,
-    display::DisplayTarget,
-    infer::InferenceContext,
-    mir::{MirEvalError, MirLowerError},
+    db::HirDatabase, display::DisplayTarget, infer::InferenceContext, mir::{MirEvalError,
     next_solver::{
-        Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs,
-        SolverDefId, Ty, ValueConst,
-    },
+        Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
+    GenericArgs, LifetimeElisionKind, MemoryMap, MirLowerError}, SolverDefId, TraitEnvironment, Ty,
+    TyLoweringContext, ValueConst, },
 };
 use super::mir::{interpret_mir, lower_to_mir, pad16};
-
-#[cfg(test)]
-mod tests;
 
 pub fn unknown_const<'db>(_ty: Ty<'db>) -> Const<'db> {
     Const::new(DbInterner::conjure(), rustc_type_ir::ConstKind::Error(ErrorGuaranteed))

@@ -1,6 +1,15 @@
 //! Defines `ExpressionStore`: a lowered representation of functions, statics and
 //! consts.
 
+pub mod body;
+mod expander;
+pub mod lower;
+pub mod path;
+pub mod pretty;
+pub mod scope;
+#[cfg(test)]
+mod tests;
+
 use std::{
     ops::{Deref, Index},
     sync::LazyLock,
@@ -19,35 +28,16 @@ use triomphe::Arc;
 use tt::TextRange;
 
 use crate::{
-    BlockId, SyntheticSyntax,
-    db::DefDatabase,
-    expr_store::path::Path,
-    hir::{
-        Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
-        PatId, RecordFieldPat, Statement,
-    },
-    nameres::{DefMap, block_def_map},
-    type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
+    block_def_map}, db::DefDatabase, expr_store::path::Path, hir::{
+        Array,
+    nameres::{DefMap, type_ref::{LifetimeRef, AsmOperand, Binding, BindingId, BlockId, Expr,
+    ExprId, ExprOrPatId, Label, LabelId, LifetimeRefId, Pat, PatId, PathId, RecordFieldPat,
+    Statement, SyntheticSyntax, TypeRef, TypeRefId}, },
 };
 pub use self::body::{Body, BodySourceMap};
 pub use self::lower::{
     hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,
 };
-
-pub mod body;
-
-mod expander;
-
-pub mod lower;
-
-pub mod path;
-
-pub mod pretty;
-
-pub mod scope;
-
-#[cfg(test)]
-mod tests;
 
 /// A wrapper around [`span::SyntaxContextId`] that is intended only for comparisons.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

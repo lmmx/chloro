@@ -1,9 +1,8 @@
 use expect_test::{Expect, expect};
 
 use crate::{
-    CompletionConfig,
-    context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
-    tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+    check_edit, check_edit_with_config}, context::{CompletionAnalysis, tests::{TEST_CONFIG,
+    CompletionConfig, NameContext, NameKind, NameRefKind},
 };
 
 fn check(

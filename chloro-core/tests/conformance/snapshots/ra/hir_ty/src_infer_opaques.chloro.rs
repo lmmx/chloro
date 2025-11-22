@@ -4,11 +4,10 @@ use rustc_type_ir::{TypeVisitableExt, fold_regions};
 use tracing::{debug, instrument};
 
 use crate::{
-    infer::InferenceContext,
+    infer::InferenceContext, infer::{opaque_types::OpaqueHiddenType,
     next_solver::{
-        EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
-        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
-    },
+        EarlyBinder, traits::ObligationCause}, OpaqueTypeKey, SolverDefId,
+    TypingMode, },
 };
 
 impl<'db> InferenceContext<'_, 'db> {

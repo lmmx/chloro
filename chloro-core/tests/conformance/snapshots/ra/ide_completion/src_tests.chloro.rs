@@ -8,13 +8,29 @@
 //! This gives this test module and its submodules here the main purpose of giving the developer an
 //! overview of whats being completed where, not how.
 
+mod attribute;
+mod expression;
+mod flyimport;
+mod fn_param;
+mod item;
+mod item_list;
+mod pattern;
+mod predicate;
+mod proc_macros;
+mod raw_identifiers;
+mod record;
+mod special;
+mod type_pos;
+mod use_tree;
+mod visibility;
+
 use base_db::SourceDatabase;
 use expect_test::Expect;
 use hir::db::HirDatabase;
 use hir::{PrefixKind, setup_tracing};
 use ide_db::{
-    FilePosition, MiniCore, RootDatabase, SnippetCap,
-    imports::insert_use::{ImportGranularity, InsertUseConfig},
+    imports::insert_use::{ImportGranularity, FilePosition, InsertUseConfig}, MiniCore,
+    RootDatabase, SnippetCap,
 };
 use itertools::Itertools;
 use stdx::{format_to, trim_indent};
@@ -22,39 +38,9 @@ use test_fixture::ChangeFixture;
 use test_utils::assert_eq_text;
 
 use crate::{
-    CallableSnippets, CompletionConfig, CompletionFieldsToResolve, CompletionItem,
-    CompletionItemKind, resolve_completion_edits,
+    resolve_completion_edits, CallableSnippets, CompletionConfig, CompletionFieldsToResolve,
+    CompletionItem, CompletionItemKind,
 };
-
-mod attribute;
-
-mod expression;
-
-mod flyimport;
-
-mod fn_param;
-
-mod item;
-
-mod item_list;
-
-mod pattern;
-
-mod predicate;
-
-mod proc_macros;
-
-mod raw_identifiers;
-
-mod record;
-
-mod special;
-
-mod type_pos;
-
-mod use_tree;
-
-mod visibility;
 
 /// Lots of basic item definitions
 const BASE_ITEMS_FIXTURE: &str = r#"

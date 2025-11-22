@@ -8,20 +8,24 @@
 //! specific JSON shapes here -- there's little value in such tests, as we can't
 //! be sure without a real client anyway.
 
+#![allow(clippy::disallowed_types)]
+
+mod cli;
+mod ratoml;
+mod support;
+mod testdir;
+
 use std::{collections::HashMap, path::PathBuf, time::Instant};
 
 use lsp_types::{
-    CodeActionContext, CodeActionParams, CompletionParams, DidOpenTextDocumentParams,
-    DocumentFormattingParams, DocumentRangeFormattingParams, FileRename, FormattingOptions,
-    GotoDefinitionParams, HoverParams, InlayHint, InlayHintLabel, InlayHintParams,
-    PartialResultParams, Position, Range, RenameFilesParams, TextDocumentItem,
-    TextDocumentPositionParams, WorkDoneProgressParams,
-    notification::DidOpenTextDocument,
-    request::{
-        CodeActionRequest, Completion, Formatting, GotoTypeDefinition, HoverRequest,
-        InlayHintRequest, InlayHintResolveRequest, RangeFormatting, WillRenameFiles,
-        WorkspaceSymbolRequest,
-    },
+    notification::DidOpenTextDocument, request::{
+        CodeActionRequest, CodeActionContext,
+    CodeActionParams, Completion, CompletionParams, DidOpenTextDocumentParams,
+    DocumentFormattingParams, DocumentRangeFormattingParams, FileRename, Formatting,
+    FormattingOptions, GotoDefinitionParams, GotoTypeDefinition, HoverParams, HoverRequest,
+    InlayHint, InlayHintLabel, InlayHintParams, InlayHintRequest, InlayHintResolveRequest,
+    PartialResultParams, Position, Range, RangeFormatting, RenameFilesParams, TextDocumentItem,
+    TextDocumentPositionParams, WillRenameFiles, WorkDoneProgressParams, WorkspaceSymbolRequest, },
 };
 use rust_analyzer::lsp::ext::{OnEnter, Runnables, RunnablesParams};
 use serde_json::json;
@@ -30,15 +34,6 @@ use test_utils::skip_slow_tests;
 use testdir::TestDir;
 
 use crate::support::{Project, project};
-
-#![allow(clippy::disallowed_types)]
-mod cli;
-
-mod ratoml;
-
-mod support;
-
-mod testdir;
 
 #[test]
 fn completes_items_from_standard_library() {

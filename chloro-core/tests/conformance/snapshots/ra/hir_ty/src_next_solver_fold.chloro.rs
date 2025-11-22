@@ -1,8 +1,8 @@
 //! Fold impls for the next-trait-solver.
 
 use rustc_type_ir::{
-    BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
-    TypeVisitableExt, inherent::IntoKind,
+    inherent::IntoKind, BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder,
+    TypeSuperFoldable, TypeVisitableExt,
 };
 
 use crate::next_solver::BoundConst;

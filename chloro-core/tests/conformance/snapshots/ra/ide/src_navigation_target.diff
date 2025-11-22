@@ -2,31 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39406 bytes
+Chloro size:   39394 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use arrayvec::ArrayVec;
- use either::Either;
- use hir::{
--    db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
--    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
--    Symbol,
-+    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId,
-+    InFile, LocalSource, ModuleSource, Semantics, Symbol, db::ExpandDatabase, sym,
-+    symbols::FileSymbol,
+     Symbol,
  };
  use ide_db::{
-+    FileId, FileRange, RootDatabase, SymbolKind,
-     base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
+-    base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
 -    defs::{find_std_module, Definition},
-+    defs::{Definition, find_std_module},
-     documentation::{Documentation, HasDocs},
-     famous_defs::FamousDefs,
-     ra_fixture::UpmapFromRaFixture,
+-    documentation::{Documentation, HasDocs},
+-    famous_defs::FamousDefs,
+-    ra_fixture::UpmapFromRaFixture,
 -    FileId, FileRange, RootDatabase, SymbolKind,
++    base_db::{CrateOrigin, defs::{Definition, documentation::{Documentation,
++    famous_defs::FamousDefs, find_std_module}, ra_fixture::UpmapFromRaFixture, FileId, FileRange,
++    HasDocs}, LangCrateOrigin, RootDatabase, RootQueryDb}, SymbolKind,
  };
  use stdx::never;
  use syntax::{

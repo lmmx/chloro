@@ -33,7 +33,7 @@ pub fn format_const_or_static(node: &SyntaxNode, buf: &mut String, indent: usize
 
         // Name
         if let Some(name) = c.name() {
-            buf.push_str(&name.text().to_string());
+            buf.push_str(name.text().as_ref());
             buf.push_str(": ");
         }
 
@@ -81,7 +81,7 @@ pub fn format_const_or_static(node: &SyntaxNode, buf: &mut String, indent: usize
 
         // Name
         if let Some(name) = s.name() {
-            buf.push_str(&name.text().to_string());
+            buf.push_str(name.text().as_ref());
             buf.push_str(": ");
         }
 

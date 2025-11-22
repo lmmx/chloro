@@ -8,28 +8,22 @@ use cfg::{CfgExpr, CfgOptions};
 use either::Either;
 pub use hir_def::VariantId;
 use hir_def::{
-    DefWithBodyId, GenericParamId, SyntheticSyntax,
     expr_store::{
-        ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
-        hir_generic_arg_to_ast, hir_segment_to_ast_segment,
-    },
-    hir::ExprOrPatId,
+        ExprOrPatPtr, hir::ExprOrPatId, hir_assoc_type_binding_to_ast,
+    hir_generic_arg_to_ast, hir_segment_to_ast_segment, DefWithBodyId, ExpressionStoreSourceMap,
+    GenericParamId, SyntheticSyntax, },
 };
 use hir_expand::{HirFileId, InFile, mod_path::ModPath, name::Name};
 use hir_ty::{
-    CastError, InferenceDiagnostic, InferenceTyDiagnosticSource, PathGenericsSource,
-    PathLoweringDiagnostic, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
-    db::HirDatabase,
-    diagnostics::{BodyValidationDiagnostic, UnsafetyReason},
+    db::HirDatabase, diagnostics::{BodyValidationDiagnostic, CastError, InferenceDiagnostic,
+    InferenceTyDiagnosticSource, PathGenericsSource, PathLoweringDiagnostic, TyLoweringDiagnostic,
+    TyLoweringDiagnosticKind, UnsafetyReason},
 };
 pub use hir_ty::{
-    GenericArgsProhibitedReason, IncorrectGenericsLenKind,
-    diagnostics::{CaseType, IncorrectCase},
+    diagnostics::{CaseType, GenericArgsProhibitedReason, IncorrectCase}, IncorrectGenericsLenKind,
 };
 use syntax::{
-    AstNode, AstPtr, SyntaxError, SyntaxNodePtr, TextRange,
-    ast::{self, HasGenericArgs},
-    match_ast,
+    ast::{self, match_ast, AstNode, AstPtr, HasGenericArgs}, SyntaxError, SyntaxNodePtr, TextRange,
 };
 use triomphe::Arc;
 

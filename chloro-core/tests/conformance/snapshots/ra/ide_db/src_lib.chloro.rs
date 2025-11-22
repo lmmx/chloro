@@ -2,12 +2,35 @@
 //!
 //! It is mainly a `HirDatabase` for semantic analysis, plus a `SymbolsDatabase`, for fuzzy search.
 
+
+mod apply_change;
+pub mod active_parameter;
+pub mod assists;
+pub mod defs;
+pub mod documentation;
+pub mod famous_defs;
+pub mod helpers;
+pub mod items_locator;
+pub mod label;
+pub mod path_transform;
+pub mod prime_caches;
+pub mod ra_fixture;
+pub mod range_mapper;
+pub mod rename;
+pub mod rust_doc;
+pub mod search;
+pub mod source_change;
+pub mod symbol_index;
+pub mod text_edit;
+pub mod traits;
+pub mod ty_filter;
+pub mod use_trivial_constructor;
+
 use std::{fmt, mem::ManuallyDrop};
 
-pub use ::line_index;
 use base_db::{
-    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce, RootQueryDb,
-    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput, query_group,
+    query_group, CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Files, Nonce,
+    RootQueryDb, SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
 };
 pub use base_db::{self, FxIndexMap, FxIndexSet};
 use hir::{
@@ -19,52 +42,9 @@ pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};
 use salsa::Durability;
 pub use span::{self, FileId};
 use triomphe::Arc;
+pub use ::line_index;
 
 use crate::line_index::LineIndex;
-
-mod apply_change;
-
-pub mod active_parameter;
-
-pub mod assists;
-
-pub mod defs;
-
-pub mod documentation;
-
-pub mod famous_defs;
-
-pub mod helpers;
-
-pub mod items_locator;
-
-pub mod label;
-
-pub mod path_transform;
-
-pub mod prime_caches;
-
-pub mod ra_fixture;
-
-pub mod range_mapper;
-
-pub mod rename;
-
-pub mod rust_doc;
-
-pub mod search;
-
-pub mod source_change;
-
-pub mod symbol_index;
-
-pub mod text_edit;
-
-pub mod traits;
-
-pub mod ty_filter;
-
-pub mod use_trivial_constructor;
 
 pub mod imports {
     pub mod import_assets;

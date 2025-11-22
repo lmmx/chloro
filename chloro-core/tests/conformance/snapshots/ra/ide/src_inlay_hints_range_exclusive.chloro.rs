@@ -40,8 +40,7 @@ fn inlay_hint(token: SyntaxToken) -> InlayHint {
 #[cfg(test)]
 mod tests {
     use crate::{
-        InlayHintsConfig,
-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+        check_with_config}, inlay_hints::tests::{DISABLED_CONFIG, InlayHintsConfig,
     };
     #[test]
     fn range_exclusive_expression_bounded_above_hints() {

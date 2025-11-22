@@ -1,5 +1,7 @@
 //! A simplified version of quote-crate like quasi quote macro
 
+#![allow(clippy::crate_in_macro_def)]
+
 use intern::{Symbol, sym};
 pub use quote;
 pub use quote_impl__ as __quote;
@@ -9,7 +11,6 @@ use tt::IdentIsRaw;
 
 use crate::{name::Name, tt::TopSubtreeBuilder};
 
-#![allow(clippy::crate_in_macro_def)]
 pub(crate) fn dollar_crate(span: Span) -> tt::Ident<Span> {
     tt::Ident { sym: sym::dollar_crate, span, is_raw: tt::IdentIsRaw::No }
 }

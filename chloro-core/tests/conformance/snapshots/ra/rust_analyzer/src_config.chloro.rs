@@ -4,12 +4,10 @@
 //! configure the server itself, feature flags are passed into analysis, and
 //! tweak things like automatic insertion of `()` in completions.
 
+mod patch_old_style;
+
 use std::{env, fmt, iter, ops::Not, sync::OnceLock};
 
-use _config_data as config_data;
-use _default_str as default_str;
-use _default_val as default_val;
-use _impl_for_config_data as impl_for_config_data;
 use cfg::{CfgAtom, CfgDiff};
 use hir::Symbol;
 use ide::{
@@ -20,9 +18,8 @@ use ide::{
     MemoryLayoutHoverRenderKind, RenameConfig, Snippet, SnippetScope, SourceRootId,
 };
 use ide_db::{
-    MiniCore, SnippetCap,
-    assists::ExprFillDefaultMode,
-    imports::insert_use::{ImportGranularity, InsertUseConfig, PrefixKind},
+    assists::ExprFillDefaultMode, imports::insert_use::{ImportGranularity, InsertUseConfig,
+    MiniCore, PrefixKind}, SnippetCap,
 };
 use itertools::{Either, Itertools};
 use paths::{Utf8Path, Utf8PathBuf};
@@ -39,17 +36,25 @@ use serde::{
 use stdx::format_to_acc;
 use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, VfsPath};
+use _config_data as config_data;
+use _default_str as default_str;
+// Conventions for configuration keys to preserve maximal extendability without breakage:
+//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
+//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
+//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
+//  - Don't use abbreviations unless really necessary
+//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
+// Deserialization definitions
+use _default_val as default_val;
+use _impl_for_config_data as impl_for_config_data;
 
 use crate::{
-    diagnostics::DiagnosticsMapConfig,
-    flycheck::{CargoOptions, FlycheckConfig},
-    lsp::capabilities::ClientCapabilities,
-    lsp_ext::{WorkspaceSymbolSearchKind, WorkspaceSymbolSearchScope},
+    diagnostics::DiagnosticsMapConfig, flycheck::{CargoOptions,
+    lsp::capabilities::ClientCapabilities, lsp_ext::{WorkspaceSymbolSearchKind, FlycheckConfig},
+    WorkspaceSymbolSearchScope},
 };
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
-
-mod patch_old_style;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

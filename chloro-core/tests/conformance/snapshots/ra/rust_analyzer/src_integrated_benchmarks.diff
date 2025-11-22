@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13440 bytes
-Chloro size:   13437 bytes
+Chloro size:   13433 bytes
 Rustfmt size:  13679 bytes
 
 ✗ Outputs DIFFER
@@ -12,8 +12,8 @@ Rustfmt size:  13679 bytes
  };
  use ide_db::{
 -    imports::insert_use::{ImportGranularity, InsertUseConfig},
-     MiniCore, SnippetCap,
-+    imports::insert_use::{ImportGranularity, InsertUseConfig},
+-    MiniCore, SnippetCap,
++    imports::insert_use::{ImportGranularity, InsertUseConfig}, MiniCore, SnippetCap,
  };
 +use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
  use project_model::CargoConfig;

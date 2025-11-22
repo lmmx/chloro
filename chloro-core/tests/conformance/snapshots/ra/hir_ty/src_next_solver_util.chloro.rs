@@ -10,30 +10,24 @@ use hir_def::{BlockId, HasModule, lang_item::LangItem};
 use la_arena::Idx;
 use rustc_abi::{Float, HasDataLayout, Integer, IntegerType, Primitive, ReprOptions};
 use rustc_type_ir::{
-    ConstKind, CoroutineArgs, DebruijnIndex, FloatTy, INNERMOST, IntTy, Interner,
-    PredicatePolarity, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeSuperVisitable,
-    TypeVisitableExt, TypeVisitor, UintTy, UniverseIndex,
     inherent::{
-        AdtDef, GenericArg as _, GenericArgs as _, IntoKind, ParamEnv as _, SliceLike, Ty as _,
-    },
-    lang_items::SolverTraitLangItem,
-    solve::SizedTraitKind,
+        AdtDef, lang_items::SolverTraitLangItem, solve::SizedTraitKind, ConstKind,
+    CoroutineArgs, DebruijnIndex, FloatTy, GenericArg as _, GenericArgs as _, IntTy, Interner,
+    IntoKind, ParamEnv as _, PredicatePolarity, RegionKind, SliceLike, Ty as _, TypeFoldable,
+    TypeFolder, TypeSuperFoldable, TypeSuperVisitable, TypeVisitableExt, TypeVisitor, UintTy,
+    UniverseIndex, INNERMOST, },
 };
 
 use crate::{
-    db::HirDatabase,
-    lower::{LifetimeElisionKind, TyLoweringContext},
-    method_resolution::{TraitImpls, TyFingerprint},
+    db::HirDatabase, infer::InferCtxt, lower::{LifetimeElisionKind, method_resolution::{TraitImpls,
     next_solver::{
-        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion,
-        infer::InferCtxt,
-    },
+        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst,
+    PlaceholderRegion, TyFingerprint}, TyLoweringContext}, },
 };
 use super::{
-    Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const, DbInterner, EarlyBinder,
-    GenericArgs, Predicate, PredicateKind, Region, SolverDefId, TraitPredicate, TraitRef, Ty,
-    TyKind,
-    fold::{BoundVarReplacer, FnMutDelegate},
+    fold::{BoundVarReplacer, Binder, BoundRegion, BoundTy, Clause, ClauseKind, Clauses, Const,
+    DbInterner, EarlyBinder, FnMutDelegate}, GenericArgs, Predicate, PredicateKind, Region,
+    SolverDefId, TraitPredicate, TraitRef, Ty, TyKind,
 };
 
 #[derive(Clone, Debug)]

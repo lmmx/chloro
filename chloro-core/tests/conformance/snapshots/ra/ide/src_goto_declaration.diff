@@ -18,10 +18,8 @@ Rustfmt size:  6484 bytes
 +use syntax::{AstNode, SyntaxKind::*, T, ast, match_ast};
  
  use crate::{
--    goto_definition::goto_definition, navigation_target::TryToNav, FilePosition,
--    GotoDefinitionConfig, NavigationTarget, RangeInfo,
-+    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo,
-+    goto_definition::goto_definition, navigation_target::TryToNav,
+     goto_definition::goto_definition, navigation_target::TryToNav, FilePosition,
+     GotoDefinitionConfig, NavigationTarget, RangeInfo,
  };
  
 -// Feature: Go to Declaration

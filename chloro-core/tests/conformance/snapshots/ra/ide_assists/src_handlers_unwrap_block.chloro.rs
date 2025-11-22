@@ -1,9 +1,6 @@
 use syntax::{
-    AstNode, SyntaxKind, T, TextRange,
     ast::{
-        self,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
+        self, edit::{AstNodeEdit, make, AstNode, IndentLevel}, SyntaxKind, TextRange, T,
     },
 };
 

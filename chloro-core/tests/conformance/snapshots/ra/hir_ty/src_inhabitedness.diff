@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6415 bytes
-Chloro size:   6246 bytes
+Chloro size:   6218 bytes
 Rustfmt size:  6524 bytes
 
 ✗ Outputs DIFFER
@@ -17,23 +17,23 @@ Rustfmt size:  6524 bytes
  use rustc_hash::FxHashSet;
  use rustc_type_ir::{
 -    inherent::{AdtDef, IntoKind},
-     TypeSuperVisitable, TypeVisitable, TypeVisitor,
-+    inherent::{AdtDef, IntoKind},
+-    TypeSuperVisitable, TypeVisitable, TypeVisitor,
++    inherent::{AdtDef, IntoKind}, TypeSuperVisitable, TypeVisitable, TypeVisitor,
  };
  use triomphe::Arc;
  
  use crate::{
-+    TraitEnvironment,
-     consteval::try_const_usize,
-     db::HirDatabase,
+-    consteval::try_const_usize,
+-    db::HirDatabase,
++    consteval::try_const_usize, db::HirDatabase, infer::{InferCtxt,
      next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
 -        obligation_ctxt::ObligationCtxt,
-         DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
-+        infer::{InferCtxt, traits::ObligationCause},
-+        obligation_ctxt::ObligationCtxt,
-     },
+-        DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
+-    },
 -    TraitEnvironment,
++        DbInterner, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
++    EarlyBinder, GenericArgs, TraitEnvironment, Ty, TyKind, },
  };
  
 -// FIXME: Turn this into a query, it can be quite slow

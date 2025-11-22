@@ -1,15 +1,12 @@
 use std::ops::Not;
 
 use hir::{
-    ClosureStyle, FindPathConfig, HirDisplay,
-    db::ExpandDatabase,
-    term_search::{TermSearchConfig, TermSearchCtx, term_search},
+    db::ExpandDatabase, term_search::{TermSearchConfig, term_search}, ClosureStyle, FindPathConfig,
+    HirDisplay, TermSearchCtx,
 };
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    assists::{Assist, AssistId, GroupLabel},
-    label::Label,
-    source_change::SourceChange,
+    assists::{Assist, label::Label, source_change::SourceChange, AssistId, GroupLabel},
 };
 use itertools::Itertools;
 use syntax::AstNode;

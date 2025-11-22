@@ -3,10 +3,8 @@ use ide_db::syntax_helpers::node_ext::expr_as_name_ref;
 use ide_db::text_edit::{TextEdit, TextEditBuilder};
 use itertools::Itertools;
 use syntax::{
-    NodeOrToken, SourceFile, SyntaxElement,
-    SyntaxKind::{self, USE_TREE, WHITESPACE},
-    SyntaxToken, T, TextRange, TextSize,
-    ast::{self, AstNode, AstToken, IsString},
+    ast::{self, AstNode, AstToken, IsString}, NodeOrToken, SourceFile, SyntaxElement,
+    SyntaxKind::{self, SyntaxToken, TextRange, TextSize, T, USE_TREE, WHITESPACE},
 };
 
 pub struct JoinLinesConfig {

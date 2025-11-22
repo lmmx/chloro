@@ -2,12 +2,41 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30062 bytes
-Chloro size:   29611 bytes
+Chloro size:   29567 bytes
 Rustfmt size:  30062 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use std::iter;
+ 
+ use either::Either;
+ use hir::{HasCrate, Module, ModuleDef, Name, Variant};
+ use ide_db::{
+-    FxHashSet, RootDatabase,
+-    defs::Definition,
+-    helpers::mod_path_to_ast,
+-    imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
+-    path_transform::PathTransform,
+-    search::FileReference,
++    defs::Definition, helpers::mod_path_to_ast, imports::insert_use::{ImportScope, insert_use},
++    path_transform::PathTransform, search::FileReference, FxHashSet, InsertUseConfig, RootDatabase,
+ };
+ use itertools::Itertools;
+ use syntax::{
+-    Edition, SyntaxElement,
+-    SyntaxKind::*,
+-    SyntaxNode, T,
+     ast::{
+-        self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
+-        edit::{AstNodeEdit, IndentLevel},
+-        make,
+-    },
+-    match_ast, ted,
++        self, edit::{AstNodeEdit, make, match_ast, ted, AstNode, Edition, HasAttrs,
++    HasGenericParams, HasName, HasVisibility, IndentLevel}, SyntaxElement, SyntaxKind::*,
++    SyntaxNode, T, },
+ };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};
  

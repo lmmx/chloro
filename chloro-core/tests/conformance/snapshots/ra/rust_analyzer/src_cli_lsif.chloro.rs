@@ -5,8 +5,7 @@ use std::time::Instant;
 
 use ide::{
     Analysis, AnalysisHost, FileId, FileRange, MonikerKind, MonikerResult, PackageInformation,
-    RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
-    VendoredLibrariesConfig,
+    RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
 };
 use ide_db::{LineIndexDatabase, line_index::WideEncoding};
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};
@@ -17,10 +16,8 @@ use stdx::format_to;
 use vfs::{AbsPathBuf, Vfs};
 
 use crate::{
-    cli::flags,
-    line_index::{LineEndings, LineIndex, PositionEncoding},
-    lsp::to_proto,
-    version::version,
+    cli::flags, line_index::{LineEndings, lsp::to_proto, version::version, LineIndex,
+    PositionEncoding},
 };
 
 struct LsifManager<'a, 'w> {

@@ -4,9 +4,8 @@
 //! are splitting the hir.
 
 use hir_def::{
-    AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId, GenericParamId,
-    ModuleDefId, VariantId,
-    hir::{BindingId, LabelId},
+    hir::{BindingId, AdtId, AssocItemId, DefWithBodyId, EnumVariantId, FieldId, GenericDefId,
+    GenericParamId, LabelId}, ModuleDefId, VariantId,
 };
 
 use crate::{

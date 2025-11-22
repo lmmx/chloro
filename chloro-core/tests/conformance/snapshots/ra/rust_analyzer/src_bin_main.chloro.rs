@@ -2,23 +2,23 @@
 //!
 //! Based on cli flags, either spawns an LSP server, or runs a batch analysis
 
+#![allow(clippy::print_stdout, clippy::print_stderr)]
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+
+#[cfg(feature = "in-rust-tree")]
+
+mod rustc_wrapper;
+
 use std::{env, fs, path::PathBuf, process::ExitCode, sync::Arc};
 
 use anyhow::Context;
 use lsp_server::Connection;
 use paths::Utf8PathBuf;
 use rust_analyzer::{
-    cli::flags,
-    config::{Config, ConfigChange, ConfigErrors},
-    from_json,
+    cli::flags, config::{Config, from_json, ConfigChange, ConfigErrors},
 };
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use vfs::AbsPathBuf;
-
-#![allow(clippy::print_stdout, clippy::print_stderr)]
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-#[cfg(feature = "in-rust-tree")]
-mod rustc_wrapper;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]

@@ -3,9 +3,9 @@
 use std::{convert::Infallible, ops::ControlFlow};
 
 use hir::{
-    AsAssocItem, AssocItem, AssocItemContainer, Complete, Crate, FindPathConfig, HasCrate,
-    ItemInNs, ModPath, Module, ModuleDef, Name, PathResolution, PrefixKind, ScopeDef, Semantics,
-    SemanticsScope, Trait, TyFingerprint, Type, db::HirDatabase,
+    db::HirDatabase, AsAssocItem, AssocItem, AssocItemContainer, Complete, Crate, FindPathConfig,
+    HasCrate, ItemInNs, ModPath, Module, ModuleDef, Name, PathResolution, PrefixKind, ScopeDef,
+    Semantics, SemanticsScope, Trait, TyFingerprint, Type,
 };
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -16,8 +16,7 @@ use syntax::{
 };
 
 use crate::{
-    FxIndexSet, RootDatabase,
-    items_locator::{self, AssocSearchMode, DEFAULT_QUERY_SEARCH_LIMIT},
+    items_locator::{self, AssocSearchMode, FxIndexSet, RootDatabase, DEFAULT_QUERY_SEARCH_LIMIT},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]

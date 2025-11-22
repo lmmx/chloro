@@ -1,10 +1,9 @@
 use dot::{Id, LabelText};
 use ide_db::base_db::salsa::plumbing::AsId;
 use ide_db::{
-    FxHashMap, RootDatabase,
     base_db::{
-        BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase,
-    },
+        BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, FxHashMap,
+    RootDatabase, RootQueryDb, SourceDatabase, },
 };
 
 pub(crate) fn view_crate_graph(

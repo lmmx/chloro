@@ -1,14 +1,11 @@
 use either::Either;
 use hir::{AssocItem, Enum, HasVisibility, Module, ModuleDef, Name, PathResolution, ScopeDef};
 use ide_db::{
-    defs::{Definition, NameRefClass},
-    search::SearchScope,
-    source_change::SourceChangeBuilder,
+    defs::{Definition, search::SearchScope, source_change::SourceChangeBuilder, NameRefClass},
 };
 use stdx::never;
 use syntax::{
-    AstNode, Direction, SyntaxNode, SyntaxToken, T,
-    ast::{self, Use, UseTree, VisibilityKind, make},
+    ast::{self, make}, AstNode, Direction, SyntaxNode, SyntaxToken, Use, UseTree, VisibilityKind, T,
 };
 
 use crate::{

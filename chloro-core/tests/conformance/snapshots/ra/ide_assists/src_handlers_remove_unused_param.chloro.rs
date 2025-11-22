@@ -1,14 +1,12 @@
-use SyntaxKind::WHITESPACE;
 use ide_db::{EditionedFileId, defs::Definition, search::FileReference};
 use syntax::{
-    AstNode, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, T, TextRange,
-    algo::{find_node_at_range, least_common_ancestor_element},
-    ast::{self, HasArgList},
-    syntax_editor::Element,
+    algo::{find_node_at_range, ast::{self, least_common_ancestor_element}, syntax_editor::Element,
+    AstNode, HasArgList}, SourceFile, SyntaxElement, SyntaxKind, SyntaxNode, TextRange, T,
 };
+use SyntaxKind::WHITESPACE;
 
 use crate::{
-    AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder, utils::next_prev,
+    assist_context::SourceChangeBuilder, utils::next_prev, AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn remove_unused_param(

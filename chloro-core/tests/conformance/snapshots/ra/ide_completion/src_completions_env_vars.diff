@@ -19,11 +19,6 @@ Rustfmt size:  5802 bytes
  };
  
  use crate::{
--    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
-+    CompletionItem, CompletionItemKind, completions::Completions, context::CompletionContext,
- };
- 
- const CARGO_DEFINED_VARS: &[(&str, &str)] = &[
          }
      }
      let range = original.text_range_between_quotes()?;

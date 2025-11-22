@@ -4,15 +4,13 @@ use std::iter;
 
 use hir::Semantics;
 use ide_db::{
-    FileRange, FxIndexMap, MiniCore, RootDatabase,
-    defs::{Definition, NameClass, NameRefClass},
-    helpers::pick_best_token,
-    search::FileReference,
+    defs::{Definition, helpers::pick_best_token, search::FileReference, FileRange, FxIndexMap,
+    MiniCore, NameClass, NameRefClass}, RootDatabase,
 };
 use syntax::{AstNode, SyntaxKind::IDENT, ast};
 
 use crate::{
-    FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav, goto_definition,
+    goto_definition, FilePosition, GotoDefinitionConfig, NavigationTarget, RangeInfo, TryToNav,
 };
 
 #[derive(Debug, Clone)]

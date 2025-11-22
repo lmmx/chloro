@@ -12,6 +12,10 @@
 //!
 //! See also a neighboring `body` module.
 
+pub mod format_args;
+pub mod generics;
+pub mod type_ref;
+
 use std::fmt;
 
 use hir_expand::{MacroDefId, name::Name};
@@ -23,20 +27,10 @@ pub use syntax::ast::{ArithOp, BinaryOp, CmpOp, LogicOp, Ordering, RangeOp, Unar
 use type_ref::TypeRefId;
 
 use crate::{
-    BlockId,
-    builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
-    expr_store::{
-        HygieneId,
-        path::{GenericArgs, Path},
-    },
-    type_ref::{Mutability, Rawness},
+    builtin_type::{BuiltinFloat, expr_store::{
+        HygieneId, path::{GenericArgs,
+    type_ref::{Mutability, BlockId, BuiltinInt, BuiltinUint}, Path}, Rawness}, },
 };
-
-pub mod format_args;
-
-pub mod generics;
-
-pub mod type_ref;
 
 pub type BindingId = Idx<Binding>;
 

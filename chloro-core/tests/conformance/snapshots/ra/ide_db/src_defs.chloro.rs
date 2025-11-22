@@ -16,11 +16,10 @@ use hir::{
 use span::Edition;
 use stdx::{format_to, impl_from};
 use syntax::{
-    SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
-    ast::{self, AstNode},
-    match_ast,
+    ast::{self, match_ast, AstNode}, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
 };
 
+// FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
 use crate::RootDatabase;
 use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
 use crate::famous_defs::FamousDefs;

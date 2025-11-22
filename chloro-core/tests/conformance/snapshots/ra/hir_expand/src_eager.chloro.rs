@@ -26,11 +26,9 @@ use syntax_bridge::DocCommentDesugarMode;
 use triomphe::Arc;
 
 use crate::{
-    AstId, EagerCallInfo, ExpandError, ExpandResult, ExpandTo, ExpansionSpanMap, InFile,
-    MacroCallId, MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
-    ast::{self, AstNode},
-    db::ExpandDatabase,
-    mod_path::ModPath,
+    ast::{self, db::ExpandDatabase, mod_path::ModPath, AstId, AstNode}, EagerCallInfo, ExpandError,
+    ExpandResult, ExpandTo, ExpansionSpanMap, InFile, MacroCallId, MacroCallKind, MacroCallLoc,
+    MacroDefId, MacroDefKind,
 };
 
 pub type EagerCallBackFn<'a> =

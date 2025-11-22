@@ -1,11 +1,11 @@
+mod generated;
+
 use expect_test::expect;
 use hir::{Semantics, db::HirDatabase, setup_tracing};
 use ide_db::{
-    EditionedFileId, FileRange, RootDatabase, SnippetCap,
-    assists::ExprFillDefaultMode,
-    base_db::SourceDatabase,
-    imports::insert_use::{ImportGranularity, InsertUseConfig},
-    source_change::FileSystemEdit,
+    assists::ExprFillDefaultMode, base_db::SourceDatabase, imports::insert_use::{ImportGranularity,
+    source_change::FileSystemEdit, EditionedFileId, FileRange, InsertUseConfig}, RootDatabase,
+    SnippetCap,
 };
 use stdx::{format_to, trim_indent};
 use syntax::TextRange;
@@ -13,11 +13,9 @@ use test_fixture::WithFixture;
 use test_utils::{assert_eq_text, extract_offset};
 
 use crate::{
-    Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
-    handlers::Handler,
+    handlers::Handler, Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy,
+    Assists, SingleResolve,
 };
-
-mod generated;
 
 pub(crate) const TEST_CONFIG: AssistConfig = AssistConfig {
     snippet_cap: SnippetCap::new(true),

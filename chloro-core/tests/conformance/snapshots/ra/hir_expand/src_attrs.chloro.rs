@@ -16,11 +16,8 @@ use syntax_bridge::{DocCommentDesugarMode, desugar_doc_comment_text, syntax_node
 use triomphe::ThinArc;
 
 use crate::{
-    db::ExpandDatabase,
-    mod_path::ModPath,
-    name::Name,
-    span_map::SpanMapRef,
-    tt::{self, TopSubtree, token_to_literal},
+    db::ExpandDatabase, mod_path::ModPath, name::Name, span_map::SpanMapRef, token_to_literal},
+    tt::{self, TopSubtree,
 };
 
 /// Syntactical attributes, without filtering of `cfg_attr`s.

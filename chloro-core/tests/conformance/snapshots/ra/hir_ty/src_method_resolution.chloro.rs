@@ -7,43 +7,33 @@ use std::ops::ControlFlow;
 
 use base_db::Crate;
 use hir_def::{
-    AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
-    ModuleId, TraitId, TypeAliasId,
-    nameres::{DefMap, block_def_map, crate_def_map},
-    signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
+    block_def_map, crate_def_map}, nameres::{DefMap, signatures::{ConstFlags, AdtId, AssocItemId,
+    BlockId, ConstId, EnumFlags, FnFlags, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
+    ModuleId, StructFlags, TraitFlags, TraitId, TypeAliasFlags}, TypeAliasId,
 };
 use hir_expand::name::Name;
 use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    FloatTy, IntTy, TypeVisitableExt, UintTy,
     inherent::{
-        AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
-    },
+        AdtDef, BoundExistentialPredicates, FloatTy, GenericArgs as _, IntTy,
+    IntoKind, SliceLike, Ty as _, TypeVisitableExt, UintTy, },
 };
 use smallvec::{SmallVec, smallvec};
 use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    TraitEnvironment,
-    autoderef::{self, AutoderefKind},
-    db::HirDatabase,
-    infer::{Adjust, Adjustment, OverloadedDeref, PointerCast, unify::InferenceTable},
-    lang_items::is_box,
-    next_solver::{
-        Canonical, DbInterner, ErrorGuaranteed, GenericArgs, Goal, Predicate, Region, SolverDefId,
-        TraitRef, Ty, TyKind, TypingMode,
-        infer::{
-            DbInternerInferExt, InferCtxt,
-            select::ImplSource,
-            traits::{Obligation, ObligationCause, PredicateObligation},
-        },
-        obligation_ctxt::ObligationCtxt,
-    },
-    traits::next_trait_solve_canonical_in_ctxt,
-    utils::all_super_traits,
+    autoderef::{self, db::HirDatabase, infer::{
+            DbInternerInferExt, infer::{Adjust,
+    lang_items::is_box, next_solver::{
+        Canonical, obligation_ctxt::ObligationCtxt,
+    select::ImplSource, traits::next_trait_solve_canonical_in_ctxt, traits::{Obligation,
+    unify::InferenceTable}, utils::all_super_traits, Adjustment, AutoderefKind}, DbInterner,
+    ErrorGuaranteed, GenericArgs, Goal, InferCtxt, ObligationCause, OverloadedDeref, PointerCast,
+    Predicate, PredicateObligation}, Region, SolverDefId, TraitEnvironment, TraitRef, Ty, TyKind,
+    TypingMode, }, },
 };
 
 /// This is used as a key for indexing impls.

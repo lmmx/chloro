@@ -2,14 +2,12 @@ use std::iter;
 
 use hir::HasSource;
 use ide_db::{
-    assists::GroupLabel,
-    famous_defs::FamousDefs,
-    syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
+    assists::GroupLabel, famous_defs::FamousDefs, syntax_helpers::node_ext::{for_each_tail_expr,
+    walk_expr},
 };
 use syntax::{
-    AstNode,
-    ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
-    match_ast,
+    ast::{self, match_ast, syntax_factory::SyntaxFactory}, AstNode, Expr, HasGenericArgs,
+    HasGenericParams,
 };
 
 use crate::{AssistContext, AssistId, Assists};

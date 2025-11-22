@@ -1,17 +1,22 @@
 //! MIR definitions and implementation
 
+mod borrowck;
+mod eval;
+mod lower;
+mod monomorphization;
+mod pretty;
+
 use std::{collections::hash_map::Entry, fmt::Display, iter};
 
 use base_db::Crate;
 pub use borrowck::{BorrowckResult, MutabilityReason, borrowck_query};
 use either::Either;
 pub use eval::{
-    Evaluator, MirEvalError, VTableMap, interpret_mir, pad16, render_const_using_debug_impl,
+    interpret_mir, pad16, render_const_using_debug_impl, Evaluator, MirEvalError, VTableMap,
 };
 use hir_def::{
-    DefWithBodyId, FieldId, StaticId, TupleFieldId, UnionId, VariantId,
-    expr_store::Body,
-    hir::{BindingAnnotation, BindingId, Expr, ExprId, Ordering, PatId},
+    expr_store::Body, hir::{BindingAnnotation, BindingId, DefWithBodyId, Expr, ExprId, FieldId,
+    Ordering, PatId}, StaticId, TupleFieldId, UnionId, VariantId,
 };
 use la_arena::{Arena, ArenaMap, Idx, RawIdx};
 pub(crate) use lower::mir_body_cycle_result;
@@ -27,29 +32,14 @@ use smallvec::{SmallVec, smallvec};
 use stdx::{impl_from, never};
 
 use crate::{
-    CallableDefId, InferenceResult, MemoryMap,
-    consteval::usize_const,
-    db::{HirDatabase, InternedClosureId},
-    display::{DisplayTarget, HirDisplay},
-    infer::PointerCast,
-    lang_items::is_box,
-    next_solver::{
-        Const, DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
-    },
+    consteval::usize_const, db::{HirDatabase, display::{DisplayTarget, infer::PointerCast,
+    infer::{InferCtxt, lang_items::is_box, next_solver::{
+        Const,
+    obligation_ctxt::ObligationCtxt, traits::ObligationCause}, CallableDefId, DbInterner,
+    ErrorGuaranteed, GenericArgs, HirDisplay}, InferenceResult, InternedClosureId}, MemoryMap,
+    ParamEnv, Ty, TyKind, },
 };
 use super::consteval::try_const_usize;
-
-mod borrowck;
-
-mod eval;
-
-mod lower;
-
-mod monomorphization;
-
-mod pretty;
 
 pub type BasicBlockId<'db> = Idx<BasicBlock<'db>>;
 

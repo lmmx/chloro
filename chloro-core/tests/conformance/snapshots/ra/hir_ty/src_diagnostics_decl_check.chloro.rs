@@ -11,12 +11,14 @@
 //! - match arm bindings (e.g. `foo @ Some(_)`)
 //! - modules (e.g. `mod foo { ... }` or `mod foo;`)
 
+mod case_conv;
+
 use std::fmt;
 
 use hir_def::{
+    db::DefDatabase, hir::Pat, item_tree::FieldsShape, signatures::StaticFlags, src::HasSource,
     AdtId, ConstId, EnumId, EnumVariantId, FunctionId, HasModule, ItemContainerId, Lookup,
-    ModuleDefId, ModuleId, StaticId, StructId, TraitId, TypeAliasId, db::DefDatabase, hir::Pat,
-    item_tree::FieldsShape, signatures::StaticFlags, src::HasSource,
+    ModuleDefId, ModuleId, StaticId, StructId, TraitId, TypeAliasId,
 };
 use hir_expand::{
     HirFileId,
@@ -25,15 +27,11 @@ use hir_expand::{
 use intern::sym;
 use stdx::{always, never};
 use syntax::{
-    AstNode, AstPtr, ToSmolStr,
-    ast::{self, HasName},
-    utils::is_raw_identifier,
+    ast::{self, utils::is_raw_identifier, AstNode, AstPtr, HasName}, ToSmolStr,
 };
 
 use crate::db::HirDatabase;
 use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
-
-mod case_conv;
 
 pub fn incorrect_case(
     db: &dyn HirDatabase,

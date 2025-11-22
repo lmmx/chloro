@@ -2,37 +2,37 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17832 bytes
-Chloro size:   17712 bytes
+Chloro size:   17700 bytes
 Rustfmt size:  18165 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-+use Edit::*;
  use either::Either;
  use ide_db::imports::{
-     insert_use::{ImportGranularity, InsertUseConfig},
+-    insert_use::{ImportGranularity, InsertUseConfig},
 -    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
-+    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
++    insert_use::{ImportGranularity, merge_imports::{MergeBehavior, try_merge_imports,
++    try_merge_trees}, InsertUseConfig},
  };
  use syntax::{
-+    AstNode, SyntaxElement, SyntaxNode,
-     algo::neighbor,
-     ast::{self, syntax_factory::SyntaxFactory},
-     match_ast,
-     syntax_editor::Removable,
+-    algo::neighbor,
+-    ast::{self, syntax_factory::SyntaxFactory},
+-    match_ast,
+-    syntax_editor::Removable,
 -    AstNode, SyntaxElement, SyntaxNode,
++    algo::neighbor, ast::{self, match_ast, syntax_editor::Removable,
++    syntax_factory::SyntaxFactory}, AstNode, SyntaxElement, SyntaxNode,
  };
- 
- use crate::{
-+    AssistId,
-     assist_context::{AssistContext, Assists},
-     utils::next_prev,
--    AssistId,
- };
- 
--use Edit::*;
 -
+-use crate::{
+-    assist_context::{AssistContext, Assists},
+-    utils::next_prev,
+-    AssistId,
+-};
+-
+ use Edit::*;
+ 
 -// Assist: merge_imports
 -//
 -// Merges neighbor imports with a common prefix.
@@ -46,6 +46,12 @@ Rustfmt size:  18165 bytes
 -// use std::{fmt::Formatter, io};
 -// ```
 -pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
++use crate::{
++    AssistId,
++    assist_context::{AssistContext, Assists},
++    utils::next_prev,
++};
++
 +pub(crate) fn merge_imports(
 +    acc: &mut Assists,
 +    ctx: &AssistContext<'_>,

@@ -1,18 +1,22 @@
 //! rust-analyzer extensions to the LSP.
 
+// Note when adding new resolve payloads, add a #[serde(default)] on boolean fields as some clients
+// might strip `false` values from the JSON payload due to their reserialization logic turning false
+// into null which will then cause them to be omitted in the resolve request. See https://github.com/rust-lang/rust-analyzer/issues/18767
+#![allow(clippy::disallowed_types)]
+
 use std::ops;
 
 use lsp_types::Url;
 use lsp_types::request::Request;
 use lsp_types::{
-    CodeActionKind, DocumentOnTypeFormattingParams, PartialResultParams, Position, Range,
-    TextDocumentIdentifier, WorkDoneProgressParams, notification::Notification,
+    notification::Notification, CodeActionKind, DocumentOnTypeFormattingParams,
+    PartialResultParams, Position, Range, TextDocumentIdentifier, WorkDoneProgressParams,
 };
 use paths::Utf8PathBuf;
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 
-#![allow(clippy::disallowed_types)]
 pub enum InternalTestingFetchConfig {
 }
 

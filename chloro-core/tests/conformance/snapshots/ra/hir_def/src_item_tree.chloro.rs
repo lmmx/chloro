@@ -30,6 +30,11 @@
 //! In general, any item in the `ItemTree` stores its `AstId`, which allows mapping it back to its
 //! surface syntax.
 
+mod lower;
+mod pretty;
+#[cfg(test)]
+mod tests;
+
 use std::{
     fmt::{self, Debug},
     hash::Hash,
@@ -40,10 +45,7 @@ use std::{
 use ast::{AstNode, StructKind};
 use base_db::Crate;
 use hir_expand::{
-    ExpandTo, HirFileId,
-    attrs::RawAttrs,
-    mod_path::{ModPath, PathKind},
-    name::Name,
+    attrs::RawAttrs, mod_path::{ModPath, name::Name, ExpandTo, HirFileId, PathKind},
 };
 use intern::Interned;
 use la_arena::{Idx, RawIdx};
@@ -56,13 +58,6 @@ use triomphe::Arc;
 
 pub(crate) use crate::item_tree::lower::{lower_use_tree, visibility_from_ast};
 use crate::{BlockId, Lookup, attr::Attrs, db::DefDatabase};
-
-mod lower;
-
-mod pretty;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub(crate) struct RawVisibilityId(u32);

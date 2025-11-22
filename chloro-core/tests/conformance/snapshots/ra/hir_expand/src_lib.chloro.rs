@@ -4,6 +4,25 @@
 //! tree originates not from the text of some `FileId`, but from some macro
 //! expansion.
 
+#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
+
+pub mod attrs;
+pub mod builtin;
+pub mod change;
+pub mod db;
+pub mod declarative;
+pub mod eager;
+pub mod files;
+pub mod hygiene;
+pub mod inert_attr_macro;
+pub mod mod_path;
+pub mod name;
+pub mod proc_macro;
+pub mod span_map;
+mod cfg_process;
+mod fixup;
+mod prettify_macro_expansion_;
+
 use core::fmt;
 use std::hash::Hash;
 
@@ -24,54 +43,17 @@ use syntax::{
 use triomphe::Arc;
 
 use crate::{
-    attrs::AttrId,
-    builtin::{
-        BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
-        include_input_to_file_id,
-    },
-    db::ExpandDatabase,
-    mod_path::ModPath,
-    proc_macro::{CustomProcMacroExpander, ProcMacroKind},
-    span_map::{ExpansionSpanMap, SpanMap},
+    attrs::AttrId, builtin::{
+        BuiltinAttrExpander, db::ExpandDatabase,
+    include_input_to_file_id, mod_path::ModPath, proc_macro::{CustomProcMacroExpander,
+    span_map::{ExpansionSpanMap, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
+    ProcMacroKind}, SpanMap}, },
 };
 pub use crate::{
-    cfg_process::check_cfg_attr_value,
-    files::{AstId, ErasedAstId, FileRange, InFile, InMacroFile, InRealFile},
-    prettify_macro_expansion_::prettify_macro_expansion,
+    cfg_process::check_cfg_attr_value, files::{AstId,
+    prettify_macro_expansion_::prettify_macro_expansion, ErasedAstId, FileRange, InFile,
+    InMacroFile, InRealFile},
 };
-
-#![cfg_attr(feature = "in-rust-tree", feature(rustc_private))]
-pub mod attrs;
-
-pub mod builtin;
-
-pub mod change;
-
-pub mod db;
-
-pub mod declarative;
-
-pub mod eager;
-
-pub mod files;
-
-pub mod hygiene;
-
-pub mod inert_attr_macro;
-
-pub mod mod_path;
-
-pub mod name;
-
-pub mod proc_macro;
-
-pub mod span_map;
-
-mod cfg_process;
-
-mod fixup;
-
-mod prettify_macro_expansion_;
 
 pub mod tt {
     pub use span::Span;

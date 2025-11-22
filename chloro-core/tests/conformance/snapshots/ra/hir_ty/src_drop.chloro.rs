@@ -7,14 +7,10 @@ use stdx::never;
 use triomphe::Arc;
 
 use crate::{
-    TraitEnvironment, consteval,
-    db::HirDatabase,
-    method_resolution::TyFingerprint,
+    consteval, db::HirDatabase, infer::{InferCtxt, method_resolution::TyFingerprint,
     next_solver::{
-        Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
-    },
+        Ty, obligation_ctxt::ObligationCtxt, traits::ObligationCause},
+    TraitEnvironment, TyKind, },
 };
 
 fn has_destructor(

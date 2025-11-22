@@ -539,8 +539,8 @@ fn build_pat(
 mod tests {
     use crate::AssistConfig;
     use crate::tests::{
-        TEST_CONFIG, check_assist, check_assist_not_applicable, check_assist_target,
-        check_assist_unresolved, check_assist_with_config,
+        check_assist, check_assist_not_applicable, check_assist_target, check_assist_unresolved,
+        check_assist_with_config, TEST_CONFIG,
     };
     use super::add_missing_match_arms;
     #[test]

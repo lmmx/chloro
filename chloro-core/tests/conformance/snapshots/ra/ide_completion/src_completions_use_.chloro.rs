@@ -5,9 +5,8 @@ use ide_db::{FxHashSet, SymbolKind};
 use syntax::{AstNode, ast, format_smolstr};
 
 use crate::{
-    CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
-    context::{CompletionContext, PathCompletionCtx, Qualified},
-    item::Builder,
+    context::{CompletionContext, item::Builder, CompletionItem, CompletionItemKind,
+    CompletionRelevance, Completions, PathCompletionCtx, Qualified},
 };
 
 pub(crate) fn complete_use_path(

@@ -10,25 +10,23 @@ use std::{cell::LazyCell, cmp::Reverse};
 use base_db::{RootQueryDb, SourceDatabase};
 use either::Either;
 use hir::{
-    Adt, AsAssocItem, DefWithBody, EditionedFileId, FileRange, FileRangeWrapper, HasAttrs,
+    sym, Adt, AsAssocItem, DefWithBody, EditionedFileId, FileRange, FileRangeWrapper, HasAttrs,
     HasContainer, HasSource, InFile, InFileWrapper, InRealFile, InlineAsmOperand, ItemContainer,
-    ModuleSource, PathResolution, Semantics, Visibility, sym,
+    ModuleSource, PathResolution, Semantics, Visibility,
 };
 use memchr::memmem::Finder;
 use parser::SyntaxKind;
 use rustc_hash::{FxHashMap, FxHashSet};
 use salsa::Database;
 use syntax::{
-    AstNode, AstToken, SmolStr, SyntaxElement, SyntaxNode, TextRange, TextSize, ToSmolStr,
-    ast::{self, HasName, Rename},
-    match_ast,
+    ast::{self, match_ast, AstNode, AstToken, HasName, Rename}, SmolStr, SyntaxElement, SyntaxNode,
+    TextRange, TextSize, ToSmolStr,
 };
 use triomphe::Arc;
 
 use crate::{
-    RootDatabase,
-    defs::{Definition, NameClass, NameRefClass},
-    traits::{as_trait_assoc_def, convert_to_def_in_trait},
+    convert_to_def_in_trait}, defs::{Definition, traits::{as_trait_assoc_def, NameClass,
+    NameRefClass}, RootDatabase,
 };
 
 #[derive(Debug, Default, Clone)]

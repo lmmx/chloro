@@ -2,19 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5590 bytes
-Chloro size:   5589 bytes
+Chloro size:   5590 bytes
 Rustfmt size:  5590 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
--#![allow(clippy::match_single_binding)]
--#![allow(clippy::no_effect)]
--
- use crate::size_and_align_expr;
- 
-+#![allow(clippy::match_single_binding)]
-+#![allow(clippy::no_effect)]
- #[test]
- fn zero_capture_simple() {
-     size_and_align_expr! {
+✓ Outputs are IDENTICAL

@@ -1,3 +1,5 @@
+mod intrinsics;
+
 use base_db::RootQueryDb;
 use hir_def::db::DefDatabase;
 use hir_expand::EditionedFileId;
@@ -10,21 +12,14 @@ use test_fixture::WithFixture;
 use test_utils::skip_slow_tests;
 
 use crate::{
-    MemoryMap,
-    consteval::try_const_usize,
-    db::HirDatabase,
-    display::DisplayTarget,
-    mir::pad16,
-    next_solver::{Const, ConstBytes, ConstKind, DbInterner, GenericArgs},
-    setup_tracing,
-    test_db::TestDB,
+    consteval::try_const_usize, db::HirDatabase, display::DisplayTarget, mir::pad16,
+    next_solver::{Const, setup_tracing, test_db::TestDB, ConstBytes, ConstKind, DbInterner,
+    GenericArgs}, MemoryMap,
 };
 use super::{
     super::mir::{MirEvalError, MirLowerError},
     ConstEvalError,
 };
-
-mod intrinsics;
 
 fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
     match e {

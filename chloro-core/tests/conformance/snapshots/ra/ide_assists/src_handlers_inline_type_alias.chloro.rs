@@ -1,3 +1,6 @@
+// Some ideas for future improvements:
+// - Support replacing aliases which are used in expressions, e.g. `A::new()`.
+// - Remove unused aliases if there are no longer any users, see inline_call.rs.
 use hir::{HasSource, PathResolution};
 use ide_db::FxHashMap;
 use ide_db::{

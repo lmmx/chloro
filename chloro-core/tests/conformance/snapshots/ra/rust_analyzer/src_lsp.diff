@@ -2,25 +2,37 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5113 bytes
-Chloro size:   5163 bytes
+Chloro size:   5158 bytes
 Rustfmt size:  5253 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- pub mod ext;
+ //! Custom LSP definitions and protocol conversions.
  
+-use core::fmt;
+-
+-use hir::Mutability;
+-use ide::{CompletionItem, CompletionItemRefMode, CompletionRelevance};
+-use tenthash::TentHash;
+-
+ pub mod ext;
+-
  pub(crate) mod capabilities;
-+
  pub(crate) mod from_proto;
-+
  pub(crate) mod semantic_tokens;
-+
  pub(crate) mod to_proto;
-+
  pub(crate) mod utils;
  
++use core::fmt;
++
++use hir::Mutability;
++use ide::{CompletionItem, CompletionItemRefMode, CompletionRelevance};
++use tenthash::TentHash;
++
  #[derive(Debug)]
+ pub(crate) struct LspError {
+     pub(crate) code: i32,
  }
  
  impl LspError {

@@ -2,12 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16730 bytes
+Chloro size:   16726 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Type tree for term search
+ 
+ use hir_def::FindPathConfig;
+ use hir_expand::mod_path::ModPath;
+ use hir_ty::{
+-    db::HirDatabase,
+-    display::{DisplaySourceCodeError, DisplayTarget, HirDisplay},
++    db::HirDatabase, display::{DisplaySourceCodeError, DisplayTarget, HirDisplay},
+ };
+ use itertools::Itertools;
+ use span::Edition;
      /// Constant generic parameter
      ConstParam(ConstParam),
      /// Well known type (such as `true` for bool)

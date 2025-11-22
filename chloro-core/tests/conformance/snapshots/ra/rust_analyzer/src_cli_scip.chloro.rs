@@ -15,9 +15,7 @@ use tracing::error;
 use vfs::FileId;
 
 use crate::{
-    cli::flags,
-    config::ConfigChange,
-    line_index::{LineEndings, LineIndex, PositionEncoding},
+    cli::flags, config::ConfigChange, line_index::{LineEndings, LineIndex, PositionEncoding},
 };
 
 impl flags::Scip {

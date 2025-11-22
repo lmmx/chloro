@@ -1,28 +1,23 @@
 //! Handle syntactic aspects of inserting a new `use` item.
 
+#[cfg(test)]
+mod tests;
+
 use std::cmp::Ordering;
 
 pub use hir::PrefixKind;
 use hir::Semantics;
 use syntax::{
-    Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
-    ast::{
-        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
-        edit_in_place::Removable, make,
-    },
-    ted,
+    algo, ast::{
+        self, edit_in_place::Removable, make, ted, AstNode, Direction, HasAttrs,
+    HasModuleItem, HasVisibility, NodeOrToken, PathSegmentKind, SyntaxKind, SyntaxNode, },
 };
 
 use crate::{
-    RootDatabase,
-    imports::merge_imports::{
-        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
-        try_merge_imports, use_tree_cmp,
-    },
+    common_prefix, eq_attrs, eq_visibility, imports::merge_imports::{
+        MergeBehavior,
+    try_merge_imports, use_tree_cmp, NormalizationStyle, RootDatabase, },
 };
-
-#[cfg(test)]
-mod tests;
 
 /// How imports should be grouped into use statements.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

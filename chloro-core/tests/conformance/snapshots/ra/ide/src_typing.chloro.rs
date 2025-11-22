@@ -13,6 +13,8 @@
 //! Language server executes such typing assists synchronously. That is, they
 //! block user's typing and should be pretty fast for this reason!
 
+mod on_enter;
+
 use std::iter;
 
 use either::Either;
@@ -22,14 +24,11 @@ use ide_db::{FilePosition, RootDatabase, base_db::RootQueryDb};
 pub(crate) use on_enter::on_enter;
 use span::Edition;
 use syntax::{
-    AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
-    algo::{ancestors_at_offset, find_node_at_offset},
-    ast::{self, AstToken, edit::IndentLevel},
+    algo::{ancestors_at_offset, ast::{self, edit::IndentLevel}, find_node_at_offset}, AstNode,
+    AstToken, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
 };
 
 use crate::SourceChange;
-
-mod on_enter;
 
 pub(crate) const TRIGGER_CHARS: &[char] = &['.', '=', '<', '>', '{', '(', '|', '+'];
 

@@ -1,7 +1,6 @@
 use syntax::{
-    AstNode, SyntaxKind,
-    ast::{self, HasAttrs, HasVisibility, edit::IndentLevel, make, syntax_factory::SyntaxFactory},
-    syntax_editor::{Element, Position, Removable},
+    ast::{self, edit::IndentLevel, make, syntax_editor::{Element, syntax_factory::SyntaxFactory},
+    AstNode, HasAttrs, HasVisibility, Position, Removable}, SyntaxKind,
 };
 
 use crate::{

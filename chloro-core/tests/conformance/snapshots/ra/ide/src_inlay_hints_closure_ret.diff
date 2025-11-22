@@ -15,6 +15,15 @@ Rustfmt size:  3222 bytes
  use hir::DisplayTarget;
  use ide_db::{famous_defs::FamousDefs, text_edit::TextEditBuilder};
  use syntax::ast::{self, AstNode};
+ 
+ use crate::{
+-    ClosureReturnTypeHints, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+-    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
++    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit}, ClosureReturnTypeHints,
++    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+ };
+ 
+ pub(super) fn hints(
      if config.closure_return_type_hints == ClosureReturnTypeHints::Never {
          return None;
      }

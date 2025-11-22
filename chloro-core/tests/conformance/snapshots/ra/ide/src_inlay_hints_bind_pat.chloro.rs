@@ -13,8 +13,8 @@ use syntax::{
 };
 
 use crate::{
-    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
-    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit},
+    inlay_hints::{closure_has_block_body, label_of_ty, ty_to_text_edit}, InlayHint,
+    InlayHintPosition, InlayHintsConfig, InlayKind,
 };
 
 pub(super) fn hints(
@@ -167,7 +167,7 @@ mod tests {
     use test_utils::extract_annotations;
     use crate::{ClosureReturnTypeHints, fixture, inlay_hints::InlayHintsConfig};
     use crate::inlay_hints::tests::{
-        DISABLED_CONFIG, TEST_CONFIG, check, check_edit, check_no_edit, check_with_config,
+        check, check_edit, check_no_edit, check_with_config, DISABLED_CONFIG, TEST_CONFIG,
     };
     #[track_caller]
     fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {

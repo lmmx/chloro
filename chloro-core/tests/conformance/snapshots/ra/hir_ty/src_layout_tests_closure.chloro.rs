@@ -1,7 +1,8 @@
-use crate::size_and_align_expr;
-
 #![allow(clippy::match_single_binding)]
 #![allow(clippy::no_effect)]
+
+use crate::size_and_align_expr;
+
 #[test]
 fn zero_capture_simple() {
     size_and_align_expr! {

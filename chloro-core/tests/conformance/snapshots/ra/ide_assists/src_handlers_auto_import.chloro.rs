@@ -3,12 +3,10 @@ use std::cmp::Reverse;
 use either::Either;
 use hir::{Module, Type, db::HirDatabase};
 use ide_db::{
-    active_parameter::ActiveParameter,
-    helpers::mod_path_to_ast,
+    active_parameter::ActiveParameter, helpers::mod_path_to_ast,
     imports::{
-        import_assets::{ImportAssets, ImportCandidate, LocatedImport},
-        insert_use::{ImportScope, insert_use, insert_use_as_alias},
-    },
+        import_assets::{ImportAssets, insert_use, insert_use::{ImportScope,
+    insert_use_as_alias}, ImportCandidate, LocatedImport}, },
 };
 use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
@@ -248,8 +246,8 @@ mod tests {
     use ide_db::{RootDatabase, assists::AssistResolveStrategy};
     use test_fixture::WithFixture;
     use crate::tests::{
-        TEST_CONFIG, check_assist, check_assist_by_label, check_assist_not_applicable,
-        check_assist_target,
+        check_assist, check_assist_by_label, check_assist_not_applicable, check_assist_target,
+        TEST_CONFIG,
     };
     fn check_auto_import_order(
         before: &str,

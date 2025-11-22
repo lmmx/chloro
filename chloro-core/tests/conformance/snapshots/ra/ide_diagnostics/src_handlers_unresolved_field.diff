@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15690 bytes
-Chloro size:   15467 bytes
+Chloro size:   15439 bytes
 Rustfmt size:  15822 bytes
 
 ✗ Outputs DIFFER
@@ -13,15 +13,19 @@ Rustfmt size:  15822 bytes
 +use hir::{Adt, FileRange, HasSource, HirDisplay, InFile, Struct, Union, db::ExpandDatabase};
  use ide_db::text_edit::TextEdit;
  use ide_db::{
-     assists::{Assist, AssistId},
-     source_change::{SourceChange, SourceChangeBuilder},
+-    assists::{Assist, AssistId},
+-    helpers::is_editable_crate,
+-    label::Label,
+-    source_change::{SourceChange, SourceChangeBuilder},
++    assists::{Assist, helpers::is_editable_crate, label::Label, source_change::{SourceChange,
++    AssistId}, SourceChangeBuilder},
  };
  use syntax::{
 -    algo,
 -    ast::{self, edit::IndentLevel, make, FieldList, Name, Visibility},
 -    AstNode, AstPtr, Direction, SyntaxKind, TextSize,
-+    AstNode, AstPtr, Direction, SyntaxKind, TextSize, algo,
-+    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
++    algo, ast::{self, edit::IndentLevel, make}, AstNode, AstPtr, Direction, FieldList, Name,
++    SyntaxKind, TextSize, Visibility,
  };
  use syntax::{
 -    ast::{edit::AstNodeEdit, Type},
@@ -142,12 +146,13 @@ Rustfmt size:  15822 bytes
  mod tests {
 -
      use crate::{
-+        DiagnosticsConfig,
++        check_diagnostics_with_config, check_diagnostics_with_disabled, check_fix, check_no_fix,
          tests::{
-             check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
-             check_fix, check_no_fix,
-         },
+-            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
+-            check_fix, check_no_fix,
+-        },
 -        DiagnosticsConfig,
++            check_diagnostics, DiagnosticsConfig, },
      };
 -
      #[test]

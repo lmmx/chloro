@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4764 bytes
-Chloro size:   4754 bytes
+Chloro size:   4742 bytes
 Rustfmt size:  4820 bytes
 
 ✗ Outputs DIFFER
@@ -14,10 +14,8 @@ Rustfmt size:  4820 bytes
 -    filter::{filter_fn, Targets},
 -    fmt::{time, MakeWriter},
 -    layer::SubscriberExt,
-     Layer, Registry,
-+    filter::{Targets, filter_fn},
-+    fmt::{MakeWriter, time},
-+    layer::SubscriberExt,
+-    Layer, Registry,
++    filter::{Targets, filter_fn}, fmt::{MakeWriter, layer::SubscriberExt, time}, Layer, Registry,
  };
  use tracing_tree::HierarchicalLayer;
  

@@ -2,12 +2,24 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17943 bytes
-Chloro size:   16897 bytes
+Chloro size:   16889 bytes
 Rustfmt size:  17943 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use base_db::{RootQueryDb, SourceRootId};
+ use fst::{Automaton, Streamer, raw::IndexedValue};
+ use hir::{
+-    Crate, Module,
+-    db::HirDatabase,
+-    import_map::{AssocSearchMode, SearchMode},
+-    symbols::{FileSymbol, SymbolCollector},
++    db::HirDatabase, import_map::{AssocSearchMode, symbols::{FileSymbol, Crate, Module,
++    SearchMode}, SymbolCollector},
+ };
+ use rayon::prelude::*;
+ use rustc_hash::FxHashSet;
      }
  
      /// Specifies whether we want to include associated items in the result.

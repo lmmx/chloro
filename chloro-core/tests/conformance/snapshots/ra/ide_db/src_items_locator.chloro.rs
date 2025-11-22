@@ -10,9 +10,7 @@ use hir::{Complete, Crate, ItemInNs, Module, import_map};
 pub use import_map::AssocSearchMode;
 
 use crate::{
-    RootDatabase,
-    imports::import_assets::NameToImport,
-    symbol_index::{self, SymbolIndex},
+    imports::import_assets::NameToImport, symbol_index::{self, RootDatabase, SymbolIndex},
 };
 
 /// A value to use, when uncertain which limit to pick.

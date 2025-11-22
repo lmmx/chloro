@@ -6,9 +6,7 @@ use ide_db::{
     source_change::SourceChange,
 };
 use syntax::{
-    AstNode, SmolStr, TextRange, ToSmolStr,
-    ast::{self, HasArgList, make},
-    format_smolstr,
+    ast::{self, format_smolstr, make}, AstNode, HasArgList, SmolStr, TextRange, ToSmolStr,
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};

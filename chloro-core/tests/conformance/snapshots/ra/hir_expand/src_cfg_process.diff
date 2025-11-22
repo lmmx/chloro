@@ -13,6 +13,15 @@ Rustfmt size:  14552 bytes
  use std::iter::Peekable;
  
  use base_db::Crate;
+ use intern::{Symbol, sym};
+ use rustc_hash::FxHashSet;
+ use syntax::{
+-    AstNode, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, T,
+-    ast::{self, Attr, HasAttrs, Meta, TokenTree, VariantList},
++    ast::{self, AstNode, Attr, HasAttrs, Meta, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode,
++    TokenTree, VariantList}, T,
+ };
+ use tracing::{debug, warn};
  
  use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
  

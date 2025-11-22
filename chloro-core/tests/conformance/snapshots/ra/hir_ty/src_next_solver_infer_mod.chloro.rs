@@ -1,11 +1,23 @@
 //! Infer context the next-trait-solver.
 
+pub mod at;
+pub mod canonical;
+mod context;
+pub mod opaque_types;
+pub mod region_constraints;
+pub mod relate;
+pub mod resolve;
+pub(crate) mod select;
+pub(crate) mod snapshot;
+pub(crate) mod traits;
+mod type_variable;
+mod unify_key;
+
 use std::cell::{Cell, RefCell};
 use std::fmt;
 use std::ops::Range;
 use std::sync::Arc;
 
-pub use BoundRegionConversionTime::*;
 use ena::unify as ut;
 use hir_def::GenericParamId;
 use hir_def::lang_item::LangItem;
@@ -14,25 +26,23 @@ use region_constraints::{RegionConstraintCollector, RegionConstraintStorage};
 use rustc_next_trait_solver::solve::SolverDelegateEvalExt;
 use rustc_pattern_analysis::Captures;
 use rustc_type_ir::{
-    ClosureKind, ConstVid, FloatVarValue, FloatVid, GenericArgKind, InferConst, InferTy,
-    IntVarValue, IntVid, OutlivesPredicate, RegionVid, TermKind, TyVid, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeVisitableExt, UniverseIndex,
-    error::{ExpectedFound, TypeError},
-    inherent::{
-        Const as _, GenericArg as _, GenericArgs as _, IntoKind, SliceLike, Term as _, Ty as _,
-    },
+    error::{ExpectedFound, inherent::{
+        Const as _, ClosureKind, ConstVid, FloatVarValue,
+    FloatVid, GenericArg as _, GenericArgKind, GenericArgs as _, InferConst, InferTy, IntVarValue,
+    IntVid, IntoKind, OutlivesPredicate, RegionVid, SliceLike, Term as _, TermKind, Ty as _, TyVid,
+    TypeError}, TypeFoldable, TypeFolder, TypeSuperFoldable, TypeVisitableExt, UniverseIndex, },
 };
 use snapshot::undo_log::InferCtxtUndoLogs;
 use tracing::{debug, instrument};
 use traits::{ObligationCause, PredicateObligations};
 use type_variable::TypeVariableOrigin;
 use unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey};
+pub use BoundRegionConversionTime::*;
 
 use crate::next_solver::{
-    BoundConst, BoundRegion, BoundTy, BoundVarKind, Goal, SolverContext,
-    fold::BoundVarReplacerDelegate,
-    infer::{select::EvaluationResult, traits::PredicateObligation},
-    obligation_ctxt::ObligationCtxt,
+    fold::BoundVarReplacerDelegate, infer::{select::EvaluationResult,
+    obligation_ctxt::ObligationCtxt, traits::PredicateObligation}, BoundConst, BoundRegion,
+    BoundTy, BoundVarKind, Goal, SolverContext,
 };
 use super::{
     AliasTerm, Binder, CanonicalQueryInput, CanonicalVarValues, Const, ConstKind, DbInterner,
@@ -41,30 +51,6 @@ use super::{
     PolySubtypePredicate, Region, SolverDefId, SubtypePredicate, Term, TraitRef, Ty, TyKind,
     TypingMode,
 };
-
-pub mod at;
-
-pub mod canonical;
-
-mod context;
-
-pub mod opaque_types;
-
-pub mod region_constraints;
-
-pub mod relate;
-
-pub mod resolve;
-
-pub(crate) mod select;
-
-pub(crate) mod snapshot;
-
-pub(crate) mod traits;
-
-mod type_variable;
-
-mod unify_key;
 
 /// `InferOk<'db, ()>` is used a lot. It may seem like a useless wrapper
 /// around `PredicateObligations`, but it has one important property:

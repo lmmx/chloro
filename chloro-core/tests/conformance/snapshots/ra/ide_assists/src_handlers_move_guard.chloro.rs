@@ -1,6 +1,6 @@
 use syntax::{
+    ast::{AstNode, edit::AstNodeEdit, make}, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat,
     SyntaxKind::WHITESPACE,
-    ast::{AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat, edit::AstNodeEdit, make},
 };
 
 use crate::{AssistContext, AssistId, Assists};

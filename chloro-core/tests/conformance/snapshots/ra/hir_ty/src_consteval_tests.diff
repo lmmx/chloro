@@ -2,12 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   57034 bytes
+Chloro size:   57014 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
++mod intrinsics;
++
  use base_db::RootQueryDb;
  use hir_def::db::DefDatabase;
  use hir_expand::EditionedFileId;
@@ -21,19 +23,29 @@ Rustfmt size:  57422 bytes
  use test_utils::skip_slow_tests;
  
  use crate::{
-+    MemoryMap,
-     consteval::try_const_usize,
-     db::HirDatabase,
-     display::DisplayTarget,
-     next_solver::{Const, ConstBytes, ConstKind, DbInterner, GenericArgs},
-     setup_tracing,
-     test_db::TestDB,
+-    consteval::try_const_usize,
+-    db::HirDatabase,
+-    display::DisplayTarget,
+-    mir::pad16,
+-    next_solver::{Const, ConstBytes, ConstKind, DbInterner, GenericArgs},
+-    setup_tracing,
+-    test_db::TestDB,
 -    MemoryMap,
++    consteval::try_const_usize, db::HirDatabase, display::DisplayTarget, mir::pad16,
++    next_solver::{Const, setup_tracing, test_db::TestDB, ConstBytes, ConstKind, DbInterner,
++    GenericArgs}, MemoryMap,
  };
 -
  use super::{
      super::mir::{MirEvalError, MirLowerError},
      ConstEvalError,
+ };
+ 
+-mod intrinsics;
+-
+ fn simplify(e: ConstEvalError<'_>) -> ConstEvalError<'_> {
+     match e {
+         ConstEvalError::MirEvalError(MirEvalError::InFunction(e, _)) => {
      crate::attach_db(&db, || match eval_goal(&db, file_id) {
          Ok(_) => panic!("Expected fail, but it succeeded"),
          Err(e) => {

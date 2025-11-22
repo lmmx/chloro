@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44130 bytes
-Chloro size:   43845 bytes
+Chloro size:   43902 bytes
 Rustfmt size:  44130 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,17 @@ Rustfmt size:  44130 bytes
  use arrayvec::ArrayVec;
  use either::Either;
  use hir::{
-     match_ast,
+ use span::Edition;
+ use stdx::{format_to, impl_from};
+ use syntax::{
+-    SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
+-    ast::{self, AstNode},
+-    match_ast,
++    ast::{self, match_ast, AstNode}, SyntaxKind, SyntaxNode, SyntaxToken, TextSize,
  };
  
 -// FIXME: a more precise name would probably be `Symbol`?
++// FIXME: this badly needs rename/rewrite (matklad, 2020-02-06).
 +use crate::RootDatabase;
 +use crate::documentation::{DocsRangeMap, Documentation, HasDocs};
 +use crate::famous_defs::FamousDefs;

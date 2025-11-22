@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9375 bytes
+Chloro size:   9347 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -11,29 +11,29 @@ Rustfmt size:  10026 bytes
  //! [lattices]: https://en.wikipedia.org/wiki/Lattice_(order)
  
  use rustc_type_ir::{
-+    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
-     inherent::{IntoKind, Span as _},
-     relate::{
+-    inherent::{IntoKind, Span as _},
+-    relate::{
 -        combine::{super_combine_consts, super_combine_tys, PredicateEmittingRelation},
-         Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
-+        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
+-        Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
++    combine::{PredicateEmittingRelation, inherent::{IntoKind, relate::{
++        Relate,
++    super_combine_consts, super_combine_tys}, AliasRelationDirection, Span as _},
++    StructurallyRelateAliases, TypeRelation, TypeVisitableExt, Upcast, Variance, VarianceDiagInfo,
      },
 -    AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
  };
  
  use crate::next_solver::{
--    infer::{
+     infer::{
 -        relate::RelateResult,
 -        traits::{Obligation, PredicateObligations},
 -        InferCtxt, TypeTrace,
 -    },
-     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
-     TyKind,
-+    infer::{
-+        InferCtxt, TypeTrace,
-+        relate::RelateResult,
-+        traits::{Obligation, PredicateObligations},
-+    },
+-    AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
+-    TyKind,
++        InferCtxt, relate::RelateResult, traits::{Obligation, AliasTy, Binder, Const,
++    DbInterner, Goal, ParamEnv, Predicate, PredicateKind, PredicateObligations}, Region, Span, Ty,
++    TyKind, TypeTrace, },
  };
  
  #[derive(Clone, Copy)]

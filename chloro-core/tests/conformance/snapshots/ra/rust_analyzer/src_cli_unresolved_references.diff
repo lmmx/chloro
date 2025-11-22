@@ -14,8 +14,7 @@ Rustfmt size:  6316 bytes
 +use hir::{AnyDiagnostic, Crate, Module, Semantics, db::HirDatabase, sym};
  use ide::{AnalysisHost, RootDatabase, TextRange};
  use ide_db::{
--    base_db::SourceDatabase, defs::NameRefClass, EditionedFileId, FxHashSet, LineIndexDatabase as _,
-+    EditionedFileId, FxHashSet, LineIndexDatabase as _, base_db::SourceDatabase, defs::NameRefClass,
+     base_db::SourceDatabase, defs::NameRefClass, EditionedFileId, FxHashSet, LineIndexDatabase as _,
  };
 -use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 +use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};

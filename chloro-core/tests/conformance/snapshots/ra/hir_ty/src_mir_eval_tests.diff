@@ -2,14 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18992 bytes
-Chloro size:   19013 bytes
+Chloro size:   18997 bytes
 Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     setup_tracing,
-     test_db::TestDB,
+ use test_fixture::WithFixture;
+ 
+ use crate::{
+-    db::HirDatabase,
+-    display::DisplayTarget,
+-    mir::MirLowerError,
+-    next_solver::{DbInterner, GenericArgs},
+-    setup_tracing,
+-    test_db::TestDB,
++    db::HirDatabase, display::DisplayTarget, mir::MirLowerError, next_solver::{DbInterner,
++    setup_tracing, test_db::TestDB, GenericArgs},
  };
 +use super::{MirEvalError, interpret_mir};
  

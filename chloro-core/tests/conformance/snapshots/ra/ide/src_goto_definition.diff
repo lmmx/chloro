@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70551 bytes
+Chloro size:   70523 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -17,31 +17,40 @@ Rustfmt size:  71259 bytes
 -    navigation_target::{self, ToNav},
 -};
  use hir::{
-     AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
+-    AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics, sym,
++    sym, AsAssocItem, AssocItem, CallableKind, FileRange, HasCrate, InFile, ModuleDef, Semantics,
++};
++use ide_db::{
++    base_db::{AnchoredPath, defs::{Definition, famous_defs::FamousDefs, helpers::pick_best_token,
++    IdentClass}, RootDatabase, SourceDatabase}, SymbolKind,
  };
--use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
- use ide_db::{
-     RootDatabase, SymbolKind,
-     base_db::{AnchoredPath, SourceDatabase},
-     famous_defs::FamousDefs,
-     helpers::pick_best_token,
- };
-+use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
+ use ide_db::{MiniCore, ra_fixture::UpmapFromRaFixture};
+-use ide_db::{
+-    RootDatabase, SymbolKind,
+-    base_db::{AnchoredPath, SourceDatabase},
+-    defs::{Definition, IdentClass},
+-    famous_defs::FamousDefs,
+-    helpers::pick_best_token,
+-};
  use itertools::Itertools;
  use span::{Edition, FileId};
  use syntax::{
-     match_ast,
- };
- 
-+use crate::Analysis;
-+use crate::{
-+    FilePosition, NavigationTarget, RangeInfo, TryToNav, UpmappingResult,
-+    doc_links::token_as_doc_comment,
-+    navigation_target::{self, ToNav},
+-    AstNode, AstToken,
+-    SyntaxKind::*,
+-    SyntaxNode, SyntaxToken, T, TextRange,
+-    ast::{self, HasLoopBody},
+-    match_ast,
++    ast::{self, match_ast, AstNode, AstToken, HasLoopBody}, SyntaxKind::*, SyntaxNode, SyntaxToken,
++    TextRange, T,
 +};
 +
++use crate::Analysis;
++use crate::{
++    doc_links::token_as_doc_comment, navigation_target::{self, FilePosition, NavigationTarget,
++    RangeInfo, ToNav}, TryToNav, UpmappingResult,
+ };
+ 
  #[derive(Debug)]
- pub struct GotoDefinitionConfig<'a> {
      pub minicore: MiniCore<'a>,
  }
  
