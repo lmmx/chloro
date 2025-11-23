@@ -102,11 +102,11 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                 extern_crates.push((std::mem::take(&mut pending_comments), n));
                             }
                             SyntaxKind::MODULE => {
-                                if let Some(module) = Module::cast(n.clone()) {
-                                    if module.item_list().is_none() {
-                                        mod_decls.push((std::mem::take(&mut pending_comments), n));
-                                        continue;
-                                    }
+                                if let Some(module) = Module::cast(n.clone())
+                                    && module.item_list().is_none()
+                                {
+                                    mod_decls.push((std::mem::take(&mut pending_comments), n));
+                                    continue;
                                 }
                                 other_items.push(NodeOrToken::Node(n));
                             }
@@ -153,13 +153,13 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         }
                     }
                     NodeOrToken::Token(t) => {
-                        if t.kind() == SyntaxKind::COMMENT {
-                            if let Some(comment) = Comment::cast(t) {
-                                if comment.is_inner() && comment.kind().doc.is_some() {
-                                    module_inner_docs.push(comment);
-                                } else {
-                                    pending_comments.push(comment);
-                                }
+                        if t.kind() == SyntaxKind::COMMENT
+                            && let Some(comment) = Comment::cast(t)
+                        {
+                            if comment.is_inner() && comment.kind().doc.is_some() {
+                                module_inner_docs.push(comment);
+                            } else {
+                                pending_comments.push(comment);
                             }
                         }
                     }

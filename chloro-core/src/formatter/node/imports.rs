@@ -53,10 +53,10 @@ pub fn sort_and_format_imports(
     for (before_comments, use_, trailing_comments) in sorted_uses {
         // Check if we need a blank line between groups
         let (group, _) = classify_import(&use_);
-        if let Some(last) = last_group {
-            if last != group {
-                buf.push('\n');
-            }
+        if let Some(last) = last_group
+            && last != group
+        {
+            buf.push('\n');
         }
         last_group = Some(group);
 
