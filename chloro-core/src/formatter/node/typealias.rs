@@ -1,6 +1,6 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility, Type},
     AstNode, AstToken, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility, Type},
 };
 
 use crate::formatter::config::MAX_WIDTH;

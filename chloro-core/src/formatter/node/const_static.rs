@@ -1,6 +1,6 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasDocComments, HasName, HasVisibility},
     AstNode, AstToken, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasName, HasVisibility},
 };
 
 use crate::formatter::write_indent;

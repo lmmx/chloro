@@ -13,7 +13,7 @@ pub mod cli {
     pub mod report;
     pub mod worker;
 
-    use args::{print_usage, Args};
+    use args::{Args, print_usage};
     use orchestrate::{discover_rust_files, format_all};
     use report::{aggregate_results, print_summary};
     use std::io;

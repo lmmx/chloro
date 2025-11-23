@@ -15,7 +15,7 @@ version = "0.6.0"
 default = []
 
 [dependencies]
-ctor = "0.6.1"
+ctor = { default-features = false, version = "0.6.1" }
 
 # free of syn (see issue #21107, PR #21114), use git rev until crate is released (0.0.260)
 # https://github.com/rust-lang/rust-analyzer/pull/21114
@@ -24,7 +24,6 @@ ra_ap_syntax = { git = "https://github.com/rust-lang/rust-analyzer.git", package
 
 [dev-dependencies]
 braces = "0.2.6"
-ctor = "0.6.1"
 duct = "1.1.1"
 imara-diff = "0.2.0"
 insta.workspace = true

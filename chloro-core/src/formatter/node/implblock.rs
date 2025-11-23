@@ -1,6 +1,6 @@
 use ra_ap_syntax::{
-    ast::{self, HasAttrs, HasDocComments, HasGenericParams},
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
+    ast::{self, HasAttrs, HasDocComments, HasGenericParams},
 };
 
 use super::format_node;

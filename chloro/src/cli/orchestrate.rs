@@ -1,5 +1,5 @@
 use super::args::Args;
-use super::worker::{format_file, ProcessResult};
+use super::worker::{ProcessResult, format_file};
 use std::path::PathBuf;
 use std::thread::{available_parallelism, scope};
 

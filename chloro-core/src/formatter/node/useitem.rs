@@ -1,6 +1,6 @@
 use ra_ap_syntax::{
-    ast::{self, HasVisibility},
     AstNode, SyntaxNode,
+    ast::{self, HasVisibility},
 };
 
 pub mod grouping;
