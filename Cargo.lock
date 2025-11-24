@@ -81,7 +81,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "chloro"
-version = "0.6.3"
+version = "0.6.4"
 dependencies = [
  "assert_cmd",
  "chloro-core",
@@ -94,7 +94,7 @@ dependencies = [
 
 [[package]]
 name = "chloro-core"
-version = "0.6.3"
+version = "0.6.4"
 dependencies = [
  "braces",
  "ctor",
