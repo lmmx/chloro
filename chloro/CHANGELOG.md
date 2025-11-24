@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3](https://github.com/lmmx/chloro/compare/chloro-v0.6.2...chloro-v0.6.3) - 2025-11-24
+
+### <!-- 1 -->Features
+
+- improve struct literal handling ([#34](https://github.com/lmmx/chloro/pull/34))
+
 ## [0.6.2](https://github.com/lmmx/chloro/compare/chloro-v0.6.1...chloro-v0.6.2) - 2025-11-24
 
 ### <!-- 2 -->Bug Fixes
