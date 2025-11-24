@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9189 bytes
+Chloro size:   9193 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -94,13 +94,6 @@ Rustfmt size:  10026 bytes
              ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
  
              _ => super_combine_tys(infcx, self, a, b),
-         b: Binder<'db, T>,
-     ) -> RelateResult<'db, Binder<'db, T>>
-     where
--        T: Relate<DbInterner<'db>>,
--    {
-+        T: Relate<DbInterner<'db>>, {
-         // GLB/LUB of a binder and itself is just itself
          if a == b {
              return Ok(a);
          }

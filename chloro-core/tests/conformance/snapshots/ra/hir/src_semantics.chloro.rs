@@ -1898,7 +1898,8 @@ impl<'db> SemanticsImpl<'db> {
     /// Search for a definition's source and cache its syntax tree
     pub fn source<Def: HasSource>(&self, def: Def) -> Option<InFile<Def::Ast>>
     where
-        Def::Ast: AstNode, {
+        Def::Ast: AstNode,
+    {
         // FIXME: source call should go through the parse cache
         let res = def.source(self.db)?;
         self.cache(find_root(res.value.syntax()), res.file_id);

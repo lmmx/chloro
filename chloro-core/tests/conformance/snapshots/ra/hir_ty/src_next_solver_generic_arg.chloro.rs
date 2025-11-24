@@ -189,7 +189,8 @@ impl<'db> GenericArgs<'db> {
         mut mk_kind: F,
     ) -> GenericArgs<'db>
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         let defs = interner.generics_of(def_id);
         let count = defs.count();
         let mut args = SmallVec::with_capacity(count);
@@ -209,7 +210,8 @@ impl<'db> GenericArgs<'db> {
         mut fallback: F,
     ) -> GenericArgs<'db>
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         let defaults = interner.db.generic_defaults(def_id);
         Self::for_item(interner, def_id.into(), |idx, id, prev| match defaults.get(idx as usize) {
             Some(default) => default.instantiate(interner, prev),
@@ -225,7 +227,8 @@ impl<'db> GenericArgs<'db> {
         mut fallback: F,
     ) -> GenericArgs<'db>
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         let mut iter = first.into_iter();
         Self::for_item(interner, def_id, |idx, id, prev| {
             iter.next().unwrap_or_else(|| fallback(idx, id, prev))
@@ -240,7 +243,8 @@ impl<'db> GenericArgs<'db> {
         mut fallback: F,
     ) -> GenericArgs<'db>
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         let defaults = interner.db.generic_defaults(def_id);
         Self::fill_rest(interner, def_id.into(), first, |idx, id, prev| {
             defaults
@@ -257,7 +261,8 @@ impl<'db> GenericArgs<'db> {
         mk_kind: &mut F,
     )
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         if let Some(def_id) = defs.parent {
             let parent_defs = interner.generics_of(def_id.into());
             Self::fill_item(args, interner, parent_defs, mk_kind);
@@ -271,7 +276,8 @@ impl<'db> GenericArgs<'db> {
         mk_kind: &mut F,
     )
     where
-        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+    {
         args.reserve(defs.own_params.len());
         for param in &defs.own_params {
             let kind = mk_kind(args.len() as u32, param.id, args);
@@ -586,7 +592,8 @@ impl<'db> DbInterner<'db> {
     pub(super) fn mk_args_from_iter<I, T>(self, iter: I) -> T::Output
     where
         I: Iterator<Item = T>,
-        T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>, {
+        T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>,
+    {
         T::collect_and_apply(iter, |xs| self.mk_args(xs))
     }
 }

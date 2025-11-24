@@ -207,7 +207,8 @@ impl LangItems {
         constructor: fn(T) -> LangItemTarget,
     )
     where
-        T: Into<AttrDefId> + Copy, {
+        T: Into<AttrDefId> + Copy,
+    {
         let _p = tracing::info_span!("collect_lang_item").entered();
         if let Some(lang_item) = lang_attr(db, item.into()) {
             self.items.entry(lang_item).or_insert_with(|| constructor(item));

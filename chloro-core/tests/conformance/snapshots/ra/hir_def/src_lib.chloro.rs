@@ -975,7 +975,8 @@ pub trait HasModule {
 impl<N, ItemId> HasModule for ItemId
 where
     N: AstIdNode,
-    ItemId: Lookup<Database = dyn DefDatabase, Data = ItemLoc<N>> + Copy, {
+    ItemId: Lookup<Database = dyn DefDatabase, Data = ItemLoc<N>> + Copy,
+{
     #[inline]
     fn module(&self, db: &dyn DefDatabase) -> ModuleId {
         self.lookup(db).container

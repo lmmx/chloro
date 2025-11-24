@@ -337,7 +337,8 @@ impl<'db> InferCtxtBuilder<'db> {
         input: &CanonicalQueryInput<'db, T>,
     ) -> (InferCtxt<'db>, T, CanonicalVarValues<'db>)
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         let infcx = self.build(input.typing_mode);
         let (value, args) = infcx.instantiate_canonical(&input.canonical);
         (infcx, value, args)
@@ -387,7 +388,8 @@ impl<'db> InferCtxt<'db> {
 
     pub(crate) fn insert_type_vars<T>(&self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         struct Folder<'a, 'db> {
             infcx: &'a InferCtxt<'db>,
         }
@@ -974,7 +976,8 @@ impl<'db> InferCtxt<'db> {
     /// at will.
     pub fn resolve_vars_if_possible<T>(&self, value: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         if let Err(guar) = value.error_reported() {
             self.set_tainted_by_errors(guar);
         }
@@ -998,7 +1001,8 @@ impl<'db> InferCtxt<'db> {
         value: Binder<'db, T>,
     ) -> T
     where
-        T: TypeFoldable<DbInterner<'db>> + Clone, {
+        T: TypeFoldable<DbInterner<'db>> + Clone,
+    {
         if let Some(inner) = value.clone().no_bound_vars() {
             return inner;
         }

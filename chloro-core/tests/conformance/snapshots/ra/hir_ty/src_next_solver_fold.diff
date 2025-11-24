@@ -61,14 +61,6 @@ Rustfmt size:  5644 bytes
      }
  }
  
- impl<'db, D> TypeFolder<DbInterner<'db>> for BoundVarReplacer<'db, D>
- where
--    D: BoundVarReplacerDelegate<'db>,
--{
-+    D: BoundVarReplacerDelegate<'db>, {
-     fn cx(&self) -> DbInterner<'db> {
-         self.interner
-     }
      }
  
      fn fold_predicate(&mut self, p: Predicate<'db>) -> Predicate<'db> {

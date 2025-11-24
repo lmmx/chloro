@@ -173,7 +173,8 @@ impl Expander {
         op: F,
     ) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>>
     where
-        F: FnOnce(&mut Self) -> ExpandResult<Option<MacroCallId>>, {
+        F: FnOnce(&mut Self) -> ExpandResult<Option<MacroCallId>>,
+    {
         if self.recursion_depth == u32::MAX {
             // Recursion limit has been reached somewhere in the macro expansion tree. We should
             // stop expanding other macro calls in this tree, or else this may result in

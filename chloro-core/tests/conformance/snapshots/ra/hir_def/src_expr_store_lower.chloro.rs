@@ -1875,7 +1875,8 @@ impl ExprCollector<'_> {
         collector: impl FnOnce(&mut Self, Option<T>) -> U,
     ) -> U
     where
-        T: ast::AstNode, {
+        T: ast::AstNode,
+    {
         let macro_call_ptr = self.expander.in_file(syntax_ptr);
         let module = self.module.local_id;
         let block_call = self.def_map.modules[self.module.local_id].scope.macro_invoc(

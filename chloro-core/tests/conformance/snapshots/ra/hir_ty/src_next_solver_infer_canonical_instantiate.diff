@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6139 bytes
-Chloro size:   5927 bytes
+Chloro size:   5935 bytes
 Rustfmt size:  6179 bytes
 
 ✗ Outputs DIFFER
@@ -35,33 +35,6 @@ Rustfmt size:  6179 bytes
      fn instantiate_projected<T>(
          &self,
          tcx: DbInterner<'db>,
-     /// with the value given in `var_values`.
-     fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         self.instantiate_projected(tcx, var_values, |value| value.clone())
-     }
- 
-         projection_fn: impl FnOnce(&V) -> T,
-     ) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         assert_eq!(self.variables.len(), var_values.len());
-         let value = projection_fn(&self.value);
-         instantiate_value(tcx, var_values, value)
-     value: T,
- ) -> T
- where
--    T: TypeFoldable<DbInterner<'db>>,
--{
-+    T: TypeFoldable<DbInterner<'db>>, {
-     if var_values.var_values.is_empty() {
-         value
-     } else {
  /// Replaces the bound vars in a canonical binder with var values.
  struct CanonicalInstantiator<'db, 'a> {
      tcx: DbInterner<'db>,

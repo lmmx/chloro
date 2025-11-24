@@ -647,7 +647,8 @@ impl<'db> TypeRelation<DbInterner<'db>> for Generalizer<'_, 'db> {
         _: Binder<'db, T>,
     ) -> RelateResult<'db, Binder<'db, T>>
     where
-        T: Relate<DbInterner<'db>>, {
+        T: Relate<DbInterner<'db>>,
+    {
         let result = self.relate(a.skip_binder(), a.skip_binder())?;
         Ok(a.rebind(result))
     }

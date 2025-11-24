@@ -480,7 +480,8 @@ fn rename_strukt_args<N>(
     args: &GenericArgList,
 ) -> Option<N>
 where
-    N: ast::AstNode, {
+    N: ast::AstNode,
+{
     let hir_strukt = ctx.sema.to_struct_def(strukt)?;
     let hir_adt = hir::Adt::from(hir_strukt);
     let item = item.clone_for_update();

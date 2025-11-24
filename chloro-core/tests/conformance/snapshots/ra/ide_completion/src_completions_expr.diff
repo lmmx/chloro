@@ -17,15 +17,6 @@ Rustfmt size:  21861 bytes
  use ide_db::FxHashSet;
  use syntax::ast;
  
- 
- impl<F> PathCandidateCallback for PathCallback<'_, F>
- where
--    F: FnMut(&mut Completions, hir::AssocItem),
--{
-+    F: FnMut(&mut Completions, hir::AssocItem), {
-     fn on_inherent_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
-         if self.seen.insert(item) {
-             (self.add_assoc_item)(self.acc, item);
      if !ctx.qualifier_ctx.none() {
          return;
      }

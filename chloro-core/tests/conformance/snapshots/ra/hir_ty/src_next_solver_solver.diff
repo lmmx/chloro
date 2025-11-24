@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13159 bytes
-Chloro size:   13148 bytes
+Chloro size:   13156 bytes
 Rustfmt size:  13159 bytes
 
 ✗ Outputs DIFFER
@@ -47,24 +47,6 @@ Rustfmt size:  13159 bytes
      type Infcx = InferCtxt<'db>;
  
      fn cx(&self) -> Self::Interner {
-         canonical: &rustc_type_ir::CanonicalQueryInput<Self::Interner, V>,
-     ) -> (Self, V, rustc_type_ir::CanonicalVarValues<Self::Interner>)
-     where
--        V: rustc_type_ir::TypeFoldable<Self::Interner>,
--    {
-+        V: rustc_type_ir::TypeFoldable<Self::Interner>, {
-         let (infcx, value, vars) = cx.infer_ctxt().build_with_canonical(canonical);
-         (SolverContext(infcx), value, vars)
-     }
-         values: rustc_type_ir::CanonicalVarValues<Self::Interner>,
-     ) -> V
-     where
--        V: rustc_type_ir::TypeFoldable<Self::Interner>,
--    {
-+        V: rustc_type_ir::TypeFoldable<Self::Interner>, {
-         canonical.instantiate(self.cx(), &values)
-     }
- 
          // lifetime for its member constraints which then results in
          // unexpected region errors.
          goals.push(Goal::new(interner, param_env, ClauseKind::WellFormed(hidden_ty.into())));

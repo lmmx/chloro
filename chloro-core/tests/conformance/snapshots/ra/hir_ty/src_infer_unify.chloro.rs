@@ -44,7 +44,8 @@ impl<'db> InferenceContext<'_, 'db> {
         t: T,
     ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
     where
-        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
+    {
         self.table.canonicalize(t)
     }
 }
@@ -278,7 +279,8 @@ impl<'db> InferenceTable<'db> {
         t: T,
     ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         // try to resolve obligations before canonicalizing, since this might
         // result in new knowledge about variables
         self.select_obligations_where_possible();
@@ -287,7 +289,8 @@ impl<'db> InferenceTable<'db> {
 
     pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>> + Clone, {
+        T: TypeFoldable<DbInterner<'db>> + Clone,
+    {
         let ty = self.resolve_vars_with_obligations(ty);
         self.infer_ctxt
             .at(&ObligationCause::new(), self.trait_env.env)
@@ -299,7 +302,8 @@ impl<'db> InferenceTable<'db> {
     /// the inference variables
     pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         let ty = self.resolve_vars_with_obligations(ty);
         let ty = self.normalize_associated_types_in(ty);
         self.resolve_vars_with_obligations(ty)
@@ -354,7 +358,8 @@ impl<'db> InferenceTable<'db> {
         fallback_region: &mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
     ) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         struct Resolver<'a, 'db> {
             table: &'a mut InferenceTable<'db>,
             binder: DebruijnIndex,
@@ -423,13 +428,15 @@ impl<'db> InferenceTable<'db> {
         canonical: rustc_type_ir::Canonical<DbInterner<'db>, T>,
     ) -> T
     where
-        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
+    {
         self.infer_ctxt.instantiate_canonical(&canonical).0
     }
 
     pub(crate) fn resolve_completely<T>(&mut self, value: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         let value = self.infer_ctxt.resolve_vars_if_possible(value);
         let mut goals = vec![];
         // FIXME(next-solver): Handle `goals`.
@@ -453,7 +460,8 @@ impl<'db> InferenceTable<'db> {
 
     pub(crate) fn resolve_vars_with_obligations<T>(&mut self, t: T) -> T
     where
-        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
+    {
         if !t.has_non_region_infer() {
             return t;
         }
@@ -603,7 +611,8 @@ impl<'db> InferenceTable<'db> {
 
     pub(super) fn register_predicates<I>(&mut self, obligations: I)
     where
-        I: IntoIterator<Item = PredicateObligation<'db>>, {
+        I: IntoIterator<Item = PredicateObligation<'db>>,
+    {
         obligations.into_iter().for_each(|obligation| {
             self.register_predicate(obligation);
         });
@@ -684,7 +693,8 @@ impl<'db> InferenceTable<'db> {
 
     pub(super) fn insert_type_vars<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.infer_ctxt.insert_type_vars(ty)
     }
 
@@ -696,7 +706,8 @@ impl<'db> InferenceTable<'db> {
     /// Whenever you lower a user-written type, you should call this.
     pub(crate) fn process_user_written_ty<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.process_remote_user_written_ty(ty)
         // FIXME: Register a well-formed obligation.
     }
@@ -705,7 +716,8 @@ impl<'db> InferenceTable<'db> {
     /// while `process_user_written_ty()` should (but doesn't currently).
     pub(crate) fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         let ty = self.insert_type_vars(ty);
         // See https://github.com/rust-lang/rust/blob/cdb45c87e2cd43495379f7e867e3cc15dcee9f93/compiler/rustc_hir_typeck/src/fn_ctxt/mod.rs#L487-L495:
         // Even though the new solver only lazily normalizes usually, here we eagerly normalize so that not everything needs
@@ -820,7 +832,8 @@ mod resolve_completely {
             outer_exclusive_binder: impl FnOnce(T) -> DebruijnIndex,
         ) -> T
         where
-            T: Into<Term<'db>> + TypeSuperFoldable<DbInterner<'db>> + Copy, {
+            T: Into<Term<'db>> + TypeSuperFoldable<DbInterner<'db>> + Copy,
+        {
             let value = if self.should_normalize {
                 let cause = ObligationCause::new();
                 let at = self.ctx.infer_ctxt.at(&cause, self.ctx.trait_env.env);

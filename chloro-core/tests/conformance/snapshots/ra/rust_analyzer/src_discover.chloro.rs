@@ -31,7 +31,8 @@ pub(crate) enum DiscoverArgument {
 
 fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
 where
-    S: serde::Serializer, {
+    S: serde::Serializer,
+{
     let path: &Utf8Path = path.as_ref();
     se.serialize_str(path.as_str())
 }

@@ -185,7 +185,8 @@ fn contiguous_range_for_item_group<N>(
     visited: &mut FxHashSet<SyntaxNode>,
 ) -> Option<TextRange>
 where
-    N: ast::HasVisibility + Clone + Hash + Eq, {
+    N: ast::HasVisibility + Clone + Hash + Eq,
+{
     if !visited.insert(first.syntax().clone()) {
         return None;
     }

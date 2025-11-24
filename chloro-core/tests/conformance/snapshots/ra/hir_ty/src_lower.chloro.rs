@@ -1616,7 +1616,8 @@ pub(crate) fn generic_predicates_filtered_by<'db, F>(
     filter: F,
 ) -> (GenericPredicates<'db>, Diagnostics)
 where
-    F: Fn(GenericDefId) -> bool, {
+    F: Fn(GenericDefId) -> bool,
+{
     let generics = generics(db, def);
     let resolver = def.resolver(db);
     let interner = DbInterner::new_with(db, Some(resolver.krate()), None);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10383 bytes
-Chloro size:   10380 bytes
+Chloro size:   10384 bytes
 Rustfmt size:  10823 bytes
 
 ✗ Outputs DIFFER
@@ -29,15 +29,6 @@ Rustfmt size:  10823 bytes
      },
      Const, ConstKind, DbInterner, Region, Ty, TyKind,
  };
- ) -> Range<T>
- where
-     T: UnifyKey,
--    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>,
--{
-+    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>, {
-     T::from_index(snapshot_var_len as u32)..T::from_index(table.len() as u32)
- }
- 
  ) -> (Range<ConstVid>, Vec<ConstVariableOrigin>) {
      let range = vars_since_snapshot(table, snapshot_var_len);
      let range = range.start.vid..range.end.vid;
@@ -55,15 +46,6 @@ Rustfmt size:  10823 bytes
              })
              .collect(),
      )
-     pub fn fudge_inference_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
-     where
-         F: FnOnce() -> Result<T, E>,
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         let variable_lengths = self.variable_lengths();
-         let (snapshot_vars, value) = self.probe(|_| {
-             let value = f()?;
              let snapshot_vars = SnapshotVarData::new(self, variable_lengths);
              Ok((snapshot_vars, self.resolve_vars_if_possible(value)))
          })?;

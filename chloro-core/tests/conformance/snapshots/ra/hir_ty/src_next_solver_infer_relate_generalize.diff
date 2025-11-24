@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31093 bytes
-Chloro size:   31085 bytes
+Chloro size:   31089 bytes
 Rustfmt size:  31849 bytes
 
 ✗ Outputs DIFFER
@@ -333,15 +333,6 @@ Rustfmt size:  31849 bytes
              }
              ConstKind::Placeholder(placeholder) => {
                  if self.for_universe.can_name(placeholder.universe) {
-         _: Binder<'db, T>,
-     ) -> RelateResult<'db, Binder<'db, T>>
-     where
--        T: Relate<DbInterner<'db>>,
--    {
-+        T: Relate<DbInterner<'db>>, {
-         let result = self.relate(a.skip_binder(), a.skip_binder())?;
-         Ok(a.rebind(result))
-     }
      /// otherwise very easily result in infinite
      /// recursion.
      pub value_may_be_infer: T,

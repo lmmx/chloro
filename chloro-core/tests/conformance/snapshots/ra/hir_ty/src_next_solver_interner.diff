@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   79998 bytes
+Chloro size:   80014 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -414,15 +414,6 @@ Rustfmt size:  84055 bytes
      type Clauses = Clauses<'db>;
  
      type GenericsOf = Generics;
-     fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
-     where
-         I: Iterator<Item = T>,
--        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
--    {
-+        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>, {
-         CollectAndApply::collect_and_apply(args, |g| {
-             GenericArgs::new_from_iter(self, g.iter().cloned())
-         })
                      Ctor::Struct(id) => id.into(),
                      Ctor::Enum(id) => id.into(),
                  };
@@ -460,14 +451,6 @@ Rustfmt size:  84055 bytes
  
      fn debug_assert_existential_args_compatible(
          self,
-     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
-     where
-         I: Iterator<Item = T>,
--        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>,
--    {
-+        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>, {
-         CollectAndApply::collect_and_apply(args, |g| Tys::new_from_iter(self, g.iter().cloned()))
-     }
  
      fn parent(self, def_id: Self::DefId) -> Self::DefId {
          use hir_def::Lookup;
@@ -761,15 +744,6 @@ Rustfmt size:  84055 bytes
      fn evaluate_root_goal_for_proof_tree_raw(
          self,
          canonical_goal: rustc_type_ir::solve::CanonicalInput<Self>,
- impl<'db> DbInterner<'db> {
-     pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
-     where
--        T: rustc_type_ir::TypeFoldable<Self>,
--    {
-+        T: rustc_type_ir::TypeFoldable<Self>, {
-         let shift_bv = |bv: BoundVar| BoundVar::from_usize(bv.as_usize() + bound_vars);
-         self.replace_escaping_bound_vars_uncached(
-             value,
                      Region::new_bound(
                          self,
                          DebruijnIndex::ZERO,
@@ -803,15 +777,6 @@ Rustfmt size:  84055 bytes
                  },
              },
          )
-         abi: FnAbi,
-     ) -> FnSig<'db>
-     where
--        I: IntoIterator<Item = Ty<'db>>,
--    {
-+        I: IntoIterator<Item = Ty<'db>>, {
-         FnSig {
-             inputs_and_output: Tys::new_from_iter(
-                 self,
          )+
      };
  }

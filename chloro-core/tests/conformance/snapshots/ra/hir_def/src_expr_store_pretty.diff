@@ -31,15 +31,6 @@ Rustfmt size:  45518 bytes
  use super::*;
  
  macro_rules! w {
- where
-     Id: Lookup<Database = dyn DefDatabase, Data = Loc>,
-     Loc: HasSource,
--    Loc::Value: ast::HasName,
--{
-+    Loc::Value: ast::HasName, {
-     let loc = id.lookup(db);
-     let source = loc.source(db);
-     source.value.name().map_or_else(|| default.to_owned(), |name| name.to_string())
              item_name(db, it, "<missing>")
          ),
      };

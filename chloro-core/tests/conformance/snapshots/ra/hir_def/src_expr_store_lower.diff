@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   143651 bytes
+Chloro size:   143655 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -188,12 +188,7 @@ Rustfmt size:  144317 bytes
          let break_expr = self.alloc_expr(Expr::Break { expr: None, label: None }, syntax_ptr);
          let if_expr = self.alloc_expr(
              Expr::If { condition, then_branch: body, else_branch: Some(break_expr) },
-         collector: impl FnOnce(&mut Self, Option<T>) -> U,
-     ) -> U
-     where
--        T: ast::AstNode,
--    {
-+        T: ast::AstNode, {
+     {
          let macro_call_ptr = self.expander.in_file(syntax_ptr);
          let module = self.module.local_id;
 -

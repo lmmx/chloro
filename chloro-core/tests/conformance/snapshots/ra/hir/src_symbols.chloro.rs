@@ -386,7 +386,8 @@ impl<'a> SymbolCollector<'a> {
     where
         L: Lookup<Database = dyn DefDatabase> + Into<ModuleDefId>,
         <L as Lookup>::Data: HasSource,
-        <<L as Lookup>::Data as HasSource>::Value: HasName, {
+        <<L as Lookup>::Data as HasSource>::Value: HasName,
+    {
         let loc = id.lookup(self.db);
         let source = loc.source(self.db);
         let Some(name_node) = source.value.name() else { return Complete::Yes };

@@ -1144,7 +1144,8 @@ pub trait MethodCandidateCallback {
 
 impl<F> MethodCandidateCallback for F
 where
-    F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>, {
+    F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,
+{
     fn on_inherent_method(
         &mut self,
         adjustments: ReceiverAdjustments,

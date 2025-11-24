@@ -12,7 +12,8 @@ pub(crate) struct EnumerateAndAdjust<I> {
 
 impl<I> Iterator for EnumerateAndAdjust<I>
 where
-    I: Iterator, {
+    I: Iterator,
+{
     type Item = (usize, <I as Iterator>::Item);
 
     fn next(&mut self) -> Option<(usize, <I as Iterator>::Item)> {
@@ -43,7 +44,8 @@ impl<T: ExactSizeIterator> EnumerateAndAdjustIterator for T {
         gap_pos: Option<usize>,
     ) -> EnumerateAndAdjust<Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         let actual_len = self.len();
         EnumerateAndAdjust {
             enumerate: self.enumerate(),

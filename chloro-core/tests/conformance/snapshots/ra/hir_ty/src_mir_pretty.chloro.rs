@@ -492,7 +492,8 @@ impl<'a, 'db> MirPrettyCtx<'a, 'db> {
         ty: &'b T,
     ) -> impl Display + use<'a, 'b, 'db, T>
     where
-        'db: 'b, {
+        'db: 'b,
+    {
         ty.display_test(self.db, self.display_target)
             .with_closure_style(ClosureStyle::ClosureWithSubst)
     }

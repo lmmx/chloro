@@ -244,7 +244,8 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
 
     fn resolve_vars_if_possible<T>(&self, value: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.resolve_vars_if_possible(value)
     }
 

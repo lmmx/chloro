@@ -36,20 +36,8 @@ Rustfmt size:  9886 bytes
 +    value: T,
 +) -> Result<T, Vec<NextSolverError<'db>>>
  where
--    T: TypeFoldable<DbInterner<'db>>,
--{
-+    T: TypeFoldable<DbInterner<'db>>, {
-     assert!(!value.has_escaping_bound_vars());
-     deeply_normalize_with_skipped_universes(at, value, vec![])
- }
-     universes: Vec<Option<UniverseIndex>>,
- ) -> Result<T, Vec<NextSolverError<'db>>>
- where
--    T: TypeFoldable<DbInterner<'db>>,
--{
-+    T: TypeFoldable<DbInterner<'db>>, {
-     let (value, coroutine_goals) =
-         deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
+     T: TypeFoldable<DbInterner<'db>>,
+ {
              at, value, universes,
          )?;
      assert_eq!(coroutine_goals, vec![]);
@@ -57,15 +45,6 @@ Rustfmt size:  9886 bytes
      Ok(value)
  }
  
-     universes: Vec<Option<UniverseIndex>>,
- ) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
- where
--    T: TypeFoldable<DbInterner<'db>>,
--{
-+    T: TypeFoldable<DbInterner<'db>>, {
-     let fulfill_cx = FulfillmentCtxt::new(at.infcx);
-     let mut folder = NormalizationFolder {
-         at,
          stalled_coroutine_goals: vec![],
      };
      let value = value.try_fold_with(&mut folder)?;

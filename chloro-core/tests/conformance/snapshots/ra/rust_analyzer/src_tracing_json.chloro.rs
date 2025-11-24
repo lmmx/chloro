@@ -43,7 +43,8 @@ impl<S, W> TimingLayer<S, W> {
 impl<S, W> Layer<S> for TimingLayer<S, W>
 where
     S: Subscriber + for<'span> LookupSpan<'span>,
-    W: for<'writer> MakeWriter<'writer> + Send + Sync + 'static, {
+    W: for<'writer> MakeWriter<'writer> + Send + Sync + 'static,
+{
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let span = ctx.span(id).unwrap();
         let data = JsonData::new(attrs.metadata().name());

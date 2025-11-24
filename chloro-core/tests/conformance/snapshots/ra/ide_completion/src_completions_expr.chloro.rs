@@ -21,7 +21,8 @@ struct PathCallback<'a, F> {
 
 impl<F> PathCandidateCallback for PathCallback<'_, F>
 where
-    F: FnMut(&mut Completions, hir::AssocItem), {
+    F: FnMut(&mut Completions, hir::AssocItem),
+{
     fn on_inherent_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
         if self.seen.insert(item) {
             (self.add_assoc_item)(self.acc, item);

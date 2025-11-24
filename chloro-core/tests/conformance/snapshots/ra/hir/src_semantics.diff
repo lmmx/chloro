@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   98809 bytes
+Chloro size:   98813 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -274,15 +274,6 @@ Rustfmt size:  101650 bytes
          let Some(sa) = self.analyze(macro_call.syntax()) else { return false };
          let macro_call = self.find_file(macro_call.syntax()).with_value(macro_call);
          match macro_call.map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast)).transpose() {
-     /// Search for a definition's source and cache its syntax tree
-     pub fn source<Def: HasSource>(&self, def: Def) -> Option<InFile<Def::Ast>>
-     where
--        Def::Ast: AstNode,
--    {
-+        Def::Ast: AstNode, {
-         // FIXME: source call should go through the parse cache
-         let res = def.source(self.db)?;
-         self.cache(find_root(res.value.syntax()), res.file_id);
  
      pub fn body_for(&self, node: InFile<&SyntaxNode>) -> Option<DefWithBody> {
          let container = self.with_ctx(|ctx| ctx.find_container(node))?;

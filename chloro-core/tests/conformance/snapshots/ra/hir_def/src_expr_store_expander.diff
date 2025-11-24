@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8495 bytes
-Chloro size:   8494 bytes
+Chloro size:   8498 bytes
 Rustfmt size:  8873 bytes
 
 ✗ Outputs DIFFER
@@ -125,15 +125,6 @@ Rustfmt size:  8873 bytes
      }
  
      pub(super) fn current_file_id(&self) -> HirFileId {
-         op: F,
-     ) -> ExpandResult<Option<(Mark, Option<Parse<T>>)>>
-     where
--        F: FnOnce(&mut Self) -> ExpandResult<Option<MacroCallId>>,
--    {
-+        F: FnOnce(&mut Self) -> ExpandResult<Option<MacroCallId>>, {
-         if self.recursion_depth == u32::MAX {
-             // Recursion limit has been reached somewhere in the macro expansion tree. We should
-             // stop expanding other macro calls in this tree, or else this may result in
              cov_mark::hit!(overflow_but_not_me);
              return ExpandResult::ok(None);
          }

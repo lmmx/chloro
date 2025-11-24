@@ -329,7 +329,8 @@ pub fn replace_errors_with_variables<'db, T>(
     t: &T,
 ) -> Canonical<'db, T>
 where
-    T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone, {
+    T: rustc_type_ir::TypeFoldable<DbInterner<'db>> + Clone,
+{
     use rustc_type_ir::{FallibleTypeFolder, TypeSuperFoldable};
     struct ErrorReplacer<'db> {
         interner: DbInterner<'db>,
@@ -542,7 +543,8 @@ impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
 /// Returns unique params for types and consts contained in `value`.
 pub fn collect_params<'db, T>(value: &T) -> Vec<TypeOrConstParamId>
 where
-    T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>, {
+    T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>,
+{
     let mut collector = ParamCollector { params: FxHashSet::default() };
     value.visit_with(&mut collector);
     Vec::from_iter(collector.params)

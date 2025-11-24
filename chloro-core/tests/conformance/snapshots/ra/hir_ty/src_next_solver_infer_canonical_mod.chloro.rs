@@ -53,7 +53,8 @@ impl<'db> InferCtxt<'db> {
         canonical: &Canonical<'db, T>,
     ) -> (T, CanonicalVarValues<'db>)
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         // For each universe that is referred to in the incoming
         // query, create a universe in our local inference context. In
         // practice, as of this writing, all queries have no universes

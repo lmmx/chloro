@@ -1298,7 +1298,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
 
     fn insert_type_vars<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.table.insert_type_vars(ty)
     }
 
@@ -1364,7 +1365,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     /// Whenever you lower a user-written type, you should call this.
     fn process_user_written_ty<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.table.process_user_written_ty(ty)
     }
 
@@ -1372,7 +1374,8 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     /// while `process_user_written_ty()` should (but doesn't currently).
     fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.table.process_remote_user_written_ty(ty)
     }
 

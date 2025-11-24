@@ -58,7 +58,8 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         canonical: &rustc_type_ir::CanonicalQueryInput<Self::Interner, V>,
     ) -> (Self, V, rustc_type_ir::CanonicalVarValues<Self::Interner>)
     where
-        V: rustc_type_ir::TypeFoldable<Self::Interner>, {
+        V: rustc_type_ir::TypeFoldable<Self::Interner>,
+    {
         let (infcx, value, vars) = cx.infer_ctxt().build_with_canonical(canonical);
         (SolverContext(infcx), value, vars)
     }
@@ -112,7 +113,8 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         values: rustc_type_ir::CanonicalVarValues<Self::Interner>,
     ) -> V
     where
-        V: rustc_type_ir::TypeFoldable<Self::Interner>, {
+        V: rustc_type_ir::TypeFoldable<Self::Interner>,
+    {
         canonical.instantiate(self.cx(), &values)
     }
 

@@ -8,12 +8,7 @@ Rustfmt size:  7718 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- impl<S> SpanTree<S>
- where
--    S: Subscriber + for<'span> tracing_subscriber::registry::LookupSpan<'span>,
--{
-+    S: Subscriber + for<'span> tracing_subscriber::registry::LookupSpan<'span>, {
+ {
      pub(crate) fn new(spec: &str) -> impl Layer<S> {
          let (write_filter, allowed_names) = WriteFilter::from_spec(spec);
 -
@@ -51,12 +46,7 @@ Rustfmt size:  7718 bytes
          attrs.record(&mut visitor);
          data
      }
- 
- impl<S> Layer<S> for SpanTree<S>
- where
--    S: Subscriber + for<'span> LookupSpan<'span>,
--{
-+    S: Subscriber + for<'span> LookupSpan<'span>, {
+ {
      fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
          let span = ctx.span(id).unwrap();
 -

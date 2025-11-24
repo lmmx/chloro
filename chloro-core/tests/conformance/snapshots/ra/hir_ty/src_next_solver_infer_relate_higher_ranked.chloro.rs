@@ -26,7 +26,8 @@ impl<'db> InferCtxt<'db> {
     #[instrument(level = "debug", skip(self), ret)]
     pub fn enter_forall_and_leak_universe<T>(&self, binder: Binder<'db, T>) -> T
     where
-        T: TypeFoldable<DbInterner<'db>> + Clone, {
+        T: TypeFoldable<DbInterner<'db>> + Clone,
+    {
         if let Some(inner) = binder.clone().no_bound_vars() {
             return inner;
         }
@@ -69,7 +70,8 @@ impl<'db> InferCtxt<'db> {
     #[instrument(level = "debug", skip(self, f))]
     pub fn enter_forall<T, U>(&self, forall: Binder<'db, T>, f: impl FnOnce(T) -> U) -> U
     where
-        T: TypeFoldable<DbInterner<'db>> + Clone, {
+        T: TypeFoldable<DbInterner<'db>> + Clone,
+    {
         // FIXME: currently we do nothing to prevent placeholders with the new universe being
         // used after exiting `f`. For example region subtyping can result in outlives constraints
         // that name placeholders created in this function. Nested goals from type relations can

@@ -79,7 +79,8 @@ pub(crate) struct InferCtxtUndoLogs<'db> {
 /// action that is convertible into an UndoLog (per the From impls above).
 impl<'db, T> UndoLogs<T> for InferCtxtUndoLogs<'db>
 where
-    UndoLog<'db>: From<T>, {
+    UndoLog<'db>: From<T>,
+{
     #[inline]
     fn num_open_snapshots(&self) -> usize {
         self.num_open_snapshots
@@ -100,7 +101,8 @@ where
     fn extend<J>(&mut self, undos: J)
     where
         Self: Sized,
-        J: IntoIterator<Item = T>, {
+        J: IntoIterator<Item = T>,
+    {
         if self.in_snapshot() {
             self.logs.extend(undos.into_iter().map(UndoLog::from))
         }

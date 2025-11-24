@@ -54,7 +54,13 @@ pub fn format_trait(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
     // Trait body
     if let Some(item_list) = trait_.assoc_item_list() {
-        buf.push_str(" {\n");
+        if trait_.where_clause().is_some() {
+            buf.push('\n');
+            write_indent(buf, indent);
+            buf.push_str("{\n");
+        } else {
+            buf.push_str(" {\n");
+        }
 
         let mut first_item = true;
         for child in item_list.syntax().children_with_tokens() {

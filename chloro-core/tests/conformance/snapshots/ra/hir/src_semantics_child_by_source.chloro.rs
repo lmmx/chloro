@@ -277,7 +277,8 @@ fn insert_item_loc<ID, N, Data>(
 where
     ID: Lookup<Database = dyn DefDatabase, Data = Data> + 'static,
     Data: AstIdLoc<Ast = N>,
-    N: AstIdNode + 'static, {
+    N: AstIdNode + 'static,
+{
     let loc = id.lookup(db);
     if loc.ast_id().file_id == file_id {
         res[key].insert(loc.ast_ptr(db).value, id)

@@ -306,7 +306,8 @@ impl Server {
     pub(crate) fn notification<N>(&self, params: N::Params)
     where
         N: lsp_types::notification::Notification,
-        N::Params: Serialize, {
+        N::Params: Serialize,
+    {
         let r = Notification::new(N::METHOD.to_owned(), params);
         self.send_notification(r)
     }
@@ -315,7 +316,8 @@ impl Server {
     pub(crate) fn request<R>(&self, params: R::Params, expected_resp: Value)
     where
         R: lsp_types::request::Request,
-        R::Params: Serialize, {
+        R::Params: Serialize,
+    {
         let actual = self.send_request::<R>(params);
         if let Some((expected_part, actual_part)) = find_mismatch(&expected_resp, &actual) {
             panic!(
@@ -332,7 +334,8 @@ impl Server {
     pub(crate) fn send_request<R>(&self, params: R::Params) -> Value
     where
         R: lsp_types::request::Request,
-        R::Params: Serialize, {
+        R::Params: Serialize,
+    {
         let id = self.req_id.get();
         self.req_id.set(id.wrapping_add(1));
         let r = Request::new(id.into(), R::METHOD.to_owned(), params);
