@@ -128,31 +128,11 @@ update-readme-conf:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    # Get the new conformance content (trailing newlines will be stripped by bash)
+    # Get the new conformance content
     NEW_CONTENT=$(just conf-md)
 
-    # Create patch JSON using jq to build it properly
-    # Add newlines in jq where they won't be stripped
-    jq -n \
-      --arg file "README.md" \
-      --arg content "${NEW_CONTENT}" \
-      '[{
-        file: $file,
-        snippet: {
-          Between: {
-            start: {
-              target: {
-                Literal: "<!-- just: conf-md -->"
-              },
-              mode: "Exclude"
-            },
-            end: {
-              target: {
-                Literal: "<!-- /just: conf-md -->"
-              },
-              mode: "Exclude"
-            }
-          }
-        },
-        replacement: ("\n" + $content + "\n")
-      }]' | textum
+    textum replace \
+      "<!-- just: conf-md -->" \
+      "$'\n'${NEW_CONTENT}$'\n'" \
+      --until "<!-- /just: conf-md -->" \
+      README.md
