@@ -4,9 +4,9 @@
 [![documentation](https://docs.rs/chloro/badge.svg)](https://docs.rs/chloro)
 [![MIT/Apache-2.0 licensed](https://img.shields.io/crates/l/chloro.svg)](./LICENSE)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/chloro/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/chloro/master)
-
-<!-- [![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn) -->
-<!-- ra_ap_syntax has tracing in -->
+[![free of syn](https://img.shields.io/badge/free%20of-syn-hotpink)](https://github.com/fasterthanlime/free-of-syn)<!-- blazon -->
+[![Dependencies: 32](https://img.shields.io/badge/cargo%20tree-32-blue)](https://crates.io/crates/chloro)
+[![Binary Size: 1.6M](https://img.shields.io/badge/build%20size-1.6M-green)](https://crates.io/crates/chloro)<!-- /blazon -->
 
 chloro is a minimal Rust code formatter.
 
@@ -31,8 +31,7 @@ as tested on rust-analyzer's [crates][ra-crates]:
 
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
-<!-- just: conf-md -->
-**Summary:** +152,332 / -16,434
+<!-- just: conf-md -->$'\n'**Summary:** +152,332 / -16,434
 
 | **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
 |---|---|
@@ -61,8 +60,7 @@ as tested on rust-analyzer's [crates][ra-crates]:
 | 17 | 14 | 40 | 7.5% | 231 | 3,074 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
 | 18 | 89 | 7 | 47.7% | 558 | 1,171 | [`ide/src_navigation_target`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_navigation_target.diff) |
 | 19 | 12 | 69 | 5.5% | 179 | 3,277 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
-| 20 | 97 | 11 | 38.8% | 430 | 1,109 | [`hir_def/src_expr_store`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_expr_store.diff) |
-<!-- /just: conf-md -->
+| 20 | 97 | 11 | 38.8% | 430 | 1,109 | [`hir_def/src_expr_store`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_expr_store.diff) |$'\n'<!-- /just: conf-md -->
 
 ## Installation
 
