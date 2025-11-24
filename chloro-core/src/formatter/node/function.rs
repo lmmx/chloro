@@ -190,9 +190,16 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(&where_clause.syntax().text().to_string());
     }
 
-    // Body
+    // Body or semicolon
     if let Some(body) = func.body() {
-        buf.push_str(" {\n");
+        // Has a body - add opening brace
+        if func.where_clause().is_some() {
+            buf.push('\n');
+            write_indent(buf, indent);
+            buf.push_str("{\n");
+        } else {
+            buf.push_str(" {\n");
+        }
 
         // Check if the body is a single record expression (tail expression)
         let stmt_list = body.stmt_list();
@@ -220,6 +227,7 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         write_indent(buf, indent);
         buf.push('}');
     } else {
+        // No body - just semicolon
         buf.push(';');
     }
     buf.push('\n');

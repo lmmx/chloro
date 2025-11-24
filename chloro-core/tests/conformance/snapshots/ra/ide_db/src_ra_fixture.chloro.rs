@@ -299,7 +299,8 @@ fn upmap_collection<T, Collection>(
 ) -> Result<Collection, ()>
 where
     T: UpmapFromRaFixture,
-    Collection: IntoIterator<Item = T> + FromIterator<T> + IsEmpty, {
+    Collection: IntoIterator<Item = T> + FromIterator<T> + IsEmpty,
+{
     if collection.is_empty() {
         // The collection was already empty, don't mark it as failing just because of that.
         return Ok(collection);

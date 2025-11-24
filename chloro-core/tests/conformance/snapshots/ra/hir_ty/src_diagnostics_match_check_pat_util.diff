@@ -2,18 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1313 bytes
-Chloro size:   1309 bytes
+Chloro size:   1313 bytes
 Rustfmt size:  1430 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- impl<I> Iterator for EnumerateAndAdjust<I>
- where
--    I: Iterator,
--{
-+    I: Iterator, {
      type Item = (usize, <I as Iterator>::Item);
  
      fn next(&mut self) -> Option<(usize, <I as Iterator>::Item)> {
@@ -33,12 +27,3 @@ Rustfmt size:  1430 bytes
      }
  
      fn size_hint(&self) -> (usize, Option<usize>) {
-         gap_pos: Option<usize>,
-     ) -> EnumerateAndAdjust<Self>
-     where
--        Self: Sized,
--    {
-+        Self: Sized, {
-         let actual_len = self.len();
-         EnumerateAndAdjust {
-             enumerate: self.enumerate(),

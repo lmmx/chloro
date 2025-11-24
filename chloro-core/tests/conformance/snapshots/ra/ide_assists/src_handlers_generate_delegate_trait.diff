@@ -317,12 +317,7 @@ Rustfmt size:  47157 bytes
      let args = old_impl_args
          .map(|old_arg| {
              arg_substs.get(&old_arg.to_string()).map_or_else(
-     args: &GenericArgList,
- ) -> Option<N>
- where
--    N: ast::AstNode,
--{
-+    N: ast::AstNode, {
+ {
      let hir_strukt = ctx.sema.to_struct_def(strukt)?;
      let hir_adt = hir::Adt::from(hir_strukt);
 -

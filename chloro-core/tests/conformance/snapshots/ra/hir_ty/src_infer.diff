@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72721 bytes
+Chloro size:   72733 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -410,33 +410,6 @@ Rustfmt size:  74236 bytes
 +        subst: GenericArgs<'db>,
 +    ) {
          self.result.method_resolutions.insert(expr, (func, subst));
-     }
- 
- 
-     fn insert_type_vars<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.table.insert_type_vars(ty)
-     }
- 
-     /// Whenever you lower a user-written type, you should call this.
-     fn process_user_written_ty<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.table.process_user_written_ty(ty)
-     }
- 
-     /// while `process_user_written_ty()` should (but doesn't currently).
-     fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.table.process_remote_user_written_ty(ty)
      }
  
          &mut self,

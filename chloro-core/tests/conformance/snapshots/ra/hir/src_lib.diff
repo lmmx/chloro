@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   225785 bytes
+Chloro size:   225793 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -241,23 +241,6 @@ Rustfmt size:  227843 bytes
          let var_id = self.inner.parent.into();
          let field = db.field_types(var_id)[self.inner.id];
          let ty = field.instantiate(interner, self.args);
- impl AstNode for FieldSource {
-     fn can_cast(kind: syntax::SyntaxKind) -> bool
-     where
--        Self: Sized,
--    {
-+        Self: Sized, {
-         ast::RecordField::can_cast(kind) || ast::TupleField::can_cast(kind)
-     }
- 
-     fn cast(syntax: SyntaxNode) -> Option<Self>
-     where
--        Self: Sized,
--    {
-+        Self: Sized, {
-         if ast::RecordField::can_cast(syntax.kind()) {
-             <ast::RecordField as AstNode>::cast(syntax).map(FieldSource::Named)
-         } else if ast::TupleField::can_cast(syntax.kind()) {
          TypeNs::new(db, var_id, ty)
      }
  
@@ -469,24 +452,6 @@ Rustfmt size:  227843 bytes
      pub fn str() -> BuiltinType {
          BuiltinType { inner: hir_def::builtin_type::BuiltinType::Str }
      }
- where
-     ID: Lookup<Database = dyn DefDatabase, Data = AssocItemLoc<LOC>>,
-     DEF: From<ID>,
--    LOC: AstIdNode,
--{
-+    LOC: AstIdNode, {
-     match id.lookup(db).container {
-         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => Some(ctor(DEF::from(id))),
-         ItemContainerId::ModuleId(_) | ItemContainerId::ExternBlockId(_) => None,
- where
-     ID: Lookup<Database = dyn DefDatabase, Data = AssocItemLoc<LOC>>,
-     DEF: From<ID>,
--    LOC: AstIdNode,
--{
-+    LOC: AstIdNode, {
-     match id.lookup(db).container {
-         ItemContainerId::ExternBlockId(_) => Some(ctor(DEF::from(id))),
-         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) | ItemContainerId::ModuleId(_) => {
      Trait(Trait),
      TypeAlias(TypeAlias),
      Impl(Impl),
@@ -923,24 +888,6 @@ Rustfmt size:  227843 bytes
      fn is_visible_from(&self, db: &dyn HirDatabase, module: Module) -> bool {
          let vis = self.visibility(db);
          vis.is_visible_from(db, module.id)
- 
- impl<F> MethodCandidateCallback for F
- where
--    F: FnMut(Function) -> ControlFlow<()>,
--{
-+    F: FnMut(Function) -> ControlFlow<()>, {
-     fn on_inherent_method(&mut self, f: Function) -> ControlFlow<()> {
-         self(f)
-     }
- 
- impl<F> PathCandidateCallback for F
- where
--    F: FnMut(AssocItem) -> ControlFlow<()>,
--{
-+    F: FnMut(AssocItem) -> ControlFlow<()>, {
-     fn on_inherent_item(&mut self, item: AssocItem) -> ControlFlow<()> {
-         self(item)
-     }
              defaults.get(param).is_none()
          })
  }

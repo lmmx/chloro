@@ -24,7 +24,8 @@ pub fn deeply_normalize<'db, T>(
     value: T,
 ) -> Result<T, Vec<NextSolverError<'db>>>
 where
-    T: TypeFoldable<DbInterner<'db>>, {
+    T: TypeFoldable<DbInterner<'db>>,
+{
     assert!(!value.has_escaping_bound_vars());
     deeply_normalize_with_skipped_universes(at, value, vec![])
 }
@@ -41,7 +42,8 @@ pub fn deeply_normalize_with_skipped_universes<'db, T>(
     universes: Vec<Option<UniverseIndex>>,
 ) -> Result<T, Vec<NextSolverError<'db>>>
 where
-    T: TypeFoldable<DbInterner<'db>>, {
+    T: TypeFoldable<DbInterner<'db>>,
+{
     let (value, coroutine_goals) =
         deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
             at, value, universes,
@@ -65,7 +67,8 @@ pub fn deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals<'db
     universes: Vec<Option<UniverseIndex>>,
 ) -> Result<(T, Vec<Goal<'db, Predicate<'db>>>), Vec<NextSolverError<'db>>>
 where
-    T: TypeFoldable<DbInterner<'db>>, {
+    T: TypeFoldable<DbInterner<'db>>,
+{
     let fulfill_cx = FulfillmentCtxt::new(at.infcx);
     let mut folder = NormalizationFolder {
         at,

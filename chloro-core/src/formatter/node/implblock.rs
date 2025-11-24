@@ -57,7 +57,13 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
     }
 
     if let Some(assoc_items) = impl_.assoc_item_list() {
-        buf.push_str(" {\n");
+        if impl_.where_clause().is_some() {
+            buf.push('\n');
+            write_indent(buf, indent);
+            buf.push_str("{\n");
+        } else {
+            buf.push_str(" {\n");
+        }
 
         let mut first_item = true;
 

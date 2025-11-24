@@ -204,7 +204,8 @@ pub trait HirDisplay<'db> {
         show_container_bounds: bool,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         assert!(
             !matches!(display_kind, DisplayKind::SourceCode { .. }),
             "HirDisplayWrapper cannot fail with DisplaySourceCodeError, use HirDisplay::hir_fmt directly instead"
@@ -231,7 +232,8 @@ pub trait HirDisplay<'db> {
         display_target: DisplayTarget,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         HirDisplayWrapper {
             db,
             t: self,
@@ -255,7 +257,8 @@ pub trait HirDisplay<'db> {
         display_target: DisplayTarget,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         HirDisplayWrapper {
             db,
             t: self,
@@ -279,7 +282,8 @@ pub trait HirDisplay<'db> {
         display_target: DisplayTarget,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         HirDisplayWrapper {
             db,
             t: self,
@@ -335,7 +339,8 @@ pub trait HirDisplay<'db> {
         display_target: DisplayTarget,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         HirDisplayWrapper {
             db,
             t: self,
@@ -359,7 +364,8 @@ pub trait HirDisplay<'db> {
         display_target: DisplayTarget,
     ) -> HirDisplayWrapper<'a, 'db, Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         HirDisplayWrapper {
             db,
             t: self,
@@ -571,7 +577,8 @@ impl<'db, T: HirDisplay<'db>> HirDisplayWrapper<'_, 'db, T> {
 
 impl<'db, T> fmt::Display for HirDisplayWrapper<'_, 'db, T>
 where
-    T: HirDisplay<'db>, {
+    T: HirDisplay<'db>,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.write_to(f) {
             Ok(()) => Ok(()),

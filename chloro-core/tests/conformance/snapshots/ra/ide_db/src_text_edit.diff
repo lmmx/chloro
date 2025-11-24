@@ -126,16 +126,13 @@ Rustfmt size:  9801 bytes
      pub fn indel(&mut self, indel: Indel) {
          self.indels.push(indel);
          if self.indels.len() <= 16 {
- 
- fn check_disjoint<'a, I>(indels: &mut I) -> bool
  where
--    I: std::iter::Iterator<Item = &'a Indel> + Clone,
--{
+     I: std::iter::Iterator<Item = &'a Indel> + Clone,
+ {
 -    indels
 -        .clone()
 -        .zip(indels.skip(1))
 -        .all(|(l, r)| l.delete.end() <= r.delete.start() || l == r)
-+    I: std::iter::Iterator<Item = &'a Indel> + Clone, {
 +    indels.clone().zip(indels.skip(1)).all(|(l, r)| l.delete.end() <= r.delete.start() || l == r)
  }
  

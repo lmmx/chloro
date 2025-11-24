@@ -64,7 +64,8 @@ impl<'db, D: BoundVarReplacerDelegate<'db>> BoundVarReplacer<'db, D> {
 
 impl<'db, D> TypeFolder<DbInterner<'db>> for BoundVarReplacer<'db, D>
 where
-    D: BoundVarReplacerDelegate<'db>, {
+    D: BoundVarReplacerDelegate<'db>,
+{
     fn cx(&self) -> DbInterner<'db> {
         self.interner
     }

@@ -2334,7 +2334,8 @@ mod single_or_array {
     use serde::{Deserialize, Serialize};
     pub(super) fn deserialize<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
     where
-        D: serde::Deserializer<'de>, {
+        D: serde::Deserializer<'de>,
+    {
         struct SingleOrVec;
         impl<'de> serde::de::Visitor<'de> for SingleOrVec {
             type Value = Vec<String>;
@@ -2361,7 +2362,8 @@ mod single_or_array {
     }
     pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer, {
+        S: serde::Serializer,
+    {
         match vec {
             // []  case is handled by skip_serializing_if
             [single] => serializer.serialize_str(single),
@@ -2385,7 +2387,8 @@ enum ManifestOrProjectJson {
 
 fn deserialize_abs_pathbuf<'de, D>(de: D) -> std::result::Result<AbsPathBuf, D::Error>
 where
-    D: serde::de::Deserializer<'de>, {
+    D: serde::de::Deserializer<'de>,
+{
     let path = String::deserialize(de)?;
     AbsPathBuf::try_from(path.as_ref())
         .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
@@ -2393,7 +2396,8 @@ where
 
 fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
 where
-    S: serde::Serializer, {
+    S: serde::Serializer,
+{
     let path: &Utf8Path = path.as_ref();
     se.serialize_str(path.as_str())
 }

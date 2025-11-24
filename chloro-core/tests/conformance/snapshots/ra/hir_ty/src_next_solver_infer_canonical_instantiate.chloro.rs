@@ -41,7 +41,8 @@ impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
     /// with the value given in `var_values`.
     fn instantiate(&self, tcx: DbInterner<'db>, var_values: &CanonicalVarValues<'db>) -> V
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         self.instantiate_projected(tcx, var_values, |value| value.clone())
     }
 
@@ -58,7 +59,8 @@ impl<'db, V> CanonicalExt<'db, V> for Canonical<'db, V> {
         projection_fn: impl FnOnce(&V) -> T,
     ) -> T
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         assert_eq!(self.variables.len(), var_values.len());
         let value = projection_fn(&self.value);
         instantiate_value(tcx, var_values, value)
@@ -74,7 +76,8 @@ pub(super) fn instantiate_value<'db, T>(
     value: T,
 ) -> T
 where
-    T: TypeFoldable<DbInterner<'db>>, {
+    T: TypeFoldable<DbInterner<'db>>,
+{
     if var_values.var_values.is_empty() {
         value
     } else {

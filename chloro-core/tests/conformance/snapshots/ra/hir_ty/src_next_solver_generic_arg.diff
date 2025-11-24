@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   20820 bytes
+Chloro size:   20848 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
@@ -57,15 +57,6 @@ Rustfmt size:  21200 bytes
  
  impl<'db> GenericArgs<'db> {
      /// Creates an `GenericArgs` for generic parameter definitions,
-         mut mk_kind: F,
-     ) -> GenericArgs<'db>
-     where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
-         let defs = interner.generics_of(def_id);
-         let count = defs.count();
-         let mut args = SmallVec::with_capacity(count);
  
      /// Creates an all-error `GenericArgs`.
      pub fn error_for_item(interner: DbInterner<'db>, def_id: SolverDefId) -> GenericArgs<'db> {
@@ -76,12 +67,8 @@ Rustfmt size:  21200 bytes
      }
  
      /// Like `for_item`, but prefers the default of a parameter if it has any.
-         mut fallback: F,
-     ) -> GenericArgs<'db>
-     where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+     {
          let defaults = interner.db.generic_defaults(def_id);
 -        Self::for_item(interner, def_id.into(), |idx, id, prev| {
 -            match defaults.get(idx as usize) {
@@ -94,36 +81,15 @@ Rustfmt size:  21200 bytes
          })
      }
  
-         mut fallback: F,
-     ) -> GenericArgs<'db>
-     where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
-         let mut iter = first.into_iter();
-         Self::for_item(interner, def_id, |idx, id, prev| {
-             iter.next().unwrap_or_else(|| fallback(idx, id, prev))
-         mut fallback: F,
-     ) -> GenericArgs<'db>
-     where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
-         let defaults = interner.db.generic_defaults(def_id);
-         Self::fill_rest(interner, def_id.into(), first, |idx, id, prev| {
-             defaults
          interner: DbInterner<'_>,
          defs: Generics,
          mk_kind: &mut F,
 -    ) where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
 +    )
 +    where
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
+         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+     {
          if let Some(def_id) = defs.parent {
-             let parent_defs = interner.generics_of(def_id.into());
-             Self::fill_item(args, interner, parent_defs, mk_kind);
          Self::fill_single(args, &defs, mk_kind);
      }
  
@@ -134,12 +100,8 @@ Rustfmt size:  21200 bytes
 +        mk_kind: &mut F,
 +    )
      where
--        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
--    {
-+        F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>, {
-         args.reserve(defs.own_params.len());
-         for param in &defs.own_params {
-             let kind = mk_kind(args.len() as u32, param.id, args);
+         F: FnMut(u32, GenericParamId, &[GenericArg<'db>]) -> GenericArg<'db>,
+     {
      }
  
      pub fn closure_sig_untupled(self) -> PolyFnSig<'db> {
@@ -267,12 +229,3 @@ Rustfmt size:  21200 bytes
  
  #[derive(Clone, Eq, PartialEq, Debug)]
  pub enum TermVid {
-     pub(super) fn mk_args_from_iter<I, T>(self, iter: I) -> T::Output
-     where
-         I: Iterator<Item = T>,
--        T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>,
--    {
-+        T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>, {
-         T::collect_and_apply(iter, |xs| self.mk_args(xs))
-     }
- }

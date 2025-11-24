@@ -955,7 +955,8 @@ impl<'db> Interner for DbInterner<'db> {
     fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
     where
         I: Iterator<Item = T>,
-        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>, {
+        T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>,
+    {
         CollectAndApply::collect_and_apply(args, |g| {
             GenericArgs::new_from_iter(self, g.iter().cloned())
         })
@@ -1144,7 +1145,8 @@ impl<'db> Interner for DbInterner<'db> {
     fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
     where
         I: Iterator<Item = T>,
-        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>, {
+        T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>,
+    {
         CollectAndApply::collect_and_apply(args, |g| Tys::new_from_iter(self, g.iter().cloned()))
     }
 
@@ -2016,7 +2018,8 @@ impl<'db> Interner for DbInterner<'db> {
 impl<'db> DbInterner<'db> {
     pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
     where
-        T: rustc_type_ir::TypeFoldable<Self>, {
+        T: rustc_type_ir::TypeFoldable<Self>,
+    {
         let shift_bv = |bv: BoundVar| BoundVar::from_usize(bv.as_usize() + bound_vars);
         self.replace_escaping_bound_vars_uncached(
             value,
@@ -2072,7 +2075,8 @@ impl<'db> DbInterner<'db> {
         abi: FnAbi,
     ) -> FnSig<'db>
     where
-        I: IntoIterator<Item = Ty<'db>>, {
+        I: IntoIterator<Item = Ty<'db>>,
+    {
         FnSig {
             inputs_and_output: Tys::new_from_iter(
                 self,

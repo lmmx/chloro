@@ -26,7 +26,8 @@ fn vars_since_snapshot<'db, T>(
 ) -> Range<T>
 where
     T: UnifyKey,
-    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>, {
+    super::UndoLog<'db>: From<sv::UndoLog<ut::Delegate<T>>>,
+{
     T::from_index(snapshot_var_len as u32)..T::from_index(table.len() as u32)
 }
 
@@ -90,7 +91,8 @@ impl<'db> InferCtxt<'db> {
     pub fn fudge_inference_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
     where
         F: FnOnce() -> Result<T, E>,
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         let variable_lengths = self.variable_lengths();
         let (snapshot_vars, value) = self.probe(|_| {
             let value = f()?;

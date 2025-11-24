@@ -68,7 +68,8 @@ impl<'db> InferCtxt<'db> {
         query_state: &mut OriginalQueryValues<'db>,
     ) -> CanonicalQueryInput<DbInterner<'db>, ParamEnvAnd<'db, V>>
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         let (param_env, value) = value.into_parts();
         // FIXME(#118965): We don't canonicalize the static lifetimes that appear in the
         // `param_env` because they are treated differently by trait selection.
@@ -118,7 +119,8 @@ impl<'db> InferCtxt<'db> {
     /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query-result
     pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         let mut query_state = OriginalQueryValues::default();
         Canonicalizer::canonicalize(
             value,
@@ -131,7 +133,8 @@ impl<'db> InferCtxt<'db> {
 
     pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         let mut query_state = OriginalQueryValues::default();
         Canonicalizer::canonicalize(
             value,
@@ -322,7 +325,8 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
 
     fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         self.binder_index.shift_in(1);
         let t = t.super_fold_with(self);
         self.binder_index.shift_out(1);
@@ -514,7 +518,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         query_state: &mut OriginalQueryValues<'db>,
     ) -> Canonical<'db, V>
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         let base = Canonical {
             max_universe: UniverseIndex::ROOT,
             variables: CanonicalVars::new_from_iter(tcx, []),
@@ -540,7 +545,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         query_state: &mut OriginalQueryValues<'db>,
     ) -> Canonical<'db, (U, V)>
     where
-        V: TypeFoldable<DbInterner<'db>>, {
+        V: TypeFoldable<DbInterner<'db>>,
+    {
         let needs_canonical_flags = if canonicalize_region_mode.any() {
             TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER | TypeFlags::HAS_FREE_REGIONS
         } else {

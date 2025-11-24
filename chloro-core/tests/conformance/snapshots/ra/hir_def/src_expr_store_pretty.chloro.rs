@@ -54,7 +54,8 @@ fn item_name<Id, Loc>(db: &dyn DefDatabase, id: Id, default: &str) -> String
 where
     Id: Lookup<Database = dyn DefDatabase, Data = Loc>,
     Loc: HasSource,
-    Loc::Value: ast::HasName, {
+    Loc::Value: ast::HasName,
+{
     let loc = id.lookup(db);
     let source = loc.source(db);
     source.value.name().map_or_else(|| default.to_owned(), |name| name.to_string())

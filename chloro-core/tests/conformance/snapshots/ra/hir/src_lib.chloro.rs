@@ -1270,13 +1270,15 @@ pub enum FieldSource {
 impl AstNode for FieldSource {
     fn can_cast(kind: syntax::SyntaxKind) -> bool
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         ast::RecordField::can_cast(kind) || ast::TupleField::can_cast(kind)
     }
 
     fn cast(syntax: SyntaxNode) -> Option<Self>
     where
-        Self: Sized, {
+        Self: Sized,
+    {
         if ast::RecordField::can_cast(syntax.kind()) {
             <ast::RecordField as AstNode>::cast(syntax).map(FieldSource::Named)
         } else if ast::TupleField::can_cast(syntax.kind()) {
@@ -3334,7 +3336,8 @@ fn as_assoc_item<'db, ID, DEF, LOC>(
 where
     ID: Lookup<Database = dyn DefDatabase, Data = AssocItemLoc<LOC>>,
     DEF: From<ID>,
-    LOC: AstIdNode, {
+    LOC: AstIdNode,
+{
     match id.lookup(db).container {
         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) => Some(ctor(DEF::from(id))),
         ItemContainerId::ModuleId(_) | ItemContainerId::ExternBlockId(_) => None,
@@ -3349,7 +3352,8 @@ fn as_extern_assoc_item<'db, ID, DEF, LOC>(
 where
     ID: Lookup<Database = dyn DefDatabase, Data = AssocItemLoc<LOC>>,
     DEF: From<ID>,
-    LOC: AstIdNode, {
+    LOC: AstIdNode,
+{
     match id.lookup(db).container {
         ItemContainerId::ExternBlockId(_) => Some(ctor(DEF::from(id))),
         ItemContainerId::TraitId(_) | ItemContainerId::ImplId(_) | ItemContainerId::ModuleId(_) => {
@@ -6274,7 +6278,8 @@ pub trait MethodCandidateCallback {
 
 impl<F> MethodCandidateCallback for F
 where
-    F: FnMut(Function) -> ControlFlow<()>, {
+    F: FnMut(Function) -> ControlFlow<()>,
+{
     fn on_inherent_method(&mut self, f: Function) -> ControlFlow<()> {
         self(f)
     }
@@ -6292,7 +6297,8 @@ pub trait PathCandidateCallback {
 
 impl<F> PathCandidateCallback for F
 where
-    F: FnMut(AssocItem) -> ControlFlow<()>, {
+    F: FnMut(AssocItem) -> ControlFlow<()>,
+{
     fn on_inherent_item(&mut self, item: AssocItem) -> ControlFlow<()> {
         self(item)
     }

@@ -46,7 +46,8 @@ pub struct Config<T> {
 
 impl<T> Config<T>
 where
-    T: for<'writer> MakeWriter<'writer> + Send + Sync + 'static, {
+    T: for<'writer> MakeWriter<'writer> + Send + Sync + 'static,
+{
     pub fn init(self) -> anyhow::Result<()> {
         let targets_filter: Targets = self
             .filter

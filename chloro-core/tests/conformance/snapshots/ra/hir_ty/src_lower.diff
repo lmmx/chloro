@@ -222,15 +222,6 @@ Rustfmt size:  87058 bytes
      TraitEnvironment::new(resolver.krate(), None, traits_in_scope.into_boxed_slice(), env)
  }
  
-     filter: F,
- ) -> (GenericPredicates<'db>, Diagnostics)
- where
--    F: Fn(GenericDefId) -> bool,
--{
-+    F: Fn(GenericDefId) -> bool, {
-     let generics = generics(db, def);
-     let resolver = def.resolver(db);
-     let interner = DbInterner::new_with(db, Some(resolver.krate()), None);
          def,
          LifetimeElisionKind::AnonymousReportError,
      );

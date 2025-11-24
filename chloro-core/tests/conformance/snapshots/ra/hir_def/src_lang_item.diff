@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   12525 bytes
+Chloro size:   12529 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -58,14 +58,11 @@ Rustfmt size:  32624 bytes
          item: T,
          constructor: fn(T) -> LangItemTarget,
 -    ) where
--        T: Into<AttrDefId> + Copy,
--    {
 +    )
 +    where
-+        T: Into<AttrDefId> + Copy, {
+         T: Into<AttrDefId> + Copy,
+     {
          let _p = tracing::info_span!("collect_lang_item").entered();
-         if let Some(lang_item) = lang_attr(db, item.into()) {
-             self.items.entry(lang_item).or_insert_with(|| constructor(item));
  
  pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option<Arc<[TraitId]>> {
      let _p = tracing::info_span!("crate_notable_traits", ?krate).entered();

@@ -66,7 +66,8 @@ pub(crate) struct SpanTree<S> {
 
 impl<S> SpanTree<S>
 where
-    S: Subscriber + for<'span> tracing_subscriber::registry::LookupSpan<'span>, {
+    S: Subscriber + for<'span> tracing_subscriber::registry::LookupSpan<'span>,
+{
     pub(crate) fn new(spec: &str) -> impl Layer<S> {
         let (write_filter, allowed_names) = WriteFilter::from_spec(spec);
         // this filter the first pass for `tracing`: these are all the "profiling" spans, but things like
@@ -125,7 +126,8 @@ impl Visit for DataVisitor<'_> {
 
 impl<S> Layer<S> for SpanTree<S>
 where
-    S: Subscriber + for<'span> LookupSpan<'span>, {
+    S: Subscriber + for<'span> LookupSpan<'span>,
+{
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let span = ctx.span(id).unwrap();
         let data = Data::new(attrs);

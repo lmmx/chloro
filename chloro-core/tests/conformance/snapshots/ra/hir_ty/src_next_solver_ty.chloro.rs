@@ -1065,7 +1065,8 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
     fn new_tup_from_iter<It, T>(interner: DbInterner<'db>, iter: It) -> T::Output
     where
         It: Iterator<Item = T>,
-        T: rustc_type_ir::CollectAndApply<Self, Self>, {
+        T: rustc_type_ir::CollectAndApply<Self, Self>,
+    {
         T::collect_and_apply(iter, |ts| Ty::new_tup(interner, ts))
     }
 

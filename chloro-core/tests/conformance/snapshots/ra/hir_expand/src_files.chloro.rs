@@ -165,7 +165,8 @@ impl<N: AstNode> AstId<N> {
     #[inline]
     pub fn upcast<M: AstIdNode>(self) -> AstId<M>
     where
-        N: Into<M>, {
+        N: Into<M>,
+    {
         self.map(|it| it.upcast())
     }
 }
@@ -203,7 +204,8 @@ impl<FileKind: Copy, T> InFileWrapper<FileKind, T> {
 
     pub fn borrow<U>(&self) -> InFileWrapper<FileKind, &U>
     where
-        T: Borrow<U>, {
+        T: Borrow<U>,
+    {
         self.with_value(self.value.borrow())
     }
 }

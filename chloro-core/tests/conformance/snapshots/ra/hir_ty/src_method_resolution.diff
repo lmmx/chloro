@@ -315,15 +315,6 @@ Rustfmt size:  65944 bytes
      ControlFlow::Continue(())
  }
  
- 
- impl<F> MethodCandidateCallback for F
- where
--    F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,
--{
-+    F: FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>, {
-     fn on_inherent_method(
-         &mut self,
-         adjustments: ReceiverAdjustments,
      callback: &mut dyn FnMut(ReceiverAdjustments, AssocItemId, bool) -> ControlFlow<()>,
  ) -> ControlFlow<()> {
      let db = table.db;

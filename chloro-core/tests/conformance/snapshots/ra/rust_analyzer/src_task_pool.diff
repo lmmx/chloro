@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1586 bytes
-Chloro size:   1578 bytes
+Chloro size:   1586 bytes
 Rustfmt size:  1619 bytes
 
 ✗ Outputs DIFFER
@@ -19,20 +19,3 @@ Rustfmt size:  1619 bytes
      }
  
      pub(crate) fn spawn<F>(&mut self, intent: ThreadIntent, task: F)
-     where
-         F: FnOnce() -> T + Send + UnwindSafe + 'static,
--        T: Send + 'static,
--    {
-+        T: Send + 'static, {
-         self.pool.spawn(intent, {
-             let sender = self.sender.clone();
-             move || sender.send(task()).unwrap()
-     pub(crate) fn spawn_with_sender<F>(&mut self, intent: ThreadIntent, task: F)
-     where
-         F: FnOnce(Sender<T>) + Send + UnwindSafe + 'static,
--        T: Send + 'static,
--    {
-+        T: Send + 'static, {
-         self.pool.spawn(intent, {
-             let sender = self.sender.clone();
-             move || task(sender)

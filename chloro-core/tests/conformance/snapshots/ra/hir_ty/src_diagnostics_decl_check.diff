@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23104 bytes
+Chloro size:   23112 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -183,12 +183,7 @@ Rustfmt size:  23115 bytes
 +    where
          N: AstNode + HasName + fmt::Debug,
          S: HasSource<Value = N>,
--        L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy,
--    {
-+        L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy, {
-         let to_expected_case_type = match expected_case {
-             CaseType::LowerSnakeCase => to_lower_snake_case,
-             CaseType::UpperSnakeCase => to_upper_snake_case,
+         L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy,
          else {
              return;
          };
@@ -200,14 +195,11 @@ Rustfmt size:  23115 bytes
          node: &T,
          ident_type: IdentType,
 -    ) where
--        T: AstNode + HasName + fmt::Debug,
--    {
 +    )
 +    where
-+        T: AstNode + HasName + fmt::Debug, {
+         T: AstNode + HasName + fmt::Debug,
+     {
          let Some(name_ast) = node.name() else {
-             never!(
-                 "Replacement ({:?}) was generated for a {:?} without a name: {:?}",
              );
              return;
          };

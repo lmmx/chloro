@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29403 bytes
+Chloro size:   29427 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -36,15 +36,6 @@ Rustfmt size:  29841 bytes
      }
  }
  
-         query_state: &mut OriginalQueryValues<'db>,
-     ) -> CanonicalQueryInput<DbInterner<'db>, ParamEnvAnd<'db, V>>
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         let (param_env, value) = value.into_parts();
-         // FIXME(#118965): We don't canonicalize the static lifetimes that appear in the
-         // `param_env` because they are treated differently by trait selection.
              &CanonicalizeFreeRegionsOtherThanStatic,
              query_state,
          );
@@ -63,24 +54,6 @@ Rustfmt size:  29841 bytes
      }
  
      /// Canonicalizes a query *response* `V`. When we canonicalize a
-     /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query-result
-     pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         let mut query_state = OriginalQueryValues::default();
-         Canonicalizer::canonicalize(
-             value,
- 
-     pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         let mut query_state = OriginalQueryValues::default();
-         Canonicalizer::canonicalize(
-             value,
  
      fn any(&self) -> bool;
  
@@ -129,15 +102,6 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
- 
-     fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.binder_index.shift_in(1);
-         let t = t.super_fold_with(self);
-         self.binder_index.shift_out(1);
              }
              _ => {}
          }
@@ -145,23 +109,6 @@ Rustfmt size:  29841 bytes
          if ct.flags().intersects(self.needs_canonical_flags) {
              ct.super_fold_with(self)
          } else {
-         query_state: &mut OriginalQueryValues<'db>,
-     ) -> Canonical<'db, V>
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         let base = Canonical {
-             max_universe: UniverseIndex::ROOT,
-             variables: CanonicalVars::new_from_iter(tcx, []),
-         query_state: &mut OriginalQueryValues<'db>,
-     ) -> Canonical<'db, (U, V)>
-     where
--        V: TypeFoldable<DbInterner<'db>>,
--    {
-+        V: TypeFoldable<DbInterner<'db>>, {
-         let needs_canonical_flags = if canonicalize_region_mode.any() {
-             TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER | TypeFlags::HAS_FREE_REGIONS
          } else {
              TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER
          };

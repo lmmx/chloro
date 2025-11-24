@@ -277,7 +277,8 @@ fn is_not_whitespace(element: &NodeOrToken<ast::TokenTree, syntax::SyntaxToken>)
 
 fn next_cfg_expr_from_syntax<I>(iter: &mut Peekable<I>) -> Option<CfgExpr>
 where
-    I: Iterator<Item = NodeOrToken<ast::TokenTree, syntax::SyntaxToken>>, {
+    I: Iterator<Item = NodeOrToken<ast::TokenTree, syntax::SyntaxToken>>,
+{
     let name = match iter.next() {
         None => return None,
         Some(NodeOrToken::Token(element)) => match element.kind() {

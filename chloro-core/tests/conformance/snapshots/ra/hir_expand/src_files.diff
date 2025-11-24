@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19315 bytes
+Chloro size:   19323 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -84,12 +84,6 @@ Rustfmt size:  20465 bytes
      #[inline]
      pub fn upcast<M: AstIdNode>(self) -> AstId<M>
      where
--        N: Into<M>,
--    {
-+        N: Into<M>, {
-         self.map(|it| it.upcast())
-     }
- }
      pub fn to_range(&self, db: &dyn ExpandDatabase) -> TextRange {
          self.to_ptr(db).text_range()
      }
@@ -97,15 +91,6 @@ Rustfmt size:  20465 bytes
      pub fn to_ptr(&self, db: &dyn ExpandDatabase) -> SyntaxNodePtr {
          db.ast_id_map(self.file_id).get_erased(self.value)
      }
- 
-     pub fn borrow<U>(&self) -> InFileWrapper<FileKind, &U>
-     where
--        T: Borrow<U>,
--    {
-+        T: Borrow<U>, {
-         self.with_value(self.value.borrow())
-     }
- }
  
  impl<T> From<InMacroFile<T>> for InFile<T> {
      fn from(InMacroFile { file_id, value }: InMacroFile<T>) -> Self {

@@ -76,7 +76,8 @@ pub fn dyn_compatibility_with_callback<F>(
     cb: &mut F,
 ) -> ControlFlow<()>
 where
-    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
+{
     let interner = DbInterner::new_with(db, Some(trait_.krate(db)), None);
     for super_trait in elaborate::supertrait_def_ids(interner, trait_.into()).skip(1) {
         if db.dyn_compatibility_of_trait(super_trait.0).is_some() {
@@ -92,7 +93,8 @@ pub fn dyn_compatibility_of_trait_with_callback<F>(
     cb: &mut F,
 ) -> ControlFlow<()>
 where
-    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
+{
     // Check whether this has a `Sized` bound
     if generics_require_sized_self(db, trait_.into()) {
         cb(DynCompatibilityViolation::SizedSelf)?;
@@ -268,7 +270,8 @@ fn dyn_compatibility_violation_for_assoc_item<F>(
     cb: &mut F,
 ) -> ControlFlow<()>
 where
-    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
+{
     // Any item that has a `Self : Sized` requisite is otherwise
     // exempt from the regulations.
     if generics_require_sized_self(db, item.into()) {
@@ -304,7 +307,8 @@ fn virtual_call_violations_for_method<F>(
     cb: &mut F,
 ) -> ControlFlow<()>
 where
-    F: FnMut(MethodViolationCode) -> ControlFlow<()>, {
+    F: FnMut(MethodViolationCode) -> ControlFlow<()>,
+{
     let func_data = db.function_signature(func);
     if !func_data.has_self_param() {
         cb(MethodViolationCode::StaticMethod)?;

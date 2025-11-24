@@ -175,7 +175,8 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         b: Binder<'db, T>,
     ) -> RelateResult<'db, Binder<'db, T>>
     where
-        T: Relate<DbInterner<'db>>, {
+        T: Relate<DbInterner<'db>>,
+    {
         // GLB/LUB of a binder and itself is just itself
         if a == b {
             return Ok(a);

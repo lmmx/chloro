@@ -79,15 +79,6 @@ Rustfmt size:  14552 bytes
  fn is_not_whitespace(element: &NodeOrToken<ast::TokenTree, syntax::SyntaxToken>) -> bool {
      !matches!(element, NodeOrToken::Token(token) if (token.kind() == SyntaxKind::WHITESPACE))
  }
- 
- fn next_cfg_expr_from_syntax<I>(iter: &mut Peekable<I>) -> Option<CfgExpr>
- where
--    I: Iterator<Item = NodeOrToken<ast::TokenTree, syntax::SyntaxToken>>,
--{
-+    I: Iterator<Item = NodeOrToken<ast::TokenTree, syntax::SyntaxToken>>, {
-     let name = match iter.next() {
-         None => return None,
-         Some(NodeOrToken::Token(element)) => match element.kind() {
      }
      result
  }

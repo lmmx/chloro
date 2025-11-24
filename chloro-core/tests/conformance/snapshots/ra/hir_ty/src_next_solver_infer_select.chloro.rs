@@ -221,7 +221,8 @@ impl<'db, N> ImplSource<'db, N> {
 
     pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
     where
-        F: FnMut(N) -> M, {
+        F: FnMut(N) -> M,
+    {
         match self {
             ImplSource::UserDefined(i) => ImplSource::UserDefined(ImplSourceUserDefinedData {
                 impl_def_id: i.impl_def_id,

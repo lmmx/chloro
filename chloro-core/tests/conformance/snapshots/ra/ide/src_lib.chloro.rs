@@ -304,7 +304,8 @@ impl Analysis {
 
     pub fn parallel_prime_caches<F>(&self, num_worker_threads: usize, cb: F) -> Cancellable<()>
     where
-        F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe, {
+        F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe,
+    {
         self.with_db(move |db| prime_caches::parallel_prime_caches(db, num_worker_threads, &cb))
     }
 
@@ -910,7 +911,8 @@ impl Analysis {
     /// catching it on the API boundary.
     fn with_db<F, T>(&self, f: F) -> Cancellable<T>
     where
-        F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe, {
+        F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe,
+    {
         // We use `attach_db_allow_change()` and not `attach_db()` because fixture injection can change the database.
         hir::attach_db_allow_change(&self.db, || Cancelled::catch(|| f(&self.db)))
     }

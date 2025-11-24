@@ -25,7 +25,8 @@ pub trait HasSource {
 
 impl<T> HasSource for T
 where
-    T: AstIdLoc, {
+    T: AstIdLoc,
+{
     type Value = T::Ast;
 
     fn ast_ptr(&self, db: &dyn DefDatabase) -> InFile<AstPtr<Self::Value>> {

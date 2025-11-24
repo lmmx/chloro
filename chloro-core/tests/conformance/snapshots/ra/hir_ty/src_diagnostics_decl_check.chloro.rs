@@ -579,7 +579,8 @@ impl<'a> DeclValidator<'a> {
     where
         N: AstNode + HasName + fmt::Debug,
         S: HasSource<Value = N>,
-        L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy, {
+        L: Lookup<Data = S, Database = dyn DefDatabase> + HasModule + Copy,
+    {
         let to_expected_case_type = match expected_case {
             CaseType::LowerSnakeCase => to_lower_snake_case,
             CaseType::UpperSnakeCase => to_upper_snake_case,
@@ -611,7 +612,8 @@ impl<'a> DeclValidator<'a> {
         ident_type: IdentType,
     )
     where
-        T: AstNode + HasName + fmt::Debug, {
+        T: AstNode + HasName + fmt::Debug,
+    {
         let Some(name_ast) = node.name() else {
             never!(
                 "Replacement ({:?}) was generated for a {:?} without a name: {:?}",

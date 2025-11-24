@@ -76,7 +76,8 @@ impl<'db> InferCtxt<'db> {
     #[instrument(skip(self, f), level = "debug")]
     pub fn commit_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
     where
-        F: FnOnce(&CombinedSnapshot) -> Result<T, E>, {
+        F: FnOnce(&CombinedSnapshot) -> Result<T, E>,
+    {
         let snapshot = self.start_snapshot();
         let r = f(&snapshot);
         debug!("commit_if_ok() -- r.is_ok() = {}", r.is_ok());
@@ -95,7 +96,8 @@ impl<'db> InferCtxt<'db> {
     #[instrument(skip(self, f), level = "debug")]
     pub fn probe<R, F>(&self, f: F) -> R
     where
-        F: FnOnce(&CombinedSnapshot) -> R, {
+        F: FnOnce(&CombinedSnapshot) -> R,
+    {
         let snapshot = self.start_snapshot();
         let r = f(&snapshot);
         self.rollback_to(snapshot);

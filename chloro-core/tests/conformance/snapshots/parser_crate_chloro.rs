@@ -1558,7 +1558,8 @@ fn main() {
 }#
 #
 fn foo()
-where for<'a> {
+where for<'a>
+{
 }
 {
     x
@@ -1706,7 +1707,8 @@ struct S {
 }
 
 fn foo<T>()
-where T {
+where T
+{
 }
 
 fn a() {
@@ -1773,7 +1775,8 @@ type ForForFn = for<'a> for<'b> fn(&'a i32, &'b i32);
 
 fn for_for_for<T>()
 where
-    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy, {
+    for<'a> for<'b> for<'c> fn(&'a T, &'b T, &'c T): Copy,
+{
 }
 
 fn foo() {
@@ -1800,7 +1803,8 @@ fn main() {
 }
 
 fn f<T>()
-where T: ?for<> Sized {
+where T: ?for<> Sized
+{
 }
 
 type T = *();
@@ -1814,7 +1818,8 @@ fn foo() -> A {
 }
 
 fn foo() -> A
-where T: Copy {
+where T: Copy
+{
     let x = 1;
 }
 
@@ -2079,7 +2084,8 @@ impl T for Foo {
 }
 
 trait T
-where Self: Copy {
+where Self: Copy
+{
 }
 
 fn f() {
@@ -2285,7 +2291,8 @@ macro_rules! m [ ($i:ident) => {} ];
 macro m { ($i:ident) => {} }
 
 fn f<T>()
-where T: for<> ?Sized {
+where T: for<> ?Sized
+{
 }
 
 struct S<T>(T);
@@ -2417,7 +2424,8 @@ type Foo where Foo: Copy = ();
 type Never = !;
 
 fn foo<T>()
-where T: Copy {
+where T: Copy
+{
 }
 
 fn foo() {
@@ -2563,7 +2571,8 @@ fn foo<T>()
 where
     T::method(..): Send,
     method(..): Send,
-    method::(..): Send, {
+    method::(..): Send,
+{
 }
 
 impl S {
@@ -2625,7 +2634,8 @@ where
    'a: 'b + 'c,
    T: Clone + Copy + 'static,
    Iterator::Item: 'a,
-   <T as Iterator>::Item: 'a {
+   <T as Iterator>::Item: 'a
+{
 }
 fn main() {
     let foo = macro_rules!();
@@ -3024,7 +3034,8 @@ fn f() {
 
 fn for_trait<F>()
 where
-   for<'a> F: Fn(&'a str) {
+   for<'a> F: Fn(&'a str)
+{
 }
 #
 fn main() {
@@ -3275,7 +3286,8 @@ fn foo(-128..=127: i8) {
 
 fn test_serialization<SER>()
 where
-    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug, {
+    SER: Serialize + for<'de> Deserialize<'de> + PartialEq + std::fmt::Debug,
+{
 }
 
 struct S {
@@ -3326,32 +3338,38 @@ macro_rules! foo {
 
 fn for_trait<F>()
 where
-    for<'a> F: Fn(&'a str), {
+    for<'a> F: Fn(&'a str),
+{
 }
 
 fn for_ref<F>()
 where
-    for<'a> &'a F: Debug, {
+    for<'a> &'a F: Debug,
+{
 }
 
 fn for_parens<F>()
 where
-    for<'a> (&'a F): Fn(&'a str), {
+    for<'a> (&'a F): Fn(&'a str),
+{
 }
 
 fn for_slice<F>()
 where
-    for<'a> [&'a F]: Eq, {
+    for<'a> [&'a F]: Eq,
+{
 }
 
 fn for_qpath<T>(_t: &T)
 where
-    for<'a> <&'a T as Baz>::Foo: Iterator, {
+    for<'a> <&'a T as Baz>::Foo: Iterator,
+{
 }
 
 fn for_for_fn<T>()
 where
-    for<'a> for<'b> fn(&'a T, &'b T): Copy, {
+    for<'a> for<'b> fn(&'a T, &'b T): Copy,
+{
 }
 #
 #
@@ -3738,7 +3756,8 @@ fn main() {
 
 pub fn foo<S: Iterator>() -> String
 where
-    <S as Iterator>::Item: Eq, {
+    <S as Iterator>::Item: Eq,
+{
     "".to_owned()
 }
 
@@ -3764,7 +3783,8 @@ mod d {
 }
 
 fn test()
-where (u64, u64): Foo {
+where (u64, u64): Foo
+{
 }
 
 fn a() -> Foo<bar::Baz> {
@@ -3925,7 +3945,8 @@ trait T {
 }
 
 fn f<T>()
-where T: Fn() -> u8 + Send {
+where T: Fn() -> u8 + Send
+{
 }
 
 impl U {

@@ -60,15 +60,6 @@ Rustfmt size:  18694 bytes
      None
  }
  
-     cb: &mut F,
- ) -> ControlFlow<()>
- where
--    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
--{
-+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
-     let interner = DbInterner::new_with(db, Some(trait_.krate(db)), None);
-     for super_trait in elaborate::supertrait_def_ids(interner, trait_.into()).skip(1) {
-         if db.dyn_compatibility_of_trait(super_trait.0).is_some() {
              cb(DynCompatibilityViolation::HasNonCompatibleSuperTrait(trait_))?;
          }
      }
@@ -76,13 +67,6 @@ Rustfmt size:  18694 bytes
      dyn_compatibility_of_trait_with_callback(db, trait_, cb)
  }
  
-     cb: &mut F,
- ) -> ControlFlow<()>
- where
--    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
--{
-+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
-     // Check whether this has a `Sized` bound
      if generics_require_sized_self(db, trait_.into()) {
          cb(DynCompatibilityViolation::SizedSelf)?;
      }
@@ -141,14 +125,6 @@ Rustfmt size:  18694 bytes
      let mut visitor =
          IllegalSelfTypeVisitor { db, trait_, super_traits: None, allow_self_projection };
      t.visit_with(&mut visitor).is_break()
-     cb: &mut F,
- ) -> ControlFlow<()>
- where
--    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>,
--{
-+    F: FnMut(DynCompatibilityViolation) -> ControlFlow<()>, {
-     // Any item that has a `Self : Sized` requisite is otherwise
-     // exempt from the regulations.
      if generics_require_sized_self(db, item.into()) {
          return ControlFlow::Continue(());
      }
@@ -156,13 +132,6 @@ Rustfmt size:  18694 bytes
      match item {
          AssocItemId::ConstId(it) => cb(DynCompatibilityViolation::AssocConst(it)),
          AssocItemId::FunctionId(it) => {
-     cb: &mut F,
- ) -> ControlFlow<()>
- where
--    F: FnMut(MethodViolationCode) -> ControlFlow<()>,
--{
-+    F: FnMut(MethodViolationCode) -> ControlFlow<()>, {
-     let func_data = db.function_signature(func);
      if !func_data.has_self_param() {
          cb(MethodViolationCode::StaticMethod)?;
      }

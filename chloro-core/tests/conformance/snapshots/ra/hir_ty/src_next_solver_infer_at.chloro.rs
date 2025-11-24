@@ -97,7 +97,8 @@ impl<'a, 'db> At<'a, 'db> {
     /// appears in the signature.
     pub fn sup<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
     where
-        T: ToTrace<'db>, {
+        T: ToTrace<'db>,
+    {
         RelateExt::relate(
             self.infcx,
             self.param_env,
@@ -112,7 +113,8 @@ impl<'a, 'db> At<'a, 'db> {
     /// Makes `expected <: actual`.
     pub fn sub<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
     where
-        T: ToTrace<'db>, {
+        T: ToTrace<'db>,
+    {
         RelateExt::relate(
             self.infcx,
             self.param_env,
@@ -127,7 +129,8 @@ impl<'a, 'db> At<'a, 'db> {
     /// Makes `expected == actual`.
     pub fn eq<T>(self, expected: T, actual: T) -> InferResult<'db, ()>
     where
-        T: Relate<DbInterner<'db>>, {
+        T: Relate<DbInterner<'db>>,
+    {
         RelateExt::relate(
             self.infcx,
             self.param_env,
@@ -141,7 +144,8 @@ impl<'a, 'db> At<'a, 'db> {
 
     pub fn relate<T>(self, expected: T, variance: Variance, actual: T) -> InferResult<'db, ()>
     where
-        T: ToTrace<'db>, {
+        T: ToTrace<'db>,
+    {
         match variance {
             Variance::Covariant => self.sub(expected, actual),
             Variance::Invariant => self.eq(expected, actual),
@@ -160,7 +164,8 @@ impl<'a, 'db> At<'a, 'db> {
     /// the current environment. This errors in case normalization fails or is ambiguous.
     pub fn deeply_normalize<T>(self, value: T) -> Result<T, Vec<NextSolverError<'db>>>
     where
-        T: TypeFoldable<DbInterner<'db>>, {
+        T: TypeFoldable<DbInterner<'db>>,
+    {
         crate::next_solver::normalize::deeply_normalize(self, value)
     }
 
@@ -171,7 +176,8 @@ impl<'a, 'db> At<'a, 'db> {
     /// "expected type".
     pub fn lub<T>(self, expected: T, actual: T) -> InferResult<'db, T>
     where
-        T: ToTrace<'db>, {
+        T: ToTrace<'db>,
+    {
         let mut op = LatticeOp::new(
             self.infcx,
             ToTrace::to_trace(self.cause, expected, actual),

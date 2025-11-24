@@ -773,7 +773,8 @@ fn get_bounds_in_scope<D>(
 ) -> (impl Iterator<Item = ast::GenericParam>, impl Iterator<Item = ast::WherePred>)
 where
     D: HasSource,
-    D::Ast: HasGenericParams, {
+    D::Ast: HasGenericParams,
+{
     // This function should be only called with `Impl`, `Trait`, or `Function`, for which it's
     // infallible to get source ast.
     let node = ctx.sema.source(def).expect("definition's source couldn't be found").value;

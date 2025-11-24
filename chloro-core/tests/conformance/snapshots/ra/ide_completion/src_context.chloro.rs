@@ -541,7 +541,8 @@ impl CompletionContext<'_> {
     /// Checks if an item is visible, not `doc(hidden)` and stable at the completion site.
     pub(crate) fn is_visible<I>(&self, item: &I) -> Visible
     where
-        I: hir::HasVisibility + hir::HasAttrs + hir::HasCrate + Copy, {
+        I: hir::HasVisibility + hir::HasAttrs + hir::HasCrate + Copy,
+    {
         let vis = item.visibility(self.db);
         let attrs = item.attrs(self.db);
         self.is_visible_impl(&vis, &attrs, item.krate(self.db))
@@ -549,7 +550,8 @@ impl CompletionContext<'_> {
 
     pub(crate) fn doc_aliases<I>(&self, item: &I) -> Vec<SmolStr>
     where
-        I: hir::HasAttrs + Copy, {
+        I: hir::HasAttrs + Copy,
+    {
         let attrs = item.attrs(self.db);
         attrs.doc_aliases().map(|it| it.as_str().into()).collect()
     }
@@ -574,7 +576,8 @@ impl CompletionContext<'_> {
 
     pub(crate) fn check_stability_and_hidden<I>(&self, item: I) -> bool
     where
-        I: hir::HasAttrs + hir::HasCrate, {
+        I: hir::HasAttrs + hir::HasCrate,
+    {
         let defining_crate = item.krate(self.db);
         let attrs = item.attrs(self.db);
         self.check_stability(Some(&attrs)) && !self.is_doc_hidden(&attrs, defining_crate)

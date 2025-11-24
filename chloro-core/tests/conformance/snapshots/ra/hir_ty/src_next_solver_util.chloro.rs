@@ -366,7 +366,8 @@ impl<'db, F, G, H> TypeFolder<DbInterner<'db>> for BottomUpFolder<'db, F, G, H>
 where
     F: FnMut(Ty<'db>) -> Ty<'db>,
     G: FnMut(Region<'db>) -> Region<'db>,
-    H: FnMut(Const<'db>) -> Const<'db>, {
+    H: FnMut(Const<'db>) -> Const<'db>,
+{
     fn cx(&self) -> DbInterner<'db> {
         self.interner
     }

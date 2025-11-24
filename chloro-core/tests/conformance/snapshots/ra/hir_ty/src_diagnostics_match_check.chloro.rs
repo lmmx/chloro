@@ -409,7 +409,8 @@ struct WriteWith<'db, F>(F, PhantomCovariantLifetime<'db>);
 
 impl<'db, F> WriteWith<'db, F>
 where
-    F: Fn(&mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>, {
+    F: Fn(&mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>,
+{
     fn new(f: F) -> Self {
         Self(f, PhantomCovariantLifetime::new())
     }
@@ -417,7 +418,8 @@ where
 
 impl<'db, F> HirDisplay<'db> for WriteWith<'db, F>
 where
-    F: Fn(&mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>, {
+    F: Fn(&mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>,
+{
     fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
         (self.0)(f)
     }

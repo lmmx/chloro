@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34158 bytes
+Chloro size:   34214 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -52,12 +52,8 @@ Rustfmt size:  35032 bytes
 +        t: T,
 +    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
      where
--        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
--    {
-+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
-         self.table.canonicalize(t)
-     }
- }
+         T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
+     {
          if inspect_goal.result() == Ok(Certainty::Yes) {
              return;
          }
@@ -139,12 +135,8 @@ Rustfmt size:  35032 bytes
 +        t: T,
 +    ) -> rustc_type_ir::Canonical<DbInterner<'db>, T>
      where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         // try to resolve obligations before canonicalizing, since this might
-         // result in new knowledge about variables
-         self.select_obligations_where_possible();
+         T: TypeFoldable<DbInterner<'db>>,
+     {
          self.infer_ctxt.canonicalize_response(t)
      }
  
@@ -152,30 +144,7 @@ Rustfmt size:  35032 bytes
 -    // Inference should use shallow normalization (`try_structurally_resolve_type()`) only, when needed.
      pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
      where
--        T: TypeFoldable<DbInterner<'db>> + Clone,
--    {
-+        T: TypeFoldable<DbInterner<'db>> + Clone, {
-         let ty = self.resolve_vars_with_obligations(ty);
-         self.infer_ctxt
-             .at(&ObligationCause::new(), self.trait_env.env)
-     /// the inference variables
-     pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         let ty = self.resolve_vars_with_obligations(ty);
-         let ty = self.normalize_associated_types_in(ty);
-         self.resolve_vars_with_obligations(ty)
-         fallback_region: &mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
-     ) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         struct Resolver<'a, 'db> {
-             table: &'a mut InferenceTable<'db>,
-             binder: DebruijnIndex,
+         T: TypeFoldable<DbInterner<'db>> + Clone,
              fallback_const: &'a mut dyn FnMut(DebruijnIndex, InferConst) -> Const<'db>,
              fallback_region: &'a mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
          }
@@ -190,20 +159,8 @@ Rustfmt size:  35032 bytes
          t.fold_with(&mut Resolver {
              table: self,
              binder: DebruijnIndex::ZERO,
-         canonical: rustc_type_ir::Canonical<DbInterner<'db>, T>,
-     ) -> T
-     where
--        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
--    {
-+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
-         self.infer_ctxt.instantiate_canonical(&canonical).0
-     }
- 
-     pub(crate) fn resolve_completely<T>(&mut self, value: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
+         T: TypeFoldable<DbInterner<'db>>,
+     {
          let value = self.infer_ctxt.resolve_vars_if_possible(value);
 -
          let mut goals = vec![];
@@ -234,12 +191,6 @@ Rustfmt size:  35032 bytes
      }
  
      pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
- 
-     pub(crate) fn resolve_vars_with_obligations<T>(&mut self, t: T) -> T
-     where
--        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
--    {
-+        T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
          if !t.has_non_region_infer() {
              return t;
          }
@@ -305,13 +256,6 @@ Rustfmt size:  35032 bytes
      }
  
      pub(super) fn register_predicates<I>(&mut self, obligations: I)
-     where
--        I: IntoIterator<Item = PredicateObligation<'db>>,
--    {
-+        I: IntoIterator<Item = PredicateObligation<'db>>, {
-         obligations.into_iter().for_each(|obligation| {
-             self.register_predicate(obligation);
-         });
          num_args: usize,
      ) -> Option<(FnTrait, Vec<Ty<'db>>, Ty<'db>)> {
          for (fn_trait_name, output_assoc_name, subtraits) in [
@@ -325,14 +269,6 @@ Rustfmt size:  35032 bytes
              (FnTrait::AsyncFnOnce, sym::CallOnceFuture, &[]),
          ] {
  
-     pub(super) fn insert_type_vars<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.infer_ctxt.insert_type_vars(ty)
-     }
- 
      /// Replaces `Ty::Error` by a new type var, so we can maybe still infer it.
      pub(super) fn insert_type_vars_shallow(&mut self, ty: Ty<'db>) -> Ty<'db> {
 -        if ty.is_ty_error() {
@@ -344,23 +280,6 @@ Rustfmt size:  35032 bytes
      }
  
      /// Whenever you lower a user-written type, you should call this.
-     pub(crate) fn process_user_written_ty<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         self.process_remote_user_written_ty(ty)
-         // FIXME: Register a well-formed obligation.
-     }
-     /// while `process_user_written_ty()` should (but doesn't currently).
-     pub(crate) fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
-     where
--        T: TypeFoldable<DbInterner<'db>>,
--    {
-+        T: TypeFoldable<DbInterner<'db>>, {
-         let ty = self.insert_type_vars(ty);
-         // See https://github.com/rust-lang/rust/blob/cdb45c87e2cd43495379f7e867e3cc15dcee9f93/compiler/rustc_hir_typeck/src/fn_ctxt/mod.rs#L487-L495:
-         // Even though the new solver only lazily normalizes usually, here we eagerly normalize so that not everything needs
  
      /// Replaces ConstScalar::Unknown by a new type var, so we can maybe still infer it.
      pub(super) fn insert_const_vars_shallow(&mut self, c: Const<'db>) -> Const<'db> {
@@ -440,15 +359,6 @@ Rustfmt size:  35032 bytes
          }
  
          fn handle_term<T>(
-             outer_exclusive_binder: impl FnOnce(T) -> DebruijnIndex,
-         ) -> T
-         where
--            T: Into<Term<'db>> + TypeSuperFoldable<DbInterner<'db>> + Copy,
--        {
-+            T: Into<Term<'db>> + TypeSuperFoldable<DbInterner<'db>> + Copy, {
-             let value = if self.should_normalize {
-                 let cause = ObligationCause::new();
-                 let at = self.ctx.infer_ctxt.at(&cause, self.ctx.trait_env.env);
              } else {
                  value
              };
