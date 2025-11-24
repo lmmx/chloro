@@ -1,5 +1,5 @@
 use syntax::{
-    ast::{self, AstNode, edit::IndentLevel, syntax_factory::SyntaxFactory},
+    ast::{edit::IndentLevel, self, syntax_factory::SyntaxFactory, AstNode},
     syntax_editor::{Element, Position},
     Direction, SyntaxKind, T,
 };

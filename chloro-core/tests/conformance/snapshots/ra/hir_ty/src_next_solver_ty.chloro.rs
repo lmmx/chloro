@@ -27,11 +27,9 @@ use rustc_type_ir::{
 use crate::{
     db::{HirDatabase, InternedCoroutine},
     next_solver::{
+        abi::Safety, interner::InternedWrapperNoDebug, util::{CoroutineArgsExt, IntegerTypeExt},
         AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
         CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
-        abi::Safety,
-        interner::InternedWrapperNoDebug,
-        util::{CoroutineArgsExt, IntegerTypeExt},
     },
     ImplTraitId,
 };

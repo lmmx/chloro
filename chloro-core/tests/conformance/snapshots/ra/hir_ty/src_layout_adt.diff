@@ -19,14 +19,6 @@ Rustfmt size:  6451 bytes
  };
  use intern::sym;
  use rustc_abi::{Integer, ReprOptions, TargetDataLayout};
- 
- use crate::{
-     db::HirDatabase,
--    layout::{field_ty, Layout, LayoutCx, LayoutError},
-+    layout::{Layout, LayoutCx, LayoutError, field_ty},
-     next_solver::GenericArgs,
-     TraitEnvironment,
- };
              (
                  r,
                  sig.repr.unwrap_or_default(),

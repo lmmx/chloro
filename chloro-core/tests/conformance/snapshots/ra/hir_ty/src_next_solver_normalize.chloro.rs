@@ -7,11 +7,7 @@ use rustc_type_ir::{
 
 use crate::next_solver::{
     fulfill::{FulfillmentCtxt, NextSolverError},
-    infer::{
-        InferCtxt,
-        at::At,
-        traits::{Obligation, ObligationCause},
-    },
+    infer::{at::At, traits::{Obligation, ObligationCause}, InferCtxt},
     util::PlaceholderReplacer,
     Binder, Const, ConstKind, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Term, Ty,
     TyKind,

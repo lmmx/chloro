@@ -7,8 +7,8 @@ use parser::T;
 use syntax::{
     algo,
     ast::{
-        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
-        make,
+        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasName, HasVisibility,
+        PathSegmentKind,
     },
     ted::{self, Position},
     Direction, SyntaxElement,

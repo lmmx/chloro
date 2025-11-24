@@ -1,6 +1,6 @@
 use either::Either;
 use syntax::{
-    ast::{self, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
+    ast::{edit::AstNodeEdit, self, syntax_factory::SyntaxFactory},
     match_ast, AstNode, T,
 };
 

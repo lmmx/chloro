@@ -22,7 +22,8 @@ Rustfmt size:  16583 bytes
  use crate::{
 -    InferenceDiagnostic,
      db::HirDatabase,
-     infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
+-    infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
++    infer::{coerce::CoerceNever, AllowTwoPhase, InferenceContext},
      next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
 +    InferenceDiagnostic,
  };

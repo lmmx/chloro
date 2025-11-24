@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86542 bytes
+Chloro size:   86527 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -23,8 +23,15 @@ Rustfmt size:  87058 bytes
 -    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
 -    UnionId, VariantId,
      builtin_type::BuiltinType,
-     expr_store::{ExpressionStore, HygieneId, path::Path},
-     hir::generics::{
+-    expr_store::{ExpressionStore, HygieneId, path::Path},
+-    hir::generics::{
+-        GenericParamDataRef, TypeOrConstParamData, TypeParamProvenance, WherePredicate,
+-    },
++    expr_store::{path::Path, ExpressionStore, HygieneId},
++    hir::generics::{GenericParamDataRef, TypeOrConstParamData, TypeParamProvenance, WherePredicate},
+     item_tree::FieldsShape,
+     lang_item::LangItem,
+     resolver::{HasResolver, LifetimeNs, Resolver, TypeNs, ValueNs},
          ConstRef, LifetimeRefId, LiteralConstRef, PathId, TraitBoundModifier,
          TraitRef as HirTraitRef, TypeBound, TypeRef, TypeRefId,
      },
@@ -53,9 +60,17 @@ Rustfmt size:  87058 bytes
 -    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
      consteval::intern_const_ref,
      db::HirDatabase,
-     generics::{Generics, generics, trait_self_param_idx},
-         ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef, Ty, Tys,
-         UnevaluatedConst, abi::Safety,
+-    generics::{Generics, generics, trait_self_param_idx},
++    generics::{generics, trait_self_param_idx, Generics},
+     next_solver::{
+-        AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const, DbInterner,
+-        EarlyBinder, EarlyParamRegion, ErrorGuaranteed, GenericArg, GenericArgs, ParamConst,
+-        ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef, Ty, Tys,
+-        UnevaluatedConst, abi::Safety,
++        abi::Safety, AliasTy, Binder, BoundExistentialPredicates, Clause, Clauses, Const,
++        DbInterner, EarlyBinder, EarlyParamRegion, ErrorGuaranteed, GenericArg, GenericArgs,
++        ParamConst, ParamEnv, PolyFnSig, Predicate, Region, SolverDefId, TraitPredicate, TraitRef,
++        Ty, Tys, UnevaluatedConst,
      },
 +    FnAbi, ImplTraitId, TraitEnvironment, TyLoweringDiagnostic, TyLoweringDiagnosticKind,
  };

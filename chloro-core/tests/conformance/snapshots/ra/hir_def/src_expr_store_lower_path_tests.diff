@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3759 bytes
-Chloro size:   3759 bytes
+Chloro size:   3743 bytes
 Rustfmt size:  3774 bytes
 
 ✗ Outputs DIFFER
@@ -13,18 +13,16 @@ Rustfmt size:  3774 bytes
  use span::Edition;
  use syntax::ast::{self, make};
  use test_fixture::WithFixture;
- 
  use crate::{
      expr_store::{
-+        ExpressionStore,
          lower::{
 -            path::{hir_segment_to_ast_segment, SEGMENT_LOWERING_MAP},
              ExprCollector,
 +            path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
          },
-         path::Path,
+-        path::Path,
 -        pretty, ExpressionStore,
-+        pretty,
++        path::Path, pretty, ExpressionStore,
      },
      nameres::crate_def_map,
      test_db::TestDB,

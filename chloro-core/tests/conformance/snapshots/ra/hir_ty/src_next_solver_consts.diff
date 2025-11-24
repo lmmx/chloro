@@ -8,11 +8,7 @@ Rustfmt size:  14546 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- use crate::{
--    next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
-+    next_solver::{ClauseKind, ParamEnv, interner::InternedWrapperNoDebug},
+     next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
      MemoryMap,
  };
 -

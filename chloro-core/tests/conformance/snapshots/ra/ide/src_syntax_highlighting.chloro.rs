@@ -25,9 +25,7 @@ use syntax::{
 use crate::{
     syntax_highlighting::{
         escape::{highlight_escape_byte, highlight_escape_char, highlight_escape_string},
-        format::highlight_format_string,
-        highlights::Highlights,
-        tags::Highlight,
+        format::highlight_format_string, highlights::Highlights, tags::Highlight,
     },
     FileId, HlMod, HlOperator, HlPunct, HlTag,
 };

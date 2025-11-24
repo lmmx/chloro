@@ -109,8 +109,7 @@ Rustfmt size:  11348 bytes
      use ide_db::SnippetCap;
 -
      use crate::{
--        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
-+        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+         tests::{check_edit, check_edit_with_config, TEST_CONFIG},
          CompletionConfig,
      };
 -

@@ -1,5 +1,5 @@
 use syntax::{
-    ast::{self, AstNode, BinExpr, RangeItem, syntax_factory::SyntaxFactory},
+    ast::{self, syntax_factory::SyntaxFactory, AstNode, BinExpr, RangeItem},
     syntax_editor::Position,
     SyntaxKind, T,
 };

@@ -19,9 +19,6 @@ use crate::{
     db::HirDatabase,
     infer::InferenceContext,
     next_solver::{
-        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
-        ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,
-        SolverDefId, TraitRef, Ty, TyKind, TypingMode,
         fulfill::{FulfillmentCtxt, NextSolverError},
         infer::{
             DbInternerInferExt, InferCtxt, InferOk, InferResult,
@@ -29,11 +26,14 @@ use crate::{
             snapshot::CombinedSnapshot,
             traits::{Obligation, ObligationCause, PredicateObligation},
         },
-        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor},
-        obligation_ctxt::ObligationCtxt,
+        inspect::{InspectConfig, InspectGoal, ProofTreeVisitor}, obligation_ctxt::ObligationCtxt,
+        self, AliasTy, Binder, Canonical, ClauseKind, Const, ConstKind, DbInterner,
+        ErrorGuaranteed, GenericArg, GenericArgs, Predicate, PredicateKind, Region, RegionKind,
+        SolverDefId, TraitRef, Ty, TyKind, TypingMode,
     },
     traits::{
-        FnTrait, NextTraitSolveResult, next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt,
+        next_trait_solve_canonical_in_ctxt, next_trait_solve_in_ctxt, FnTrait,
+        NextTraitSolveResult,
     },
     TraitEnvironment,
 };
@@ -806,9 +806,9 @@ mod resolve_completely {
     use crate::{
         infer::unify::InferenceTable,
         next_solver::{
-            Const, DbInterner, Goal, Predicate, Region, Term, Ty,
             infer::{resolve::ReplaceInferWithError, traits::ObligationCause},
             normalize::deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals,
+            Const, DbInterner, Goal, Predicate, Region, Term, Ty,
         },
     };
     pub(super) struct Resolver<'a, 'db> {

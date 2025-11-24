@@ -444,7 +444,7 @@ pub(crate) fn is_in_condition(it: &ast::Expr) -> bool {
 mod tests {
     use expect_test::expect;
     use crate::{
-        tests::{TEST_CONFIG, check, check_edit, check_edit_with_config},
+        tests::{check, check_edit, check_edit_with_config, TEST_CONFIG},
         CompletionConfig, Snippet,
     };
     #[test]

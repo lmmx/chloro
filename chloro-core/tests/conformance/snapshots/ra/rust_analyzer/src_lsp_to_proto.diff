@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111271 bytes
+Chloro size:   111255 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -36,11 +36,12 @@ Rustfmt size:  113494 bytes
      line_index::{LineEndings, LineIndex, PositionEncoding},
      lsp::{
 -        completion_item_hash,
-+        LspError, completion_item_hash,
-         ext::ShellRunnableArgs,
-         semantic_tokens::{self, standard_fallback_type},
-         utils::invalid_params_error,
+-        ext::ShellRunnableArgs,
+-        semantic_tokens::{self, standard_fallback_type},
+-        utils::invalid_params_error,
 -        LspError,
++        completion_item_hash, ext::ShellRunnableArgs,
++        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error, LspError,
      },
      lsp_ext::{self, SnippetTextEdit},
      target_spec::{CargoTargetSpec, TargetSpec},

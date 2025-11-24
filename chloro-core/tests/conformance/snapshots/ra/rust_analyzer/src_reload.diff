@@ -17,9 +17,9 @@ Rustfmt size:  41840 bytes
  
  use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
  use ide_db::{
--    FxHashMap,
-     base_db::{CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths, salsa::Durability},
-+    FxHashMap,
++    base_db::{salsa::Durability, CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths},
+     FxHashMap,
+-    base_db::{CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths, salsa::Durability},
  };
  use itertools::Itertools;
  use load_cargo::{ProjectFolders, load_proc_macro};

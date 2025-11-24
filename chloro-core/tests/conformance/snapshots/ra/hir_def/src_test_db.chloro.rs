@@ -14,7 +14,7 @@ use triomphe::Arc;
 
 use crate::{
     db::DefDatabase,
-    nameres::{DefMap, ModuleSource, block_def_map, crate_def_map},
+    nameres::{block_def_map, crate_def_map, DefMap, ModuleSource},
     src::HasSource,
     LocalModuleId, Lookup, ModuleDefId, ModuleId,
 };

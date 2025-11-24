@@ -25,7 +25,13 @@ Rustfmt size:  28638 bytes
  };
  
  use crate::{
-         infer::InferCtxt,
+     lower::{LifetimeElisionKind, TyLoweringContext},
+     method_resolution::{TraitImpls, TyFingerprint},
+     next_solver::{
+-        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion,
+-        infer::InferCtxt,
++        infer::InferCtxt, BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst,
++        PlaceholderRegion,
      },
  };
 -

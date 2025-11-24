@@ -25,8 +25,8 @@ use crate::{
     lower::{LifetimeElisionKind, TyLoweringContext},
     method_resolution::{TraitImpls, TyFingerprint},
     next_solver::{
-        BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst, PlaceholderRegion,
-        infer::InferCtxt,
+        infer::InferCtxt, BoundConst, FxIndexMap, ParamEnv, Placeholder, PlaceholderConst,
+        PlaceholderRegion,
     },
 };
 use super::{

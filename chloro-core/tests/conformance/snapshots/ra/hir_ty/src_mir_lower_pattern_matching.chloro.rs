@@ -6,13 +6,13 @@ use rustc_type_ir::inherent::{IntoKind, SliceLike, Ty as _};
 use crate::next_solver::GenericArgs;
 use crate::{
     mir::{
-        LocalId, MutBorrowKind, Operand, OperandKind,
         lower::{
             BasicBlockId, BinOp, BindingId, BorrowKind, Either, Expr, FieldId, Idx, MemoryMap,
             MirLowerCtx, MirLowerError, MirSpan, Pat, PatId, Place, PlaceElem, ProjectionElem,
             RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
             TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId,
         },
+        LocalId, MutBorrowKind, Operand, OperandKind,
     },
     BindingMode,
 };

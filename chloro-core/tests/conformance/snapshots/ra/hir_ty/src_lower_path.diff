@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55184 bytes
+Chloro size:   55177 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -14,8 +14,17 @@ Rustfmt size:  55742 bytes
  use hir_def::{
 -    GenericDefId, GenericParamId, Lookup, TraitId, TypeAliasId,
      expr_store::{
-         ExpressionStore, HygieneId,
+-        ExpressionStore, HygieneId,
          path::{
+             GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, GenericArgsParentheses,
+             Path, PathSegment, PathSegments,
+         },
++        ExpressionStore, HygieneId,
+     },
+-    hir::generics::{
+-        GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
+-    },
++    hir::generics::{GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance},
      resolver::{ResolveValueResult, TypeNs, ValueNs},
      signatures::TraitFlags,
      type_ref::{TypeRef, TypeRefId},
@@ -35,7 +44,14 @@ Rustfmt size:  55742 bytes
 -    PathLoweringDiagnostic, TyDefId, ValueTyDefId,
      consteval::{unknown_const, unknown_const_as_generic},
      db::HirDatabase,
-     generics::{Generics, generics},
+-    generics::{Generics, generics},
++    generics::{generics, Generics},
+     lower::{
+-        LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
++        named_associated_type_shorthand_candidates, LifetimeElisionKind,
++        PathDiagnosticCallbackData,
+     },
+     next_solver::{
          Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,
          ProjectionPredicate, Region, TraitRef, Ty,
      },

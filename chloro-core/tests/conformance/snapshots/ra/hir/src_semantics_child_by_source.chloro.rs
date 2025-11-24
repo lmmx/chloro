@@ -7,10 +7,7 @@
 use either::Either;
 use hir_def::{
     db::DefDatabase,
-    dyn_map::{
-        DynMap,
-        keys::{self, Key},
-    },
+    dyn_map::{keys::{self, Key}, DynMap},
     hir::generics::GenericParams,
     item_scope::ItemScope,
     nameres::DefMap,

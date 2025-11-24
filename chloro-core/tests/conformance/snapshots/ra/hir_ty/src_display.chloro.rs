@@ -11,7 +11,7 @@ use base_db::Crate;
 use either::Either;
 use hir_def::{
     db::DefDatabase,
-    expr_store::{ExpressionStore, path::Path},
+    expr_store::{path::Path, ExpressionStore},
     find_path::{self, PrefixKind},
     hir::generics::{TypeOrConstParamData, TypeParamProvenance, WherePredicate},
     item_scope::ItemInNs,
@@ -54,14 +54,13 @@ use crate::{
     layout::Layout,
     mir::pad16,
     next_solver::{
-        AliasTy, Clause, ClauseKind, Const, ConstKind, DbInterner, EarlyBinder,
-        ExistentialPredicate, FnSig, GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Term,
-        TraitRef, Ty, TyKind, TypingMode,
-        abi::Safety,
-        infer::{DbInternerInferExt, traits::ObligationCause},
+        abi::Safety, infer::{DbInternerInferExt, traits::ObligationCause}, AliasTy, Clause,
+        ClauseKind, Const, ConstKind, DbInterner, EarlyBinder, ExistentialPredicate, FnSig,
+        GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Term, TraitRef, Ty, TyKind,
+        TypingMode,
     },
     primitive,
-    utils::{self, detect_variant_from_bytes},
+    utils::{detect_variant_from_bytes, self},
     CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
 };
 

@@ -8,14 +8,16 @@ use syntax::{AstNode, SmolStr, ToSmolStr, format_smolstr};
 
 use crate::{
     context::{
-        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
+        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx,
+        PathKind,
     },
     item::{
         Builder, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn,
         CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
     },
     render::{
-        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
+        compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
+        RenderContext,
     },
     CallableSnippets,
 };
@@ -376,7 +378,7 @@ fn params<'db>(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
         CallableSnippets, CompletionConfig,
     };
     #[test]

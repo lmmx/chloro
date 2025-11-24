@@ -14,12 +14,10 @@ use triomphe::Arc;
 
 use crate::{
     attr::{Attrs, AttrsWithOwner},
-    expr_store::{
-        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, scope::ExprScopes,
-    },
+    expr_store::{scope::ExprScopes, Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap},
     hir::generics::GenericParams,
     import_map::ImportMap,
-    item_tree::{ItemTree, file_item_tree_query},
+    item_tree::{file_item_tree_query, ItemTree},
     lang_item::{self, LangItem},
     nameres::crate_def_map,
     signatures::{

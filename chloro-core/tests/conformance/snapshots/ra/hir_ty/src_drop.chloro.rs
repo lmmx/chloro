@@ -11,9 +11,7 @@ use crate::{
     db::HirDatabase,
     method_resolution::TyFingerprint,
     next_solver::{
-        Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, Ty, TyKind,
     },
     TraitEnvironment,
 };

@@ -5,7 +5,7 @@ use ide_db::{
     defs::{Definition, NameRefClass},
 };
 use syntax::{
-    ast::{self, NameRef, edit::IndentLevel},
+    ast::{edit::IndentLevel, self, NameRef},
     AstNode, Direction, SyntaxKind, TextSize,
 };
 

@@ -14,9 +14,8 @@ use crate::{
     consteval::try_const_usize,
     db::HirDatabase,
     next_solver::{
-        DbInterner, EarlyBinder, GenericArgs, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, DbInterner,
+        EarlyBinder, GenericArgs, Ty, TyKind,
     },
     TraitEnvironment,
 };

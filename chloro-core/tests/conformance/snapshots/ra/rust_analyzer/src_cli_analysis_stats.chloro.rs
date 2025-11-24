@@ -4,7 +4,7 @@
 use std::{
     env, fmt,
     ops::AddAssign,
-    panic::{AssertUnwindSafe, catch_unwind},
+    panic::{catch_unwind, AssertUnwindSafe},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -25,7 +25,7 @@ use ide::{
     InlayHintsConfig, LineCol, RootDatabase,
 };
 use ide_db::{
-    base_db::{SourceDatabase, salsa::Database},
+    base_db::{salsa::Database, SourceDatabase},
     EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
 };
 use itertools::Itertools;

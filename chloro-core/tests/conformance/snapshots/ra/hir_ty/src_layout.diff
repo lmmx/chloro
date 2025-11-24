@@ -38,8 +38,9 @@ Rustfmt size:  14808 bytes
      db::HirDatabase,
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt},
-         DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
-+        infer::{DbInternerInferExt, traits::ObligationCause},
+-        DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
++        infer::{DbInternerInferExt, traits::ObligationCause}, DbInterner, GenericArgs, ParamEnv,
++        Ty, TyKind, TypingMode,
      },
      TraitEnvironment,
  };

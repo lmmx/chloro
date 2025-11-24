@@ -22,11 +22,6 @@ Rustfmt size:  42083 bytes
  };
  use ide_db::{
      base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
--    defs::{find_std_module, Definition},
-+    defs::{Definition, find_std_module},
-     documentation::{Documentation, HasDocs},
-     famous_defs::FamousDefs,
-     ra_fixture::UpmapFromRaFixture,
  };
  use stdx::never;
  use syntax::{

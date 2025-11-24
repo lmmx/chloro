@@ -12,8 +12,9 @@ Rustfmt size:  22284 bytes
  use stdx::{format_to, to_lower_snake_case};
  use syntax::{
 -    TextRange,
-     ast::{self, AstNode, HasName, HasVisibility, edit_in_place::Indent, make},
+-    ast::{self, AstNode, HasName, HasVisibility, edit_in_place::Indent, make},
 -    ted,
++    ast::{edit_in_place::Indent, make, self, AstNode, HasName, HasVisibility},
 +    ted, TextRange,
  };
  

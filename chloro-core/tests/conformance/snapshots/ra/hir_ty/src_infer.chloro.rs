@@ -34,9 +34,9 @@ pub(crate) use closure::analysis::{CaptureKind, CapturedItem, CapturedItemWithou
 pub use coerce::could_coerce;
 use either::Either;
 use hir_def::{
-    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
+    expr_store::{path::Path, Body, ExpressionStore, HygieneId},
     hir::{BindingAnnotation, BindingId, ExprId, ExprOrPatId, LabelId, PatId},
-    lang_item::{LangItem, LangItemTarget, lang_item},
+    lang_item::{lang_item, LangItem, LangItemTarget},
     layout::Integer,
     resolver::{HasResolver, ResolveValueResult, Resolver, TypeNs, ValueNs},
     signatures::{ConstSignature, StaticSignature},
@@ -66,12 +66,13 @@ use crate::{
         expr::ExprIsRead,
     },
     lower::{
-        ImplTraitIdx, ImplTraitLoweringMode, LifetimeElisionKind, diagnostics::TyLoweringDiagnostic,
+        diagnostics::TyLoweringDiagnostic, ImplTraitIdx, ImplTraitLoweringMode,
+        LifetimeElisionKind,
     },
     mir::MirSpan,
     next_solver::{
-        AliasTy, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Region, Ty, TyKind,
-        Tys, abi::Safety, infer::traits::ObligationCause,
+        abi::Safety, infer::traits::ObligationCause, AliasTy, Const, DbInterner, ErrorGuaranteed,
+        GenericArg, GenericArgs, Region, Ty, TyKind, Tys,
     },
     traits::FnTrait,
     utils::TargetFeatureIsSafeInTarget,

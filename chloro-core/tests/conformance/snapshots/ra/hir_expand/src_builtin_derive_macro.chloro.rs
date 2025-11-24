@@ -9,8 +9,8 @@ use span::{Edition, Span, SyntaxContext};
 use stdx::never;
 use syntax::{
     ast::{
-        self, AstNode, FieldList, HasAttrs, HasGenericArgs, HasGenericParams, HasModuleItem,
-        HasName, HasTypeBounds, edit_in_place::GenericParamsOwnerEdit, make,
+        edit_in_place::GenericParamsOwnerEdit, make, self, AstNode, FieldList, HasAttrs,
+        HasGenericArgs, HasGenericParams, HasModuleItem, HasName, HasTypeBounds,
     },
     ted,
 };

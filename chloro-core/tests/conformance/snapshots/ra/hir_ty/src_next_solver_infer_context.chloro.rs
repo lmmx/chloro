@@ -8,7 +8,7 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::{
-    infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
+    infer::opaque_types::{table::OpaqueTypeStorageEntries, OpaqueHiddenType},
     Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
     SolverDefId, Span, Ty, TyKind,
 };

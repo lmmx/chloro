@@ -11,7 +11,7 @@ Rustfmt size:  11546 bytes
  use ide_db::FxHashSet;
  use syntax::{
 -    ast::{self, edit_in_place::GenericParamsOwnerEdit, make, HasGenericParams},
-+    ast::{self, HasGenericParams, edit_in_place::GenericParamsOwnerEdit, make},
++    ast::{edit_in_place::GenericParamsOwnerEdit, make, self, HasGenericParams},
      ted::{self, Position},
      AstNode, TextRange,
  };

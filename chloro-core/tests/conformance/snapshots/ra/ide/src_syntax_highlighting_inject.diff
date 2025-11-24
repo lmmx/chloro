@@ -25,14 +25,6 @@ Rustfmt size:  12342 bytes
  };
  use syntax::{
      ast::{self, AstNode, IsString, QuoteOffsets},
- 
- use crate::{
-     doc_links::{doc_attributes, extract_definitions_from_docs, resolve_doc_path_for_def},
--    syntax_highlighting::{highlights::Highlights, HighlightConfig},
-+    syntax_highlighting::{HighlightConfig, highlights::Highlights},
-     Analysis, HlMod, HlRange, HlTag, RootDatabase,
- };
- 
              });
          },
      )?;

@@ -14,14 +14,6 @@ Rustfmt size:  4752 bytes
  use std::ops;
  
  use hir_expand::{InFile, Lookup};
- use crate::{
-     db::DefDatabase,
-     expr_store::{
--        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
-+        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
-     },
-     hir::{BindingId, ExprId, PatId},
-     src::HasSource,
      ) -> (Arc<Body>, Arc<BodySourceMap>) {
          let _p = tracing::info_span!("body_with_source_map_query").entered();
          let mut params = None;

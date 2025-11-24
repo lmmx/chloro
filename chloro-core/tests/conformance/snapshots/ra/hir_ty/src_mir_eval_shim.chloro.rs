@@ -14,11 +14,11 @@ use stdx::never;
 
 use crate::{
     display::DisplayTarget,
-    drop::{DropGlue, has_drop_glue},
+    drop::{has_drop_glue, DropGlue},
     mir::eval::{
-        Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
+        pad16, Address, AdtId, Arc, Evaluator, FunctionId, GenericArgs, HasModule, HirDisplay,
         InternedClosure, Interval, IntervalAndTy, IntervalOrOwned, ItemContainerId, LangItem,
-        Layout, Locals, Lookup, MirEvalError, MirSpan, Mutability, Result, Ty, TyKind, pad16,
+        Layout, Locals, Lookup, MirEvalError, MirSpan, Mutability, Result, Ty, TyKind,
     },
     next_solver::Region,
 };

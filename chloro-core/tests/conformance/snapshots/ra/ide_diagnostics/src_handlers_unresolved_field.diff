@@ -18,7 +18,7 @@ Rustfmt size:  15822 bytes
  use syntax::{
      algo,
 -    ast::{self, edit::IndentLevel, make, FieldList, Name, Visibility},
-+    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
++    ast::{edit::IndentLevel, make, self, FieldList, Name, Visibility},
      AstNode, AstPtr, Direction, SyntaxKind, TextSize,
  };
  use syntax::{

@@ -11,33 +11,32 @@ use std::iter::{self, once};
 use either::Either;
 use hir_def::{
     expr_store::{
-        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, HygieneId,
-        lower::ExprCollector,
-        path::Path,
-        scope::{ExprScopes, ScopeId},
+        lower::ExprCollector, path::Path, scope::{ExprScopes, ScopeId}, Body, BodySourceMap,
+        ExpressionStore, ExpressionStoreSourceMap, HygieneId,
     },
     hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
     lang_item::LangItem,
     nameres::MacroSubNs,
-    resolver::{HasResolver, Resolver, TypeNs, ValueNs, resolver_for_scope},
+    resolver::{resolver_for_scope, HasResolver, Resolver, TypeNs, ValueNs},
     type_ref::{Mutability, TypeRefId},
     AdtId, AssocItemId, CallableDefId, ConstId, DefWithBodyId, FieldId, FunctionId, GenericDefId,
     LocalFieldId, ModuleDefId, StructId, TraitId, VariantId,
 };
 use hir_expand::{
-    mod_path::{ModPath, PathKind, path},
+    mod_path::{path, ModPath, PathKind},
     name::{AsName, Name},
     HirFileId, InFile,
 };
 use hir_ty::{
     diagnostics::{
-        InsideUnsafeBlock, record_literal_missing_fields, record_pattern_missing_fields,
-        unsafe_operations,
+        record_literal_missing_fields, record_pattern_missing_fields, unsafe_operations,
+        InsideUnsafeBlock,
     },
     lang_items::lang_items_for_bin_op,
     method_resolution,
     next_solver::{
-        DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind, TypingMode, infer::DbInternerInferExt,
+        infer::DbInternerInferExt, DbInterner, ErrorGuaranteed, GenericArgs, Ty, TyKind,
+        TypingMode,
     },
     traits::structurally_normalize_ty,
     Adjustment, InferenceResult, LifetimeElisionKind, TraitEnvironment, TyLoweringContext,

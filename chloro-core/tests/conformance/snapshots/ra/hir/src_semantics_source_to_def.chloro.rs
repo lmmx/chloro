@@ -87,10 +87,7 @@
 
 use either::Either;
 use hir_def::{
-    dyn_map::{
-        DynMap,
-        keys::{self, Key},
-    },
+    dyn_map::{keys::{self, Key}, DynMap},
     hir::{BindingId, Expr, LabelId},
     nameres::{block_def_map, crate_def_map},
     AdtId, BlockId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId, ExternBlockId,

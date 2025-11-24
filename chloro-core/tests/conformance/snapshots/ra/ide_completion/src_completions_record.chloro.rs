@@ -148,7 +148,7 @@ fn complete_fields(
 mod tests {
     use ide_db::SnippetCap;
     use crate::{
-        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
         CompletionConfig,
     };
     #[test]

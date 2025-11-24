@@ -14,7 +14,7 @@ use triomphe::Arc;
 use crate::{
     db::DefDatabase,
     item_scope::BuiltinShadowMode,
-    nameres::{LocalDefMap, path_resolution::ResolveMode},
+    nameres::{path_resolution::ResolveMode, LocalDefMap},
     AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
 };
 use super::{DefMap, MacroSubNs};

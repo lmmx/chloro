@@ -11,7 +11,7 @@ use triomphe::Arc;
 use crate::{
     attrs::RawAttrs,
     db::ExpandDatabase,
-    hygiene::{Transparency, apply_mark},
+    hygiene::{apply_mark, Transparency},
     tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
 };
 

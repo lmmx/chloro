@@ -13,14 +13,14 @@ use tracing::debug;
 
 use crate::{
     next_solver::{
-        AliasTy, CanonicalVarKind, Clause, ClauseKind, CoercePredicate, GenericArgs, ImplIdWrapper,
-        ParamEnv, Predicate, PredicateKind, SubtypePredicate, Ty, TyKind, fold::fold_tys,
-        util::sizedness_fast_path,
+        fold::fold_tys, util::sizedness_fast_path, AliasTy, CanonicalVarKind, Clause, ClauseKind,
+        CoercePredicate, GenericArgs, ImplIdWrapper, ParamEnv, Predicate, PredicateKind,
+        SubtypePredicate, Ty, TyKind,
     },
     ImplTraitId,
 };
 use super::{
-    infer::{DbInternerInferExt, InferCtxt, canonical::instantiate::CanonicalExt},
+    infer::{canonical::instantiate::CanonicalExt, DbInternerInferExt, InferCtxt},
     DbInterner, ErrorGuaranteed, GenericArg, SolverDefId, Span,
 };
 

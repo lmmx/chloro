@@ -6,7 +6,7 @@ use base_db::Crate;
 use cfg::{CfgExpr, CfgOptions};
 use either::Either;
 use hir_expand::{
-    attrs::{Attr, AttrId, RawAttrs, collect_attrs},
+    attrs::{collect_attrs, Attr, AttrId, RawAttrs},
     span_map::SpanMapRef,
     HirFileId, InFile,
 };

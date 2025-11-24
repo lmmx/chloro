@@ -10,7 +10,7 @@ use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
 use triomphe::Arc;
 
 use crate::{
-    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs},
+    attrs::{collect_attrs, AttrId, AttrInput, RawAttrs},
     builtin::pseudo_derive_attr_expansion,
     cfg_process,
     declarative::DeclarativeMacroExpander,

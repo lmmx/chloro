@@ -15,8 +15,9 @@ Rustfmt size:  10666 bytes
  };
  use syntax::{
 -    AstNode, Edition, SyntaxNode,
-     ast::{self, HasGenericArgs, make},
+-    ast::{self, HasGenericArgs, make},
 -    match_ast, ted,
++    ast::{make, self, HasGenericArgs},
 +    match_ast, ted, AstNode, Edition, SyntaxNode,
  };
  

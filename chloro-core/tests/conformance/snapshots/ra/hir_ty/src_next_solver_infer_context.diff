@@ -8,11 +8,6 @@ Rustfmt size:  11433 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- };
- 
- use crate::next_solver::{
--    infer::opaque_types::{table::OpaqueTypeStorageEntries, OpaqueHiddenType},
-+    infer::opaque_types::{OpaqueHiddenType, table::OpaqueTypeStorageEntries},
      Binder, Const, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, OpaqueTypeKey, Region,
      SolverDefId, Span, Ty, TyKind,
  };

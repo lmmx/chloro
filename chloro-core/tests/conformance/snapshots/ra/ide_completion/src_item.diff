@@ -18,6 +18,14 @@ Rustfmt size:  27860 bytes
  };
  use itertools::Itertools;
  use macros::UpmapFromRaFixture;
+ 
+ use crate::{
+     context::{CompletionContext, PathCompletionCtx},
+-    render::{RenderContext, render_path_resolution},
++    render::{render_path_resolution, RenderContext},
+ };
+ 
+ /// `CompletionItem` describes a single completion entity which expands to 1 or more entries in the
  pub struct CompletionItem {
      /// Label in the completion pop up which identifies completion.
      pub label: CompletionItemLabel,

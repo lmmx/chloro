@@ -17,7 +17,7 @@ use std::{iter, mem};
 
 use hir::{ChangeWithProcMacros, ProcMacrosBuilder, db::DefDatabase};
 use ide_db::{
-    base_db::{CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths, salsa::Durability},
+    base_db::{salsa::Durability, CrateGraphBuilder, ProcMacroLoadingError, ProcMacroPaths},
     FxHashMap,
 };
 use itertools::Itertools;

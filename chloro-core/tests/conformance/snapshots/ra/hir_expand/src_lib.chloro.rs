@@ -45,8 +45,8 @@ use triomphe::Arc;
 use crate::{
     attrs::AttrId,
     builtin::{
-        BuiltinAttrExpander, BuiltinDeriveExpander, BuiltinFnLikeExpander, EagerExpander,
-        include_input_to_file_id,
+        include_input_to_file_id, BuiltinAttrExpander, BuiltinDeriveExpander,
+        BuiltinFnLikeExpander, EagerExpander,
     },
     db::ExpandDatabase,
     mod_path::ModPath,

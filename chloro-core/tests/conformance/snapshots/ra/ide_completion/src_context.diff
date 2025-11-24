@@ -25,14 +25,6 @@ Rustfmt size:  31005 bytes
  };
  use itertools::Either;
  use syntax::{
- 
- use crate::{
-     config::AutoImportExclusionType,
--    context::analysis::{expand_and_analyze, AnalysisResult},
-+    context::analysis::{AnalysisResult, expand_and_analyze},
-     CompletionConfig,
- };
- 
  /// Existing qualifiers for the thing we are currently completing.
  #[derive(Debug, Default)]
  pub(crate) struct QualifierCtx {

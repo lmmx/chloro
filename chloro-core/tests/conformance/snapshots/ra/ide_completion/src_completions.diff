@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25726 bytes
-Chloro size:   25718 bytes
+Chloro size:   25686 bytes
 Rustfmt size:  25726 bytes
 
 ✗ Outputs DIFFER
@@ -15,8 +15,24 @@ Rustfmt size:  25726 bytes
      context::{
          DotAccess, ItemListKind, NameContext, NameKind, NameRefContext, NameRefKind,
          PathCompletionCtx, PathKind, PatternContext, TypeLocation, Visible,
+     },
+     item::Builder,
+     render::{
+-        RenderContext,
+-        const_::render_const,
+-        function::{render_fn, render_method},
+-        literal::{render_struct_literal, render_variant_lit},
+-        macro_::render_macro,
+-        pattern::{render_struct_pat, render_variant_pat},
+-        render_expr, render_field, render_path_resolution, render_pattern_resolution,
+-        render_tuple_field,
++        const_::render_const, function::{render_fn, render_method},
++        literal::{render_struct_literal, render_variant_lit}, macro_::render_macro,
++        pattern::{render_struct_pat, render_variant_pat}, render_expr, render_field,
++        render_path_resolution, render_pattern_resolution, render_tuple_field,
          type_alias::{render_type_alias, render_type_alias_with_eq},
-         union_literal::render_union_literal,
+-        union_literal::render_union_literal,
++        union_literal::render_union_literal, RenderContext,
      },
 +    CompletionContext, CompletionItem, CompletionItemKind,
  };

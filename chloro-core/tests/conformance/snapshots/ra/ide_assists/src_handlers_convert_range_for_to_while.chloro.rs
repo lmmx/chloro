@@ -3,8 +3,8 @@ use itertools::Itertools;
 use syntax::{
     algo::previous_non_trivia_token,
     ast::{
-        self, HasArgList, HasLoopBody, HasName, RangeItem, edit::AstNodeEdit, make,
-        syntax_factory::SyntaxFactory,
+        edit::AstNodeEdit, make, self, syntax_factory::SyntaxFactory, HasArgList, HasLoopBody,
+        HasName, RangeItem,
     },
     syntax_editor::{Element, Position},
     AstNode, T,

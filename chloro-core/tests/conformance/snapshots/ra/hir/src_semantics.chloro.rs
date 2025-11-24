@@ -12,9 +12,9 @@ use std::{
 
 use either::Either;
 use hir_def::{
-    expr_store::{Body, ExprOrPatSource, path::Path},
+    expr_store::{path::Path, Body, ExprOrPatSource},
     hir::{BindingId, Expr, ExprId, ExprOrPatId, Pat},
-    nameres::{ModuleOrigin, crate_def_map},
+    nameres::{crate_def_map, ModuleOrigin},
     resolver::{self, HasResolver, Resolver, TypeNs},
     type_ref::Mutability,
     DefWithBodyId, FunctionId, MacroId, StructId, TraitId, VariantId,
@@ -48,7 +48,7 @@ use syntax::{
 use crate::{
     db::HirDatabase,
     semantics::source_to_def::{ChildContainer, SourceToDefCache, SourceToDefCtx},
-    source_analyzer::{SourceAnalyzer, name_hygiene, resolve_hir_path},
+    source_analyzer::{name_hygiene, resolve_hir_path, SourceAnalyzer},
     Adjust, Adjustment, Adt, AutoBorrow, BindingMode, BuiltinAttr, Callable, Const, ConstParam,
     Crate, DefWithBody, DeriveHelper, Enum, Field, Function, GenericSubstitution, HasSource, Impl,
     InFile, InlineAsmOperand, ItemInNs, Label, LifetimeParam, Local, Macro, Module, ModuleDef, Name,

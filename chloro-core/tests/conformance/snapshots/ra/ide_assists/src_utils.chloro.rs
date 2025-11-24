@@ -21,11 +21,9 @@ use ide_db::{
 use stdx::format_to;
 use syntax::{
     ast::{
-        self, HasArgList, HasAttrs, HasGenericParams, HasName, HasTypeBounds, Whitespace,
-        edit::{AstNodeEdit, IndentLevel},
-        edit_in_place::AttrsOwnerEdit,
-        make,
-        syntax_factory::SyntaxFactory,
+        edit::{AstNodeEdit, IndentLevel}, edit_in_place::AttrsOwnerEdit, make, self,
+        syntax_factory::SyntaxFactory, HasArgList, HasAttrs, HasGenericParams, HasName,
+        HasTypeBounds, Whitespace,
     },
     syntax_editor::{Removable, SyntaxEditor},
     AstNode, AstToken, Direction, NodeOrToken, SourceFile,

@@ -34,10 +34,8 @@ use crate::{
     global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
     lsp::{
-        LspError, completion_item_hash,
-        ext::ShellRunnableArgs,
-        semantic_tokens::{self, standard_fallback_type},
-        utils::invalid_params_error,
+        completion_item_hash, ext::ShellRunnableArgs,
+        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error, LspError,
     },
     lsp_ext::{self, SnippetTextEdit},
     target_spec::{CargoTargetSpec, TargetSpec},

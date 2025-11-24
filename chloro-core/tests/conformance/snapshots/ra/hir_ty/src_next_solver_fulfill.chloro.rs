@@ -16,10 +16,7 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::{
-    infer::{
-        InferCtxt,
-        traits::{PredicateObligation, PredicateObligations},
-    },
+    infer::{traits::{PredicateObligation, PredicateObligations}, InferCtxt},
     inspect::ProofTreeVisitor,
     DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
 };

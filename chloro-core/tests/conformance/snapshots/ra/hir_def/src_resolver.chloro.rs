@@ -19,18 +19,11 @@ use triomphe::Arc;
 use crate::{
     builtin_type::BuiltinType,
     db::DefDatabase,
-    expr_store::{
-        HygieneId,
-        path::Path,
-        scope::{ExprScopes, ScopeId},
-    },
-    hir::{
-        BindingId, ExprId, LabelId,
-        generics::{GenericParams, TypeOrConstParamData},
-    },
-    item_scope::{BUILTIN_SCOPE, BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope},
+    expr_store::{path::Path, scope::{ExprScopes, ScopeId}, HygieneId},
+    hir::{generics::{GenericParams, TypeOrConstParamData}, BindingId, ExprId, LabelId},
+    item_scope::{BuiltinShadowMode, ImportOrExternCrate, ImportOrGlob, ItemScope, BUILTIN_SCOPE},
     lang_item::LangItemTarget,
-    nameres::{DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo, block_def_map},
+    nameres::{block_def_map, DefMap, LocalDefMap, MacroSubNs, ResolvePathResultPrefixInfo},
     per_ns::PerNs,
     src::HasSource,
     type_ref::LifetimeRef,

@@ -14,12 +14,11 @@ use crate::{
     db::HirDatabase,
     infer::unify::InferenceTable,
     next_solver::{
-        Canonical, TraitRef, Ty, TyKind,
         infer::{
             InferOk,
             traits::{Obligation, ObligationCause, PredicateObligations},
         },
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, Canonical, TraitRef, Ty, TyKind,
     },
     TraitEnvironment,
 };

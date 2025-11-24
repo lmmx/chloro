@@ -8,6 +8,16 @@ Rustfmt size:  58546 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Fully type-check project and print various stats, like the number of type
+ //! errors.
+ 
+ use std::{
+     env, fmt,
+     ops::AddAssign,
+-    panic::{AssertUnwindSafe, catch_unwind},
++    panic::{catch_unwind, AssertUnwindSafe},
+     time::{SystemTime, UNIX_EPOCH},
+ };
  
  use cfg::{CfgAtom, CfgDiff};
  use hir::{
@@ -23,9 +33,9 @@ Rustfmt size:  58546 bytes
      InlayHintsConfig, LineCol, RootDatabase,
  };
  use ide_db::{
--    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
-     base_db::{SourceDatabase, salsa::Database},
-+    EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
++    base_db::{salsa::Database, SourceDatabase},
+     EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
+-    base_db::{SourceDatabase, salsa::Database},
  };
  use itertools::Itertools;
  use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace};

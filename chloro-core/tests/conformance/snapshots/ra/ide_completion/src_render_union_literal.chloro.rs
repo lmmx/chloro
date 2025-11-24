@@ -6,10 +6,7 @@ use itertools::Itertools;
 use syntax::ToSmolStr;
 
 use crate::{
-    render::{
-        RenderContext,
-        variant::{format_literal_label, format_literal_lookup, visible_fields},
-    },
+    render::{variant::{format_literal_label, format_literal_lookup, visible_fields}, RenderContext},
     CompletionItem, CompletionItemKind,
 };
 

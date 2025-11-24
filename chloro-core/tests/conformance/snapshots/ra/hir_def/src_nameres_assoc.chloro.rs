@@ -23,9 +23,8 @@ use crate::{
     db::DefDatabase,
     macro_call_as_call_id,
     nameres::{
-        DefMap, LocalDefMap, MacroSubNs,
-        attr_resolution::ResolvedAttr,
-        diagnostics::{DefDiagnostic, DefDiagnostics},
+        attr_resolution::ResolvedAttr, diagnostics::{DefDiagnostic, DefDiagnostics}, DefMap,
+        LocalDefMap, MacroSubNs,
     },
     AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId, ItemLoc,
     MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,

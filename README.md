@@ -31,36 +31,36 @@ as tested on rust-analyzer's [crates][ra-crates]:
 
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
-<!-- just: conf-md -->$'\n'**Summary:** +122,844 / -13,303
+<!-- just: conf-md -->$'\n'**Summary:** +123,222 / -13,685
 
 | **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
 |---|---|
-| `- }` × 111<br>`- },` × 93<br>`- );` × 87<br>`- ///` × 72<br>`- },` × 64<br> | `+}` × 75<br>`+///` × 75<br>`+ },` × 65<br>`+ }` × 65<br>`+ }` × 52<br> |
+| `- }` × 111<br>`- },` × 93<br>`- );` × 87<br>`- ///` × 72<br>`- },` × 64<br> | `+}` × 75<br>`+///` × 75<br>`+ },` × 72<br>`+ }` × 65<br>`+ }` × 52<br> |
 
 ### Top 20 Most Impacted Files
 
 | Rank | Size Rank | Diff Rank | Impact |   +   |    -    | File |
 |------|-----------|-----------|--------|-------|---------|------|
 | 1 | 9 | 1 | 42.8% | 1,606 | 3,751 | [`rust_analyzer/src_config`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_config.diff) |
-| 2 | 2 | 17 | 2.2% | 241 | 11,083 | [`ide/src_hover_tests`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_hover_tests.diff) |
-| 3 | 4 | 9 | 4.7% | 281 | 6,011 | [`ide_assists/src_handlers_extract_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_function.diff) |
-| 4 | 3 | 14 | 3.9% | 247 | 6,390 | [`hir/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_lib.diff) |
-| 5 | 16 | 4 | 15.1% | 445 | 2,950 | [`rust_analyzer/src_lsp_to_proto`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_lsp_to_proto.diff) |
-| 6 | 7 | 12 | 6.6% | 256 | 3,859 | [`ide/src_goto_definition`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_goto_definition.diff) |
+| 2 | 3 | 8 | 4.9% | 313 | 6,368 | [`hir/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir/src_lib.diff) |
+| 3 | 2 | 17 | 2.2% | 241 | 11,083 | [`ide/src_hover_tests`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_hover_tests.diff) |
+| 4 | 4 | 10 | 4.8% | 287 | 6,011 | [`ide_assists/src_handlers_extract_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_function.diff) |
+| 5 | 16 | 4 | 15.2% | 449 | 2,948 | [`rust_analyzer/src_lsp_to_proto`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_lsp_to_proto.diff) |
+| 6 | 7 | 13 | 6.6% | 256 | 3,859 | [`ide/src_goto_definition`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_goto_definition.diff) |
 | 7 | 62 | 2 | 55.0% | 808 | 1,469 | [`hir_expand/src_builtin_derive_macro`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_expand/src_builtin_derive_macro.diff) |
-| 8 | 31 | 5 | 17.1% | 388 | 2,263 | [`hir_ty/src_next_solver_interner`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_next_solver_interner.diff) |
-| 9 | 8 | 32 | 4.8% | 180 | 3,758 | [`ide/src_rename`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_rename.diff) |
-| 10 | 94 | 3 | 41.4% | 465 | 1,124 | [`ide/src_navigation_target`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_navigation_target.diff) |
-| 11 | 1 | 516 | 0.1% | 12 | 19,633 | [`ide_db/src_generated_lints`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_db/src_generated_lints.diff) |
-| 12 | 47 | 11 | 15.0% | 260 | 1,739 | [`ide_assists/src_handlers_auto_import`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_auto_import.diff) |
-| 13 | 76 | 7 | 27.3% | 348 | 1,277 | [`hir_def/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_lib.diff) |
-| 14 | 14 | 42 | 5.3% | 160 | 3,037 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
+| 8 | 31 | 5 | 17.4% | 393 | 2,264 | [`hir_ty/src_next_solver_interner`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_ty/src_next_solver_interner.diff) |
+| 9 | 8 | 33 | 4.8% | 182 | 3,758 | [`ide/src_rename`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_rename.diff) |
+| 10 | 94 | 3 | 41.2% | 463 | 1,124 | [`ide/src_navigation_target`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_navigation_target.diff) |
+| 11 | 76 | 6 | 27.6% | 352 | 1,275 | [`hir_def/src_lib`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/hir_def/src_lib.diff) |
+| 12 | 1 | 518 | 0.1% | 12 | 19,633 | [`ide_db/src_generated_lints`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_db/src_generated_lints.diff) |
+| 13 | 47 | 12 | 15.0% | 260 | 1,739 | [`ide_assists/src_handlers_auto_import`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_auto_import.diff) |
+| 14 | 14 | 41 | 5.4% | 164 | 3,037 | [`ide_assists/src_handlers_generate_function`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_function.diff) |
 | 15 | 34 | 20 | 10.2% | 221 | 2,174 | [`ide_assists/src_handlers_add_missing_match_arms`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_add_missing_match_arms.diff) |
-| 16 | 15 | 49 | 4.9% | 149 | 3,018 | [`ide/src_references`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_references.diff) |
-| 17 | 20 | 40 | 6.6% | 167 | 2,534 | [`ide_assists/src_handlers_extract_variable`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_variable.diff) |
-| 18 | 23 | 37 | 6.9% | 172 | 2,506 | [`rust_analyzer/src_handlers_request`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_handlers_request.diff) |
-| 19 | 151 | 6 | 42.5% | 349 | 821 | [`rust_analyzer/tests_slow-tests_ratoml`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/tests_slow-tests_ratoml.diff) |
-| 20 | 12 | 81 | 3.6% | 115 | 3,237 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |$'\n'<!-- /just: conf-md -->
+| 16 | 15 | 48 | 4.9% | 149 | 3,018 | [`ide/src_references`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide/src_references.diff) |
+| 17 | 20 | 36 | 6.9% | 174 | 2,529 | [`ide_assists/src_handlers_extract_variable`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_variable.diff) |
+| 18 | 23 | 34 | 7.1% | 177 | 2,505 | [`rust_analyzer/src_handlers_request`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_handlers_request.diff) |
+| 19 | 12 | 78 | 3.7% | 120 | 3,236 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
+| 20 | 45 | 21 | 12.0% | 216 | 1,803 | [`ide_assists/src_handlers_generate_delegate_trait`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_delegate_trait.diff) |$'\n'<!-- /just: conf-md -->
 
 ## Installation
 

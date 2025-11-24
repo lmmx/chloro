@@ -23,7 +23,7 @@ Rustfmt size:  27358 bytes
  use syntax::syntax_editor::{Element, Position};
  use syntax::{
 -    ast::{self, edit::AstNodeEdit, AstNode, HasAttrs, HasGenericParams, HasName},
-+    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit},
++    ast::{edit::AstNodeEdit, self, AstNode, HasAttrs, HasGenericParams, HasName},
      TokenText,
  };
  

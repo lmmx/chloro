@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::imports::{
     insert_use::{ImportGranularity, InsertUseConfig},
-    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
+    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
 };
 use syntax::{
     algo::neighbor,

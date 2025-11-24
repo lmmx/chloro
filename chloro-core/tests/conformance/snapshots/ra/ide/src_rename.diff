@@ -22,7 +22,8 @@ Rustfmt size:  91697 bytes
  use ide_db::{
 -    FileId, FileRange, RootDatabase,
      defs::{Definition, NameClass, NameRefClass},
-     rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
+-    rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
++    rename::{bail, format_err, source_edit_from_references, IdentifierKind, RenameDefinition},
      source_change::SourceChangeBuilder,
 +    FileId, FileRange, RootDatabase,
  };
@@ -30,9 +31,9 @@ Rustfmt size:  91697 bytes
 -use std::fmt::Write;
  use stdx::{always, format_to, never};
  use syntax::{
--    AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
-     ast::{self, HasArgList, prec::ExprPrecedence},
-+    AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
++    ast::{prec::ExprPrecedence, self, HasArgList},
+     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
+-    ast::{self, HasArgList, prec::ExprPrecedence},
  };
  
 -use ide_db::text_edit::TextEdit;

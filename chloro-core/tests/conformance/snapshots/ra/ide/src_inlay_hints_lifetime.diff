@@ -133,9 +133,9 @@ Rustfmt size:  17157 bytes
  #[cfg(test)]
  mod tests {
      use crate::{
--        InlayHintsConfig, LifetimeElisionHints,
-         inlay_hints::tests::{TEST_CONFIG, check, check_with_config},
-+        InlayHintsConfig, LifetimeElisionHints,
++        inlay_hints::tests::{check, check_with_config, TEST_CONFIG},
+         InlayHintsConfig, LifetimeElisionHints,
+-        inlay_hints::tests::{TEST_CONFIG, check, check_with_config},
      };
 -
      #[test]

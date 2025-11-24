@@ -19,14 +19,6 @@ Rustfmt size:  6864 bytes
  use syntax_bridge::DocCommentDesugarMode;
  use triomphe::Arc;
  
- use crate::{
-     attrs::RawAttrs,
-     db::ExpandDatabase,
--    hygiene::{apply_mark, Transparency},
-+    hygiene::{Transparency, apply_mark},
-     tt, AstId, ExpandError, ExpandErrorKind, ExpandResult, HirFileId, Lookup, MacroCallId,
- };
- 
          let loc = db.lookup_intern_macro_call(call_id);
          match self.mac.err() {
              Some(_) => ExpandResult::new(

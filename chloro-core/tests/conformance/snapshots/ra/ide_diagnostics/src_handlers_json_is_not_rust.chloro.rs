@@ -5,7 +5,7 @@ use hir::{FindPathConfig, PathResolution, Semantics};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use},
+    imports::insert_use::{insert_use, ImportScope},
     source_change::SourceChangeBuilder,
     EditionedFileId, FileRange, FxHashMap, RootDatabase,
 };

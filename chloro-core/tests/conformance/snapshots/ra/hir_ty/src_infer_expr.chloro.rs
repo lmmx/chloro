@@ -7,8 +7,8 @@ use hir_def::hir::ClosureKind;
 use hir_def::{
     expr_store::path::{GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, Path},
     hir::{
-        ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr, ExprId, ExprOrPatId, LabelId,
-        Literal, Pat, PatId, Statement, UnaryOp, generics::GenericParamDataRef,
+        generics::GenericParamDataRef, ArithOp, Array, AsmOperand, AsmOptions, BinaryOp, Expr,
+        ExprId, ExprOrPatId, LabelId, Literal, Pat, PatId, Statement, UnaryOp,
     },
     lang_item::{LangItem, LangItemTarget},
     resolver::ValueNs,
@@ -30,25 +30,23 @@ use crate::{
     db::InternedCoroutine,
     generics::generics,
     infer::{
+        coerce::{CoerceMany, CoerceNever}, find_continuable, pat::contains_explicit_ref_binding,
         AllowTwoPhase, BreakableKind,
-        coerce::{CoerceMany, CoerceNever},
-        find_continuable,
-        pat::contains_explicit_ref_binding,
     },
     lang_items::lang_items_for_bin_op,
     lower::{
-        LifetimeElisionKind, lower_mutability,
+        lower_mutability,
         path::{GenericArgsLowerer, TypeLikeConst, substs_from_args_and_bindings},
+        LifetimeElisionKind,
     },
     method_resolution::{self, VisibleFromModule},
     next_solver::{
-        Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, TraitRef, Ty, TyKind,
-        TypeError,
         infer::{
             InferOk,
             traits::{Obligation, ObligationCause},
         },
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, Const, DbInterner, ErrorGuaranteed, GenericArg,
+        GenericArgs, TraitRef, Ty, TyKind, TypeError,
     },
     traits::FnTrait,
     Adjust, Adjustment, AutoBorrow, CallableDefId, DeclContext, DeclOrigin,

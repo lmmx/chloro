@@ -329,7 +329,7 @@ fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, 
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
         AdjustmentHints, AdjustmentHintsMode, InlayHintsConfig,
     };
     #[test]

@@ -2,6 +2,7 @@ use crate::format_source;
 
 mod functions;
 mod struct_literals;
+mod use_items;
 
 #[test]
 fn format_simple_function() {

@@ -21,11 +21,6 @@ Rustfmt size:  15488 bytes
  
  use crate::{
      config::AutoImportExclusionType,
-         CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
-         TypeLocation,
-     },
--    render::{render_resolution_with_import, render_resolution_with_import_pat, RenderContext},
-+    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
      Completions,
  };
  

@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, HasArgList, HasGenericArgs, make, syntax_factory::SyntaxFactory},
+    ast::{make, self, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
     syntax_editor::Position,
     AstNode,
 };

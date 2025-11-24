@@ -37,7 +37,7 @@ use hir::{
 use ide_db::{
     assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
     base_db::{ReleaseChannel, RootQueryDb as _},
-    generated::lints::{CLIPPY_LINT_GROUPS, DEFAULT_LINT_GROUPS, DEFAULT_LINTS, Lint, LintGroup},
+    generated::lints::{Lint, LintGroup, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, DEFAULT_LINT_GROUPS},
     imports::insert_use::InsertUseConfig,
     label::Label,
     source_change::SourceChange,

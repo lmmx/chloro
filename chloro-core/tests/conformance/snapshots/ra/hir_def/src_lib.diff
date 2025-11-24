@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   37929 bytes
+Chloro size:   37913 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -88,11 +88,12 @@ Rustfmt size:  45085 bytes
      expr_store::ExpressionStoreSourceMap,
      hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
      nameres::{
-+        LocalDefMap,
-         assoc::{ImplItems, TraitItems},
-         block_def_map, crate_def_map, crate_local_def_map,
-         diagnostics::DefDiagnostics,
+-        assoc::{ImplItems, TraitItems},
+-        block_def_map, crate_def_map, crate_local_def_map,
+-        diagnostics::DefDiagnostics,
 -        LocalDefMap,
++        assoc::{ImplItems, TraitItems}, block_def_map, crate_def_map, crate_local_def_map,
++        diagnostics::DefDiagnostics, LocalDefMap,
      },
      signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
  };

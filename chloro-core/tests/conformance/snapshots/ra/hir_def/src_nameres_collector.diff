@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 108302 bytes
-Chloro size:   107510 bytes
+Chloro size:   107486 bytes
 Rustfmt size:  108302 bytes
 
 ✗ Outputs DIFFER
@@ -35,6 +35,23 @@ Rustfmt size:  108302 bytes
      attr::Attrs,
      db::DefDatabase,
      item_scope::{GlobId, ImportId, ImportOrExternCrate, PerNsGlobImports},
+     },
+     macro_call_as_call_id,
+     nameres::{
+-        BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, ModuleData, ModuleOrigin, ResolveMode,
+-        assoc::TraitItems,
+-        attr_resolution::{attr_macro_as_call_id, derive_macro_as_call_id},
+-        crate_def_map,
+-        diagnostics::DefDiagnostic,
+-        mod_resolution::ModDir,
++        assoc::TraitItems, attr_resolution::{attr_macro_as_call_id, derive_macro_as_call_id},
++        crate_def_map, diagnostics::DefDiagnostic, mod_resolution::ModDir,
+         path_resolution::{ReachedFixedPoint, ResolvePathResult},
+         proc_macro::{ProcMacroDef, ProcMacroKind, parse_macro_name_and_helper_attrs},
+-        sub_namespace_match,
++        sub_namespace_match, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, ModuleData,
++        ModuleOrigin, ResolveMode,
+     },
      per_ns::{Item, PerNs},
      tt,
      visibility::{RawVisibility, Visibility},

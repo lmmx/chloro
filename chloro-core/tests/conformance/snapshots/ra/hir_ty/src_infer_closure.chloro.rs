@@ -20,17 +20,16 @@ use tracing::debug;
 
 use crate::{
     db::{InternedClosure, InternedCoroutine},
-    infer::{BreakableKind, Diverges, coerce::CoerceMany},
+    infer::{coerce::CoerceMany, BreakableKind, Diverges},
     next_solver::{
-        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
-        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
-        PredicateKind, SolverDefId, Ty, TyKind,
         abi::Safety,
         infer::{
             BoundRegionConversionTime, InferOk, InferResult,
             traits::{ObligationCause, PredicateObligations},
         },
-        util::explicit_item_bounds,
+        util::explicit_item_bounds, AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds,
+        ClauseKind, DbInterner, ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig,
+        PolyProjectionPredicate, Predicate, PredicateKind, SolverDefId, Ty, TyKind,
     },
     traits::FnTrait,
     FnAbi,

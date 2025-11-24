@@ -13,7 +13,7 @@ Rustfmt size:  12721 bytes
  use ide_db::FileId;
  use syntax::{
 -    ast::{self, edit_in_place::HasVisibilityEdit, make, HasVisibility as _},
-+    ast::{self, HasVisibility as _, edit_in_place::HasVisibilityEdit, make},
++    ast::{edit_in_place::HasVisibilityEdit, make, self, HasVisibility as _},
      AstNode, TextRange,
  };
  

@@ -78,9 +78,9 @@ use crate::{
     display::{DisplayTarget, HirDisplay},
     infer::unify::InferenceTable,
     next_solver::{
-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
-        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
+        abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
+        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
+        PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
     },
 };
 

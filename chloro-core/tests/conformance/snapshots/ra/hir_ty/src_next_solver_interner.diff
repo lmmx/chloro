@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   80014 bytes
+Chloro size:   80022 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -28,14 +28,16 @@ Rustfmt size:  84055 bytes
 +pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
  use crate::{
      db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
--    method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
-+    method_resolution::{ALL_FLOAT_FPS, ALL_INT_FPS, TyFingerprint},
+     method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
      next_solver::{
 -        util::{explicit_item_bounds, for_trait_impls, ContainsTypeErrors},
-         AdtIdWrapper, BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper,
-         CoroutineIdWrapper, Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey,
-         RegionAssumptions, SolverContext, SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
-+        util::{ContainsTypeErrors, explicit_item_bounds, for_trait_impls},
+-        AdtIdWrapper, BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper,
+-        CoroutineIdWrapper, Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey,
+-        RegionAssumptions, SolverContext, SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
++        util::{ContainsTypeErrors, explicit_item_bounds, for_trait_impls}, AdtIdWrapper,
++        BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper, CoroutineIdWrapper,
++        Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey, RegionAssumptions, SolverContext,
++        SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
      },
      FnAbi,
  };
@@ -43,11 +45,14 @@ Rustfmt size:  84055 bytes
  use super::{
      abi::Safety,
      fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
--    generics::{generics, Generics},
-+    generics::{Generics, generics},
+     generics::{generics, Generics},
      region::{
-         BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
+-        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
++        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion,
++        Region,
      },
+     util::sizedness_constraint_for_ty,
+     Binder, BoundExistentialPredicates, BoundTy, BoundTyKind, Clause, ClauseKind, Clauses, Const,
                  folder: &mut F,
              ) -> Result<Self, F::Error> {
                  use rustc_type_ir::inherent::SliceLike as _;

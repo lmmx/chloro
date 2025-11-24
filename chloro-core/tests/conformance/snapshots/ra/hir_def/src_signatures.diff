@@ -20,24 +20,14 @@ Rustfmt size:  34530 bytes
  use la_arena::{Arena, Idx};
  use rustc_abi::{IntegerType, ReprOptions};
  use syntax::{
-     attr::Attrs,
      db::DefDatabase,
      expr_store::{
--        lower::{
+         lower::{
 -            lower_function, lower_generic_params, lower_trait, lower_type_alias, ExprCollector,
--        },
-         ExpressionStore, ExpressionStoreSourceMap,
-+        lower::{
 +            ExprCollector, lower_function, lower_generic_params, lower_trait, lower_type_alias,
-+        },
+         },
+         ExpressionStore, ExpressionStoreSourceMap,
      },
--    hir::{generics::GenericParams, ExprId, PatId},
--    item_tree::{visibility_from_ast, FieldsShape, RawVisibility},
-+    hir::{ExprId, PatId, generics::GenericParams},
-+    item_tree::{FieldsShape, RawVisibility, visibility_from_ast},
-     lang_item::LangItem,
-     src::HasSource,
-     type_ref::{TraitRef, TypeBound, TypeRefId},
      pub shape: FieldsShape,
      pub repr: Option<ReprOptions>,
  }

@@ -18,7 +18,7 @@ use syntax::{
 
 use crate::{
     doc_links::{doc_attributes, extract_definitions_from_docs, resolve_doc_path_for_def},
-    syntax_highlighting::{HighlightConfig, highlights::Highlights},
+    syntax_highlighting::{highlights::Highlights, HighlightConfig},
     Analysis, HlMod, HlRange, HlTag, RootDatabase,
 };
 

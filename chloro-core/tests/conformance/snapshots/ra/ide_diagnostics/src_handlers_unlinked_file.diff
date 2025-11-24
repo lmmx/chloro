@@ -18,9 +18,9 @@ Rustfmt size:  15808 bytes
  };
  use paths::Utf8Component;
  use syntax::{
--    AstNode, TextRange,
-     ast::{self, HasModuleItem, HasName, edit::IndentLevel},
-+    AstNode, TextRange,
++    ast::{edit::IndentLevel, self, HasModuleItem, HasName},
+     AstNode, TextRange,
+-    ast::{self, HasModuleItem, HasName, edit::IndentLevel},
  };
  
  use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, Severity, fix};

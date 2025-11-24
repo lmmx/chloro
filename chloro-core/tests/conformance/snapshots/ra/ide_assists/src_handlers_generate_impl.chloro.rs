@@ -1,5 +1,5 @@
 use syntax::{
-    ast::{self, AstNode, HasGenericParams, HasName, edit_in_place::Indent, make},
+    ast::{edit_in_place::Indent, make, self, AstNode, HasGenericParams, HasName},
     syntax_editor::{Position, SyntaxEditor},
 };
 

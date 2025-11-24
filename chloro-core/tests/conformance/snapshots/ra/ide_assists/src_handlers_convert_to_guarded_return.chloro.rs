@@ -4,11 +4,7 @@ use either::Either;
 use hir::{Semantics, TypeInfo};
 use ide_db::{RootDatabase, ty_filter::TryEnum};
 use syntax::{
-    ast::{
-        self,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
-    },
+    ast::{edit::{AstNodeEdit, IndentLevel}, make, self},
     AstNode,
     SyntaxKind::{CLOSURE_EXPR, FN, FOR_EXPR, LOOP_EXPR, WHILE_EXPR, WHITESPACE},
     SyntaxNode, T,

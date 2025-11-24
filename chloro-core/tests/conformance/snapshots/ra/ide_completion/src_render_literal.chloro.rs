@@ -10,11 +10,12 @@ use crate::{
     context::{CompletionContext, PathCompletionCtx, PathKind},
     item::{Builder, CompletionItem, CompletionRelevanceFn},
     render::{
-        RenderContext, compute_type_match,
+        compute_type_match,
         variant::{
             RenderedLiteral, format_literal_label, format_literal_lookup, render_record_lit,
             render_tuple_lit, visible_fields,
         },
+        RenderContext,
     },
     CompletionItemKind, CompletionRelevance, CompletionRelevanceReturnType,
 };

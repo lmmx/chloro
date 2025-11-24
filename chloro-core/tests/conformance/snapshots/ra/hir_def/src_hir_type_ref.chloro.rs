@@ -10,10 +10,7 @@ use thin_vec::ThinVec;
 
 use crate::{
     builtin_type::{BuiltinInt, BuiltinType, BuiltinUint},
-    expr_store::{
-        ExpressionStore,
-        path::{GenericArg, Path},
-    },
+    expr_store::{path::{GenericArg, Path}, ExpressionStore},
     hir::{ExprId, Literal},
     LifetimeParamId, TypeParamId,
 };

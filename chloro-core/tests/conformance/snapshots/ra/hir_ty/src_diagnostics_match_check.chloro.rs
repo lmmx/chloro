@@ -9,7 +9,7 @@ mod pat_util;
 pub(crate) mod pat_analysis;
 
 use hir_def::{
-    expr_store::{Body, path::Path},
+    expr_store::{path::Path, Body},
     hir::PatId,
     item_tree::FieldsShape,
     AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,

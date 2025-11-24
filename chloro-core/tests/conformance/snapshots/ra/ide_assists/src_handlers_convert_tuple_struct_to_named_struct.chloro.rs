@@ -4,9 +4,7 @@ use either::Either;
 use hir::FileRangeWrapper;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{
-        self, AstNode, HasAttrs, HasGenericParams, HasVisibility, syntax_factory::SyntaxFactory,
-    },
+    ast::{self, syntax_factory::SyntaxFactory, AstNode, HasAttrs, HasGenericParams, HasVisibility},
     match_ast,
     syntax_editor::{Element, Position, SyntaxEditor},
     SyntaxElement, SyntaxKind, SyntaxNode, TextSize, T,

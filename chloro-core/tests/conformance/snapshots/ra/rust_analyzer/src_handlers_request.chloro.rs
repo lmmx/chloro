@@ -39,13 +39,12 @@ use crate::{
     global_state::{FetchWorkspaceRequest, GlobalState, GlobalStateSnapshot},
     line_index::LineEndings,
     lsp::{
-        LspError, completion_item_hash,
+        completion_item_hash,
         ext::{
             InternalTestingFetchConfigOption, InternalTestingFetchConfigParams,
             InternalTestingFetchConfigResponse,
         },
-        from_proto, to_proto,
-        utils::{all_edits_are_disjoint, invalid_params_error},
+        from_proto, to_proto, utils::{all_edits_are_disjoint, invalid_params_error}, LspError,
     },
     lsp_ext::{
         self, CrateInfoResult, ExternalDocsPair, ExternalDocsResponse, FetchDependencyListParams,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9092 bytes
-Chloro size:   9075 bytes
+Chloro size:   9040 bytes
 Rustfmt size:  9092 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,9 @@ Rustfmt size:  9092 bytes
  };
  
  use crate::{
--    InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
-     inlay_hints::{GenericParameterHints, param_name},
-+    InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
++    inlay_hints::{param_name, GenericParameterHints},
+     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
+-    inlay_hints::{GenericParameterHints, param_name},
  };
 -
  use super::param_name::is_argument_similar_to_param_name;
@@ -60,12 +60,12 @@ Rustfmt size:  9092 bytes
  #[cfg(test)]
  mod tests {
      use crate::{
--        InlayHintsConfig,
-         inlay_hints::{
-             GenericParameterHints,
-             tests::{DISABLED_CONFIG, check_with_config},
-         },
-+        InlayHintsConfig,
++        inlay_hints::{tests::{DISABLED_CONFIG, check_with_config}, GenericParameterHints},
+         InlayHintsConfig,
+-        inlay_hints::{
+-            GenericParameterHints,
+-            tests::{DISABLED_CONFIG, check_with_config},
+-        },
      };
 -
      #[track_caller]

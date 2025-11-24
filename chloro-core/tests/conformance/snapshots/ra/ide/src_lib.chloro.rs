@@ -83,8 +83,8 @@ pub use ide_db::{
 };
 use ide_db::{
     base_db::{
-        CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb, SourceDatabase, VfsPath,
-        salsa::Cancelled,
+        salsa::Cancelled, CrateOrigin, CrateWorkspaceData, Env, FileSet, RootQueryDb,
+        SourceDatabase, VfsPath,
     },
     prime_caches, symbol_index, FxHashMap, FxIndexSet, LineIndexDatabase,
 };
@@ -114,9 +114,9 @@ pub use crate::{
     },
     inlay_hints::{
         AdjustmentHints, AdjustmentHintsMode, ClosureReturnTypeHints, DiscriminantHints,
-        GenericParameterHints, InlayFieldsToResolve, InlayHint, InlayHintLabel, InlayHintLabelPart,
-        InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip, LazyProperty,
-        LifetimeElisionHints,
+        GenericParameterHints, InlayFieldsToResolve, InlayHint, InlayHintLabel,
+        InlayHintLabelPart, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip,
+        LazyProperty, LifetimeElisionHints,
     },
     join_lines::JoinLinesConfig,
     markup::Markup,
@@ -134,8 +134,7 @@ pub use crate::{
         StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
     },
     syntax_highlighting::{
-        HighlightConfig, HlRange,
-        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag},
+        tags::{Highlight, HlMod, HlMods, HlOperator, HlPunct, HlTag}, HighlightConfig, HlRange,
     },
     test_explorer::{TestItem, TestItemKind},
 };

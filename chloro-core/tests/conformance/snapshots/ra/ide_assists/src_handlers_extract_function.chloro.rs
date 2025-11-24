@@ -11,7 +11,7 @@ use ide_db::{
     defs::{Definition, NameRefClass},
     famous_defs::FamousDefs,
     helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use},
+    imports::insert_use::{insert_use, ImportScope},
     search::{FileReference, ReferenceCategory, SearchScope},
     source_change::SourceChangeBuilder,
     syntax_helpers::node_ext::{
@@ -22,8 +22,8 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        self, AstNode, AstToken, HasGenericParams, HasName, edit::IndentLevel,
-        edit_in_place::Indent,
+        edit::IndentLevel, edit_in_place::Indent, self, AstNode, AstToken, HasGenericParams,
+        HasName,
     },
     match_ast, ted, Edition, SyntaxElement,
     SyntaxKind::{self, COMMENT},

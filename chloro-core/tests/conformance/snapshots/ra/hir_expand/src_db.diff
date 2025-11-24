@@ -18,11 +18,6 @@ Rustfmt size:  33429 bytes
  use triomphe::Arc;
  
  use crate::{
--    attrs::{collect_attrs, AttrId, AttrInput, RawAttrs},
-+    attrs::{AttrId, AttrInput, RawAttrs, collect_attrs},
-     builtin::pseudo_derive_attr_expansion,
-     cfg_process,
-     declarative::DeclarativeMacroExpander,
      EagerExpander, EditionedFileId, ExpandError, ExpandResult, ExpandTo, HirFileId, MacroCallId,
      MacroCallKind, MacroCallLoc, MacroDefId, MacroDefKind,
  };

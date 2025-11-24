@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23719 bytes
+Chloro size:   23707 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -49,8 +49,9 @@ Rustfmt size:  23725 bytes
 -        InlayHintsConfig, fixture,
 +        fixture,
          inlay_hints::{
-             LazyProperty,
-             tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
+-            LazyProperty,
+-            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
++            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config}, LazyProperty,
          },
 +        InlayHintsConfig,
      };

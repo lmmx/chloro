@@ -11,10 +11,10 @@ use syntax::{AstNode, TextRange, ast::HasName};
 
 use crate::{
     annotations::fn_references::find_all_methods,
-    goto_implementation::{GotoImplementationConfig, goto_implementation},
+    goto_implementation::{goto_implementation, GotoImplementationConfig},
     navigation_target,
-    references::{FindAllRefsConfig, find_all_refs},
-    runnables::{Runnable, runnables},
+    references::{find_all_refs, FindAllRefsConfig},
+    runnables::{runnables, Runnable},
     NavigationTarget, RunnableKind,
 };
 

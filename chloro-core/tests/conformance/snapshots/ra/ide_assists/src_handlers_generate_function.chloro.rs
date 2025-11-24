@@ -15,8 +15,8 @@ use itertools::Itertools;
 use stdx::to_lower_snake_case;
 use syntax::{
     ast::{
-        self, AstNode, BlockExpr, CallExpr, HasArgList, HasGenericParams, HasModuleItem,
-        HasTypeBounds, edit::IndentLevel, edit_in_place::Indent, make,
+        edit::IndentLevel, edit_in_place::Indent, make, self, AstNode, BlockExpr, CallExpr,
+        HasArgList, HasGenericParams, HasModuleItem, HasTypeBounds,
     },
     ted, Edition, SyntaxKind, SyntaxNode, TextRange, T,
 };

@@ -11,14 +11,14 @@ pub use ide_db::rename::RenameError;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
     defs::{Definition, NameClass, NameRefClass},
-    rename::{IdentifierKind, RenameDefinition, bail, format_err, source_edit_from_references},
+    rename::{bail, format_err, source_edit_from_references, IdentifierKind, RenameDefinition},
     source_change::SourceChangeBuilder,
     FileId, FileRange, RootDatabase,
 };
 use itertools::Itertools;
 use stdx::{always, format_to, never};
 use syntax::{
-    ast::{self, HasArgList, prec::ExprPrecedence},
+    ast::{prec::ExprPrecedence, self, HasArgList},
     AstNode, SyntaxKind, SyntaxNode, TextRange, TextSize,
 };
 

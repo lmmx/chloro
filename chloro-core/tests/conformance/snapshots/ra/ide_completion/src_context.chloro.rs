@@ -26,7 +26,7 @@ use syntax::{
 
 use crate::{
     config::AutoImportExclusionType,
-    context::analysis::{AnalysisResult, expand_and_analyze},
+    context::analysis::{expand_and_analyze, AnalysisResult},
     CompletionConfig,
 };
 

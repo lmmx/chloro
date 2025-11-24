@@ -10,7 +10,7 @@ use ide_db::{
 };
 use syntax::syntax_editor::{Element, Position};
 use syntax::{
-    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit},
+    ast::{edit::AstNodeEdit, self, AstNode, HasAttrs, HasGenericParams, HasName},
     TokenText,
 };
 

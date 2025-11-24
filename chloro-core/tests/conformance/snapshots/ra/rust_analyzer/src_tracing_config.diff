@@ -8,16 +8,6 @@ Rustfmt size:  4820 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use anyhow::Context;
- use tracing::level_filters::LevelFilter;
- use tracing_subscriber::{
--    filter::{filter_fn, Targets},
--    fmt::{time, MakeWriter},
-+    filter::{Targets, filter_fn},
-+    fmt::{MakeWriter, time},
-     layer::SubscriberExt,
-     Layer, Registry,
- };
      /// env RA_PROFILE=*@3>10        // dump everything, up to depth 3, if it takes more than 10
      /// ```
      pub profile_filter: Option<String>,

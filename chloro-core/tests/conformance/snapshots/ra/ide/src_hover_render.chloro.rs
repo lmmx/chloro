@@ -10,7 +10,7 @@ use hir::{
     MethodViolationCode, Name, Semantics, Symbol, Trait, Type, TypeInfo, VariantDef,
 };
 use ide_db::{
-    defs::{Definition, find_std_module},
+    defs::{find_std_module, Definition},
     documentation::{DocsRangeMap, HasDocs},
     famous_defs::FamousDefs,
     generated::lints::{CLIPPY_LINTS, DEFAULT_LINTS, FEATURES},
@@ -28,7 +28,7 @@ use syntax::{AstNode, AstToken, Direction, SyntaxToken, T, algo, ast, match_ast}
 
 use crate::{
     doc_links::{remove_links, rewrite_links},
-    hover::{SubstTyLen, notable_traits, walk_and_push_ty},
+    hover::{notable_traits, walk_and_push_ty, SubstTyLen},
     interpret::render_const_eval_error,
     HoverAction, HoverConfig, HoverResult, Markup, MemoryLayoutHoverConfig,
     MemoryLayoutHoverRenderKind,

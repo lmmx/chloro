@@ -7,10 +7,7 @@ use rustc_ast_ir::Mutability;
 use crate::{
     autoderef::{Autoderef, AutoderefKind},
     infer::unify::InferenceTable,
-    next_solver::{
-        Ty,
-        infer::{InferOk, traits::PredicateObligations},
-    },
+    next_solver::{infer::{InferOk, traits::PredicateObligations}, Ty},
     Adjust, Adjustment, OverloadedDeref,
 };
 

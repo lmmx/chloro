@@ -8,15 +8,6 @@ Rustfmt size:  31432 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir_ty::{
-     db::HirDatabase,
-     display::{
--        hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
-         HirDisplay, HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault,
-+        hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
-     },
-     next_solver::ClauseKind,
- };
          let data = db.function_signature(self.id);
          let container = self.as_assoc_item(db).map(|it| it.container(db));
          let mut module = self.module(db);

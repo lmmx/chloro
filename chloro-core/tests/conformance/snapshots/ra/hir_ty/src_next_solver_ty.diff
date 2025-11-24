@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   50940 bytes
+Chloro size:   50924 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -22,13 +22,12 @@ Rustfmt size:  52438 bytes
  use crate::{
      db::{HirDatabase, InternedCoroutine},
      next_solver::{
-+        AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
-+        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
-         abi::Safety,
-         interner::InternedWrapperNoDebug,
-         util::{CoroutineArgsExt, IntegerTypeExt},
--        AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
--        CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
+-        abi::Safety,
+-        interner::InternedWrapperNoDebug,
+-        util::{CoroutineArgsExt, IntegerTypeExt},
++        abi::Safety, interner::InternedWrapperNoDebug, util::{CoroutineArgsExt, IntegerTypeExt},
+         AdtDef, AliasTy, Binder, CallableIdWrapper, Clause, ClauseKind, ClosureIdWrapper, Const,
+         CoroutineIdWrapper, FnSig, GenericArg, PolyFnSig, Region, TraitRef, TypeAliasIdWrapper,
      },
      ImplTraitId,
  };

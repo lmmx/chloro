@@ -15,8 +15,7 @@ use crate::{
     lower::LifetimeElisionKind,
     method_resolution::{self, VisibleFromModule},
     next_solver::{
-        GenericArg, GenericArgs, TraitRef, Ty,
-        infer::traits::{Obligation, ObligationCause},
+        infer::traits::{Obligation, ObligationCause}, GenericArg, GenericArgs, TraitRef, Ty,
     },
     InferenceDiagnostic, ValueTyDefId,
 };

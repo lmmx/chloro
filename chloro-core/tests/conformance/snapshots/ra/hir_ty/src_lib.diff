@@ -85,15 +85,13 @@ Rustfmt size:  22967 bytes
  
  use crate::{
      db::HirDatabase,
-     display::{DisplayTarget, HirDisplay},
      infer::unify::InferenceTable,
      next_solver::{
--        abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
+         abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
 -        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig,
 -        Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
-+        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-+        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
-+        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
++        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
++        PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
      },
  };
  

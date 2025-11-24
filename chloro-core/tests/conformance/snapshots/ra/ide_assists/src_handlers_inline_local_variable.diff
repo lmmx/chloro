@@ -8,12 +8,6 @@ Rustfmt size:  18858 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     EditionedFileId, RootDatabase,
- };
- use syntax::{
--    ast::{self, syntax_factory::SyntaxFactory, AstNode, AstToken, HasName},
-+    ast::{self, AstNode, AstToken, HasName, syntax_factory::SyntaxFactory},
-     SyntaxElement, TextRange,
  };
  
  use crate::{

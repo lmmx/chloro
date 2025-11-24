@@ -18,10 +18,9 @@ use triomphe::Arc;
 use crate::{
     db::HirDatabase,
     next_solver::{
-        Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
-        TyKind,
         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, Canonical, DbInterner, GenericArgs, Goal, ParamEnv,
+        Predicate, SolverContext, Span, Ty, TyKind,
     },
 };
 

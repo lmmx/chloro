@@ -12,10 +12,9 @@ use rustc_type_ir::{
 
 use crate::next_solver::{
     infer::{
-        InferCtxt, UnificationTable, iter_idx_range,
-        snapshot::VariableLengths,
-        type_variable::TypeVariableOrigin,
-        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
+        iter_idx_range, snapshot::VariableLengths, type_variable::TypeVariableOrigin,
+        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey}, InferCtxt,
+        UnificationTable,
     },
     Const, ConstKind, DbInterner, Region, Ty, TyKind,
 };

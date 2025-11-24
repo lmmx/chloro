@@ -1,7 +1,7 @@
 use hir::{HasSource, HasVisibility, ModuleDef, PathResolution, ScopeDef, db::HirDatabase};
 use ide_db::FileId;
 use syntax::{
-    ast::{self, HasVisibility as _, edit_in_place::HasVisibilityEdit, make},
+    ast::{edit_in_place::HasVisibilityEdit, make, self, HasVisibility as _},
     AstNode, TextRange,
 };
 

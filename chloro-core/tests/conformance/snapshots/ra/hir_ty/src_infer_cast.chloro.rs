@@ -10,7 +10,7 @@ use stdx::never;
 
 use crate::{
     db::HirDatabase,
-    infer::{AllowTwoPhase, InferenceContext, coerce::CoerceNever},
+    infer::{coerce::CoerceNever, AllowTwoPhase, InferenceContext},
     next_solver::{BoundExistentialPredicates, DbInterner, ParamTy, Ty, TyKind},
     InferenceDiagnostic,
 };

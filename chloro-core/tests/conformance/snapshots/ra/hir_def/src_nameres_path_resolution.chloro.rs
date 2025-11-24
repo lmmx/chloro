@@ -20,11 +20,11 @@ use stdx::TupleExt;
 
 use crate::{
     db::DefDatabase,
-    item_scope::{BUILTIN_SCOPE, ImportOrExternCrate},
+    item_scope::{ImportOrExternCrate, BUILTIN_SCOPE},
     item_tree::FieldsShape,
     nameres::{
-        BlockInfo, BuiltinShadowMode, DefMap, LocalDefMap, MacroSubNs, assoc::TraitItems,
-        crate_def_map, sub_namespace_match,
+        assoc::TraitItems, crate_def_map, sub_namespace_match, BlockInfo, BuiltinShadowMode,
+        DefMap, LocalDefMap, MacroSubNs,
     },
     per_ns::PerNs,
     visibility::{RawVisibility, Visibility},

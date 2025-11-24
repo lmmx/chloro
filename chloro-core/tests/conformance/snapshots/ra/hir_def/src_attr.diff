@@ -12,7 +12,8 @@ Rustfmt size:  32850 bytes
  use either::Either;
  use hir_expand::{
 -    HirFileId, InFile,
-     attrs::{Attr, AttrId, RawAttrs, collect_attrs},
+-    attrs::{Attr, AttrId, RawAttrs, collect_attrs},
++    attrs::{collect_attrs, Attr, AttrId, RawAttrs},
      span_map::SpanMapRef,
 +    HirFileId, InFile,
  };

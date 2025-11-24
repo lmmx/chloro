@@ -2,7 +2,7 @@
 
 use ide_db::{
     defs::Definition,
-    syntax_helpers::format_string::{FormatSpecifier, is_format_string, lex_format_specifiers},
+    syntax_helpers::format_string::{is_format_string, lex_format_specifiers, FormatSpecifier},
     SymbolKind,
 };
 use span::Edition;

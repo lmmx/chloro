@@ -9,8 +9,8 @@ use either::Either;
 pub use hir_def::VariantId;
 use hir_def::{
     expr_store::{
-        ExprOrPatPtr, ExpressionStoreSourceMap, hir_assoc_type_binding_to_ast,
-        hir_generic_arg_to_ast, hir_segment_to_ast_segment,
+        hir_assoc_type_binding_to_ast, hir_generic_arg_to_ast, hir_segment_to_ast_segment,
+        ExprOrPatPtr, ExpressionStoreSourceMap,
     },
     hir::ExprOrPatId,
     DefWithBodyId, GenericParamId, SyntheticSyntax,

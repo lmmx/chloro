@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6718 bytes
-Chloro size:   6681 bytes
+Chloro size:   6665 bytes
 Rustfmt size:  6767 bytes
 
 ✗ Outputs DIFFER
@@ -20,9 +20,8 @@ Rustfmt size:  6767 bytes
      next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
 -        obligation_ctxt::ObligationCtxt,
-         Ty, TyKind,
-+        infer::{InferCtxt, traits::ObligationCause},
-+        obligation_ctxt::ObligationCtxt,
+-        Ty, TyKind,
++        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, Ty, TyKind,
      },
      TraitEnvironment,
  };

@@ -21,13 +21,6 @@ Rustfmt size:  30951 bytes
  };
  use stdx::never;
  
- use crate::{
-     db::HirDatabase,
--    generics::{generics, Generics},
-+    generics::{Generics, generics},
-     next_solver::{
-         Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
-         RegionKind, Term, Ty, TyKind, VariancesOf,
          }
          _ => return VariancesOf::new_from_iter(interner, []),
      }

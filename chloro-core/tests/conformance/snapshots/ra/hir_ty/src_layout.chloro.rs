@@ -27,8 +27,8 @@ use crate::{
     consteval::try_const_usize,
     db::HirDatabase,
     next_solver::{
-        DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
-        infer::{DbInternerInferExt, traits::ObligationCause},
+        infer::{DbInternerInferExt, traits::ObligationCause}, DbInterner, GenericArgs, ParamEnv,
+        Ty, TyKind, TypingMode,
     },
     TraitEnvironment,
 };

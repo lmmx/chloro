@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30062 bytes
-Chloro size:   29577 bytes
+Chloro size:   29569 bytes
 Rustfmt size:  30062 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,8 @@ Rustfmt size:  30062 bytes
 -    FxHashSet, RootDatabase,
      defs::Definition,
      helpers::mod_path_to_ast,
-     imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
+-    imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
++    imports::insert_use::{insert_use, ImportScope, InsertUseConfig},
      path_transform::PathTransform,
      search::FileReference,
 +    FxHashSet, RootDatabase,
@@ -24,17 +25,19 @@ Rustfmt size:  30062 bytes
  use itertools::Itertools;
  use syntax::{
 -    Edition, SyntaxElement,
--    SyntaxKind::*,
--    SyntaxNode, T,
-     ast::{
-         self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
-         edit::{AstNodeEdit, IndentLevel},
-         make,
-     },
--    match_ast, ted,
++    ast::{
++        edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasAttrs, HasGenericParams,
++        HasName, HasVisibility,
++    },
 +    match_ast, ted, Edition, SyntaxElement,
-+    SyntaxKind::*,
-+    SyntaxNode, T,
+     SyntaxKind::*,
+     SyntaxNode, T,
+-    ast::{
+-        self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
+-        edit::{AstNodeEdit, IndentLevel},
+-        make,
+-    },
+-    match_ast, ted,
  };
  
  use crate::{AssistContext, AssistId, Assists, assist_context::SourceChangeBuilder};

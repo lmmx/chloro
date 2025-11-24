@@ -6,8 +6,8 @@ use std::io::{self};
 use anyhow::Context;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
-    filter::{Targets, filter_fn},
-    fmt::{MakeWriter, time},
+    filter::{filter_fn, Targets},
+    fmt::{time, MakeWriter},
     layer::SubscriberExt,
     Layer, Registry,
 };

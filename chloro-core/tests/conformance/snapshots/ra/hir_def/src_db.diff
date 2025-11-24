@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12846 bytes
+Chloro size:   12831 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -27,17 +27,13 @@ Rustfmt size:  13097 bytes
  
  use crate::{
      attr::{Attrs, AttrsWithOwner},
-     expr_store::{
+-    expr_store::{
 -        scope::ExprScopes, Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap,
-+        Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap, scope::ExprScopes,
-     },
+-    },
++    expr_store::{scope::ExprScopes, Body, BodySourceMap, ExpressionStore, ExpressionStoreSourceMap},
      hir::generics::GenericParams,
      import_map::ImportMap,
--    item_tree::{file_item_tree_query, ItemTree},
-+    item_tree::{ItemTree, file_item_tree_query},
-     lang_item::{self, LangItem},
-     nameres::crate_def_map,
-     signatures::{
+     item_tree::{file_item_tree_query, ItemTree},
      TypeAliasLoc, UnionId, UnionLoc, UseId, UseLoc, VariantId,
  };
  

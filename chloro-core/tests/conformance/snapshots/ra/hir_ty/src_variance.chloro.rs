@@ -23,7 +23,7 @@ use stdx::never;
 
 use crate::{
     db::HirDatabase,
-    generics::{Generics, generics},
+    generics::{generics, Generics},
     next_solver::{
         Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
         RegionKind, Term, Ty, TyKind, VariancesOf,

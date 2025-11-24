@@ -1,9 +1,7 @@
 use dot::{Id, LabelText};
 use ide_db::base_db::salsa::plumbing::AsId;
 use ide_db::{
-    base_db::{
-        BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase,
-    },
+    base_db::{BuiltCrateData, BuiltDependency, Crate, ExtraCrateData, RootQueryDb, SourceDatabase},
     FxHashMap, RootDatabase,
 };
 

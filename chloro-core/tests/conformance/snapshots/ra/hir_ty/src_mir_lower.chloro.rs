@@ -9,13 +9,13 @@ use std::{fmt::Write, iter, mem};
 
 use base_db::Crate;
 use hir_def::{
-    expr_store::{Body, ExpressionStore, HygieneId, path::Path},
+    expr_store::{path::Path, Body, ExpressionStore, HygieneId},
     hir::{
-        ArithOp, Array, BinaryOp, BindingAnnotation, BindingId, ExprId, LabelId, Literal, MatchArm,
-        Pat, PatId, RecordFieldPat, RecordLitField,
+        ArithOp, Array, BinaryOp, BindingAnnotation, BindingId, ExprId, LabelId, Literal,
+        MatchArm, Pat, PatId, RecordFieldPat, RecordLitField,
     },
     item_tree::FieldsShape,
-    lang_item::{LangItem, LangItemTarget, lang_item},
+    lang_item::{lang_item, LangItem, LangItemTarget},
     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
     AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId,
     LocalFieldId, Lookup, TraitId, TupleId,
@@ -32,21 +32,21 @@ use triomphe::Arc;
 use crate::{
     consteval::ConstEvalError,
     db::{HirDatabase, InternedClosure, InternedClosureId},
-    display::{DisplayTarget, HirDisplay, hir_display_with_store},
+    display::{hir_display_with_store, DisplayTarget, HirDisplay},
     generics::generics,
-    infer::{CaptureKind, CapturedItem, TypeMismatch, cast::CastTy},
+    infer::{cast::CastTy, CaptureKind, CapturedItem, TypeMismatch},
     inhabitedness::is_ty_uninhabited_from,
     layout::LayoutError,
     mir::{
-        AggregateKind, Arena, BasicBlock, BasicBlockId, BinOp, BorrowKind, CastKind, Either, Expr,
-        FieldId, GenericArgs, Idx, InferenceResult, Local, LocalId, MemoryMap, MirBody, MirSpan,
-        Mutability, Operand, Place, PlaceElem, PointerCast, ProjectionElem, ProjectionStore,
-        RawIdx, Rvalue, Statement, StatementKind, SwitchTargets, Terminator, TerminatorKind,
-        TupleFieldId, Ty, UnOp, VariantId, return_slot,
+        return_slot, AggregateKind, Arena, BasicBlock, BasicBlockId, BinOp, BorrowKind, CastKind,
+        Either, Expr, FieldId, GenericArgs, Idx, InferenceResult, Local, LocalId, MemoryMap,
+        MirBody, MirSpan, Mutability, Operand, Place, PlaceElem, PointerCast, ProjectionElem,
+        ProjectionStore, RawIdx, Rvalue, Statement, StatementKind, SwitchTargets, Terminator,
+        TerminatorKind, TupleFieldId, Ty, UnOp, VariantId,
     },
     next_solver::{
-        Const, DbInterner, ParamConst, Region, TyKind, TypingMode, UnevaluatedConst,
-        infer::{DbInternerInferExt, InferCtxt},
+        infer::{DbInternerInferExt, InferCtxt}, Const, DbInterner, ParamConst, Region, TyKind,
+        TypingMode, UnevaluatedConst,
     },
     traits::FnTrait,
     Adjust, Adjustment, AutoBorrow, CallableDefId, TraitEnvironment,

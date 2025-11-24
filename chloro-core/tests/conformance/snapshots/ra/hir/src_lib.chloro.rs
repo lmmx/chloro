@@ -45,15 +45,12 @@ pub use hir_def::ModuleId;
 use hir_def::{
     expr_store::{ExpressionStoreDiagnostics, ExpressionStoreSourceMap},
     hir::{
-        BindingAnnotation, BindingId, Expr, ExprId, ExprOrPatId, LabelId, Pat,
         generics::{LifetimeParamData, TypeOrConstParamData, TypeParamProvenance},
+        BindingAnnotation, BindingId, Expr, ExprId, ExprOrPatId, LabelId, Pat,
     },
     item_tree::ImportAlias,
     layout::{self, ReprOptions, TargetDataLayout},
-    nameres::{
-        assoc::TraitItems,
-        diagnostics::{DefDiagnostic, DefDiagnosticKind},
-    },
+    nameres::{assoc::TraitItems, diagnostics::{DefDiagnostic, DefDiagnosticKind}},
     per_ns::PerNs,
     resolver::{HasResolver, Resolver},
     signatures::{ImplFlags, StaticFlags, StructFlags, TraitFlags, VariantFields},
@@ -80,13 +77,13 @@ use hir_ty::{
     direct_super_traits, known_const_to_ast,
     layout::{Layout as TyLayout, RustcEnumVariantIdx, RustcFieldIdx, TagEncoding},
     method_resolution,
-    mir::{MutBorrowKind, interpret_mir},
+    mir::{interpret_mir, MutBorrowKind},
     next_solver::{
-        AliasTy, Canonical, ClauseKind, ConstKind, DbInterner, ErrorGuaranteed, GenericArg,
-        GenericArgs, PolyFnSig, Region, SolverDefId, Ty, TyKind, TypingMode,
-        infer::{DbInternerInferExt, InferCtxt},
+        infer::{DbInternerInferExt, InferCtxt}, AliasTy, Canonical, ClauseKind, ConstKind,
+        DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Ty,
+        TyKind, TypingMode,
     },
-    traits::{self, FnTrait, structurally_normalize_ty},
+    traits::{self, structurally_normalize_ty, FnTrait},
     TraitEnvironment, TyDefId, TyLoweringDiagnostic, ValueTyDefId,
 };
 use itertools::Itertools;
@@ -106,64 +103,45 @@ use triomphe::{Arc, ThinArc};
 pub use {
     cfg::{CfgAtom, CfgExpr, CfgOptions},
     hir_def::{
-        Complete,
-        FindPathConfig,
-        attr::{AttrSourceMap, Attrs, AttrsWithOwner},
-        find_path::PrefixKind,
-        import_map,
-        lang_item::LangItem,
-        nameres::{DefMap, ModuleSource, crate_def_map},
-        per_ns::Namespace,
-        type_ref::{Mutability, TypeRef},
-        visibility::Visibility,
+        attr::{AttrSourceMap, Attrs, AttrsWithOwner}, find_path::PrefixKind, import_map,
+        lang_item::LangItem, nameres::{DefMap, ModuleSource, crate_def_map}, per_ns::Namespace,
+        type_ref::{Mutability, TypeRef}, visibility::Visibility,
         // FIXME: This is here since some queries take it as input that are used
         // outside of hir.
         {ModuleDefId, TraitId},
+        Complete, FindPathConfig,
     },
     hir_expand::{
-        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind,
-        attrs::{Attr, AttrId},
-        change::ChangeWithProcMacros,
+        attrs::{Attr, AttrId}, change::ChangeWithProcMacros,
         files::{
             FilePosition, FilePositionWrapper, FileRange, FileRangeWrapper, HirFilePosition,
             HirFileRange, InFile, InFileWrapper, InMacroFile, InRealFile, MacroFilePosition,
             MacroFileRange,
         },
-        inert_attr_macro::AttributeTemplate,
-        mod_path::{ModPath, PathKind, tool_path},
-        name::Name,
-        prettify_macro_expansion,
-        proc_macro::{ProcMacros, ProcMacrosBuilder},
-        tt,
+        inert_attr_macro::AttributeTemplate, mod_path::{ModPath, PathKind, tool_path}, name::Name,
+        prettify_macro_expansion, proc_macro::{ProcMacros, ProcMacrosBuilder}, tt,
+        EditionedFileId, ExpandResult, HirFileId, MacroCallId, MacroKind,
     },
     hir_ty::{
-        CastError, FnAbi, PointerCast, attach_db, attach_db_allow_change,
-        consteval::ConstEvalError,
-        diagnostics::UnsafetyReason,
+        attach_db, attach_db_allow_change, consteval::ConstEvalError, diagnostics::UnsafetyReason,
         display::{ClosureStyle, DisplayTarget, HirDisplay, HirDisplayError, HirWrite},
-        drop::DropGlue,
-        dyn_compatibility::{DynCompatibilityViolation, MethodViolationCode},
-        layout::LayoutError,
-        method_resolution::TyFingerprint,
-        mir::{MirEvalError, MirLowerError},
-        next_solver::abi::Safety,
-        next_solver::clear_tls_solver_cache,
+        drop::DropGlue, dyn_compatibility::{DynCompatibilityViolation, MethodViolationCode},
+        layout::LayoutError, method_resolution::TyFingerprint, mir::{MirEvalError, MirLowerError},
+        next_solver::abi::Safety, next_solver::clear_tls_solver_cache, CastError, FnAbi,
+        PointerCast,
     },
-    intern::{Symbol, sym},
+    intern::{sym, Symbol},
     // FIXME: Properly encapsulate mir
     hir_ty::mir,
 };
 use {
     hir_def::expr_store::path::Path,
-    hir_expand::{
-        name::AsName,
-        span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef},
-    },
+    hir_expand::{name::AsName, span_map::{ExpansionSpanMap, RealSpanMap, SpanMap, SpanMapRef}},
 };
 
 use crate::db::{DefDatabase, HirDatabase};
 pub use crate::{
-    attrs::{HasAttrs, resolve_doc_path_on},
+    attrs::{resolve_doc_path_on, HasAttrs},
     diagnostics::*,
     has_source::HasSource,
     semantics::{

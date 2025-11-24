@@ -8,7 +8,7 @@ use syntax::{
 };
 
 use crate::{
-    inlay_hints::{GenericParameterHints, param_name},
+    inlay_hints::{param_name, GenericParameterHints},
     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
 };
 use super::param_name::is_argument_similar_to_param_name;
@@ -155,10 +155,7 @@ fn get_segment_representation(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::{
-            GenericParameterHints,
-            tests::{DISABLED_CONFIG, check_with_config},
-        },
+        inlay_hints::{tests::{DISABLED_CONFIG, check_with_config}, GenericParameterHints},
         InlayHintsConfig,
     };
     #[track_caller]

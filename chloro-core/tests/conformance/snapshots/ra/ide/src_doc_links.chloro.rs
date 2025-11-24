@@ -13,7 +13,7 @@ use hir::{
 use ide_db::{
     base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
     defs::{Definition, NameClass, NameRefClass},
-    documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
+    documentation::{docs_with_rangemap, DocsRangeMap, Documentation, HasDocs},
     helpers::pick_best_token,
     RootDatabase,
 };

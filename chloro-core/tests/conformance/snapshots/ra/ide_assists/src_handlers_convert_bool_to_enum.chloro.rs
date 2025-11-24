@@ -5,14 +5,14 @@ use ide_db::{
     assists::AssistId,
     defs::Definition,
     helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use},
+    imports::insert_use::{insert_use, ImportScope},
     search::{FileReference, UsageSearchResult},
     source_change::SourceChangeBuilder,
     FxHashSet,
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, HasName, edit::IndentLevel, edit_in_place::Indent, make},
+    ast::{edit::IndentLevel, edit_in_place::Indent, make, self, HasName},
     AstNode, NodeOrToken, SyntaxKind, SyntaxNode, T,
 };
 

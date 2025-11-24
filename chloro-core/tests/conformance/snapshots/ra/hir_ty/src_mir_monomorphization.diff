@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9213 bytes
-Chloro size:   9211 bytes
+Chloro size:   9203 bytes
 Rustfmt size:  9281 bytes
 
 ✗ Outputs DIFFER
@@ -12,11 +12,11 @@ Rustfmt size:  9281 bytes
      db::{HirDatabase, InternedClosureId},
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
-+        DbInterner, GenericArgs, Ty, TyKind, TypingMode,
-+        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-         obligation_ctxt::ObligationCtxt,
+-        obligation_ctxt::ObligationCtxt,
 -        references_non_lt_error, DbInterner, GenericArgs, Ty, TyKind, TypingMode,
-+        references_non_lt_error,
++        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
++        obligation_ctxt::ObligationCtxt, references_non_lt_error, DbInterner, GenericArgs, Ty,
++        TyKind, TypingMode,
      },
      TraitEnvironment,
  };

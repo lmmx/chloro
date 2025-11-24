@@ -7,8 +7,8 @@ use ide_db::{
 };
 use syntax::{
     ast::{
-        self, AssocItem, BlockExpr, GenericParam, HasAttrs, HasGenericParams, HasName,
-        HasTypeBounds, HasVisibility, edit::AstNodeEdit, make,
+        edit::AstNodeEdit, make, self, AssocItem, BlockExpr, GenericParam, HasAttrs,
+        HasGenericParams, HasName, HasTypeBounds, HasVisibility,
     },
     syntax_editor::Position,
     AstNode,

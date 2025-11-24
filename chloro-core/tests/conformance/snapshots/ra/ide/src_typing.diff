@@ -26,7 +26,7 @@ Rustfmt size:  36650 bytes
  use syntax::{
      algo::{ancestors_at_offset, find_node_at_offset},
 -    ast::{self, edit::IndentLevel, AstToken},
-+    ast::{self, AstToken, edit::IndentLevel},
++    ast::{edit::IndentLevel, self, AstToken},
      AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
  };
  

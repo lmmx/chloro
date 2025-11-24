@@ -8,26 +8,18 @@ Rustfmt size:  16174 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use hir_def::{ImplId, TraitId};
- use macros::{TypeFoldable, TypeVisitable};
- use rustc_type_ir::{
--    solve::{inspect::ProbeKind, BuiltinImplSource, CandidateSource, Certainty},
-+    solve::{BuiltinImplSource, CandidateSource, Certainty, inspect::ProbeKind},
-     Interner,
- };
- 
- use crate::{
      db::InternedOpaqueTyId,
      next_solver::{
-+        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
          infer::{
 +            InferCtxt,
              select::EvaluationResult::*,
              traits::{Obligation, ObligationCause, PredicateObligation, TraitObligation},
 -            InferCtxt,
          },
-         inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
+-        inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor},
 -        Const, ErrorGuaranteed, GenericArgs, Goal, TraitRef, Ty, TypeError,
++        inspect::{InspectCandidate, InspectGoal, ProofTreeVisitor}, Const, ErrorGuaranteed,
++        GenericArgs, Goal, TraitRef, Ty, TypeError,
      },
  };
  

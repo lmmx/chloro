@@ -42,7 +42,7 @@ use ide_db::{
 };
 use syntax::ast::HasGenericParams;
 use syntax::{
-    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
+    ast::{edit_in_place::AttrsOwnerEdit, make, self, HasGenericArgs, HasTypeBounds},
     format_smolstr, ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
 };
 

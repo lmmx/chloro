@@ -13,11 +13,6 @@ Rustfmt size:  34347 bytes
  
  use crate::{
      context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
--    tests::{check_edit, check_edit_with_config, TEST_CONFIG},
-+    tests::{TEST_CONFIG, check_edit, check_edit_with_config},
-     CompletionConfig,
- };
- 
      let (db, position) = crate::tests::position(ra_fixture);
      let (ctx, analysis) =
          crate::context::CompletionContext::new(&db, position, &config, None).unwrap();
