@@ -27,11 +27,11 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     SyntaxKind::RECORD_EXPR if !is_last_node => {
                         // Non-tail record expression - try to format, fall back to default
                         write_indent(buf, indent);
-                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone()) {
-                            if try_format_record_expr(&record_expr, buf, indent) {
-                                buf.push_str(";\n");
-                                continue;
-                            }
+                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone())
+                            && try_format_record_expr(&record_expr, buf, indent)
+                        {
+                            buf.push_str(";\n");
+                            continue;
                         }
                         // Fall through to default
                         buf.push_str(&n.text().to_string());
@@ -41,11 +41,11 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                     SyntaxKind::RECORD_EXPR if is_last_node => {
                         // Tail expression record - format without semicolon
                         write_indent(buf, indent);
-                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone()) {
-                            if try_format_record_expr(&record_expr, buf, indent) {
-                                buf.push('\n');
-                                continue;
-                            }
+                        if let Some(record_expr) = ast::RecordExpr::cast(n.clone())
+                            && try_format_record_expr(&record_expr, buf, indent)
+                        {
+                            buf.push('\n');
+                            continue;
                         }
                         // Fall through to default
                         buf.push_str(&n.text().to_string());
