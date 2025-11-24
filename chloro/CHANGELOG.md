@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1](https://github.com/lmmx/chloro/compare/chloro-v0.6.0...chloro-v0.6.1) - 2025-11-24
+
+### <!-- 9 -->Other
+
+- bump ra_ap_syntax; use blazon for badges; new textum CLI for readme conf ([#22](https://github.com/lmmx/chloro/pull/22))
+- r-a MSRV; de-default ctor; split ws crates
+
 ### <!-- 4 -->Documentation
 
 - oops
