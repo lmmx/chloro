@@ -16,10 +16,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn expand_glob_import(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let star = ctx.find_token_syntax_at_offset(T![*])?;
     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
     let use_item = star.parent_ancestors().find_map(ast::Use::cast)?;
@@ -53,10 +50,7 @@ pub(crate) fn expand_glob_import(
     )
 }
 
-pub(crate) fn expand_glob_reexport(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let star = ctx.find_token_syntax_at_offset(T![*])?;
     let use_tree = star.parent().and_then(ast::UseTree::cast)?;
     let use_item = star.parent_ancestors().find_map(ast::Use::cast)?;
@@ -163,7 +157,9 @@ enum Expandable {
     Enum(Enum),
 }
 
-fn find_parent_and_path(star: &SyntaxToken) -> Option<(Either<ast::UseTree, ast::UseTreeList>, ast::Path)> {
+fn find_parent_and_path(
+    star: &SyntaxToken,
+) -> Option<(Either<ast::UseTree, ast::UseTreeList>, ast::Path)> {
     return star.parent_ancestors().find_map(|n| {
         find_use_tree_list(n.clone())
             .map(|(u, p)| (Either::Right(u), p))
@@ -181,10 +177,7 @@ fn find_parent_and_path(star: &SyntaxToken) -> Option<(Either<ast::UseTree, ast:
     }
 }
 
-fn def_is_referenced_in(
-    def: Definition,
-    ctx: &AssistContext<'_>,
-) -> bool {
+fn def_is_referenced_in(def: Definition, ctx: &AssistContext<'_>) -> bool {
     let search_scope = SearchScope::single_file(ctx.file_id());
     def.usages(&ctx.sema).in_scope(&search_scope).at_least_one()
 }
@@ -197,11 +190,7 @@ struct Ref {
 }
 
 impl Ref {
-    fn from_scope_def(
-        ctx: &AssistContext<'_>,
-        name: Name,
-        scope_def: ScopeDef,
-    ) -> Option<Self> {
+    fn from_scope_def(ctx: &AssistContext<'_>, name: Name, scope_def: ScopeDef) -> Option<Self> {
         match scope_def {
             ScopeDef::ModuleDef(def) => Some(Ref {
                 visible_name: name,
@@ -217,10 +206,7 @@ impl Ref {
 struct Refs(Vec<Ref>);
 
 impl Refs {
-    fn used_refs(
-        &self,
-        ctx: &AssistContext<'_>,
-    ) -> Refs {
+    fn used_refs(&self, ctx: &AssistContext<'_>) -> Refs {
         Refs(
             self.0
                 .clone()
@@ -244,10 +230,7 @@ impl Refs {
         )
     }
 
-    fn filter_out_by_defs(
-        &self,
-        defs: Vec<Definition>,
-    ) -> Refs {
+    fn filter_out_by_defs(&self, defs: Vec<Definition>) -> Refs {
         Refs(self.0.clone().into_iter().filter(|r| !defs.contains(&r.def)).collect())
     }
 }
@@ -281,11 +264,7 @@ fn find_refs_in_mod(
     }
 }
 
-fn is_visible_from(
-    ctx: &AssistContext<'_>,
-    expandable: &Expandable,
-    from: Module,
-) -> bool {
+fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Module) -> bool {
     fn is_mod_visible_from(ctx: &AssistContext<'_>, module: Module, from: Module) -> bool {
         match module.parent(ctx.db()) {
             Some(parent) => {
@@ -311,10 +290,7 @@ fn is_visible_from(
     }
 }
 
-fn find_imported_defs(
-    ctx: &AssistContext<'_>,
-    use_item: Use,
-) -> Vec<Definition> {
+fn find_imported_defs(ctx: &AssistContext<'_>, use_item: Use) -> Vec<Definition> {
     [Direction::Prev, Direction::Next]
         .into_iter()
         .flat_map(|dir| {
@@ -339,10 +315,7 @@ fn find_imported_defs(
         .collect()
 }
 
-fn find_names_to_import(
-    refs_in_target: Refs,
-    imported_defs: Vec<Definition>,
-) -> Vec<Name> {
+fn find_names_to_import(refs_in_target: Refs, imported_defs: Vec<Definition>) -> Vec<Name> {
     let final_refs = refs_in_target.filter_out_by_defs(imported_defs);
     final_refs.0.iter().map(|r| r.visible_name.clone()).collect()
 }

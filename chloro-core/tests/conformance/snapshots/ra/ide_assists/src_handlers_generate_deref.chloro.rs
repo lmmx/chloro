@@ -13,17 +13,11 @@ use crate::{
     AssistId,
 };
 
-pub(crate) fn generate_deref(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_record_deref(acc, ctx).or_else(|| generate_tuple_deref(acc, ctx))
 }
 
-fn generate_record_deref(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
     let deref_type_to_generate = match existing_deref_impl(&ctx.sema, &strukt) {
@@ -60,10 +54,7 @@ fn generate_record_deref(
     )
 }
 
-fn generate_tuple_deref(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::TupleField>()?;
     let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;

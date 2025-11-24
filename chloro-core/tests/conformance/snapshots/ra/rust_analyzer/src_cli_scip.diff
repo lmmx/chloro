@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31106 bytes
-Chloro size:   30666 bytes
+Chloro size:   30575 bytes
 Rustfmt size:  31747 bytes
 
 ✗ Outputs DIFFER
@@ -182,14 +182,7 @@ Rustfmt size:  31747 bytes
 +    Some(vfs.file_path(file_id).as_path()?.strip_prefix(rootpath)?.as_str().to_owned())
  }
  
--fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
-+fn get_line_index(
-+    db: &RootDatabase,
-+    file_id: FileId,
-+) -> LineIndex {
-     LineIndex {
-         index: db.line_index(file_id),
-         encoding: PositionEncoding::Utf8,
+ fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
      }
  }
  
@@ -197,7 +190,7 @@ Rustfmt size:  31747 bytes
 -// only encode as a vector of [start_line, start_col, end_col].
 -//
 -// This transforms a line index into the optimized SCIP Range.
--fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
+ fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
 -    let LineCol {
 -        line: start_line,
 -        col: start_col,
@@ -207,10 +200,6 @@ Rustfmt size:  31747 bytes
 -        col: end_col,
 -    } = line_index.index.line_col(range.end());
 -
-+fn text_range_to_scip_range(
-+    line_index: &LineIndex,
-+    range: TextRange,
-+) -> Vec<i32> {
 +    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
 +    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
      if start_line == end_line {
@@ -226,7 +215,7 @@ Rustfmt size:  31747 bytes
      }
  }
  
--fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
+ fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
 -    let LineCol {
 -        line: start_line,
 -        col: start_col,
@@ -236,28 +225,11 @@ Rustfmt size:  31747 bytes
 -        col: end_col,
 -    } = line_index.index.line_col(range.end());
 -
-+fn text_range_to_string(
-+    relative_path: &str,
-+    line_index: &LineIndex,
-+    range: TextRange,
-+) -> String {
 +    let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
 +    let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
      format!("{relative_path}:{start_line}:{start_col}-{end_line}:{end_col}")
  }
  
-         self.local_count = 0;
-     }
- 
--    fn token_symbols(&mut self, id: TokenId, token: &TokenStaticData) -> Option<TokenSymbols> {
-+    fn token_symbols(
-+        &mut self,
-+        id: TokenId,
-+        token: &TokenStaticData,
-+    ) -> Option<TokenSymbols> {
-         let mut local_count = self.local_count;
-         let token_symbols = self
-             .token_to_symbols
          package: Some(scip_types::Package {
              manager: "cargo".to_owned(),
              name: moniker.package_information.name.clone(),
@@ -290,11 +262,7 @@ Rustfmt size:  31747 bytes
 -
      /// If expected == "", then assert that there are no symbols (this is basically local symbol)
      #[track_caller]
--    fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
-+    fn check_symbol(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expected: &str,
-+    ) {
+     fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
          let (host, position) = position(ra_fixture);
 -
          let analysis = host.analysis();

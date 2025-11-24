@@ -450,10 +450,7 @@ fn descend_token(
     })
 }
 
-fn filter_by_config(
-    highlight: &mut Highlight,
-    config: &HighlightConfig<'_>,
-) -> bool {
+fn filter_by_config(highlight: &mut Highlight, config: &HighlightConfig<'_>) -> bool {
     match &mut highlight.tag {
         HlTag::StringLiteral if !config.strings => return false,
         HlTag::Comment if !config.comments => return false,

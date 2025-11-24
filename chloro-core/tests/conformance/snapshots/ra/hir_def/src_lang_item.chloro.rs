@@ -98,10 +98,7 @@ impl LangItemTarget {
 
 /// Salsa query. This will look for lang items in a specific crate.
 #[salsa_macros::tracked(returns(ref))]
-pub fn crate_lang_items(
-    db: &dyn DefDatabase,
-    krate: Crate,
-) -> Option<Box<LangItems>> {
+pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangItems>> {
     let _p = tracing::info_span!("crate_lang_items_query").entered();
     let mut lang_items = LangItems::default();
     let crate_def_map = crate_def_map(db, krate);
@@ -199,10 +196,7 @@ pub struct LangItems {
 }
 
 impl LangItems {
-    pub fn target(
-        &self,
-        item: LangItem,
-    ) -> Option<LangItemTarget> {
+    pub fn target(&self, item: LangItem) -> Option<LangItemTarget> {
         self.items.get(&item).copied()
     }
 
@@ -221,27 +215,18 @@ impl LangItems {
     }
 }
 
-pub(crate) fn lang_attr(
-    db: &dyn DefDatabase,
-    item: AttrDefId,
-) -> Option<LangItem> {
+pub(crate) fn lang_attr(db: &dyn DefDatabase, item: AttrDefId) -> Option<LangItem> {
     db.attrs(item).lang_item()
 }
 
-pub(crate) fn notable_traits_in_deps(
-    db: &dyn DefDatabase,
-    krate: Crate,
-) -> Arc<[Arc<[TraitId]>]> {
+pub(crate) fn notable_traits_in_deps(db: &dyn DefDatabase, krate: Crate) -> Arc<[Arc<[TraitId]>]> {
     let _p = tracing::info_span!("notable_traits_in_deps", ?krate).entered();
     Arc::from_iter(
         db.transitive_deps(krate).into_iter().filter_map(|krate| db.crate_notable_traits(krate)),
     )
 }
 
-pub(crate) fn crate_notable_traits(
-    db: &dyn DefDatabase,
-    krate: Crate,
-) -> Option<Arc<[TraitId]>> {
+pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option<Arc<[TraitId]>> {
     let _p = tracing::info_span!("crate_notable_traits", ?krate).entered();
     let mut traits = Vec::new();
     let crate_def_map = crate_def_map(db, krate);
@@ -297,35 +282,19 @@ macro_rules! language_item_table {
 }
 
 impl LangItem {
-    pub fn resolve_function(
-        self,
-        db: &dyn DefDatabase,
-        start_crate: Crate,
-    ) -> Option<FunctionId> {
+    pub fn resolve_function(self, db: &dyn DefDatabase, start_crate: Crate) -> Option<FunctionId> {
         lang_item(db, start_crate, self).and_then(|t| t.as_function())
     }
 
-    pub fn resolve_trait(
-        self,
-        db: &dyn DefDatabase,
-        start_crate: Crate,
-    ) -> Option<TraitId> {
+    pub fn resolve_trait(self, db: &dyn DefDatabase, start_crate: Crate) -> Option<TraitId> {
         lang_item(db, start_crate, self).and_then(|t| t.as_trait())
     }
 
-    pub fn resolve_adt(
-        self,
-        db: &dyn DefDatabase,
-        start_crate: Crate,
-    ) -> Option<AdtId> {
+    pub fn resolve_adt(self, db: &dyn DefDatabase, start_crate: Crate) -> Option<AdtId> {
         lang_item(db, start_crate, self).and_then(|t| t.as_adt())
     }
 
-    pub fn resolve_enum(
-        self,
-        db: &dyn DefDatabase,
-        start_crate: Crate,
-    ) -> Option<EnumId> {
+    pub fn resolve_enum(self, db: &dyn DefDatabase, start_crate: Crate) -> Option<EnumId> {
         lang_item(db, start_crate, self).and_then(|t| t.as_enum())
     }
 
@@ -342,11 +311,7 @@ impl LangItem {
         Self::from_symbol(name.symbol())
     }
 
-    pub fn path(
-        &self,
-        db: &dyn DefDatabase,
-        start_crate: Crate,
-    ) -> Option<Path> {
+    pub fn path(&self, db: &dyn DefDatabase, start_crate: Crate) -> Option<Path> {
         let t = lang_item(db, start_crate, *self)?;
         Some(Path::LangItem(t, None))
     }

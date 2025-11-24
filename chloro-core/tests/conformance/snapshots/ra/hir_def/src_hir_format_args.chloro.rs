@@ -449,10 +449,7 @@ impl FormatArgumentsCollector {
         }
     }
 
-    pub fn add(
-        &mut self,
-        arg: FormatArgument,
-    ) -> usize {
+    pub fn add(&mut self, arg: FormatArgument) -> usize {
         let index = self.arguments.len();
         if let Some(name) = arg.kind.ident() {
             self.names.push((name.clone(), index));
@@ -475,18 +472,12 @@ impl FormatArgumentsCollector {
         index
     }
 
-    pub fn by_name(
-        &self,
-        name: &Name,
-    ) -> Option<(usize, &FormatArgument)> {
+    pub fn by_name(&self, name: &Name) -> Option<(usize, &FormatArgument)> {
         let &(_, i) = self.names.iter().find(|(n, _)| n == name)?;
         Some((i, &self.arguments[i]))
     }
 
-    pub fn by_index(
-        &self,
-        i: usize,
-    ) -> Option<&FormatArgument> {
+    pub fn by_index(&self, i: usize) -> Option<&FormatArgument> {
         (i < self.num_explicit_args).then(|| &self.arguments[i])
     }
 

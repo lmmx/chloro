@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18200 bytes
+Chloro size:   18189 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
@@ -46,14 +46,9 @@ Rustfmt size:  18737 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn merge_match_arms(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let current_arm = ctx.find_node_at_trimmed_offset::<ast::MatchArm>()?;
      // Don't try to handle arms with guards for now - can add support for this later
-     if current_arm.guard().is_some() {
      let current_arm_types = get_arm_types(ctx, &current_arm);
      let multi_arm_selection = !ctx.has_empty_selection()
          && ctx.selection_trimmed().end() > current_arm.syntax().text_range().end();

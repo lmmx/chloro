@@ -128,7 +128,9 @@ impl<'db> NormalizationFolder<'_, 'db> {
         Ok(result)
     }
 
-    fn select_all_and_stall_coroutine_predicates(&mut self) -> Result<(), Vec<NextSolverError<'db>>> {
+    fn select_all_and_stall_coroutine_predicates(
+        &mut self,
+    ) -> Result<(), Vec<NextSolverError<'db>>> {
         let errors = self.fulfill_cx.try_evaluate_obligations(self.at.infcx);
         if !errors.is_empty() {
             return Err(errors);
@@ -164,10 +166,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         Ok(t)
     }
 
-    fn try_fold_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Result<Ty<'db>, Self::Error> {
+    fn try_fold_ty(&mut self, ty: Ty<'db>) -> Result<Ty<'db>, Self::Error> {
         let infcx = self.at.infcx;
         debug_assert_eq!(ty, infcx.shallow_resolve(ty));
         if !ty.has_aliases() {
@@ -191,10 +190,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         }
     }
 
-    fn try_fold_const(
-        &mut self,
-        ct: Const<'db>,
-    ) -> Result<Const<'db>, Self::Error> {
+    fn try_fold_const(&mut self, ct: Const<'db>) -> Result<Const<'db>, Self::Error> {
         let infcx = self.at.infcx;
         debug_assert_eq!(ct, infcx.shallow_resolve_const(ct));
         if !ct.has_aliases() {
@@ -238,10 +234,7 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
         self.at.infcx.interner
     }
 
-    fn fold_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
         let infcx = self.at.infcx;
         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
@@ -256,10 +249,7 @@ impl<'db> TypeFolder<DbInterner<'db>> for DeeplyNormalizeForDiagnosticsFolder<'_
         }
     }
 
-    fn fold_const(
-        &mut self,
-        ct: Const<'db>,
-    ) -> Const<'db> {
+    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
         let infcx = self.at.infcx;
         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11017 bytes
-Chloro size:   11074 bytes
+Chloro size:   11012 bytes
 Rustfmt size:  11350 bytes
 
 ✗ Outputs DIFFER
@@ -44,18 +44,6 @@ Rustfmt size:  11350 bytes
          lifetimes.shrink_to_fit();
          type_or_consts.shrink_to_fit();
          where_predicates.shrink_to_fit();
-         })
-     }
- 
--    fn lower_param_list(&mut self, ec: &mut ExprCollector<'_>, params: ast::GenericParamList) {
-+    fn lower_param_list(
-+        &mut self,
-+        ec: &mut ExprCollector<'_>,
-+        params: ast::GenericParamList,
-+    ) {
-         for generic_param in params.generic_params() {
-             let enabled = ec.check_cfg(&generic_param);
-             if !enabled {
  
              match generic_param {
                  ast::GenericParam::TypeParam(type_param) => {
@@ -139,14 +127,3 @@ Rustfmt size:  11350 bytes
              }
              type_ref
          }
-     }
- 
--    fn fill_self_param(&mut self, ec: &mut ExprCollector<'_>, bounds: Option<ast::TypeBoundList>) {
-+    fn fill_self_param(
-+        &mut self,
-+        ec: &mut ExprCollector<'_>,
-+        bounds: Option<ast::TypeBoundList>,
-+    ) {
-         let self_ = Name::new_symbol_root(sym::Self_);
-         let idx = self.type_or_consts.alloc(
-             TypeParamData {

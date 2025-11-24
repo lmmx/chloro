@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   50418 bytes
+Chloro size:   50300 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -53,11 +53,7 @@ Rustfmt size:  51735 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn add_missing_match_arms(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
      let match_arm_list = match_expr.match_arm_list()?;
      let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
@@ -174,23 +170,15 @@ Rustfmt size:  51735 bytes
      None
  }
  
--fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
+ fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
 -    !existing_pats
 -        .iter()
 -        .any(|pat| does_pat_match_variant(pat, var))
-+fn is_variant_missing(
-+    existing_pats: &[Pat],
-+    var: &Pat,
-+) -> bool {
 +    !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
  }
  
 -// Fixme: this is still somewhat limited, use hir_ty::diagnostics::match_check?
--fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
-+fn does_pat_match_variant(
-+    pat: &Pat,
-+    var: &Pat,
-+) -> bool {
+ fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
      match (pat, var) {
          (Pat::WildcardPat(_), _) => true,
 -        (Pat::SlicePat(spat), Pat::SlicePat(svar)) => spat
@@ -221,41 +209,6 @@ Rustfmt size:  51735 bytes
  }
  
  #[derive(Eq, PartialEq, Clone, Copy, Debug)]
- }
- 
- impl ExtendedVariant {
--    fn should_be_hidden(self, db: &RootDatabase, krate: Crate) -> bool {
-+    fn should_be_hidden(
-+        self,
-+        db: &RootDatabase,
-+        krate: Crate,
-+    ) -> bool {
-         match self {
-             ExtendedVariant::Variant { variant: var, .. } => {
-                 var.attrs(db).has_doc_hidden() && var.module(db).krate() != krate
-         }
-     }
- 
--    fn is_non_exhaustive(&self, db: &RootDatabase, krate: Crate) -> bool {
-+    fn is_non_exhaustive(
-+        &self,
-+        db: &RootDatabase,
-+        krate: Crate,
-+    ) -> bool {
-         match self {
-             ExtendedEnum::Enum { enum_: e, .. } => {
-                 e.attrs(db).by_key(sym::non_exhaustive).exists() && e.module(db).krate() != krate
-         }
-     }
- 
--    fn variants(&self, db: &RootDatabase) -> Vec<ExtendedVariant> {
-+    fn variants(
-+        &self,
-+        db: &RootDatabase,
-+    ) -> Vec<ExtendedVariant> {
-         match *self {
-             ExtendedEnum::Enum { enum_: e, use_self } => e
-                 .variants(db)
      expr: &ast::Expr,
      self_ty: Option<&hir::Type<'_>>,
  ) -> Option<ExtendedEnum> {

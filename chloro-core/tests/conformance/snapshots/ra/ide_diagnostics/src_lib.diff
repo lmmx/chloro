@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33711 bytes
+Chloro size:   33563 bytes
 Rustfmt size:  33895 bytes
 
 ✗ Outputs DIFFER
@@ -88,35 +88,6 @@ Rustfmt size:  33895 bytes
      pub main_node: Option<InFile<SyntaxNodePtr>>,
  }
  
-         self
-     }
- 
--    fn with_main_node(mut self, main_node: InFile<SyntaxNodePtr>) -> Diagnostic {
-+    fn with_main_node(
-+        mut self,
-+        main_node: InFile<SyntaxNodePtr>,
-+    ) -> Diagnostic {
-         self.main_node = Some(main_node);
-         self
-     }
- 
--    fn with_fixes(mut self, fixes: Option<Vec<Assist>>) -> Diagnostic {
-+    fn with_fixes(
-+        mut self,
-+        fixes: Option<Vec<Assist>>,
-+    ) -> Diagnostic {
-         self.fixes = fixes;
-         self
-     }
- 
--    fn with_unused(mut self, unused: bool) -> Diagnostic {
-+    fn with_unused(
-+        mut self,
-+        unused: bool,
-+    ) -> Diagnostic {
-         self.unused = unused;
-         self
-     }
      pub disabled: FxHashSet<String>,
      pub expr_fill_default: ExprFillDefaultMode,
      pub style_lints: bool,
@@ -239,17 +210,6 @@ Rustfmt size:  33895 bytes
  
  fn build_lints_map(
      lints: &'static [Lint],
-     }
- }
- 
--fn default_lint_severity(lint: &Lint, edition: Edition) -> Severity {
-+fn default_lint_severity(
-+    lint: &Lint,
-+    edition: Edition,
-+) -> Severity {
-     if lint.deny_since.is_some_and(|e| edition >= e) {
-         Severity::Error
-     } else if lint.warn_since.is_some_and(|e| edition >= e) {
          // Inline modules will be handled by `fill_lint_attrs()`.
          return None;
      }
@@ -283,47 +243,3 @@ Rustfmt size:  33895 bytes
      if prev_len != lint_attrs.len()
          && let Some(false) | None = sema.check_cfg_attr(value)
      {
- }
- 
- impl LintGroups {
--    fn contains(&self, group: &str) -> bool {
-+    fn contains(
-+        &self,
-+        group: &str,
-+    ) -> bool {
-         self.groups.contains(&group) || (self.inside_warnings && group == "warnings")
-     }
- }
- 
--fn lint_groups(lint: &DiagnosticCode, edition: Edition) -> LintGroups {
-+fn lint_groups(
-+    lint: &DiagnosticCode,
-+    edition: Edition,
-+) -> LintGroups {
-     let (groups, inside_warnings) = match lint {
-         DiagnosticCode::RustcLint(name) => {
-             let lint = &RUSTC_LINTS[name];
-     LintGroups { groups, inside_warnings }
- }
- 
--fn fix(id: &'static str, label: &str, source_change: SourceChange, target: TextRange) -> Assist {
-+fn fix(
-+    id: &'static str,
-+    label: &str,
-+    source_change: SourceChange,
-+    target: TextRange,
-+) -> Assist {
-     let mut res = unresolved_fix(id, label, target);
-     res.source_change = Some(source_change);
-     res
- }
- 
--fn unresolved_fix(id: &'static str, label: &str, target: TextRange) -> Assist {
-+fn unresolved_fix(
-+    id: &'static str,
-+    label: &str,
-+    target: TextRange,
-+) -> Assist {
-     assert!(!id.contains(' '));
-     Assist {
-         id: AssistId::quick_fix(id),

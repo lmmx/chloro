@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2201 bytes
-Chloro size:   2237 bytes
+Chloro size:   2196 bytes
 Rustfmt size:  2201 bytes
 
 ✗ Outputs DIFFER
@@ -22,26 +22,8 @@ Rustfmt size:  2201 bytes
      pub fn is_spammy(self) -> bool {
          matches!(self, Verbosity::Spammy)
      }
-     Ok(buff)
- }
  
--fn report_metric(metric: &str, value: u64, unit: &str) {
-+fn report_metric(
-+    metric: &str,
-+    value: u64,
-+    unit: &str,
-+) {
-     if std::env::var("RA_METRICS").is_err() {
-         return;
-     }
-     println!("METRIC:{metric}:{value}:{unit}")
- }
- 
--fn print_memory_usage(mut host: AnalysisHost, vfs: Vfs) {
-+fn print_memory_usage(
-+    mut host: AnalysisHost,
-+    vfs: Vfs,
-+) {
+ fn print_memory_usage(mut host: AnalysisHost, vfs: Vfs) {
      let mem = host.per_query_memory_usage();
 -
      let before = profile::memory_usage();
@@ -64,12 +46,3 @@ Rustfmt size:  2201 bytes
      eprintln!("{remaining:>8}        Remaining");
  }
  
--fn full_name_of_item(db: &dyn HirDatabase, module: Module, name: Name) -> String {
-+fn full_name_of_item(
-+    db: &dyn HirDatabase,
-+    module: Module,
-+    name: Name,
-+) -> String {
-     module
-         .path_to_root(db)
-         .into_iter()

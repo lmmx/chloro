@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12569 bytes
-Chloro size:   12189 bytes
+Chloro size:   12167 bytes
 Rustfmt size:  12721 bytes
 
 ✗ Outputs DIFFER
@@ -42,22 +42,9 @@ Rustfmt size:  12721 bytes
 -//     m::frobnicate();
 -// }
 -// ```
--pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn fix_visibility(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      add_vis_to_referenced_module_def(acc, ctx)
  }
- 
--fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+fn add_vis_to_referenced_module_def(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
-     let path: ast::Path = ctx.find_node_at_offset()?;
-     let qualifier = path.qualifier()?;
-     let name_ref = path.segment()?.name_ref()?;
      let ScopeDef::ModuleDef(def) = def else {
          return None;
      };

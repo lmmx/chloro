@@ -37,79 +37,49 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         self.create_next_universe()
     }
 
-    fn universe_of_ty(
-        &self,
-        vid: TyVid,
-    ) -> Option<UniverseIndex> {
+    fn universe_of_ty(&self, vid: TyVid) -> Option<UniverseIndex> {
         self.probe_ty_var(vid).err()
     }
 
-    fn universe_of_lt(
-        &self,
-        lt: RegionVid,
-    ) -> Option<UniverseIndex> {
+    fn universe_of_lt(&self, lt: RegionVid) -> Option<UniverseIndex> {
         self.inner.borrow_mut().unwrap_region_constraints().probe_value(lt).err()
     }
 
-    fn universe_of_ct(
-        &self,
-        ct: ConstVid,
-    ) -> Option<UniverseIndex> {
+    fn universe_of_ct(&self, ct: ConstVid) -> Option<UniverseIndex> {
         self.probe_const_var(ct).err()
     }
 
-    fn root_ty_var(
-        &self,
-        var: TyVid,
-    ) -> TyVid {
+    fn root_ty_var(&self, var: TyVid) -> TyVid {
         self.root_var(var)
     }
 
-    fn root_const_var(
-        &self,
-        var: ConstVid,
-    ) -> ConstVid {
+    fn root_const_var(&self, var: ConstVid) -> ConstVid {
         self.root_const_var(var)
     }
 
-    fn opportunistic_resolve_ty_var(
-        &self,
-        vid: TyVid,
-    ) -> Ty<'db> {
+    fn opportunistic_resolve_ty_var(&self, vid: TyVid) -> Ty<'db> {
         match self.probe_ty_var(vid) {
             Ok(ty) => ty,
             Err(_) => Ty::new_var(self.interner, self.root_var(vid)),
         }
     }
 
-    fn opportunistic_resolve_int_var(
-        &self,
-        vid: IntVid,
-    ) -> Ty<'db> {
+    fn opportunistic_resolve_int_var(&self, vid: IntVid) -> Ty<'db> {
         self.opportunistic_resolve_int_var(vid)
     }
 
-    fn opportunistic_resolve_float_var(
-        &self,
-        vid: FloatVid,
-    ) -> Ty<'db> {
+    fn opportunistic_resolve_float_var(&self, vid: FloatVid) -> Ty<'db> {
         self.opportunistic_resolve_float_var(vid)
     }
 
-    fn opportunistic_resolve_ct_var(
-        &self,
-        vid: ConstVid,
-    ) -> Const<'db> {
+    fn opportunistic_resolve_ct_var(&self, vid: ConstVid) -> Const<'db> {
         match self.probe_const_var(vid) {
             Ok(ct) => ct,
             Err(_) => Const::new_var(self.interner, self.root_const_var(vid)),
         }
     }
 
-    fn opportunistic_resolve_lt_var(
-        &self,
-        vid: RegionVid,
-    ) -> Region<'db> {
+    fn opportunistic_resolve_lt_var(&self, vid: RegionVid) -> Region<'db> {
         self.inner
             .borrow_mut()
             .unwrap_region_constraints()
@@ -182,10 +152,7 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         self.next_const_var()
     }
 
-    fn fresh_args_for_item(
-        &self,
-        def_id: SolverDefId,
-    ) -> GenericArgs<'db> {
+    fn fresh_args_for_item(&self, def_id: SolverDefId) -> GenericArgs<'db> {
         self.fresh_args_for_item(def_id)
     }
 
@@ -204,35 +171,19 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         self.enter_forall(value, f)
     }
 
-    fn equate_ty_vids_raw(
-        &self,
-        a: rustc_type_ir::TyVid,
-        b: rustc_type_ir::TyVid,
-    ) {
+    fn equate_ty_vids_raw(&self, a: rustc_type_ir::TyVid, b: rustc_type_ir::TyVid) {
         self.inner.borrow_mut().type_variables().equate(a, b);
     }
 
-    fn equate_int_vids_raw(
-        &self,
-        a: rustc_type_ir::IntVid,
-        b: rustc_type_ir::IntVid,
-    ) {
+    fn equate_int_vids_raw(&self, a: rustc_type_ir::IntVid, b: rustc_type_ir::IntVid) {
         self.inner.borrow_mut().int_unification_table().union(a, b);
     }
 
-    fn equate_float_vids_raw(
-        &self,
-        a: rustc_type_ir::FloatVid,
-        b: rustc_type_ir::FloatVid,
-    ) {
+    fn equate_float_vids_raw(&self, a: rustc_type_ir::FloatVid, b: rustc_type_ir::FloatVid) {
         self.inner.borrow_mut().float_unification_table().union(a, b);
     }
 
-    fn equate_const_vids_raw(
-        &self,
-        a: rustc_type_ir::ConstVid,
-        b: rustc_type_ir::ConstVid,
-    ) {
+    fn equate_const_vids_raw(&self, a: rustc_type_ir::ConstVid, b: rustc_type_ir::ConstVid) {
         self.inner.borrow_mut().const_unification_table().union(a, b);
     }
 
@@ -279,67 +230,37 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         self.instantiate_const_var(relation, target_is_expected, target_vid, source_ct)
     }
 
-    fn set_tainted_by_errors(
-        &self,
-        e: ErrorGuaranteed,
-    ) {
+    fn set_tainted_by_errors(&self, e: ErrorGuaranteed) {
         self.set_tainted_by_errors(e)
     }
 
-    fn shallow_resolve(
-        &self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
         self.shallow_resolve(ty)
     }
 
-    fn shallow_resolve_const(
-        &self,
-        ct: Const<'db>,
-    ) -> Const<'db> {
+    fn shallow_resolve_const(&self, ct: Const<'db>) -> Const<'db> {
         self.shallow_resolve_const(ct)
     }
 
-    fn resolve_vars_if_possible<T>(
-        &self,
-        value: T,
-    ) -> T
+    fn resolve_vars_if_possible<T>(&self, value: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         self.resolve_vars_if_possible(value)
     }
 
-    fn probe<T>(
-        &self,
-        probe: impl FnOnce() -> T,
-    ) -> T {
+    fn probe<T>(&self, probe: impl FnOnce() -> T) -> T {
         self.probe(|_| probe())
     }
 
-    fn sub_regions(
-        &self,
-        sub: Region<'db>,
-        sup: Region<'db>,
-        _span: Span,
-    ) {
+    fn sub_regions(&self, sub: Region<'db>, sup: Region<'db>, _span: Span) {
         self.inner.borrow_mut().unwrap_region_constraints().make_subregion(sub, sup);
     }
 
-    fn equate_regions(
-        &self,
-        a: Region<'db>,
-        b: Region<'db>,
-        _span: Span,
-    ) {
+    fn equate_regions(&self, a: Region<'db>, b: Region<'db>, _span: Span) {
         self.inner.borrow_mut().unwrap_region_constraints().make_eqregion(a, b);
     }
 
-    fn register_ty_outlives(
-        &self,
-        _ty: Ty<'db>,
-        _r: Region<'db>,
-        _span: Span,
-    ) {
+    fn register_ty_outlives(&self, _ty: Ty<'db>, _r: Region<'db>, _span: Span) {
         // self.register_type_outlives_constraint(ty, r, &ObligationCause::dummy());
     }
 
@@ -399,18 +320,11 @@ impl<'db> rustc_type_ir::InferCtxtLike for InferCtxt<'db> {
         let _ = self.take_opaque_types();
     }
 
-    fn sub_unification_table_root_var(
-        &self,
-        var: rustc_type_ir::TyVid,
-    ) -> rustc_type_ir::TyVid {
+    fn sub_unification_table_root_var(&self, var: rustc_type_ir::TyVid) -> rustc_type_ir::TyVid {
         self.sub_unification_table_root_var(var)
     }
 
-    fn sub_unify_ty_vids_raw(
-        &self,
-        a: rustc_type_ir::TyVid,
-        b: rustc_type_ir::TyVid,
-    ) {
+    fn sub_unify_ty_vids_raw(&self, a: rustc_type_ir::TyVid, b: rustc_type_ir::TyVid) {
         self.sub_unify_ty_vids_raw(a, b);
     }
 

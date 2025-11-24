@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2772 bytes
-Chloro size:   2786 bytes
+Chloro size:   2763 bytes
 Rustfmt size:  2808 bytes
 
 ✗ Outputs DIFFER
@@ -73,11 +73,7 @@ Rustfmt size:  2808 bytes
          check_result(&refs, &[28..=34]);
      }
 -
--    fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
-+    fn check_result(
-+        refs: &[(TextRange, Option<TextRange>)],
-+        expected: &[RangeInclusive<u32>],
-+    ) {
+     fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
          assert_eq!(refs.len(), expected.len());
 -
          for (i, &(full, focus)) in refs.iter().enumerate() {

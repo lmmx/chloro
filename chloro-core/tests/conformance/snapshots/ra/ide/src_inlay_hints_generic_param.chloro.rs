@@ -120,7 +120,9 @@ pub(crate) fn hints(
     Some(())
 }
 
-fn get_segment_representation(arg: &ast::GenericArg) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
+fn get_segment_representation(
+    arg: &ast::GenericArg,
+) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
     return match arg {
         ast::GenericArg::AssocTypeArg(_) => None,
         ast::GenericArg::ConstArg(const_arg) => {

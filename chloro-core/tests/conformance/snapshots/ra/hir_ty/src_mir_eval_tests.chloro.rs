@@ -14,10 +14,7 @@ use crate::{
 };
 use super::{MirEvalError, interpret_mir};
 
-fn eval_main(
-    db: &TestDB,
-    file_id: EditionedFileId,
-) -> Result<(String, String), MirEvalError<'_>> {
+fn eval_main(db: &TestDB, file_id: EditionedFileId) -> Result<(String, String), MirEvalError<'_>> {
     crate::attach_db(db, || {
         let interner = DbInterner::new_with(db, None, None);
         let module_id = db.module_for_file(file_id.file_id(db));
@@ -107,10 +104,7 @@ fn check_pass_and_stdio(
     })
 }
 
-fn check_panic(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expected_panic: &str,
-) {
+fn check_panic(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_panic: &str) {
     let (db, file_ids) = TestDB::with_many_files(ra_fixture);
     crate::attach_db(&db, || {
         let file_id = *file_ids.last().unwrap();

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10661 bytes
-Chloro size:   10417 bytes
+Chloro size:   10406 bytes
 Rustfmt size:  10661 bytes
 
 ✗ Outputs DIFFER
@@ -28,11 +28,7 @@ Rustfmt size:  10661 bytes
 -//     field: Type,
 -// }
 -// ```
--pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn extract_type_alias(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if ctx.has_empty_selection() {
          return None;
      }

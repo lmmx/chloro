@@ -12,10 +12,7 @@ use syntax::{
     SyntaxNode, SyntaxToken, TextRange, TextSize, TokenAtOffset,
 };
 
-pub(crate) fn on_enter(
-    db: &RootDatabase,
-    position: FilePosition,
-) -> Option<TextEdit> {
+pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<TextEdit> {
     let editioned_file_id_wrapper =
         ide_db::base_db::EditionedFileId::current_edition(db, position.file_id);
     let parse = db.parse(editioned_file_id_wrapper);
@@ -80,10 +77,7 @@ fn on_enter_in_comment(
     Some(edit)
 }
 
-fn on_enter_in_block(
-    block: ast::BlockExpr,
-    position: FilePosition,
-) -> Option<TextEdit> {
+fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
     let contents = block_contents(&block)?;
     if block.syntax().text().contains_char('\n') {
         return None;
@@ -94,10 +88,7 @@ fn on_enter_in_block(
     Some(edit)
 }
 
-fn on_enter_in_use_tree_list(
-    list: ast::UseTreeList,
-    position: FilePosition,
-) -> Option<TextEdit> {
+fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> Option<TextEdit> {
     if list.syntax().text().contains_char('\n') {
         return None;
     }
@@ -132,10 +123,7 @@ fn followed_by_comment(comment: &ast::Comment) -> bool {
     ws.syntax().next_token().and_then(ast::Comment::cast).is_some()
 }
 
-fn node_indent(
-    file: &SourceFile,
-    token: &SyntaxToken,
-) -> Option<SmolStr> {
+fn node_indent(file: &SourceFile, token: &SyntaxToken) -> Option<SmolStr> {
     let ws = match file.syntax().token_at_offset(token.text_range().start()) {
         TokenAtOffset::Between(l, r) => {
             assert!(r == *token);

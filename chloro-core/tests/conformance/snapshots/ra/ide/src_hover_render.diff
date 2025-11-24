@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53902 bytes
+Chloro size:   53838 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -146,17 +146,6 @@ Rustfmt size:  53876 bytes
      res.markup = {
          let mut s = String::from(".., ");
          for (f, _) in &missing_fields {
-     res
- }
- 
--pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<HoverResult> {
-+pub(super) fn try_for_lint(
-+    attr: &ast::Attr,
-+    token: &SyntaxToken,
-+) -> Option<HoverResult> {
-     let (path, tt) = attr.as_simple_call()?;
-     if !tt.syntax().text_range().contains(token.text_range().start()) {
-         return None;
          }
          _ => return None,
      };
@@ -171,18 +160,6 @@ Rustfmt size:  53876 bytes
      let lint =
          lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
      Some(HoverResult {
-     Markup::from(markup)
- }
- 
--fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -> Option<String> {
-+fn definition_owner_name(
-+    db: &RootDatabase,
-+    def: Definition,
-+    edition: Edition,
-+) -> Option<String> {
-     match def {
-         Definition::Field(f) => {
-             let parent = f.parent_def(db);
          }
          _ => None,
      };
@@ -272,18 +249,6 @@ Rustfmt size:  53876 bytes
      let mut res = HoverResult::default();
      if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
          res.actions.push(actions);
-     Some(res)
- }
- 
--fn definition_path(db: &RootDatabase, &def: &Definition, edition: Edition) -> Option<String> {
-+fn definition_path(
-+    db: &RootDatabase,
-+    &def: &Definition,
-+    edition: Edition,
-+) -> Option<String> {
-     if matches!(
-         def,
-         Definition::TupleField(_)
      subst_types: String,
  ) -> (Markup, Option<DocsRangeMap>) {
      let mut buf = String::new();
@@ -355,17 +320,6 @@ Rustfmt size:  53876 bytes
      Some(label)
  }
  
- }
- 
- impl KeywordHint {
--    fn new(description: String, keyword_mod: String) -> Self {
-+    fn new(
-+        description: String,
-+        keyword_mod: String,
-+    ) -> Self {
-         Self { description, keyword_mod, actions: Vec::default() }
-     }
- }
  #[cfg(test)]
  mod tests {
      use super::*;

@@ -200,17 +200,11 @@ impl ClientCapabilities {
         fields_to_resolve != InlayFieldsToResolve::empty()
     }
 
-    fn experimental_bool(
-        &self,
-        index: &'static str,
-    ) -> bool {
+    fn experimental_bool(&self, index: &'static str) -> bool {
         || -> _ { self.0.experimental.as_ref()?.get(index)?.as_bool() }().unwrap_or_default()
     }
 
-    fn experimental<T: serde::de::DeserializeOwned>(
-        &self,
-        index: &'static str,
-    ) -> Option<T> {
+    fn experimental<T: serde::de::DeserializeOwned>(&self, index: &'static str) -> Option<T> {
         serde_json::from_value(self.0.experimental.as_ref()?.get(index)?.clone()).ok()
     }
 
@@ -294,7 +288,9 @@ impl ClientCapabilities {
         PositionEncoding::Wide(WideEncoding::Utf16)
     }
 
-    pub fn workspace_edit_resource_operations(&self) -> Option<&[lsp_types::ResourceOperationKind]> {
+    pub fn workspace_edit_resource_operations(
+        &self,
+    ) -> Option<&[lsp_types::ResourceOperationKind]> {
         self.0.workspace.as_ref()?.workspace_edit.as_ref()?.resource_operations.as_deref()
     }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13679 bytes
-Chloro size:   13817 bytes
+Chloro size:   13691 bytes
 Rustfmt size:  13851 bytes
 
 ✗ Outputs DIFFER
@@ -38,18 +38,6 @@ Rustfmt size:  13851 bytes
      }
  
      pub(crate) fn is_visible_from_other_crate(self) -> bool {
-     }
- 
-     #[tracing::instrument(skip_all)]
--    pub fn is_visible_from(self, db: &dyn DefDatabase, from_module: ModuleId) -> bool {
-+    pub fn is_visible_from(
-+        self,
-+        db: &dyn DefDatabase,
-+        from_module: ModuleId,
-+    ) -> bool {
-         let to_module = match self {
-             Visibility::Module(m, _) => m,
-             Visibility::PubCrate(krate) => return from_module.krate == krate,
          if def_map.krate() != to_module.krate {
              return false;
          }
@@ -71,30 +59,6 @@ Rustfmt size:  13851 bytes
          // from_module needs to be a descendant of to_module
          let mut def_map = def_map;
          let mut parent_arc;
-     ///
-     /// If there is no subset relation between `self` and `other`, returns `None` (ie. they're only
-     /// visible in unrelated modules).
--    pub(crate) fn max(self, other: Visibility, def_map: &DefMap) -> Option<Visibility> {
-+    pub(crate) fn max(
-+        self,
-+        other: Visibility,
-+        def_map: &DefMap,
-+    ) -> Option<Visibility> {
-         match (self, other) {
-             (_, Visibility::Public) | (Visibility::Public, _) => Some(Visibility::Public),
-             (Visibility::PubCrate(krate), Visibility::PubCrate(krateb)) => {
-     ///
-     /// If there is no subset relation between `self` and `other`, returns `None` (ie. they're only
-     /// visible in unrelated modules).
--    pub(crate) fn min(self, other: Visibility, def_map: &DefMap) -> Option<Visibility> {
-+    pub(crate) fn min(
-+        self,
-+        other: Visibility,
-+        def_map: &DefMap,
-+    ) -> Option<Visibility> {
-         match (self, other) {
-             (vis, Visibility::Public) | (Visibility::Public, vis) => Some(vis),
-             (Visibility::PubCrate(krate), Visibility::PubCrate(krateb)) => {
              }
              (Visibility::Module(mod_, exp), Visibility::PubCrate(krate))
              | (Visibility::PubCrate(krate), Visibility::Module(mod_, exp)) => {
@@ -129,36 +93,3 @@ Rustfmt size:  13851 bytes
      });
      match raw_vis {
          RawVisibility::PubSelf(explicitness) => {
- }
- 
- /// Resolve visibility of a type alias.
--pub(crate) fn assoc_visibility_query(db: &dyn DefDatabase, def: AssocItemId) -> Visibility {
-+pub(crate) fn assoc_visibility_query(
-+    db: &dyn DefDatabase,
-+    def: AssocItemId,
-+) -> Visibility {
-     match def {
-         AssocItemId::FunctionId(function_id) => {
-             let loc = function_id.lookup(db);
-     }
- }
- 
--fn trait_item_visibility(db: &dyn DefDatabase, container: ItemContainerId) -> Option<Visibility> {
-+fn trait_item_visibility(
-+    db: &dyn DefDatabase,
-+    container: ItemContainerId,
-+) -> Option<Visibility> {
-     match container {
-         ItemContainerId::TraitId(trait_) => Some(trait_visibility(db, trait_)),
-         _ => None,
-     }
- }
- 
--fn trait_visibility(db: &dyn DefDatabase, def: TraitId) -> Visibility {
-+fn trait_visibility(
-+    db: &dyn DefDatabase,
-+    def: TraitId,
-+) -> Visibility {
-     let loc = def.lookup(db);
-     let source = loc.source(db);
-     visibility_from_ast(db, def, source.map(|src| src.visibility()))

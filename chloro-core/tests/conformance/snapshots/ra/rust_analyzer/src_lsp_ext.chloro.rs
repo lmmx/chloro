@@ -651,10 +651,7 @@ pub enum Health {
 }
 
 impl ops::BitOrAssign for Health {
-    fn bitor_assign(
-        &mut self,
-        rhs: Self,
-    ) {
+    fn bitor_assign(&mut self, rhs: Self) {
         *self = match (*self, rhs) {
             (Health::Error, _) | (_, Health::Error) => Health::Error,
             (Health::Warning, _) | (_, Health::Warning) => Health::Warning,

@@ -150,10 +150,7 @@ pub struct RangeInfo<T> {
 }
 
 impl<T> RangeInfo<T> {
-    pub fn new(
-        range: TextRange,
-        info: T,
-    ) -> RangeInfo<T> {
+    pub fn new(range: TextRange, info: T) -> RangeInfo<T> {
         RangeInfo { range, info }
     }
 }
@@ -173,17 +170,11 @@ impl AnalysisHost {
         AnalysisHost { db }
     }
 
-    pub fn update_lru_capacity(
-        &mut self,
-        lru_capacity: Option<u16>,
-    ) {
+    pub fn update_lru_capacity(&mut self, lru_capacity: Option<u16>) {
         self.db.update_base_query_lru_capacities(lru_capacity);
     }
 
-    pub fn update_lru_capacities(
-        &mut self,
-        lru_capacities: &FxHashMap<Box<str>, u16>,
-    ) {
+    pub fn update_lru_capacities(&mut self, lru_capacities: &FxHashMap<Box<str>, u16>) {
         self.db.update_lru_capacities(lru_capacities);
     }
 
@@ -195,10 +186,7 @@ impl AnalysisHost {
 
     /// Applies changes to the current state of the world. If there are
     /// outstanding snapshots, they will be canceled.
-    pub fn apply_change(
-        &mut self,
-        change: ChangeWithProcMacros,
-    ) {
+    pub fn apply_change(&mut self, change: ChangeWithProcMacros) {
         self.db.apply_change(change);
     }
 
@@ -299,53 +287,34 @@ impl Analysis {
     }
 
     /// Debug info about the current state of the analysis.
-    pub fn status(
-        &self,
-        file_id: Option<FileId>,
-    ) -> Cancellable<String> {
+    pub fn status(&self, file_id: Option<FileId>) -> Cancellable<String> {
         self.with_db(|db| status::status(db, file_id))
     }
 
-    pub fn source_root_id(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<SourceRootId> {
+    pub fn source_root_id(&self, file_id: FileId) -> Cancellable<SourceRootId> {
         self.with_db(|db| db.file_source_root(file_id).source_root_id(db))
     }
 
-    pub fn is_local_source_root(
-        &self,
-        source_root_id: SourceRootId,
-    ) -> Cancellable<bool> {
+    pub fn is_local_source_root(&self, source_root_id: SourceRootId) -> Cancellable<bool> {
         self.with_db(|db| {
             let sr = db.source_root(source_root_id).source_root(db);
             !sr.is_library
         })
     }
 
-    pub fn parallel_prime_caches<F>(
-        &self,
-        num_worker_threads: usize,
-        cb: F,
-    ) -> Cancellable<()>
+    pub fn parallel_prime_caches<F>(&self, num_worker_threads: usize, cb: F) -> Cancellable<()>
     where
         F: Fn(ParallelPrimeCachesProgress) + Sync + std::panic::UnwindSafe, {
         self.with_db(move |db| prime_caches::parallel_prime_caches(db, num_worker_threads, &cb))
     }
 
     /// Gets the text of the source file.
-    pub fn file_text(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Arc<str>> {
+    pub fn file_text(&self, file_id: FileId) -> Cancellable<Arc<str>> {
         self.with_db(|db| SourceDatabase::file_text(db, file_id).text(db).clone())
     }
 
     /// Gets the syntax tree of the file.
-    pub fn parse(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<SourceFile> {
+    pub fn parse(&self, file_id: FileId) -> Cancellable<SourceFile> {
         // FIXME edition
         self.with_db(|db| {
             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
@@ -355,10 +324,7 @@ impl Analysis {
     }
 
     /// Returns true if this file belongs to an immutable library.
-    pub fn is_library_file(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<bool> {
+    pub fn is_library_file(&self, file_id: FileId) -> Cancellable<bool> {
         self.with_db(|db| {
             let source_root = db.file_source_root(file_id).source_root_id(db);
             db.source_root(source_root).source_root(db).is_library
@@ -367,27 +333,18 @@ impl Analysis {
 
     /// Gets the file's `LineIndex`: data structure to convert between absolute
     /// offsets and line/column representation.
-    pub fn file_line_index(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Arc<LineIndex>> {
+    pub fn file_line_index(&self, file_id: FileId) -> Cancellable<Arc<LineIndex>> {
         self.with_db(|db| db.line_index(file_id))
     }
 
     /// Selects the next syntactic nodes encompassing the range.
-    pub fn extend_selection(
-        &self,
-        frange: FileRange,
-    ) -> Cancellable<TextRange> {
+    pub fn extend_selection(&self, frange: FileRange) -> Cancellable<TextRange> {
         self.with_db(|db| extend_selection::extend_selection(db, frange))
     }
 
     /// Returns position of the matching brace (all types of braces are
     /// supported).
-    pub fn matching_brace(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Option<TextSize>> {
+    pub fn matching_brace(&self, position: FilePosition) -> Cancellable<Option<TextSize>> {
         self.with_db(|db| {
             let file_id = EditionedFileId::current_edition(&self.db, position.file_id);
             let parse = db.parse(file_id);
@@ -396,38 +353,23 @@ impl Analysis {
         })
     }
 
-    pub fn view_syntax_tree(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<String> {
+    pub fn view_syntax_tree(&self, file_id: FileId) -> Cancellable<String> {
         self.with_db(|db| view_syntax_tree::view_syntax_tree(db, file_id))
     }
 
-    pub fn view_hir(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<String> {
+    pub fn view_hir(&self, position: FilePosition) -> Cancellable<String> {
         self.with_db(|db| view_hir::view_hir(db, position))
     }
 
-    pub fn view_mir(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<String> {
+    pub fn view_mir(&self, position: FilePosition) -> Cancellable<String> {
         self.with_db(|db| view_mir::view_mir(db, position))
     }
 
-    pub fn interpret_function(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<String> {
+    pub fn interpret_function(&self, position: FilePosition) -> Cancellable<String> {
         self.with_db(|db| interpret::interpret(db, position))
     }
 
-    pub fn view_item_tree(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<String> {
+    pub fn view_item_tree(&self, file_id: FileId) -> Cancellable<String> {
         self.with_db(|db| view_item_tree::view_item_tree(db, file_id))
     }
 
@@ -442,25 +384,16 @@ impl Analysis {
         self.with_db(|db| test_explorer::discover_tests_in_crate_by_test_id(db, crate_id))
     }
 
-    pub fn discover_tests_in_crate(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<Vec<TestItem>> {
+    pub fn discover_tests_in_crate(&self, crate_id: Crate) -> Cancellable<Vec<TestItem>> {
         self.with_db(|db| test_explorer::discover_tests_in_crate(db, crate_id))
     }
 
-    pub fn discover_tests_in_file(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Vec<TestItem>> {
+    pub fn discover_tests_in_file(&self, file_id: FileId) -> Cancellable<Vec<TestItem>> {
         self.with_db(|db| test_explorer::discover_tests_in_file(db, file_id))
     }
 
     /// Renders the crate graph to GraphViz "dot" syntax.
-    pub fn view_crate_graph(
-        &self,
-        full: bool,
-    ) -> Cancellable<Result<String, String>> {
+    pub fn view_crate_graph(&self, full: bool) -> Cancellable<Result<String, String>> {
         self.with_db(|db| view_crate_graph::view_crate_graph(db, full))
     }
 
@@ -468,10 +401,7 @@ impl Analysis {
         self.with_db(fetch_crates::fetch_crates)
     }
 
-    pub fn expand_macro(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Option<ExpandedMacro>> {
+    pub fn expand_macro(&self, position: FilePosition) -> Cancellable<Option<ExpandedMacro>> {
         self.with_db(|db| expand_macro::expand_macro(db, position))
     }
 
@@ -493,10 +423,7 @@ impl Analysis {
     /// Returns an edit which should be applied when opening a new line, fixing
     /// up minor stuff like continuing the comment.
     /// The edit will be a snippet (with `$0`).
-    pub fn on_enter(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Option<TextEdit>> {
+    pub fn on_enter(&self, position: FilePosition) -> Cancellable<Option<TextEdit>> {
         self.with_db(|db| typing::on_enter(db, position))
     }
 
@@ -557,10 +484,7 @@ impl Analysis {
     }
 
     /// Returns the set of folding ranges.
-    pub fn folding_ranges(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Vec<Fold>> {
+    pub fn folding_ranges(&self, file_id: FileId) -> Cancellable<Vec<Fold>> {
         self.with_db(|db| {
             let editioned_file_id_wrapper = EditionedFileId::current_edition(&self.db, file_id);
 
@@ -569,11 +493,7 @@ impl Analysis {
     }
 
     /// Fuzzy searches for a symbol.
-    pub fn symbol_search(
-        &self,
-        query: Query,
-        limit: usize,
-    ) -> Cancellable<Vec<NavigationTarget>> {
+    pub fn symbol_search(&self, query: Query, limit: usize) -> Cancellable<Vec<NavigationTarget>> {
         // `world_symbols` currently clones the database to run stuff in parallel, which will make any query panic
         // if we were to attach it here.
         Cancelled::catch(|| {
@@ -666,10 +586,7 @@ impl Analysis {
     }
 
     /// Computes parameter information at the given position.
-    pub fn signature_help(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Option<SignatureHelp>> {
+    pub fn signature_help(&self, position: FilePosition) -> Cancellable<Option<SignatureHelp>> {
         self.with_db(|db| signature_help::signature_help(db, position))
     }
 
@@ -701,82 +618,52 @@ impl Analysis {
     }
 
     /// Returns a `mod name;` declaration which created the current module.
-    pub fn parent_module(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Vec<NavigationTarget>> {
+    pub fn parent_module(&self, position: FilePosition) -> Cancellable<Vec<NavigationTarget>> {
         self.with_db(|db| parent_module::parent_module(db, position))
     }
 
     /// Returns vec of `mod name;` declaration which are created by the current module.
-    pub fn child_modules(
-        &self,
-        position: FilePosition,
-    ) -> Cancellable<Vec<NavigationTarget>> {
+    pub fn child_modules(&self, position: FilePosition) -> Cancellable<Vec<NavigationTarget>> {
         self.with_db(|db| child_modules::child_modules(db, position))
     }
 
     /// Returns crates that this file belongs to.
-    pub fn crates_for(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Vec<Crate>> {
+    pub fn crates_for(&self, file_id: FileId) -> Cancellable<Vec<Crate>> {
         self.with_db(|db| parent_module::crates_for(db, file_id))
     }
 
     /// Returns crates that this file belongs to.
-    pub fn transitive_rev_deps(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<Vec<Crate>> {
+    pub fn transitive_rev_deps(&self, crate_id: Crate) -> Cancellable<Vec<Crate>> {
         self.with_db(|db| Vec::from_iter(db.transitive_rev_deps(crate_id)))
     }
 
     /// Returns crates that this file *might* belong to.
-    pub fn relevant_crates_for(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Vec<Crate>> {
+    pub fn relevant_crates_for(&self, file_id: FileId) -> Cancellable<Vec<Crate>> {
         self.with_db(|db| db.relevant_crates(file_id).iter().copied().collect())
     }
 
     /// Returns the edition of the given crate.
-    pub fn crate_edition(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<Edition> {
+    pub fn crate_edition(&self, crate_id: Crate) -> Cancellable<Edition> {
         self.with_db(|db| crate_id.data(db).edition)
     }
 
     /// Returns whether the given crate is a proc macro.
-    pub fn is_proc_macro_crate(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<bool> {
+    pub fn is_proc_macro_crate(&self, crate_id: Crate) -> Cancellable<bool> {
         self.with_db(|db| crate_id.data(db).is_proc_macro)
     }
 
     /// Returns true if this crate has `no_std` or `no_core` specified.
-    pub fn is_crate_no_std(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<bool> {
+    pub fn is_crate_no_std(&self, crate_id: Crate) -> Cancellable<bool> {
         self.with_db(|db| crate_def_map(db, crate_id).is_no_std())
     }
 
     /// Returns the root file of the given crate.
-    pub fn crate_root(
-        &self,
-        crate_id: Crate,
-    ) -> Cancellable<FileId> {
+    pub fn crate_root(&self, crate_id: Crate) -> Cancellable<FileId> {
         self.with_db(|db| crate_id.data(db).root_file_id)
     }
 
     /// Returns the set of possible targets to run for the current file.
-    pub fn runnables(
-        &self,
-        file_id: FileId,
-    ) -> Cancellable<Vec<Runnable>> {
+    pub fn runnables(&self, file_id: FileId) -> Cancellable<Vec<Runnable>> {
         self.with_db(|db| runnables::runnables(db, file_id))
     }
 
@@ -842,11 +729,7 @@ impl Analysis {
     }
 
     /// Computes syntax highlighting for the given file.
-    pub fn highlight_as_html(
-        &self,
-        file_id: FileId,
-        rainbow: bool,
-    ) -> Cancellable<String> {
+    pub fn highlight_as_html(&self, file_id: FileId, rainbow: bool) -> Cancellable<String> {
         self.with_db(|db| syntax_highlighting::highlight_as_html(db, file_id, rainbow))
     }
 
@@ -1008,10 +891,7 @@ impl Analysis {
         self.with_db(|db| view_memory_layout(db, position))
     }
 
-    pub fn editioned_file_id_to_vfs(
-        &self,
-        file_id: hir::EditionedFileId,
-    ) -> FileId {
+    pub fn editioned_file_id_to_vfs(&self, file_id: hir::EditionedFileId) -> FileId {
         file_id.file_id(&self.db)
     }
 
@@ -1028,10 +908,7 @@ impl Analysis {
     ///
     /// Salsa implements cancellation by unwinding with a special value and
     /// catching it on the API boundary.
-    fn with_db<F, T>(
-        &self,
-        f: F,
-    ) -> Cancellable<T>
+    fn with_db<F, T>(&self, f: F) -> Cancellable<T>
     where
         F: FnOnce(&RootDatabase) -> T + std::panic::UnwindSafe, {
         // We use `attach_db_allow_change()` and not `attach_db()` because fixture injection can change the database.

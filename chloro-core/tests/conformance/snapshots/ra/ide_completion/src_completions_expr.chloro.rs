@@ -22,20 +22,14 @@ struct PathCallback<'a, F> {
 impl<F> PathCandidateCallback for PathCallback<'_, F>
 where
     F: FnMut(&mut Completions, hir::AssocItem), {
-    fn on_inherent_item(
-        &mut self,
-        item: hir::AssocItem,
-    ) -> ControlFlow<()> {
+    fn on_inherent_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
         if self.seen.insert(item) {
             (self.add_assoc_item)(self.acc, item);
         }
         ControlFlow::Continue(())
     }
 
-    fn on_trait_item(
-        &mut self,
-        item: hir::AssocItem,
-    ) -> ControlFlow<()> {
+    fn on_trait_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
         // The excluded check needs to come before the `seen` test, so that if we see the same method twice,
         // once as inherent and once not, we will include it.
         if item.container_trait(self.ctx.db).is_none_or(|trait_| {
@@ -450,10 +444,7 @@ pub(crate) fn complete_expr_path(
     }
 }
 
-pub(crate) fn complete_expr(
-    acc: &mut Completions,
-    ctx: &CompletionContext<'_>,
-) {
+pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let _p = tracing::info_span!("complete_expr").entered();
     if !ctx.config.enable_term_search {
         return;

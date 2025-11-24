@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9578 bytes
-Chloro size:   9529 bytes
+Chloro size:   9506 bytes
 Rustfmt size:  9883 bytes
 
 ✗ Outputs DIFFER
@@ -59,15 +59,10 @@ Rustfmt size:  9883 bytes
      use super::*;
 -    use expect_test::{expect, Expect};
 -
--    fn check(input: &str, expect: &Expect) {
 +    use expect_test::{Expect, expect};
-+    fn check(
-+        input: &str,
-+        expect: &Expect,
-+    ) {
+     fn check(input: &str, expect: &Expect) {
          let (output, exprs) = parse_format_exprs(input).unwrap_or(("-".to_owned(), vec![]));
          let outcome_repr = if !exprs.is_empty() {
-             format!("{output}; {}", with_placeholders(exprs).join(", "))
          } else {
              output
          };

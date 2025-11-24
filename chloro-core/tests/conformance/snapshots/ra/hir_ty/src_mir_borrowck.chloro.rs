@@ -116,7 +116,9 @@ pub fn borrowck_query<'db>(
     Ok(res.into())
 }
 
-fn make_fetch_closure_field<'db>(db: &'db dyn HirDatabase) -> impl FnOnce(InternedClosureId, GenericArgs<'db>, usize) -> Ty<'db> + use<'db> {
+fn make_fetch_closure_field<'db>(
+    db: &'db dyn HirDatabase,
+) -> impl FnOnce(InternedClosureId, GenericArgs<'db>, usize) -> Ty<'db> + use<'db> {
     |c: InternedClosureId, subst: GenericArgs<'db>, f: usize| {
         let InternedClosure(def, _) = db.lookup_intern_closure(c);
         let infer = db.infer(def);
@@ -320,10 +322,7 @@ fn partially_moved<'db>(
     result
 }
 
-fn borrow_regions<'db>(
-    db: &'db dyn HirDatabase,
-    body: &MirBody<'db>,
-) -> Vec<BorrowRegion<'db>> {
+fn borrow_regions<'db>(db: &'db dyn HirDatabase, body: &MirBody<'db>) -> Vec<BorrowRegion<'db>> {
     let mut borrows = FxHashMap::default();
     for (_, block) in body.basic_blocks.iter() {
         db.unwind_if_revision_cancelled();
@@ -518,10 +517,7 @@ fn push_mut_span<'db>(
     };
 }
 
-fn record_usage<'db>(
-    local: LocalId<'db>,
-    result: &mut ArenaMap<LocalId<'db>, MutabilityReason>,
-) {
+fn record_usage<'db>(local: LocalId<'db>, result: &mut ArenaMap<LocalId<'db>, MutabilityReason>) {
     if let it @ MutabilityReason::Unused = &mut result[local] {
         *it = MutabilityReason::Not;
     };

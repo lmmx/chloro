@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52466 bytes
+Chloro size:   52421 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -45,14 +45,9 @@ Rustfmt size:  53059 bytes
 -// fn foo() -> Result<i32, ${0:_}> { Ok(42i32) }
 -// ```
 -
--pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn wrap_return_type(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
      let parent = ret_type.syntax().parent()?;
-     let body_expr = match_ast! {
              _ => return None,
          }
      };
@@ -79,17 +74,6 @@ Rustfmt size:  53059 bytes
          AssistId::refactor_rewrite(s)
      }
  
-         }
-     }
- 
--    fn core_type(&self, famous_defs: &FamousDefs<'_, '_>) -> Option<hir::Enum> {
-+    fn core_type(
-+        &self,
-+        famous_defs: &FamousDefs<'_, '_>,
-+    ) -> Option<hir::Enum> {
-         match self {
-             WrapperKind::Option => famous_defs.core_option_Option(),
-             WrapperKind::Result => famous_defs.core_result_Result(),
      }
  }
  
@@ -104,17 +88,6 @@ Rustfmt size:  53059 bytes
      ctx.sema.resolve_mod_path(ast_ret_type.syntax(), &wrapper_path).and_then(|def| {
          def.filter_map(|def| match def.into_module_def() {
              hir::ModuleDef::TypeAlias(alias) => {
-     })
- }
- 
--fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
-+fn tail_cb_impl(
-+    acc: &mut Vec<ast::Expr>,
-+    e: &ast::Expr,
-+) {
-     match e {
-         Expr::BreakExpr(break_expr) => {
-             if let Some(break_expr_arg) = break_expr.expr() {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};

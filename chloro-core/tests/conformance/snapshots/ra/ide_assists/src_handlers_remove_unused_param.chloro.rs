@@ -13,10 +13,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn remove_unused_param(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
     let ident_pat = match param.pat()? {
         ast::Pat::IdentPat(it) => it,

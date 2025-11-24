@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   30914 bytes
+Chloro size:   30895 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -22,13 +22,7 @@ Rustfmt size:  32290 bytes
  };
  
  macro_rules! register_builtin {
-     }
- }
- 
--pub fn find_builtin_macro(
--    ident: &name::Name,
--) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
-+pub fn find_builtin_macro(ident: &name::Name) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
+ ) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
      find_by_name(ident)
  }
 -
@@ -163,15 +157,6 @@ Rustfmt size:  32290 bytes
      ExpandResult::ok(call)
  }
  
- #[allow(clippy::never_loop)]
--fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
-+fn use_panic_2021(
-+    db: &dyn ExpandDatabase,
-+    span: Span,
-+) -> bool {
-     // To determine the edition, we check the first span up the expansion
-     // stack that does not have #[allow_internal_unstable(edition_panic)].
-     // (To avoid using the edition of e.g. the assert!() or debug_assert!() definition.)
          ] => ExpandError::other(span, Box::from(unescape_symbol(text).as_str())),
          _ => ExpandError::other(span, "`compile_error!` argument must be a string"),
      };
@@ -203,15 +188,6 @@ Rustfmt size:  32290 bytes
      ExpandResult::ok(quote!(call_site =>#text))
  }
  
--fn get_env_inner(db: &dyn ExpandDatabase, arg_id: MacroCallId, key: &Symbol) -> Option<String> {
-+fn get_env_inner(
-+    db: &dyn ExpandDatabase,
-+    arg_id: MacroCallId,
-+    key: &Symbol,
-+) -> Option<String> {
-     let krate = db.lookup_intern_macro_call(arg_id).krate;
-     krate.env(db).get(key.as_str())
- }
              );
          }
      };

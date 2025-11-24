@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8964 bytes
-Chloro size:   8762 bytes
+Chloro size:   8751 bytes
 Rustfmt size:  9394 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,7 @@ Rustfmt size:  9394 bytes
 -//     _ = 2 + 2;
 -// }
 -// ```
--pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn remove_parentheses(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
 -
 -    let cursor_in_range = parens

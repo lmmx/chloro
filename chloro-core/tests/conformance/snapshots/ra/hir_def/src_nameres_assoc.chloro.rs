@@ -40,10 +40,7 @@ pub struct TraitItems {
 #[salsa::tracked]
 impl TraitItems {
     #[inline]
-    pub(crate) fn query(
-        db: &dyn DefDatabase,
-        tr: TraitId,
-    ) -> &TraitItems {
+    pub(crate) fn query(db: &dyn DefDatabase, tr: TraitId) -> &TraitItems {
         &Self::query_with_diagnostics(db, tr).0
     }
 
@@ -75,30 +72,21 @@ impl TraitItems {
         })
     }
 
-    pub fn associated_type_by_name(
-        &self,
-        name: &Name,
-    ) -> Option<TypeAliasId> {
+    pub fn associated_type_by_name(&self, name: &Name) -> Option<TypeAliasId> {
         self.items.iter().find_map(|(item_name, item)| match item {
             AssocItemId::TypeAliasId(t) if item_name == name => Some(*t),
             _ => None,
         })
     }
 
-    pub fn method_by_name(
-        &self,
-        name: &Name,
-    ) -> Option<FunctionId> {
+    pub fn method_by_name(&self, name: &Name) -> Option<FunctionId> {
         self.items.iter().find_map(|(item_name, item)| match item {
             AssocItemId::FunctionId(t) if item_name == name => Some(*t),
             _ => None,
         })
     }
 
-    pub fn assoc_item_by_name(
-        &self,
-        name: &Name,
-    ) -> Option<AssocItemId> {
+    pub fn assoc_item_by_name(&self, name: &Name) -> Option<AssocItemId> {
         self.items.iter().find_map(|&(ref item_name, item)| match item {
             AssocItemId::FunctionId(_) if item_name == name => Some(item),
             AssocItemId::TypeAliasId(_) if item_name == name => Some(item),
@@ -121,10 +109,7 @@ pub struct ImplItems {
 #[salsa::tracked]
 impl ImplItems {
     #[salsa::tracked(returns(ref))]
-    pub fn of(
-        db: &dyn DefDatabase,
-        id: ImplId,
-    ) -> (ImplItems, DefDiagnostics) {
+    pub fn of(db: &dyn DefDatabase, id: ImplId) -> (ImplItems, DefDiagnostics) {
         let _p = tracing::info_span!("impl_items_with_diagnostics_query").entered();
         let ItemLoc { container: module_id, id: ast_id } = id.lookup(db);
         let collector =
@@ -196,10 +181,7 @@ impl<'a> AssocItemCollector<'a> {
         (self.items.into_boxed_slice(), self.macro_calls, self.diagnostics)
     }
 
-    fn collect_item(
-        &mut self,
-        item: ast::AssocItem,
-    ) {
+    fn collect_item(&mut self, item: ast::AssocItem) {
         let ast_id = self.ast_id_map.ast_id(&item);
         let attrs = Attrs::new(self.db, &item, self.span_map.as_ref(), self.cfg_options);
         if let Err(cfg) = attrs.is_cfg_enabled(self.cfg_options) {
@@ -258,10 +240,7 @@ impl<'a> AssocItemCollector<'a> {
         self.record_item(item);
     }
 
-    fn record_item(
-        &mut self,
-        item: ast::AssocItem,
-    ) {
+    fn record_item(&mut self, item: ast::AssocItem) {
         match item {
             ast::AssocItem::Fn(function) => {
                 let Some(name) = function.name() else { return };
@@ -354,10 +333,7 @@ impl<'a> AssocItemCollector<'a> {
         }
     }
 
-    fn collect_macro_items(
-        &mut self,
-        macro_call_id: MacroCallId,
-    ) {
+    fn collect_macro_items(&mut self, macro_call_id: MacroCallId) {
         if self.depth > self.def_map.recursion_limit() as usize {
             tracing::warn!("macro expansion is too deep");
             return;

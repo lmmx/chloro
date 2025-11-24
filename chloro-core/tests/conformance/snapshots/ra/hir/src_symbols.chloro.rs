@@ -48,10 +48,7 @@ pub struct DeclarationLocation {
 }
 
 impl DeclarationLocation {
-    pub fn syntax<DB: HirDatabase>(
-        &self,
-        sema: &Semantics<'_, DB>,
-    ) -> SyntaxNode {
+    pub fn syntax<DB: HirDatabase>(&self, sema: &Semantics<'_, DB>) -> SyntaxNode {
         let root = sema.parse_or_expand(self.hir_file_id);
         self.ptr.to_node(&root)
     }
@@ -75,10 +72,7 @@ pub struct SymbolCollector<'a> {
 /// Given a [`ModuleId`] and a [`HirDatabase`], use the DefMap for the module's crate to collect
 /// all symbols that should be indexed for the given module.
 impl<'a> SymbolCollector<'a> {
-    pub fn new(
-        db: &'a dyn HirDatabase,
-        collect_pub_only: bool,
-    ) -> Self {
+    pub fn new(db: &'a dyn HirDatabase, collect_pub_only: bool) -> Self {
         SymbolCollector {
             db,
             symbols: Default::default(),
@@ -98,10 +92,7 @@ impl<'a> SymbolCollector<'a> {
         symbol_collector.finish()
     }
 
-    pub fn collect(
-        &mut self,
-        module: Module,
-    ) {
+    pub fn collect(&mut self, module: Module) {
         let _p = tracing::info_span!("SymbolCollector::collect", ?module).entered();
         tracing::info!(?module, "SymbolCollector::collect");
         // The initial work is the root module we're collecting, additional work will
@@ -116,10 +107,7 @@ impl<'a> SymbolCollector<'a> {
         self.symbols.into_iter().collect()
     }
 
-    fn do_work(
-        &mut self,
-        work: SymbolCollectorWork,
-    ) {
+    fn do_work(&mut self, work: SymbolCollectorWork) {
         let _p = tracing::info_span!("SymbolCollector::do_work", ?work).entered();
         tracing::info!(?work, "SymbolCollector::do_work");
         self.db.unwind_if_revision_cancelled();
@@ -127,10 +115,7 @@ impl<'a> SymbolCollector<'a> {
         self.with_container_name(parent_name, |s| s.collect_from_module(work.module_id));
     }
 
-    fn collect_from_module(
-        &mut self,
-        module_id: ModuleId,
-    ) {
+    fn collect_from_module(&mut self, module_id: ModuleId) {
         let collect_pub_only = self.collect_pub_only;
         let push_decl = |this: &mut Self, def: ModuleDefId, name, vis| {
             if collect_pub_only && vis != Visibility::Public {
@@ -320,11 +305,7 @@ impl<'a> SymbolCollector<'a> {
         }
     }
 
-    fn collect_from_body(
-        &mut self,
-        body_id: impl Into<DefWithBodyId>,
-        name: Option<Name>,
-    ) {
+    fn collect_from_body(&mut self, body_id: impl Into<DefWithBodyId>, name: Option<Name>) {
         if self.collect_pub_only {
             return;
         }
@@ -341,10 +322,7 @@ impl<'a> SymbolCollector<'a> {
         }
     }
 
-    fn collect_from_impl(
-        &mut self,
-        impl_id: ImplId,
-    ) {
+    fn collect_from_impl(&mut self, impl_id: ImplId) {
         let impl_data = self.db.impl_signature(impl_id);
         let impl_name = Some(
             hir_display_with_store(impl_data.self_ty, &impl_data.store)
@@ -366,11 +344,7 @@ impl<'a> SymbolCollector<'a> {
         })
     }
 
-    fn collect_from_trait(
-        &mut self,
-        trait_id: TraitId,
-        trait_do_not_complete: Complete,
-    ) {
+    fn collect_from_trait(&mut self, trait_id: TraitId, trait_do_not_complete: Complete) {
         let trait_data = self.db.trait_signature(trait_id);
         self.with_container_name(Some(Symbol::intern(trait_data.name.as_str())), |s| {
             for &(ref name, assoc_item_id) in &trait_id.trait_items(self.db).items {
@@ -379,11 +353,7 @@ impl<'a> SymbolCollector<'a> {
         });
     }
 
-    fn with_container_name(
-        &mut self,
-        container_name: Option<Symbol>,
-        f: impl FnOnce(&mut Self),
-    ) {
+    fn with_container_name(&mut self, container_name: Option<Symbol>, f: impl FnOnce(&mut Self)) {
         if let Some(container_name) = container_name {
             let prev = self.current_container_name.replace(container_name);
             f(self);
@@ -459,11 +429,7 @@ impl<'a> SymbolCollector<'a> {
         do_not_complete
     }
 
-    fn push_module(
-        &mut self,
-        module_id: ModuleId,
-        name: &Name,
-    ) {
+    fn push_module(&mut self, module_id: ModuleId, name: &Name) {
         let def_map = module_id.def_map(self.db);
         let module_data = &def_map[module_id.local_id];
         let Some(declaration) = module_data.origin.declaration() else { return };

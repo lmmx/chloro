@@ -2,10 +2,7 @@ use syntax::{AstNode, T, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn split_import(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let colon_colon = ctx.find_token_syntax_at_offset(T![::])?;
     let path = ast::Path::cast(colon_colon.parent()?)?.qualifier()?;
     let use_tree = path.top_path().syntax().ancestors().find_map(ast::UseTree::cast)?;

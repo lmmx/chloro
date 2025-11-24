@@ -30,10 +30,7 @@ use crate::{
     },
 };
 
-pub(crate) fn variances_of(
-    db: &dyn HirDatabase,
-    def: GenericDefId,
-) -> VariancesOf<'_> {
+pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> VariancesOf<'_> {
     tracing::debug!("variances_of(def={:?})", def);
     let interner = DbInterner::new_with(db, None, None);
     match def {
@@ -74,10 +71,7 @@ pub(crate) fn variances_of(
     VariancesOf::new_from_iter(interner, variances)
 }
 
-fn glb(
-    v1: Variance,
-    v2: Variance,
-) -> Variance {
+fn glb(v1: Variance, v2: Variance) -> Variance {
     // Greatest lower bound of the variance lattice as defined in The Paper:
     //
     //       *
@@ -166,11 +160,7 @@ impl<'db> Context<'db> {
     /// Adds constraints appropriate for an instance of `ty` appearing
     /// in a context with the generics defined in `generics` and
     /// ambient variance `variance`
-    fn add_constraints_from_ty(
-        &mut self,
-        ty: Ty<'db>,
-        variance: Variance,
-    ) {
+    fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {
         tracing::debug!("add_constraints_from_ty(ty={:?}, variance={:?})", ty, variance);
         match ty.kind() {
             TyKind::Int(_)
@@ -258,10 +248,7 @@ impl<'db> Context<'db> {
         }
     }
 
-    fn add_constraints_from_invariant_args(
-        &mut self,
-        args: GenericArgs<'db>,
-    ) {
+    fn add_constraints_from_invariant_args(&mut self, args: GenericArgs<'db>) {
         for k in args.iter() {
             match k {
                 GenericArg::Lifetime(lt) => {
@@ -296,10 +283,7 @@ impl<'db> Context<'db> {
 
     /// Adds constraints appropriate for a const expression `val`
     /// in a context with ambient variance `variance`
-    fn add_constraints_from_const(
-        &mut self,
-        c: Const<'db>,
-    ) {
+    fn add_constraints_from_const(&mut self, c: Const<'db>) {
         match c.kind() {
             ConstKind::Unevaluated(c) => self.add_constraints_from_invariant_args(c.args),
             _ => {}
@@ -325,11 +309,7 @@ impl<'db> Context<'db> {
 
     /// Adds constraints appropriate for a region appearing in a
     /// context with ambient variance `variance`
-    fn add_constraints_from_region(
-        &mut self,
-        region: Region<'db>,
-        variance: Variance,
-    ) {
+    fn add_constraints_from_region(&mut self, region: Region<'db>, variance: Variance) {
         tracing::debug!(
             "add_constraints_from_region(region={:?}, variance={:?})",
             region,
@@ -362,12 +342,7 @@ impl<'db> Context<'db> {
 
     /// Adds constraints appropriate for a mutability-type pair
     /// appearing in a context with ambient variance `variance`
-    fn add_constraints_from_mt(
-        &mut self,
-        ty: Ty<'db>,
-        mt: Mutability,
-        variance: Variance,
-    ) {
+    fn add_constraints_from_mt(&mut self, ty: Ty<'db>, mt: Mutability, variance: Variance) {
         self.add_constraints_from_ty(
             ty,
             match mt {
@@ -377,11 +352,7 @@ impl<'db> Context<'db> {
         );
     }
 
-    fn constrain(
-        &mut self,
-        index: usize,
-        variance: Variance,
-    ) {
+    fn constrain(&mut self, index: usize, variance: Variance) {
         tracing::debug!(
             "constrain(index={:?}, variance={:?}, to={:?})",
             index,
@@ -852,10 +823,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
         );
     }
     #[track_caller]
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expected: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: Expect) {
         // use tracing_subscriber::{layer::SubscriberExt, Layer};
         // let my_layer = tracing_subscriber::fmt::layer();
         // let _g = tracing::subscriber::set_default(tracing_subscriber::registry().with(

@@ -10,10 +10,7 @@ use crate::{
     AssistContext, AssistId, Assists, GroupLabel,
 };
 
-pub(crate) fn generate_setter(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // This if condition denotes two modes this assist can work in:
     // - First is acting upon selection of record fields
     // - Next is acting upon a single record field
@@ -45,17 +42,11 @@ pub(crate) fn generate_setter(
     Some(())
 }
 
-pub(crate) fn generate_getter(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_getter_impl(acc, ctx, false)
 }
 
-pub(crate) fn generate_getter_mut(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_getter_impl(acc, ctx, true)
 }
 
@@ -179,10 +170,7 @@ fn generate_getter_from_info(
     )
 }
 
-fn generate_setter_from_info(
-    info: &AssistInfo,
-    record_field_info: &RecordFieldInfo,
-) -> ast::Fn {
+fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
     let strukt = &info.strukt;
     let field_name = &record_field_info.fn_name;
     let fn_name = make::name(&format!("set_{field_name}"));

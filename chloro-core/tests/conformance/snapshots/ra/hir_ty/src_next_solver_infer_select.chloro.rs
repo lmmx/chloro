@@ -219,10 +219,7 @@ impl<'db, N> ImplSource<'db, N> {
         }
     }
 
-    pub(crate) fn map<M, F>(
-        self,
-        f: F,
-    ) -> ImplSource<'db, M>
+    pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
     where
         F: FnMut(N) -> M, {
         match self {
@@ -280,10 +277,7 @@ struct Select {
 impl<'db> ProofTreeVisitor<'db> for Select {
     type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
 
-    fn visit_goal(
-        &mut self,
-        goal: &InspectGoal<'_, 'db>,
-    ) -> Self::Result {
+    fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
         let mut candidates = goal.candidates();
         candidates.retain(|cand| cand.result().is_ok());
         // No candidates -- not implemented.

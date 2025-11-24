@@ -7,10 +7,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn extract_type_alias(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;
     }

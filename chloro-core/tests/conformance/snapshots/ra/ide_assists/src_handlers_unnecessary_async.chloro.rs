@@ -12,10 +12,7 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn unnecessary_async(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let function: ast::Fn = ctx.find_node_at_offset()?;
     // Do nothing if the cursor isn't on the async token.
     let async_token = function.async_token()?;
@@ -85,10 +82,7 @@ fn find_all_references(
 
 /// Finds the await expression for the given `NameRef`.
 /// If no await expression is found, returns None.
-fn find_await_expression(
-    ctx: &AssistContext<'_>,
-    nameref: &NameRef,
-) -> Option<ast::AwaitExpr> {
+fn find_await_expression(ctx: &AssistContext<'_>, nameref: &NameRef) -> Option<ast::AwaitExpr> {
     // From the nameref, walk up the tree to the await expression.
     let await_expr = if let Some(path) = full_path_of_name_ref(nameref) {
         // Function calls.

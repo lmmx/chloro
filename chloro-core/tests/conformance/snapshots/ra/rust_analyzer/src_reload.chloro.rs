@@ -87,10 +87,7 @@ impl GlobalState {
         self.is_quiescent() && !self.prime_caches_queue.op_in_progress()
     }
 
-    pub(crate) fn update_configuration(
-        &mut self,
-        config: Config,
-    ) {
+    pub(crate) fn update_configuration(&mut self, config: Config) {
         let _p = tracing::info_span!("GlobalState::update_configuration").entered();
         let old_config = mem::replace(&mut self.config, Arc::new(config));
         if self.config.lru_parse_query_capacity() != old_config.lru_parse_query_capacity() {
@@ -376,10 +373,7 @@ impl GlobalState {
         });
     }
 
-    pub(crate) fn fetch_build_data(
-        &mut self,
-        cause: Cause,
-    ) {
+    pub(crate) fn fetch_build_data(&mut self, cause: Cause) {
         info!(%cause, "will fetch build data");
         let workspaces = Arc::clone(&self.workspaces);
         let config = self.config.cargo(None);
@@ -459,10 +453,7 @@ impl GlobalState {
         });
     }
 
-    pub(crate) fn switch_workspaces(
-        &mut self,
-        cause: Cause,
-    ) {
+    pub(crate) fn switch_workspaces(&mut self, cause: Cause) {
         let _p = tracing::info_span!("GlobalState::switch_workspaces").entered();
         tracing::info!(%cause, "will switch workspaces");
         let Some(FetchWorkspaceResponse { workspaces, force_crate_graph_reload }) =
@@ -715,11 +706,7 @@ impl GlobalState {
         info!("did switch workspaces");
     }
 
-    fn recreate_crate_graph(
-        &mut self,
-        cause: String,
-        initial_build: bool,
-    ) {
+    fn recreate_crate_graph(&mut self, cause: String, initial_build: bool) {
         info!(?cause, "Building Crate Graph");
         self.report_progress(
             "Building CrateGraph",
@@ -977,10 +964,7 @@ pub(crate) fn should_refresh_for_change(
 
 /// Similar to [`str::eq_ignore_ascii_case`] but instead of ignoring
 /// case, we say that `-` and `_` are equal.
-fn eq_ignore_underscore(
-    s1: &str,
-    s2: &str,
-) -> bool {
+fn eq_ignore_underscore(s1: &str, s2: &str) -> bool {
     if s1.len() != s2.len() {
         return false;
     }

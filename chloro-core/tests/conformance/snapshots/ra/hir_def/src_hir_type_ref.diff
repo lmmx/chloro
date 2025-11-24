@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9897 bytes
-Chloro size:   9530 bytes
+Chloro size:   9453 bytes
 Rustfmt size:  10040 bytes
 
 ✗ Outputs DIFFER
@@ -86,15 +86,8 @@ Rustfmt size:  10040 bytes
  
  #[derive(Clone, PartialEq, Eq, Hash, Debug)]
  pub enum UseArgRef {
-         TypeRef::Tuple(ThinVec::new())
-     }
  
--    pub fn walk(this: TypeRefId, map: &ExpressionStore, f: &mut impl FnMut(&TypeRef)) {
-+    pub fn walk(
-+        this: TypeRefId,
-+        map: &ExpressionStore,
-+        f: &mut impl FnMut(&TypeRef),
-+    ) {
+     pub fn walk(this: TypeRefId, map: &ExpressionStore, f: &mut impl FnMut(&TypeRef)) {
          go(this, f, map);
 -
          fn go(type_ref: TypeRefId, f: &mut impl FnMut(&TypeRef), map: &ExpressionStore) {
@@ -118,17 +111,6 @@ Rustfmt size:  10040 bytes
          fn go_path(path: &Path, f: &mut impl FnMut(&TypeRef), map: &ExpressionStore) {
              if let Some(type_ref) = path.type_anchor() {
                  go(type_ref, f, map);
- }
- 
- impl TypeBound {
--    pub fn as_path<'a>(&self, map: &'a ExpressionStore) -> Option<(&'a Path, TraitBoundModifier)> {
-+    pub fn as_path<'a>(
-+        &self,
-+        map: &'a ExpressionStore,
-+    ) -> Option<(&'a Path, TraitBoundModifier)> {
-         match self {
-             &TypeBound::Path(p, m) => Some((&map[p], m)),
-             &TypeBound::ForLifetime(_, p) => Some((&map[p], TraitBoundModifier::None)),
      UInt(u128),
      Bool(bool),
      Char(char),
@@ -141,14 +123,3 @@ Rustfmt size:  10040 bytes
      Unknown,
  }
  
- }
- 
- impl std::fmt::Display for LiteralConstRef {
--    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-+    fn fmt(
-+        &self,
-+        f: &mut std::fmt::Formatter<'_>,
-+    ) -> Result<(), std::fmt::Error> {
-         match self {
-             LiteralConstRef::Int(num) => num.fmt(f),
-             LiteralConstRef::UInt(num) => num.fmt(f),

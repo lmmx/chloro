@@ -136,10 +136,7 @@ pub fn usize_const<'db>(
     )
 }
 
-pub fn try_const_usize<'db>(
-    db: &'db dyn HirDatabase,
-    c: Const<'db>,
-) -> Option<u128> {
+pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u128> {
     match c.kind() {
         ConstKind::Param(_) => None,
         ConstKind::Infer(_) => None,
@@ -161,10 +158,7 @@ pub fn try_const_usize<'db>(
     }
 }
 
-pub fn try_const_isize<'db>(
-    db: &'db dyn HirDatabase,
-    c: &Const<'db>,
-) -> Option<i128> {
+pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<i128> {
     match (*c).kind() {
         ConstKind::Param(_) => None,
         ConstKind::Infer(_) => None,
@@ -222,10 +216,7 @@ pub(crate) fn const_eval_discriminant_variant<'db>(
     Ok(c)
 }
 
-pub(crate) fn eval_to_const<'db>(
-    expr: ExprId,
-    ctx: &mut InferenceContext<'_, 'db>,
-) -> Const<'db> {
+pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
     let infer = ctx.fixme_resolve_all_clone();
     fn has_closure(body: &Body, expr: ExprId) -> bool {
         if matches!(body[expr], Expr::Closure { .. }) {

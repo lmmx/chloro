@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2218 bytes
-Chloro size:   1780 bytes
+Chloro size:   1769 bytes
 Rustfmt size:  2218 bytes
 
 ✗ Outputs DIFFER
@@ -46,14 +46,9 @@ Rustfmt size:  2218 bytes
 -//     let _x = 2;
 -// }
 -// ```
--pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn remove_else_branches(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let else_token = ctx.find_token_syntax_at_offset(T![else])?;
      let else_branches = ctx
-         .find_node_at_range::<ast::IfExpr>()
                  .clone()
                  .into()
          })?;

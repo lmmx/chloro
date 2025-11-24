@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70547 bytes
+Chloro size:   70513 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -212,14 +212,6 @@ Rustfmt size:  71259 bytes
      Some(navs)
  }
  
--fn def_to_nav(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Vec<NavigationTarget> {
-+fn def_to_nav(
-+    sema: &Semantics<'_, RootDatabase>,
-+    def: Definition,
-+) -> Vec<NavigationTarget> {
-     def.try_to_nav(sema).map(|it| it.collect()).unwrap_or_default()
- }
- 
      focus_range: Option<TextRange>,
  ) -> UpmappingResult<NavigationTarget> {
      let kind = SymbolKind::Label;
@@ -262,14 +254,9 @@ Rustfmt size:  71259 bytes
          assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
      }
 -
--    fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
-+    fn check_name(
-+        expected_name: &str,
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+    ) {
+     fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, _) = fixture::annotations(ra_fixture);
          let navs = analysis
-             .goto_definition(position, &TEST_CONFIG)
          };
          assert_eq!(target.name, hir::Symbol::intern(expected_name));
      }

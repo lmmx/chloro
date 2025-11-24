@@ -203,10 +203,7 @@ fn expand_slice_rest_pattern(
     )
 }
 
-pub(crate) fn expand_rest_pattern(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn expand_rest_pattern(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let rest_pat = ctx.find_node_at_offset::<ast::RestPat>()?;
     let parent = rest_pat.syntax().parent()?;
     match_ast! {

@@ -21,10 +21,7 @@ use crate::{
     utils,
 };
 
-pub(crate) fn convert_bool_to_enum(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
         find_bool_node(ctx)?;
     let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
@@ -139,10 +136,7 @@ fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
     }
 }
 
-fn replace_bool_expr(
-    edit: &mut SourceChangeBuilder,
-    expr: ast::Expr,
-) {
+fn replace_bool_expr(edit: &mut SourceChangeBuilder, expr: ast::Expr) {
     let expr_range = expr.syntax().text_range();
     let enum_expr = bool_expr_to_enum_expr(expr);
     edit.replace(expr_range, enum_expr.syntax().text())

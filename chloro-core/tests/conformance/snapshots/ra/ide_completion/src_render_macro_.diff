@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7655 bytes
-Chloro size:   7652 bytes
+Chloro size:   7641 bytes
 Rustfmt size:  7898 bytes
 
 ✗ Outputs DIFFER
@@ -109,17 +109,6 @@ Rustfmt size:  7898 bytes
      item
  }
  
-     SmolStr::from_iter([name, "!"])
- }
- 
--fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static str) {
-+fn guess_macro_braces(
-+    macro_name: &str,
-+    docs: &str,
-+) -> (&'static str, &'static str) {
-     let mut votes = [0, 0, 0];
-     for (idx, s) in docs.match_indices(&macro_name) {
-         let (before, after) = (&docs[..idx], &docs[idx + s.len()..]);
              }
          }
      }

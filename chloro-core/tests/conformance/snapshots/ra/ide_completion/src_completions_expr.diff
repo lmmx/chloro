@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20947 bytes
-Chloro size:   20995 bytes
+Chloro size:   20938 bytes
 Rustfmt size:  21861 bytes
 
 ✗ Outputs DIFFER
@@ -22,26 +22,10 @@ Rustfmt size:  21861 bytes
  where
 -    F: FnMut(&mut Completions, hir::AssocItem),
 -{
--    fn on_inherent_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
 +    F: FnMut(&mut Completions, hir::AssocItem), {
-+    fn on_inherent_item(
-+        &mut self,
-+        item: hir::AssocItem,
-+    ) -> ControlFlow<()> {
+     fn on_inherent_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
          if self.seen.insert(item) {
              (self.add_assoc_item)(self.acc, item);
-         }
-         ControlFlow::Continue(())
-     }
- 
--    fn on_trait_item(&mut self, item: hir::AssocItem) -> ControlFlow<()> {
-+    fn on_trait_item(
-+        &mut self,
-+        item: hir::AssocItem,
-+    ) -> ControlFlow<()> {
-         // The excluded check needs to come before the `seen` test, so that if we see the same method twice,
-         // once as inherent and once not, we will include it.
-         if item.container_trait(self.ctx.db).is_none_or(|trait_| {
      if !ctx.qualifier_ctx.none() {
          return;
      }
@@ -209,14 +193,8 @@ Rustfmt size:  21861 bytes
  
                      match ty.as_ref().and_then(|t| t.original.as_adt()) {
                          Some(hir::Adt::Union(_)) => (),
-     }
- }
  
--pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) {
-+pub(crate) fn complete_expr(
-+    acc: &mut Completions,
-+    ctx: &CompletionContext<'_>,
-+) {
+ pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) {
      let _p = tracing::info_span!("complete_expr").entered();
 -
      if !ctx.config.enable_term_search {

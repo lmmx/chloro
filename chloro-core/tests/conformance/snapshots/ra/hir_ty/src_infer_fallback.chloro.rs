@@ -395,10 +395,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// If `ty` is an unresolved type variable, returns its root vid.
-    fn root_vid(
-        &self,
-        ty: Ty<'db>,
-    ) -> Option<TyVid> {
+    fn root_vid(&self, ty: Ty<'db>) -> Option<TyVid> {
         Some(self.table.infer_ctxt.root_var(self.shallow_resolve(ty).ty_vid()?))
     }
 }

@@ -52,17 +52,11 @@ impl ModPath {
         convert_path(db, path, span_for_range)
     }
 
-    pub fn from_tt(
-        db: &dyn ExpandDatabase,
-        tt: tt::TokenTreesView<'_>,
-    ) -> Option<ModPath> {
+    pub fn from_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
         convert_path_tt(db, tt)
     }
 
-    pub fn from_segments(
-        kind: PathKind,
-        segments: impl IntoIterator<Item = Name>,
-    ) -> ModPath {
+    pub fn from_segments(kind: PathKind, segments: impl IntoIterator<Item = Name>) -> ModPath {
         let mut segments: SmallVec<_> = segments.into_iter().collect();
         segments.shrink_to_fit();
         ModPath { kind, segments }
@@ -77,10 +71,7 @@ impl ModPath {
         &self.segments
     }
 
-    pub fn push_segment(
-        &mut self,
-        segment: Name,
-    ) {
+    pub fn push_segment(&mut self, segment: Name) {
         self.segments.push(segment);
     }
 
@@ -154,10 +145,7 @@ impl ModPath {
 }
 
 impl Extend<Name> for ModPath {
-    fn extend<T: IntoIterator<Item = Name>>(
-        &mut self,
-        iter: T,
-    ) {
+    fn extend<T: IntoIterator<Item = Name>>(&mut self, iter: T) {
         self.segments.extend(iter);
     }
 }
@@ -169,10 +157,7 @@ struct Display<'a> {
 }
 
 impl fmt::Display for Display<'_> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         display_fmt_path(self.db, self.path, f, self.edition)
     }
 }
@@ -304,10 +289,7 @@ fn convert_path(
     Some(mod_path)
 }
 
-fn convert_path_tt(
-    db: &dyn ExpandDatabase,
-    tt: tt::TokenTreesView<'_>,
-) -> Option<ModPath> {
+fn convert_path_tt(db: &dyn ExpandDatabase, tt: tt::TokenTreesView<'_>) -> Option<ModPath> {
     let mut leaves = tt.iter().filter_map(|tt| match tt {
         tt::TtElement::Leaf(leaf) => Some(leaf),
         tt::TtElement::Subtree(..) => None,
@@ -349,10 +331,7 @@ fn convert_path_tt(
     Some(ModPath { kind, segments })
 }
 
-pub fn resolve_crate_root(
-    db: &dyn ExpandDatabase,
-    mut ctxt: SyntaxContext,
-) -> Option<Crate> {
+pub fn resolve_crate_root(db: &dyn ExpandDatabase, mut ctxt: SyntaxContext) -> Option<Crate> {
     // When resolving `$crate` from a `macro_rules!` invoked in a `macro`,
     // we don't want to pretend that the `macro_rules!` definition is in the `macro`
     // as described in `SyntaxContextId::apply_mark`, so we ignore prepended opaque marks.

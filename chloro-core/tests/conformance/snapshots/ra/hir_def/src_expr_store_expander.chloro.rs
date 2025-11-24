@@ -57,18 +57,11 @@ impl Expander {
         }
     }
 
-    pub(super) fn ctx_for_range(
-        &self,
-        range: TextRange,
-    ) -> SyntaxContext {
+    pub(super) fn ctx_for_range(&self, range: TextRange) -> SyntaxContext {
         self.span_map.span_for_range(range).ctx
     }
 
-    pub(super) fn hygiene_for_range(
-        &self,
-        db: &dyn DefDatabase,
-        range: TextRange,
-    ) -> HygieneId {
+    pub(super) fn hygiene_for_range(&self, db: &dyn DefDatabase, range: TextRange) -> HygieneId {
         match self.span_map.as_ref() {
             hir_expand::span_map::SpanMapRef::ExpansionSpanMap(span_map) => {
                 HygieneId::new(span_map.span_at(range.start()).ctx.opaque_and_semitransparent(db))
@@ -150,10 +143,7 @@ impl Expander {
         self.within_limit(db, |_this| ExpandResult::ok(Some(call_id)))
     }
 
-    pub(super) fn exit(
-        &mut self,
-        Mark { file_id, span_map, ast_id_map, mut bomb }: Mark,
-    ) {
+    pub(super) fn exit(&mut self, Mark { file_id, span_map, ast_id_map, mut bomb }: Mark) {
         self.span_map = span_map;
         self.current_file_id = file_id;
         self.ast_id_map = ast_id_map;
@@ -169,10 +159,7 @@ impl Expander {
         bomb.defuse();
     }
 
-    pub(super) fn in_file<T>(
-        &self,
-        value: T,
-    ) -> InFile<T> {
+    pub(super) fn in_file<T>(&self, value: T) -> InFile<T> {
         InFile { file_id: self.current_file_id, value }
     }
 

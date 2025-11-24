@@ -273,11 +273,7 @@ pub(super) fn add_call_parens<'b>(
     builder.label(SmolStr::from_iter([&name, label_suffix])).insert_snippet(cap, snippet)
 }
 
-fn ref_of_param(
-    ctx: &CompletionContext<'_>,
-    arg: &str,
-    ty: &hir::Type<'_>,
-) -> &'static str {
+fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &'static str {
     if let Some(derefed_ty) = ty.remove_ref() {
         for (name, local) in ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()) {
             if name.as_str() == arg {
@@ -292,10 +288,7 @@ fn ref_of_param(
     ""
 }
 
-fn detail(
-    ctx: &CompletionContext<'_>,
-    func: hir::Function,
-) -> String {
+fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     let mut ret_ty = func.ret_type(ctx.db);
     let mut detail = String::new();
     if func.is_const(ctx.db) {
@@ -319,10 +312,7 @@ fn detail(
     detail
 }
 
-fn detail_full(
-    ctx: &CompletionContext<'_>,
-    func: hir::Function,
-) -> String {
+fn detail_full(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     let signature = format!("{}", func.display(ctx.db, ctx.display_target));
     let mut detail = String::with_capacity(signature.len());
     for segment in signature.split_whitespace() {
@@ -335,11 +325,7 @@ fn detail_full(
     detail
 }
 
-fn params_display(
-    ctx: &CompletionContext<'_>,
-    detail: &mut String,
-    func: hir::Function,
-) {
+fn params_display(ctx: &CompletionContext<'_>, detail: &mut String, func: hir::Function) {
     if let Some(self_param) = func.self_param(ctx.db) {
         format_to!(detail, "{}", self_param.display(ctx.db, ctx.display_target));
         let assoc_fn_params = func.assoc_fn_params(ctx.db);

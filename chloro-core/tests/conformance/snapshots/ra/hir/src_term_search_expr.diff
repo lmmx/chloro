@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16730 bytes
+Chloro size:   16661 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
@@ -57,25 +57,8 @@ Rustfmt size:  16513 bytes
      /// Passing type as reference (with `&`)
      Reference(Box<Expr<'db>>),
      /// Indicates possibility of many different options that all evaluate to `ty`
-     /// Get type of the type tree.
-     ///
-     /// Same as getting the type of root node
--    pub fn ty(&self, db: &'db dyn HirDatabase) -> Type<'db> {
-+    pub fn ty(
-+        &self,
-+        db: &'db dyn HirDatabase,
-+    ) -> Type<'db> {
-         match self {
-             Expr::Const(it) => it.ty(db),
-             Expr::Static(it) => it.ty(db),
-     }
- 
      /// List the traits used in type tree
--    pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
-+    pub fn traits_used(
-+        &self,
-+        db: &dyn HirDatabase,
-+    ) -> Vec<Trait> {
+     pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
          let mut res = Vec::new();
 -
          if let Expr::Method { func, params, .. } = self {
@@ -88,14 +71,3 @@ Rustfmt size:  16513 bytes
          res
      }
  
-     /// macro!().bar()
-     /// &macro!()
-     /// ```
--    fn contains_many_in_illegal_pos(&self, db: &dyn HirDatabase) -> bool {
-+    fn contains_many_in_illegal_pos(
-+        &self,
-+        db: &dyn HirDatabase,
-+    ) -> bool {
-         match self {
-             Expr::Method { target, func, .. } => {
-                 match func.as_assoc_item(db).and_then(|it| it.container_or_implemented_trait(db)) {

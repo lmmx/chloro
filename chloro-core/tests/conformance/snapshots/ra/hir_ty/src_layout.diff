@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14409 bytes
+Chloro size:   14364 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -75,14 +75,8 @@ Rustfmt size:  14808 bytes
 +}
 +
  impl fmt::Display for LayoutError {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
          match self {
-             LayoutError::BadCalc(err) => err.fallback_fmt(f),
-             LayoutError::HasErrorConst => write!(f, "type contains an unevaluatable const"),
              LayoutError::TargetLayoutNotAvailable => write!(f, "target layout not available"),
              LayoutError::Unknown => write!(f, "unknown"),
              LayoutError::UserReprTooSmall => {
@@ -194,29 +188,13 @@ Rustfmt size:  14808 bytes
          }
  
          TyKind::Coroutine(_, _)
-     Err(LayoutError::RecursiveTypeWithoutIndirection)
  }
  
--fn struct_tail_erasing_lifetimes<'a>(db: &'a dyn HirDatabase, pointee: Ty<'a>) -> Ty<'a> {
-+fn struct_tail_erasing_lifetimes<'a>(
-+    db: &'a dyn HirDatabase,
-+    pointee: Ty<'a>,
-+) -> Ty<'a> {
-     match pointee.kind() {
-         TyKind::Adt(def, args) => {
-             let struct_id = match def.inner().id {
-     db.field_types(def)[fd].instantiate(DbInterner::new_with(db, None, None), args)
- }
- 
--fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
+ fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
 -    Scalar::Initialized {
 -        value,
 -        valid_range: WrappingRange::full(value.size(dl)),
 -    }
-+fn scalar_unit(
-+    dl: &TargetDataLayout,
-+    value: Primitive,
-+) -> Scalar {
 +    Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
  }
 -

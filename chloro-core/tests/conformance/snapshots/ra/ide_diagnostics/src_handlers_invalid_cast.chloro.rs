@@ -15,10 +15,7 @@ macro_rules! format_ty {
     }}
 }
 
-pub(crate) fn invalid_cast(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::InvalidCast<'_>,
-) -> Diagnostic {
+pub(crate) fn invalid_cast(ctx: &DiagnosticsContext<'_>, d: &hir::InvalidCast<'_>) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     let (code, message) = match d.error {
         CastError::CastToBool => (

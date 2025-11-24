@@ -57,11 +57,7 @@ impl CargoTestOutputParser {
 }
 
 impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
-    fn from_line(
-        &self,
-        line: &str,
-        _error: &mut String,
-    ) -> Option<CargoTestMessage> {
+    fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
         Some(CargoTestMessage {

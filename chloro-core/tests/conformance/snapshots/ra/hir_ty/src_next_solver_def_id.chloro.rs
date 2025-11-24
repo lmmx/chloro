@@ -33,10 +33,7 @@ pub enum SolverDefId {
 }
 
 impl std::fmt::Debug for SolverDefId {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let interner = DbInterner::conjure();
         let db = interner.db;
         match *self {
@@ -270,10 +267,7 @@ macro_rules! declare_id_wrapper {
 pub struct CallableIdWrapper(pub CallableDefId);
 
 impl std::fmt::Debug for CallableIdWrapper {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Debug::fmt(&self.0, f)
     }
 }

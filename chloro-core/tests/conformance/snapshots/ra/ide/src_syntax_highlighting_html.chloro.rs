@@ -57,11 +57,7 @@ pub(crate) fn highlight_as_html_with_config(
     buf
 }
 
-pub(crate) fn highlight_as_html(
-    db: &RootDatabase,
-    file_id: FileId,
-    rainbow: bool,
-) -> String {
+pub(crate) fn highlight_as_html(db: &RootDatabase, file_id: FileId, rainbow: bool) -> String {
     highlight_as_html_with_config(
         db,
         &HighlightConfig {

@@ -284,10 +284,7 @@ impl<'db> Evaluator<'db> {
         Ok(())
     }
 
-    fn detect_lang_function(
-        &self,
-        def: FunctionId,
-    ) -> Option<LangItem> {
+    fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
         use LangItem::*;
         let attrs = self.db.attrs(def.into());
         if attrs.by_key(sym::rustc_const_panic_str).exists() {

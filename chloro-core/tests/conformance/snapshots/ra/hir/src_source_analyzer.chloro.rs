@@ -182,7 +182,9 @@ impl<'db> SourceAnalyzer<'db> {
         SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
     }
 
-    fn body_(&self) -> Option<(DefWithBodyId, &Body, &BodySourceMap, Option<&InferenceResult<'db>>)> {
+    fn body_(
+        &self,
+    ) -> Option<(DefWithBodyId, &Body, &BodySourceMap, Option<&InferenceResult<'db>>)> {
         self.body_or_sig.as_ref().and_then(|it| match it {
             BodyOrSig::Body { def, body, source_map, infer } => {
                 Some((*def, &**body, &**source_map, infer.as_deref()))
@@ -223,52 +225,34 @@ impl<'db> SourceAnalyzer<'db> {
         })
     }
 
-    fn trait_environment(
-        &self,
-        db: &'db dyn HirDatabase,
-    ) -> Arc<TraitEnvironment<'db>> {
+    fn trait_environment(&self, db: &'db dyn HirDatabase) -> Arc<TraitEnvironment<'db>> {
         self.body_().map(|(def, ..)| def).map_or_else(
             || TraitEnvironment::empty(self.resolver.krate()),
             |def| db.trait_environment_for_body(def),
         )
     }
 
-    fn expr_id(
-        &self,
-        expr: ast::Expr,
-    ) -> Option<ExprOrPatId> {
+    fn expr_id(&self, expr: ast::Expr) -> Option<ExprOrPatId> {
         let src = InFile { file_id: self.file_id, value: expr };
         self.store_sm()?.node_expr(src.as_ref())
     }
 
-    fn pat_id(
-        &self,
-        pat: &ast::Pat,
-    ) -> Option<ExprOrPatId> {
+    fn pat_id(&self, pat: &ast::Pat) -> Option<ExprOrPatId> {
         let src = InFile { file_id: self.file_id, value: pat };
         self.store_sm()?.node_pat(src)
     }
 
-    fn type_id(
-        &self,
-        pat: &ast::Type,
-    ) -> Option<TypeRefId> {
+    fn type_id(&self, pat: &ast::Type) -> Option<TypeRefId> {
         let src = InFile { file_id: self.file_id, value: pat };
         self.store_sm()?.node_type(src)
     }
 
-    fn binding_id_of_pat(
-        &self,
-        pat: &ast::IdentPat,
-    ) -> Option<BindingId> {
+    fn binding_id_of_pat(&self, pat: &ast::IdentPat) -> Option<BindingId> {
         let pat_id = self.pat_id(&pat.clone().into())?;
         if let Pat::Bind { id, .. } = self.store()?[pat_id.as_pat()?] { Some(id) } else { None }
     }
 
-    pub(crate) fn expr_adjustments(
-        &self,
-        expr: &ast::Expr,
-    ) -> Option<&[Adjustment<'db>]> {
+    pub(crate) fn expr_adjustments(&self, expr: &ast::Expr) -> Option<&[Adjustment<'db>]> {
         // It is safe to omit destructuring assignments here because they have no adjustments (neither
         // expressions nor patterns).
         let expr_id = self.expr_id(expr.clone())?.as_expr()?;
@@ -767,10 +751,7 @@ impl<'db> SourceAnalyzer<'db> {
         }
     }
 
-    pub(crate) fn resolve_use_type_arg(
-        &self,
-        name: &ast::NameRef,
-    ) -> Option<crate::TypeParam> {
+    pub(crate) fn resolve_use_type_arg(&self, name: &ast::NameRef) -> Option<crate::TypeParam> {
         let name = name.as_name();
         self.resolver
             .all_generic_params()
@@ -1253,10 +1234,7 @@ impl<'db> SourceAnalyzer<'db> {
             .collect()
     }
 
-    pub(crate) fn resolve_variant(
-        &self,
-        record_lit: ast::RecordExpr,
-    ) -> Option<VariantId> {
+    pub(crate) fn resolve_variant(&self, record_lit: ast::RecordExpr) -> Option<VariantId> {
         let infer = self.infer()?;
         let expr_id = self.expr_id(record_lit.into())?;
         infer.variant_resolution_for_expr_or_pat(expr_id)
@@ -1409,10 +1387,7 @@ impl<'db> SourceAnalyzer<'db> {
         Some((trait_id, fn_id))
     }
 
-    fn ty_of_expr(
-        &self,
-        expr: ast::Expr,
-    ) -> Option<Ty<'db>> {
+    fn ty_of_expr(&self, expr: ast::Expr) -> Option<Ty<'db>> {
         self.infer()?.type_of_expr_or_pat(self.expr_id(expr)?)
     }
 }
@@ -1751,10 +1726,7 @@ fn resolve_hir_path_qualifier(
     })
 }
 
-pub(crate) fn name_hygiene(
-    db: &dyn HirDatabase,
-    name: InFile<&SyntaxNode>,
-) -> HygieneId {
+pub(crate) fn name_hygiene(db: &dyn HirDatabase, name: InFile<&SyntaxNode>) -> HygieneId {
     let Some(macro_file) = name.file_id.macro_file() else {
         return HygieneId::ROOT;
     };

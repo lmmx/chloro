@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5189 bytes
-Chloro size:   4641 bytes
+Chloro size:   4630 bytes
 Rustfmt size:  5232 bytes
 
 ✗ Outputs DIFFER
@@ -48,11 +48,7 @@ Rustfmt size:  5232 bytes
 -//     };
 -// }
 -// ```
--pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn add_braces(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (expr_type, expr) = get_replacement_node(ctx)?;
 -
      acc.add(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15380 bytes
-Chloro size:   12131 bytes
+Chloro size:   12120 bytes
 Rustfmt size:  15488 bytes
 
 ✗ Outputs DIFFER
@@ -211,14 +211,7 @@ Rustfmt size:  15488 bytes
      import_assets
          .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
          .filter(|import| {
-     Some(())
- }
- 
--fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
-+fn filter_excluded_flyimport(
-+    ctx: &CompletionContext<'_>,
-+    import: &LocatedImport,
-+) -> bool {
+ fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
      let def = import.item_to_import.into_module_def();
      let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
 -

@@ -11,10 +11,7 @@ use crate::{
     utils::{self},
 };
 
-pub(crate) fn promote_local_to_const(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let name = pat.name()?;
     if !pat.is_simple_ident() {

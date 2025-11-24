@@ -267,10 +267,7 @@ fn import_on_the_fly_method(
     Some(())
 }
 
-fn filter_excluded_flyimport(
-    ctx: &CompletionContext<'_>,
-    import: &LocatedImport,
-) -> bool {
+fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
     let def = import.item_to_import.into_module_def();
     let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
     if matches!(is_exclude_flyimport, Some(AutoImportExclusionType::Always))

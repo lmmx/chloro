@@ -13,10 +13,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn generate_new(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field_list = match strukt.kind() {
         StructKind::Record(named) => {

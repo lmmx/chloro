@@ -9,10 +9,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn unmerge_imports(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tree = ctx.find_node_at_offset::<ast::UseTree>()?;
     let tree_list = tree.syntax().parent().and_then(ast::UseTreeList::cast)?;
     if tree_list.use_trees().count() < 2 {

@@ -28,10 +28,7 @@ fn render_crate_def_map(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> Stri
     crate_def_map(&db, krate).dump(&db)
 }
 
-fn check(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let actual = render_crate_def_map(ra_fixture);
     expect.assert_eq(&actual);
 }

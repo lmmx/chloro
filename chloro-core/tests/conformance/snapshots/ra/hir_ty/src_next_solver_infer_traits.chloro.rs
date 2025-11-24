@@ -84,10 +84,7 @@ impl<'db> Elaboratable<DbInterner<'db>> for PredicateObligation<'db> {
         self.predicate
     }
 
-    fn child(
-        &self,
-        clause: Clause<'db>,
-    ) -> Self {
+    fn child(&self, clause: Clause<'db>) -> Self {
         Obligation {
             cause: self.cause.clone(),
             param_env: self.param_env,
@@ -121,10 +118,7 @@ impl<'db, T: Copy> Obligation<'db, T> {
 
 impl<'db, T: PartialEq> PartialEq<Obligation<'db, T>> for Obligation<'db, T> {
     #[inline]
-    fn eq(
-        &self,
-        other: &Obligation<'db, T>,
-    ) -> bool {
+    fn eq(&self, other: &Obligation<'db, T>) -> bool {
         // Ignore `cause` and `recursion_depth`. This is a small performance
         // win for a few crates, and a huge performance win for the crate in
         // https://github.com/rust-lang/rustc-perf/pull/1680, which greatly
@@ -137,10 +131,7 @@ impl<'db, T: Eq> Eq for Obligation<'db, T> {
 }
 
 impl<'db, T: Hash> Hash for Obligation<'db, T> {
-    fn hash<H: Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         // See the comment on `Obligation::eq`.
         self.param_env.hash(state);
         self.predicate.hash(state);
@@ -163,10 +154,7 @@ impl<'db> PredicateObligation<'db> {
     /// Flips the polarity of the inner predicate.
     ///
     /// Given `T: Trait` predicate it returns `T: !Trait` and given `T: !Trait` returns `T: Trait`.
-    pub fn flip_polarity(
-        &self,
-        _interner: DbInterner<'db>,
-    ) -> Option<PredicateObligation<'db>> {
+    pub fn flip_polarity(&self, _interner: DbInterner<'db>) -> Option<PredicateObligation<'db>> {
         Some(PredicateObligation {
             cause: self.cause.clone(),
             param_env: self.param_env,
@@ -190,10 +178,7 @@ impl<'db, O> Obligation<'db, O> {
     ///
     /// To deal with this evaluate and fulfill explicitly update the depth
     /// of nested obligations using this function.
-    pub fn set_depth_from_parent(
-        &mut self,
-        parent_depth: usize,
-    ) {
+    pub fn set_depth_from_parent(&mut self, parent_depth: usize) {
         self.recursion_depth = cmp::max(parent_depth + 1, self.recursion_depth);
     }
 

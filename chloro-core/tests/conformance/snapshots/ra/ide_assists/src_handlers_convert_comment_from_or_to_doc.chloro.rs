@@ -17,10 +17,7 @@ pub(crate) fn convert_comment_from_or_to_doc(
     }
 }
 
-fn doc_to_comment(
-    acc: &mut Assists,
-    comment: ast::Comment,
-) -> Option<()> {
+fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     let target = if comment.kind().shape.is_line() {
         line_comments_text_range(&comment)?
     } else {

@@ -39,10 +39,7 @@ pub(crate) struct HirPlace<'db> {
 }
 
 impl<'db> HirPlace<'db> {
-    fn ty(
-        &self,
-        ctx: &mut InferenceContext<'_, 'db>,
-    ) -> Ty<'db> {
+    fn ty(&self, ctx: &mut InferenceContext<'_, 'db>) -> Ty<'db> {
         let mut ty = ctx.table.resolve_completely(ctx.result[self.local]);
         for p in &self.projections {
             ty = p.projected_ty(
@@ -104,11 +101,7 @@ impl<'db> CapturedItem<'db> {
         self.place.projections.iter().any(|it| !matches!(it, ProjectionElem::Deref))
     }
 
-    pub fn ty(
-        &self,
-        db: &'db dyn HirDatabase,
-        subst: GenericArgs<'db>,
-    ) -> Ty<'db> {
+    pub fn ty(&self, db: &'db dyn HirDatabase, subst: GenericArgs<'db>) -> Ty<'db> {
         let interner = DbInterner::new_with(db, None, None);
         self.ty.instantiate(interner, subst.split_closure_args_untupled().parent_args)
     }
@@ -122,11 +115,7 @@ impl<'db> CapturedItem<'db> {
     }
 
     /// Converts the place to a name that can be inserted into source code.
-    pub fn place_to_name(
-        &self,
-        owner: DefWithBodyId,
-        db: &dyn HirDatabase,
-    ) -> String {
+    pub fn place_to_name(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
         let body = db.body(owner);
         let mut result = body[self.place.local].name.as_str().to_owned();
         for proj in &self.place.projections {
@@ -166,11 +155,7 @@ impl<'db> CapturedItem<'db> {
         result
     }
 
-    pub fn display_place_source_code(
-        &self,
-        owner: DefWithBodyId,
-        db: &dyn HirDatabase,
-    ) -> String {
+    pub fn display_place_source_code(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
         let body = db.body(owner);
         let krate = owner.krate(db);
         let edition = krate.data(db).edition;
@@ -226,11 +211,7 @@ impl<'db> CapturedItem<'db> {
         result
     }
 
-    pub fn display_place(
-        &self,
-        owner: DefWithBodyId,
-        db: &dyn HirDatabase,
-    ) -> String {
+    pub fn display_place(&self, owner: DefWithBodyId, db: &dyn HirDatabase) -> String {
         let body = db.body(owner);
         let krate = owner.krate(db);
         let edition = krate.data(db).edition;
@@ -299,10 +280,7 @@ pub(crate) struct CapturedItemWithoutTy<'db> {
 }
 
 impl<'db> CapturedItemWithoutTy<'db> {
-    fn with_ty(
-        self,
-        ctx: &mut InferenceContext<'_, 'db>,
-    ) -> CapturedItem<'db> {
+    fn with_ty(self, ctx: &mut InferenceContext<'_, 'db>) -> CapturedItem<'db> {
         let ty = self.place.ty(ctx);
         let ty = match &self.kind {
             CaptureKind::ByValue => ty,
@@ -324,10 +302,7 @@ impl<'db> CapturedItemWithoutTy<'db> {
 }
 
 impl<'db> InferenceContext<'_, 'db> {
-    fn place_of_expr(
-        &mut self,
-        tgt_expr: ExprId,
-    ) -> Option<HirPlace<'db>> {
+    fn place_of_expr(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
         let r = self.place_of_expr_without_adjust(tgt_expr)?;
         let adjustments =
             self.result.expr_adjustments.get(&tgt_expr).map(|it| &**it).unwrap_or_default();
@@ -335,11 +310,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// Pushes the span into `current_capture_span_stack`, *without clearing it first*.
-    fn path_place(
-        &mut self,
-        path: &Path,
-        id: ExprOrPatId,
-    ) -> Option<HirPlace<'db>> {
+    fn path_place(&mut self, path: &Path, id: ExprOrPatId) -> Option<HirPlace<'db>> {
         if path.type_anchor().is_some() {
             return None;
         }
@@ -360,10 +331,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// Changes `current_capture_span_stack` to contain the stack of spans for this expr.
-    fn place_of_expr_without_adjust(
-        &mut self,
-        tgt_expr: ExprId,
-    ) -> Option<HirPlace<'db>> {
+    fn place_of_expr_without_adjust(&mut self, tgt_expr: ExprId) -> Option<HirPlace<'db>> {
         self.current_capture_span_stack.clear();
         match &self.body[tgt_expr] {
             Expr::Path(p) => {
@@ -396,11 +364,7 @@ impl<'db> InferenceContext<'_, 'db> {
         None
     }
 
-    fn push_capture(
-        &mut self,
-        place: HirPlace<'db>,
-        kind: CaptureKind,
-    ) {
+    fn push_capture(&mut self, place: HirPlace<'db>, kind: CaptureKind) {
         self.current_captures.push(CapturedItemWithoutTy {
             place,
             kind,
@@ -437,32 +401,20 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn ref_expr(
-        &mut self,
-        expr: ExprId,
-        place: Option<HirPlace<'db>>,
-    ) {
+    fn ref_expr(&mut self, expr: ExprId, place: Option<HirPlace<'db>>) {
         if let Some(place) = place {
             self.add_capture(place, CaptureKind::ByRef(BorrowKind::Shared));
         }
         self.walk_expr(expr);
     }
 
-    fn add_capture(
-        &mut self,
-        place: HirPlace<'db>,
-        kind: CaptureKind,
-    ) {
+    fn add_capture(&mut self, place: HirPlace<'db>, kind: CaptureKind) {
         if self.is_upvar(&place) {
             self.push_capture(place, kind);
         }
     }
 
-    fn mutate_path_pat(
-        &mut self,
-        path: &Path,
-        id: PatId,
-    ) {
+    fn mutate_path_pat(&mut self, path: &Path, id: PatId) {
         if let Some(place) = self.path_place(path, id.into()) {
             self.add_capture(
                 place,
@@ -472,11 +424,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn mutate_expr(
-        &mut self,
-        expr: ExprId,
-        place: Option<HirPlace<'db>>,
-    ) {
+    fn mutate_expr(&mut self, expr: ExprId, place: Option<HirPlace<'db>>) {
         if let Some(place) = place {
             self.add_capture(
                 place,
@@ -486,20 +434,14 @@ impl<'db> InferenceContext<'_, 'db> {
         self.walk_expr(expr);
     }
 
-    fn consume_expr(
-        &mut self,
-        expr: ExprId,
-    ) {
+    fn consume_expr(&mut self, expr: ExprId) {
         if let Some(place) = self.place_of_expr(expr) {
             self.consume_place(place);
         }
         self.walk_expr(expr);
     }
 
-    fn consume_place(
-        &mut self,
-        place: HirPlace<'db>,
-    ) {
+    fn consume_place(&mut self, place: HirPlace<'db>) {
         if self.is_upvar(&place) {
             let ty = place.ty(self);
             let kind = if self.is_ty_copy(ty) {
@@ -511,11 +453,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn walk_expr_with_adjust(
-        &mut self,
-        tgt_expr: ExprId,
-        adjustment: &[Adjustment<'db>],
-    ) {
+    fn walk_expr_with_adjust(&mut self, tgt_expr: ExprId, adjustment: &[Adjustment<'db>]) {
         if let Some((last, rest)) = adjustment.split_last() {
             match &last.kind {
                 Adjust::NeverToAny | Adjust::Deref(None) | Adjust::Pointer(_) => {
@@ -555,10 +493,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.walk_expr_with_adjust(tgt_expr, rest);
     }
 
-    fn walk_expr(
-        &mut self,
-        tgt_expr: ExprId,
-    ) {
+    fn walk_expr(&mut self, tgt_expr: ExprId) {
         if let Some(it) = self.result.expr_adjustments.get_mut(&tgt_expr) {
             // FIXME: this take is completely unneeded, and just is here to make borrow checker
             // happy. Remove it if you can.
@@ -570,10 +505,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn walk_expr_without_adjust(
-        &mut self,
-        tgt_expr: ExprId,
-    ) {
+    fn walk_expr_without_adjust(&mut self, tgt_expr: ExprId) {
         match &self.body[tgt_expr] {
             Expr::OffsetOf(_) => (),
             Expr::InlineAsm(e) => e.operands.iter().for_each(|(_, op)| match op {
@@ -804,11 +736,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn walk_pat(
-        &mut self,
-        result: &mut Option<CaptureKind>,
-        pat: PatId,
-    ) {
+    fn walk_pat(&mut self, result: &mut Option<CaptureKind>, pat: PatId) {
         let mut update_result = |ck: CaptureKind| match result {
             Some(r) => {
                 *r = cmp::max(*r, ck);
@@ -875,17 +803,11 @@ impl<'db> InferenceContext<'_, 'db> {
         self.body.walk_pats_shallow(p, |p| self.walk_pat_inner(p, update_result, for_mut));
     }
 
-    fn expr_ty(
-        &self,
-        expr: ExprId,
-    ) -> Ty<'db> {
+    fn expr_ty(&self, expr: ExprId) -> Ty<'db> {
         self.result[expr]
     }
 
-    fn expr_ty_after_adjustments(
-        &self,
-        e: ExprId,
-    ) -> Ty<'db> {
+    fn expr_ty_after_adjustments(&self, e: ExprId) -> Ty<'db> {
         let mut ty = None;
         if let Some(it) = self.result.expr_adjustments.get(&e)
             && let Some(it) = it.last()
@@ -895,10 +817,7 @@ impl<'db> InferenceContext<'_, 'db> {
         ty.unwrap_or_else(|| self.expr_ty(e))
     }
 
-    fn is_upvar(
-        &self,
-        place: &HirPlace<'db>,
-    ) -> bool {
+    fn is_upvar(&self, place: &HirPlace<'db>) -> bool {
         if let Some(c) = self.current_closure {
             let InternedClosure(_, root) = self.db.lookup_intern_closure(c);
             return self.body.is_binding_upvar(place.local, root);
@@ -906,10 +825,7 @@ impl<'db> InferenceContext<'_, 'db> {
         false
     }
 
-    fn is_ty_copy(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> bool {
+    fn is_ty_copy(&mut self, ty: Ty<'db>) -> bool {
         if let TyKind::Closure(id, _) = ty.kind() {
             // FIXME: We handle closure as a special case, since chalk consider every closure as copy. We
             // should probably let chalk know which closures are copy, but I don't know how doing it
@@ -925,10 +841,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.table.type_is_copy_modulo_regions(ty)
     }
 
-    fn select_from_expr(
-        &mut self,
-        expr: ExprId,
-    ) {
+    fn select_from_expr(&mut self, expr: ExprId) {
         self.walk_expr(expr);
     }
 
@@ -1015,11 +928,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn consume_with_pat(
-        &mut self,
-        mut place: HirPlace<'db>,
-        tgt_pat: PatId,
-    ) {
+    fn consume_with_pat(&mut self, mut place: HirPlace<'db>, tgt_pat: PatId) {
         let adjustments_count =
             self.result.pat_adjustments.get(&tgt_pat).map(|it| it.len()).unwrap_or_default();
         place.projections.extend((0..adjustments_count).map(|_| ProjectionElem::Deref));
@@ -1156,10 +1065,7 @@ impl<'db> InferenceContext<'_, 'db> {
             .truncate(self.current_capture_span_stack.len() - adjustments_count);
     }
 
-    fn consume_exprs(
-        &mut self,
-        exprs: impl Iterator<Item = ExprId>,
-    ) {
+    fn consume_exprs(&mut self, exprs: impl Iterator<Item = ExprId>) {
         for expr in exprs {
             self.consume_expr(expr);
         }
@@ -1180,10 +1086,7 @@ impl<'db> InferenceContext<'_, 'db> {
         r
     }
 
-    fn analyze_closure(
-        &mut self,
-        closure: InternedClosureId,
-    ) -> FnTrait {
+    fn analyze_closure(&mut self, closure: InternedClosureId) -> FnTrait {
         let InternedClosure(_, root) = self.db.lookup_intern_closure(closure);
         self.current_closure = Some(closure);
         let Expr::Closure { body, capture_by, .. } = &self.body[root] else {
@@ -1271,7 +1174,9 @@ impl<'db> InferenceContext<'_, 'db> {
     ///
     /// These dependencies are collected in the main inference. We do a topological sort in this function. It
     /// will consume the `deferred_closures` field and return its content in a sorted vector.
-    fn sort_closures(&mut self) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
+    fn sort_closures(
+        &mut self,
+    ) -> Vec<(InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>)> {
         let mut deferred_closures = mem::take(&mut self.deferred_closures);
         let mut dependents_count: FxHashMap<InternedClosureId, usize> =
             deferred_closures.keys().map(|it| (*it, 0)).collect();
@@ -1299,10 +1204,7 @@ impl<'db> InferenceContext<'_, 'db> {
         result
     }
 
-    pub(crate) fn add_current_closure_dependency(
-        &mut self,
-        dep: InternedClosureId,
-    ) {
+    pub(crate) fn add_current_closure_dependency(&mut self, dep: InternedClosureId) {
         if let Some(c) = self.current_closure
             && !dep_creates_cycle(&self.closure_dependencies, &mut FxHashSet::default(), c, dep)
         {

@@ -65,10 +65,7 @@ pub(crate) fn file_structure(
     res
 }
 
-fn structure_node(
-    node: &SyntaxNode,
-    config: &FileStructureConfig,
-) -> Option<StructureNode> {
+fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<StructureNode> {
     fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
         decl_with_detail(&node, None, kind)
     }
@@ -247,10 +244,7 @@ mod tests {
     use expect_test::{Expect, expect};
     use super::*;
     const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig { exclude_locals: true };
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
     }
     fn check_with_config(

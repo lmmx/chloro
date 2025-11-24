@@ -310,10 +310,7 @@ impl std::error::Error for HandlerCancelledError {
 }
 
 impl fmt::Display for HandlerCancelledError {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Cancelled")
     }
 }

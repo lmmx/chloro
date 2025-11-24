@@ -356,10 +356,7 @@ impl<'db> ImportAssets<'db> {
         .into_iter()
     }
 
-    fn scope_definitions(
-        &self,
-        sema: &Semantics<'_, RootDatabase>,
-    ) -> FxHashSet<ScopeDef> {
+    fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
         let _p = tracing::info_span!("ImportAssets::scope_definitions").entered();
         let mut scope_definitions = FxHashSet::default();
         if let Some(scope) = sema.scope(&self.candidate_node) {
@@ -544,10 +541,7 @@ fn validate_resolvable(
     result
 }
 
-pub fn item_for_path_search(
-    db: &RootDatabase,
-    item: ItemInNs,
-) -> Option<ItemInNs> {
+pub fn item_for_path_search(db: &RootDatabase, item: ItemInNs) -> Option<ItemInNs> {
     Some(match item {
         ItemInNs::Types(_) | ItemInNs::Values(_) => match item_as_assoc(db, item) {
             Some(assoc_item) => item_for_path_search_assoc(db, assoc_item)?,
@@ -557,10 +551,7 @@ pub fn item_for_path_search(
     })
 }
 
-fn item_for_path_search_assoc(
-    db: &RootDatabase,
-    assoc_item: AssocItem,
-) -> Option<ItemInNs> {
+fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Option<ItemInNs> {
     Some(match assoc_item.container(db) {
         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
         AssocItemContainer::Impl(impl_) => {
@@ -753,10 +744,7 @@ impl<'db> ImportCandidate<'db> {
         }
     }
 
-    fn for_regular_path(
-        sema: &Semantics<'db, RootDatabase>,
-        path: &ast::Path,
-    ) -> Option<Self> {
+    fn for_regular_path(sema: &Semantics<'db, RootDatabase>, path: &ast::Path) -> Option<Self> {
         if sema.resolve_path(path).is_some() {
             return None;
         }
@@ -767,10 +755,7 @@ impl<'db> ImportCandidate<'db> {
         )
     }
 
-    fn for_name(
-        sema: &Semantics<'db, RootDatabase>,
-        name: &ast::Name,
-    ) -> Option<Self> {
+    fn for_name(sema: &Semantics<'db, RootDatabase>, name: &ast::Name) -> Option<Self> {
         if sema
             .scope(name.syntax())?
             .speculative_resolve(&make::ext::ident_path(&name.text()))
@@ -834,9 +819,6 @@ fn path_import_candidate<'db>(
     })
 }
 
-fn item_as_assoc(
-    db: &RootDatabase,
-    item: ItemInNs,
-) -> Option<AssocItem> {
+fn item_as_assoc(db: &RootDatabase, item: ItemInNs) -> Option<AssocItem> {
     item.into_module_def().as_assoc_item(db)
 }

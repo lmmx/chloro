@@ -16,10 +16,7 @@ use syntax::AstNode;
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext};
 
-pub(crate) fn typed_hole(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::TypedHole<'_>,
-) -> Diagnostic {
+pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.expr.map(|it| it.into()));
     let (message, fixes) = if d.expected.is_unknown() {
         ("`_` expressions may only appear on the left-hand side of an assignment".to_owned(), None)
@@ -39,10 +36,7 @@ pub(crate) fn typed_hole(
         .with_fixes(fixes)
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::TypedHole<'_>,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Assist>> {
     let db = ctx.sema.db;
     let root = db.parse_or_expand(d.expr.file_id);
     let (original_range, _) =

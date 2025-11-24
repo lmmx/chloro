@@ -708,11 +708,7 @@ impl DefMap {
         extern_prelude.or_else(macro_use_prelude).or_else(prelude)
     }
 
-    fn resolve_name_in_extern_prelude(
-        &self,
-        local_def_map: &LocalDefMap,
-        name: &Name,
-    ) -> PerNs {
+    fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
         local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::types(
                 it.into(),
@@ -722,10 +718,7 @@ impl DefMap {
         })
     }
 
-    fn resolve_in_macro_use_prelude(
-        &self,
-        name: &Name,
-    ) -> PerNs {
+    fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
         self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
             PerNs::macros(
                 it,
@@ -759,11 +752,7 @@ impl DefMap {
         from_crate_root.or_else(from_extern_prelude)
     }
 
-    fn resolve_in_prelude(
-        &self,
-        db: &dyn DefDatabase,
-        name: &Name,
-    ) -> PerNs {
+    fn resolve_in_prelude(&self, db: &dyn DefDatabase, name: &Name) -> PerNs {
         if let Some((prelude, _use)) = self.prelude {
             let keep;
             let def_map = if prelude.krate == self.krate {

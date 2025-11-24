@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6719 bytes
-Chloro size:   6204 bytes
+Chloro size:   6193 bytes
 Rustfmt size:  6740 bytes
 
 ✗ Outputs DIFFER
@@ -41,14 +41,9 @@ Rustfmt size:  6740 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn unmerge_match_arm(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn unmerge_match_arm(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let pipe_token = ctx.find_token_syntax_at_offset(T![|])?;
      let or_pat = ast::OrPat::cast(pipe_token.parent()?)?;
-     if or_pat.leading_pipe().is_some_and(|it| it == pipe_token) {
      }
      let match_arm = ast::MatchArm::cast(or_pat.syntax().parent()?)?;
      let match_arm_body = match_arm.expr()?;

@@ -34,17 +34,11 @@ pub trait ProcMacroExpander {
         current_dir: String,
     ) -> Result<tt::TopSubtree, ProcMacroExpansionError>;
 
-    fn eq_dyn(
-        &self,
-        other: &dyn ProcMacroExpander,
-    ) -> bool;
+    fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool;
 }
 
 impl PartialEq for dyn ProcMacroExpander {
-    fn eq(
-        &self,
-        other: &Self,
-    ) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.eq_dyn(other)
     }
 }
@@ -90,10 +84,7 @@ impl ProcMacrosBuilder {
         );
     }
 
-    pub(crate) fn build(
-        self,
-        crates_id_map: &CratesIdMap,
-    ) -> ProcMacros {
+    pub(crate) fn build(self, crates_id_map: &CratesIdMap) -> ProcMacros {
         let mut map = self
             .0
             .into_iter()
@@ -121,20 +112,13 @@ pub struct CrateProcMacros(StoredProcMacroLoadResult);
 pub struct ProcMacros(FxHashMap<Crate, Arc<CrateProcMacros>>);
 
 impl ProcMacros {
-    fn get(
-        &self,
-        krate: Crate,
-    ) -> Option<Arc<CrateProcMacros>> {
+    fn get(&self, krate: Crate) -> Option<Arc<CrateProcMacros>> {
         self.0.get(&krate).cloned()
     }
 }
 
 impl CrateProcMacros {
-    fn get(
-        &self,
-        idx: u32,
-        err_span: Span,
-    ) -> Result<&ProcMacro, ExpandError> {
+    fn get(&self, idx: u32, err_span: Span) -> Result<&ProcMacro, ExpandError> {
         let proc_macros = match &self.0 {
             Ok(proc_macros) => proc_macros,
             Err(_) => {
@@ -195,10 +179,7 @@ pub struct ProcMacro {
 }
 
 impl PartialEq for ProcMacro {
-    fn eq(
-        &self,
-        other: &Self,
-    ) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         let Self { name, kind, expander, disabled } = self;
         let Self {
             name: other_name,
@@ -264,10 +245,7 @@ impl CustomProcMacroExpander {
         self.proc_macro_id == Self::PROC_MACRO_ATTR_DISABLED
     }
 
-    pub fn as_expand_error(
-        &self,
-        def_crate: Crate,
-    ) -> Option<ExpandErrorKind> {
+    pub fn as_expand_error(&self, def_crate: Crate) -> Option<ExpandErrorKind> {
         match self.proc_macro_id {
             Self::PROC_MACRO_ATTR_DISABLED => Some(ExpandErrorKind::ProcMacroAttrExpansionDisabled),
             Self::DISABLED_ID => Some(ExpandErrorKind::MacroDisabled),

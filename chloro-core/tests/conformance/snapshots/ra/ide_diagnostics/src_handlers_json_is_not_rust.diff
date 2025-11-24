@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11256 bytes
-Chloro size:   11304 bytes
+Chloro size:   11250 bytes
 Rustfmt size:  11337 bytes
 
 ✗ Outputs DIFFER
@@ -29,29 +29,6 @@ Rustfmt size:  11337 bytes
  
  #[derive(Default)]
  struct State {
- }
- 
- impl State {
--    fn generate_new_name(&mut self, name: &str) -> ast::Name {
-+    fn generate_new_name(
-+        &mut self,
-+        name: &str,
-+    ) -> ast::Name {
-         let name = stdx::to_camel_case(name);
-         let count = if let Some(count) = self.names.get_mut(&name) {
-             *count += 1;
-         ty
-     }
- 
--    fn type_of(&mut self, name: &str, value: &serde_json::Value) -> ast::Type {
-+    fn type_of(
-+        &mut self,
-+        name: &str,
-+        value: &serde_json::Value,
-+    ) -> ast::Type {
-         match value {
-             serde_json::Value::Null => make::ty_unit(),
-             serde_json::Value::Bool(_) => make::ty("bool"),
                      Diagnostic::new(
                          DiagnosticCode::Ra("json-is-not-rust", Severity::WeakWarning),
                          "JSON syntax is not valid as a Rust item",

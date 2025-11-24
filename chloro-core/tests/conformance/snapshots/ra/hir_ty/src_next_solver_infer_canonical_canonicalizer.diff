@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29649 bytes
+Chloro size:   29403 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -63,14 +63,8 @@ Rustfmt size:  29841 bytes
      }
  
      /// Canonicalizes a query *response* `V`. When we canonicalize a
-     /// out the [chapter in the rustc dev guide][c].
-     ///
      /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query-result
--    pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
-+    pub fn canonicalize_response<V>(
-+        &self,
-+        value: V,
-+    ) -> Canonical<'db, V>
+     pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
      where
 -        V: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -78,14 +72,8 @@ Rustfmt size:  29841 bytes
          let mut query_state = OriginalQueryValues::default();
          Canonicalizer::canonicalize(
              value,
-         )
-     }
  
--    pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
-+    pub fn canonicalize_user_type_annotation<V>(
-+        &self,
-+        value: V,
-+    ) -> Canonical<'db, V>
+     pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
      where
 -        V: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -141,14 +129,8 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
-         self.tcx
-     }
  
--    fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
-+    fn fold_binder<T>(
-+        &mut self,
-+        t: Binder<'db, T>,
-+    ) -> Binder<'db, T>
+     fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
      where
 -        T: TypeFoldable<DbInterner<'db>>,
 -    {
@@ -156,39 +138,6 @@ Rustfmt size:  29841 bytes
          self.binder_index.shift_in(1);
          let t = t.super_fold_with(self);
          self.binder_index.shift_out(1);
-         t
-     }
- 
--    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
-+    fn fold_region(
-+        &mut self,
-+        r: Region<'db>,
-+    ) -> Region<'db> {
-         match r.kind() {
-             RegionKind::ReBound(BoundVarIndexKind::Bound(..), ..) => r,
-             RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
-         }
-     }
- 
--    fn fold_ty(&mut self, mut t: Ty<'db>) -> Ty<'db> {
-+    fn fold_ty(
-+        &mut self,
-+        mut t: Ty<'db>,
-+    ) -> Ty<'db> {
-         match t.kind() {
-             TyKind::Infer(TyVar(mut vid)) => {
-                 // We need to canonicalize the *root* of our ty var.
-         }
-     }
- 
--    fn fold_const(&mut self, mut ct: Const<'db>) -> Const<'db> {
-+    fn fold_const(
-+        &mut self,
-+        mut ct: Const<'db>,
-+    ) -> Const<'db> {
-         match ct.kind() {
-             ConstKind::Infer(InferConst::Var(mut vid)) => {
-                 // We need to canonicalize the *root* of our const var.
              }
              _ => {}
          }
@@ -252,10 +201,9 @@ Rustfmt size:  29841 bytes
      }
  
      /// Creates a canonical variable replacing `kind` from the input,
-     /// or returns an existing variable if `kind` has already been
      /// seen. `kind` is expected to be an unbound variable (or
      /// potentially a free region).
--    fn canonical_var(&mut self, info: CanonicalVarKind<'db>, kind: GenericArg<'db>) -> BoundVar {
+     fn canonical_var(&mut self, info: CanonicalVarKind<'db>, kind: GenericArg<'db>) -> BoundVar {
 -        let Canonicalizer {
 -            variables,
 -            query_state,
@@ -263,11 +211,6 @@ Rustfmt size:  29841 bytes
 -            ..
 -        } = self;
 -
-+    fn canonical_var(
-+        &mut self,
-+        info: CanonicalVarKind<'db>,
-+        kind: GenericArg<'db>,
-+    ) -> BoundVar {
 +        let Canonicalizer { variables, query_state, indices, .. } = self;
          let var_values = &mut query_state.var_values;
 -
@@ -281,14 +224,8 @@ Rustfmt size:  29841 bytes
          // This code is hot. `variables` and `var_values` are usually small
          // (fewer than 8 elements ~95% of the time). They are SmallVec's to
          // avoid allocations in those cases. We also don't use `indices` to
-         }
-     }
  
--    fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
-+    fn get_or_insert_sub_root(
-+        &mut self,
-+        vid: TyVid,
-+    ) -> BoundVar {
+     fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
          let root_vid = self.infcx.sub_unification_table_root_var(vid);
 -        let idx = *self
 -            .sub_root_lookup_table
@@ -324,26 +261,3 @@ Rustfmt size:  29841 bytes
                  CanonicalVarKind::Region(u) => CanonicalVarKind::Region(reverse_universe_map[&u]),
                  CanonicalVarKind::Const(u) => CanonicalVarKind::Const(reverse_universe_map[&u]),
                  CanonicalVarKind::PlaceholderTy(placeholder) => {
-     ///
-     /// (This works because unification never fails -- and hence trait
-     /// selection is never affected -- due to a universe mismatch.)
--    fn canonical_var_for_region_in_root_universe(&mut self, r: Region<'db>) -> Region<'db> {
-+    fn canonical_var_for_region_in_root_universe(
-+        &mut self,
-+        r: Region<'db>,
-+    ) -> Region<'db> {
-         self.canonical_var_for_region(CanonicalVarKind::Region(UniverseIndex::ROOT), r)
-     }
- 
-     /// if `ty_var` is bound to anything; if so, canonicalize
-     /// *that*. Otherwise, create a new canonical variable for
-     /// `ty_var`.
--    fn canonicalize_ty_var(&mut self, info: CanonicalVarKind<'db>, ty_var: Ty<'db>) -> Ty<'db> {
-+    fn canonicalize_ty_var(
-+        &mut self,
-+        info: CanonicalVarKind<'db>,
-+        ty_var: Ty<'db>,
-+    ) -> Ty<'db> {
-         debug_assert_eq!(ty_var, self.infcx.shallow_resolve(ty_var));
-         let var = self.canonical_var(info, ty_var.into());
-         Ty::new_canonical_bound(self.cx(), var)

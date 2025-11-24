@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18595 bytes
-Chloro size:   18325 bytes
+Chloro size:   18314 bytes
 Rustfmt size:  18641 bytes
 
 ✗ Outputs DIFFER
@@ -39,16 +39,6 @@ Rustfmt size:  18641 bytes
      match comment.kind().doc {
          Some(_) => doc_to_comment(acc, comment),
          None => can_be_doc_comment(&comment).and_then(|style| comment_to_doc(acc, comment, style)),
-     }
- }
- 
--fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
-+fn doc_to_comment(
-+    acc: &mut Assists,
-+    comment: ast::Comment,
-+) -> Option<()> {
-     let target = if comment.kind().shape.is_line() {
-         line_comments_text_range(&comment)?
      } else {
          comment.syntax().text_range()
      };

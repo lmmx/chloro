@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11085 bytes
-Chloro size:   10608 bytes
+Chloro size:   10574 bytes
 Rustfmt size:  11546 bytes
 
 ✗ Outputs DIFFER
@@ -46,11 +46,7 @@ Rustfmt size:  11546 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn introduce_named_lifetime(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
      // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo
 -    let lifetime = ctx
@@ -157,17 +153,6 @@ Rustfmt size:  11546 bytes
          }
          None => Some("'a".to_owned()),
      }
- }
- 
- impl NeedsLifetime {
--    fn make_mut(self, builder: &mut SourceChangeBuilder) -> Self {
-+    fn make_mut(
-+        self,
-+        builder: &mut SourceChangeBuilder,
-+    ) -> Self {
-         match self {
-             Self::SelfParam(it) => Self::SelfParam(builder.make_mut(it)),
-             Self::RefType(it) => Self::RefType(builder.make_mut(it)),
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -13,10 +13,7 @@ use crate::{
     Assist, Diagnostic, DiagnosticCode, DiagnosticsContext,
 };
 
-pub(crate) fn no_such_field(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::NoSuchField,
-) -> Diagnostic {
+pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {
     let (code, message) = if d.private.is_some() {
         ("E0451", "field is private")
     } else if let VariantId::EnumVariantId(_) = d.variant {
@@ -30,10 +27,7 @@ pub(crate) fn no_such_field(
         .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::NoSuchField,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Option<Vec<Assist>> {
     // FIXME: quickfix for pattern
     let root = ctx.sema.db.parse_or_expand(d.field.file_id);
     match &d.field.value.to_node(&root) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9092 bytes
-Chloro size:   9068 bytes
+Chloro size:   9075 bytes
 Rustfmt size:  9092 bytes
 
 ✗ Outputs DIFFER
@@ -50,14 +50,6 @@ Rustfmt size:  9092 bytes
      acc.extend(hints);
      Some(())
  }
- 
--fn get_segment_representation(
--    arg: &ast::GenericArg,
--) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
-+fn get_segment_representation(arg: &ast::GenericArg) -> Option<Either<Either<Vec<ast::NameRef>, ast::Path>, ast::Lifetime>> {
-     return match arg {
-         ast::GenericArg::AssocTypeArg(_) => None,
-         ast::GenericArg::ConstArg(const_arg) => {
              type_path(&ty).map(Either::Right).map(Either::Left)
          }
      };

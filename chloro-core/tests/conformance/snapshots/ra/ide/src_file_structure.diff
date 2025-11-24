@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34343 bytes
+Chloro size:   34309 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -34,14 +34,6 @@ Rustfmt size:  34938 bytes
      for event in file.syntax().preorder_with_tokens() {
          match event {
              WalkEvent::Enter(NodeOrToken::Node(node)) => {
-     res
- }
- 
--fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<StructureNode> {
-+fn structure_node(
-+    node: &SyntaxNode,
-+    config: &FileStructureConfig,
-+) -> Option<StructureNode> {
      fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
          decl_with_detail(&node, None, kind)
      }
@@ -107,12 +99,8 @@ Rustfmt size:  34938 bytes
 -        exclude_locals: true,
 -    };
 -
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
 +    const DEFAULT_CONFIG: FileStructureConfig = FileStructureConfig { exclude_locals: true };
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          check_with_config(ra_fixture, &DEFAULT_CONFIG, expect);
      }
 -

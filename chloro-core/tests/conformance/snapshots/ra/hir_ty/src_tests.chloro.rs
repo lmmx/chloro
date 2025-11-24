@@ -274,10 +274,7 @@ fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
     infer_with_mismatches(ra_fixture, false)
 }
 
-fn infer_with_mismatches(
-    content: &str,
-    include_mismatches: bool,
-) -> String {
+fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
     crate::attach_db(&db, || {
@@ -495,10 +492,7 @@ pub(crate) fn visit_module(
     }
 }
 
-fn ellipsize(
-    mut text: String,
-    max_len: usize,
-) -> String {
+fn ellipsize(mut text: String, max_len: usize) -> String {
     if text.len() <= max_len {
         return text;
     }
@@ -516,19 +510,13 @@ fn ellipsize(
     text
 }
 
-fn check_infer(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check_infer(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let mut actual = infer(ra_fixture);
     actual.push('\n');
     expect.assert_eq(&actual);
 }
 
-fn check_infer_with_mismatches(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check_infer_with_mismatches(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let mut actual = infer_with_mismatches(ra_fixture, true);
     actual.push('\n');
     expect.assert_eq(&actual);

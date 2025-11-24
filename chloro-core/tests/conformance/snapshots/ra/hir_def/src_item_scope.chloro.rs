@@ -133,27 +133,15 @@ pub struct GlobId {
 }
 
 impl PerNsGlobImports {
-    pub(crate) fn contains_type(
-        &self,
-        module_id: LocalModuleId,
-        name: Name,
-    ) -> bool {
+    pub(crate) fn contains_type(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.types.contains(&(module_id, name))
     }
 
-    pub(crate) fn contains_value(
-        &self,
-        module_id: LocalModuleId,
-        name: Name,
-    ) -> bool {
+    pub(crate) fn contains_value(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.values.contains(&(module_id, name))
     }
 
-    pub(crate) fn contains_macro(
-        &self,
-        module_id: LocalModuleId,
-        name: Name,
-    ) -> bool {
+    pub(crate) fn contains_macro(&self, module_id: LocalModuleId, name: Name) -> bool {
         self.macros.contains(&(module_id, name))
     }
 }
@@ -243,11 +231,15 @@ impl ItemScope {
         self.values.iter().map(|(n, &i)| (n, i))
     }
 
-    pub fn types(&self) -> impl Iterator<Item = (&Name, Item<ModuleDefId, ImportOrExternCrate>)> + '_ {
+    pub fn types(
+        &self,
+    ) -> impl Iterator<Item = (&Name, Item<ModuleDefId, ImportOrExternCrate>)> + '_ {
         self.types.iter().map(|(n, &i)| (n, i))
     }
 
-    pub fn macros(&self) -> impl Iterator<Item = (&Name, Item<MacroId, ImportOrExternCrate>)> + '_ {
+    pub fn macros(
+        &self,
+    ) -> impl Iterator<Item = (&Name, Item<MacroId, ImportOrExternCrate>)> + '_ {
         self.macros.iter().map(|(n, &i)| (n, i))
     }
 
@@ -263,11 +255,7 @@ impl ItemScope {
             .dedup()
     }
 
-    pub fn fully_resolve_import(
-        &self,
-        db: &dyn DefDatabase,
-        mut import: ImportId,
-    ) -> PerNs {
+    pub fn fully_resolve_import(&self, db: &dyn DefDatabase, mut import: ImportId) -> PerNs {
         let mut res = PerNs::none();
         let mut def_map;
         let mut scope = self;
@@ -366,10 +354,7 @@ impl ItemScope {
     }
 
     /// Get a name from current module scope, legacy macros are not included
-    pub fn get(
-        &self,
-        name: &Name,
-    ) -> PerNs {
+    pub fn get(&self, name: &Name) -> PerNs {
         PerNs {
             types: self.types.get(name).copied(),
             values: self.values.get(name).copied(),
@@ -377,10 +362,7 @@ impl ItemScope {
         }
     }
 
-    pub(crate) fn type_(
-        &self,
-        name: &Name,
-    ) -> Option<(ModuleDefId, Visibility)> {
+    pub(crate) fn type_(&self, name: &Name) -> Option<(ModuleDefId, Visibility)> {
         self.types.get(name).map(|item| (item.def, item.vis))
     }
 
@@ -470,82 +452,51 @@ impl ItemScope {
         )
     }
 
-    pub fn macro_invoc(
-        &self,
-        call: AstId<ast::MacroCall>,
-    ) -> Option<MacroCallId> {
+    pub fn macro_invoc(&self, call: AstId<ast::MacroCall>) -> Option<MacroCallId> {
         self.macro_invocations.get(&call).copied()
     }
 
-    pub fn iter_macro_invoc(&self) -> impl Iterator<Item = (&AstId<ast::MacroCall>, &MacroCallId)> {
+    pub fn iter_macro_invoc(
+        &self,
+    ) -> impl Iterator<Item = (&AstId<ast::MacroCall>, &MacroCallId)> {
         self.macro_invocations.iter()
     }
 }
 
 impl ItemScope {
-    pub(crate) fn declare(
-        &mut self,
-        def: ModuleDefId,
-    ) {
+    pub(crate) fn declare(&mut self, def: ModuleDefId) {
         self.declarations.push(def)
     }
 
-    pub(crate) fn get_legacy_macro(
-        &self,
-        name: &Name,
-    ) -> Option<&[MacroId]> {
+    pub(crate) fn get_legacy_macro(&self, name: &Name) -> Option<&[MacroId]> {
         self.legacy_macros.get(name).map(|it| &**it)
     }
 
-    pub(crate) fn define_impl(
-        &mut self,
-        imp: ImplId,
-    ) {
+    pub(crate) fn define_impl(&mut self, imp: ImplId) {
         self.impls.push(imp);
     }
 
-    pub(crate) fn define_extern_block(
-        &mut self,
-        extern_block: ExternBlockId,
-    ) {
+    pub(crate) fn define_extern_block(&mut self, extern_block: ExternBlockId) {
         self.extern_blocks.push(extern_block);
     }
 
-    pub(crate) fn define_extern_crate_decl(
-        &mut self,
-        extern_crate: ExternCrateId,
-    ) {
+    pub(crate) fn define_extern_crate_decl(&mut self, extern_crate: ExternCrateId) {
         self.extern_crate_decls.push(extern_crate);
     }
 
-    pub(crate) fn define_unnamed_const(
-        &mut self,
-        konst: ConstId,
-    ) {
+    pub(crate) fn define_unnamed_const(&mut self, konst: ConstId) {
         self.unnamed_consts.push(konst);
     }
 
-    pub(crate) fn define_legacy_macro(
-        &mut self,
-        name: Name,
-        mac: MacroId,
-    ) {
+    pub(crate) fn define_legacy_macro(&mut self, name: Name, mac: MacroId) {
         self.legacy_macros.entry(name).or_default().push(mac);
     }
 
-    pub(crate) fn add_attr_macro_invoc(
-        &mut self,
-        item: AstId<ast::Item>,
-        call: MacroCallId,
-    ) {
+    pub(crate) fn add_attr_macro_invoc(&mut self, item: AstId<ast::Item>, call: MacroCallId) {
         self.attr_macros.insert(item, call);
     }
 
-    pub(crate) fn add_macro_invoc(
-        &mut self,
-        call: AstId<ast::MacroCall>,
-        call_id: MacroCallId,
-    ) {
+    pub(crate) fn add_macro_invoc(&mut self, call: AstId<ast::MacroCall>, call_id: MacroCallId) {
         self.macro_invocations.insert(call, call_id);
     }
 
@@ -585,7 +536,9 @@ impl ItemScope {
         });
     }
 
-    pub fn derive_macro_invocs(&self) -> impl Iterator<
+    pub fn derive_macro_invocs(
+        &self,
+    ) -> impl Iterator<
         Item = (
             AstId<ast::Adt>,
             impl Iterator<Item = (AttrId, MacroCallId, &[Option<MacroCallId>])>,
@@ -609,10 +562,7 @@ impl ItemScope {
         Some(self.derive_macros.get(&ast_id)?.iter().find(|it| it.attr_id == attr_id)?.attr_call_id)
     }
 
-    pub(crate) fn unnamed_trait_vis(
-        &self,
-        tr: TraitId,
-    ) -> Option<Visibility> {
+    pub(crate) fn unnamed_trait_vis(&self, tr: TraitId) -> Option<Visibility> {
         self.unnamed_trait_imports.iter().find(|&&(t, _)| t == tr).map(|(_, trait_)| trait_.vis)
     }
 
@@ -763,10 +713,7 @@ impl ItemScope {
     }
 
     /// Marks everything that is not a procedural macro as private to `this_module`.
-    pub(crate) fn censor_non_proc_macros(
-        &mut self,
-        krate: Crate,
-    ) {
+    pub(crate) fn censor_non_proc_macros(&mut self, krate: Crate) {
         self.types
             .values_mut()
             .map(|def| &mut def.vis)
@@ -781,11 +728,7 @@ impl ItemScope {
         }
     }
 
-    pub(crate) fn dump(
-        &self,
-        db: &dyn ExpandDatabase,
-        buf: &mut String,
-    ) {
+    pub(crate) fn dump(&self, db: &dyn ExpandDatabase, buf: &mut String) {
         let mut entries: Vec<_> = self.resolutions().collect();
         entries.sort_by_key(|(name, _)| name.clone());
         for (name, def) in entries {
@@ -873,31 +816,19 @@ impl ItemScope {
 }
 
 impl ItemScope {
-    pub(crate) fn update_visibility_types(
-        &mut self,
-        name: &Name,
-        vis: Visibility,
-    ) {
+    pub(crate) fn update_visibility_types(&mut self, name: &Name, vis: Visibility) {
         let res =
             self.types.get_mut(name).expect("tried to update visibility of non-existent type");
         res.vis = vis;
     }
 
-    pub(crate) fn update_visibility_values(
-        &mut self,
-        name: &Name,
-        vis: Visibility,
-    ) {
+    pub(crate) fn update_visibility_values(&mut self, name: &Name, vis: Visibility) {
         let res =
             self.values.get_mut(name).expect("tried to update visibility of non-existent value");
         res.vis = vis;
     }
 
-    pub(crate) fn update_visibility_macros(
-        &mut self,
-        name: &Name,
-        vis: Visibility,
-    ) {
+    pub(crate) fn update_visibility_macros(&mut self, name: &Name, vis: Visibility) {
         let res =
             self.macros.get_mut(name).expect("tried to update visibility of non-existent macro");
         res.vis = vis;
@@ -955,20 +886,14 @@ impl ItemInNs {
     }
 
     /// Returns the crate defining this item (or `None` if `self` is built-in).
-    pub fn krate(
-        &self,
-        db: &dyn DefDatabase,
-    ) -> Option<Crate> {
+    pub fn krate(&self, db: &dyn DefDatabase) -> Option<Crate> {
         match self {
             ItemInNs::Types(id) | ItemInNs::Values(id) => id.module(db).map(|m| m.krate),
             ItemInNs::Macros(id) => Some(id.module(db).krate),
         }
     }
 
-    pub fn module(
-        &self,
-        db: &dyn DefDatabase,
-    ) -> Option<ModuleId> {
+    pub fn module(&self, db: &dyn DefDatabase) -> Option<ModuleId> {
         match self {
             ItemInNs::Types(id) | ItemInNs::Values(id) => id.module(db),
             ItemInNs::Macros(id) => Some(id.module(db)),

@@ -85,10 +85,7 @@ impl<'db> ObligationStorage<'db> {
         not_stalled
     }
 
-    fn on_fulfillment_overflow(
-        &mut self,
-        infcx: &InferCtxt<'db>,
-    ) {
+    fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
         infcx.probe(|_| {
             // IMPORTANT: we must not use solve any inference variables in the obligations
             // as this is all happening inside of a probe. We use a probe to make sure
@@ -288,10 +285,7 @@ pub struct StalledOnCoroutines<'a, 'db> {
 impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
     type Result = ControlFlow<()>;
 
-    fn visit_goal(
-        &mut self,
-        inspect_goal: &super::inspect::InspectGoal<'_, 'db>,
-    ) -> Self::Result {
+    fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
         inspect_goal.goal().predicate.visit_with(self)?;
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
@@ -304,10 +298,7 @@ impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
 impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
     type Result = ControlFlow<()>;
 
-    fn visit_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Self::Result {
+    fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
         if !self.cache.insert(ty) {
             return ControlFlow::Continue(());
         }

@@ -54,10 +54,7 @@ pub(crate) fn type_mismatch(
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::TypeMismatch<'_>,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
     if let Some(expr_ptr) = d.expr_or_pat.value.cast::<ast::Expr>() {
         let expr_ptr = &InFile { file_id: d.expr_or_pat.file_id, value: expr_ptr };

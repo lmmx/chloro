@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8451 bytes
+Chloro size:   8382 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -80,12 +80,8 @@ Rustfmt size:  8697 bytes
      pub(crate) fn token_at_offset(&self) -> TokenAtOffset<SyntaxToken> {
          self.token_at_offset.clone()
      }
--    pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
 +
-+    pub(crate) fn find_token_syntax_at_offset(
-+        &self,
-+        kind: SyntaxKind,
-+    ) -> Option<SyntaxToken> {
+     pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
          self.token_at_offset().find(|it| it.kind() == kind)
      }
 +
@@ -114,17 +110,6 @@ Rustfmt size:  8697 bytes
      /// Returns the element covered by the selection range, this excludes trailing whitespace in the selection.
      pub(crate) fn covering_element(&self) -> SyntaxElement {
          self.covering_element.clone()
- }
- 
- impl Assists {
--    pub(crate) fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
-+    pub(crate) fn new(
-+        ctx: &AssistContext<'_>,
-+        resolve: AssistResolveStrategy,
-+    ) -> Assists {
-         Assists {
-             resolve,
-             file: ctx.frange.file_id.file_id(ctx.db()),
          f: impl FnOnce(&mut SourceChangeBuilder),
      ) -> Option<()> {
          let mut f = Some(f);
@@ -170,11 +155,3 @@ Rustfmt size:  8697 bytes
          Some(())
      }
  
--    fn is_allowed(&self, id: &AssistId) -> bool {
-+    fn is_allowed(
-+        &self,
-+        id: &AssistId,
-+    ) -> bool {
-         match &self.allowed {
-             Some(allowed) => allowed.iter().any(|kind| kind.contains(id.1)),
-             None => true,

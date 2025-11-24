@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62523 bytes
-Chloro size:   62559 bytes
+Chloro size:   62436 bytes
 Rustfmt size:  62523 bytes
 
 ✗ Outputs DIFFER
@@ -30,42 +30,6 @@ Rustfmt size:  62523 bytes
  };
  
  use crate::RootDatabase;
-         &self.parameters
-     }
- 
--    fn push_call_param(&mut self, param: &str) {
-+    fn push_call_param(
-+        &mut self,
-+        param: &str,
-+    ) {
-         self.push_param("(", param);
-     }
- 
--    fn push_generic_param(&mut self, param: &str) {
-+    fn push_generic_param(
-+        &mut self,
-+        param: &str,
-+    ) {
-         self.push_param("<", param);
-     }
- 
--    fn push_record_field(&mut self, param: &str) {
-+    fn push_record_field(
-+        &mut self,
-+        param: &str,
-+    ) {
-         self.push_param("{ ", param);
-     }
- 
--    fn push_param(&mut self, opening_delim: &str, param: &str) {
-+    fn push_param(
-+        &mut self,
-+        opening_delim: &str,
-+        param: &str,
-+    ) {
-         if !self.signature.ends_with(opening_delim) {
-             self.signature.push_str(", ");
-         }
      let edition =
          sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
      let display_target = sema.first_crate(file_id)?.to_display_target(db);
@@ -238,14 +202,8 @@ Rustfmt size:  62523 bytes
      }
 -
      #[track_caller]
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (db, position) = position(ra_fixture);
-         let sig_help = hir::attach_db(&db, || crate::signature_help::signature_help(&db, position));
-         let actual = match sig_help {
          };
          expect.assert_eq(&actual);
      }

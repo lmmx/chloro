@@ -17,10 +17,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn remove_unused_imports(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // First, grab the uses that intersect with the current selection.
     let selected_el = match ctx.covering_element() {
         syntax::NodeOrToken::Node(n) => n,
@@ -189,10 +186,7 @@ fn used_once_in_scope(
 }
 
 /// Build a search scope spanning the given module but none of its submodules.
-fn module_search_scope(
-    db: &RootDatabase,
-    module: hir::Module,
-) -> Vec<SearchScope> {
+fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
     let (file_id, range) = {
         let InFile { file_id, value } = module.definition_source(db);
         if let Some(InRealFile { file_id, value: call_source }) = file_id.original_call_node(db) {

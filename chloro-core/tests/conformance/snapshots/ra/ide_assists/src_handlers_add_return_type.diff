@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11659 bytes
+Chloro size:   11648 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,7 @@ Rustfmt size:  12025 bytes
 -// ```
 -// fn foo() -> i32 { 42i32 }
 -// ```
--pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn add_return_type(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
      let module = ctx.sema.scope(tail_expr.syntax())?.module();
 -    let ty = ctx

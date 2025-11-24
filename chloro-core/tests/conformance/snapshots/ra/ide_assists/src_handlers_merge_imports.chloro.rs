@@ -18,10 +18,7 @@ use crate::{
     utils::next_prev,
 };
 
-pub(crate) fn merge_imports(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (target, edits) = if ctx.has_empty_selection() {
         // Merge a neighbor
         cov_mark::hit!(merge_with_use_item_neighbors);
@@ -106,21 +103,13 @@ trait Merge {
         }
     }
 
-    fn try_merge(
-        &self,
-        other: &Self,
-        cfg: &InsertUseConfig,
-    ) -> Option<Self>;
+    fn try_merge(&self, other: &Self, cfg: &InsertUseConfig) -> Option<Self>;
 
     fn into_either(self) -> Either<ast::Use, ast::UseTree>;
 }
 
 impl Merge for ast::Use {
-    fn try_merge(
-        &self,
-        other: &Self,
-        cfg: &InsertUseConfig,
-    ) -> Option<Self> {
+    fn try_merge(&self, other: &Self, cfg: &InsertUseConfig) -> Option<Self> {
         let mb = match cfg.granularity {
             ImportGranularity::One => MergeBehavior::One,
             _ => MergeBehavior::Crate,
@@ -134,11 +123,7 @@ impl Merge for ast::Use {
 }
 
 impl Merge for ast::UseTree {
-    fn try_merge(
-        &self,
-        other: &Self,
-        _: &InsertUseConfig,
-    ) -> Option<Self> {
+    fn try_merge(&self, other: &Self, _: &InsertUseConfig) -> Option<Self> {
         try_merge_trees(self, other, MergeBehavior::Crate)
     }
 
@@ -154,10 +139,7 @@ enum Edit {
 }
 
 impl Edit {
-    fn replace(
-        old: impl AstNode,
-        new: impl AstNode,
-    ) -> Self {
+    fn replace(old: impl AstNode, new: impl AstNode) -> Self {
         Edit::Replace(old.syntax().clone(), new.syntax().clone())
     }
 }

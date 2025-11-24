@@ -209,10 +209,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         }
     }
 
-    pub(crate) fn set_lifetime_elision(
-        &mut self,
-        lifetime_elision: LifetimeElisionKind<'db>,
-    ) {
+    pub(crate) fn set_lifetime_elision(&mut self, lifetime_elision: LifetimeElisionKind<'db>) {
         self.lifetime_elision = lifetime_elision;
     }
 
@@ -235,33 +232,20 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         self.with_debruijn(self.in_binders.shifted_in(debruijn.as_u32()), f)
     }
 
-    pub(crate) fn with_impl_trait_mode(
-        self,
-        impl_trait_mode: ImplTraitLoweringMode,
-    ) -> Self {
+    pub(crate) fn with_impl_trait_mode(self, impl_trait_mode: ImplTraitLoweringMode) -> Self {
         Self { impl_trait_mode: ImplTraitLoweringState::new(impl_trait_mode), ..self }
     }
 
-    pub(crate) fn impl_trait_mode(
-        &mut self,
-        impl_trait_mode: ImplTraitLoweringMode,
-    ) -> &mut Self {
+    pub(crate) fn impl_trait_mode(&mut self, impl_trait_mode: ImplTraitLoweringMode) -> &mut Self {
         self.impl_trait_mode = ImplTraitLoweringState::new(impl_trait_mode);
         self
     }
 
-    pub(crate) fn lowering_param_default(
-        &mut self,
-        index: u32,
-    ) {
+    pub(crate) fn lowering_param_default(&mut self, index: u32) {
         self.lowering_param_default = Some(index);
     }
 
-    pub(crate) fn push_diagnostic(
-        &mut self,
-        type_ref: TypeRefId,
-        kind: TyLoweringDiagnosticKind,
-    ) {
+    pub(crate) fn push_diagnostic(&mut self, type_ref: TypeRefId, kind: TyLoweringDiagnosticKind) {
         self.diagnostics.push(TyLoweringDiagnostic { source: type_ref, kind });
     }
 }
@@ -279,18 +263,11 @@ pub(crate) enum ImplTraitLoweringMode {
 }
 
 impl<'db, 'a> TyLoweringContext<'db, 'a> {
-    pub fn lower_ty(
-        &mut self,
-        type_ref: TypeRefId,
-    ) -> Ty<'db> {
+    pub fn lower_ty(&mut self, type_ref: TypeRefId) -> Ty<'db> {
         self.lower_ty_ext(type_ref).0
     }
 
-    pub(crate) fn lower_const(
-        &mut self,
-        const_ref: ConstRef,
-        const_type: Ty<'db>,
-    ) -> Const<'db> {
+    pub(crate) fn lower_const(&mut self, const_ref: ConstRef, const_type: Ty<'db>) -> Const<'db> {
         let const_ref = &self.store[const_ref.expr];
         match const_ref {
             hir_def::hir::Expr::Path(path) => {
@@ -338,10 +315,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         }
     }
 
-    pub(crate) fn path_to_const(
-        &mut self,
-        path: &Path,
-    ) -> Option<Const<'db>> {
+    pub(crate) fn path_to_const(&mut self, path: &Path) -> Option<Const<'db>> {
         match self.resolver.resolve_path_in_value_ns_fully(self.db, path, HygieneId::ROOT) {
             Some(ValueNs::GenericParam(p)) => {
                 let args = self.generics();
@@ -372,11 +346,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         }
     }
 
-    pub(crate) fn lower_path_as_const(
-        &mut self,
-        path: &Path,
-        const_type: Ty<'db>,
-    ) -> Const<'db> {
+    pub(crate) fn lower_path_as_const(&mut self, path: &Path, const_type: Ty<'db>) -> Const<'db> {
         self.path_to_const(path).unwrap_or_else(|| unknown_const(const_type))
     }
 
@@ -384,19 +354,12 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         self.generics.get_or_init(|| generics(self.db, self.def))
     }
 
-    fn param_index_is_disallowed(
-        &self,
-        index: u32,
-    ) -> bool {
+    fn param_index_is_disallowed(&self, index: u32) -> bool {
         self.lowering_param_default
             .is_some_and(|disallow_params_after| index >= disallow_params_after)
     }
 
-    fn type_param(
-        &mut self,
-        id: TypeParamId,
-        index: u32,
-    ) -> Ty<'db> {
+    fn type_param(&mut self, id: TypeParamId, index: u32) -> Ty<'db> {
         if self.param_index_is_disallowed(index) {
             // FIXME: Report an error.
             Ty::new_error(self.interner, ErrorGuaranteed)
@@ -405,11 +368,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         }
     }
 
-    fn const_param(
-        &mut self,
-        id: ConstParamId,
-        index: u32,
-    ) -> Const<'db> {
+    fn const_param(&mut self, id: ConstParamId, index: u32) -> Const<'db> {
         if self.param_index_is_disallowed(index) {
             // FIXME: Report an error.
             Const::error(self.interner)
@@ -418,11 +377,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         }
     }
 
-    fn region_param(
-        &mut self,
-        id: LifetimeParamId,
-        index: u32,
-    ) -> Region<'db> {
+    fn region_param(&mut self, id: LifetimeParamId, index: u32) -> Region<'db> {
         if self.param_index_is_disallowed(index) {
             // FIXME: Report an error.
             Region::error(self.interner)
@@ -432,10 +387,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
     }
 
     #[tracing::instrument(skip(self), ret)]
-    pub fn lower_ty_ext(
-        &mut self,
-        type_ref_id: TypeRefId,
-    ) -> (Ty<'db>, Option<TypeNs>) {
+    pub fn lower_ty_ext(&mut self, type_ref_id: TypeRefId) -> (Ty<'db>, Option<TypeNs>) {
         let interner = self.interner;
         let mut res = None;
         let type_ref = &self.store[type_ref_id];
@@ -565,10 +517,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
     /// This is only for `generic_predicates_for_param`, where we can't just
     /// lower the self types of the predicates since that could lead to cycles.
     /// So we just check here if the `type_ref` resolves to a generic param, and which.
-    fn lower_ty_only_param(
-        &self,
-        type_ref: TypeRefId,
-    ) -> Option<TypeOrConstParamId> {
+    fn lower_ty_only_param(&self, type_ref: TypeRefId) -> Option<TypeOrConstParamId> {
         let type_ref = &self.store[type_ref];
         let path = match type_ref {
             TypeRef::Path(path) => path,
@@ -603,10 +552,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
     }
 
     #[inline]
-    fn at_path(
-        &mut self,
-        path_id: PathId,
-    ) -> PathLoweringContext<'_, 'a, 'db> {
+    fn at_path(&mut self, path_id: PathId) -> PathLoweringContext<'_, 'a, 'db> {
         PathLoweringContext::new(
             self,
             Self::on_path_diagnostic_callback(path_id.type_ref()),
@@ -776,10 +722,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         clause.into_iter().chain(assoc_bounds.into_iter().flatten())
     }
 
-    fn lower_dyn_trait(
-        &mut self,
-        bounds: &[TypeBound],
-    ) -> Ty<'db> {
+    fn lower_dyn_trait(&mut self, bounds: &[TypeBound]) -> Ty<'db> {
         let interner = self.interner;
         // FIXME: we should never create non-existential predicates in the first place
         // For now, use an error type so we don't run into dummy binder issues
@@ -978,10 +921,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
         ImplTrait { predicates }
     }
 
-    pub(crate) fn lower_lifetime(
-        &mut self,
-        lifetime: LifetimeRefId,
-    ) -> Region<'db> {
+    pub(crate) fn lower_lifetime(&mut self, lifetime: LifetimeRefId) -> Region<'db> {
         match self.resolver.resolve_lifetime(&self.store[lifetime]) {
             Some(resolution) => match resolution {
                 LifetimeNs::Static => Region::new_static(self.interner),
@@ -1104,10 +1044,7 @@ pub enum ValueTyDefId {
     StaticId(StaticId),
 }
 impl ValueTyDefId {
-    pub(crate) fn to_generic_def_id(
-        self,
-        db: &dyn HirDatabase,
-    ) -> GenericDefId {
+    pub(crate) fn to_generic_def_id(self, db: &dyn HirDatabase) -> GenericDefId {
         match self {
             Self::FunctionId(id) => id.into(),
             Self::StructId(id) => id.into(),
@@ -1123,10 +1060,7 @@ impl ValueTyDefId {
 /// `struct Foo(usize)`, we have two types: The type of the struct itself, and
 /// the constructor function `(usize) -> Foo` which lives in the values
 /// namespace.
-pub(crate) fn ty_query<'db>(
-    db: &'db dyn HirDatabase,
-    def: TyDefId,
-) -> EarlyBinder<'db, Ty<'db>> {
+pub(crate) fn ty_query<'db>(db: &'db dyn HirDatabase, def: TyDefId) -> EarlyBinder<'db, Ty<'db>> {
     let interner = DbInterner::new_with(db, None, None);
     match def {
         TyDefId::BuiltinType(it) => EarlyBinder::bind(Ty::from_builtin_type(interner, it)),
@@ -1141,10 +1075,7 @@ pub(crate) fn ty_query<'db>(
 
 /// Build the declared type of a function. This should not need to look at the
 /// function body.
-fn type_for_fn<'db>(
-    db: &'db dyn HirDatabase,
-    def: FunctionId,
-) -> EarlyBinder<'db, Ty<'db>> {
+fn type_for_fn<'db>(db: &'db dyn HirDatabase, def: FunctionId) -> EarlyBinder<'db, Ty<'db>> {
     let interner = DbInterner::new_with(db, None, None);
     EarlyBinder::bind(Ty::new_fn_def(
         interner,
@@ -1154,10 +1085,7 @@ fn type_for_fn<'db>(
 }
 
 /// Build the declared type of a const.
-fn type_for_const<'db>(
-    db: &'db dyn HirDatabase,
-    def: ConstId,
-) -> EarlyBinder<'db, Ty<'db>> {
+fn type_for_const<'db>(db: &'db dyn HirDatabase, def: ConstId) -> EarlyBinder<'db, Ty<'db>> {
     let resolver = def.resolver(db);
     let data = db.const_signature(def);
     let parent = def.loc(db).container;
@@ -1173,10 +1101,7 @@ fn type_for_const<'db>(
 }
 
 /// Build the declared type of a static.
-fn type_for_static<'db>(
-    db: &'db dyn HirDatabase,
-    def: StaticId,
-) -> EarlyBinder<'db, Ty<'db>> {
+fn type_for_static<'db>(db: &'db dyn HirDatabase, def: StaticId) -> EarlyBinder<'db, Ty<'db>> {
     let resolver = def.resolver(db);
     let data = db.static_signature(def);
     let mut ctx = TyLoweringContext::new(
@@ -1314,10 +1239,7 @@ pub(crate) fn impl_self_ty_with_diagnostics_cycle_result(
     (EarlyBinder::bind(Ty::new_error(DbInterner::new_with(db, None, None), ErrorGuaranteed)), None)
 }
 
-pub(crate) fn const_param_ty_query<'db>(
-    db: &'db dyn HirDatabase,
-    def: ConstParamId,
-) -> Ty<'db> {
+pub(crate) fn const_param_ty_query<'db>(db: &'db dyn HirDatabase, def: ConstParamId) -> Ty<'db> {
     db.const_param_ty_with_diagnostics(def).0
 }
 
@@ -1824,10 +1746,7 @@ pub struct GenericDefaults<'db>(Option<Arc<[Option<EarlyBinder<'db, GenericArg<'
 
 impl<'db> GenericDefaults<'db> {
     #[inline]
-    pub fn get(
-        &self,
-        idx: usize,
-    ) -> Option<EarlyBinder<'db, GenericArg<'db>>> {
+    pub fn get(&self, idx: usize) -> Option<EarlyBinder<'db, GenericArg<'db>>> {
         self.0.as_ref()?[idx]
     }
 }
@@ -1968,10 +1887,7 @@ fn fn_sig_for_fn<'db>(
     }))
 }
 
-fn type_for_adt<'db>(
-    db: &'db dyn HirDatabase,
-    adt: AdtId,
-) -> EarlyBinder<'db, Ty<'db>> {
+fn type_for_adt<'db>(db: &'db dyn HirDatabase, adt: AdtId) -> EarlyBinder<'db, Ty<'db>> {
     let interner = DbInterner::new_with(db, None, None);
     let args = GenericArgs::identity_for_item(interner, adt.into());
     let ty = Ty::new_adt(interner, adt, args);

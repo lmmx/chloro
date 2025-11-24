@@ -17,10 +17,7 @@ use crate::{
     utils::ref_field_expr::determine_ref_and_parens,
 };
 
-pub(crate) fn destructure_tuple_binding(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn destructure_tuple_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     destructure_tuple_binding_impl(acc, ctx, false)
 }
 
@@ -62,10 +59,7 @@ fn destructure_tuple_edit_impl(
     }
 }
 
-fn collect_data(
-    ident_pat: IdentPat,
-    ctx: &AssistContext<'_>,
-) -> Option<TupleData> {
+fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleData> {
     if ident_pat.at_token().is_some() {
         // Cannot destructure pattern with sub-pattern:
         // Only IdentPat can have sub-pattern,
@@ -252,10 +246,7 @@ enum EditTupleUsage {
 }
 
 impl EditTupleUsage {
-    fn apply(
-        self,
-        edit: &mut SourceChangeBuilder,
-    ) {
+    fn apply(self, edit: &mut SourceChangeBuilder) {
         match self {
             EditTupleUsage::NoIndex(range) => {
                 edit.insert(range.start(), "/*");
@@ -273,10 +264,7 @@ struct TupleIndex {
     field_expr: FieldExpr,
 }
 
-fn detect_tuple_index(
-    usage: &FileReference,
-    data: &TupleData,
-) -> Option<TupleIndex> {
+fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIndex> {
     // usage is IDENT
     // IDENT
     //  NAME_REF
@@ -330,10 +318,7 @@ mod tests {
     use crate::tests::{check_assist, check_assist_not_applicable};
     // Tests for direct tuple destructure:
     // `let $0t = (1,2);` -> `let (_0, _1) = (1,2);`
-    fn assist(
-        acc: &mut Assists,
-        ctx: &AssistContext<'_>,
-    ) -> Option<()> {
+    fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
         destructure_tuple_binding_impl(acc, ctx, false)
     }
     #[test]
@@ -1104,16 +1089,10 @@ fn main {
     mod assist {
         use super::*;
         use crate::tests::check_assist_by_label;
-        fn assist(
-            acc: &mut Assists,
-            ctx: &AssistContext<'_>,
-        ) -> Option<()> {
+        fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
             destructure_tuple_binding_impl(acc, ctx, true)
         }
-        fn in_place_assist(
-            acc: &mut Assists,
-            ctx: &AssistContext<'_>,
-        ) -> Option<()> {
+        fn in_place_assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
             destructure_tuple_binding_impl(acc, ctx, false)
         }
         pub(crate) fn check_in_place_assist(

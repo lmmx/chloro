@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12611 bytes
-Chloro size:   12840 bytes
+Chloro size:   12602 bytes
 Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
@@ -22,14 +22,8 @@ Rustfmt size:  12892 bytes
  use lsp_types::lsif;
  use project_model::{CargoConfig, ProjectManifest, ProjectWorkspace, RustLibSource};
  use rustc_hash::FxHashMap;
-         }
-     }
  
--    fn add(&mut self, data: lsif::Element) -> Id {
-+    fn add(
-+        &mut self,
-+        data: lsif::Element,
-+    ) -> Id {
+     fn add(&mut self, data: lsif::Element) -> Id {
          let id = Id(self.count);
 -        self.emit(
 -            &serde_json::to_string(&lsif::Entry {
@@ -42,84 +36,6 @@ Rustfmt size:  12892 bytes
          self.count += 1;
          id
      }
- 
--    fn add_vertex(&mut self, vertex: lsif::Vertex) -> Id {
-+    fn add_vertex(
-+        &mut self,
-+        vertex: lsif::Vertex,
-+    ) -> Id {
-         self.add(lsif::Element::Vertex(vertex))
-     }
- 
--    fn add_edge(&mut self, edge: lsif::Edge) -> Id {
-+    fn add_edge(
-+        &mut self,
-+        edge: lsif::Edge,
-+    ) -> Id {
-         self.add(lsif::Element::Edge(edge))
-     }
- 
--    fn emit(&mut self, data: &str) {
-+    fn emit(
-+        &mut self,
-+        data: &str,
-+    ) {
-         format_to!(self.out, "{data}\n");
-     }
- 
--    fn get_token_id(&mut self, id: TokenId) -> Id {
-+    fn get_token_id(
-+        &mut self,
-+        id: TokenId,
-+    ) -> Id {
-         if let Some(it) = self.token_map.get(&id) {
-             return *it;
-         }
-         result_set_id
-     }
- 
--    fn get_package_id(&mut self, package_information: PackageInformation) -> Id {
-+    fn get_package_id(
-+        &mut self,
-+        package_information: PackageInformation,
-+    ) -> Id {
-         if let Some(it) = self.package_map.get(&package_information) {
-             return *it;
-         }
-         result_set_id
-     }
- 
--    fn get_range_id(&mut self, id: FileRange) -> Id {
-+    fn get_range_id(
-+        &mut self,
-+        id: FileRange,
-+    ) -> Id {
-         if let Some(it) = self.range_map.get(&id) {
-             return *it;
-         }
-         range_id
-     }
- 
--    fn get_file_id(&mut self, id: FileId) -> Id {
-+    fn get_file_id(
-+        &mut self,
-+        id: FileId,
-+    ) -> Id {
-         if let Some(it) = self.file_map.get(&id) {
-             return *it;
-         }
-         doc_id
-     }
- 
--    fn add_token(&mut self, id: TokenId, token: TokenStaticData) {
-+    fn add_token(
-+        &mut self,
-+        id: TokenId,
-+        token: TokenStaticData,
-+    ) {
-         let result_set_id = self.get_token_id(id);
-         if let Some(hover) = token.hover {
-             let hover_id = self.add_vertex(lsif::Vertex::HoverResult {
              let mut edges = token.references.iter().fold(
                  FxHashMap::<_, Vec<lsp_types::NumberOrString>>::default(),
                  |mut edges, it| {
@@ -130,20 +46,15 @@ Rustfmt size:  12892 bytes
                      entry.push((*self.range_map.get(&it.range).unwrap()).into());
                      edges
                  },
-         }
      }
  
--    fn add_file(&mut self, file: StaticIndexedFile) {
+     fn add_file(&mut self, file: StaticIndexedFile) {
 -        let StaticIndexedFile {
 -            file_id,
 -            tokens,
 -            folds,
 -            ..
 -        } = file;
-+    fn add_file(
-+        &mut self,
-+        file: StaticIndexedFile,
-+    ) {
 +        let StaticIndexedFile { file_id, tokens, folds, .. } = file;
          let doc_id = self.get_file_id(file_id);
          let text = self.analysis.file_text(file_id).unwrap();

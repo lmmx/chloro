@@ -88,10 +88,7 @@ impl Query {
     }
 
     /// Specifies whether we want to include associated items in the result.
-    pub fn assoc_search_mode(
-        &mut self,
-        assoc_mode: AssocSearchMode,
-    ) {
+    pub fn assoc_search_mode(&mut self, assoc_mode: AssocSearchMode) {
         self.assoc_mode = assoc_mode;
     }
 
@@ -121,18 +118,12 @@ pub struct LocalRoots {
 }
 
 /// The symbol indices of modules that make up a given crate.
-pub fn crate_symbols(
-    db: &dyn HirDatabase,
-    krate: Crate,
-) -> Box<[&SymbolIndex]> {
+pub fn crate_symbols(db: &dyn HirDatabase, krate: Crate) -> Box<[&SymbolIndex]> {
     let _p = tracing::info_span!("crate_symbols").entered();
     krate.modules(db).into_iter().map(|module| SymbolIndex::module_symbols(db, module)).collect()
 }
 
-pub fn world_symbols(
-    db: &RootDatabase,
-    query: Query,
-) -> Vec<FileSymbol> {
+pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
     let _p = tracing::info_span!("world_symbols", query = ?query.query).entered();
     let indices: Vec<_> = if query.libs {
         LibraryRoots::get(db)
@@ -173,10 +164,7 @@ pub struct SymbolIndex {
 
 impl SymbolIndex {
     /// The symbol index for a given source root within library_roots.
-    pub fn library_symbols(
-        db: &dyn HirDatabase,
-        source_root_id: SourceRootId,
-    ) -> &SymbolIndex {
+    pub fn library_symbols(db: &dyn HirDatabase, source_root_id: SourceRootId) -> &SymbolIndex {
         // FIXME:
         #[salsa::interned]
         struct InternedSourceRootId {
@@ -209,10 +197,7 @@ impl SymbolIndex {
 
     /// The symbol index for a given module. These modules should only be in source roots that
     /// are inside local_roots.
-    pub fn module_symbols(
-        db: &dyn HirDatabase,
-        module: Module,
-    ) -> &SymbolIndex {
+    pub fn module_symbols(db: &dyn HirDatabase, module: Module) -> &SymbolIndex {
         // FIXME:
         #[salsa::interned]
         struct InternedModuleId {
@@ -237,19 +222,13 @@ impl SymbolIndex {
 }
 
 impl fmt::Debug for SymbolIndex {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SymbolIndex").field("n_symbols", &self.symbols.len()).finish()
     }
 }
 
 impl PartialEq for SymbolIndex {
-    fn eq(
-        &self,
-        other: &SymbolIndex,
-    ) -> bool {
+    fn eq(&self, other: &SymbolIndex) -> bool {
         self.symbols == other.symbols
     }
 }
@@ -258,10 +237,7 @@ impl Eq for SymbolIndex {
 }
 
 impl Hash for SymbolIndex {
-    fn hash<H: Hasher>(
-        &self,
-        hasher: &mut H,
-    ) {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
         self.symbols.hash(hasher)
     }
 }
@@ -312,10 +288,7 @@ impl SymbolIndex {
         self.map.as_fst().size() + self.symbols.len() * size_of::<FileSymbol>()
     }
 
-    fn range_to_map_value(
-        start: usize,
-        end: usize,
-    ) -> u64 {
+    fn range_to_map_value(start: usize, end: usize) -> u64 {
         debug_assert![start <= (u32::MAX as usize)];
         debug_assert![end <= (u32::MAX as usize)];
         ((start as u64) << 32) | end as u64
@@ -407,10 +380,7 @@ impl Query {
         None
     }
 
-    fn matches_assoc_mode(
-        &self,
-        is_trait_assoc_item: bool,
-    ) -> bool {
+    fn matches_assoc_mode(&self, is_trait_assoc_item: bool) -> bool {
         !matches!(
             (is_trait_assoc_item, self.assoc_mode),
             (true, AssocSearchMode::Exclude) | (false, AssocSearchMode::AssocItemsOnly)

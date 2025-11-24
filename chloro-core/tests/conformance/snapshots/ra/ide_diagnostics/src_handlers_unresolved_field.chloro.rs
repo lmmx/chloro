@@ -50,10 +50,7 @@ pub(crate) fn unresolved_field(
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::UnresolvedField<'_>,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
     if d.method_with_same_name_exists {
         fixes.extend(method_fix(ctx, &d.expr));
@@ -62,10 +59,7 @@ fn fixes(
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 
-fn field_fix(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::UnresolvedField<'_>,
-) -> Option<Assist> {
+fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Option<Assist> {
     // Get the FileRange of the invalid field access
     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
     let expr = d.expr.value.to_node(&root).left()?;

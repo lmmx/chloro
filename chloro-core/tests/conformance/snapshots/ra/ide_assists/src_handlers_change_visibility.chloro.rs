@@ -10,20 +10,14 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::vis_offset};
 
-pub(crate) fn change_visibility(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {
         return change_vis(acc, vis);
     }
     add_vis(acc, ctx)
 }
 
-fn add_vis(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let item_keyword = ctx.token_at_offset().find(|leaf| {
         matches!(
             leaf.kind(),
@@ -102,10 +96,7 @@ fn can_add(node: &SyntaxNode) -> bool {
     }
 }
 
-fn change_vis(
-    acc: &mut Assists,
-    vis: ast::Visibility,
-) -> Option<()> {
+fn change_vis(acc: &mut Assists, vis: ast::Visibility) -> Option<()> {
     if vis.syntax().text() == "pub" {
         let target = vis.syntax().text_range();
         return acc.add(

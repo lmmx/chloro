@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10203 bytes
-Chloro size:   9479 bytes
+Chloro size:   9468 bytes
 Rustfmt size:  10203 bytes
 
 ✗ Outputs DIFFER
@@ -50,14 +50,9 @@ Rustfmt size:  10203 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn move_const_to_impl(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let db = ctx.db();
      let const_: ast::Const = ctx.find_node_at_offset()?;
-     // Don't show the assist when the cursor is at the const's body.
      {
          return None;
      }

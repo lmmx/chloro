@@ -103,10 +103,7 @@ fn banged_name(name: &str) -> SmolStr {
     SmolStr::from_iter([name, "!"])
 }
 
-fn guess_macro_braces(
-    macro_name: &str,
-    docs: &str,
-) -> (&'static str, &'static str) {
+fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static str) {
     let mut votes = [0, 0, 0];
     for (idx, s) in docs.match_indices(&macro_name) {
         let (before, after) = (&docs[..idx], &docs[idx + s.len()..]);

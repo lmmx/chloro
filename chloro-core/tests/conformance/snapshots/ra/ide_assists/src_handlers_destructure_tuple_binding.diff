@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43693 bytes
+Chloro size:   43544 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -39,11 +39,7 @@ Rustfmt size:  44616 bytes
 -//     let v = _0;
 -// }
 -// ```
--pub(crate) fn destructure_tuple_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn destructure_tuple_binding(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn destructure_tuple_binding(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      destructure_tuple_binding_impl(acc, ctx, false)
  }
  
@@ -107,14 +103,6 @@ Rustfmt size:  44616 bytes
      }
  }
  
--fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleData> {
-+fn collect_data(
-+    ident_pat: IdentPat,
-+    ctx: &AssistContext<'_>,
-+) -> Option<TupleData> {
-     if ident_pat.at_token().is_some() {
-         // Cannot destructure pattern with sub-pattern:
-         // Only IdentPat can have sub-pattern,
          cov_mark::hit!(destructure_tuple_subpattern);
          return None;
      }
@@ -250,16 +238,6 @@ Rustfmt size:  44616 bytes
  enum EditTupleUsage {
      /// no index access -> make invalid -> requires handling by user
      /// -> put usage in block comment
- }
- 
- impl EditTupleUsage {
--    fn apply(self, edit: &mut SourceChangeBuilder) {
-+    fn apply(
-+        self,
-+        edit: &mut SourceChangeBuilder,
-+    ) {
-         match self {
-             EditTupleUsage::NoIndex(range) => {
                  edit.insert(range.start(), "/*");
                  edit.insert(range.end(), "*/");
              }
@@ -276,15 +254,10 @@ Rustfmt size:  44616 bytes
      index: usize,
      field_expr: FieldExpr,
  }
--fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIndex> {
 +
-+fn detect_tuple_index(
-+    usage: &FileReference,
-+    data: &TupleData,
-+) -> Option<TupleIndex> {
+ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIndex> {
      // usage is IDENT
      // IDENT
-     //  NAME_REF
      //     PATH_EXPR
      //      PAREN_EXRP*
      //       FIELD_EXPR
@@ -332,11 +305,7 @@ Rustfmt size:  44616 bytes
      // Tests for direct tuple destructure:
      // `let $0t = (1,2);` -> `let (_0, _1) = (1,2);`
 -
--    fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+    fn assist(
-+        acc: &mut Assists,
-+        ctx: &AssistContext<'_>,
-+    ) -> Option<()> {
+     fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
          destructure_tuple_binding_impl(acc, ctx, false)
      }
 -
@@ -582,18 +551,10 @@ Rustfmt size:  44616 bytes
          use super::*;
          use crate::tests::check_assist_by_label;
 -
--        fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+        fn assist(
-+            acc: &mut Assists,
-+            ctx: &AssistContext<'_>,
-+        ) -> Option<()> {
+         fn assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
              destructure_tuple_binding_impl(acc, ctx, true)
          }
--        fn in_place_assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+        fn in_place_assist(
-+            acc: &mut Assists,
-+            ctx: &AssistContext<'_>,
-+        ) -> Option<()> {
+         fn in_place_assist(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
              destructure_tuple_binding_impl(acc, ctx, false)
          }
 -

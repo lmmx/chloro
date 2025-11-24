@@ -128,10 +128,7 @@ impl<'a> AssistContext<'a> {
         self.token_at_offset.clone()
     }
 
-    pub(crate) fn find_token_syntax_at_offset(
-        &self,
-        kind: SyntaxKind,
-    ) -> Option<SyntaxToken> {
+    pub(crate) fn find_token_syntax_at_offset(&self, kind: SyntaxKind) -> Option<SyntaxToken> {
         self.token_at_offset().find(|it| it.kind() == kind)
     }
 
@@ -169,10 +166,7 @@ pub(crate) struct Assists {
 }
 
 impl Assists {
-    pub(crate) fn new(
-        ctx: &AssistContext<'_>,
-        resolve: AssistResolveStrategy,
-    ) -> Assists {
+    pub(crate) fn new(ctx: &AssistContext<'_>, resolve: AssistResolveStrategy) -> Assists {
         Assists {
             resolve,
             file: ctx.frange.file_id.file_id(ctx.db()),
@@ -235,10 +229,7 @@ impl Assists {
         Some(())
     }
 
-    fn is_allowed(
-        &self,
-        id: &AssistId,
-    ) -> bool {
+    fn is_allowed(&self, id: &AssistId) -> bool {
         match &self.allowed {
             Some(allowed) => allowed.iter().any(|kind| kind.contains(id.1)),
             None => true,

@@ -289,10 +289,7 @@ fn retain_adt_literal_usages(
 /// - `None` otherwise
 ///
 /// The returned name is the name of the type whose constructor usages should be searched for.
-fn name_for_constructor_search(
-    syntax: &SyntaxNode,
-    position: FilePosition,
-) -> Option<ast::Name> {
+fn name_for_constructor_search(syntax: &SyntaxNode, position: FilePosition) -> Option<ast::Name> {
     let token = syntax.token_at_offset(position.offset).right_biased()?;
     let token_parent = token.parent()?;
     let kind = token.kind();
@@ -368,10 +365,7 @@ fn is_enum_lit_name_ref(
 
 /// Checks if a path ends with the given name reference.
 /// Helper function for checking constructor usage patterns.
-fn path_ends_with(
-    path: Option<ast::Path>,
-    name_ref: &ast::NameRef,
-) -> bool {
+fn path_ends_with(path: Option<ast::Path>, name_ref: &ast::NameRef) -> bool {
     path.and_then(|path| path.segment())
         .and_then(|segment| segment.name_ref())
         .map_or(false, |segment| segment == *name_ref)
@@ -1455,10 +1449,7 @@ fn main() {
             "#]],
         );
     }
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_scope(ra_fixture, None, expect)
     }
     fn check_with_scope(

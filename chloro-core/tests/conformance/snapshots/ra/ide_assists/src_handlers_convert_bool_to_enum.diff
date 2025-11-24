@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40489 bytes
-Chloro size:   39821 bytes
+Chloro size:   39799 bytes
 Rustfmt size:  41249 bytes
 
 ✗ Outputs DIFFER
@@ -56,7 +56,7 @@ Rustfmt size:  41249 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
+ pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 -    let BoolNodeData {
 -        target_node,
 -        name,
@@ -70,10 +70,6 @@ Rustfmt size:  41249 bytes
 -        .module()
 -        .nearest_non_block_module(ctx.db());
 -
-+pub(crate) fn convert_bool_to_enum(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
 +    let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
 +        find_bool_node(ctx)?;
 +    let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
@@ -114,17 +110,6 @@ Rustfmt size:  41249 bytes
              Either::Left(param) => Some(BoolNodeData {
                  target_node: param.syntax().clone(),
                  name,
-     }
- }
- 
--fn replace_bool_expr(edit: &mut SourceChangeBuilder, expr: ast::Expr) {
-+fn replace_bool_expr(
-+    edit: &mut SourceChangeBuilder,
-+    expr: ast::Expr,
-+) {
-     let expr_range = expr.syntax().text_range();
-     let enum_expr = bool_expr_to_enum_expr(expr);
-     edit.replace(expr_range, enum_expr.syntax().text())
  fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
      let true_expr = make::expr_path(make::path_from_text("Bool::True"));
      let false_expr = make::expr_path(make::path_from_text("Bool::False"));

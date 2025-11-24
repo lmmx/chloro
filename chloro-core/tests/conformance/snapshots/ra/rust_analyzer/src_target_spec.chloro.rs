@@ -70,10 +70,7 @@ pub(crate) struct ProjectJsonTargetSpec {
 }
 
 impl ProjectJsonTargetSpec {
-    pub(crate) fn runnable_args(
-        &self,
-        kind: &RunnableKind,
-    ) -> Option<Runnable> {
+    pub(crate) fn runnable_args(&self, kind: &RunnableKind) -> Option<Runnable> {
         match kind {
             RunnableKind::Bin => {
                 for runnable in &self.shell_runnables {
@@ -203,11 +200,7 @@ impl CargoTargetSpec {
         (cargo_args, executable_args)
     }
 
-    pub(crate) fn push_to(
-        self,
-        buf: &mut Vec<String>,
-        kind: &RunnableKind,
-    ) {
+    pub(crate) fn push_to(self, buf: &mut Vec<String>, kind: &RunnableKind) {
         buf.push("--package".to_owned());
         buf.push(self.package);
         // Can't mix --doc with other target flags
@@ -240,10 +233,7 @@ impl CargoTargetSpec {
 }
 
 /// Fill minimal features needed
-fn required_features(
-    cfg_expr: &CfgExpr,
-    features: &mut Vec<String>,
-) {
+fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
     match cfg_expr {
         CfgExpr::Atom(CfgAtom::KeyValue { key, value }) if *key == sym::feature => {
             features.push(value.to_string())
@@ -276,10 +266,7 @@ mod tests {
         dummy_test_span_utils::{DUMMY, DummyTestSpanMap},
         syntax_node_to_token_tree, DocCommentDesugarMode,
     };
-    fn check(
-        cfg: &str,
-        expected_features: &[&str],
-    ) {
+    fn check(cfg: &str, expected_features: &[&str]) {
         let cfg_expr = {
             let source_file = ast::SourceFile::parse(cfg, Edition::CURRENT).ok().unwrap();
             let tt = source_file.syntax().descendants().find_map(ast::TokenTree::cast).unwrap();

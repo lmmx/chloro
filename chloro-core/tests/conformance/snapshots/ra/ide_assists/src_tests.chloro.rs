@@ -253,11 +253,7 @@ pub(crate) fn check_assist_unresolved(
 }
 
 #[track_caller]
-fn check_doc_test(
-    assist_id: &str,
-    before: &str,
-    after: &str,
-) {
+fn check_doc_test(assist_id: &str, before: &str, after: &str) {
     let after = trim_indent(after);
     let (db, file_id, selection) = RootDatabase::with_range_or_offset(before);
     let before = db.file_text(file_id.file_id(&db)).text(&db).to_string();

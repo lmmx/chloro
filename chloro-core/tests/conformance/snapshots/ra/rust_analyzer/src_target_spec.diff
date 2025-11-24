@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10598 bytes
+Chloro size:   10510 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
@@ -15,14 +15,6 @@ Rustfmt size:  11050 bytes
          Ok(global_state_snapshot.target_spec_for_crate(crate_id))
      }
  
- }
- 
- impl ProjectJsonTargetSpec {
--    pub(crate) fn runnable_args(&self, kind: &RunnableKind) -> Option<Runnable> {
-+    pub(crate) fn runnable_args(
-+        &self,
-+        kind: &RunnableKind,
-+    ) -> Option<Runnable> {
          match kind {
              RunnableKind::Bin => {
                  for runnable in &self.shell_runnables {
@@ -103,31 +95,13 @@ Rustfmt size:  11050 bytes
                  );
                  feats.extend(target_required_features);
  
-         (cargo_args, executable_args)
-     }
- 
--    pub(crate) fn push_to(self, buf: &mut Vec<String>, kind: &RunnableKind) {
-+    pub(crate) fn push_to(
-+        self,
-+        buf: &mut Vec<String>,
-+        kind: &RunnableKind,
-+    ) {
+     pub(crate) fn push_to(self, buf: &mut Vec<String>, kind: &RunnableKind) {
          buf.push("--package".to_owned());
          buf.push(self.package);
 -
          // Can't mix --doc with other target flags
          if let RunnableKind::DocTest { .. } = kind {
              return;
- }
- 
- /// Fill minimal features needed
--fn required_features(cfg_expr: &CfgExpr, features: &mut Vec<String>) {
-+fn required_features(
-+    cfg_expr: &CfgExpr,
-+    features: &mut Vec<String>,
-+) {
-     match cfg_expr {
-         CfgExpr::Atom(CfgAtom::KeyValue { key, value }) if *key == sym::feature => {
              features.push(value.to_string())
          }
          CfgExpr::All(preds) => {
@@ -154,11 +128,7 @@ Rustfmt size:  11050 bytes
          syntax_node_to_token_tree, DocCommentDesugarMode,
      };
 -
--    fn check(cfg: &str, expected_features: &[&str]) {
-+    fn check(
-+        cfg: &str,
-+        expected_features: &[&str],
-+    ) {
+     fn check(cfg: &str, expected_features: &[&str]) {
          let cfg_expr = {
              let source_file = ast::SourceFile::parse(cfg, Edition::CURRENT).ok().unwrap();
 -            let tt = source_file

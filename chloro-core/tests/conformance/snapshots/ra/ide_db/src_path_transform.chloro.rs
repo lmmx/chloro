@@ -132,10 +132,7 @@ impl<'a> PathTransform<'a> {
     }
 
     #[must_use]
-    pub fn apply(
-        &self,
-        syntax: &SyntaxNode,
-    ) -> SyntaxNode {
+    pub fn apply(&self, syntax: &SyntaxNode) -> SyntaxNode {
         self.build_ctx().apply(syntax)
     }
 
@@ -148,10 +145,7 @@ impl<'a> PathTransform<'a> {
         nodes.into_iter().map(|node| ctx.apply(&node.clone())).collect()
     }
 
-    fn prettify_target_node(
-        &self,
-        node: SyntaxNode,
-    ) -> SyntaxNode {
+    fn prettify_target_node(&self, node: SyntaxNode) -> SyntaxNode {
         match self.target_scope.file_id() {
             HirFileId::FileId(_) => node,
             HirFileId::MacroFile(file_id) => {
@@ -166,10 +160,7 @@ impl<'a> PathTransform<'a> {
         }
     }
 
-    fn prettify_target_ast<N: AstNode>(
-        &self,
-        node: N,
-    ) -> N {
+    fn prettify_target_ast<N: AstNode>(&self, node: N) -> N {
         N::cast(self.prettify_target_node(node.syntax().clone())).unwrap()
     }
 
@@ -285,10 +276,7 @@ fn preorder_rev(item: &SyntaxNode) -> impl Iterator<Item = SyntaxNode> {
 }
 
 impl Ctx<'_> {
-    fn apply(
-        &self,
-        item: &SyntaxNode,
-    ) -> SyntaxNode {
+    fn apply(&self, item: &SyntaxNode) -> SyntaxNode {
         // `transform_path` may update a node's parent and that would break the
         // tree traversal. Thus all paths in the tree are collected into a vec
         // so that such operation is safe.
@@ -303,10 +291,7 @@ impl Ctx<'_> {
         editor.finish().new_root().clone()
     }
 
-    fn transform_default_values(
-        &mut self,
-        defaulted_params: Vec<DefaultedParam>,
-    ) {
+    fn transform_default_values(&mut self, defaulted_params: Vec<DefaultedParam>) {
         // By now the default values are simply copied from where they are declared
         // and should be transformed. As any value is allowed to refer to previous
         // generic (both type and const) parameters, they should be all iterated left-to-right.
@@ -330,10 +315,7 @@ impl Ctx<'_> {
         }
     }
 
-    fn transform_path(
-        &self,
-        path: &SyntaxNode,
-    ) -> SyntaxNode {
+    fn transform_path(&self, path: &SyntaxNode) -> SyntaxNode {
         fn find_child_paths_and_ident_pats(
             root_path: &SyntaxNode,
         ) -> Vec<Either<ast::Path, ast::IdentPat>> {
@@ -376,11 +358,7 @@ impl Ctx<'_> {
         }
     }
 
-    fn transform_path_(
-        &self,
-        editor: &mut SyntaxEditor,
-        path: &ast::Path,
-    ) -> Option<()> {
+    fn transform_path_(&self, editor: &mut SyntaxEditor, path: &ast::Path) -> Option<()> {
         if path.qualifier().is_some() {
             return None;
         }

@@ -14,10 +14,7 @@ use crate::{
     AssistContext, AssistId, AssistKind, Assists, GroupLabel,
 };
 
-pub(crate) fn generate_delegate_methods(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;
     }

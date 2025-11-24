@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24042 bytes
-Chloro size:   23922 bytes
+Chloro size:   23899 bytes
 Rustfmt size:  24042 bytes
 
 ✗ Outputs DIFFER
@@ -526,17 +526,6 @@ Rustfmt size:  24042 bytes
      const METHOD: &'static str = "experimental/serverStatus";
  }
  
- }
- 
- impl ops::BitOrAssign for Health {
--    fn bitor_assign(&mut self, rhs: Self) {
-+    fn bitor_assign(
-+        &mut self,
-+        rhs: Self,
-+    ) {
-         *self = match (*self, rhs) {
-             (Health::Error, _) | (_, Health::Error) => Health::Error,
-             (Health::Warning, _) | (_, Health::Warning) => Health::Warning,
      }
  }
  

@@ -6,10 +6,7 @@ use crate::{
     CompletionConfig,
 };
 
-fn check(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     check_with_config(TEST_CONFIG, ra_fixture, expect);
 }
 

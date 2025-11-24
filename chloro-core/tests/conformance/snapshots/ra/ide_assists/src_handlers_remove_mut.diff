@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 906 bytes
-Chloro size:   698 bytes
+Chloro size:   687 bytes
 Rustfmt size:  977 bytes
 
 ✗ Outputs DIFFER
@@ -27,11 +27,7 @@ Rustfmt size:  977 bytes
 -//     fn feed(&self, amount: u32) {}
 -// }
 -// ```
--pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn remove_mut(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn remove_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let mut_token = ctx.find_token_syntax_at_offset(T![mut])?;
 -
      let target = mut_token.text_range();

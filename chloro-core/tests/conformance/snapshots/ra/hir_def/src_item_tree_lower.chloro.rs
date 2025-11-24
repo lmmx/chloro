@@ -39,10 +39,7 @@ pub(super) struct Ctx<'a> {
 }
 
 impl<'a> Ctx<'a> {
-    pub(super) fn new(
-        db: &'a dyn DefDatabase,
-        file: HirFileId,
-    ) -> Self {
+    pub(super) fn new(db: &'a dyn DefDatabase, file: HirFileId) -> Self {
         Self {
             db,
             tree: ItemTree::default(),
@@ -58,20 +55,14 @@ impl<'a> Ctx<'a> {
         self.span_map.get_or_init(|| self.db.span_map(self.file)).as_ref()
     }
 
-    pub(super) fn lower_module_items(
-        mut self,
-        item_owner: &dyn HasModuleItem,
-    ) -> ItemTree {
+    pub(super) fn lower_module_items(mut self, item_owner: &dyn HasModuleItem) -> ItemTree {
         self.top_level = item_owner.items().flat_map(|item| self.lower_mod_item(&item)).collect();
         self.tree.vis.arena = self.visibilities.into_iter().collect();
         self.tree.top_level = self.top_level.into_boxed_slice();
         self.tree
     }
 
-    pub(super) fn lower_macro_stmts(
-        mut self,
-        stmts: ast::MacroStmts,
-    ) -> ItemTree {
+    pub(super) fn lower_macro_stmts(mut self, stmts: ast::MacroStmts) -> ItemTree {
         self.top_level = stmts
             .statements()
             .filter_map(|stmt| {
@@ -104,10 +95,7 @@ impl<'a> Ctx<'a> {
         self.tree
     }
 
-    pub(super) fn lower_block(
-        mut self,
-        block: &ast::BlockExpr,
-    ) -> ItemTree {
+    pub(super) fn lower_block(mut self, block: &ast::BlockExpr) -> ItemTree {
         self.tree.top_attrs = RawAttrs::new(self.db, block, self.span_map());
         self.top_level = block
             .statements()
@@ -133,10 +121,7 @@ impl<'a> Ctx<'a> {
         self.tree
     }
 
-    fn lower_mod_item(
-        &mut self,
-        item: &ast::Item,
-    ) -> Option<ModItemId> {
+    fn lower_mod_item(&mut self, item: &ast::Item) -> Option<ModItemId> {
         let mod_item: ModItemId = match item {
             ast::Item::Struct(ast) => self.lower_struct(ast)?.into(),
             ast::Item::Union(ast) => self.lower_union(ast)?.into(),
@@ -162,11 +147,7 @@ impl<'a> Ctx<'a> {
         Some(mod_item)
     }
 
-    fn add_attrs(
-        &mut self,
-        item: FileAstId<ast::Item>,
-        attrs: RawAttrs,
-    ) {
+    fn add_attrs(&mut self, item: FileAstId<ast::Item>, attrs: RawAttrs) {
         if !attrs.is_empty() {
             match self.tree.attrs.entry(item) {
                 Entry::Occupied(mut entry) => {
@@ -179,10 +160,7 @@ impl<'a> Ctx<'a> {
         }
     }
 
-    fn lower_struct(
-        &mut self,
-        strukt: &ast::Struct,
-    ) -> Option<ItemTreeAstId<Struct>> {
+    fn lower_struct(&mut self, strukt: &ast::Struct) -> Option<ItemTreeAstId<Struct>> {
         let visibility = self.lower_visibility(strukt);
         let name = strukt.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(strukt);
@@ -192,10 +170,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_union(
-        &mut self,
-        union: &ast::Union,
-    ) -> Option<ItemTreeAstId<Union>> {
+    fn lower_union(&mut self, union: &ast::Union) -> Option<ItemTreeAstId<Union>> {
         let visibility = self.lower_visibility(union);
         let name = union.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(union);
@@ -204,10 +179,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_enum(
-        &mut self,
-        enum_: &ast::Enum,
-    ) -> Option<ItemTreeAstId<Enum>> {
+    fn lower_enum(&mut self, enum_: &ast::Enum) -> Option<ItemTreeAstId<Enum>> {
         let visibility = self.lower_visibility(enum_);
         let name = enum_.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(enum_);
@@ -216,10 +188,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_function(
-        &mut self,
-        func: &ast::Fn,
-    ) -> Option<ItemTreeAstId<Function>> {
+    fn lower_function(&mut self, func: &ast::Fn) -> Option<ItemTreeAstId<Function>> {
         let visibility = self.lower_visibility(func);
         let name = func.name()?.as_name();
         let ast_id = self.source_ast_id_map.ast_id(func);
@@ -240,10 +209,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_static(
-        &mut self,
-        static_: &ast::Static,
-    ) -> Option<ItemTreeAstId<Static>> {
+    fn lower_static(&mut self, static_: &ast::Static) -> Option<ItemTreeAstId<Static>> {
         let name = static_.name()?.as_name();
         let visibility = self.lower_visibility(static_);
         let ast_id = self.source_ast_id_map.ast_id(static_);
@@ -252,10 +218,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_const(
-        &mut self,
-        konst: &ast::Const,
-    ) -> ItemTreeAstId<Const> {
+    fn lower_const(&mut self, konst: &ast::Const) -> ItemTreeAstId<Const> {
         let name = konst.name().map(|it| it.as_name());
         let visibility = self.lower_visibility(konst);
         let ast_id = self.source_ast_id_map.ast_id(konst);
@@ -264,10 +227,7 @@ impl<'a> Ctx<'a> {
         ast_id
     }
 
-    fn lower_module(
-        &mut self,
-        module: &ast::Module,
-    ) -> Option<ItemTreeAstId<Mod>> {
+    fn lower_module(&mut self, module: &ast::Module) -> Option<ItemTreeAstId<Mod>> {
         let name = module.name()?.as_name();
         let visibility = self.lower_visibility(module);
         let kind = if module.semicolon_token().is_some() {
@@ -289,10 +249,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_trait(
-        &mut self,
-        trait_def: &ast::Trait,
-    ) -> Option<ItemTreeAstId<Trait>> {
+    fn lower_trait(&mut self, trait_def: &ast::Trait) -> Option<ItemTreeAstId<Trait>> {
         let name = trait_def.name()?.as_name();
         let visibility = self.lower_visibility(trait_def);
         let ast_id = self.source_ast_id_map.ast_id(trait_def);
@@ -301,10 +258,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_impl(
-        &mut self,
-        impl_def: &ast::Impl,
-    ) -> ItemTreeAstId<Impl> {
+    fn lower_impl(&mut self, impl_def: &ast::Impl) -> ItemTreeAstId<Impl> {
         let ast_id = self.source_ast_id_map.ast_id(impl_def);
         // Note that trait impls don't get implicit `Self` unlike traits, because here they are a
         // type alias rather than a type parameter, so this is handled by the resolver.
@@ -313,10 +267,7 @@ impl<'a> Ctx<'a> {
         ast_id
     }
 
-    fn lower_use(
-        &mut self,
-        use_item: &ast::Use,
-    ) -> Option<ItemTreeAstId<Use>> {
+    fn lower_use(&mut self, use_item: &ast::Use) -> Option<ItemTreeAstId<Use>> {
         let visibility = self.lower_visibility(use_item);
         let ast_id = self.source_ast_id_map.ast_id(use_item);
         let (use_tree, _) = lower_use_tree(self.db, use_item.use_tree()?, &mut |range| {
@@ -342,10 +293,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_macro_call(
-        &mut self,
-        m: &ast::MacroCall,
-    ) -> Option<ItemTreeAstId<MacroCall>> {
+    fn lower_macro_call(&mut self, m: &ast::MacroCall) -> Option<ItemTreeAstId<MacroCall>> {
         let span_map = self.span_map();
         let path = m.path()?;
         let range = path.syntax().text_range();
@@ -359,10 +307,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_macro_rules(
-        &mut self,
-        m: &ast::MacroRules,
-    ) -> Option<ItemTreeAstId<MacroRules>> {
+    fn lower_macro_rules(&mut self, m: &ast::MacroRules) -> Option<ItemTreeAstId<MacroRules>> {
         let name = m.name()?;
         let ast_id = self.source_ast_id_map.ast_id(m);
         let res = MacroRules { name: name.as_name() };
@@ -370,10 +315,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_macro_def(
-        &mut self,
-        m: &ast::MacroDef,
-    ) -> Option<ItemTreeAstId<Macro2>> {
+    fn lower_macro_def(&mut self, m: &ast::MacroDef) -> Option<ItemTreeAstId<Macro2>> {
         let name = m.name()?;
         let ast_id = self.source_ast_id_map.ast_id(m);
         let visibility = self.lower_visibility(m);
@@ -382,10 +324,7 @@ impl<'a> Ctx<'a> {
         Some(ast_id)
     }
 
-    fn lower_extern_block(
-        &mut self,
-        block: &ast::ExternBlock,
-    ) -> ItemTreeAstId<ExternBlock> {
+    fn lower_extern_block(&mut self, block: &ast::ExternBlock) -> ItemTreeAstId<ExternBlock> {
         let ast_id = self.source_ast_id_map.ast_id(block);
         let children: Box<[_]> = block.extern_item_list().map_or(Box::new([]), |list| {
             list.extern_items()
@@ -411,10 +350,7 @@ impl<'a> Ctx<'a> {
         ast_id
     }
 
-    fn lower_visibility(
-        &mut self,
-        item: &dyn ast::HasVisibility,
-    ) -> RawVisibilityId {
+    fn lower_visibility(&mut self, item: &dyn ast::HasVisibility) -> RawVisibilityId {
         let vis = visibility_from_ast(self.db, item.visibility(), &mut |range| {
             self.span_map().span_for_range(range).ctx
         });

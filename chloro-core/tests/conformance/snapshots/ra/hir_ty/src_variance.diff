@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30542 bytes
+Chloro size:   30319 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -28,17 +28,6 @@ Rustfmt size:  30951 bytes
      next_solver::{
          Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
          RegionKind, Term, Ty, TyKind, VariancesOf,
-     },
- };
- 
--pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> VariancesOf<'_> {
-+pub(crate) fn variances_of(
-+    db: &dyn HirDatabase,
-+    def: GenericDefId,
-+) -> VariancesOf<'_> {
-     tracing::debug!("variances_of(def={:?})", def);
-     let interner = DbInterner::new_with(db, None, None);
-     match def {
          }
          _ => return VariancesOf::new_from_iter(interner, []),
      }
@@ -76,14 +65,9 @@ Rustfmt size:  30951 bytes
 -//     salsa::CycleRecoveryAction::Iterate
 -// }
 -
--fn glb(v1: Variance, v2: Variance) -> Variance {
-+fn glb(
-+    v1: Variance,
-+    v2: Variance,
-+) -> Variance {
+ fn glb(v1: Variance, v2: Variance) -> Variance {
      // Greatest lower bound of the variance lattice as defined in The Paper:
      //
-     //       *
      let interner = DbInterner::new_with(db, None, None);
      let generics = generics(db, def);
      let count = generics.len();
@@ -137,20 +121,14 @@ Rustfmt size:  30951 bytes
          variances
      }
  
-     /// Adds constraints appropriate for an instance of `ty` appearing
      /// in a context with the generics defined in `generics` and
      /// ambient variance `variance`
--    fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {
+     fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {
 -        tracing::debug!(
 -            "add_constraints_from_ty(ty={:?}, variance={:?})",
 -            ty,
 -            variance
 -        );
-+    fn add_constraints_from_ty(
-+        &mut self,
-+        ty: Ty<'db>,
-+        variance: Variance,
-+    ) {
 +        tracing::debug!("add_constraints_from_ty(ty={:?}, variance={:?})", ty, variance);
          match ty.kind() {
              TyKind::Int(_)
@@ -177,15 +155,6 @@ Rustfmt size:  30951 bytes
              }
          }
      }
- 
--    fn add_constraints_from_invariant_args(&mut self, args: GenericArgs<'db>) {
-+    fn add_constraints_from_invariant_args(
-+        &mut self,
-+        args: GenericArgs<'db>,
-+    ) {
-         for k in args.iter() {
-             match k {
-                 GenericArg::Lifetime(lt) => {
              return;
          }
          let variances = self.db.variances_of(def_id);
@@ -193,54 +162,6 @@ Rustfmt size:  30951 bytes
          for (k, v) in args.iter().zip(variances) {
              match k {
                  GenericArg::Lifetime(lt) => self.add_constraints_from_region(lt, variance.xform(v)),
- 
-     /// Adds constraints appropriate for a const expression `val`
-     /// in a context with ambient variance `variance`
--    fn add_constraints_from_const(&mut self, c: Const<'db>) {
-+    fn add_constraints_from_const(
-+        &mut self,
-+        c: Const<'db>,
-+    ) {
-         match c.kind() {
-             ConstKind::Unevaluated(c) => self.add_constraints_from_invariant_args(c.args),
-             _ => {}
- 
-     /// Adds constraints appropriate for a region appearing in a
-     /// context with ambient variance `variance`
--    fn add_constraints_from_region(&mut self, region: Region<'db>, variance: Variance) {
-+    fn add_constraints_from_region(
-+        &mut self,
-+        region: Region<'db>,
-+        variance: Variance,
-+    ) {
-         tracing::debug!(
-             "add_constraints_from_region(region={:?}, variance={:?})",
-             region,
- 
-     /// Adds constraints appropriate for a mutability-type pair
-     /// appearing in a context with ambient variance `variance`
--    fn add_constraints_from_mt(&mut self, ty: Ty<'db>, mt: Mutability, variance: Variance) {
-+    fn add_constraints_from_mt(
-+        &mut self,
-+        ty: Ty<'db>,
-+        mt: Mutability,
-+        variance: Variance,
-+    ) {
-         self.add_constraints_from_ty(
-             ty,
-             match mt {
-         );
-     }
- 
--    fn constrain(&mut self, index: usize, variance: Variance) {
-+    fn constrain(
-+        &mut self,
-+        index: usize,
-+        variance: Variance,
-+    ) {
-         tracing::debug!(
-             "constrain(index={:?}, variance={:?}, to={:?})",
-             index,
  
  #[cfg(test)]
  mod tests {
@@ -398,14 +319,8 @@ Rustfmt size:  30951 bytes
      }
 -
      #[track_caller]
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: Expect) {
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expected: Expect,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: Expect) {
          // use tracing_subscriber::{layer::SubscriberExt, Layer};
-         // let my_layer = tracing_subscriber::fmt::layer();
-         // let _g = tracing::subscriber::set_default(tracing_subscriber::registry().with(
          //     })),
          // ));
          let (db, file_id) = TestDB::with_single_file(ra_fixture);

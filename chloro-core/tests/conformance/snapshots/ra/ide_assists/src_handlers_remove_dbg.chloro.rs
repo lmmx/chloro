@@ -8,10 +8,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn remove_dbg(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let macro_calls = if ctx.has_empty_selection() {
         vec![ctx.find_node_at_offset::<ast::MacroExpr>()?]
     } else {
@@ -53,7 +50,9 @@ pub(crate) fn remove_dbg(
 /// - (`macro_expr` has no parent - is that possible?)
 ///
 /// Returns `Some(_, None)` when the macro call should just be removed.
-fn compute_dbg_replacement(macro_expr: ast::MacroExpr) -> Option<(Vec<NodeOrToken<SyntaxNode, SyntaxToken>>, Option<ast::Expr>)> {
+fn compute_dbg_replacement(
+    macro_expr: ast::MacroExpr,
+) -> Option<(Vec<NodeOrToken<SyntaxNode, SyntaxToken>>, Option<ast::Expr>)> {
     let macro_call = macro_expr.macro_call()?;
     let tt = macro_call.token_tree()?;
     let r_delim = NodeOrToken::Token(tt.right_delimiter_token()?);

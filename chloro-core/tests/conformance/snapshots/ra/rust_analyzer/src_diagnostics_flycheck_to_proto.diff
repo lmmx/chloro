@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 77855 bytes
-Chloro size:   77883 bytes
+Chloro size:   77860 bytes
 Rustfmt size:  77855 bytes
 
 ✗ Outputs DIFFER
@@ -145,11 +145,7 @@ Rustfmt size:  77855 bytes
      use lsp_types::ClientCapabilities;
      use paths::Utf8Path;
 -
--    fn check(diagnostics_json: &str, expect: ExpectFile) {
-+    fn check(
-+        diagnostics_json: &str,
-+        expect: ExpectFile,
-+    ) {
+     fn check(diagnostics_json: &str, expect: ExpectFile) {
          check_with_config(DiagnosticsMapConfig::default(), diagnostics_json, expect)
      }
 -

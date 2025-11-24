@@ -22,10 +22,7 @@ use crate::{
 };
 use super::inline_call::split_refs_and_uses;
 
-pub(crate) fn inline_type_alias_uses(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
     let hir_alias = ctx.sema.to_def(&ast_alias)?;
@@ -84,10 +81,7 @@ pub(crate) fn inline_type_alias_uses(
     )
 }
 
-pub(crate) fn inline_type_alias(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let alias_instance = ctx.find_node_at_offset::<ast::PathType>()?;
     let concrete_type;
     let replacement;
@@ -123,10 +117,7 @@ pub(crate) fn inline_type_alias(
 }
 
 impl Replacement {
-    fn replace_generic(
-        &self,
-        concrete_type: &ast::Type,
-    ) -> SyntaxNode {
+    fn replace_generic(&self, concrete_type: &ast::Type) -> SyntaxNode {
         match self {
             Replacement::Generic { lifetime_map, const_and_type_map } => {
                 create_replacement(lifetime_map, const_and_type_map, concrete_type)
@@ -144,10 +135,7 @@ enum Replacement {
     Plain,
 }
 
-fn inline(
-    alias_def: &ast::TypeAlias,
-    alias_instance: &ast::PathType,
-) -> Option<Replacement> {
+fn inline(alias_def: &ast::TypeAlias, alias_instance: &ast::PathType) -> Option<Replacement> {
     let repl = if let Some(alias_generics) = alias_def.generic_param_list() {
         if alias_generics.generic_params().next().is_none() {
             cov_mark::hit!(no_generics_params);
@@ -312,10 +300,7 @@ fn create_replacement(
     editor.finish().new_root().clone()
 }
 
-fn get_type_alias(
-    ctx: &AssistContext<'_>,
-    path: &ast::PathType,
-) -> Option<ast::TypeAlias> {
+fn get_type_alias(ctx: &AssistContext<'_>, path: &ast::PathType) -> Option<ast::TypeAlias> {
     let resolved_path = ctx.sema.resolve_path(&path.path()?)?;
     // We need the generics in the correct order to be able to map any provided
     // instance generics to declaration generics. The `hir::TypeAlias` doesn't
@@ -358,7 +343,9 @@ impl ConstOrTypeGeneric {
     }
 }
 
-fn generic_param_list_to_const_and_type_generics(generics: &ast::GenericParamList) -> Vec<ConstOrTypeGeneric> {
+fn generic_param_list_to_const_and_type_generics(
+    generics: &ast::GenericParamList,
+) -> Vec<ConstOrTypeGeneric> {
     let mut others = Vec::new();
     for param in generics.generic_params() {
         match param {
@@ -372,7 +359,9 @@ fn generic_param_list_to_const_and_type_generics(generics: &ast::GenericParamLis
     others
 }
 
-fn generic_args_to_const_and_type_generics(generics: &Option<ast::GenericArgList>) -> Vec<ConstOrTypeGeneric> {
+fn generic_args_to_const_and_type_generics(
+    generics: &Option<ast::GenericArgList>,
+) -> Vec<ConstOrTypeGeneric> {
     let mut others = Vec::new();
     // It's fine for there to be no instance generics because the declaration
     // might have default values or they might be inferred.

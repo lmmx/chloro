@@ -194,10 +194,7 @@ impl RaFixtureAnalysis {
     }
 
     /// This returns `None` for minicore or other sysroot files.
-    fn virtual_file_id_to_line(
-        &self,
-        file_id: FileId,
-    ) -> Option<usize> {
+    fn virtual_file_id_to_line(&self, file_id: FileId) -> Option<usize> {
         if self.is_sysroot_file(file_id) {
             None
         } else {
@@ -205,10 +202,7 @@ impl RaFixtureAnalysis {
         }
     }
 
-    pub fn map_offset_down(
-        &self,
-        offset: TextSize,
-    ) -> Option<(FileId, TextSize)> {
+    pub fn map_offset_down(&self, offset: TextSize) -> Option<(FileId, TextSize)> {
         let inside_literal_range = self.literal.map_offset_down(offset)?;
         let combined_offset = self.mapper.map_offset_down(inside_literal_range)?;
         // There is usually a small number of files, so a linear search is smaller and faster.
@@ -227,10 +221,7 @@ impl RaFixtureAnalysis {
         Some((file_id, file_offset))
     }
 
-    pub fn map_range_down(
-        &self,
-        range: TextRange,
-    ) -> Option<(FileId, TextRange)> {
+    pub fn map_range_down(&self, range: TextRange) -> Option<(FileId, TextRange)> {
         let (start_file_id, start_offset) = self.map_offset_down(range.start())?;
         let (end_file_id, end_offset) = self.map_offset_down(range.end())?;
         if start_file_id != end_file_id {
@@ -259,18 +250,11 @@ impl RaFixtureAnalysis {
             .filter_map(|range| self.literal.map_range_up(range))
     }
 
-    pub fn map_offset_up(
-        &self,
-        virtual_file: FileId,
-        offset: TextSize,
-    ) -> Option<TextSize> {
+    pub fn map_offset_up(&self, virtual_file: FileId, offset: TextSize) -> Option<TextSize> {
         self.map_range_up(virtual_file, TextRange::empty(offset)).next().map(|range| range.start())
     }
 
-    pub fn is_sysroot_file(
-        &self,
-        file_id: FileId,
-    ) -> bool {
+    pub fn is_sysroot_file(&self, file_id: FileId) -> bool {
         self.sysroot_files.contains(&file_id)
     }
 }

@@ -406,10 +406,7 @@ fn gen_hash_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
 }
 
 /// Generate a `PartialEq` impl based on the fields and members of the target type.
-fn gen_partial_eq(
-    adt: &ast::Adt,
-    trait_ref: Option<TraitRef<'_>>,
-) -> Option<ast::BlockExpr> {
+fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
     fn gen_eq_chain(expr: Option<ast::Expr>, cmp: ast::Expr) -> Option<ast::Expr> {
         match expr {
             Some(expr) => Some(make::expr_bin_op(expr, BinaryOp::LogicOp(LogicOp::And), cmp)),
@@ -594,10 +591,7 @@ fn gen_partial_eq(
     Some(body)
 }
 
-fn gen_partial_ord(
-    adt: &ast::Adt,
-    trait_ref: Option<TraitRef<'_>>,
-) -> Option<ast::BlockExpr> {
+fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast::BlockExpr> {
     fn gen_partial_eq_match(match_target: ast::Expr) -> Option<ast::Stmt> {
         let mut arms = vec![];
 

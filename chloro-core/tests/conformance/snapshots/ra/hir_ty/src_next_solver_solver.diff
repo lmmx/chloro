@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13159 bytes
-Chloro size:   13164 bytes
+Chloro size:   13148 bytes
 Rustfmt size:  13159 bytes
 
 ✗ Outputs DIFFER
@@ -56,26 +56,6 @@ Rustfmt size:  13159 bytes
          let (infcx, value, vars) = cx.infer_ctxt().build_with_canonical(canonical);
          (SolverContext(infcx), value, vars)
      }
- 
--    fn fresh_var_for_kind_with_span(&self, arg: GenericArg<'db>, _span: Span) -> GenericArg<'db> {
-+    fn fresh_var_for_kind_with_span(
-+        &self,
-+        arg: GenericArg<'db>,
-+        _span: Span,
-+    ) -> GenericArg<'db> {
-         match arg.kind() {
-             GenericArgKind::Lifetime(_) => self.next_region_var().into(),
-             GenericArgKind::Type(_) => self.next_ty_var().into(),
-         None
-     }
- 
--    fn make_deduplicated_outlives_constraints(
--        &self,
--    ) -> Vec<
-+    fn make_deduplicated_outlives_constraints(&self) -> Vec<
-         rustc_type_ir::OutlivesPredicate<
-             Self::Interner,
-             <Self::Interner as rustc_type_ir::Interner>::GenericArg,
          values: rustc_type_ir::CanonicalVarValues<Self::Interner>,
      ) -> V
      where

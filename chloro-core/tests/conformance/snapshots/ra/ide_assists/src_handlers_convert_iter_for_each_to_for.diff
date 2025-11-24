@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13249 bytes
-Chloro size:   12361 bytes
+Chloro size:   12350 bytes
 Rustfmt size:  13343 bytes
 
 ✗ Outputs DIFFER
@@ -128,15 +128,6 @@ Rustfmt size:  13343 bytes
 -
      Some((expr_behind_ref, wanted_method, krate))
  }
- 
- /// Whether iterable implements core::Iterator
--fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
-+fn impls_core_iter(
-+    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
-+    iterable: &ast::Expr,
-+) -> bool {
-     (|| {
-         let it_typ = sema.type_of_expr(iterable)?.adjusted();
  
      expr: ast::MethodCallExpr,
  ) -> Option<(ast::Expr, ast::Expr)> {

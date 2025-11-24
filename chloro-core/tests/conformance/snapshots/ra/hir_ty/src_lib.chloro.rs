@@ -102,11 +102,7 @@ pub struct ComplexMemoryMap<'db> {
 }
 
 impl ComplexMemoryMap<'_> {
-    fn insert(
-        &mut self,
-        addr: usize,
-        val: Box<[u8]>,
-    ) {
+    fn insert(&mut self, addr: usize, val: Box<[u8]>) {
         match self.memory.entry(addr) {
             Entry::Occupied(mut e) => {
                 if e.get().len() < val.len() {
@@ -121,10 +117,7 @@ impl ComplexMemoryMap<'_> {
 }
 
 impl<'db> MemoryMap<'db> {
-    pub fn vtable_ty(
-        &self,
-        id: usize,
-    ) -> Result<Ty<'db>, MirEvalError<'db>> {
+    pub fn vtable_ty(&self, id: usize) -> Result<Ty<'db>, MirEvalError<'db>> {
         match self {
             MemoryMap::Empty | MemoryMap::Simple(_) => Err(MirEvalError::InvalidVTableId(id)),
             MemoryMap::Complex(cm) => cm.vtable.ty(id),
@@ -160,11 +153,7 @@ impl<'db> MemoryMap<'db> {
         }
     }
 
-    fn get(
-        &self,
-        addr: usize,
-        size: usize,
-    ) -> Option<&[u8]> {
+    fn get(&self, addr: usize, size: usize) -> Option<&[u8]> {
         if size == 0 {
             Some(&[])
         } else {
@@ -179,10 +168,7 @@ impl<'db> MemoryMap<'db> {
 }
 
 /// Return an index of a parameter in the generic type parameter list by it's id.
-pub fn param_idx(
-    db: &dyn HirDatabase,
-    id: TypeOrConstParamId,
-) -> Option<usize> {
+pub fn param_idx(db: &dyn HirDatabase, id: TypeOrConstParamId) -> Option<usize> {
     generics::generics(db, id.parent).type_or_const_param_idx(id)
 }
 
@@ -228,20 +214,14 @@ pub enum FnAbi {
 }
 
 impl PartialEq for FnAbi {
-    fn eq(
-        &self,
-        _other: &Self,
-    ) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         // FIXME: Proper equality breaks `coercion::two_closures_lub` test
         true
     }
 }
 
 impl Hash for FnAbi {
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         // Required because of the FIXME above and due to us implementing `Eq`, without this
         // we would break the `Hash` + `Eq` contract
         core::mem::discriminant(&Self::Unknown).hash(state);
@@ -544,20 +524,14 @@ struct ParamCollector {
 impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
     type Result = ();
 
-    fn visit_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Self::Result {
+    fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
         if let TyKind::Param(param) = ty.kind() {
             self.params.insert(param.id.into());
         }
         ty.super_visit_with(self);
     }
 
-    fn visit_const(
-        &mut self,
-        konst: Const<'db>,
-    ) -> Self::Result {
+    fn visit_const(&mut self, konst: Const<'db>) -> Self::Result {
         if let ConstKind::Param(param) = konst.kind() {
             self.params.insert(param.id.into());
         }

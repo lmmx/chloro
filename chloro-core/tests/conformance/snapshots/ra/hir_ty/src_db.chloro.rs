@@ -31,10 +31,7 @@ use crate::{
 pub trait HirDatabase {
     #[salsa::invoke(crate::infer::infer_query)]
     #[salsa::cycle(cycle_result = crate::infer::infer_cycle_result)]
-    fn infer<'db>(
-        &'db self,
-        def: DefWithBodyId,
-    ) -> Arc<InferenceResult<'db>>;
+    fn infer<'db>(&'db self, def: DefWithBodyId) -> Arc<InferenceResult<'db>>;
     // region:mir
 
     #[salsa::invoke(crate::mir::mir_body_query)]
@@ -125,23 +122,14 @@ pub trait HirDatabase {
     ) -> Result<Arc<Layout>, LayoutError>;
 
     #[salsa::invoke(crate::layout::target_data_layout_query)]
-    fn target_data_layout(
-        &self,
-        krate: Crate,
-    ) -> Result<Arc<TargetDataLayout>, TargetLoadError>;
+    fn target_data_layout(&self, krate: Crate) -> Result<Arc<TargetDataLayout>, TargetLoadError>;
 
     #[salsa::invoke(crate::dyn_compatibility::dyn_compatibility_of_trait_query)]
-    fn dyn_compatibility_of_trait(
-        &self,
-        trait_: TraitId,
-    ) -> Option<DynCompatibilityViolation>;
+    fn dyn_compatibility_of_trait(&self, trait_: TraitId) -> Option<DynCompatibilityViolation>;
 
     #[salsa::invoke(crate::lower::ty_query)]
     #[salsa::transparent]
-    fn ty<'db>(
-        &'db self,
-        def: TyDefId,
-    ) -> EarlyBinder<'db, Ty<'db>>;
+    fn ty<'db>(&'db self, def: TyDefId) -> EarlyBinder<'db, Ty<'db>>;
 
     #[salsa::invoke(crate::lower::type_for_type_alias_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::type_for_type_alias_with_diagnostics_cycle_result)]
@@ -153,10 +141,7 @@ pub trait HirDatabase {
     /// Returns the type of the value of the given constant, or `None` if the `ValueTyDefId` is
     /// a `StructId` or `EnumVariantId` with a record constructor.
     #[salsa::invoke(crate::lower::value_ty_query)]
-    fn value_ty<'db>(
-        &'db self,
-        def: ValueTyDefId,
-    ) -> Option<EarlyBinder<'db, Ty<'db>>>;
+    fn value_ty<'db>(&'db self, def: ValueTyDefId) -> Option<EarlyBinder<'db, Ty<'db>>>;
 
     #[salsa::invoke(crate::lower::impl_self_ty_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::impl_self_ty_with_diagnostics_cycle_result)]
@@ -167,10 +152,7 @@ pub trait HirDatabase {
 
     #[salsa::invoke(crate::lower::impl_self_ty_query)]
     #[salsa::transparent]
-    fn impl_self_ty<'db>(
-        &'db self,
-        def: ImplId,
-    ) -> EarlyBinder<'db, Ty<'db>>;
+    fn impl_self_ty<'db>(&'db self, def: ImplId) -> EarlyBinder<'db, Ty<'db>>;
 
     #[salsa::invoke_interned(crate::lower::const_param_ty_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::const_param_ty_with_diagnostics_cycle_result)]
@@ -181,10 +163,7 @@ pub trait HirDatabase {
 
     #[salsa::invoke(crate::lower::const_param_ty_query)]
     #[salsa::transparent]
-    fn const_param_ty_ns<'db>(
-        &'db self,
-        def: ConstParamId,
-    ) -> Ty<'db>;
+    fn const_param_ty_ns<'db>(&'db self, def: ConstParamId) -> Ty<'db>;
 
     #[salsa::invoke(crate::lower::impl_trait_with_diagnostics_query)]
     fn impl_trait_with_diagnostics<'db>(
@@ -194,10 +173,7 @@ pub trait HirDatabase {
 
     #[salsa::invoke(crate::lower::impl_trait_query)]
     #[salsa::transparent]
-    fn impl_trait<'db>(
-        &'db self,
-        def: ImplId,
-    ) -> Option<EarlyBinder<'db, TraitRef<'db>>>;
+    fn impl_trait<'db>(&'db self, def: ImplId) -> Option<EarlyBinder<'db, TraitRef<'db>>>;
 
     #[salsa::invoke(crate::lower::field_types_with_diagnostics_query)]
     fn field_types_with_diagnostics<'db>(
@@ -253,10 +229,7 @@ pub trait HirDatabase {
     ) -> GenericPredicates<'db>;
 
     #[salsa::invoke(crate::lower::generic_predicates_query)]
-    fn generic_predicates<'db>(
-        &'db self,
-        def: GenericDefId,
-    ) -> GenericPredicates<'db>;
+    fn generic_predicates<'db>(&'db self, def: GenericDefId) -> GenericPredicates<'db>;
 
     #[salsa::invoke(crate::lower::trait_environment_for_body_query)]
     #[salsa::transparent]
@@ -266,10 +239,7 @@ pub trait HirDatabase {
     ) -> Arc<TraitEnvironment<'db>>;
 
     #[salsa::invoke(crate::lower::trait_environment_query)]
-    fn trait_environment<'db>(
-        &'db self,
-        def: GenericDefId,
-    ) -> Arc<TraitEnvironment<'db>>;
+    fn trait_environment<'db>(&'db self, def: GenericDefId) -> Arc<TraitEnvironment<'db>>;
 
     #[salsa::invoke(crate::lower::generic_defaults_with_diagnostics_query)]
     #[salsa::cycle(cycle_result = crate::lower::generic_defaults_with_diagnostics_cycle_result)]
@@ -283,22 +253,13 @@ pub trait HirDatabase {
     /// The binders of the returned defaults are only up to (not including) this parameter.
     #[salsa::invoke(crate::lower::generic_defaults_query)]
     #[salsa::transparent]
-    fn generic_defaults<'db>(
-        &'db self,
-        def: GenericDefId,
-    ) -> GenericDefaults<'db>;
+    fn generic_defaults<'db>(&'db self, def: GenericDefId) -> GenericDefaults<'db>;
 
     #[salsa::invoke(InherentImpls::inherent_impls_in_crate_query)]
-    fn inherent_impls_in_crate(
-        &self,
-        krate: Crate,
-    ) -> Arc<InherentImpls>;
+    fn inherent_impls_in_crate(&self, krate: Crate) -> Arc<InherentImpls>;
 
     #[salsa::invoke(InherentImpls::inherent_impls_in_block_query)]
-    fn inherent_impls_in_block(
-        &self,
-        block: BlockId,
-    ) -> Option<Arc<InherentImpls>>;
+    fn inherent_impls_in_block(&self, block: BlockId) -> Option<Arc<InherentImpls>>;
 
     /// Collects all crates in the dependency graph that have impls for the
     /// given fingerprint. This is only used for primitive types and types
@@ -312,40 +273,22 @@ pub trait HirDatabase {
     ) -> SmallVec<[Crate; 2]>;
 
     #[salsa::invoke(TraitImpls::trait_impls_in_crate_query)]
-    fn trait_impls_in_crate(
-        &self,
-        krate: Crate,
-    ) -> Arc<TraitImpls>;
+    fn trait_impls_in_crate(&self, krate: Crate) -> Arc<TraitImpls>;
 
     #[salsa::invoke(TraitImpls::trait_impls_in_block_query)]
-    fn trait_impls_in_block(
-        &self,
-        block: BlockId,
-    ) -> Option<Arc<TraitImpls>>;
+    fn trait_impls_in_block(&self, block: BlockId) -> Option<Arc<TraitImpls>>;
 
     #[salsa::invoke(TraitImpls::trait_impls_in_deps_query)]
-    fn trait_impls_in_deps(
-        &self,
-        krate: Crate,
-    ) -> Arc<[Arc<TraitImpls>]>;
+    fn trait_impls_in_deps(&self, krate: Crate) -> Arc<[Arc<TraitImpls>]>;
 
     #[salsa::interned]
-    fn intern_impl_trait_id(
-        &self,
-        id: ImplTraitId<'_>,
-    ) -> InternedOpaqueTyId;
+    fn intern_impl_trait_id(&self, id: ImplTraitId<'_>) -> InternedOpaqueTyId;
 
     #[salsa::interned]
-    fn intern_closure(
-        &self,
-        id: InternedClosure,
-    ) -> InternedClosureId;
+    fn intern_closure(&self, id: InternedClosure) -> InternedClosureId;
 
     #[salsa::interned]
-    fn intern_coroutine(
-        &self,
-        id: InternedCoroutine,
-    ) -> InternedCoroutineId;
+    fn intern_coroutine(&self, id: InternedCoroutine) -> InternedCoroutineId;
 
     #[salsa::invoke(crate::variance::variances_of)]
     #[salsa::cycle(
@@ -353,10 +296,7 @@ pub trait HirDatabase {
         // cycle_initial = crate::variance::variances_of_cycle_initial,
         cycle_result = crate::variance::variances_of_cycle_initial,
     )]
-    fn variances_of<'db>(
-        &'db self,
-        def: GenericDefId,
-    ) -> VariancesOf<'db>;
+    fn variances_of<'db>(&'db self, def: GenericDefId) -> VariancesOf<'db>;
 }
 
 #[test]

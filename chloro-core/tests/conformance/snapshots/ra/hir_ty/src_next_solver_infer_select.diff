@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16020 bytes
-Chloro size:   16081 bytes
+Chloro size:   16035 bytes
 Rustfmt size:  16174 bytes
 
 ✗ Outputs DIFFER
@@ -44,14 +44,8 @@ Rustfmt size:  16174 bytes
      /// Successful resolution for a builtin impl.
      Builtin(BuiltinImplSource, Vec<N>),
  }
-         }
-     }
  
--    pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
-+    pub(crate) fn map<M, F>(
-+        self,
-+        f: F,
-+    ) -> ImplSource<'db, M>
+     pub(crate) fn map<M, F>(self, f: F) -> ImplSource<'db, M>
      where
 -        F: FnMut(N) -> M,
 -    {
@@ -68,12 +62,7 @@ Rustfmt size:  16174 bytes
  
  impl<'db> ProofTreeVisitor<'db> for Select {
      type Result = ControlFlow<SelectionResult<'db, Selection<'db>>>;
- 
--    fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
-+    fn visit_goal(
-+        &mut self,
-+        goal: &InspectGoal<'_, 'db>,
-+    ) -> Self::Result {
+     fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
          let mut candidates = goal.candidates();
          candidates.retain(|cand| cand.result().is_ok());
 -

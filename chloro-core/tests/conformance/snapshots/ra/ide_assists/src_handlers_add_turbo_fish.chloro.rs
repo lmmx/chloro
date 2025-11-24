@@ -11,10 +11,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn add_turbo_fish(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let turbofish_target =
         ctx.find_node_at_offset::<ast::PathSegment>().map(Either::Left).or_else(|| {
             let callable_expr = ctx.find_node_at_offset::<ast::CallableExpr>()?;
@@ -166,10 +163,7 @@ pub(crate) fn add_turbo_fish(
 }
 
 /// This will create a turbofish generic arg list corresponding to the number of arguments
-fn get_fish_head(
-    make: &SyntaxFactory,
-    number_of_arguments: usize,
-) -> ast::GenericArgList {
+fn get_fish_head(make: &SyntaxFactory, number_of_arguments: usize) -> ast::GenericArgList {
     let args = (0..number_of_arguments).map(|_| make::type_arg(make::ty_placeholder()).into());
     make.generic_arg_list(args, true)
 }

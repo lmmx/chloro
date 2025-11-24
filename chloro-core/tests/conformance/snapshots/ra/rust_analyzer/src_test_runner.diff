@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4036 bytes
+Chloro size:   4005 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -25,13 +25,7 @@ Rustfmt size:  4381 bytes
      }
  }
  
- impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
--    fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
-+    fn from_line(
-+        &self,
-+        line: &str,
-+        _error: &mut String,
-+    ) -> Option<CargoTestMessage> {
+     fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
          let mut deserializer = serde_json::Deserializer::from_str(line);
          deserializer.disable_recursion_limit();
 -

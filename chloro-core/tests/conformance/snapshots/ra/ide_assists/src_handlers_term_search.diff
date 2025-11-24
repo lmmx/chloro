@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9362 bytes
-Chloro size:   9339 bytes
+Chloro size:   9328 bytes
 Rustfmt size:  9410 bytes
 
 ✗ Outputs DIFFER
@@ -22,11 +22,6 @@ Rustfmt size:  9410 bytes
  
  use crate::assist_context::{AssistContext, Assists};
  
--pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn term_search(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
      let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
      let syntax = unexpanded.syntax();
      let goal_range = syntax.text_range();

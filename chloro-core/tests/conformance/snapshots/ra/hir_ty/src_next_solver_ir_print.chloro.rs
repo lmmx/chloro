@@ -9,17 +9,11 @@ use super::SolverDefId;
 use super::interner::DbInterner;
 
 impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::AliasTy<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
-    fn print_debug(
-        t: &ty::AliasTy<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print_debug(t: &ty::AliasTy<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::with_attached_db(|db| match t.def_id {
             SolverDefId::TypeAliasId(id) => fmt.write_str(&format!(
                 "AliasTy({:?}[{:?}])",
@@ -35,10 +29,7 @@ impl<'db> IrPrint<ty::AliasTy<Self>> for DbInterner<'db> {
 }
 
 impl<'db> IrPrint<ty::AliasTerm<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::AliasTerm<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::AliasTerm<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
@@ -61,17 +52,11 @@ impl<'db> IrPrint<ty::AliasTerm<Self>> for DbInterner<'db> {
 }
 
 impl<'db> IrPrint<ty::TraitRef<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::TraitRef<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::TraitRef<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
-    fn print_debug(
-        t: &ty::TraitRef<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print_debug(t: &ty::TraitRef<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::with_attached_db(|db| {
             let trait_ = t.def_id.0;
             let self_ty = &t.args.as_slice()[0];
@@ -95,10 +80,7 @@ impl<'db> IrPrint<ty::TraitRef<Self>> for DbInterner<'db> {
 }
 
 impl<'db> IrPrint<ty::TraitPredicate<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::TraitPredicate<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::TraitPredicate<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
@@ -204,10 +186,7 @@ impl<'db> IrPrint<ty::ProjectionPredicate<Self>> for DbInterner<'db> {
 }
 
 impl<'db> IrPrint<ty::NormalizesTo<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::NormalizesTo<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::NormalizesTo<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
@@ -252,17 +231,11 @@ impl<'db> IrPrint<ty::CoercePredicate<Self>> for DbInterner<'db> {
 }
 
 impl<'db> IrPrint<ty::FnSig<Self>> for DbInterner<'db> {
-    fn print(
-        t: &ty::FnSig<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print(t: &ty::FnSig<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Self::print_debug(t, fmt)
     }
 
-    fn print_debug(
-        t: &ty::FnSig<Self>,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn print_debug(t: &ty::FnSig<Self>, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         fmt.write_str(&format!("TODO: {:?}", type_name_of_val(t)))
     }
 }

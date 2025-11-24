@@ -1,5 +1,7 @@
 use crate::format_source;
 
+mod functions;
+
 #[test]
 fn format_simple_function() {
     let input = "fn main(){println!(\"hello\");}";

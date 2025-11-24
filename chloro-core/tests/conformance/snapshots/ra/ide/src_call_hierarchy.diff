@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18328 bytes
-Chloro size:   18329 bytes
+Chloro size:   18298 bytes
 Rustfmt size:  18564 bytes
 
 ✗ Outputs DIFFER
@@ -87,16 +87,6 @@ Rustfmt size:  18564 bytes
      Some(calls.into_items())
  }
  
- }
- 
- impl CallLocations {
--    fn add(&mut self, target: NavigationTarget, range: FileRange) {
-+    fn add(
-+        &mut self,
-+        target: NavigationTarget,
-+        range: FileRange,
-+    ) {
-         self.funcs.entry(target).or_default().push(range);
      }
  
      fn into_items(self) -> Vec<CallItem> {

@@ -51,10 +51,7 @@ impl Attrs {
         Attrs(RawAttrs::new_expanded(db, owner, span_map, cfg_options))
     }
 
-    pub fn get(
-        &self,
-        id: AttrId,
-    ) -> Option<&Attr> {
+    pub fn get(&self, id: AttrId) -> Option<&Attr> {
         (**self).iter().find(|attr| attr.id == id)
     }
 
@@ -167,10 +164,7 @@ impl Attrs {
 
 impl Attrs {
     #[inline]
-    pub fn by_key(
-        &self,
-        key: Symbol,
-    ) -> AttrQuery<'_> {
+    pub fn by_key(&self, key: Symbol) -> AttrQuery<'_> {
         AttrQuery { attrs: self, key }
     }
 
@@ -199,10 +193,7 @@ impl Attrs {
     }
 
     #[inline]
-    pub(crate) fn is_cfg_enabled(
-        &self,
-        cfg_options: &CfgOptions,
-    ) -> Result<(), CfgExpr> {
+    pub(crate) fn is_cfg_enabled(&self, cfg_options: &CfgOptions) -> Result<(), CfgExpr> {
         self.cfgs().try_for_each(|cfg| {
             if cfg_options.check(&cfg) != Some(false) { Ok(()) } else { Err(cfg) }
         })
@@ -334,10 +325,7 @@ fn parse_rustc_legacy_const_generics(tt: &crate::tt::TopSubtree) -> Box<[u32]> {
     indices.into_boxed_slice()
 }
 
-fn merge_repr(
-    this: &mut ReprOptions,
-    other: ReprOptions,
-) {
+fn merge_repr(this: &mut ReprOptions, other: ReprOptions) {
     let ReprOptions { int, align, pack, flags, field_shuffle_seed: _ } = this;
     flags.insert(other.flags);
     *align = (*align).max(other.align);
@@ -516,17 +504,11 @@ fn parse_comma_sep<S>(iter: TtIter<'_, S>) -> Vec<Symbol> {
 }
 
 impl AttrsWithOwner {
-    pub fn new(
-        db: &dyn DefDatabase,
-        owner: AttrDefId,
-    ) -> Self {
+    pub fn new(db: &dyn DefDatabase, owner: AttrDefId) -> Self {
         Self { attrs: db.attrs(owner), owner }
     }
 
-    pub(crate) fn attrs_query(
-        db: &dyn DefDatabase,
-        def: AttrDefId,
-    ) -> Attrs {
+    pub(crate) fn attrs_query(db: &dyn DefDatabase, def: AttrDefId) -> Attrs {
         let _p = tracing::info_span!("attrs_query").entered();
         // FIXME: this should use `Trace` to avoid duplication in `source_map` below
         match def {
@@ -623,10 +605,7 @@ impl AttrsWithOwner {
         }
     }
 
-    pub fn source_map(
-        &self,
-        db: &dyn DefDatabase,
-    ) -> AttrSourceMap {
+    pub fn source_map(&self, db: &dyn DefDatabase) -> AttrSourceMap {
         let owner = match self.owner {
             AttrDefId::ModuleId(module) => {
                 // Modules can have 2 attribute owners (the `mod x;` item, and the module file itself).
@@ -724,10 +703,7 @@ impl AttrSourceMap {
 
     /// Append a second source map to this one, this is required for modules, whose outline and inline
     /// attributes can reside in different files
-    fn append_module_inline_attrs(
-        &mut self,
-        other: Self,
-    ) {
+    fn append_module_inline_attrs(&mut self, other: Self) {
         assert!(self.mod_def_site_file_id.is_none() && other.mod_def_site_file_id.is_none());
         let len = self.source.len();
         self.source.extend(other.source);
@@ -742,17 +718,11 @@ impl AttrSourceMap {
     ///
     /// Note that the returned syntax node might be a `#[cfg_attr]`, or a doc comment, instead of
     /// the attribute represented by `Attr`.
-    pub fn source_of(
-        &self,
-        attr: &Attr,
-    ) -> InFile<&Either<ast::Attr, ast::Comment>> {
+    pub fn source_of(&self, attr: &Attr) -> InFile<&Either<ast::Attr, ast::Comment>> {
         self.source_of_id(attr.id)
     }
 
-    pub fn source_of_id(
-        &self,
-        id: AttrId,
-    ) -> InFile<&Either<ast::Attr, ast::Comment>> {
+    pub fn source_of_id(&self, id: AttrId) -> InFile<&Either<ast::Attr, ast::Comment>> {
         let ast_idx = id.ast_index();
         let file_id = match self.mod_def_site_file_id {
             Some((file_id, def_site_cut)) if def_site_cut <= ast_idx => file_id,
@@ -810,10 +780,7 @@ impl<'attr> AttrQuery<'attr> {
     ///       ^^^^^^^^^^^^^ key
     /// ```
     #[inline]
-    pub fn find_string_value_in_tt(
-        self,
-        key: Symbol,
-    ) -> Option<&'attr str> {
+    pub fn find_string_value_in_tt(self, key: Symbol) -> Option<&'attr str> {
         self.tt_values().find_map(|tt| {
             let name = tt.iter()
                 .skip_while(|tt| !matches!(tt, TtElement::Leaf(tt::Leaf::Ident(tt::Ident { sym, ..} )) if *sym == key))
@@ -874,10 +841,7 @@ mod tests {
     use syntax::{AstNode, TextRange, ast};
     use syntax_bridge::{DocCommentDesugarMode, syntax_node_to_token_tree};
     use crate::attr::{DocAtom, DocExpr};
-    fn assert_parse_result(
-        input: &str,
-        expected: DocExpr,
-    ) {
+    fn assert_parse_result(input: &str, expected: DocExpr) {
         let source_file = ast::SourceFile::parse(input, span::Edition::CURRENT).ok().unwrap();
         let tt = source_file.syntax().descendants().find_map(ast::TokenTree::cast).unwrap();
         let map = SpanMap::RealSpanMap(Arc::new(RealSpanMap::absolute(

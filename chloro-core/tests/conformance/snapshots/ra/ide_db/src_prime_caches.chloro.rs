@@ -260,10 +260,7 @@ pub fn parallel_prime_caches(
     }
 }
 
-fn crate_name(
-    db: &RootDatabase,
-    krate: Crate,
-) -> Symbol {
+fn crate_name(db: &RootDatabase, krate: Crate) -> Symbol {
     krate
         .extra_data(db)
         .display_name

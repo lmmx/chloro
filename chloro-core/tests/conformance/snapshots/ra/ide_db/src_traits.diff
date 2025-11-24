@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8057 bytes
-Chloro size:   8110 bytes
+Chloro size:   8042 bytes
 Rustfmt size:  8222 bytes
 
 ✗ Outputs DIFFER
@@ -55,28 +55,6 @@ Rustfmt size:  8222 bytes
      resolve_target_trait(sema, impl_def).map_or(vec![], |target_trait| {
          target_trait
              .items(sema.db)
- }
- 
- /// Converts associated trait impl items to their trait definition counterpart
--pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> Definition {
-+pub(crate) fn convert_to_def_in_trait(
-+    db: &dyn HirDatabase,
-+    def: Definition,
-+) -> Definition {
-     (|| {
-         let assoc = def.as_assoc_item(db)?;
-         let trait_ = assoc.implemented_trait(db)?;
- }
- 
- /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.
--pub(crate) fn as_trait_assoc_def(db: &dyn HirDatabase, def: Definition) -> Option<Definition> {
-+pub(crate) fn as_trait_assoc_def(
-+    db: &dyn HirDatabase,
-+    def: Definition,
-+) -> Option<Definition> {
-     let assoc = def.as_assoc_item(db)?;
-     let trait_ = match assoc.container(db) {
-         hir::AssocItemContainer::Trait(_) => return Some(def),
  
  #[cfg(test)]
  mod tests {
@@ -105,11 +83,7 @@ Rustfmt size:  8222 bytes
          (database, FilePosition { file_id, offset })
      }
 -
--    fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check_trait(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (db, position) = position(ra_fixture);
          let sema = Semantics::new(&db);
 -
@@ -126,11 +100,7 @@ Rustfmt size:  8222 bytes
          expect.assert_eq(&actual);
      }
 -
--    fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check_missing_assoc(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (db, position) = position(ra_fixture);
          let sema = Semantics::new(&db);
 -

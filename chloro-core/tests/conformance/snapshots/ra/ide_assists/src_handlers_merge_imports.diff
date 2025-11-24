@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17832 bytes
-Chloro size:   17712 bytes
+Chloro size:   17585 bytes
 Rustfmt size:  18165 bytes
 
 ✗ Outputs DIFFER
@@ -40,20 +40,15 @@ Rustfmt size:  18165 bytes
 -// ```
 -// use std::{fmt::Formatter, io};
 -// ```
--pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 +use crate::{
 +    AssistId,
 +    assist_context::{AssistContext, Assists},
 +    utils::next_prev,
 +};
 +
-+pub(crate) fn merge_imports(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (target, edits) = if ctx.has_empty_selection() {
          // Merge a neighbor
-         cov_mark::hit!(merge_with_use_item_neighbors);
          let target = tree.syntax().text_range();
  
          let use_item = tree.syntax().parent().and_then(ast::Use::cast)?;
@@ -139,27 +134,12 @@ Rustfmt size:  18165 bytes
              None
          }
      }
--    fn try_merge(&self, other: &Self, cfg: &InsertUseConfig) -> Option<Self>;
 +
-+    fn try_merge(
-+        &self,
-+        other: &Self,
-+        cfg: &InsertUseConfig,
-+    ) -> Option<Self>;
+     fn try_merge(&self, other: &Self, cfg: &InsertUseConfig) -> Option<Self>;
 +
      fn into_either(self) -> Either<ast::Use, ast::UseTree>;
  }
  
- impl Merge for ast::Use {
--    fn try_merge(&self, other: &Self, cfg: &InsertUseConfig) -> Option<Self> {
-+    fn try_merge(
-+        &self,
-+        other: &Self,
-+        cfg: &InsertUseConfig,
-+    ) -> Option<Self> {
-         let mb = match cfg.granularity {
-             ImportGranularity::One => MergeBehavior::One,
-             _ => MergeBehavior::Crate,
          };
          try_merge_imports(self, other, mb)
      }
@@ -167,32 +147,13 @@ Rustfmt size:  18165 bytes
      fn into_either(self) -> Either<ast::Use, ast::UseTree> {
          Either::Left(self)
      }
- }
- 
- impl Merge for ast::UseTree {
--    fn try_merge(&self, other: &Self, _: &InsertUseConfig) -> Option<Self> {
-+    fn try_merge(
-+        &self,
-+        other: &Self,
-+        _: &InsertUseConfig,
-+    ) -> Option<Self> {
+     fn try_merge(&self, other: &Self, _: &InsertUseConfig) -> Option<Self> {
          try_merge_trees(self, other, MergeBehavior::Crate)
      }
 +
      fn into_either(self) -> Either<ast::Use, ast::UseTree> {
          Either::Right(self)
      }
- }
- 
- impl Edit {
--    fn replace(old: impl AstNode, new: impl AstNode) -> Self {
-+    fn replace(
-+        old: impl AstNode,
-+        new: impl AstNode,
-+    ) -> Self {
-         Edit::Replace(old.syntax().clone(), new.syntax().clone())
-     }
- }
          check_assist, check_assist_import_one, check_assist_not_applicable,
          check_assist_not_applicable_for_import_one,
      };

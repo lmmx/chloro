@@ -49,10 +49,7 @@ use crate::{
 };
 
 #[track_caller]
-fn check_errors(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check_errors(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let db = TestDB::with_files(ra_fixture);
     let krate = db.fetch_test_crate();
     let def_map = crate_def_map(&db, krate);
@@ -83,10 +80,7 @@ fn check_errors(
     expect.assert_eq(&errors);
 }
 
-fn check(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    mut expect: Expect,
-) {
+fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, mut expect: Expect) {
     let extra_proc_macros = vec![(
         r#"
 #[proc_macro_attribute]
@@ -261,10 +255,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
     expect.assert_eq(&expanded_text);
 }
 
-fn reindent(
-    indent: IndentLevel,
-    pp: String,
-) -> String {
+fn reindent(indent: IndentLevel, pp: String) -> String {
     if !pp.contains('\n') {
         return pp;
     }
@@ -379,10 +370,7 @@ impl ProcMacroExpander for IdentityWhenValidProcMacroExpander {
         }
     }
 
-    fn eq_dyn(
-        &self,
-        other: &dyn ProcMacroExpander,
-    ) -> bool {
+    fn eq_dyn(&self, other: &dyn ProcMacroExpander) -> bool {
         other.type_id() == TypeId::of::<Self>()
     }
 }

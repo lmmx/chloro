@@ -661,10 +661,7 @@ pub struct Config {
 }
 
 impl fmt::Debug for Config {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Config")
             .field("discovered_projects_from_filesystem", &self.discovered_projects_from_filesystem)
             .field("discovered_projects_from_command", &self.discovered_projects_from_command)
@@ -711,10 +708,7 @@ impl Config {
 
     /// Changes made to client and global configurations will partially not be reflected even after `.apply_change()` was called.
     /// The return tuple's bool component signals whether the `GlobalState` should call its `update_configuration()` method.
-    fn apply_change_with_sink(
-        &self,
-        change: ConfigChange,
-    ) -> (Config, bool) {
+    fn apply_change_with_sink(&self, change: ConfigChange) -> (Config, bool) {
         let mut config = self.clone();
         config.validation_errors = ConfigErrors::default();
         let mut should_update = false;
@@ -923,10 +917,7 @@ impl Config {
     /// Given `change` this generates a new `Config`, thereby collecting errors of type `ConfigError`.
     /// If there are changes that have global/client level effect, the last component of the return type
     /// will be set to `true`, which should be used by the `GlobalState` to update itself.
-    pub fn apply_change(
-        &self,
-        change: ConfigChange,
-    ) -> (Config, ConfigErrors, bool) {
+    pub fn apply_change(&self, change: ConfigChange) -> (Config, ConfigErrors, bool) {
         let (config, should_update) = self.apply_change_with_sink(change);
         let e = ConfigErrors(
             config
@@ -978,10 +969,7 @@ impl ConfigChange {
             .insert(source_root, (RatomlFileKind::Crate, vfs_path, content))
     }
 
-    pub fn change_user_config(
-        &mut self,
-        content: Option<Arc<str>>,
-    ) {
+    pub fn change_user_config(&mut self, content: Option<Arc<str>>) {
         assert!(self.user_config_change.is_none());
         // Otherwise it is a double write.
         self.user_config_change = content;
@@ -998,10 +986,7 @@ impl ConfigChange {
             .insert(source_root, (RatomlFileKind::Workspace, vfs_path, content))
     }
 
-    pub fn change_client_config(
-        &mut self,
-        change: serde_json::Value,
-    ) {
+    pub fn change_client_config(&mut self, change: serde_json::Value) {
         self.client_config_change = Some(change);
     }
 
@@ -1247,10 +1232,7 @@ impl ConfigErrors {
 }
 
 impl fmt::Display for ConfigErrors {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let errors = self.0.iter().format_with("\n", |inner, f| {
             match &**inner {
                 ConfigErrorInner::Json { config_key: key, error: e } => {
@@ -1312,19 +1294,13 @@ impl Config {
         self.discovered_projects_from_filesystem = discovered;
     }
 
-    pub fn remove_workspace(
-        &mut self,
-        path: &AbsPath,
-    ) {
+    pub fn remove_workspace(&mut self, path: &AbsPath) {
         if let Some(position) = self.workspace_roots.iter().position(|it| it == path) {
             self.workspace_roots.remove(position);
         }
     }
 
-    pub fn add_workspaces(
-        &mut self,
-        paths: impl Iterator<Item = AbsPathBuf>,
-    ) {
+    pub fn add_workspaces(&mut self, paths: impl Iterator<Item = AbsPathBuf>) {
         self.workspace_roots.extend(paths);
     }
 
@@ -1353,10 +1329,7 @@ impl Config {
 }
 
 impl Config {
-    pub fn assist(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> AssistConfig {
+    pub fn assist(&self, source_root: Option<SourceRootId>) -> AssistConfig {
         AssistConfig {
             snippet_cap: self.snippet_cap(),
             allowed: None,
@@ -1377,10 +1350,7 @@ impl Config {
         }
     }
 
-    pub fn rename(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> RenameConfig {
+    pub fn rename(&self, source_root: Option<SourceRootId>) -> RenameConfig {
         RenameConfig {
             prefer_no_std: self.imports_preferNoStd(source_root).to_owned(),
             prefer_prelude: self.imports_preferPrelude(source_root).to_owned(),
@@ -1388,10 +1358,7 @@ impl Config {
         }
     }
 
-    pub fn call_hierarchy<'a>(
-        &self,
-        minicore: MiniCore<'a>,
-    ) -> CallHierarchyConfig<'a> {
+    pub fn call_hierarchy<'a>(&self, minicore: MiniCore<'a>) -> CallHierarchyConfig<'a> {
         CallHierarchyConfig { exclude_tests: self.references_excludeTests().to_owned(), minicore }
     }
 
@@ -1467,10 +1434,7 @@ impl Config {
         &self.detached_files
     }
 
-    pub fn diagnostics(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> DiagnosticsConfig {
+    pub fn diagnostics(&self, source_root: Option<SourceRootId>) -> DiagnosticsConfig {
         DiagnosticsConfig {
             enabled: *self.diagnostics_enable(source_root),
             proc_attr_macros_enabled: self.expand_proc_attr_macros(),
@@ -1493,10 +1457,7 @@ impl Config {
         }
     }
 
-    pub fn diagnostic_fixes(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> DiagnosticsConfig {
+    pub fn diagnostic_fixes(&self, source_root: Option<SourceRootId>) -> DiagnosticsConfig {
         // We always want to show quickfixes for diagnostics, even when diagnostics/experimental diagnostics are disabled.
         DiagnosticsConfig {
             enabled: true,
@@ -1509,10 +1470,7 @@ impl Config {
         self.procMacro_enable().to_owned() && self.procMacro_attributes_enable().to_owned()
     }
 
-    pub fn highlight_related(
-        &self,
-        _source_root: Option<SourceRootId>,
-    ) -> HighlightRelatedConfig {
+    pub fn highlight_related(&self, _source_root: Option<SourceRootId>) -> HighlightRelatedConfig {
         HighlightRelatedConfig {
             references: self.highlightRelated_references_enable().to_owned(),
             break_points: self.highlightRelated_breakPoints_enable().to_owned(),
@@ -1537,10 +1495,7 @@ impl Config {
         }
     }
 
-    pub fn hover<'a>(
-        &self,
-        minicore: MiniCore<'a>,
-    ) -> HoverConfig<'a> {
+    pub fn hover<'a>(&self, minicore: MiniCore<'a>) -> HoverConfig<'a> {
         let mem_kind = |kind| match kind {
             MemoryLayoutHoverRenderKindDef::Both => MemoryLayoutHoverRenderKind::Both,
             MemoryLayoutHoverRenderKindDef::Decimal => MemoryLayoutHoverRenderKind::Decimal,
@@ -1577,17 +1532,11 @@ impl Config {
         }
     }
 
-    pub fn goto_definition<'a>(
-        &self,
-        minicore: MiniCore<'a>,
-    ) -> GotoDefinitionConfig<'a> {
+    pub fn goto_definition<'a>(&self, minicore: MiniCore<'a>) -> GotoDefinitionConfig<'a> {
         GotoDefinitionConfig { minicore }
     }
 
-    pub fn inlay_hints<'a>(
-        &self,
-        minicore: MiniCore<'a>,
-    ) -> InlayHintsConfig<'a> {
+    pub fn inlay_hints<'a>(&self, minicore: MiniCore<'a>) -> InlayHintsConfig<'a> {
         let client_capability_fields = self.inlay_hint_resolve_support_properties();
         InlayHintsConfig {
             render_colons: self.inlayHints_renderColons().to_owned(),
@@ -1672,10 +1621,7 @@ impl Config {
         }
     }
 
-    fn insert_use_config(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> InsertUseConfig {
+    fn insert_use_config(&self, source_root: Option<SourceRootId>) -> InsertUseConfig {
         InsertUseConfig {
             granularity: match self.imports_granularity_group(source_root) {
                 ImportGranularityDef::Item | ImportGranularityDef::Preserve => {
@@ -1709,10 +1655,7 @@ impl Config {
         self.semanticHighlighting_nonStandardTokens().to_owned()
     }
 
-    pub fn highlighting_config<'a>(
-        &self,
-        minicore: MiniCore<'a>,
-    ) -> HighlightConfig<'a> {
+    pub fn highlighting_config<'a>(&self, minicore: MiniCore<'a>) -> HighlightConfig<'a> {
         HighlightConfig {
             strings: self.semanticHighlighting_strings_enable().to_owned(),
             comments: self.semanticHighlighting_comments_enable().to_owned(),
@@ -1810,17 +1753,11 @@ impl Config {
         self.cachePriming_enable().to_owned()
     }
 
-    pub fn publish_diagnostics(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn publish_diagnostics(&self, source_root: Option<SourceRootId>) -> bool {
         self.diagnostics_enable(source_root).to_owned()
     }
 
-    pub fn diagnostics_map(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> DiagnosticsMapConfig {
+    pub fn diagnostics_map(&self, source_root: Option<SourceRootId>) -> DiagnosticsMapConfig {
         DiagnosticsMapConfig {
             remap_prefix: self.diagnostics_remapPrefix(source_root).clone(),
             warnings_as_info: self.diagnostics_warningsAsInfo(source_root).clone(),
@@ -1829,10 +1766,7 @@ impl Config {
         }
     }
 
-    pub fn extra_args(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> &Vec<String> {
+    pub fn extra_args(&self, source_root: Option<SourceRootId>) -> &Vec<String> {
         self.cargo_extraArgs(source_root)
     }
 
@@ -1843,10 +1777,7 @@ impl Config {
         self.cargo_extraEnv(source_root)
     }
 
-    pub fn check_extra_args(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> Vec<String> {
+    pub fn check_extra_args(&self, source_root: Option<SourceRootId>) -> Vec<String> {
         let mut extra_args = self.extra_args(source_root).clone();
         extra_args.extend_from_slice(self.check_extraArgs(source_root));
         extra_args
@@ -1912,24 +1843,15 @@ impl Config {
         }
     }
 
-    pub fn cargo_autoreload_config(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn cargo_autoreload_config(&self, source_root: Option<SourceRootId>) -> bool {
         self.cargo_autoreload(source_root).to_owned()
     }
 
-    pub fn run_build_scripts(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn run_build_scripts(&self, source_root: Option<SourceRootId>) -> bool {
         self.cargo_buildScripts_enable(source_root).to_owned() || self.procMacro_enable().to_owned()
     }
 
-    pub fn cargo(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> CargoConfig {
+    pub fn cargo(&self, source_root: Option<SourceRootId>) -> CargoConfig {
         let rustc_source = self.rustc_source(source_root).as_ref().map(|rustc_src| {
             if rustc_src == "discover" {
                 RustLibSource::Discover
@@ -2013,10 +1935,7 @@ impl Config {
         }
     }
 
-    pub fn cfg_set_test(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn cfg_set_test(&self, source_root: Option<SourceRootId>) -> bool {
         *self.cfg_setTest(source_root)
     }
 
@@ -2067,10 +1986,7 @@ impl Config {
         .unwrap()
     }
 
-    pub fn rustfmt(
-        &self,
-        source_root_id: Option<SourceRootId>,
-    ) -> RustfmtConfig {
+    pub fn rustfmt(&self, source_root_id: Option<SourceRootId>) -> RustfmtConfig {
         match &self.rustfmt_overrideCommand(source_root_id) {
             Some(args) if !args.is_empty() => {
                 let mut args = args.clone();
@@ -2084,17 +2000,11 @@ impl Config {
         }
     }
 
-    pub fn flycheck_workspace(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn flycheck_workspace(&self, source_root: Option<SourceRootId>) -> bool {
         *self.check_workspace(source_root)
     }
 
-    pub(crate) fn cargo_test_options(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> CargoOptions {
+    pub(crate) fn cargo_test_options(&self, source_root: Option<SourceRootId>) -> CargoOptions {
         CargoOptions {
             target_tuples: self.cargo_target(source_root).clone().into_iter().collect(),
             all_targets: false,
@@ -2112,10 +2022,7 @@ impl Config {
         }
     }
 
-    pub(crate) fn flycheck(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> FlycheckConfig {
+    pub(crate) fn flycheck(&self, source_root: Option<SourceRootId>) -> FlycheckConfig {
         match &self.check_overrideCommand(source_root) {
             Some(args) if !args.is_empty() => {
                 let mut args = args.clone();
@@ -2176,10 +2083,7 @@ impl Config {
         }
     }
 
-    fn target_dir_from_config(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> TargetDirectoryConfig {
+    fn target_dir_from_config(&self, source_root: Option<SourceRootId>) -> TargetDirectoryConfig {
         match &self.cargo_targetDir(source_root) {
             Some(TargetDirectory::UseSubdirectory(true)) => TargetDirectoryConfig::UseSubdirectory,
             Some(TargetDirectory::UseSubdirectory(false)) | None => TargetDirectoryConfig::None,
@@ -2187,24 +2091,15 @@ impl Config {
         }
     }
 
-    pub fn check_on_save(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn check_on_save(&self, source_root: Option<SourceRootId>) -> bool {
         *self.checkOnSave(source_root)
     }
 
-    pub fn script_rebuild_on_save(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> bool {
+    pub fn script_rebuild_on_save(&self, source_root: Option<SourceRootId>) -> bool {
         *self.cargo_buildScripts_rebuildOnSave(source_root)
     }
 
-    pub fn runnables(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> RunnablesConfig {
+    pub fn runnables(&self, source_root: Option<SourceRootId>) -> RunnablesConfig {
         RunnablesConfig {
             override_cargo: self.runnables_command(source_root).clone(),
             cargo_extra_args: self.runnables_extraArgs(source_root).clone(),
@@ -2259,19 +2154,13 @@ impl Config {
         }
     }
 
-    pub fn document_symbol(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> DocumentSymbolConfig {
+    pub fn document_symbol(&self, source_root: Option<SourceRootId>) -> DocumentSymbolConfig {
         DocumentSymbolConfig {
             search_exclude_locals: *self.document_symbol_search_excludeLocals(source_root),
         }
     }
 
-    pub fn workspace_symbol(
-        &self,
-        source_root: Option<SourceRootId>,
-    ) -> WorkspaceSymbolConfig {
+    pub fn workspace_symbol(&self, source_root: Option<SourceRootId>) -> WorkspaceSymbolConfig {
         WorkspaceSymbolConfig {
             search_exclude_imports: *self.workspace_symbol_search_excludeImports(source_root),
             search_scope: match self.workspace_symbol_search_scope(source_root) {
@@ -2471,10 +2360,7 @@ mod single_or_array {
         }
         deserializer.deserialize_any(SingleOrVec)
     }
-    pub(super) fn serialize<S>(
-        vec: &[String],
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer, {
         match vec {
@@ -2506,10 +2392,7 @@ where
         .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
 }
 
-fn serialize_abs_pathbuf<S>(
-    path: &AbsPathBuf,
-    se: S,
-) -> Result<S::Ok, S::Error>
+fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer, {
     let path: &Utf8Path = path.as_ref();
@@ -3063,10 +2946,7 @@ impl WorkspaceLocalConfigInput {
     #[allow(dead_code)]
     const FIELDS: &'static [&'static [&'static str]] = &[WorkspaceConfigInput::FIELDS, LocalConfigInput::FIELDS];
 
-    fn from_toml(
-        toml: toml::Table,
-        error_sink: &mut Vec<(String, toml::de::Error)>,
-    ) -> Self {
+    fn from_toml(toml: toml::Table, error_sink: &mut Vec<(String, toml::de::Error)>) -> Self {
         Self {
             workspace: WorkspaceConfigInput::from_toml(&toml, error_sink),
             local: LocalConfigInput::from_toml(&toml, error_sink),
@@ -3130,10 +3010,7 @@ fn get_field_toml<T: DeserializeOwned>(
         })
 }
 
-fn toml_pointer<'a>(
-    toml: &'a toml::Table,
-    pointer: &str,
-) -> Option<&'a toml::Value> {
+fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Value> {
     fn parse_index(s: &str) -> Option<usize> {
         if s.starts_with('+') || (s.starts_with('0') && s.len() != 1) {
             return None;
@@ -3205,12 +3082,7 @@ fn to_title_case(s: &str) -> String {
     result
 }
 
-fn field_props(
-    field: &str,
-    ty: &str,
-    doc: &[&str],
-    default: &str,
-) -> serde_json::Value {
+fn field_props(field: &str, ty: &str, doc: &[&str], default: &str) -> serde_json::Value {
     let doc = doc_comment_to_string(doc);
     let doc = doc.trim_end_matches('\n');
     assert!(

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6953 bytes
-Chloro size:   7008 bytes
+Chloro size:   6931 bytes
 Rustfmt size:  7231 bytes
 
 ✗ Outputs DIFFER
@@ -12,13 +12,8 @@ Rustfmt size:  7231 bytes
  /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
  /// cargo output into a Rust data type
 -pub(crate) trait CargoParser<T>: Send + 'static {
--    fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
 +pub(crate) trait CargoParser<T> {
-+    fn from_line(
-+        &self,
-+        line: &str,
-+        error: &mut String,
-+    ) -> Option<T>;
+     fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
 +
      fn from_eof(&self) -> Option<T>;
  }
@@ -36,15 +31,6 @@ Rustfmt size:  7231 bytes
      }
  }
  
- impl<T: Sized + Send + 'static> CargoActor<T> {
--    fn run(self, outfile: Option<Utf8PathBuf>) -> io::Result<(bool, String)> {
-+    fn run(
-+        self,
-+        outfile: Option<Utf8PathBuf>,
-+    ) -> io::Result<(bool, String)> {
-         // We manually read a line at a time, instead of using serde's
-         // stream deserializers, because the deserializer cannot recover
-         // from an error, resulting in it getting stuck, because we try to
          // Because cargo only outputs one JSON object per line, we can
          // simply skip a line if it doesn't parse, which just ignores any
          // erroneous output.
@@ -74,17 +60,6 @@ Rustfmt size:  7231 bytes
          let read_at_least_one_message =
              read_at_least_one_stdout_message || read_at_least_one_stderr_message;
          let mut error = stdout_errors;
- }
- 
- impl<T> fmt::Debug for CommandHandle<T> {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         f.debug_struct("CommandHandle")
-             .field("program", &self.program)
-             .field("arguments", &self.arguments)
          sender: Sender<T>,
          out_file: Option<Utf8PathBuf>,
      ) -> std::io::Result<Self> {

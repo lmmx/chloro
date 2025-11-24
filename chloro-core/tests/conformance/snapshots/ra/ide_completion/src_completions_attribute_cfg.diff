@@ -2,23 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3900 bytes
-Chloro size:   3902 bytes
+Chloro size:   3891 bytes
 Rustfmt size:  3900 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use crate::{CompletionItem, completions::Completions, context::CompletionContext};
- 
--pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
-+pub(crate) fn complete_cfg(
-+    acc: &mut Completions,
-+    ctx: &CompletionContext<'_>,
-+) {
-     let add_completion = |item: &str| {
-         let mut completion =
-             CompletionItem::new(SymbolKind::BuiltinAttr, ctx.source_range(), item, ctx.edition);
          completion.insert_text(format!(r#""{item}""#));
          acc.add(completion.build(ctx.db));
      };

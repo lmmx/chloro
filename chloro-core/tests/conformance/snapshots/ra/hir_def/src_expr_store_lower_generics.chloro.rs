@@ -107,11 +107,7 @@ impl GenericParamsCollector {
         })
     }
 
-    fn lower_param_list(
-        &mut self,
-        ec: &mut ExprCollector<'_>,
-        params: ast::GenericParamList,
-    ) {
+    fn lower_param_list(&mut self, ec: &mut ExprCollector<'_>, params: ast::GenericParamList) {
         for generic_param in params.generic_params() {
             let enabled = ec.check_cfg(&generic_param);
             if !enabled {
@@ -269,11 +265,7 @@ impl GenericParamsCollector {
         }
     }
 
-    fn fill_self_param(
-        &mut self,
-        ec: &mut ExprCollector<'_>,
-        bounds: Option<ast::TypeBoundList>,
-    ) {
+    fn fill_self_param(&mut self, ec: &mut ExprCollector<'_>, bounds: Option<ast::TypeBoundList>) {
         let self_ = Name::new_symbol_root(sym::Self_);
         let idx = self.type_or_consts.alloc(
             TypeParamData {

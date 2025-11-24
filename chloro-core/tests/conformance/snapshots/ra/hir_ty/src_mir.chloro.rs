@@ -110,11 +110,7 @@ pub enum OperandKind<'db> {
 }
 
 impl<'db> Operand<'db> {
-    fn from_concrete_const(
-        data: Box<[u8]>,
-        memory_map: MemoryMap<'db>,
-        ty: Ty<'db>,
-    ) -> Self {
+    fn from_concrete_const(data: Box<[u8]>, memory_map: MemoryMap<'db>, ty: Ty<'db>) -> Self {
         let interner = DbInterner::conjure();
         Operand {
             kind: OperandKind::Constant {
@@ -125,10 +121,7 @@ impl<'db> Operand<'db> {
         }
     }
 
-    fn from_bytes(
-        data: Box<[u8]>,
-        ty: Ty<'db>,
-    ) -> Self {
+    fn from_bytes(data: Box<[u8]>, ty: Ty<'db>) -> Self {
         Operand::from_concrete_const(data, MemoryMap::default(), ty)
     }
 
@@ -288,17 +281,11 @@ impl<'db> ProjectionStore<'db> {
         self.proj_to_id.shrink_to_fit();
     }
 
-    pub fn intern_if_exist(
-        &self,
-        projection: &[PlaceElem<'db>],
-    ) -> Option<ProjectionId> {
+    pub fn intern_if_exist(&self, projection: &[PlaceElem<'db>]) -> Option<ProjectionId> {
         self.proj_to_id.get(projection).copied()
     }
 
-    pub fn intern(
-        &mut self,
-        projection: Box<[PlaceElem<'db>]>,
-    ) -> ProjectionId {
+    pub fn intern(&mut self, projection: Box<[PlaceElem<'db>]>) -> ProjectionId {
         let new_id = ProjectionId(self.proj_to_id.len() as u32);
         match self.proj_to_id.entry(projection) {
             Entry::Occupied(id) => *id.get(),
@@ -319,10 +306,7 @@ impl ProjectionId {
         self == ProjectionId::EMPTY
     }
 
-    pub fn lookup<'a, 'db>(
-        self,
-        store: &'a ProjectionStore<'db>,
-    ) -> &'a [PlaceElem<'db>] {
+    pub fn lookup<'a, 'db>(self, store: &'a ProjectionStore<'db>) -> &'a [PlaceElem<'db>] {
         store.id_to_proj.get(&self).unwrap()
     }
 
@@ -344,11 +328,7 @@ pub struct Place<'db> {
 }
 
 impl<'db> Place<'db> {
-    fn is_parent(
-        &self,
-        child: &Place<'db>,
-        store: &ProjectionStore<'db>,
-    ) -> bool {
+    fn is_parent(&self, child: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
         self.local == child.local
             && child.projection.lookup(store).starts_with(self.projection.lookup(store))
     }
@@ -364,11 +344,7 @@ impl<'db> Place<'db> {
         })
     }
 
-    fn project(
-        &self,
-        projection: PlaceElem<'db>,
-        store: &mut ProjectionStore<'db>,
-    ) -> Place<'db> {
+    fn project(&self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> Place<'db> {
         Place { local: self.local, projection: self.projection.project(projection, store) }
     }
 }
@@ -417,11 +393,7 @@ impl<'db> SwitchTargets<'db> {
 
     /// Builds a switch targets definition that jumps to `then` if the tested value equals `value`,
     /// and to `else_` if not.
-    pub fn static_if(
-        value: u128,
-        then: BasicBlockId<'db>,
-        else_: BasicBlockId<'db>,
-    ) -> Self {
+    pub fn static_if(value: u128, then: BasicBlockId<'db>, else_: BasicBlockId<'db>) -> Self {
         Self { values: smallvec![value], targets: smallvec![then, else_] }
     }
 
@@ -448,10 +420,7 @@ impl<'db> SwitchTargets<'db> {
     /// Finds the `BasicBlock` to which this `SwitchInt` will branch given the
     /// specific value. This cannot fail, as it'll return the `otherwise`
     /// branch if there's not a specific match for the value.
-    pub fn target_for_value(
-        &self,
-        value: u128,
-    ) -> BasicBlockId<'db> {
+    pub fn target_for_value(&self, value: u128) -> BasicBlockId<'db> {
         self.iter().find_map(|(v, t)| (v == value).then_some(t)).unwrap_or_else(|| self.otherwise())
     }
 }
@@ -786,11 +755,7 @@ pub enum BinOp {
 }
 
 impl BinOp {
-    fn run_compare<T: PartialEq + PartialOrd>(
-        &self,
-        l: T,
-        r: T,
-    ) -> bool {
+    fn run_compare<T: PartialEq + PartialOrd>(&self, l: T, r: T) -> bool {
         match self {
             BinOp::Ge => l >= r,
             BinOp::Gt => l > r,
@@ -804,10 +769,7 @@ impl BinOp {
 }
 
 impl Display for BinOp {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
             BinOp::Add => "+",
             BinOp::Sub => "-",
@@ -1024,10 +986,7 @@ pub enum StatementKind<'db> {
 }
 
 impl<'db> StatementKind<'db> {
-    fn with_span(
-        self,
-        span: MirSpan,
-    ) -> Statement<'db> {
+    fn with_span(self, span: MirSpan) -> Statement<'db> {
         Statement { kind: self, span }
     }
 }
@@ -1077,10 +1036,7 @@ impl<'db> MirBody<'db> {
         self.binding_locals.iter().map(|(it, y)| (*y, it)).collect()
     }
 
-    fn walk_places(
-        &mut self,
-        mut f: impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>),
-    ) {
+    fn walk_places(&mut self, mut f: impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>)) {
         fn for_operand<'db>(
             op: &mut Operand<'db>,
             f: &mut impl FnMut(&mut Place<'db>, &mut ProjectionStore<'db>),
@@ -1205,10 +1161,7 @@ pub enum MirSpan {
 }
 
 impl MirSpan {
-    pub fn is_ref_span(
-        &self,
-        body: &Body,
-    ) -> bool {
+    pub fn is_ref_span(&self, body: &Body) -> bool {
         match *self {
             MirSpan::ExprId(expr) => matches!(body[expr], Expr::Ref { .. }),
             // FIXME: Figure out if this is correct wrt. match ergonomics.

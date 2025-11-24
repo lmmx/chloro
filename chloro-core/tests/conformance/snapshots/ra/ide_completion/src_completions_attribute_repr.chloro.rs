@@ -54,10 +54,7 @@ struct ReprCompletion {
     collides: &'static [&'static str],
 }
 
-const fn attr(
-    label: &'static str,
-    collides: &'static [&'static str],
-) -> ReprCompletion {
+const fn attr(label: &'static str, collides: &'static [&'static str]) -> ReprCompletion {
     ReprCompletion { label, snippet: None, lookup: None, collides }
 }
 

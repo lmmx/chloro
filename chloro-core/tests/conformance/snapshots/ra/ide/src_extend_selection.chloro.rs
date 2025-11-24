@@ -12,10 +12,7 @@ use syntax::{
 
 use crate::FileRange;
 
-pub(crate) fn extend_selection(
-    db: &RootDatabase,
-    frange: FileRange,
-) -> TextRange {
+pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
     let sema = Semantics::new(db);
     let src = sema.parse_guess_edition(frange.file_id);
     try_extend_selection(&sema, src.syntax(), frange).unwrap_or(frange.range)
@@ -187,11 +184,7 @@ fn extend_single_word_in_comment_or_string(
     if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
 }
 
-fn extend_ws(
-    root: &SyntaxNode,
-    ws: SyntaxToken,
-    offset: TextSize,
-) -> TextRange {
+fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
     let ws_text = ws.text();
     let suffix = TextRange::new(offset, ws.text_range().end()) - ws.text_range().start();
     let prefix = TextRange::new(ws.text_range().start(), offset) - ws.text_range().start();
@@ -215,10 +208,7 @@ fn extend_ws(
     ws.text_range()
 }
 
-fn pick_best(
-    l: SyntaxToken,
-    r: SyntaxToken,
-) -> SyntaxToken {
+fn pick_best(l: SyntaxToken, r: SyntaxToken) -> SyntaxToken {
     return if priority(&r) > priority(&l) { r } else { l };
     fn priority(n: &SyntaxToken) -> usize {
         match n.kind() {
@@ -278,10 +268,7 @@ fn extend_comments(comment: ast::Comment) -> Option<TextRange> {
     }
 }
 
-fn adj_comments(
-    comment: &ast::Comment,
-    dir: Direction,
-) -> ast::Comment {
+fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
     let mut res = comment.clone();
     for element in comment.syntax().siblings_with_tokens(dir) {
         let token = match element.as_token() {
@@ -301,10 +288,7 @@ fn adj_comments(
 mod tests {
     use crate::fixture;
     use super::*;
-    fn do_check(
-        before: &str,
-        afters: &[&str],
-    ) {
+    fn do_check(before: &str, afters: &[&str]) {
         let (analysis, position) = fixture::position(before);
         let before = analysis.file_text(position.file_id).unwrap();
         let range = TextRange::empty(position.offset);

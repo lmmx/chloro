@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21059 bytes
-Chloro size:   20609 bytes
+Chloro size:   20538 bytes
 Rustfmt size:  21059 bytes
 
 ✗ Outputs DIFFER
@@ -35,14 +35,9 @@ Rustfmt size:  21059 bytes
 -// | VS Code | <kbd>Alt+Shift+→</kbd>, <kbd>Alt+Shift+←</kbd> |
 -//
 -// ![Expand and Shrink Selection](https://user-images.githubusercontent.com/48062697/113020651-b42fc800-917a-11eb-8a4f-cf1a07859fac.gif)
--pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
-+pub(crate) fn extend_selection(
-+    db: &RootDatabase,
-+    frange: FileRange,
-+) -> TextRange {
+ pub(crate) fn extend_selection(db: &RootDatabase, frange: FileRange) -> TextRange {
      let sema = Semantics::new(db);
      let src = sema.parse_guess_edition(frange.file_id);
-     try_extend_selection(&sema, src.syntax(), frange).unwrap_or(frange.range)
      frange: FileRange,
  ) -> Option<TextRange> {
      let range = frange.range;
@@ -153,27 +148,6 @@ Rustfmt size:  21059 bytes
      let range = TextRange::new(from, to);
      if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
  }
- 
--fn extend_ws(root: &SyntaxNode, ws: SyntaxToken, offset: TextSize) -> TextRange {
-+fn extend_ws(
-+    root: &SyntaxNode,
-+    ws: SyntaxToken,
-+    offset: TextSize,
-+) -> TextRange {
-     let ws_text = ws.text();
-     let suffix = TextRange::new(offset, ws.text_range().end()) - ws.text_range().start();
-     let prefix = TextRange::new(ws.text_range().start(), offset) - ws.text_range().start();
-     ws.text_range()
- }
- 
--fn pick_best(l: SyntaxToken, r: SyntaxToken) -> SyntaxToken {
-+fn pick_best(
-+    l: SyntaxToken,
-+    r: SyntaxToken,
-+) -> SyntaxToken {
-     return if priority(&r) > priority(&l) { r } else { l };
-     fn priority(n: &SyntaxToken) -> usize {
-         match n.kind() {
      fn is_single_line_ws(node: &SyntaxToken) -> bool {
          node.kind() == WHITESPACE && !node.text().contains('\n')
      }
@@ -200,28 +174,13 @@ Rustfmt size:  21059 bytes
      None
  }
  
-     }
- }
- 
--fn adj_comments(comment: &ast::Comment, dir: Direction) -> ast::Comment {
-+fn adj_comments(
-+    comment: &ast::Comment,
-+    dir: Direction,
-+) -> ast::Comment {
-     let mut res = comment.clone();
-     for element in comment.syntax().siblings_with_tokens(dir) {
-         let token = match element.as_token() {
  #[cfg(test)]
  mod tests {
      use crate::fixture;
 -
      use super::*;
 -
--    fn do_check(before: &str, afters: &[&str]) {
-+    fn do_check(
-+        before: &str,
-+        afters: &[&str],
-+    ) {
+     fn do_check(before: &str, afters: &[&str]) {
          let (analysis, position) = fixture::position(before);
          let before = analysis.file_text(position.file_id).unwrap();
          let range = TextRange::empty(position.offset);

@@ -6,10 +6,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn unqualify_method_call(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
     let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
     let path = path_expr.path()?;

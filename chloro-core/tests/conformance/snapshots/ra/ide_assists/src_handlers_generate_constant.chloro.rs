@@ -11,10 +11,7 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn generate_constant(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let constant_token = ctx.find_node_at_offset::<ast::NameRef>()?;
     if constant_token.to_string().chars().any(|it| !(it.is_uppercase() || it == '_')) {
         cov_mark::hit!(not_constant_name);

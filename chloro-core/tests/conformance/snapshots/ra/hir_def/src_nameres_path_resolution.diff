@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32735 bytes
-Chloro size:   32411 bytes
+Chloro size:   32326 bytes
 Rustfmt size:  32996 bytes
 
 ✗ Outputs DIFFER
@@ -158,7 +158,7 @@ Rustfmt size:  32996 bytes
          extern_prelude.or_else(macro_use_prelude).or_else(prelude)
      }
  
--    fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
+     fn resolve_name_in_extern_prelude(&self, local_def_map: &LocalDefMap, name: &Name) -> PerNs {
 -        local_def_map
 -            .extern_prelude
 -            .get(name)
@@ -169,11 +169,6 @@ Rustfmt size:  32996 bytes
 -                    extern_crate.map(ImportOrExternCrate::ExternCrate),
 -                )
 -            })
-+    fn resolve_name_in_extern_prelude(
-+        &self,
-+        local_def_map: &LocalDefMap,
-+        name: &Name,
-+    ) -> PerNs {
 +        local_def_map.extern_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
 +            PerNs::types(
 +                it.into(),
@@ -183,7 +178,7 @@ Rustfmt size:  32996 bytes
 +        })
      }
  
--    fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
+     fn resolve_in_macro_use_prelude(&self, name: &Name) -> PerNs {
 -        self.macro_use_prelude
 -            .get(name)
 -            .map_or(PerNs::none(), |&(it, extern_crate)| {
@@ -193,10 +188,6 @@ Rustfmt size:  32996 bytes
 -                    extern_crate.map(ImportOrExternCrate::ExternCrate),
 -                )
 -            })
-+    fn resolve_in_macro_use_prelude(
-+        &self,
-+        name: &Name,
-+    ) -> PerNs {
 +        self.macro_use_prelude.get(name).map_or(PerNs::none(), |&(it, extern_crate)| {
 +            PerNs::macros(
 +                it,
@@ -214,15 +205,6 @@ Rustfmt size:  32996 bytes
          from_crate_root.or_else(from_extern_prelude)
      }
  
--    fn resolve_in_prelude(&self, db: &dyn DefDatabase, name: &Name) -> PerNs {
-+    fn resolve_in_prelude(
-+        &self,
-+        db: &dyn DefDatabase,
-+        name: &Name,
-+    ) -> PerNs {
-         if let Some((prelude, _use)) = self.prelude {
-             let keep;
-             let def_map = if prelude.krate == self.krate {
  ) -> (&'db DefMap, LocalModuleId) {
      // INVARIANT: `local_id` in `def_map` must be a block module.
      stdx::always!(def_map.module_id(local_id).is_block_module());

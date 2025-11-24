@@ -300,10 +300,7 @@ fn mode_and_needs_parens_for_adjustment_hints(
 
 /// Returns whatever we need to add parentheses on the inside and/or outside of `expr`,
 /// if we are going to add (`postfix`) adjustments hints to it.
-fn needs_parens_for_adjustment_hints(
-    expr: &ast::Expr,
-    postfix: bool,
-) -> (bool, bool) {
+fn needs_parens_for_adjustment_hints(expr: &ast::Expr, postfix: bool) -> (bool, bool) {
     let prec = expr.precedence();
     if postfix {
         let needs_inner_parens = prec.needs_parentheses_in(ExprPrecedence::Postfix);

@@ -17,10 +17,7 @@ pub struct ExpandedMacro {
     pub expansion: String,
 }
 
-pub(crate) fn expand_macro(
-    db: &RootDatabase,
-    position: FilePosition,
-) -> Option<ExpandedMacro> {
+pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
     let sema = Semantics::new(db);
     let file_id = sema.attach_first_edition(position.file_id)?;
     let file = sema.parse(file_id);
@@ -275,10 +272,7 @@ mod tests {
     use expect_test::{Expect, expect};
     use crate::fixture;
     #[track_caller]
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, pos) = fixture::position(ra_fixture);
         let expansion = analysis.expand_macro(pos).unwrap().unwrap();
         let actual = format!("{}\n{}", expansion.name, expansion.expansion);

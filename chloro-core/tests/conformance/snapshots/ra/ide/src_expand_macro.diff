@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21133 bytes
-Chloro size:   20747 bytes
+Chloro size:   20713 bytes
 Rustfmt size:  21133 bytes
 
 ✗ Outputs DIFFER
@@ -31,11 +31,7 @@ Rustfmt size:  21133 bytes
 -// | VS Code | **rust-analyzer: Expand macro recursively at caret** |
 -//
 -// ![Expand Macro Recursively](https://user-images.githubusercontent.com/48062697/113020648-b3973180-917a-11eb-84a9-ecb921293dc5.gif)
--pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
-+pub(crate) fn expand_macro(
-+    db: &RootDatabase,
-+    position: FilePosition,
-+) -> Option<ExpandedMacro> {
+ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<ExpandedMacro> {
      let sema = Semantics::new(db);
      let file_id = sema.attach_first_edition(position.file_id)?;
      let file = sema.parse(file_id);
@@ -129,13 +125,8 @@ Rustfmt size:  21133 bytes
      use crate::fixture;
 -
      #[track_caller]
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (analysis, pos) = fixture::position(ra_fixture);
-         let expansion = analysis.expand_macro(pos).unwrap().unwrap();
          let actual = format!("{}\n{}", expansion.name, expansion.expansion);
          expect.assert_eq(&actual);
      }

@@ -6,10 +6,7 @@ use syntax::{AstToken, TextRange, TextSize};
 use crate::syntax_highlighting::highlights::Highlights;
 use crate::{HlRange, HlTag};
 
-pub(super) fn highlight_escape_string<T: IsString>(
-    stack: &mut Highlights,
-    string: &T,
-) {
+pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
     let text = string.text();
     let start = string.syntax().text_range().start();
     string.escaped_char_ranges(&mut |piece_range, char| {
@@ -27,10 +24,7 @@ pub(super) fn highlight_escape_string<T: IsString>(
     });
 }
 
-pub(super) fn highlight_escape_char(
-    stack: &mut Highlights,
-    char: &Char,
-) {
+pub(super) fn highlight_escape_char(stack: &mut Highlights, char: &Char) {
     if char.value().is_err() {
         // We do not emit invalid escapes highlighting here. The lexer would likely be in a bad
         // state and this token contains junk, since `'` is not a reliable delimiter (consider
@@ -52,10 +46,7 @@ pub(super) fn highlight_escape_char(
     stack.add(HlRange { range, highlight: HlTag::EscapeSequence.into(), binding_hash: None })
 }
 
-pub(super) fn highlight_escape_byte(
-    stack: &mut Highlights,
-    byte: &Byte,
-) {
+pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
     if byte.value().is_err() {
         // See `highlight_escape_char` for why no error highlighting here.
         return;

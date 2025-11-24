@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31554 bytes
-Chloro size:   30792 bytes
+Chloro size:   30762 bytes
 Rustfmt size:  31554 bytes
 
 ✗ Outputs DIFFER
@@ -117,15 +117,6 @@ Rustfmt size:  31554 bytes
      Some(get_doc_links(db, definition, target_dir, sysroot))
  }
  
- /// Extracts all links from a given markdown text returning the definition text range, link-text
- /// and the namespace if known.
--pub(crate) fn extract_definitions_from_docs(
--    docs: &Documentation,
--) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
-+pub(crate) fn extract_definitions_from_docs(docs: &Documentation) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
-     Parser::new_with_broken_link_callback(
-         docs.as_str(),
-         MARKDOWN_OPTIONS,
          self,
          sema: &Semantics<'_, RootDatabase>,
          offset: TextSize,
@@ -214,13 +205,6 @@ Rustfmt size:  31554 bytes
      Some((url.into(), title))
  }
  
- /// Try to resolve path to local documentation via path-based links (i.e. `../gateway/struct.Shard.html`).
--fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<String> {
-+fn rewrite_url_link(
-+    db: &RootDatabase,
-+    def: Definition,
-+    target: &str,
-+) -> Option<String> {
      if !(target.contains('#') || target.contains(".html")) {
          return None;
      }
@@ -235,16 +219,6 @@ Rustfmt size:  31554 bytes
      url = url.join(&file).ok()?;
      url.set_fragment(frag.as_deref());
      url.join(target).ok().map(Into::into)
- }
- 
--fn mod_path_of_def(db: &RootDatabase, def: Definition) -> Option<String> {
-+fn mod_path_of_def(
-+    db: &RootDatabase,
-+    def: Definition,
-+) -> Option<String> {
-     def.canonical_module_path(db).map(|it| {
-         let mut path = String::new();
-         it.flat_map(|it| it.name(db)).for_each(|name| format_to!(path, "{}/", name.as_str()));
      // however in some cases we want to change the link type, for example,
      // `Shortcut` type parsed from Start/End tags doesn't make sense for url links
      let mut end_link_type: Option<LinkType> = None;
@@ -287,14 +261,3 @@ Rustfmt size:  31554 bytes
      Some((def, res, None))
  }
  
- /// https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
- ///                                                       ^^^^^^^^^^^^^^
- /// ```
--fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
-+fn get_assoc_item_fragment(
-+    db: &dyn HirDatabase,
-+    assoc_item: hir::AssocItem,
-+) -> Option<String> {
-     Some(match assoc_item {
-         AssocItem::Function(function) => {
-             let is_trait_method =

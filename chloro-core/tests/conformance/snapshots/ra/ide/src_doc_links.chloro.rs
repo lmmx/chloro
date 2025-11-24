@@ -168,7 +168,9 @@ pub(crate) fn external_docs(
 
 /// Extracts all links from a given markdown text returning the definition text range, link-text
 /// and the namespace if known.
-pub(crate) fn extract_definitions_from_docs(docs: &Documentation) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
+pub(crate) fn extract_definitions_from_docs(
+    docs: &Documentation,
+) -> Vec<(TextRange, String, Option<hir::Namespace>)> {
     Parser::new_with_broken_link_callback(
         docs.as_str(),
         MARKDOWN_OPTIONS,
@@ -415,11 +417,7 @@ fn rewrite_intra_doc_link(
 }
 
 /// Try to resolve path to local documentation via path-based links (i.e. `../gateway/struct.Shard.html`).
-fn rewrite_url_link(
-    db: &RootDatabase,
-    def: Definition,
-    target: &str,
-) -> Option<String> {
+fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<String> {
     if !(target.contains('#') || target.contains(".html")) {
         return None;
     }
@@ -433,10 +431,7 @@ fn rewrite_url_link(
     url.join(target).ok().map(Into::into)
 }
 
-fn mod_path_of_def(
-    db: &RootDatabase,
-    def: Definition,
-) -> Option<String> {
+fn mod_path_of_def(db: &RootDatabase, def: Definition) -> Option<String> {
     def.canonical_module_path(db).map(|it| {
         let mut path = String::new();
         it.flat_map(|it| it.name(db)).for_each(|name| format_to!(path, "{}/", name.as_str()));
@@ -700,10 +695,7 @@ fn filename_and_frag_for_def(
 /// https://doc.rust-lang.org/std/iter/trait.Iterator.html#tymethod.next
 ///                                                       ^^^^^^^^^^^^^^
 /// ```
-fn get_assoc_item_fragment(
-    db: &dyn HirDatabase,
-    assoc_item: hir::AssocItem,
-) -> Option<String> {
+fn get_assoc_item_fragment(db: &dyn HirDatabase, assoc_item: hir::AssocItem) -> Option<String> {
     Some(match assoc_item {
         AssocItem::Function(function) => {
             let is_trait_method =

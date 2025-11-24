@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4508 bytes
+Chloro size:   4485 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -44,14 +44,6 @@ Rustfmt size:  4581 bytes
          Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
              db,
              &ast_id,
-         )))
-     }
- 
--    pub(crate) fn is_builtin_or_registered_attr(&self, path: &ModPath) -> bool {
-+    pub(crate) fn is_builtin_or_registered_attr(
-+        &self,
-+        path: &ModPath,
-+    ) -> bool {
          if path.kind != PathKind::Plain {
              return false;
          }

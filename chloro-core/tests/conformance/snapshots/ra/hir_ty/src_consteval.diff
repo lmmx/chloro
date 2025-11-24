@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10314 bytes
+Chloro size:   10281 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -47,28 +47,6 @@ Rustfmt size:  10586 bytes
      intern_const_ref(
          db,
          &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
-     )
- }
- 
--pub fn try_const_usize<'db>(db: &'db dyn HirDatabase, c: Const<'db>) -> Option<u128> {
-+pub fn try_const_usize<'db>(
-+    db: &'db dyn HirDatabase,
-+    c: Const<'db>,
-+) -> Option<u128> {
-     match c.kind() {
-         ConstKind::Param(_) => None,
-         ConstKind::Infer(_) => None,
-     }
- }
- 
--pub fn try_const_isize<'db>(db: &'db dyn HirDatabase, c: &Const<'db>) -> Option<i128> {
-+pub fn try_const_isize<'db>(
-+    db: &'db dyn HirDatabase,
-+    c: &Const<'db>,
-+) -> Option<i128> {
-     match (*c).kind() {
-         ConstKind::Param(_) => None,
-         ConstKind::Infer(_) => None,
          };
          return Ok(value);
      }
@@ -85,11 +63,6 @@ Rustfmt size:  10586 bytes
 -// FIXME: Ideally constants in const eval should have separate body (issue #7434), and this function should
 -// get an `InferenceResult` instead of an `InferenceContext`. And we should remove `ctx.clone().resolve_all()` here
 -// and make this function private. See the fixme comment on `InferenceContext::resolve_all`.
--pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
-+pub(crate) fn eval_to_const<'db>(
-+    expr: ExprId,
-+    ctx: &mut InferenceContext<'_, 'db>,
-+) -> Const<'db> {
+ pub(crate) fn eval_to_const<'db>(expr: ExprId, ctx: &mut InferenceContext<'_, 'db>) -> Const<'db> {
      let infer = ctx.fixme_resolve_all_clone();
      fn has_closure(body: &Body, expr: ExprId) -> bool {
-         if matches!(body[expr], Expr::Closure { .. }) {

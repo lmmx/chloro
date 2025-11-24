@@ -57,17 +57,11 @@ impl<'db> TraitEnvironment<'db> {
         Arc::new(TraitEnvironment { krate, block, traits_from_clauses, env })
     }
 
-    pub fn with_block(
-        this: &mut Arc<Self>,
-        block: BlockId,
-    ) {
+    pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
         Arc::make_mut(this).block = Some(block);
     }
 
-    pub fn traits_in_scope_from_clauses(
-        &self,
-        ty: Ty<'db>,
-    ) -> impl Iterator<Item = TraitId> + '_ {
+    pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
         self.traits_from_clauses
             .iter()
             .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
@@ -157,10 +151,7 @@ pub enum FnTrait {
 }
 
 impl fmt::Display for FnTrait {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             FnTrait::FnOnce => write!(f, "FnOnce"),
             FnTrait::FnMut => write!(f, "FnMut"),
@@ -218,11 +209,7 @@ impl FnTrait {
         }
     }
 
-    pub fn get_id(
-        self,
-        db: &dyn HirDatabase,
-        krate: Crate,
-    ) -> Option<TraitId> {
+    pub fn get_id(self, db: &dyn HirDatabase, krate: Crate) -> Option<TraitId> {
         self.lang_item().resolve_trait(db, krate)
     }
 }

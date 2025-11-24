@@ -38,10 +38,7 @@ fn check_external_docs(
     }
 }
 
-fn check_rewrite(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+fn check_rewrite(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (analysis, position) = fixture::position(ra_fixture);
     let sema = &Semantics::new(&analysis.db);
     let (cursor_def, docs, range) = def_under_cursor(sema, &position);

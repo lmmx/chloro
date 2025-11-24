@@ -28,10 +28,7 @@ use crate::{
     try_default,
 };
 
-pub(crate) fn handle_cancel(
-    state: &mut GlobalState,
-    params: CancelParams,
-) -> anyhow::Result<()> {
+pub(crate) fn handle_cancel(state: &mut GlobalState, params: CancelParams) -> anyhow::Result<()> {
     let id: lsp_server::RequestId = match params.id {
         lsp_types::NumberOrString::Number(id) => id.into(),
         lsp_types::NumberOrString::String(id) => id.into(),
@@ -290,10 +287,7 @@ pub(crate) fn handle_did_change_watched_files(
     Ok(())
 }
 
-fn run_flycheck(
-    state: &mut GlobalState,
-    vfs_path: VfsPath,
-) -> bool {
+fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
     let _p = tracing::info_span!("run_flycheck").entered();
     let file_id = state.vfs.read().0.file_id(&vfs_path);
     if let Some((file_id, vfs::FileExcluded::No)) = file_id {
@@ -474,19 +468,13 @@ fn run_flycheck(
     }
 }
 
-pub(crate) fn handle_cancel_flycheck(
-    state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<()> {
+pub(crate) fn handle_cancel_flycheck(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_cancel_flycheck").entered();
     state.flycheck.iter().for_each(|flycheck| flycheck.cancel());
     Ok(())
 }
 
-pub(crate) fn handle_clear_flycheck(
-    state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<()> {
+pub(crate) fn handle_clear_flycheck(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_clear_flycheck").entered();
     state.diagnostics.clear_check_all();
     Ok(())
@@ -512,10 +500,7 @@ pub(crate) fn handle_run_flycheck(
     Ok(())
 }
 
-pub(crate) fn handle_abort_run_test(
-    state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<()> {
+pub(crate) fn handle_abort_run_test(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     if state.test_run_session.take().is_some() {
         state.send_notification::<lsp_ext::EndRunTest>(());
     }

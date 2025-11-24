@@ -396,10 +396,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.pat_ty_after_adjustment(pat)
     }
 
-    fn pat_ty_after_adjustment(
-        &self,
-        pat: PatId,
-    ) -> Ty<'db> {
+    fn pat_ty_after_adjustment(&self, pat: PatId) -> Ty<'db> {
         *self
             .result
             .pat_adjustments
@@ -515,11 +512,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn infer_lit_pat(
-        &mut self,
-        expr: ExprId,
-        expected: Ty<'db>,
-    ) -> Ty<'db> {
+    fn infer_lit_pat(&mut self, expr: ExprId, expected: Ty<'db>) -> Ty<'db> {
         // Like slice patterns, byte string patterns can denote both `&[u8; N]` and `&[u8]`.
         if let Expr::Literal(Literal::ByteString(_)) = self.body[expr]
             && let TyKind::Ref(_, inner, _) = expected.kind()
@@ -537,11 +530,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.infer_expr(expr, &Expectation::has_type(expected), ExprIsRead::Yes)
     }
 
-    fn is_non_ref_pat(
-        &mut self,
-        body: &hir_def::expr_store::Body,
-        pat: PatId,
-    ) -> bool {
+    fn is_non_ref_pat(&mut self, body: &hir_def::expr_store::Body, pat: PatId) -> bool {
         match &body[pat] {
             Pat::Tuple { .. }
             | Pat::TupleStruct { .. }
@@ -614,18 +603,12 @@ impl<'db> InferenceContext<'_, 'db> {
     ///
     /// If we're in an irrefutable pattern we prefer the array impl candidate given that
     /// the slice impl candidate would be rejected anyway (if no ambiguity existed).
-    fn pat_is_irrefutable(
-        &self,
-        decl_ctxt: Option<DeclContext>,
-    ) -> bool {
+    fn pat_is_irrefutable(&self, decl_ctxt: Option<DeclContext>) -> bool {
         matches!(decl_ctxt, Some(DeclContext { origin: DeclOrigin::LocalDecl { has_else: false } }))
     }
 }
 
-pub(super) fn contains_explicit_ref_binding(
-    body: &Body,
-    pat_id: PatId,
-) -> bool {
+pub(super) fn contains_explicit_ref_binding(body: &Body, pat_id: PatId) -> bool {
     let mut res = false;
     body.walk_pats(pat_id, &mut |pat| {
         res |= matches!(body[pat], Pat::Bind { id, .. } if body[id].mode == BindingAnnotation::Ref);

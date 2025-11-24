@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 62212 bytes
-Chloro size:   62220 bytes
+Chloro size:   62135 bytes
 Rustfmt size:  62212 bytes
 
 ✗ Outputs DIFFER
@@ -52,18 +52,6 @@ Rustfmt size:  62212 bytes
  const FIND_PATH_FUEL: usize = 10000;
  
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
- }
- 
- /// Attempts to find a path to refer to the given `item` visible from the `from` ModuleId
--fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Option<ModPath> {
-+fn find_path_inner(
-+    ctx: &FindPathCtx<'_>,
-+    item: ItemInNs,
-+    max_len: usize,
-+) -> Option<ModPath> {
-     // - if the item is a module, jump straight to module search
-     if !ctx.is_std_item
-         && let ItemInNs::Types(ModuleDefId::ModuleId(module_id)) = item
          return find_path_for_module(ctx, &mut FxHashSet::default(), module_id, true, max_len)
              .map(|choice| choice.path);
      }
@@ -132,31 +120,6 @@ Rustfmt size:  62212 bytes
      if item.krate(ctx.db) == Some(ctx.from.krate) {
          // Item was defined in the same crate that wants to import it. It cannot be found in any
          // dependency in this case.
- }
- 
- impl Choice {
--    fn new(prefer_prelude: bool, kind: PathKind, name: Name, stability: Stability) -> Self {
-+    fn new(
-+        prefer_prelude: bool,
-+        kind: PathKind,
-+        name: Name,
-+        stability: Stability,
-+    ) -> Self {
-         Self {
-             path_text_len: path_kind_len(kind) + name.as_str().len(),
-             stability,
-         }
-     }
- 
--    fn push(mut self, prefer_prelude: bool, name: Name) -> Self {
-+    fn push(
-+        mut self,
-+        prefer_prelude: bool,
-+        name: Name,
-+    ) -> Self {
-         self.path_text_len += name.as_str().len();
-         self.prefer_due_to_prelude |= prefer_prelude && name == sym::prelude;
-         self.path.push_segment(name);
      mut cb: impl FnMut(&mut FxHashSet<(ItemInNs, ModuleId)>, &Name, ModuleId),
  ) {
      let _p = tracing::info_span!("find_local_import_locations").entered();

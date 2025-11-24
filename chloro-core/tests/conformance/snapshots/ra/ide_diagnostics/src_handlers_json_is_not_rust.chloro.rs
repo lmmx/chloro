@@ -27,10 +27,7 @@ struct State {
 }
 
 impl State {
-    fn generate_new_name(
-        &mut self,
-        name: &str,
-    ) -> ast::Name {
+    fn generate_new_name(&mut self, name: &str) -> ast::Name {
         let name = stdx::to_camel_case(name);
         let count = if let Some(count) = self.names.get_mut(&name) {
             *count += 1;
@@ -83,11 +80,7 @@ impl State {
         ty
     }
 
-    fn type_of(
-        &mut self,
-        name: &str,
-        value: &serde_json::Value,
-    ) -> ast::Type {
+    fn type_of(&mut self, name: &str, value: &serde_json::Value) -> ast::Type {
         match value {
             serde_json::Value::Null => make::ty_unit(),
             serde_json::Value::Bool(_) => make::ty("bool"),

@@ -11,10 +11,7 @@ static ASSIST_NAME: &str = "introduce_named_lifetime";
 
 static ASSIST_LABEL: &str = "Introduce named lifetime";
 
-pub(crate) fn introduce_named_lifetime(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // FIXME: How can we handle renaming any one of multiple anonymous lifetimes?
     // FIXME: should also add support for the case fun(f: &Foo) -> &$0Foo
     let lifetime =
@@ -120,10 +117,7 @@ enum NeedsLifetime {
 }
 
 impl NeedsLifetime {
-    fn make_mut(
-        self,
-        builder: &mut SourceChangeBuilder,
-    ) -> Self {
+    fn make_mut(self, builder: &mut SourceChangeBuilder) -> Self {
         match self {
             Self::SelfParam(it) => Self::SelfParam(builder.make_mut(it)),
             Self::RefType(it) => Self::RefType(builder.make_mut(it)),

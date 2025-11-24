@@ -94,7 +94,9 @@ impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> f
         self.principal().map(|trait_ref| trait_ref.skip_binder().def_id)
     }
 
-    fn principal(self) -> Option<
+    fn principal(
+        self,
+    ) -> Option<
         rustc_type_ir::Binder<DbInterner<'db>, rustc_type_ir::ExistentialTraitRef<DbInterner<'db>>>,
     > {
         self.inner()[0]
@@ -112,7 +114,9 @@ impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> f
         })
     }
 
-    fn projection_bounds(self) -> impl IntoIterator<
+    fn projection_bounds(
+        self,
+    ) -> impl IntoIterator<
         Item = rustc_type_ir::Binder<
             DbInterner<'db>,
             rustc_type_ir::ExistentialProjection<DbInterner<'db>>,
@@ -189,19 +193,13 @@ pub struct Predicate<'db> {
 }
 
 impl<'db> std::fmt::Debug for Predicate<'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner().internee.fmt(f)
     }
 }
 
 impl<'db> std::fmt::Debug for InternedWrapperNoDebug<WithCachedTypeInfo<Binder<'db, PredicateKind<'db>>>> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Binder<")?;
         match self.0.internee.skip_binder() {
             rustc_type_ir::PredicateKind::Clause(clause_kind) => {
@@ -231,10 +229,7 @@ impl<'db> std::fmt::Debug for InternedWrapperNoDebug<WithCachedTypeInfo<Binder<'
 }
 
 impl<'db> Predicate<'db> {
-    pub fn new(
-        interner: DbInterner<'db>,
-        kind: Binder<'db, PredicateKind<'db>>,
-    ) -> Self {
+    pub fn new(interner: DbInterner<'db>, kind: Binder<'db, PredicateKind<'db>>) -> Self {
         let flags = FlagComputation::for_predicate(kind);
         let cached = WithCachedTypeInfo {
             internee: kind,
@@ -279,10 +274,7 @@ impl<'db> Predicate<'db> {
 pub struct InternedClausesWrapper<'db>(SmallVec<[Clause<'db>; 2]>, TypeFlags, DebruijnIndex);
 
 impl<'db> PartialEq for InternedClausesWrapper<'db> {
-    fn eq(
-        &self,
-        other: &Self,
-    ) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.0.eq(&other.0)
     }
 }
@@ -291,10 +283,7 @@ impl<'db> Eq for InternedClausesWrapper<'db> {
 }
 
 impl<'db> std::hash::Hash for InternedClausesWrapper<'db> {
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.0.hash(state)
     }
 }
@@ -327,10 +316,7 @@ impl<'db> Clauses<'db> {
 }
 
 impl<'db> std::fmt::Debug for Clauses<'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner().0.fmt(f)
     }
 }
@@ -403,10 +389,7 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for Clauses<'db> {
         Ok(Clauses::new_from_iter(folder.cx(), inner))
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         use rustc_type_ir::inherent::SliceLike as _;
         let inner: smallvec::SmallVec<[_; 2]> = self.iter().map(|v| v.fold_with(folder)).collect();
         Clauses::new_from_iter(folder.cx(), inner)
@@ -502,10 +485,7 @@ impl<'db> TypeFoldable<DbInterner<'db>> for Predicate<'db> {
         folder.try_fold_predicate(self)
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         folder.fold_predicate(self)
     }
 }
@@ -533,10 +513,7 @@ impl<'db> Elaboratable<DbInterner<'db>> for Predicate<'db> {
         *self
     }
 
-    fn child(
-        &self,
-        clause: <DbInterner<'db> as rustc_type_ir::Interner>::Clause,
-    ) -> Self {
+    fn child(&self, clause: <DbInterner<'db> as rustc_type_ir::Interner>::Clause) -> Self {
         clause.as_predicate()
     }
 
@@ -573,10 +550,7 @@ impl<'db> IntoKind for Predicate<'db> {
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::PredicateKind<DbInterner<'db>>> for Predicate<'db> {
-    fn upcast_from(
-        from: ty::PredicateKind<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::PredicateKind<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         Binder::dummy(from).upcast(interner)
     }
 }
@@ -591,10 +565,7 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::Binder<DbInterner<'db>, ty::PredicateK
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::ClauseKind<DbInterner<'db>>> for Predicate<'db> {
-    fn upcast_from(
-        from: ty::ClauseKind<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::ClauseKind<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         Binder::dummy(PredicateKind::Clause(from)).upcast(interner)
     }
 }
@@ -609,28 +580,19 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::Binder<DbInterner<'db>, ty::ClauseKind
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, Clause<'db>> for Predicate<'db> {
-    fn upcast_from(
-        from: Clause<'db>,
-        _interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: Clause<'db>, _interner: DbInterner<'db>) -> Self {
         from.0
     }
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::NormalizesTo<DbInterner<'db>>> for Predicate<'db> {
-    fn upcast_from(
-        from: ty::NormalizesTo<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::NormalizesTo<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         PredicateKind::NormalizesTo(from).upcast(interner)
     }
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::TraitRef<DbInterner<'db>>> for Predicate<'db> {
-    fn upcast_from(
-        from: ty::TraitRef<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::TraitRef<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         Binder::dummy(from).upcast(interner)
     }
 }
@@ -667,19 +629,13 @@ impl<'db> UpcastFrom<DbInterner<'db>, Binder<'db, ProjectionPredicate<'db>>> for
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ProjectionPredicate<'db>> for Predicate<'db> {
-    fn upcast_from(
-        from: ProjectionPredicate<'db>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ProjectionPredicate<'db>, interner: DbInterner<'db>) -> Self {
         PredicateKind::Clause(ClauseKind::Projection(from)).upcast(interner)
     }
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::TraitPredicate<DbInterner<'db>>> for Predicate<'db> {
-    fn upcast_from(
-        from: ty::TraitPredicate<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::TraitPredicate<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         PredicateKind::Clause(ClauseKind::Trait(from)).upcast(interner)
     }
 }
@@ -721,10 +677,7 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::OutlivesPredicate<DbInterner<'db>, Reg
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, PolyRegionOutlivesPredicate<'db>> for Predicate<'db> {
-    fn upcast_from(
-        from: PolyRegionOutlivesPredicate<'db>,
-        tcx: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: PolyRegionOutlivesPredicate<'db>, tcx: DbInterner<'db>) -> Self {
         from.map_bound(|p| PredicateKind::Clause(ClauseKind::RegionOutlives(p))).upcast(tcx)
     }
 }
@@ -816,10 +769,7 @@ impl<'db> TypeFoldable<DbInterner<'db>> for Clause<'db> {
         Ok(folder.try_fold_predicate(self.as_predicate())?.expect_clause())
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         folder.fold_predicate(self.as_predicate()).expect_clause()
     }
 }
@@ -846,10 +796,7 @@ impl<'db> Elaboratable<DbInterner<'db>> for Clause<'db> {
         self.0
     }
 
-    fn child(
-        &self,
-        clause: <DbInterner<'db> as rustc_type_ir::Interner>::Clause,
-    ) -> Self {
+    fn child(&self, clause: <DbInterner<'db> as rustc_type_ir::Interner>::Clause) -> Self {
         clause
     }
 
@@ -877,10 +824,7 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::Binder<DbInterner<'db>, ty::ClauseKind
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::TraitRef<DbInterner<'db>>> for Clause<'db> {
-    fn upcast_from(
-        from: ty::TraitRef<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::TraitRef<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         Clause(from.upcast(interner))
     }
 }
@@ -895,10 +839,7 @@ impl<'db> UpcastFrom<DbInterner<'db>, ty::Binder<DbInterner<'db>, ty::TraitRef<D
 }
 
 impl<'db> UpcastFrom<DbInterner<'db>, ty::TraitPredicate<DbInterner<'db>>> for Clause<'db> {
-    fn upcast_from(
-        from: ty::TraitPredicate<DbInterner<'db>>,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    fn upcast_from(from: ty::TraitPredicate<DbInterner<'db>>, interner: DbInterner<'db>) -> Self {
         Clause(from.upcast(interner))
     }
 }

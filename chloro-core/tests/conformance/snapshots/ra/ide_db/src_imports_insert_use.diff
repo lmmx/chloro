@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20481 bytes
+Chloro size:   20436 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -42,27 +42,6 @@ Rustfmt size:  20506 bytes
  /// How imports should be grouped into use statements.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum ImportGranularity {
- }
- 
- /// Insert an import path into the given file/node. A `merge` value of none indicates that no import merging is allowed to occur.
--pub fn insert_use(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
-+pub fn insert_use(
-+    scope: &ImportScope,
-+    path: ast::Path,
-+    cfg: &InsertUseConfig,
-+) {
-     insert_use_with_alias_option(scope, path, cfg, None);
- }
- 
--pub fn insert_use_as_alias(scope: &ImportScope, path: ast::Path, cfg: &InsertUseConfig) {
-+pub fn insert_use_as_alias(
-+    scope: &ImportScope,
-+    path: ast::Path,
-+    cfg: &InsertUseConfig,
-+) {
-     let text: &str = "use foo as _";
-     let parse = syntax::SourceFile::parse(text, span::Edition::CURRENT_FIXME);
-     let node = parse
          .find_map(ast::UseTree::cast)
          .expect("Failed to make ast node `Rename`");
      let alias = node.rename();
@@ -114,18 +93,6 @@ Rustfmt size:  20506 bytes
      loop {
          if is_tree_one_style(&prev) {
              if res != ImportGranularityGuess::One {
-     }
- }
- 
--fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
-+fn insert_use_(
-+    scope: &ImportScope,
-+    use_item: ast::Use,
-+    group_imports: bool,
-+) {
-     let scope_syntax = scope.as_syntax_node();
-     let insert_use_tree =
-         use_item.use_tree().expect("`use_item` should have a use tree for `insert_path`");
              let tree = use_.use_tree()?;
              Some((tree, node))
          });

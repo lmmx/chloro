@@ -74,26 +74,16 @@ enum VariantShape {
     Unit,
 }
 
-fn tuple_field_iterator(
-    span: Span,
-    n: usize,
-) -> impl Iterator<Item = tt::Ident> {
+fn tuple_field_iterator(span: Span, n: usize) -> impl Iterator<Item = tt::Ident> {
     (0..n).map(move |it| tt::Ident::new(&format!("f{it}"), span))
 }
 
 impl VariantShape {
-    fn as_pattern(
-        &self,
-        path: tt::TopSubtree,
-        span: Span,
-    ) -> tt::TopSubtree {
+    fn as_pattern(&self, path: tt::TopSubtree, span: Span) -> tt::TopSubtree {
         self.as_pattern_map(path, span, |it| quote!(span => #it))
     }
 
-    fn field_names(
-        &self,
-        span: Span,
-    ) -> Vec<tt::Ident> {
+    fn field_names(&self, span: Span) -> Vec<tt::Ident> {
         match self {
             VariantShape::Struct(s) => s.clone(),
             VariantShape::Tuple(n) => tuple_field_iterator(span, *n).collect(),
@@ -162,18 +152,11 @@ enum AdtShape {
 }
 
 impl AdtShape {
-    fn as_pattern(
-        &self,
-        span: Span,
-        name: &tt::Ident,
-    ) -> Vec<tt::TopSubtree> {
+    fn as_pattern(&self, span: Span, name: &tt::Ident) -> Vec<tt::TopSubtree> {
         self.as_pattern_map(name, |it| quote!(span =>#it), span)
     }
 
-    fn field_names(
-        &self,
-        span: Span,
-    ) -> Vec<Vec<tt::Ident>> {
+    fn field_names(&self, span: Span) -> Vec<Vec<tt::Ident>> {
         match self {
             AdtShape::Struct(s) => {
                 vec![s.field_names(span)]

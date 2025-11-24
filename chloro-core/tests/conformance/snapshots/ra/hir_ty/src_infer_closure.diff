@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36961 bytes
+Chloro size:   36915 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -87,14 +87,6 @@ Rustfmt size:  36953 bytes
          ty
      }
  
--    fn fn_trait_kind_from_def_id(&self, trait_id: TraitId) -> Option<rustc_type_ir::ClosureKind> {
-+    fn fn_trait_kind_from_def_id(
-+        &self,
-+        trait_id: TraitId,
-+    ) -> Option<rustc_type_ir::ClosureKind> {
-         let lang_item = self.db.lang_attr(trait_id.into())?;
-         match lang_item {
-             LangItem::Fn => Some(rustc_type_ir::ClosureKind::Fn),
      ) -> (Option<PolyFnSig<'db>>, Option<rustc_type_ir::ClosureKind>) {
          let mut expected_sig = None;
          let mut expected_kind = None;
@@ -264,11 +256,3 @@ Rustfmt size:  36953 bytes
          result
      }
  
--    fn closure_sigs(&self, bound_sig: PolyFnSig<'db>) -> ClosureSignatures<'db> {
-+    fn closure_sigs(
-+        &self,
-+        bound_sig: PolyFnSig<'db>,
-+    ) -> ClosureSignatures<'db> {
-         let liberated_sig = bound_sig.skip_binder();
-         // FIXME: When we lower HRTB we'll need to actually liberate regions here.
-         ClosureSignatures { bound_sig, liberated_sig }

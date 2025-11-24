@@ -127,10 +127,7 @@ fn is_ref_and_impls_iter_method(
 }
 
 /// Whether iterable implements core::Iterator
-fn impls_core_iter(
-    sema: &hir::Semantics<'_, ide_db::RootDatabase>,
-    iterable: &ast::Expr,
-) -> bool {
+fn impls_core_iter(sema: &hir::Semantics<'_, ide_db::RootDatabase>, iterable: &ast::Expr) -> bool {
     (|| {
         let it_typ = sema.type_of_expr(iterable)?.adjusted();
 

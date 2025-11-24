@@ -124,10 +124,7 @@ pub fn dyn_compatibility_of_trait_query(
     res
 }
 
-pub fn generics_require_sized_self(
-    db: &dyn HirDatabase,
-    def: GenericDefId,
-) -> bool {
+pub fn generics_require_sized_self(db: &dyn HirDatabase, def: GenericDefId) -> bool {
     let krate = def.module(db).krate();
     let Some(sized) = LangItem::Sized.resolve_trait(db, krate) else {
         return false;
@@ -155,19 +152,13 @@ pub fn generics_require_sized_self(
     })
 }
 
-fn predicates_reference_self(
-    db: &dyn HirDatabase,
-    trait_: TraitId,
-) -> bool {
+fn predicates_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     db.generic_predicates(trait_.into())
         .iter()
         .any(|pred| predicate_references_self(db, trait_, pred, AllowSelfProjection::No))
 }
 
-fn bounds_reference_self(
-    db: &dyn HirDatabase,
-    trait_: TraitId,
-) -> bool {
+fn bounds_reference_self(db: &dyn HirDatabase, trait_: TraitId) -> bool {
     let trait_data = trait_.trait_items(db);
     trait_data
         .items

@@ -51,26 +51,17 @@ impl<'a> RenderContext<'a> {
         }
     }
 
-    pub(crate) fn private_editable(
-        mut self,
-        private_editable: bool,
-    ) -> Self {
+    pub(crate) fn private_editable(mut self, private_editable: bool) -> Self {
         self.is_private_editable = private_editable;
         self
     }
 
-    pub(crate) fn import_to_add(
-        mut self,
-        import_to_add: Option<LocatedImport>,
-    ) -> Self {
+    pub(crate) fn import_to_add(mut self, import_to_add: Option<LocatedImport>) -> Self {
         self.import_to_add = import_to_add;
         self
     }
 
-    pub(crate) fn doc_aliases(
-        mut self,
-        doc_aliases: Vec<SmolStr>,
-    ) -> Self {
+    pub(crate) fn doc_aliases(mut self, doc_aliases: Vec<SmolStr>) -> Self {
         self.doc_aliases = doc_aliases;
         self
     }
@@ -100,18 +91,12 @@ impl<'a> RenderContext<'a> {
             && self.completion.token.parent().is_some_and(|it| it.kind() == SyntaxKind::MACRO_CALL)
     }
 
-    fn is_deprecated(
-        &self,
-        def: impl HasAttrs,
-    ) -> bool {
+    fn is_deprecated(&self, def: impl HasAttrs) -> bool {
         let attrs = def.attrs(self.db());
         attrs.by_key(sym::deprecated).exists()
     }
 
-    fn is_deprecated_assoc_item(
-        &self,
-        as_assoc_item: impl AsAssocItem,
-    ) -> bool {
+    fn is_deprecated_assoc_item(&self, as_assoc_item: impl AsAssocItem) -> bool {
         let db = self.db();
         let assoc = match as_assoc_item.as_assoc_item(db) {
             Some(assoc) => assoc,
@@ -129,10 +114,7 @@ impl<'a> RenderContext<'a> {
                 .unwrap_or(false)
     }
 
-    fn docs(
-        &self,
-        def: impl HasDocs,
-    ) -> Option<Documentation> {
+    fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
         def.docs(self.db())
     }
 }
@@ -208,10 +190,7 @@ pub(crate) fn render_field(
     item.build(db)
 }
 
-fn field_with_receiver(
-    receiver: Option<&str>,
-    field_name: &str,
-) -> SmolStr {
+fn field_with_receiver(receiver: Option<&str>, field_name: &str) -> SmolStr {
     receiver
         .map_or_else(|| field_name.into(), |receiver| format_smolstr!("{}.{field_name}", receiver))
 }
@@ -552,10 +531,7 @@ fn res_to_kind(resolution: ScopeDef) -> CompletionItemKind {
     }
 }
 
-fn scope_def_docs(
-    db: &RootDatabase,
-    resolution: ScopeDef,
-) -> Option<Documentation> {
+fn scope_def_docs(db: &RootDatabase, resolution: ScopeDef) -> Option<Documentation> {
     use hir::ModuleDef::*;
     match resolution {
         ScopeDef::ModuleDef(Module(it)) => it.docs(db),
@@ -569,10 +545,7 @@ fn scope_def_docs(
     }
 }
 
-fn scope_def_is_deprecated(
-    ctx: &RenderContext<'_>,
-    resolution: ScopeDef,
-) -> bool {
+fn scope_def_is_deprecated(ctx: &RenderContext<'_>, resolution: ScopeDef) -> bool {
     match resolution {
         ScopeDef::ModuleDef(it) => ctx.is_deprecated_assoc_item(it),
         ScopeDef::GenericParam(it) => ctx.is_deprecated(it),
@@ -608,10 +581,7 @@ fn compute_type_match(
     match_types(ctx, expected_type, completion_ty)
 }
 
-fn compute_exact_name_match(
-    ctx: &CompletionContext<'_>,
-    completion_name: &str,
-) -> bool {
+fn compute_exact_name_match(ctx: &CompletionContext<'_>, completion_name: &str) -> bool {
     ctx.expected_name.as_ref().is_some_and(|name| name.text() == completion_name)
 }
 
@@ -700,10 +670,7 @@ mod tests {
         expect.assert_debug_eq(&actual);
     }
     #[track_caller]
-    fn check_function_relevance(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_function_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let actual: Vec<_> =
             do_completion(ra_fixture, CompletionItemKind::SymbolKind(SymbolKind::Method))
                 .into_iter()
@@ -723,10 +690,7 @@ mod tests {
         check_relevance_(actual, expect);
     }
     #[track_caller]
-    fn check_relevance(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let mut actual = get_all_items(TEST_CONFIG, ra_fixture, None);
         actual.retain(|it| it.kind != CompletionItemKind::Snippet);
         actual.retain(|it| it.kind != CompletionItemKind::Keyword);
@@ -735,10 +699,7 @@ mod tests {
         check_relevance_(actual, expect);
     }
     #[track_caller]
-    fn check_relevance_(
-        actual: Vec<CompletionItem>,
-        expect: Expect,
-    ) {
+    fn check_relevance_(actual: Vec<CompletionItem>, expect: Expect) {
         let actual = actual
             .into_iter()
             .flat_map(|it| {

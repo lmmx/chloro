@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16586 bytes
+Chloro size:   16507 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -83,14 +83,6 @@ Rustfmt size:  17571 bytes
              Either::Right(comment) if DESUGAR_COMMENTS => comment.doc_comment().map(|doc| {
                  let span = span_map.span_for_range(comment.syntax().text_range());
                  let (text, kind) = desugar_doc_comment_text(doc, DocCommentDesugarMode::ProcMacro);
-             .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
-     }
- 
--    pub fn merge(&self, other: Self) -> Self {
-+    pub fn merge(
-+        &self,
-+        other: Self,
-+    ) -> Self {
          match (&self.entries, other.entries) {
              (None, None) => Self::EMPTY,
              (None, entries @ Some(_)) => Self { entries },
@@ -113,17 +105,12 @@ Rustfmt size:  17571 bytes
      }
  
      /// Processes `cfg_attr`s
--    pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
+     pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
 -        let has_cfg_attrs = self.iter().any(|attr| {
 -            attr.path
 -                .as_ident()
 -                .is_some_and(|name| *name == sym::cfg_attr)
 -        });
-+    pub fn expand_cfg_attr(
-+        self,
-+        db: &dyn ExpandDatabase,
-+        krate: Crate,
-+    ) -> RawAttrs {
 +        let has_cfg_attrs =
 +            self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
          if !has_cfg_attrs {
@@ -141,11 +128,7 @@ Rustfmt size:  17571 bytes
  impl AttrId {
      const INNER_ATTR_SET_BIT: u32 = 1 << 31;
  
--    pub fn new(id: usize, is_inner: bool) -> Self {
-+    pub fn new(
-+        id: usize,
-+        is_inner: bool,
-+    ) -> Self {
+     pub fn new(id: usize, is_inner: bool) -> Self {
          assert!(id <= !Self::INNER_ATTR_SET_BIT as usize);
          let id = id as u32;
 -        Self {
@@ -159,17 +142,6 @@ Rustfmt size:  17571 bytes
      }
  
      pub fn ast_index(&self) -> usize {
- }
- 
- impl fmt::Display for AttrInput {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             AttrInput::Literal(lit) => write!(f, " = {lit}"),
-             AttrInput::TokenTree(tt) => tt.fmt(f),
          let span = span_map.span_for_range(range);
          let input = if let Some(ast::Expr::Literal(lit)) = ast.expr() {
              let token = lit.token();
@@ -311,32 +283,18 @@ Rustfmt size:  17571 bytes
      match (has_error, buf.capacity() == 0) {
          (true, _) => None,
          (false, false) => Some(Cow::Owned(buf)),
-     }
- }
- 
--pub fn collect_attrs(
--    owner: &dyn ast::HasAttrs,
--) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
+ pub fn collect_attrs(
+     owner: &dyn ast::HasAttrs,
+ ) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
 -    let inner_attrs = inner_attributes(owner.syntax())
 -        .into_iter()
 -        .flatten()
 -        .zip(iter::repeat(true));
-+pub fn collect_attrs(owner: &dyn ast::HasAttrs) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
 +    let inner_attrs =
 +        inner_attributes(owner.syntax()).into_iter().flatten().zip(iter::repeat(true));
      let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
          .filter(|el| match el {
              Either::Left(attr) => attr.kind().is_outer(),
-         .map(|(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr))
- }
- 
--fn inner_attributes(
--    syntax: &SyntaxNode,
--) -> Option<impl Iterator<Item = Either<ast::Attr, ast::Comment>>> {
-+fn inner_attributes(syntax: &SyntaxNode) -> Option<impl Iterator<Item = Either<ast::Attr, ast::Comment>>> {
-     let node = match_ast! {
-         match syntax {
-             ast::SourceFile(_) => syntax.clone(),
              _ => return None,
          }
      };
@@ -349,8 +307,8 @@ Rustfmt size:  17571 bytes
  
 -// Input subtree is: `(cfg, $(attr),+)`
 -// Split it up into a `cfg` subtree and the `attr` subtrees.
--fn parse_cfg_attr_input(
--    subtree: &TopSubtree,
+ fn parse_cfg_attr_input(
+     subtree: &TopSubtree,
 -) -> Option<(
 -    tt::TokenTreesView<'_>,
 -    impl Iterator<Item = tt::TokenTreesView<'_>>,
@@ -361,7 +319,7 @@ Rustfmt size:  17571 bytes
 -            tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))
 -        )
 -    });
-+fn parse_cfg_attr_input(subtree: &TopSubtree) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {
++) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {
 +    let mut parts = subtree
 +        .token_trees()
 +        .split(|tt| matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))));

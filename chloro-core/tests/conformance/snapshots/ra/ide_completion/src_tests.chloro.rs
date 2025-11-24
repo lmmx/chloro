@@ -101,7 +101,9 @@ pub(crate) fn completion_list_no_kw(#[rust_analyzer::rust_fixture] ra_fixture: &
     completion_list_with_config(TEST_CONFIG, ra_fixture, false, None)
 }
 
-pub(crate) fn completion_list_no_kw_with_private_editable(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
+pub(crate) fn completion_list_no_kw_with_private_editable(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> String {
     let mut config = TEST_CONFIG;
     config.enable_private_editable = true;
     completion_list_with_config(config, ra_fixture, false, None)
@@ -153,7 +155,9 @@ fn completion_list_with_config(
 }
 
 /// Creates analysis from a multi-file fixture, returns positions marked with $0.
-pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (RootDatabase, FilePosition) {
+pub(crate) fn position(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> (RootDatabase, FilePosition) {
     let mut database = RootDatabase::default();
     let change_fixture = ChangeFixture::parse(&database, ra_fixture);
     database.enable_proc_attr_macros();
@@ -164,10 +168,7 @@ pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Root
     (database, position)
 }
 
-pub(crate) fn do_completion(
-    code: &str,
-    kind: CompletionItemKind,
-) -> Vec<CompletionItem> {
+pub(crate) fn do_completion(code: &str, kind: CompletionItemKind) -> Vec<CompletionItem> {
     do_completion_with_config(TEST_CONFIG, code, kind)
 }
 
@@ -262,10 +263,7 @@ pub(crate) fn check_edit_with_config(
     assert_eq_text!(&ra_fixture_after, &actual)
 }
 
-pub(crate) fn check(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let actual = completion_list(ra_fixture);
     expect.assert_eq(&actual);
 }
@@ -277,10 +275,7 @@ pub(crate) fn check_with_base_items(
     check(&format!("{BASE_ITEMS_FIXTURE}{ra_fixture}"), expect)
 }
 
-pub(crate) fn check_no_kw(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    expect: Expect,
-) {
+pub(crate) fn check_no_kw(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let actual = completion_list_no_kw(ra_fixture);
     expect.assert_eq(&actual)
 }

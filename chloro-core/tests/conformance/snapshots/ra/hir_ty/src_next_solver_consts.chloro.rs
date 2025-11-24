@@ -30,10 +30,7 @@ pub struct Const<'db> {
 }
 
 impl<'db> Const<'db> {
-    pub fn new(
-        interner: DbInterner<'db>,
-        kind: ConstKind<'db>,
-    ) -> Self {
+    pub fn new(interner: DbInterner<'db>, kind: ConstKind<'db>) -> Self {
         let flags = FlagComputation::for_const_kind(&kind);
         let cached = WithCachedTypeInfo {
             internee: kind,
@@ -56,25 +53,15 @@ impl<'db> Const<'db> {
         Const::new(interner, ConstKind::Error(ErrorGuaranteed))
     }
 
-    pub fn new_param(
-        interner: DbInterner<'db>,
-        param: ParamConst,
-    ) -> Self {
+    pub fn new_param(interner: DbInterner<'db>, param: ParamConst) -> Self {
         Const::new(interner, ConstKind::Param(param))
     }
 
-    pub fn new_placeholder(
-        interner: DbInterner<'db>,
-        placeholder: PlaceholderConst,
-    ) -> Self {
+    pub fn new_placeholder(interner: DbInterner<'db>, placeholder: PlaceholderConst) -> Self {
         Const::new(interner, ConstKind::Placeholder(placeholder))
     }
 
-    pub fn new_bound(
-        interner: DbInterner<'db>,
-        index: DebruijnIndex,
-        bound: BoundConst,
-    ) -> Self {
+    pub fn new_bound(interner: DbInterner<'db>, index: DebruijnIndex, bound: BoundConst) -> Self {
         Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Bound(index), bound))
     }
 
@@ -114,19 +101,13 @@ impl<'db> Const<'db> {
 }
 
 impl<'db> std::fmt::Debug for Const<'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.inner().internee.fmt(f)
     }
 }
 
 impl<'db> std::fmt::Debug for InternedWrapperNoDebug<WithCachedTypeInfo<ConstKind<'db>>> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.internee.fmt(f)
     }
 }
@@ -140,19 +121,13 @@ pub struct ParamConst {
 }
 
 impl std::fmt::Debug for ParamConst {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "#{}", self.index)
     }
 }
 
 impl ParamConst {
-    pub fn find_const_ty_from_env<'db>(
-        self,
-        env: ParamEnv<'db>,
-    ) -> Ty<'db> {
+    pub fn find_const_ty_from_env<'db>(self, env: ParamEnv<'db>) -> Ty<'db> {
         let mut candidates = env.caller_bounds().iter().filter_map(|clause| {
             // `ConstArgHasType` are never desugared to be higher ranked.
             match clause.kind().skip_binder() {
@@ -196,10 +171,7 @@ pub struct ValueConst<'db> {
 }
 
 impl<'db> ValueConst<'db> {
-    pub fn new(
-        ty: Ty<'db>,
-        bytes: ConstBytes<'db>,
-    ) -> Self {
+    pub fn new(ty: Ty<'db>, bytes: ConstBytes<'db>) -> Self {
         let value = Valtree::new(bytes);
         ValueConst { ty, value }
     }
@@ -222,10 +194,7 @@ pub struct ConstBytes<'db> {
 }
 
 impl Hash for ConstBytes<'_> {
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.memory.hash(state)
     }
 }
@@ -307,10 +276,7 @@ impl<'db> TypeFoldable<DbInterner<'db>> for Const<'db> {
         folder.try_fold_const(self)
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         folder.fold_const(self)
     }
 }
@@ -374,43 +340,26 @@ impl<'db> Flags for Const<'db> {
 }
 
 impl<'db> rustc_type_ir::inherent::Const<DbInterner<'db>> for Const<'db> {
-    fn new_infer(
-        interner: DbInterner<'db>,
-        var: InferConst,
-    ) -> Self {
+    fn new_infer(interner: DbInterner<'db>, var: InferConst) -> Self {
         Const::new(interner, ConstKind::Infer(var))
     }
 
-    fn new_var(
-        interner: DbInterner<'db>,
-        var: ConstVid,
-    ) -> Self {
+    fn new_var(interner: DbInterner<'db>, var: ConstVid) -> Self {
         Const::new(interner, ConstKind::Infer(InferConst::Var(var)))
     }
 
-    fn new_bound(
-        interner: DbInterner<'db>,
-        debruijn: DebruijnIndex,
-        var: BoundConst,
-    ) -> Self {
+    fn new_bound(interner: DbInterner<'db>, debruijn: DebruijnIndex, var: BoundConst) -> Self {
         Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), var))
     }
 
-    fn new_anon_bound(
-        interner: DbInterner<'db>,
-        debruijn: DebruijnIndex,
-        var: BoundVar,
-    ) -> Self {
+    fn new_anon_bound(interner: DbInterner<'db>, debruijn: DebruijnIndex, var: BoundVar) -> Self {
         Const::new(
             interner,
             ConstKind::Bound(BoundVarIndexKind::Bound(debruijn), BoundConst { var }),
         )
     }
 
-    fn new_canonical_bound(
-        interner: DbInterner<'db>,
-        var: BoundVar,
-    ) -> Self {
+    fn new_canonical_bound(interner: DbInterner<'db>, var: BoundVar) -> Self {
         Const::new(interner, ConstKind::Bound(BoundVarIndexKind::Canonical, BoundConst { var }))
     }
 
@@ -428,17 +377,11 @@ impl<'db> rustc_type_ir::inherent::Const<DbInterner<'db>> for Const<'db> {
         Const::new(interner, ConstKind::Unevaluated(uv))
     }
 
-    fn new_expr(
-        interner: DbInterner<'db>,
-        expr: ExprConst,
-    ) -> Self {
+    fn new_expr(interner: DbInterner<'db>, expr: ExprConst) -> Self {
         Const::new(interner, ConstKind::Expr(expr))
     }
 
-    fn new_error(
-        interner: DbInterner<'db>,
-        guar: ErrorGuaranteed,
-    ) -> Self {
+    fn new_error(interner: DbInterner<'db>, guar: ErrorGuaranteed) -> Self {
         Const::new(interner, ConstKind::Error(guar))
     }
 }
@@ -453,10 +396,7 @@ impl<'db> rustc_type_ir::inherent::BoundVarLike<DbInterner<'db>> for BoundConst 
         self.var
     }
 
-    fn assert_eq(
-        self,
-        var: BoundVarKind,
-    ) {
+    fn assert_eq(self, var: BoundVarKind) {
         var.expect_const()
     }
 }
@@ -472,24 +412,15 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderConst {
         self.bound.var
     }
 
-    fn with_updated_universe(
-        self,
-        ui: rustc_type_ir::UniverseIndex,
-    ) -> Self {
+    fn with_updated_universe(self, ui: rustc_type_ir::UniverseIndex) -> Self {
         Placeholder { universe: ui, bound: self.bound }
     }
 
-    fn new(
-        ui: rustc_type_ir::UniverseIndex,
-        var: BoundConst,
-    ) -> Self {
+    fn new(ui: rustc_type_ir::UniverseIndex, var: BoundConst) -> Self {
         Placeholder { universe: ui, bound: var }
     }
 
-    fn new_anon(
-        ui: rustc_type_ir::UniverseIndex,
-        var: rustc_type_ir::BoundVar,
-    ) -> Self {
+    fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
         Placeholder { universe: ui, bound: BoundConst { var } }
     }
 }

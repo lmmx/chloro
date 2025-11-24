@@ -25,19 +25,13 @@ pub struct Region<'db> {
 }
 
 impl std::fmt::Debug for Region<'_> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.kind().fmt(f)
     }
 }
 
 impl<'db> Region<'db> {
-    pub fn new(
-        interner: DbInterner<'db>,
-        kind: RegionKind<'db>,
-    ) -> Self {
+    pub fn new(interner: DbInterner<'db>, kind: RegionKind<'db>) -> Self {
         Region::new_(interner.db(), kind)
     }
 
@@ -57,17 +51,11 @@ impl<'db> Region<'db> {
         Region::new(interner, RegionKind::ReEarlyParam(early_bound_region))
     }
 
-    pub fn new_placeholder(
-        interner: DbInterner<'db>,
-        placeholder: PlaceholderRegion,
-    ) -> Self {
+    pub fn new_placeholder(interner: DbInterner<'db>, placeholder: PlaceholderRegion) -> Self {
         Region::new(interner, RegionKind::RePlaceholder(placeholder))
     }
 
-    pub fn new_var(
-        interner: DbInterner<'db>,
-        v: RegionVid,
-    ) -> Region<'db> {
+    pub fn new_var(interner: DbInterner<'db>, v: RegionVid) -> Region<'db> {
         Region::new(interner, RegionKind::ReVar(v))
     }
 
@@ -170,10 +158,7 @@ pub struct LateParamRegion {
 }
 
 impl std::fmt::Debug for LateParamRegion {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "ReLateParam({:?}, {:?})", self.scope, self.bound_region)
     }
 }
@@ -193,10 +178,7 @@ pub enum BoundRegionKind {
 }
 
 impl std::fmt::Debug for BoundRegionKind {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
             BoundRegionKind::Anon => write!(f, "BrAnon"),
             BoundRegionKind::Named(did) => {
@@ -220,10 +202,7 @@ impl rustc_type_ir::inherent::ParamLike for EarlyParamRegion {
 }
 
 impl std::fmt::Debug for EarlyParamRegion {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "#{}", self.index)
         // write!(f, "{}/#{}", self.name, self.index)
     }
@@ -234,19 +213,13 @@ impl<'db> rustc_type_ir::inherent::BoundVarLike<DbInterner<'db>> for BoundRegion
         self.var
     }
 
-    fn assert_eq(
-        self,
-        var: BoundVarKind,
-    ) {
+    fn assert_eq(self, var: BoundVarKind) {
         assert_eq!(self.kind, var.expect_region())
     }
 }
 
 impl core::fmt::Debug for BoundRegion {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
             BoundRegionKind::Anon => write!(f, "{:?}", self.var),
             BoundRegionKind::ClosureEnv => write!(f, "{:?}.Env", self.var),
@@ -299,10 +272,7 @@ impl<'db> TypeFoldable<DbInterner<'db>> for Region<'db> {
         folder.try_fold_region(self)
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         folder.fold_region(self)
     }
 }
@@ -353,10 +323,7 @@ impl<'db> rustc_type_ir::inherent::Region<DbInterner<'db>> for Region<'db> {
         )
     }
 
-    fn new_canonical_bound(
-        interner: DbInterner<'db>,
-        var: rustc_type_ir::BoundVar,
-    ) -> Self {
+    fn new_canonical_bound(interner: DbInterner<'db>, var: rustc_type_ir::BoundVar) -> Self {
         Region::new(
             interner,
             RegionKind::ReBound(
@@ -389,24 +356,15 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderRegion {
         self.bound.var
     }
 
-    fn with_updated_universe(
-        self,
-        ui: rustc_type_ir::UniverseIndex,
-    ) -> Self {
+    fn with_updated_universe(self, ui: rustc_type_ir::UniverseIndex) -> Self {
         Placeholder { universe: ui, bound: self.bound }
     }
 
-    fn new(
-        ui: rustc_type_ir::UniverseIndex,
-        bound: Self::Bound,
-    ) -> Self {
+    fn new(ui: rustc_type_ir::UniverseIndex, bound: Self::Bound) -> Self {
         Placeholder { universe: ui, bound }
     }
 
-    fn new_anon(
-        ui: rustc_type_ir::UniverseIndex,
-        var: rustc_type_ir::BoundVar,
-    ) -> Self {
+    fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
         Placeholder { universe: ui, bound: BoundRegion { var, kind: BoundRegionKind::Anon } }
     }
 }

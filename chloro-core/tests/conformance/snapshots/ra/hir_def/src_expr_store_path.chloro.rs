@@ -97,10 +97,7 @@ pub enum GenericArg {
 
 impl Path {
     /// Converts a known mod path to `Path`.
-    pub fn from_known_path(
-        path: ModPath,
-        generic_args: Vec<Option<GenericArgs>>,
-    ) -> Path {
+    pub fn from_known_path(path: ModPath, generic_args: Vec<Option<GenericArgs>>) -> Path {
         Path::Normal(Box::new(NormalPath {
             generic_args: generic_args.into_boxed_slice(),
             type_anchor: None,
@@ -244,10 +241,7 @@ impl<'a> PathSegments<'a> {
         self.get(self.len().checked_sub(1)?)
     }
 
-    pub fn get(
-        &self,
-        idx: usize,
-    ) -> Option<PathSegment<'a>> {
+    pub fn get(&self, idx: usize) -> Option<PathSegment<'a>> {
         let res = PathSegment {
             name: self.segments.get(idx)?,
             args_and_bindings: self.generic_args.and_then(|it| it.get(idx)?.as_ref()),
@@ -255,20 +249,14 @@ impl<'a> PathSegments<'a> {
         Some(res)
     }
 
-    pub fn skip(
-        &self,
-        len: usize,
-    ) -> PathSegments<'a> {
+    pub fn skip(&self, len: usize) -> PathSegments<'a> {
         PathSegments {
             segments: self.segments.get(len..).unwrap_or(&[]),
             generic_args: self.generic_args.and_then(|it| it.get(len..)),
         }
     }
 
-    pub fn take(
-        &self,
-        len: usize,
-    ) -> PathSegments<'a> {
+    pub fn take(&self, len: usize) -> PathSegments<'a> {
         PathSegments {
             segments: self.segments.get(..len).unwrap_or(self.segments),
             generic_args: self.generic_args.map(|it| it.get(..len).unwrap_or(it)),

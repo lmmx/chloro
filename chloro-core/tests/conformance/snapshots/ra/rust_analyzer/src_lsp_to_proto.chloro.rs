@@ -43,10 +43,7 @@ use crate::{
     target_spec::{CargoTargetSpec, TargetSpec},
 };
 
-pub(crate) fn position(
-    line_index: &LineIndex,
-    offset: TextSize,
-) -> lsp_types::Position {
+pub(crate) fn position(line_index: &LineIndex, offset: TextSize) -> lsp_types::Position {
     let line_col = line_index.index.line_col(offset);
     match line_index.encoding {
         PositionEncoding::Utf8 => lsp_types::Position::new(line_col.line, line_col.col),
@@ -57,10 +54,7 @@ pub(crate) fn position(
     }
 }
 
-pub(crate) fn range(
-    line_index: &LineIndex,
-    range: TextRange,
-) -> lsp_types::Range {
+pub(crate) fn range(line_index: &LineIndex, range: TextRange) -> lsp_types::Range {
     let start = position(line_index, range.start());
     let end = position(line_index, range.end());
     lsp_types::Range::new(start, end)
@@ -107,7 +101,9 @@ pub(crate) fn structure_node_kind(kind: StructureNodeKind) -> lsp_types::SymbolK
     }
 }
 
-pub(crate) fn document_highlight_kind(category: ReferenceCategory) -> Option<lsp_types::DocumentHighlightKind> {
+pub(crate) fn document_highlight_kind(
+    category: ReferenceCategory,
+) -> Option<lsp_types::DocumentHighlightKind> {
     if category.contains(ReferenceCategory::WRITE) {
         return Some(lsp_types::DocumentHighlightKind::WRITE);
     }
@@ -133,7 +129,9 @@ pub(crate) fn documentation(documentation: Documentation) -> lsp_types::Document
     lsp_types::Documentation::MarkupContent(markup_content)
 }
 
-pub(crate) fn completion_item_kind(completion_item_kind: CompletionItemKind) -> lsp_types::CompletionItemKind {
+pub(crate) fn completion_item_kind(
+    completion_item_kind: CompletionItemKind,
+) -> lsp_types::CompletionItemKind {
     match completion_item_kind {
         CompletionItemKind::Binding => lsp_types::CompletionItemKind::VARIABLE,
         CompletionItemKind::BuiltinType => lsp_types::CompletionItemKind::STRUCT,
@@ -176,10 +174,7 @@ pub(crate) fn completion_item_kind(completion_item_kind: CompletionItemKind) -> 
     }
 }
 
-pub(crate) fn text_edit(
-    line_index: &LineIndex,
-    indel: Indel,
-) -> lsp_types::TextEdit {
+pub(crate) fn text_edit(line_index: &LineIndex, indel: Indel) -> lsp_types::TextEdit {
     let range = range(line_index, indel.delete);
     let new_text = match line_index.endings {
         LineEndings::Unix => indel.insert,
@@ -782,7 +777,9 @@ pub(crate) fn semantic_token_delta(
     lsp_types::SemanticTokensDelta { result_id, edits }
 }
 
-fn semantic_token_type_and_modifiers(highlight: Highlight) -> (lsp_types::SemanticTokenType, semantic_tokens::ModifierSet) {
+fn semantic_token_type_and_modifiers(
+    highlight: Highlight,
+) -> (lsp_types::SemanticTokenType, semantic_tokens::ModifierSet) {
     use semantic_tokens::{modifiers as mods, types};
     let ty = match highlight.tag {
         HlTag::Symbol(symbol) => match symbol {
@@ -941,10 +938,7 @@ pub(crate) fn folding_range(
     }
 }
 
-pub(crate) fn url(
-    snap: &GlobalStateSnapshot,
-    file_id: FileId,
-) -> lsp_types::Url {
+pub(crate) fn url(snap: &GlobalStateSnapshot, file_id: FileId) -> lsp_types::Url {
     snap.file_id_to_url(file_id)
 }
 
@@ -1836,10 +1830,7 @@ pub(crate) mod command {
             ]),
         }
     }
-    pub(crate) fn run_single(
-        runnable: &lsp_ext::Runnable,
-        title: &str,
-    ) -> lsp_types::Command {
+    pub(crate) fn run_single(runnable: &lsp_ext::Runnable, title: &str) -> lsp_types::Command {
         lsp_types::Command {
             title: title.to_owned(),
             command: "rust-analyzer.runSingle".into(),
@@ -2005,11 +1996,7 @@ fn bar(_: usize) {}
         assert!(!docs.contains("use crate::bar"));
     }
     #[track_caller]
-    fn check_rendered_snippets(
-        edit: TextEdit,
-        snippets: SnippetEdit,
-        expect: Expect,
-    ) {
+    fn check_rendered_snippets(edit: TextEdit, snippets: SnippetEdit, expect: Expect) {
         check_rendered_snippets_in_source(
             r"/* place to put all ranges in */",
             edit,

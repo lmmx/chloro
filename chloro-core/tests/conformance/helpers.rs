@@ -8,9 +8,11 @@ pub use fixture::load_fixture;
 
 use chloro_core::format_source;
 
-#[ctor::ctor]
-fn init_debug() {
-    chloro_core::debug::set_debug(true);
+ctor::declarative::ctor! {
+    #[ctor]
+    unsafe fn init_debug() {
+        chloro_core::debug::set_debug(true);
+    }
 }
 
 pub fn compare_with_rustfmt(code: &str, name: &str) -> ComparisonResult {

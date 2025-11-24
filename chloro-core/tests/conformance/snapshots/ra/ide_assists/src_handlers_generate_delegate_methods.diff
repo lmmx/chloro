@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17091 bytes
-Chloro size:   16606 bytes
+Chloro size:   16595 bytes
 Rustfmt size:  17091 bytes
 
 ✗ Outputs DIFFER
@@ -51,11 +51,7 @@ Rustfmt size:  17091 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_delegate_methods(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if !ctx.config.code_action_grouping {
          return None;
      }

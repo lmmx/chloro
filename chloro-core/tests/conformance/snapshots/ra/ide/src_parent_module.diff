@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4004 bytes
-Chloro size:   3684 bytes
+Chloro size:   3662 bytes
 Rustfmt size:  4004 bytes
 
 ✗ Outputs DIFFER
@@ -22,11 +22,7 @@ Rustfmt size:  4004 bytes
 -// ![Parent Module](https://user-images.githubusercontent.com/48062697/113065580-04c21800-91b1-11eb-9a32-00086161c0bd.gif)
 -
  /// This returns `Vec` because a module may be included from several places.
--pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
-+pub(crate) fn parent_module(
-+    db: &RootDatabase,
-+    position: FilePosition,
-+) -> Vec<NavigationTarget> {
+ pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
      let sema = Semantics::new(db);
      let source_file = sema.parse_guess_edition(position.file_id);
 -
@@ -42,17 +38,6 @@ Rustfmt size:  4004 bytes
      match module {
          Some(module) => sema
              .to_def(&module)
- }
- 
- /// This returns `Vec` because a module may be included from several places.
--pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
-+pub(crate) fn crates_for(
-+    db: &RootDatabase,
-+    file_id: FileId,
-+) -> Vec<Crate> {
-     db.relevant_crates(file_id)
-         .iter()
-         .copied()
  #[cfg(test)]
  mod tests {
      use ide_db::FileRange;

@@ -164,10 +164,7 @@ impl<'db> InferenceContext<'_, 'db> {
     /// Whether this pattern constitutes a read of value of the scrutinee that
     /// it is matching against. This is used to determine whether we should
     /// perform `NeverToAny` coercions.
-    fn pat_guaranteed_to_constitute_read_for_never(
-        &self,
-        pat: PatId,
-    ) -> bool {
+    fn pat_guaranteed_to_constitute_read_for_never(&self, pat: PatId) -> bool {
         match &self.body[pat] {
             // Does not constitute a read.
             Pat::Wild => false,
@@ -204,10 +201,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn is_syntactic_place_expr(
-        &self,
-        expr: ExprId,
-    ) -> bool {
+    fn is_syntactic_place_expr(&self, expr: ExprId) -> bool {
         match &self.body[expr] {
             // Lang item paths cannot currently be local variables or statics.
             Expr::Path(Path::LangItem(_, _)) => false,
@@ -1076,12 +1070,7 @@ impl<'db> InferenceContext<'_, 'db> {
         ty
     }
 
-    fn infer_expr_path(
-        &mut self,
-        path: &Path,
-        id: ExprOrPatId,
-        scope_id: ExprId,
-    ) -> Ty<'db> {
+    fn infer_expr_path(&mut self, path: &Path, id: ExprOrPatId, scope_id: ExprId) -> Ty<'db> {
         let g = self.resolver.update_to_inner_scope(self.db, self.owner, scope_id);
         let ty = match self.infer_path(path, id) {
             Some(ty) => ty,
@@ -1224,11 +1213,7 @@ impl<'db> InferenceContext<'_, 'db> {
         }
     }
 
-    fn infer_expr_array(
-        &mut self,
-        array: &Array,
-        expected: &Expectation<'db>,
-    ) -> Ty<'db> {
+    fn infer_expr_array(&mut self, array: &Array, expected: &Expectation<'db>) -> Ty<'db> {
         let elem_ty = match expected.to_option(&mut self.table).as_ref().map(|t| t.kind()) {
             Some(TyKind::Array(st, _) | TyKind::Slice(st)) => st,
             _ => self.table.next_ty_var(),
@@ -1272,10 +1257,7 @@ impl<'db> InferenceContext<'_, 'db> {
         Ty::new_array_with_const_len(self.interner(), elem_ty, len)
     }
 
-    pub(super) fn infer_return(
-        &mut self,
-        expr: ExprId,
-    ) {
+    pub(super) fn infer_return(&mut self, expr: ExprId) {
         let ret_ty = self
             .return_coercion
             .as_mut()
@@ -1288,11 +1270,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.return_coercion = Some(coerce_many);
     }
 
-    fn infer_expr_return(
-        &mut self,
-        ret: ExprId,
-        expr: Option<ExprId>,
-    ) -> Ty<'db> {
+    fn infer_expr_return(&mut self, ret: ExprId, expr: Option<ExprId>) -> Ty<'db> {
         match self.return_coercion {
             Some(_) => {
                 if let Some(expr) = expr {
@@ -1313,10 +1291,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.types.never
     }
 
-    fn infer_expr_become(
-        &mut self,
-        expr: ExprId,
-    ) -> Ty<'db> {
+    fn infer_expr_become(&mut self, expr: ExprId) -> Ty<'db> {
         match &self.return_coercion {
             Some(return_coercion) => {
                 let ret_ty = return_coercion.expected_ty();
@@ -1336,11 +1311,7 @@ impl<'db> InferenceContext<'_, 'db> {
         self.types.never
     }
 
-    fn infer_expr_box(
-        &mut self,
-        inner_expr: ExprId,
-        expected: &Expectation<'db>,
-    ) -> Ty<'db> {
+    fn infer_expr_box(&mut self, inner_expr: ExprId, expected: &Expectation<'db>) -> Ty<'db> {
         if let Some(box_id) = self.resolve_boxed_box() {
             let table = &mut self.table;
             let inner_exp = expected
@@ -2319,10 +2290,7 @@ impl<'db> InferenceContext<'_, 'db> {
         )
     }
 
-    fn register_obligations_for_call(
-        &mut self,
-        callable_ty: Ty<'db>,
-    ) {
+    fn register_obligations_for_call(&mut self, callable_ty: Ty<'db>) {
         let callable_ty = self.table.try_structurally_resolve_type(callable_ty);
         if let TyKind::FnDef(fn_def, parameters) = callable_ty.kind() {
             let generic_predicates =
@@ -2358,11 +2326,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// Returns the argument indices to skip.
-    fn check_legacy_const_generics(
-        &mut self,
-        callee: Ty<'db>,
-        args: &[ExprId],
-    ) -> Box<[u32]> {
+    fn check_legacy_const_generics(&mut self, callee: Ty<'db>, args: &[ExprId]) -> Box<[u32]> {
         let (func, _subst) = match callee.kind() {
             TyKind::FnDef(callable, subst) => {
                 let func = match callable.0 {
@@ -2404,10 +2368,7 @@ impl<'db> InferenceContext<'_, 'db> {
     }
 
     /// Dereferences a single level of immutable referencing.
-    fn deref_ty_if_possible(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    fn deref_ty_if_possible(&mut self, ty: Ty<'db>) -> Ty<'db> {
         let ty = self.table.try_structurally_resolve_type(ty);
         match ty.kind() {
             TyKind::Ref(_, inner, Mutability::Not) => {
@@ -2467,12 +2428,7 @@ impl<'db> InferenceContext<'_, 'db> {
         if is_assign { self.types.unit } else { output_ty }
     }
 
-    fn is_builtin_binop(
-        &mut self,
-        lhs: Ty<'db>,
-        rhs: Ty<'db>,
-        op: BinaryOp,
-    ) -> bool {
+    fn is_builtin_binop(&mut self, lhs: Ty<'db>, rhs: Ty<'db>, op: BinaryOp) -> bool {
         // Special-case a single layer of referencing, so that things like `5.0 + &6.0f32` work (See rust-lang/rust#57447).
         let lhs = self.deref_ty_if_possible(lhs);
         let rhs = self.deref_ty_if_possible(rhs);

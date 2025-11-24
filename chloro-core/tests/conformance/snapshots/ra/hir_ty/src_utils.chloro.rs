@@ -27,20 +27,14 @@ use crate::{
     TargetFeatures,
 };
 
-pub(crate) fn fn_traits(
-    db: &dyn DefDatabase,
-    krate: Crate,
-) -> impl Iterator<Item = TraitId> + '_ {
+pub(crate) fn fn_traits(db: &dyn DefDatabase, krate: Crate) -> impl Iterator<Item = TraitId> + '_ {
     [LangItem::Fn, LangItem::FnMut, LangItem::FnOnce]
         .into_iter()
         .filter_map(move |lang| lang.resolve_trait(db, krate))
 }
 
 /// Returns an iterator over the direct super traits (including the trait itself).
-pub fn direct_super_traits(
-    db: &dyn DefDatabase,
-    trait_: TraitId,
-) -> SmallVec<[TraitId; 4]> {
+pub fn direct_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
     let mut result = smallvec![trait_];
     direct_super_traits_cb(db, trait_, |tt| {
         if !result.contains(&tt) {
@@ -52,10 +46,7 @@ pub fn direct_super_traits(
 
 /// Returns an iterator over the whole super trait hierarchy (including the
 /// trait itself).
-pub fn all_super_traits(
-    db: &dyn DefDatabase,
-    trait_: TraitId,
-) -> SmallVec<[TraitId; 4]> {
+pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
     // we need to take care a bit here to avoid infinite loops in case of cycles
     // (i.e. if we have `trait A: B; trait B: A;`)
     let mut result = smallvec![trait_];
@@ -73,11 +64,7 @@ pub fn all_super_traits(
     result
 }
 
-fn direct_super_traits_cb(
-    db: &dyn DefDatabase,
-    trait_: TraitId,
-    cb: impl FnMut(TraitId),
-) {
+fn direct_super_traits_cb(db: &dyn DefDatabase, trait_: TraitId, cb: impl FnMut(TraitId)) {
     let resolver = LazyCell::new(|| trait_.resolver(db));
     let (generic_params, store) = db.generic_params_and_store(trait_.into());
     let trait_self = generic_params.trait_self_param();

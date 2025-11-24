@@ -91,21 +91,14 @@ pub mod keys {
 
         type V = ID;
 
-        fn insert(
-            map: &mut DynMap,
-            key: AstPtr<AST>,
-            value: ID,
-        ) {
+        fn insert(map: &mut DynMap, key: AstPtr<AST>, value: ID) {
             map.map
                 .entry::<FxHashMap<AstPtr<AST>, ID>>()
                 .or_insert_with(Default::default)
                 .insert(key, value);
         }
 
-        fn get<'a>(
-            map: &'a DynMap,
-            key: &AstPtr<AST>,
-        ) -> Option<&'a ID> {
+        fn get<'a>(map: &'a DynMap, key: &AstPtr<AST>) -> Option<&'a ID> {
             map.map.get::<FxHashMap<AstPtr<AST>, ID>>()?.get(key)
         }
 
@@ -143,16 +136,9 @@ pub trait Policy {
 
     type V;
 
-    fn insert(
-        map: &mut DynMap,
-        key: Self::K,
-        value: Self::V,
-    );
+    fn insert(map: &mut DynMap, key: Self::K, value: Self::V);
 
-    fn get<'a>(
-        map: &'a DynMap,
-        key: &Self::K,
-    ) -> Option<&'a Self::V>;
+    fn get<'a>(map: &'a DynMap, key: &Self::K) -> Option<&'a Self::V>;
 
     fn is_empty(map: &DynMap) -> bool;
 }
@@ -162,18 +148,11 @@ impl<K: Hash + Eq + 'static, V: 'static> Policy for (K, V) {
 
     type V = V;
 
-    fn insert(
-        map: &mut DynMap,
-        key: K,
-        value: V,
-    ) {
+    fn insert(map: &mut DynMap, key: K, value: V) {
         map.map.entry::<FxHashMap<K, V>>().or_insert_with(Default::default).insert(key, value);
     }
 
-    fn get<'a>(
-        map: &'a DynMap,
-        key: &K,
-    ) -> Option<&'a V> {
+    fn get<'a>(map: &'a DynMap, key: &K) -> Option<&'a V> {
         map.map.get::<FxHashMap<K, V>>()?.get(key)
     }
 
@@ -194,18 +173,11 @@ pub struct KeyMap<KEY> {
 }
 
 impl<P: Policy> KeyMap<Key<P::K, P::V, P>> {
-    pub fn insert(
-        &mut self,
-        key: P::K,
-        value: P::V,
-    ) {
+    pub fn insert(&mut self, key: P::K, value: P::V) {
         P::insert(&mut self.map, key, value)
     }
 
-    pub fn get(
-        &self,
-        key: &P::K,
-    ) -> Option<&P::V> {
+    pub fn get(&self, key: &P::K) -> Option<&P::V> {
         P::get(&self.map, key)
     }
 
@@ -217,20 +189,14 @@ impl<P: Policy> KeyMap<Key<P::K, P::V, P>> {
 impl<P: Policy> Index<Key<P::K, P::V, P>> for DynMap {
     type Output = KeyMap<Key<P::K, P::V, P>>;
 
-    fn index(
-        &self,
-        _key: Key<P::K, P::V, P>,
-    ) -> &Self::Output {
+    fn index(&self, _key: Key<P::K, P::V, P>) -> &Self::Output {
         // Safe due to `#[repr(transparent)]`.
         unsafe { std::mem::transmute::<&DynMap, &KeyMap<Key<P::K, P::V, P>>>(self) }
     }
 }
 
 impl<P: Policy> IndexMut<Key<P::K, P::V, P>> for DynMap {
-    fn index_mut(
-        &mut self,
-        _key: Key<P::K, P::V, P>,
-    ) -> &mut Self::Output {
+    fn index_mut(&mut self, _key: Key<P::K, P::V, P>) -> &mut Self::Output {
         // Safe due to `#[repr(transparent)]`.
         unsafe { std::mem::transmute::<&mut DynMap, &mut KeyMap<Key<P::K, P::V, P>>>(self) }
     }

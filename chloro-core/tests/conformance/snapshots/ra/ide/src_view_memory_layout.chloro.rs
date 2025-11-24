@@ -26,10 +26,7 @@ pub struct RecursiveMemoryLayout {
 }
 
 impl fmt::Display for RecursiveMemoryLayout {
-    fn fmt(
-        &self,
-        fmt: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fn process(
             fmt: &mut fmt::Formatter<'_>,
             nodes: &Vec<MemoryLayoutNode>,
@@ -63,10 +60,7 @@ enum FieldOrTupleIdx {
 }
 
 impl FieldOrTupleIdx {
-    fn name(
-        &self,
-        db: &RootDatabase,
-    ) -> String {
+    fn name(&self, db: &RootDatabase) -> String {
         match *self {
             FieldOrTupleIdx::Field(f) => f.name(db).as_str().to_owned(),
             FieldOrTupleIdx::TupleIdx(i) => format!(".{i}"),

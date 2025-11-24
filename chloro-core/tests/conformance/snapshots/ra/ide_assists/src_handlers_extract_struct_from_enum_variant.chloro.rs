@@ -133,7 +133,9 @@ pub(crate) fn extract_struct_from_enum_variant(
     )
 }
 
-fn extract_field_list_if_applicable(variant: &ast::Variant) -> Option<Either<ast::RecordFieldList, ast::TupleFieldList>> {
+fn extract_field_list_if_applicable(
+    variant: &ast::Variant,
+) -> Option<Either<ast::RecordFieldList, ast::TupleFieldList>> {
     match variant.kind() {
         ast::StructKind::Record(field_list) if field_list.fields().next().is_some() => {
             Some(Either::Left(field_list))
@@ -145,11 +147,7 @@ fn extract_field_list_if_applicable(variant: &ast::Variant) -> Option<Either<ast
     }
 }
 
-fn existing_definition(
-    db: &RootDatabase,
-    variant_name: &ast::Name,
-    variant: &Variant,
-) -> bool {
+fn existing_definition(db: &RootDatabase, variant_name: &ast::Name, variant: &Variant) -> bool {
     variant
         .parent_enum(db)
         .module(db)
@@ -190,10 +188,7 @@ fn extract_generic_params(
     tagged_one.then(|| make::generic_param_list(generics))
 }
 
-fn tag_generics_in_variant(
-    ty: &ast::Type,
-    generics: &mut [(ast::GenericParam, bool)],
-) -> bool {
+fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
     let mut tagged_one = false;
     for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
@@ -293,10 +288,7 @@ fn create_struct_def(
     strukt
 }
 
-fn update_variant(
-    variant: &ast::Variant,
-    generics: Option<ast::GenericParamList>,
-) -> Option<()> {
+fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList>) -> Option<()> {
     let name = variant.name()?;
     let generic_args = generics
         .filter(|generics| generics.generic_params().count() > 0)

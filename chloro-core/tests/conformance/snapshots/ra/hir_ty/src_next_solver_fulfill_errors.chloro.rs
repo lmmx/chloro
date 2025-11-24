@@ -447,10 +447,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
     type Result = ControlFlow<PredicateObligation<'db>>;
 
     #[instrument(level = "trace", skip(self, goal), fields(goal = ?goal.goal()))]
-    fn visit_goal(
-        &mut self,
-        goal: &inspect::InspectGoal<'_, 'db>,
-    ) -> Self::Result {
+    fn visit_goal(&mut self, goal: &inspect::InspectGoal<'_, 'db>) -> Self::Result {
         let interner = goal.infcx().interner;
         // Skip goals that aren't the *reason* for our goal's failure.
         match (self.consider_ambiguities, goal.result()) {
@@ -580,10 +577,7 @@ enum ChildMode<'db> {
 }
 
 impl<'db> NextSolverError<'db> {
-    pub fn to_debuggable_error(
-        &self,
-        infcx: &InferCtxt<'db>,
-    ) -> FulfillmentError<'db> {
+    pub fn to_debuggable_error(&self, infcx: &InferCtxt<'db>) -> FulfillmentError<'db> {
         match self {
             NextSolverError::TrueError(obligation) => {
                 fulfillment_error_for_no_solution(infcx, obligation.clone())
@@ -647,10 +641,7 @@ mod wf {
             self.infcx.interner
         }
 
-        fn require_sized(
-            &mut self,
-            subty: Ty<'db>,
-        ) {
+        fn require_sized(&mut self, subty: Ty<'db>) {
             if !subty.has_escaping_bound_vars() {
                 let cause = ObligationCause::new();
                 let trait_ref = TraitRef::new(
@@ -670,10 +661,7 @@ mod wf {
 
         /// Pushes all the predicates needed to validate that `term` is WF into `out`.
         #[instrument(level = "debug", skip(self))]
-        fn add_wf_preds_for_term(
-            &mut self,
-            term: Term<'db>,
-        ) {
+        fn add_wf_preds_for_term(&mut self, term: Term<'db>) {
             term.visit_with(self);
             debug!(?self.out);
         }
@@ -780,10 +768,7 @@ mod wf {
     impl<'a, 'db> TypeVisitor<DbInterner<'db>> for WfPredicates<'a, 'db> {
         type Result = ();
 
-        fn visit_ty(
-            &mut self,
-            t: Ty<'db>,
-        ) -> Self::Result {
+        fn visit_ty(&mut self, t: Ty<'db>) -> Self::Result {
             debug!("wf bounds for t={:?} t.kind={:#?}", t, t.kind());
             let tcx = self.interner();
             match t.kind() {
@@ -1014,10 +999,7 @@ mod wf {
             t.super_visit_with(self)
         }
 
-        fn visit_const(
-            &mut self,
-            c: Const<'db>,
-        ) -> Self::Result {
+        fn visit_const(&mut self, c: Const<'db>) -> Self::Result {
             let tcx = self.interner();
             match c.kind() {
                 ConstKind::Unevaluated(uv) => {
@@ -1089,10 +1071,7 @@ mod wf {
             c.super_visit_with(self)
         }
 
-        fn visit_predicate(
-            &mut self,
-            _p: Predicate<'db>,
-        ) -> Self::Result {
+        fn visit_predicate(&mut self, _p: Predicate<'db>) -> Self::Result {
             panic!("predicate should not be checked for well-formedness");
         }
     }

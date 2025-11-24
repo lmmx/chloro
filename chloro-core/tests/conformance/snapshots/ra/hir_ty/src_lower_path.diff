@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 55742 bytes
-Chloro size:   55439 bytes
+Chloro size:   55184 bytes
 Rustfmt size:  55742 bytes
 
 ✗ Outputs DIFFER
@@ -67,28 +67,6 @@ Rustfmt size:  55742 bytes
  }
  
  pub(crate) struct PathLoweringContext<'a, 'b, 'db> {
- 
-     #[inline]
-     #[cold]
--    fn on_diagnostic(&mut self, diag: PathLoweringDiagnostic) {
-+    fn on_diagnostic(
-+        &mut self,
-+        diag: PathLoweringDiagnostic,
-+    ) {
-         (self.on_diagnostic.callback)(&self.on_diagnostic.data, self.ctx, diag);
-     }
- 
-     }
- 
-     #[inline]
--    pub(crate) fn set_current_segment(&mut self, segment: usize) {
-+    pub(crate) fn set_current_segment(
-+        &mut self,
-+        segment: usize,
-+    ) {
-         self.current_segment_idx = segment;
-         self.current_or_prev_segment = self
-             .segments
      pub(crate) fn lower_ty_relative_path(
          &mut self,
          ty: Ty<'db>,
@@ -119,17 +97,6 @@ Rustfmt size:  55742 bytes
          self.skip_resolved_segment();
          self.lower_ty_relative_path(ty, Some(resolution), infer_args)
      }
- 
-     /// This returns whether to keep the resolution (`true`) of throw it (`false`).
-     #[must_use]
--    fn handle_type_ns_resolution(&mut self, resolution: &TypeNs) -> bool {
-+    fn handle_type_ns_resolution(
-+        &mut self,
-+        resolution: &TypeNs,
-+    ) -> bool {
-         let mut prohibit_generics_on_resolved = |reason| {
-             if self.current_or_prev_segment.args_and_bindings.is_some() {
-                 let segment = self.current_segment_u32();
                  });
              }
          };
@@ -224,30 +191,6 @@ Rustfmt size:  55742 bytes
          match &res {
              ResolveValueResult::ValueNs(resolution, _) => {
                  let resolved_segment_idx = self.current_segment_u32();
-     }
- 
-     #[tracing::instrument(skip(self), ret)]
--    fn select_associated_type(&mut self, res: Option<TypeNs>, infer_args: bool) -> Ty<'db> {
-+    fn select_associated_type(
-+        &mut self,
-+        res: Option<TypeNs>,
-+        infer_args: bool,
-+    ) -> Ty<'db> {
-         let interner = self.ctx.interner;
-         let Some(res) = res else {
-             return Ty::new_error(self.ctx.interner, ErrorGuaranteed);
-         .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
-     }
- 
--    fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {
-+    fn lower_path_inner(
-+        &mut self,
-+        typeable: TyDefId,
-+        infer_args: bool,
-+    ) -> Ty<'db> {
-         let generic_def = match typeable {
-             TyDefId::BuiltinType(builtinty) => {
-                 return Ty::from_builtin_type(self.ctx.interner, builtinty);
      /// `create_substs_for_ast_path` and `def_to_ty` in rustc.
      pub(crate) fn substs_from_path(
          &mut self,
@@ -292,38 +235,6 @@ Rustfmt size:  55742 bytes
          substs_from_args_and_bindings(
              self.ctx.db,
              self.ctx.store,
-         hard_error: bool,
-     );
- 
--    fn report_elision_failure(&mut self, def: GenericDefId, expected_count: u32);
-+    fn report_elision_failure(
-+        &mut self,
-+        def: GenericDefId,
-+        expected_count: u32,
-+    );
- 
--    fn report_missing_lifetime(&mut self, def: GenericDefId, expected_count: u32);
-+    fn report_missing_lifetime(
-+        &mut self,
-+        def: GenericDefId,
-+        expected_count: u32,
-+    );
- 
-     fn report_len_mismatch(
-         &mut self,
-         kind: IncorrectGenericsLenKind,
-     );
- 
--    fn report_arg_mismatch(&mut self, param_id: GenericParamId, arg_idx: u32, has_self_arg: bool);
-+    fn report_arg_mismatch(
-+        &mut self,
-+        param_id: GenericParamId,
-+        arg_idx: u32,
-+        has_self_arg: bool,
-+    );
- 
-     fn provided_kind(
-         &mut self,
          arg: &HirGenericArg,
      ) -> GenericArg<'db>;
  
@@ -337,17 +248,6 @@ Rustfmt size:  55742 bytes
  
      fn inferred_kind(
          &mut self,
-         preceding_args: &[GenericArg<'db>],
-     ) -> GenericArg<'db>;
- 
--    fn parent_arg(&mut self, param_id: GenericParamId) -> GenericArg<'db>;
-+    fn parent_arg(
-+        &mut self,
-+        param_id: GenericParamId,
-+    ) -> GenericArg<'db>;
- }
- 
- /// Returns true if there was an error.
      ctx: &mut impl GenericArgsLowerer<'db>,
  ) -> bool {
      let mut had_error = false;

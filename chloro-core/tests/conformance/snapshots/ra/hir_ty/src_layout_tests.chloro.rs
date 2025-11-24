@@ -165,10 +165,7 @@ fn check_size_and_align_expr(
 }
 
 #[track_caller]
-fn check_fail(
-    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    e: LayoutError,
-) {
+fn check_fail(#[rust_analyzer::rust_fixture] ra_fixture: &str, e: LayoutError) {
     let r = eval_goal(ra_fixture, "");
     assert_eq!(r, Err(e));
 }

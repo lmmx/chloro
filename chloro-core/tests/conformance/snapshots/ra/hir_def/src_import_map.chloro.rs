@@ -63,10 +63,7 @@ enum IsTraitAssocItem {
 type ImportMapIndex = FxIndexMap<ItemInNs, (SmallVec<[ImportInfo; 1]>, IsTraitAssocItem)>;
 
 impl ImportMap {
-    pub fn dump(
-        &self,
-        db: &dyn DefDatabase,
-    ) -> String {
+    pub fn dump(&self, db: &dyn DefDatabase) -> String {
         let mut out = String::new();
         for (k, v) in self.item_to_info_map.iter() {
             format_to!(out, "{:?} ({:?}) -> ", k, v.1);
@@ -78,10 +75,7 @@ impl ImportMap {
         out
     }
 
-    pub(crate) fn import_map_query(
-        db: &dyn DefDatabase,
-        krate: Crate,
-    ) -> Arc<Self> {
+    pub(crate) fn import_map_query(db: &dyn DefDatabase, krate: Crate) -> Arc<Self> {
         let _p = tracing::info_span!("import_map_query").entered();
         let map = Self::collect_import_map(db, krate);
         let mut importables: Vec<_> = map
@@ -122,17 +116,11 @@ impl ImportMap {
         Arc::new(ImportMap { item_to_info_map: map, fst: builder.into_map(), importables })
     }
 
-    pub fn import_info_for(
-        &self,
-        item: ItemInNs,
-    ) -> Option<&[ImportInfo]> {
+    pub fn import_info_for(&self, item: ItemInNs) -> Option<&[ImportInfo]> {
         self.item_to_info_map.get(&item).map(|(info, _)| &**info)
     }
 
-    fn collect_import_map(
-        db: &dyn DefDatabase,
-        krate: Crate,
-    ) -> ImportMapIndex {
+    fn collect_import_map(db: &dyn DefDatabase, krate: Crate) -> ImportMapIndex {
         let _p = tracing::info_span!("collect_import_map").entered();
         let def_map = crate_def_map(db, krate);
         let mut map = FxIndexMap::default();
@@ -266,20 +254,14 @@ impl Eq for ImportMap {
 }
 
 impl PartialEq for ImportMap {
-    fn eq(
-        &self,
-        other: &Self,
-    ) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         // `fst` and `importables` are built from `map`, so we don't need to compare them.
         self.item_to_info_map == other.item_to_info_map
     }
 }
 
 impl fmt::Debug for ImportMap {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut importable_names: Vec<_> = self
             .item_to_info_map
             .iter()
@@ -310,12 +292,7 @@ pub enum SearchMode {
 }
 
 impl SearchMode {
-    pub fn check(
-        self,
-        query: &str,
-        case_sensitive: bool,
-        candidate: &str,
-    ) -> bool {
+    pub fn check(self, query: &str, case_sensitive: bool, candidate: &str) -> bool {
         match self {
             SearchMode::Exact if case_sensitive => candidate == query,
             SearchMode::Exact => candidate.eq_ignore_ascii_case(query),
@@ -396,10 +373,7 @@ impl Query {
     }
 
     /// Specifies whether we want to include associated items in the result.
-    pub fn assoc_search_mode(
-        self,
-        assoc_mode: AssocSearchMode,
-    ) -> Self {
+    pub fn assoc_search_mode(self, assoc_mode: AssocSearchMode) -> Self {
         Self { assoc_mode, ..self }
     }
 
@@ -408,10 +382,7 @@ impl Query {
         Self { case_sensitive: true, ..self }
     }
 
-    fn matches_assoc_mode(
-        &self,
-        is_trait_assoc_item: IsTraitAssocItem,
-    ) -> bool {
+    fn matches_assoc_mode(&self, is_trait_assoc_item: IsTraitAssocItem) -> bool {
         !matches!(
             (is_trait_assoc_item, self.assoc_mode),
             (IsTraitAssocItem::Yes, AssocSearchMode::Exclude)
@@ -501,10 +472,7 @@ mod tests {
     use crate::{ItemContainerId, Lookup, nameres::assoc::TraitItems, test_db::TestDB};
     use super::*;
     impl ImportMap {
-        fn fmt_for_test(
-            &self,
-            db: &dyn DefDatabase,
-        ) -> String {
+        fn fmt_for_test(&self, db: &dyn DefDatabase) -> String {
             let mut importable_paths: Vec<_> = self
                 .item_to_info_map
                 .iter()
@@ -602,10 +570,7 @@ mod tests {
             assoc_item_name.display(db, Edition::CURRENT)
         ))
     }
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let db = TestDB::with_files(ra_fixture);
         let all_crates = db.all_crates();
         let actual = all_crates
@@ -623,10 +588,7 @@ mod tests {
             .collect::<String>();
         expect.assert_eq(&actual)
     }
-    fn render_path(
-        db: &dyn DefDatabase,
-        info: &ImportInfo,
-    ) -> String {
+    fn render_path(db: &dyn DefDatabase, info: &ImportInfo) -> String {
         let mut module = info.container;
         let mut segments = vec![&info.name];
         let def_map = module.def_map(db);

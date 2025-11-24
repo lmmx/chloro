@@ -8,11 +8,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-fn insert_impl(
-    editor: &mut SyntaxEditor,
-    impl_: &ast::Impl,
-    nominal: &impl Indent,
-) {
+fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Indent) {
     let indent = nominal.indent_level();
     impl_.indent(indent);
     editor.insert_all(
@@ -25,10 +21,7 @@ fn insert_impl(
     );
 }
 
-pub(crate) fn generate_impl(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
     let target = nominal.syntax().text_range();
@@ -58,10 +51,7 @@ pub(crate) fn generate_impl(
     )
 }
 
-pub(crate) fn generate_trait_impl(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
     let target = nominal.syntax().text_range();
@@ -96,10 +86,7 @@ pub(crate) fn generate_trait_impl(
     )
 }
 
-pub(crate) fn generate_impl_trait(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_impl_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let trait_ = ast::Trait::cast(name.syntax().parent()?)?;
     let target_scope = ctx.sema.scope(trait_.syntax())?;

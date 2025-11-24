@@ -39,10 +39,7 @@ use syntax::{
 use crate::db::HirDatabase;
 use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
 
-pub fn incorrect_case(
-    db: &dyn HirDatabase,
-    owner: ModuleDefId,
-) -> Vec<IncorrectCase> {
+pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
     let _p = tracing::info_span!("incorrect_case").entered();
     let mut validator = DeclValidator::new(db);
     validator.validate_item(owner);
@@ -60,10 +57,7 @@ pub enum CaseType {
 }
 
 impl fmt::Display for CaseType {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let repr = match self {
             CaseType::LowerSnakeCase => "snake_case",
             CaseType::UpperSnakeCase => "UPPER_SNAKE_CASE",
@@ -90,10 +84,7 @@ pub enum IdentType {
 }
 
 impl fmt::Display for IdentType {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let repr = match self {
             IdentType::Constant => "Constant",
             IdentType::Enum => "Enum",
@@ -139,10 +130,7 @@ impl<'a> DeclValidator<'a> {
         DeclValidator { db, sink: Vec::new() }
     }
 
-    pub(super) fn validate_item(
-        &mut self,
-        item: ModuleDefId,
-    ) {
+    pub(super) fn validate_item(&mut self, item: ModuleDefId) {
         match item {
             ModuleDefId::ModuleId(module_id) => self.validate_module(module_id),
             ModuleDefId::TraitId(trait_id) => self.validate_trait(trait_id),
@@ -155,10 +143,7 @@ impl<'a> DeclValidator<'a> {
         }
     }
 
-    fn validate_adt(
-        &mut self,
-        adt: AdtId,
-    ) {
+    fn validate_adt(&mut self, adt: AdtId) {
         match adt {
             AdtId::StructId(struct_id) => self.validate_struct(struct_id),
             AdtId::EnumId(enum_id) => self.validate_enum(enum_id),
@@ -168,10 +153,7 @@ impl<'a> DeclValidator<'a> {
         }
     }
 
-    fn validate_module(
-        &mut self,
-        module_id: ModuleId,
-    ) {
+    fn validate_module(&mut self, module_id: ModuleId) {
         // Check the module name.
         let Some(module_name) = module_id.name(self.db) else { return };
         let Some(module_name_replacement) =
@@ -195,10 +177,7 @@ impl<'a> DeclValidator<'a> {
         );
     }
 
-    fn validate_trait(
-        &mut self,
-        trait_id: TraitId,
-    ) {
+    fn validate_trait(&mut self, trait_id: TraitId) {
         // Check the trait name.
         let data = self.db.trait_signature(trait_id);
         self.create_incorrect_case_diagnostic_for_item_name(
@@ -209,10 +188,7 @@ impl<'a> DeclValidator<'a> {
         );
     }
 
-    fn validate_func(
-        &mut self,
-        func: FunctionId,
-    ) {
+    fn validate_func(&mut self, func: FunctionId) {
         let container = func.lookup(self.db).container;
         if matches!(container, ItemContainerId::ExternBlockId(_)) {
             cov_mark::hit!(extern_func_incorrect_case_ignored);
@@ -245,10 +221,7 @@ impl<'a> DeclValidator<'a> {
 
     /// Check incorrect names for patterns inside the function body.
     /// This includes function parameters except for trait implementation associated functions.
-    fn validate_func_body(
-        &mut self,
-        func: FunctionId,
-    ) {
+    fn validate_func_body(&mut self, func: FunctionId) {
         let body = self.db.body(func.into());
         let edition = self.edition(func);
         let mut pats_replacements = body
@@ -309,18 +282,12 @@ impl<'a> DeclValidator<'a> {
         }
     }
 
-    fn edition(
-        &self,
-        id: impl HasModule,
-    ) -> span::Edition {
+    fn edition(&self, id: impl HasModule) -> span::Edition {
         let krate = id.krate(self.db);
         krate.data(self.db).edition
     }
 
-    fn validate_struct(
-        &mut self,
-        struct_id: StructId,
-    ) {
+    fn validate_struct(&mut self, struct_id: StructId) {
         // Check the structure name.
         let data = self.db.struct_signature(struct_id);
         self.create_incorrect_case_diagnostic_for_item_name(
@@ -334,10 +301,7 @@ impl<'a> DeclValidator<'a> {
     }
 
     /// Check incorrect names for struct fields.
-    fn validate_struct_fields(
-        &mut self,
-        struct_id: StructId,
-    ) {
+    fn validate_struct_fields(&mut self, struct_id: StructId) {
         let data = struct_id.fields(self.db);
         if data.shape != FieldsShape::Record {
             return;
@@ -406,10 +370,7 @@ impl<'a> DeclValidator<'a> {
         }
     }
 
-    fn validate_enum(
-        &mut self,
-        enum_id: EnumId,
-    ) {
+    fn validate_enum(&mut self, enum_id: EnumId) {
         let data = self.db.enum_signature(enum_id);
         // Check the enum name.
         self.create_incorrect_case_diagnostic_for_item_name(
@@ -423,10 +384,7 @@ impl<'a> DeclValidator<'a> {
     }
 
     /// Check incorrect names for enum variants.
-    fn validate_enum_variants(
-        &mut self,
-        enum_id: EnumId,
-    ) {
+    fn validate_enum_variants(&mut self, enum_id: EnumId) {
         let data = enum_id.enum_variants(self.db);
         for (variant_id, _, _) in data.variants.iter() {
             self.validate_enum_variant_fields(*variant_id);
@@ -494,10 +452,7 @@ impl<'a> DeclValidator<'a> {
     }
 
     /// Check incorrect names for fields of enum variant.
-    fn validate_enum_variant_fields(
-        &mut self,
-        variant_id: EnumVariantId,
-    ) {
+    fn validate_enum_variant_fields(&mut self, variant_id: EnumVariantId) {
         let variant_data = variant_id.fields(self.db);
         if variant_data.shape != FieldsShape::Record {
             return;
@@ -566,10 +521,7 @@ impl<'a> DeclValidator<'a> {
         }
     }
 
-    fn validate_const(
-        &mut self,
-        const_id: ConstId,
-    ) {
+    fn validate_const(&mut self, const_id: ConstId) {
         let container = const_id.lookup(self.db).container;
         if self.is_trait_impl_container(container) {
             cov_mark::hit!(trait_impl_assoc_const_incorrect_case_ignored);
@@ -587,10 +539,7 @@ impl<'a> DeclValidator<'a> {
         );
     }
 
-    fn validate_static(
-        &mut self,
-        static_id: StaticId,
-    ) {
+    fn validate_static(&mut self, static_id: StaticId) {
         let data = self.db.static_signature(static_id);
         if data.flags.contains(StaticFlags::EXTERN) {
             cov_mark::hit!(extern_static_incorrect_case_ignored);
@@ -604,10 +553,7 @@ impl<'a> DeclValidator<'a> {
         );
     }
 
-    fn validate_type_alias(
-        &mut self,
-        type_alias_id: TypeAliasId,
-    ) {
+    fn validate_type_alias(&mut self, type_alias_id: TypeAliasId) {
         let container = type_alias_id.lookup(self.db).container;
         if self.is_trait_impl_container(container) {
             cov_mark::hit!(trait_impl_assoc_type_incorrect_case_ignored);
@@ -687,10 +633,7 @@ impl<'a> DeclValidator<'a> {
         self.sink.push(diagnostic);
     }
 
-    fn is_trait_impl_container(
-        &self,
-        container_id: ItemContainerId,
-    ) -> bool {
+    fn is_trait_impl_container(&self, container_id: ItemContainerId) -> bool {
         if let ItemContainerId::ImplId(impl_id) = container_id
             && self.db.impl_trait(impl_id).is_some()
         {

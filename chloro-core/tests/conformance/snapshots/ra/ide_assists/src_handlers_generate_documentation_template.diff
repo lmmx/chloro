@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33414 bytes
-Chloro size:   32429 bytes
+Chloro size:   32304 bytes
 Rustfmt size:  33414 bytes
 
 ✗ Outputs DIFFER
@@ -90,11 +90,7 @@ Rustfmt size:  33414 bytes
 -// /// ```
 -// pub fn add(a: i32, b: i32) -> i32 { a + b }
 -// ```
--pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_doc_example(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let tok: ast::Comment = ctx.find_token_at_offset()?;
      let node = tok.syntax().parent()?;
      let last_doc_token =
@@ -116,15 +112,6 @@ Rustfmt size:  33414 bytes
      acc.add(
          AssistId::generate("generate_doc_example"),
          "Generate a documentation example",
-     )
- }
- 
--fn make_example_for_fn(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<String> {
-+fn make_example_for_fn(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> Option<String> {
-     if !is_public(ast_func, ctx)? {
          // Doctests for private items can't actually name the item, so they're pretty useless.
          return None;
      }
@@ -153,47 +140,6 @@ Rustfmt size:  33414 bytes
      Some(example)
  }
  
--fn introduction_builder(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<String> {
-+fn introduction_builder(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> Option<String> {
-     let hir_func = ctx.sema.to_def(ast_func)?;
-     let container = hir_func.as_assoc_item(ctx.db())?.container(ctx.db());
-     if let hir::AssocItemContainer::Impl(imp) = container {
- }
- 
- /// Checks if the function is public / exported
--fn is_public(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<bool> {
-+fn is_public(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> Option<bool> {
-     let hir_func = ctx.sema.to_def(ast_func)?;
-     Some(
-         hir_func.visibility(ctx.db()) == Visibility::Public
- }
- 
- /// Checks that all parent modules of the function are public / exported
--fn all_parent_mods_public(hir_func: &hir::Function, ctx: &AssistContext<'_>) -> bool {
-+fn all_parent_mods_public(
-+    hir_func: &hir::Function,
-+    ctx: &AssistContext<'_>,
-+) -> bool {
-     let mut module = hir_func.module(ctx.db());
-     loop {
-         if let Some(parent) = module.parent(ctx.db()) {
- }
- 
- /// Returns the name of the current crate
--fn crate_name(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<String> {
-+fn crate_name(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> Option<String> {
-     let krate = ctx.sema.scope(ast_func.syntax())?.krate();
-     Some(krate.display_name(ctx.db())?.to_string())
- }
      let assert_postfix = |s| {
          ["!(", "_eq!(", "_ne!(", "_matches!("].iter().any(|postfix| str::starts_with(s, postfix))
      };
@@ -208,62 +154,6 @@ Rustfmt size:  33414 bytes
      Some(false)
  }
  
- }
- 
- /// Helper function to determine if the function is in a trait implementation
--fn is_in_trait_impl(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> bool {
-+fn is_in_trait_impl(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> bool {
-     ctx.sema
-         .to_def(ast_func)
-         .and_then(|hir_func| hir_func.as_assoc_item(ctx.db()))
- }
- 
- /// Helper function to determine if the function definition is in a trait definition
--fn is_in_trait_def(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> bool {
-+fn is_in_trait_def(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> bool {
-     ctx.sema
-         .to_def(ast_func)
-         .and_then(|hir_func| hir_func.as_assoc_item(ctx.db()))
- }
- 
- /// Helper function to transform lines of documentation into a Rust code documentation
--fn documentation_from_lines(doc_lines: Vec<String>, indent_level: IndentLevel) -> String {
-+fn documentation_from_lines(
-+    doc_lines: Vec<String>,
-+    indent_level: IndentLevel,
-+) -> String {
-     let mut result = String::new();
-     for doc_line in doc_lines {
-         result.push_str("///");
- }
- 
- /// Helper function to build the path of the module in the which is the node
--fn build_path(ast_func: &ast::Fn, ctx: &AssistContext<'_>, edition: Edition) -> Option<String> {
-+fn build_path(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+    edition: Edition,
-+) -> Option<String> {
-     let crate_name = crate_name(ast_func, ctx)?;
-     let leaf = self_partial_type(ast_func)
-         .or_else(|| ast_func.name().map(|n| n.to_string()))
- }
- 
- /// Helper function to determine if the function returns some data
--fn returns_a_value(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> bool {
-+fn returns_a_value(
-+    ast_func: &ast::Fn,
-+    ctx: &AssistContext<'_>,
-+) -> bool {
-     ctx.sema
-         .to_def(ast_func)
-         .map(|hir_func| hir_func.ret_type(ctx.db()))
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

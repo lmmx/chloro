@@ -24,10 +24,7 @@ use syntax::{
 use crate::{AssistContext, Assists};
 use super::remove_unused_param::range_to_remove;
 
-pub(crate) fn extract_module(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         return None;
     }
@@ -367,10 +364,7 @@ impl Module {
         }
     }
 
-    fn change_visibility(
-        &mut self,
-        record_fields: Vec<SyntaxNode>,
-    ) {
+    fn change_visibility(&mut self, record_fields: Vec<SyntaxNode>) {
         let (mut replacements, record_field_parents, impls) =
             get_replacements_for_visibility_change(&mut self.body_items, false);
         let mut impl_items = impls
@@ -752,10 +746,7 @@ fn get_use_tree_paths_from_path(
     Some(use_tree_str)
 }
 
-fn add_change_vis(
-    vis: Option<ast::Visibility>,
-    node_or_token_opt: Option<syntax::SyntaxElement>,
-) {
+fn add_change_vis(vis: Option<ast::Visibility>, node_or_token_opt: Option<syntax::SyntaxElement>) {
     if vis.is_none()
         && let Some(node_or_token) = node_or_token_opt
     {
@@ -1080,7 +1071,8 @@ mod modname {
         )
     }
     #[test]
-    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection() {
+    fn test_extract_module_for_corresponding_adt_of_impl_present_in_same_mod_but_not_in_selection(
+    ) {
         check_assist(
             extract_module,
             r"
@@ -1120,7 +1112,8 @@ mod modname {
         )
     }
     #[test]
-    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super() {
+    fn test_extract_module_for_impl_not_having_corresponding_adt_in_selection_and_not_in_same_mod_but_with_super(
+    ) {
         check_assist(
             extract_module,
             r"

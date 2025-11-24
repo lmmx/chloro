@@ -63,10 +63,7 @@ fn is_upper_snake_case(ident: &str) -> bool {
     is_snake_case(ident, char::is_lowercase)
 }
 
-fn is_snake_case<F: Fn(char) -> bool>(
-    ident: &str,
-    wrong_case: F,
-) -> bool {
+fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
     if ident.is_empty() {
         return true;
     }
@@ -89,11 +86,7 @@ fn is_snake_case<F: Fn(char) -> bool>(
 mod tests {
     use super::*;
     use expect_test::{Expect, expect};
-    fn check<F: Fn(&str) -> Option<String>>(
-        fun: F,
-        input: &str,
-        expect: Expect,
-    ) {
+    fn check<F: Fn(&str) -> Option<String>>(fun: F, input: &str, expect: Expect) {
         // `None` is translated to empty string, meaning that there is nothing to fix.
         let output = fun(input).unwrap_or_default();
         expect.assert_eq(&output);

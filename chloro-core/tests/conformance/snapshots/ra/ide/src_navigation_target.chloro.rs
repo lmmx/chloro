@@ -60,10 +60,7 @@ pub struct NavigationTarget {
 }
 
 impl fmt::Debug for NavigationTarget {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut f = f.debug_struct("NavigationTarget");
         macro_rules! opt {
             ($($name:ident)*) => {$(
@@ -119,10 +116,7 @@ impl UpmapFromRaFixture for NavigationTarget {
 }
 
 pub(crate) trait ToNav {
-    fn to_nav(
-        &self,
-        db: &RootDatabase,
-    ) -> UpmappingResult<NavigationTarget>;
+    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget>;
 }
 
 pub trait TryToNav {
@@ -351,19 +345,13 @@ impl TryToNav for hir::ModuleDef {
 pub(crate) trait ToNavFromAst {
     const KIND: SymbolKind;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         _ = db;
         None
     }
 }
 
-fn container_name(
-    db: &RootDatabase,
-    t: impl HasContainer,
-) -> Option<Symbol> {
+fn container_name(db: &RootDatabase, t: impl HasContainer) -> Option<Symbol> {
     match t.container(db) {
         hir::ItemContainer::Trait(it) => Some(it.name(db).symbol().clone()),
         // FIXME: Handle owners of blocks correctly here
@@ -375,10 +363,7 @@ fn container_name(
 impl ToNavFromAst for hir::Function {
     const KIND: SymbolKind = SymbolKind::Function;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -386,10 +371,7 @@ impl ToNavFromAst for hir::Function {
 impl ToNavFromAst for hir::Const {
     const KIND: SymbolKind = SymbolKind::Const;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -397,10 +379,7 @@ impl ToNavFromAst for hir::Const {
 impl ToNavFromAst for hir::Static {
     const KIND: SymbolKind = SymbolKind::Static;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -408,10 +387,7 @@ impl ToNavFromAst for hir::Static {
 impl ToNavFromAst for hir::Struct {
     const KIND: SymbolKind = SymbolKind::Struct;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -419,10 +395,7 @@ impl ToNavFromAst for hir::Struct {
 impl ToNavFromAst for hir::Enum {
     const KIND: SymbolKind = SymbolKind::Enum;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -434,10 +407,7 @@ impl ToNavFromAst for hir::Variant {
 impl ToNavFromAst for hir::Union {
     const KIND: SymbolKind = SymbolKind::Union;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -445,10 +415,7 @@ impl ToNavFromAst for hir::Union {
 impl ToNavFromAst for hir::TypeAlias {
     const KIND: SymbolKind = SymbolKind::TypeAlias;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -456,10 +423,7 @@ impl ToNavFromAst for hir::TypeAlias {
 impl ToNavFromAst for hir::Trait {
     const KIND: SymbolKind = SymbolKind::Trait;
 
-    fn container_name(
-        self,
-        db: &RootDatabase,
-    ) -> Option<Symbol> {
+    fn container_name(self, db: &RootDatabase) -> Option<Symbol> {
         container_name(db, self)
     }
 }
@@ -493,10 +457,7 @@ where
 }
 
 impl ToNav for hir::Module {
-    fn to_nav(
-        &self,
-        db: &RootDatabase,
-    ) -> UpmappingResult<NavigationTarget> {
+    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
         let InFile { file_id, value } = self.definition_source(db);
         let name = self.name(db).map(|it| it.symbol().clone()).unwrap_or_else(|| sym::underscore);
         let (syntax, focus) = match &value {
@@ -519,10 +480,7 @@ impl ToNav for hir::Module {
 }
 
 impl ToNav for hir::Crate {
-    fn to_nav(
-        &self,
-        db: &RootDatabase,
-    ) -> UpmappingResult<NavigationTarget> {
+    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
         self.root_module().to_nav(db)
     }
 }
@@ -685,10 +643,7 @@ impl TryToNav for hir::GenericParam {
 }
 
 impl ToNav for LocalSource {
-    fn to_nav(
-        &self,
-        db: &RootDatabase,
-    ) -> UpmappingResult<NavigationTarget> {
+    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
         let InFile { file_id, value } = &self.source;
         let file_id = *file_id;
         let local = self.local;
@@ -723,10 +678,7 @@ impl ToNav for LocalSource {
 }
 
 impl ToNav for hir::Local {
-    fn to_nav(
-        &self,
-        db: &RootDatabase,
-    ) -> UpmappingResult<NavigationTarget> {
+    fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
         self.primary_source(db).to_nav(db)
     }
 }
@@ -934,10 +886,7 @@ impl<T> IntoIterator for UpmappingResult<T> {
 }
 
 impl<T> UpmappingResult<T> {
-    pub(crate) fn map<U>(
-        self,
-        f: impl Fn(T) -> U,
-    ) -> UpmappingResult<U> {
+    pub(crate) fn map<U>(self, f: impl Fn(T) -> U) -> UpmappingResult<U> {
         UpmappingResult { call_site: f(self.call_site), def_site: self.def_site.map(f) }
     }
 }

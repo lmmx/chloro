@@ -31,10 +31,7 @@ pub(crate) fn remove_trailing_return(
     )
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &RemoveTrailingReturn,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.return_expr.file_id);
     let return_expr = d.return_expr.value.to_node(&root);
     let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);

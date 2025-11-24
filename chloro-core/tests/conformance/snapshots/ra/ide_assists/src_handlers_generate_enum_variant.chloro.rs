@@ -7,10 +7,7 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn generate_enum_variant(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let parent = PathParent::new(&path)?;
     if ctx.sema.resolve_path(&path).is_some() {
@@ -110,10 +107,7 @@ impl PathParent {
     }
 }
 
-fn name_from_field(
-    make: &SyntaxFactory,
-    field: &ast::RecordExprField,
-) -> ast::Name {
+fn name_from_field(make: &SyntaxFactory, field: &ast::RecordExprField) -> ast::Name {
     let text = match field.name_ref() {
         Some(it) => it.to_string(),
         None => name_from_field_shorthand(field).unwrap_or("unknown".to_owned()),

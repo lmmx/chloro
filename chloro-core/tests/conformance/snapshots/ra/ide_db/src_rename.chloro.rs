@@ -54,10 +54,7 @@ pub type Result<T, E = RenameError> = std::result::Result<T, E>;
 pub struct RenameError(pub String);
 
 impl fmt::Display for RenameError {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
     }
 }
@@ -123,10 +120,7 @@ impl Definition {
     /// `Definition`. Note that builtin types can't be
     /// renamed and extern crate names will report its range, though a rename will introduce
     /// an alias instead.
-    pub fn range_for_rename(
-        self,
-        sema: &Semantics<'_, RootDatabase>,
-    ) -> Option<FileRange> {
+    pub fn range_for_rename(self, sema: &Semantics<'_, RootDatabase>) -> Option<FileRange> {
         let syn_ctx_is_root = |(range, ctx): (_, SyntaxContext)| ctx.is_root().then_some(range);
         let res = match self {
             Definition::Macro(mac) => {
@@ -679,10 +673,7 @@ pub enum IdentifierKind {
 }
 
 impl IdentifierKind {
-    pub fn classify(
-        edition: Edition,
-        new_name: &str,
-    ) -> Result<(Name, IdentifierKind)> {
+    pub fn classify(edition: Edition, new_name: &str) -> Result<(Name, IdentifierKind)> {
         match parser::LexedStr::single_token(edition, new_name) {
             Some(res) => match res {
                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),

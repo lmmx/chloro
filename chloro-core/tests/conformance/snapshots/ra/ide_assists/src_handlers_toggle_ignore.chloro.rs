@@ -5,10 +5,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};
 
-pub(crate) fn toggle_ignore(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let attr: ast::Attr = ctx.find_node_at_offset()?;
     let func = attr.syntax().parent().and_then(ast::Fn::cast)?;
     let attr = test_related_attribute_syn(&func)?;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6719 bytes
-Chloro size:   6140 bytes
+Chloro size:   6129 bytes
 Rustfmt size:  6719 bytes
 
 ✗ Outputs DIFFER
@@ -39,11 +39,7 @@ Rustfmt size:  6719 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn convert_from_to_tryfrom(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
      let trait_ty = impl_.trait_()?;
 -

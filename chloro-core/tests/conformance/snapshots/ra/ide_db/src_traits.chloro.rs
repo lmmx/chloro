@@ -69,10 +69,7 @@ pub fn get_missing_assoc_items(
 }
 
 /// Converts associated trait impl items to their trait definition counterpart
-pub(crate) fn convert_to_def_in_trait(
-    db: &dyn HirDatabase,
-    def: Definition,
-) -> Definition {
+pub(crate) fn convert_to_def_in_trait(db: &dyn HirDatabase, def: Definition) -> Definition {
     (|| {
         let assoc = def.as_assoc_item(db)?;
         let trait_ = assoc.implemented_trait(db)?;
@@ -82,10 +79,7 @@ pub(crate) fn convert_to_def_in_trait(
 }
 
 /// If this is an trait (impl) assoc item, returns the assoc item of the corresponding trait definition.
-pub(crate) fn as_trait_assoc_def(
-    db: &dyn HirDatabase,
-    def: Definition,
-) -> Option<Definition> {
+pub(crate) fn as_trait_assoc_def(db: &dyn HirDatabase, def: Definition) -> Option<Definition> {
     let assoc = def.as_assoc_item(db)?;
     let trait_ = match assoc.container(db) {
         hir::AssocItemContainer::Trait(_) => return Some(def),
@@ -135,10 +129,7 @@ mod tests {
         let offset = range_or_offset.expect_offset();
         (database, FilePosition { file_id, offset })
     }
-    fn check_trait(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
         let file = sema.parse(position.file_id);
@@ -151,10 +142,7 @@ mod tests {
         };
         expect.assert_eq(&actual);
     }
-    fn check_missing_assoc(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
         let file = sema.parse(position.file_id);

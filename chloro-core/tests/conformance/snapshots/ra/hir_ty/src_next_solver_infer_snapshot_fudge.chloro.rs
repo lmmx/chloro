@@ -87,10 +87,7 @@ impl<'db> InferCtxt<'db> {
     /// the actual types (`?T`, `Option<?T>`) -- and remember that
     /// after the snapshot is popped, the variable `?T` is no longer
     /// unified.
-    pub fn fudge_inference_if_ok<T, E, F>(
-        &self,
-        f: F,
-    ) -> Result<T, E>
+    pub fn fudge_inference_if_ok<T, E, F>(&self, f: F) -> Result<T, E>
     where
         F: FnOnce() -> Result<T, E>,
         T: TypeFoldable<DbInterner<'db>>, {
@@ -136,10 +133,7 @@ struct SnapshotVarData {
 }
 
 impl SnapshotVarData {
-    fn new(
-        infcx: &InferCtxt<'_>,
-        vars_pre_snapshot: VariableLengths,
-    ) -> SnapshotVarData {
+    fn new(infcx: &InferCtxt<'_>, vars_pre_snapshot: VariableLengths) -> SnapshotVarData {
         let mut inner = infcx.inner.borrow_mut();
         let region_vars = inner
             .unwrap_region_constraints()
@@ -176,10 +170,7 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
         self.infcx.interner
     }
 
-    fn fold_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
         if let TyKind::Infer(infer_ty) = ty.kind() {
             match infer_ty {
                 rustc_type_ir::TyVar(vid) => {
@@ -228,10 +219,7 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
         }
     }
 
-    fn fold_region(
-        &mut self,
-        r: Region<'db>,
-    ) -> Region<'db> {
+    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
         if let RegionKind::ReVar(vid) = r.kind() {
             if self.snapshot_vars.region_vars.contains(&vid) {
                 self.infcx.next_region_var()
@@ -243,10 +231,7 @@ impl<'a, 'db> TypeFolder<DbInterner<'db>> for InferenceFudger<'a, 'db> {
         }
     }
 
-    fn fold_const(
-        &mut self,
-        ct: Const<'db>,
-    ) -> Const<'db> {
+    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
         if let ConstKind::Infer(infer_ct) = ct.kind() {
             match infer_ct {
                 rustc_type_ir::InferConst::Var(vid) => {

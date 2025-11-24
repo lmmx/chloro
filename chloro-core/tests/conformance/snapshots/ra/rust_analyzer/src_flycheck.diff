@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31541 bytes
+Chloro size:   31318 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
@@ -27,29 +27,6 @@ Rustfmt size:  31299 bytes
  use toolchain::Tool;
  use triomphe::Arc;
  
- }
- 
- impl CargoOptions {
--    pub(crate) fn apply_on_command(&self, cmd: &mut Command, ws_target_dir: Option<&Utf8Path>) {
-+    pub(crate) fn apply_on_command(
-+        &self,
-+        cmd: &mut Command,
-+        ws_target_dir: Option<&Utf8Path>,
-+    ) {
-         for target in &self.target_tuples {
-             cmd.args(["--target", target.as_str()]);
-         }
- }
- 
- impl fmt::Display for FlycheckConfig {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             FlycheckConfig::CargoCommand { command, .. } => write!(f, "cargo {command}"),
-             FlycheckConfig::CustomCommand { command, args, .. } => {
  /// The spawned thread is shut down when this struct is dropped.
  #[derive(Debug)]
  pub(crate) struct FlycheckHandle {
@@ -57,17 +34,6 @@ Rustfmt size:  31299 bytes
      sender: Sender<StateChange>,
      _thread: stdx::thread::JoinHandle,
      id: usize,
-     }
- 
-     /// Schedule a re-start of the cargo check worker to do a workspace wide check.
--    pub(crate) fn restart_workspace(&self, saved_file: Option<AbsPathBuf>) {
-+    pub(crate) fn restart_workspace(
-+        &self,
-+        saved_file: Option<AbsPathBuf>,
-+    ) {
-         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
-         self.sender
-             .send(StateChange::Restart {
          diagnostic: Diagnostic,
          package_id: Option<Arc<PackageId>>,
      },
@@ -82,17 +48,6 @@ Rustfmt size:  31299 bytes
      /// Request check progress notification to client
      Progress {
          /// Flycheck instance ID
- }
- 
- impl fmt::Debug for FlycheckMessage {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             FlycheckMessage::AddDiagnostic {
-                 id,
  
  enum FlycheckScope {
      Workspace,
@@ -111,22 +66,6 @@ Rustfmt size:  31299 bytes
      generation: DiagnosticsGeneration,
      sender: Sender<FlycheckMessage>,
      config: FlycheckConfig,
-         }
-     }
- 
--    fn report_progress(&self, progress: Progress) {
-+    fn report_progress(
-+        &self,
-+        progress: Progress,
-+    ) {
-         self.send(FlycheckMessage::Progress { id: self.id, progress });
-     }
- 
--    fn next_event(&self, inbox: &Receiver<StateChange>) -> Option<Event> {
-+    fn next_event(
-+        &self,
-+        inbox: &Receiver<StateChange>,
-+    ) -> Option<Event> {
          let Some(command_receiver) = &self.command_receiver else {
              return inbox.recv().ok().map(Event::RequestStateChange);
          };
@@ -134,28 +73,6 @@ Rustfmt size:  31299 bytes
          // Biased to give restarts a preference so check outputs don't block a restart or stop
          select_biased! {
              recv(inbox) -> msg => msg.ok().map(Event::RequestStateChange),
-         }
-     }
- 
--    fn run(mut self, inbox: Receiver<StateChange>) {
-+    fn run(
-+        mut self,
-+        inbox: Receiver<StateChange>,
-+    ) {
-         'event: while let Some(event) = self.next_event(&inbox) {
-             match event {
-                 Event::RequestStateChange(StateChange::Cancel) => {
-     }
- 
-     #[track_caller]
--    fn send(&self, check_task: FlycheckMessage) {
-+    fn send(
-+        &self,
-+        check_task: FlycheckMessage,
-+    ) {
-         self.sender.send(check_task).unwrap();
-     }
- }
  #[allow(clippy::large_enum_variant)]
  enum CargoCheckMessage {
      CompilerArtifact(cargo_metadata::Artifact),
@@ -167,17 +84,6 @@ Rustfmt size:  31299 bytes
  }
  
  struct CargoCheckParser;
- 
- impl CargoParser<CargoCheckMessage> for CargoCheckParser {
--    fn from_line(&self, line: &str, error: &mut String) -> Option<CargoCheckMessage> {
-+    fn from_line(
-+        &self,
-+        line: &str,
-+        error: &mut String,
-+    ) -> Option<CargoCheckMessage> {
-         let mut deserializer = serde_json::Deserializer::from_str(line);
-         deserializer.disable_recursion_limit();
-         if let Ok(message) = JsonMessage::deserialize(&mut deserializer) {
                  }
              };
          }

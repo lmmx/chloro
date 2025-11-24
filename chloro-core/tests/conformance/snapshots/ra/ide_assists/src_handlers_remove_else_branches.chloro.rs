@@ -2,10 +2,7 @@ use syntax::{AstNode, SyntaxKind, T, TextRange, ast};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn remove_else_branches(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let else_token = ctx.find_token_syntax_at_offset(T![else])?;
     let else_branches = ctx
         .find_node_at_range::<ast::IfExpr>()

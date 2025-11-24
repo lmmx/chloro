@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6055 bytes
+Chloro size:   6040 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -34,15 +34,8 @@ Rustfmt size:  6074 bytes
      match qualified {
          Qualified::With {
              resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
-     }
- }
  
--fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
-+fn add_keywords(
-+    acc: &mut Completions,
-+    ctx: &CompletionContext<'_>,
-+    kind: Option<&ItemListKind>,
-+) {
+ fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
 -
 -    let in_item_list = matches!(

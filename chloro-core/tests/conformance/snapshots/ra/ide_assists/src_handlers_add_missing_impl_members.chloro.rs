@@ -14,10 +14,7 @@ use crate::{
     AssistId,
 };
 
-pub(crate) fn add_missing_impl_members(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn add_missing_impl_members(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     add_missing_impl_members_inner(
         acc,
         ctx,

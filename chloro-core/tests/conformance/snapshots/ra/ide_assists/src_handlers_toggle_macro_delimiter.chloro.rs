@@ -6,10 +6,7 @@ use syntax::{
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn toggle_macro_delimiter(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     #[derive(Debug)]
     enum MacroDelims {
         LPar,

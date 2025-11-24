@@ -9,10 +9,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn make_raw_string(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn make_raw_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if token.is_raw() {
         return None;
@@ -33,10 +30,7 @@ pub(crate) fn make_raw_string(
     )
 }
 
-pub(crate) fn make_usual_string(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn make_usual_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;
@@ -58,10 +52,7 @@ pub(crate) fn make_usual_string(
     )
 }
 
-pub(crate) fn add_hash(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn add_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;
@@ -77,10 +68,7 @@ pub(crate) fn add_hash(
     })
 }
 
-pub(crate) fn remove_hash(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_at_offset::<ast::AnyString>()?;
     if !token.is_raw() {
         return None;

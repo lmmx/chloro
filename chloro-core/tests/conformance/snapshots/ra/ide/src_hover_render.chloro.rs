@@ -312,10 +312,7 @@ pub(super) fn struct_rest_pat(
     res
 }
 
-pub(super) fn try_for_lint(
-    attr: &ast::Attr,
-    token: &SyntaxToken,
-) -> Option<HoverResult> {
+pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<HoverResult> {
     let (path, tt) = attr.as_simple_call()?;
     if !tt.syntax().text_range().contains(token.text_range().start()) {
         return None;
@@ -366,11 +363,7 @@ pub(super) fn process_markup(
     Markup::from(markup)
 }
 
-fn definition_owner_name(
-    db: &RootDatabase,
-    def: Definition,
-    edition: Edition,
-) -> Option<String> {
+fn definition_owner_name(db: &RootDatabase, def: Definition, edition: Edition) -> Option<String> {
     match def {
         Definition::Field(f) => {
             let parent = f.parent_def(db);
@@ -1080,11 +1073,7 @@ fn closure_ty(
     Some(res)
 }
 
-fn definition_path(
-    db: &RootDatabase,
-    &def: &Definition,
-    edition: Edition,
-) -> Option<String> {
+fn definition_path(db: &RootDatabase, &def: &Definition, edition: Edition) -> Option<String> {
     if matches!(
         def,
         Definition::TupleField(_)
@@ -1239,10 +1228,7 @@ struct KeywordHint {
 }
 
 impl KeywordHint {
-    fn new(
-        description: String,
-        keyword_mod: String,
-    ) -> Self {
+    fn new(description: String, keyword_mod: String) -> Self {
         Self { description, keyword_mod, actions: Vec::default() }
     }
 }

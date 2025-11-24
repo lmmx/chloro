@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20441 bytes
-Chloro size:   20471 bytes
+Chloro size:   20440 bytes
 Rustfmt size:  22031 bytes
 
 ✗ Outputs DIFFER
@@ -100,25 +100,6 @@ Rustfmt size:  22031 bytes
              },
          )),
          inline_completion_provider: None,
-         fields_to_resolve != InlayFieldsToResolve::empty()
-     }
- 
--    fn experimental_bool(&self, index: &'static str) -> bool {
-+    fn experimental_bool(
-+        &self,
-+        index: &'static str,
-+    ) -> bool {
-         || -> _ { self.0.experimental.as_ref()?.get(index)?.as_bool() }().unwrap_or_default()
-     }
- 
--    fn experimental<T: serde::de::DeserializeOwned>(&self, index: &'static str) -> Option<T> {
-+    fn experimental<T: serde::de::DeserializeOwned>(
-+        &self,
-+        index: &'static str,
-+    ) -> Option<T> {
-         serde_json::from_value(self.0.experimental.as_ref()?.get(index)?.clone()).ok()
-     }
- 
              Some(general) => general.position_encodings.as_deref().unwrap_or_default(),
              None => &[],
          };
@@ -133,9 +114,9 @@ Rustfmt size:  22031 bytes
          PositionEncoding::Wide(WideEncoding::Utf16)
      }
  
--    pub fn workspace_edit_resource_operations(
--        &self,
--    ) -> Option<&[lsp_types::ResourceOperationKind]> {
+     pub fn workspace_edit_resource_operations(
+         &self,
+     ) -> Option<&[lsp_types::ResourceOperationKind]> {
 -        self.0
 -            .workspace
 -            .as_ref()?
@@ -143,7 +124,6 @@ Rustfmt size:  22031 bytes
 -            .as_ref()?
 -            .resource_operations
 -            .as_deref()
-+    pub fn workspace_edit_resource_operations(&self) -> Option<&[lsp_types::ResourceOperationKind]> {
 +        self.0.workspace.as_ref()?.workspace_edit.as_ref()?.resource_operations.as_deref()
      }
  

@@ -44,21 +44,14 @@ pub(crate) enum Void {
 pub(crate) struct EnumVariantContiguousIndex(usize);
 
 impl EnumVariantContiguousIndex {
-    fn from_enum_variant_id(
-        db: &dyn HirDatabase,
-        target_evid: EnumVariantId,
-    ) -> Self {
+    fn from_enum_variant_id(db: &dyn HirDatabase, target_evid: EnumVariantId) -> Self {
         // Find the index of this variant in the list of variants.
         use hir_def::Lookup;
         let i = target_evid.lookup(db).index as usize;
         EnumVariantContiguousIndex(i)
     }
 
-    fn to_enum_variant_id(
-        self,
-        db: &dyn HirDatabase,
-        eid: EnumId,
-    ) -> EnumVariantId {
+    fn to_enum_variant_id(self, db: &dyn HirDatabase, eid: EnumId) -> EnumVariantId {
         eid.enum_variants(db).variants[self.0].0
     }
 }
@@ -114,18 +107,12 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         compute_match_usefulness(self, arms, scrut_ty, place_validity, complexity_limit)
     }
 
-    fn is_uninhabited(
-        &self,
-        ty: Ty<'db>,
-    ) -> bool {
+    fn is_uninhabited(&self, ty: Ty<'db>) -> bool {
         is_ty_uninhabited_from(self.infcx, ty, self.module, self.env.clone())
     }
 
     /// Returns whether the given ADT is from another crate declared `#[non_exhaustive]`.
-    fn is_foreign_non_exhaustive(
-        &self,
-        adt: hir_def::AdtId,
-    ) -> bool {
+    fn is_foreign_non_exhaustive(&self, adt: hir_def::AdtId) -> bool {
         let is_local = adt.krate(self.db) == self.module.krate();
         !is_local && self.db.attrs(adt.into()).by_key(sym::non_exhaustive).exists()
     }
@@ -170,10 +157,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         })
     }
 
-    pub(crate) fn lower_pat(
-        &self,
-        pat: &Pat<'db>,
-    ) -> DeconstructedPat<'a, 'db> {
+    pub(crate) fn lower_pat(&self, pat: &Pat<'db>) -> DeconstructedPat<'a, 'db> {
         let singleton = |pat: DeconstructedPat<'a, 'db>| vec![pat.at_index(0)];
         let ctor;
         let mut fields: Vec<_>;
@@ -261,10 +245,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         DeconstructedPat::new(ctor, fields, arity, pat.ty, ())
     }
 
-    pub(crate) fn hoist_witness_pat(
-        &self,
-        pat: &WitnessPat<'a, 'db>,
-    ) -> Pat<'db> {
+    pub(crate) fn hoist_witness_pat(&self, pat: &WitnessPat<'a, 'db>) -> Pat<'db> {
         let mut subpatterns = pat.iter_fields().map(|p| self.hoist_witness_pat(p));
         let kind = match pat.ctor() {
             &Bool(value) => PatKind::LiteralBool { value },
@@ -516,10 +497,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // Ok(())
     }
 
-    fn bug(
-        &self,
-        fmt: fmt::Arguments<'_>,
-    ) {
+    fn bug(&self, fmt: fmt::Arguments<'_>) {
         never!("{}", fmt)
     }
 
@@ -537,10 +515,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
 }
 
 impl fmt::Debug for MatchCheckCtx<'_, '_> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("MatchCheckCtx").finish()
     }
 }

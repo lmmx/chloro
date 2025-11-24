@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5650 bytes
-Chloro size:   5404 bytes
+Chloro size:   5393 bytes
 Rustfmt size:  5853 bytes
 
 ✗ Outputs DIFFER
@@ -35,14 +35,9 @@ Rustfmt size:  5853 bytes
 -//     y: u32,
 -// }
 -// ```
--pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_derive(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let cap = ctx.config.snippet_cap?;
      let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
-     let target = nominal.syntax().text_range();
          .filter(|(name, _arg)| name == "derive")
          .map(|(_name, arg)| arg)
          .next();

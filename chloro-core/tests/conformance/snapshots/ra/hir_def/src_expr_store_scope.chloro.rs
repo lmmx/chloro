@@ -51,69 +51,44 @@ pub struct ScopeData {
 }
 
 impl ExprScopes {
-    pub(crate) fn expr_scopes_query(
-        db: &dyn DefDatabase,
-        def: DefWithBodyId,
-    ) -> Arc<ExprScopes> {
+    pub(crate) fn expr_scopes_query(db: &dyn DefDatabase, def: DefWithBodyId) -> Arc<ExprScopes> {
         let body = db.body(def);
         let mut scopes = ExprScopes::new_body(&body);
         scopes.shrink_to_fit();
         Arc::new(scopes)
     }
 
-    pub fn entries(
-        &self,
-        scope: ScopeId,
-    ) -> &[ScopeEntry] {
+    pub fn entries(&self, scope: ScopeId) -> &[ScopeEntry] {
         &self.scope_entries[self.scopes[scope].entries.clone()]
     }
 
     /// If `scope` refers to a block expression scope, returns the corresponding `BlockId`.
-    pub fn block(
-        &self,
-        scope: ScopeId,
-    ) -> Option<BlockId> {
+    pub fn block(&self, scope: ScopeId) -> Option<BlockId> {
         self.scopes[scope].block
     }
 
     /// If `scope` refers to a macro def scope, returns the corresponding `MacroId`.
     #[allow(clippy::borrowed_box)]
-    pub fn macro_def(
-        &self,
-        scope: ScopeId,
-    ) -> Option<&Box<MacroDefId>> {
+    pub fn macro_def(&self, scope: ScopeId) -> Option<&Box<MacroDefId>> {
         self.scopes[scope].macro_def.as_ref()
     }
 
     /// If `scope` refers to a labeled expression scope, returns the corresponding `Label`.
-    pub fn label(
-        &self,
-        scope: ScopeId,
-    ) -> Option<(LabelId, Name)> {
+    pub fn label(&self, scope: ScopeId) -> Option<(LabelId, Name)> {
         self.scopes[scope].label.clone()
     }
 
     /// Returns the scopes in ascending order.
-    pub fn scope_chain(
-        &self,
-        scope: Option<ScopeId>,
-    ) -> impl Iterator<Item = ScopeId> + '_ {
+    pub fn scope_chain(&self, scope: Option<ScopeId>) -> impl Iterator<Item = ScopeId> + '_ {
         std::iter::successors(scope, move |&scope| self.scopes[scope].parent)
     }
 
-    pub fn resolve_name_in_scope(
-        &self,
-        scope: ScopeId,
-        name: &Name,
-    ) -> Option<&ScopeEntry> {
+    pub fn resolve_name_in_scope(&self, scope: ScopeId, name: &Name) -> Option<&ScopeEntry> {
         self.scope_chain(Some(scope))
             .find_map(|scope| self.entries(scope).iter().find(|it| it.name == *name))
     }
 
-    pub fn scope_for(
-        &self,
-        expr: ExprId,
-    ) -> Option<ScopeId> {
+    pub fn scope_for(&self, expr: ExprId) -> Option<ScopeId> {
         self.scope_by_expr.get(expr).copied()
     }
 
@@ -154,10 +129,7 @@ impl ExprScopes {
         })
     }
 
-    fn new_scope(
-        &mut self,
-        parent: ScopeId,
-    ) -> ScopeId {
+    fn new_scope(&mut self, parent: ScopeId) -> ScopeId {
         self.scopes.alloc(ScopeData {
             parent: Some(parent),
             block: None,
@@ -167,11 +139,7 @@ impl ExprScopes {
         })
     }
 
-    fn new_labeled_scope(
-        &mut self,
-        parent: ScopeId,
-        label: Option<(LabelId, Name)>,
-    ) -> ScopeId {
+    fn new_labeled_scope(&mut self, parent: ScopeId, label: Option<(LabelId, Name)>) -> ScopeId {
         self.scopes.alloc(ScopeData {
             parent: Some(parent),
             block: None,
@@ -196,11 +164,7 @@ impl ExprScopes {
         })
     }
 
-    fn new_macro_def_scope(
-        &mut self,
-        parent: ScopeId,
-        macro_id: Box<MacroDefId>,
-    ) -> ScopeId {
+    fn new_macro_def_scope(&mut self, parent: ScopeId, macro_id: Box<MacroDefId>) -> ScopeId {
         self.scopes.alloc(ScopeData {
             parent: Some(parent),
             block: None,
@@ -223,12 +187,7 @@ impl ExprScopes {
             IdxRange::new_inclusive(self.scopes[scope].entries.start()..=entry);
     }
 
-    fn add_pat_bindings(
-        &mut self,
-        store: &ExpressionStore,
-        scope: ScopeId,
-        pat: PatId,
-    ) {
+    fn add_pat_bindings(&mut self, store: &ExpressionStore, scope: ScopeId, pat: PatId) {
         let pattern = &store[pat];
         if let Pat::Bind { id, .. } = *pattern {
             self.add_bindings(store, scope, id, store.binding_hygiene(id));
@@ -236,20 +195,11 @@ impl ExprScopes {
         pattern.walk_child_pats(|pat| self.add_pat_bindings(store, scope, pat));
     }
 
-    fn add_params_bindings(
-        &mut self,
-        store: &ExpressionStore,
-        scope: ScopeId,
-        params: &[PatId],
-    ) {
+    fn add_params_bindings(&mut self, store: &ExpressionStore, scope: ScopeId, params: &[PatId]) {
         params.iter().for_each(|pat| self.add_pat_bindings(store, scope, *pat));
     }
 
-    fn set_scope(
-        &mut self,
-        node: ExprId,
-        scope: ScopeId,
-    ) {
+    fn set_scope(&mut self, node: ExprId, scope: ScopeId) {
         self.scope_by_expr.insert(node, scope);
     }
 
@@ -378,10 +328,7 @@ mod tests {
         test_db::TestDB,
         FunctionId, ModuleDefId,
     };
-    fn find_function(
-        db: &TestDB,
-        file_id: FileId,
-    ) -> FunctionId {
+    fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
         let krate = db.test_crate();
         let crate_def_map = crate_def_map(db, krate);
         let module = crate_def_map.modules_for_file(db, file_id).next().unwrap();
@@ -391,10 +338,7 @@ mod tests {
             _ => panic!(),
         }
     }
-    fn do_check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expected: &[&str],
-    ) {
+    fn do_check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &[&str]) {
         let (offset, code) = extract_offset(ra_fixture);
         let code = {
             let mut buf = String::new();
@@ -544,10 +488,7 @@ fn foo() {
             &[],
         );
     }
-    fn do_check_local_name(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expected_offset: u32,
-    ) {
+    fn do_check_local_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected_offset: u32) {
         let (db, position) = TestDB::with_position(ra_fixture);
         let editioned_file_id = position.file_id;
         let offset = position.offset;

@@ -45,10 +45,7 @@ pub(crate) fn discover_test_roots(db: &RootDatabase) -> Vec<TestItem> {
         .collect()
 }
 
-fn find_crate_by_id(
-    db: &RootDatabase,
-    crate_id: &str,
-) -> Option<base_db::Crate> {
+fn find_crate_by_id(db: &RootDatabase, crate_id: &str) -> Option<base_db::Crate> {
     // here, we use display_name as the crate id. This is not super ideal, but it works since we
     // only show tests for the local crates.
     db.all_crates().iter().copied().find(|&id| {
@@ -121,10 +118,7 @@ pub(crate) fn discover_tests_in_crate_by_test_id(
     discover_tests_in_crate(db, crate_id)
 }
 
-pub(crate) fn discover_tests_in_file(
-    db: &RootDatabase,
-    file_id: FileId,
-) -> Vec<TestItem> {
+pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<TestItem> {
     let sema = Semantics::new(db);
     let Some(module) = sema.file_to_module_def(file_id) else { return vec![] };
     let Some((mut tests, id)) = find_module_id_and_test_parents(&sema, module) else {

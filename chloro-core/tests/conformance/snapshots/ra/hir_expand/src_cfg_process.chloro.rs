@@ -14,11 +14,7 @@ use tracing::{debug, warn};
 
 use crate::{MacroCallLoc, MacroDefKind, db::ExpandDatabase, proc_macro::ProcMacroKind};
 
-fn check_cfg(
-    db: &dyn ExpandDatabase,
-    attr: &Attr,
-    krate: Crate,
-) -> Option<bool> {
+fn check_cfg(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
     if !attr.simple_name().as_deref().map(|v| v == "cfg")? {
         return None;
     }
@@ -27,11 +23,7 @@ fn check_cfg(
     Some(enabled)
 }
 
-fn check_cfg_attr(
-    db: &dyn ExpandDatabase,
-    attr: &Attr,
-    krate: Crate,
-) -> Option<bool> {
+fn check_cfg_attr(db: &dyn ExpandDatabase, attr: &Attr, krate: Crate) -> Option<bool> {
     if !attr.simple_name().as_deref().map(|v| v == "cfg_attr")? {
         return None;
     }
@@ -143,10 +135,7 @@ fn remove_tokens_within_cfg_attr(meta: Meta) -> Option<FxHashSet<SyntaxElement>>
 }
 
 /// Removes a possible comma after the [AstNode]
-fn remove_possible_comma(
-    item: &impl AstNode,
-    res: &mut FxHashSet<SyntaxElement>,
-) {
+fn remove_possible_comma(item: &impl AstNode, res: &mut FxHashSet<SyntaxElement>) {
     if let Some(comma) = item.syntax().next_sibling_or_token().filter(|it| it.kind() == T![,]) {
         res.insert(comma);
     }
@@ -358,10 +347,7 @@ mod tests {
     use expect_test::{Expect, expect};
     use syntax::{AstNode, SourceFile, ast::Attr};
     use crate::cfg_process::parse_from_attr_token_tree;
-    fn check_dnf_from_syntax(
-        input: &str,
-        expect: Expect,
-    ) {
+    fn check_dnf_from_syntax(input: &str, expect: Expect) {
         let parse = SourceFile::parse(input, span::Edition::CURRENT);
         let node = match parse.tree().syntax().descendants().find_map(Attr::cast) {
             Some(it) => it,

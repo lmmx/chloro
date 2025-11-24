@@ -12,10 +12,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn replace_if_let_with_match(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let if_expr: ast::IfExpr = ctx.find_node_at_offset()?;
     let available_range = TextRange::new(
         if_expr.syntax().text_range().start(),
@@ -159,10 +156,7 @@ fn make_else_arm(
     make.match_arm(pattern, None, expr)
 }
 
-pub(crate) fn replace_match_with_if_let(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr: ast::MatchExpr = ctx.find_node_at_offset()?;
     let match_arm_list = match_expr.match_arm_list()?;
     let available_range = TextRange::new(
@@ -307,10 +301,7 @@ fn is_empty_expr(expr: &ast::Expr) -> bool {
     }
 }
 
-fn binds_name(
-    sema: &hir::Semantics<'_, RootDatabase>,
-    pat: &ast::Pat,
-) -> bool {
+fn binds_name(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
     let binds_name_v = |pat| binds_name(sema, &pat);
     match pat {
         ast::Pat::IdentPat(pat) => !matches!(
@@ -332,10 +323,7 @@ fn binds_name(
     }
 }
 
-fn is_sad_pat(
-    sema: &hir::Semantics<'_, RootDatabase>,
-    pat: &ast::Pat,
-) -> bool {
+fn is_sad_pat(sema: &hir::Semantics<'_, RootDatabase>, pat: &ast::Pat) -> bool {
     sema.type_of_pat(pat)
         .and_then(|ty| TryEnum::from_ty(sema, &ty.adjusted()))
         .is_some_and(|it| does_pat_match_variant(pat, &it.sad_pattern()))

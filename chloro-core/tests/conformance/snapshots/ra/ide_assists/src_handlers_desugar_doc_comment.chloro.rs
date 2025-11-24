@@ -11,10 +11,7 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn desugar_doc_comment(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
     // Only allow doc comments
     let placement = comment.kind().doc?;
