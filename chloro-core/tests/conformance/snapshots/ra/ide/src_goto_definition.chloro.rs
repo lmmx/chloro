@@ -551,10 +551,7 @@ fn nav_for_break_points(
     Some(navs)
 }
 
-fn def_to_nav(
-    sema: &Semantics<'_, RootDatabase>,
-    def: Definition,
-) -> Vec<NavigationTarget> {
+fn def_to_nav(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Vec<NavigationTarget> {
     def.try_to_nav(sema).map(|it| it.collect()).unwrap_or_default()
 }
 
@@ -613,10 +610,7 @@ mod tests {
             .info;
         assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
     }
-    fn check_name(
-        expected_name: &str,
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    ) {
+    fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, _) = fixture::annotations(ra_fixture);
         let navs = analysis
             .goto_definition(position, &TEST_CONFIG)

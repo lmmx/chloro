@@ -173,60 +173,42 @@ impl FamousDefs<'_, '_> {
         .flatten()
     }
 
-    fn find_trait(
-        &self,
-        path: &str,
-    ) -> Option<Trait> {
+    fn find_trait(&self, path: &str) -> Option<Trait> {
         match self.find_def(path)? {
             hir::ScopeDef::ModuleDef(hir::ModuleDef::Trait(it)) => Some(it),
             _ => None,
         }
     }
 
-    fn find_macro(
-        &self,
-        path: &str,
-    ) -> Option<Macro> {
+    fn find_macro(&self, path: &str) -> Option<Macro> {
         match self.find_def(path)? {
             hir::ScopeDef::ModuleDef(hir::ModuleDef::Macro(it)) => Some(it),
             _ => None,
         }
     }
 
-    fn find_enum(
-        &self,
-        path: &str,
-    ) -> Option<Enum> {
+    fn find_enum(&self, path: &str) -> Option<Enum> {
         match self.find_def(path)? {
             hir::ScopeDef::ModuleDef(hir::ModuleDef::Adt(hir::Adt::Enum(it))) => Some(it),
             _ => None,
         }
     }
 
-    fn find_module(
-        &self,
-        path: &str,
-    ) -> Option<Module> {
+    fn find_module(&self, path: &str) -> Option<Module> {
         match self.find_def(path)? {
             hir::ScopeDef::ModuleDef(hir::ModuleDef::Module(it)) => Some(it),
             _ => None,
         }
     }
 
-    fn find_function(
-        &self,
-        path: &str,
-    ) -> Option<Function> {
+    fn find_function(&self, path: &str) -> Option<Function> {
         match self.find_def(path)? {
             hir::ScopeDef::ModuleDef(hir::ModuleDef::Function(it)) => Some(it),
             _ => None,
         }
     }
 
-    fn find_lang_crate(
-        &self,
-        origin: LangCrateOrigin,
-    ) -> Option<Crate> {
+    fn find_lang_crate(&self, origin: LangCrateOrigin) -> Option<Crate> {
         let krate = self.1;
         let db = self.0.db;
         if krate.origin(db) == CrateOrigin::Lang(origin) {
@@ -240,10 +222,7 @@ impl FamousDefs<'_, '_> {
         Some(res)
     }
 
-    fn find_def(
-        &self,
-        path: &str,
-    ) -> Option<ScopeDef> {
+    fn find_def(&self, path: &str) -> Option<ScopeDef> {
         let db = self.0.db;
         let mut path = path.split(':');
         let trait_ = path.next_back()?;

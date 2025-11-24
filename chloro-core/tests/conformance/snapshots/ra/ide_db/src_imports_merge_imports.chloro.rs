@@ -29,10 +29,7 @@ pub enum MergeBehavior {
 }
 
 impl MergeBehavior {
-    fn is_tree_allowed(
-        &self,
-        tree: &ast::UseTree,
-    ) -> bool {
+    fn is_tree_allowed(&self, tree: &ast::UseTree) -> bool {
         match self {
             MergeBehavior::Crate | MergeBehavior::One => true,
             // only simple single segment paths are allowed
@@ -121,11 +118,7 @@ fn try_merge_trees_mut(
 
 /// Recursively merges rhs to lhs
 #[must_use]
-fn recursive_merge(
-    lhs: &ast::UseTree,
-    rhs: &ast::UseTree,
-    merge: MergeBehavior,
-) -> Option<()> {
+fn recursive_merge(lhs: &ast::UseTree, rhs: &ast::UseTree, merge: MergeBehavior) -> Option<()> {
     let mut use_trees: Vec<ast::UseTree> = lhs
         .use_tree_list()
         .into_iter()
@@ -258,10 +251,7 @@ impl From<MergeBehavior> for NormalizationStyle {
 /// - `foo::{bar::Qux, bar::{self}}` -> `{foo::bar::{self, Qux}}`
 /// - `foo::bar::{self}` -> `{foo::bar}`
 /// - `foo::bar` -> `{foo::bar}`
-pub fn try_normalize_import(
-    use_item: &ast::Use,
-    style: NormalizationStyle,
-) -> Option<ast::Use> {
+pub fn try_normalize_import(use_item: &ast::Use, style: NormalizationStyle) -> Option<ast::Use> {
     let use_item = use_item.clone_subtree().clone_for_update();
     try_normalize_use_tree_mut(&use_item.use_tree()?, style)?;
     Some(use_item)
@@ -296,10 +286,7 @@ pub fn try_normalize_use_tree_mut(
 }
 
 /// Recursively normalizes a use tree and its subtrees (if any).
-fn recursive_normalize(
-    use_tree: &ast::UseTree,
-    style: NormalizationStyle,
-) -> Option<()> {
+fn recursive_normalize(use_tree: &ast::UseTree, style: NormalizationStyle) -> Option<()> {
     let use_tree_list = use_tree.use_tree_list()?;
     let merge_subtree_into_parent_tree = |single_subtree: &ast::UseTree| {
         let subtree_is_only_self = single_subtree.path().as_ref().is_some_and(path_is_self);
@@ -515,10 +502,7 @@ fn recursive_normalize(
 }
 
 /// Traverses both paths until they differ, returning the common prefix of both.
-pub fn common_prefix(
-    lhs: &ast::Path,
-    rhs: &ast::Path,
-) -> Option<(ast::Path, ast::Path)> {
+pub fn common_prefix(lhs: &ast::Path, rhs: &ast::Path) -> Option<(ast::Path, ast::Path)> {
     let mut res = None;
     let mut lhs_curr = lhs.first_qualifier_or_self();
     let mut rhs_curr = rhs.first_qualifier_or_self();
@@ -540,10 +524,7 @@ pub fn common_prefix(
 }
 
 /// Use tree comparison func for binary searching for merging.
-fn use_tree_cmp_bin_search(
-    lhs: &ast::UseTree,
-    rhs: &ast::UseTree,
-) -> Ordering {
+fn use_tree_cmp_bin_search(lhs: &ast::UseTree, rhs: &ast::UseTree) -> Ordering {
     let lhs_is_simple_path = lhs.is_simple_path() && lhs.rename().is_none();
     let rhs_is_simple_path = rhs.is_simple_path() && rhs.rename().is_none();
     match (
@@ -571,10 +552,7 @@ fn use_tree_cmp_bin_search(
 /// Ref:
 ///   - <https://doc.rust-lang.org/style-guide/index.html#sorting>
 ///   - <https://doc.rust-lang.org/edition-guide/rust-2024/rustfmt.html>
-pub(super) fn use_tree_cmp(
-    a: &ast::UseTree,
-    b: &ast::UseTree,
-) -> Ordering {
+pub(super) fn use_tree_cmp(a: &ast::UseTree, b: &ast::UseTree) -> Ordering {
     let a_is_simple_path = a.is_simple_path() && a.rename().is_none();
     let b_is_simple_path = b.is_simple_path() && b.rename().is_none();
     match (a.path(), b.path()) {
@@ -611,10 +589,7 @@ pub(super) fn use_tree_cmp(
     }
 }
 
-fn path_segment_cmp(
-    a: &ast::PathSegment,
-    b: &ast::PathSegment,
-) -> Ordering {
+fn path_segment_cmp(a: &ast::PathSegment, b: &ast::PathSegment) -> Ordering {
     match (a.kind(), b.kind()) {
         (None, None) => Ordering::Equal,
         (Some(_), None) => Ordering::Greater,
@@ -704,10 +679,7 @@ fn use_tree_cmp_by_tree_list_glob_or_alias(
     }
 }
 
-pub fn eq_visibility(
-    vis0: Option<ast::Visibility>,
-    vis1: Option<ast::Visibility>,
-) -> bool {
+pub fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility>) -> bool {
     match (vis0, vis1) {
         (None, None) => true,
         (Some(vis0), Some(vis1)) => vis_eq(&vis0, &vis1),
@@ -869,10 +841,7 @@ mod version_sort {
         Right,
         Equal,
     }
-    pub(super) fn version_sort(
-        a: &str,
-        b: &str,
-    ) -> Ordering {
+    pub(super) fn version_sort(a: &str, b: &str) -> Ordering {
         let iter_a = VersionChunkIter::new(a);
         let iter_b = VersionChunkIter::new(b);
         let mut more_leading_zeros = MoreLeadingZeros::Equal;

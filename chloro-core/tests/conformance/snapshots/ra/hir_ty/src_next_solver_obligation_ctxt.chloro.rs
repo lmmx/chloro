@@ -25,10 +25,7 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
 }
 
 impl<'a, 'db> ObligationCtxt<'a, 'db> {
-    pub fn register_obligation(
-        &mut self,
-        obligation: PredicateObligation<'db>,
-    ) {
+    pub fn register_obligation(&mut self, obligation: PredicateObligation<'db>) {
         self.engine.register_predicate_obligation(self.infcx, obligation);
     }
 
@@ -39,10 +36,7 @@ impl<'a, 'db> ObligationCtxt<'a, 'db> {
         self.engine.register_predicate_obligations(self.infcx, obligations);
     }
 
-    pub fn register_infer_ok_obligations<T>(
-        &mut self,
-        infer_ok: InferOk<'db, T>,
-    ) -> T {
+    pub fn register_infer_ok_obligations<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
         let InferOk { value, obligations } = infer_ok;
         self.register_obligations(obligations);
         value

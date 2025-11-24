@@ -20,10 +20,7 @@ use crate::{
     AssistId, GroupLabel,
 };
 
-pub(crate) fn qualify_path(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();
     let mut proposed_imports: Vec<_> =
@@ -190,10 +187,7 @@ fn find_trait_method(
     }
 }
 
-fn item_as_trait(
-    db: &RootDatabase,
-    item: hir::ItemInNs,
-) -> Option<hir::Trait> {
+fn item_as_trait(db: &RootDatabase, item: hir::ItemInNs) -> Option<hir::Trait> {
     match item.into_module_def() {
         hir::ModuleDef::Trait(trait_) => Some(trait_),
         item_module_def => item_module_def.as_assoc_item(db)?.container_trait(db),

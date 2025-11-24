@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10632 bytes
-Chloro size:   10231 bytes
+Chloro size:   10220 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -48,14 +48,6 @@ Rustfmt size:  10803 bytes
      Some(RangeInfo { range, info: navs })
  }
  
--fn impls_for_ty(sema: &Semantics<'_, RootDatabase>, ty: hir::Type<'_>) -> Vec<NavigationTarget> {
-+fn impls_for_ty(
-+    sema: &Semantics<'_, RootDatabase>,
-+    ty: hir::Type<'_>,
-+) -> Vec<NavigationTarget> {
-     Impl::all_for_type(sema.db, ty)
-         .into_iter()
-         .filter_map(|imp| imp.try_to_nav(sema))
  mod tests {
      use ide_db::FileRange;
      use itertools::Itertools;

@@ -502,10 +502,7 @@ mod tests {
     use expect_test::{ExpectFile, expect_file};
     use lsp_types::ClientCapabilities;
     use paths::Utf8Path;
-    fn check(
-        diagnostics_json: &str,
-        expect: ExpectFile,
-    ) {
+    fn check(diagnostics_json: &str, expect: ExpectFile) {
         check_with_config(DiagnosticsMapConfig::default(), diagnostics_json, expect)
     }
     fn check_with_config(

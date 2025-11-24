@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11756 bytes
-Chloro size:   11771 bytes
+Chloro size:   11752 bytes
 Rustfmt size:  11841 bytes
 
 ✗ Outputs DIFFER
@@ -16,16 +16,6 @@ Rustfmt size:  11841 bytes
  use ide_db::{
      imports::insert_use::{ImportGranularity, InsertUseConfig},
      FilePosition, MiniCore, RootDatabase, SnippetCap,
-     completion_list_with_config(TEST_CONFIG, ra_fixture, false, None)
- }
- 
--pub(crate) fn completion_list_no_kw_with_private_editable(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> String {
-+pub(crate) fn completion_list_no_kw_with_private_editable(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
-     let mut config = TEST_CONFIG;
-     config.enable_private_editable = true;
-     completion_list_with_config(config, ra_fixture, false, None)
      trigger_character: Option<char>,
  ) -> Vec<CompletionItem> {
      let _tracing = setup_tracing();
@@ -33,14 +23,6 @@ Rustfmt size:  11841 bytes
      // filter out all but one built-in type completion for smaller test outputs
      let items = get_all_items(config, ra_fixture, trigger_character);
      items
- }
- 
- /// Creates analysis from a multi-file fixture, returns positions marked with $0.
--pub(crate) fn position(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> (RootDatabase, FilePosition) {
-+pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (RootDatabase, FilePosition) {
-     let mut database = RootDatabase::default();
      let change_fixture = ChangeFixture::parse(&database, ra_fixture);
      database.enable_proc_attr_macros();
      database.apply_change(change_fixture.change);
@@ -55,14 +37,6 @@ Rustfmt size:  11841 bytes
 -    };
 +    let position = FilePosition { file_id: file_id.file_id(&database), offset };
      (database, position)
- }
- 
--pub(crate) fn do_completion(code: &str, kind: CompletionItemKind) -> Vec<CompletionItem> {
-+pub(crate) fn do_completion(
-+    code: &str,
-+    kind: CompletionItemKind,
-+) -> Vec<CompletionItem> {
-     do_completion_with_config(TEST_CONFIG, code, kind)
  }
  
  ) {
@@ -109,24 +83,4 @@ Rustfmt size:  11841 bytes
 +        });
      combined_edit.apply(&mut actual);
      assert_eq_text!(&ra_fixture_after, &actual)
- }
- 
--pub(crate) fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+pub(crate) fn check(
-+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+    expect: Expect,
-+) {
-     let actual = completion_list(ra_fixture);
-     expect.assert_eq(&actual);
- }
-     check(&format!("{BASE_ITEMS_FIXTURE}{ra_fixture}"), expect)
- }
- 
--pub(crate) fn check_no_kw(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+pub(crate) fn check_no_kw(
-+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+    expect: Expect,
-+) {
-     let actual = completion_list_no_kw(ra_fixture);
-     expect.assert_eq(&actual)
  }

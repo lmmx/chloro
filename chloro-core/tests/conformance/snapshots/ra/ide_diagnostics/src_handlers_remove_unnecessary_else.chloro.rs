@@ -35,10 +35,7 @@ pub(crate) fn remove_unnecessary_else(
     )
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &RemoveUnnecessaryElse,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<Assist>> {
     let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
     let if_expr = d.if_expr.value.to_node(&root);
     let if_expr = ctx.sema.original_ast_node(if_expr)?;

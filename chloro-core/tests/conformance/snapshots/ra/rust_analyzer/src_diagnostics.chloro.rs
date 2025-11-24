@@ -59,10 +59,7 @@ pub(crate) struct Fix {
 }
 
 impl DiagnosticCollection {
-    pub(crate) fn clear_check(
-        &mut self,
-        flycheck_id: usize,
-    ) {
+    pub(crate) fn clear_check(&mut self, flycheck_id: usize) {
         let Some(check) = self.check.get_mut(flycheck_id) else {
             return;
         };
@@ -143,10 +140,7 @@ impl DiagnosticCollection {
         }
     }
 
-    pub(crate) fn clear_native_for(
-        &mut self,
-        file_id: FileId,
-    ) {
+    pub(crate) fn clear_native_for(&mut self, file_id: FileId) {
         self.native_syntax.remove(&file_id);
         self.native_semantic.remove(&file_id);
         self.changes.insert(file_id);
@@ -195,10 +189,7 @@ impl DiagnosticCollection {
         self.changes.insert(file_id);
     }
 
-    pub(crate) fn set_native_diagnostics(
-        &mut self,
-        kind: DiagnosticsTaskKind,
-    ) {
+    pub(crate) fn set_native_diagnostics(&mut self, kind: DiagnosticsTaskKind) {
         let (generation, diagnostics, target) = match kind {
             DiagnosticsTaskKind::Syntax(generation, diagnostics) => {
                 (generation, diagnostics, &mut self.native_syntax)
@@ -262,10 +253,7 @@ impl DiagnosticCollection {
     }
 }
 
-fn are_diagnostics_equal(
-    left: &lsp_types::Diagnostic,
-    right: &lsp_types::Diagnostic,
-) -> bool {
+fn are_diagnostics_equal(left: &lsp_types::Diagnostic, right: &lsp_types::Diagnostic) -> bool {
     left.source == right.source
         && left.severity == right.severity
         && left.range == right.range

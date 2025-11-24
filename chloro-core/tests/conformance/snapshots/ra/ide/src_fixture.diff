@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4500 bytes
-Chloro size:   4471 bytes
+Chloro size:   4499 bytes
 Rustfmt size:  5051 bytes
 
 ✗ Outputs DIFFER
@@ -16,14 +16,6 @@ Rustfmt size:  5051 bytes
  
  use crate::{Analysis, AnalysisHost, FileId, FilePosition, FileRange};
  
- }
- 
- /// Creates analysis from a multi-file fixture, returns positions marked with $0.
--pub(crate) fn position(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> (Analysis, FilePosition) {
-+pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FilePosition) {
-     let mut host = AnalysisHost::default();
      let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
      host.db.enable_proc_attr_macros();
      host.db.apply_change(change_fixture.change);
@@ -62,11 +54,6 @@ Rustfmt size:  5051 bytes
  }
  
  /// Creates analysis for a single file, returns range marked with a pair of $0 or a position marked with $0.
--pub(crate) fn range_or_position(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> (Analysis, FileId, RangeOrOffset) {
-+pub(crate) fn range_or_position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FileId, RangeOrOffset) {
-     let mut host = AnalysisHost::default();
      let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
      host.db.enable_proc_attr_macros();
      host.db.apply_change(change_fixture.change);
@@ -77,12 +64,6 @@ Rustfmt size:  5051 bytes
      (host.analysis(), file_id.file_id(&host.db), range_or_offset)
  }
  
- /// Creates analysis from a multi-file fixture, returns positions marked with $0.
--pub(crate) fn annotations(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> (Analysis, FilePosition, Vec<(FileRange, String)>) {
-+pub(crate) fn annotations(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FilePosition, Vec<(FileRange, String)>) {
-     let mut host = AnalysisHost::default();
      let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
      host.db.enable_proc_attr_macros();
      host.db.apply_change(change_fixture.change);
@@ -129,11 +110,6 @@ Rustfmt size:  5051 bytes
  }
  
  /// Creates analysis from a multi-file fixture with annotations without $0
--pub(crate) fn annotations_without_marker(
--    #[rust_analyzer::rust_fixture] ra_fixture: &str,
--) -> (Analysis, Vec<(FileRange, String)>) {
-+pub(crate) fn annotations_without_marker(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, Vec<(FileRange, String)>) {
-     let mut host = AnalysisHost::default();
      let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
      host.db.enable_proc_attr_macros();
      host.db.apply_change(change_fixture.change);

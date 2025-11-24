@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22284 bytes
-Chloro size:   20788 bytes
+Chloro size:   20744 bytes
 Rustfmt size:  22284 bytes
 
 ✗ Outputs DIFFER
@@ -44,14 +44,9 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_setter(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      // This if condition denotes two modes this assist can work in:
      // - First is acting upon selection of record fields
-     // - Next is acting upon a single record field
      //
      // This is the only part where implementation diverges a bit,
      // subsequent code is generic for both of these modes
@@ -133,11 +128,7 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_getter(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_getter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      generate_getter_impl(acc, ctx, false)
  }
  
@@ -162,14 +153,9 @@ Rustfmt size:  22284 bytes
 -//     }
 -// }
 -// ```
--pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_getter_mut(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_getter_mut(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      generate_getter_impl(acc, ctx, true)
  }
- 
      if info_of_record_fields.is_empty() {
          return None;
      }
@@ -216,15 +202,6 @@ Rustfmt size:  22284 bytes
      make::fn_(
          None,
          strukt.visibility(),
-     )
- }
- 
--fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldInfo) -> ast::Fn {
-+fn generate_setter_from_info(
-+    info: &AssistInfo,
-+    record_field_info: &RecordFieldInfo,
-+) -> ast::Fn {
-     let strukt = &info.strukt;
      let field_name = &record_field_info.fn_name;
      let fn_name = make::name(&format!("set_{field_name}"));
      let field_ty = &record_field_info.field_ty;

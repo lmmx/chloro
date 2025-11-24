@@ -40,10 +40,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
         self.infcx.interner
     }
 
-    fn try_fold_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Result<Ty<'db>, Self::Error> {
+    fn try_fold_ty(&mut self, ty: Ty<'db>) -> Result<Ty<'db>, Self::Error> {
         if !ty.has_type_flags(TypeFlags::HAS_ALIAS | TypeFlags::HAS_PARAM) {
             return Ok(ty);
         }
@@ -70,10 +67,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
         }
     }
 
-    fn try_fold_const(
-        &mut self,
-        ct: Const<'db>,
-    ) -> Result<Const<'db>, Self::Error> {
+    fn try_fold_const(&mut self, ct: Const<'db>) -> Result<Const<'db>, Self::Error> {
         let ConstKind::Param(param) = ct.kind() else {
             return ct.try_super_fold_with(self);
         };
@@ -84,10 +78,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
             .ok_or_else(|| MirLowerError::GenericArgNotProvided(param.id.into(), self.subst))
     }
 
-    fn try_fold_region(
-        &mut self,
-        region: Region<'db>,
-    ) -> Result<Region<'db>, Self::Error> {
+    fn try_fold_region(&mut self, region: Region<'db>) -> Result<Region<'db>, Self::Error> {
         let RegionKind::ReEarlyParam(param) = region.kind() else {
             return Ok(region);
         };
@@ -123,10 +114,7 @@ impl<'db> Filler<'db> {
         }
     }
 
-    fn fill_operand(
-        &mut self,
-        op: &mut Operand<'db>,
-    ) -> Result<(), MirLowerError<'db>> {
+    fn fill_operand(&mut self, op: &mut Operand<'db>) -> Result<(), MirLowerError<'db>> {
         match &mut op.kind {
             OperandKind::Constant { konst, ty } => {
                 self.fill(konst)?;
@@ -137,10 +125,7 @@ impl<'db> Filler<'db> {
         Ok(())
     }
 
-    fn fill_body(
-        &mut self,
-        body: &mut MirBody<'db>,
-    ) -> Result<(), MirLowerError<'db>> {
+    fn fill_body(&mut self, body: &mut MirBody<'db>) -> Result<(), MirLowerError<'db>> {
         for (_, l) in body.locals.iter_mut() {
             self.fill(&mut l.ty)?;
         }

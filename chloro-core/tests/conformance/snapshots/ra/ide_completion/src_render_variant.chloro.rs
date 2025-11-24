@@ -125,10 +125,7 @@ pub(crate) fn format_literal_label(
 }
 
 /// Format a struct, etc. literal option for lookup used in completions filtering.
-pub(crate) fn format_literal_lookup(
-    name: &str,
-    kind: StructKind,
-) -> SmolStr {
+pub(crate) fn format_literal_lookup(name: &str, kind: StructKind) -> SmolStr {
     match kind {
         StructKind::Tuple => SmolStr::from_iter([name, "()"]),
         StructKind::Record => SmolStr::from_iter([name, "{}"]),

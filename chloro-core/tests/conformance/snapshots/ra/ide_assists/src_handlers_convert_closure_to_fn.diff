@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35596 bytes
+Chloro size:   35574 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -67,14 +67,9 @@ Rustfmt size:  36442 bytes
 -//     closure("abc", &mut s);
 -// }
 -// ```
--pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn convert_closure_to_fn(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
      if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
-         // Not inside the parameter list.
      let closure_ty = ctx.sema.type_of_expr(&closure.clone().into())?;
      let callable = closure_ty.original.as_callable(ctx.db())?;
      let closure_ty = closure_ty.original.as_closure()?;
@@ -147,17 +142,6 @@ Rustfmt size:  36442 bytes
      let capture_name = make::expr_path(make::path_from_text(&capture_name.text()));
      if capture_kind == CaptureKind::Move || is_ref {
          return capture_name;
-     make::expr_prefix(T![*], capture_name).into()
- }
- 
--fn capture_as_arg(ctx: &AssistContext<'_>, capture: &ClosureCapture<'_>) -> ast::Expr {
-+fn capture_as_arg(
-+    ctx: &AssistContext<'_>,
-+    capture: &ClosureCapture<'_>,
-+) -> ast::Expr {
-     let place = parse_expr_from_str(&capture.display_place_source_code(ctx.db()), ctx.edition())
-         .expect("`display_place_source_code()` produced an invalid expr");
-     let needs_mut = match capture.kind() {
      if captures_as_args.is_empty() {
          return;
      }

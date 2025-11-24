@@ -32,10 +32,7 @@ impl ProcMacroKind {
 }
 
 impl Attrs {
-    pub fn parse_proc_macro_decl(
-        &self,
-        func_name: &Name,
-    ) -> Option<ProcMacroDef> {
+    pub fn parse_proc_macro_decl(&self, func_name: &Name) -> Option<ProcMacroDef> {
         if self.is_proc_macro() {
             Some(ProcMacroDef { name: func_name.clone(), kind: ProcMacroKind::Bang })
         } else if self.is_proc_macro_attribute() {

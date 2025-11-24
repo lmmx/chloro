@@ -13,10 +13,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn wrap_return_type(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let parent = ret_type.syntax().parent()?;
     let body_expr = match_ast! {
@@ -169,10 +166,7 @@ impl WrapperKind {
         }
     }
 
-    fn core_type(
-        &self,
-        famous_defs: &FamousDefs<'_, '_>,
-    ) -> Option<hir::Enum> {
+    fn core_type(&self, famous_defs: &FamousDefs<'_, '_>) -> Option<hir::Enum> {
         match self {
             WrapperKind::Option => famous_defs.core_option_Option(),
             WrapperKind::Result => famous_defs.core_result_Result(),
@@ -238,10 +232,7 @@ fn wrapper_alias<'db>(
     })
 }
 
-fn tail_cb_impl(
-    acc: &mut Vec<ast::Expr>,
-    e: &ast::Expr,
-) {
+fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
     match e {
         Expr::BreakExpr(break_expr) => {
             if let Some(break_expr_arg) = break_expr.expr() {

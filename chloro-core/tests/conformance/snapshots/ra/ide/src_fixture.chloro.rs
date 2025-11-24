@@ -15,7 +15,9 @@ pub(crate) fn file(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis
 }
 
 /// Creates analysis from a multi-file fixture, returns positions marked with $0.
-pub(crate) fn position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FilePosition) {
+pub(crate) fn position(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> (Analysis, FilePosition) {
     let mut host = AnalysisHost::default();
     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
     host.db.enable_proc_attr_macros();
@@ -37,7 +39,9 @@ pub(crate) fn range(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysi
 }
 
 /// Creates analysis for a single file, returns range marked with a pair of $0 or a position marked with $0.
-pub(crate) fn range_or_position(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FileId, RangeOrOffset) {
+pub(crate) fn range_or_position(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> (Analysis, FileId, RangeOrOffset) {
     let mut host = AnalysisHost::default();
     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
     host.db.enable_proc_attr_macros();
@@ -47,7 +51,9 @@ pub(crate) fn range_or_position(#[rust_analyzer::rust_fixture] ra_fixture: &str)
 }
 
 /// Creates analysis from a multi-file fixture, returns positions marked with $0.
-pub(crate) fn annotations(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, FilePosition, Vec<(FileRange, String)>) {
+pub(crate) fn annotations(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> (Analysis, FilePosition, Vec<(FileRange, String)>) {
     let mut host = AnalysisHost::default();
     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
     host.db.enable_proc_attr_macros();
@@ -70,7 +76,9 @@ pub(crate) fn annotations(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (A
 }
 
 /// Creates analysis from a multi-file fixture with annotations without $0
-pub(crate) fn annotations_without_marker(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (Analysis, Vec<(FileRange, String)>) {
+pub(crate) fn annotations_without_marker(
+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
+) -> (Analysis, Vec<(FileRange, String)>) {
     let mut host = AnalysisHost::default();
     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
     host.db.enable_proc_attr_macros();

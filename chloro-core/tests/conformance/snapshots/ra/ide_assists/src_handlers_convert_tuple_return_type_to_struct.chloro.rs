@@ -224,10 +224,7 @@ fn add_tuple_struct_def(
 }
 
 /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
-fn replace_body_return_values(
-    body: ast::Expr,
-    struct_name: &str,
-) {
+fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
     let mut exprs_to_wrap = Vec::new();
     let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_wrap, e);
     walk_expr(&body, &mut |expr| {
@@ -250,10 +247,7 @@ fn replace_body_return_values(
     }
 }
 
-fn tail_cb_impl(
-    acc: &mut Vec<ast::Expr>,
-    e: &ast::Expr,
-) {
+fn tail_cb_impl(acc: &mut Vec<ast::Expr>, e: &ast::Expr) {
     match e {
         ast::Expr::BreakExpr(break_expr) => {
             if let Some(break_expr_arg) = break_expr.expr() {

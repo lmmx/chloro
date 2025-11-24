@@ -28,28 +28,19 @@ pub enum SpanMapRef<'a> {
 }
 
 impl syntax_bridge::SpanMapper<Span> for SpanMap {
-    fn span_for(
-        &self,
-        range: TextRange,
-    ) -> Span {
+    fn span_for(&self, range: TextRange) -> Span {
         self.span_for_range(range)
     }
 }
 
 impl syntax_bridge::SpanMapper<Span> for SpanMapRef<'_> {
-    fn span_for(
-        &self,
-        range: TextRange,
-    ) -> Span {
+    fn span_for(&self, range: TextRange) -> Span {
         self.span_for_range(range)
     }
 }
 
 impl SpanMap {
-    pub fn span_for_range(
-        &self,
-        range: TextRange,
-    ) -> Span {
+    pub fn span_for_range(&self, range: TextRange) -> Span {
         match self {
             // FIXME: Is it correct for us to only take the span at the start? This feels somewhat
             // wrong. The context will be right, but the range could be considered wrong. See
@@ -68,10 +59,7 @@ impl SpanMap {
     }
 
     #[inline]
-    pub(crate) fn new(
-        db: &dyn ExpandDatabase,
-        file_id: HirFileId,
-    ) -> SpanMap {
+    pub(crate) fn new(db: &dyn ExpandDatabase, file_id: HirFileId) -> SpanMap {
         match file_id {
             HirFileId::FileId(file_id) => SpanMap::RealSpanMap(db.real_span_map(file_id)),
             HirFileId::MacroFile(m) => {
@@ -82,10 +70,7 @@ impl SpanMap {
 }
 
 impl SpanMapRef<'_> {
-    pub fn span_for_range(
-        self,
-        range: TextRange,
-    ) -> Span {
+    pub fn span_for_range(self, range: TextRange) -> Span {
         match self {
             Self::ExpansionSpanMap(span_map) => span_map.span_at(range.start()),
             Self::RealSpanMap(span_map) => span_map.span_for_range(range),

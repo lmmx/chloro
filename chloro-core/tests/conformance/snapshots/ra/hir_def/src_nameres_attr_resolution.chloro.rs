@@ -69,10 +69,7 @@ impl DefMap {
         )))
     }
 
-    pub(crate) fn is_builtin_or_registered_attr(
-        &self,
-        path: &ModPath,
-    ) -> bool {
+    pub(crate) fn is_builtin_or_registered_attr(&self, path: &ModPath) -> bool {
         if path.kind != PathKind::Plain {
             return false;
         }

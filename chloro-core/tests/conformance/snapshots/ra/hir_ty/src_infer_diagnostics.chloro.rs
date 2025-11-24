@@ -23,10 +23,7 @@ use crate::{
 pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
 
 impl<'db> Diagnostics<'db> {
-    pub(super) fn push(
-        &self,
-        diagnostic: InferenceDiagnostic<'db>,
-    ) {
+    pub(super) fn push(&self, diagnostic: InferenceDiagnostic<'db>) {
         self.0.borrow_mut().push(diagnostic);
     }
 

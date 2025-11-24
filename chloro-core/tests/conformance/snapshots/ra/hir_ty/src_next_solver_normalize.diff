@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9789 bytes
-Chloro size:   9822 bytes
+Chloro size:   9745 bytes
 Rustfmt size:  9886 bytes
 
 ✗ Outputs DIFFER
@@ -110,14 +110,6 @@ Rustfmt size:  9886 bytes
          // Alias is guaranteed to be fully structurally resolved,
          // so we can super fold here.
          let term = infcx.resolve_vars_if_possible(infer_term);
-         Ok(result)
-     }
- 
--    fn select_all_and_stall_coroutine_predicates(
--        &mut self,
--    ) -> Result<(), Vec<NextSolverError<'db>>> {
-+    fn select_all_and_stall_coroutine_predicates(&mut self) -> Result<(), Vec<NextSolverError<'db>>> {
-         let errors = self.fulfill_cx.try_evaluate_obligations(self.at.infcx);
          if !errors.is_empty() {
              return Err(errors);
          }
@@ -137,16 +129,6 @@ Rustfmt size:  9886 bytes
          Ok(())
      }
  }
-         Ok(t)
-     }
- 
--    fn try_fold_ty(&mut self, ty: Ty<'db>) -> Result<Ty<'db>, Self::Error> {
-+    fn try_fold_ty(
-+        &mut self,
-+        ty: Ty<'db>,
-+    ) -> Result<Ty<'db>, Self::Error> {
-         let infcx = self.at.infcx;
-         debug_assert_eq!(ty, infcx.shallow_resolve(ty));
          if !ty.has_aliases() {
              return Ok(ty);
          }
@@ -159,16 +141,6 @@ Rustfmt size:  9886 bytes
          if ty.has_escaping_bound_vars() {
              let (ty, mapped_regions, mapped_types, mapped_consts) =
                  BoundVarReplacer::replace_bound_vars(infcx, &mut self.universes, ty);
-         }
-     }
- 
--    fn try_fold_const(&mut self, ct: Const<'db>) -> Result<Const<'db>, Self::Error> {
-+    fn try_fold_const(
-+        &mut self,
-+        ct: Const<'db>,
-+    ) -> Result<Const<'db>, Self::Error> {
-         let infcx = self.at.infcx;
-         debug_assert_eq!(ct, infcx.shallow_resolve_const(ct));
          if !ct.has_aliases() {
              return Ok(ct);
          }
@@ -188,25 +160,3 @@ Rustfmt size:  9886 bytes
  pub(crate) fn deeply_normalize_for_diagnostics<'db, T: TypeFoldable<DbInterner<'db>>>(
      infcx: &InferCtxt<'db>,
      param_env: ParamEnv<'db>,
-         self.at.infcx.interner
-     }
- 
--    fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
-+    fn fold_ty(
-+        &mut self,
-+        ty: Ty<'db>,
-+    ) -> Ty<'db> {
-         let infcx = self.at.infcx;
-         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
-             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(
-         }
-     }
- 
--    fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
-+    fn fold_const(
-+        &mut self,
-+        ct: Const<'db>,
-+    ) -> Const<'db> {
-         let infcx = self.at.infcx;
-         let result: Result<_, Vec<NextSolverError<'db>>> = infcx.commit_if_ok(|_| {
-             deeply_normalize_with_skipped_universes_and_ambiguous_coroutine_goals(

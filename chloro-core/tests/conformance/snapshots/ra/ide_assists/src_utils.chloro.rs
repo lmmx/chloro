@@ -267,10 +267,7 @@ pub(crate) fn vis_offset(node: &SyntaxNode) -> TextSize {
         .unwrap_or_else(|| node.text_range().start())
 }
 
-pub(crate) fn invert_boolean_expression(
-    make: &SyntaxFactory,
-    expr: ast::Expr,
-) -> ast::Expr {
+pub(crate) fn invert_boolean_expression(make: &SyntaxFactory, expr: ast::Expr) -> ast::Expr {
     invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
 }
 
@@ -278,10 +275,7 @@ pub(crate) fn invert_boolean_expression_legacy(expr: ast::Expr) -> ast::Expr {
     invert_special_case_legacy(&expr).unwrap_or_else(|| make::expr_prefix(T![!], expr).into())
 }
 
-fn invert_special_case(
-    make: &SyntaxFactory,
-    expr: &ast::Expr,
-) -> Option<ast::Expr> {
+fn invert_special_case(make: &SyntaxFactory, expr: &ast::Expr) -> Option<ast::Expr> {
     match expr {
         ast::Expr::BinExpr(bin) => {
             let op_kind = bin.op_kind()?;
@@ -400,10 +394,7 @@ pub(crate) fn next_prev() -> impl Iterator<Item = Direction> {
     [Direction::Next, Direction::Prev].into_iter()
 }
 
-pub(crate) fn does_pat_match_variant(
-    pat: &ast::Pat,
-    var: &ast::Pat,
-) -> bool {
+pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
     let first_node_text = |pat: &ast::Pat| pat.syntax().first_child().map(|node| node.text());
     let pat_head = match pat {
         ast::Pat::IdentPat(bind_pat) => match bind_pat.pat() {
@@ -416,17 +407,11 @@ pub(crate) fn does_pat_match_variant(
     pat_head == var_head
 }
 
-pub(crate) fn does_pat_variant_nested_or_literal(
-    ctx: &AssistContext<'_>,
-    pat: &ast::Pat,
-) -> bool {
+pub(crate) fn does_pat_variant_nested_or_literal(ctx: &AssistContext<'_>, pat: &ast::Pat) -> bool {
     check_pat_variant_nested_or_literal_with_depth(ctx, pat, 0)
 }
 
-fn check_pat_variant_from_enum(
-    ctx: &AssistContext<'_>,
-    pat: &ast::Pat,
-) -> bool {
+fn check_pat_variant_from_enum(ctx: &AssistContext<'_>, pat: &ast::Pat) -> bool {
     ctx.sema.type_of_pat(pat).is_none_or(|ty: hir::TypeInfo<'_>| {
         ty.adjusted().as_adt().is_some_and(|adt| matches!(adt, hir::Adt::Enum(_)))
     })
@@ -531,10 +516,7 @@ pub(crate) fn find_struct_impl(
     Some(block)
 }
 
-fn has_any_fn(
-    imp: &ast::Impl,
-    names: &[String],
-) -> bool {
+fn has_any_fn(imp: &ast::Impl, names: &[String]) -> bool {
     if let Some(il) = imp.assoc_item_list() {
         for item in il.assoc_items() {
             if let ast::AssocItem::Fn(f) = item
@@ -549,10 +531,7 @@ fn has_any_fn(
 }
 
 /// Find the end of the `impl` block for the given `ast::Impl`.
-pub(crate) fn find_impl_block_end(
-    impl_def: ast::Impl,
-    buf: &mut String,
-) -> Option<TextSize> {
+pub(crate) fn find_impl_block_end(impl_def: ast::Impl, buf: &mut String) -> Option<TextSize> {
     buf.push('\n');
     let end = impl_def
         .assoc_item_list()
@@ -565,10 +544,7 @@ pub(crate) fn find_impl_block_end(
 
 /// Generates the surrounding `impl Type { <code> }` including type and lifetime
 /// parameters.
-pub(crate) fn generate_impl_text(
-    adt: &ast::Adt,
-    code: &str,
-) -> String {
+pub(crate) fn generate_impl_text(adt: &ast::Adt, code: &str) -> String {
     generate_impl_text_inner(adt, None, true, code)
 }
 
@@ -577,11 +553,7 @@ pub(crate) fn generate_impl_text(
 ///
 /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.
 #[allow(dead_code)]
-pub(crate) fn generate_trait_impl_text(
-    adt: &ast::Adt,
-    trait_text: &str,
-    code: &str,
-) -> String {
+pub(crate) fn generate_trait_impl_text(adt: &ast::Adt, trait_text: &str, code: &str) -> String {
     generate_impl_text_inner(adt, Some(trait_text), true, code)
 }
 
@@ -698,10 +670,7 @@ pub(crate) fn generate_trait_impl(
 /// and lifetime parameters, with `impl`'s generic parameters' bounds kept as-is.
 ///
 /// This is useful for traits like `From<T>`, since `impl<T> From<T> for U<T>` doesn't require `T: From<T>`.
-pub(crate) fn generate_trait_impl_intransitive(
-    adt: &ast::Adt,
-    trait_: ast::Type,
-) -> ast::Impl {
+pub(crate) fn generate_trait_impl_intransitive(adt: &ast::Adt, trait_: ast::Type) -> ast::Impl {
     generate_impl_inner(false, adt, Some(trait_), false, None)
 }
 
@@ -857,10 +826,7 @@ impl<'db> ReferenceConversion<'db> {
         make::ty(&ty)
     }
 
-    pub(crate) fn getter(
-        &self,
-        field_name: String,
-    ) -> ast::Expr {
+    pub(crate) fn getter(&self, field_name: String) -> ast::Expr {
         let expr = make::expr_field(make::ext::expr_self(), &field_name);
         match self.conversion {
             ReferenceConversionType::Copy => expr,
@@ -983,10 +949,7 @@ pub(crate) fn get_methods(items: &ast::AssocItemList) -> Vec<ast::Fn> {
 }
 
 /// Trim(remove leading and trailing whitespace) `initial_range` in `source_file`, return the trimmed range.
-pub(crate) fn trimmed_text_range(
-    source_file: &SourceFile,
-    initial_range: TextRange,
-) -> TextRange {
+pub(crate) fn trimmed_text_range(source_file: &SourceFile, initial_range: TextRange) -> TextRange {
     let mut trimmed_range = initial_range;
     while source_file
         .syntax()
@@ -1139,10 +1102,7 @@ pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree
     tt_stack.pop().expect("parent token tree was closed before it was completed").1
 }
 
-pub(crate) fn cover_let_chain(
-    mut expr: ast::Expr,
-    range: TextRange,
-) -> Option<ast::Expr> {
+pub(crate) fn cover_let_chain(mut expr: ast::Expr, range: TextRange) -> Option<ast::Expr> {
     if !expr.syntax().text_range().contains_range(range) {
         return None;
     }
@@ -1164,10 +1124,7 @@ pub(crate) fn cover_let_chain(
     }
 }
 
-pub fn is_body_const(
-    sema: &Semantics<'_, RootDatabase>,
-    expr: &ast::Expr,
-) -> bool {
+pub fn is_body_const(sema: &Semantics<'_, RootDatabase>, expr: &ast::Expr) -> bool {
     let mut is_const = true;
     preorder_expr(expr, &mut |ev| {
         let expr = match ev {

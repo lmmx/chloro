@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10157 bytes
-Chloro size:   9823 bytes
+Chloro size:   9801 bytes
 Rustfmt size:  10267 bytes
 
 ✗ Outputs DIFFER
@@ -42,11 +42,7 @@ Rustfmt size:  10267 bytes
 -//     let country = Countries::Lesotho;
 -// }
 -// ```
--pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn generate_enum_variant(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let path: ast::Path = ctx.find_node_at_offset()?;
      let parent = PathParent::new(&path)?;
 -
@@ -118,17 +114,6 @@ Rustfmt size:  10267 bytes
          match self {
              PathParent::PathExpr(it) => {
                  let call_expr = ast::CallExpr::cast(it.syntax().parent()?)?;
-     }
- }
- 
--fn name_from_field(make: &SyntaxFactory, field: &ast::RecordExprField) -> ast::Name {
-+fn name_from_field(
-+    make: &SyntaxFactory,
-+    field: &ast::RecordExprField,
-+) -> ast::Name {
-     let text = match field.name_ref() {
-         Some(it) => it.to_string(),
-         None => name_from_field_shorthand(field).unwrap_or("unknown".to_owned()),
      scope: &hir::SemanticsScope<'_>,
  ) -> Option<ast::Type> {
      let ty = ctx.sema.type_of_expr(&arg).map(|it| it.adjusted())?;

@@ -34,10 +34,7 @@ pub(crate) enum CastTy<'db> {
 }
 
 impl<'db> CastTy<'db> {
-    pub(crate) fn from_ty(
-        db: &dyn HirDatabase,
-        t: Ty<'db>,
-    ) -> Option<Self> {
+    pub(crate) fn from_ty(db: &dyn HirDatabase, t: Ty<'db>) -> Option<Self> {
         match t.kind() {
             TyKind::Bool => Some(Self::Int(Int::Bool)),
             TyKind::Char => Some(Self::Int(Int::Char)),
@@ -145,10 +142,7 @@ impl<'db> CastCheck<'db> {
         self.do_check(ctx).map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
     }
 
-    fn do_check(
-        &self,
-        ctx: &mut InferenceContext<'_, 'db>,
-    ) -> Result<(), CastError> {
+    fn do_check(&self, ctx: &mut InferenceContext<'_, 'db>) -> Result<(), CastError> {
         let (t_from, t_cast) =
             match (CastTy::from_ty(ctx.db, self.expr_ty), CastTy::from_ty(ctx.db, self.cast_ty)) {
                 (Some(t_from), Some(t_cast)) => (t_from, t_cast),

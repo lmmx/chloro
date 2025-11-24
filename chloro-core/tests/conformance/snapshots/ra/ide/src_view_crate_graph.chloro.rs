@@ -7,10 +7,7 @@ use ide_db::{
     FxHashMap, RootDatabase,
 };
 
-pub(crate) fn view_crate_graph(
-    db: &RootDatabase,
-    full: bool,
-) -> Result<String, String> {
+pub(crate) fn view_crate_graph(db: &RootDatabase, full: bool) -> Result<String, String> {
     let all_crates = db.all_crates();
     let crates_to_render = all_crates
         .iter()
@@ -56,17 +53,11 @@ impl<'a> dot::GraphWalk<'a, Crate, Edge<'a>> for DotCrateGraph<'_> {
             .collect()
     }
 
-    fn source(
-        &'a self,
-        edge: &Edge<'a>,
-    ) -> Crate {
+    fn source(&'a self, edge: &Edge<'a>) -> Crate {
         edge.0
     }
 
-    fn target(
-        &'a self,
-        edge: &Edge<'a>,
-    ) -> Crate {
+    fn target(&'a self, edge: &Edge<'a>) -> Crate {
         edge.1.crate_id
     }
 }
@@ -76,25 +67,16 @@ impl<'a> dot::Labeller<'a, Crate, Edge<'a>> for DotCrateGraph<'_> {
         Id::new("rust_analyzer_crate_graph").unwrap()
     }
 
-    fn node_id(
-        &'a self,
-        n: &Crate,
-    ) -> Id<'a> {
+    fn node_id(&'a self, n: &Crate) -> Id<'a> {
         let id = n.as_id().index();
         Id::new(format!("_{id:?}")).unwrap()
     }
 
-    fn node_shape(
-        &'a self,
-        _node: &Crate,
-    ) -> Option<LabelText<'a>> {
+    fn node_shape(&'a self, _node: &Crate) -> Option<LabelText<'a>> {
         Some(LabelText::LabelStr("box".into()))
     }
 
-    fn node_label(
-        &'a self,
-        n: &Crate,
-    ) -> LabelText<'a> {
+    fn node_label(&'a self, n: &Crate) -> LabelText<'a> {
         let name = self.crates_to_render[n]
             .1
             .display_name

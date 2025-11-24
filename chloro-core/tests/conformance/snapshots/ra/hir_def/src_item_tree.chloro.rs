@@ -76,10 +76,7 @@ impl RawVisibilityId {
 }
 
 impl fmt::Debug for RawVisibilityId {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut f = f.debug_tuple("RawVisibilityId");
         match *self {
             Self::PUB => f.field(&"pub"),
@@ -92,10 +89,7 @@ impl fmt::Debug for RawVisibilityId {
 }
 
 #[salsa_macros::tracked(returns(deref))]
-pub(crate) fn file_item_tree_query(
-    db: &dyn DefDatabase,
-    file_id: HirFileId,
-) -> Arc<ItemTree> {
+pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> Arc<ItemTree> {
     let _p = tracing::info_span!("file_item_tree_query", ?file_id).entered();
     static EMPTY: OnceLock<Arc<ItemTree>> = OnceLock::new();
     let ctx = lower::Ctx::new(db, file_id);
@@ -151,10 +145,7 @@ pub(crate) fn file_item_tree_query(
 }
 
 #[salsa_macros::tracked(returns(deref))]
-pub(crate) fn block_item_tree_query(
-    db: &dyn DefDatabase,
-    block: BlockId,
-) -> Arc<ItemTree> {
+pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc<ItemTree> {
     let _p = tracing::info_span!("block_item_tree_query", ?block).entered();
     static EMPTY: OnceLock<Arc<ItemTree>> = OnceLock::new();
     let loc = block.lookup(db);
@@ -211,18 +202,11 @@ impl ItemTree {
     }
 
     /// Returns the inner attributes of the source file.
-    pub(crate) fn top_level_attrs(
-        &self,
-        db: &dyn DefDatabase,
-        krate: Crate,
-    ) -> Attrs {
+    pub(crate) fn top_level_attrs(&self, db: &dyn DefDatabase, krate: Crate) -> Attrs {
         Attrs::expand_cfg_attr(db, krate, self.top_attrs.clone())
     }
 
-    pub(crate) fn raw_attrs(
-        &self,
-        of: FileAstId<ast::Item>,
-    ) -> &RawAttrs {
+    pub(crate) fn raw_attrs(&self, of: FileAstId<ast::Item>) -> &RawAttrs {
         self.attrs.get(&of).unwrap_or(&RawAttrs::EMPTY)
     }
 
@@ -262,11 +246,7 @@ impl ItemTree {
         ItemTreeDataStats { traits, impls, mods, macro_calls, macro_rules }
     }
 
-    pub fn pretty_print(
-        &self,
-        db: &dyn DefDatabase,
-        edition: Edition,
-    ) -> String {
+    pub fn pretty_print(&self, db: &dyn DefDatabase, edition: Edition) -> String {
         pretty::print_item_tree(db, self, edition)
     }
 
@@ -338,17 +318,11 @@ pub struct TreeId {
 }
 
 impl TreeId {
-    pub(crate) fn new(
-        file: HirFileId,
-        block: Option<BlockId>,
-    ) -> Self {
+    pub(crate) fn new(file: HirFileId, block: Option<BlockId>) -> Self {
         Self { file, block }
     }
 
-    pub(crate) fn item_tree<'db>(
-        &self,
-        db: &'db dyn DefDatabase,
-    ) -> &'db ItemTree {
+    pub(crate) fn item_tree<'db>(&self, db: &'db dyn DefDatabase) -> &'db ItemTree {
         match self.block {
             Some(block) => block_item_tree_query(db, block),
             None => file_item_tree_query(db, self.file),
@@ -414,10 +388,7 @@ macro_rules! mod_items {
 impl Index<RawVisibilityId> for ItemTree {
     type Output = RawVisibility;
 
-    fn index(
-        &self,
-        index: RawVisibilityId,
-    ) -> &Self::Output {
+    fn index(&self, index: RawVisibilityId) -> &Self::Output {
         static VIS_PUB: RawVisibility = RawVisibility::Public;
         static VIS_PRIV_IMPLICIT: RawVisibility =
             RawVisibility::PubSelf(VisibilityExplicitness::Implicit);
@@ -454,10 +425,7 @@ pub enum ImportAlias {
 }
 
 impl ImportAlias {
-    pub fn display(
-        &self,
-        edition: Edition,
-    ) -> impl fmt::Display + '_ {
+    pub fn display(&self, edition: Edition) -> impl fmt::Display + '_ {
         ImportAliasDisplay { value: self, edition }
     }
 }
@@ -468,10 +436,7 @@ struct ImportAliasDisplay<'a> {
 }
 
 impl fmt::Display for ImportAliasDisplay<'_> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.value {
             ImportAlias::Underscore => f.write_str("_"),
             ImportAlias::Alias(name) => fmt::Display::fmt(&name.display_no_db(self.edition), f),

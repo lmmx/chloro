@@ -58,11 +58,7 @@ pub(crate) enum Target {
 }
 
 impl CargoOptions {
-    pub(crate) fn apply_on_command(
-        &self,
-        cmd: &mut Command,
-        ws_target_dir: Option<&Utf8Path>,
-    ) {
+    pub(crate) fn apply_on_command(&self, cmd: &mut Command, ws_target_dir: Option<&Utf8Path>) {
         for target in &self.target_tuples {
             cmd.args(["--target", target.as_str()]);
         }
@@ -119,10 +115,7 @@ impl FlycheckConfig {
 }
 
 impl fmt::Display for FlycheckConfig {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             FlycheckConfig::CargoCommand { command, .. } => write!(f, "cargo {command}"),
             FlycheckConfig::CustomCommand { command, args, .. } => {
@@ -185,10 +178,7 @@ impl FlycheckHandle {
     }
 
     /// Schedule a re-start of the cargo check worker to do a workspace wide check.
-    pub(crate) fn restart_workspace(
-        &self,
-        saved_file: Option<AbsPathBuf>,
-    ) {
+    pub(crate) fn restart_workspace(&self, saved_file: Option<AbsPathBuf>) {
         let generation = self.generation.fetch_add(1, Ordering::Relaxed) + 1;
         self.sender
             .send(StateChange::Restart {
@@ -267,10 +257,7 @@ pub(crate) enum FlycheckMessage {
 }
 
 impl fmt::Debug for FlycheckMessage {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             FlycheckMessage::AddDiagnostic {
                 id,
@@ -393,17 +380,11 @@ impl FlycheckActor {
         }
     }
 
-    fn report_progress(
-        &self,
-        progress: Progress,
-    ) {
+    fn report_progress(&self, progress: Progress) {
         self.send(FlycheckMessage::Progress { id: self.id, progress });
     }
 
-    fn next_event(
-        &self,
-        inbox: &Receiver<StateChange>,
-    ) -> Option<Event> {
+    fn next_event(&self, inbox: &Receiver<StateChange>) -> Option<Event> {
         let Some(command_receiver) = &self.command_receiver else {
             return inbox.recv().ok().map(Event::RequestStateChange);
         };
@@ -414,10 +395,7 @@ impl FlycheckActor {
         }
     }
 
-    fn run(
-        mut self,
-        inbox: Receiver<StateChange>,
-    ) {
+    fn run(mut self, inbox: Receiver<StateChange>) {
         'event: while let Some(event) = self.next_event(&inbox) {
             match event {
                 Event::RequestStateChange(StateChange::Cancel) => {
@@ -762,10 +740,7 @@ impl FlycheckActor {
     }
 
     #[track_caller]
-    fn send(
-        &self,
-        check_task: FlycheckMessage,
-    ) {
+    fn send(&self, check_task: FlycheckMessage) {
         self.sender.send(check_task).unwrap();
     }
 }
@@ -782,11 +757,7 @@ enum CargoCheckMessage {
 struct CargoCheckParser;
 
 impl CargoParser<CargoCheckMessage> for CargoCheckParser {
-    fn from_line(
-        &self,
-        line: &str,
-        error: &mut String,
-    ) -> Option<CargoCheckMessage> {
+    fn from_line(&self, line: &str, error: &mut String) -> Option<CargoCheckMessage> {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
         if let Ok(message) = JsonMessage::deserialize(&mut deserializer) {

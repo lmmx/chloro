@@ -56,10 +56,7 @@ use crate::{
     try_default,
 };
 
-pub(crate) fn handle_workspace_reload(
-    state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<()> {
+pub(crate) fn handle_workspace_reload(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     state.proc_macro_clients = Arc::from_iter([]);
     state.build_deps_changed = false;
     let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
@@ -67,10 +64,7 @@ pub(crate) fn handle_workspace_reload(
     Ok(())
 }
 
-pub(crate) fn handle_proc_macros_rebuild(
-    state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<()> {
+pub(crate) fn handle_proc_macros_rebuild(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
     state.proc_macro_clients = Arc::from_iter([]);
     state.build_deps_changed = false;
     state.fetch_build_data_queue.request_op("rebuild proc macros request".to_owned(), ());
@@ -123,10 +117,7 @@ pub(crate) fn handle_analyzer_status(
     Ok(buf)
 }
 
-pub(crate) fn handle_memory_usage(
-    _state: &mut GlobalState,
-    _: (),
-) -> anyhow::Result<String> {
+pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Result<String> {
     let _p = tracing::info_span!("handle_memory_usage").entered();
     #[cfg(not(feature = "dhat"))]
     {
@@ -232,10 +223,7 @@ fn all_test_targets(cargo: &CargoWorkspace) -> impl Iterator<Item = TestTarget> 
     })
 }
 
-fn find_test_target(
-    namespace_root: &str,
-    cargo: &CargoWorkspace,
-) -> Option<TestTarget> {
+fn find_test_target(namespace_root: &str, cargo: &CargoWorkspace) -> Option<TestTarget> {
     all_test_targets(cargo).find(|t| namespace_root == t.target.replace('-', "_"))
 }
 
@@ -1049,10 +1037,7 @@ pub(crate) fn handle_runnables(
     Ok(res)
 }
 
-fn should_skip_for_offset(
-    runnable: &Runnable,
-    offset: Option<TextSize>,
-) -> bool {
+fn should_skip_for_offset(runnable: &Runnable, offset: Option<TextSize>) -> bool {
     match offset {
         None => false,
         _ if matches!(&runnable.kind, RunnableKind::TestMod { .. }) => false,
@@ -2015,10 +2000,7 @@ pub(crate) fn handle_view_recursive_memory_layout(
     }))
 }
 
-fn to_command_link(
-    command: lsp_types::Command,
-    tooltip: String,
-) -> lsp_ext::CommandLink {
+fn to_command_link(command: lsp_types::Command, tooltip: String) -> lsp_ext::CommandLink {
     lsp_ext::CommandLink { tooltip: Some(tooltip), command }
 }
 
@@ -2183,10 +2165,7 @@ fn prepare_hover_actions(
         .collect()
 }
 
-fn should_skip_target(
-    runnable: &Runnable,
-    cargo_spec: Option<&TargetSpec>,
-) -> bool {
+fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {
     match runnable.kind {
         RunnableKind::Bin => {
             // Do not suggest binary run on other target than binary
@@ -2458,10 +2437,7 @@ fn to_url(path: VfsPath) -> Option<Url> {
     Url::from_file_path(str_path).ok()
 }
 
-fn resource_ops_supported(
-    config: &Config,
-    kind: ResourceOperationKind,
-) -> anyhow::Result<()> {
+fn resource_ops_supported(config: &Config, kind: ResourceOperationKind) -> anyhow::Result<()> {
     if !matches!(config.workspace_edit_resource_operations(), Some(resops) if resops.contains(&kind))
     {
         return Err(LspError::new(
@@ -2488,10 +2464,7 @@ fn resolve_resource_op(op: &ResourceOp) -> ResourceOperationKind {
     }
 }
 
-pub(crate) fn diff(
-    left: &str,
-    right: &str,
-) -> TextEdit {
+pub(crate) fn diff(left: &str, right: &str) -> TextEdit {
     use dissimilar::Chunk;
     let chunks = dissimilar::diff(left, right);
     let mut builder = TextEdit::builder();

@@ -103,28 +103,18 @@ impl Clone for RootDatabase {
 }
 
 impl fmt::Debug for RootDatabase {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("RootDatabase").finish()
     }
 }
 
 #[salsa_macros::db]
 impl SourceDatabase for RootDatabase {
-    fn file_text(
-        &self,
-        file_id: vfs::FileId,
-    ) -> FileText {
+    fn file_text(&self, file_id: vfs::FileId) -> FileText {
         self.files.file_text(file_id)
     }
 
-    fn set_file_text(
-        &mut self,
-        file_id: vfs::FileId,
-        text: &str,
-    ) {
+    fn set_file_text(&mut self, file_id: vfs::FileId, text: &str) {
         let files = Arc::clone(&self.files);
         files.set_file_text(self, file_id, text);
     }
@@ -140,10 +130,7 @@ impl SourceDatabase for RootDatabase {
     }
 
     /// Source root of the file.
-    fn source_root(
-        &self,
-        source_root_id: SourceRootId,
-    ) -> SourceRootInput {
+    fn source_root(&self, source_root_id: SourceRootId) -> SourceRootInput {
         self.files.source_root(source_root_id)
     }
 
@@ -157,10 +144,7 @@ impl SourceDatabase for RootDatabase {
         files.set_source_root_with_durability(self, source_root_id, source_root, durability);
     }
 
-    fn file_source_root(
-        &self,
-        id: vfs::FileId,
-    ) -> FileSourceRootInput {
+    fn file_source_root(&self, id: vfs::FileId) -> FileSourceRootInput {
         self.files.file_source_root(id)
     }
 
@@ -216,10 +200,7 @@ impl RootDatabase {
         self.set_expand_proc_attr_macros_with_durability(true, Durability::HIGH);
     }
 
-    pub fn update_base_query_lru_capacities(
-        &mut self,
-        _lru_capacity: Option<u16>,
-    ) {
+    pub fn update_base_query_lru_capacities(&mut self, _lru_capacity: Option<u16>) {
         // let lru_capacity = lru_capacity.unwrap_or(base_db::DEFAULT_PARSE_LRU_CAP);
         // base_db::FileTextQuery.in_db_mut(self).set_lru_capacity(DEFAULT_FILE_TEXT_LRU_CAP);
         // base_db::ParseQuery.in_db_mut(self).set_lru_capacity(lru_capacity);
@@ -229,10 +210,7 @@ impl RootDatabase {
         // hir::db::BodyWithSourceMapQuery.in_db_mut(self).set_lru_capacity(2048);
     }
 
-    pub fn update_lru_capacities(
-        &mut self,
-        _lru_capacities: &FxHashMap<Box<str>, u16>,
-    ) {
+    pub fn update_lru_capacities(&mut self, _lru_capacities: &FxHashMap<Box<str>, u16>) {
         // FIXME(salsa-transition): bring this back; allow changing LRU settings at runtime.
         // use hir::db as hir_db;
         // base_db::FileTextQuery.in_db_mut(self).set_lru_capacity(DEFAULT_FILE_TEXT_LRU_CAP);
@@ -261,16 +239,10 @@ impl RootDatabase {
 #[query_group::query_group]
 pub trait LineIndexDatabase {
     #[salsa::invoke_interned(line_index)]
-    fn line_index(
-        &self,
-        file_id: FileId,
-    ) -> Arc<LineIndex>;
+    fn line_index(&self, file_id: FileId) -> Arc<LineIndex>;
 }
 
-fn line_index(
-    db: &dyn LineIndexDatabase,
-    file_id: FileId,
-) -> Arc<LineIndex> {
+fn line_index(db: &dyn LineIndexDatabase, file_id: FileId) -> Arc<LineIndex> {
     let text = db.file_text(file_id).text(db);
     Arc::new(LineIndex::new(text))
 }
@@ -366,10 +338,7 @@ impl<'a> Ranker<'a> {
 
     /// A utility function that ranks a token again a given kind and text, returning a number that
     /// represents how close the token is to the given kind and text.
-    pub fn rank_token(
-        &self,
-        tok: &syntax::SyntaxToken,
-    ) -> usize {
+    pub fn rank_token(&self, tok: &syntax::SyntaxToken) -> usize {
         let tok_kind = tok.kind();
         let exact_same_kind = tok_kind == self.kind;
         let both_idents = exact_same_kind || (tok_kind.is_any_identifier() && self.ident_kind);

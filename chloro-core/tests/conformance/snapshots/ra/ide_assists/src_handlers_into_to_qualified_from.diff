@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5102 bytes
-Chloro size:   4593 bytes
+Chloro size:   4582 bytes
 Rustfmt size:  5128 bytes
 
 ✗ Outputs DIFFER
@@ -47,14 +47,9 @@ Rustfmt size:  5128 bytes
 -//     let b: B = B::from(a);
 -// }
 -// ```
--pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn into_to_qualified_from(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let nameref = method_call.name_ref()?;
-     let receiver = method_call.receiver()?;
              return None;
          }
  

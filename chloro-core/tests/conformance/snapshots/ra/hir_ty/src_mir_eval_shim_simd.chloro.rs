@@ -21,10 +21,7 @@ macro_rules! not_supported {
 }
 
 impl<'db> Evaluator<'db> {
-    fn detect_simd_ty(
-        &self,
-        ty: Ty<'db>,
-    ) -> Result<'db, (usize, Ty<'db>)> {
+    fn detect_simd_ty(&self, ty: Ty<'db>) -> Result<'db, (usize, Ty<'db>)> {
         match ty.kind() {
             TyKind::Adt(adt_def, subst) => {
                 let len = match subst.as_slice().get(1).and_then(|it| it.konst()) {

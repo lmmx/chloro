@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8029 bytes
-Chloro size:   8124 bytes
+Chloro size:   8032 bytes
 Rustfmt size:  8029 bytes
 
 ✗ Outputs DIFFER
@@ -17,17 +17,6 @@ Rustfmt size:  8029 bytes
  /// Different signed int types.
  #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub enum BuiltinInt {
- }
- 
- impl fmt::Display for BuiltinType {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             BuiltinType::Char => f.write_str("char"),
-             BuiltinType::Bool => f.write_str("bool"),
          };
          Some(res)
      }
@@ -42,36 +31,3 @@ Rustfmt size:  8029 bytes
      pub fn from_suffix_sym(suffix: &Symbol) -> Option<BuiltinUint> {
          let res = match suffix {
              s if *s == sym::usize => Self::Usize,
- }
- 
- impl fmt::Display for BuiltinInt {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         f.write_str(match self {
-             BuiltinInt::Isize => "isize",
-             BuiltinInt::I8 => "i8",
- }
- 
- impl fmt::Display for BuiltinUint {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         f.write_str(match self {
-             BuiltinUint::Usize => "usize",
-             BuiltinUint::U8 => "u8",
- }
- 
- impl fmt::Display for BuiltinFloat {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         f.write_str(match self {
-             BuiltinFloat::F16 => "f16",
-             BuiltinFloat::F32 => "f32",

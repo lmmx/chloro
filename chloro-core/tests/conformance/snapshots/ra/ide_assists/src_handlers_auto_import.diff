@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   43211 bytes
+Chloro size:   43169 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -104,11 +104,7 @@ Rustfmt size:  46663 bytes
 -// }
 -// # pub mod std { pub mod collections { pub struct HashMap { } } }
 -// ```
--pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn auto_import(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let cfg = ctx.config.import_path_config();
 -
      let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
@@ -181,16 +177,6 @@ Rustfmt size:  46663 bytes
                  let type_ = if is_method { "method" } else { "item" };
                  let group_label = GroupLabel(format!(
                      "Import a trait for {} {} by alias",
-     Some(())
- }
- 
--pub(super) fn find_importable_node<'a: 'db, 'db>(
--    ctx: &'a AssistContext<'db>,
--) -> Option<(ImportAssets<'db>, SyntaxNode, Option<Type<'db>>)> {
-+pub(super) fn find_importable_node<'a: 'db, 'db>(ctx: &'a AssistContext<'db>) -> Option<(ImportAssets<'db>, SyntaxNode, Option<Type<'db>>)> {
-     // Deduplicate this with the `expected_type_and_name` logic for completions
-     let expected = |expr_or_pat: Either<ast::Expr, ast::Pat>| match expr_or_pat {
-         Either::Left(expr) => {
              }
          }
      };
@@ -264,13 +250,6 @@ Rustfmt size:  46663 bytes
      score
  }
  
- /// A heuristic that gives a higher score to modules that are more separated.
--fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Module) -> usize {
-+fn module_distance_heuristic(
-+    db: &dyn HirDatabase,
-+    current: &Module,
-+    item: &Module,
-+) -> usize {
      // get the path starting from the item to the respective crate roots
      let mut current_path = current.path_to_root(db);
      let mut item_path = item.path_to_root(db);
@@ -314,11 +293,7 @@ Rustfmt size:  46663 bytes
          TEST_CONFIG,
      };
 -
--    fn check_auto_import_order(before: &str, order: &[&str]) {
-+    fn check_auto_import_order(
-+        before: &str,
-+        order: &[&str],
-+    ) {
+     fn check_auto_import_order(before: &str, order: &[&str]) {
          let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
 -        let frange = FileRange {
 -            file_id,

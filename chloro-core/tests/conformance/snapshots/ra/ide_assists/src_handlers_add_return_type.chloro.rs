@@ -3,10 +3,7 @@ use syntax::{AstNode, SyntaxKind, SyntaxToken, TextRange, TextSize, ast, match_a
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn add_return_type(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (fn_type, tail_expr, builder_edit_pos) = extract_tail(ctx)?;
     let module = ctx.sema.scope(tail_expr.syntax())?.module();
     let ty = ctx.sema.type_of_expr(&peel_blocks(tail_expr.clone()))?.adjusted();

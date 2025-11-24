@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18809 bytes
-Chloro size:   18554 bytes
+Chloro size:   18543 bytes
 Rustfmt size:  18809 bytes
 
 ✗ Outputs DIFFER
@@ -90,17 +90,6 @@ Rustfmt size:  18809 bytes
      if first != last {
          Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
      } else {
-     }
- }
- 
--fn eq_visibility(vis0: Option<ast::Visibility>, vis1: Option<ast::Visibility>) -> bool {
-+fn eq_visibility(
-+    vis0: Option<ast::Visibility>,
-+    vis1: Option<ast::Visibility>,
-+) -> bool {
-     match (vis0, vis1) {
-         (None, None) => true,
-         (Some(vis0), Some(vis1)) => vis_eq(&vis0, &vis1),
      visited: &mut FxHashSet<ast::Comment>,
  ) -> Option<TextRange> {
      visited.insert(first.clone());

@@ -141,10 +141,7 @@ enum Variant {
 }
 
 impl Variant {
-    fn fields(
-        self,
-        ctx: &CompletionContext<'_>,
-    ) -> Option<Vec<hir::Field>> {
+    fn fields(self, ctx: &CompletionContext<'_>) -> Option<Vec<hir::Field>> {
         let fields = match self {
             Variant::Struct(it) => it.fields(ctx.db),
             Variant::EnumVariant(it) => it.fields(ctx.db),
@@ -156,10 +153,7 @@ impl Variant {
         if !fields_omitted { Some(visible_fields) } else { None }
     }
 
-    fn kind(
-        self,
-        db: &dyn HirDatabase,
-    ) -> StructKind {
+    fn kind(self, db: &dyn HirDatabase) -> StructKind {
         match self {
             Variant::Struct(it) => it.kind(db),
             Variant::EnumVariant(it) => it.kind(db),
@@ -173,30 +167,21 @@ impl Variant {
         }
     }
 
-    fn docs(
-        self,
-        db: &dyn HirDatabase,
-    ) -> Option<Documentation> {
+    fn docs(self, db: &dyn HirDatabase) -> Option<Documentation> {
         match self {
             Variant::Struct(it) => it.docs(db),
             Variant::EnumVariant(it) => it.docs(db),
         }
     }
 
-    fn is_deprecated(
-        self,
-        ctx: &RenderContext<'_>,
-    ) -> bool {
+    fn is_deprecated(self, ctx: &RenderContext<'_>) -> bool {
         match self {
             Variant::Struct(it) => ctx.is_deprecated(it),
             Variant::EnumVariant(it) => ctx.is_deprecated(it),
         }
     }
 
-    fn ty(
-        self,
-        db: &dyn HirDatabase,
-    ) -> hir::Type<'_> {
+    fn ty(self, db: &dyn HirDatabase) -> hir::Type<'_> {
         match self {
             Variant::Struct(it) => it.ty(db),
             Variant::EnumVariant(it) => it.parent_enum(db).ty(db),

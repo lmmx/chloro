@@ -26,10 +26,7 @@ use crate::{
     utils::convert_param_list_to_arg_list,
 };
 
-pub(crate) fn generate_delegate_trait(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if !ctx.config.code_action_grouping {
         return None;
     }
@@ -103,11 +100,7 @@ enum Delegee {
 }
 
 impl Delegee {
-    fn signature(
-        &self,
-        db: &dyn HirDatabase,
-        edition: Edition,
-    ) -> String {
+    fn signature(&self, db: &dyn HirDatabase, edition: Edition) -> String {
         let mut s = String::new();
         let (Delegee::Bound(it) | Delegee::Impls(it, _)) = self;
         for m in it.module(db).path_to_root(db).iter().rev() {
@@ -132,12 +125,7 @@ impl Struct {
         Some(Struct { name, strukt: s })
     }
 
-    pub(crate) fn delegate(
-        &self,
-        field: Field,
-        acc: &mut Assists,
-        ctx: &AssistContext<'_>,
-    ) {
+    pub(crate) fn delegate(&self, field: Field, acc: &mut Assists, ctx: &AssistContext<'_>) {
         let db = ctx.db();
         for (index, delegee) in field.impls.iter().enumerate() {
             let trait_ = match delegee {
@@ -410,11 +398,7 @@ fn remove_instantiated_params(
     }
 }
 
-fn remove_useless_where_clauses(
-    trait_ty: &ast::Type,
-    self_ty: &ast::Type,
-    wc: ast::WhereClause,
-) {
+fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: ast::WhereClause) {
     let live_generics = [trait_ty, self_ty]
         .into_iter()
         .flat_map(|ty| ty.generic_arg_list())
@@ -505,10 +489,7 @@ where
     N::cast(transform.apply(item.syntax()))
 }
 
-fn has_self_type(
-    trait_: hir::Trait,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn has_self_type(trait_: hir::Trait, ctx: &AssistContext<'_>) -> Option<()> {
     let trait_source = ctx.sema.source(trait_)?.value;
     trait_source
         .syntax()
@@ -595,10 +576,7 @@ fn process_assoc_item(
     }
 }
 
-fn const_assoc_item(
-    item: syntax::ast::Const,
-    qual_path_ty: ast::Path,
-) -> Option<AssocItem> {
+fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     // We want rhs of the const assignment to be a qualified path
     // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
@@ -691,10 +669,7 @@ fn func_assoc_item(
     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
 }
 
-fn ty_assoc_item(
-    item: syntax::ast::TypeAlias,
-    qual_path_ty: Path,
-) -> Option<AssocItem> {
+fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let ty = make::ty_path(qualified_path);
@@ -711,10 +686,7 @@ fn ty_assoc_item(
     Some(AssocItem::TypeAlias(alias))
 }
 
-fn qualified_path(
-    qual_path_ty: ast::Path,
-    path_expr_seg: ast::Path,
-) -> ast::Path {
+fn qualified_path(qual_path_ty: ast::Path, path_expr_seg: ast::Path) -> ast::Path {
     make::path_from_text(&format!("{qual_path_ty}::{path_expr_seg}"))
 }
 

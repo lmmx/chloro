@@ -5,10 +5,7 @@ use syntax::{AstNode, SyntaxKind, SyntaxNode, SyntaxNodePtr, SyntaxToken, T, ast
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};
 
-pub(crate) fn need_mut(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::NeedMut,
-) -> Option<Diagnostic> {
+pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option<Diagnostic> {
     let root = ctx.sema.db.parse_or_expand(d.span.file_id);
     let node = d.span.value.to_node(&root);
     let mut span = d.span;
@@ -58,10 +55,7 @@ pub(crate) fn need_mut(
     )
 }
 
-pub(crate) fn unused_mut(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::UnusedMut,
-) -> Option<Diagnostic> {
+pub(crate) fn unused_mut(ctx: &DiagnosticsContext<'_>, d: &hir::UnusedMut) -> Option<Diagnostic> {
     let ast = d.local.primary_source(ctx.sema.db).syntax_ptr();
     let fixes = (|| {
         let file_id = ast.file_id.file_id()?;
@@ -98,10 +92,7 @@ pub(crate) fn unused_mut(
     )
 }
 
-pub(super) fn token(
-    parent: &SyntaxNode,
-    kind: SyntaxKind,
-) -> Option<SyntaxToken> {
+pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
     parent.children_with_tokens().filter_map(|it| it.into_token()).find(|it| it.kind() == kind)
 }
 

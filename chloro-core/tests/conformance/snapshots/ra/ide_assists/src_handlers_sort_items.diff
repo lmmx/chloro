@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13045 bytes
-Chloro size:   11810 bytes
+Chloro size:   11788 bytes
 Rustfmt size:  13263 bytes
 
 ✗ Outputs DIFFER
@@ -93,11 +93,7 @@ Rustfmt size:  13263 bytes
 -//   Cat { name: String, weight: f64 },
 -// }
 -// ```
--pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn sort_items(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if ctx.has_empty_selection() {
          cov_mark::hit!(not_applicable_if_no_selection);
          return None;
@@ -190,11 +186,7 @@ Rustfmt size:  13263 bytes
 +    acc.add_rewrite("Sort fields alphabetically", fields, sorted, record_field_list.syntax())
  }
  
--fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
-+fn add_sort_variants_assist(
-+    acc: &mut Assists,
-+    variant_list: ast::VariantList,
-+) -> Option<()> {
+ fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
      let variants: Vec<_> = variant_list.variants().collect();
      let sorted = sort_by_name(&variants);
 -

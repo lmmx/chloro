@@ -16,10 +16,7 @@ impl RootDatabase {
         self.synthetic_write(Durability::LOW);
     }
 
-    pub fn apply_change(
-        &mut self,
-        change: ChangeWithProcMacros,
-    ) {
+    pub fn apply_change(&mut self, change: ChangeWithProcMacros) {
         let _p = tracing::info_span!("RootDatabase::apply_change").entered();
         self.request_cancellation();
         tracing::trace!("apply_change {:?}", change);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17858 bytes
-Chloro size:   18069 bytes
+Chloro size:   17754 bytes
 Rustfmt size:  18799 bytes
 
 ✗ Outputs DIFFER
@@ -23,17 +23,6 @@ Rustfmt size:  18799 bytes
  use super::{
      AggregateKind, BasicBlockId, BorrowKind, LocalId, MirBody, MutBorrowKind, Operand, OperandKind,
      Place, Rvalue, UnOp,
- }
- 
- impl<'db> MirBody<'db> {
--    pub fn pretty_print(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> String {
-+    pub fn pretty_print(
-+        &self,
-+        db: &'db dyn HirDatabase,
-+        display_target: DisplayTarget,
-+    ) -> String {
-         let hir_body = db.body(self.owner);
-         let mut ctx = MirPrettyCtx::new(self, &hir_body, db, display_target);
          ctx.for_body(|this| match ctx.body.owner {
              hir_def::DefWithBodyId::FunctionId(id) => {
                  let data = db.function_signature(id);
@@ -60,24 +49,13 @@ Rustfmt size:  18799 bytes
  
 -    // String with lines is rendered poorly in `dbg` macros, which I use very much, so this
 -    // function exists to solve that.
--    pub fn dbg(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> impl Debug {
-+    pub fn dbg(
-+        &self,
-+        db: &'db dyn HirDatabase,
-+        display_target: DisplayTarget,
-+    ) -> impl Debug {
+     pub fn dbg(&self, db: &'db dyn HirDatabase, display_target: DisplayTarget) -> impl Debug {
          struct StringDbg(String);
          impl Debug for StringDbg {
-             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
- }
  
  impl Write for MirPrettyCtx<'_, '_> {
--    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+     fn write_str(&mut self, s: &str) -> std::fmt::Result {
 -        let mut it = s.split('\n'); // note: `.lines()` is wrong here
-+    fn write_str(
-+        &mut self,
-+        s: &str,
-+    ) -> std::fmt::Result {
 +        let mut it = s.split('\n');
 +        // note: `.lines()` is wrong here
          self.write(it.next().unwrap_or_default());
@@ -96,50 +74,6 @@ Rustfmt size:  18799 bytes
              }
          }
      }
- }
- 
- impl<'a, 'db> MirPrettyCtx<'a, 'db> {
--    fn for_body(&mut self, name: impl FnOnce(&mut MirPrettyCtx<'_, 'db>)) {
-+    fn for_body(
-+        &mut self,
-+        name: impl FnOnce(&mut MirPrettyCtx<'_, 'db>),
-+    ) {
-         name(self);
-         self.with_block(|this| {
-             this.locals();
-         }
-     }
- 
--    fn for_closure(&mut self, closure: InternedClosureId) {
-+    fn for_closure(
-+        &mut self,
-+        closure: InternedClosureId,
-+    ) {
-         let body = match self.db.mir_body_for_closure(closure) {
-             Ok(it) => it,
-             Err(e) => {
-         self.indent = ctx.indent;
-     }
- 
--    fn with_block(&mut self, f: impl FnOnce(&mut MirPrettyCtx<'_, 'db>)) {
-+    fn with_block(
-+        &mut self,
-+        f: impl FnOnce(&mut MirPrettyCtx<'_, 'db>),
-+    ) {
-         self.indent += "    ";
-         wln!(self, "{{");
-         f(self);
-         self.result += &self.indent;
-     }
- 
--    fn write(&mut self, line: &str) {
-+    fn write(
-+        &mut self,
-+        line: &str,
-+    ) {
-         self.result += line;
-     }
- 
              wln!(
                  self,
                  "let {}: {};",
@@ -149,27 +83,6 @@ Rustfmt size:  18799 bytes
                  self.hir_display(&local.ty)
              );
          }
-     }
- 
--    fn local_name(&self, local: LocalId<'db>) -> LocalName<'db> {
-+    fn local_name(
-+        &self,
-+        local: LocalId<'db>,
-+    ) -> LocalName<'db> {
-         match self.local_to_binding.get(local) {
-             Some(b) => LocalName::Binding(self.hir_body[*b].name.clone(), local),
-             None => LocalName::Unknown(local),
-         }
-     }
- 
--    fn basic_block_id(&self, basic_block_id: BasicBlockId<'db>) -> String {
-+    fn basic_block_id(
-+        &self,
-+        basic_block_id: BasicBlockId<'db>,
-+    ) -> String {
-         format!("'bb{}", u32::from(basic_block_id.into_raw()))
-     }
- 
                              wln!(
                                  this,
                                  "StorageDead({})",
@@ -202,17 +115,6 @@ Rustfmt size:  18799 bytes
                              w!(this, "Call ");
                              this.with_block(|this| {
                                  w!(this, "func: ");
-         }
-     }
- 
--    fn place(&mut self, p: &Place<'db>) {
-+    fn place(
-+        &mut self,
-+        p: &Place<'db>,
-+    ) {
-         fn f<'db>(
-             this: &mut MirPrettyCtx<'_, 'db>,
-             local: LocalId<'db>,
          ) {
              let Some((last, head)) = projections.split_last() else {
                  // no projection
@@ -258,25 +160,7 @@ Rustfmt size:  18799 bytes
 +        f(self, p.local, p.projection.lookup(&self.body.projection_store));
      }
  
--    fn operand(&mut self, r: &Operand<'db>) {
-+    fn operand(
-+        &mut self,
-+        r: &Operand<'db>,
-+    ) {
-         match &r.kind {
-             OperandKind::Copy(p) | OperandKind::Move(p) => {
-                 // MIR at the time of writing doesn't have difference between move and copy, so we show them
-         }
-     }
- 
--    fn rvalue(&mut self, r: &Rvalue<'db>) {
-+    fn rvalue(
-+        &mut self,
-+        r: &Rvalue<'db>,
-+    ) {
-         match r {
-             Rvalue::Use(op) => self.operand(op),
-             Rvalue::Ref(r, p) => {
+     fn operand(&mut self, r: &Operand<'db>) {
                  match r {
                      BorrowKind::Shared => w!(self, "&"),
                      BorrowKind::Shallow => w!(self, "&shallow "),
@@ -299,17 +183,6 @@ Rustfmt size:  18799 bytes
              }
              Rvalue::Aggregate(AggregateKind::Adt(_, _), it) => {
                  w!(self, "Adt(");
-         }
-     }
- 
--    fn operand_list(&mut self, it: &[Operand<'db>]) {
-+    fn operand_list(
-+        &mut self,
-+        it: &[Operand<'db>],
-+    ) {
-         let mut it = it.iter();
-         if let Some(first) = it.next() {
-             self.operand(first);
          }
      }
  

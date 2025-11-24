@@ -332,18 +332,12 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         RegionSnapshot { any_unifications: self.storage.any_unifications }
     }
 
-    pub(super) fn rollback_to(
-        &mut self,
-        snapshot: RegionSnapshot,
-    ) {
+    pub(super) fn rollback_to(&mut self, snapshot: RegionSnapshot) {
         debug!("RegionConstraintCollector: rollback_to({:?})", snapshot);
         self.storage.any_unifications = snapshot.any_unifications;
     }
 
-    pub(super) fn new_region_var(
-        &mut self,
-        universe: UniverseIndex,
-    ) -> RegionVid {
+    pub(super) fn new_region_var(&mut self, universe: UniverseIndex) -> RegionVid {
         let vid = self.storage.var_infos.push(RegionVariableInfo { universe });
         let u_vid = self.unification_table_mut().new_key(RegionVariableValue::Unknown { universe });
         assert_eq!(vid, u_vid.vid);
@@ -352,10 +346,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         vid
     }
 
-    fn add_constraint(
-        &mut self,
-        constraint: Constraint<'db>,
-    ) {
+    fn add_constraint(&mut self, constraint: Constraint<'db>) {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: add_constraint({:?})", constraint);
         let index = self.storage.data.constraints.len();
@@ -363,11 +354,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         self.undo_log.push(AddConstraint(index));
     }
 
-    pub(super) fn make_eqregion(
-        &mut self,
-        a: Region<'db>,
-        b: Region<'db>,
-    ) {
+    pub(super) fn make_eqregion(&mut self, a: Region<'db>, b: Region<'db>) {
         if a != b {
             // Eventually, it would be nice to add direct support for
             // equating regions.
@@ -407,11 +394,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     }
 
     #[instrument(skip(self), level = "debug")]
-    pub(super) fn make_subregion(
-        &mut self,
-        sub: Region<'db>,
-        sup: Region<'db>,
-    ) {
+    pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
         // cannot add constraints once regions are resolved
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
@@ -488,20 +471,14 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         }
     }
 
-    pub fn probe_value(
-        &mut self,
-        vid: RegionVid,
-    ) -> Result<Region<'db>, UniverseIndex> {
+    pub fn probe_value(&mut self, vid: RegionVid) -> Result<Region<'db>, UniverseIndex> {
         match self.unification_table_mut().probe_value(vid) {
             RegionVariableValue::Known { value } => Ok(value),
             RegionVariableValue::Unknown { universe } => Err(universe),
         }
     }
 
-    fn combine_map(
-        &mut self,
-        t: CombineMapType,
-    ) -> &mut CombineMap<'db> {
+    fn combine_map(&mut self, t: CombineMapType) -> &mut CombineMap<'db> {
         match t {
             Glb => &mut self.storage.glbs,
             Lub => &mut self.storage.lubs,
@@ -536,10 +513,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         new_r
     }
 
-    pub fn universe(
-        &mut self,
-        region: Region<'db>,
-    ) -> UniverseIndex {
+    pub fn universe(&mut self, region: Region<'db>) -> UniverseIndex {
         match region.kind() {
             RegionKind::ReStatic
             | RegionKind::ReErased
@@ -555,18 +529,12 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         }
     }
 
-    pub fn vars_since_snapshot(
-        &self,
-        value_count: usize,
-    ) -> Range<RegionVid> {
+    pub fn vars_since_snapshot(&self, value_count: usize) -> Range<RegionVid> {
         RegionVid::from(value_count)..RegionVid::from(self.storage.unification_table.len())
     }
 
     /// See `InferCtxt::region_constraints_added_in_snapshot`.
-    pub fn region_constraints_added_in_snapshot(
-        &self,
-        mark: &Snapshot,
-    ) -> bool {
+    pub fn region_constraints_added_in_snapshot(&self, mark: &Snapshot) -> bool {
         self.undo_log
             .region_constraints_in_snapshot(mark)
             .any(|elt| matches!(elt, AddConstraint(_)))
@@ -579,19 +547,13 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 }
 
 impl fmt::Debug for RegionSnapshot {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "RegionSnapshot")
     }
 }
 
 impl<'db> fmt::Debug for GenericKind<'db> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             GenericKind::Param(ref p) => write!(f, "{p:?}"),
             GenericKind::Placeholder(ref p) => write!(f, "{p:?}"),
@@ -601,10 +563,7 @@ impl<'db> fmt::Debug for GenericKind<'db> {
 }
 
 impl<'db> fmt::Display for GenericKind<'db> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             GenericKind::Param(ref p) => write!(f, "{p:?}"),
             GenericKind::Placeholder(ref p) => write!(f, "{p:?}"),
@@ -614,10 +573,7 @@ impl<'db> fmt::Display for GenericKind<'db> {
 }
 
 impl<'db> GenericKind<'db> {
-    pub fn to_ty(
-        &self,
-        interner: DbInterner<'db>,
-    ) -> Ty<'db> {
+    pub fn to_ty(&self, interner: DbInterner<'db>) -> Ty<'db> {
         match *self {
             GenericKind::Param(ref p) => (*p).to_ty(interner),
             GenericKind::Placeholder(ref p) => Ty::new_placeholder(interner, *p),
@@ -647,10 +603,7 @@ impl<'db> VerifyBound<'db> {
         }
     }
 
-    pub fn or(
-        self,
-        vb: VerifyBound<'db>,
-    ) -> VerifyBound<'db> {
+    pub fn or(self, vb: VerifyBound<'db>) -> VerifyBound<'db> {
         if self.must_hold() || vb.cannot_hold() {
             self
         } else if self.cannot_hold() || vb.must_hold() {
@@ -671,10 +624,7 @@ impl<'db> RegionConstraintData<'db> {
 }
 
 impl<'db> Rollback<UndoLog<'db>> for RegionConstraintStorage<'db> {
-    fn reverse(
-        &mut self,
-        undo: UndoLog<'db>,
-    ) {
+    fn reverse(&mut self, undo: UndoLog<'db>) {
         match undo {
             AddVar(vid) => {
                 self.var_infos.pop().unwrap();

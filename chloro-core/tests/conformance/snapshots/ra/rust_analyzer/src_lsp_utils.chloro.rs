@@ -17,7 +17,9 @@ pub(crate) fn invalid_params_error(message: String) -> LspError {
     LspError { code: lsp_server::ErrorCode::InvalidParams as i32, message }
 }
 
-pub(crate) fn notification_is<N: lsp_types::notification::Notification>(notification: &Notification) -> bool {
+pub(crate) fn notification_is<N: lsp_types::notification::Notification>(
+    notification: &Notification,
+) -> bool {
     notification.method == N::METHOD
 }
 
@@ -29,10 +31,7 @@ pub(crate) enum Progress {
 }
 
 impl Progress {
-    pub(crate) fn fraction(
-        done: usize,
-        total: usize,
-    ) -> f64 {
+    pub(crate) fn fraction(done: usize, total: usize) -> f64 {
         assert!(done <= total);
         done as f64 / total.max(1) as f64
     }
@@ -78,11 +77,7 @@ impl GlobalState {
 
     /// If `additional_info` is [`Some`], appends a note to the notification telling to check the logs.
     /// This will always log `message` + `additional_info` to the server's error log.
-    pub(crate) fn show_and_log_error(
-        &mut self,
-        message: String,
-        additional_info: Option<String>,
-    ) {
+    pub(crate) fn show_and_log_error(&mut self, message: String, additional_info: Option<String>) {
         match additional_info {
             Some(additional_info) => {
                 tracing::error!("{message}:\n{additional_info}");
@@ -112,10 +107,7 @@ impl GlobalState {
     /// It's unclear if making from source `cargo xtask install` builds more
     /// panicky is a good idea, let's see if we can keep our awesome bleeding
     /// edge users from being upset!
-    pub(crate) fn poke_rust_analyzer_developer(
-        &mut self,
-        message: String,
-    ) {
+    pub(crate) fn poke_rust_analyzer_developer(&mut self, message: String) {
         let from_source_build = option_env!("POKE_RA_DEVS").is_some();
         if from_source_build {
             self.show_and_log_error(message, None);

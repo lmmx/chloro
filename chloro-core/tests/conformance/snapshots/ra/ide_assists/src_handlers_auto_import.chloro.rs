@@ -14,10 +14,7 @@ use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
-pub(crate) fn auto_import(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let cfg = ctx.config.import_path_config();
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let mut proposed_imports: Vec<_> = import_assets
@@ -85,7 +82,9 @@ pub(crate) fn auto_import(
     Some(())
 }
 
-pub(super) fn find_importable_node<'a: 'db, 'db>(ctx: &'a AssistContext<'db>) -> Option<(ImportAssets<'db>, SyntaxNode, Option<Type<'db>>)> {
+pub(super) fn find_importable_node<'a: 'db, 'db>(
+    ctx: &'a AssistContext<'db>,
+) -> Option<(ImportAssets<'db>, SyntaxNode, Option<Type<'db>>)> {
     // Deduplicate this with the `expected_type_and_name` logic for completions
     let expected = |expr_or_pat: Either<ast::Expr, ast::Pat>| match expr_or_pat {
         Either::Left(expr) => {
@@ -213,11 +212,7 @@ pub(crate) fn relevance_score(
 }
 
 /// A heuristic that gives a higher score to modules that are more separated.
-fn module_distance_heuristic(
-    db: &dyn HirDatabase,
-    current: &Module,
-    item: &Module,
-) -> usize {
+fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Module) -> usize {
     // get the path starting from the item to the respective crate roots
     let mut current_path = current.path_to_root(db);
     let mut item_path = item.path_to_root(db);
@@ -251,10 +246,7 @@ mod tests {
         check_assist, check_assist_by_label, check_assist_not_applicable, check_assist_target,
         TEST_CONFIG,
     };
-    fn check_auto_import_order(
-        before: &str,
-        order: &[&str],
-    ) {
+    fn check_auto_import_order(before: &str, order: &[&str]) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
         let frange = FileRange { file_id, range: range_or_offset.into() };
         let sema = Semantics::new(&db);

@@ -38,10 +38,7 @@ pub(crate) struct InspectGoal<'a, 'db> {
 }
 
 impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("InspectGoal")
             .field("depth", &self.depth)
             .field("orig_values", &self.orig_values)
@@ -55,10 +52,7 @@ impl<'a, 'db> std::fmt::Debug for InspectGoal<'a, 'db> {
 }
 
 impl<'a, 'db> std::fmt::Debug for InspectCandidate<'a, 'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("InspectCandidate")
             .field("kind", &self.kind)
             .field("steps", &self.steps)
@@ -459,10 +453,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         }
     }
 
-    pub(crate) fn visit_with<V: ProofTreeVisitor<'db>>(
-        &self,
-        visitor: &mut V,
-    ) -> V::Result {
+    pub(crate) fn visit_with<V: ProofTreeVisitor<'db>>(&self, visitor: &mut V) -> V::Result {
         if self.depth < visitor.config().max_depth {
             try_visit!(visitor.visit_goal(self));
         }
@@ -478,10 +469,7 @@ pub(crate) trait ProofTreeVisitor<'db> {
         InspectConfig { max_depth: 10 }
     }
 
-    fn visit_goal(
-        &mut self,
-        goal: &InspectGoal<'_, 'db>,
-    ) -> Self::Result;
+    fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result;
 }
 
 impl<'db> InferCtxt<'db> {

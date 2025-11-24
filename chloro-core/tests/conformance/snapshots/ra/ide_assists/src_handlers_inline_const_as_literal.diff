@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19183 bytes
-Chloro size:   18505 bytes
+Chloro size:   18494 bytes
 Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
@@ -33,11 +33,7 @@ Rustfmt size:  19179 bytes
 -//     "Hello, World!"
 -// }
 -// ```
--pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn inline_const_as_literal(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let variable = ctx.find_node_at_offset::<ast::PathExpr>()?;
 -
      if let hir::PathResolution::Def(hir::ModuleDef::Const(konst)) =

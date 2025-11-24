@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8204 bytes
+Chloro size:   8104 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -59,22 +59,9 @@ Rustfmt size:  8412 bytes
      }
  
 -    // pub fn with_block(self: &mut Arc<Self>, block: BlockId) {
--    pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
-+    pub fn with_block(
-+        this: &mut Arc<Self>,
-+        block: BlockId,
-+    ) {
+     pub fn with_block(this: &mut Arc<Self>, block: BlockId) {
          Arc::make_mut(this).block = Some(block);
      }
- 
--    pub fn traits_in_scope_from_clauses(&self, ty: Ty<'db>) -> impl Iterator<Item = TraitId> + '_ {
-+    pub fn traits_in_scope_from_clauses(
-+        &self,
-+        ty: Ty<'db>,
-+    ) -> impl Iterator<Item = TraitId> + '_ {
-         self.traits_from_clauses
-             .iter()
-             .filter_map(move |(self_ty, trait_id)| (*self_ty == ty).then_some(*trait_id))
      ty: Ty<'db>,
      env: Arc<TraitEnvironment<'db>>,
  ) -> Ty<'db> {
@@ -116,29 +103,6 @@ Rustfmt size:  8412 bytes
      AsyncFnOnce,
      AsyncFnMut,
      AsyncFn,
- }
- 
- impl fmt::Display for FnTrait {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             FnTrait::FnOnce => write!(f, "FnOnce"),
-             FnTrait::FnMut => write!(f, "FnMut"),
-         }
-     }
- 
--    pub fn get_id(self, db: &dyn HirDatabase, krate: Crate) -> Option<TraitId> {
-+    pub fn get_id(
-+        self,
-+        db: &dyn HirDatabase,
-+        krate: Crate,
-+    ) -> Option<TraitId> {
-         self.lang_item().resolve_trait(db, krate)
-     }
- }
      let interner = DbInterner::new_with(db, Some(env.krate), env.block);
      // FIXME(next-solver): I believe this should be `PostAnalysis`.
      let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());

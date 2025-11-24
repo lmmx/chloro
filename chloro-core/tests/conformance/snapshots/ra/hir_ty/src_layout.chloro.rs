@@ -91,10 +91,7 @@ impl std::error::Error for LayoutError {
 }
 
 impl fmt::Display for LayoutError {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LayoutError::BadCalc(err) => err.fallback_fmt(f),
             LayoutError::HasErrorConst => write!(f, "type contains an unevaluatable const"),
@@ -370,10 +367,7 @@ pub(crate) fn layout_of_ty_cycle_result<'db>(
     Err(LayoutError::RecursiveTypeWithoutIndirection)
 }
 
-fn struct_tail_erasing_lifetimes<'a>(
-    db: &'a dyn HirDatabase,
-    pointee: Ty<'a>,
-) -> Ty<'a> {
+fn struct_tail_erasing_lifetimes<'a>(db: &'a dyn HirDatabase, pointee: Ty<'a>) -> Ty<'a> {
     match pointee.kind() {
         TyKind::Adt(def, args) => {
             let struct_id = match def.inner().id {
@@ -410,9 +404,6 @@ fn field_ty<'a>(
     db.field_types(def)[fd].instantiate(DbInterner::new_with(db, None, None), args)
 }
 
-fn scalar_unit(
-    dl: &TargetDataLayout,
-    value: Primitive,
-) -> Scalar {
+fn scalar_unit(dl: &TargetDataLayout, value: Primitive) -> Scalar {
     Scalar::Initialized { value, valid_range: WrappingRange::full(value.size(dl)) }
 }

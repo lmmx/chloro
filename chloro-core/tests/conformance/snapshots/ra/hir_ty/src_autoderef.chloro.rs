@@ -64,11 +64,7 @@ pub fn autoderef<'db>(
 pub(crate) trait TrackAutoderefSteps<'db> {
     fn len(&self) -> usize;
 
-    fn push(
-        &mut self,
-        ty: Ty<'db>,
-        kind: AutoderefKind,
-    );
+    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
 }
 
 impl<'db> TrackAutoderefSteps<'db> for usize {
@@ -76,11 +72,7 @@ impl<'db> TrackAutoderefSteps<'db> for usize {
         *self
     }
 
-    fn push(
-        &mut self,
-        _: Ty<'db>,
-        _: AutoderefKind,
-    ) {
+    fn push(&mut self, _: Ty<'db>, _: AutoderefKind) {
         *self += 1;
     }
 }
@@ -90,11 +82,7 @@ impl<'db> TrackAutoderefSteps<'db> for Vec<(Ty<'db>, AutoderefKind)> {
         self.len()
     }
 
-    fn push(
-        &mut self,
-        ty: Ty<'db>,
-        kind: AutoderefKind,
-    ) {
+    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
         self.push((ty, kind));
     }
 }
@@ -189,28 +177,19 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
 }
 
 impl<'a, 'db> Autoderef<'a, 'db> {
-    pub(crate) fn new(
-        table: &'a mut InferenceTable<'db>,
-        base_ty: Ty<'db>,
-    ) -> Self {
+    pub(crate) fn new(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
         Self::new_impl(table, base_ty)
     }
 }
 
 impl<'a, 'db> Autoderef<'a, 'db, usize> {
-    pub(crate) fn new_no_tracking(
-        table: &'a mut InferenceTable<'db>,
-        base_ty: Ty<'db>,
-    ) -> Self {
+    pub(crate) fn new_no_tracking(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
         Self::new_impl(table, base_ty)
     }
 }
 
 impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
-    fn new_impl(
-        table: &'a mut InferenceTable<'db>,
-        base_ty: Ty<'db>,
-    ) -> Self {
+    fn new_impl(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
         Autoderef {
             state: AutoderefSnapshot {
                 steps: Steps::default(),
@@ -260,10 +239,7 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
         }
     }
 
-    fn overloaded_deref_ty(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Option<Ty<'db>> {
+    fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
         debug!("overloaded_deref_ty({:?})", ty);
         let interner = self.table.interner();
         // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.

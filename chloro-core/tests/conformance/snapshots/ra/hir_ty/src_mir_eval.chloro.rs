@@ -93,10 +93,7 @@ impl<'db> VTableMap<'db> {
     const OFFSET: usize = 1000;
     // We should add some offset to ids to make 0 (null) an invalid id.
 
-    fn id(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> usize {
+    fn id(&mut self, ty: Ty<'db>) -> usize {
         if let Some(it) = self.ty_to_id.get(&ty) {
             return *it;
         }
@@ -106,19 +103,13 @@ impl<'db> VTableMap<'db> {
         id
     }
 
-    pub(crate) fn ty(
-        &self,
-        id: usize,
-    ) -> Result<'db, Ty<'db>> {
+    pub(crate) fn ty(&self, id: usize) -> Result<'db, Ty<'db>> {
         id.checked_sub(VTableMap::OFFSET)
             .and_then(|id| self.id_to_ty.get(id).copied())
             .ok_or(MirEvalError::InvalidVTableId(id))
     }
 
-    fn ty_of_bytes(
-        &self,
-        bytes: &[u8],
-    ) -> Result<'db, Ty<'db>> {
+    fn ty_of_bytes(&self, bytes: &[u8]) -> Result<'db, Ty<'db>> {
         let id = from_bytes!(usize, bytes);
         self.ty(id)
     }
@@ -144,21 +135,14 @@ impl TlsData {
         self.keys.len() - 1
     }
 
-    fn get_key(
-        &mut self,
-        key: usize,
-    ) -> Result<'static, u128> {
+    fn get_key(&mut self, key: usize) -> Result<'static, u128> {
         let r = self.keys.get(key).ok_or_else(|| {
             MirEvalError::UndefinedBehavior(format!("Getting invalid tls key {key}"))
         })?;
         Ok(*r)
     }
 
-    fn set_key(
-        &mut self,
-        key: usize,
-        value: u128,
-    ) -> Result<'static, ()> {
+    fn set_key(&mut self, key: usize, value: u128) -> Result<'static, ()> {
         let r = self.keys.get_mut(key).ok_or_else(|| {
             MirEvalError::UndefinedBehavior(format!("Setting invalid tls key {key}"))
         })?;
@@ -241,25 +225,15 @@ struct IntervalAndTy<'db> {
 }
 
 impl Interval {
-    fn new(
-        addr: Address,
-        size: usize,
-    ) -> Self {
+    fn new(addr: Address, size: usize) -> Self {
         Self { addr, size }
     }
 
-    fn get<'a, 'db>(
-        &self,
-        memory: &'a Evaluator<'db>,
-    ) -> Result<'db, &'a [u8]> {
+    fn get<'a, 'db>(&self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
         memory.read_memory(self.addr, self.size)
     }
 
-    fn write_from_bytes<'db>(
-        &self,
-        memory: &mut Evaluator<'db>,
-        bytes: &[u8],
-    ) -> Result<'db, ()> {
+    fn write_from_bytes<'db>(&self, memory: &mut Evaluator<'db>, bytes: &[u8]) -> Result<'db, ()> {
         memory.write_memory(self.addr, bytes)
     }
 
@@ -271,19 +245,13 @@ impl Interval {
         memory.copy_from_interval(self.addr, interval)
     }
 
-    fn slice(
-        self,
-        range: Range<usize>,
-    ) -> Interval {
+    fn slice(self, range: Range<usize>) -> Interval {
         Interval { addr: self.addr.offset(range.start), size: range.len() }
     }
 }
 
 impl<'db> IntervalAndTy<'db> {
-    fn get<'a>(
-        &self,
-        memory: &'a Evaluator<'db>,
-    ) -> Result<'db, &'a [u8]> {
+    fn get<'a>(&self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
         memory.read_memory(self.interval.addr, self.interval.size)
     }
 
@@ -310,10 +278,7 @@ impl From<Interval> for IntervalOrOwned {
 }
 
 impl IntervalOrOwned {
-    fn get<'a, 'db>(
-        &'a self,
-        memory: &'a Evaluator<'db>,
-    ) -> Result<'db, &'a [u8]> {
+    fn get<'a, 'db>(&'a self, memory: &'a Evaluator<'db>) -> Result<'db, &'a [u8]> {
         Ok(match self {
             IntervalOrOwned::Owned(o) => o,
             IntervalOrOwned::Borrowed(b) => b.get(memory)?,
@@ -361,10 +326,7 @@ impl Address {
         }
     }
 
-    fn map(
-        &self,
-        f: impl FnOnce(usize) -> usize,
-    ) -> Address {
+    fn map(&self, f: impl FnOnce(usize) -> usize) -> Address {
         match self {
             Stack(it) => Stack(f(*it)),
             Heap(it) => Heap(f(*it)),
@@ -372,10 +334,7 @@ impl Address {
         }
     }
 
-    fn offset(
-        &self,
-        offset: usize,
-    ) -> Address {
+    fn offset(&self, offset: usize) -> Address {
         self.map(|it| it + offset)
     }
 }
@@ -533,10 +492,7 @@ impl MirEvalError<'_> {
 }
 
 impl std::fmt::Debug for MirEvalError<'_> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ConstEvalError(arg0, arg1) => {
                 f.debug_tuple("ConstEvalError").field(arg0).field(arg1).finish()
@@ -582,11 +538,7 @@ struct DropFlags<'db> {
 }
 
 impl<'db> DropFlags<'db> {
-    fn add_place(
-        &mut self,
-        p: Place<'db>,
-        store: &ProjectionStore<'db>,
-    ) {
+    fn add_place(&mut self, p: Place<'db>, store: &ProjectionStore<'db>) {
         if p.iterate_over_parents(store).any(|it| self.need_drop.contains(&it)) {
             return;
         }
@@ -594,11 +546,7 @@ impl<'db> DropFlags<'db> {
         self.need_drop.insert(p);
     }
 
-    fn remove_place(
-        &mut self,
-        p: &Place<'db>,
-        store: &ProjectionStore<'db>,
-    ) -> bool {
+    fn remove_place(&mut self, p: &Place<'db>, store: &ProjectionStore<'db>) -> bool {
         // FIXME: replace parents with parts
         if let Some(parent) = p.iterate_over_parents(store).find(|it| self.need_drop.contains(it)) {
             self.need_drop.remove(&parent);
@@ -730,19 +678,11 @@ impl<'db> Evaluator<'db> {
         self.infcx.interner
     }
 
-    fn place_addr(
-        &self,
-        p: &Place<'db>,
-        locals: &Locals<'db>,
-    ) -> Result<'db, Address> {
+    fn place_addr(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Address> {
         Ok(self.place_addr_and_ty_and_metadata(p, locals)?.0)
     }
 
-    fn place_interval(
-        &self,
-        p: &Place<'db>,
-        locals: &Locals<'db>,
-    ) -> Result<'db, Interval> {
+    fn place_interval(&self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
         let place_addr_and_ty = self.place_addr_and_ty_and_metadata(p, locals)?;
         Ok(Interval {
             addr: place_addr_and_ty.0,
@@ -758,11 +698,7 @@ impl<'db> Evaluator<'db> {
         self.cached_ptr_size
     }
 
-    fn projected_ty(
-        &self,
-        ty: Ty<'db>,
-        proj: PlaceElem<'db>,
-    ) -> Ty<'db> {
+    fn projected_ty(&self, ty: Ty<'db>, proj: PlaceElem<'db>) -> Ty<'db> {
         let pair = (ty, proj);
         if let Some(r) = self.projected_ty_cache.borrow().get(&pair) {
             return *r;
@@ -910,10 +846,7 @@ impl<'db> Evaluator<'db> {
         Ok((addr, ty, metadata))
     }
 
-    fn layout(
-        &self,
-        ty: Ty<'db>,
-    ) -> Result<'db, Arc<Layout>> {
+    fn layout(&self, ty: Ty<'db>) -> Result<'db, Arc<Layout>> {
         if let Some(x) = self.layout_cache.borrow().get(&ty) {
             return Ok(x.clone());
         }
@@ -925,27 +858,15 @@ impl<'db> Evaluator<'db> {
         Ok(r)
     }
 
-    fn layout_adt(
-        &self,
-        adt: AdtId,
-        subst: GenericArgs<'db>,
-    ) -> Result<'db, Arc<Layout>> {
+    fn layout_adt(&self, adt: AdtId, subst: GenericArgs<'db>) -> Result<'db, Arc<Layout>> {
         self.layout(Ty::new_adt(self.interner(), adt, subst))
     }
 
-    fn place_ty<'a>(
-        &'a self,
-        p: &Place<'db>,
-        locals: &'a Locals<'db>,
-    ) -> Result<'db, Ty<'db>> {
+    fn place_ty<'a>(&'a self, p: &Place<'db>, locals: &'a Locals<'db>) -> Result<'db, Ty<'db>> {
         Ok(self.place_addr_and_ty_and_metadata(p, locals)?.1)
     }
 
-    fn operand_ty(
-        &self,
-        o: &Operand<'db>,
-        locals: &Locals<'db>,
-    ) -> Result<'db, Ty<'db>> {
+    fn operand_ty(&self, o: &Operand<'db>, locals: &Locals<'db>) -> Result<'db, Ty<'db>> {
         Ok(match &o.kind {
             OperandKind::Copy(p) | OperandKind::Move(p) => self.place_ty(p, locals)?,
             OperandKind::Constant { konst: _, ty } => *ty,
@@ -1712,11 +1633,7 @@ impl<'db> Evaluator<'db> {
         })
     }
 
-    fn compute_discriminant(
-        &self,
-        ty: Ty<'db>,
-        bytes: &[u8],
-    ) -> Result<'db, i128> {
+    fn compute_discriminant(&self, ty: Ty<'db>, bytes: &[u8]) -> Result<'db, i128> {
         let layout = self.layout(ty)?;
         let TyKind::Adt(adt_def, _) = ty.kind() else {
             return Ok(0);
@@ -2055,11 +1972,7 @@ impl<'db> Evaluator<'db> {
         Ok(Interval::new(addr, size))
     }
 
-    fn eval_place(
-        &mut self,
-        p: &Place<'db>,
-        locals: &Locals<'db>,
-    ) -> Result<'db, Interval> {
+    fn eval_place(&mut self, p: &Place<'db>, locals: &Locals<'db>) -> Result<'db, Interval> {
         let addr = self.place_addr(p, locals)?;
         Ok(Interval::new(
             addr,
@@ -2067,11 +1980,7 @@ impl<'db> Evaluator<'db> {
         ))
     }
 
-    fn read_memory(
-        &self,
-        addr: Address,
-        size: usize,
-    ) -> Result<'db, &[u8]> {
+    fn read_memory(&self, addr: Address, size: usize) -> Result<'db, &[u8]> {
         if size == 0 {
             return Ok(&[]);
         }
@@ -2088,11 +1997,7 @@ impl<'db> Evaluator<'db> {
             .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory read".to_owned()))
     }
 
-    fn write_memory_using_ref(
-        &mut self,
-        addr: Address,
-        size: usize,
-    ) -> Result<'db, &mut [u8]> {
+    fn write_memory_using_ref(&mut self, addr: Address, size: usize) -> Result<'db, &mut [u8]> {
         let (mem, pos) = match addr {
             Stack(it) => (&mut self.stack, it),
             Heap(it) => (&mut self.heap, it),
@@ -2106,11 +2011,7 @@ impl<'db> Evaluator<'db> {
             .ok_or_else(|| MirEvalError::UndefinedBehavior("out of bound memory write".to_owned()))
     }
 
-    fn write_memory(
-        &mut self,
-        addr: Address,
-        r: &[u8],
-    ) -> Result<'db, ()> {
+    fn write_memory(&mut self, addr: Address, r: &[u8]) -> Result<'db, ()> {
         if r.is_empty() {
             return Ok(());
         }
@@ -2129,11 +2030,7 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn copy_from_interval(
-        &mut self,
-        addr: Address,
-        r: Interval,
-    ) -> Result<'db, ()> {
+    fn copy_from_interval(&mut self, addr: Address, r: Interval) -> Result<'db, ()> {
         if r.size == 0 {
             return Ok(());
         }
@@ -2228,11 +2125,7 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn heap_allocate(
-        &mut self,
-        size: usize,
-        align: usize,
-    ) -> Result<'db, Address> {
+    fn heap_allocate(&mut self, size: usize, align: usize) -> Result<'db, Address> {
         if !align.is_power_of_two() || align > 10000 {
             return Err(MirEvalError::UndefinedBehavior(format!("Alignment {align} is invalid")));
         }
@@ -2247,10 +2140,7 @@ impl<'db> Evaluator<'db> {
         Ok(Address::Heap(pos))
     }
 
-    fn detect_fn_trait(
-        &self,
-        def: FunctionId,
-    ) -> Option<FnTrait> {
+    fn detect_fn_trait(&self, def: FunctionId) -> Option<FnTrait> {
         let def = Some(def);
         if def == self.cached_fn_trait_func {
             Some(FnTrait::Fn)
@@ -2888,11 +2778,7 @@ impl<'db> Evaluator<'db> {
         }
     }
 
-    fn eval_static(
-        &mut self,
-        st: StaticId,
-        locals: &Locals<'db>,
-    ) -> Result<'db, Address> {
+    fn eval_static(&mut self, st: StaticId, locals: &Locals<'db>) -> Result<'db, Address> {
         if let Some(o) = self.static_locations.get(&st) {
             return Ok(*o);
         };
@@ -2916,10 +2802,7 @@ impl<'db> Evaluator<'db> {
         Ok(addr)
     }
 
-    fn const_eval_discriminant(
-        &self,
-        variant: EnumVariantId,
-    ) -> Result<'db, i128> {
+    fn const_eval_discriminant(&self, variant: EnumVariantId) -> Result<'db, i128> {
         let r = self.db.const_eval_discriminant(variant);
         match r {
             Ok(r) => Ok(r),
@@ -3051,18 +2934,12 @@ impl<'db> Evaluator<'db> {
         Ok(())
     }
 
-    fn write_to_stdout(
-        &mut self,
-        interval: Interval,
-    ) -> Result<'db, ()> {
+    fn write_to_stdout(&mut self, interval: Interval) -> Result<'db, ()> {
         self.stdout.extend(interval.get(self)?.to_vec());
         Ok(())
     }
 
-    fn write_to_stderr(
-        &mut self,
-        interval: Interval,
-    ) -> Result<'db, ()> {
+    fn write_to_stderr(&mut self, interval: Interval) -> Result<'db, ()> {
         self.stderr.extend(interval.get(self)?.to_vec());
         Ok(())
     }
@@ -3134,10 +3011,7 @@ pub fn render_const_using_debug_impl<'db>(
     Ok(std::string::String::from_utf8_lossy(evaluator.read_memory(addr, size)?).into_owned())
 }
 
-pub fn pad16(
-    it: &[u8],
-    is_signed: bool,
-) -> [u8; 16] {
+pub fn pad16(it: &[u8], is_signed: bool) -> [u8; 16] {
     let is_negative = is_signed && it.last().unwrap_or(&0) > &127;
     let mut res = [if is_negative { 255 } else { 0 }; 16];
     res[..it.len()].copy_from_slice(it);
@@ -3209,10 +3083,7 @@ macro_rules! unchecked_int_op {
 }
 
 impl IntValue {
-    fn from_bytes(
-        bytes: &[u8],
-        is_signed: bool,
-    ) -> Self {
+    fn from_bytes(bytes: &[u8], is_signed: bool) -> Self {
         match (bytes.len(), is_signed) {
             (1, false) => Self::U8(u8::from_le_bytes(bytes.try_into().unwrap())),
             (1, true) => Self::I8(i8::from_le_bytes(bytes.try_into().unwrap())),

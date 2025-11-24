@@ -7,10 +7,7 @@ use crate::{
     handlers::qualify_path::QualifyCandidate,
 };
 
-pub(crate) fn qualify_method_call(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name: ast::NameRef = ctx.find_node_at_offset()?;
     let call = name.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
     let ident = name.ident_token()?;
@@ -43,10 +40,7 @@ pub(crate) fn qualify_method_call(
     Some(())
 }
 
-fn item_for_path_search(
-    db: &dyn HirDatabase,
-    item: ItemInNs,
-) -> Option<ItemInNs> {
+fn item_for_path_search(db: &dyn HirDatabase, item: ItemInNs) -> Option<ItemInNs> {
     Some(match item {
         ItemInNs::Types(_) | ItemInNs::Values(_) => match item_as_assoc(db, item) {
             Some(assoc_item) => match assoc_item.container(db) {
@@ -62,10 +56,7 @@ fn item_for_path_search(
     })
 }
 
-fn item_as_assoc(
-    db: &dyn HirDatabase,
-    item: ItemInNs,
-) -> Option<AssocItem> {
+fn item_as_assoc(db: &dyn HirDatabase, item: ItemInNs) -> Option<AssocItem> {
     item.into_module_def().as_assoc_item(db)
 }
 

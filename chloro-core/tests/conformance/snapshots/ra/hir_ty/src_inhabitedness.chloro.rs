@@ -66,10 +66,7 @@ struct VisiblyUninhabited;
 impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
     type Result = ControlFlow<VisiblyUninhabited>;
 
-    fn visit_ty(
-        &mut self,
-        mut ty: Ty<'db>,
-    ) -> ControlFlow<VisiblyUninhabited> {
+    fn visit_ty(&mut self, mut ty: Ty<'db>) -> ControlFlow<VisiblyUninhabited> {
         if self.recursive_ty.contains(&ty) || self.max_depth == 0 {
             // rustc considers recursive types always inhabited. I think it is valid to consider
             // recursive types as always uninhabited, but we should do what rustc is doing.

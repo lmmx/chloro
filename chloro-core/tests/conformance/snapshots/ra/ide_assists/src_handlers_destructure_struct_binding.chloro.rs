@@ -57,10 +57,7 @@ struct StructEditData {
     edition: Edition,
 }
 
-fn collect_data(
-    ident_pat: ast::IdentPat,
-    ctx: &AssistContext<'_>,
-) -> Option<StructEditData> {
+fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
     let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else { return None };
     let module = ctx.sema.scope(ident_pat.syntax())?.module();
@@ -219,10 +216,7 @@ fn generate_field_names(
     }
 }
 
-fn new_field_name(
-    base_name: SmolStr,
-    names_in_scope: &FxHashSet<SmolStr>,
-) -> SmolStr {
+fn new_field_name(base_name: SmolStr, names_in_scope: &FxHashSet<SmolStr>) -> SmolStr {
     let mut name = base_name.clone();
     let mut i = 1;
     while names_in_scope.contains(&name) {

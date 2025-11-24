@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   69416 bytes
+Chloro size:   69393 bytes
 Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
@@ -43,14 +43,7 @@ Rustfmt size:  69401 bytes
          let alloc_fn =
              attrs.iter().filter_map(|it| it.path().as_ident()).map(|it| it.symbol()).find(|it| {
                  [
-         Ok(())
-     }
- 
--    fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
-+    fn detect_lang_function(
-+        &self,
-+        def: FunctionId,
-+    ) -> Option<LangItem> {
+     fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
          use LangItem::*;
          let attrs = self.db.attrs(def.into());
 -

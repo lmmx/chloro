@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 26548 bytes
-Chloro size:   26588 bytes
+Chloro size:   26459 bytes
 Rustfmt size:  26702 bytes
 
 ✗ Outputs DIFFER
@@ -25,13 +25,6 @@ Rustfmt size:  26702 bytes
          generator
      }
  
-     /// Suggest a name without conflicts. If the name conflicts with existing names,
-     /// it will try to resolve the conflict by adding a numeric suffix.
--    pub fn suggest_name(&mut self, name: &str) -> SmolStr {
-+    pub fn suggest_name(
-+        &mut self,
-+        name: &str,
-+    ) -> SmolStr {
          let (prefix, suffix) = Self::split_numeric_suffix(name);
          let prefix = SmolStr::new(prefix);
          let suffix = suffix.unwrap_or(0);
@@ -39,15 +32,6 @@ Rustfmt size:  26702 bytes
          match self.pool.entry(prefix.clone()) {
              Entry::Vacant(entry) => {
                  entry.insert(suffix);
-     ///
-     /// If the name conflicts with existing generic parameters, it will try to
-     /// resolve the conflict with `for_unique_generic_name`.
--    pub fn for_impl_trait_as_generic(&mut self, ty: &ast::ImplTraitType) -> SmolStr {
-+    pub fn for_impl_trait_as_generic(
-+        &mut self,
-+        ty: &ast::ImplTraitType,
-+    ) -> SmolStr {
-         let c = ty
              .type_bound_list()
              .and_then(|bounds| bounds.syntax().text().char_at(0.into()))
              .unwrap_or('T');
@@ -69,12 +53,6 @@ Rustfmt size:  26702 bytes
          self.suggest_name("var_name")
      }
  
-     /// Insert a name into the pool
--    fn insert(&mut self, name: &str) {
-+    fn insert(
-+        &mut self,
-+        name: &str,
-+    ) {
          let (prefix, suffix) = Self::split_numeric_suffix(name);
          let prefix = SmolStr::new(prefix);
          let suffix = suffix.unwrap_or(0);
@@ -141,14 +119,6 @@ Rustfmt size:  26702 bytes
      normalize(name)
  }
  
--fn from_param(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<SmolStr> {
-+fn from_param(
-+    expr: &ast::Expr,
-+    sema: &Semantics<'_, RootDatabase>,
-+) -> Option<SmolStr> {
-     let arg_list = expr.syntax().parent().and_then(ast::ArgList::cast)?;
-     let args_parent = arg_list.syntax().parent()?;
-     let func = match_ast! {
              _ => return None,
          }
      };
@@ -156,14 +126,6 @@ Rustfmt size:  26702 bytes
      let (idx, _) = arg_list.args().find_position(|it| it == expr).unwrap();
      let param = func.params().into_iter().nth(idx)?;
      let pat = sema.source(param)?.value.right()?.pat()?;
-     }
- }
- 
--fn from_type(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<SmolStr> {
-+fn from_type(
-+    expr: &ast::Expr,
-+    sema: &Semantics<'_, RootDatabase>,
-+) -> Option<SmolStr> {
      let ty = sema.type_of_expr(expr)?.adjusted();
      let ty = ty.remove_ref().unwrap_or(ty);
      let edition = sema.scope(expr.syntax())?.krate().edition(sema.db);
@@ -178,18 +140,6 @@ Rustfmt size:  26702 bytes
      if name.ends_with(['s', 'x', 'y']) {
          // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
          // create a plural.
-     }
- }
- 
--fn trait_name(trait_: &hir::Trait, db: &RootDatabase, edition: Edition) -> Option<String> {
-+fn trait_name(
-+    trait_: &hir::Trait,
-+    db: &RootDatabase,
-+    edition: Edition,
-+) -> Option<String> {
-     let name = trait_.name(db).display(db, edition).to_string();
-     if USELESS_TRAITS.contains(&name.as_str()) {
-         return None;
  mod tests {
      use hir::FileRange;
      use test_fixture::WithFixture;
@@ -197,11 +147,7 @@ Rustfmt size:  26702 bytes
      use super::*;
 -
      #[track_caller]
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expected: &str,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
          let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
 -        let frange = FileRange {
 -            file_id,

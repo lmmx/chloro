@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8077 bytes
-Chloro size:   7894 bytes
+Chloro size:   7883 bytes
 Rustfmt size:  8186 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,7 @@ Rustfmt size:  8186 bytes
 -// ```
 -// mod foo;
 -// ```
--pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn move_module_to_file(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let module_ast = ctx.find_node_at_offset::<ast::Module>()?;
      let module_items = module_ast.item_list()?;
 -

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16831 bytes
-Chloro size:   16655 bytes
+Chloro size:   16644 bytes
 Rustfmt size:  16831 bytes
 
 ✗ Outputs DIFFER
@@ -26,17 +26,6 @@ Rustfmt size:  16831 bytes
  pub(crate) fn generic_args_prohibited(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::GenericArgsProhibited,
-     format!("generic arguments are not allowed on {kind}")
- }
- 
--fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option<Vec<Assist>> {
-+fn fixes(
-+    ctx: &DiagnosticsContext<'_>,
-+    d: &hir::GenericArgsProhibited,
-+) -> Option<Vec<Assist>> {
-     let file_id = d.args.file_id.file_id()?;
-     let syntax = d.args.to_node(ctx.sema.db);
-     let range = match &syntax {
  mod tests {
      // This diagnostic was the first to be emitted in ty lowering, so the tests here also test
      // diagnostics in ty lowering in general (which is why there are so many of them).

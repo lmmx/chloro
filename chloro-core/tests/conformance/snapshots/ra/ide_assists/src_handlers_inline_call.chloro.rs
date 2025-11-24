@@ -29,10 +29,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn inline_into_callers(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let def_file = ctx.file_id();
     let vfs_def_file = ctx.vfs_file_id();
     let name = ctx.find_node_at_offset::<ast::Name>()?;
@@ -129,10 +126,7 @@ pub(super) fn split_refs_and_uses<T: ast::AstNode>(
         .partition_map(|either| either)
 }
 
-pub(crate) fn inline_call(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name_ref: ast::NameRef = ctx.find_node_at_offset()?;
     let call_info = CallInfo::from_name_ref(
         name_ref.clone(),
@@ -190,10 +184,7 @@ struct CallInfo {
 }
 
 impl CallInfo {
-    fn from_name_ref(
-        name_ref: ast::NameRef,
-        krate: Crate,
-    ) -> Option<CallInfo> {
+    fn from_name_ref(name_ref: ast::NameRef, krate: Crate) -> Option<CallInfo> {
         let parent = name_ref.syntax().parent()?;
         if let Some(call) = ast::MethodCallExpr::cast(parent.clone()) {
             let receiver = call.receiver()?;

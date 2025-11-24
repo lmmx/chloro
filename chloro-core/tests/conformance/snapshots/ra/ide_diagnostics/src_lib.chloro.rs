@@ -200,26 +200,17 @@ impl Diagnostic {
         self
     }
 
-    fn with_main_node(
-        mut self,
-        main_node: InFile<SyntaxNodePtr>,
-    ) -> Diagnostic {
+    fn with_main_node(mut self, main_node: InFile<SyntaxNodePtr>) -> Diagnostic {
         self.main_node = Some(main_node);
         self
     }
 
-    fn with_fixes(
-        mut self,
-        fixes: Option<Vec<Assist>>,
-    ) -> Diagnostic {
+    fn with_fixes(mut self, fixes: Option<Vec<Assist>>) -> Diagnostic {
         self.fixes = fixes;
         self
     }
 
-    fn with_unused(
-        mut self,
-        unused: bool,
-    ) -> Diagnostic {
+    fn with_unused(mut self, unused: bool) -> Diagnostic {
         self.unused = unused;
         self
     }
@@ -633,10 +624,7 @@ fn handle_lints(
     }
 }
 
-fn default_lint_severity(
-    lint: &Lint,
-    edition: Edition,
-) -> Severity {
+fn default_lint_severity(lint: &Lint, edition: Edition) -> Severity {
     if lint.deny_since.is_some_and(|e| edition >= e) {
         Severity::Error
     } else if lint.warn_since.is_some_and(|e| edition >= e) {
@@ -781,18 +769,12 @@ struct LintGroups {
 }
 
 impl LintGroups {
-    fn contains(
-        &self,
-        group: &str,
-    ) -> bool {
+    fn contains(&self, group: &str) -> bool {
         self.groups.contains(&group) || (self.inside_warnings && group == "warnings")
     }
 }
 
-fn lint_groups(
-    lint: &DiagnosticCode,
-    edition: Edition,
-) -> LintGroups {
+fn lint_groups(lint: &DiagnosticCode, edition: Edition) -> LintGroups {
     let (groups, inside_warnings) = match lint {
         DiagnosticCode::RustcLint(name) => {
             let lint = &RUSTC_LINTS[name];
@@ -809,22 +791,13 @@ fn lint_groups(
     LintGroups { groups, inside_warnings }
 }
 
-fn fix(
-    id: &'static str,
-    label: &str,
-    source_change: SourceChange,
-    target: TextRange,
-) -> Assist {
+fn fix(id: &'static str, label: &str, source_change: SourceChange, target: TextRange) -> Assist {
     let mut res = unresolved_fix(id, label, target);
     res.source_change = Some(source_change);
     res
 }
 
-fn unresolved_fix(
-    id: &'static str,
-    label: &str,
-    target: TextRange,
-) -> Assist {
+fn unresolved_fix(id: &'static str, label: &str, target: TextRange) -> Assist {
     assert!(!id.contains(' '));
     Assist {
         id: AssistId::quick_fix(id),

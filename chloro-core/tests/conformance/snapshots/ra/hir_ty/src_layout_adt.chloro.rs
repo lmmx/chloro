@@ -104,10 +104,7 @@ pub(crate) fn layout_of_adt_cycle_result<'db>(
     Err(LayoutError::RecursiveTypeWithoutIndirection)
 }
 
-fn layout_scalar_valid_range(
-    db: &dyn HirDatabase,
-    def: AdtId,
-) -> (Bound<u128>, Bound<u128>) {
+fn layout_scalar_valid_range(db: &dyn HirDatabase, def: AdtId) -> (Bound<u128>, Bound<u128>) {
     let attrs = db.attrs(def.into());
     let get = |name| {
         let attr = attrs.by_key(name).tt_values();

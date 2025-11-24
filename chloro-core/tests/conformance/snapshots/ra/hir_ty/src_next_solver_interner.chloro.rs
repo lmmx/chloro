@@ -341,10 +341,7 @@ pub struct Placeholder<T> {
 }
 
 impl<T: std::fmt::Debug> std::fmt::Debug for Placeholder<T> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         if self.universe == UniverseIndex::ROOT {
             write!(f, "!{:?}", self.bound)
         } else {
@@ -374,10 +371,7 @@ impl VariantDef {
         }
     }
 
-    pub fn fields(
-        &self,
-        db: &dyn HirDatabase,
-    ) -> Vec<(Idx<FieldData>, FieldData)> {
+    pub fn fields(&self, db: &dyn HirDatabase) -> Vec<(Idx<FieldData>, FieldData)> {
         let id: VariantId = match self {
             VariantDef::Struct(it) => (*it).into(),
             VariantDef::Union(it) => (*it).into(),
@@ -408,10 +402,7 @@ pub struct AdtDefInner {
 
 impl std::hash::Hash for AdtDefInner {
     #[inline]
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        s: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
         self.id.hash(s)
     }
 }
@@ -423,10 +414,7 @@ pub struct AdtDef {
 }
 
 impl AdtDef {
-    pub fn new<'db>(
-        def_id: AdtId,
-        interner: DbInterner<'db>,
-    ) -> Self {
+    pub fn new<'db>(def_id: AdtId, interner: DbInterner<'db>) -> Self {
         let db = interner.db();
         let (flags, variants, repr) = match def_id {
             AdtId::StructId(struct_id) => {
@@ -648,10 +636,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
 }
 
 impl fmt::Debug for AdtDef {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         crate::with_attached_db(|db| match self.inner().id {
             AdtId::StructId(struct_id) => {
                 let data = db.struct_signature(struct_id);
@@ -685,10 +670,7 @@ impl<'db> inherent::Features<DbInterner<'db>> for Features {
         false
     }
 
-    fn feature_bound_holds_in_crate(
-        self,
-        _symbol: (),
-    ) -> bool {
+    fn feature_bound_holds_in_crate(self, _symbol: ()) -> bool {
         false
     }
 }
@@ -713,19 +695,13 @@ pub struct Pattern<'db> {
 }
 
 impl<'db> std::fmt::Debug for InternedWrapperNoDebug<PatternKind<'db>> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
 impl<'db> Pattern<'db> {
-    pub fn new(
-        interner: DbInterner<'db>,
-        kind: PatternKind<'db>,
-    ) -> Self {
+    pub fn new(interner: DbInterner<'db>, kind: PatternKind<'db>) -> Self {
         Pattern::new_(interner.db(), InternedWrapperNoDebug(kind))
     }
 
@@ -972,17 +948,11 @@ impl<'db> Interner for DbInterner<'db> {
 
     type Features = Features;
 
-    fn mk_args(
-        self,
-        args: &[Self::GenericArg],
-    ) -> Self::GenericArgs {
+    fn mk_args(self, args: &[Self::GenericArg]) -> Self::GenericArgs {
         GenericArgs::new_from_iter(self, args.iter().cloned())
     }
 
-    fn mk_args_from_iter<I, T>(
-        self,
-        args: I,
-    ) -> T::Output
+    fn mk_args_from_iter<I, T>(self, args: I) -> T::Output
     where
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<Self::GenericArg, Self::GenericArgs>, {
@@ -1001,17 +971,11 @@ impl<'db> Interner for DbInterner<'db> {
         Tracked(data)
     }
 
-    fn get_tracked<T: fmt::Debug + Clone>(
-        self,
-        tracked: &Self::Tracked<T>,
-    ) -> T {
+    fn get_tracked<T: fmt::Debug + Clone>(self, tracked: &Self::Tracked<T>) -> T {
         tracked.0.clone()
     }
 
-    fn with_cached_task<T>(
-        self,
-        task: impl FnOnce() -> T,
-    ) -> (T, Self::DepNodeIndex) {
+    fn with_cached_task<T>(self, task: impl FnOnce() -> T) -> (T, Self::DepNodeIndex) {
         (task(), DepNodeIndex)
     }
 
@@ -1035,24 +999,15 @@ impl<'db> Interner for DbInterner<'db> {
         panic!("evaluation shouldn't be concurrent yet")
     }
 
-    fn expand_abstract_consts<T: rustc_type_ir::TypeFoldable<Self>>(
-        self,
-        _: T,
-    ) -> T {
+    fn expand_abstract_consts<T: rustc_type_ir::TypeFoldable<Self>>(self, _: T) -> T {
         unreachable!("only used by the old trait solver in rustc");
     }
 
-    fn generics_of(
-        self,
-        def_id: Self::DefId,
-    ) -> Self::GenericsOf {
+    fn generics_of(self, def_id: Self::DefId) -> Self::GenericsOf {
         generics(self.db(), def_id)
     }
 
-    fn variances_of(
-        self,
-        def_id: Self::DefId,
-    ) -> Self::VariancesOf {
+    fn variances_of(self, def_id: Self::DefId) -> Self::VariancesOf {
         let generic_def = match def_id {
             SolverDefId::Ctor(Ctor::Enum(def_id)) | SolverDefId::EnumVariantId(def_id) => {
                 def_id.loc(self.db).parent.into()
@@ -1083,10 +1038,7 @@ impl<'db> Interner for DbInterner<'db> {
         self.db.variances_of(generic_def)
     }
 
-    fn type_of(
-        self,
-        def_id: Self::DefId,
-    ) -> EarlyBinder<Self, Self::Ty> {
+    fn type_of(self, def_id: Self::DefId) -> EarlyBinder<Self, Self::Ty> {
         match def_id {
             SolverDefId::TypeAliasId(id) => {
                 use hir_def::Lookup;
@@ -1114,17 +1066,11 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn adt_def(
-        self,
-        def_id: Self::AdtId,
-    ) -> Self::AdtDef {
+    fn adt_def(self, def_id: Self::AdtId) -> Self::AdtDef {
         AdtDef::new(def_id.0, self)
     }
 
-    fn alias_ty_kind(
-        self,
-        alias: rustc_type_ir::AliasTy<Self>,
-    ) -> AliasTyKind {
+    fn alias_ty_kind(self, alias: rustc_type_ir::AliasTy<Self>) -> AliasTyKind {
         match alias.def_id {
             SolverDefId::InternedOpaqueTyId(_) => AliasTyKind::Opaque,
             SolverDefId::TypeAliasId(type_alias) => match type_alias.loc(self.db).container {
@@ -1180,20 +1126,12 @@ impl<'db> Interner for DbInterner<'db> {
         (TraitRef::new_from_args(self, trait_def_id.try_into().unwrap(), trait_args), alias_args)
     }
 
-    fn check_args_compatible(
-        self,
-        _def_id: Self::DefId,
-        _args: Self::GenericArgs,
-    ) -> bool {
+    fn check_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) -> bool {
         // FIXME
         true
     }
 
-    fn debug_assert_args_compatible(
-        self,
-        _def_id: Self::DefId,
-        _args: Self::GenericArgs,
-    ) {
+    fn debug_assert_args_compatible(self, _def_id: Self::DefId, _args: Self::GenericArgs) {
     }
 
     fn debug_assert_existential_args_compatible(
@@ -1203,20 +1141,14 @@ impl<'db> Interner for DbInterner<'db> {
     ) {
     }
 
-    fn mk_type_list_from_iter<I, T>(
-        self,
-        args: I,
-    ) -> T::Output
+    fn mk_type_list_from_iter<I, T>(self, args: I) -> T::Output
     where
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<Self::Ty, Self::Tys>, {
         CollectAndApply::collect_and_apply(args, |g| Tys::new_from_iter(self, g.iter().cloned()))
     }
 
-    fn parent(
-        self,
-        def_id: Self::DefId,
-    ) -> Self::DefId {
+    fn parent(self, def_id: Self::DefId) -> Self::DefId {
         use hir_def::Lookup;
         let container = match def_id {
             SolverDefId::FunctionId(it) => it.lookup(self.db()).container,
@@ -1270,10 +1202,7 @@ impl<'db> Interner for DbInterner<'db> {
         self.db().callable_item_signature(def_id.0)
     }
 
-    fn coroutine_movability(
-        self,
-        def_id: Self::CoroutineId,
-    ) -> rustc_ast_ir::Movability {
+    fn coroutine_movability(self, def_id: Self::CoroutineId) -> rustc_ast_ir::Movability {
         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
         // the current infer query, except with revealed opaques - is it rare enough to not matter?
         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
@@ -1293,17 +1222,11 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn coroutine_for_closure(
-        self,
-        def_id: Self::CoroutineClosureId,
-    ) -> Self::CoroutineId {
+    fn coroutine_for_closure(self, def_id: Self::CoroutineClosureId) -> Self::CoroutineId {
         def_id
     }
 
-    fn generics_require_sized_self(
-        self,
-        def_id: Self::DefId,
-    ) -> bool {
+    fn generics_require_sized_self(self, def_id: Self::DefId) -> bool {
         let sized_trait =
             LangItem::Sized.resolve_trait(self.db(), self.krate.expect("Must have self.krate"));
         let Some(sized_id) = sized_trait else {
@@ -1484,17 +1407,11 @@ impl<'db> Interner for DbInterner<'db> {
         EarlyBinder::bind([unimplemented!()])
     }
 
-    fn has_target_features(
-        self,
-        _def_id: Self::FunctionId,
-    ) -> bool {
+    fn has_target_features(self, _def_id: Self::FunctionId) -> bool {
         false
     }
 
-    fn require_lang_item(
-        self,
-        lang_item: SolverLangItem,
-    ) -> Self::DefId {
+    fn require_lang_item(self, lang_item: SolverLangItem) -> Self::DefId {
         let lang_item = match lang_item {
             SolverLangItem::AsyncFnKindUpvars => unimplemented!(),
             SolverLangItem::AsyncFnOnceOutput => LangItem::AsyncFnOnceOutput,
@@ -1525,10 +1442,7 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn require_trait_lang_item(
-        self,
-        lang_item: SolverTraitLangItem,
-    ) -> TraitIdWrapper {
+    fn require_trait_lang_item(self, lang_item: SolverTraitLangItem) -> TraitIdWrapper {
         let lang_item = match lang_item {
             SolverTraitLangItem::AsyncFn => LangItem::AsyncFn,
             SolverTraitLangItem::AsyncFnKindHelper => unimplemented!(),
@@ -1567,10 +1481,7 @@ impl<'db> Interner for DbInterner<'db> {
             .into()
     }
 
-    fn require_adt_lang_item(
-        self,
-        lang_item: SolverAdtLangItem,
-    ) -> AdtIdWrapper {
+    fn require_adt_lang_item(self, lang_item: SolverAdtLangItem) -> AdtIdWrapper {
         let lang_item = match lang_item {
             SolverAdtLangItem::Option => LangItem::Option,
             SolverAdtLangItem::Poll => LangItem::Poll,
@@ -1581,38 +1492,23 @@ impl<'db> Interner for DbInterner<'db> {
             .into()
     }
 
-    fn is_lang_item(
-        self,
-        def_id: Self::DefId,
-        lang_item: SolverLangItem,
-    ) -> bool {
+    fn is_lang_item(self, def_id: Self::DefId, lang_item: SolverLangItem) -> bool {
         self.as_lang_item(def_id)
             .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
-    fn is_trait_lang_item(
-        self,
-        def_id: Self::TraitId,
-        lang_item: SolverTraitLangItem,
-    ) -> bool {
+    fn is_trait_lang_item(self, def_id: Self::TraitId, lang_item: SolverTraitLangItem) -> bool {
         self.as_trait_lang_item(def_id)
             .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
-    fn is_adt_lang_item(
-        self,
-        def_id: Self::AdtId,
-        lang_item: SolverAdtLangItem,
-    ) -> bool {
+    fn is_adt_lang_item(self, def_id: Self::AdtId, lang_item: SolverAdtLangItem) -> bool {
         // FIXME: derive PartialEq on SolverTraitLangItem
         self.as_adt_lang_item(def_id)
             .map_or(false, |l| std::mem::discriminant(&l) == std::mem::discriminant(&lang_item))
     }
 
-    fn as_lang_item(
-        self,
-        def_id: Self::DefId,
-    ) -> Option<SolverLangItem> {
+    fn as_lang_item(self, def_id: Self::DefId) -> Option<SolverLangItem> {
         let def_id: AttrDefId = match def_id {
             SolverDefId::TraitId(id) => id.into(),
             SolverDefId::TypeAliasId(id) => id.into(),
@@ -1638,10 +1534,7 @@ impl<'db> Interner for DbInterner<'db> {
         )
     }
 
-    fn as_trait_lang_item(
-        self,
-        def_id: Self::TraitId,
-    ) -> Option<SolverTraitLangItem> {
+    fn as_trait_lang_item(self, def_id: Self::TraitId) -> Option<SolverTraitLangItem> {
         let def_id: AttrDefId = def_id.0.into();
         let lang_item = self.db().lang_attr(def_id)?;
         as_lang_item!(
@@ -1681,10 +1574,7 @@ impl<'db> Interner for DbInterner<'db> {
         )
     }
 
-    fn as_adt_lang_item(
-        self,
-        def_id: Self::AdtId,
-    ) -> Option<SolverAdtLangItem> {
+    fn as_adt_lang_item(self, def_id: Self::AdtId) -> Option<SolverAdtLangItem> {
         let def_id: AttrDefId = def_id.0.into();
         let lang_item = self.db().lang_attr(def_id)?;
         as_lang_item!(
@@ -1770,11 +1660,7 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn for_each_blanket_impl(
-        self,
-        trait_def_id: Self::TraitId,
-        mut f: impl FnMut(Self::ImplId),
-    ) {
+    fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
         let Some(krate) = self.krate else { return };
         for impls in self.db.trait_impls_in_deps(krate).iter() {
             for impl_id in impls.for_trait(trait_def_id.0) {
@@ -1787,18 +1673,12 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn has_item_definition(
-        self,
-        _def_id: Self::DefId,
-    ) -> bool {
+    fn has_item_definition(self, _def_id: Self::DefId) -> bool {
         // FIXME(next-solver): should check if the associated item has a value.
         true
     }
 
-    fn impl_is_default(
-        self,
-        impl_def_id: Self::ImplId,
-    ) -> bool {
+    fn impl_is_default(self, impl_def_id: Self::ImplId) -> bool {
         self.db.impl_signature(impl_def_id.0).is_default()
     }
 
@@ -1813,10 +1693,7 @@ impl<'db> Interner for DbInterner<'db> {
             .expect("invalid impl passed to trait solver")
     }
 
-    fn impl_polarity(
-        self,
-        impl_id: Self::ImplId,
-    ) -> rustc_type_ir::ImplPolarity {
+    fn impl_polarity(self, impl_id: Self::ImplId) -> rustc_type_ir::ImplPolarity {
         let impl_data = self.db().impl_signature(impl_id.0);
         if impl_data.flags.contains(ImplFlags::NEGATIVE) {
             ImplPolarity::Negative
@@ -1825,65 +1702,41 @@ impl<'db> Interner for DbInterner<'db> {
         }
     }
 
-    fn trait_is_auto(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_auto(self, trait_: Self::TraitId) -> bool {
         let trait_data = self.db().trait_signature(trait_.0);
         trait_data.flags.contains(TraitFlags::AUTO)
     }
 
-    fn trait_is_alias(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_alias(self, trait_: Self::TraitId) -> bool {
         let trait_data = self.db().trait_signature(trait_.0);
         trait_data.flags.contains(TraitFlags::ALIAS)
     }
 
-    fn trait_is_dyn_compatible(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_dyn_compatible(self, trait_: Self::TraitId) -> bool {
         crate::dyn_compatibility::dyn_compatibility(self.db(), trait_.0).is_none()
     }
 
-    fn trait_is_fundamental(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_fundamental(self, trait_: Self::TraitId) -> bool {
         let trait_data = self.db().trait_signature(trait_.0);
         trait_data.flags.contains(TraitFlags::FUNDAMENTAL)
     }
 
-    fn trait_may_be_implemented_via_object(
-        self,
-        _trait_def_id: Self::TraitId,
-    ) -> bool {
+    fn trait_may_be_implemented_via_object(self, _trait_def_id: Self::TraitId) -> bool {
         // FIXME(next-solver): should check the `TraitFlags` for
         // the `#[rustc_do_not_implement_via_object]` flag
         true
     }
 
-    fn is_impl_trait_in_trait(
-        self,
-        _def_id: Self::DefId,
-    ) -> bool {
+    fn is_impl_trait_in_trait(self, _def_id: Self::DefId) -> bool {
         // FIXME(next-solver)
         false
     }
 
-    fn delay_bug(
-        self,
-        msg: impl ToString,
-    ) -> Self::ErrorGuaranteed {
+    fn delay_bug(self, msg: impl ToString) -> Self::ErrorGuaranteed {
         panic!("Bug encountered in next-trait-solver: {}", msg.to_string())
     }
 
-    fn is_general_coroutine(
-        self,
-        def_id: Self::CoroutineId,
-    ) -> bool {
+    fn is_general_coroutine(self, def_id: Self::CoroutineId) -> bool {
         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
         // the current infer query, except with revealed opaques - is it rare enough to not matter?
         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
@@ -1897,10 +1750,7 @@ impl<'db> Interner for DbInterner<'db> {
         )
     }
 
-    fn coroutine_is_async(
-        self,
-        def_id: Self::CoroutineId,
-    ) -> bool {
+    fn coroutine_is_async(self, def_id: Self::CoroutineId) -> bool {
         // FIXME: Make this a query? I don't believe this can be accessed from bodies other than
         // the current infer query, except with revealed opaques - is it rare enough to not matter?
         let InternedCoroutine(owner, expr_id) = def_id.0.loc(self.db);
@@ -1912,26 +1762,17 @@ impl<'db> Interner for DbInterner<'db> {
         )
     }
 
-    fn coroutine_is_gen(
-        self,
-        _coroutine_def_id: Self::CoroutineId,
-    ) -> bool {
+    fn coroutine_is_gen(self, _coroutine_def_id: Self::CoroutineId) -> bool {
         // We don't handle gen coroutines yet.
         false
     }
 
-    fn coroutine_is_async_gen(
-        self,
-        _coroutine_def_id: Self::CoroutineId,
-    ) -> bool {
+    fn coroutine_is_async_gen(self, _coroutine_def_id: Self::CoroutineId) -> bool {
         // We don't handle gen coroutines yet.
         false
     }
 
-    fn unsizing_params_for_adt(
-        self,
-        id: Self::AdtId,
-    ) -> Self::UnsizingParams {
+    fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
         let def = AdtDef::new(id.0, self);
         let num_params = self.generics_of(id.into()).count();
         let maybe_unsizing_param_idx = |arg: GenericArg<'db>| match arg.kind() {
@@ -2014,10 +1855,7 @@ impl<'db> Interner for DbInterner<'db> {
         Binder::bind_with_vars(inner, bound_vars)
     }
 
-    fn opaque_types_defined_by(
-        self,
-        def_id: Self::LocalDefId,
-    ) -> Self::LocalDefIds {
+    fn opaque_types_defined_by(self, def_id: Self::LocalDefId) -> Self::LocalDefIds {
         let Ok(def_id) = DefWithBodyId::try_from(def_id) else {
             return SolverDefIds::default();
         };
@@ -2055,10 +1893,7 @@ impl<'db> Interner for DbInterner<'db> {
         SolverDefIds::new_from_iter(self, result)
     }
 
-    fn alias_has_const_conditions(
-        self,
-        _def_id: Self::DefId,
-    ) -> bool {
+    fn alias_has_const_conditions(self, _def_id: Self::DefId) -> bool {
         // FIXME(next-solver)
         false
     }
@@ -2074,10 +1909,7 @@ impl<'db> Interner for DbInterner<'db> {
         EarlyBinder::bind([])
     }
 
-    fn fn_is_const(
-        self,
-        id: Self::FunctionId,
-    ) -> bool {
+    fn fn_is_const(self, id: Self::FunctionId) -> bool {
         let id = match id.0 {
             CallableDefId::FunctionId(id) => id,
             _ => return false,
@@ -2085,10 +1917,7 @@ impl<'db> Interner for DbInterner<'db> {
         self.db().function_signature(id).flags.contains(FnFlags::CONST)
     }
 
-    fn impl_is_const(
-        self,
-        _def_id: Self::ImplId,
-    ) -> bool {
+    fn impl_is_const(self, _def_id: Self::ImplId) -> bool {
         false
     }
 
@@ -2100,10 +1929,7 @@ impl<'db> Interner for DbInterner<'db> {
         None
     }
 
-    fn type_of_opaque_hir_typeck(
-        self,
-        def_id: Self::LocalDefId,
-    ) -> EarlyBinder<Self, Self::Ty> {
+    fn type_of_opaque_hir_typeck(self, def_id: Self::LocalDefId) -> EarlyBinder<Self, Self::Ty> {
         match def_id {
             SolverDefId::InternedOpaqueTyId(opaque) => {
                 let impl_trait_id = self.db().lookup_intern_impl_trait_id(opaque);
@@ -2131,31 +1957,19 @@ impl<'db> Interner for DbInterner<'db> {
         }))
     }
 
-    fn is_default_trait(
-        self,
-        def_id: Self::TraitId,
-    ) -> bool {
+    fn is_default_trait(self, def_id: Self::TraitId) -> bool {
         self.as_trait_lang_item(def_id).map_or(false, |l| matches!(l, SolverTraitLangItem::Sized))
     }
 
-    fn trait_is_coinductive(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_coinductive(self, trait_: Self::TraitId) -> bool {
         self.db().trait_signature(trait_.0).flags.contains(TraitFlags::COINDUCTIVE)
     }
 
-    fn trait_is_unsafe(
-        self,
-        trait_: Self::TraitId,
-    ) -> bool {
+    fn trait_is_unsafe(self, trait_: Self::TraitId) -> bool {
         self.db().trait_signature(trait_.0).flags.contains(TraitFlags::UNSAFE)
     }
 
-    fn impl_self_is_guaranteed_unsized(
-        self,
-        _def_id: Self::ImplId,
-    ) -> bool {
+    fn impl_self_is_guaranteed_unsized(self, _def_id: Self::ImplId) -> bool {
         false
     }
 
@@ -2177,10 +1991,7 @@ impl<'db> Interner for DbInterner<'db> {
 
     type Probe = rustc_type_ir::solve::inspect::Probe<DbInterner<'db>>;
 
-    fn mk_probe(
-        self,
-        probe: rustc_type_ir::solve::inspect::Probe<Self>,
-    ) -> Self::Probe {
+    fn mk_probe(self, probe: rustc_type_ir::solve::inspect::Probe<Self>) -> Self::Probe {
         probe
     }
 
@@ -2194,10 +2005,7 @@ impl<'db> Interner for DbInterner<'db> {
         >(self, canonical_goal)
     }
 
-    fn is_sizedness_trait(
-        self,
-        def_id: Self::TraitId,
-    ) -> bool {
+    fn is_sizedness_trait(self, def_id: Self::TraitId) -> bool {
         matches!(
             self.as_trait_lang_item(def_id),
             Some(SolverTraitLangItem::Sized | SolverTraitLangItem::MetaSized)
@@ -2206,11 +2014,7 @@ impl<'db> Interner for DbInterner<'db> {
 }
 
 impl<'db> DbInterner<'db> {
-    pub fn shift_bound_var_indices<T>(
-        self,
-        bound_vars: usize,
-        value: T,
-    ) -> T
+    pub fn shift_bound_var_indices<T>(self, bound_vars: usize, value: T) -> T
     where
         T: rustc_type_ir::TypeFoldable<Self>, {
         let shift_bv = |bv: BoundVar| BoundVar::from_usize(bv.as_usize() + bound_vars);
@@ -2322,11 +2126,7 @@ mod tls_db {
     }
     impl Attached {
         #[inline]
-        fn attach<R>(
-            &self,
-            db: &dyn HirDatabase,
-            op: impl FnOnce() -> R,
-        ) -> R {
+        fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
             struct DbGuard<'s> {
                 state: Option<&'s Attached>,
             }
@@ -2366,11 +2166,7 @@ mod tls_db {
         }
 
         #[inline]
-        fn attach_allow_change<R>(
-            &self,
-            db: &dyn HirDatabase,
-            op: impl FnOnce() -> R,
-        ) -> R {
+        fn attach_allow_change<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
             struct DbGuard<'s> {
                 state: &'s Attached,
                 prev: Option<NonNull<dyn HirDatabase>>,
@@ -2393,27 +2189,18 @@ mod tls_db {
         }
 
         #[inline]
-        fn with<R>(
-            &self,
-            op: impl FnOnce(&dyn HirDatabase) -> R,
-        ) -> R {
+        fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
             // SAFETY: The db is attached, so it must be valid.
             op(unsafe { db.as_ref() })
         }
     }
     #[inline]
-    pub fn attach_db<R>(
-        db: &dyn HirDatabase,
-        op: impl FnOnce() -> R,
-    ) -> R {
+    pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
         GLOBAL_DB.with(|global_db| global_db.attach(db, op))
     }
     #[inline]
-    pub fn attach_db_allow_change<R>(
-        db: &dyn HirDatabase,
-        op: impl FnOnce() -> R,
-    ) -> R {
+    pub fn attach_db_allow_change<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
         GLOBAL_DB.with(|global_db| global_db.attach_allow_change(db, op))
     }
     #[inline]

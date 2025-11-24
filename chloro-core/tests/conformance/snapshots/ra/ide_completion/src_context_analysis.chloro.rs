@@ -97,10 +97,7 @@ pub(super) fn expand_and_analyze<'db>(
     )
 }
 
-fn token_at_offset_ignore_whitespace(
-    file: &SyntaxNode,
-    offset: TextSize,
-) -> Option<SyntaxToken> {
+fn token_at_offset_ignore_whitespace(file: &SyntaxNode, offset: TextSize) -> Option<SyntaxToken> {
     let token = file.token_at_offset(offset).left_biased()?;
     algo::skip_whitespace_token(token, Direction::Prev)
 }
@@ -1773,19 +1770,13 @@ fn fetch_immediate_impl_or_trait(
 
 /// Attempts to find `node` inside `syntax` via `node`'s text range.
 /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
-fn find_opt_node_in_file<N: AstNode>(
-    syntax: &SyntaxNode,
-    node: Option<N>,
-) -> Option<N> {
+fn find_opt_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: Option<N>) -> Option<N> {
     find_node_in_file(syntax, &node?)
 }
 
 /// Attempts to find `node` inside `syntax` via `node`'s text range.
 /// If the fake identifier has been inserted after this node or inside of this node use the `_compensated` version instead.
-fn find_node_in_file<N: AstNode>(
-    syntax: &SyntaxNode,
-    node: &N,
-) -> Option<N> {
+fn find_node_in_file<N: AstNode>(syntax: &SyntaxNode, node: &N) -> Option<N> {
     let syntax_range = syntax.text_range();
     let range = node.syntax().text_range();
     let intersection = range.intersect(syntax_range)?;

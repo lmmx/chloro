@@ -23,10 +23,7 @@ use hir_def::{
 use itertools::chain;
 use triomphe::Arc;
 
-pub fn generics(
-    db: &dyn DefDatabase,
-    def: GenericDefId,
-) -> Generics {
+pub fn generics(db: &dyn DefDatabase, def: GenericDefId) -> Generics {
     let parent_generics = parent_generic_def(db, def).map(|def| Box::new(generics(db, def)));
     let (params, store) = db.generic_params_and_store(def);
     let has_trait_self_param = params.trait_self_param().is_some();
@@ -47,10 +44,7 @@ where
     GenericParams: ops::Index<T>, {
     type Output = <GenericParams as ops::Index<T>>::Output;
 
-    fn index(
-        &self,
-        index: T,
-    ) -> &Self::Output {
+    fn index(&self, index: T) -> &Self::Output {
         &self.params[index]
     }
 }
@@ -89,31 +83,41 @@ impl Generics {
         self.iter_parent().map(|(id, _)| id)
     }
 
-    pub(crate) fn iter_self_type_or_consts(&self) -> impl DoubleEndedIterator<Item = (LocalTypeOrConstParamId, &TypeOrConstParamData)> + '_ {
+    pub(crate) fn iter_self_type_or_consts(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (LocalTypeOrConstParamId, &TypeOrConstParamData)> + '_ {
         let mut toc = self.params.iter_type_or_consts();
         let trait_self_param = self.has_trait_self_param.then(|| toc.next()).flatten();
         chain!(trait_self_param, toc)
     }
 
     /// Iterate over the parent params followed by self params.
-    pub(crate) fn iter(&self) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
+    pub(crate) fn iter(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
         self.iter_parent().chain(self.iter_self())
     }
 
-    pub(crate) fn iter_parents_with_store(&self) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_ {
+    pub(crate) fn iter_parents_with_store(
+        &self,
+    ) -> impl Iterator<Item = ((GenericParamId, GenericParamDataRef<'_>), &ExpressionStore)> + '_ {
         self.iter_parent()
             .zip(self.parent_generics().into_iter().flat_map(|it| std::iter::repeat(&*it.store)))
     }
 
     /// Iterate over the params without parent params.
-    pub(crate) fn iter_self(&self) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
+    pub(crate) fn iter_self(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
         let mut toc = self.params.iter_type_or_consts().map(from_toc_id(self));
         let trait_self_param = self.has_trait_self_param.then(|| toc.next()).flatten();
         chain!(trait_self_param, self.params.iter_lt().map(from_lt_id(self)), toc)
     }
 
     /// Iterator over types and const params of parent.
-    pub(crate) fn iter_parent(&self) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
+    pub(crate) fn iter_parent(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (GenericParamId, GenericParamDataRef<'_>)> + '_ {
         self.parent_generics().into_iter().flat_map(|it| {
             let mut toc = it.params.iter_type_or_consts().map(from_toc_id(it));
             let trait_self_param = it.has_trait_self_param.then(|| toc.next()).flatten();
@@ -176,17 +180,11 @@ impl Generics {
         })
     }
 
-    pub fn type_or_const_param_idx(
-        &self,
-        param: TypeOrConstParamId,
-    ) -> Option<usize> {
+    pub fn type_or_const_param_idx(&self, param: TypeOrConstParamId) -> Option<usize> {
         self.find_type_or_const_param(param)
     }
 
-    fn find_type_or_const_param(
-        &self,
-        param: TypeOrConstParamId,
-    ) -> Option<usize> {
+    fn find_type_or_const_param(&self, param: TypeOrConstParamId) -> Option<usize> {
         if param.parent == self.def {
             let idx = param.local_id.into_raw().into_u32() as usize;
             debug_assert!(
@@ -205,17 +203,11 @@ impl Generics {
         }
     }
 
-    pub fn lifetime_idx(
-        &self,
-        lifetime: LifetimeParamId,
-    ) -> Option<usize> {
+    pub fn lifetime_idx(&self, lifetime: LifetimeParamId) -> Option<usize> {
         self.find_lifetime(lifetime)
     }
 
-    fn find_lifetime(
-        &self,
-        lifetime: LifetimeParamId,
-    ) -> Option<usize> {
+    fn find_lifetime(&self, lifetime: LifetimeParamId) -> Option<usize> {
         if lifetime.parent == self.def {
             let idx = lifetime.local_id.into_raw().into_u32() as usize;
             debug_assert!(idx <= self.params.len_lifetimes());
@@ -235,10 +227,7 @@ impl Generics {
     }
 }
 
-pub(crate) fn trait_self_param_idx(
-    db: &dyn DefDatabase,
-    def: GenericDefId,
-) -> Option<usize> {
+pub(crate) fn trait_self_param_idx(db: &dyn DefDatabase, def: GenericDefId) -> Option<usize> {
     match def {
         GenericDefId::TraitId(_) => {
             let params = db.generic_params(def);
@@ -254,10 +243,7 @@ pub(crate) fn trait_self_param_idx(
     }
 }
 
-pub(crate) fn parent_generic_def(
-    db: &dyn DefDatabase,
-    def: GenericDefId,
-) -> Option<GenericDefId> {
+pub(crate) fn parent_generic_def(db: &dyn DefDatabase, def: GenericDefId) -> Option<GenericDefId> {
     let container = match def {
         GenericDefId::FunctionId(it) => it.lookup(db).container,
         GenericDefId::TypeAliasId(it) => it.lookup(db).container,
@@ -274,7 +260,9 @@ pub(crate) fn parent_generic_def(
     }
 }
 
-fn from_toc_id<'a>(it: &'a Generics) -> impl Fn(
+fn from_toc_id<'a>(
+    it: &'a Generics,
+) -> impl Fn(
     (LocalTypeOrConstParamId, &'a TypeOrConstParamData),
 ) -> (GenericParamId, GenericParamDataRef<'a>) {
     move |(local_id, p): (_, _)| {
@@ -292,7 +280,9 @@ fn from_toc_id<'a>(it: &'a Generics) -> impl Fn(
     }
 }
 
-fn from_lt_id<'a>(it: &'a Generics) -> impl Fn((LocalLifetimeParamId, &'a LifetimeParamData)) -> (GenericParamId, GenericParamDataRef<'a>) {
+fn from_lt_id<'a>(
+    it: &'a Generics,
+) -> impl Fn((LocalLifetimeParamId, &'a LifetimeParamData)) -> (GenericParamId, GenericParamDataRef<'a>) {
     move |(local_id, p): (_, _)| {
         (
             GenericParamId::LifetimeParamId(LifetimeParamId { parent: it.def, local_id }),

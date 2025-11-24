@@ -61,10 +61,7 @@ impl Definition {
         self.module(db).map(|it| it.path_to_root(db).into_iter().rev())
     }
 
-    pub fn krate(
-        &self,
-        db: &RootDatabase,
-    ) -> Option<Crate> {
+    pub fn krate(&self, db: &RootDatabase) -> Option<Crate> {
         Some(match self {
             Definition::Module(m) => m.krate(),
             &Definition::Crate(it) => it,
@@ -75,10 +72,7 @@ impl Definition {
     /// Returns the module this definition resides in.
     ///
     /// As such, for modules themselves this will return the parent module.
-    pub fn module(
-        &self,
-        db: &RootDatabase,
-    ) -> Option<Module> {
+    pub fn module(&self, db: &RootDatabase) -> Option<Module> {
         let module = match self {
             Definition::Macro(it) => it.module(db),
             Definition::Module(it) => it.parent(db)?,
@@ -108,10 +102,7 @@ impl Definition {
         Some(module)
     }
 
-    pub fn enclosing_definition(
-        &self,
-        db: &RootDatabase,
-    ) -> Option<Definition> {
+    pub fn enclosing_definition(&self, db: &RootDatabase) -> Option<Definition> {
         fn container_to_definition(container: ItemContainer) -> Option<Definition> {
             match container {
                 ItemContainer::Trait(it) => Some(it.into()),
@@ -148,10 +139,7 @@ impl Definition {
         }
     }
 
-    pub fn visibility(
-        &self,
-        db: &RootDatabase,
-    ) -> Option<Visibility> {
+    pub fn visibility(&self, db: &RootDatabase) -> Option<Visibility> {
         let vis = match self {
             Definition::Field(sf) => sf.visibility(db),
             Definition::Module(it) => it.visibility(db),
@@ -180,10 +168,7 @@ impl Definition {
         Some(vis)
     }
 
-    pub fn name(
-        &self,
-        db: &RootDatabase,
-    ) -> Option<Name> {
+    pub fn name(&self, db: &RootDatabase) -> Option<Name> {
         let name = match self {
             Definition::Macro(it) => it.name(db),
             Definition::Field(it) => it.name(db),
@@ -317,11 +302,7 @@ impl Definition {
         .map(|(docs, range_map)| (docs, Some(range_map)))
     }
 
-    pub fn label(
-        &self,
-        db: &RootDatabase,
-        display_target: DisplayTarget,
-    ) -> String {
+    pub fn label(&self, db: &RootDatabase, display_target: DisplayTarget) -> String {
         match *self {
             Definition::Macro(it) => it.display(db, display_target).to_string(),
             Definition::Field(it) => it.display(db, display_target).to_string(),
@@ -911,10 +892,7 @@ impl From<Either<PathResolution, InlineAsmOperand>> for Definition {
 }
 
 impl AsAssocItem for Definition {
-    fn as_assoc_item(
-        self,
-        db: &dyn hir::db::HirDatabase,
-    ) -> Option<AssocItem> {
+    fn as_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<AssocItem> {
         match self {
             Definition::Function(it) => it.as_assoc_item(db),
             Definition::Const(it) => it.as_assoc_item(db),
@@ -925,10 +903,7 @@ impl AsAssocItem for Definition {
 }
 
 impl AsExternAssocItem for Definition {
-    fn as_extern_assoc_item(
-        self,
-        db: &dyn hir::db::HirDatabase,
-    ) -> Option<ExternAssocItem> {
+    fn as_extern_assoc_item(self, db: &dyn hir::db::HirDatabase) -> Option<ExternAssocItem> {
         match self {
             Definition::Function(it) => it.as_extern_assoc_item(db),
             Definition::Static(it) => it.as_extern_assoc_item(db),

@@ -149,10 +149,7 @@ pub struct GenericParams {
 impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
     type Output = TypeOrConstParamData;
 
-    fn index(
-        &self,
-        index: LocalTypeOrConstParamId,
-    ) -> &TypeOrConstParamData {
+    fn index(&self, index: LocalTypeOrConstParamId) -> &TypeOrConstParamData {
         &self.type_or_consts[index]
     }
 }
@@ -160,10 +157,7 @@ impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
 impl ops::Index<LocalLifetimeParamId> for GenericParams {
     type Output = LifetimeParamData;
 
-    fn index(
-        &self,
-        index: LocalLifetimeParamId,
-    ) -> &LifetimeParamData {
+    fn index(&self, index: LocalLifetimeParamId) -> &LifetimeParamData {
         &self.lifetimes[index]
     }
 }
@@ -201,10 +195,7 @@ impl GenericParams {
     /// The index of the self param in the generic of the non-parent definition.
     pub(crate) const SELF_PARAM_ID_IN_SELF: la_arena::Idx<TypeOrConstParamData> = LocalTypeOrConstParamId::from_raw(RawIdx::from_u32(0));
 
-    pub fn new(
-        db: &dyn DefDatabase,
-        def: GenericDefId,
-    ) -> Arc<GenericParams> {
+    pub fn new(db: &dyn DefDatabase, def: GenericDefId) -> Arc<GenericParams> {
         match def {
             GenericDefId::AdtId(AdtId::EnumId(it)) => db.enum_signature(it).generic_params.clone(),
             GenericDefId::AdtId(AdtId::StructId(it)) => {
@@ -347,21 +338,21 @@ impl GenericParams {
 
     /// Iterator of type_or_consts field
     #[inline]
-    pub fn iter_type_or_consts(&self) -> impl DoubleEndedIterator<Item = (LocalTypeOrConstParamId, &TypeOrConstParamData)> {
+    pub fn iter_type_or_consts(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (LocalTypeOrConstParamId, &TypeOrConstParamData)> {
         self.type_or_consts.iter()
     }
 
     /// Iterator of lifetimes field
     #[inline]
-    pub fn iter_lt(&self) -> impl DoubleEndedIterator<Item = (LocalLifetimeParamId, &LifetimeParamData)> {
+    pub fn iter_lt(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = (LocalLifetimeParamId, &LifetimeParamData)> {
         self.lifetimes.iter()
     }
 
-    pub fn find_type_by_name(
-        &self,
-        name: &Name,
-        parent: GenericDefId,
-    ) -> Option<TypeParamId> {
+    pub fn find_type_by_name(&self, name: &Name, parent: GenericDefId) -> Option<TypeParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.type_param().is_some() {
                 Some(TypeParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))
@@ -371,11 +362,7 @@ impl GenericParams {
         })
     }
 
-    pub fn find_const_by_name(
-        &self,
-        name: &Name,
-        parent: GenericDefId,
-    ) -> Option<ConstParamId> {
+    pub fn find_const_by_name(&self, name: &Name, parent: GenericDefId) -> Option<ConstParamId> {
         self.type_or_consts.iter().find_map(|(id, p)| {
             if p.name().as_ref() == Some(&name) && p.const_param().is_some() {
                 Some(ConstParamId::from_unchecked(TypeOrConstParamId { local_id: id, parent }))

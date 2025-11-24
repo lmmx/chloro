@@ -24,10 +24,7 @@ pub enum GenericArg<'db> {
 }
 
 impl<'db> std::fmt::Debug for GenericArg<'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Ty(t) => std::fmt::Debug::fmt(t, f),
             Self::Lifetime(r) => std::fmt::Debug::fmt(r, f),
@@ -73,10 +70,7 @@ impl<'db> GenericArg<'db> {
         }
     }
 
-    pub fn error_from_id(
-        interner: DbInterner<'db>,
-        id: GenericParamId,
-    ) -> GenericArg<'db> {
+    pub fn error_from_id(interner: DbInterner<'db>, id: GenericParamId) -> GenericArg<'db> {
         match id {
             GenericParamId::TypeParamId(_) => Ty::new_error(interner, ErrorGuaranteed).into(),
             GenericParamId::ConstParamId(_) => Const::error(interner).into(),
@@ -101,10 +95,7 @@ pub enum Term<'db> {
 }
 
 impl<'db> std::fmt::Debug for Term<'db> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Ty(t) => std::fmt::Debug::fmt(t, f),
             Self::Const(c) => std::fmt::Debug::fmt(c, f),
@@ -117,10 +108,7 @@ impl<'db> Term<'db> {
         self.as_type().expect("expected a type, but found a const")
     }
 
-    pub fn is_trivially_wf(
-        &self,
-        tcx: DbInterner<'db>,
-    ) -> bool {
+    pub fn is_trivially_wf(&self, tcx: DbInterner<'db>) -> bool {
         match self.kind() {
             TermKind::Ty(ty) => ty.is_trivially_wf(tcx),
             TermKind::Const(ct) => ct.is_trivially_wf(),
@@ -210,10 +198,7 @@ impl<'db> GenericArgs<'db> {
     }
 
     /// Creates an all-error `GenericArgs`.
-    pub fn error_for_item(
-        interner: DbInterner<'db>,
-        def_id: SolverDefId,
-    ) -> GenericArgs<'db> {
+    pub fn error_for_item(interner: DbInterner<'db>, def_id: SolverDefId) -> GenericArgs<'db> {
         GenericArgs::for_item(interner, def_id, |_, id, _| GenericArg::error_from_id(interner, id))
     }
 
@@ -400,30 +385,21 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         })
     }
 
-    fn type_at(
-        self,
-        i: usize,
-    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
+    fn type_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Ty {
         self.inner()
             .get(i)
             .and_then(|g| g.as_type())
             .unwrap_or_else(|| Ty::new_error(DbInterner::conjure(), ErrorGuaranteed))
     }
 
-    fn region_at(
-        self,
-        i: usize,
-    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
+    fn region_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Region {
         self.inner()
             .get(i)
             .and_then(|g| g.as_region())
             .unwrap_or_else(|| Region::error(DbInterner::conjure()))
     }
 
-    fn const_at(
-        self,
-        i: usize,
-    ) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
+    fn const_at(self, i: usize) -> <DbInterner<'db> as rustc_type_ir::Interner>::Const {
         self.inner()
             .get(i)
             .and_then(|g| g.as_const())
@@ -468,7 +444,9 @@ impl<'db> rustc_type_ir::inherent::GenericArgs<DbInterner<'db>> for GenericArgs<
         }
     }
 
-    fn split_coroutine_closure_args(self) -> rustc_type_ir::CoroutineClosureArgsParts<DbInterner<'db>> {
+    fn split_coroutine_closure_args(
+        self,
+    ) -> rustc_type_ir::CoroutineClosureArgsParts<DbInterner<'db>> {
         match self.inner().as_slice() {
             [
                 parent_args @ ..,
@@ -601,17 +579,11 @@ impl From<ConstVid> for TermVid {
 }
 
 impl<'db> DbInterner<'db> {
-    pub(super) fn mk_args(
-        self,
-        args: &[GenericArg<'db>],
-    ) -> GenericArgs<'db> {
+    pub(super) fn mk_args(self, args: &[GenericArg<'db>]) -> GenericArgs<'db> {
         GenericArgs::new_from_iter(self, args.iter().cloned())
     }
 
-    pub(super) fn mk_args_from_iter<I, T>(
-        self,
-        iter: I,
-    ) -> T::Output
+    pub(super) fn mk_args_from_iter<I, T>(self, iter: I) -> T::Output
     where
         I: Iterator<Item = T>,
         T: rustc_type_ir::CollectAndApply<GenericArg<'db>, GenericArgs<'db>>, {

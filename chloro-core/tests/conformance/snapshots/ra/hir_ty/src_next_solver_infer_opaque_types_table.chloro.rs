@@ -28,21 +28,14 @@ pub struct OpaqueTypeStorageEntries {
 }
 
 impl rustc_type_ir::inherent::OpaqueTypeStorageEntries for OpaqueTypeStorageEntries {
-    fn needs_reevaluation(
-        self,
-        canonicalized: usize,
-    ) -> bool {
+    fn needs_reevaluation(self, canonicalized: usize) -> bool {
         self.opaque_types != canonicalized
     }
 }
 
 impl<'db> OpaqueTypeStorage<'db> {
     #[instrument(level = "debug")]
-    pub(crate) fn remove(
-        &mut self,
-        key: OpaqueTypeKey<'db>,
-        prev: Option<OpaqueHiddenType<'db>>,
-    ) {
+    pub(crate) fn remove(&mut self, key: OpaqueTypeKey<'db>, prev: Option<OpaqueHiddenType<'db>>) {
         if let Some(prev) = prev {
             *self.opaque_types.get_mut(&key).unwrap() = prev;
         } else {
@@ -66,7 +59,9 @@ impl<'db> OpaqueTypeStorage<'db> {
         opaque_types.is_empty() && duplicate_entries.is_empty()
     }
 
-    pub(crate) fn take_opaque_types(&mut self) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+    pub(crate) fn take_opaque_types(
+        &mut self,
+    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
         let OpaqueTypeStorage { opaque_types, duplicate_entries } = self;
         std::mem::take(opaque_types).into_iter().chain(std::mem::take(duplicate_entries))
     }
@@ -94,7 +89,9 @@ impl<'db> OpaqueTypeStorage<'db> {
     ///
     /// Outside of canonicalization one should generally use `iter_opaque_types`
     /// to also consider duplicate entries.
-    pub(crate) fn iter_lookup_table(&self) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+    pub(crate) fn iter_lookup_table(
+        &self,
+    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
         self.opaque_types.iter().map(|(k, v)| (*k, *v))
     }
 
@@ -103,11 +100,15 @@ impl<'db> OpaqueTypeStorage<'db> {
     /// These have to considered when checking all opaque type uses but are e.g.
     /// irrelevant for canonical inputs as nested queries never meaningfully
     /// accesses them.
-    pub(crate) fn iter_duplicate_entries(&self) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+    pub(crate) fn iter_duplicate_entries(
+        &self,
+    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
         self.duplicate_entries.iter().copied()
     }
 
-    pub(crate) fn iter_opaque_types(&self) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
+    pub(crate) fn iter_opaque_types(
+        &self,
+    ) -> impl Iterator<Item = (OpaqueTypeKey<'db>, OpaqueHiddenType<'db>)> {
         let OpaqueTypeStorage { opaque_types, duplicate_entries } = self;
         opaque_types.iter().map(|(k, v)| (*k, *v)).chain(duplicate_entries.iter().copied())
     }

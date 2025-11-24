@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9375 bytes
+Chloro size:   9189 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -62,15 +62,6 @@ Rustfmt size:  10026 bytes
                  );
                  Ok(a)
              }
-     }
- 
-     /// Relates two types using a given lattice.
--    fn tys(&mut self, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, Ty<'db>> {
-+    fn tys(
-+        &mut self,
-+        a: Ty<'db>,
-+        b: Ty<'db>,
-+    ) -> RelateResult<'db, Ty<'db>> {
          if a == b {
              return Ok(a);
          }
@@ -103,30 +94,6 @@ Rustfmt size:  10026 bytes
              ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
  
              _ => super_combine_tys(infcx, self, a, b),
-         }
-     }
- 
--    fn regions(&mut self, a: Region<'db>, b: Region<'db>) -> RelateResult<'db, Region<'db>> {
-+    fn regions(
-+        &mut self,
-+        a: Region<'db>,
-+        b: Region<'db>,
-+    ) -> RelateResult<'db, Region<'db>> {
-         let mut inner = self.infcx.inner.borrow_mut();
-         let mut constraints = inner.unwrap_region_constraints();
-         Ok(match self.kind {
-         })
-     }
- 
--    fn consts(&mut self, a: Const<'db>, b: Const<'db>) -> RelateResult<'db, Const<'db>> {
-+    fn consts(
-+        &mut self,
-+        a: Const<'db>,
-+        b: Const<'db>,
-+    ) -> RelateResult<'db, Const<'db>> {
-         super_combine_consts(self.infcx, self, a, b)
-     }
- 
          b: Binder<'db, T>,
      ) -> RelateResult<'db, Binder<'db, T>>
      where
@@ -159,16 +126,9 @@ Rustfmt size:  10026 bytes
 -    // Subtle hack: ordering *may* be significant here. This method
 -    // relates `v` to `a` first, which may help us to avoid unnecessary
 -    // type variable obligations. See caller for details.
--    fn relate_bound(&mut self, v: Ty<'db>, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, ()> {
-+    fn relate_bound(
-+        &mut self,
-+        v: Ty<'db>,
-+        a: Ty<'db>,
-+        b: Ty<'db>,
-+    ) -> RelateResult<'db, ()> {
+     fn relate_bound(&mut self, v: Ty<'db>, a: Ty<'db>, b: Ty<'db>) -> RelateResult<'db, ()> {
          let at = self.infcx.at(&self.trace.cause, self.param_env);
          match self.kind {
-             LatticeOpKind::Glb => {
          preds: impl IntoIterator<Item: Upcast<DbInterner<'db>, Predicate<'db>>>,
      ) {
          self.obligations.extend(preds.into_iter().map(|pred| {
@@ -182,23 +142,3 @@ Rustfmt size:  10026 bytes
          }))
      }
  
--    fn register_goals(&mut self, goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>) {
-+    fn register_goals(
-+        &mut self,
-+        goals: impl IntoIterator<Item = Goal<'db, Predicate<'db>>>,
-+    ) {
-         self.obligations.extend(goals.into_iter().map(|goal| {
-             Obligation::new(
-                 self.infcx.interner,
-         }))
-     }
- 
--    fn register_alias_relate_predicate(&mut self, a: Ty<'db>, b: Ty<'db>) {
-+    fn register_alias_relate_predicate(
-+        &mut self,
-+        a: Ty<'db>,
-+        b: Ty<'db>,
-+    ) {
-         self.register_predicates([Binder::dummy(PredicateKind::AliasRelate(
-             a.into(),
-             b.into(),

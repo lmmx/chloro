@@ -4,10 +4,7 @@ use syntax::ast::{self, AstNode};
 
 use crate::{AssistContext, AssistId, Assists};
 
-pub(crate) fn inline_macro(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn inline_macro(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
     let macro_call = ctx.sema.to_def(&unexpanded)?;
     let target_crate_id = ctx.sema.file_to_module_def(ctx.vfs_file_id())?.krate().into();

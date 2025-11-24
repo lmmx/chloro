@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12476 bytes
+Chloro size:   12407 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -40,17 +40,6 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
-         not_stalled
-     }
- 
--    fn on_fulfillment_overflow(&mut self, infcx: &InferCtxt<'db>) {
-+    fn on_fulfillment_overflow(
-+        &mut self,
-+        infcx: &InferCtxt<'db>,
-+    ) {
-         infcx.probe(|_| {
-             // IMPORTANT: we must not use solve any inference variables in the obligations
-             // as this is all happening inside of a probe. We use a probe to make sure
                  break;
              }
          }
@@ -76,27 +65,13 @@ Rustfmt size:  12418 bytes
          self.obligations
              .drain_pending(|obl| {
                  infcx.probe(|_| {
- impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
-     type Result = ControlFlow<()>;
  
--    fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
-+    fn visit_goal(
-+        &mut self,
-+        inspect_goal: &super::inspect::InspectGoal<'_, 'db>,
-+    ) -> Self::Result {
+     fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
          inspect_goal.goal().predicate.visit_with(self)?;
 -
          if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
              candidate.visit_nested_no_probe(self)
          } else {
- impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
-     type Result = ControlFlow<()>;
- 
--    fn visit_ty(&mut self, ty: Ty<'db>) -> Self::Result {
-+    fn visit_ty(
-+        &mut self,
-+        ty: Ty<'db>,
-+    ) -> Self::Result {
          if !self.cache.insert(ty) {
              return ControlFlow::Continue(());
          }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6275 bytes
-Chloro size:   6386 bytes
+Chloro size:   6271 bytes
 Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
@@ -24,59 +24,6 @@ Rustfmt size:  6621 bytes
  
  pub type ExpansionSpanMap = span::SpanMap<SyntaxContext>;
  
- }
- 
- impl syntax_bridge::SpanMapper<Span> for SpanMap {
--    fn span_for(&self, range: TextRange) -> Span {
-+    fn span_for(
-+        &self,
-+        range: TextRange,
-+    ) -> Span {
-         self.span_for_range(range)
-     }
- }
- 
- impl syntax_bridge::SpanMapper<Span> for SpanMapRef<'_> {
--    fn span_for(&self, range: TextRange) -> Span {
-+    fn span_for(
-+        &self,
-+        range: TextRange,
-+    ) -> Span {
-         self.span_for_range(range)
-     }
- }
- 
- impl SpanMap {
--    pub fn span_for_range(&self, range: TextRange) -> Span {
-+    pub fn span_for_range(
-+        &self,
-+        range: TextRange,
-+    ) -> Span {
-         match self {
-             // FIXME: Is it correct for us to only take the span at the start? This feels somewhat
-             // wrong. The context will be right, but the range could be considered wrong. See
-     }
- 
-     #[inline]
--    pub(crate) fn new(db: &dyn ExpandDatabase, file_id: HirFileId) -> SpanMap {
-+    pub(crate) fn new(
-+        db: &dyn ExpandDatabase,
-+        file_id: HirFileId,
-+    ) -> SpanMap {
-         match file_id {
-             HirFileId::FileId(file_id) => SpanMap::RealSpanMap(db.real_span_map(file_id)),
-             HirFileId::MacroFile(m) => {
- }
- 
- impl SpanMapRef<'_> {
--    pub fn span_for_range(self, range: TextRange) -> Span {
-+    pub fn span_for_range(
-+        self,
-+        range: TextRange,
-+    ) -> Span {
-         match self {
-             Self::ExpansionSpanMap(span_map) => span_map.span_at(range.start()),
-             Self::RealSpanMap(span_map) => span_map.span_for_range(range),
      use syntax::ast::HasModuleItem;
      let mut pairs = vec![(syntax::TextSize::new(0), span::ROOT_ERASED_FILE_AST_ID)];
      let ast_id_map = db.ast_id_map(editioned_file_id.into());

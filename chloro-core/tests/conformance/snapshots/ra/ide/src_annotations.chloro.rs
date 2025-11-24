@@ -229,10 +229,7 @@ pub(crate) fn resolve_annotation(
     annotation
 }
 
-fn should_skip_runnable(
-    kind: &RunnableKind,
-    binary_target: bool,
-) -> bool {
+fn should_skip_runnable(kind: &RunnableKind, binary_target: bool) -> bool {
     match kind {
         RunnableKind::Bin => !binary_target,
         _ => false,
@@ -270,10 +267,7 @@ mod tests {
             .collect();
         expect.assert_debug_eq(&annotations);
     }
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         check_with_config(ra_fixture, expect, &DEFAULT_CONFIG);
     }
     #[test]

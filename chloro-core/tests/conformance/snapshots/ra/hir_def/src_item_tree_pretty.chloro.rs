@@ -13,11 +13,7 @@ use crate::{
     visibility::RawVisibility,
 };
 
-pub(super) fn print_item_tree(
-    db: &dyn DefDatabase,
-    tree: &ItemTree,
-    edition: Edition,
-) -> String {
+pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {
     let mut p =
         Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };
     p.print_attrs(&tree.top_attrs, true, "\n");
@@ -55,10 +51,7 @@ struct Printer<'a> {
 }
 
 impl Printer<'_> {
-    fn indented(
-        &mut self,
-        f: impl FnOnce(&mut Self),
-    ) {
+    fn indented(&mut self, f: impl FnOnce(&mut Self)) {
         self.indent_level += 1;
         wln!(self);
         f(self);
@@ -89,12 +82,7 @@ impl Printer<'_> {
         }
     }
 
-    fn print_attrs(
-        &mut self,
-        attrs: &RawAttrs,
-        inner: bool,
-        separated_by: &str,
-    ) {
+    fn print_attrs(&mut self, attrs: &RawAttrs, inner: bool, separated_by: &str) {
         let inner = if inner { "!" } else { "" };
         for attr in &**attrs {
             w!(
@@ -108,20 +96,13 @@ impl Printer<'_> {
         }
     }
 
-    fn print_attrs_of(
-        &mut self,
-        of: ModItemId,
-        separated_by: &str,
-    ) {
+    fn print_attrs_of(&mut self, of: ModItemId, separated_by: &str) {
         if let Some(attrs) = self.tree.attrs.get(&of.ast_id()) {
             self.print_attrs(attrs, false, separated_by);
         }
     }
 
-    fn print_visibility(
-        &mut self,
-        vis: RawVisibilityId,
-    ) {
+    fn print_visibility(&mut self, vis: RawVisibilityId) {
         match &self.tree[vis] {
             RawVisibility::Module(path, _expl) => {
                 w!(self, "pub(in {}) ", path.display(self.db, self.edition))
@@ -132,10 +113,7 @@ impl Printer<'_> {
         };
     }
 
-    fn print_fields(
-        &mut self,
-        kind: FieldsShape,
-    ) {
+    fn print_fields(&mut self, kind: FieldsShape) {
         match kind {
             FieldsShape::Record => {
                 self.whitespace();
@@ -148,10 +126,7 @@ impl Printer<'_> {
         }
     }
 
-    fn print_use_tree(
-        &mut self,
-        use_tree: &UseTree,
-    ) {
+    fn print_use_tree(&mut self, use_tree: &UseTree) {
         match &use_tree.kind {
             UseTreeKind::Single { path, alias } => {
                 w!(self, "{}", path.display(self.db, self.edition));
@@ -181,10 +156,7 @@ impl Printer<'_> {
         }
     }
 
-    fn print_mod_item(
-        &mut self,
-        item: ModItemId,
-    ) {
+    fn print_mod_item(&mut self, item: ModItemId) {
         self.print_attrs_of(item, "\n");
         match item {
             ModItemId::Use(ast_id) => {
@@ -333,19 +305,13 @@ impl Printer<'_> {
         self.blank();
     }
 
-    fn print_ast_id(
-        &mut self,
-        ast_id: ErasedFileAstId,
-    ) {
+    fn print_ast_id(&mut self, ast_id: ErasedFileAstId) {
         wln!(self, "// AstId: {ast_id:#?}");
     }
 }
 
 impl Write for Printer<'_> {
-    fn write_str(
-        &mut self,
-        s: &str,
-    ) -> fmt::Result {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
         for line in s.split_inclusive('\n') {
             if self.needs_indent {
                 match self.buf.chars().last() {

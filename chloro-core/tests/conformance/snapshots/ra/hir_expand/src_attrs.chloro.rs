@@ -112,10 +112,7 @@ impl RawAttrs {
             .flat_map(|attr| attr.expand_cfg_attr(db, cfg_options))
     }
 
-    pub fn merge(
-        &self,
-        other: Self,
-    ) -> Self {
+    pub fn merge(&self, other: Self) -> Self {
         match (&self.entries, other.entries) {
             (None, None) => Self::EMPTY,
             (None, entries @ Some(_)) => Self { entries },
@@ -139,11 +136,7 @@ impl RawAttrs {
     }
 
     /// Processes `cfg_attr`s
-    pub fn expand_cfg_attr(
-        self,
-        db: &dyn ExpandDatabase,
-        krate: Crate,
-    ) -> RawAttrs {
+    pub fn expand_cfg_attr(self, db: &dyn ExpandDatabase, krate: Crate) -> RawAttrs {
         let has_cfg_attrs =
             self.iter().any(|attr| attr.path.as_ident().is_some_and(|name| *name == sym::cfg_attr));
         if !has_cfg_attrs {
@@ -176,10 +169,7 @@ pub struct AttrId {
 impl AttrId {
     const INNER_ATTR_SET_BIT: u32 = 1 << 31;
 
-    pub fn new(
-        id: usize,
-        is_inner: bool,
-    ) -> Self {
+    pub fn new(id: usize, is_inner: bool) -> Self {
         assert!(id <= !Self::INNER_ATTR_SET_BIT as usize);
         let id = id as u32;
         Self { id: if is_inner { id | Self::INNER_ATTR_SET_BIT } else { id } }
@@ -211,10 +201,7 @@ pub enum AttrInput {
 }
 
 impl fmt::Display for AttrInput {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             AttrInput::Literal(lit) => write!(f, " = {lit}"),
             AttrInput::TokenTree(tt) => tt.fmt(f),
@@ -452,7 +439,9 @@ fn unescape(s: &str) -> Option<Cow<'_, str>> {
     }
 }
 
-pub fn collect_attrs(owner: &dyn ast::HasAttrs) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
+pub fn collect_attrs(
+    owner: &dyn ast::HasAttrs,
+) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
     let inner_attrs =
         inner_attributes(owner.syntax()).into_iter().flatten().zip(iter::repeat(true));
     let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
@@ -467,7 +456,9 @@ pub fn collect_attrs(owner: &dyn ast::HasAttrs) -> impl Iterator<Item = (AttrId,
         .map(|(id, (attr, is_inner))| (AttrId::new(id, is_inner), attr))
 }
 
-fn inner_attributes(syntax: &SyntaxNode) -> Option<impl Iterator<Item = Either<ast::Attr, ast::Comment>>> {
+fn inner_attributes(
+    syntax: &SyntaxNode,
+) -> Option<impl Iterator<Item = Either<ast::Attr, ast::Comment>>> {
     let node = match_ast! {
         match syntax {
             ast::SourceFile(_) => syntax.clone(),
@@ -491,7 +482,9 @@ fn inner_attributes(syntax: &SyntaxNode) -> Option<impl Iterator<Item = Either<a
     Some(attrs)
 }
 
-fn parse_cfg_attr_input(subtree: &TopSubtree) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {
+fn parse_cfg_attr_input(
+    subtree: &TopSubtree,
+) -> Option<(tt::TokenTreesView<'_>, impl Iterator<Item = tt::TokenTreesView<'_>>)> {
     let mut parts = subtree
         .token_trees()
         .split(|tt| matches!(tt, tt::TtElement::Leaf(tt::Leaf::Punct(Punct { char: ',', .. }))));

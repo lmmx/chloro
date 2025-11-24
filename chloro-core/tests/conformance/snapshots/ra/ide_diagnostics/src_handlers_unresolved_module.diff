@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2564 bytes
-Chloro size:   2449 bytes
+Chloro size:   2438 bytes
 Rustfmt size:  2696 bytes
 
 ✗ Outputs DIFFER
@@ -22,17 +22,6 @@ Rustfmt size:  2696 bytes
  pub(crate) fn unresolved_module(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::UnresolvedModule,
-     .with_fixes(fixes(ctx, d))
- }
- 
--fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedModule) -> Option<Vec<Assist>> {
-+fn fixes(
-+    ctx: &DiagnosticsContext<'_>,
-+    d: &hir::UnresolvedModule,
-+) -> Option<Vec<Assist>> {
-     let root = ctx.sema.db.parse_or_expand(d.decl.file_id);
-     let unresolved_module = d.decl.value.to_node(&root);
-     Some(
                      &format!("Create module at `{candidate}`"),
                      FileSystemEdit::CreateFile {
                          dst: AnchoredPathBuf {

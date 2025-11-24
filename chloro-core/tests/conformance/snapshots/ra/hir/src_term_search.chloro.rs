@@ -34,10 +34,7 @@ impl<'db> AlternativeExprs<'db> {
     /// # Arguments
     /// `threshold` - threshold value for many trees (more than that is many)
     /// `exprs` - expressions iterator
-    fn new(
-        threshold: usize,
-        exprs: impl Iterator<Item = Expr<'db>>,
-    ) -> AlternativeExprs<'db> {
+    fn new(threshold: usize, exprs: impl Iterator<Item = Expr<'db>>) -> AlternativeExprs<'db> {
         let mut it = AlternativeExprs::Few(Default::default());
         it.extend_with_threshold(threshold, exprs);
         it
@@ -47,10 +44,7 @@ impl<'db> AlternativeExprs<'db> {
     ///
     /// # Arguments
     /// `ty` - Type of expressions queried (this is used to give type to `Expr::Many`)
-    fn exprs(
-        &self,
-        ty: &Type<'db>,
-    ) -> Vec<Expr<'db>> {
+    fn exprs(&self, ty: &Type<'db>) -> Vec<Expr<'db>> {
         match self {
             AlternativeExprs::Few(exprs) => exprs.iter().cloned().collect(),
             AlternativeExprs::Many => vec![Expr::Many(ty.clone())],
@@ -62,11 +56,7 @@ impl<'db> AlternativeExprs<'db> {
     /// # Arguments
     /// `threshold` - threshold value for many trees (more than that is many)
     /// `exprs` - expressions iterator
-    fn extend_with_threshold(
-        &mut self,
-        threshold: usize,
-        exprs: impl Iterator<Item = Expr<'db>>,
-    ) {
+    fn extend_with_threshold(&mut self, threshold: usize, exprs: impl Iterator<Item = Expr<'db>>) {
         match self {
             AlternativeExprs::Few(tts) => {
                 for it in exprs {
@@ -110,10 +100,7 @@ struct LookupTable<'db> {
 
 impl<'db> LookupTable<'db> {
     /// Initialize lookup table
-    fn new(
-        many_threshold: usize,
-        goal: Type<'db>,
-    ) -> Self {
+    fn new(many_threshold: usize, goal: Type<'db>) -> Self {
         let mut res = Self { many_threshold, ..Default::default() };
         res.new_types.insert(NewTypesKey::ImplMethod, Vec::new());
         res.new_types.insert(NewTypesKey::StructProjection, Vec::new());
@@ -122,11 +109,7 @@ impl<'db> LookupTable<'db> {
     }
 
     /// Find all `Expr`s that unify with the `ty`
-    fn find(
-        &mut self,
-        db: &'db dyn HirDatabase,
-        ty: &Type<'db>,
-    ) -> Option<Vec<Expr<'db>>> {
+    fn find(&mut self, db: &'db dyn HirDatabase, ty: &Type<'db>) -> Option<Vec<Expr<'db>>> {
         let res = self
             .data
             .iter()
@@ -188,11 +171,7 @@ impl<'db> LookupTable<'db> {
     /// Note that the types have to be the same, unification is not enough as unification is not
     /// transitive. For example Vec<i32> and FxHashSet<i32> both unify with Iterator<Item = i32>,
     /// but they clearly do not unify themselves.
-    fn insert(
-        &mut self,
-        ty: Type<'db>,
-        exprs: impl Iterator<Item = Expr<'db>>,
-    ) {
+    fn insert(&mut self, ty: Type<'db>, exprs: impl Iterator<Item = Expr<'db>>) {
         match self.data.get_mut(&ty) {
             Some(it) => {
                 it.extend_with_threshold(self.many_threshold, exprs);
@@ -217,10 +196,7 @@ impl<'db> LookupTable<'db> {
     /// Query new types reached since last query by key
     ///
     /// Create new key if you wish to query it to avoid conflicting with existing queries.
-    fn new_types(
-        &mut self,
-        key: NewTypesKey,
-    ) -> Vec<Type<'db>> {
+    fn new_types(&mut self, key: NewTypesKey) -> Vec<Type<'db>> {
         match self.new_types.get_mut(&key) {
             Some(it) => std::mem::take(it),
             None => Vec::new(),

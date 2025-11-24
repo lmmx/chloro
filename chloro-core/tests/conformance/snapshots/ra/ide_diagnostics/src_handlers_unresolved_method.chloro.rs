@@ -45,10 +45,7 @@ pub(crate) fn unresolved_method(
     .with_fixes(fixes(ctx, d))
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::UnresolvedMethodCall<'_>,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Option<Vec<Assist>> {
     let field_fix = if let Some(ty) = &d.field_with_same_name {
         field_fix(ctx, d, ty)
     } else {

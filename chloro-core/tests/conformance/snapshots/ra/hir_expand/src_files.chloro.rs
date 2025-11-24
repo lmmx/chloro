@@ -45,10 +45,7 @@ pub type FilePosition = FilePositionWrapper<EditionedFileId>;
 
 impl FilePosition {
     #[inline]
-    pub fn into_file_id(
-        self,
-        db: &dyn ExpandDatabase,
-    ) -> FilePositionWrapper<FileId> {
+    pub fn into_file_id(self, db: &dyn ExpandDatabase) -> FilePositionWrapper<FileId> {
         FilePositionWrapper { file_id: self.file_id.file_id(db), offset: self.offset }
     }
 }
@@ -66,11 +63,7 @@ impl From<FilePosition> for HirFilePosition {
 }
 
 impl FilePositionWrapper<span::FileId> {
-    pub fn with_edition(
-        self,
-        db: &dyn ExpandDatabase,
-        edition: span::Edition,
-    ) -> FilePosition {
+    pub fn with_edition(self, db: &dyn ExpandDatabase, edition: span::Edition) -> FilePosition {
         FilePositionWrapper {
             file_id: EditionedFileId::new(db, self.file_id, edition),
             offset: self.offset,
@@ -79,11 +72,7 @@ impl FilePositionWrapper<span::FileId> {
 }
 
 impl FileRangeWrapper<span::FileId> {
-    pub fn with_edition(
-        self,
-        db: &dyn ExpandDatabase,
-        edition: span::Edition,
-    ) -> FileRange {
+    pub fn with_edition(self, db: &dyn ExpandDatabase, edition: span::Edition) -> FileRange {
         FileRangeWrapper {
             file_id: EditionedFileId::new(db, self.file_id, edition),
             range: self.range,
@@ -92,11 +81,7 @@ impl FileRangeWrapper<span::FileId> {
 }
 
 impl<T> InFileWrapper<span::FileId, T> {
-    pub fn with_edition(
-        self,
-        db: &dyn ExpandDatabase,
-        edition: span::Edition,
-    ) -> InRealFile<T> {
+    pub fn with_edition(self, db: &dyn ExpandDatabase, edition: span::Edition) -> InRealFile<T> {
         InRealFile { file_id: EditionedFileId::new(db, self.file_id, edition), value: self.value }
     }
 }
@@ -121,26 +106,17 @@ pub type FileRange = FileRangeWrapper<EditionedFileId>;
 
 impl FileRange {
     #[inline]
-    pub fn into_file_id(
-        self,
-        db: &dyn ExpandDatabase,
-    ) -> FileRangeWrapper<FileId> {
+    pub fn into_file_id(self, db: &dyn ExpandDatabase) -> FileRangeWrapper<FileId> {
         FileRangeWrapper { file_id: self.file_id.file_id(db), range: self.range }
     }
 
     #[inline]
-    pub fn file_text(
-        self,
-        db: &dyn ExpandDatabase,
-    ) -> &triomphe::Arc<str> {
+    pub fn file_text(self, db: &dyn ExpandDatabase) -> &triomphe::Arc<str> {
         db.file_text(self.file_id.file_id(db)).text(db)
     }
 
     #[inline]
-    pub fn text(
-        self,
-        db: &dyn ExpandDatabase,
-    ) -> &str {
+    pub fn text(self, db: &dyn ExpandDatabase) -> &str {
         &self.file_text(db)[self.range]
     }
 }
@@ -151,31 +127,19 @@ impl FileRange {
 pub type AstId<N> = crate::InFile<FileAstId<N>>;
 
 impl<N: AstNode> AstId<N> {
-    pub fn to_node(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> N {
+    pub fn to_node(&self, db: &dyn ExpandDatabase) -> N {
         self.to_ptr(db).to_node(&db.parse_or_expand(self.file_id))
     }
 
-    pub fn to_range(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> TextRange {
+    pub fn to_range(&self, db: &dyn ExpandDatabase) -> TextRange {
         self.to_ptr(db).text_range()
     }
 
-    pub fn to_in_file_node(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> crate::InFile<N> {
+    pub fn to_in_file_node(&self, db: &dyn ExpandDatabase) -> crate::InFile<N> {
         crate::InFile::new(self.file_id, self.to_ptr(db).to_node(&db.parse_or_expand(self.file_id)))
     }
 
-    pub fn to_ptr(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> AstPtr<N> {
+    pub fn to_ptr(&self, db: &dyn ExpandDatabase) -> AstPtr<N> {
         db.ast_id_map(self.file_id).get(self.value)
     }
 
@@ -194,42 +158,27 @@ impl<N: AstNode> AstId<N> {
 pub type ErasedAstId = crate::InFile<ErasedFileAstId>;
 
 impl ErasedAstId {
-    pub fn to_range(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> TextRange {
+    pub fn to_range(&self, db: &dyn ExpandDatabase) -> TextRange {
         self.to_ptr(db).text_range()
     }
 
-    pub fn to_ptr(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> SyntaxNodePtr {
+    pub fn to_ptr(&self, db: &dyn ExpandDatabase) -> SyntaxNodePtr {
         db.ast_id_map(self.file_id).get_erased(self.value)
     }
 }
 
 impl<FileKind, T> InFileWrapper<FileKind, T> {
-    pub fn new(
-        file_id: FileKind,
-        value: T,
-    ) -> Self {
+    pub fn new(file_id: FileKind, value: T) -> Self {
         Self { file_id, value }
     }
 
-    pub fn map<F: FnOnce(T) -> U, U>(
-        self,
-        f: F,
-    ) -> InFileWrapper<FileKind, U> {
+    pub fn map<F: FnOnce(T) -> U, U>(self, f: F) -> InFileWrapper<FileKind, U> {
         InFileWrapper::new(self.file_id, f(self.value))
     }
 }
 
 impl<FileKind: Copy, T> InFileWrapper<FileKind, T> {
-    pub fn with_value<U>(
-        &self,
-        value: U,
-    ) -> InFileWrapper<FileKind, U> {
+    pub fn with_value<U>(&self, value: U) -> InFileWrapper<FileKind, U> {
         InFileWrapper::new(self.file_id, value)
     }
 
@@ -278,55 +227,37 @@ impl<FileKind, L, R> InFileWrapper<FileKind, Either<L, R>> {
 }
 
 trait FileIdToSyntax {
-    fn file_syntax(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> SyntaxNode;
+    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode;
 }
 
 impl FileIdToSyntax for EditionedFileId {
-    fn file_syntax(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> SyntaxNode {
+    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
         db.parse(self).syntax_node()
     }
 }
 
 impl FileIdToSyntax for MacroCallId {
-    fn file_syntax(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> SyntaxNode {
+    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
         db.parse_macro_expansion(self).value.0.syntax_node()
     }
 }
 
 impl FileIdToSyntax for HirFileId {
-    fn file_syntax(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> SyntaxNode {
+    fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
         db.parse_or_expand(self)
     }
 }
 
 #[allow(private_bounds)]
 impl<FileId: FileIdToSyntax, T> InFileWrapper<FileId, T> {
-    pub fn file_syntax(
-        &self,
-        db: &dyn db::ExpandDatabase,
-    ) -> SyntaxNode {
+    pub fn file_syntax(&self, db: &dyn db::ExpandDatabase) -> SyntaxNode {
         FileIdToSyntax::file_syntax(self.file_id, db)
     }
 }
 
 #[allow(private_bounds)]
 impl<FileId: FileIdToSyntax, N: AstNode> InFileWrapper<FileId, AstPtr<N>> {
-    pub fn to_node(
-        &self,
-        db: &dyn ExpandDatabase,
-    ) -> N {
+    pub fn to_node(&self, db: &dyn ExpandDatabase) -> N {
         self.value.to_node(&self.file_syntax(db))
     }
 }
@@ -400,10 +331,7 @@ impl<SN: Borrow<SyntaxNode>> InFile<SN> {
     ///
     /// For attributes and derives, this will point back to the attribute only.
     /// For the entire item use [`InFile::original_file_range_full`].
-    pub fn original_file_range_rooted(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> FileRange {
+    pub fn original_file_range_rooted(self, db: &dyn db::ExpandDatabase) -> FileRange {
         self.borrow().map(SyntaxNode::text_range).original_node_file_range_rooted(db)
     }
 
@@ -470,10 +398,7 @@ impl InMacroFile<SyntaxToken> {
 
 impl InFile<SyntaxToken> {
     /// Falls back to the macro call range if the node cannot be mapped up fully.
-    pub fn original_file_range(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> FileRange {
+    pub fn original_file_range(self, db: &dyn db::ExpandDatabase) -> FileRange {
         match self.file_id {
             HirFileId::FileId(file_id) => FileRange { file_id, range: self.value.text_range() },
             HirFileId::MacroFile(mac_file) => {
@@ -497,10 +422,7 @@ impl InFile<SyntaxToken> {
     }
 
     /// Attempts to map the syntax node back up its macro calls.
-    pub fn original_file_range_opt(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> Option<FileRange> {
+    pub fn original_file_range_opt(self, db: &dyn db::ExpandDatabase) -> Option<FileRange> {
         match self.file_id {
             HirFileId::FileId(file_id) => {
                 Some(FileRange { file_id, range: self.value.text_range() })
@@ -521,10 +443,7 @@ impl InFile<SyntaxToken> {
 }
 
 impl InMacroFile<TextSize> {
-    pub fn original_file_range(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> (FileRange, SyntaxContext) {
+    pub fn original_file_range(self, db: &dyn db::ExpandDatabase) -> (FileRange, SyntaxContext) {
         span_for_offset(db, &db.expansion_span_map(self.file_id), self.value)
     }
 }
@@ -550,10 +469,7 @@ impl InFile<TextRange> {
         }
     }
 
-    pub fn original_node_file_range_rooted(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> FileRange {
+    pub fn original_node_file_range_rooted(self, db: &dyn db::ExpandDatabase) -> FileRange {
         match self.file_id {
             HirFileId::FileId(file_id) => FileRange { file_id, range: self.value },
             HirFileId::MacroFile(mac_file) => {
@@ -615,10 +531,7 @@ impl InFile<TextRange> {
 }
 
 impl<N: AstNode> InFile<N> {
-    pub fn original_ast_node_rooted(
-        self,
-        db: &dyn db::ExpandDatabase,
-    ) -> Option<InRealFile<N>> {
+    pub fn original_ast_node_rooted(self, db: &dyn db::ExpandDatabase) -> Option<InRealFile<N>> {
         // This kind of upmapping can only be achieved in attribute expanded files,
         // as we don't have node inputs otherwise and therefore can't find an `N` node in the input
         let file_id = match self.file_id {

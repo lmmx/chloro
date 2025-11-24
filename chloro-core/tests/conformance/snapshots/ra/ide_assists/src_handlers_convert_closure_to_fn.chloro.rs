@@ -22,10 +22,7 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn convert_closure_to_fn(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let closure = ctx.find_node_at_offset::<ast::ClosureExpr>()?;
     if ctx.find_node_at_offset::<ast::Expr>() != Some(ast::Expr::ClosureExpr(closure.clone())) {
         // Not inside the parameter list.
@@ -469,10 +466,7 @@ fn wrap_capture_in_deref_if_needed(
     make::expr_prefix(T![*], capture_name).into()
 }
 
-fn capture_as_arg(
-    ctx: &AssistContext<'_>,
-    capture: &ClosureCapture<'_>,
-) -> ast::Expr {
+fn capture_as_arg(ctx: &AssistContext<'_>, capture: &ClosureCapture<'_>) -> ast::Expr {
     let place = parse_expr_from_str(&capture.display_place_source_code(ctx.db()), ctx.edition())
         .expect("`display_place_source_code()` produced an invalid expr");
     let needs_mut = match capture.kind() {

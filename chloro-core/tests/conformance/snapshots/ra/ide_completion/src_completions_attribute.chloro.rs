@@ -204,10 +204,7 @@ impl AttrCompletion {
         self.lookup.unwrap_or(self.label)
     }
 
-    const fn qualifiers(
-        self,
-        qualifiers: &'static [&'static str],
-    ) -> AttrCompletion {
+    const fn qualifiers(self, qualifiers: &'static [&'static str]) -> AttrCompletion {
         AttrCompletion { qualifiers, ..self }
     }
 

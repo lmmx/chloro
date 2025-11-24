@@ -7,10 +7,7 @@ use syntax::{AstNode, ast};
 
 use crate::{AssistContext, Assists};
 
-pub(crate) fn remove_underscore(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn remove_underscore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (text, text_range, def) = if let Some(name_ref) = ctx.find_node_at_offset::<ast::Name>() {
         let text = name_ref.text();
         if !text.starts_with('_') {

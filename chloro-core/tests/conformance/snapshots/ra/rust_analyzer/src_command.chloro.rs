@@ -18,11 +18,7 @@ use stdx::process::streaming_output;
 /// Cargo output is structured as one JSON per line. This trait abstracts parsing one line of
 /// cargo output into a Rust data type
 pub(crate) trait CargoParser<T> {
-    fn from_line(
-        &self,
-        line: &str,
-        error: &mut String,
-    ) -> Option<T>;
+    fn from_line(&self, line: &str, error: &mut String) -> Option<T>;
 
     fn from_eof(&self) -> Option<T>;
 }
@@ -47,10 +43,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
 }
 
 impl<T: Sized + Send + 'static> CargoActor<T> {
-    fn run(
-        self,
-        outfile: Option<Utf8PathBuf>,
-    ) -> io::Result<(bool, String)> {
+    fn run(self, outfile: Option<Utf8PathBuf>) -> io::Result<(bool, String)> {
         // We manually read a line at a time, instead of using serde's
         // stream deserializers, because the deserializer cannot recover
         // from an error, resulting in it getting stuck, because we try to
@@ -140,10 +133,7 @@ pub(crate) struct CommandHandle<T> {
 }
 
 impl<T> fmt::Debug for CommandHandle<T> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("CommandHandle")
             .field("program", &self.program)
             .field("arguments", &self.arguments)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17010 bytes
-Chloro size:   16991 bytes
+Chloro size:   16987 bytes
 Rustfmt size:  17010 bytes
 
 ✗ Outputs DIFFER
@@ -62,17 +62,6 @@ Rustfmt size:  17010 bytes
      is_argument_expr_similar_to_param_name(sema, argument, param_name)
  }
  
- ///
- /// `fn strip_suffix(suffix)` will be hidden.
- /// `fn stripsuffix(suffix)` will not be hidden.
--fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
-+fn is_param_name_suffix_of_fn_name(
-+    param_name: &str,
-+    fn_name: &str,
-+) -> bool {
-     fn_name == param_name
-         || fn_name
-             .len()
      debug_assert!(!param_name.is_empty());
      let param_name = param_name.split('_');
      let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
@@ -80,16 +69,6 @@ Rustfmt size:  17010 bytes
      let prefix_match = zip(argument.clone(), param_name.clone())
          .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
      let postfix_match = || {
-     prefix_match || postfix_match()
- }
- 
--pub(super) fn get_segment_representation(
--    expr: &ast::Expr,
--) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
-+pub(super) fn get_segment_representation(expr: &ast::Expr) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
-     match expr {
-         ast::Expr::MethodCallExpr(method_call_expr) => {
-             let receiver =
  #[cfg(test)]
  mod tests {
      use crate::{

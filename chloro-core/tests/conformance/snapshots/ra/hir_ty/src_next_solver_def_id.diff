@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11678 bytes
-Chloro size:   11070 bytes
+Chloro size:   11024 bytes
 Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
@@ -31,12 +31,6 @@ Rustfmt size:  12164 bytes
      Ctor(Ctor),
  }
  
- impl std::fmt::Debug for SolverDefId {
--    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut std::fmt::Formatter<'_>,
-+    ) -> std::fmt::Result {
          let interner = DbInterner::conjure();
          let db = interner.db;
          match *self {
@@ -174,12 +168,6 @@ Rustfmt size:  12164 bytes
  #[derive(Clone, Copy, PartialEq, Eq, Hash)]
  pub struct CallableIdWrapper(pub CallableDefId);
  
- impl std::fmt::Debug for CallableIdWrapper {
--    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut std::fmt::Formatter<'_>,
-+    ) -> std::fmt::Result {
          std::fmt::Debug::fmt(&self.0, f)
      }
  }

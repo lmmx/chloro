@@ -14,10 +14,7 @@ use syntax::ast::{self, AstNode, MatchArmList, MatchExpr, Pat, make};
 
 use crate::{AssistContext, AssistId, Assists, utils};
 
-pub(crate) fn add_missing_match_arms(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;
     let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
@@ -332,17 +329,11 @@ fn cursor_at_trivial_match_arm_list(
     None
 }
 
-fn is_variant_missing(
-    existing_pats: &[Pat],
-    var: &Pat,
-) -> bool {
+fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
     !existing_pats.iter().any(|pat| does_pat_match_variant(pat, var))
 }
 
-fn does_pat_match_variant(
-    pat: &Pat,
-    var: &Pat,
-) -> bool {
+fn does_pat_match_variant(pat: &Pat, var: &Pat) -> bool {
     match (pat, var) {
         (Pat::WildcardPat(_), _) => true,
         (Pat::SlicePat(spat), Pat::SlicePat(svar)) => {
@@ -376,11 +367,7 @@ enum ExtendedVariant {
 }
 
 impl ExtendedVariant {
-    fn should_be_hidden(
-        self,
-        db: &RootDatabase,
-        krate: Crate,
-    ) -> bool {
+    fn should_be_hidden(self, db: &RootDatabase, krate: Crate) -> bool {
         match self {
             ExtendedVariant::Variant { variant: var, .. } => {
                 var.attrs(db).has_doc_hidden() && var.module(db).krate() != krate
@@ -403,11 +390,7 @@ impl ExtendedEnum {
         }
     }
 
-    fn is_non_exhaustive(
-        &self,
-        db: &RootDatabase,
-        krate: Crate,
-    ) -> bool {
+    fn is_non_exhaustive(&self, db: &RootDatabase, krate: Crate) -> bool {
         match self {
             ExtendedEnum::Enum { enum_: e, .. } => {
                 e.attrs(db).by_key(sym::non_exhaustive).exists() && e.module(db).krate() != krate
@@ -416,10 +399,7 @@ impl ExtendedEnum {
         }
     }
 
-    fn variants(
-        &self,
-        db: &RootDatabase,
-    ) -> Vec<ExtendedVariant> {
+    fn variants(&self, db: &RootDatabase) -> Vec<ExtendedVariant> {
         match *self {
             ExtendedEnum::Enum { enum_: e, use_self } => e
                 .variants(db)

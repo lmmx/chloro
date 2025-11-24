@@ -110,7 +110,9 @@ impl EagerExpander {
     }
 }
 
-pub fn find_builtin_macro(ident: &name::Name) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
+pub fn find_builtin_macro(
+    ident: &name::Name,
+) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
     find_by_name(ident)
 }
 fn mk_pound(span: Span) -> tt::Leaf {
@@ -437,10 +439,7 @@ fn unreachable_expand(
 }
 
 #[allow(clippy::never_loop)]
-fn use_panic_2021(
-    db: &dyn ExpandDatabase,
-    span: Span,
-) -> bool {
+fn use_panic_2021(db: &dyn ExpandDatabase, span: Span) -> bool {
     // To determine the edition, we check the first span up the expansion
     // stack that does not have #[allow_internal_unstable(edition_panic)].
     // (To avoid using the edition of e.g. the assert!() or debug_assert!() definition.)
@@ -839,11 +838,7 @@ fn include_str_expand(
     ExpandResult::ok(quote!(call_site =>#text))
 }
 
-fn get_env_inner(
-    db: &dyn ExpandDatabase,
-    arg_id: MacroCallId,
-    key: &Symbol,
-) -> Option<String> {
+fn get_env_inner(db: &dyn ExpandDatabase, arg_id: MacroCallId, key: &Symbol) -> Option<String> {
     let krate = db.lookup_intern_macro_call(arg_id).krate;
     krate.env(db).get(key.as_str())
 }

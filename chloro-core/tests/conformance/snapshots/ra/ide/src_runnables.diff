@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   49709 bytes
+Chloro size:   49561 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
@@ -41,17 +41,6 @@ Rustfmt size:  50564 bytes
  #[derive(Debug, Clone, Hash, PartialEq, Eq)]
  pub enum TestId {
      Name(SmolStr),
- }
- 
- impl fmt::Display for TestId {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         match self {
-             TestId::Name(name) => name.fmt(f),
-             TestId::Path(path) => path.fmt(f),
  
  #[derive(Debug, Clone, Hash, PartialEq, Eq)]
  pub enum RunnableKind {
@@ -75,17 +64,6 @@ Rustfmt size:  50564 bytes
      Bin,
  }
  
- }
- 
- impl Runnable {
--    pub fn label(&self, target: Option<&str>) -> String {
-+    pub fn label(
-+        &self,
-+        target: Option<&str>,
-+    ) -> String {
-         match &self.kind {
-             RunnableKind::Test { test_id, .. } => format!("test {test_id}"),
-             RunnableKind::TestMod { path } => format!("test-mod {path}"),
      }
  }
  
@@ -100,11 +78,7 @@ Rustfmt size:  50564 bytes
 -// | VS Code | **rust-analyzer: Run** |
 -//
 -// ![Run](https://user-images.githubusercontent.com/48062697/113065583-055aae80-91b1-11eb-958f-d67efcaf6a2f.gif)
--pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
-+pub(crate) fn runnables(
-+    db: &RootDatabase,
-+    file_id: FileId,
-+) -> Vec<Runnable> {
+ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
      let sema = Semantics::new(db);
 -
      let mut res = Vec::new();
@@ -153,17 +127,6 @@ Rustfmt size:  50564 bytes
      let file_id = mod_source.file_id.original_file(sema.db);
      let mod_scope = SearchScope::file_range(hir::FileRange { file_id, range: mod_source.value });
      let fn_pos = FilePosition {
-     find_related_tests(sema, syntax, fn_pos, Some(mod_scope), tests)
- }
- 
--fn as_test_runnable(sema: &Semantics<'_, RootDatabase>, fn_def: &ast::Fn) -> Option<Runnable> {
-+fn as_test_runnable(
-+    sema: &Semantics<'_, RootDatabase>,
-+    fn_def: &ast::Fn,
-+) -> Option<Runnable> {
-     if test_related_attribute_syn(fn_def).is_some() {
-         let function = sema.to_def(fn_def)?;
-         runnable_fn(sema, function)
      }
  }
  
@@ -246,17 +209,6 @@ Rustfmt size:  50564 bytes
      Some(Runnable {
          use_name_in_title: false,
          nav: def.to_nav(sema.db).call_site(),
-     })
- }
- 
--fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<Runnable> {
-+fn module_def_doctest(
-+    sema: &Semantics<'_, RootDatabase>,
-+    def: Definition,
-+) -> Option<Runnable> {
-     let db = sema.db;
-     let attrs = match def {
-         Definition::Module(it) => it.attrs(db),
          format_to!(path, "{}", def_name.display(db, edition));
          Some(path)
      })();
@@ -267,17 +219,6 @@ Rustfmt size:  50564 bytes
      let mut nav = match def {
          Definition::Module(def) => NavigationTarget::from_module_to_decl(db, def),
          def => def.try_to_nav(sema)?,
- }
- 
- impl TestAttr {
--    fn from_fn(db: &dyn HirDatabase, fn_def: hir::Function) -> TestAttr {
-+    fn from_fn(
-+        db: &dyn HirDatabase,
-+        fn_def: hir::Function,
-+    ) -> TestAttr {
-         TestAttr { ignore: fn_def.is_ignore(db) }
-     }
- }
      const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
      const RUSTDOC_CODE_BLOCK_ATTRIBUTES_RUNNABLE: &[&str] =
          &["", "rust", "should_panic", "edition2015", "edition2018", "edition2021"];
@@ -366,23 +307,14 @@ Rustfmt size:  50564 bytes
 -
      use crate::fixture;
 -
--    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (analysis, position) = fixture::position(ra_fixture);
          let result = analysis
-             .runnables(position.file_id)
              .collect::<Vec<_>>();
          expect.assert_debug_eq(&result);
      }
 -
--    fn check_tests(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
-+    fn check_tests(
-+        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+        expect: Expect,
-+    ) {
+     fn check_tests(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let (analysis, position) = fixture::position(ra_fixture);
          let tests = analysis.related_tests(position, None).unwrap();
          let navigation_targets = tests.into_iter().map(|runnable| runnable.nav).collect::<Vec<_>>();

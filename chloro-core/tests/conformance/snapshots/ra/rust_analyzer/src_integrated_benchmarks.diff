@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13440 bytes
-Chloro size:   13437 bytes
+Chloro size:   13411 bytes
 Rustfmt size:  13679 bytes
 
 ✗ Outputs DIFFER
@@ -19,14 +19,8 @@ Rustfmt size:  13679 bytes
 -use load_cargo::{load_workspace_at, LoadCargoConfig, ProcMacroServerChoice};
 -
  #[track_caller]
--fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
-+fn file_id(
-+    vfs: &vfs::Vfs,
-+    path: &VfsPath,
-+) -> vfs::FileId {
+ fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
      match vfs.file_id(path) {
-         Some((file_id, vfs::FileExcluded::No)) => file_id,
-         None | Some((_, vfs::FileExcluded::Yes)) => panic!("can't find virtual file for {path}"),
      if std::env::var("RUN_SLOW_BENCHES").is_err() {
          return;
      }
@@ -252,13 +246,3 @@ Rustfmt size:  13679 bytes
              .unwrap();
      }
  }
- 
--fn patch(what: &mut String, from: &str, to: &str) -> usize {
-+fn patch(
-+    what: &mut String,
-+    from: &str,
-+    to: &str,
-+) -> usize {
-     let idx = what.find(from).unwrap();
-     *what = what.replacen(from, to, 1);
-     idx

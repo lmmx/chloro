@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4441 bytes
-Chloro size:   4100 bytes
+Chloro size:   4077 bytes
 Rustfmt size:  4556 bytes
 
 ✗ Outputs DIFFER
@@ -28,15 +28,6 @@ Rustfmt size:  4556 bytes
 -// ability to dispatch diagnostics during this work otherwise the code becomes a complete mess.
  #[derive(Debug, Default, Clone)]
  pub(super) struct Diagnostics<'db>(RefCell<Vec<InferenceDiagnostic<'db>>>);
- 
- impl<'db> Diagnostics<'db> {
--    pub(super) fn push(&self, diagnostic: InferenceDiagnostic<'db>) {
-+    pub(super) fn push(
-+        &self,
-+        diagnostic: InferenceDiagnostic<'db>,
-+    ) {
-         self.0.borrow_mut().push(diagnostic);
-     }
  
          diagnostics: Vec<TyLoweringDiagnostic>,
      ) {

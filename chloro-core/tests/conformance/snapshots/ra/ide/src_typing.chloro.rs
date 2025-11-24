@@ -128,10 +128,7 @@ fn on_opening_delimiter_typed(
     }
 }
 
-fn on_left_brace_typed(
-    reparsed: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_left_brace_typed(reparsed: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let segment: ast::PathSegment = find_node_at_offset(reparsed.syntax(), offset)?;
     if segment.syntax().text_range().start() != offset {
         return None;
@@ -186,10 +183,7 @@ fn on_delimited_node_typed(
 
 /// Returns an edit which should be applied after `=` was typed. Primarily,
 /// this works when adding `let =`.
-fn on_eq_typed(
-    file: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let text = file.syntax().text();
     let has_newline = iter::successors(Some(offset), |&offset| Some(offset + TextSize::new(1)))
         .filter_map(|offset| text.char_at(offset))
@@ -277,10 +271,7 @@ fn on_eq_typed(
 }
 
 /// Returns an edit which should be applied when a dot ('.') is typed on a blank line, indenting the line appropriately.
-fn on_dot_typed(
-    file: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let whitespace =
         file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
     // if prior is fn call over multiple lines dont indent
@@ -355,10 +346,7 @@ fn on_left_angle_typed(
     }
 }
 
-fn on_pipe_typed(
-    file: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_pipe_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let pipe_token = file.syntax().token_at_offset(offset).right_biased()?;
     if pipe_token.kind() != SyntaxKind::PIPE {
         return None;
@@ -370,10 +358,7 @@ fn on_pipe_typed(
     Some(TextEdit::insert(after_lpipe, "|".to_owned()))
 }
 
-fn on_plus_typed(
-    file: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let plus_token = file.syntax().token_at_offset(offset).right_biased()?;
     if plus_token.kind() != SyntaxKind::PLUS {
         return None;
@@ -395,10 +380,7 @@ fn on_plus_typed(
 }
 
 /// Adds a space after an arrow when `fn foo() { ... }` is turned into `fn foo() -> { ... }`
-fn on_right_angle_typed(
-    file: &SourceFile,
-    offset: TextSize,
-) -> Option<TextEdit> {
+fn on_right_angle_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let file_text = file.syntax().text();
     let after_arrow = offset + TextSize::of('>');
     if file_text.char_at(after_arrow) != Some('{') {
@@ -413,17 +395,11 @@ mod tests {
     use test_utils::{assert_eq_text, extract_offset};
     use super::*;
     impl ExtendedTextEdit {
-        fn apply(
-            &self,
-            text: &mut String,
-        ) {
+        fn apply(&self, text: &mut String) {
             self.edit.apply(text);
         }
     }
-    fn do_type_char(
-        char_typed: char,
-        before: &str,
-    ) -> Option<String> {
+    fn do_type_char(char_typed: char, before: &str) -> Option<String> {
         let (offset, mut before) = extract_offset(before);
         let edit = TextEdit::insert(offset, char_typed.to_string());
         edit.apply(&mut before);
@@ -442,10 +418,7 @@ mod tests {
             .unwrap_or_else(|| panic!("typing `{char_typed}` did nothing"));
         assert_eq_text!(ra_fixture_after, &actual);
     }
-    fn type_char_noop(
-        char_typed: char,
-        #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
-    ) {
+    fn type_char_noop(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str) {
         let file_change = do_type_char(char_typed, ra_fixture_before);
         assert_eq!(file_change, None)
     }

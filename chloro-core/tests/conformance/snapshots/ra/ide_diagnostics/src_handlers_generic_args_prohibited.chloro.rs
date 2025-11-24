@@ -38,10 +38,7 @@ fn describe_reason(reason: GenericArgsProhibitedReason) -> String {
     format!("generic arguments are not allowed on {kind}")
 }
 
-fn fixes(
-    ctx: &DiagnosticsContext<'_>,
-    d: &hir::GenericArgsProhibited,
-) -> Option<Vec<Assist>> {
+fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::GenericArgsProhibited) -> Option<Vec<Assist>> {
     let file_id = d.args.file_id.file_id()?;
     let syntax = d.args.to_node(ctx.sema.db);
     let range = match &syntax {

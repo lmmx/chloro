@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5111 bytes
-Chloro size:   5130 bytes
+Chloro size:   5107 bytes
 Rustfmt size:  5132 bytes
 
 ✗ Outputs DIFFER
@@ -48,14 +48,6 @@ Rustfmt size:  5132 bytes
      (target_node, ref_data)
  }
  
- 
- impl RefData {
-     /// Derefs `expr` and wraps it in parens if necessary
--    pub(crate) fn wrap_expr(&self, mut expr: ast::Expr) -> ast::Expr {
-+    pub(crate) fn wrap_expr(
-+        &self,
-+        mut expr: ast::Expr,
-+    ) -> ast::Expr {
          if self.needs_deref {
              expr = make::expr_prefix(T![*], expr).into();
          }

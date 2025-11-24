@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31662 bytes
-Chloro size:   31779 bytes
+Chloro size:   31677 bytes
 Rustfmt size:  32318 bytes
 
 ✗ Outputs DIFFER
@@ -103,17 +103,6 @@ Rustfmt size:  32318 bytes
          match &self.import_candidate {
              ImportCandidate::Path(path_candidate) => path_applicable_imports(
                  db,
-         .into_iter()
-     }
- 
--    fn scope_definitions(&self, sema: &Semantics<'_, RootDatabase>) -> FxHashSet<ScopeDef> {
-+    fn scope_definitions(
-+        &self,
-+        sema: &Semantics<'_, RootDatabase>,
-+    ) -> FxHashSet<ScopeDef> {
-         let _p = tracing::info_span!("ImportAssets::scope_definitions").entered();
-         let mut scope_definitions = FxHashSet::default();
-         if let Some(scope) = sema.scope(&self.candidate_node) {
      scope_filter: impl Fn(ItemInNs) -> bool + Copy,
  ) -> FxIndexSet<LocatedImport> {
      let _p = tracing::info_span!("ImportAssets::path_applicable_imports").entered();
@@ -166,28 +155,6 @@ Rustfmt size:  32318 bytes
                  }),
              };
              if !is_match {
-     result
- }
- 
--pub fn item_for_path_search(db: &RootDatabase, item: ItemInNs) -> Option<ItemInNs> {
-+pub fn item_for_path_search(
-+    db: &RootDatabase,
-+    item: ItemInNs,
-+) -> Option<ItemInNs> {
-     Some(match item {
-         ItemInNs::Types(_) | ItemInNs::Values(_) => match item_as_assoc(db, item) {
-             Some(assoc_item) => item_for_path_search_assoc(db, assoc_item)?,
-     })
- }
- 
--fn item_for_path_search_assoc(db: &RootDatabase, assoc_item: AssocItem) -> Option<ItemInNs> {
-+fn item_for_path_search_assoc(
-+    db: &RootDatabase,
-+    assoc_item: AssocItem,
-+) -> Option<ItemInNs> {
-     Some(match assoc_item.container(db) {
-         AssocItemContainer::Trait(trait_) => ItemInNs::from(ModuleDef::from(trait_)),
-         AssocItemContainer::Impl(impl_) => {
      scope_filter: impl Fn(hir::Trait) -> bool,
  ) -> FxIndexSet<LocatedImport> {
      let _p = tracing::info_span!("ImportAssets::trait_applicable_items").entered();
@@ -319,28 +286,6 @@ Rustfmt size:  32318 bytes
      located_imports
  }
  
-         }
-     }
- 
--    fn for_regular_path(sema: &Semantics<'db, RootDatabase>, path: &ast::Path) -> Option<Self> {
-+    fn for_regular_path(
-+        sema: &Semantics<'db, RootDatabase>,
-+        path: &ast::Path,
-+    ) -> Option<Self> {
-         if sema.resolve_path(path).is_some() {
-             return None;
-         }
-         )
-     }
- 
--    fn for_name(sema: &Semantics<'db, RootDatabase>, name: &ast::Name) -> Option<Self> {
-+    fn for_name(
-+        sema: &Semantics<'db, RootDatabase>,
-+        name: &ast::Name,
-+    ) -> Option<Self> {
-         if sema
-             .scope(name.syntax())?
-             .speculative_resolve(&make::ext::ident_path(&name.text()))
      Some(match qualifier {
          Some(qualifier) => match sema.resolve_path(&qualifier) {
              Some(PathResolution::Def(ModuleDef::BuiltinType(_))) | None => {
@@ -363,10 +308,3 @@ Rustfmt size:  32318 bytes
      })
  }
  
--fn item_as_assoc(db: &RootDatabase, item: ItemInNs) -> Option<AssocItem> {
-+fn item_as_assoc(
-+    db: &RootDatabase,
-+    item: ItemInNs,
-+) -> Option<AssocItem> {
-     item.into_module_def().as_assoc_item(db)
- }

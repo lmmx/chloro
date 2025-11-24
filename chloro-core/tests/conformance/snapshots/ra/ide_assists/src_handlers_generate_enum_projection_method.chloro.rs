@@ -31,10 +31,7 @@ pub(crate) fn generate_enum_try_into_method(
     )
 }
 
-pub(crate) fn generate_enum_as_method(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_enum_as_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     generate_enum_projection_method(
         acc,
         ctx,

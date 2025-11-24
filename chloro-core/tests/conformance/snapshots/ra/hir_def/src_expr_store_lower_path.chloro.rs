@@ -253,10 +253,7 @@ pub(super) fn lower_path(
 
 /// This function finds the AST segment that corresponds to the HIR segment
 /// with index `segment_idx` on the path that is lowered from `path`.
-pub fn hir_segment_to_ast_segment(
-    path: &ast::Path,
-    segment_idx: u32,
-) -> Option<ast::PathSegment> {
+pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<ast::PathSegment> {
     // Too tightly coupled to `lower_path()`, but unfortunately we cannot decouple them,
     // as keeping source maps for all paths segments will have a severe impact on memory usage.
     let mut segments = path.segments();

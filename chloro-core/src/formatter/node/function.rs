@@ -65,8 +65,76 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
             .collect();
 
         let has_self = params.self_param().is_some();
-        let is_single_line = params_vec.len() + if has_self { 1 } else { 0 } <= 1
-            && params.syntax().text().len() <= 60.into();
+
+        // Calculate total length for single-line formatting
+        let self_text = if let Some(self_param) = params.self_param() {
+            self_param.syntax().text().to_string()
+        } else {
+            String::new()
+        };
+
+        // Build what the single-line version would look like
+        let mut single_line_content = String::new();
+        if has_self {
+            single_line_content.push_str(&self_text);
+            if !params_vec.is_empty() {
+                single_line_content.push_str(", ");
+            }
+        }
+        for (i, p) in params_vec.iter().enumerate() {
+            if i > 0 {
+                single_line_content.push_str(", ");
+            }
+            single_line_content.push_str(p);
+        }
+
+        // Calculate the full line length if we format on single line
+        // Format: "pub fn name(params) -> ReturnType"
+        let mut hypothetical_line_len = indent;
+
+        // Add visibility
+        if let Some(vis) = func.visibility() {
+            hypothetical_line_len += u32::from(vis.syntax().text().len()) as usize + 1;
+        }
+
+        // Add modifiers
+        if func.const_token().is_some() {
+            hypothetical_line_len += 6; // "const "
+        }
+        if func.async_token().is_some() {
+            hypothetical_line_len += 6; // "async "
+        }
+        if func.unsafe_token().is_some() {
+            hypothetical_line_len += 7; // "unsafe "
+        }
+
+        hypothetical_line_len += 3; // "fn "
+
+        // Add name
+        if let Some(name) = func.name() {
+            hypothetical_line_len += name.text().len();
+        }
+
+        // Add generics
+        if let Some(generics) = func.generic_param_list() {
+            hypothetical_line_len += u32::from(generics.syntax().text().len()) as usize;
+        }
+
+        // Add parameters with parens
+        hypothetical_line_len += 2 + single_line_content.len(); // "(content)"
+
+        // Add return type
+        if let Some(ret) = func.ret_type() {
+            hypothetical_line_len += 4; // " -> "
+            if let Some(ty) = ret.ty() {
+                hypothetical_line_len += u32::from(ty.syntax().text().len()) as usize;
+            }
+        }
+
+        // Add space before opening brace or semicolon
+        hypothetical_line_len += 2; // " {" or ";"
+
+        let is_single_line = hypothetical_line_len < crate::formatter::config::MAX_WIDTH;
 
         buf.push('(');
 

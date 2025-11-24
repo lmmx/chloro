@@ -50,21 +50,14 @@ fn read_stdin() -> anyhow::Result<String> {
     Ok(buff)
 }
 
-fn report_metric(
-    metric: &str,
-    value: u64,
-    unit: &str,
-) {
+fn report_metric(metric: &str, value: u64, unit: &str) {
     if std::env::var("RA_METRICS").is_err() {
         return;
     }
     println!("METRIC:{metric}:{value}:{unit}")
 }
 
-fn print_memory_usage(
-    mut host: AnalysisHost,
-    vfs: Vfs,
-) {
+fn print_memory_usage(mut host: AnalysisHost, vfs: Vfs) {
     let mem = host.per_query_memory_usage();
     let before = profile::memory_usage();
     drop(vfs);
@@ -82,11 +75,7 @@ fn print_memory_usage(
     eprintln!("{remaining:>8}        Remaining");
 }
 
-fn full_name_of_item(
-    db: &dyn HirDatabase,
-    module: Module,
-    name: Name,
-) -> String {
+fn full_name_of_item(db: &dyn HirDatabase, module: Module, name: Name) -> String {
     module
         .path_to_root(db)
         .into_iter()

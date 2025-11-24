@@ -38,11 +38,7 @@ impl<Args, Output> Default for OpQueue<Args, Output> {
 
 impl<Args: std::fmt::Debug, Output> OpQueue<Args, Output> {
     /// Request an operation to start.
-    pub(crate) fn request_op(
-        &mut self,
-        reason: Cause,
-        args: Args,
-    ) {
+    pub(crate) fn request_op(&mut self, reason: Cause, args: Args) {
         self.op_requested = Some((reason, args));
     }
 
@@ -57,10 +53,7 @@ impl<Args: std::fmt::Debug, Output> OpQueue<Args, Output> {
     }
 
     /// Mark an operation as completed.
-    pub(crate) fn op_completed(
-        &mut self,
-        result: Output,
-    ) {
+    pub(crate) fn op_completed(&mut self, result: Output) {
         assert!(self.op_in_progress);
         self.op_in_progress = false;
         self.last_op_result = Some(result);

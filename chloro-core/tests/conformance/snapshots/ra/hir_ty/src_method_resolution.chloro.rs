@@ -179,10 +179,7 @@ pub struct TraitImpls {
 }
 
 impl TraitImpls {
-    pub(crate) fn trait_impls_in_crate_query(
-        db: &dyn HirDatabase,
-        krate: Crate,
-    ) -> Arc<Self> {
+    pub(crate) fn trait_impls_in_crate_query(db: &dyn HirDatabase, krate: Crate) -> Arc<Self> {
         let _p = tracing::info_span!("trait_impls_in_crate_query", ?krate).entered();
         let mut impls = FxHashMap::default();
         Self::collect_def_map(db, &mut impls, crate_def_map(db, krate));
@@ -218,11 +215,7 @@ impl TraitImpls {
         }
     }
 
-    fn collect_def_map(
-        db: &dyn HirDatabase,
-        map: &mut TraitFpMapCollector,
-        def_map: &DefMap,
-    ) {
+    fn collect_def_map(db: &dyn HirDatabase, map: &mut TraitFpMapCollector, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
             for impl_id in module_data.scope.impls() {
                 // Reservation impls should be ignored during trait resolution, so we never need
@@ -266,10 +259,7 @@ impl TraitImpls {
     }
 
     /// Queries all impls of the given trait.
-    pub fn for_trait(
-        &self,
-        trait_: TraitId,
-    ) -> impl Iterator<Item = ImplId> + '_ {
+    pub fn for_trait(&self, trait_: TraitId) -> impl Iterator<Item = ImplId> + '_ {
         self.map
             .get(&trait_)
             .into_iter()
@@ -317,10 +307,7 @@ pub struct InherentImpls {
 }
 
 impl InherentImpls {
-    pub(crate) fn inherent_impls_in_crate_query(
-        db: &dyn HirDatabase,
-        krate: Crate,
-    ) -> Arc<Self> {
+    pub(crate) fn inherent_impls_in_crate_query(db: &dyn HirDatabase, krate: Crate) -> Arc<Self> {
         let _p = tracing::info_span!("inherent_impls_in_crate_query", ?krate).entered();
         let mut impls = Self { map: FxHashMap::default(), invalid_impls: Vec::default() };
         let crate_def_map = crate_def_map(db, krate);
@@ -350,11 +337,7 @@ impl InherentImpls {
         self.map.shrink_to_fit();
     }
 
-    fn collect_def_map(
-        &mut self,
-        db: &dyn HirDatabase,
-        def_map: &DefMap,
-    ) {
+    fn collect_def_map(&mut self, db: &dyn HirDatabase, def_map: &DefMap) {
         for (_module_id, module_data) in def_map.modules() {
             for impl_id in module_data.scope.impls() {
                 let data = db.impl_signature(impl_id);
@@ -387,10 +370,7 @@ impl InherentImpls {
         }
     }
 
-    pub fn for_self_ty<'db>(
-        &self,
-        self_ty: Ty<'db>,
-    ) -> &[ImplId] {
+    pub fn for_self_ty<'db>(&self, self_ty: Ty<'db>) -> &[ImplId] {
         match TyFingerprint::for_inherent_impl(self_ty) {
             Some(fp) => self.map.get(&fp).map(|vec| vec.as_ref()).unwrap_or(&[]),
             None => &[],
@@ -655,10 +635,7 @@ impl ReceiverAdjustments {
         (ty, adjust)
     }
 
-    fn with_autoref(
-        &self,
-        a: AutorefOrPtrAdjustment,
-    ) -> ReceiverAdjustments {
+    fn with_autoref(&self, a: AutorefOrPtrAdjustment) -> ReceiverAdjustments {
         Self { autoref: Some(a), ..*self }
     }
 }
@@ -923,10 +900,7 @@ fn is_inherent_impl_coherent<'db>(
 /// - All of
 ///   - At least one of the types `T0..=Tn`` must be a local type. Let `Ti`` be the first such type.
 ///   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
-pub fn check_orphan_rules<'db>(
-    db: &'db dyn HirDatabase,
-    impl_: ImplId,
-) -> bool {
+pub fn check_orphan_rules<'db>(db: &'db dyn HirDatabase, impl_: ImplId) -> bool {
     let Some(impl_trait) = db.impl_trait(impl_) else {
         // not a trait impl
         return true;

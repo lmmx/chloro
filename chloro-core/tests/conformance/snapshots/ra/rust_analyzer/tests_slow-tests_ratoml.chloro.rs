@@ -49,10 +49,7 @@ impl RatomlTest {
         case
     }
 
-    fn fixture_path(
-        &self,
-        fixture: &str,
-    ) -> Url {
+    fn fixture_path(&self, fixture: &str) -> Url {
         let mut lines = fixture.trim().split('\n');
         let mut path =
             lines.next().expect("All files in a fixture are expected to have at least one line.");
@@ -80,11 +77,7 @@ impl RatomlTest {
         .unwrap()
     }
 
-    fn create(
-        &mut self,
-        fixture_path: &str,
-        text: String,
-    ) {
+    fn create(&mut self, fixture_path: &str, text: String) {
         let url = self.fixture_path(fixture_path);
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
@@ -104,10 +97,7 @@ impl RatomlTest {
         });
     }
 
-    fn delete(
-        &mut self,
-        file_idx: usize,
-    ) {
+    fn delete(&mut self, file_idx: usize) {
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),
@@ -123,11 +113,7 @@ impl RatomlTest {
         });
     }
 
-    fn edit(
-        &mut self,
-        file_idx: usize,
-        text: String,
-    ) {
+    fn edit(&mut self, file_idx: usize, text: String) {
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: self.urls[file_idx].clone(),

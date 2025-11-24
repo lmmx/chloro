@@ -45,10 +45,7 @@ pub enum TestId {
 }
 
 impl fmt::Display for TestId {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TestId::Name(name) => name.fmt(f),
             TestId::Path(path) => path.fmt(f),
@@ -96,10 +93,7 @@ impl RunnableKind {
 }
 
 impl Runnable {
-    pub fn label(
-        &self,
-        target: Option<&str>,
-    ) -> String {
+    pub fn label(&self, target: Option<&str>) -> String {
         match &self.kind {
             RunnableKind::Test { test_id, .. } => format!("test {test_id}"),
             RunnableKind::TestMod { path } => format!("test-mod {path}"),
@@ -131,10 +125,7 @@ impl Runnable {
     }
 }
 
-pub(crate) fn runnables(
-    db: &RootDatabase,
-    file_id: FileId,
-) -> Vec<Runnable> {
+pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
     let sema = Semantics::new(db);
     let mut res = Vec::new();
     // Record all runnables that come from macro expansions here instead.
@@ -284,10 +275,7 @@ fn find_related_tests_in_module(
     find_related_tests(sema, syntax, fn_pos, Some(mod_scope), tests)
 }
 
-fn as_test_runnable(
-    sema: &Semantics<'_, RootDatabase>,
-    fn_def: &ast::Fn,
-) -> Option<Runnable> {
+fn as_test_runnable(sema: &Semantics<'_, RootDatabase>, fn_def: &ast::Fn) -> Option<Runnable> {
     if test_related_attribute_syn(fn_def).is_some() {
         let function = sema.to_def(fn_def)?;
         runnable_fn(sema, function)
@@ -470,10 +458,7 @@ fn runnable_mod_outline_definition(
     })
 }
 
-fn module_def_doctest(
-    sema: &Semantics<'_, RootDatabase>,
-    def: Definition,
-) -> Option<Runnable> {
+fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Option<Runnable> {
     let db = sema.db;
     let attrs = match def {
         Definition::Module(it) => it.attrs(db),
@@ -549,10 +534,7 @@ pub struct TestAttr {
 }
 
 impl TestAttr {
-    fn from_fn(
-        db: &dyn HirDatabase,
-        fn_def: hir::Function,
-    ) -> TestAttr {
+    fn from_fn(db: &dyn HirDatabase, fn_def: hir::Function) -> TestAttr {
         TestAttr { ignore: fn_def.is_ignore(db) }
     }
 }
@@ -737,10 +719,7 @@ impl UpdateTest {
 mod tests {
     use expect_test::{Expect, expect};
     use crate::fixture;
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let result = analysis
             .runnables(position.file_id)
@@ -760,10 +739,7 @@ mod tests {
             .collect::<Vec<_>>();
         expect.assert_debug_eq(&result);
     }
-    fn check_tests(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_tests(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let tests = analysis.related_tests(position, None).unwrap();
         let navigation_targets = tests.into_iter().map(|runnable| runnable.nav).collect::<Vec<_>>();

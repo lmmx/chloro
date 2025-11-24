@@ -19,10 +19,7 @@ pub struct ActiveParameter<'db> {
 
 impl<'db> ActiveParameter<'db> {
     /// Returns information about the call argument this token is part of.
-    pub fn at_token(
-        sema: &Semantics<'db, RootDatabase>,
-        token: SyntaxToken,
-    ) -> Option<Self> {
+    pub fn at_token(sema: &Semantics<'db, RootDatabase>, token: SyntaxToken) -> Option<Self> {
         let (signature, active_parameter) = callable_for_token(sema, token)?;
         Self::from_signature_and_active_parameter(sema, signature, active_parameter)
     }

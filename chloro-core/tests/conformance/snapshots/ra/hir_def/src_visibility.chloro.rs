@@ -44,11 +44,7 @@ impl Visibility {
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn is_visible_from(
-        self,
-        db: &dyn DefDatabase,
-        from_module: ModuleId,
-    ) -> bool {
+    pub fn is_visible_from(self, db: &dyn DefDatabase, from_module: ModuleId) -> bool {
         let to_module = match self {
             Visibility::Module(m, _) => m,
             Visibility::PubCrate(krate) => return from_module.krate == krate,
@@ -145,11 +141,7 @@ impl Visibility {
     ///
     /// If there is no subset relation between `self` and `other`, returns `None` (ie. they're only
     /// visible in unrelated modules).
-    pub(crate) fn max(
-        self,
-        other: Visibility,
-        def_map: &DefMap,
-    ) -> Option<Visibility> {
+    pub(crate) fn max(self, other: Visibility, def_map: &DefMap) -> Option<Visibility> {
         match (self, other) {
             (_, Visibility::Public) | (Visibility::Public, _) => Some(Visibility::Public),
             (Visibility::PubCrate(krate), Visibility::PubCrate(krateb)) => {
@@ -216,11 +208,7 @@ impl Visibility {
     ///
     /// If there is no subset relation between `self` and `other`, returns `None` (ie. they're only
     /// visible in unrelated modules).
-    pub(crate) fn min(
-        self,
-        other: Visibility,
-        def_map: &DefMap,
-    ) -> Option<Visibility> {
+    pub(crate) fn min(self, other: Visibility, def_map: &DefMap) -> Option<Visibility> {
         match (self, other) {
             (vis, Visibility::Public) | (Visibility::Public, vis) => Some(vis),
             (Visibility::PubCrate(krate), Visibility::PubCrate(krateb)) => {
@@ -319,10 +307,7 @@ pub fn visibility_from_ast(
 }
 
 /// Resolve visibility of a type alias.
-pub(crate) fn assoc_visibility_query(
-    db: &dyn DefDatabase,
-    def: AssocItemId,
-) -> Visibility {
+pub(crate) fn assoc_visibility_query(db: &dyn DefDatabase, def: AssocItemId) -> Visibility {
     match def {
         AssocItemId::FunctionId(function_id) => {
             let loc = function_id.lookup(db);
@@ -348,20 +333,14 @@ pub(crate) fn assoc_visibility_query(
     }
 }
 
-fn trait_item_visibility(
-    db: &dyn DefDatabase,
-    container: ItemContainerId,
-) -> Option<Visibility> {
+fn trait_item_visibility(db: &dyn DefDatabase, container: ItemContainerId) -> Option<Visibility> {
     match container {
         ItemContainerId::TraitId(trait_) => Some(trait_visibility(db, trait_)),
         _ => None,
     }
 }
 
-fn trait_visibility(
-    db: &dyn DefDatabase,
-    def: TraitId,
-) -> Visibility {
+fn trait_visibility(db: &dyn DefDatabase, def: TraitId) -> Visibility {
     let loc = def.lookup(db);
     let source = loc.source(db);
     visibility_from_ast(db, def, source.map(|src| src.visibility()))

@@ -101,10 +101,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         Self { db, infer, body, errors: Vec::new() }
     }
 
-    pub(crate) fn lower_pattern(
-        &mut self,
-        pat: PatId,
-    ) -> Pat<'db> {
+    pub(crate) fn lower_pattern(&mut self, pat: PatId) -> Pat<'db> {
         // XXX(iDawer): Collecting pattern adjustments feels imprecise to me.
         // When lowering of & and box patterns are implemented this should be tested
         // in a manner of `match_ergonomics_issue_9095` test.
@@ -117,10 +114,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         )
     }
 
-    fn lower_pattern_unadjusted(
-        &mut self,
-        pat: PatId,
-    ) -> Pat<'db> {
+    fn lower_pattern_unadjusted(&mut self, pat: PatId) -> Pat<'db> {
         let mut ty = self.infer[pat];
         let variant = self.infer.variant_resolution_for_pat(pat);
         let kind = match self.body[pat] {
@@ -225,17 +219,11 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             .collect()
     }
 
-    fn lower_patterns(
-        &mut self,
-        pats: &[PatId],
-    ) -> Vec<Pat<'db>> {
+    fn lower_patterns(&mut self, pats: &[PatId]) -> Vec<Pat<'db>> {
         pats.iter().map(|&p| self.lower_pattern(p)).collect()
     }
 
-    fn lower_opt_pattern(
-        &mut self,
-        pat: Option<PatId>,
-    ) -> Option<Pat<'db>> {
+    fn lower_opt_pattern(&mut self, pat: Option<PatId>) -> Option<Pat<'db>> {
         pat.map(|p| self.lower_pattern(p))
     }
 
@@ -272,11 +260,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         }
     }
 
-    fn lower_path(
-        &mut self,
-        pat: PatId,
-        _path: &Path,
-    ) -> Pat<'db> {
+    fn lower_path(&mut self, pat: PatId, _path: &Path) -> Pat<'db> {
         let ty = self.infer[pat];
         let pat_from_kind = |kind| Pat { ty, kind: Box::new(kind) };
         match self.infer.variant_resolution_for_pat(pat) {
@@ -288,10 +272,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
         }
     }
 
-    fn lower_lit(
-        &mut self,
-        expr: hir_def::hir::ExprId,
-    ) -> PatKind<'db> {
+    fn lower_lit(&mut self, expr: hir_def::hir::ExprId) -> PatKind<'db> {
         use hir_def::hir::{Expr, Literal::Bool};
         match self.body[expr] {
             Expr::Literal(Bool(value)) => PatKind::LiteralBool { value },
@@ -304,10 +285,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
 }
 
 impl<'db> HirDisplay<'db> for Pat<'db> {
-    fn hir_fmt(
-        &self,
-        f: &mut HirFormatter<'_, 'db>,
-    ) -> Result<(), HirDisplayError> {
+    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
         match &*self.kind {
             PatKind::Wild => write!(f, "_"),
             PatKind::Never => write!(f, "!"),
@@ -440,10 +418,7 @@ where
 impl<'db, F> HirDisplay<'db> for WriteWith<'db, F>
 where
     F: Fn(&mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError>, {
-    fn hir_fmt(
-        &self,
-        f: &mut HirFormatter<'_, 'db>,
-    ) -> Result<(), HirDisplayError> {
+    fn hir_fmt(&self, f: &mut HirFormatter<'_, 'db>) -> Result<(), HirDisplayError> {
         (self.0)(f)
     }
 }

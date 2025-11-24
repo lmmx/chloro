@@ -2,20 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1480 bytes
-Chloro size:   1503 bytes
+Chloro size:   1480 bytes
 Rustfmt size:  1480 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-         }
-     }
- 
--    pub fn find_path_config(&self, allow_unstable: bool) -> FindPathConfig {
-+    pub fn find_path_config(
-+        &self,
-+        allow_unstable: bool,
-+    ) -> FindPathConfig {
-         FindPathConfig {
-             prefer_no_std: self.prefer_no_std,
-             prefer_prelude: self.prefer_prelude,
+✓ Outputs are IDENTICAL

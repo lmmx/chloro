@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   13029 bytes
+Chloro size:   12844 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -36,26 +36,15 @@ Rustfmt size:  13256 bytes
 -pub(crate) trait TrackAutoderefSteps<'db>: Default + fmt::Debug {
 +pub(crate) trait TrackAutoderefSteps<'db> {
      fn len(&self) -> usize;
--    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
 +
-+    fn push(
-+        &mut self,
-+        ty: Ty<'db>,
-+        kind: AutoderefKind,
-+    );
+     fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind);
  }
  
- impl<'db> TrackAutoderefSteps<'db> for usize {
      fn len(&self) -> usize {
          *self
      }
--    fn push(&mut self, _: Ty<'db>, _: AutoderefKind) {
 +
-+    fn push(
-+        &mut self,
-+        _: Ty<'db>,
-+        _: AutoderefKind,
-+    ) {
+     fn push(&mut self, _: Ty<'db>, _: AutoderefKind) {
          *self += 1;
      }
  }
@@ -64,16 +53,10 @@ Rustfmt size:  13256 bytes
      fn len(&self) -> usize {
          self.len()
      }
--    fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
 +
-+    fn push(
-+        &mut self,
-+        ty: Ty<'db>,
-+        kind: AutoderefKind,
-+    ) {
+     fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
          self.push((ty, kind));
      }
- }
  /// Although called `Autoderef` it can be configured to use the
  /// `Receiver` trait instead of the `Deref` trait.
  pub(crate) struct Autoderef<'a, 'db, Steps = Vec<(Ty<'db>, AutoderefKind)>> {
@@ -140,44 +123,7 @@ Rustfmt size:  13256 bytes
          Some((self.state.cur_ty, self.step_count()))
      }
  }
- 
- impl<'a, 'db> Autoderef<'a, 'db> {
--    pub(crate) fn new(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
-+    pub(crate) fn new(
-+        table: &'a mut InferenceTable<'db>,
-+        base_ty: Ty<'db>,
-+    ) -> Self {
-         Self::new_impl(table, base_ty)
-     }
- }
- 
- impl<'a, 'db> Autoderef<'a, 'db, usize> {
--    pub(crate) fn new_no_tracking(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
-+    pub(crate) fn new_no_tracking(
-+        table: &'a mut InferenceTable<'db>,
-+        base_ty: Ty<'db>,
-+    ) -> Self {
-         Self::new_impl(table, base_ty)
-     }
- }
- 
- impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
--    fn new_impl(table: &'a mut InferenceTable<'db>, base_ty: Ty<'db>) -> Self {
-+    fn new_impl(
-+        table: &'a mut InferenceTable<'db>,
-+        base_ty: Ty<'db>,
-+    ) -> Self {
-         Autoderef {
-             state: AutoderefSnapshot {
-                 steps: Steps::default(),
-         }
-     }
- 
--    fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
-+    fn overloaded_deref_ty(
-+        &mut self,
-+        ty: Ty<'db>,
-+    ) -> Option<Ty<'db>> {
+     fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
          debug!("overloaded_deref_ty({:?})", ty);
          let interner = self.table.interner();
 -

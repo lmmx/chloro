@@ -11,10 +11,7 @@ use syntax::{
 };
 use triomphe::Arc;
 
-pub(crate) fn view_syntax_tree(
-    db: &RootDatabase,
-    file_id: FileId,
-) -> String {
+pub(crate) fn view_syntax_tree(db: &RootDatabase, file_id: FileId) -> String {
     let sema = Semantics::new(db);
     let line_index = db.line_index(file_id);
     let parse = sema.parse_guess_edition(file_id);
@@ -22,10 +19,7 @@ pub(crate) fn view_syntax_tree(
     syntax_node_to_json(parse.syntax(), &ctx)
 }
 
-fn syntax_node_to_json(
-    node: &SyntaxNode,
-    ctx: &SyntaxTreeCtx,
-) -> String {
+fn syntax_node_to_json(node: &SyntaxNode, ctx: &SyntaxTreeCtx) -> String {
     let mut result = String::new();
     for event in node.preorder_with_tokens() {
         match event {
@@ -105,28 +99,19 @@ struct TextPosition {
 }
 
 impl std::fmt::Display for TextPosition {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{:?},{},{}]", self.offset, self.line, self.col)
     }
 }
 
 impl TextPosition {
-    pub(crate) fn new(
-        line_index: &LineIndex,
-        offset: TextSize,
-    ) -> Self {
+    pub(crate) fn new(line_index: &LineIndex, offset: TextSize) -> Self {
         let LineCol { line, col } = line_index.line_col(offset);
         Self { offset, line, col }
     }
 }
 
-fn parse_rust_string(
-    token: SyntaxToken,
-    ctx: &SyntaxTreeCtx,
-) -> Option<String> {
+fn parse_rust_string(token: SyntaxToken, ctx: &SyntaxTreeCtx) -> Option<String> {
     let string_node = ast::String::cast(token)?;
     let text = string_node.value().ok()?;
     let mut trim_result = String::new();
@@ -173,10 +158,7 @@ struct InStringCtx {
 mod tests {
     use expect_test::expect;
     use crate::fixture;
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: expect_test::Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: expect_test::Expect) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let syn = analysis.view_syntax_tree(file_id).unwrap();
         expect.assert_eq(&syn)

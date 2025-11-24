@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15570 bytes
-Chloro size:   15544 bytes
+Chloro size:   15521 bytes
 Rustfmt size:  15570 bytes
 
 ✗ Outputs DIFFER
@@ -131,17 +131,6 @@ Rustfmt size:  15570 bytes
          let req = self.req.take_if(|it| it.method == R::METHOD)?;
          let res = crate::from_json(R::METHOD, &req.params);
          match res {
- }
- 
- impl fmt::Display for HandlerCancelledError {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         write!(f, "Cancelled")
-     }
- }
  where
      R: lsp_types::request::Request,
      R::Params: DeserializeOwned,

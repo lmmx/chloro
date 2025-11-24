@@ -130,10 +130,7 @@ pub(crate) fn inlay_hints_resolve(
     acc.into_iter().find(|hint| hasher(hint) == hash)
 }
 
-fn handle_event(
-    ctx: &mut InlayHintCtx,
-    node: WalkEvent<SyntaxNode>,
-) -> Option<SyntaxNode> {
+fn handle_event(ctx: &mut InlayHintCtx, node: WalkEvent<SyntaxNode>) -> Option<SyntaxNode> {
     match node {
         WalkEvent::Enter(node) => {
             if let Some(node) = ast::AnyHasGenericParams::cast(node.clone()) {
@@ -287,10 +284,7 @@ pub struct InlayHintsConfig<'a> {
 }
 
 impl InlayHintsConfig<'_> {
-    fn lazy_text_edit(
-        &self,
-        finish: impl FnOnce() -> TextEdit,
-    ) -> LazyProperty<TextEdit> {
+    fn lazy_text_edit(&self, finish: impl FnOnce() -> TextEdit) -> LazyProperty<TextEdit> {
         if self.fields_to_resolve.resolve_text_edits {
             LazyProperty::Lazy
         } else {
@@ -300,10 +294,7 @@ impl InlayHintsConfig<'_> {
         }
     }
 
-    fn lazy_tooltip(
-        &self,
-        finish: impl FnOnce() -> InlayTooltip,
-    ) -> LazyProperty<InlayTooltip> {
+    fn lazy_tooltip(&self, finish: impl FnOnce() -> InlayTooltip) -> LazyProperty<InlayTooltip> {
         if self.fields_to_resolve.resolve_hint_tooltip
             && self.fields_to_resolve.resolve_label_tooltip
         {
@@ -475,10 +466,7 @@ impl<T> LazyProperty<T> {
 }
 
 impl std::hash::Hash for InlayHint {
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.range.hash(state);
         self.position.hash(state);
         self.pad_left.hash(state);
@@ -490,10 +478,7 @@ impl std::hash::Hash for InlayHint {
 }
 
 impl InlayHint {
-    fn closing_paren_after(
-        kind: InlayKind,
-        range: TextRange,
-    ) -> InlayHint {
+    fn closing_paren_after(kind: InlayKind, range: TextRange) -> InlayHint {
         InlayHint {
             range,
             kind,
@@ -529,10 +514,7 @@ impl InlayHintLabel {
         }
     }
 
-    pub fn prepend_str(
-        &mut self,
-        s: &str,
-    ) {
+    pub fn prepend_str(&mut self, s: &str) {
         match &mut *self.parts {
             [InlayHintLabelPart { text, linked_location: None, tooltip: None }, ..] => {
                 text.insert_str(0, s)
@@ -544,10 +526,7 @@ impl InlayHintLabel {
         }
     }
 
-    pub fn append_str(
-        &mut self,
-        s: &str,
-    ) {
+    pub fn append_str(&mut self, s: &str) {
         match &mut *self.parts {
             [.., InlayHintLabelPart { text, linked_location: None, tooltip: None }] => {
                 text.push_str(s)
@@ -560,10 +539,7 @@ impl InlayHintLabel {
         }
     }
 
-    pub fn append_part(
-        &mut self,
-        part: InlayHintLabelPart,
-    ) {
+    pub fn append_part(&mut self, part: InlayHintLabelPart) {
         if part.linked_location.is_none()
             && part.tooltip.is_none()
             && let Some(InlayHintLabelPart { text, linked_location: None, tooltip: None }) =
@@ -597,19 +573,13 @@ impl From<&str> for InlayHintLabel {
 }
 
 impl fmt::Display for InlayHintLabel {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.parts.iter().map(|part| &part.text).format(""))
     }
 }
 
 impl fmt::Debug for InlayHintLabel {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(&self.parts).finish()
     }
 }
@@ -629,10 +599,7 @@ pub struct InlayHintLabelPart {
 }
 
 impl std::hash::Hash for InlayHintLabelPart {
-    fn hash<H: std::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.text.hash(state);
         self.linked_location.is_some().hash(state);
         self.tooltip.is_some().hash(state);
@@ -640,10 +607,7 @@ impl std::hash::Hash for InlayHintLabelPart {
 }
 
 impl fmt::Debug for InlayHintLabelPart {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self { text, linked_location: None, tooltip: None | Some(LazyProperty::Lazy) } => {
                 text.fmt(f)
@@ -676,19 +640,13 @@ struct InlayHintLabelBuilder<'a> {
 }
 
 impl fmt::Write for InlayHintLabelBuilder<'_> {
-    fn write_str(
-        &mut self,
-        s: &str,
-    ) -> fmt::Result {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
         self.last_part.write_str(s)
     }
 }
 
 impl HirWrite for InlayHintLabelBuilder<'_> {
-    fn start_location_link(
-        &mut self,
-        def: ModuleDefId,
-    ) {
+    fn start_location_link(&mut self, def: ModuleDefId) {
         never!(self.location.is_some(), "location link is already started");
         self.make_new_part();
         self.location = Some(if self.resolve {

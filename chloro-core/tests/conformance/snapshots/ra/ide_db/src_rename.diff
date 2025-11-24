@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29385 bytes
-Chloro size:   29442 bytes
+Chloro size:   29373 bytes
 Rustfmt size:  29385 bytes
 
 ✗ Outputs DIFFER
@@ -42,17 +42,6 @@ Rustfmt size:  29385 bytes
  };
  
  pub type Result<T, E = RenameError> = std::result::Result<T, E>;
- pub struct RenameError(pub String);
- 
- impl fmt::Display for RenameError {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         fmt::Display::fmt(&self.0, f)
-     }
- }
      ($fmt:expr) => { RenameError(format!($fmt)) };
      ($fmt:expr, $($arg:tt)+) => { RenameError(format!($fmt, $($arg)+)) }
  }
@@ -73,17 +62,6 @@ Rustfmt size:  29385 bytes
          match *self {
              Definition::Module(module) => rename_mod(sema, module, new_name),
              Definition::ToolModule(_) => {
-     /// `Definition`. Note that builtin types can't be
-     /// renamed and extern crate names will report its range, though a rename will introduce
-     /// an alias instead.
--    pub fn range_for_rename(self, sema: &Semantics<'_, RootDatabase>) -> Option<FileRange> {
-+    pub fn range_for_rename(
-+        self,
-+        sema: &Semantics<'_, RootDatabase>,
-+    ) -> Option<FileRange> {
-         let syn_ctx_is_root = |(range, ctx): (_, SyntaxContext)| ctx.is_root().then_some(range);
-         let res = match self {
-             Definition::Macro(mac) => {
              Definition::DeriveHelper(_) => return None,
          };
          return res;
@@ -161,14 +139,3 @@ Rustfmt size:  29385 bytes
      if let Some(record_field) = ast::RecordExprField::for_name_ref(name_ref) {
          let rcf_name_ref = record_field.name_ref();
          let rcf_expr = record_field.expr();
- }
- 
- impl IdentifierKind {
--    pub fn classify(edition: Edition, new_name: &str) -> Result<(Name, IdentifierKind)> {
-+    pub fn classify(
-+        edition: Edition,
-+        new_name: &str,
-+    ) -> Result<(Name, IdentifierKind)> {
-         match parser::LexedStr::single_token(edition, new_name) {
-             Some(res) => match res {
-                 (SyntaxKind::IDENT, _) => Ok((Name::new_root(new_name), IdentifierKind::Ident)),

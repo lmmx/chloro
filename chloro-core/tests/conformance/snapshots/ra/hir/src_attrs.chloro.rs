@@ -23,10 +23,7 @@ use crate::{
 };
 
 pub trait HasAttrs {
-    fn attrs(
-        self,
-        db: &dyn HirDatabase,
-    ) -> AttrsWithOwner;
+    fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner;
 
     #[doc(hidden)]
     fn attr_id(self) -> AttrDefId;
@@ -58,10 +55,7 @@ macro_rules! impl_has_attrs_enum {
     )*};
 }
 impl HasAttrs for AssocItem {
-    fn attrs(
-        self,
-        db: &dyn HirDatabase,
-    ) -> AttrsWithOwner {
+    fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner {
         match self {
             AssocItem::Function(it) => it.attrs(db),
             AssocItem::Const(it) => it.attrs(db),
@@ -79,10 +73,7 @@ impl HasAttrs for AssocItem {
 }
 
 impl HasAttrs for crate::Crate {
-    fn attrs(
-        self,
-        db: &dyn HirDatabase,
-    ) -> AttrsWithOwner {
+    fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner {
         let def = AttrDefId::ModuleId(self.root_module().id);
         AttrsWithOwner::new(db, def)
     }

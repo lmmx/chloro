@@ -201,10 +201,7 @@ impl HlTag {
 }
 
 impl fmt::Display for HlTag {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
@@ -269,19 +266,13 @@ impl HlMod {
 }
 
 impl fmt::Display for HlMod {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
 impl fmt::Display for Highlight {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.tag.fmt(f)?;
         for modifier in self.mods.iter() {
             f.write_char('.')?;
@@ -328,28 +319,19 @@ impl Highlight {
 impl ops::BitOr<HlMod> for HlTag {
     type Output = Highlight;
 
-    fn bitor(
-        self,
-        rhs: HlMod,
-    ) -> Highlight {
+    fn bitor(self, rhs: HlMod) -> Highlight {
         Highlight::new(self) | rhs
     }
 }
 
 impl ops::BitOrAssign<HlMod> for HlMods {
-    fn bitor_assign(
-        &mut self,
-        rhs: HlMod,
-    ) {
+    fn bitor_assign(&mut self, rhs: HlMod) {
         self.0 |= rhs.mask();
     }
 }
 
 impl ops::BitOrAssign<HlMod> for Highlight {
-    fn bitor_assign(
-        &mut self,
-        rhs: HlMod,
-    ) {
+    fn bitor_assign(&mut self, rhs: HlMod) {
         self.mods |= rhs;
     }
 }
@@ -357,10 +339,7 @@ impl ops::BitOrAssign<HlMod> for Highlight {
 impl ops::BitOr<HlMod> for Highlight {
     type Output = Highlight;
 
-    fn bitor(
-        mut self,
-        rhs: HlMod,
-    ) -> Highlight {
+    fn bitor(mut self, rhs: HlMod) -> Highlight {
         self |= rhs;
         self
     }
@@ -371,10 +350,7 @@ impl HlMods {
         self.0 == 0
     }
 
-    pub fn contains(
-        self,
-        m: HlMod,
-    ) -> bool {
+    pub fn contains(self, m: HlMod) -> bool {
         self.0 & m.mask() == m.mask()
     }
 

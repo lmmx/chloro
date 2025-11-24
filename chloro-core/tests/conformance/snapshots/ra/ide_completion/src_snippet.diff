@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7279 bytes
-Chloro size:   7333 bytes
+Chloro size:   7276 bytes
 Rustfmt size:  7507 bytes
 
 ✗ Outputs DIFFER
@@ -40,34 +40,8 @@ Rustfmt size:  7507 bytes
              scope,
              snippet,
              description,
-     }
  
-     /// Returns [`None`] if the required items do not resolve.
--    pub(crate) fn imports(&self, ctx: &CompletionContext<'_>) -> Option<Vec<LocatedImport>> {
-+    pub(crate) fn imports(
-+        &self,
-+        ctx: &CompletionContext<'_>,
-+    ) -> Option<Vec<LocatedImport>> {
-         import_edits(ctx, &self.requires)
-     }
- 
-         self.snippet.replace("${receiver}", "$0")
-     }
- 
--    pub fn postfix_snippet(&self, receiver: &str) -> String {
-+    pub fn postfix_snippet(
-+        &self,
-+        receiver: &str,
-+    ) -> String {
-         self.snippet.replace("${receiver}", receiver)
-     }
- }
- 
--fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
-+fn import_edits(
-+    ctx: &CompletionContext<'_>,
-+    requires: &[ModPath],
-+) -> Option<Vec<LocatedImport>> {
+ fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
      let import_cfg = ctx.config.find_path_config(ctx.is_nightly);
 -
      let resolve = |import| {

@@ -22,10 +22,7 @@ enum WrapUnwrapOption {
 /// But a derive attribute list doesn't have paths. So we need to collect all the tokens before and after the ident
 ///
 /// If this functions return None just map to WrapAttr
-fn attempt_get_derive(
-    attr: ast::Attr,
-    ident: SyntaxToken,
-) -> WrapUnwrapOption {
+fn attempt_get_derive(attr: ast::Attr, ident: SyntaxToken) -> WrapUnwrapOption {
     let attempt_attr = || {
         {
             let mut derive = ident.text_range();
@@ -97,10 +94,7 @@ fn attempt_get_derive(
     }
 }
 
-pub(crate) fn wrap_unwrap_cfg_attr(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn wrap_unwrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let option = if ctx.has_empty_selection() {
         let ident = ctx.find_token_syntax_at_offset(T![ident]);
         let attr = ctx.find_node_at_offset::<ast::Attr>();
@@ -211,11 +205,7 @@ fn wrap_derive(
     Some(())
 }
 
-fn wrap_cfg_attr(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-    attr: ast::Attr,
-) -> Option<()> {
+fn wrap_cfg_attr(acc: &mut Assists, ctx: &AssistContext<'_>, attr: ast::Attr) -> Option<()> {
     let range = attr.syntax().text_range();
     let path = attr.path()?;
     let handle_source_change = |edit: &mut SourceChangeBuilder| {
@@ -270,10 +260,7 @@ fn wrap_cfg_attr(
     Some(())
 }
 
-fn unwrap_cfg_attr(
-    acc: &mut Assists,
-    attr: ast::Attr,
-) -> Option<()> {
+fn unwrap_cfg_attr(acc: &mut Assists, attr: ast::Attr) -> Option<()> {
     let range = attr.syntax().text_range();
     let meta = attr.meta()?;
     let meta_tt = meta.token_tree()?;

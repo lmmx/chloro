@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15727 bytes
+Chloro size:   15705 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -28,14 +28,9 @@ Rustfmt size:  16309 bytes
 -//     println!("foo");
 -// }
 -// ```
--pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn unwrap_block(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let assist_id = AssistId::refactor_rewrite("unwrap_block");
      let assist_label = "Unwrap block";
-     let l_curly_token = ctx.find_token_syntax_at_offset(T!['{'])?;
      let target = block.syntax().text_range();
      let mut parent = block.syntax().parent()?;
      if ast::MatchArm::can_cast(parent.kind()) {
@@ -90,17 +85,6 @@ Rustfmt size:  16309 bytes
          })
      }
  }
-     update_expr_string_with_pat(expr_string, &[' '])
- }
- 
--fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> String {
-+fn update_expr_string_with_pat(
-+    expr_str: String,
-+    whitespace_pat: &[char],
-+) -> String {
-     // Remove leading whitespace, index to remove the leading '{',
-     // then continue to remove leading whitespace.
-     // We cannot assume the `{` is the first character because there are block modifiers
      // (`unsafe`, `async` etc.).
      let after_open_brace_index = expr_str.find('{').map_or(0, |it| it + 1);
      let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);

@@ -625,10 +625,7 @@ pub(crate) fn highlight_yield_points(
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
-fn cover_range(
-    r0: Option<TextRange>,
-    r1: Option<TextRange>,
-) -> Option<TextRange> {
+fn cover_range(r0: Option<TextRange>, r1: Option<TextRange>) -> Option<TextRange> {
     match (r0, r1) {
         (Some(r0), Some(r1)) => Some(r0.cover(r1)),
         (Some(range), None) => Some(range),
@@ -637,10 +634,7 @@ fn cover_range(
     }
 }
 
-fn find_defs(
-    sema: &Semantics<'_, RootDatabase>,
-    token: SyntaxToken,
-) -> FxHashSet<Definition> {
+fn find_defs(sema: &Semantics<'_, RootDatabase>, token: SyntaxToken) -> FxHashSet<Definition> {
     sema.descend_into_macros_exact(token)
         .into_iter()
         .filter_map(|token| IdentClass::classify_token(sema, &token))
@@ -656,10 +650,7 @@ fn original_frange(
     InFile::new(file_id, text_range?).original_node_file_range_opt(db).map(|(frange, _)| frange)
 }
 
-fn merge_map(
-    res: &mut HighlightMap,
-    new: Option<HighlightMap>,
-) {
+fn merge_map(res: &mut HighlightMap, new: Option<HighlightMap>) {
     let Some(new) = new else {
         return;
     };
@@ -682,18 +673,11 @@ impl<'a> WalkExpandedExprCtx<'a> {
         Self { sema, depth: 0, check_ctx: &is_closure_or_blk_with_modif }
     }
 
-    fn with_check_ctx(
-        &self,
-        check_ctx: &'static dyn Fn(&ast::Expr) -> bool,
-    ) -> Self {
+    fn with_check_ctx(&self, check_ctx: &'static dyn Fn(&ast::Expr) -> bool) -> Self {
         Self { check_ctx, ..*self }
     }
 
-    fn walk(
-        &mut self,
-        expr: &ast::Expr,
-        cb: &mut dyn FnMut(usize, ast::Expr),
-    ) {
+    fn walk(&mut self, expr: &ast::Expr, cb: &mut dyn FnMut(usize, ast::Expr)) {
         preorder_expr_with_ctx_checker(expr, self.check_ctx, &mut |ev: WalkEvent<ast::Expr>| {
             match ev {
                 syntax::WalkEvent::Enter(expr) => {

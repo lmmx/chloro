@@ -2,20 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1771 bytes
-Chloro size:   1791 bytes
+Chloro size:   1768 bytes
 Rustfmt size:  1822 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- }
- 
  impl fmt::Display for VersionInfo {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
          write!(f, "{}", self.version)?;
 -
          if let Some(ci) = &self.commit_info {

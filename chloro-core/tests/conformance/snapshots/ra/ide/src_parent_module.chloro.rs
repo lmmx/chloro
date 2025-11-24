@@ -12,10 +12,7 @@ use syntax::{
 use crate::NavigationTarget;
 
 /// This returns `Vec` because a module may be included from several places.
-pub(crate) fn parent_module(
-    db: &RootDatabase,
-    position: FilePosition,
-) -> Vec<NavigationTarget> {
+pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
     let mut module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
@@ -42,10 +39,7 @@ pub(crate) fn parent_module(
 }
 
 /// This returns `Vec` because a module may be included from several places.
-pub(crate) fn crates_for(
-    db: &RootDatabase,
-    file_id: FileId,
-) -> Vec<Crate> {
+pub(crate) fn crates_for(db: &RootDatabase, file_id: FileId) -> Vec<Crate> {
     db.relevant_crates(file_id)
         .iter()
         .copied()

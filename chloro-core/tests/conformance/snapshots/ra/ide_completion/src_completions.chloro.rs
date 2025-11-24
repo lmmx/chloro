@@ -65,44 +65,27 @@ impl From<Completions> for Vec<CompletionItem> {
 impl Builder {
     /// Convenience method, which allows to add a freshly created completion into accumulator
     /// without binding it to the variable.
-    pub(crate) fn add_to(
-        self,
-        acc: &mut Completions,
-        db: &RootDatabase,
-    ) {
+    pub(crate) fn add_to(self, acc: &mut Completions, db: &RootDatabase) {
         acc.add(self.build(db))
     }
 }
 
 impl Completions {
-    fn add(
-        &mut self,
-        item: CompletionItem,
-    ) {
+    fn add(&mut self, item: CompletionItem) {
         self.buf.push(item)
     }
 
-    fn add_many(
-        &mut self,
-        items: impl IntoIterator<Item = CompletionItem>,
-    ) {
+    fn add_many(&mut self, items: impl IntoIterator<Item = CompletionItem>) {
         self.buf.extend(items)
     }
 
-    fn add_opt(
-        &mut self,
-        item: Option<CompletionItem>,
-    ) {
+    fn add_opt(&mut self, item: Option<CompletionItem>) {
         if let Some(item) = item {
             self.buf.push(item)
         }
     }
 
-    pub(crate) fn add_keyword(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-        keyword: &'static str,
-    ) {
+    pub(crate) fn add_keyword(&mut self, ctx: &CompletionContext<'_>, keyword: &'static str) {
         let item = CompletionItem::new(
             CompletionItemKind::Keyword,
             ctx.source_range(),
@@ -112,30 +95,21 @@ impl Completions {
         item.add_to(self, ctx.db);
     }
 
-    pub(crate) fn add_nameref_keywords_with_colon(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-    ) {
+    pub(crate) fn add_nameref_keywords_with_colon(&mut self, ctx: &CompletionContext<'_>) {
         ["self::", "crate::"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super::");
         }
     }
 
-    pub(crate) fn add_nameref_keywords(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-    ) {
+    pub(crate) fn add_nameref_keywords(&mut self, ctx: &CompletionContext<'_>) {
         ["self", "crate"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super");
         }
     }
 
-    pub(crate) fn add_type_keywords(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-    ) {
+    pub(crate) fn add_type_keywords(&mut self, ctx: &CompletionContext<'_>) {
         self.add_keyword_snippet(ctx, "fn", "fn($1)");
         self.add_keyword_snippet(ctx, "dyn", "dyn $0");
         self.add_keyword_snippet(ctx, "impl", "impl $0");
@@ -404,11 +378,7 @@ impl Completions {
         );
     }
 
-    pub(crate) fn add_const(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-        konst: hir::Const,
-    ) {
+    pub(crate) fn add_const(&mut self, ctx: &CompletionContext<'_>, konst: hir::Const) {
         let is_private_editable = match ctx.is_visible(&konst) {
             Visible::Yes => false,
             Visible::Editable => true,
@@ -568,11 +538,7 @@ impl Completions {
         self.add(item);
     }
 
-    pub(crate) fn add_lifetime(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-        name: hir::Name,
-    ) {
+    pub(crate) fn add_lifetime(&mut self, ctx: &CompletionContext<'_>, name: hir::Name) {
         CompletionItem::new(
             SymbolKind::LifetimeParam,
             ctx.source_range(),
@@ -582,11 +548,7 @@ impl Completions {
         .add_to(self, ctx.db)
     }
 
-    pub(crate) fn add_label(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-        name: hir::Name,
-    ) {
+    pub(crate) fn add_label(&mut self, ctx: &CompletionContext<'_>, name: hir::Name) {
         CompletionItem::new(
             SymbolKind::Label,
             ctx.source_range(),
@@ -658,11 +620,7 @@ impl Completions {
         ));
     }
 
-    pub(crate) fn suggest_name(
-        &mut self,
-        ctx: &CompletionContext<'_>,
-        name: &str,
-    ) {
+    pub(crate) fn suggest_name(&mut self, ctx: &CompletionContext<'_>, name: &str) {
         let item = CompletionItem::new(
             CompletionItemKind::Binding,
             ctx.source_range(),

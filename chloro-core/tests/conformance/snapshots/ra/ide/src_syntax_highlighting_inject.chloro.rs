@@ -238,10 +238,7 @@ pub(super) fn doc_comment(
     }
 }
 
-fn find_doc_string_in_attr(
-    attr: &hir::Attr,
-    it: &ast::Attr,
-) -> Option<ast::String> {
+fn find_doc_string_in_attr(attr: &hir::Attr, it: &ast::Attr) -> Option<ast::String> {
     match it.expr() {
         // #[doc = lit]
         Some(ast::Expr::Literal(lit)) => match lit.kind() {

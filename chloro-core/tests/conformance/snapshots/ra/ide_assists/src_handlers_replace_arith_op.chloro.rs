@@ -27,11 +27,7 @@ pub(crate) fn replace_arith_with_wrapping(
     replace_arith(acc, ctx, ArithKind::Wrapping)
 }
 
-fn replace_arith(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-    kind: ArithKind,
-) -> Option<()> {
+fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
     let (lhs, op, rhs) = parse_binary_op(ctx)?;
     let op_expr = lhs.syntax().parent()?;
     if !is_primitive_int(ctx, &lhs) || !is_primitive_int(ctx, &rhs) {
@@ -60,10 +56,7 @@ fn replace_arith(
     )
 }
 
-fn is_primitive_int(
-    ctx: &AssistContext<'_>,
-    expr: &ast::Expr,
-) -> bool {
+fn is_primitive_int(ctx: &AssistContext<'_>, expr: &ast::Expr) -> bool {
     match ctx.sema.type_of_expr(expr) {
         Some(ty) => ty.adjusted().is_int_or_uint(),
         _ => false,
@@ -112,10 +105,7 @@ impl ArithKind {
         }
     }
 
-    fn method_name(
-        &self,
-        op: ArithOp,
-    ) -> String {
+    fn method_name(&self, op: ArithOp) -> String {
         let prefix = match self {
             ArithKind::Checked => "checked_",
             ArithKind::Wrapping => "wrapping_",

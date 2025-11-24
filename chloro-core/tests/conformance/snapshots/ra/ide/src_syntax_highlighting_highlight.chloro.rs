@@ -242,10 +242,7 @@ fn punctuation(
     }
 }
 
-fn keyword(
-    token: SyntaxToken,
-    kind: SyntaxKind,
-) -> Highlight {
+fn keyword(token: SyntaxToken, kind: SyntaxKind) -> Highlight {
     let h = Highlight::new(HlTag::Keyword);
     match kind {
         T![await] => h | HlMod::Async | HlMod::ControlFlow,
@@ -470,10 +467,7 @@ fn highlight_name(
     }
 }
 
-fn calc_binding_hash(
-    name: &hir::Name,
-    shadow_count: u32,
-) -> u64 {
+fn calc_binding_hash(name: &hir::Name, shadow_count: u32) -> u64 {
     hash_once::<ide_db::FxHasher>((name.as_str(), shadow_count))
 }
 
@@ -843,11 +837,7 @@ fn highlight_name_ref_by_syntax(
     }
 }
 
-fn is_consumed_lvalue(
-    node: &SyntaxNode,
-    local: &hir::Local,
-    db: &RootDatabase,
-) -> bool {
+fn is_consumed_lvalue(node: &SyntaxNode, local: &hir::Local, db: &RootDatabase) -> bool {
     // When lvalues are passed as arguments and they're not Copy, then mark them as Consuming.
     parents_match(node.clone().into(), &[PATH_SEGMENT, PATH, PATH_EXPR, ARG_LIST])
         && !local.ty(db).is_copy(db)

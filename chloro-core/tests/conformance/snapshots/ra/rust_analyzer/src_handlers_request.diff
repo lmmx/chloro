@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101181 bytes
-Chloro size:   100533 bytes
+Chloro size:   100434 bytes
 Rustfmt size:  101181 bytes
 
 ✗ Outputs DIFFER
@@ -18,27 +18,14 @@ Rustfmt size:  101181 bytes
  use base64::{Engine, prelude::BASE64_STANDARD};
  use ide::{
      AssistKind, AssistResolveStrategy, Cancellable, CompletionFieldsToResolve, FilePosition,
-     try_default,
- };
- 
--pub(crate) fn handle_workspace_reload(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
-+pub(crate) fn handle_workspace_reload(
-+    state: &mut GlobalState,
-+    _: (),
-+) -> anyhow::Result<()> {
+ pub(crate) fn handle_workspace_reload(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
      state.proc_macro_clients = Arc::from_iter([]);
      state.build_deps_changed = false;
 -
      let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
      state.fetch_workspaces_queue.request_op("reload workspace request".to_owned(), req);
      Ok(())
- }
- 
--pub(crate) fn handle_proc_macros_rebuild(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
-+pub(crate) fn handle_proc_macros_rebuild(
-+    state: &mut GlobalState,
-+    _: (),
-+) -> anyhow::Result<()> {
+ pub(crate) fn handle_proc_macros_rebuild(state: &mut GlobalState, _: ()) -> anyhow::Result<()> {
      state.proc_macro_clients = Arc::from_iter([]);
      state.build_deps_changed = false;
 -
@@ -74,11 +61,7 @@ Rustfmt size:  101181 bytes
      Ok(buf)
  }
  
--pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Result<String> {
-+pub(crate) fn handle_memory_usage(
-+    _state: &mut GlobalState,
-+    _: (),
-+) -> anyhow::Result<String> {
+ pub(crate) fn handle_memory_usage(_state: &mut GlobalState, _: ()) -> anyhow::Result<String> {
      let _p = tracing::info_span!("handle_memory_usage").entered();
 -
      #[cfg(not(feature = "dhat"))]
@@ -100,17 +83,6 @@ Rustfmt size:  101181 bytes
  fn all_test_targets(cargo: &CargoWorkspace) -> impl Iterator<Item = TestTarget> {
      cargo.packages().filter(|p| cargo[*p].is_member).flat_map(|p| {
          let package = &cargo[p];
-     })
- }
- 
--fn find_test_target(namespace_root: &str, cargo: &CargoWorkspace) -> Option<TestTarget> {
-+fn find_test_target(
-+    namespace_root: &str,
-+    cargo: &CargoWorkspace,
-+) -> Option<TestTarget> {
-     all_test_targets(cargo).find(|t| namespace_root == t.target.replace('-', "_"))
- }
- 
      if let Some(_session) = state.test_run_session.take() {
          state.send_notification::<lsp_ext::EndRunTest>(());
      }
@@ -292,17 +264,6 @@ Rustfmt size:  101181 bytes
      // Add `cargo check` and `cargo test` for all targets of the whole package
      let config = snap.config.runnables(source_root);
      match target_spec {
-     Ok(res)
- }
- 
--fn should_skip_for_offset(runnable: &Runnable, offset: Option<TextSize>) -> bool {
-+fn should_skip_for_offset(
-+    runnable: &Runnable,
-+    offset: Option<TextSize>,
-+) -> bool {
-     match offset {
-         None => false,
-         _ if matches!(&runnable.kind, RunnableKind::TestMod { .. }) => false,
  ) -> anyhow::Result<Vec<lsp_ext::TestInfo>> {
      let _p = tracing::info_span!("handle_related_tests").entered();
      let position = try_default!(from_proto::file_position(&snap, params)?);
@@ -885,17 +846,6 @@ Rustfmt size:  101181 bytes
      let res = snap.analysis.get_recursive_memory_layout(FilePosition { file_id, offset })?;
      Ok(res.map(|it| lsp_ext::RecursiveMemoryLayout {
          nodes: it
-     }))
- }
- 
--fn to_command_link(command: lsp_types::Command, tooltip: String) -> lsp_ext::CommandLink {
-+fn to_command_link(
-+    command: lsp_types::Command,
-+    tooltip: String,
-+) -> lsp_ext::CommandLink {
-     lsp_ext::CommandLink { tooltip: Some(tooltip), command }
- }
- 
      if !hover_actions_config.runnable() {
          return None;
      }
@@ -942,17 +892,6 @@ Rustfmt size:  101181 bytes
      Some(lsp_ext::CommandLinkGroup {
          title: Some("Go to ".into()),
          commands: nav_targets
-         .collect()
- }
- 
--fn should_skip_target(runnable: &Runnable, cargo_spec: Option<&TargetSpec>) -> bool {
-+fn should_skip_target(
-+    runnable: &Runnable,
-+    cargo_spec: Option<&TargetSpec>,
-+) -> bool {
-     match runnable.kind {
-         RunnableKind::Bin => {
-             // Do not suggest binary run on other target than binary
  ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
      let file_id = try_default!(from_proto::file_id(snap, &text_document.uri)?);
      let file = snap.analysis.file_text(file_id)?;
@@ -1003,17 +942,6 @@ Rustfmt size:  101181 bytes
      if line_index.endings != new_line_endings {
          // If line endings are different, send the entire file.
          // Diffing would not work here, as the line endings might be the only
-     Url::from_file_path(str_path).ok()
- }
- 
--fn resource_ops_supported(config: &Config, kind: ResourceOperationKind) -> anyhow::Result<()> {
-+fn resource_ops_supported(
-+    config: &Config,
-+    kind: ResourceOperationKind,
-+) -> anyhow::Result<()> {
-     if !matches!(config.workspace_edit_resource_operations(), Some(resops) if resops.contains(&kind))
-     {
-         return Err(LspError::new(
          )
          .into());
      }
@@ -1021,14 +949,8 @@ Rustfmt size:  101181 bytes
      Ok(())
  }
  
-     }
- }
  
--pub(crate) fn diff(left: &str, right: &str) -> TextEdit {
-+pub(crate) fn diff(
-+    left: &str,
-+    right: &str,
-+) -> TextEdit {
+ pub(crate) fn diff(left: &str, right: &str) -> TextEdit {
      use dissimilar::Chunk;
 -
      let chunks = dissimilar::diff(left, right);

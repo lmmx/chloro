@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20553 bytes
-Chloro size:   20583 bytes
+Chloro size:   20503 bytes
 Rustfmt size:  21116 bytes
 
 ✗ Outputs DIFFER
@@ -23,14 +23,8 @@ Rustfmt size:  21116 bytes
  #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub enum SymbolInformationKind {
      AssociatedType,
- }
- 
  impl fmt::Display for MonikerIdentifier {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
          f.write_str(&self.crate_name)?;
 -        f.write_fmt(format_args!(
 -            "::{}",
@@ -50,15 +44,6 @@ Rustfmt size:  21116 bytes
  }
  
  impl MonikerResult {
--    pub fn from_def(db: &RootDatabase, def: Definition, from_crate: Crate) -> Option<Self> {
-+    pub fn from_def(
-+        db: &RootDatabase,
-+        def: Definition,
-+        from_crate: Crate,
-+    ) -> Option<Self> {
-         def_to_moniker(db, def, from_crate)
-     }
- }
          .descend_into_macros_exact(original_token.clone())
          .into_iter()
          .filter_map(|token| {
@@ -74,14 +59,8 @@ Rustfmt size:  21116 bytes
          })
          .flatten()
          .unique()
-     Some(RangeInfo::new(original_token.text_range(), navs))
- }
  
--pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformationKind {
-+pub(crate) fn def_to_kind(
-+    db: &RootDatabase,
-+    def: Definition,
-+) -> SymbolInformationKind {
+ pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformationKind {
      use SymbolInformationKind::*;
 -
      match def {
@@ -146,14 +125,6 @@ Rustfmt size:  21116 bytes
          },
      })
  }
- 
--fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {
-+fn display<'db, T: HirDisplay<'db>>(
-+    db: &'db RootDatabase,
-+    module: hir::Module,
-+    it: T,
-+) -> String {
-     match it.display_source_code(db, module.into(), true) {
          Ok(result) => result,
          // Fallback on display variant that always succeeds
          Err(_) => {

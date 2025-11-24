@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3679 bytes
-Chloro size:   3593 bytes
+Chloro size:   3570 bytes
 Rustfmt size:  3832 bytes
 
 ✗ Outputs DIFFER
@@ -18,14 +18,8 @@ Rustfmt size:  3832 bytes
      Bang,
      Attr,
  }
- }
- 
  impl Attrs {
--    pub fn parse_proc_macro_decl(&self, func_name: &Name) -> Option<ProcMacroDef> {
-+    pub fn parse_proc_macro_decl(
-+        &self,
-+        func_name: &Name,
-+    ) -> Option<ProcMacroDef> {
+     pub fn parse_proc_macro_decl(&self, func_name: &Name) -> Option<ProcMacroDef> {
          if self.is_proc_macro() {
 -            Some(ProcMacroDef {
 -                name: func_name.clone(),

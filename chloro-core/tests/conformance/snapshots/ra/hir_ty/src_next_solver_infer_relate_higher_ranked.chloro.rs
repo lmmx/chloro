@@ -24,10 +24,7 @@ impl<'db> InferCtxt<'db> {
     ///
     /// [rustc dev guide]: https://rustc-dev-guide.rust-lang.org/traits/hrtb.html
     #[instrument(level = "debug", skip(self), ret)]
-    pub fn enter_forall_and_leak_universe<T>(
-        &self,
-        binder: Binder<'db, T>,
-    ) -> T
+    pub fn enter_forall_and_leak_universe<T>(&self, binder: Binder<'db, T>) -> T
     where
         T: TypeFoldable<DbInterner<'db>> + Clone, {
         if let Some(inner) = binder.clone().no_bound_vars() {
@@ -70,11 +67,7 @@ impl<'db> InferCtxt<'db> {
     ///
     /// [rustc dev guide]: https://rustc-dev-guide.rust-lang.org/traits/hrtb.html
     #[instrument(level = "debug", skip(self, f))]
-    pub fn enter_forall<T, U>(
-        &self,
-        forall: Binder<'db, T>,
-        f: impl FnOnce(T) -> U,
-    ) -> U
+    pub fn enter_forall<T, U>(&self, forall: Binder<'db, T>, f: impl FnOnce(T) -> U) -> U
     where
         T: TypeFoldable<DbInterner<'db>> + Clone, {
         // FIXME: currently we do nothing to prevent placeholders with the new universe being

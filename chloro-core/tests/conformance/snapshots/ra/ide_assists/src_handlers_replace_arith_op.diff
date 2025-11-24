@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6386 bytes
-Chloro size:   5703 bytes
+Chloro size:   5654 bytes
 Rustfmt size:  6494 bytes
 
 ✗ Outputs DIFFER
@@ -79,15 +79,7 @@ Rustfmt size:  6494 bytes
  pub(crate) fn replace_arith_with_wrapping(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
-     replace_arith(acc, ctx, ArithKind::Wrapping)
- }
- 
--fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
-+fn replace_arith(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+    kind: ArithKind,
-+) -> Option<()> {
+ fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
      let (lhs, op, rhs) = parse_binary_op(ctx)?;
      let op_expr = lhs.syntax().parent()?;
 -
@@ -115,17 +107,6 @@ Rustfmt size:  6494 bytes
              let arith_expr =
                  make.expr_method_call(receiver, make.name_ref(&method_name), make.arg_list([rhs]));
              edit.replace(op_expr, arith_expr.syntax());
-     )
- }
- 
--fn is_primitive_int(ctx: &AssistContext<'_>, expr: &ast::Expr) -> bool {
-+fn is_primitive_int(
-+    ctx: &AssistContext<'_>,
-+    expr: &ast::Expr,
-+) -> bool {
-     match ctx.sema.type_of_expr(expr) {
-         Some(ty) => ty.adjusted().is_int_or_uint(),
-         _ => false,
          return None;
      }
      let expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
@@ -150,16 +131,6 @@ Rustfmt size:  6494 bytes
          AssistId::refactor_rewrite(s)
      }
  
-         }
-     }
- 
--    fn method_name(&self, op: ArithOp) -> String {
-+    fn method_name(
-+        &self,
-+        op: ArithOp,
-+    ) -> String {
-         let prefix = match self {
-             ArithKind::Checked => "checked_",
              ArithKind::Wrapping => "wrapping_",
              ArithKind::Saturating => "saturating_",
          };

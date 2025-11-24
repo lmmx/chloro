@@ -33,10 +33,7 @@ pub fn block_as_lone_tail(block: &ast::BlockExpr) -> Option<ast::Expr> {
 }
 
 /// Preorder walk all the expression's child expressions.
-pub fn walk_expr(
-    expr: &ast::Expr,
-    cb: &mut dyn FnMut(ast::Expr),
-) {
+pub fn walk_expr(expr: &ast::Expr, cb: &mut dyn FnMut(ast::Expr)) {
     preorder_expr(expr, &mut |ev| {
         if let WalkEvent::Enter(expr) = ev {
             cb(expr);
@@ -65,10 +62,7 @@ pub fn is_closure_or_blk_with_modif(expr: &ast::Expr) -> bool {
 /// Preorder walk all the expression's child expressions preserving events.
 /// If the callback returns true on an [`WalkEvent::Enter`], the subtree of the expression will be skipped.
 /// Note that the subtree may already be skipped due to the context analysis this function does.
-pub fn preorder_expr(
-    start: &ast::Expr,
-    cb: &mut dyn FnMut(WalkEvent<ast::Expr>) -> bool,
-) {
+pub fn preorder_expr(start: &ast::Expr, cb: &mut dyn FnMut(WalkEvent<ast::Expr>) -> bool) {
     preorder_expr_with_ctx_checker(start, &is_closure_or_blk_with_modif, cb);
 }
 
@@ -119,10 +113,7 @@ pub fn preorder_expr_with_ctx_checker(
 }
 
 /// Preorder walk all the expression's child patterns.
-pub fn walk_patterns_in_expr(
-    start: &ast::Expr,
-    cb: &mut dyn FnMut(ast::Pat),
-) {
+pub fn walk_patterns_in_expr(start: &ast::Expr, cb: &mut dyn FnMut(ast::Pat)) {
     let mut preorder = start.syntax().preorder();
     while let Some(event) = preorder.next() {
         let node = match event {
@@ -211,10 +202,7 @@ pub fn walk_pat<T>(
 }
 
 /// Preorder walk all the type's sub types.
-pub fn walk_ty(
-    ty: &ast::Type,
-    cb: &mut dyn FnMut(ast::Type) -> bool,
-) {
+pub fn walk_ty(ty: &ast::Type, cb: &mut dyn FnMut(ast::Type) -> bool) {
     let mut preorder = ty.syntax().preorder();
     while let Some(event) = preorder.next() {
         let node = match event {
@@ -241,10 +229,7 @@ pub fn walk_ty(
     }
 }
 
-pub fn vis_eq(
-    this: &ast::Visibility,
-    other: &ast::Visibility,
-) -> bool {
+pub fn vis_eq(this: &ast::Visibility, other: &ast::Visibility) -> bool {
     match (this.kind(), other.kind()) {
         (VisibilityKind::In(this), VisibilityKind::In(other)) => {
             stdx::iter_eq_by(this.segments(), other.segments(), |lhs, rhs| {
@@ -294,10 +279,7 @@ pub fn is_pattern_cond(expr: ast::Expr) -> bool {
 /// Does not walk into `break` or `return` expressions.
 /// Note that modifying the tree while iterating it will cause undefined iteration which might
 /// potentially results in an out of bounds panic.
-pub fn for_each_tail_expr(
-    expr: &ast::Expr,
-    cb: &mut dyn FnMut(&ast::Expr),
-) {
+pub fn for_each_tail_expr(expr: &ast::Expr, cb: &mut dyn FnMut(&ast::Expr)) {
     let walk_loop = |cb: &mut dyn FnMut(&ast::Expr), label, body: Option<ast::BlockExpr>| {
         for_each_break_expr(label, body.and_then(|it| it.stmt_list()), &mut |b| {
             cb(&ast::Expr::BreakExpr(b))
@@ -435,10 +417,7 @@ fn for_each_break_expr(
     }
 }
 
-pub fn eq_label_lt(
-    lt1: &Option<ast::Lifetime>,
-    lt2: &Option<ast::Lifetime>,
-) -> bool {
+pub fn eq_label_lt(lt1: &Option<ast::Lifetime>, lt2: &Option<ast::Lifetime>) -> bool {
     lt1.as_ref().zip(lt2.as_ref()).is_some_and(|(lt, lbl)| lt.text() == lbl.text())
 }
 

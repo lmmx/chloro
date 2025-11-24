@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7455 bytes
-Chloro size:   7689 bytes
+Chloro size:   7457 bytes
 Rustfmt size:  7718 bytes
 
 ✗ Outputs DIFFER
@@ -52,39 +52,12 @@ Rustfmt size:  7718 bytes
          data
      }
  
--    fn into_node(self, name: &'static str) -> Node {
-+    fn into_node(
-+        self,
-+        name: &'static str,
-+    ) -> Node {
-         Node {
-             name,
-             fields: self.fields,
- }
- 
- impl Visit for DataVisitor<'_> {
--    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-+    fn record_debug(
-+        &mut self,
-+        field: &Field,
-+        value: &dyn std::fmt::Debug,
-+    ) {
-         write!(self.string, "{} = {:?} ", field.name(), value).unwrap();
-     }
- }
- 
  impl<S> Layer<S> for SpanTree<S>
  where
 -    S: Subscriber + for<'span> LookupSpan<'span>,
 -{
--    fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
 +    S: Subscriber + for<'span> LookupSpan<'span>, {
-+    fn on_new_span(
-+        &self,
-+        attrs: &Attributes<'_>,
-+        id: &Id,
-+        ctx: Context<'_, S>,
-+    ) {
+     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
          let span = ctx.span(id).unwrap();
 -
          let data = Data::new(attrs);
@@ -92,19 +65,10 @@ Rustfmt size:  7718 bytes
      }
  
 -    fn on_event(&self, _event: &Event<'_>, _ctx: Context<'_, S>) {}
-+    fn on_event(
-+        &self,
-+        _event: &Event<'_>,
-+        _ctx: Context<'_, S>,
-+    ) {
++    fn on_event(&self, _event: &Event<'_>, _ctx: Context<'_, S>) {
 +    }
  
--    fn on_close(&self, id: Id, ctx: Context<'_, S>) {
-+    fn on_close(
-+        &self,
-+        id: Id,
-+        ctx: Context<'_, S>,
-+    ) {
+     fn on_close(&self, id: Id, ctx: Context<'_, S>) {
          let span = ctx.span(&id).unwrap();
          let data = span.extensions_mut().remove::<Data>().unwrap();
          let mut node = data.into_node(span.name());
@@ -121,27 +85,6 @@ Rustfmt size:  7718 bytes
              }
              None => {
                  if self.aggregate {
- }
- 
- impl Node {
--    fn print(&self, filter: &WriteFilter) {
-+    fn print(
-+        &self,
-+        filter: &WriteFilter,
-+    ) {
-         self.go(0, filter)
-     }
- 
-     #[allow(clippy::print_stderr)]
--    fn go(&self, level: usize, filter: &WriteFilter) {
-+    fn go(
-+        &self,
-+        level: usize,
-+        filter: &WriteFilter,
-+    ) {
-         if self.duration > filter.longer_than && level < filter.depth {
-             let duration = ms(self.duration);
-             let current_indent = level * 2;
          if self.children.is_empty() {
              return;
          }
@@ -165,14 +108,3 @@ Rustfmt size:  7718 bytes
          let depth = if let Some(idx) = spec.rfind('@') {
              let depth: usize = spec[idx + 1..].parse().expect("invalid profile depth");
              spec = &spec[..idx];
- struct ms(Duration);
- 
- impl std::fmt::Display for ms {
--    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut std::fmt::Formatter<'_>,
-+    ) -> std::fmt::Result {
-         let n = self.0.as_millis();
-         write!(f, "{n:5}ms")
-     }

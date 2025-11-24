@@ -29,10 +29,7 @@ pub(crate) enum DiscoverArgument {
     Buildfile(AbsPathBuf),
 }
 
-fn serialize_abs_pathbuf<S>(
-    path: &AbsPathBuf,
-    se: S,
-) -> Result<S::Ok, S::Error>
+fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer, {
     let path: &Utf8Path = path.as_ref();
@@ -41,10 +38,7 @@ where
 
 impl DiscoverCommand {
     /// Create a new [DiscoverCommand].
-    pub(crate) fn new(
-        sender: Sender<DiscoverProjectMessage>,
-        command: Vec<String>,
-    ) -> Self {
+    pub(crate) fn new(sender: Sender<DiscoverProjectMessage>, command: Vec<String>) -> Self {
         Self { sender, command }
     }
 
@@ -138,11 +132,7 @@ impl DiscoverProjectMessage {
 struct DiscoverProjectParser;
 
 impl CargoParser<DiscoverProjectMessage> for DiscoverProjectParser {
-    fn from_line(
-        &self,
-        line: &str,
-        _error: &mut String,
-    ) -> Option<DiscoverProjectMessage> {
+    fn from_line(&self, line: &str, _error: &mut String) -> Option<DiscoverProjectMessage> {
         match serde_json::from_str::<DiscoverProjectData>(line) {
             Ok(data) => {
                 let msg = DiscoverProjectMessage::new(data);

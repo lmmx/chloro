@@ -96,10 +96,7 @@ type CoerceResult<'db> = InferResult<'db, (Vec<Adjustment<'db>>, Ty<'db>)>;
 
 /// Coercing a mutable reference to an immutable works, while
 /// coercing `&T` to `&mut T` should be forbidden.
-fn coerce_mutbls<'db>(
-    from_mutbl: Mutability,
-    to_mutbl: Mutability,
-) -> RelateResult<'db, ()> {
+fn coerce_mutbls<'db>(from_mutbl: Mutability, to_mutbl: Mutability) -> RelateResult<'db, ()> {
     if from_mutbl >= to_mutbl { Ok(()) } else { Err(TypeError::Mutability) }
 }
 
@@ -143,11 +140,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         result
     }
 
-    fn unify_raw(
-        &mut self,
-        a: Ty<'db>,
-        b: Ty<'db>,
-    ) -> InferResult<'db, Ty<'db>> {
+    fn unify_raw(&mut self, a: Ty<'db>, b: Ty<'db>) -> InferResult<'db, Ty<'db>> {
         debug!("unify(a: {:?}, b: {:?}, use_lub: {})", a, b, self.use_lub);
         self.commit_if_ok(|this| {
             let at = this.infer_ctxt().at(&this.cause, this.table.trait_env.env);
@@ -178,11 +171,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
     }
 
     /// Unify two types (using sub or lub).
-    fn unify(
-        &mut self,
-        a: Ty<'db>,
-        b: Ty<'db>,
-    ) -> CoerceResult<'db> {
+    fn unify(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
         self.unify_raw(a, b)
             .and_then(|InferOk { value: ty, obligations }| success(vec![], ty, obligations))
     }
@@ -208,11 +197,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
     }
 
     #[instrument(skip(self))]
-    fn coerce(
-        &mut self,
-        a: Ty<'db>,
-        b: Ty<'db>,
-    ) -> CoerceResult<'db> {
+    fn coerce(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
         // First, remove any resolved type variables (at the top level, at least):
         let a = self.table.shallow_resolve(a);
         let b = self.table.shallow_resolve(b);
@@ -298,11 +283,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
     /// Coercing *from* an inference variable. In this case, we have no information
     /// about the source type, so we can't really do a true coercion and we always
     /// fall back to subtyping (`unify_and`).
-    fn coerce_from_inference_variable(
-        &mut self,
-        a: Ty<'db>,
-        b: Ty<'db>,
-    ) -> CoerceResult<'db> {
+    fn coerce_from_inference_variable(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
         debug!("coerce_from_inference_variable(a={:?}, b={:?})", a, b);
         debug_assert!(a.is_infer() && self.table.shallow_resolve(a) == a);
         debug_assert!(self.table.shallow_resolve(b) == b);
@@ -539,11 +520,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
     ///
     /// [unsized coercion](https://doc.rust-lang.org/reference/type-coercions.html#unsized-coercions)
     #[instrument(skip(self), level = "debug")]
-    fn coerce_unsized(
-        &mut self,
-        source: Ty<'db>,
-        target: Ty<'db>,
-    ) -> CoerceResult<'db> {
+    fn coerce_unsized(&mut self, source: Ty<'db>, target: Ty<'db>) -> CoerceResult<'db> {
         debug!(?source, ?target);
         debug_assert!(self.table.shallow_resolve(source) == source);
         debug_assert!(self.table.shallow_resolve(target) == target);
@@ -829,11 +806,7 @@ impl<'a, 'b, 'db> Coerce<'a, 'b, 'db> {
         self.coerce_from_safe_fn(fn_ty_a, b, None)
     }
 
-    fn coerce_from_fn_item(
-        &mut self,
-        a: Ty<'db>,
-        b: Ty<'db>,
-    ) -> CoerceResult<'db> {
+    fn coerce_from_fn_item(&mut self, a: Ty<'db>, b: Ty<'db>) -> CoerceResult<'db> {
         debug!("coerce_from_fn_item(a={:?}, b={:?})", a, b);
         debug_assert!(self.table.shallow_resolve(a) == a);
         debug_assert!(self.table.shallow_resolve(b) == b);
@@ -1296,10 +1269,7 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
         Self::make(expected_ty, Expressions::UpFront(coercion_sites))
     }
 
-    fn make(
-        expected_ty: Ty<'db>,
-        expressions: Expressions<'exprs>,
-    ) -> Self {
+    fn make(expected_ty: Ty<'db>, expressions: Expressions<'exprs>) -> Self {
         CoerceMany { expected_ty, final_ty: None, expressions, pushed: 0 }
     }
 
@@ -1479,10 +1449,7 @@ impl<'db, 'exprs> CoerceMany<'db, 'exprs> {
         self.pushed += 1;
     }
 
-    pub(crate) fn complete(
-        self,
-        icx: &mut InferenceContext<'_, 'db>,
-    ) -> Ty<'db> {
+    pub(crate) fn complete(self, icx: &mut InferenceContext<'_, 'db>) -> Ty<'db> {
         if let Some(final_ty) = self.final_ty {
             final_ty
         } else {

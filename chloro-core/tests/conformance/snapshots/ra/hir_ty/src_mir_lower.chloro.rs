@@ -133,10 +133,7 @@ impl DropScopeToken {
     /// code. Either when the control flow is diverging (so drop code doesn't reached) or when drop is handled
     /// for us (for example a block that ended with a return statement. Return will drop everything, so the block shouldn't
     /// do anything)
-    fn pop_assume_dropped(
-        self,
-        ctx: &mut MirLowerCtx<'_, '_>,
-    ) {
+    fn pop_assume_dropped(self, ctx: &mut MirLowerCtx<'_, '_>) {
         std::mem::forget(self);
         ctx.pop_drop_scope_assume_dropped_internal();
     }
@@ -1430,11 +1427,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         }
     }
 
-    fn lower_literal_to_operand(
-        &mut self,
-        ty: Ty<'db>,
-        l: &Literal,
-    ) -> Result<'db, Operand<'db>> {
+    fn lower_literal_to_operand(&mut self, ty: Ty<'db>, l: &Literal) -> Result<'db, Operand<'db>> {
         let size = || self.db.layout_of_ty(ty, self.env.clone()).map(|it| it.size.bytes_usize());
         const USIZE_SIZE: usize = size_of::<usize>();
         let bytes: Box<[_]> = match l {
@@ -1610,10 +1603,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         Ok(b)
     }
 
-    fn is_unterminated(
-        &mut self,
-        source: BasicBlockId<'db>,
-    ) -> bool {
+    fn is_unterminated(&mut self, source: BasicBlockId<'db>) -> bool {
         self.result.basic_blocks[source].terminator.is_none()
     }
 
@@ -1626,26 +1616,15 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         self.result.basic_blocks[source].terminator = Some(Terminator { span, kind: terminator });
     }
 
-    fn set_goto(
-        &mut self,
-        source: BasicBlockId<'db>,
-        target: BasicBlockId<'db>,
-        span: MirSpan,
-    ) {
+    fn set_goto(&mut self, source: BasicBlockId<'db>, target: BasicBlockId<'db>, span: MirSpan) {
         self.set_terminator(source, TerminatorKind::Goto { target }, span);
     }
 
-    fn expr_ty_without_adjust(
-        &self,
-        e: ExprId,
-    ) -> Ty<'db> {
+    fn expr_ty_without_adjust(&self, e: ExprId) -> Ty<'db> {
         self.infer[e]
     }
 
-    fn expr_ty_after_adjustments(
-        &self,
-        e: ExprId,
-    ) -> Ty<'db> {
+    fn expr_ty_after_adjustments(&self, e: ExprId) -> Ty<'db> {
         let mut ty = None;
         if let Some(it) = self.infer.expr_adjustments.get(&e)
             && let Some(it) = it.last()
@@ -1655,20 +1634,11 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         ty.unwrap_or_else(|| self.expr_ty_without_adjust(e))
     }
 
-    fn push_statement(
-        &mut self,
-        block: BasicBlockId<'db>,
-        statement: Statement<'db>,
-    ) {
+    fn push_statement(&mut self, block: BasicBlockId<'db>, statement: Statement<'db>) {
         self.result.basic_blocks[block].statements.push(statement);
     }
 
-    fn push_fake_read(
-        &mut self,
-        block: BasicBlockId<'db>,
-        p: Place<'db>,
-        span: MirSpan,
-    ) {
+    fn push_fake_read(&mut self, block: BasicBlockId<'db>, p: Place<'db>, span: MirSpan) {
         self.push_statement(block, StatementKind::FakeRead(p).with_span(span));
     }
 
@@ -1682,10 +1652,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         self.push_statement(block, StatementKind::Assign(place, rvalue).with_span(span));
     }
 
-    fn discr_temp_place(
-        &mut self,
-        current: BasicBlockId<'db>,
-    ) -> Place<'db> {
+    fn discr_temp_place(&mut self, current: BasicBlockId<'db>) -> Place<'db> {
         match &self.discr_temp {
             Some(it) => *it,
             None => {
@@ -1737,10 +1704,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         Ok(my.end)
     }
 
-    fn has_adjustments(
-        &self,
-        expr_id: ExprId,
-    ) -> bool {
+    fn has_adjustments(&self, expr_id: ExprId) -> bool {
         !self.infer.expr_adjustments.get(&expr_id).map(|it| it.is_empty()).unwrap_or(true)
     }
 
@@ -1786,10 +1750,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         Ok(r)
     }
 
-    fn is_uninhabited(
-        &self,
-        expr_id: ExprId,
-    ) -> bool {
+    fn is_uninhabited(&self, expr_id: ExprId) -> bool {
         is_ty_uninhabited_from(
             &self.infcx,
             self.infer[expr_id],
@@ -1800,11 +1761,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
 
     /// This function push `StorageLive` statement for the binding, and applies changes to add `StorageDead` and
     /// `Drop` in the appropriated places.
-    fn push_storage_live(
-        &mut self,
-        b: BindingId,
-        current: BasicBlockId<'db>,
-    ) -> Result<'db, ()> {
+    fn push_storage_live(&mut self, b: BindingId, current: BasicBlockId<'db>) -> Result<'db, ()> {
         let l = self.binding_local(b)?;
         self.push_storage_live_for_local(l, current, MirSpan::BindingId(b))
     }
@@ -1820,10 +1777,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         Ok(())
     }
 
-    fn resolve_lang_item(
-        &self,
-        item: LangItem,
-    ) -> Result<'db, LangItemTarget> {
+    fn resolve_lang_item(&self, item: LangItem) -> Result<'db, LangItemTarget> {
         let crate_id = self.owner.module(self.db).krate();
         lang_item(self.db, crate_id, item).ok_or(MirLowerError::LangItemNotFound(item))
     }
@@ -1979,10 +1933,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         Ok(current)
     }
 
-    fn binding_local(
-        &self,
-        b: BindingId,
-    ) -> Result<'db, LocalId<'db>> {
+    fn binding_local(&self, b: BindingId) -> Result<'db, LocalId<'db>> {
         match self.result.binding_locals.get(b) {
             Some(it) => Ok(*it),
             None => {
@@ -1994,10 +1945,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         }
     }
 
-    fn const_eval_discriminant(
-        &self,
-        variant: EnumVariantId,
-    ) -> Result<'db, i128> {
+    fn const_eval_discriminant(&self, variant: EnumVariantId) -> Result<'db, i128> {
         let r = self.db.const_eval_discriminant(variant);
         match r {
             Ok(r) => Ok(r),

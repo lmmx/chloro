@@ -95,10 +95,7 @@ pub struct MonikerIdentifier {
 }
 
 impl fmt::Display for MonikerIdentifier {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.crate_name)?;
         f.write_fmt(format_args!("::{}", self.description.iter().map(|x| &x.name).join("::")))
     }
@@ -122,11 +119,7 @@ pub enum MonikerResult {
 }
 
 impl MonikerResult {
-    pub fn from_def(
-        db: &RootDatabase,
-        def: Definition,
-        from_crate: Crate,
-    ) -> Option<Self> {
+    pub fn from_def(db: &RootDatabase, def: Definition, from_crate: Crate) -> Option<Self> {
         def_to_moniker(db, def, from_crate)
     }
 }
@@ -186,10 +179,7 @@ pub(crate) fn moniker(
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 
-pub(crate) fn def_to_kind(
-    db: &RootDatabase,
-    def: Definition,
-) -> SymbolInformationKind {
+pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformationKind {
     use SymbolInformationKind::*;
     match def {
         Definition::Macro(it) => match it.kind(db) {
@@ -392,11 +382,7 @@ fn def_to_non_local_moniker(
     })
 }
 
-fn display<'db, T: HirDisplay<'db>>(
-    db: &'db RootDatabase,
-    module: hir::Module,
-    it: T,
-) -> String {
+fn display<'db, T: HirDisplay<'db>>(db: &'db RootDatabase, module: hir::Module, it: T) -> String {
     match it.display_source_code(db, module.into(), true) {
         Ok(result) => result,
         // Fallback on display variant that always succeeds

@@ -36,10 +36,7 @@ use crate::{
     AssistId,
 };
 
-pub(crate) fn extract_function(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn extract_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let range = ctx.selection_trimmed();
     if range.is_empty() {
         return None;
@@ -239,10 +236,7 @@ fn make_function_name(semantics_scope: &hir::SemanticsScope<'_>) -> ast::NameRef
 ///   }
 ///   ```
 ///
-fn extraction_target(
-    node: &SyntaxNode,
-    selection_range: TextRange,
-) -> Option<FunctionBody> {
+fn extraction_target(node: &SyntaxNode, selection_range: TextRange) -> Option<FunctionBody> {
     if let Some(stmt) = ast::Stmt::cast(node.clone()) {
         return match stmt {
             ast::Stmt::Item(_) => None,
@@ -409,10 +403,7 @@ struct OutlivedLocal {
 struct LocalUsages(ide_db::search::UsageSearchResult);
 
 impl LocalUsages {
-    fn find_local_usages(
-        ctx: &AssistContext<'_>,
-        var: Local,
-    ) -> Self {
+    fn find_local_usages(ctx: &AssistContext<'_>, var: Local) -> Self {
         Self(
             Definition::Local(var)
                 .usages(&ctx.sema)
@@ -427,10 +418,7 @@ impl LocalUsages {
 }
 
 impl<'db> Function<'db> {
-    fn return_type(
-        &self,
-        ctx: &AssistContext<'db>,
-    ) -> FunType<'db> {
+    fn return_type(&self, ctx: &AssistContext<'db>) -> FunType<'db> {
         match &self.ret_ty {
             RetType::Expr(ty) if ty.is_unit() => FunType::Unit,
             RetType::Expr(ty) => FunType::Single(ty.clone()),
@@ -445,10 +433,7 @@ impl<'db> Function<'db> {
         }
     }
 
-    fn self_param_adt(
-        &self,
-        ctx: &AssistContext<'_>,
-    ) -> Option<ast::Adt> {
+    fn self_param_adt(&self, ctx: &AssistContext<'_>) -> Option<ast::Adt> {
         let self_param = self.self_param.as_ref()?;
         let def = ctx.sema.to_def(self_param)?;
         let adt = def.ty(ctx.db()).strip_references().as_adt()?;
@@ -473,11 +458,7 @@ impl<'db> Param<'db> {
         }
     }
 
-    fn to_arg(
-        &self,
-        ctx: &AssistContext<'db>,
-        edition: Edition,
-    ) -> ast::Expr {
+    fn to_arg(&self, ctx: &AssistContext<'db>, edition: Edition) -> ast::Expr {
         let var = path_expr_from_local(ctx, self.var, edition);
         match self.kind() {
             ParamKind::Value | ParamKind::MutValue => var,
@@ -534,10 +515,7 @@ impl<'db> TryKind<'db> {
 }
 
 impl<'db> FlowKind<'db> {
-    fn make_result_handler(
-        &self,
-        expr: Option<ast::Expr>,
-    ) -> ast::Expr {
+    fn make_result_handler(&self, expr: Option<ast::Expr>) -> ast::Expr {
         match self {
             FlowKind::Return(_) => make::expr_return(expr),
             FlowKind::Break(label, _) => make::expr_break(label.clone(), expr),
@@ -552,10 +530,7 @@ impl<'db> FlowKind<'db> {
         }
     }
 
-    fn expr_ty(
-        &self,
-        ctx: &AssistContext<'db>,
-    ) -> Option<hir::Type<'db>> {
+    fn expr_ty(&self, ctx: &AssistContext<'db>) -> Option<hir::Type<'db>> {
         match self {
             FlowKind::Return(Some(expr)) | FlowKind::Break(_, Some(expr)) => {
                 ctx.sema.type_of_expr(expr).map(TypeInfo::adjusted)
@@ -618,10 +593,7 @@ impl FunctionBody {
         }
     }
 
-    fn from_range(
-        parent: ast::StmtList,
-        selected: TextRange,
-    ) -> Option<FunctionBody> {
+    fn from_range(parent: ast::StmtList, selected: TextRange) -> Option<FunctionBody> {
         let full_body = parent.syntax().children_with_tokens();
         // Get all of the elements intersecting with the selection
         let mut stmts_in_selection = full_body
@@ -666,10 +638,7 @@ impl FunctionBody {
         }
     }
 
-    fn walk_expr(
-        &self,
-        cb: &mut dyn FnMut(ast::Expr),
-    ) {
+    fn walk_expr(&self, cb: &mut dyn FnMut(ast::Expr)) {
         match self {
             FunctionBody::Expr(expr) => walk_expr(expr, cb),
             FunctionBody::Span { parent, text_range, .. } => {
@@ -692,10 +661,7 @@ impl FunctionBody {
         }
     }
 
-    fn preorder_expr(
-        &self,
-        cb: &mut dyn FnMut(WalkEvent<ast::Expr>) -> bool,
-    ) {
+    fn preorder_expr(&self, cb: &mut dyn FnMut(WalkEvent<ast::Expr>) -> bool) {
         match self {
             FunctionBody::Expr(expr) => preorder_expr(expr, cb),
             FunctionBody::Span { parent, text_range, .. } => {
@@ -718,10 +684,7 @@ impl FunctionBody {
         }
     }
 
-    fn walk_pat(
-        &self,
-        cb: &mut dyn FnMut(ast::Pat),
-    ) {
+    fn walk_pat(&self, cb: &mut dyn FnMut(ast::Pat)) {
         match self {
             FunctionBody::Expr(expr) => walk_patterns_in_expr(expr, cb),
             FunctionBody::Span { parent, text_range, .. } => {
@@ -764,24 +727,15 @@ impl FunctionBody {
         }
     }
 
-    fn contains_range(
-        &self,
-        range: TextRange,
-    ) -> bool {
+    fn contains_range(&self, range: TextRange) -> bool {
         self.text_range().contains_range(range)
     }
 
-    fn precedes_range(
-        &self,
-        range: TextRange,
-    ) -> bool {
+    fn precedes_range(&self, range: TextRange) -> bool {
         self.text_range().end() <= range.start()
     }
 
-    fn contains_node(
-        &self,
-        node: &SyntaxNode,
-    ) -> bool {
+    fn contains_node(&self, node: &SyntaxNode) -> bool {
         self.contains_range(node.text_range())
     }
 }
@@ -981,10 +935,7 @@ impl FunctionBody {
         ))
     }
 
-    fn return_ty<'db>(
-        &self,
-        ctx: &AssistContext<'db>,
-    ) -> Option<RetType<'db>> {
+    fn return_ty<'db>(&self, ctx: &AssistContext<'db>) -> Option<RetType<'db>> {
         match self.tail_expr() {
             Some(expr) => ctx.sema.type_of_expr(&expr).map(TypeInfo::original).map(RetType::Expr),
             None => Some(RetType::Stmt),
@@ -1131,10 +1082,7 @@ impl FunctionBody {
             .collect()
     }
 
-    fn has_usages_after_body(
-        &self,
-        usages: &LocalUsages,
-    ) -> bool {
+    fn has_usages_after_body(&self, usages: &LocalUsages) -> bool {
         usages.iter().any(|reference| self.precedes_range(reference.range))
     }
 }
@@ -1219,10 +1167,7 @@ fn reference_is_exclusive(
 }
 
 /// checks if this expr requires `&mut` access, recurses on field access
-fn expr_require_exclusive_access(
-    ctx: &AssistContext<'_>,
-    expr: &ast::Expr,
-) -> Option<bool> {
+fn expr_require_exclusive_access(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<bool> {
     if let ast::Expr::MacroExpr(_) = expr {
         // FIXME: expand macro and check output for mutable usages of the variable?
         return None;
@@ -1251,26 +1196,17 @@ fn expr_require_exclusive_access(
 }
 
 trait HasTokenAtOffset {
-    fn token_at_offset(
-        &self,
-        offset: TextSize,
-    ) -> TokenAtOffset<SyntaxToken>;
+    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken>;
 }
 
 impl HasTokenAtOffset for SyntaxNode {
-    fn token_at_offset(
-        &self,
-        offset: TextSize,
-    ) -> TokenAtOffset<SyntaxToken> {
+    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken> {
         SyntaxNode::token_at_offset(self, offset)
     }
 }
 
 impl HasTokenAtOffset for FunctionBody {
-    fn token_at_offset(
-        &self,
-        offset: TextSize,
-    ) -> TokenAtOffset<SyntaxToken> {
+    fn token_at_offset(&self, offset: TextSize) -> TokenAtOffset<SyntaxToken> {
         match self {
             FunctionBody::Expr(expr) => expr.syntax().token_at_offset(offset),
             FunctionBody::Span { parent, text_range, .. } => {
@@ -1380,10 +1316,7 @@ fn is_defined_outside_of_body(
 /// find where to put extracted function definition
 ///
 /// Function should be put right after returned node
-fn node_to_insert_after(
-    body: &FunctionBody,
-    anchor: Anchor,
-) -> Option<SyntaxNode> {
+fn node_to_insert_after(body: &FunctionBody, anchor: Anchor) -> Option<SyntaxNode> {
     let node = body.node();
     let mut ancestors = node.ancestors().peekable();
     let mut last_ancestor = None;
@@ -1441,10 +1374,7 @@ fn impl_type_name(impl_node: &ast::Impl) -> Option<String> {
 }
 
 /// Fixes up the call site before the target expressions are replaced with the call expression
-fn fixup_call_site(
-    builder: &mut SourceChangeBuilder,
-    body: &FunctionBody,
-) {
+fn fixup_call_site(builder: &mut SourceChangeBuilder, body: &FunctionBody) {
     let parent_match_arm = body.parent().and_then(ast::MatchArm::cast);
     if let Some(parent_match_arm) = parent_match_arm
         && parent_match_arm.comma_token().is_none()
@@ -1454,11 +1384,7 @@ fn fixup_call_site(
     }
 }
 
-fn make_call(
-    ctx: &AssistContext<'_>,
-    fun: &Function<'_>,
-    indent: IndentLevel,
-) -> SyntaxNode {
+fn make_call(ctx: &AssistContext<'_>, fun: &Function<'_>, indent: IndentLevel) -> SyntaxNode {
     let ret_ty = fun.return_type(ctx);
     let args = make::arg_list(fun.params.iter().map(|param| param.to_arg(ctx, fun.mods.edition)));
     let name = fun.name.clone();
@@ -1530,10 +1456,7 @@ enum FlowHandler<'db> {
 }
 
 impl<'db> FlowHandler<'db> {
-    fn from_ret_ty(
-        fun: &Function<'db>,
-        ret_ty: &FunType<'db>,
-    ) -> FlowHandler<'db> {
+    fn from_ret_ty(fun: &Function<'db>, ret_ty: &FunType<'db>) -> FlowHandler<'db> {
         if fun.contains_tail_expr {
             return FlowHandler::None;
         }
@@ -1561,10 +1484,7 @@ impl<'db> FlowHandler<'db> {
         }
     }
 
-    fn make_call_expr(
-        &self,
-        call_expr: ast::Expr,
-    ) -> ast::Expr {
+    fn make_call_expr(&self, call_expr: ast::Expr) -> ast::Expr {
         match self {
             FlowHandler::None => call_expr,
             FlowHandler::Try { kind: _ } => make::expr_try(call_expr),
@@ -1637,11 +1557,7 @@ impl<'db> FlowHandler<'db> {
     }
 }
 
-fn path_expr_from_local(
-    ctx: &AssistContext<'_>,
-    var: Local,
-    edition: Edition,
-) -> ast::Expr {
+fn path_expr_from_local(ctx: &AssistContext<'_>, var: Local, edition: Edition) -> ast::Expr {
     let name = var.name(ctx.db()).display(ctx.db(), edition).to_string();
     make::expr_path(make::ext::ident_path(&name))
 }
@@ -1748,10 +1664,7 @@ fn pred_is_required(
     }
 }
 
-fn resolved_type_param(
-    ctx: &AssistContext<'_>,
-    pred: &ast::WherePred,
-) -> Option<TypeParam> {
+fn resolved_type_param(ctx: &AssistContext<'_>, pred: &ast::WherePred) -> Option<TypeParam> {
     let path = match pred.ty()? {
         ast::Type::PathType(path_type) => path_type.path(),
         _ => None,
@@ -1764,10 +1677,7 @@ fn resolved_type_param(
 
 impl<'db> Function<'db> {
     /// Collect all the `TypeParam`s used in the `body` and `params`.
-    fn type_params(
-        &self,
-        ctx: &AssistContext<'db>,
-    ) -> Vec<TypeParam> {
+    fn type_params(&self, ctx: &AssistContext<'db>) -> Vec<TypeParam> {
         let type_params_in_descendant_paths =
             self.body.descendant_paths().filter_map(|it| match ctx.sema.resolve_path(&it) {
                 Some(PathResolution::TypeParam(type_param)) => Some(type_param),
@@ -1788,11 +1698,7 @@ impl<'db> Function<'db> {
         make::param_list(self_param, params)
     }
 
-    fn make_ret_ty(
-        &self,
-        ctx: &AssistContext<'_>,
-        module: hir::Module,
-    ) -> Option<ast::RetType> {
+    fn make_ret_ty(&self, ctx: &AssistContext<'_>, module: hir::Module) -> Option<ast::RetType> {
         let fun_ty = self.return_type(ctx);
         let handler = FlowHandler::from_ret_ty(self, &fun_ty);
         let ret_ty = match &handler {
@@ -1835,11 +1741,7 @@ impl<'db> Function<'db> {
 }
 
 impl<'db> FunType<'db> {
-    fn make_ty(
-        &self,
-        ctx: &AssistContext<'db>,
-        module: hir::Module,
-    ) -> ast::Type {
+    fn make_ty(&self, ctx: &AssistContext<'db>, module: hir::Module) -> ast::Type {
         match self {
             FunType::Unit => make::ty_unit(),
             FunType::Single(ty) => make_ty(ty, ctx, module),
@@ -2001,10 +1903,7 @@ fn make_body(
     }
 }
 
-fn map_tail_expr(
-    block: ast::BlockExpr,
-    f: impl FnOnce(ast::Expr) -> ast::Expr,
-) -> ast::BlockExpr {
+fn map_tail_expr(block: ast::BlockExpr, f: impl FnOnce(ast::Expr) -> ast::Expr) -> ast::BlockExpr {
     let tail_expr = match block.tail_expr() {
         Some(tail_expr) => tail_expr,
         None => return block,
@@ -2012,20 +1911,14 @@ fn map_tail_expr(
     make::block_expr(block.statements(), Some(f(tail_expr)))
 }
 
-fn with_default_tail_expr(
-    block: ast::BlockExpr,
-    tail_expr: ast::Expr,
-) -> ast::BlockExpr {
+fn with_default_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr {
     match block.tail_expr() {
         Some(_) => block,
         None => make::block_expr(block.statements(), Some(tail_expr)),
     }
 }
 
-fn with_tail_expr(
-    block: ast::BlockExpr,
-    tail_expr: ast::Expr,
-) -> ast::BlockExpr {
+fn with_tail_expr(block: ast::BlockExpr, tail_expr: ast::Expr) -> ast::BlockExpr {
     let stmt_tail_opt: Option<ast::Stmt> =
         block.tail_expr().map(|expr| make::expr_stmt(expr).into());
     let mut elements: Vec<SyntaxElement> = vec![];
@@ -2045,19 +1938,11 @@ fn with_tail_expr(
     make::hacky_block_expr(elements, Some(tail_expr))
 }
 
-fn format_type(
-    ty: &hir::Type<'_>,
-    ctx: &AssistContext<'_>,
-    module: hir::Module,
-) -> String {
+fn format_type(ty: &hir::Type<'_>, ctx: &AssistContext<'_>, module: hir::Module) -> String {
     ty.display_source_code(ctx.db(), module.into(), true).ok().unwrap_or_else(|| "_".to_owned())
 }
 
-fn make_ty(
-    ty: &hir::Type<'_>,
-    ctx: &AssistContext<'_>,
-    module: hir::Module,
-) -> ast::Type {
+fn make_ty(ty: &hir::Type<'_>, ctx: &AssistContext<'_>, module: hir::Module) -> ast::Type {
     let ty_str = format_type(ty, ctx, module);
     make::ty(&ty_str)
 }
@@ -2128,10 +2013,7 @@ fn fix_param_usages(
     res
 }
 
-fn update_external_control_flow(
-    handler: &FlowHandler<'_>,
-    syntax: &SyntaxNode,
-) {
+fn update_external_control_flow(handler: &FlowHandler<'_>, syntax: &SyntaxNode) {
     let mut nested_loop = None;
     let mut nested_scope = None;
     for event in syntax.preorder() {

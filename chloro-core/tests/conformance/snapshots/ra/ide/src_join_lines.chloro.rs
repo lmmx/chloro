@@ -181,10 +181,7 @@ fn remove_newline(
     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
 }
 
-fn join_single_expr_block(
-    edit: &mut TextEditBuilder,
-    token: &SyntaxToken,
-) -> Option<()> {
+fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
     let block_expr = ast::BlockExpr::cast(token.parent_ancestors().nth(1)?)?;
     if !block_expr.is_standalone() {
         return None;
@@ -202,10 +199,7 @@ fn join_single_expr_block(
     Some(())
 }
 
-fn join_single_use_tree(
-    edit: &mut TextEditBuilder,
-    token: &SyntaxToken,
-) -> Option<()> {
+fn join_single_use_tree(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Option<()> {
     let use_tree_list = ast::UseTreeList::cast(token.parent()?)?;
     let (tree,) = use_tree_list.use_trees().collect_tuple()?;
     edit.replace(use_tree_list.syntax().text_range(), tree.syntax().text().to_string());
@@ -252,10 +246,7 @@ fn as_if_expr(element: &SyntaxElement) -> Option<ast::IfExpr> {
     ast::IfExpr::cast(node)
 }
 
-fn compute_ws(
-    left: SyntaxKind,
-    right: SyntaxKind,
-) -> &'static str {
+fn compute_ws(left: SyntaxKind, right: SyntaxKind) -> &'static str {
     match left {
         T!['('] | T!['['] => return "",
         T!['{'] => {

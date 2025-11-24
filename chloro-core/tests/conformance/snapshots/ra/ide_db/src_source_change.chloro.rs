@@ -26,10 +26,7 @@ use crate::{SnippetCap, assists::Command, syntax_helpers::tree_diff::diff};
 pub struct ChangeAnnotationId(u32);
 
 impl fmt::Display for ChangeAnnotationId {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
     }
 }
@@ -51,20 +48,14 @@ pub struct SourceChange {
 }
 
 impl SourceChange {
-    pub fn from_text_edit(
-        file_id: impl Into<FileId>,
-        edit: TextEdit,
-    ) -> Self {
+    pub fn from_text_edit(file_id: impl Into<FileId>, edit: TextEdit) -> Self {
         SourceChange {
             source_file_edits: iter::once((file_id.into(), (edit, None))).collect(),
             ..Default::default()
         }
     }
 
-    pub fn insert_annotation(
-        &mut self,
-        annotation: ChangeAnnotation,
-    ) -> ChangeAnnotationId {
+    pub fn insert_annotation(&mut self, annotation: ChangeAnnotation) -> ChangeAnnotationId {
         let id = ChangeAnnotationId(self.next_annotation_id);
         self.next_annotation_id += 1;
         self.annotations.insert(id, annotation);
@@ -73,11 +64,7 @@ impl SourceChange {
 
     /// Inserts a [`TextEdit`] for the given [`FileId`]. This properly handles merging existing
     /// edits for a file if some already exist.
-    pub fn insert_source_edit(
-        &mut self,
-        file_id: impl Into<FileId>,
-        edit: TextEdit,
-    ) {
+    pub fn insert_source_edit(&mut self, file_id: impl Into<FileId>, edit: TextEdit) {
         self.insert_source_and_snippet_edit(file_id.into(), edit, None)
     }
 
@@ -107,10 +94,7 @@ impl SourceChange {
         }
     }
 
-    pub fn push_file_system_edit(
-        &mut self,
-        edit: FileSystemEdit,
-    ) {
+    pub fn push_file_system_edit(&mut self, edit: FileSystemEdit) {
         self.file_system_edits.push(edit);
     }
 
@@ -121,10 +105,7 @@ impl SourceChange {
         self.source_file_edits.get(&file_id)
     }
 
-    pub fn merge(
-        mut self,
-        other: SourceChange,
-    ) -> SourceChange {
+    pub fn merge(mut self, other: SourceChange) -> SourceChange {
         self.extend(other.source_file_edits);
         self.extend(other.file_system_edits);
         self.is_snippet |= other.is_snippet;
@@ -133,10 +114,7 @@ impl SourceChange {
 }
 
 impl Extend<(FileId, TextEdit)> for SourceChange {
-    fn extend<T: IntoIterator<Item = (FileId, TextEdit)>>(
-        &mut self,
-        iter: T,
-    ) {
+    fn extend<T: IntoIterator<Item = (FileId, TextEdit)>>(&mut self, iter: T) {
         self.extend(iter.into_iter().map(|(file_id, edit)| (file_id, (edit, None))))
     }
 }
@@ -153,10 +131,7 @@ impl Extend<(FileId, (TextEdit, Option<SnippetEdit>))> for SourceChange {
 }
 
 impl Extend<FileSystemEdit> for SourceChange {
-    fn extend<T: IntoIterator<Item = FileSystemEdit>>(
-        &mut self,
-        iter: T,
-    ) {
+    fn extend<T: IntoIterator<Item = FileSystemEdit>>(&mut self, iter: T) {
         iter.into_iter().for_each(|edit| self.push_file_system_edit(edit));
     }
 }
@@ -219,10 +194,7 @@ impl SnippetEdit {
     }
 
     /// Inserts all of the snippets into the given text.
-    pub fn apply(
-        &self,
-        text: &mut String,
-    ) {
+    pub fn apply(&self, text: &mut String) {
         // Start from the back so that we don't have to adjust ranges
         for (index, range) in self.0.iter().rev() {
             if range.is_empty() {
@@ -276,17 +248,11 @@ impl TreeMutator {
         TreeMutator { immutable, mutable_clone }
     }
 
-    pub fn make_mut<N: AstNode>(
-        &self,
-        node: &N,
-    ) -> N {
+    pub fn make_mut<N: AstNode>(&self, node: &N) -> N {
         N::cast(self.make_syntax_mut(node.syntax())).unwrap()
     }
 
-    pub fn make_syntax_mut(
-        &self,
-        node: &SyntaxNode,
-    ) -> SyntaxNode {
+    pub fn make_syntax_mut(&self, node: &SyntaxNode) -> SyntaxNode {
         let ptr = SyntaxNodePtr::new(node);
         ptr.to_node(&self.mutable_clone)
     }
@@ -306,26 +272,16 @@ impl SourceChangeBuilder {
         }
     }
 
-    pub fn edit_file(
-        &mut self,
-        file_id: impl Into<FileId>,
-    ) {
+    pub fn edit_file(&mut self, file_id: impl Into<FileId>) {
         self.commit();
         self.file_id = file_id.into();
     }
 
-    pub fn make_editor(
-        &self,
-        node: &SyntaxNode,
-    ) -> SyntaxEditor {
+    pub fn make_editor(&self, node: &SyntaxNode) -> SyntaxEditor {
         SyntaxEditor::new(node.ancestors().last().unwrap_or_else(|| node.clone()))
     }
 
-    pub fn add_file_edits(
-        &mut self,
-        file_id: impl Into<FileId>,
-        edit: SyntaxEditor,
-    ) {
+    pub fn add_file_edits(&mut self, file_id: impl Into<FileId>, edit: SyntaxEditor) {
         match self.file_editors.entry(file_id.into()) {
             Entry::Occupied(mut entry) => entry.get_mut().merge(edit),
             Entry::Vacant(entry) => {
@@ -334,24 +290,15 @@ impl SourceChangeBuilder {
         }
     }
 
-    pub fn make_placeholder_snippet(
-        &mut self,
-        _cap: SnippetCap,
-    ) -> SyntaxAnnotation {
+    pub fn make_placeholder_snippet(&mut self, _cap: SnippetCap) -> SyntaxAnnotation {
         self.add_snippet_annotation(AnnotationSnippet::Over)
     }
 
-    pub fn make_tabstop_before(
-        &mut self,
-        _cap: SnippetCap,
-    ) -> SyntaxAnnotation {
+    pub fn make_tabstop_before(&mut self, _cap: SnippetCap) -> SyntaxAnnotation {
         self.add_snippet_annotation(AnnotationSnippet::Before)
     }
 
-    pub fn make_tabstop_after(
-        &mut self,
-        _cap: SnippetCap,
-    ) -> SyntaxAnnotation {
+    pub fn make_tabstop_after(&mut self, _cap: SnippetCap) -> SyntaxAnnotation {
         self.add_snippet_annotation(AnnotationSnippet::After)
     }
 
@@ -412,17 +359,11 @@ impl SourceChangeBuilder {
         }
     }
 
-    pub fn make_mut<N: AstNode>(
-        &mut self,
-        node: N,
-    ) -> N {
+    pub fn make_mut<N: AstNode>(&mut self, node: N) -> N {
         self.mutated_tree.get_or_insert_with(|| TreeMutator::new(node.syntax())).make_mut(&node)
     }
 
-    pub fn make_import_scope_mut(
-        &mut self,
-        scope: ImportScope,
-    ) -> ImportScope {
+    pub fn make_import_scope_mut(&mut self, scope: ImportScope) -> ImportScope {
         ImportScope {
             kind: match scope.kind.clone() {
                 ImportScopeKind::File(it) => ImportScopeKind::File(self.make_mut(it)),
@@ -443,61 +384,35 @@ impl SourceChangeBuilder {
     /// The typical pattern for an assist is to find specific nodes in the read
     /// phase, and then get their mutable counterparts using `make_mut` in the
     /// mutable state.
-    pub fn make_syntax_mut(
-        &mut self,
-        node: SyntaxNode,
-    ) -> SyntaxNode {
+    pub fn make_syntax_mut(&mut self, node: SyntaxNode) -> SyntaxNode {
         self.mutated_tree.get_or_insert_with(|| TreeMutator::new(&node)).make_syntax_mut(&node)
     }
 
     /// Remove specified `range` of text.
-    pub fn delete(
-        &mut self,
-        range: TextRange,
-    ) {
+    pub fn delete(&mut self, range: TextRange) {
         self.edit.delete(range)
     }
 
     /// Append specified `text` at the given `offset`
-    pub fn insert(
-        &mut self,
-        offset: TextSize,
-        text: impl Into<String>,
-    ) {
+    pub fn insert(&mut self, offset: TextSize, text: impl Into<String>) {
         self.edit.insert(offset, text.into())
     }
 
     /// Replaces specified `range` of text with a given string.
-    pub fn replace(
-        &mut self,
-        range: TextRange,
-        replace_with: impl Into<String>,
-    ) {
+    pub fn replace(&mut self, range: TextRange, replace_with: impl Into<String>) {
         self.edit.replace(range, replace_with.into())
     }
 
-    pub fn replace_ast<N: AstNode>(
-        &mut self,
-        old: N,
-        new: N,
-    ) {
+    pub fn replace_ast<N: AstNode>(&mut self, old: N, new: N) {
         diff(old.syntax(), new.syntax()).into_text_edit(&mut self.edit)
     }
 
-    pub fn create_file(
-        &mut self,
-        dst: AnchoredPathBuf,
-        content: impl Into<String>,
-    ) {
+    pub fn create_file(&mut self, dst: AnchoredPathBuf, content: impl Into<String>) {
         let file_system_edit = FileSystemEdit::CreateFile { dst, initial_contents: content.into() };
         self.source_change.push_file_system_edit(file_system_edit);
     }
 
-    pub fn move_file(
-        &mut self,
-        src: impl Into<FileId>,
-        dst: AnchoredPathBuf,
-    ) {
+    pub fn move_file(&mut self, src: impl Into<FileId>, dst: AnchoredPathBuf) {
         let file_system_edit = FileSystemEdit::MoveFile { src: src.into(), dst };
         self.source_change.push_file_system_edit(file_system_edit);
     }
@@ -513,61 +428,37 @@ impl SourceChangeBuilder {
     }
 
     /// Adds a tabstop snippet to place the cursor before `node`
-    pub fn add_tabstop_before(
-        &mut self,
-        _cap: SnippetCap,
-        node: impl AstNode,
-    ) {
+    pub fn add_tabstop_before(&mut self, _cap: SnippetCap, node: impl AstNode) {
         assert!(node.syntax().parent().is_some());
         self.add_snippet(PlaceSnippet::Before(node.syntax().clone().into()));
     }
 
     /// Adds a tabstop snippet to place the cursor after `node`
-    pub fn add_tabstop_after(
-        &mut self,
-        _cap: SnippetCap,
-        node: impl AstNode,
-    ) {
+    pub fn add_tabstop_after(&mut self, _cap: SnippetCap, node: impl AstNode) {
         assert!(node.syntax().parent().is_some());
         self.add_snippet(PlaceSnippet::After(node.syntax().clone().into()));
     }
 
     /// Adds a tabstop snippet to place the cursor before `token`
-    pub fn add_tabstop_before_token(
-        &mut self,
-        _cap: SnippetCap,
-        token: SyntaxToken,
-    ) {
+    pub fn add_tabstop_before_token(&mut self, _cap: SnippetCap, token: SyntaxToken) {
         assert!(token.parent().is_some());
         self.add_snippet(PlaceSnippet::Before(token.into()));
     }
 
     /// Adds a tabstop snippet to place the cursor after `token`
-    pub fn add_tabstop_after_token(
-        &mut self,
-        _cap: SnippetCap,
-        token: SyntaxToken,
-    ) {
+    pub fn add_tabstop_after_token(&mut self, _cap: SnippetCap, token: SyntaxToken) {
         assert!(token.parent().is_some());
         self.add_snippet(PlaceSnippet::After(token.into()));
     }
 
     /// Adds a snippet to move the cursor selected over `node`
-    pub fn add_placeholder_snippet(
-        &mut self,
-        _cap: SnippetCap,
-        node: impl AstNode,
-    ) {
+    pub fn add_placeholder_snippet(&mut self, _cap: SnippetCap, node: impl AstNode) {
         assert!(node.syntax().parent().is_some());
         self.add_snippet(PlaceSnippet::Over(node.syntax().clone().into()))
     }
 
     /// Adds a snippet to move the cursor selected over `token`
-    pub fn add_placeholder_snippet_token(
-        &mut self,
-        _cap: SnippetCap,
-        token: SyntaxToken,
-    ) {
+    pub fn add_placeholder_snippet_token(&mut self, _cap: SnippetCap, token: SyntaxToken) {
         assert!(token.parent().is_some());
         self.add_snippet(PlaceSnippet::Over(token.into()))
     }
@@ -576,30 +467,20 @@ impl SourceChangeBuilder {
     ///
     /// This allows for renaming newly generated items without having to go
     /// through a separate rename step.
-    pub fn add_placeholder_snippet_group(
-        &mut self,
-        _cap: SnippetCap,
-        nodes: Vec<SyntaxNode>,
-    ) {
+    pub fn add_placeholder_snippet_group(&mut self, _cap: SnippetCap, nodes: Vec<SyntaxNode>) {
         assert!(nodes.iter().all(|node| node.parent().is_some()));
         self.add_snippet(PlaceSnippet::OverGroup(
             nodes.into_iter().map(|node| node.into()).collect(),
         ))
     }
 
-    fn add_snippet(
-        &mut self,
-        snippet: PlaceSnippet,
-    ) {
+    fn add_snippet(&mut self, snippet: PlaceSnippet) {
         let snippet_builder = self.snippet_builder.get_or_insert(SnippetBuilder { places: vec![] });
         snippet_builder.places.push(snippet);
         self.source_change.is_snippet = true;
     }
 
-    fn add_snippet_annotation(
-        &mut self,
-        kind: AnnotationSnippet,
-    ) -> SyntaxAnnotation {
+    fn add_snippet_annotation(&mut self, kind: AnnotationSnippet) -> SyntaxAnnotation {
         let annotation = SyntaxAnnotation::default();
         self.snippet_annotations.push((kind, annotation));
         self.source_change.is_snippet = true;

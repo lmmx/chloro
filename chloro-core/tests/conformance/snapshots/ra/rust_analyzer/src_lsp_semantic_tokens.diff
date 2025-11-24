@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11108 bytes
-Chloro size:   8320 bytes
+Chloro size:   8258 bytes
 Rustfmt size:  11838 bytes
 
 ✗ Outputs DIFFER
@@ -122,18 +122,13 @@ Rustfmt size:  11838 bytes
  #[derive(Default)]
  pub(crate) struct ModifierSet(pub(crate) u32);
  
- }
  
  impl ops::BitOrAssign<SemanticTokenModifier> for ModifierSet {
--    fn bitor_assign(&mut self, rhs: SemanticTokenModifier) {
+     fn bitor_assign(&mut self, rhs: SemanticTokenModifier) {
 -        let idx = SUPPORTED_MODIFIERS
 -            .iter()
 -            .position(|it| it == &rhs)
 -            .unwrap();
-+    fn bitor_assign(
-+        &mut self,
-+        rhs: SemanticTokenModifier,
-+    ) {
 +        let idx = SUPPORTED_MODIFIERS.iter().position(|it| it == &rhs).unwrap();
          self.0 |= 1 << idx;
      }
@@ -151,13 +146,7 @@ Rustfmt size:  11838 bytes
      }
  
      /// Push a new token onto the builder
--    pub(crate) fn push(&mut self, range: Range, token_index: u32, modifier_bitset: u32) {
-+    pub(crate) fn push(
-+        &mut self,
-+        range: Range,
-+        token_index: u32,
-+        modifier_bitset: u32,
-+    ) {
+     pub(crate) fn push(&mut self, range: Range, token_index: u32, modifier_bitset: u32) {
          let mut push_line = range.start.line;
          let mut push_char = range.start.character;
 -

@@ -88,10 +88,7 @@ fn drop_generic_args(path: &ast::Path) -> ast::Path {
 }
 
 /// Mutates `node` to shorten `path` in all descendants of `node`.
-fn shorten_paths(
-    node: &SyntaxNode,
-    path: &ast::Path,
-) {
+fn shorten_paths(node: &SyntaxNode, path: &ast::Path) {
     for child in node.children() {
         match_ast! {
             match child {
@@ -110,10 +107,7 @@ fn shorten_paths(
     }
 }
 
-fn maybe_replace_path(
-    path: ast::Path,
-    target: ast::Path,
-) -> Option<()> {
+fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
     if !path_eq_no_generics(path.clone(), target) {
         return None;
     }
@@ -127,10 +121,7 @@ fn maybe_replace_path(
     Some(())
 }
 
-fn path_eq_no_generics(
-    lhs: ast::Path,
-    rhs: ast::Path,
-) -> bool {
+fn path_eq_no_generics(lhs: ast::Path, rhs: ast::Path) -> bool {
     let mut lhs_curr = lhs;
     let mut rhs_curr = rhs;
     loop {

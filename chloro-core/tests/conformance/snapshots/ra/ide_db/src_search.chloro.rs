@@ -170,10 +170,7 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning all the reverse dependencies of the given crate.
-    fn reverse_dependencies(
-        db: &RootDatabase,
-        of: hir::Crate,
-    ) -> SearchScope {
+    fn reverse_dependencies(db: &RootDatabase, of: hir::Crate) -> SearchScope {
         let mut entries = FxHashMap::default();
         for rev_dep in of.transitive_reverse_dependencies(db) {
             let root_file = rev_dep.root_file(db);
@@ -190,10 +187,7 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning the given crate.
-    fn krate(
-        db: &RootDatabase,
-        of: hir::Crate,
-    ) -> SearchScope {
+    fn krate(db: &RootDatabase, of: hir::Crate) -> SearchScope {
         let root_file = of.root_file(db);
         let source_root_id = db.file_source_root(root_file).source_root_id(db);
         let source_root = db.source_root(source_root_id).source_root(db);
@@ -206,10 +200,7 @@ impl SearchScope {
     }
 
     /// Build a search scope spanning the given module and all its submodules.
-    pub fn module_and_children(
-        db: &RootDatabase,
-        module: hir::Module,
-    ) -> SearchScope {
+    pub fn module_and_children(db: &RootDatabase, module: hir::Module) -> SearchScope {
         let mut entries = FxHashMap::default();
         let (file_id, range) = {
             let InFile { file_id, value } = module.definition_source_range(db);
@@ -251,10 +242,7 @@ impl SearchScope {
         SearchScope::new(files.iter().map(|f| (*f, None)).collect())
     }
 
-    pub fn intersection(
-        &self,
-        other: &SearchScope,
-    ) -> SearchScope {
+    pub fn intersection(&self, other: &SearchScope) -> SearchScope {
         let (mut small, mut large) = (&self.entries, &other.entries);
         if small.len() > large.len() {
             mem::swap(&mut small, &mut large)
@@ -289,10 +277,7 @@ impl IntoIterator for SearchScope {
 }
 
 impl Definition {
-    fn search_scope(
-        &self,
-        db: &RootDatabase,
-    ) -> SearchScope {
+    fn search_scope(&self, db: &RootDatabase) -> SearchScope {
         let _p = tracing::info_span!("search_scope").entered();
         if let Definition::BuiltinType(_) = self {
             return SearchScope::crate_graph(db);
@@ -402,10 +387,7 @@ impl Definition {
         }
     }
 
-    pub fn usages<'a>(
-        self,
-        sema: &'a Semantics<'_, RootDatabase>,
-    ) -> FindUsages<'a> {
+    pub fn usages<'a>(self, sema: &'a Semantics<'_, RootDatabase>) -> FindUsages<'a> {
         FindUsages {
             def: self,
             rename: None,
@@ -441,27 +423,18 @@ impl<'a> FindUsages<'a> {
     }
 
     /// Limit the search to a given [`SearchScope`].
-    pub fn in_scope(
-        self,
-        scope: &'a SearchScope,
-    ) -> Self {
+    pub fn in_scope(self, scope: &'a SearchScope) -> Self {
         self.set_scope(Some(scope))
     }
 
     /// Limit the search to a given [`SearchScope`].
-    pub fn set_scope(
-        mut self,
-        scope: Option<&'a SearchScope>,
-    ) -> Self {
+    pub fn set_scope(mut self, scope: Option<&'a SearchScope>) -> Self {
         assert!(self.scope.is_none());
         self.scope = scope;
         self
     }
 
-    pub fn with_rename(
-        mut self,
-        rename: Option<&'a Rename>,
-    ) -> Self {
+    pub fn with_rename(mut self, rename: Option<&'a Rename>) -> Self {
         self.rename = rename;
         self
     }
@@ -879,10 +852,7 @@ impl<'a> FindUsages<'a> {
         true
     }
 
-    pub fn search(
-        &self,
-        sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool,
-    ) {
+    pub fn search(&self, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) {
         let _p = tracing::info_span!("FindUsages:search").entered();
         let sema = self.sema;
         let search_scope = {
@@ -1360,10 +1330,7 @@ fn is_name_ref_in_import(name_ref: &ast::NameRef) -> bool {
         .is_some_and(|it| it.kind() == SyntaxKind::USE_TREE)
 }
 
-fn is_name_ref_in_test(
-    sema: &Semantics<'_, RootDatabase>,
-    name_ref: &ast::NameRef,
-) -> bool {
+fn is_name_ref_in_test(sema: &Semantics<'_, RootDatabase>, name_ref: &ast::NameRef) -> bool {
     name_ref.syntax().ancestors().any(|node| match ast::Fn::cast(node) {
         Some(it) => sema.to_def(&it).is_some_and(|func| func.is_test(sema.db)),
         None => false,

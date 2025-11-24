@@ -86,10 +86,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     #[inline]
     #[cold]
-    fn on_diagnostic(
-        &mut self,
-        diag: PathLoweringDiagnostic,
-    ) {
+    fn on_diagnostic(&mut self, diag: PathLoweringDiagnostic) {
         (self.on_diagnostic.callback)(&self.on_diagnostic.data, self.ctx, diag);
     }
 
@@ -125,10 +122,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     }
 
     #[inline]
-    pub(crate) fn set_current_segment(
-        &mut self,
-        segment: usize,
-    ) {
+    pub(crate) fn set_current_segment(&mut self, segment: usize) {
         self.current_segment_idx = segment;
         self.current_or_prev_segment = self
             .segments
@@ -279,10 +273,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
 
     /// This returns whether to keep the resolution (`true`) of throw it (`false`).
     #[must_use]
-    fn handle_type_ns_resolution(
-        &mut self,
-        resolution: &TypeNs,
-    ) -> bool {
+    fn handle_type_ns_resolution(&mut self, resolution: &TypeNs) -> bool {
         let mut prohibit_generics_on_resolved = |reason| {
             if self.current_or_prev_segment.args_and_bindings.is_some() {
                 let segment = self.current_segment_u32();
@@ -466,11 +457,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     }
 
     #[tracing::instrument(skip(self), ret)]
-    fn select_associated_type(
-        &mut self,
-        res: Option<TypeNs>,
-        infer_args: bool,
-    ) -> Ty<'db> {
+    fn select_associated_type(&mut self, res: Option<TypeNs>, infer_args: bool) -> Ty<'db> {
         let interner = self.ctx.interner;
         let Some(res) = res else {
             return Ty::new_error(self.ctx.interner, ErrorGuaranteed);
@@ -511,11 +498,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         .unwrap_or_else(|| Ty::new_error(interner, ErrorGuaranteed))
     }
 
-    fn lower_path_inner(
-        &mut self,
-        typeable: TyDefId,
-        infer_args: bool,
-    ) -> Ty<'db> {
+    fn lower_path_inner(&mut self, typeable: TyDefId, infer_args: bool) -> Ty<'db> {
         let generic_def = match typeable {
             TyDefId::BuiltinType(builtinty) => {
                 return Ty::from_builtin_type(self.ctx.interner, builtinty);
@@ -945,17 +928,9 @@ pub(crate) trait GenericArgsLowerer<'db> {
         hard_error: bool,
     );
 
-    fn report_elision_failure(
-        &mut self,
-        def: GenericDefId,
-        expected_count: u32,
-    );
+    fn report_elision_failure(&mut self, def: GenericDefId, expected_count: u32);
 
-    fn report_missing_lifetime(
-        &mut self,
-        def: GenericDefId,
-        expected_count: u32,
-    );
+    fn report_missing_lifetime(&mut self, def: GenericDefId, expected_count: u32);
 
     fn report_len_mismatch(
         &mut self,
@@ -965,12 +940,7 @@ pub(crate) trait GenericArgsLowerer<'db> {
         kind: IncorrectGenericsLenKind,
     );
 
-    fn report_arg_mismatch(
-        &mut self,
-        param_id: GenericParamId,
-        arg_idx: u32,
-        has_self_arg: bool,
-    );
+    fn report_arg_mismatch(&mut self, param_id: GenericParamId, arg_idx: u32, has_self_arg: bool);
 
     fn provided_kind(
         &mut self,
@@ -994,10 +964,7 @@ pub(crate) trait GenericArgsLowerer<'db> {
         preceding_args: &[GenericArg<'db>],
     ) -> GenericArg<'db>;
 
-    fn parent_arg(
-        &mut self,
-        param_id: GenericParamId,
-    ) -> GenericArg<'db>;
+    fn parent_arg(&mut self, param_id: GenericParamId) -> GenericArg<'db>;
 }
 
 /// Returns true if there was an error.

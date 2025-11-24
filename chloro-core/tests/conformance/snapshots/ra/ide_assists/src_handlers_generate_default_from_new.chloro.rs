@@ -10,10 +10,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn generate_default_from_new(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
     if fn_name.text() != "new" {
@@ -91,10 +88,7 @@ fn generate_trait_impl_text_from_impl(
     buf
 }
 
-fn is_default_implemented(
-    ctx: &AssistContext<'_>,
-    impl_: &Impl,
-) -> bool {
+fn is_default_implemented(ctx: &AssistContext<'_>, impl_: &Impl) -> bool {
     let db = ctx.sema.db;
     let impl_ = ctx.sema.to_def(impl_);
     let impl_def = match impl_ {

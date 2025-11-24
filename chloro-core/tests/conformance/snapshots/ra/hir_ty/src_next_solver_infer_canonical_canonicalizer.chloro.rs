@@ -116,10 +116,7 @@ impl<'db> InferCtxt<'db> {
     /// out the [chapter in the rustc dev guide][c].
     ///
     /// [c]: https://rust-lang.github.io/chalk/book/canonical_queries/canonicalization.html#canonicalizing-the-query-result
-    pub fn canonicalize_response<V>(
-        &self,
-        value: V,
-    ) -> Canonical<'db, V>
+    pub fn canonicalize_response<V>(&self, value: V) -> Canonical<'db, V>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let mut query_state = OriginalQueryValues::default();
@@ -132,10 +129,7 @@ impl<'db> InferCtxt<'db> {
         )
     }
 
-    pub fn canonicalize_user_type_annotation<V>(
-        &self,
-        value: V,
-    ) -> Canonical<'db, V>
+    pub fn canonicalize_user_type_annotation<V>(&self, value: V) -> Canonical<'db, V>
     where
         V: TypeFoldable<DbInterner<'db>>, {
         let mut query_state = OriginalQueryValues::default();
@@ -326,10 +320,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         self.tcx
     }
 
-    fn fold_binder<T>(
-        &mut self,
-        t: Binder<'db, T>,
-    ) -> Binder<'db, T>
+    fn fold_binder<T>(&mut self, t: Binder<'db, T>) -> Binder<'db, T>
     where
         T: TypeFoldable<DbInterner<'db>>, {
         self.binder_index.shift_in(1);
@@ -338,10 +329,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         t
     }
 
-    fn fold_region(
-        &mut self,
-        r: Region<'db>,
-    ) -> Region<'db> {
+    fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
         match r.kind() {
             RegionKind::ReBound(BoundVarIndexKind::Bound(..), ..) => r,
             RegionKind::ReBound(BoundVarIndexKind::Canonical, ..) => {
@@ -358,10 +346,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn fold_ty(
-        &mut self,
-        mut t: Ty<'db>,
-    ) -> Ty<'db> {
+    fn fold_ty(&mut self, mut t: Ty<'db>) -> Ty<'db> {
         match t.kind() {
             TyKind::Infer(TyVar(mut vid)) => {
                 // We need to canonicalize the *root* of our ty var.
@@ -465,10 +450,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn fold_const(
-        &mut self,
-        mut ct: Const<'db>,
-    ) -> Const<'db> {
+    fn fold_const(&mut self, mut ct: Const<'db>) -> Const<'db> {
         match ct.kind() {
             ConstKind::Infer(InferConst::Var(mut vid)) => {
                 // We need to canonicalize the *root* of our const var.
@@ -607,11 +589,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// or returns an existing variable if `kind` has already been
     /// seen. `kind` is expected to be an unbound variable (or
     /// potentially a free region).
-    fn canonical_var(
-        &mut self,
-        info: CanonicalVarKind<'db>,
-        kind: GenericArg<'db>,
-    ) -> BoundVar {
+    fn canonical_var(&mut self, info: CanonicalVarKind<'db>, kind: GenericArg<'db>) -> BoundVar {
         let Canonicalizer { variables, query_state, indices, .. } = self;
         let var_values = &mut query_state.var_values;
         let universe = info.universe();
@@ -668,10 +646,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         }
     }
 
-    fn get_or_insert_sub_root(
-        &mut self,
-        vid: TyVid,
-    ) -> BoundVar {
+    fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
         let root_vid = self.infcx.sub_unification_table_root_var(vid);
         let idx =
             *self.sub_root_lookup_table.entry(root_vid).or_insert_with(|| self.variables.len());
@@ -736,10 +711,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     ///
     /// (This works because unification never fails -- and hence trait
     /// selection is never affected -- due to a universe mismatch.)
-    fn canonical_var_for_region_in_root_universe(
-        &mut self,
-        r: Region<'db>,
-    ) -> Region<'db> {
+    fn canonical_var_for_region_in_root_universe(&mut self, r: Region<'db>) -> Region<'db> {
         self.canonical_var_for_region(CanonicalVarKind::Region(UniverseIndex::ROOT), r)
     }
 
@@ -758,11 +730,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// if `ty_var` is bound to anything; if so, canonicalize
     /// *that*. Otherwise, create a new canonical variable for
     /// `ty_var`.
-    fn canonicalize_ty_var(
-        &mut self,
-        info: CanonicalVarKind<'db>,
-        ty_var: Ty<'db>,
-    ) -> Ty<'db> {
+    fn canonicalize_ty_var(&mut self, info: CanonicalVarKind<'db>, ty_var: Ty<'db>) -> Ty<'db> {
         debug_assert_eq!(ty_var, self.infcx.shallow_resolve(ty_var));
         let var = self.canonical_var(info, ty_var.into());
         Ty::new_canonical_bound(self.cx(), var)

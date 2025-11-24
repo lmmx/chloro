@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22391 bytes
-Chloro size:   22032 bytes
+Chloro size:   22021 bytes
 Rustfmt size:  22391 bytes
 
 ✗ Outputs DIFFER
@@ -56,14 +56,9 @@ Rustfmt size:  22391 bytes
 -//     bar();
 -// }
 -// ```
--pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
-+pub(crate) fn convert_to_guarded_return(
-+    acc: &mut Assists,
-+    ctx: &AssistContext<'_>,
-+) -> Option<()> {
+ pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
          Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
-         Either::Right(if_expr) => if_expr_to_guarded_return(if_expr, acc, ctx),
          Some(_) => return None,
          _ => None,
      };

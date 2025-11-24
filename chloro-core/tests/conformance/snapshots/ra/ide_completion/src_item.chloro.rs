@@ -86,10 +86,7 @@ pub struct CompletionItemLabel {
 }
 
 impl fmt::Debug for CompletionItem {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = f.debug_struct("CompletionItem");
         s.field("label", &self.label.primary)
             .field("detail_left", &self.label.detail_left)
@@ -496,10 +493,7 @@ impl Builder {
         )
     }
 
-    pub(crate) fn build(
-        self,
-        db: &RootDatabase,
-    ) -> CompletionItem {
+    pub(crate) fn build(self, db: &RootDatabase) -> CompletionItem {
         let _p = tracing::info_span!("item::Builder::build").entered();
         let label = self.label;
         let mut lookup = self.lookup.unwrap_or_else(|| label.clone());
@@ -574,42 +568,27 @@ impl Builder {
         }
     }
 
-    pub(crate) fn lookup_by(
-        &mut self,
-        lookup: impl Into<SmolStr>,
-    ) -> &mut Builder {
+    pub(crate) fn lookup_by(&mut self, lookup: impl Into<SmolStr>) -> &mut Builder {
         self.lookup = Some(lookup.into());
         self
     }
 
-    pub(crate) fn label(
-        &mut self,
-        label: impl Into<SmolStr>,
-    ) -> &mut Builder {
+    pub(crate) fn label(&mut self, label: impl Into<SmolStr>) -> &mut Builder {
         self.label = label.into();
         self
     }
 
-    pub(crate) fn trait_name(
-        &mut self,
-        trait_name: SmolStr,
-    ) -> &mut Builder {
+    pub(crate) fn trait_name(&mut self, trait_name: SmolStr) -> &mut Builder {
         self.trait_name = Some(trait_name);
         self
     }
 
-    pub(crate) fn doc_aliases(
-        &mut self,
-        doc_aliases: Vec<SmolStr>,
-    ) -> &mut Builder {
+    pub(crate) fn doc_aliases(&mut self, doc_aliases: Vec<SmolStr>) -> &mut Builder {
         self.doc_aliases = doc_aliases;
         self
     }
 
-    pub(crate) fn insert_text(
-        &mut self,
-        insert_text: impl Into<String>,
-    ) -> &mut Builder {
+    pub(crate) fn insert_text(&mut self, insert_text: impl Into<String>) -> &mut Builder {
         self.insert_text = Some(insert_text.into());
         self
     }
@@ -624,34 +603,21 @@ impl Builder {
         self.insert_text(snippet)
     }
 
-    pub(crate) fn text_edit(
-        &mut self,
-        edit: TextEdit,
-    ) -> &mut Builder {
+    pub(crate) fn text_edit(&mut self, edit: TextEdit) -> &mut Builder {
         self.text_edit = Some(edit);
         self
     }
 
-    pub(crate) fn snippet_edit(
-        &mut self,
-        _cap: SnippetCap,
-        edit: TextEdit,
-    ) -> &mut Builder {
+    pub(crate) fn snippet_edit(&mut self, _cap: SnippetCap, edit: TextEdit) -> &mut Builder {
         self.is_snippet = true;
         self.text_edit(edit)
     }
 
-    pub(crate) fn detail(
-        &mut self,
-        detail: impl Into<String>,
-    ) -> &mut Builder {
+    pub(crate) fn detail(&mut self, detail: impl Into<String>) -> &mut Builder {
         self.set_detail(Some(detail))
     }
 
-    pub(crate) fn set_detail(
-        &mut self,
-        detail: Option<impl Into<String>>,
-    ) -> &mut Builder {
+    pub(crate) fn set_detail(&mut self, detail: Option<impl Into<String>>) -> &mut Builder {
         self.detail = detail.map(Into::into);
         if let Some(detail) = &self.detail
             && never!(detail.contains('\n'), "multiline detail:\n{}", detail)
@@ -662,33 +628,21 @@ impl Builder {
     }
 
     #[allow(unused)]
-    pub(crate) fn documentation(
-        &mut self,
-        docs: Documentation,
-    ) -> &mut Builder {
+    pub(crate) fn documentation(&mut self, docs: Documentation) -> &mut Builder {
         self.set_documentation(Some(docs))
     }
 
-    pub(crate) fn set_documentation(
-        &mut self,
-        docs: Option<Documentation>,
-    ) -> &mut Builder {
+    pub(crate) fn set_documentation(&mut self, docs: Option<Documentation>) -> &mut Builder {
         self.documentation = docs;
         self
     }
 
-    pub(crate) fn set_deprecated(
-        &mut self,
-        deprecated: bool,
-    ) -> &mut Builder {
+    pub(crate) fn set_deprecated(&mut self, deprecated: bool) -> &mut Builder {
         self.deprecated = deprecated;
         self
     }
 
-    pub(crate) fn set_relevance(
-        &mut self,
-        relevance: CompletionRelevance,
-    ) -> &mut Builder {
+    pub(crate) fn set_relevance(&mut self, relevance: CompletionRelevance) -> &mut Builder {
         self.relevance = relevance;
         self
     }
@@ -706,10 +660,7 @@ impl Builder {
         self
     }
 
-    pub(crate) fn add_import(
-        &mut self,
-        import_to_add: LocatedImport,
-    ) -> &mut Builder {
+    pub(crate) fn add_import(&mut self, import_to_add: LocatedImport) -> &mut Builder {
         self.imports_to_add.push(import_to_add);
         self
     }

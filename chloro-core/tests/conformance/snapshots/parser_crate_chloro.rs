@@ -126,7 +126,6 @@ mod atom;
 use std::*;
 use std::cell::Cell;
 use std::cell::Cell;
-// 2021
 use std::collections;
 use std::collections;
 use std::io;
@@ -1454,10 +1453,7 @@ fn foo() {
 }
 struct Foo;
 
-fn foo(
-    x: i32,
-    y,
-) {
+fn foo(x: i32, y) {
 }
 
 struct S {
@@ -1717,7 +1713,8 @@ fn a() {
     [1, 2, @
     ,
     struct,
-    let]
+    let
+    ]
 }
 
 fn b() {
@@ -1812,8 +1809,15 @@ const () = T::<0, ,T>;
 
 const () = T::<0, ,T>();
 
-fn foo() -> A;
-fn foo() -> A;
+fn foo() -> A {
+    let x = 1;
+}
+
+fn foo() -> A
+where T: Copy {
+    let x = 1;
+}
+
 struct S {
     f: ,
     pub g: (),
@@ -1837,9 +1841,11 @@ fn main() {
 
 const [&];
 
-fn;
-{
-}fn foo() {
+fn foo() {
+    let _ = async {}
+}
+
+fn foo() {
     S { ..x, };
     S { ..x, a: 0 }
 }
@@ -1898,7 +1904,9 @@ fn foo() {
     ()
 }
 
-fn foo<T: T();
+fn foo<T: T![], T: T!, T: T!{}>() -> Box<T! + T!{}> {
+}
+
 struct T;
 
 fn test() {
@@ -1940,7 +1948,8 @@ fn foo() {
 
 pub() struct S;
 
-static C: ;
+static C: u32 = 0;
+
 type F;
 fn foo() {
     || -> A> { let x = 1; }
@@ -1951,9 +1960,11 @@ const C:  = 0;
 fn foo() {
     let (,);
 }
+
 fn gen_fn() {
 }
-fn async_gen_fn() {
+
+async fn async_gen_fn() {
 }
 
 fn main() {
@@ -1961,12 +1972,7 @@ fn main() {
     S { 0::default() };
 }
 
-fn f(
-    x,
-    y: i32,
-    z,
-    t: i32,
-) {
+fn f(x, y: i32, z, t: i32) {
 }
 
 fn foo() {
@@ -1975,10 +1981,7 @@ fn foo() {
     );
 }
 
-fn f(
-    y: i32,
-    t: i32,
-) {
+fn f(y: i32, t: i32) {
 }
 #
 #
@@ -2011,10 +2014,7 @@ fn b(x: i32) {
 fn c(x: i32) {
 }
 
-fn d(
-    x: i32,
-    y: (),
-) {
+fn d(x: i32, y: ()) {
 }
 
 fn foo() {
@@ -2129,12 +2129,10 @@ fn main() {
 }
 
 fn foo() {
-    builtin#offset_of(Foo, (bar.baz.0)
-    )
+    builtin#offset_of(Foo, (bar.baz.0));
 }
 
-struct S<T: 'a + ?Sized + (Copy) +;
-#
+struct S<T: 'a + ?Sized + (Copy) + [const] Drop>;
 fn foo() {
     let _ = try {};
 }
@@ -2219,10 +2217,7 @@ fn main() {
     let [| a, ..] = [];
 }
 
-fn foo(
-    ...,
-    (x, y): (i32, i32),
-) {
+fn foo(..., (x, y): (i32, i32)) {
 }
 
 fn foo() {
@@ -2255,10 +2250,7 @@ impl S {
     fn c(&'a self) {
     }
 
-    fn d(
-        &'a mut self,
-        x: i32,
-    ) {
+    fn d(&'a mut self, x: i32) {
     }
 
     fn e(mut self) {
@@ -2351,7 +2343,7 @@ fn f() {
 
 type A = for<'a> Test<'a> + Send;
 
-impl  {
+impl ! {
 }
 
 type Result<T> = ();
@@ -2437,11 +2429,13 @@ fn foo() {
 
 fn foo() {
     builtin#asm("");
-    global_asm("");
-    naked_asm("");
+    builtin#global_asm("")
+    builtin#naked_asm("");
 }
 
-fn foo<T: for<'a> [const]();
+fn foo<T: for<'a> [const] async Trait>() {
+}
+
 type A = dyn Iterator<Item=Foo<'a>> + 'a;
 
 trait T {
@@ -2454,15 +2448,9 @@ fn foo() {
 
 pub fn main() {
     gen { yield ""; };
-    async
-    gen { yield ""; };
-    gen
-    move
-    { yield ""; };
-    async
-    gen
-    move
-    { yield ""; };
+    async gen { yield ""; };
+    gen move { yield ""; };
+    async gen move { yield ""; };
 }
 
 fn foo() {
@@ -2616,6 +2604,9 @@ impl T for Foo {
     async fn foo() {
     }
 }
+
+trait Z<U> {}
+
 fn main() {
     let &a = ();
     let &mut b = ();
@@ -2698,11 +2689,7 @@ type B = for<'a> unsafe extern "C" fn(&'a ()) -> ();
 
 type Obj = for<'a> PartialEq<&'a i32>;
 
-const fn foo(
-    _: impl ,
-    [const],
-    Trait,
-) {
+const fn foo(_: impl [const] Trait) {
 }
 
 const u32 = 0;
@@ -2806,11 +2793,7 @@ fn foo() {
         [] => {}
     }
 }
-fn printf(
-    format: *const i8,
-    ...,
-    _: u8,
-) -> i32;
+fn printf(format: *const i8, ..., _: u8) -> i32;
 type T = [(); 92];
 
 fn main() {
@@ -2893,19 +2876,16 @@ fn foo() {
     <usize as Default>::default();
 }
 
-const C: ;
+const C: u32 = 0;
+
 impl Foo {
-    const C: ;
+    const C: &'a () = &();
 }
 
-const C: ;
+const C: u32 = 0;
+
 trait Foo {
     const C: i32;
-
-
-
-
-
 }
 
 trait T {
@@ -3008,8 +2988,7 @@ trait T {
 
 fn f() {
     let x: i32 = 92;
-    super
-    let y;
+    super let y;
     super::foo;
 }
 
@@ -3059,6 +3038,13 @@ fn foo() {
         break 'l 92;
     }
 }
+
+trait Z<U>
+where U: Copy {}
+
+trait Z<U>
+where Self: T<U> {}
+
 const fn foo(_: impl const Trait) {
 }
 
@@ -3322,10 +3308,7 @@ fn outer() {
 }
 
 impl Whatever {
-    fn salsa_event(
-        &self,
-        event_fn: impl Fn() -> Event<Self>,
-    ) {
+    fn salsa_event(&self, event_fn: impl Fn() -> Event<Self>) {
         #![allow(unused_variables)]
         // this is  `inner_attr` of the block
     }
@@ -3380,18 +3363,9 @@ where
 #
 #
 #
-fn a(
-    _: *mut u8,
-    ...,
-);
-fn b(
-    _: *mut u8,
-    _: ...,
-);
-fn c(
-    _: *mut u8,
-    #[cfg(never)] [w, t, f]: ...,
-);
+fn a(_: *mut u8, ...);
+fn b(_: *mut u8, _: ...);
+fn c(_: *mut u8, #[cfg(never)] [w, t, f]: ...);
 fn main() {
     match .. {
     }
@@ -3591,15 +3565,9 @@ fn g1(#[attr1] #[attr2] pat: Type) {
 
 fn g2(#[attr1] x: u8) {
 }
-fn printf(
-    format: *const i8,
-    #[attr] ...,
-) -> i32;
+fn printf(format: *const i8, #[attr] ...) -> i32;
 trait Foo {
-    fn bar(
-        #[attr] _: u64,
-        # [attr] mut x: i32,
-    );
+    fn bar(#[attr] _: u64, # [attr] mut x: i32);
 }
 
 impl S {
@@ -3859,25 +3827,10 @@ fn test_use_tree_merge() {
         );
     }
 }
-pub fn socket(
-    domain: ::c_int,
-    ty: ::c_int,
-    protocol: ::c_int,
-) -> ::c_int;
-pub fn bind(
-    fd: ::c_int,
-    addr: *const sockaddr,
-    len: socklen_t,
-) -> ::c_int;
-pub fn connect(
-    socket: ::c_int,
-    address: *const sockaddr,
-    len: socklen_t,
-) -> ::c_int;
-pub fn listen(
-    socket: ::c_int,
-    backlog: ::c_int,
-) -> ::c_int;
+pub fn socket(domain: ::c_int, ty: ::c_int, protocol: ::c_int) -> ::c_int;
+pub fn bind(fd: ::c_int, addr: *const sockaddr, len: socklen_t) -> ::c_int;
+pub fn connect(socket: ::c_int, address: *const sockaddr, len: socklen_t) -> ::c_int;
+pub fn listen(socket: ::c_int, backlog: ::c_int) -> ::c_int;
 pub fn getsockname(
     socket: ::c_int,
     address: *mut sockaddr,
@@ -3910,12 +3863,7 @@ pub fn sendto(
     addr: *const sockaddr,
     addrlen: socklen_t,
 ) -> ::ssize_t;
-pub fn send(
-    socket: ::c_int,
-    buf: *const ::c_void,
-    len: ::size_t,
-    flags: ::c_int,
-) -> ::ssize_t;
+pub fn send(socket: ::c_int, buf: *const ::c_void, len: ::size_t, flags: ::c_int) -> ::ssize_t;
 pub fn recvfrom(
     socket: ::c_int,
     buf: *mut ::c_void,
@@ -3924,12 +3872,7 @@ pub fn recvfrom(
     addr: *mut ::sockaddr,
     addrlen: *mut ::socklen_t,
 ) -> ::ssize_t;
-pub fn recv(
-    socket: ::c_int,
-    buf: *mut ::c_void,
-    len: ::size_t,
-    flags: ::c_int,
-) -> ::ssize_t;
+pub fn recv(socket: ::c_int, buf: *mut ::c_void, len: ::size_t, flags: ::c_int) -> ::ssize_t;
 struct Foo;
 
 impl Foo {
@@ -3978,10 +3921,7 @@ trait T {
     fn f4(&&a: &&usize) {
     }
 
-    fn bar(
-        _: u64,
-        mut x: i32,
-    );
+    fn bar(_: u64, mut x: i32);
 }
 
 fn f<T>()
@@ -4094,12 +4034,7 @@ fn finalize_with_eof(mut self) -> LexedStr<'a> {
     self.res
 }
 
-fn push(
-    &mut self,
-    kind: SyntaxKind,
-    len: usize,
-    errors: Vec<String>,
-) {
+fn push(&mut self, kind: SyntaxKind, len: usize, errors: Vec<String>) {
     self.res.push(kind, self.offset);
     self.offset += len;
     for msg in errors {
@@ -4109,11 +4044,7 @@ fn push(
         }
 }
 
-fn extend_token(
-    &mut self,
-    kind: &rustc_lexer::TokenKind,
-    mut token_text: &str,
-) {
+fn extend_token(&mut self, kind: &rustc_lexer::TokenKind, mut token_text: &str) {
     // A note on an intended tradeoff:
     // We drop some useful information here (see patterns with double dots `..`)
     // Storing that info in `SyntaxKind` is not possible due to its layout requirements of
@@ -4232,11 +4163,7 @@ fn extend_token(
     self.push(syntax_kind, token_text.len(), errors);
 }
 
-fn extend_literal(
-    &mut self,
-    len: usize,
-    kind: &rustc_lexer::LiteralKind,
-) {
+fn extend_literal(&mut self, len: usize, kind: &rustc_lexer::LiteralKind) {
     let invalid_raw_msg = String::from("Invalid raw string literal");
     let mut errors = vec![];
     let mut no_end_quote = |c: char, kind: &str| {
@@ -4342,10 +4269,7 @@ fn extend_literal(
         };
     self.push(syntax_kind, len, errors);
 }
-fn err_to_msg(
-    error: EscapeError,
-    mode: Mode,
-) -> String {
+fn err_to_msg(error: EscapeError, mode: Mode) -> String {
     match error {
         EscapeError::ZeroChars => "empty character literal",
         EscapeError::MoreThanOneChar => "character literal may only contain one codepoint",
@@ -4412,18 +4336,12 @@ impl Input {
     }
 
     #[inline]
-    pub fn push(
-        &mut self,
-        kind: SyntaxKind,
-    ) {
+    pub fn push(&mut self, kind: SyntaxKind) {
         self.push_impl(kind, SyntaxKind::EOF)
     }
 
     #[inline]
-    pub fn push_ident(
-        &mut self,
-        contextual_kind: SyntaxKind,
-    ) {
+    pub fn push_ident(&mut self, contextual_kind: SyntaxKind) {
         self.push_impl(SyntaxKind::IDENT, contextual_kind)
     }
 
@@ -4451,11 +4369,7 @@ impl Input {
     }
 
     #[inline]
-    fn push_impl(
-        &mut self,
-        kind: SyntaxKind,
-        contextual_kind: SyntaxKind,
-    ) {
+    fn push_impl(&mut self, kind: SyntaxKind, contextual_kind: SyntaxKind) {
         let idx = self.len();
         if idx.is_multiple_of(bits::BITS as usize) {
             self.joint.push(0);
@@ -4467,34 +4381,22 @@ impl Input {
 
 /// pub(crate) impl used by the parser to consume `Tokens`.
 impl Input {
-    pub(crate) fn kind(
-        &self,
-        idx: usize,
-    ) -> SyntaxKind {
+    pub(crate) fn kind(&self, idx: usize) -> SyntaxKind {
         self.kind.get(idx).copied().unwrap_or(SyntaxKind::EOF)
     }
 
-    pub(crate) fn contextual_kind(
-        &self,
-        idx: usize,
-    ) -> SyntaxKind {
+    pub(crate) fn contextual_kind(&self, idx: usize) -> SyntaxKind {
         self.contextual_kind.get(idx).copied().unwrap_or(SyntaxKind::EOF)
     }
 
-    pub(crate) fn is_joint(
-        &self,
-        n: usize,
-    ) -> bool {
+    pub(crate) fn is_joint(&self, n: usize) -> bool {
         let (idx, b_idx) = self.bit_index(n);
         self.joint[idx] & (1 << b_idx) != 0
     }
 }
 
 impl Input {
-    fn bit_index(
-        &self,
-        n: usize,
-    ) -> (usize, usize) {
+    fn bit_index(&self, n: usize) -> (usize, usize) {
         let idx = n / (bits::BITS as usize);
         let b_idx = n % (bits::BITS as usize);
         (idx, b_idx)
@@ -4532,10 +4434,7 @@ fn lex_err() {
     }
 }
 
-fn lex(
-    text: &str,
-    edition: Edition,
-) -> String {
+fn lex(text: &str, edition: Edition) -> String {
     let lexed = LexedStr::new(edition, text);
     let mut res = String::new();
     for i in 0..lexed.len() {
@@ -4569,11 +4468,7 @@ fn parse_err() {
     }
 }
 
-fn parse(
-    entry: TopEntryPoint,
-    text: &str,
-    edition: Edition,
-) -> (String, bool) {
+fn parse(entry: TopEntryPoint, text: &str, edition: Edition) -> (String, bool) {
     let lexed = LexedStr::new(edition, text);
     let input = lexed.to_input(edition);
     let output = entry.parse(&input, edition);
@@ -4664,10 +4559,7 @@ fn run_and_expect_errors(path: &str) {
 }
 
 #[track_caller]
-fn run_and_expect_no_errors_with_edition(
-    path: &str,
-    edition: Edition,
-) {
+fn run_and_expect_no_errors_with_edition(path: &str, edition: Edition) {
     let path = PathBuf::from(path);
     let text = std::fs::read_to_string(&path).unwrap();
     let (actual, errors) = parse(TopEntryPoint::SourceFile, &text, edition);
@@ -4679,10 +4571,7 @@ fn run_and_expect_no_errors_with_edition(
 }
 
 #[track_caller]
-fn run_and_expect_errors_with_edition(
-    path: &str,
-    edition: Edition,
-) {
+fn run_and_expect_errors_with_edition(path: &str, edition: Edition) {
     let path = PathBuf::from(path);
     let text = std::fs::read_to_string(&path).unwrap();
     let (actual, errors) = parse(TopEntryPoint::SourceFile, &text, edition);
@@ -4729,11 +4618,7 @@ pub enum TopEntryPoint {
 }
 
 impl TopEntryPoint {
-    pub fn parse(
-        &self,
-        input: &Input,
-        edition: Edition,
-    ) -> Output {
+    pub fn parse(&self, input: &Input, edition: Edition) -> Output {
         let _p = tracing::info_span!("TopEntryPoint::parse", ?self).entered();
         let entry_point: fn(&'_ mut parser::Parser<'_>) = match self {
             TopEntryPoint::SourceFile => grammar::entry::top::source_file,
@@ -4794,11 +4679,7 @@ pub enum PrefixEntryPoint {
 }
 
 impl PrefixEntryPoint {
-    pub fn parse(
-        &self,
-        input: &Input,
-        edition: Edition,
-    ) -> Output {
+    pub fn parse(&self, input: &Input, edition: Edition) -> Output {
         let entry_point: fn(&'_ mut parser::Parser<'_>) = match self {
             PrefixEntryPoint::Vis => grammar::entry::prefix::vis,
             PrefixEntryPoint::Block => grammar::entry::prefix::block,
@@ -4835,11 +4716,7 @@ impl Reparser {
     ///
     /// Tokens must start with `{`, end with `}` and form a valid brace
     /// sequence.
-    pub fn parse(
-        self,
-        tokens: &Input,
-        edition: Edition,
-    ) -> Output {
+    pub fn parse(self, tokens: &Input, edition: Edition) -> Output {
         let Reparser(r) = self;
         let mut p = parser::Parser::new(tokens, edition);
         r(&mut p);
@@ -5132,10 +5009,7 @@ impl BlockLike {
 
 const VISIBILITY_FIRST: TokenSet = TokenSet::new(&[T![pub]]);
 
-fn opt_visibility(
-    p: &mut Parser<'_>,
-    in_tuple_field: bool,
-) -> bool {
+fn opt_visibility(p: &mut Parser<'_>, in_tuple_field: bool) -> bool {
     if !p.at(T![pub]) {
         return false;
     }
@@ -5216,10 +5090,7 @@ fn opt_ret_type(p: &mut Parser<'_>) -> bool {
     }
 }
 
-fn name_r(
-    p: &mut Parser<'_>,
-    recovery: TokenSet,
-) {
+fn name_r(p: &mut Parser<'_>, recovery: TokenSet) {
     if p.at(IDENT) {
         let m = p.start();
         p.bump(IDENT);
@@ -5291,10 +5162,7 @@ fn lifetime(p: &mut Parser<'_>) {
     m.complete(p, LIFETIME);
 }
 
-fn error_block(
-    p: &mut Parser<'_>,
-    message: &str,
-) {
+fn error_block(p: &mut Parser<'_>, message: &str) {
     assert!(p.at(T!['{']));
     let m = p.start();
     p.error(message);
@@ -5304,10 +5172,7 @@ fn error_block(
     m.complete(p, ERROR);
 }
 
-fn error_let_stmt(
-    p: &mut Parser<'_>,
-    message: &str,
-) {
+fn error_let_stmt(p: &mut Parser<'_>, message: &str) {
     assert!(p.at(T![let]));
     let m = p.start();
     p.error(message);
@@ -5376,10 +5241,7 @@ pub(crate) struct Parser<'t> {
 const PARSER_STEP_LIMIT: usize = if cfg!(debug_assertions) { 150_000 } else { 15_000_000 };
 
 impl<'t> Parser<'t> {
-    pub(super) fn new(
-        inp: &'t Input,
-        edition: Edition,
-    ) -> Parser<'t> {
+    pub(super) fn new(inp: &'t Input, edition: Edition) -> Parser<'t> {
         Parser { inp, pos: 0, events: Vec::new(), steps: Cell::new(0), edition }
     }
 
@@ -5396,10 +5258,7 @@ impl<'t> Parser<'t> {
 
     /// Lookahead operation: returns the kind of the next nth
     /// token.
-    pub(crate) fn nth(
-        &self,
-        n: usize,
-    ) -> SyntaxKind {
+    pub(crate) fn nth(&self, n: usize) -> SyntaxKind {
         assert!(n <= 3);
         let steps = self.steps.get();
         assert!((steps as usize) < PARSER_STEP_LIMIT, "the parser seems stuck");
@@ -5408,18 +5267,11 @@ impl<'t> Parser<'t> {
     }
 
     /// Checks if the current token is `kind`.
-    pub(crate) fn at(
-        &self,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn at(&self, kind: SyntaxKind) -> bool {
         self.nth_at(0, kind)
     }
 
-    pub(crate) fn nth_at(
-        &self,
-        n: usize,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn nth_at(&self, n: usize, kind: SyntaxKind) -> bool {
         match kind {
             T![-=] => self.at_composite2(n, T![-], T![=]),
             T![->] => self.at_composite2(n, T![-], T![>]),
@@ -5452,10 +5304,7 @@ impl<'t> Parser<'t> {
     }
 
     /// Consume the next token if `kind` matches.
-    pub(crate) fn eat(
-        &mut self,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn eat(&mut self, kind: SyntaxKind) -> bool {
         if !self.at(kind) {
             return false;
         }
@@ -5488,10 +5337,7 @@ impl<'t> Parser<'t> {
         true
     }
 
-    pub(crate) fn eat_contextual_kw(
-        &mut self,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn eat_contextual_kw(&mut self, kind: SyntaxKind) -> bool {
         if !self.at_contextual_kw(kind) {
             return false;
         }
@@ -5499,24 +5345,13 @@ impl<'t> Parser<'t> {
         true
     }
 
-    fn at_composite2(
-        &self,
-        n: usize,
-        k1: SyntaxKind,
-        k2: SyntaxKind,
-    ) -> bool {
+    fn at_composite2(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind) -> bool {
         self.inp.kind(self.pos + n) == k1
             && self.inp.kind(self.pos + n + 1) == k2
             && self.inp.is_joint(self.pos + n)
     }
 
-    fn at_composite3(
-        &self,
-        n: usize,
-        k1: SyntaxKind,
-        k2: SyntaxKind,
-        k3: SyntaxKind,
-    ) -> bool {
+    fn at_composite3(&self, n: usize, k1: SyntaxKind, k2: SyntaxKind, k3: SyntaxKind) -> bool {
         self.inp.kind(self.pos + n) == k1
             && self.inp.kind(self.pos + n + 1) == k2
             && self.inp.kind(self.pos + n + 2) == k3
@@ -5525,27 +5360,17 @@ impl<'t> Parser<'t> {
     }
 
     /// Checks if the current token is in `kinds`.
-    pub(crate) fn at_ts(
-        &self,
-        kinds: TokenSet,
-    ) -> bool {
+    pub(crate) fn at_ts(&self, kinds: TokenSet) -> bool {
         kinds.contains(self.current())
     }
 
     /// Checks if the current token is contextual keyword `kw`.
-    pub(crate) fn at_contextual_kw(
-        &self,
-        kw: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn at_contextual_kw(&self, kw: SyntaxKind) -> bool {
         self.inp.contextual_kind(self.pos) == kw
     }
 
     /// Checks if the nth token is contextual keyword `kw`.
-    pub(crate) fn nth_at_contextual_kw(
-        &self,
-        n: usize,
-        kw: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn nth_at_contextual_kw(&self, n: usize, kw: SyntaxKind) -> bool {
         self.inp.contextual_kind(self.pos + n) == kw
     }
 
@@ -5559,10 +5384,7 @@ impl<'t> Parser<'t> {
     }
 
     /// Consume the next token. Panics if the parser isn't currently at `kind`.
-    pub(crate) fn bump(
-        &mut self,
-        kind: SyntaxKind,
-    ) {
+    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         assert!(self.eat(kind));
     }
 
@@ -5576,10 +5398,7 @@ impl<'t> Parser<'t> {
     }
 
     /// Advances the parser by one token
-    pub(crate) fn split_float(
-        &mut self,
-        mut marker: Marker,
-    ) -> (bool, Marker) {
+    pub(crate) fn split_float(&mut self, mut marker: Marker) -> (bool, Marker) {
         assert!(self.at(SyntaxKind::FLOAT_NUMBER));
         // we have parse `<something>.`
         // `<something>`.0.1
@@ -5613,10 +5432,7 @@ impl<'t> Parser<'t> {
     /// *identifier* token, but the parser remaps it to the
     /// `union` keyword, and keyword is what ends up in the
     /// final tree.
-    pub(crate) fn bump_remap(
-        &mut self,
-        kind: SyntaxKind,
-    ) {
+    pub(crate) fn bump_remap(&mut self, kind: SyntaxKind) {
         if self.nth(0) == EOF {
             // FIXME: panic!?
             return;
@@ -5628,20 +5444,14 @@ impl<'t> Parser<'t> {
     /// FIXME: this should be much more fancy and support
     /// structured errors with spans and notes, like rustc
     /// does.
-    pub(crate) fn error<T: Into<String>>(
-        &mut self,
-        message: T,
-    ) {
+    pub(crate) fn error<T: Into<String>>(&mut self, message: T) {
         let msg = message.into();
         self.push_event(Event::Error { msg });
     }
 
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
-    pub(crate) fn expect(
-        &mut self,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) fn expect(&mut self, kind: SyntaxKind) -> bool {
         if self.eat(kind) {
             return true;
         }
@@ -5650,10 +5460,7 @@ impl<'t> Parser<'t> {
     }
 
     /// Create an error node and consume the next token.
-    pub(crate) fn err_and_bump(
-        &mut self,
-        message: &str,
-    ) {
+    pub(crate) fn err_and_bump(&mut self, message: &str) {
         let m = self.start();
         self.error(message);
         self.bump_any();
@@ -5663,11 +5470,7 @@ impl<'t> Parser<'t> {
     /// Create an error node and consume the next token unless it is in the recovery set.
     ///
     /// Returns true if recovery kicked in.
-    pub(crate) fn err_recover(
-        &mut self,
-        message: &str,
-        recovery: TokenSet,
-    ) -> bool {
+    pub(crate) fn err_recover(&mut self, message: &str, recovery: TokenSet) -> bool {
         if matches!(self.current(), T!['{'] | T!['}']) {
             self.error(message);
             return true;
@@ -5683,20 +5486,13 @@ impl<'t> Parser<'t> {
         false
     }
 
-    fn do_bump(
-        &mut self,
-        kind: SyntaxKind,
-        n_raw_tokens: u8,
-    ) {
+    fn do_bump(&mut self, kind: SyntaxKind, n_raw_tokens: u8) {
         self.pos += n_raw_tokens as usize;
         self.steps.set(0);
         self.push_event(Event::Token { kind, n_raw_tokens });
     }
 
-    fn push_event(
-        &mut self,
-        event: Event,
-    ) {
+    fn push_event(&mut self, event: Event) {
         self.events.push(event);
     }
 
@@ -5719,11 +5515,7 @@ impl Marker {
     /// Finishes the syntax tree node and assigns `kind` to it,
     /// and mark the create a `CompletedMarker` for possible future
     /// operation like `.precede()` to deal with forward_parent.
-    pub(crate) fn complete(
-        mut self,
-        p: &mut Parser<'_>,
-        kind: SyntaxKind,
-    ) -> CompletedMarker {
+    pub(crate) fn complete(mut self, p: &mut Parser<'_>, kind: SyntaxKind) -> CompletedMarker {
         self.bomb.defuse();
         let idx = self.pos as usize;
         match &mut p.events[idx] {
@@ -5739,10 +5531,7 @@ impl Marker {
 
     /// Abandons the syntax tree node. All its children
     /// are attached to its parent instead.
-    pub(crate) fn abandon(
-        mut self,
-        p: &mut Parser<'_>,
-    ) {
+    pub(crate) fn abandon(mut self, p: &mut Parser<'_>) {
         self.bomb.defuse();
         let idx = self.pos as usize;
         if idx == p.events.len() - 1 {
@@ -5761,11 +5550,7 @@ pub(crate) struct CompletedMarker {
 }
 
 impl CompletedMarker {
-    fn new(
-        start_pos: u32,
-        end_pos: u32,
-        kind: SyntaxKind,
-    ) -> Self {
+    fn new(start_pos: u32, end_pos: u32, kind: SyntaxKind) -> Self {
         CompletedMarker { start_pos, end_pos, kind }
     }
 
@@ -5782,10 +5567,7 @@ impl CompletedMarker {
     /// Append a new `START` events as `[START, FINISH, NEWSTART]`,
     /// then mark `NEWSTART` as `START`'s parent with saving its relative
     /// distance to `NEWSTART` into forward_parent(=2 in this case);
-    pub(crate) fn precede(
-        self,
-        p: &mut Parser<'_>,
-    ) -> Marker {
+    pub(crate) fn precede(self, p: &mut Parser<'_>) -> Marker {
         let new_pos = p.start();
         let idx = self.start_pos as usize;
         match &mut p.events[idx] {
@@ -5798,11 +5580,7 @@ impl CompletedMarker {
     }
 
     /// Extends this completed marker *to the left* up to `m`.
-    pub(crate) fn extend_to(
-        self,
-        p: &mut Parser<'_>,
-        mut m: Marker,
-    ) -> CompletedMarker {
+    pub(crate) fn extend_to(self, p: &mut Parser<'_>, mut m: Marker) -> CompletedMarker {
         m.bomb.defuse();
         let idx = m.pos as usize;
         match &mut p.events[idx] {
@@ -5818,10 +5596,7 @@ impl CompletedMarker {
         self.kind
     }
 
-    pub(crate) fn last_token(
-        &self,
-        p: &Parser<'_>,
-    ) -> Option<SyntaxKind> {
+    pub(crate) fn last_token(&self, p: &Parser<'_>) -> Option<SyntaxKind> {
         let end_pos = self.end_pos as usize;
         debug_assert_eq!(p.events[end_pos - 1], Event::Finish);
         p.events[..end_pos].iter().rev().find_map(|event| match event {
@@ -5925,31 +5700,21 @@ impl Output {
         })
     }
 
-    pub(crate) fn token(
-        &mut self,
-        kind: SyntaxKind,
-        n_tokens: u8,
-    ) {
+    pub(crate) fn token(&mut self, kind: SyntaxKind, n_tokens: u8) {
         let e = ((kind as u16 as u32) << Self::KIND_SHIFT)
             | ((n_tokens as u32) << Self::N_INPUT_TOKEN_SHIFT)
             | Self::EVENT_MASK;
         self.event.push(e)
     }
 
-    pub(crate) fn float_split_hack(
-        &mut self,
-        ends_in_dot: bool,
-    ) {
+    pub(crate) fn float_split_hack(&mut self, ends_in_dot: bool) {
         let e = ((Self::SPLIT_EVENT as u32) << Self::TAG_SHIFT)
             | ((ends_in_dot as u32) << Self::N_INPUT_TOKEN_SHIFT)
             | Self::EVENT_MASK;
         self.event.push(e);
     }
 
-    pub(crate) fn enter_node(
-        &mut self,
-        kind: SyntaxKind,
-    ) {
+    pub(crate) fn enter_node(&mut self, kind: SyntaxKind) {
         let e = ((kind as u16 as u32) << Self::KIND_SHIFT)
             | ((Self::ENTER_EVENT as u32) << Self::TAG_SHIFT)
             | Self::EVENT_MASK;
@@ -5961,10 +5726,7 @@ impl Output {
         self.event.push(e)
     }
 
-    pub(crate) fn error(
-        &mut self,
-        error: String,
-    ) {
+    pub(crate) fn error(&mut self, error: String) {
         let idx = self.error.len();
         self.error.push(error);
         let e = (idx as u32) << Self::ERROR_SHIFT;
@@ -6001,20 +5763,14 @@ impl SyntaxKind {
     }
 }
 
-pub(super) fn use_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn use_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![use]);
     use_tree(p, true);
     p.expect(T![;]);
     m.complete(p, USE);
 }
 
-fn use_tree(
-    p: &mut Parser<'_>,
-    top_level: bool,
-) -> bool {
+fn use_tree(p: &mut Parser<'_>, top_level: bool) -> bool {
     let m = p.start();
     match p.current() {
         // test use_tree_star
@@ -6105,10 +5861,7 @@ pub(crate) fn use_tree_list(p: &mut Parser<'_>) {
     m.complete(p, USE_TREE_LIST);
 }
 
-pub(super) fn trait_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn trait_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![trait]);
     name_r(p, ITEM_RECOVERY_SET);
     // test trait_item_generic_params
@@ -6143,10 +5896,7 @@ pub(super) fn trait_(
     m.complete(p, TRAIT);
 }
 
-pub(super) fn impl_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn impl_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![impl]);
     if p.at(T![<]) && not_a_qualified_path(p) {
         generic_params::opt_generic_param_list(p);
@@ -6224,27 +5974,17 @@ pub(crate) fn impl_type(p: &mut Parser<'_>) {
     types::type_(p);
 }
 
-pub(super) fn konst(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn konst(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![const]);
     const_or_static(p, m, true);
 }
 
-pub(super) fn static_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn static_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![static]);
     const_or_static(p, m, false);
 }
 
-fn const_or_static(
-    p: &mut Parser<'_>,
-    m: Marker,
-    is_const: bool,
-) {
+fn const_or_static(p: &mut Parser<'_>, m: Marker, is_const: bool) {
     p.eat(T![mut]);
     if is_const && p.eat(T![_]) {
         // test anonymous_const
@@ -6296,28 +6036,18 @@ fn const_or_static(
     m.complete(p, if is_const { CONST } else { STATIC });
 }
 
-pub(super) fn strukt(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn strukt(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![struct]);
     struct_or_union(p, m, true);
 }
 
-pub(super) fn union(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn union(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at_contextual_kw(T![union]));
     p.bump_remap(T![union]);
     struct_or_union(p, m, false);
 }
 
-fn struct_or_union(
-    p: &mut Parser<'_>,
-    m: Marker,
-    is_struct: bool,
-) {
+fn struct_or_union(p: &mut Parser<'_>, m: Marker, is_struct: bool) {
     name_r(p, ITEM_RECOVERY_SET);
     generic_params::opt_generic_param_list(p);
     match p.current() {
@@ -6352,10 +6082,7 @@ fn struct_or_union(
     m.complete(p, if is_struct { STRUCT } else { UNION });
 }
 
-pub(super) fn enum_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(super) fn enum_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![enum]);
     name_r(p, ITEM_RECOVERY_SET);
     generic_params::opt_generic_param_list(p);
@@ -6483,10 +6210,7 @@ fn tuple_field_list(p: &mut Parser<'_>) {
     m.complete(p, TUPLE_FIELD_LIST);
 }
 
-pub(super) fn mod_contents(
-    p: &mut Parser<'_>,
-    stop_on_r_curly: bool,
-) {
+pub(super) fn mod_contents(p: &mut Parser<'_>, stop_on_r_curly: bool) {
     attributes::inner_attrs(p);
     while !(p.at(EOF) || (p.at(T!['}']) && stop_on_r_curly)) {
         // We can set `is_in_extern=true`, because it only allows `safe fn`, and there is no ambiguity here.
@@ -6514,11 +6238,7 @@ pub(super) const ITEM_RECOVERY_SET: TokenSet = TokenSet::new(&[
     T![;],
 ]);
 
-pub(super) fn item_or_macro(
-    p: &mut Parser<'_>,
-    stop_on_r_curly: bool,
-    is_in_extern: bool,
-) {
+pub(super) fn item_or_macro(p: &mut Parser<'_>, stop_on_r_curly: bool, is_in_extern: bool) {
     let m = p.start();
     attributes::outer_attrs(p);
     let m = match opt_item(p, m, is_in_extern) {
@@ -6575,11 +6295,7 @@ pub(super) fn item_or_macro(
 }
 
 /// Try to parse an item, completing `m` in case of success.
-pub(super) fn opt_item(
-    p: &mut Parser<'_>,
-    m: Marker,
-    is_in_extern: bool,
-) -> Result<(), Marker> {
+pub(super) fn opt_item(p: &mut Parser<'_>, m: Marker, is_in_extern: bool) -> Result<(), Marker> {
     // test_err pub_expr
     // fn foo() { pub 92; }
     let has_visibility = opt_visibility(p, false);
@@ -6703,10 +6419,7 @@ pub(super) fn opt_item(
     Ok(())
 }
 
-fn opt_item_without_modifiers(
-    p: &mut Parser<'_>,
-    m: Marker,
-) -> Result<(), Marker> {
+fn opt_item_without_modifiers(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
     let la = p.nth(1);
     match p.current() {
         T![extern] if la == T![crate] => extern_crate(p, m),
@@ -6745,10 +6458,7 @@ fn opt_item_without_modifiers(
     Ok(())
 }
 
-fn extern_crate(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn extern_crate(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![extern]);
     p.bump(T![crate]);
     name_ref_or_self(p);
@@ -6760,10 +6470,7 @@ fn extern_crate(
     m.complete(p, EXTERN_CRATE);
 }
 
-pub(crate) fn mod_item(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+pub(crate) fn mod_item(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![mod]);
     name(p);
     if p.at(T!['{']) {
@@ -6776,10 +6483,7 @@ pub(crate) fn mod_item(
     m.complete(p, MODULE);
 }
 
-fn type_alias(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn type_alias(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![type]);
     name(p);
     // test type_item_type_params
@@ -6819,10 +6523,7 @@ pub(crate) fn extern_item_list(p: &mut Parser<'_>) {
     m.complete(p, EXTERN_ITEM_LIST);
 }
 
-fn macro_rules(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn macro_rules(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at_contextual_kw(T![macro_rules]));
     p.bump_remap(T![macro_rules]);
     p.expect(T![!]);
@@ -6841,10 +6542,7 @@ fn macro_rules(
     m.complete(p, MACRO_RULES);
 }
 
-fn macro_def(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn macro_def(p: &mut Parser<'_>, m: Marker) {
     p.expect(T![macro]);
     name_r(p, ITEM_RECOVERY_SET);
     if p.at(T!['{']) {
@@ -6863,10 +6561,7 @@ fn macro_def(
     m.complete(p, MACRO_DEF);
 }
 
-fn fn_(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn fn_(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![fn]);
     name_r(p, ITEM_RECOVERY_SET);
     // test function_type_params
@@ -6899,10 +6594,7 @@ fn fn_(
     m.complete(p, FN);
 }
 
-fn macro_call(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn macro_call(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at(T![!]));
     match macro_call_after_excl(p) {
         BlockLike::Block => (),
@@ -7238,10 +6930,7 @@ fn builtin_expr(p: &mut Parser<'_>) -> Option<CompletedMarker> {
     }
 }
 
-pub(crate) fn parse_asm_expr(
-    p: &mut Parser<'_>,
-    m: Marker,
-) -> Option<CompletedMarker> {
+pub(crate) fn parse_asm_expr(p: &mut Parser<'_>, m: Marker) -> Option<CompletedMarker> {
     p.expect(T!['(']);
     if expr(p).is_none() {
         p.err_and_bump("expected asm template");
@@ -7513,10 +7202,7 @@ fn label(p: &mut Parser<'_>) {
     m.complete(p, LABEL);
 }
 
-fn loop_expr(
-    p: &mut Parser<'_>,
-    m: Option<Marker>,
-) -> CompletedMarker {
+fn loop_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![loop]));
     let m = m.unwrap_or_else(|| p.start());
     p.bump(T![loop]);
@@ -7524,10 +7210,7 @@ fn loop_expr(
     m.complete(p, LOOP_EXPR)
 }
 
-fn while_expr(
-    p: &mut Parser<'_>,
-    m: Option<Marker>,
-) -> CompletedMarker {
+fn while_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![while]));
     let m = m.unwrap_or_else(|| p.start());
     p.bump(T![while]);
@@ -7536,10 +7219,7 @@ fn while_expr(
     m.complete(p, WHILE_EXPR)
 }
 
-fn for_expr(
-    p: &mut Parser<'_>,
-    m: Option<Marker>,
-) -> CompletedMarker {
+fn for_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![for]));
     let m = m.unwrap_or_else(|| p.start());
     p.bump(T![for]);
@@ -7726,10 +7406,7 @@ fn continue_expr(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, CONTINUE_EXPR)
 }
 
-fn break_expr(
-    p: &mut Parser<'_>,
-    r: Restrictions,
-) -> CompletedMarker {
+fn break_expr(p: &mut Parser<'_>, r: Restrictions) -> CompletedMarker {
     assert!(p.at(T![break]));
     let m = p.start();
     p.bump(T![break]);
@@ -7749,10 +7426,7 @@ fn break_expr(
     m.complete(p, BREAK_EXPR)
 }
 
-fn try_block_expr(
-    p: &mut Parser<'_>,
-    m: Option<Marker>,
-) -> CompletedMarker {
+fn try_block_expr(p: &mut Parser<'_>, m: Option<Marker>) -> CompletedMarker {
     assert!(p.at(T![try]));
     let m = m.unwrap_or_else(|| p.start());
     p.bump(T![try]);
@@ -7783,10 +7457,7 @@ enum Flavor {
     Closure,
 }
 
-fn list_(
-    p: &mut Parser<'_>,
-    flavor: Flavor,
-) {
+fn list_(p: &mut Parser<'_>, flavor: Flavor) {
     use Flavor::*;
     let (bra, ket) = match flavor {
         Closure => (T![|], T![|]),
@@ -7843,11 +7514,7 @@ fn list_(
 
 const PARAM_FIRST: TokenSet = patterns::PATTERN_FIRST.union(types::TYPE_FIRST);
 
-fn param(
-    p: &mut Parser<'_>,
-    m: Marker,
-    flavor: Flavor,
-) {
+fn param(p: &mut Parser<'_>, m: Marker, flavor: Flavor) {
     match flavor {
         // test param_list_vararg
         // extern "C" { fn printf(format: *const i8, ..., _: u8) -> i32; }
@@ -7911,10 +7578,7 @@ fn variadic_param(p: &mut Parser<'_>) -> bool {
     }
 }
 
-fn opt_self_param(
-    p: &mut Parser<'_>,
-    m: Marker,
-) -> Result<(), Marker> {
+fn opt_self_param(p: &mut Parser<'_>, m: Marker) -> Result<(), Marker> {
     if p.at(T![self]) || p.at(T![mut]) && p.nth(1) == T![self] {
         p.eat(T![mut]);
         self_as_name(p);
@@ -7972,10 +7636,7 @@ pub(super) fn outer_attrs(p: &mut Parser<'_>) {
     }
 }
 
-fn attr(
-    p: &mut Parser<'_>,
-    inner: bool,
-) {
+fn attr(p: &mut Parser<'_>, inner: bool) {
     assert!(p.at(T![#]));
     let attr = p.start();
     p.bump(T![#]);
@@ -8053,10 +7714,7 @@ fn expr_let(p: &mut Parser<'_>) {
     expr_bp(p, None, r, 5);
 }
 
-pub(super) fn stmt(
-    p: &mut Parser<'_>,
-    semicolon: Semicolon,
-) {
+pub(super) fn stmt(p: &mut Parser<'_>, semicolon: Semicolon) {
     if p.eat(T![;]) {
         return;
     }
@@ -8120,10 +7778,7 @@ pub(super) fn stmt(
     }
 }
 
-pub(super) fn let_stmt(
-    p: &mut Parser<'_>,
-    with_semi: Semicolon,
-) {
+pub(super) fn let_stmt(p: &mut Parser<'_>, with_semi: Semicolon) {
     p.eat(T![super]);
     p.bump(T![let]);
     patterns::pattern(p);
@@ -8327,10 +7982,7 @@ fn expr_bp(
 
 const LHS_FIRST: TokenSet = atom::ATOM_EXPR_FIRST.union(TokenSet::new(&[T![&], T![*], T![!], T![.], T![-], T![_]]));
 
-fn lhs(
-    p: &mut Parser<'_>,
-    r: Restrictions,
-) -> Option<(CompletedMarker, BlockLike)> {
+fn lhs(p: &mut Parser<'_>, r: Restrictions) -> Option<(CompletedMarker, BlockLike)> {
     let m;
     let kind = match p.current() {
         // test ref_expr
@@ -8489,20 +8141,14 @@ fn postfix_dot_expr<const FLOAT_RECOVERY: bool>(
     field_expr::<FLOAT_RECOVERY>(p, lhs)
 }
 
-fn call_expr(
-    p: &mut Parser<'_>,
-    lhs: CompletedMarker,
-) -> CompletedMarker {
+fn call_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T!['(']));
     let m = lhs.precede(p);
     arg_list(p);
     m.complete(p, CALL_EXPR)
 }
 
-fn index_expr(
-    p: &mut Parser<'_>,
-    lhs: CompletedMarker,
-) -> CompletedMarker {
+fn index_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T!['[']));
     let m = lhs.precede(p);
     p.bump(T!['[']);
@@ -8579,20 +8225,14 @@ fn field_expr<const FLOAT_RECOVERY: bool>(
     Ok(m.complete(p, FIELD_EXPR))
 }
 
-fn try_expr(
-    p: &mut Parser<'_>,
-    lhs: CompletedMarker,
-) -> CompletedMarker {
+fn try_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T![?]));
     let m = lhs.precede(p);
     p.bump(T![?]);
     m.complete(p, TRY_EXPR)
 }
 
-fn cast_expr(
-    p: &mut Parser<'_>,
-    lhs: CompletedMarker,
-) -> CompletedMarker {
+fn cast_expr(p: &mut Parser<'_>, lhs: CompletedMarker) -> CompletedMarker {
     assert!(p.at(T![as]));
     let m = lhs.precede(p);
     p.bump(T![as]);
@@ -8621,10 +8261,7 @@ fn arg_list(p: &mut Parser<'_>) {
     m.complete(p, ARG_LIST);
 }
 
-fn path_expr(
-    p: &mut Parser<'_>,
-    r: Restrictions,
-) -> (CompletedMarker, BlockLike) {
+fn path_expr(p: &mut Parser<'_>, r: Restrictions) -> (CompletedMarker, BlockLike) {
     assert!(paths::is_path_start(p));
     let m = p.start();
     paths::expr_path(p);
@@ -8946,10 +8583,7 @@ pub(super) fn generic_param_list(p: &mut Parser<'_>) {
 
 const GENERIC_PARAM_FIRST: TokenSet = TokenSet::new(&[IDENT, LIFETIME_IDENT, T![const]]);
 
-fn generic_param(
-    p: &mut Parser<'_>,
-    m: Marker,
-) -> bool {
+fn generic_param(p: &mut Parser<'_>, m: Marker) -> bool {
     match p.current() {
         LIFETIME_IDENT => lifetime_param(p, m),
         IDENT => type_param(p, m),
@@ -8963,10 +8597,7 @@ fn generic_param(
     true
 }
 
-fn lifetime_param(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn lifetime_param(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at(LIFETIME_IDENT));
     lifetime(p);
     if p.eat(T![:]) {
@@ -8975,10 +8606,7 @@ fn lifetime_param(
     m.complete(p, LIFETIME_PARAM);
 }
 
-fn type_param(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn type_param(p: &mut Parser<'_>, m: Marker) {
     assert!(p.at(IDENT));
     name(p);
     if p.at(T![:]) {
@@ -8993,10 +8621,7 @@ fn type_param(
     m.complete(p, TYPE_PARAM);
 }
 
-fn const_param(
-    p: &mut Parser<'_>,
-    m: Marker,
-) {
+fn const_param(p: &mut Parser<'_>, m: Marker) {
     p.bump(T![const]);
     name(p);
     if p.at(T![:]) {
@@ -9044,10 +8669,7 @@ pub(super) fn bounds_without_colon(p: &mut Parser<'_>) {
     bounds_without_colon_m(p, m);
 }
 
-pub(super) fn bounds_without_colon_m(
-    p: &mut Parser<'_>,
-    marker: Marker,
-) -> CompletedMarker {
+pub(super) fn bounds_without_colon_m(p: &mut Parser<'_>, marker: Marker) -> CompletedMarker {
     while type_bound(p) {
         if !p.eat(T![+]) {
             break;
@@ -9256,10 +8878,7 @@ pub(super) fn type_no_bounds(p: &mut Parser<'_>) {
     type_with_bounds_cond(p, false);
 }
 
-fn type_with_bounds_cond(
-    p: &mut Parser<'_>,
-    allow_bounds: bool,
-) {
+fn type_with_bounds_cond(p: &mut Parser<'_>, allow_bounds: bool) {
     match p.current() {
         T!['('] => paren_or_tuple_type(p),
         T![!] => never_type(p),
@@ -9460,10 +9079,7 @@ pub(super) fn for_binder(p: &mut Parser<'_>) {
     m.complete(p, FOR_BINDER);
 }
 
-pub(super) fn for_type(
-    p: &mut Parser<'_>,
-    allow_bounds: bool,
-) {
+pub(super) fn for_type(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(p.at(T![for]));
     let m = p.start();
     for_binder(p);
@@ -9514,10 +9130,7 @@ fn bare_dyn_trait_type(p: &mut Parser<'_>) {
     m.complete(p, DYN_TRAIT_TYPE);
 }
 
-fn path_or_macro_type(
-    p: &mut Parser<'_>,
-    allow_bounds: bool,
-) {
+fn path_or_macro_type(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(paths::is_path_start(p));
     let r = p.start();
     let m = p.start();
@@ -9536,10 +9149,7 @@ fn path_or_macro_type(
     }
 }
 
-pub(super) fn path_type_bounds(
-    p: &mut Parser<'_>,
-    allow_bounds: bool,
-) {
+pub(super) fn path_type_bounds(p: &mut Parser<'_>, allow_bounds: bool) {
     assert!(paths::is_path_start(p));
     let m = p.start();
     paths::type_path(p);
@@ -9607,19 +9217,13 @@ pub(crate) fn pattern_single(p: &mut Parser<'_>) {
 
 /// Parses a pattern list separated by pipes `|`
 /// using the given `recovery_set`.
-pub(super) fn pattern_top_r(
-    p: &mut Parser<'_>,
-    recovery_set: TokenSet,
-) {
+pub(super) fn pattern_top_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     pattern_r(p, recovery_set);
 }
 
 /// Parses a pattern list separated by pipes `|`, with no leading `|`,using the
 /// given `recovery_set`.
-fn pattern_r(
-    p: &mut Parser<'_>,
-    recovery_set: TokenSet,
-) {
+fn pattern_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     let m = p.start();
     let has_leading_pipe = p.eat(T![|]);
     pattern_single_r(p, recovery_set);
@@ -9633,10 +9237,7 @@ fn pattern_r(
     m.complete(p, OR_PAT);
 }
 
-fn pattern_single_r(
-    p: &mut Parser<'_>,
-    recovery_set: TokenSet,
-) {
+fn pattern_single_r(p: &mut Parser<'_>, recovery_set: TokenSet) {
     // test range_pat
     // fn main() {
     //     match 92 {
@@ -9783,10 +9384,7 @@ const PAT_RECOVERY_SET: TokenSet = TokenSet::new(&[
     T![&],
 ]);
 
-fn atom_pat(
-    p: &mut Parser<'_>,
-    recovery_set: TokenSet,
-) -> Option<CompletedMarker> {
+fn atom_pat(p: &mut Parser<'_>, recovery_set: TokenSet) -> Option<CompletedMarker> {
     let m = match p.current() {
         T![box] => box_pat(p),
         T![ref] | T![mut] => ident_pat(p, true),
@@ -9983,10 +9581,7 @@ fn slice_pat(p: &mut Parser<'_>) -> CompletedMarker {
     m.complete(p, SLICE_PAT)
 }
 
-fn pat_list(
-    p: &mut Parser<'_>,
-    ket: SyntaxKind,
-) {
+fn pat_list(p: &mut Parser<'_>, ket: SyntaxKind) {
     while !p.at(EOF) && !p.at(ket) {
         pattern(p);
         if !p.eat(T![,]) {
@@ -9999,10 +9594,7 @@ fn pat_list(
     }
 }
 
-fn ident_pat(
-    p: &mut Parser<'_>,
-    with_at: bool,
-) -> CompletedMarker {
+fn ident_pat(p: &mut Parser<'_>, with_at: bool) -> CompletedMarker {
     assert!(matches!(p.current(), T![ref] | T![mut] | IDENT));
     let m = p.start();
     p.eat(T![ref]);
@@ -10080,10 +9672,7 @@ enum Mode {
     Vis,
 }
 
-fn path(
-    p: &mut Parser<'_>,
-    mode: Mode,
-) -> Option<CompletedMarker> {
+fn path(p: &mut Parser<'_>, mode: Mode) -> Option<CompletedMarker> {
     let path = p.start();
     if path_segment(p, mode, true).is_none() {
         path.abandon(p);
@@ -10116,11 +9705,7 @@ const EXPR_PATH_SEGMENT_RECOVERY_SET: TokenSet = expressions::EXPR_RECOVERY_SET.
 
 const TYPE_PATH_SEGMENT_RECOVERY_SET: TokenSet = types::TYPE_RECOVERY_SET;
 
-fn path_segment(
-    p: &mut Parser<'_>,
-    mode: Mode,
-    first: bool,
-) -> Option<CompletedMarker> {
+fn path_segment(p: &mut Parser<'_>, mode: Mode, first: bool) -> Option<CompletedMarker> {
     let m = p.start();
     // test qual_paths
     // type X = <A as B>::Output;
@@ -10240,10 +9825,7 @@ pub(crate) fn opt_path_type_args(p: &mut Parser<'_>) {
     }
 }
 
-fn opt_path_args(
-    p: &mut Parser<'_>,
-    mode: Mode,
-) {
+fn opt_path_args(p: &mut Parser<'_>, mode: Mode) {
     match mode {
         Mode::Use | Mode::Attr | Mode::Vis => {}
         Mode::Type => opt_path_type_args(p),
@@ -10279,17 +9861,11 @@ impl TokenSet {
         TokenSet(res)
     }
 
-    pub(crate) const fn union(
-        self,
-        other: TokenSet,
-    ) -> TokenSet {
+    pub(crate) const fn union(self, other: TokenSet) -> TokenSet {
         TokenSet([self.0[0] | other.0[0], self.0[1] | other.0[1], self.0[2] | other.0[2]])
     }
 
-    pub(crate) const fn contains(
-        &self,
-        kind: SyntaxKind,
-    ) -> bool {
+    pub(crate) const fn contains(&self, kind: SyntaxKind) -> bool {
         let discriminant = kind as usize;
         debug_assert!(
             discriminant <= LAST_TOKEN_KIND_DISCRIMINANT,
@@ -10327,10 +9903,7 @@ pub enum StrStep<'a> {
 }
 
 impl LexedStr<'_> {
-    pub fn to_input(
-        &self,
-        edition: Edition,
-    ) -> crate::Input {
+    pub fn to_input(&self, edition: Edition) -> crate::Input {
         let _p = tracing::info_span!("LexedStr::to_input").entered();
         let mut res = crate::Input::with_capacity(self.len());
         let mut was_joint = false;
@@ -10415,11 +9988,7 @@ enum State {
 }
 
 impl Builder<'_, '_> {
-    fn token(
-        &mut self,
-        kind: SyntaxKind,
-        n_tokens: u8,
-    ) {
+    fn token(&mut self, kind: SyntaxKind, n_tokens: u8) {
         match mem::replace(&mut self.state, State::Normal) {
             State::PendingEnter => unreachable!(),
             State::PendingExit => (self.sink)(StrStep::Exit),
@@ -10429,10 +9998,7 @@ impl Builder<'_, '_> {
         self.do_token(kind, n_tokens as usize);
     }
 
-    fn float_split(
-        &mut self,
-        has_pseudo_dot: bool,
-    ) {
+    fn float_split(&mut self, has_pseudo_dot: bool) {
         match mem::replace(&mut self.state, State::Normal) {
             State::PendingEnter => unreachable!(),
             State::PendingExit => (self.sink)(StrStep::Exit),
@@ -10442,10 +10008,7 @@ impl Builder<'_, '_> {
         self.do_float_split(has_pseudo_dot);
     }
 
-    fn enter(
-        &mut self,
-        kind: SyntaxKind,
-    ) {
+    fn enter(&mut self, kind: SyntaxKind) {
         match mem::replace(&mut self.state, State::Normal) {
             State::PendingEnter => {
                 (self.sink)(StrStep::Enter { kind });
@@ -10486,10 +10049,7 @@ impl Builder<'_, '_> {
         }
     }
 
-    fn eat_n_trivias(
-        &mut self,
-        n: usize,
-    ) {
+    fn eat_n_trivias(&mut self, n: usize) {
         for _ in 0..n {
             let kind = self.lexed.kind(self.pos);
             assert!(kind.is_trivia());
@@ -10497,20 +10057,13 @@ impl Builder<'_, '_> {
         }
     }
 
-    fn do_token(
-        &mut self,
-        kind: SyntaxKind,
-        n_tokens: usize,
-    ) {
+    fn do_token(&mut self, kind: SyntaxKind, n_tokens: usize) {
         let text = &self.lexed.range_text(self.pos..self.pos + n_tokens);
         self.pos += n_tokens;
         (self.sink)(StrStep::Token { kind, text });
     }
 
-    fn do_float_split(
-        &mut self,
-        has_pseudo_dot: bool,
-    ) {
+    fn do_float_split(&mut self, has_pseudo_dot: bool) {
         let text = &self.lexed.range_text(self.pos..self.pos + 1);
         match text.split_once('.') {
             Some((left, right)) => {
@@ -10909,17 +10462,11 @@ pub struct FrontmatterError {
 }
 
 impl FrontmatterError {
-    pub fn new(
-        message: impl Into<String>,
-        span: Span,
-    ) -> Self {
+    pub fn new(message: impl Into<String>, span: Span) -> Self {
         Self { message: message.into(), primary_span: span, visible_spans: Vec::new() }
     }
 
-    pub fn push_visible_span(
-        mut self,
-        span: Span,
-    ) -> Self {
+    pub fn push_visible_span(mut self, span: Span) -> Self {
         self.visible_spans.push(span);
         self
     }
@@ -10938,10 +10485,7 @@ impl FrontmatterError {
 }
 
 impl std::fmt::Display for FrontmatterError {
-    fn fmt(
-        &self,
-        fmt: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.message.fmt(fmt)
     }
 }
@@ -11030,11 +10574,7 @@ fn meta_item() {
 }
 
 #[track_caller]
-fn check(
-    entry: PrefixEntryPoint,
-    input: &str,
-    prefix: &str,
-) {
+fn check(entry: PrefixEntryPoint, input: &str, prefix: &str) {
     let lexed = LexedStr::new(Edition::CURRENT, input);
     let input = lexed.to_input(Edition::CURRENT);
     let mut n_tokens = 0;
@@ -11386,11 +10926,7 @@ fn expr() {
 }
 
 #[track_caller]
-fn check(
-    entry: TopEntryPoint,
-    input: &str,
-    expect: expect_test::Expect,
-) {
+fn check(entry: TopEntryPoint, input: &str, expect: expect_test::Expect) {
     let (parsed, _errors) = super::parse(entry, input, crate::Edition::CURRENT);
     expect.assert_eq(&parsed)
 }
@@ -12024,10 +11560,7 @@ impl SyntaxKind {
 
     #[doc = r" Checks whether this syntax kind is a strict keyword for the given edition."]
     #[doc = r" Strict keywords are identifiers that are always considered keywords."]
-    pub fn is_strict_keyword(
-        self,
-        edition: Edition,
-    ) -> bool {
+    pub fn is_strict_keyword(self, edition: Edition) -> bool {
         matches!(
             self,
             SELF_TYPE_KW
@@ -12089,10 +11622,7 @@ impl SyntaxKind {
 
     #[doc = r" Checks whether this syntax kind is a weak keyword for the given edition."]
     #[doc = r" Weak keywords are identifiers that are considered keywords only in certain contexts."]
-    pub fn is_contextual_keyword(
-        self,
-        edition: Edition,
-    ) -> bool {
+    pub fn is_contextual_keyword(self, edition: Edition) -> bool {
         match self {
             ASM_KW => true,
             ATT_SYNTAX_KW => true,
@@ -12129,10 +11659,7 @@ impl SyntaxKind {
     }
 
     #[doc = r" Checks whether this syntax kind is a strict or weak keyword for the given edition."]
-    pub fn is_keyword(
-        self,
-        edition: Edition,
-    ) -> bool {
+    pub fn is_keyword(self, edition: Edition) -> bool {
         matches!(
             self,
             SELF_TYPE_KW
@@ -12284,10 +11811,7 @@ impl SyntaxKind {
         matches!(self, BYTE | BYTE_STRING | CHAR | C_STRING | FLOAT_NUMBER | INT_NUMBER | STRING)
     }
 
-    pub fn from_keyword(
-        ident: &str,
-        edition: Edition,
-    ) -> Option<SyntaxKind> {
+    pub fn from_keyword(ident: &str, edition: Edition) -> Option<SyntaxKind> {
         let kw = match ident {
             "Self" => SELF_TYPE_KW,
             "abstract" => ABSTRACT_KW,
@@ -12346,10 +11870,7 @@ impl SyntaxKind {
         Some(kw)
     }
 
-    pub fn from_contextual_keyword(
-        ident: &str,
-        edition: Edition,
-    ) -> Option<SyntaxKind> {
+    pub fn from_contextual_keyword(ident: &str, edition: Edition) -> Option<SyntaxKind> {
         let kw = match ident {
             "asm" => ASM_KW,
             "att_syntax" => ATT_SYNTAX_KW,
@@ -12437,10 +11958,7 @@ impl ::core::clone::Clone for SyntaxKind {
 
 impl ::core::cmp::PartialEq for SyntaxKind {
     #[inline]
-    fn eq(
-        &self,
-        other: &Self,
-    ) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         (*self as u16) == (*other as u16)
     }
 }
@@ -12450,29 +11968,20 @@ impl ::core::cmp::Eq for SyntaxKind {
 
 impl ::core::cmp::PartialOrd for SyntaxKind {
     #[inline]
-    fn partial_cmp(
-        &self,
-        other: &Self,
-    ) -> core::option::Option<core::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> core::option::Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl ::core::cmp::Ord for SyntaxKind {
     #[inline]
-    fn cmp(
-        &self,
-        other: &Self,
-    ) -> core::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         (*self as u16).cmp(&(*other as u16))
     }
 }
 
 impl ::core::hash::Hash for SyntaxKind {
-    fn hash<H: ::core::hash::Hasher>(
-        &self,
-        state: &mut H,
-    ) {
+    fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
         ::core::mem::discriminant(self).hash(state);
     }
 }

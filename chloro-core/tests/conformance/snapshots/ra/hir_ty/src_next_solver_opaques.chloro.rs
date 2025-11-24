@@ -16,10 +16,7 @@ pub struct ExternalConstraints<'db> {
 }
 
 impl<'db> ExternalConstraints<'db> {
-    pub fn new(
-        interner: DbInterner<'db>,
-        data: ExternalConstraintsData<'db>,
-    ) -> Self {
+    pub fn new(interner: DbInterner<'db>, data: ExternalConstraintsData<'db>) -> Self {
         ExternalConstraints::new_(interner.db(), data)
     }
 
@@ -74,10 +71,7 @@ impl<'db> rustc_type_ir::TypeFoldable<DbInterner<'db>> for ExternalConstraints<'
         ))
     }
 
-    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(
-        self,
-        folder: &mut F,
-    ) -> Self {
+    fn fold_with<F: rustc_type_ir::TypeFolder<DbInterner<'db>>>(self, folder: &mut F) -> Self {
         ExternalConstraints::new(
             folder.cx(),
             ExternalConstraintsData {

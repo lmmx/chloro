@@ -736,10 +736,7 @@ fn rename_self_to_param(
     Ok(source_change)
 }
 
-fn text_edit_from_self_param(
-    self_param: &ast::SelfParam,
-    new_name: String,
-) -> Option<TextEdit> {
+fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> Option<TextEdit> {
     let mut replacement_text = new_name;
     replacement_text.push_str(": ");
     if self_param.amp_token().is_some() {
@@ -809,10 +806,7 @@ mod tests {
         };
     }
     #[track_caller]
-    fn check_conflicts(
-        new_name: &str,
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-    ) {
+    fn check_conflicts(new_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (analysis, position, conflicts) = fixture::annotations(ra_fixture);
         let source_change = analysis.rename(position, new_name, &TEST_CONFIG).unwrap().unwrap();
         let expected_conflicts = conflicts
@@ -858,10 +852,7 @@ mod tests {
             .expect("Expect returned a RenameError");
         expect.assert_eq(&filter_expect(source_change))
     }
-    fn check_prepare(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check_prepare(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (analysis, position) = fixture::position(ra_fixture);
         let result = analysis
             .prepare_rename(position)

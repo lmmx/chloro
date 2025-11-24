@@ -150,10 +150,7 @@ fn should_hide_param_name_hint(
 ///
 /// `fn strip_suffix(suffix)` will be hidden.
 /// `fn stripsuffix(suffix)` will not be hidden.
-fn is_param_name_suffix_of_fn_name(
-    param_name: &str,
-    fn_name: &str,
-) -> bool {
+fn is_param_name_suffix_of_fn_name(param_name: &str, fn_name: &str) -> bool {
     fn_name == param_name
         || fn_name
             .len()
@@ -199,7 +196,9 @@ pub(super) fn is_argument_similar_to_param_name(
     prefix_match || postfix_match()
 }
 
-pub(super) fn get_segment_representation(expr: &ast::Expr) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
+pub(super) fn get_segment_representation(
+    expr: &ast::Expr,
+) -> Option<Either<Vec<ast::NameRef>, ast::Path>> {
     match expr {
         ast::Expr::MethodCallExpr(method_call_expr) => {
             let receiver =

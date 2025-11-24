@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4719 bytes
-Chloro size:   4741 bytes
+Chloro size:   4718 bytes
 Rustfmt size:  4752 bytes
 
 ✗ Outputs DIFFER
@@ -40,13 +40,5 @@ Rustfmt size:  4752 bytes
          let (body, source_map) = lower_body(db, def, file_id, module, params, body, is_async_fn);
 -
          (Arc::new(body), Arc::new(source_map))
-     }
- 
--    pub(crate) fn body_query(db: &dyn DefDatabase, def: DefWithBodyId) -> Arc<Body> {
-+    pub(crate) fn body_query(
-+        db: &dyn DefDatabase,
-+        def: DefWithBodyId,
-+    ) -> Arc<Body> {
-         db.body_with_source_map(def).0
      }
  

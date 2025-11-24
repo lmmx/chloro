@@ -156,11 +156,7 @@ struct CallLocations {
 }
 
 impl CallLocations {
-    fn add(
-        &mut self,
-        target: NavigationTarget,
-        range: FileRange,
-    ) {
+    fn add(&mut self, target: NavigationTarget, range: FileRange) {
         self.funcs.entry(target).or_default().push(range);
     }
 

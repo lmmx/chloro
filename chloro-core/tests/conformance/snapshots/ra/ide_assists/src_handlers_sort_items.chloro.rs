@@ -8,10 +8,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::get_methods};
 
-pub(crate) fn sort_items(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     if ctx.has_empty_selection() {
         cov_mark::hit!(not_applicable_if_no_selection);
         return None;
@@ -113,10 +110,7 @@ fn add_sort_fields_assist(
     acc.add_rewrite("Sort fields alphabetically", fields, sorted, record_field_list.syntax())
 }
 
-fn add_sort_variants_assist(
-    acc: &mut Assists,
-    variant_list: ast::VariantList,
-) -> Option<()> {
+fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
     let variants: Vec<_> = variant_list.variants().collect();
     let sorted = sort_by_name(&variants);
     if variants == sorted {

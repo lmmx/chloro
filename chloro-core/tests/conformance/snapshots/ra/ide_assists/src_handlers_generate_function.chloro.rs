@@ -26,17 +26,11 @@ use crate::{
     AssistContext, AssistId, Assists,
 };
 
-pub(crate) fn generate_function(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_function(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     gen_fn(acc, ctx).or_else(|| gen_method(acc, ctx))
 }
 
-fn gen_fn(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn gen_fn(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path_expr: ast::PathExpr = ctx.find_node_at_offset()?;
     let call = path_expr.syntax().parent().and_then(ast::CallExpr::cast)?;
     let path = path_expr.path()?;
@@ -109,10 +103,7 @@ fn fn_target_info(
     }
 }
 
-fn gen_method(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+fn gen_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     if ctx.sema.resolve_method_call(&call).is_some() {
         return None;
@@ -320,11 +311,7 @@ impl FunctionBuilder {
         })
     }
 
-    fn render(
-        self,
-        cap: Option<SnippetCap>,
-        edit: &mut SourceChangeBuilder,
-    ) -> ast::Fn {
+    fn render(self, cap: Option<SnippetCap>, edit: &mut SourceChangeBuilder) -> ast::Fn {
         let visibility = match self.visibility {
             Visibility::None => None,
             Visibility::Crate => Some(make::visibility_pub_crate()),
@@ -540,11 +527,7 @@ impl GeneratedFunctionTarget {
         }
     }
 
-    fn insert_impl_at(
-        &self,
-        edit: &mut SourceChangeBuilder,
-        impl_: ast::Impl,
-    ) {
+    fn insert_impl_at(&self, edit: &mut SourceChangeBuilder, impl_: ast::Impl) {
         match self {
             GeneratedFunctionTarget::AfterItem(item) => {
                 let item = edit.make_syntax_mut(item.clone());
@@ -582,11 +565,7 @@ impl GeneratedFunctionTarget {
         }
     }
 
-    fn insert_fn_at(
-        &self,
-        edit: &mut SourceChangeBuilder,
-        func: ast::Fn,
-    ) {
+    fn insert_fn_at(&self, edit: &mut SourceChangeBuilder, func: ast::Fn) {
         match self {
             GeneratedFunctionTarget::AfterItem(item) => {
                 let item = edit.make_syntax_mut(item.clone());
@@ -643,10 +622,7 @@ struct AdtInfo {
 }
 
 impl AdtInfo {
-    fn new(
-        adt: Adt,
-        impl_exists: bool,
-    ) -> Self {
+    fn new(adt: Adt, impl_exists: bool) -> Self {
         Self { adt, impl_exists }
     }
 }
@@ -742,7 +718,9 @@ fn fn_generic_params(
     Some((Some(generic_param_list), where_clause))
 }
 
-fn params_and_where_preds_in_scope(ctx: &AssistContext<'_>) -> (Vec<ast::GenericParam>, Vec<ast::WherePred>) {
+fn params_and_where_preds_in_scope(
+    ctx: &AssistContext<'_>,
+) -> (Vec<ast::GenericParam>, Vec<ast::WherePred>) {
     let Some(body) = containing_body(ctx) else {
         return Default::default();
     };
@@ -902,10 +880,7 @@ fn compute_contained_params_in_where_pred(
     Some(WherePredWithParams { node, self_ty_params, other_params })
 }
 
-fn filter_generic_params(
-    ctx: &AssistContext<'_>,
-    node: SyntaxNode,
-) -> Option<hir::GenericParam> {
+fn filter_generic_params(ctx: &AssistContext<'_>, node: SyntaxNode) -> Option<hir::GenericParam> {
     let path = ast::Path::cast(node)?;
     match ctx.sema.resolve_path(&path)? {
         PathResolution::TypeParam(it) => Some(it.into()),
@@ -1048,10 +1023,7 @@ fn deduplicate_arg_names(arg_names: &mut [String]) {
     }
 }
 
-fn fn_arg_name(
-    sema: &Semantics<'_, RootDatabase>,
-    arg_expr: &ast::Expr,
-) -> String {
+fn fn_arg_name(sema: &Semantics<'_, RootDatabase>, arg_expr: &ast::Expr) -> String {
     let name = (|| match arg_expr {
         ast::Expr::CastExpr(cast_expr) => Some(fn_arg_name(sema, &cast_expr.expr()?)),
         expr => {
@@ -1205,18 +1177,11 @@ impl Graph {
         Self { edges: vec![Vec::new(); node_count] }
     }
 
-    fn add_edge(
-        &mut self,
-        from: usize,
-        to: usize,
-    ) {
+    fn add_edge(&mut self, from: usize, to: usize) {
         self.edges[from].push(to);
     }
 
-    fn edges_for(
-        &self,
-        node_idx: usize,
-    ) -> &[usize] {
+    fn edges_for(&self, node_idx: usize) -> &[usize] {
         &self.edges[node_idx]
     }
 
@@ -1248,10 +1213,7 @@ impl<'g> Visitor<'g> {
         Self { graph, visited, stack: Vec::new() }
     }
 
-    fn mark_reachable(
-        &mut self,
-        start_idx: usize,
-    ) {
+    fn mark_reachable(&mut self, start_idx: usize) {
         // non-recursive DFS
         stdx::always!(self.stack.is_empty());
         self.stack.push(start_idx);

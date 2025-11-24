@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21184 bytes
+Chloro size:   20992 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -58,29 +58,6 @@ Rustfmt size:  22047 bytes
  
  /// An index type for enum variants. This ranges from 0 to `variants.len()`, whereas `EnumVariantId`
  /// can take arbitrary large values (and hence mustn't be used with `IndexVec`/`BitSet`).
- pub(crate) struct EnumVariantContiguousIndex(usize);
- 
- impl EnumVariantContiguousIndex {
--    fn from_enum_variant_id(db: &dyn HirDatabase, target_evid: EnumVariantId) -> Self {
-+    fn from_enum_variant_id(
-+        db: &dyn HirDatabase,
-+        target_evid: EnumVariantId,
-+    ) -> Self {
-         // Find the index of this variant in the list of variants.
-         use hir_def::Lookup;
-         let i = target_evid.lookup(db).index as usize;
-         EnumVariantContiguousIndex(i)
-     }
- 
--    fn to_enum_variant_id(self, db: &dyn HirDatabase, eid: EnumId) -> EnumVariantId {
-+    fn to_enum_variant_id(
-+        self,
-+        db: &dyn HirDatabase,
-+        eid: EnumId,
-+    ) -> EnumVariantId {
-         eid.enum_variants(db).variants[self.0].0
-     }
- }
          let db = infcx.interner.db;
          let def_map = module.crate_def_map(db);
          let exhaustive_patterns = def_map.is_unstable_feature_enabled(&sym::exhaustive_patterns);
@@ -102,23 +79,8 @@ Rustfmt size:  22047 bytes
          let place_validity = PlaceValidity::from_bool(known_valid_scrutinee.unwrap_or(true));
          // Measured to take ~100ms on modern hardware.
          let complexity_limit = 500000;
-         compute_match_usefulness(self, arms, scrut_ty, place_validity, complexity_limit)
-     }
- 
--    fn is_uninhabited(&self, ty: Ty<'db>) -> bool {
-+    fn is_uninhabited(
-+        &self,
-+        ty: Ty<'db>,
-+    ) -> bool {
-         is_ty_uninhabited_from(self.infcx, ty, self.module, self.env.clone())
-     }
- 
      /// Returns whether the given ADT is from another crate declared `#[non_exhaustive]`.
--    fn is_foreign_non_exhaustive(&self, adt: hir_def::AdtId) -> bool {
-+    fn is_foreign_non_exhaustive(
-+        &self,
-+        adt: hir_def::AdtId,
-+    ) -> bool {
+     fn is_foreign_non_exhaustive(&self, adt: hir_def::AdtId) -> bool {
          let is_local = adt.krate(self.db) == self.module.krate();
 -        !is_local
 -            && self
@@ -166,12 +128,7 @@ Rustfmt size:  22047 bytes
 +        })
      }
  
--    pub(crate) fn lower_pat(&self, pat: &Pat<'db>) -> DeconstructedPat<'a, 'db> {
-+    pub(crate) fn lower_pat(
-+        &self,
-+        pat: &Pat<'db>,
-+    ) -> DeconstructedPat<'a, 'db> {
-         let singleton = |pat: DeconstructedPat<'a, 'db>| vec![pat.at_index(0)];
+     pub(crate) fn lower_pat(&self, pat: &Pat<'db>) -> DeconstructedPat<'a, 'db> {
          let ctor;
          let mut fields: Vec<_>;
          let arity;
@@ -214,17 +171,6 @@ Rustfmt size:  22047 bytes
                          ctor = Wildcard;
                          fields.clear();
                          arity = 0;
-         DeconstructedPat::new(ctor, fields, arity, pat.ty, ())
-     }
- 
--    pub(crate) fn hoist_witness_pat(&self, pat: &WitnessPat<'a, 'db>) -> Pat<'db> {
-+    pub(crate) fn hoist_witness_pat(
-+        &self,
-+        pat: &WitnessPat<'a, 'db>,
-+    ) -> Pat<'db> {
-         let mut subpatterns = pat.iter_fields().map(|p| self.hoist_witness_pat(p));
-         let kind = match pat.ctor() {
-             &Bool(value) => PatKind::LiteralBool { value },
                          .collect();
  
                      if let VariantId::EnumVariantId(enum_variant) = variant {
@@ -345,25 +291,3 @@ Rustfmt size:  22047 bytes
          // if let Some(variant) = variant {
          //     match variant {
          //         VariantId::EnumVariantId(v) => {
-         // Ok(())
-     }
- 
--    fn bug(&self, fmt: fmt::Arguments<'_>) {
-+    fn bug(
-+        &self,
-+        fmt: fmt::Arguments<'_>,
-+    ) {
-         never!("{}", fmt)
-     }
- 
- }
- 
- impl fmt::Debug for MatchCheckCtx<'_, '_> {
--    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-+    fn fmt(
-+        &self,
-+        f: &mut fmt::Formatter<'_>,
-+    ) -> fmt::Result {
-         f.debug_struct("MatchCheckCtx").finish()
-     }
- }

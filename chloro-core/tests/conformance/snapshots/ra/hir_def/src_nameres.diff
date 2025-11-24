@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29633 bytes
+Chloro size:   29205 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -50,16 +50,6 @@ Rustfmt size:  30449 bytes
      /// The extern prelude which contains all root modules of external crates that are in scope.
      extern_prelude: FxIndexMap<Name, (CrateRootModuleId, Option<ExternCrateId>)>,
  }
- 
- impl std::hash::Hash for LocalDefMap {
--    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-+    fn hash<H: std::hash::Hasher>(
-+        &self,
-+        state: &mut H,
-+    ) {
-         let LocalDefMap { extern_prelude } = self;
-         extern_prelude.len().hash(state);
-         for (name, (crate_root, extern_crate)) in extern_prelude {
  }
  
  impl LocalDefMap {
@@ -70,14 +60,12 @@ Rustfmt size:  30449 bytes
  
      fn shrink_to_fit(&mut self) {
          let Self { extern_prelude } = self;
-         extern_prelude.shrink_to_fit();
-     }
  
--    pub(crate) fn extern_prelude(
--        &self,
+     pub(crate) fn extern_prelude(
+         &self,
 -    ) -> impl DoubleEndedIterator<Item = (&Name, (CrateRootModuleId, Option<ExternCrateId>))> + '_
 -    {
-+    pub(crate) fn extern_prelude(&self) -> impl DoubleEndedIterator<Item = (&Name, (CrateRootModuleId, Option<ExternCrateId>))> + '_ {
++    ) -> impl DoubleEndedIterator<Item = (&Name, (CrateRootModuleId, Option<ExternCrateId>))> + '_ {
          self.extern_prelude.iter().map(|(name, &def)| (name, def))
      }
  }
@@ -123,28 +111,14 @@ Rustfmt size:  30449 bytes
              unstable_features: FxHashSet::default(),
              rustc_coherence_is_core: false,
              no_core: false,
- }
- 
- impl BlockRelativeModuleId {
--    fn def_map(self, db: &dyn DefDatabase, krate: Crate) -> &DefMap {
-+    fn def_map(
-+        self,
-+        db: &dyn DefDatabase,
-+        krate: Crate,
-+    ) -> &DefMap {
-         self.into_module(krate).def_map(db)
      }
  
--    fn into_module(self, krate: Crate) -> ModuleId {
+     fn into_module(self, krate: Crate) -> ModuleId {
 -        ModuleId {
 -            krate,
 -            block: self.block,
 -            local_id: self.local_id,
 -        }
-+    fn into_module(
-+        self,
-+        krate: Crate,
-+    ) -> ModuleId {
 +        ModuleId { krate, block: self.block, local_id: self.local_id }
      }
  
@@ -152,15 +126,10 @@ Rustfmt size:  30449 bytes
  
  impl std::ops::Index<LocalModuleId> for DefMap {
      type Output = ModuleData;
--    fn index(&self, id: LocalModuleId) -> &ModuleData {
 +
-+    fn index(
-+        &self,
-+        id: LocalModuleId,
-+    ) -> &ModuleData {
+     fn index(&self, id: LocalModuleId) -> &ModuleData {
          &self.modules[id]
      }
- }
  impl ModuleOrigin {
      pub fn declaration(&self) -> Option<AstId<ast::Module>> {
          match self {
@@ -182,14 +151,8 @@ Rustfmt size:  30449 bytes
              ModuleOrigin::CrateRoot { .. } | ModuleOrigin::BlockExpr { .. } => None,
          }
      }
- 
-     /// Returns a node which defines this module.
      /// That is, a file or a `mod foo {}` with items.
--    pub fn definition_source(&self, db: &dyn DefDatabase) -> InFile<ModuleSource> {
-+    pub fn definition_source(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> InFile<ModuleSource> {
+     pub fn definition_source(&self, db: &dyn DefDatabase) -> InFile<ModuleSource> {
          match self {
 -            &ModuleOrigin::File {
 -                definition: editioned_file_id,
@@ -211,28 +174,6 @@ Rustfmt size:  30449 bytes
                  definition_tree_id.file_id(),
                  ModuleSource::Module(
                      AstId::new(definition_tree_id.file_id(), definition).to_node(db),
- }
- 
- #[inline]
--pub fn crate_def_map(db: &dyn DefDatabase, crate_id: Crate) -> &DefMap {
-+pub fn crate_def_map(
-+    db: &dyn DefDatabase,
-+    crate_id: Crate,
-+) -> &DefMap {
-     crate_local_def_map(db, crate_id).def_map(db)
- }
- 
- }
- 
- #[salsa_macros::tracked(returns(ref))]
--pub(crate) fn crate_local_def_map(db: &dyn DefDatabase, crate_id: Crate) -> DefMapPair<'_> {
-+pub(crate) fn crate_local_def_map(
-+    db: &dyn DefDatabase,
-+    crate_id: Crate,
-+) -> DefMapPair<'_> {
-     let krate = crate_id.data(db);
-     let _p = tracing::info_span!(
-         "crate_def_map_query",
              .unwrap_or_default()
      )
      .entered();
@@ -264,11 +205,7 @@ Rustfmt size:  30449 bytes
  }
  
  #[salsa_macros::tracked(returns(ref))]
--pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
-+pub fn block_def_map(
-+    db: &dyn DefDatabase,
-+    block_id: BlockId,
-+) -> DefMap {
+ pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
      let BlockLoc { ast_id, module } = block_id.lookup(db);
 -
      let visibility = Visibility::Module(
@@ -338,36 +275,8 @@ Rustfmt size:  30449 bytes
      }
  
      pub fn registered_tools(&self) -> &[Symbol] {
-         &self.data.registered_tools
-     }
  
--    pub fn is_unstable_feature_enabled(&self, feature: &Symbol) -> bool {
-+    pub fn is_unstable_feature_enabled(
-+        &self,
-+        feature: &Symbol,
-+    ) -> bool {
-         self.data.unstable_features.contains(feature)
-     }
- 
-         self.data.no_core
-     }
- 
--    pub fn fn_as_proc_macro(&self, id: FunctionId) -> Option<ProcMacroId> {
-+    pub fn fn_as_proc_macro(
-+        &self,
-+        id: FunctionId,
-+    ) -> Option<ProcMacroId> {
-         self.data.fn_proc_macro_mapping.get(&id).copied()
-     }
- 
-         self.krate
-     }
- 
--    pub fn module_id(&self, local_id: LocalModuleId) -> ModuleId {
-+    pub fn module_id(
-+        &self,
-+        local_id: LocalModuleId,
-+    ) -> ModuleId {
+     pub fn module_id(&self, local_id: LocalModuleId) -> ModuleId {
          let block = self.block.map(|b| b.block);
 -        ModuleId {
 -            krate: self.krate,
@@ -390,12 +299,7 @@ Rustfmt size:  30449 bytes
      }
  
      /// Returns the module containing `local_mod`, either the parent `mod`, or the module (or block) containing
-     /// the block, if `self` corresponds to a block expression.
--    pub fn containing_module(&self, local_mod: LocalModuleId) -> Option<ModuleId> {
-+    pub fn containing_module(
-+        &self,
-+        local_mod: LocalModuleId,
-+    ) -> Option<ModuleId> {
+     pub fn containing_module(&self, local_mod: LocalModuleId) -> Option<ModuleId> {
          match self[local_mod].parent {
              Some(parent) => Some(self.module_id(parent)),
 -            None => self.block.map(
@@ -425,14 +329,9 @@ Rustfmt size:  30449 bytes
  
 -    // FIXME: this can use some more human-readable format (ideally, an IR
 -    // even), as this should be a great debugging aid.
--    pub fn dump(&self, db: &dyn DefDatabase) -> String {
-+    pub fn dump(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> String {
+     pub fn dump(&self, db: &dyn DefDatabase) -> String {
          let mut buf = String::new();
          let mut arc;
-         let mut current_map = self;
          }
          go(&mut buf, db, current_map, "crate", Self::ROOT);
          return buf;
@@ -452,17 +351,6 @@ Rustfmt size:  30449 bytes
              {
                  let path = format!("{path}::{}", name.display(db, Edition::LATEST));
                  buf.push('\n');
-         }
-     }
- 
--    pub fn dump_block_scopes(&self, db: &dyn DefDatabase) -> String {
-+    pub fn dump_block_scopes(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> String {
-         let mut buf = String::new();
-         let mut arc;
-         let mut current_map = self;
              arc = block.parent.def_map(db, self.krate);
              current_map = arc;
          }
@@ -477,27 +365,6 @@ Rustfmt size:  30449 bytes
          None
      }
  }
- 
- impl ModuleData {
--    pub(crate) fn new(origin: ModuleOrigin, visibility: Visibility) -> Self {
-+    pub(crate) fn new(
-+        origin: ModuleOrigin,
-+        visibility: Visibility,
-+    ) -> Self {
-         ModuleData {
-             origin,
-             visibility,
-     }
- 
-     /// Returns a node which defines this module. That is, a file or a `mod foo {}` with items.
--    pub fn definition_source(&self, db: &dyn DefDatabase) -> InFile<ModuleSource> {
-+    pub fn definition_source(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> InFile<ModuleSource> {
-         self.origin.definition_source(db)
-     }
- 
              ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                  definition.into()
              }
@@ -508,15 +375,6 @@ Rustfmt size:  30449 bytes
              ModuleOrigin::BlockExpr { block, .. } => block.file_id,
          }
      }
- 
--    pub fn definition_source_range(&self, db: &dyn DefDatabase) -> InFile<TextRange> {
-+    pub fn definition_source_range(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> InFile<TextRange> {
-         match &self.origin {
-             &ModuleOrigin::File { definition, .. } | &ModuleOrigin::CrateRoot { definition } => {
-                 InFile::new(
                      ErasedAstId::new(definition.into(), ROOT_ERASED_FILE_AST_ID).to_range(db),
                  )
              }
@@ -528,14 +386,7 @@ Rustfmt size:  30449 bytes
                  definition_tree_id.file_id(),
                  AstId::new(definition_tree_id.file_id(), definition).to_range(db),
              ),
- 
-     /// Returns a node which declares this module, either a `mod foo;` or a `mod foo {}`.
-     /// `None` for the crate root or block.
--    pub fn declaration_source(&self, db: &dyn DefDatabase) -> Option<InFile<ast::Module>> {
-+    pub fn declaration_source(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> Option<InFile<ast::Module>> {
+     pub fn declaration_source(&self, db: &dyn DefDatabase) -> Option<InFile<ast::Module>> {
          let decl = self.origin.declaration()?;
          let value = decl.to_node(db);
 -        Some(InFile {
@@ -547,11 +398,7 @@ Rustfmt size:  30449 bytes
  
      /// Returns the range which declares this module, either a `mod foo;` or a `mod foo {}`.
      /// `None` for the crate root or block.
--    pub fn declaration_source_range(&self, db: &dyn DefDatabase) -> Option<InFile<TextRange>> {
-+    pub fn declaration_source_range(
-+        &self,
-+        db: &dyn DefDatabase,
-+    ) -> Option<InFile<TextRange>> {
+     pub fn declaration_source_range(&self, db: &dyn DefDatabase) -> Option<InFile<TextRange>> {
          let decl = self.origin.declaration()?;
 -        Some(InFile {
 -            file_id: decl.file_id,
@@ -561,17 +408,6 @@ Rustfmt size:  30449 bytes
      }
  }
  
- }
- 
- impl MacroSubNs {
--    fn from_id(db: &dyn DefDatabase, macro_id: MacroId) -> Self {
-+    fn from_id(
-+        db: &dyn DefDatabase,
-+        macro_id: MacroId,
-+    ) -> Self {
-         let expander = match macro_id {
-             MacroId::Macro2Id(it) => it.lookup(db).expander,
-             MacroId::MacroRulesId(it) => it.lookup(db).expander,
                  };
              }
          };
@@ -579,14 +415,3 @@ Rustfmt size:  30449 bytes
          // Eager macros aren't *guaranteed* to be bang macros, but they *are* all bang macros currently.
          match expander {
              MacroExpander::Declarative
- /// We ignore resolutions from one sub-namespace when searching names in scope for another.
- ///
- /// [rustc]: https://github.com/rust-lang/rust/blob/1.69.0/compiler/rustc_resolve/src/macros.rs#L75
--fn sub_namespace_match(candidate: Option<MacroSubNs>, expected: Option<MacroSubNs>) -> bool {
-+fn sub_namespace_match(
-+    candidate: Option<MacroSubNs>,
-+    expected: Option<MacroSubNs>,
-+) -> bool {
-     match (candidate, expected) {
-         (Some(candidate), Some(expected)) => candidate == expected,
-         _ => true,

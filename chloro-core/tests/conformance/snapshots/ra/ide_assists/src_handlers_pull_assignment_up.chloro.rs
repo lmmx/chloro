@@ -11,10 +11,7 @@ use crate::{
     assist_context::{AssistContext, Assists},
 };
 
-pub(crate) fn pull_assignment_up(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assign_expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
     let op_kind = assign_expr.op_kind()?;
     if op_kind != (ast::BinaryOp::Assignment { op: None }) {
@@ -99,10 +96,7 @@ struct AssignmentsCollector<'a> {
 }
 
 impl AssignmentsCollector<'_> {
-    fn collect_match(
-        &mut self,
-        match_expr: &ast::MatchExpr,
-    ) -> Option<()> {
+    fn collect_match(&mut self, match_expr: &ast::MatchExpr) -> Option<()> {
         for arm in match_expr.match_arm_list()?.arms() {
             match arm.expr()? {
                 ast::Expr::BlockExpr(block) => self.collect_block(&block)?,
@@ -113,10 +107,7 @@ impl AssignmentsCollector<'_> {
         Some(())
     }
 
-    fn collect_if(
-        &mut self,
-        if_expr: &ast::IfExpr,
-    ) -> Option<()> {
+    fn collect_if(&mut self, if_expr: &ast::IfExpr) -> Option<()> {
         let then_branch = if_expr.then_branch()?;
         self.collect_block(&then_branch)?;
         match if_expr.else_branch()? {
@@ -128,10 +119,7 @@ impl AssignmentsCollector<'_> {
         }
     }
 
-    fn collect_block(
-        &mut self,
-        block: &ast::BlockExpr,
-    ) -> Option<()> {
+    fn collect_block(&mut self, block: &ast::BlockExpr) -> Option<()> {
         let last_expr = block.tail_expr().or_else(|| match block.statements().last()? {
             ast::Stmt::ExprStmt(stmt) => stmt.expr(),
             ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
@@ -142,10 +130,7 @@ impl AssignmentsCollector<'_> {
         None
     }
 
-    fn collect_expr(
-        &mut self,
-        expr: &ast::BinExpr,
-    ) -> Option<()> {
+    fn collect_expr(&mut self, expr: &ast::BinExpr) -> Option<()> {
         if expr.op_kind()? == (ast::BinaryOp::Assignment { op: None })
             && is_equivalent(self.sema, &expr.lhs()?, &self.common_lhs)
         {

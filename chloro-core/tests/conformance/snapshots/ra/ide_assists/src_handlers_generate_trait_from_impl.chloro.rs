@@ -7,10 +7,7 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
-pub(crate) fn generate_trait_from_impl(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Get AST Node
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     // Check if cursor is to the left of assoc item list's L_CURLY.
@@ -99,10 +96,7 @@ pub(crate) fn generate_trait_from_impl(
 }
 
 /// `E0449` Trait items always share the visibility of their trait
-fn remove_items_visibility(
-    editor: &mut SyntaxEditor,
-    item: &ast::AssocItem,
-) {
+fn remove_items_visibility(editor: &mut SyntaxEditor, item: &ast::AssocItem) {
     if let Some(has_vis) = ast::AnyHasVisibility::cast(item.syntax().clone()) {
         if let Some(vis) = has_vis.visibility()
             && let Some(token) = vis.syntax().next_sibling_or_token()
@@ -116,10 +110,7 @@ fn remove_items_visibility(
     }
 }
 
-fn strip_body(
-    editor: &mut SyntaxEditor,
-    item: &ast::AssocItem,
-) {
+fn strip_body(editor: &mut SyntaxEditor, item: &ast::AssocItem) {
     if let ast::AssocItem::Fn(f) = item
         && let Some(body) = f.body()
     {

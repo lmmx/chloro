@@ -4,10 +4,7 @@ use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
 const MIN_NUMBER_OF_DIGITS_TO_FORMAT: usize = 5;
 
-pub(crate) fn reformat_number_literal(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn reformat_number_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let literal = ctx.find_node_at_offset::<ast::Literal>()?;
     let literal = match literal.kind() {
         ast::LiteralKind::IntNumber(it) => it,
@@ -37,10 +34,7 @@ pub(crate) fn reformat_number_literal(
     )
 }
 
-fn remove_separators(
-    acc: &mut Assists,
-    literal: ast::IntNumber,
-) -> Option<()> {
+fn remove_separators(acc: &mut Assists, literal: ast::IntNumber) -> Option<()> {
     let group_id = GroupLabel("Reformat number literal".into());
     let range = literal.syntax().text_range();
     acc.add_group(
@@ -61,10 +55,7 @@ const fn group_size(r: Radix) -> usize {
     }
 }
 
-fn add_group_separators(
-    s: &str,
-    group_size: usize,
-) -> String {
+fn add_group_separators(s: &str, group_size: usize) -> String {
     let mut chars = Vec::new();
     for (i, ch) in s.chars().filter(|&ch| ch != '_').rev().enumerate() {
         if i > 0 && i % group_size == 0 {

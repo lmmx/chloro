@@ -65,26 +65,17 @@ impl TokenId {
 pub struct TokenStore(Vec<TokenStaticData>);
 
 impl TokenStore {
-    pub fn insert(
-        &mut self,
-        data: TokenStaticData,
-    ) -> TokenId {
+    pub fn insert(&mut self, data: TokenStaticData) -> TokenId {
         let id = TokenId(self.0.len());
         self.0.push(data);
         id
     }
 
-    pub fn get_mut(
-        &mut self,
-        id: TokenId,
-    ) -> Option<&mut TokenStaticData> {
+    pub fn get_mut(&mut self, id: TokenId) -> Option<&mut TokenStaticData> {
         self.0.get_mut(id.0)
     }
 
-    pub fn get(
-        &self,
-        id: TokenId,
-    ) -> Option<&TokenStaticData> {
+    pub fn get(&self, id: TokenId) -> Option<&TokenStaticData> {
         self.0.get(id.0)
     }
 
@@ -155,10 +146,7 @@ pub enum VendoredLibrariesConfig<'a> {
 }
 
 impl StaticIndex<'_> {
-    fn add_file(
-        &mut self,
-        file_id: FileId,
-    ) {
+    fn add_file(&mut self, file_id: FileId) {
         let current_crate = crates_for(self.db, file_id).pop().map(Into::into);
         let folds = self.analysis.folding_ranges(file_id).unwrap();
         let inlay_hints = self

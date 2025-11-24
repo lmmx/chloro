@@ -82,10 +82,7 @@ mod tests {
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[28..=34]);
     }
-    fn check_result(
-        refs: &[(TextRange, Option<TextRange>)],
-        expected: &[RangeInclusive<u32>],
-    ) {
+    fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
         assert_eq!(refs.len(), expected.len());
         for (i, &(full, focus)) in refs.iter().enumerate() {
             let range = &expected[i];

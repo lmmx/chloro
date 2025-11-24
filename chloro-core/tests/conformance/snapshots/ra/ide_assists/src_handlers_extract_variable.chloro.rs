@@ -17,10 +17,7 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
 
-pub(crate) fn extract_variable(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let node = if ctx.has_empty_selection() {
         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
             t.parent().and_then(ast::ExprStmt::cast)?.syntax().clone()
@@ -301,10 +298,7 @@ impl ExtractionKind {
     }
 }
 
-fn get_literal_name(
-    ctx: &AssistContext<'_>,
-    expr: &ast::Expr,
-) -> Option<String> {
+fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String> {
     let ast::Expr::Literal(literal) = expr else {
         return None;
     };
@@ -336,10 +330,7 @@ enum Anchor {
 }
 
 impl Anchor {
-    fn from(
-        to_extract: &ast::Expr,
-        kind: &ExtractionKind,
-    ) -> Option<Anchor> {
+    fn from(to_extract: &ast::Expr, kind: &ExtractionKind) -> Option<Anchor> {
         let result = to_extract
             .syntax()
             .ancestors()

@@ -103,11 +103,7 @@ struct FindPathCtx<'db> {
 }
 
 /// Attempts to find a path to refer to the given `item` visible from the `from` ModuleId
-fn find_path_inner(
-    ctx: &FindPathCtx<'_>,
-    item: ItemInNs,
-    max_len: usize,
-) -> Option<ModPath> {
+fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Option<ModPath> {
     // - if the item is a module, jump straight to module search
     if !ctx.is_std_item
         && let ItemInNs::Types(ModuleDefId::ModuleId(module_id)) = item
@@ -490,12 +486,7 @@ struct Choice {
 }
 
 impl Choice {
-    fn new(
-        prefer_prelude: bool,
-        kind: PathKind,
-        name: Name,
-        stability: Stability,
-    ) -> Self {
+    fn new(prefer_prelude: bool, kind: PathKind, name: Name, stability: Stability) -> Self {
         Self {
             path_text_len: path_kind_len(kind) + name.as_str().len(),
             stability,
@@ -504,11 +495,7 @@ impl Choice {
         }
     }
 
-    fn push(
-        mut self,
-        prefer_prelude: bool,
-        name: Name,
-    ) -> Self {
+    fn push(mut self, prefer_prelude: bool, name: Name) -> Self {
         self.path_text_len += name.as_str().len();
         self.prefer_due_to_prelude |= prefer_prelude && name == sym::prelude;
         self.path.push_segment(name);

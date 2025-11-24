@@ -20,10 +20,7 @@ use crate::{
     AssistId,
 };
 
-pub(crate) fn convert_to_guarded_return(
-    acc: &mut Assists,
-    ctx: &AssistContext<'_>,
-) -> Option<()> {
+pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
         Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
         Either::Right(if_expr) => if_expr_to_guarded_return(if_expr, acc, ctx),

@@ -46,32 +46,19 @@ impl SignatureHelp {
         &self.parameters
     }
 
-    fn push_call_param(
-        &mut self,
-        param: &str,
-    ) {
+    fn push_call_param(&mut self, param: &str) {
         self.push_param("(", param);
     }
 
-    fn push_generic_param(
-        &mut self,
-        param: &str,
-    ) {
+    fn push_generic_param(&mut self, param: &str) {
         self.push_param("<", param);
     }
 
-    fn push_record_field(
-        &mut self,
-        param: &str,
-    ) {
+    fn push_record_field(&mut self, param: &str) {
         self.push_param("{ ", param);
     }
 
-    fn push_param(
-        &mut self,
-        opening_delim: &str,
-        param: &str,
-    ) {
+    fn push_param(&mut self, opening_delim: &str, param: &str) {
         if !self.signature.ends_with(opening_delim) {
             self.signature.push_str(", ");
         }
@@ -743,10 +730,7 @@ mod tests {
         (database, position)
     }
     #[track_caller]
-    fn check(
-        #[rust_analyzer::rust_fixture] ra_fixture: &str,
-        expect: Expect,
-    ) {
+    fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sig_help = hir::attach_db(&db, || crate::signature_help::signature_help(&db, position));
         let actual = match sig_help {

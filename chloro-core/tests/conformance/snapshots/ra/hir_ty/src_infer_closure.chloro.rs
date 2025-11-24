@@ -211,10 +211,7 @@ impl<'db> InferenceContext<'_, 'db> {
         ty
     }
 
-    fn fn_trait_kind_from_def_id(
-        &self,
-        trait_id: TraitId,
-    ) -> Option<rustc_type_ir::ClosureKind> {
+    fn fn_trait_kind_from_def_id(&self, trait_id: TraitId) -> Option<rustc_type_ir::ClosureKind> {
         let lang_item = self.db.lang_attr(trait_id.into())?;
         match lang_item {
             LangItem::Fn => Some(rustc_type_ir::ClosureKind::Fn),
@@ -814,10 +811,7 @@ impl<'db> InferenceContext<'_, 'db> {
         result
     }
 
-    fn closure_sigs(
-        &self,
-        bound_sig: PolyFnSig<'db>,
-    ) -> ClosureSignatures<'db> {
+    fn closure_sigs(&self, bound_sig: PolyFnSig<'db>) -> ClosureSignatures<'db> {
         let liberated_sig = bound_sig.skip_binder();
         // FIXME: When we lower HRTB we'll need to actually liberate regions here.
         ClosureSignatures { bound_sig, liberated_sig }

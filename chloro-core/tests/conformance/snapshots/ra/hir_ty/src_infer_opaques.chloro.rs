@@ -39,10 +39,7 @@ enum UsageKind<'db> {
 }
 
 impl<'db> UsageKind<'db> {
-    fn merge(
-        &mut self,
-        other: UsageKind<'db>,
-    ) {
+    fn merge(&mut self, other: UsageKind<'db>) {
         match (&*self, &other) {
             (UsageKind::HasDefiningUse(_), _) | (_, UsageKind::None) => unreachable!(),
             (UsageKind::None, _) => *self = other,

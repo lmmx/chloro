@@ -63,11 +63,7 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         (SolverContext(infcx), value, vars)
     }
 
-    fn fresh_var_for_kind_with_span(
-        &self,
-        arg: GenericArg<'db>,
-        _span: Span,
-    ) -> GenericArg<'db> {
+    fn fresh_var_for_kind_with_span(&self, arg: GenericArg<'db>, _span: Span) -> GenericArg<'db> {
         match arg.kind() {
             GenericArgKind::Lifetime(_) => self.next_region_var().into(),
             GenericArgKind::Type(_) => self.next_ty_var().into(),
@@ -98,7 +94,9 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         None
     }
 
-    fn make_deduplicated_outlives_constraints(&self) -> Vec<
+    fn make_deduplicated_outlives_constraints(
+        &self,
+    ) -> Vec<
         rustc_type_ir::OutlivesPredicate<
             Self::Interner,
             <Self::Interner as rustc_type_ir::Interner>::GenericArg,

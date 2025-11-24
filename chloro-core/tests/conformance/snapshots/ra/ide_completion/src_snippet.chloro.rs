@@ -148,10 +148,7 @@ impl Snippet {
     }
 
     /// Returns [`None`] if the required items do not resolve.
-    pub(crate) fn imports(
-        &self,
-        ctx: &CompletionContext<'_>,
-    ) -> Option<Vec<LocatedImport>> {
+    pub(crate) fn imports(&self, ctx: &CompletionContext<'_>) -> Option<Vec<LocatedImport>> {
         import_edits(ctx, &self.requires)
     }
 
@@ -159,18 +156,12 @@ impl Snippet {
         self.snippet.replace("${receiver}", "$0")
     }
 
-    pub fn postfix_snippet(
-        &self,
-        receiver: &str,
-    ) -> String {
+    pub fn postfix_snippet(&self, receiver: &str) -> String {
         self.snippet.replace("${receiver}", receiver)
     }
 }
 
-fn import_edits(
-    ctx: &CompletionContext<'_>,
-    requires: &[ModPath],
-) -> Option<Vec<LocatedImport>> {
+fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
     let import_cfg = ctx.config.find_path_config(ctx.is_nightly);
     let resolve = |import| {
         let item = ctx.scope.resolve_mod_path(import).next()?;

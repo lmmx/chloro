@@ -66,10 +66,7 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
         InspectConfig { max_depth: 5 }
     }
 
-    fn visit_goal(
-        &mut self,
-        inspect_goal: &InspectGoal<'_, 'db>,
-    ) {
+    fn visit_goal(&mut self, inspect_goal: &InspectGoal<'_, 'db>) {
         // No need to walk into goal subtrees that certainly hold, since they
         // wouldn't then be stalled on an infer var.
         if inspect_goal.result() == Ok(Certainty::Yes) {
@@ -197,17 +194,11 @@ impl<'db> InferenceTable<'db> {
         self.infer_ctxt.interner
     }
 
-    pub(crate) fn type_is_copy_modulo_regions(
-        &self,
-        ty: Ty<'db>,
-    ) -> bool {
+    pub(crate) fn type_is_copy_modulo_regions(&self, ty: Ty<'db>) -> bool {
         self.infer_ctxt.type_is_copy_modulo_regions(self.trait_env.env, ty)
     }
 
-    pub(crate) fn type_var_is_sized(
-        &self,
-        self_ty: TyVid,
-    ) -> bool {
+    pub(crate) fn type_var_is_sized(&self, self_ty: TyVid) -> bool {
         let Some(sized_did) = LangItem::Sized.resolve_trait(self.db, self.trait_env.krate) else {
             return true;
         };
@@ -243,11 +234,7 @@ impl<'db> InferenceTable<'db> {
         obligations_for_self_ty
     }
 
-    fn predicate_has_self_ty(
-        &self,
-        predicate: Predicate<'db>,
-        expected_vid: TyVid,
-    ) -> bool {
+    fn predicate_has_self_ty(&self, predicate: Predicate<'db>, expected_vid: TyVid) -> bool {
         match predicate.kind().skip_binder() {
             PredicateKind::Clause(ClauseKind::Trait(data)) => {
                 self.type_matches_expected_vid(expected_vid, data.self_ty())
@@ -272,11 +259,7 @@ impl<'db> InferenceTable<'db> {
         }
     }
 
-    fn type_matches_expected_vid(
-        &self,
-        expected_vid: TyVid,
-        ty: Ty<'db>,
-    ) -> bool {
+    fn type_matches_expected_vid(&self, expected_vid: TyVid, ty: Ty<'db>) -> bool {
         let ty = self.shallow_resolve(ty);
         match ty.kind() {
             TyKind::Infer(rustc_type_ir::TyVar(found_vid)) => {
@@ -286,10 +269,7 @@ impl<'db> InferenceTable<'db> {
         }
     }
 
-    pub(super) fn set_diverging(
-        &mut self,
-        ty: Ty<'db>,
-    ) {
+    pub(super) fn set_diverging(&mut self, ty: Ty<'db>) {
         self.diverging_type_vars.insert(ty);
     }
 
@@ -305,10 +285,7 @@ impl<'db> InferenceTable<'db> {
         self.infer_ctxt.canonicalize_response(t)
     }
 
-    pub(crate) fn normalize_associated_types_in<T>(
-        &mut self,
-        ty: T,
-    ) -> T
+    pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>> + Clone, {
         let ty = self.resolve_vars_with_obligations(ty);
@@ -320,10 +297,7 @@ impl<'db> InferenceTable<'db> {
 
     /// Works almost same as [`Self::normalize_associated_types_in`], but this also resolves shallow
     /// the inference variables
-    pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(
-        &mut self,
-        ty: T,
-    ) -> T
+    pub(crate) fn eagerly_normalize_and_resolve_shallow_in<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         let ty = self.resolve_vars_with_obligations(ty);
@@ -331,10 +305,7 @@ impl<'db> InferenceTable<'db> {
         self.resolve_vars_with_obligations(ty)
     }
 
-    pub(crate) fn normalize_alias_ty(
-        &mut self,
-        alias: Ty<'db>,
-    ) -> Ty<'db> {
+    pub(crate) fn normalize_alias_ty(&mut self, alias: Ty<'db>) -> Ty<'db> {
         self.infer_ctxt
             .at(&ObligationCause::new(), self.trait_env.env)
             .structurally_normalize_ty(alias, &mut self.fulfillment_cx)
@@ -367,10 +338,7 @@ impl<'db> InferenceTable<'db> {
         self.infer_ctxt.next_region_var()
     }
 
-    pub(crate) fn next_var_for_param(
-        &mut self,
-        id: GenericParamId,
-    ) -> GenericArg<'db> {
+    pub(crate) fn next_var_for_param(&mut self, id: GenericParamId) -> GenericArg<'db> {
         match id {
             GenericParamId::TypeParamId(_) => self.next_ty_var().into(),
             GenericParamId::ConstParamId(_) => self.next_const_var().into(),
@@ -459,10 +427,7 @@ impl<'db> InferenceTable<'db> {
         self.infer_ctxt.instantiate_canonical(&canonical).0
     }
 
-    pub(crate) fn resolve_completely<T>(
-        &mut self,
-        value: T,
-    ) -> T
+    pub(crate) fn resolve_completely<T>(&mut self, value: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         let value = self.infer_ctxt.resolve_vars_if_possible(value);
@@ -472,35 +437,21 @@ impl<'db> InferenceTable<'db> {
     }
 
     /// Unify two relatable values (e.g. `Ty`) and register new trait goals that arise from that.
-    pub(crate) fn unify<T: ToTrace<'db>>(
-        &mut self,
-        ty1: T,
-        ty2: T,
-    ) -> bool {
+    pub(crate) fn unify<T: ToTrace<'db>>(&mut self, ty1: T, ty2: T) -> bool {
         self.try_unify(ty1, ty2).map(|infer_ok| self.register_infer_ok(infer_ok)).is_ok()
     }
 
     /// Unify two relatable values (e.g. `Ty`) and return new trait goals arising from it, so the
     /// caller needs to deal with them.
-    pub(crate) fn try_unify<T: ToTrace<'db>>(
-        &mut self,
-        t1: T,
-        t2: T,
-    ) -> InferResult<'db, ()> {
+    pub(crate) fn try_unify<T: ToTrace<'db>>(&mut self, t1: T, t2: T) -> InferResult<'db, ()> {
         self.infer_ctxt.at(&ObligationCause::new(), self.trait_env.env).eq(t1, t2)
     }
 
-    pub(crate) fn shallow_resolve(
-        &self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    pub(crate) fn shallow_resolve(&self, ty: Ty<'db>) -> Ty<'db> {
         self.infer_ctxt.shallow_resolve(ty)
     }
 
-    pub(crate) fn resolve_vars_with_obligations<T>(
-        &mut self,
-        t: T,
-    ) -> T
+    pub(crate) fn resolve_vars_with_obligations<T>(&mut self, t: T) -> T
     where
         T: rustc_type_ir::TypeFoldable<DbInterner<'db>>, {
         if !t.has_non_region_infer() {
@@ -515,10 +466,7 @@ impl<'db> InferenceTable<'db> {
     }
 
     /// Create a `GenericArgs` full of infer vars for `def`.
-    pub(crate) fn fresh_args_for_item(
-        &self,
-        def: SolverDefId,
-    ) -> GenericArgs<'db> {
+    pub(crate) fn fresh_args_for_item(&self, def: SolverDefId) -> GenericArgs<'db> {
         self.infer_ctxt.fresh_args_for_item(def)
     }
 
@@ -536,10 +484,7 @@ impl<'db> InferenceTable<'db> {
     /// In case there is still ambiguity, the returned type may be an inference
     /// variable. This is different from `structurally_resolve_type` which errors
     /// in this case.
-    pub(crate) fn try_structurally_resolve_type(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    pub(crate) fn try_structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
         if let TyKind::Alias(..) = ty.kind() {
             // We need to use a separate variable here as otherwise the temporary for
             // `self.fulfillment_cx.borrow_mut()` is alive in the `Err` branch, resulting
@@ -557,10 +502,7 @@ impl<'db> InferenceTable<'db> {
         }
     }
 
-    pub(crate) fn structurally_resolve_type(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    pub(crate) fn structurally_resolve_type(&mut self, ty: Ty<'db>) -> Ty<'db> {
         self.try_structurally_resolve_type(ty)
         // FIXME: Err if it still contain infer vars.
     }
@@ -572,10 +514,7 @@ impl<'db> InferenceTable<'db> {
     }
 
     #[tracing::instrument(skip_all)]
-    pub(crate) fn rollback_to(
-        &mut self,
-        snapshot: InferenceTableSnapshot<'db>,
-    ) {
+    pub(crate) fn rollback_to(&mut self, snapshot: InferenceTableSnapshot<'db>) {
         self.infer_ctxt.rollback_to(snapshot.ctxt_snapshot);
         self.fulfillment_cx = snapshot.obligations;
     }
@@ -610,19 +549,13 @@ impl<'db> InferenceTable<'db> {
     /// whether a trait *might* be implemented before deciding to 'lock in' the
     /// choice (during e.g. method resolution or deref).
     #[tracing::instrument(level = "debug", skip(self))]
-    pub(crate) fn try_obligation(
-        &mut self,
-        predicate: Predicate<'db>,
-    ) -> NextTraitSolveResult {
+    pub(crate) fn try_obligation(&mut self, predicate: Predicate<'db>) -> NextTraitSolveResult {
         let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
         let canonicalized = self.canonicalize(goal);
         next_trait_solve_canonical_in_ctxt(&self.infer_ctxt, canonicalized)
     }
 
-    pub(crate) fn register_obligation(
-        &mut self,
-        predicate: Predicate<'db>,
-    ) {
+    pub(crate) fn register_obligation(&mut self, predicate: Predicate<'db>) {
         let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
         self.register_obligation_in_env(goal)
     }
@@ -651,10 +584,7 @@ impl<'db> InferenceTable<'db> {
         }
     }
 
-    pub(crate) fn register_infer_ok<T>(
-        &mut self,
-        infer_ok: InferOk<'db, T>,
-    ) -> T {
+    pub(crate) fn register_infer_ok<T>(&mut self, infer_ok: InferOk<'db, T>) -> T {
         let InferOk { value, obligations } = infer_ok;
         self.register_predicates(obligations);
         value
@@ -664,20 +594,14 @@ impl<'db> InferenceTable<'db> {
         self.fulfillment_cx.try_evaluate_obligations(&self.infer_ctxt);
     }
 
-    pub(super) fn register_predicate(
-        &mut self,
-        obligation: PredicateObligation<'db>,
-    ) {
+    pub(super) fn register_predicate(&mut self, obligation: PredicateObligation<'db>) {
         if obligation.has_escaping_bound_vars() {
             panic!("escaping bound vars in predicate {:?}", obligation);
         }
         self.fulfillment_cx.register_predicate_obligation(&self.infer_ctxt, obligation);
     }
 
-    pub(super) fn register_predicates<I>(
-        &mut self,
-        obligations: I,
-    )
+    pub(super) fn register_predicates<I>(&mut self, obligations: I)
     where
         I: IntoIterator<Item = PredicateObligation<'db>>, {
         obligations.into_iter().for_each(|obligation| {
@@ -758,28 +682,19 @@ impl<'db> InferenceTable<'db> {
         None
     }
 
-    pub(super) fn insert_type_vars<T>(
-        &mut self,
-        ty: T,
-    ) -> T
+    pub(super) fn insert_type_vars<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         self.infer_ctxt.insert_type_vars(ty)
     }
 
     /// Replaces `Ty::Error` by a new type var, so we can maybe still infer it.
-    pub(super) fn insert_type_vars_shallow(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> Ty<'db> {
+    pub(super) fn insert_type_vars_shallow(&mut self, ty: Ty<'db>) -> Ty<'db> {
         if ty.is_ty_error() { self.next_ty_var() } else { ty }
     }
 
     /// Whenever you lower a user-written type, you should call this.
-    pub(crate) fn process_user_written_ty<T>(
-        &mut self,
-        ty: T,
-    ) -> T
+    pub(crate) fn process_user_written_ty<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         self.process_remote_user_written_ty(ty)
@@ -788,10 +703,7 @@ impl<'db> InferenceTable<'db> {
 
     /// The difference of this method from `process_user_written_ty()` is that this method doesn't register a well-formed obligation,
     /// while `process_user_written_ty()` should (but doesn't currently).
-    pub(crate) fn process_remote_user_written_ty<T>(
-        &mut self,
-        ty: T,
-    ) -> T
+    pub(crate) fn process_remote_user_written_ty<T>(&mut self, ty: T) -> T
     where
         T: TypeFoldable<DbInterner<'db>>, {
         let ty = self.insert_type_vars(ty);
@@ -803,18 +715,12 @@ impl<'db> InferenceTable<'db> {
     }
 
     /// Replaces ConstScalar::Unknown by a new type var, so we can maybe still infer it.
-    pub(super) fn insert_const_vars_shallow(
-        &mut self,
-        c: Const<'db>,
-    ) -> Const<'db> {
+    pub(super) fn insert_const_vars_shallow(&mut self, c: Const<'db>) -> Const<'db> {
         if c.is_ct_error() { self.next_const_var() } else { c }
     }
 
     /// Check if given type is `Sized` or not
-    pub(crate) fn is_sized(
-        &mut self,
-        ty: Ty<'db>,
-    ) -> bool {
+    pub(crate) fn is_sized(&mut self, ty: Ty<'db>) -> bool {
         fn short_circuit_trivial_tys(ty: Ty<'_>) -> Option<bool> {
             match ty.kind() {
                 TyKind::Bool
@@ -875,10 +781,7 @@ impl<'db> InferenceTable<'db> {
 }
 
 impl fmt::Debug for InferenceTable<'_> {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("InferenceTable")
             .field("name", &self.infer_ctxt.inner.borrow().type_variable_storage)
             .field("fulfillment_cx", &self.fulfillment_cx)
@@ -945,31 +848,19 @@ mod resolve_completely {
             self.ctx.interner()
         }
 
-        fn fold_region(
-            &mut self,
-            r: Region<'db>,
-        ) -> Region<'db> {
+        fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {
             if r.is_var() { Region::error(self.ctx.interner()) } else { r }
         }
 
-        fn fold_ty(
-            &mut self,
-            ty: Ty<'db>,
-        ) -> Ty<'db> {
+        fn fold_ty(&mut self, ty: Ty<'db>) -> Ty<'db> {
             self.handle_term(ty, |it| it.outer_exclusive_binder())
         }
 
-        fn fold_const(
-            &mut self,
-            ct: Const<'db>,
-        ) -> Const<'db> {
+        fn fold_const(&mut self, ct: Const<'db>) -> Const<'db> {
             self.handle_term(ct, |it| it.outer_exclusive_binder())
         }
 
-        fn fold_predicate(
-            &mut self,
-            predicate: Predicate<'db>,
-        ) -> Predicate<'db> {
+        fn fold_predicate(&mut self, predicate: Predicate<'db>) -> Predicate<'db> {
             assert!(
                 !self.should_normalize,
                 "normalizing predicates in writeback is not generally sound"

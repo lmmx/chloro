@@ -108,10 +108,7 @@ impl Body {
         (Arc::new(body), Arc::new(source_map))
     }
 
-    pub(crate) fn body_query(
-        db: &dyn DefDatabase,
-        def: DefWithBodyId,
-    ) -> Arc<Body> {
+    pub(crate) fn body_query(db: &dyn DefDatabase, def: DefWithBodyId) -> Arc<Body> {
         db.body_with_source_map(def).0
     }
 

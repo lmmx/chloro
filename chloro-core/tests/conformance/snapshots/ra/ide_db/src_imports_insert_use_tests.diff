@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29267 bytes
+Chloro size:   29241 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
@@ -194,15 +194,7 @@ Rustfmt size:  29734 bytes
 +    check(path, ra_fixture_before, ra_fixture_after, ImportGranularity::One)
  }
  
--fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior) {
-+fn check_merge_only_fail(
-+    ra_fixture0: &str,
-+    ra_fixture1: &str,
-+    mb: MergeBehavior,
-+) {
-     let use0 = ast::SourceFile::parse(ra_fixture0, span::Edition::CURRENT)
-         .tree()
-         .syntax()
+ fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior) {
          .descendants()
          .find_map(ast::Use::cast)
          .unwrap();
@@ -218,11 +210,7 @@ Rustfmt size:  29734 bytes
      assert_eq!(result.map(|u| u.to_string()), None);
  }
  
--fn check_guess(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: ImportGranularityGuess) {
-+fn check_guess(
-+    #[rust_analyzer::rust_fixture] ra_fixture: &str,
-+    expected: ImportGranularityGuess,
-+) {
+ fn check_guess(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: ImportGranularityGuess) {
      let syntax = ast::SourceFile::parse(ra_fixture, span::Edition::CURRENT).tree();
 -    let file = ImportScope {
 -        kind: ImportScopeKind::File(syntax),

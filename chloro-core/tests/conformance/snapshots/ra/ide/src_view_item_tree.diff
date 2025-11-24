@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 630 bytes
-Chloro size:   431 bytes
+Chloro size:   420 bytes
 Rustfmt size:  639 bytes
 
 ✗ Outputs DIFFER
@@ -19,11 +19,7 @@ Rustfmt size:  639 bytes
 -// | Editor  | Action Name |
 -// |---------|-------------|
 -// | VS Code | **rust-analyzer: Debug ItemTree** |
--pub(crate) fn view_item_tree(db: &RootDatabase, file_id: FileId) -> String {
-+pub(crate) fn view_item_tree(
-+    db: &RootDatabase,
-+    file_id: FileId,
-+) -> String {
+ pub(crate) fn view_item_tree(db: &RootDatabase, file_id: FileId) -> String {
      let sema = Semantics::new(db);
      let file_id = sema
          .attach_first_edition(file_id)
