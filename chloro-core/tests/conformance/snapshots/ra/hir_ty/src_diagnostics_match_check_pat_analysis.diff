@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   20992 bytes
+Chloro size:   21025 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
@@ -193,16 +193,6 @@ Rustfmt size:  22047 bytes
              Slice(_) => unimplemented!(),
              DerefPattern(_) => unimplemented!(),
              &Str(void) => match void {},
-                 PatKind::Wild
-             }
-         };
--        Pat {
--            ty: *pat.ty(),
--            kind: Box::new(kind),
--        }
-+        Pat { ty: *pat.ty(), kind: Box::new(kind) }
-     }
- }
  
  impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
      type Error = ();

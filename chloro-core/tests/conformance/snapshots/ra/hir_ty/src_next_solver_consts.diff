@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14166 bytes
+Chloro size:   14265 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
@@ -110,30 +110,10 @@ Rustfmt size:  14546 bytes
      }
  
      fn new_placeholder(
-     }
- 
-     fn with_updated_universe(self, ui: rustc_type_ir::UniverseIndex) -> Self {
--        Placeholder {
--            universe: ui,
--            bound: self.bound,
--        }
-+        Placeholder { universe: ui, bound: self.bound }
-     }
- 
-     fn new(ui: rustc_type_ir::UniverseIndex, var: BoundConst) -> Self {
--        Placeholder {
--            universe: ui,
--            bound: var,
--        }
-+        Placeholder { universe: ui, bound: var }
+             bound: var,
+         }
      }
 +
      fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
--        Placeholder {
--            universe: ui,
--            bound: BoundConst { var },
--        }
-+        Placeholder { universe: ui, bound: BoundConst { var } }
-     }
- }
- 
+         Placeholder {
+             universe: ui,

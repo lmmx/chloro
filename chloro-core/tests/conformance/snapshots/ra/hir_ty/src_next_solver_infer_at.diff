@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11088 bytes
-Chloro size:   11037 bytes
+Chloro size:   11202 bytes
 Rustfmt size:  11331 bytes
 
 ✗ Outputs DIFFER
@@ -115,57 +115,3 @@ Rustfmt size:  11331 bytes
      }
  
      fn goals_to_obligations(&self, goals: Vec<Goal<'db, Predicate<'db>>>) -> InferOk<'db, ()> {
- 
- impl<'db> ToTrace<'db> for Region<'db> {
-     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
--        TypeTrace {
--            cause: cause.clone(),
--            values: ValuePairs::Regions(ExpectedFound::new(a, b)),
--        }
-+        TypeTrace { cause: cause.clone(), values: ValuePairs::Regions(ExpectedFound::new(a, b)) }
-     }
- }
- 
- 
- impl<'db> ToTrace<'db> for Term<'db> {
-     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
--        TypeTrace {
--            cause: cause.clone(),
--            values: ValuePairs::Terms(ExpectedFound::new(a, b)),
--        }
-+        TypeTrace { cause: cause.clone(), values: ValuePairs::Terms(ExpectedFound::new(a, b)) }
-     }
- }
- 
- impl<'db> ToTrace<'db> for TraitRef<'db> {
-     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
--        TypeTrace {
--            cause: cause.clone(),
--            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
--        }
-+        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
-     }
- }
- 
- 
- impl<'db> ToTrace<'db> for AliasTerm<'db> {
-     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
--        TypeTrace {
--            cause: cause.clone(),
--            values: ValuePairs::Aliases(ExpectedFound::new(a, b)),
--        }
-+        TypeTrace { cause: cause.clone(), values: ValuePairs::Aliases(ExpectedFound::new(a, b)) }
-     }
- }
- 
- 
- impl<'db> ToTrace<'db> for PolyFnSig<'db> {
-     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
--        TypeTrace {
--            cause: cause.clone(),
--            values: ValuePairs::PolySigs(ExpectedFound::new(a, b)),
--        }
-+        TypeTrace { cause: cause.clone(), values: ValuePairs::PolySigs(ExpectedFound::new(a, b)) }
-     }
- }
- 

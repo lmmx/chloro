@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5229 bytes
-Chloro size:   5232 bytes
+Chloro size:   5277 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -20,18 +20,6 @@ Rustfmt size:  5418 bytes
  
  const MOD_DEPTH_LIMIT: usize = 32;
  
- 
- impl ModDir {
-     pub(super) fn root() -> ModDir {
--        ModDir {
--            dir_path: DirPath::empty(),
--            root_non_dir_owner: false,
--            depth: 0,
--        }
-+        ModDir { dir_path: DirPath::empty(), root_non_dir_owner: false, depth: 0 }
-     }
- 
-     pub(super) fn descend_into_definition(
              cov_mark::hit!(circular_mods);
              return None;
          }

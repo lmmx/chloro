@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   37884 bytes
+Chloro size:   37929 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -348,18 +348,6 @@ Rustfmt size:  45085 bytes
  /// A `ModuleId` that is always a crate's root module.
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  pub struct CrateRootModuleId {
- impl HasModule for CrateRootModuleId {
-     #[inline]
-     fn module(&self, _db: &dyn DefDatabase) -> ModuleId {
--        ModuleId {
--            krate: self.krate,
--            block: None,
--            local_id: DefMap::ROOT,
--        }
-+        ModuleId { krate: self.krate, block: None, local_id: DefMap::ROOT }
-     }
- 
-     #[inline]
          other.block.is_none() && other.local_id == DefMap::ROOT && self.krate == other.krate
      }
  }

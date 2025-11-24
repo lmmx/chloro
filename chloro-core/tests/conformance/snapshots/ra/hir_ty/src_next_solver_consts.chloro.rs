@@ -413,15 +413,24 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderConst {
     }
 
     fn with_updated_universe(self, ui: rustc_type_ir::UniverseIndex) -> Self {
-        Placeholder { universe: ui, bound: self.bound }
+        Placeholder {
+            universe: ui,
+            bound: self.bound,
+        }
     }
 
     fn new(ui: rustc_type_ir::UniverseIndex, var: BoundConst) -> Self {
-        Placeholder { universe: ui, bound: var }
+        Placeholder {
+            universe: ui,
+            bound: var,
+        }
     }
 
     fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
-        Placeholder { universe: ui, bound: BoundConst { var } }
+        Placeholder {
+            universe: ui,
+            bound: BoundConst { var },
+        }
     }
 }
 

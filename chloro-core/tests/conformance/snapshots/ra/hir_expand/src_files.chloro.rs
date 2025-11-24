@@ -46,19 +46,28 @@ pub type FilePosition = FilePositionWrapper<EditionedFileId>;
 impl FilePosition {
     #[inline]
     pub fn into_file_id(self, db: &dyn ExpandDatabase) -> FilePositionWrapper<FileId> {
-        FilePositionWrapper { file_id: self.file_id.file_id(db), offset: self.offset }
+        FilePositionWrapper {
+            file_id: self.file_id.file_id(db),
+            offset: self.offset,
+        }
     }
 }
 
 impl From<FileRange> for HirFileRange {
     fn from(value: FileRange) -> Self {
-        HirFileRange { file_id: value.file_id.into(), range: value.range }
+        HirFileRange {
+            file_id: value.file_id.into(),
+            range: value.range,
+        }
     }
 }
 
 impl From<FilePosition> for HirFilePosition {
     fn from(value: FilePosition) -> Self {
-        HirFilePosition { file_id: value.file_id.into(), offset: value.offset }
+        HirFilePosition {
+            file_id: value.file_id.into(),
+            offset: value.offset,
+        }
     }
 }
 
@@ -82,7 +91,10 @@ impl FileRangeWrapper<span::FileId> {
 
 impl<T> InFileWrapper<span::FileId, T> {
     pub fn with_edition(self, db: &dyn ExpandDatabase, edition: span::Edition) -> InRealFile<T> {
-        InRealFile { file_id: EditionedFileId::new(db, self.file_id, edition), value: self.value }
+        InRealFile {
+            file_id: EditionedFileId::new(db, self.file_id, edition),
+            value: self.value,
+        }
     }
 }
 
@@ -107,7 +119,10 @@ pub type FileRange = FileRangeWrapper<EditionedFileId>;
 impl FileRange {
     #[inline]
     pub fn into_file_id(self, db: &dyn ExpandDatabase) -> FileRangeWrapper<FileId> {
-        FileRangeWrapper { file_id: self.file_id.file_id(db), range: self.range }
+        FileRangeWrapper {
+            file_id: self.file_id.file_id(db),
+            range: self.range,
+        }
     }
 
     #[inline]
@@ -268,7 +283,10 @@ impl<FileId: Copy, N: AstNode> InFileWrapper<FileId, N> {
     }
 
     pub fn node_file_range(&self) -> FileRangeWrapper<FileId> {
-        FileRangeWrapper { file_id: self.file_id, range: self.value.syntax().text_range() }
+        FileRangeWrapper {
+            file_id: self.file_id,
+            range: self.value.syntax().text_range(),
+        }
     }
 }
 
@@ -280,7 +298,10 @@ impl<FileId: Copy, N: AstNode> InFileWrapper<FileId, &N> {
 
 impl<FileId: Copy, SN: Borrow<SyntaxNode>> InFileWrapper<FileId, SN> {
     pub fn file_range(&self) -> FileRangeWrapper<FileId> {
-        FileRangeWrapper { file_id: self.file_id, range: self.value.borrow().text_range() }
+        FileRangeWrapper {
+            file_id: self.file_id,
+            range: self.value.borrow().text_range(),
+        }
     }
 }
 

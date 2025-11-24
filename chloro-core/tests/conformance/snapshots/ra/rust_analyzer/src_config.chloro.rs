@@ -1462,7 +1462,6 @@ impl Config {
         DiagnosticsConfig {
             enabled: true,
             disable_experimental: false,
-            ..self.diagnostics(source_root)
         }
     }
 

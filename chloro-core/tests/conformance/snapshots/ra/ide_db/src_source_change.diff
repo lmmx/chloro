@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21058 bytes
-Chloro size:   21126 bytes
+Chloro size:   21088 bytes
 Rustfmt size:  21705 bytes
 
 ✗ Outputs DIFFER
@@ -263,6 +263,13 @@ Rustfmt size:  21705 bytes
 +                .is_err()
 +        );
          mem::take(&mut self.source_change)
+     }
+ }
+             source_file_edits: Default::default(),
+             file_system_edits: vec![edit],
+             is_snippet: false,
+-            ..SourceChange::default()
+         }
      }
  }
              PlaceSnippet::After(it) => vec![Snippet::Tabstop(it.text_range().end())],

@@ -104,7 +104,10 @@ impl DefDiagnostic {
         id: AstId<ast::Use>,
         index: Idx<ast::UseTree>,
     ) -> Self {
-        Self { in_module: container, kind: DefDiagnosticKind::UnresolvedImport { id, index } }
+        Self {
+            in_module: container,
+            kind: DefDiagnosticKind::UnresolvedImport { id, index },
+        }
     }
 
     pub fn macro_error(
@@ -113,7 +116,10 @@ impl DefDiagnostic {
         path: ModPath,
         err: ExpandErrorKind,
     ) -> Self {
-        Self { in_module: container, kind: DefDiagnosticKind::MacroError { ast, path, err } }
+        Self {
+            in_module: container,
+            kind: DefDiagnosticKind::MacroError { ast, path, err },
+        }
     }
 
     pub fn unconfigured_code(
@@ -133,14 +139,20 @@ impl DefDiagnostic {
         ast: MacroCallKind,
         path: ModPath,
     ) -> Self {
-        Self { in_module: container, kind: DefDiagnosticKind::UnresolvedMacroCall { ast, path } }
+        Self {
+            in_module: container,
+            kind: DefDiagnosticKind::UnresolvedMacroCall { ast, path },
+        }
     }
 
     pub(super) fn unimplemented_builtin_macro(
         container: LocalModuleId,
         ast: AstId<ast::Macro>,
     ) -> Self {
-        Self { in_module: container, kind: DefDiagnosticKind::UnimplementedBuiltinMacro { ast } }
+        Self {
+            in_module: container,
+            kind: DefDiagnosticKind::UnimplementedBuiltinMacro { ast },
+        }
     }
 
     pub(super) fn invalid_derive_target(

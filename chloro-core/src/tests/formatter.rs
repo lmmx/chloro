@@ -1,6 +1,7 @@
 use crate::format_source;
 
 mod functions;
+mod struct_literals;
 
 #[test]
 fn format_simple_function() {

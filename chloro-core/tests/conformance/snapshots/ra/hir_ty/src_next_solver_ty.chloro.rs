@@ -1319,7 +1319,10 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderTy {
     }
 
     fn with_updated_universe(self, ui: rustc_type_ir::UniverseIndex) -> Self {
-        Placeholder { universe: ui, bound: self.bound }
+        Placeholder {
+            universe: ui,
+            bound: self.bound,
+        }
     }
 
     fn new(ui: rustc_type_ir::UniverseIndex, bound: BoundTy) -> Self {
@@ -1327,6 +1330,9 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderTy {
     }
 
     fn new_anon(ui: rustc_type_ir::UniverseIndex, var: rustc_type_ir::BoundVar) -> Self {
-        Placeholder { universe: ui, bound: BoundTy { var, kind: BoundTyKind::Anon } }
+        Placeholder {
+            universe: ui,
+            bound: BoundTy { var, kind: BoundTyKind::Anon },
+        }
     }
 }

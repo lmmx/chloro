@@ -211,7 +211,10 @@ impl<'db> ToTrace<'db> for Ty<'db> {
 
 impl<'db> ToTrace<'db> for Region<'db> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::Regions(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::Regions(ExpectedFound::new(a, b)),
+        }
     }
 }
 
@@ -246,13 +249,19 @@ impl<'db> ToTrace<'db> for GenericArg<'db> {
 
 impl<'db> ToTrace<'db> for Term<'db> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::Terms(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::Terms(ExpectedFound::new(a, b)),
+        }
     }
 }
 
 impl<'db> ToTrace<'db> for TraitRef<'db> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
+        }
     }
 }
 
@@ -267,7 +276,10 @@ impl<'db> ToTrace<'db> for AliasTy<'db> {
 
 impl<'db> ToTrace<'db> for AliasTerm<'db> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::Aliases(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::Aliases(ExpectedFound::new(a, b)),
+        }
     }
 }
 
@@ -282,7 +294,10 @@ impl<'db> ToTrace<'db> for FnSig<DbInterner<'db>> {
 
 impl<'db> ToTrace<'db> for PolyFnSig<'db> {
     fn to_trace(cause: &ObligationCause, a: Self, b: Self) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::PolySigs(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::PolySigs(ExpectedFound::new(a, b)),
+        }
     }
 }
 

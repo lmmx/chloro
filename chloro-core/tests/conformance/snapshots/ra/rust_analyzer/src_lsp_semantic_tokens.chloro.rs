@@ -126,7 +126,10 @@ impl SemanticTokensBuilder {
     }
 
     pub(crate) fn build(self) -> SemanticTokens {
-        SemanticTokens { result_id: Some(self.id), data: self.data }
+        SemanticTokens {
+            result_id: Some(self.id),
+            data: self.data,
+        }
     }
 }
 

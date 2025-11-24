@@ -1525,7 +1525,7 @@ async fn foo() {
 
 const ;
 {
-    1;
+    1
 }{
     return;
 }fn f() {
@@ -1552,7 +1552,7 @@ fn main() {
     >
 }
 {
-    1;
+    1
 }{
     return;
 }#
@@ -1561,7 +1561,7 @@ fn foo()
 where for<'a> {
 }
 {
-    x;
+    x
 }{
     return;
 }struct S {
@@ -1616,7 +1616,7 @@ struct S {
 
 fn foo();
 {
-    1;
+    1
 }{
     return;
 }fn f() {
@@ -1736,7 +1736,7 @@ fn c() {
     )
 }
 {
-    1;
+    1
 }{
     return;
 }fn f() {
@@ -1760,7 +1760,7 @@ fn f() {
     };
 }
 {
-    ();
+    ()
 }{
     return;
 }type ForRef = for<'a> &'a u32;
@@ -1779,13 +1779,13 @@ where
 fn foo() {
 }
 {
-    1;
+    1
 }{
-    2 + 3;
+    2 + 3
 }fn baz() {
 }
 {
-    1;
+    1
 }{
     return;
 }fn foo() {
@@ -4797,7 +4797,10 @@ pub(crate) enum Event {
 
 impl Event {
     pub(crate) fn tombstone() -> Self {
-        Event::Start { kind: TOMBSTONE, forward_parent: None }
+        Event::Start {
+            kind: TOMBSTONE,
+            forward_parent: None,
+        }
     }
 }
 
@@ -10463,7 +10466,11 @@ pub struct FrontmatterError {
 
 impl FrontmatterError {
     pub fn new(message: impl Into<String>, span: Span) -> Self {
-        Self { message: message.into(), primary_span: span, visible_spans: Vec::new() }
+        Self {
+            message: message.into(),
+            primary_span: span,
+            visible_spans: Vec::new(),
+        }
     }
 
     pub fn push_visible_span(mut self, span: Span) -> Self {

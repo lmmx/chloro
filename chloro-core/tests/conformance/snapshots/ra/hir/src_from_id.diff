@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9973 bytes
-Chloro size:   9176 bytes
+Chloro size:   9242 bytes
 Rustfmt size:  10039 bytes
 
 ✗ Outputs DIFFER
@@ -36,24 +36,3 @@ Rustfmt size:  10039 bytes
  impl From<AdtId> for Adt {
      fn from(id: AdtId) -> Self {
          match id {
- 
- impl From<Field> for FieldId {
-     fn from(def: Field) -> Self {
--        FieldId {
--            parent: def.parent.into(),
--            local_id: def.id,
--        }
-+        FieldId { parent: def.parent.into(), local_id: def.id }
-     }
- }
- 
- impl From<FieldId> for Field {
-     fn from(def: FieldId) -> Self {
--        Field {
--            parent: def.parent.into(),
--            id: def.local_id,
--        }
-+        Field { parent: def.parent.into(), id: def.local_id }
-     }
- }
- 

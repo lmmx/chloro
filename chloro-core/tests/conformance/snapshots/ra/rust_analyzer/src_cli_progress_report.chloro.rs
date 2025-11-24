@@ -20,7 +20,14 @@ impl<'a> ProgressReport<'a> {
     }
 
     pub(crate) fn hidden() -> ProgressReport<'a> {
-        ProgressReport { curr: 0.0, text: String::new(), hidden: true, len: 0, pos: 0, msg: None }
+        ProgressReport {
+            curr: 0.0,
+            text: String::new(),
+            hidden: true,
+            len: 0,
+            pos: 0,
+            msg: None,
+        }
     }
 
     pub(crate) fn set_message(&mut self, msg: impl Fn() -> String + 'a) {

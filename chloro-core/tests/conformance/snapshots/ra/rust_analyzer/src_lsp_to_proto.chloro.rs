@@ -1848,7 +1848,6 @@ pub(crate) mod command {
         lsp_types::Command {
             title: "Interpret".into(),
             command: "rust-analyzer.interpretFunction".into(),
-            // FIXME: use the `_runnable` here.
             arguments: Some(vec![]),
         }
     }

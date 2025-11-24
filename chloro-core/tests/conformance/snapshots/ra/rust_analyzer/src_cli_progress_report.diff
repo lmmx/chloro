@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3394 bytes
-Chloro size:   3388 bytes
+Chloro size:   3469 bytes
 Rustfmt size:  3394 bytes
 
 ✗ Outputs DIFFER
@@ -22,6 +22,21 @@ Rustfmt size:  3394 bytes
      len: usize,
      pos: u64,
      msg: Option<Box<dyn Fn() -> String + 'a>>,
+     }
+ 
+     pub(crate) fn hidden() -> ProgressReport<'a> {
+-        ProgressReport { curr: 0.0, text: String::new(), hidden: true, len: 0, pos: 0, msg: None }
++        ProgressReport {
++            curr: 0.0,
++            text: String::new(),
++            hidden: true,
++            len: 0,
++            pos: 0,
++            msg: None,
++        }
+     }
+ 
+     pub(crate) fn set_message(&mut self, msg: impl Fn() -> String + 'a) {
          // Get length of common portion
          let mut common_prefix_length = 0;
          let common_length = usize::min(self.text.len(), text.len());

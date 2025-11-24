@@ -145,7 +145,6 @@ impl<'db> InferCtxtInner<'db> {
     fn new() -> InferCtxtInner<'db> {
         InferCtxtInner {
             undo_log: InferCtxtUndoLogs::default(),
-
             type_variable_storage: Default::default(),
             const_unification_storage: Default::default(),
             int_unification_storage: Default::default(),
@@ -1198,7 +1197,10 @@ impl<'db> TypeTrace<'db> {
         a: TraitRef<'db>,
         b: TraitRef<'db>,
     ) -> TypeTrace<'db> {
-        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
+        TypeTrace {
+            cause: cause.clone(),
+            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
+        }
     }
 
     pub fn consts(cause: &ObligationCause, a: Const<'db>, b: Const<'db>) -> TypeTrace<'db> {

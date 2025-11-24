@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11162 bytes
-Chloro size:   11180 bytes
+Chloro size:   11225 bytes
 Rustfmt size:  11162 bytes
 
 ✗ Outputs DIFFER
@@ -75,6 +75,18 @@ Rustfmt size:  11162 bytes
 -
          res
      }
+ 
+ 
+ impl Default for TermSearchConfig {
+     fn default() -> Self {
+-        Self { enable_borrowcheck: true, many_alternatives_threshold: 1, fuel: 1200 }
++        Self {
++            enable_borrowcheck: true,
++            many_alternatives_threshold: 1,
++            fuel: 1200,
++        }
+     }
+ }
  
      let module = ctx.scope.module();
      let mut defs = FxHashSet::default();

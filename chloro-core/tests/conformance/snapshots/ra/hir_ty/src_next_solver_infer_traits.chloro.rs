@@ -112,7 +112,10 @@ impl<'db> Elaboratable<DbInterner<'db>> for PredicateObligation<'db> {
 
 impl<'db, T: Copy> Obligation<'db, T> {
     pub fn as_goal(&self) -> Goal<'db, T> {
-        Goal { param_env: self.param_env, predicate: self.predicate }
+        Goal {
+            param_env: self.param_env,
+            predicate: self.predicate,
+        }
     }
 }
 
@@ -140,7 +143,10 @@ impl<'db, T: Hash> Hash for Obligation<'db, T> {
 
 impl<'db, P> From<Obligation<'db, P>> for Goal<'db, P> {
     fn from(value: Obligation<'db, P>) -> Self {
-        Goal { param_env: value.param_env, predicate: value.predicate }
+        Goal {
+            param_env: value.param_env,
+            predicate: value.predicate,
+        }
     }
 }
 

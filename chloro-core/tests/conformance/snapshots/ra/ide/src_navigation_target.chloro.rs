@@ -887,7 +887,10 @@ impl<T> IntoIterator for UpmappingResult<T> {
 
 impl<T> UpmappingResult<T> {
     pub(crate) fn map<U>(self, f: impl Fn(T) -> U) -> UpmappingResult<U> {
-        UpmappingResult { call_site: f(self.call_site), def_site: self.def_site.map(f) }
+        UpmappingResult {
+            call_site: f(self.call_site),
+            def_site: self.def_site.map(f),
+        }
     }
 }
 

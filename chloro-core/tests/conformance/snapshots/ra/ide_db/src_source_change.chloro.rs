@@ -525,7 +525,6 @@ impl From<FileSystemEdit> for SourceChange {
             source_file_edits: Default::default(),
             file_system_edits: vec![edit],
             is_snippet: false,
-            ..SourceChange::default()
         }
     }
 }

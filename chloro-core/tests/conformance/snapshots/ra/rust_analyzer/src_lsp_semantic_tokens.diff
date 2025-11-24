@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11108 bytes
-Chloro size:   8258 bytes
+Chloro size:   8291 bytes
 Rustfmt size:  11838 bytes
 
 ✗ Outputs DIFFER
@@ -172,13 +172,6 @@ Rustfmt size:  11838 bytes
          self.prev_line = range.start.line;
          self.prev_char = range.start.character;
      }
- 
-     pub(crate) fn build(self) -> SemanticTokens {
--        SemanticTokens {
--            result_id: Some(self.id),
--            data: self.data,
--        }
-+        SemanticTokens { result_id: Some(self.id), data: self.data }
      }
  }
  

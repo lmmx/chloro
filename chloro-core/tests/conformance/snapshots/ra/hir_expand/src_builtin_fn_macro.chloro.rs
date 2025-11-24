@@ -478,7 +478,10 @@ fn compile_error_expand(
         ] => ExpandError::other(span, Box::from(unescape_symbol(text).as_str())),
         _ => ExpandError::other(span, "`compile_error!` argument must be a string"),
     };
-    ExpandResult { value: quote! {span =>}, err: Some(err) }
+    ExpandResult {
+        value: quote! {span =>},
+        err: Some(err),
+    }
 }
 
 fn concat_expand(

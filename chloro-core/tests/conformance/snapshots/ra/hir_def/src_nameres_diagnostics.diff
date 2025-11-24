@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4245 bytes
-Chloro size:   4381 bytes
+Chloro size:   4513 bytes
 Rustfmt size:  4722 bytes
 
 ✗ Outputs DIFFER
@@ -34,28 +34,6 @@ Rustfmt size:  4722 bytes
          }
      }
  
-         id: AstId<ast::Use>,
-         index: Idx<ast::UseTree>,
-     ) -> Self {
--        Self {
--            in_module: container,
--            kind: DefDiagnosticKind::UnresolvedImport { id, index },
--        }
-+        Self { in_module: container, kind: DefDiagnosticKind::UnresolvedImport { id, index } }
-     }
- 
-     pub fn macro_error(
-         path: ModPath,
-         err: ExpandErrorKind,
-     ) -> Self {
--        Self {
--            in_module: container,
--            kind: DefDiagnosticKind::MacroError { ast, path, err },
--        }
-+        Self { in_module: container, kind: DefDiagnosticKind::MacroError { ast, path, err } }
-     }
- 
-     pub fn unconfigured_code(
          }
      }
  
@@ -63,27 +41,6 @@ Rustfmt size:  4722 bytes
      pub(crate) fn unresolved_macro_call(
          container: LocalModuleId,
          ast: MacroCallKind,
-         path: ModPath,
-     ) -> Self {
--        Self {
--            in_module: container,
--            kind: DefDiagnosticKind::UnresolvedMacroCall { ast, path },
--        }
-+        Self { in_module: container, kind: DefDiagnosticKind::UnresolvedMacroCall { ast, path } }
-     }
- 
-     pub(super) fn unimplemented_builtin_macro(
-         container: LocalModuleId,
-         ast: AstId<ast::Macro>,
-     ) -> Self {
--        Self {
--            in_module: container,
--            kind: DefDiagnosticKind::UnimplementedBuiltinMacro { ast },
--        }
-+        Self { in_module: container, kind: DefDiagnosticKind::UnimplementedBuiltinMacro { ast } }
-     }
- 
-     pub(super) fn invalid_derive_target(
      ) -> Self {
          Self {
              in_module: container,

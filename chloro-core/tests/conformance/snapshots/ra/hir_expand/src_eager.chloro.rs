@@ -278,5 +278,8 @@ fn eager_macro_recur(
         }
     }
     replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
-    ExpandResult { value: Some((original, offset)), err: error }
+    ExpandResult {
+        value: Some((original, offset)),
+        err: error,
+    }
 }

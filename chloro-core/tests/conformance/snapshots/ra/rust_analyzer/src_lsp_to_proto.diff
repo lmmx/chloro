@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 111479 bytes
-Chloro size:   111319 bytes
+Chloro size:   111271 bytes
 Rustfmt size:  113494 bytes
 
 ✗ Outputs DIFFER
@@ -810,6 +810,8 @@ Rustfmt size:  113494 bytes
      pub(crate) fn interpret_single(_runnable: &lsp_ext::Runnable) -> lsp_types::Command {
          lsp_types::Command {
              title: "Interpret".into(),
+             command: "rust-analyzer.interpretFunction".into(),
+-            // FIXME: use the `_runnable` here.
              arguments: Some(vec![]),
          }
      }
