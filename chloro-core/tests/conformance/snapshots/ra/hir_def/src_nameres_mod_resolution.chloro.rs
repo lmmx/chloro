@@ -22,7 +22,11 @@ pub(super) struct ModDir {
 
 impl ModDir {
     pub(super) fn root() -> ModDir {
-        ModDir { dir_path: DirPath::empty(), root_non_dir_owner: false, depth: 0 }
+        ModDir {
+            dir_path: DirPath::empty(),
+            root_non_dir_owner: false,
+            depth: 0,
+        }
     }
 
     pub(super) fn descend_into_definition(

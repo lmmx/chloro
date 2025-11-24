@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72688 bytes
+Chloro size:   72721 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -109,6 +109,17 @@ Rustfmt size:  74236 bytes
      BreakOutsideOfLoop {
          expr: ExprId,
          is_break: bool,
+ impl<'db> Adjustment<'db> {
+     pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
+         let ty = Ty::new_ref(interner, lt, ty, m);
+-        Adjustment { kind: Adjust::Borrow(AutoBorrow::Ref(lt, m)), target: ty }
++        Adjustment {
++            kind: Adjust::Borrow(AutoBorrow::Ref(lt, m)),
++            target: ty,
++        }
+     }
+ }
+ 
  /// See #49434 for tracking.
  #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
  pub(crate) enum AllowTwoPhase {

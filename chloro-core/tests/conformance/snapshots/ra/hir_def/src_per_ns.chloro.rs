@@ -48,15 +48,27 @@ impl PerNs {
     }
 
     pub fn none() -> PerNs {
-        PerNs { types: None, values: None, macros: None }
+        PerNs {
+            types: None,
+            values: None,
+            macros: None,
+        }
     }
 
     pub fn values(def: ModuleDefId, vis: Visibility, import: Option<ImportOrGlob>) -> PerNs {
-        PerNs { types: None, values: Some(Item { def, vis, import }), macros: None }
+        PerNs {
+            types: None,
+            values: Some(Item { def, vis, import }),
+            macros: None,
+        }
     }
 
     pub fn types(def: ModuleDefId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
-        PerNs { types: Some(Item { def, vis, import }), values: None, macros: None }
+        PerNs {
+            types: Some(Item { def, vis, import }),
+            values: None,
+            macros: None,
+        }
     }
 
     pub fn both(
@@ -77,7 +89,11 @@ impl PerNs {
     }
 
     pub fn macros(def: MacroId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
-        PerNs { types: None, values: None, macros: Some(Item { def, vis, import }) }
+        PerNs {
+            types: None,
+            values: None,
+            macros: Some(Item { def, vis, import }),
+        }
     }
 
     pub fn is_none(&self) -> bool {

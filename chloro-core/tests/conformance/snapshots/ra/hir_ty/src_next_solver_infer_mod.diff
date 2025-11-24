@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49283 bytes
+Chloro size:   49315 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -151,6 +151,13 @@ Rustfmt size:  49754 bytes
      /// Caches for opaque type inference.
      pub(crate) opaque_type_storage: OpaqueTypeStorage<'db>,
  }
+     fn new() -> InferCtxtInner<'db> {
+         InferCtxtInner {
+             undo_log: InferCtxtUndoLogs::default(),
+-
+             type_variable_storage: Default::default(),
+             const_unification_storage: Default::default(),
+             int_unification_storage: Default::default(),
  #[derive(Clone)]
  pub struct InferCtxt<'db> {
      pub interner: DbInterner<'db>,
@@ -303,6 +310,17 @@ Rustfmt size:  49754 bytes
      /// Equivalent to `ConstKind::Infer(InferConst::Var(_))`.
      Const(ConstVid),
  }
+         a: TraitRef<'db>,
+         b: TraitRef<'db>,
+     ) -> TypeTrace<'db> {
+-        TypeTrace { cause: cause.clone(), values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)) }
++        TypeTrace {
++            cause: cause.clone(),
++            values: ValuePairs::TraitRefs(ExpectedFound::new(a, b)),
++        }
+     }
+ 
+     pub fn consts(cause: &ObligationCause, a: Const<'db>, b: Const<'db>) -> TypeTrace<'db> {
      /// The `DefId` and args of the opaque type causing this constraint.
      /// Used for error reporting.
      pub key: OpaqueTypeKey<'db>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   225587 bytes
+Chloro size:   225785 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -300,6 +300,17 @@ Rustfmt size:  227843 bytes
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
  pub struct InstantiatedVariant<'db> {
      pub(crate) inner: Variant,
+ 
+ impl<'db> InstantiatedVariant<'db> {
+     pub fn parent_enum(self, db: &dyn HirDatabase) -> InstantiatedEnum<'db> {
+-        InstantiatedEnum { inner: self.inner.id.lookup(db).parent.into(), args: self.args }
++        InstantiatedEnum {
++            inner: self.inner.id.lookup(db).parent.into(),
++            args: self.args,
++        }
+     }
+ 
+     pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
      Union(Union),
      Enum(Enum),
  }
@@ -598,6 +609,28 @@ Rustfmt size:  227843 bytes
          self.as_ty(db)
              .display(db, display_target)
              .with_closure_style(ClosureStyle::ImplFn)
+ 
+ impl<'db> ClosureCapture<'db> {
+     pub fn local(&self) -> Local {
+-        Local { parent: self.owner, binding_id: self.capture.local() }
++        Local {
++            parent: self.owner,
++            binding_id: self.capture.local(),
++        }
+     }
+ 
+     /// Returns whether this place has any field (aka. non-deref) projections.
+     }
+ 
+     pub fn usages(&self) -> CaptureUsages {
+-        CaptureUsages { parent: self.owner, spans: self.capture.spans() }
++        CaptureUsages {
++            parent: self.owner,
++            spans: self.capture.spans(),
++        }
+     }
+ 
+     pub fn kind(&self) -> CaptureKind {
  impl CaptureUsages {
      pub fn sources(&self, db: &dyn HirDatabase) -> Vec<CaptureUsageSource> {
          let (body, source_map) = db.body_with_source_map(self.parent);
@@ -612,6 +645,27 @@ Rustfmt size:  227843 bytes
      fn from_def_params(db: &'db dyn HirDatabase, def: impl Into<TyDefId> + HasResolver) -> Self {
          let ty = db.ty(def.into());
          Type::new(db, def, ty.instantiate_identity())
+ 
+     pub fn new_slice(ty: Self) -> Self {
+         let interner = DbInterner::conjure();
+-        Type { env: ty.env, ty: Ty::new_slice(interner, ty.ty) }
++        Type {
++            env: ty.env,
++            ty: Ty::new_slice(interner, ty.ty),
++        }
+     }
+ 
+     pub fn new_tuple(krate: base_db::Crate, tys: &[Self]) -> Self {
+         let tys = tys.iter().map(|it| it.ty);
+         let interner = DbInterner::conjure();
+-        Type { env: TraitEnvironment::empty(krate), ty: Ty::new_tup_from_iter(interner, tys) }
++        Type {
++            env: TraitEnvironment::empty(krate),
++            ty: Ty::new_tup_from_iter(interner, tys),
++        }
+     }
+ 
+     pub fn is_unit(&self) -> bool {
      pub fn contains_reference(&self, db: &'db dyn HirDatabase) -> bool {
          let interner = DbInterner::new_with(db, None, None);
          return self.ty.visit_with(&mut Visitor { interner }).is_break();
@@ -782,7 +836,14 @@ Rustfmt size:  227843 bytes
      /// Check if type unifies with another type.
      ///
      /// Note that we consider placeholder types to unify with everything.
-         Type { env: self.env.clone(), ty: self.ty }
+     }
+ 
+     pub fn to_type(&self, _db: &'db dyn HirDatabase) -> Type<'db> {
+-        Type { env: self.env.clone(), ty: self.ty }
++        Type {
++            env: self.env.clone(),
++            ty: self.ty,
++        }
      }
  
 -    // FIXME: Find better API that also handles const generics

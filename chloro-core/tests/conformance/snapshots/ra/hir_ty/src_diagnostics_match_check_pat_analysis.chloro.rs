@@ -296,7 +296,10 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                 PatKind::Wild
             }
         };
-        Pat { ty: *pat.ty(), kind: Box::new(kind) }
+        Pat {
+            ty: *pat.ty(),
+            kind: Box::new(kind),
+        }
     }
 }
 

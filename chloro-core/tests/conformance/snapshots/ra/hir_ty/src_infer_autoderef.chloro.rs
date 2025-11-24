@@ -45,6 +45,9 @@ impl<'db> Autoderef<'_, 'db> {
             .zip(targets)
             .map(|(autoderef, target)| Adjustment { kind: Adjust::Deref(autoderef), target })
             .collect();
-        InferOk { obligations: self.take_obligations(), value: steps }
+        InferOk {
+            obligations: self.take_obligations(),
+            value: steps,
+        }
     }
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9629 bytes
-Chloro size:   9619 bytes
+Chloro size:   9652 bytes
 Rustfmt size:  9801 bytes
 
 ✗ Outputs DIFFER
@@ -32,14 +32,8 @@ Rustfmt size:  9801 bytes
      }
 +
      pub fn replace(range: TextRange, replace_with: String) -> Indel {
--        Indel {
--            delete: range,
--            insert: replace_with,
--        }
-+        Indel { delete: range, insert: replace_with }
-     }
- 
-     pub fn apply(&self, text: &mut String) {
+         Indel {
+             delete: range,
              }
              _ => (),
          }

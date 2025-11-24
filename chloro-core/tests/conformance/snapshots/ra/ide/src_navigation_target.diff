@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39035 bytes
+Chloro size:   39068 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -665,17 +665,6 @@ Rustfmt size:  42083 bytes
          Some(doc_owner.to_nav(db))
      }
  }
- 
- impl<T> UpmappingResult<T> {
-     pub(crate) fn map<U>(self, f: impl Fn(T) -> U) -> UpmappingResult<U> {
--        UpmappingResult {
--            call_site: f(self.call_site),
--            def_site: self.def_site.map(f),
--        }
-+        UpmappingResult { call_site: f(self.call_site), def_site: self.def_site.map(f) }
-     }
- }
- 
      value: TextRange,
      focus_range: Option<TextRange>,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {

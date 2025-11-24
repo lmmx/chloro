@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1595 bytes
+Chloro size:   1628 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
@@ -46,10 +46,6 @@ Rustfmt size:  1772 bytes
 +            .map(|(autoderef, target)| Adjustment { kind: Adjust::Deref(autoderef), target })
              .collect();
 -
--        InferOk {
--            obligations: self.take_obligations(),
--            value: steps,
--        }
-+        InferOk { obligations: self.take_obligations(), value: steps }
-     }
- }
+         InferOk {
+             obligations: self.take_obligations(),
+             value: steps,

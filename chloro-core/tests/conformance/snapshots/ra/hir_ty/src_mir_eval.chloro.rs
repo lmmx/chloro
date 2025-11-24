@@ -246,7 +246,10 @@ impl Interval {
     }
 
     fn slice(self, range: Range<usize>) -> Interval {
-        Interval { addr: self.addr.offset(range.start), size: range.len() }
+        Interval {
+            addr: self.addr.offset(range.start),
+            size: range.len(),
+        }
     }
 }
 

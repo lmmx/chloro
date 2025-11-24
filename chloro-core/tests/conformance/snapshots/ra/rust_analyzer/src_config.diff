@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   149947 bytes
+Chloro size:   149903 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -1702,6 +1702,13 @@ Rustfmt size:  167117 bytes
          fn sort_objects_by_field(json: &mut serde_json::Value) {
              if let serde_json::Value::Object(object) = json {
                  let old = std::mem::take(object);
+         DiagnosticsConfig {
+             enabled: true,
+             disable_experimental: false,
+-            ..self.diagnostics(source_root)
+         }
+     }
+ 
  
      pub fn inlay_hints<'a>(&self, minicore: MiniCore<'a>) -> InlayHintsConfig<'a> {
          let client_capability_fields = self.inlay_hint_resolve_support_properties();

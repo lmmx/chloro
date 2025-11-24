@@ -32,7 +32,11 @@ pub(crate) struct OpQueue<Args = (), Output = ()> {
 
 impl<Args, Output> Default for OpQueue<Args, Output> {
     fn default() -> Self {
-        Self { op_requested: None, op_in_progress: false, last_op_result: None }
+        Self {
+            op_requested: None,
+            op_in_progress: false,
+            last_op_result: None,
+        }
     }
 }
 

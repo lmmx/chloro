@@ -82,7 +82,6 @@ impl<'a> RenderContext<'a> {
         CompletionRelevance {
             is_private_editable: self.is_private_editable,
             requires_import: self.import_to_add.is_some(),
-            ..Default::default()
         }
     }
 

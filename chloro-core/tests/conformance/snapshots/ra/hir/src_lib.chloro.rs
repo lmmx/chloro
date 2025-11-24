@@ -1707,7 +1707,10 @@ pub struct InstantiatedVariant<'db> {
 
 impl<'db> InstantiatedVariant<'db> {
     pub fn parent_enum(self, db: &dyn HirDatabase) -> InstantiatedEnum<'db> {
-        InstantiatedEnum { inner: self.inner.id.lookup(db).parent.into(), args: self.args }
+        InstantiatedEnum {
+            inner: self.inner.id.lookup(db).parent.into(),
+            args: self.args,
+        }
     }
 
     pub fn fields(self, db: &dyn HirDatabase) -> Vec<InstantiatedField<'db>> {
@@ -4556,7 +4559,10 @@ pub struct ClosureCapture<'db> {
 
 impl<'db> ClosureCapture<'db> {
     pub fn local(&self) -> Local {
-        Local { parent: self.owner, binding_id: self.capture.local() }
+        Local {
+            parent: self.owner,
+            binding_id: self.capture.local(),
+        }
     }
 
     /// Returns whether this place has any field (aka. non-deref) projections.
@@ -4565,7 +4571,10 @@ impl<'db> ClosureCapture<'db> {
     }
 
     pub fn usages(&self) -> CaptureUsages {
-        CaptureUsages { parent: self.owner, spans: self.capture.spans() }
+        CaptureUsages {
+            parent: self.owner,
+            spans: self.capture.spans(),
+        }
     }
 
     pub fn kind(&self) -> CaptureKind {
@@ -4747,13 +4756,19 @@ impl<'db> Type<'db> {
 
     pub fn new_slice(ty: Self) -> Self {
         let interner = DbInterner::conjure();
-        Type { env: ty.env, ty: Ty::new_slice(interner, ty.ty) }
+        Type {
+            env: ty.env,
+            ty: Ty::new_slice(interner, ty.ty),
+        }
     }
 
     pub fn new_tuple(krate: base_db::Crate, tys: &[Self]) -> Self {
         let tys = tys.iter().map(|it| it.ty);
         let interner = DbInterner::conjure();
-        Type { env: TraitEnvironment::empty(krate), ty: Ty::new_tup_from_iter(interner, tys) }
+        Type {
+            env: TraitEnvironment::empty(krate),
+            ty: Ty::new_tup_from_iter(interner, tys),
+        }
     }
 
     pub fn is_unit(&self) -> bool {
@@ -5656,7 +5671,10 @@ impl<'db> TypeNs<'db> {
     }
 
     pub fn to_type(&self, _db: &'db dyn HirDatabase) -> Type<'db> {
-        Type { env: self.env.clone(), ty: self.ty }
+        Type {
+            env: self.env.clone(),
+            ty: self.ty,
+        }
     }
 
     pub fn impls_trait(&self, infcx: InferCtxt<'db>, trait_: Trait, args: &[TypeNs<'db>]) -> bool {

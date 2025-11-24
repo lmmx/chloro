@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8537 bytes
-Chloro size:   8125 bytes
+Chloro size:   8191 bytes
 Rustfmt size:  8636 bytes
 
 ✗ Outputs DIFFER
@@ -32,17 +32,6 @@ Rustfmt size:  8636 bytes
  impl PartialEq<Symbol> for Name {
      fn eq(&self, sym: &Symbol) -> bool {
          self.symbol == *sym
- 
- impl Name {
-     fn new_text(text: &str) -> Name {
--        Name {
--            symbol: Symbol::intern(text),
--            ctx: (),
--        }
-+        Name { symbol: Symbol::intern(text), ctx: () }
-     }
- 
-     pub fn new(text: &str, mut ctx: SyntaxContext) -> Name {
          Self { symbol, ctx: () }
      }
  
@@ -50,17 +39,6 @@ Rustfmt size:  8636 bytes
      pub fn new_symbol_root(sym: Symbol) -> Self {
          Self::new_symbol(sym, SyntaxContext::root(Edition::Edition2015))
      }
-     /// name is equal only to itself. It's not clear how to implement this in
-     /// salsa though, so we punt on that bit for a moment.
-     pub const fn missing() -> Name {
--        Name {
--            symbol: sym::MISSING_NAME,
--            ctx: (),
--        }
-+        Name { symbol: sym::MISSING_NAME, ctx: () }
-     }
- 
-     /// Returns true if this is a fake name for things missing in the source code. See
      /// Returns the text this name represents if it isn't a tuple field.
      ///
      /// Do not use this for user-facing text, use `display` instead to handle editions properly.

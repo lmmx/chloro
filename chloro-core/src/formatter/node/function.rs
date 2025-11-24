@@ -194,17 +194,24 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
     if let Some(body) = func.body() {
         buf.push_str(" {\n");
 
-        // Process body contents, preserving inline comments
-        for child in body.syntax().children_with_tokens() {
-            match child {
-                NodeOrToken::Node(n) => {
-                    format_block_expr_contents(&n, buf, indent + 4);
-                }
-                NodeOrToken::Token(t) => {
-                    if t.kind() == SyntaxKind::COMMENT {
-                        write_indent(buf, indent + 4);
-                        buf.push_str(t.text());
-                        buf.push('\n');
+        // Check if the body is a single record expression (tail expression)
+        let stmt_list = body.stmt_list();
+        if let Some(stmt_list) = stmt_list {
+            // Use our block formatting which handles record expressions
+            super::block::format_stmt_list(stmt_list.syntax(), buf, indent + 4);
+        } else {
+            // Fallback: Process body contents directly
+            for child in body.syntax().children_with_tokens() {
+                match child {
+                    NodeOrToken::Node(n) => {
+                        format_block_expr_contents(&n, buf, indent + 4);
+                    }
+                    NodeOrToken::Token(t) => {
+                        if t.kind() == SyntaxKind::COMMENT {
+                            write_indent(buf, indent + 4);
+                            buf.push_str(t.text());
+                            buf.push('\n');
+                        }
                     }
                 }
             }

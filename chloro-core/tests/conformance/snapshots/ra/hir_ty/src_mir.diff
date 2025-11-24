@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48151 bytes
+Chloro size:   48217 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -216,13 +216,6 @@ Rustfmt size:  50490 bytes
      }
  
      fn project(&self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> Place<'db> {
--        Place {
--            local: self.local,
--            projection: self.projection.project(projection, store),
--        }
-+        Place { local: self.local, projection: self.projection.project(projection, store) }
-     }
- }
  
  impl<'db> From<LocalId<'db>> for Place<'db> {
      fn from(local: LocalId<'db>) -> Self {
@@ -260,17 +253,6 @@ Rustfmt size:  50490 bytes
      targets: SmallVec<[BasicBlockId<'db>; 2]>,
  }
  
-     /// Builds a switch targets definition that jumps to `then` if the tested value equals `value`,
-     /// and to `else_` if not.
-     pub fn static_if(value: u128, then: BasicBlockId<'db>, else_: BasicBlockId<'db>) -> Self {
--        Self {
--            values: smallvec![value],
--            targets: smallvec![then, else_],
--        }
-+        Self { values: smallvec![value], targets: smallvec![then, else_] }
-     }
- 
-     /// Returns the fallback target that is jumped to when none of the values match the operand.
      /// specific value. This cannot fail, as it'll return the `otherwise`
      /// branch if there's not a specific match for the value.
      pub fn target_for_value(&self, value: u128) -> BasicBlockId<'db> {

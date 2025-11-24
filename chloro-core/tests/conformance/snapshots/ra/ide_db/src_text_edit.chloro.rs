@@ -45,7 +45,10 @@ impl Indel {
     }
 
     pub fn replace(range: TextRange, replace_with: String) -> Indel {
-        Indel { delete: range, insert: replace_with }
+        Indel {
+            delete: range,
+            insert: replace_with,
+        }
     }
 
     pub fn apply(&self, text: &mut String) {

@@ -96,7 +96,10 @@ impl IntegerTypeExt for IntegerType {
     }
 
     fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db> {
-        Discr { val: 0, ty: self.to_ty(interner) }
+        Discr {
+            val: 0,
+            ty: self.to_ty(interner),
+        }
     }
 
     fn disr_incr<'db>(

@@ -206,13 +206,19 @@ impl From<VariantDef> for VariantId {
 
 impl From<Field> for FieldId {
     fn from(def: Field) -> Self {
-        FieldId { parent: def.parent.into(), local_id: def.id }
+        FieldId {
+            parent: def.parent.into(),
+            local_id: def.id,
+        }
     }
 }
 
 impl From<FieldId> for Field {
     fn from(def: FieldId) -> Self {
-        Field { parent: def.parent.into(), id: def.local_id }
+        Field {
+            parent: def.parent.into(),
+            id: def.local_id,
+        }
     }
 }
 

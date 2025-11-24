@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28476 bytes
+Chloro size:   28509 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -54,6 +54,17 @@ Rustfmt size:  28638 bytes
      fn disr_incr<'db>(
          &self,
          interner: DbInterner<'db>,
+     }
+ 
+     fn initial_discriminant<'db>(&self, interner: DbInterner<'db>) -> Discr<'db> {
+-        Discr { val: 0, ty: self.to_ty(interner) }
++        Discr {
++            val: 0,
++            ty: self.to_ty(interner),
++        }
+     }
+ 
+     fn disr_incr<'db>(
  
  pub trait IntegerExt {
      fn to_ty<'db>(&self, interner: DbInterner<'db>, signed: bool) -> Ty<'db>;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5172 bytes
-Chloro size:   4926 bytes
+Chloro size:   5106 bytes
 Rustfmt size:  5492 bytes
 
 ✗ Outputs DIFFER
@@ -36,36 +36,6 @@ Rustfmt size:  5492 bytes
  pub type MacrosItem = Item<MacroId, ImportOrExternCrate>;
  
  #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-     }
- 
-     pub fn none() -> PerNs {
--        PerNs {
--            types: None,
--            values: None,
--            macros: None,
--        }
-+        PerNs { types: None, values: None, macros: None }
-     }
- 
-     pub fn values(def: ModuleDefId, vis: Visibility, import: Option<ImportOrGlob>) -> PerNs {
--        PerNs {
--            types: None,
--            values: Some(Item { def, vis, import }),
--            macros: None,
--        }
-+        PerNs { types: None, values: Some(Item { def, vis, import }), macros: None }
-     }
- 
-     pub fn types(def: ModuleDefId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
--        PerNs {
--            types: Some(Item { def, vis, import }),
--            values: None,
--            macros: None,
--        }
-+        PerNs { types: Some(Item { def, vis, import }), values: None, macros: None }
-     }
- 
-     pub fn both(
          import: Option<ImportOrExternCrate>,
      ) -> PerNs {
          PerNs {
@@ -78,18 +48,6 @@ Rustfmt size:  5492 bytes
              values: Some(Item {
                  def: values,
                  vis,
-     }
- 
-     pub fn macros(def: MacroId, vis: Visibility, import: Option<ImportOrExternCrate>) -> PerNs {
--        PerNs {
--            types: None,
--            values: None,
--            macros: Some(Item { def, vis, import }),
--        }
-+        PerNs { types: None, values: None, macros: Some(Item { def, vis, import }) }
-     }
- 
-     pub fn is_none(&self) -> bool {
      }
  
      pub fn or_else(self, f: impl FnOnce() -> PerNs) -> PerNs {

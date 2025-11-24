@@ -345,7 +345,10 @@ impl<'db> Place<'db> {
     }
 
     fn project(&self, projection: PlaceElem<'db>, store: &mut ProjectionStore<'db>) -> Place<'db> {
-        Place { local: self.local, projection: self.projection.project(projection, store) }
+        Place {
+            local: self.local,
+            projection: self.projection.project(projection, store),
+        }
     }
 }
 
@@ -394,7 +397,10 @@ impl<'db> SwitchTargets<'db> {
     /// Builds a switch targets definition that jumps to `then` if the tested value equals `value`,
     /// and to `else_` if not.
     pub fn static_if(value: u128, then: BasicBlockId<'db>, else_: BasicBlockId<'db>) -> Self {
-        Self { values: smallvec![value], targets: smallvec![then, else_] }
+        Self {
+            values: smallvec![value],
+            targets: smallvec![then, else_],
+        }
     }
 
     /// Returns the fallback target that is jumped to when none of the values match the operand.
