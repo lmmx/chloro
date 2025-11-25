@@ -2,8 +2,8 @@
 
 use hir::{StructKind, db::HirDatabase};
 use ide_db::{
-    SymbolKind,
     documentation::{Documentation, HasDocs},
+    SymbolKind,
 };
 
 use crate::{

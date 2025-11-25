@@ -1,8 +1,8 @@
 //! Definition of `SolverDefId`
 
 use hir_def::{
-    AdtId, CallableDefId, ConstId, DefWithBodyId, EnumId, EnumVariantId, FunctionId, GeneralConstId,
-    GenericDefId, ImplId, StaticId, StructId, TraitId, TypeAliasId, UnionId,
+    AdtId, CallableDefId, ConstId, DefWithBodyId, EnumId, EnumVariantId, FunctionId,
+    GeneralConstId, GenericDefId, ImplId, StaticId, StructId, TraitId, TypeAliasId, UnionId,
 };
 use rustc_type_ir::inherent;
 use stdx::impl_from;

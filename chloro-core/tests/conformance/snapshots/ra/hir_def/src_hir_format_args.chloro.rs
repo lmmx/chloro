@@ -7,8 +7,8 @@ use rustc_parse_format as parse;
 use span::SyntaxContext;
 use stdx::TupleExt;
 use syntax::{
-    TextRange,
     ast::{self, IsString},
+    TextRange,
 };
 use PositionUsedAs::*;
 

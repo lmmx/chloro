@@ -15,11 +15,7 @@ Rustfmt size:  12415 bytes
      syntax_editor::SyntaxEditor,
      AstNode, SyntaxNode,
  };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: convert_match_to_let_else

@@ -15,13 +15,8 @@ Rustfmt size:  21200 bytes
 -
 +use crate::next_solver::{PolyFnSig, interned_vec_db};
  use super::{
--    generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
--    SolverDefId, Ty, Tys,
-+    generics::Generics,
-+    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
- };
- 
- #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]
+     generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
+     SolverDefId, Ty, Tys,
                  Ok(relation.relate(a_ct, b_ct)?.into())
              }
              (GenericArgKind::Lifetime(unpacked), x) => {

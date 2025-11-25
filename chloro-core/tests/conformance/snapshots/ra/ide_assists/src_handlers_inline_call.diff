@@ -40,7 +40,9 @@ Rustfmt size:  41039 bytes
  };
  
  use crate::{
+-    AssistId,
      assist_context::{AssistContext, Assists},
++    AssistId,
  };
  
 -// Assist: inline_into_callers

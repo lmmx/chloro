@@ -7,8 +7,8 @@ use syntax::{
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

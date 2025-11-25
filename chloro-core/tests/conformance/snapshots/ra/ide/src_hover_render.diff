@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53876 bytes
-Chloro size:   53838 bytes
+Chloro size:   53834 bytes
 Rustfmt size:  53876 bytes
 
 ✗ Outputs DIFFER
@@ -14,8 +14,8 @@ Rustfmt size:  53876 bytes
  
  use either::Either;
  use hir::{
-+    db::ExpandDatabase,
-     Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
+-    Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
++    db::ExpandDatabase, Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
      DynCompatibilityViolation, HasCrate, HasSource, HirDisplay, Layout, LayoutError,
      MethodViolationCode, Name, Semantics, Symbol, Trait, Type, TypeInfo, VariantDef,
 -    db::ExpandDatabase,
@@ -32,6 +32,12 @@ Rustfmt size:  53876 bytes
  };
  use itertools::Itertools;
  use rustc_apfloat::{
+-    Float,
+     ieee::{Half as f16, Quad as f128},
++    Float,
+ };
+ use span::{Edition, TextSize};
+ use stdx::format_to;
  use syntax::{AstNode, AstToken, Direction, SyntaxToken, T, algo, ast, match_ast};
  
  use crate::{

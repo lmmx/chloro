@@ -4,8 +4,8 @@ use std::iter;
 
 use hir::Module;
 use ide_db::{
-    FxHashSet, RootDatabase, SymbolKind,
     base_db::{SourceDatabase, VfsPath},
+    FxHashSet, RootDatabase, SymbolKind,
 };
 use syntax::{AstNode, SyntaxKind, ast};
 

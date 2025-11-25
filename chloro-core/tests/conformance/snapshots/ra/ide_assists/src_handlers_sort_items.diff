@@ -13,9 +13,8 @@ Rustfmt size:  13263 bytes
  use itertools::Itertools;
 -
  use syntax::{
--    ast::{self, HasName},
+     ast::{self, HasName},
      AstNode, SyntaxNode,
-+    ast::{self, HasName},
  };
  
 -use crate::{utils::get_methods, AssistContext, AssistId, Assists};

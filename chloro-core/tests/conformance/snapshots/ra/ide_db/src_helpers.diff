@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4302 bytes
-Chloro size:   4264 bytes
+Chloro size:   4260 bytes
 Rustfmt size:  4302 bytes
 
 ✗ Outputs DIFFER
@@ -17,6 +17,13 @@ Rustfmt size:  4302 bytes
  };
  
  use crate::{
+-    RootDatabase,
+     defs::{Definition, IdentClass},
+-    generated,
++    generated, RootDatabase,
+ };
+ 
+ pub fn item_name(db: &RootDatabase, item: ItemInNs) -> Option<Name> {
  ) -> Option<SyntaxToken> {
      tokens.max_by_key(move |t| f(t.kind()))
  }

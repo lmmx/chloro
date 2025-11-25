@@ -8,12 +8,8 @@ Rustfmt size:  17849 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use span::SyntaxContext;
- use stdx::TupleExt;
- use syntax::{
--    ast::{self, IsString},
+     ast::{self, IsString},
      TextRange,
-+    ast::{self, IsString},
  };
 +use PositionUsedAs::*;
  

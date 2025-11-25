@@ -118,11 +118,7 @@ Rustfmt size:  11050 bytes
 -
      use ide::Edition;
      use syntax::{
--        ast::{self, AstNode},
-         SmolStr,
-+        ast::{self, AstNode},
-     };
-     use syntax_bridge::{
+         ast::{self, AstNode},
          dummy_test_span_utils::{DummyTestSpanMap, DUMMY},
          syntax_node_to_token_tree, DocCommentDesugarMode,
      };

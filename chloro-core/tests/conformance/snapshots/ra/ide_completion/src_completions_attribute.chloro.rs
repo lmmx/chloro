@@ -20,8 +20,8 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
-    AstNode, Edition, SyntaxKind, T,
     ast::{self, AttrKind},
+    AstNode, Edition, SyntaxKind, T,
 };
 
 use crate::{

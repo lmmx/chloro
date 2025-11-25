@@ -13,9 +13,9 @@ use syntax::{
 use Edit::*;
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
     utils::next_prev,
+    AssistId,
 };
 
 pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

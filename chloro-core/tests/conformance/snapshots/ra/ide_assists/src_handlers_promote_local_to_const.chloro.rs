@@ -2,13 +2,13 @@ use hir::HirDisplay;
 use ide_db::{assists::AssistId, defs::Definition};
 use stdx::to_upper_snake_case;
 use syntax::{
+    ast::{self, syntax_factory::SyntaxFactory, HasName},
     AstNode,
-    ast::{self, HasName, syntax_factory::SyntaxFactory},
 };
 
 use crate::{
     assist_context::{AssistContext, Assists},
-    utils::{self},
+    utils::self,
 };
 
 pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

@@ -8,15 +8,6 @@ Rustfmt size:  14657 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use intern::Interned;
- use span::AstIdMap;
- use syntax::{
--    ast::{self, HasModuleItem, HasName},
-     AstNode,
-+    ast::{self, HasModuleItem, HasName},
- };
- use thin_vec::ThinVec;
- use triomphe::Arc;
      db::DefDatabase,
      macro_call_as_call_id,
      nameres::{
@@ -26,12 +17,8 @@ Rustfmt size:  14657 bytes
 +        attr_resolution::ResolvedAttr, diagnostics::{DefDiagnostic, DefDiagnostics}, DefMap,
 +        LocalDefMap, MacroSubNs,
      },
--    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
--    ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
-+    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId, ItemLoc,
-+    MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
- };
- 
+     AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
+     ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
  #[derive(Debug, Clone, PartialEq, Eq)]
  pub struct TraitItems {
      pub items: Box<[(Name, AssocItemId)]>,

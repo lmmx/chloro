@@ -22,15 +22,6 @@ Rustfmt size:  16896 bytes
  use std::sync::LazyLock;
  
  use ide_db::{
- };
- use itertools::Itertools;
- use syntax::{
--    ast::{self, AttrKind},
-     AstNode, Edition, SyntaxKind, T,
-+    ast::{self, AttrKind},
- };
- 
- use crate::{
      item::CompletionItem,
      Completions,
  };

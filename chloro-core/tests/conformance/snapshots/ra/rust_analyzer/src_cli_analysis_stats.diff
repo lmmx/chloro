@@ -29,7 +29,13 @@ Rustfmt size:  58546 bytes
 +    Name,
  };
  use hir_def::{
-     SyntheticSyntax,
+-    SyntheticSyntax,
+     expr_store::BodySourceMap,
+     hir::{ExprId, PatId},
++    SyntheticSyntax,
+ };
+ use ide::{
+     Analysis, AnalysisHost, AnnotationConfig, DiagnosticsConfig, Edition, InlayFieldsToResolve,
      InlayHintsConfig, LineCol, RootDatabase,
  };
  use ide_db::{

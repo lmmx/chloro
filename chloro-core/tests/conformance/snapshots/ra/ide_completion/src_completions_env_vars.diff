@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5700 bytes
-Chloro size:   5699 bytes
+Chloro size:   5691 bytes
 Rustfmt size:  5802 bytes
 
 ✗ Outputs DIFFER
@@ -13,19 +13,7 @@ Rustfmt size:  5802 bytes
 +
  use ide_db::syntax_helpers::node_ext::macro_call_for_string_token;
  use syntax::{
--    ast::{self, IsString},
-     AstToken,
-+    ast::{self, IsString},
- };
- 
- use crate::{
--    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
-+    completions::Completions,
-+    context::CompletionContext,
-+    CompletionItem, CompletionItemKind,
- };
- 
- const CARGO_DEFINED_VARS: &[(&str, &str)] = &[
+     ast::{self, IsString},
          }
      }
      let range = original.text_range_between_quotes()?;

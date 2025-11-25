@@ -6,8 +6,8 @@ use syntax::{
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

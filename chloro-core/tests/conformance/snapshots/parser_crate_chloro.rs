@@ -216,8 +216,8 @@ use crate::{
     TokenSet, T,
 };
 use crate::{
-    SyntaxKind::{self, *},
     output::Output,
+    SyntaxKind::{self, *},
 };
 pub use crate::{
     input::Input,

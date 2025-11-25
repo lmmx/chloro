@@ -5,11 +5,9 @@ use std::fmt;
 use arrayvec::ArrayVec;
 use either::Either;
 use hir::{
-    db::ExpandDatabase,
-    sym,
-    symbols::FileSymbol,
-    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId, InFile,
-    LocalSource, ModuleSource, Semantics, Symbol,
+    db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
+    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
+    Symbol,
 };
 use ide_db::{
     base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
@@ -21,8 +19,8 @@ use ide_db::{
 };
 use stdx::never;
 use syntax::{
-    AstNode, SyntaxNode, TextRange,
     ast::{self, HasName},
+    AstNode, SyntaxNode, TextRange,
 };
 
 /// `NavigationTarget` represents an element in the editor's UI which you can

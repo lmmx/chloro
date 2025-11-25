@@ -1,7 +1,7 @@
 use hir::Semantics;
 use ide_db::{
-    FileId, LineIndexDatabase, RootDatabase,
     line_index::{LineCol, LineIndex},
+    FileId, LineIndexDatabase, RootDatabase,
 };
 use span::{TextRange, TextSize};
 use stdx::format_to;

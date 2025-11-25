@@ -2,8 +2,8 @@ use either::Either;
 use hir::InFile;
 use ide_db::FileRange;
 use syntax::{
-    AstNode, AstPtr,
     ast::{self, HasArgList},
+    AstNode, AstPtr,
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};

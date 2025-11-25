@@ -53,9 +53,8 @@ use crate::{
     IncorrectGenericsLenKind, Rawness, TraitEnvironment,
 };
 use super::{
-    cast::CastCheck,
-    find_breakable, BreakableContext, Diverges, Expectation, InferenceContext, InferenceDiagnostic,
-    TypeMismatch,
+    cast::CastCheck, find_breakable, BreakableContext, Diverges, Expectation, InferenceContext,
+    InferenceDiagnostic, TypeMismatch,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]

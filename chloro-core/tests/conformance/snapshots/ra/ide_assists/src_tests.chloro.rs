@@ -15,8 +15,8 @@ use test_fixture::WithFixture;
 use test_utils::{assert_eq_text, extract_offset};
 
 use crate::{
-    handlers::Handler,
-    Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
+    handlers::Handler, Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy,
+    Assists, SingleResolve,
 };
 
 pub(crate) const TEST_CONFIG: AssistConfig = AssistConfig {

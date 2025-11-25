@@ -15,8 +15,8 @@ use syntax::{
 };
 
 use crate::{
-    AssistConfig,
     assist_context::{AssistContext, Assists},
+    AssistConfig,
 };
 
 pub(crate) fn generate_blanket_trait_impl(

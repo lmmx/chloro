@@ -5,9 +5,8 @@ use ena::{
     unify::{self as ut, UnifyKey},
 };
 use rustc_type_ir::{
-    inherent::IntoKind,
-    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeVisitableExt,
+    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
+    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
 };
 
 use crate::next_solver::{

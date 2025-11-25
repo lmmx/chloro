@@ -12,8 +12,8 @@ use ide_db::{
 use itertools::Itertools;
 use stdx::{format_to, never};
 use syntax::{
+    ast::{make, self},
     Edition, SyntaxKind, SyntaxNode,
-    ast::{self, make},
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity, fix};

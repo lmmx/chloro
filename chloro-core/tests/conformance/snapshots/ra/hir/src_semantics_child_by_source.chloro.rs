@@ -13,7 +13,8 @@ use hir_def::{
     nameres::DefMap,
     src::{HasChildSource, HasSource},
     AdtId, AssocItemId, AstIdLoc, DefWithBodyId, EnumId, FieldId, GenericDefId, ImplId,
-    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId, VariantId,
+    LifetimeParamId, Lookup, MacroId, ModuleDefId, ModuleId, TraitId, TypeOrConstParamId,
+    VariantId,
 };
 use hir_expand::{HirFileId, attrs::collect_attrs};
 use span::AstIdNode;

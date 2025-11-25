@@ -44,8 +44,8 @@ use hir_ty::{
 use intern::sym;
 use itertools::Itertools;
 use rustc_type_ir::{
-    AliasTyKind,
     inherent::{AdtDef, IntoKind, Ty as _},
+    AliasTyKind,
 };
 use smallvec::SmallVec;
 use stdx::never;

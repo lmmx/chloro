@@ -2,8 +2,8 @@ use hir::{InFile, db::ExpandDatabase};
 use ide_db::source_change::SourceChange;
 use ide_db::text_edit::TextEdit;
 use syntax::{
-    AstNode, TextRange,
     ast::{self, HasArgList},
+    AstNode, TextRange,
 };
 
 use crate::{Assist, Diagnostic, DiagnosticCode, DiagnosticsContext, fix};

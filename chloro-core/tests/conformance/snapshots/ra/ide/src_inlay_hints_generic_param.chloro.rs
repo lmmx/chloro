@@ -3,8 +3,8 @@
 use either::Either;
 use ide_db::{active_parameter::generic_def_for_node, famous_defs::FamousDefs};
 use syntax::{
-    AstNode,
     ast::{self, AnyHasGenericArgs, HasGenericArgs, HasName},
+    AstNode,
 };
 
 use crate::{

@@ -2,8 +2,8 @@
 
 use ide_db::SymbolKind;
 use syntax::{
-    SmolStr,
     ast::{self, Expr},
+    SmolStr,
 };
 
 use crate::{

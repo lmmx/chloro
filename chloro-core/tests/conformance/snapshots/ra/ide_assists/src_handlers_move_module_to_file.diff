@@ -18,8 +18,8 @@ Rustfmt size:  8186 bytes
  use stdx::format_to;
  use syntax::{
 -    ast::{self, edit::AstNodeEdit, HasName},
++    ast::{edit::AstNodeEdit, self, HasName},
      AstNode, SmolStr, TextRange,
-+    ast::{self, HasName, edit::AstNodeEdit},
  };
  
  use crate::{AssistContext, AssistId, Assists};

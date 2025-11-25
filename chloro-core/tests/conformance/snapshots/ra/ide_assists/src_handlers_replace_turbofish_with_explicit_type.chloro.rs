@@ -5,8 +5,8 @@ use syntax::{
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn replace_turbofish_with_explicit_type(

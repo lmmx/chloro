@@ -37,8 +37,8 @@ use salsa::plumbing::{AsId, FromId};
 use span::{Edition, ErasedFileAstId, FileAstId, Span, SpanAnchor, SyntaxContext};
 use stdx::TupleExt;
 use syntax::{
-    SyntaxNode, SyntaxToken, TextRange, TextSize,
     ast::{self, AstNode},
+    SyntaxNode, SyntaxToken, TextRange, TextSize,
 };
 use triomphe::Arc;
 

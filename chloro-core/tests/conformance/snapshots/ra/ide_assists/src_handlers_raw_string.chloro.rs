@@ -1,7 +1,7 @@
 use ide_db::source_change::SourceChangeBuilder;
 use syntax::{
+    ast::{make::tokens::literal, self, IsString},
     AstToken,
-    ast::{self, IsString, make::tokens::literal},
 };
 
 use crate::{

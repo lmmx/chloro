@@ -23,6 +23,15 @@ Rustfmt size:  25126 bytes
  };
  use intern::sym;
  use itertools::Itertools;
+ use rustc_pattern_analysis::constructor::Constructor;
+ use rustc_type_ir::inherent::{AdtDef, IntoKind};
+ use syntax::{
+-    AstNode,
+     ast::{self, UnaryOp},
++    AstNode,
+ };
+ use tracing::debug;
+ use triomphe::Arc;
  use typed_arena::Arena;
  
  use crate::{

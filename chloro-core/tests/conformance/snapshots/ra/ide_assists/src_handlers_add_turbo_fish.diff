@@ -16,11 +16,7 @@ Rustfmt size:  12073 bytes
      syntax_editor::Position,
      AstNode,
  };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: add_turbo_fish

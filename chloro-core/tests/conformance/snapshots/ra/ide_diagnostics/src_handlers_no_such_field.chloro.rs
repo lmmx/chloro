@@ -3,14 +3,13 @@ use hir::{HasSource, HirDisplay, Semantics, VariantId, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{EditionedFileId, RootDatabase, source_change::SourceChange};
 use syntax::{
+    ast::{edit::IndentLevel, make, self},
     AstNode,
-    ast::{self, edit::IndentLevel, make},
 };
 
 use crate::{
-    fix,
-    handlers::private_field::field_is_private_fixes,
-    Assist, Diagnostic, DiagnosticCode, DiagnosticsContext,
+    fix, handlers::private_field::field_is_private_fixes, Assist, Diagnostic, DiagnosticCode,
+    DiagnosticsContext,
 };
 
 pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) -> Diagnostic {

@@ -52,7 +52,9 @@ Rustfmt size:  45288 bytes
  };
  
  use crate::{
+-    AssistConfig,
      assist_context::{AssistContext, SourceChangeBuilder},
++    AssistConfig,
  };
  
 -mod gen_trait_fn_body;

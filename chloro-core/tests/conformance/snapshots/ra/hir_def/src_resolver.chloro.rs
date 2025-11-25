@@ -4,9 +4,9 @@ use std::{fmt, mem};
 
 use base_db::Crate;
 use hir_expand::{
-    MacroDefId,
     mod_path::{ModPath, PathKind},
     name::{AsName, Name},
+    MacroDefId,
 };
 use intern::{Symbol, sym};
 use itertools::Itertools as _;
@@ -28,11 +28,11 @@ use crate::{
     src::HasSource,
     type_ref::LifetimeRef,
     visibility::{RawVisibility, Visibility},
-    AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId, EnumVariantId,
-    ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId, GenericParamId, HasModule,
-    ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup, Macro2Id, MacroId,
-    MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId, TraitId, TypeAliasId,
-    TypeOrConstParamId, TypeParamId, UseId, VariantId,
+    AdtId, AstIdLoc, ConstId, ConstParamId, CrateRootModuleId, DefWithBodyId, EnumId,
+    EnumVariantId, ExternBlockId, ExternCrateId, FunctionId, FxIndexMap, GenericDefId,
+    GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId, LocalModuleId, Lookup,
+    Macro2Id, MacroId, MacroRulesId, ModuleDefId, ModuleId, ProcMacroId, StaticId, StructId,
+    TraitId, TypeAliasId, TypeOrConstParamId, TypeParamId, UseId, VariantId,
 };
 
 #[derive(Debug, Clone)]

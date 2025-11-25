@@ -11,8 +11,8 @@ use hir_expand::{
 };
 use intern::{Interned, sym};
 use syntax::{
-    AstPtr,
     ast::{self, AstNode, HasGenericArgs},
+    AstPtr,
 };
 
 use crate::expr_store::{

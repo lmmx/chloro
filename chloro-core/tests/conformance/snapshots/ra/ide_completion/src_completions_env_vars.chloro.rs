@@ -3,14 +3,12 @@
 
 use ide_db::syntax_helpers::node_ext::macro_call_for_string_token;
 use syntax::{
-    AstToken,
     ast::{self, IsString},
+    AstToken,
 };
 
 use crate::{
-    completions::Completions,
-    context::CompletionContext,
-    CompletionItem, CompletionItemKind,
+    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
 };
 
 const CARGO_DEFINED_VARS: &[(&str, &str)] = &[

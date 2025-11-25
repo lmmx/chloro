@@ -31,8 +31,8 @@ use hir_def::{
     },
     AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
     FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
-    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
-    VariantId,
+    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
+    UnionId, VariantId,
 };
 use hir_expand::name::Name;
 use la_arena::{Arena, ArenaMap, Idx};
@@ -44,7 +44,7 @@ use rustc_type_ir::{
     inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
     AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
     ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate,
-    TyKind::{self},
+    TyKind::self,
     TypeVisitableExt,
 };
 use salsa::plumbing::AsId;

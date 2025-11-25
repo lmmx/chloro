@@ -11,9 +11,8 @@ use syntax::{
 };
 
 use crate::{
-    RootDatabase,
     defs::{Definition, IdentClass},
-    generated,
+    generated, RootDatabase,
 };
 
 pub fn item_name(db: &RootDatabase, item: ItemInNs) -> Option<Name> {

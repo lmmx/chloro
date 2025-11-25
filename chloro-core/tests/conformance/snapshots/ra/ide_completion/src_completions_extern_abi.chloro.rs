@@ -1,14 +1,12 @@
 //! Completes function abi strings.
 
 use syntax::{
-    AstNode, AstToken, SmolStr,
     ast::{self, IsString},
+    AstNode, AstToken, SmolStr,
 };
 
 use crate::{
-    completions::Completions,
-    context::CompletionContext,
-    CompletionItem, CompletionItemKind,
+    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
 };
 
 const SUPPORTED_CALLING_CONVENTIONS: &[&str] = &[

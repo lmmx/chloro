@@ -3,17 +3,16 @@
 use std::{convert::Infallible, ops::ControlFlow};
 
 use hir::{
-    db::HirDatabase,
-    AsAssocItem, AssocItem, AssocItemContainer, Complete, Crate, FindPathConfig, HasCrate, ItemInNs,
-    ModPath, Module, ModuleDef, Name, PathResolution, PrefixKind, ScopeDef, Semantics,
-    SemanticsScope, Trait, TyFingerprint, Type,
+    db::HirDatabase, AsAssocItem, AssocItem, AssocItemContainer, Complete, Crate, FindPathConfig,
+    HasCrate, ItemInNs, ModPath, Module, ModuleDef, Name, PathResolution, PrefixKind, ScopeDef,
+    Semantics, SemanticsScope, Trait, TyFingerprint, Type,
 };
 use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 use syntax::{
+    ast::{make, self, HasName},
     AstNode, SyntaxNode,
-    ast::{self, HasName, make},
 };
 
 use crate::{

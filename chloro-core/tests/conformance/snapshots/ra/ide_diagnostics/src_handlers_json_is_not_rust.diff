@@ -12,8 +12,8 @@ Rustfmt size:  11337 bytes
  use stdx::{format_to, never};
  use syntax::{
 -    ast::{self, make},
++    ast::{make, self},
      Edition, SyntaxKind, SyntaxNode,
-+    ast::{self, make},
  };
  
 -use crate::{fix, Diagnostic, DiagnosticCode, DiagnosticsConfig, Severity};

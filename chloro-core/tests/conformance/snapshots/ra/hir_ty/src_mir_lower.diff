@@ -33,8 +33,8 @@ Rustfmt size:  95826 bytes
 -    lang_item::{LangItem, LangItemTarget, lang_item},
 +    lang_item::{lang_item, LangItem, LangItemTarget},
      resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
-+    AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId,
-+    LocalFieldId, Lookup, TraitId, TupleId,
++    AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule,
++    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleId,
  };
  use hir_expand::name::Name;
  use la_arena::ArenaMap;

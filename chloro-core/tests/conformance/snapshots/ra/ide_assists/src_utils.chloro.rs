@@ -32,8 +32,8 @@ use syntax::{
 };
 
 use crate::{
-    AssistConfig,
     assist_context::{AssistContext, SourceChangeBuilder},
+    AssistConfig,
 };
 
 pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {

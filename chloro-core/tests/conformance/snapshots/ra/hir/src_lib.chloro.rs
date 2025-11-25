@@ -63,9 +63,8 @@ use hir_def::{
     TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
 };
 use hir_expand::{
-    attrs::collect_attrs,
-    proc_macro::ProcMacroKind,
-    AstId, MacroCallKind, RenderedExpandError, ValueResult,
+    attrs::collect_attrs, proc_macro::ProcMacroKind, AstId, MacroCallKind, RenderedExpandError,
+    ValueResult,
 };
 pub use hir_ty::next_solver;
 pub use hir_ty::setup_tracing;

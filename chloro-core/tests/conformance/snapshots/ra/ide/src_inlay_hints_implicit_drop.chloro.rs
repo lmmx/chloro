@@ -13,9 +13,8 @@ use hir::{
 };
 use ide_db::{FileRange, famous_defs::FamousDefs};
 use syntax::{
-    ToSmolStr,
     ast::{self, AstNode},
-    match_ast,
+    match_ast, ToSmolStr,
 };
 
 use crate::{InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind};

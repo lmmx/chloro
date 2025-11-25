@@ -25,15 +25,6 @@ Rustfmt size:  14808 bytes
  use rustc_abi::{
      AddressSpace, Float, Integer, LayoutCalculator, Primitive, ReprOptions, Scalar, StructKind,
      TargetDataLayout, WrappingRange,
- };
- use rustc_index::IndexVec;
- use rustc_type_ir::{
--    inherent::{IntoKind, SliceLike},
-     FloatTy, IntTy, UintTy,
-+    inherent::{IntoKind, SliceLike},
- };
- use triomphe::Arc;
- 
      consteval::try_const_usize,
      db::HirDatabase,
      next_solver::{

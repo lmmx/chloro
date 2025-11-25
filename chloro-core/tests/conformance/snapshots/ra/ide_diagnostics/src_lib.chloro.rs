@@ -30,9 +30,7 @@ use std::{iter, sync::LazyLock};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase,
-    diagnostics::AnyDiagnostic,
-    Crate, DisplayTarget, InFile, Semantics,
+    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
 };
 use ide_db::{
     assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},

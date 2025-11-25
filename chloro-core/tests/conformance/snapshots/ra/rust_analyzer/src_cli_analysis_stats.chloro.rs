@@ -16,9 +16,9 @@ use hir::{
     Name,
 };
 use hir_def::{
-    SyntheticSyntax,
     expr_store::BodySourceMap,
     hir::{ExprId, PatId},
+    SyntheticSyntax,
 };
 use ide::{
     Analysis, AnalysisHost, AnnotationConfig, DiagnosticsConfig, Edition, InlayFieldsToResolve,

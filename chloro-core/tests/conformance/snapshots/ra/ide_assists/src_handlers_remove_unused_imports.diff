@@ -8,13 +8,6 @@ Rustfmt size:  21244 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-     FxHashMap, RootDatabase,
- };
- use syntax::{
--    ast::{self, Rename},
-     AstNode,
-+    ast::{self, Rename},
- };
  
  use crate::{AssistContext, AssistId, Assists};
  

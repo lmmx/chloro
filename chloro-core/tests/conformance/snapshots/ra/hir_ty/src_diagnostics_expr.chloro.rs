@@ -22,8 +22,8 @@ use rustc_hash::FxHashSet;
 use rustc_pattern_analysis::constructor::Constructor;
 use rustc_type_ir::inherent::{AdtDef, IntoKind};
 use syntax::{
-    AstNode,
     ast::{self, UnaryOp},
+    AstNode,
 };
 use tracing::debug;
 use triomphe::Arc;

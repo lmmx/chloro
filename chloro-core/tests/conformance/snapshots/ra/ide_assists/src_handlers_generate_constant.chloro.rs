@@ -1,8 +1,8 @@
 use hir::{HasVisibility, HirDisplay, Module};
 use ide_db::{
-    FileId,
     assists::AssistId,
     defs::{Definition, NameRefClass},
+    FileId,
 };
 use syntax::{
     ast::{edit::IndentLevel, self, NameRef},

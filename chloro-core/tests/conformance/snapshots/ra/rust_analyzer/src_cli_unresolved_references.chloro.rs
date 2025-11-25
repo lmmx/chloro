@@ -3,9 +3,8 @@
 use hir::{AnyDiagnostic, Crate, Module, Semantics, db::HirDatabase, sym};
 use ide::{AnalysisHost, RootDatabase, TextRange};
 use ide_db::{
-    base_db::SourceDatabase,
-    defs::NameRefClass,
-    EditionedFileId, FxHashSet, LineIndexDatabase as _,
+    base_db::SourceDatabase, defs::NameRefClass, EditionedFileId, FxHashSet,
+    LineIndexDatabase as _,
 };
 use load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
 use parser::SyntaxKind;

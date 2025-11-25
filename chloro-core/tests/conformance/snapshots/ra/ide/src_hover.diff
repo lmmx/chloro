@@ -17,8 +17,9 @@ Rustfmt size:  25435 bytes
  use either::Either;
  use hir::{
 -    DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
-     db::DefDatabase,
-+    DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
+-    db::DefDatabase,
++    db::DefDatabase, DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem,
++    Semantics,
  };
  use ide_db::{
 -    FileRange, FxIndexSet, MiniCore, Ranker, RootDatabase,
@@ -30,6 +31,13 @@ Rustfmt size:  25435 bytes
  };
  use itertools::{Itertools, multizip};
  use macros::UpmapFromRaFixture;
+ use span::{Edition, TextRange};
+ use syntax::{
+-    AstNode, AstToken,
++    ast, AstNode, AstToken,
+     SyntaxKind::{self, *},
+-    SyntaxNode, T, ast,
++    SyntaxNode, T,
  };
  
  use crate::{

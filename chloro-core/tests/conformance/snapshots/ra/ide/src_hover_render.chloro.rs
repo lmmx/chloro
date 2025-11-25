@@ -4,8 +4,7 @@ use std::{env, mem, ops::Not};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase,
-    Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
+    db::ExpandDatabase, Adt, AsAssocItem, AsExternAssocItem, CaptureKind, DisplayTarget, DropGlue,
     DynCompatibilityViolation, HasCrate, HasSource, HirDisplay, Layout, LayoutError,
     MethodViolationCode, Name, Semantics, Symbol, Trait, Type, TypeInfo, VariantDef,
 };
@@ -19,8 +18,8 @@ use ide_db::{
 };
 use itertools::Itertools;
 use rustc_apfloat::{
-    Float,
     ieee::{Half as f16, Quad as f128},
+    Float,
 };
 use span::{Edition, TextSize};
 use stdx::format_to;

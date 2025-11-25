@@ -18,10 +18,7 @@ use ide::{
     UpdateTest,
 };
 use ide_db::{
-    assists,
-    rust_doc::format_docs,
-    source_change::ChangeAnnotationId,
-    FxHasher, MiniCore,
+    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
 };
 use itertools::Itertools;
 use paths::{Utf8Component, Utf8Prefix};

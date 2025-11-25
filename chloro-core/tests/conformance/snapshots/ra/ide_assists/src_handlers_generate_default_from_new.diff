@@ -16,10 +16,7 @@ Rustfmt size:  13024 bytes
      AstNode,
  };
  
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: generate_default_from_new

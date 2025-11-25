@@ -7,16 +7,13 @@ use smallvec::SmallVec;
 pub use span::FileId;
 use span::{TextRange, TextSize};
 use syntax::{
-    AstToken, SmolStr,
     ast::{self, IsString},
+    AstToken, SmolStr,
 };
 
 use crate::{
-    active_parameter::ActiveParameter,
-    documentation::Documentation,
-    range_mapper::RangeMapper,
-    search::ReferenceCategory,
-    MiniCore, RootDatabase, SymbolKind,
+    active_parameter::ActiveParameter, documentation::Documentation, range_mapper::RangeMapper,
+    search::ReferenceCategory, MiniCore, RootDatabase, SymbolKind,
 };
 
 impl RootDatabase {

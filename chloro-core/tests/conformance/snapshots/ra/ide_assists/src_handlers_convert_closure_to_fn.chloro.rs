@@ -1,12 +1,8 @@
 use either::Either;
 use hir::{CaptureKind, ClosureCapture, FileRangeWrapper, HirDisplay};
 use ide_db::{
-    assists::AssistId,
-    base_db::SourceDatabase,
-    defs::Definition,
-    search::FileReferenceNode,
-    source_change::SourceChangeBuilder,
-    FxHashSet,
+    assists::AssistId, base_db::SourceDatabase, defs::Definition, search::FileReferenceNode,
+    source_change::SourceChangeBuilder, FxHashSet,
 };
 use stdx::format_to;
 use syntax::{

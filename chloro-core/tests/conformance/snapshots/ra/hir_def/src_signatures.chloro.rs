@@ -5,8 +5,8 @@ use std::{cell::LazyCell, ops::Not as _};
 use bitflags::bitflags;
 use cfg::{CfgExpr, CfgOptions};
 use hir_expand::{
-    InFile, Intern, Lookup,
     name::{AsName, Name},
+    InFile, Intern, Lookup,
 };
 use intern::{Symbol, sym};
 use la_arena::{Arena, Idx};

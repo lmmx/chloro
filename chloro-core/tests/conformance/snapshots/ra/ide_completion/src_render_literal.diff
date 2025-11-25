@@ -13,12 +13,8 @@ Rustfmt size:  6748 bytes
 -use hir::{db::HirDatabase, StructKind};
 +use hir::{StructKind, db::HirDatabase};
  use ide_db::{
--    documentation::{Documentation, HasDocs},
+     documentation::{Documentation, HasDocs},
      SymbolKind,
-+    documentation::{Documentation, HasDocs},
- };
- 
- use crate::{
      render::{
          compute_type_match,
          variant::{

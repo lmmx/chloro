@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   225619 bytes
+Chloro size:   225615 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -68,9 +68,9 @@ Rustfmt size:  227843 bytes
  };
  use hir_expand::{
 -    AstId, MacroCallKind, RenderedExpandError, ValueResult, attrs::collect_attrs,
-+    attrs::collect_attrs,
-     proc_macro::ProcMacroKind,
-+    AstId, MacroCallKind, RenderedExpandError, ValueResult,
+-    proc_macro::ProcMacroKind,
++    attrs::collect_attrs, proc_macro::ProcMacroKind, AstId, MacroCallKind, RenderedExpandError,
++    ValueResult,
  };
 +pub use hir_ty::next_solver;
 +pub use hir_ty::setup_tracing;

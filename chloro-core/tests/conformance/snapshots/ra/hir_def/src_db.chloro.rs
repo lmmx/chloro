@@ -3,8 +3,8 @@
 use base_db::{Crate, RootQueryDb, SourceDatabase};
 use either::Either;
 use hir_expand::{
-    db::ExpandDatabase,
-    EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId, MacroDefKind,
+    db::ExpandDatabase, EditionedFileId, HirFileId, InFile, Lookup, MacroCallId, MacroDefId,
+    MacroDefKind,
 };
 use intern::sym;
 use la_arena::ArenaMap;

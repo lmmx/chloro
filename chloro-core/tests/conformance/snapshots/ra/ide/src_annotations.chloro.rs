@@ -2,9 +2,8 @@ mod fn_references;
 
 use hir::{HasSource, InFile, InRealFile, Semantics};
 use ide_db::{
-    defs::Definition,
-    helpers::visit_file_defs,
-    FileId, FilePosition, FileRange, FxIndexSet, MiniCore, RootDatabase,
+    defs::Definition, helpers::visit_file_defs, FileId, FilePosition, FileRange, FxIndexSet,
+    MiniCore, RootDatabase,
 };
 use itertools::Itertools;
 use syntax::{AstNode, TextRange, ast::HasName};

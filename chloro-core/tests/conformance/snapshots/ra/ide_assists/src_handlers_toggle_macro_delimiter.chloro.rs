@@ -1,7 +1,7 @@
 use ide_db::assists::AssistId;
 use syntax::{
-    AstNode, SyntaxToken, T,
     ast::{self, syntax_factory::SyntaxFactory},
+    AstNode, SyntaxToken, T,
 };
 
 use crate::{AssistContext, Assists};

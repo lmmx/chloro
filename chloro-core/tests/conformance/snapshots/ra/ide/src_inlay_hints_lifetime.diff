@@ -19,15 +19,17 @@ Rustfmt size:  17157 bytes
  use itertools::Itertools;
 -use syntax::{SmolStr, format_smolstr};
  use syntax::{
-     SyntaxKind, SyntaxToken,
+-    SyntaxKind, SyntaxToken,
      ast::{self, AstNode, HasGenericParams, HasName},
++    SyntaxKind, SyntaxToken,
  };
 +use syntax::{SmolStr, format_smolstr};
  
  use crate::{
 -    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
-     inlay_hints::InlayHintCtx,
-+    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
+-    inlay_hints::InlayHintCtx,
++    inlay_hints::InlayHintCtx, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
++    LifetimeElisionHints,
  };
  
  pub(super) fn fn_hints(

@@ -5,15 +5,4 @@ Original size: 1159 bytes
 Chloro size:   1159 bytes
 Rustfmt size:  1159 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- //! Completion of field list position.
- 
- use crate::{
--    context::{PathCompletionCtx, Qualified},
-     CompletionContext, Completions,
-+    context::{PathCompletionCtx, Qualified},
- };
- 
- pub(crate) fn complete_field_list_tuple_variant(
+✓ Outputs are IDENTICAL

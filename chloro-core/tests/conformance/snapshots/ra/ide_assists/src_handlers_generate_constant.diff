@@ -11,10 +11,8 @@ Rustfmt size:  8317 bytes
 -use crate::assist_context::{AssistContext, Assists};
  use hir::{HasVisibility, HirDisplay, Module};
  use ide_db::{
-+    FileId,
      assists::AssistId,
-     defs::{Definition, NameRefClass},
--    FileId,
+     FileId,
  };
  use syntax::{
 -    ast::{self, edit::IndentLevel, NameRef},

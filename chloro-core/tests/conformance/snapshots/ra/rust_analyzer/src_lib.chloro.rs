@@ -34,9 +34,7 @@ use serde::de::DeserializeOwned;
 pub(crate) use try_default_ as try_default;
 
 pub use crate::{
-    lsp::capabilities::server_capabilities,
-    main_loop::main_loop,
-    reload::ws_to_crate_graph,
+    lsp::capabilities::server_capabilities, main_loop::main_loop, reload::ws_to_crate_graph,
     version::version,
 };
 use self::lsp::ext as lsp_ext;

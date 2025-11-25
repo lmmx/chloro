@@ -16,13 +16,6 @@ Rustfmt size:  23079 bytes
  use itertools::Itertools;
  use rustc_hash::FxHashMap;
  use stdx::format_to;
- use syntax::{
--    ast::{self, AstNode, HasName},
-     SyntaxNode,
-+    ast::{self, AstNode, HasName},
- };
- use test_fixture::WithFixture;
- use triomphe::Arc;
      InferenceResult,
  };
  

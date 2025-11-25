@@ -17,7 +17,9 @@ Rustfmt size:  23406 bytes
  };
  
  use crate::{
+-    AssistId,
      assist_context::{AssistContext, Assists},
++    AssistId,
  };
  
 -// Assist: expand_glob_import

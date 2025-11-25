@@ -9,9 +9,9 @@ use hir_expand::name::Name;
 use intern::sym;
 use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};
 use rustc_type_ir::{
-    TypingMode,
     inherent::{IntoKind, Span as _},
     solve::Certainty,
+    TypingMode,
 };
 use triomphe::Arc;
 

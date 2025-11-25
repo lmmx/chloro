@@ -3,8 +3,8 @@ use std::fmt::Display;
 use hir::{ModPath, ModuleDef};
 use ide_db::{RootDatabase, famous_defs::FamousDefs};
 use syntax::{
-    AstNode, Edition, SyntaxNode,
     ast::{self, HasName},
+    AstNode, Edition, SyntaxNode,
 };
 
 use crate::{

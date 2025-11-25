@@ -28,9 +28,7 @@ use hir::{
     HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
 };
 use ide_db::{
-    famous_defs::FamousDefs,
-    text_edit::TextEditBuilder,
-    FileRange, MiniCore, RootDatabase,
+    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
 };
 use ide_db::{FxHashSet, text_edit::TextEdit};
 use itertools::Itertools;

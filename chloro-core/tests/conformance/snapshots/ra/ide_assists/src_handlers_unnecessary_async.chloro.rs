@@ -6,8 +6,8 @@ use ide_db::{
     EditionedFileId,
 };
 use syntax::{
-    AstNode, SyntaxKind, TextRange,
     ast::{self, NameRef},
+    AstNode, SyntaxKind, TextRange,
 };
 
 use crate::{AssistContext, Assists};

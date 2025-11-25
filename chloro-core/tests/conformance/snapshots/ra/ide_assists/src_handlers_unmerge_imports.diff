@@ -14,11 +14,7 @@ Rustfmt size:  6089 bytes
      syntax_editor::{Element, Position, Removable},
      AstNode, SyntaxKind,
  };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: unmerge_imports

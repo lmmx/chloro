@@ -8,15 +8,8 @@ Rustfmt size:  6513 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Database used for testing `hir`.
- 
- use std::{fmt, panic, sync::Mutex};
- 
- use base_db::{
--    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
--    SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
-+    CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb, SourceDatabase,
-+    SourceRoot, SourceRootId, SourceRootInput,
+     CrateGraphBuilder, CratesMap, FileSourceRootInput, FileText, Nonce, RootQueryDb,
+     SourceDatabase, SourceRoot, SourceRootId, SourceRootInput,
  };
 -
 -use hir_def::{db::DefDatabase, nameres::crate_def_map, ModuleId};

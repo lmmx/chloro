@@ -5,9 +5,8 @@ use std::{fmt, mem};
 use hir::Mutability;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    documentation::Documentation,
-    imports::import_assets::LocatedImport,
-    RootDatabase, SnippetCap, SymbolKind,
+    documentation::Documentation, imports::import_assets::LocatedImport, RootDatabase, SnippetCap,
+    SymbolKind,
 };
 use itertools::Itertools;
 use macros::UpmapFromRaFixture;

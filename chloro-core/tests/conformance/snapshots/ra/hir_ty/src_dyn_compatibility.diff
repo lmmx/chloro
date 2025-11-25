@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18694 bytes
-Chloro size:   18347 bytes
+Chloro size:   18343 bytes
 Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
@@ -16,9 +16,7 @@ Rustfmt size:  18694 bytes
  use std::ops::ControlFlow;
  
  use hir_def::{
-+    hir::generics::LocalTypeOrConstParamId,
-+    lang_item::LangItem,
-+    signatures::TraitFlags,
++    hir::generics::LocalTypeOrConstParamId, lang_item::LangItem, signatures::TraitFlags,
      AssocItemId, ConstId, CrateRootModuleId, FunctionId, GenericDefId, HasModule, TraitId,
 -    TypeAliasId, TypeOrConstParamId, TypeParamId, hir::generics::LocalTypeOrConstParamId,
 -    lang_item::LangItem, signatures::TraitFlags,
@@ -30,7 +28,8 @@ Rustfmt size:  18694 bytes
 -    Upcast, elaborate,
 +    elaborate,
      inherent::{IntoKind, SliceLike},
-+    AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _, Upcast,
++    AliasTyKind, ClauseKind, PredicatePolarity, TypeSuperVisitable as _, TypeVisitable as _,
++    Upcast,
  };
  use smallvec::SmallVec;
  

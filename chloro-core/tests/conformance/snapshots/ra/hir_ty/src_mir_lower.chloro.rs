@@ -17,8 +17,8 @@ use hir_def::{
     item_tree::FieldsShape,
     lang_item::{lang_item, LangItem, LangItemTarget},
     resolver::{HasResolver, ResolveValueResult, Resolver, ValueNs},
-    AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule, ItemContainerId,
-    LocalFieldId, Lookup, TraitId, TupleId,
+    AdtId, DefWithBodyId, EnumVariantId, GeneralConstId, GenericParamId, HasModule,
+    ItemContainerId, LocalFieldId, Lookup, TraitId, TupleId,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;

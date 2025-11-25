@@ -15,8 +15,8 @@ use ide_db::{
 };
 use stdx::format_to;
 use syntax::{
+    ast::{make, self},
     AstNode, Edition, SyntaxNode, SyntaxNodePtr, ToSmolStr,
-    ast::{self, make},
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, fix};

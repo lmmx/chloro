@@ -1,8 +1,8 @@
 //! Completion of field list position.
 
 use crate::{
-    CompletionContext, Completions,
     context::{PathCompletionCtx, Qualified},
+    CompletionContext, Completions,
 };
 
 pub(crate) fn complete_field_list_tuple_variant(

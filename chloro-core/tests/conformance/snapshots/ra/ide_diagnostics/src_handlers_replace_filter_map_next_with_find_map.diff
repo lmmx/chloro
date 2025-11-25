@@ -13,9 +13,7 @@ Rustfmt size:  5400 bytes
  use ide_db::source_change::SourceChange;
  use ide_db::text_edit::TextEdit;
  use syntax::{
--    ast::{self, HasArgList},
      AstNode, TextRange,
-+    ast::{self, HasArgList},
  };
  
 -use crate::{fix, Assist, Diagnostic, DiagnosticCode, DiagnosticsContext};

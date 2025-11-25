@@ -32,8 +32,8 @@ use intern::{Internable, Interned, sym};
 use itertools::Itertools;
 use la_arena::ArenaMap;
 use rustc_apfloat::{
-    Float,
     ieee::{Half as f16, Quad as f128},
+    Float,
 };
 use rustc_ast_ir::FloatTy;
 use rustc_hash::FxHashSet;

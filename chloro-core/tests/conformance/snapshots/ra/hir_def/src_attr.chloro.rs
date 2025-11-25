@@ -16,8 +16,8 @@ use mbe::DelimiterKind;
 use rustc_abi::ReprOptions;
 use span::AstIdNode;
 use syntax::{
-    AstPtr,
     ast::{self, HasAttrs},
+    AstPtr,
 };
 use triomphe::Arc;
 use tt::iter::{TtElement, TtIter};
@@ -28,7 +28,8 @@ use crate::{
     lang_item::LangItem,
     nameres::{ModuleOrigin, ModuleSource},
     src::{HasChildSource, HasSource},
-    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId, VariantId,
+    AdtId, AstIdLoc, AttrDefId, GenericParamId, HasModule, LocalFieldId, Lookup, MacroId,
+    VariantId,
 };
 
 /// Desugared attributes of an item post `cfg_attr` expansion.

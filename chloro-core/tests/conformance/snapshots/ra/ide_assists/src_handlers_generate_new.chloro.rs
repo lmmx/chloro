@@ -1,6 +1,5 @@
 use ide_db::{
-    imports::import_assets::item_for_path_search,
-    syntax_helpers::suggest_name::NameGenerator,
+    imports::import_assets::item_for_path_search, syntax_helpers::suggest_name::NameGenerator,
     use_trivial_constructor::use_trivial_constructor,
 };
 use syntax::{

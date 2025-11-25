@@ -96,17 +96,16 @@ use hir_def::{
     UseId, VariantId,
 };
 use hir_expand::{
-    attrs::AttrId,
-    name::AsName,
-    EditionedFileId, ExpansionInfo, HirFileId, InMacroFile, MacroCallId,
+    attrs::AttrId, name::AsName, EditionedFileId, ExpansionInfo, HirFileId, InMacroFile,
+    MacroCallId,
 };
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
 use span::FileId;
 use stdx::impl_from;
 use syntax::{
-    AstNode, AstPtr, SyntaxNode,
     ast::{self, HasAttrs, HasName},
+    AstNode, AstPtr, SyntaxNode,
 };
 use tt::TextRange;
 

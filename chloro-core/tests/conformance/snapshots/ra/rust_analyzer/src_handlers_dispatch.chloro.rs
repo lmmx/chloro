@@ -6,8 +6,8 @@ use std::{
 };
 
 use ide_db::base_db::{
-    DbPanicContext,
     salsa::{self, Cancelled},
+    DbPanicContext,
 };
 use lsp_server::{ExtractError, Response, ResponseError};
 use serde::{Serialize, de::DeserializeOwned};

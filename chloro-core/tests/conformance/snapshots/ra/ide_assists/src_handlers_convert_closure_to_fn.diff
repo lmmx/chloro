@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36442 bytes
-Chloro size:   35543 bytes
+Chloro size:   35527 bytes
 Rustfmt size:  36442 bytes
 
 ✗ Outputs DIFFER
@@ -13,12 +13,8 @@ Rustfmt size:  36442 bytes
  use ide_db::{
 -    FxHashSet, assists::AssistId, base_db::SourceDatabase, defs::Definition,
 -    search::FileReferenceNode, source_change::SourceChangeBuilder,
-+    assists::AssistId,
-+    base_db::SourceDatabase,
-+    defs::Definition,
-+    search::FileReferenceNode,
-+    source_change::SourceChangeBuilder,
-+    FxHashSet,
++    assists::AssistId, base_db::SourceDatabase, defs::Definition, search::FileReferenceNode,
++    source_change::SourceChangeBuilder, FxHashSet,
  };
  use stdx::format_to;
  use syntax::{

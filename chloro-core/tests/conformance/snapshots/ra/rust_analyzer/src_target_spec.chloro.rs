@@ -259,8 +259,8 @@ mod tests {
     use super::*;
     use ide::Edition;
     use syntax::{
-        SmolStr,
         ast::{self, AstNode},
+        SmolStr,
     };
     use syntax_bridge::{
         dummy_test_span_utils::{DummyTestSpanMap, DUMMY},

@@ -6,10 +6,7 @@ use either::Either;
 use hir::{EditionedFileId, HirFileId, InFile, Semantics, sym};
 use ide_db::range_mapper::RangeMapper;
 use ide_db::{
-    defs::Definition,
-    documentation::docs_with_rangemap,
-    rust_doc::is_rust_fence,
-    SymbolKind,
+    defs::Definition, documentation::docs_with_rangemap, rust_doc::is_rust_fence, SymbolKind,
 };
 use syntax::{
     ast::{self, AstNode, IsString, QuoteOffsets},

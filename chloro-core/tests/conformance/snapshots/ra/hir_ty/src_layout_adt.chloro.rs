@@ -3,8 +3,8 @@
 use std::{cmp, ops::Bound};
 
 use hir_def::{
-    AdtId, VariantId,
     signatures::{StructFlags, VariantFields},
+    AdtId, VariantId,
 };
 use intern::sym;
 use rustc_abi::{Integer, ReprOptions, TargetDataLayout};

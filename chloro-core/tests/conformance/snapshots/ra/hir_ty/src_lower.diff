@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86527 bytes
+Chloro size:   86525 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -37,8 +37,8 @@ Rustfmt size:  87058 bytes
      },
 +    AdtId, AssocItemId, CallableDefId, ConstId, ConstParamId, DefWithBodyId, EnumId, EnumVariantId,
 +    FunctionId, GenericDefId, GenericParamId, HasModule, ImplId, ItemContainerId, LifetimeParamId,
-+    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId, UnionId,
-+    VariantId,
++    LocalFieldId, Lookup, StaticId, StructId, TypeAliasId, TypeOrConstParamId, TypeParamId,
++    UnionId, VariantId,
  };
  use hir_expand::name::Name;
  use la_arena::{Arena, ArenaMap, Idx};
@@ -48,7 +48,8 @@ Rustfmt size:  87058 bytes
 +    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
      AliasTyKind, BoundVarIndexKind, ConstKind, DebruijnIndex, ExistentialPredicate,
      ExistentialProjection, ExistentialTraitRef, FnSig, OutlivesPredicate,
-     TyKind::{self},
+-    TyKind::{self},
++    TyKind::self,
      TypeVisitableExt,
 -    inherent::{GenericArg as _, GenericArgs as _, IntoKind as _, Region as _, SliceLike, Ty as _},
  };

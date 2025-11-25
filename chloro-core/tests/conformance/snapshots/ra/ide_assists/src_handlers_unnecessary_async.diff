@@ -17,7 +17,10 @@ Rustfmt size:  7946 bytes
 +    EditionedFileId,
  };
  use syntax::{
-     AstNode, SyntaxKind, TextRange,
+-    AstNode, SyntaxKind, TextRange,
+     ast::{self, NameRef},
++    AstNode, SyntaxKind, TextRange,
+ };
  
  use crate::{AssistContext, Assists};
  

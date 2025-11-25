@@ -11,8 +11,7 @@ use syntax::{
 };
 
 use crate::{
-    assist_config::AssistConfig,
-    Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
+    assist_config::AssistConfig, Assist, AssistId, AssistKind, AssistResolveStrategy, GroupLabel,
 };
 
 /// `AssistContext` allows to apply an assist or check if it could be applied.

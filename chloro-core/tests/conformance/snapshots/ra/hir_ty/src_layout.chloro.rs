@@ -18,8 +18,8 @@ use rustc_abi::{
 };
 use rustc_index::IndexVec;
 use rustc_type_ir::{
-    FloatTy, IntTy, UintTy,
     inherent::{IntoKind, SliceLike},
+    FloatTy, IntTy, UintTy,
 };
 use triomphe::Arc;
 

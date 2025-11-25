@@ -14,7 +14,7 @@ use hir_def::{
 use hir_expand::{HirFileId, name::Name};
 use hir_ty::{
     db::HirDatabase,
-    display::{HirDisplay, hir_display_with_store},
+    display::{hir_display_with_store, HirDisplay},
 };
 use intern::Symbol;
 use rustc_hash::FxHashMap;

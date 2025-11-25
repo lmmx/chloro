@@ -27,6 +27,12 @@ Rustfmt size:  34201 bytes
  };
  
  use crate::{
+-    Highlight, HlMod, HlTag,
+     syntax_highlighting::tags::{HlOperator, HlPunct},
++    Highlight, HlMod, HlTag,
+ };
+ 
+ pub(super) fn token(
              None => h.into(),
          });
      }
