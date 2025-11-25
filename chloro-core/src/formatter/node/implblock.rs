@@ -165,8 +165,8 @@ fn is_comment_attached_to_next_item(
     comment_idx: usize,
     item_kinds: &[SyntaxKind],
 ) -> bool {
-    for i in (comment_idx + 1)..children.len() {
-        match &children[i] {
+    for child_item in children.iter().skip(comment_idx + 1) {
+        match &child_item {
             NodeOrToken::Token(t) => {
                 if t.kind() == SyntaxKind::WHITESPACE {
                     // If there's a blank line, the comment is not attached
