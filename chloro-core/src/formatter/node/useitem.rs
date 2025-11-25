@@ -186,9 +186,7 @@ fn format_item_with_nested_braces(item: &str, buf: &mut String, indent: usize) {
                 let item_with_comma = format!("{}, ", inner_item);
                 let potential_len = inner_indent + current_line.len() + item_with_comma.len();
 
-                if current_line.is_empty() {
-                    current_line.push_str(&item_with_comma);
-                } else if potential_len < MAX_WIDTH {
+                if current_line.is_empty() || potential_len < MAX_WIDTH {
                     current_line.push_str(&item_with_comma);
                 } else {
                     write_indent(buf, inner_indent);
