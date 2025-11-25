@@ -25,14 +25,20 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
         SyntaxKind::IDENT => 1,
         _ => 0,
     })?;
+
     // due to how rust-analyzer works internally, we need to special case derive attributes,
+
     // otherwise they might not get found, e.g. here with the cursor at $0 `#[attr]` would expand:
-    // ```
-    // #[attr]
-    // #[derive($0Foo)]
-    // struct Bar;
+
     // ```
 
+    // #[attr]
+
+    // #[derive($0Foo)]
+
+    // struct Bar;
+
+    // ```
     let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
         let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
         if !macro_file.is_derive_attr_pseudo_expansion(db) {

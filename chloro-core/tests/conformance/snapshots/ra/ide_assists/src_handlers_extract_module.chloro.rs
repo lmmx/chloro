@@ -51,9 +51,10 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 
     let mut old_item_indent = module.body_items[0].indent_level();
     let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
-    // If the selection is inside impl block, we need to place new module outside impl block,
-    // as impl blocks cannot contain modules
 
+    // If the selection is inside impl block, we need to place new module outside impl block,
+
+    // as impl blocks cannot contain modules
     let mut impl_parent: Option<ast::Impl> = None;
     let mut impl_child_count: usize = 0;
     if let Some(parent_assoc_list) = module.body_items[0].syntax().parent()
@@ -241,10 +242,12 @@ impl Module {
         let mut refs: FxHashMap<FileId, Vec<(TextRange, String)>> = FxHashMap::default();
         // use `TextSize` as key to avoid repeated use stmts
         let mut use_stmts_to_be_inserted = FxHashMap::default();
-        //Here impl is not included as each item inside impl will be tied to the parent of
-        //implementing block(a struct, enum, etc), if the parent is in selected module, it will
-        //get updated by ADT section given below or if it is not, then we dont need to do any operation
 
+        //Here impl is not included as each item inside impl will be tied to the parent of
+
+        //implementing block(a struct, enum, etc), if the parent is in selected module, it will
+
+        //get updated by ADT section given below or if it is not, then we dont need to do any operation
         for item in &self.body_items {
             match_ast! {
                 match (item.syntax()) {
@@ -464,8 +467,8 @@ impl Module {
         let usage_res = def.usages(&ctx.sema).in_scope(&SearchScope::single_file(file_id)).all();
 
         let file = ctx.sema.parse(file_id);
-        // track uses which does not exists in `Use`
 
+        // track uses which does not exists in `Use`
         let mut uses_exist_in_sel = false;
         let mut uses_exist_out_sel = false;
         'outside: for (_, refs) in usage_res.iter() {
@@ -491,8 +494,8 @@ impl Module {
             selection_range,
             file_id.file_id(ctx.db()),
         );
-        // Find use stmt that use def in current file
 
+        // Find use stmt that use def in current file
         let use_stmt: Option<ast::Use> = usage_res
             .into_iter()
             .filter(|(use_file_id, _)| *use_file_id == file_id)
@@ -511,9 +514,10 @@ impl Module {
         //outside:
         //- Def is inside: Nothing to import
         //- Def is outside: Import it inside with super
-        //Exists inside selection but not outside -> Check for the import of it in original module,
-        //get the use_tree_str, reconstruct the use stmt in new module
 
+        //Exists inside selection but not outside -> Check for the import of it in original module,
+
+        //get the use_tree_str, reconstruct the use stmt in new module
         let mut import_path_to_be_removed: Option<TextRange> = None;
         if uses_exist_in_sel && uses_exist_out_sel {
             //Changes to be made only inside new module

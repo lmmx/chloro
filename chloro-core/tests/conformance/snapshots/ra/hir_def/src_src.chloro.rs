@@ -88,9 +88,10 @@ impl HasChildSource<LocalTypeOrConstParamId> for GenericDefId {
         let (file_id, generic_params_list) = self.file_id_and_params_of(db);
 
         let mut params = ArenaMap::default();
-        // For traits and trait aliases the first type index is `Self`, we need to add it before
-        // the other params.
 
+        // For traits and trait aliases the first type index is `Self`, we need to add it before
+
+        // the other params.
         match *self {
             GenericDefId::TraitId(id) => {
                 let trait_ref = id.lookup(db).source(db).value;

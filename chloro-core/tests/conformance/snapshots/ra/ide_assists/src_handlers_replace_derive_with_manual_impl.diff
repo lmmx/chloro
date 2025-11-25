@@ -57,15 +57,6 @@ Rustfmt size:  30915 bytes
  pub(crate) fn replace_derive_with_manual_impl(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<ast::Impl> {
-     let trait_ = trait_?;
-     let target_scope = sema.scope(annotated_name.syntax())?;
--
-     // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
-+
-     let ignore_items = if trait_.module(sema.db).krate().origin(sema.db).is_local() {
-         IgnoreAssocItems::No
-     } else {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_no_snippet_cap, check_assist_not_applicable};

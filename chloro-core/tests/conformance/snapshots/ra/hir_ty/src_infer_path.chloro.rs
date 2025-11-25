@@ -227,8 +227,8 @@ impl<'db> InferenceContext<'_, 'db> {
                 Obligation::new(interner, ObligationCause::new(), param_env, predicate)
             }));
         }
-        // We need to add `Self: Trait` obligation when `def` is a trait assoc item.
 
+        // We need to add `Self: Trait` obligation when `def` is a trait assoc item.
         let container = match def {
             GenericDefId::FunctionId(id) => id.lookup(self.db).container,
             GenericDefId::ConstId(id) => id.lookup(self.db).container,

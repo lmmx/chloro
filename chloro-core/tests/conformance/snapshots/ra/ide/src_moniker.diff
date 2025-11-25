@@ -81,15 +81,6 @@ Rustfmt size:  21116 bytes
  }
  
  fn enclosing_def_to_moniker(
-     };
-     let krate = module.krate();
-     let edition = krate.edition(db);
--
-     // Add descriptors for this definition and every enclosing definition.
-+
-     let mut reverse_description = vec![];
-     let mut def = definition;
-     loop {
              crate_name: krate.display_name(db)?.crate_name().to_string(),
              description,
          },

@@ -26,29 +26,7 @@ Rustfmt size:  31747 bytes
          };
  
          let si = StaticIndex::compute(&analysis, vendored_libs_config);
-         };
- 
-         let mut documents = Vec::new();
--
-         // All TokenIds where an Occurrence has been emitted that references a symbol.
-+
-         let mut token_ids_referenced: FxHashSet<TokenId> = FxHashSet::default();
-         // All TokenIds where the SymbolInformation has been written to the document.
-         let mut token_ids_emitted: FxHashSet<TokenId> = FxHashSet::default();
-         // All FileIds emitted as documents.
-         let mut file_ids_emitted: FxHashSet<FileId> = FxHashSet::default();
--
-         // All non-local symbols encountered, for detecting duplicate symbol errors.
-+
-         let mut nonlocal_symbols_emitted: FxHashSet<String> = FxHashSet::default();
-         // List of (source_location, symbol) for duplicate symbol errors to report.
-         let mut duplicate_symbol_errors: Vec<(String, String)> = Vec::new();
-                     true
-                 }
-             };
--
          // Generates symbols from token monikers.
-+
          let mut symbol_generator = SymbolGenerator::default();
  
 -        for StaticIndexedFile {
@@ -78,15 +56,6 @@ Rustfmt size:  31747 bytes
                  else {
                      // token did not have a moniker, so there is no reasonable occurrence to emit
                      // see ide::moniker::def_to_moniker
-                 panic!("Invariant violation: file emitted multiple times.");
-             }
-         }
--
-         // Collect all symbols referenced by the files but not defined within them.
-+
-         let mut external_symbols = Vec::new();
-         for id in token_ids_referenced.difference(&token_ids_emitted) {
-             let id = *id;
              };
  
              let file_id = definition.file_id;

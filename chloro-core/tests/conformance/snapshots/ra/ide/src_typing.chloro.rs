@@ -113,8 +113,8 @@ fn on_opening_delimiter_typed(
     if brace_token.kind() != expected_ast_bracket {
         return None;
     }
-    // Remove the opening bracket to get a better parse tree, and reparse.
 
+    // Remove the opening bracket to get a better parse tree, and reparse.
     let range = brace_token.text_range();
     if !stdx::always!(range.len() == TextSize::of(opening_bracket)) {
         return None;
@@ -183,8 +183,8 @@ fn on_delimited_node_typed(
             node = parent;
         }
     }
-    // Insert the closing bracket right after the node.
 
+    // Insert the closing bracket right after the node.
     Some(TextEdit::insert(
         node.text_range().end() + TextSize::of(opening_bracket),
         closing_bracket.to_string(),
@@ -289,9 +289,10 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let whitespace =
         file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
-    // if prior is fn call over multiple lines dont indent
-    // or if previous is method call over multiples lines keep that indent
 
+    // if prior is fn call over multiple lines dont indent
+
+    // or if previous is method call over multiples lines keep that indent
     let current_indent = {
         let text = whitespace.text();
         let (_prefix, suffix) = text.rsplit_once('\n')?;
@@ -343,8 +344,8 @@ fn on_left_angle_typed(
     offset: TextSize,
 ) -> Option<TextEdit> {
     let file_text = reparsed.syntax().text();
-    // Find the next non-whitespace char in the line, check if its a `>`
 
+    // Find the next non-whitespace char in the line, check if its a `>`
     let mut next_offset = offset;
     while file_text.char_at(next_offset) == Some(' ') {
         next_offset += TextSize::of(' ')

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72766 bytes
+Chloro size:   72771 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -81,17 +81,15 @@ Rustfmt size:  74236 bytes
  /// The entry point of type inference.
  pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<InferenceResult<'_>> {
      let _p = tracing::info_span!("infer_query").entered();
-     ctx.handle_opaque_type_uses();
- 
      ctx.type_inference_fallback();
--
+ 
      // Comment from rustc:
-     // Even though coercion casts provide type hints, we check casts after fallback for
-     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
 +
+     // Even though coercion casts provide type hints, we check casts after fallback for
++
+     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
      let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
      for mut cast in cast_checks.into_iter() {
-         if let Err(diag) = cast.check(&mut ctx) {
      UnresolvedIdent {
          id: ExprOrPatId,
      },
@@ -316,14 +314,14 @@ Rustfmt size:  74236 bytes
          let mut ctx = self.clone();
  
          ctx.type_inference_fallback();
--
+ 
          // Comment from rustc:
-         // Even though coercion casts provide type hints, we check casts after fallback for
-         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
 +
+         // Even though coercion casts provide type hints, we check casts after fallback for
++
+         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
          let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
          for mut cast in cast_checks.into_iter() {
-             if let Err(diag) = cast.check(&mut ctx) {
          ctx.resolve_all()
      }
  
@@ -334,16 +332,13 @@ Rustfmt size:  74236 bytes
      fn resolve_all(self) -> InferenceResult<'db> {
          let InferenceContext {
              mut table, mut result, tuple_field_accesses_rev, diagnostics, ..
-             LifetimeElisionKind::for_fn_params(&data),
-             |ctx| data.params.iter().map(|&type_ref| ctx.lower_ty(type_ref)).collect::<Vec<_>>(),
          );
--
+ 
          // Check if function contains a va_list, if it does then we append it to the parameter types
-         // that are collected from the function data
 +
+         // that are collected from the function data
          if data.is_varargs() {
              let va_list_ty = match self.resolve_va_list() {
-                 Some(va_list) => Ty::new_adt(
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  

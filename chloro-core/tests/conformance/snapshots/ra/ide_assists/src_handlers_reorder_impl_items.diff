@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6390 bytes
-Chloro size:   5831 bytes
+Chloro size:   5832 bytes
 Rustfmt size:  6460 bytes
 
 ✗ Outputs DIFFER
@@ -48,16 +48,13 @@ Rustfmt size:  6460 bytes
  pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
      let items = impl_ast.assoc_item_list()?;
-         SyntaxElement::Node(n) => n,
-         SyntaxElement::Token(t) => t.parent()?,
      };
--
+ 
      // restrict the range
-     // if cursor is in assoc_items, abort
 +
+     // if cursor is in assoc_items, abort
      let assoc_range = items.syntax().text_range();
      let cursor_position = ctx.offset();
-     if assoc_range.contains_inclusive(cursor_position) {
                  ast::AssocItem::MacroCall(_) => None,
              };
  
@@ -71,12 +68,7 @@ Rustfmt size:  6460 bytes
 +                .unwrap_or(usize::MAX)
          })
          .collect();
--
-     // Don't edit already sorted methods:
-+
-     if assoc_items == sorted {
-         cov_mark::hit!(not_applicable_if_sorted);
-         return None;
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -978,8 +978,8 @@ impl<'db> SourceAnalyzer<'db> {
         if resolved.is_some() {
             return resolved;
         }
-        // FIXME: collectiong here shouldnt be necessary?
 
+        // FIXME: collectiong here shouldnt be necessary?
         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
         let hir_path =
             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
@@ -987,9 +987,10 @@ impl<'db> SourceAnalyzer<'db> {
             .parent_path()
             .and_then(|p| collector.lower_path(p, &mut ExprCollector::impl_trait_error_allocator));
         let (store, _) = collector.store.finish();
-        // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
-        // trying to resolve foo::bar.
 
+        // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
+
+        // trying to resolve foo::bar.
         if let Some(use_tree) = parent().and_then(ast::UseTree::cast)
             && use_tree.coloncolon_token().is_some()
         {
@@ -1006,9 +1007,10 @@ impl<'db> SourceAnalyzer<'db> {
             })
             .last()
             .and_then(ast::Meta::cast);
-        // Case where path is a qualifier of another path, e.g. foo::bar::Baz where we are
-        // trying to resolve foo::bar.
 
+        // Case where path is a qualifier of another path, e.g. foo::bar::Baz where we are
+
+        // trying to resolve foo::bar.
         if let Some(parent_hir_path) = parent_hir_path {
             return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
                 None if meta_path.is_some() => path

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10203 bytes
-Chloro size:   9474 bytes
+Chloro size:   9700 bytes
 Rustfmt size:  10203 bytes
 
 ✗ Outputs DIFFER
@@ -21,7 +21,7 @@ Rustfmt size:  10203 bytes
 -// NOTE: Code may break if the self type implements a trait that has associated const with the same
 -// name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
 -// pretty rare case.
--
+ 
 -// Assist: move_const_to_impl
 -//
 -// Move a local constant item in a method to impl's associated constant. All the references will be
@@ -50,20 +50,23 @@ Rustfmt size:  10203 bytes
 -//     }
 -// }
 -// ```
++// NOTE: Code may break if the self type implements a trait that has associated const with the same
++
++// name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
++
++// pretty rare case.
  pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let db = ctx.db();
      let const_: ast::Const = ctx.find_node_at_offset()?;
-     }
- 
      let parent_fn = const_.syntax().ancestors().find_map(ast::Fn::cast)?;
--
+ 
      // NOTE: We can technically provide this assist for default methods in trait definitions, but
-     // it's somewhat complex to handle it correctly when the const's name conflicts with
-     // supertrait's item. We may want to consider implementing it in the future.
 +
+     // it's somewhat complex to handle it correctly when the const's name conflicts with
++
+     // supertrait's item. We may want to consider implementing it in the future.
      let AssocItemContainer::Impl(impl_) =
          ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
-     else {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -29,6 +29,7 @@ pub trait HirDatabase {
     #[salsa::invoke(crate::infer::infer_query)]
     #[salsa::cycle(cycle_result = crate::infer::infer_cycle_result)]
     fn infer<'db>(&'db self, def: DefWithBodyId) -> Arc<InferenceResult<'db>>;
+
     // region:mir
 
     #[salsa::invoke(crate::mir::mir_body_query)]
@@ -99,6 +100,7 @@ pub trait HirDatabase {
         func: FunctionId,
         fn_subst: GenericArgs<'db>,
     ) -> (FunctionId, GenericArgs<'db>);
+
     // endregion:mir
 
     #[salsa::invoke(crate::layout::layout_of_adt_query)]

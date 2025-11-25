@@ -119,8 +119,8 @@ impl<'db> LookupTable<'db> {
         if res.is_none() {
             self.types_wishlist.insert(ty.clone());
         }
-        // Collapse suggestions if there are many
 
+        // Collapse suggestions if there are many
         if let Some(res) = &res
             && res.len() > self.many_threshold
         {
@@ -161,8 +161,8 @@ impl<'db> LookupTable<'db> {
         if res.is_none() {
             self.types_wishlist.insert(ty.clone());
         }
-        // Collapse suggestions if there are many
 
+        // Collapse suggestions if there are many
         if let Some(res) = &res
             && res.len() > self.many_threshold
         {
@@ -290,8 +290,8 @@ pub fn term_search<'db, DB: HirDatabase>(ctx: &'db TermSearchCtx<'db, DB>) -> Ve
         }
         remaining > 0
     };
-    // Try trivial tactic first, also populates lookup table
 
+    // Try trivial tactic first, also populates lookup table
     let mut solutions: Vec<Expr<'db>> = tactics::trivial(ctx, &defs, &mut lookup).collect();
     // Use well known types tactic before iterations as it does not depend on other tactics
     solutions.extend(tactics::famous_types(ctx, &defs, &mut lookup));

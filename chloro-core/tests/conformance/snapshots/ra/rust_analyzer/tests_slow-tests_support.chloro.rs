@@ -473,6 +473,7 @@ fn recv_timeout(receiver: &Receiver<Message>) -> Result<Option<Message>, Timeout
     }
 }
 
+// Comparison functionality borrowed from cargo:
 /// Compares JSON object for approximate equality.
 /// You can use `[..]` wildcard in strings (useful for OS dependent things such
 /// as paths). You can use a `"{...}"` string literal as a wildcard for

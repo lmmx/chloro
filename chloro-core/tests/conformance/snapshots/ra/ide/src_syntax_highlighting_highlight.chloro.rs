@@ -874,8 +874,8 @@ fn parents_match(
         node = parent.into();
         kinds = rest;
     }
-    // Only true if we matched all expected kinds
 
+    // Only true if we matched all expected kinds
     kinds.is_empty()
 }
 

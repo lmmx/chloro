@@ -276,9 +276,10 @@ pub(crate) fn fetch_native_diagnostics(
 ) -> Vec<(FileId, Vec<lsp_types::Diagnostic>)> {
     let _p = tracing::info_span!("fetch_native_diagnostics").entered();
     let _ctx = DbPanicContext::enter("fetch_native_diagnostics".to_owned());
-    // the diagnostics produced may point to different files not requested by the concrete request,
-    // put those into here and filter later
 
+    // the diagnostics produced may point to different files not requested by the concrete request,
+
+    // put those into here and filter later
     let mut odd_ones = Vec::new();
     let mut diagnostics = subscriptions[slice]
         .iter()
@@ -313,8 +314,8 @@ pub(crate) fn fetch_native_diagnostics(
             Some((file_id, diagnostics))
         })
         .collect::<Vec<_>>();
-    // Add back any diagnostics that point to files we are subscribed to
 
+    // Add back any diagnostics that point to files we are subscribed to
     for (file_id, group) in odd_ones
         .into_iter()
         .sorted_by_key(|it| it.range.file_id)

@@ -14,6 +14,120 @@ use syntax::{AstNode, Edition, SyntaxNode, ast, match_ast};
 
 use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
+
+// Feature: Auto Import
+
+//
+
+// Using the `auto-import` assist it is possible to insert missing imports for unresolved items.
+
+// When inserting an import it will do so in a structured manner by keeping imports grouped,
+
+// separated by a newline in the following order:
+
+//
+
+// - `std` and `core`
+
+// - External Crates
+
+// - Current Crate, paths prefixed by `crate`
+
+// - Current Module, paths prefixed by `self`
+
+// - Super Module, paths prefixed by `super`
+
+//
+
+// Example:
+
+// ```rust
+
+// use std::fs::File;
+
+//
+
+// use itertools::Itertools;
+
+// use syntax::ast;
+
+//
+
+// use crate::utils::insert_use;
+
+//
+
+// use self::auto_import;
+
+//
+
+// use super::AssistContext;
+
+// ```
+
+//
+
+// #### Import Granularity
+
+//
+
+// It is possible to configure how use-trees are merged with the `imports.granularity.group` setting.
+
+// It has the following configurations:
+
+//
+
+// - `crate`: Merge imports from the same crate into a single use statement. This kind of
+
+//  nesting is only supported in Rust versions later than 1.24.
+
+// - `module`: Merge imports from the same module into a single use statement.
+
+// - `item`: Don't merge imports at all, creating one import per item.
+
+// - `preserve`: Do not change the granularity of any imports. For auto-import this has the same
+
+//  effect as `item`.
+
+// - `one`: Merge all imports into a single use statement as long as they have the same visibility
+
+//  and attributes.
+
+//
+
+// In `VS Code` the configuration for this is `rust-analyzer.imports.granularity.group`.
+
+//
+
+// #### Import Prefix
+
+//
+
+// The style of imports in the same crate is configurable through the `imports.prefix` setting.
+
+// It has the following configurations:
+
+//
+
+// - `crate`: This setting will force paths to be always absolute, starting with the `crate`
+
+//  prefix, unless the item is defined outside of the current crate.
+
+// - `self`: This setting will force paths that are relative to the current module to always
+
+//  start with `self`. This will result in paths that always start with either `crate`, `self`,
+
+//  `super` or an extern crate identifier.
+
+// - `plain`: This setting does not impose any restrictions in imports.
+
+//
+
+// In `VS Code` the configuration for this is `rust-analyzer.imports.prefix`.
+
+//
+
+// ![Auto Import](https://user-images.githubusercontent.com/48062697/113020673-b85be580-917a-11eb-9022-59585f35d4f8.gif)
 pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let cfg = ctx.config.import_path_config();
 
@@ -27,8 +141,8 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
 
     let range = ctx.sema.original_range(&syntax_under_caret).range;
     let scope = ImportScope::find_insert_use_container(&syntax_under_caret, &ctx.sema)?;
-    // we aren't interested in different namespaces
 
+    // we aren't interested in different namespaces
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 
@@ -227,18 +341,18 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
     // get the path starting from the item to the respective crate roots
     let mut current_path = current.path_to_root(db);
     let mut item_path = item.path_to_root(db);
-    // we want paths going from the root to the item
 
+    // we want paths going from the root to the item
     current_path.reverse();
     item_path.reverse();
+
     // length of the common prefix of the two paths
-
     let prefix_length = current_path.iter().zip(&item_path).take_while(|(a, b)| a == b).count();
+
     // how many modules differ between the two paths (all modules, removing any duplicates)
-
     let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
-    // cost of importing from another crate
 
+    // cost of importing from another crate
     let crate_boundary_cost = if current.krate() == item.krate() {
         0
     } else if item.krate().origin(db).is_local() {

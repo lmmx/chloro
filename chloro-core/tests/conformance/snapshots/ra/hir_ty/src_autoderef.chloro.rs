@@ -130,8 +130,8 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
             debug!("autoderef stage #0 is {:?}", self.state.cur_ty);
             return Some((self.state.cur_ty, 0));
         }
-        // If we have reached the recursion limit, error gracefully.
 
+        // If we have reached the recursion limit, error gracefully.
         if self.state.steps.len() >= AUTODEREF_RECURSION_LIMIT {
             self.state.reached_recursion_limit = true;
             return None;
@@ -140,12 +140,16 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Iterator for Autoderef<'a, 'db, S
         if self.state.cur_ty.is_ty_var() {
             return None;
         }
-        // Otherwise, deref if type is derefable:
-        // NOTE: in the case of self.use_receiver_trait = true, you might think it would
-        // be better to skip this clause and use the Overloaded case only, since &T
-        // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
-        // and Deref, and this has benefits for const and the emitted MIR.
 
+        // Otherwise, deref if type is derefable:
+
+        // NOTE: in the case of self.use_receiver_trait = true, you might think it would
+
+        // be better to skip this clause and use the Overloaded case only, since &T
+
+        // and &mut T implement Receiver. But built-in derefs apply equally to Receiver
+
+        // and Deref, and this has benefits for const and the emitted MIR.
         let (kind, new_ty) = if let Some(ty) =
             self.state.cur_ty.builtin_deref(self.table.db, self.include_raw_pointers)
         {
@@ -246,8 +250,8 @@ impl<'a, 'db, Steps: TrackAutoderefSteps<'db>> Autoderef<'a, 'db, Steps> {
     fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
         debug!("overloaded_deref_ty({:?})", ty);
         let interner = self.table.interner();
-        // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.
 
+        // <ty as Deref>, or whatever the equivalent trait is that we've been asked to walk.
         let AutoderefTraits { trait_, trait_target } = self.autoderef_traits()?;
 
         let trait_ref = TraitRef::new(interner, trait_.into(), [ty]);

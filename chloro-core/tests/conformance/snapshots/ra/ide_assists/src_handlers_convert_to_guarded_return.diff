@@ -57,15 +57,6 @@ Rustfmt size:  22391 bytes
  pub(crate) fn convert_to_guarded_return(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      match ctx.find_node_at_offset::<Either<ast::LetStmt, ast::IfExpr>>()? {
          Either::Left(let_stmt) => let_stmt_to_guarded_return(let_stmt, acc, ctx),
-     if parent_block.tail_expr()? != if_expr.clone().into() {
-         return None;
-     }
--
-     // check for early return and continue
-+
-     if is_early_block(&then_block) || is_never_block(&ctx.sema, &then_branch) {
-         return None;
-     }
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -502,11 +502,14 @@ impl<'db> InferCtxt<'db> {
         else {
             return false;
         };
-        // This can get called from typeck (by euv), and `moves_by_default`
-        // rightly refuses to work with inference variables, but
-        // moves_by_default has a cache, which we want to use in other
-        // cases.
 
+        // This can get called from typeck (by euv), and `moves_by_default`
+
+        // rightly refuses to work with inference variables, but
+
+        // moves_by_default has a cache, which we want to use in other
+
+        // cases.
         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
     }
 

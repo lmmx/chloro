@@ -457,10 +457,12 @@ impl<'db> Resolver<'db> {
         if let Some(res) = self.module_scope.resolve_path_in_value_ns(db, path) {
             return Some(res);
         }
-        // If a path of the shape `u16::from_le_bytes` failed to resolve at all, then we fall back
-        // to resolving to the primitive type, to allow this to still work in the presence of
-        // `use core::u16;`.
 
+        // If a path of the shape `u16::from_le_bytes` failed to resolve at all, then we fall back
+
+        // to resolving to the primitive type, to allow this to still work in the presence of
+
+        // `use core::u16;`.
         if path.kind == PathKind::Plain
             && n_segments > 1
             && let Some(builtin) = BuiltinType::by_name(first_name)
@@ -663,8 +665,8 @@ impl<'db> Resolver<'db> {
                 _ => (),
             }
         }
-        // Fill in the prelude traits
 
+        // Fill in the prelude traits
         if let Some((prelude, _use)) = self.module_scope.def_map.prelude() {
             let prelude_def_map = prelude.def_map(db);
             traits.extend(prelude_def_map[prelude.local_id].scope.traits());

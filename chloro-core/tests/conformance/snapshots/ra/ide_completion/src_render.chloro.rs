@@ -343,9 +343,10 @@ fn get_import_name(
     // FIXME: Temporary workaround for handling aliased import.
     // This should be removed after we have proper support for importing alias.
     // <https://github.com/rust-lang/rust-analyzer/issues/14079>
-    // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
-    // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
 
+    // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
+
+    // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
     if import_edit.item_to_import == import_edit.original_item {
         import_edit.import_path.segments().last().cloned()
     } else {
@@ -593,9 +594,10 @@ fn compute_type_match(
     completion_ty: &hir::Type<'_>,
 ) -> Option<CompletionRelevanceTypeMatch> {
     let expected_type = ctx.expected_type.as_ref()?;
-    // We don't ever consider unit type to be an exact type match, since
-    // nearly always this is not meaningful to the user.
 
+    // We don't ever consider unit type to be an exact type match, since
+
+    // nearly always this is not meaningful to the user.
     if expected_type.is_unit() {
         return None;
     }
@@ -2600,6 +2602,7 @@ fn test() {
                 fn fn_other() fn() -> Result<u32> [type_could_unify]
             "#]],
         );
+
         //
     }
     #[test]

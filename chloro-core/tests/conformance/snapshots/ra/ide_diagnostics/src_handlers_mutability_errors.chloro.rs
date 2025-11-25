@@ -408,8 +408,8 @@ fn main() {
         // there would be no mutability error for locals in dead code. Rustc tries to
         // not emit `unused_mut` in this case, but since it works without `mut`, and
         // special casing it is not trivial, we emit it.
-        // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
 
+        // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
         check_diagnostics(
             r#"
 fn main() {

@@ -39,27 +39,6 @@ Rustfmt size:  7893 bytes
  pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let call = ctx.find_node_at_offset::<ast::CallExpr>()?;
      let ast::Expr::PathExpr(path_expr) = call.expr()? else { return None };
-     if !fun.has_self_param(ctx.sema.db) {
-         return None;
-     }
--
-     // `core::ops::Add::add(` -> ``
-+
-     let delete_path =
-         TextRange::new(path.syntax().text_range().start(), l_paren.text_range().end());
--
-     // Parens around `expr` if needed
-+
-     let parens = first_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix).then(|| {
-         let range = first_arg.syntax().text_range();
-         (range.start(), range.end())
-     });
--
-     // `, ` -> `.add(`
-+
-     let replace_comma = TextRange::new(
-         first_arg.syntax().text_range().end(),
-         second_arg
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

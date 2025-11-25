@@ -36,18 +36,28 @@ use crate::{
 
 pub fn main_loop(config: Config, connection: Connection) -> anyhow::Result<()> {
     tracing::info!("initial config: {:#?}", config);
-    // Windows scheduler implements priority boosts: if thread waits for an
-    // event (like a condvar), and event fires, priority of the thread is
-    // temporary bumped. This optimization backfires in our case: each time the
-    // `main_loop` schedules a task to run on a threadpool, the worker threads
-    // gets a higher priority, and (on a machine with fewer cores) displaces the
-    // main loop! We work around this by marking the main loop as a
-    // higher-priority thread.
-    //
-    // https://docs.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities
-    // https://docs.microsoft.com/en-us/windows/win32/procthread/priority-boosts
-    // https://github.com/rust-lang/rust-analyzer/issues/2835
 
+    // Windows scheduler implements priority boosts: if thread waits for an
+
+    // event (like a condvar), and event fires, priority of the thread is
+
+    // temporary bumped. This optimization backfires in our case: each time the
+
+    // `main_loop` schedules a task to run on a threadpool, the worker threads
+
+    // gets a higher priority, and (on a machine with fewer cores) displaces the
+
+    // main loop! We work around this by marking the main loop as a
+
+    // higher-priority thread.
+
+    //
+
+    // https://docs.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities
+
+    // https://docs.microsoft.com/en-us/windows/win32/procthread/priority-boosts
+
+    // https://github.com/rust-lang/rust-analyzer/issues/2835
     #[cfg(windows)]
     unsafe {
         use windows_sys::Win32::System::Threading::*;
@@ -666,9 +676,10 @@ impl GlobalState {
             })
             .collect::<Vec<_>>();
         tracing::trace!("updating tests for {:?}", subscriptions);
-        // Updating tests are triggered by the user typing
-        // so we run them on a latency sensitive thread.
 
+        // Updating tests are triggered by the user typing
+
+        // so we run them on a latency sensitive thread.
         self.task_pool.handle.spawn(ThreadIntent::LatencySensitive, {
             let snapshot = self.snapshot();
             move || {

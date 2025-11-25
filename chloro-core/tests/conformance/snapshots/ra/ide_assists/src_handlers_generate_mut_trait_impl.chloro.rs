@@ -6,6 +6,10 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists};
 
+
+// FIXME: Generate proper `index_mut` method body refer to `index` method body may impossible due to the unpredictable case [#15581].
+
+// Here just leave the `index_mut` method body be same as `index` method body, user can modify it manually to meet their need.
 pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?.clone_for_update();
     let indent = impl_def.indent_level();
@@ -20,11 +24,11 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
 
     let trait_ = resolve_target_trait(&ctx.sema, &impl_def)?;
     let trait_new = get_trait_mut(&trait_, famous)?;
+
     // Index -> IndexMut
-
     ted::replace(trait_name.syntax(), make::name_ref(trait_new).clone_for_update().syntax());
-    // index -> index_mut
 
+    // index -> index_mut
     let (trait_method_name, new_trait_method_name) = impl_def
         .syntax()
         .descendants()
@@ -38,14 +42,14 @@ pub(crate) fn generate_mut_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>
     if let Some(type_alias) = impl_def.syntax().descendants().find_map(ast::TypeAlias::cast) {
         ted::remove(type_alias.syntax());
     }
-    // &self -> &mut self
 
+    // &self -> &mut self
     let mut_self_param = make::mut_self_param();
     let self_param: ast::SelfParam =
         impl_def.syntax().descendants().find_map(ast::SelfParam::cast)?;
     ted::replace(self_param.syntax(), mut_self_param.clone_for_update().syntax());
-    // &Self::Output -> &mut Self::Output
 
+    // &Self::Output -> &mut Self::Output
     let ret_type = impl_def.syntax().descendants().find_map(ast::RetType::cast)?;
     let new_ret_type = process_ret_type(&ret_type)?;
     ted::replace(ret_type.syntax(), make::ret_type(new_ret_type).clone_for_update().syntax());

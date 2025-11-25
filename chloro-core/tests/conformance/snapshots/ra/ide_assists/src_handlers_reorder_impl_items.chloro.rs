@@ -16,9 +16,10 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         SyntaxElement::Node(n) => n,
         SyntaxElement::Token(t) => t.parent()?,
     };
-    // restrict the range
-    // if cursor is in assoc_items, abort
 
+    // restrict the range
+
+    // if cursor is in assoc_items, abort
     let assoc_range = items.syntax().text_range();
     let cursor_position = ctx.offset();
     if assoc_range.contains_inclusive(cursor_position) {
@@ -52,8 +53,8 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
                 .unwrap_or(usize::MAX)
         })
         .collect();
-    // Don't edit already sorted methods:
 
+    // Don't edit already sorted methods:
     if assoc_items == sorted {
         cov_mark::hit!(not_applicable_if_sorted);
         return None;

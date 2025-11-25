@@ -249,8 +249,8 @@ fn create_struct_def(
         let vis = vis.clone_for_update();
         ted::insert(ted::Position::before(node), vis);
     };
-    // for fields without any existing visibility, use visibility of enum
 
+    // for fields without any existing visibility, use visibility of enum
     let field_list: ast::FieldList = match field_list {
         Either::Left(field_list) => {
             if let Some(vis) = &enum_vis {
@@ -278,14 +278,14 @@ fn create_struct_def(
     let field_list = field_list.indent(IndentLevel::single());
 
     let strukt = make::struct_(enum_vis, name, generics, field_list).clone_for_update();
-    // take comments from variant
 
+    // take comments from variant
     ted::insert_all(
         ted::Position::first_child_of(strukt.syntax()),
         take_all_comments(variant.syntax()),
     );
-    // copy attributes from enum
 
+    // copy attributes from enum
     ted::insert_all(
         ted::Position::first_child_of(strukt.syntax()),
         enum_
@@ -309,13 +309,13 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
         Some(generic_args) => make::ty(&format!("{name}{generic_args}")),
         None => make::ty(&name.text()),
     };
-    // change from a record to a tuple field list
 
+    // change from a record to a tuple field list
     let tuple_field = make::tuple_field(None, ty);
     let field_list = make::tuple_field_list(iter::once(tuple_field)).clone_for_update();
     ted::replace(variant.field_list()?.syntax(), field_list.syntax());
-    // remove any ws after the name
 
+    // remove any ws after the name
     if let Some(ws) = name
         .syntax()
         .siblings_with_tokens(syntax::Direction::Next)
@@ -408,8 +408,8 @@ fn reference_to_node(
 ) -> Option<(ast::PathSegment, SyntaxNode, hir::Module)> {
     let segment =
         reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
-    // filter out the reference in marco
 
+    // filter out the reference in marco
     let segment_range = segment.syntax().text_range();
     if segment_range != reference.range {
         return None;

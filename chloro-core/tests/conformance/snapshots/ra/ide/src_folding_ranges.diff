@@ -49,22 +49,6 @@ Rustfmt size:  18809 bytes
  pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
      let mut res = vec![];
      let mut visited_comments = FxHashSet::default();
-     let mut visited_nodes = FxHashSet::default();
--
-     // regions can be nested, here is a LIFO buffer
-+
-     let mut region_starts: Vec<TextSize> = vec![];
- 
-     for element in file.syntax().descendants_with_tokens() {
-     visited: &mut FxHashSet<ast::Comment>,
- ) -> Option<TextRange> {
-     visited.insert(first.clone());
--
-     // Only fold comments of the same flavor
-+
-     let group_kind = first.kind();
-     if !group_kind.shape.is_line() {
-         return None;
  #[cfg(test)]
  mod tests {
      use test_utils::extract_tags;

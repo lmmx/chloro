@@ -1,3 +1,4 @@
+// chloro-core/src/formatter/node/implblock.rs
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams},
@@ -109,6 +110,10 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         let is_attached =
                             is_comment_attached_to_next_item(&children, idx, IMPL_ITEM_KINDS);
                         if !is_attached {
+                            // Check for blank line before standalone comment
+                            if should_have_blank_line_before_comment(&children, idx) {
+                                buf.push('\n');
+                            }
                             write_indent(buf, indent + 4);
                             buf.push_str(t.text());
                             buf.push('\n');
@@ -124,6 +129,30 @@ pub fn format_impl(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(" {}");
     }
     buf.push('\n');
+}
+
+/// Check if there should be a blank line before a comment at the given index
+fn should_have_blank_line_before_comment(
+    children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
+    comment_idx: usize,
+) -> bool {
+    for i in (0..comment_idx).rev() {
+        match &children[i] {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    if t.text().matches('\n').count() >= 2 {
+                        return true;
+                    }
+                } else if t.kind() == SyntaxKind::COMMENT {
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(_) => return false,
+        }
+    }
+    false
 }
 
 /// Collect comments immediately before an item at the given index

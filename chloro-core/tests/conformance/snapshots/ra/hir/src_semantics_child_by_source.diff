@@ -217,15 +217,6 @@ Rustfmt size:  12826 bytes
              res[keys::BLOCK].insert(block.lookup(db).ast_id.to_ptr(db), block);
          }
      }
-             GenericParams::generic_params_and_store_and_source_map(db, *self);
-         let mut toc_idx_iter = generic_params.iter_type_or_consts().map(|(idx, _)| idx);
-         let lts_idx_iter = generic_params.iter_lt().map(|(idx, _)| idx);
--
-         // For traits the first type index is `Self`, skip it.
-+
-         if let GenericDefId::TraitId(_) = *self {
-             toc_idx_iter.next().unwrap(); // advance_by(1);
-         }
              for (local_id, ast_param) in
                  toc_idx_iter.zip(generic_params_list.type_or_const_params())
              {

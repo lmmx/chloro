@@ -774,8 +774,8 @@ fn hint_iterator<'db>(
     }
     let iter_trait = famous_defs.core_iter_Iterator()?;
     let iter_mod = famous_defs.core_iter()?;
-    // Assert that this struct comes from `core::iter`.
 
+    // Assert that this struct comes from `core::iter`.
     if !(strukt.visibility(db) == hir::Visibility::Public
         && strukt.module(db).path_to_root(db).contains(&iter_mod))
     {

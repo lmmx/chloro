@@ -20,8 +20,8 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let func = param.syntax().ancestors().find_map(ast::Fn::cast)?;
     let is_self_present =
         param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
-    // check if fn is in impl Trait for ..
 
+    // check if fn is in impl Trait for ..
     if func
         .syntax()
         .parent() // AssocItemList

@@ -419,9 +419,10 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
         .flat_map(|gal| gal.generic_args())
         .map(|x| x.to_string())
         .collect::<FxHashSet<_>>();
-    // Keep where-clauses that have generics after substitution, and remove the
-    // rest.
 
+    // Keep where-clauses that have generics after substitution, and remove the
+
+    // rest.
     let has_live_generics = |pred: &WherePred| {
         pred.syntax()
             .descendants_with_tokens()
@@ -599,13 +600,18 @@ fn process_assoc_item(
 
 fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
-    // We want rhs of the const assignment to be a qualified path
-    // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
-    // The qualified will have the following generic syntax :
-    // <Base as Trait<GenArgs>>::ConstName;
-    // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
-    // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
 
+    // We want rhs of the const assignment to be a qualified path
+
+    // The general case for const assignment can be found [here](`https://doc.rust-lang.org/reference/items/constant-items.html`)
+
+    // The qualified will have the following generic syntax :
+
+    // <Base as Trait<GenArgs>>::ConstName;
+
+    // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
+
+    // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let inner = make::item_const(
         item.attrs(),

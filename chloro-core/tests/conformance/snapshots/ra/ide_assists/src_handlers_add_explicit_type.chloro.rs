@@ -30,8 +30,8 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
 
     let module = ctx.sema.scope(pat.syntax())?.module();
     let pat_range = pat.syntax().text_range();
-    // Don't enable the assist if there is a type ascription without any placeholders
 
+    // Don't enable the assist if there is a type ascription without any placeholders
     if let Some(ty) = &ascribed_ty {
         let mut contains_infer_ty = false;
         walk_ty(ty, &mut |ty| {
@@ -49,8 +49,8 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         (pat, _) => ctx.sema.type_of_pat(&pat)?,
     }
     .adjusted();
-    // Fully unresolved or unnameable types can't be annotated
 
+    // Fully unresolved or unnameable types can't be annotated
     if (ty.contains_unknown() && ty.type_arguments().count() == 0) || ty.is_closure() {
         cov_mark::hit!(add_explicit_type_not_applicable_if_ty_not_inferred);
         return None;

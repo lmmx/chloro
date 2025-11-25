@@ -31,18 +31,18 @@ pub(crate) fn unqualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) 
     if !fun.has_self_param(ctx.sema.db) {
         return None;
     }
-    // `core::ops::Add::add(` -> ``
 
+    // `core::ops::Add::add(` -> ``
     let delete_path =
         TextRange::new(path.syntax().text_range().start(), l_paren.text_range().end());
-    // Parens around `expr` if needed
 
+    // Parens around `expr` if needed
     let parens = first_arg.precedence().needs_parentheses_in(ExprPrecedence::Postfix).then(|| {
         let range = first_arg.syntax().text_range();
         (range.start(), range.end())
     });
-    // `, ` -> `.add(`
 
+    // `, ` -> `.add(`
     let replace_comma = TextRange::new(
         first_arg.syntax().text_range().end(),
         second_arg

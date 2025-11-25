@@ -102,8 +102,8 @@ fn remove_newline(
         edit.replace(range, replace_with.to_owned());
         return;
     }
-    // The node is between two other nodes
 
+    // The node is between two other nodes
     let (prev, next) = match (token.prev_sibling_or_token(), token.next_sibling_or_token()) {
         (Some(prev), Some(next)) => (prev, next),
         _ => return,
@@ -185,8 +185,8 @@ fn remove_newline(
         ));
         return;
     }
-    // Remove newline but add a computed amount of whitespace characters
 
+    // Remove newline but add a computed amount of whitespace characters
     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
 }
 
@@ -199,8 +199,8 @@ fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Op
 
     let block_range = block_expr.syntax().text_range();
     let mut buf = expr.syntax().text().to_string();
-    // Match block needs to have a comma after the block
 
+    // Match block needs to have a comma after the block
     if let Some(match_arm) = block_expr.syntax().parent().and_then(ast::MatchArm::cast)
         && match_arm.comma_token().is_none()
     {
@@ -480,8 +480,8 @@ fn foo(e: Result<U, V>) {
     }
 }",
         );
-        // comma with whitespace between brace and ,
 
+        // comma with whitespace between brace and ,
         check_join_lines(
             r"
 fn foo(e: Result<U, V>) {
@@ -500,8 +500,8 @@ fn foo(e: Result<U, V>) {
     }
 }",
         );
-        // comma with newline between brace and ,
 
+        // comma with newline between brace and ,
         check_join_lines(
             r"
 fn foo(e: Result<U, V>) {
@@ -538,8 +538,8 @@ fn foo() {
     let x = ($04,);
 }",
         );
-        // single arg tuple with whitespace between brace and comma
 
+        // single arg tuple with whitespace between brace and comma
         check_join_lines(
             r"
 fn foo() {
@@ -552,8 +552,8 @@ fn foo() {
     let x = ($04   ,);
 }",
         );
-        // single arg tuple with newline between brace and comma
 
+        // single arg tuple with newline between brace and comma
         check_join_lines(
             r"
 fn foo() {

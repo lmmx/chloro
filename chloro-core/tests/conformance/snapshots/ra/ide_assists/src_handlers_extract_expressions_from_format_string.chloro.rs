@@ -12,6 +12,38 @@ use syntax::{
 
 use crate::{AssistContext, Assists, utils};
 
+
+// Assist: extract_expressions_from_format_string
+
+//
+
+// Move an expression out of a format string.
+
+//
+
+// ```
+
+// # //- minicore: fmt
+
+// fn main() {
+
+//     print!("{var} {x + 1}$0");
+
+// }
+
+// ```
+
+// ->
+
+// ```
+
+// fn main() {
+
+//     print!("{var} {}"$0, x + 1);
+
+// }
+
+// ```
 pub(crate) fn extract_expressions_from_format_string(
     acc: &mut Assists,
     ctx: &AssistContext<'_>,

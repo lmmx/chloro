@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32166 bytes
+Chloro size:   32215 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -114,15 +114,6 @@ Rustfmt size:  32663 bytes
      }
  
      fn projection_bounds(
-         b: Self,
-     ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
-         let interner = relation.cx();
--
-         // We need to perform this deduplication as we sometimes generate duplicate projections in `a`.
-+
-         let mut a_v: Vec<_> = a.into_iter().collect();
-         let mut b_v: Vec<_> = b.into_iter().collect();
-         // `skip_binder` here is okay because `stable_cmp` doesn't look at binders
                  match (ep_a.skip_binder(), ep_b.skip_binder()) {
                      (ty::ExistentialPredicate::Trait(a), ty::ExistentialPredicate::Trait(b)) => {
                          Ok(ep_a.rebind(ty::ExistentialPredicate::Trait(
@@ -153,10 +144,9 @@ Rustfmt size:  32663 bytes
      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
          write!(f, "Binder<")?;
          match self.0.internee.skip_binder() {
-     }
  }
  
--// FIXME: should make a "header" in interned_vec
+ // FIXME: should make a "header" in interned_vec
 -
  #[derive(Debug, Clone)]
  pub struct InternedClausesWrapper<'db>(SmallVec<[Clause<'db>; 2]>, TypeFlags, DebruijnIndex);

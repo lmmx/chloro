@@ -2211,6 +2211,7 @@ impl Function {
         let ty = Ty::new_fn_ptr(interner, callable_sig);
         Type::new_with_resolver_inner(db, &resolver, ty)
     }
+
     // FIXME: Find a better API to express all combinations here, perhaps we should have `PreInstantiationType`?
 
     /// Get this function's return type
@@ -2537,8 +2538,11 @@ impl<'db> Param<'db> {
             _ => None,
         }
     }
+
     // pub fn parent_closure(&self) -> Option<Closure> {
+
     //     self.func.as_ref().right().cloned()
+
     // }
 
     pub fn index(&self) -> usize {

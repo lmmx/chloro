@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7946 bytes
-Chloro size:   7541 bytes
+Chloro size:   7588 bytes
 Rustfmt size:  7946 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,7 @@ Rustfmt size:  7946 bytes
  use crate::{AssistContext, Assists};
  
 -// FIXME: This ought to be a diagnostic lint.
--
+ 
 -// Assist: unnecessary_async
 -//
 -// Removes the `async` mark from functions which have no `.await` in their body.
@@ -40,32 +40,10 @@ Rustfmt size:  7946 bytes
 -// pub fn foo() {}
 -// pub async fn bar() { foo() }
 -// ```
++// FIXME: This ought to be a diagnostic lint.
  pub(crate) fn unnecessary_async(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let function: ast::Fn = ctx.find_node_at_offset()?;
--
-     // Do nothing if the cursor isn't on the async token.
-+
-     let async_token = function.async_token()?;
-     if !async_token.text_range().contains_inclusive(ctx.offset()) {
-         return None;
-     {
-         return None;
-     }
--
-     // Remove the `async` keyword plus whitespace after it, if any.
-+
-     let async_range = {
-         let async_token = function.async_token()?;
-         let next_token = async_token.next_token()?;
-             async_token.text_range()
-         }
-     };
--
-     // Otherwise, we may remove the `async` keyword.
-+
-     acc.add(
-         AssistId::quick_fix("unnecessary_async"),
-         "Remove unnecessary async",
+ 
  #[cfg(test)]
  mod tests {
      use super::*;

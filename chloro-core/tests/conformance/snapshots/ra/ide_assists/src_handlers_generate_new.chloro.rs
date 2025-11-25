@@ -40,8 +40,8 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         }
         StructKind::Unit => return None,
     };
-    // Return early if we've found an existing new fn
 
+    // Return early if we've found an existing new fn
     let impl_def =
         find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
 
@@ -278,8 +278,8 @@ impl Foo {
 }
 "#,
         );
-        // make sure the assist only works on unit variants
 
+        // make sure the assist only works on unit variants
         check_assist(
             generate_new,
             r#"
@@ -808,8 +808,8 @@ impl Foo {
 }
 "#,
         );
-        // make sure the assist only works on unit variants
 
+        // make sure the assist only works on unit variants
         check_assist(
             generate_new,
             r#"

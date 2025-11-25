@@ -1203,8 +1203,8 @@ struct Foo {
 }
 "#,
     );
-    // The "x"
 
+    // The "x"
     let highlights = &analysis
         .highlight_range(
             HL_CONFIG,

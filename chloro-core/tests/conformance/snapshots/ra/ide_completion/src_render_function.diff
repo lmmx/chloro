@@ -30,15 +30,6 @@ Rustfmt size:  21606 bytes
  };
  
  #[derive(Debug)]
-     has_dot_receiver: bool,
- ) -> Option<(Option<hir::SelfParam>, Vec<hir::Param<'db>>)> {
-     ctx.config.callable.as_ref()?;
--
-     // Don't add parentheses if the expected type is a function reference with the same signature.
-+
-     if let Some(expected) = ctx.expected_type.as_ref().filter(|e| e.is_fn())
-         && let Some(expected) = expected.as_callable(ctx.db)
-         && let Some(completed) = func.ty(ctx.db).as_callable(ctx.db)
  #[cfg(test)]
  mod tests {
      use crate::{
@@ -113,15 +104,6 @@ Rustfmt size:  21606 bytes
      #[test]
      fn complete_fn_param() {
          // has mut kw
- fn g(foo: (), mut bar: u32)
- "#,
-         );
--
-         // has type param
-+
-         check_edit(
-             "mut bar: u32",
-             r#"
  "#,
          );
      }

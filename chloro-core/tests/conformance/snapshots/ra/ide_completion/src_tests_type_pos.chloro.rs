@@ -896,8 +896,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Method generic params
 
+    // Method generic params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -947,8 +947,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Associated type generic params
 
+    // Associated type generic params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -999,8 +999,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Type generic params
 
+    // Type generic params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1021,8 +1021,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Type alias generic params
 
+    // Type alias generic params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1044,8 +1044,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Enum variant params
 
+    // Enum variant params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1066,8 +1066,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Trait params
 
+    // Trait params
     check_with_base_items(
         r#"
     const X: usize = 0;
@@ -1086,8 +1086,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Trait alias params
 
+    // Trait alias params
     check_with_base_items(
         r#"
     #![feature(trait_alias)]
@@ -1108,8 +1108,8 @@ fn completes_const_and_type_generics_separately() {
             kw self::
         "#]],
     );
-    // Omitted lifetime params
 
+    // Omitted lifetime params
     check_with_base_items(
         r#"
 struct S<'a, 'b, const C: usize, T>(core::marker::PhantomData<&'a &'b T>);

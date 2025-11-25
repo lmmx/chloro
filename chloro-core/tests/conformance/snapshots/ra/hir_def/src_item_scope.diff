@@ -100,13 +100,13 @@ Rustfmt size:  33374 bytes
      pub(crate) fn unnamed_trait_vis(&self, tr: TraitId) -> Option<Visibility> {
          self.unnamed_trait_imports.iter().find(|&&(t, _)| t == tr).map(|(_, trait_)| trait_.vis)
      }
-         import: Option<ImportOrExternCrate>,
-     ) -> bool {
          let mut changed = false;
--
-         // FIXME: Document and simplify this
  
+         // FIXME: Document and simplify this
+-
          if let Some(mut fld) = def.types {
+             let existing = self.types.entry(lookup.1.clone());
+             match existing {
      }
  }
  

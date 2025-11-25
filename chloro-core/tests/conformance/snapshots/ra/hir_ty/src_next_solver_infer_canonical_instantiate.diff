@@ -58,12 +58,3 @@ Rustfmt size:  6179 bytes
      }
  
      fn fold_clauses(&mut self, c: Clauses<'db>) -> Clauses<'db> {
-         if !c.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
-             return c;
-         }
--
-         // FIXME: We might need cache here for perf like rustc
-+
-         c.super_fold_with(self)
-     }
- }

@@ -1,3 +1,4 @@
+// chloro-core/src/formatter/node.rs
 mod block;
 mod const_static;
 mod debug;
@@ -72,6 +73,14 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
     )
 }
 
+/// An item with its associated preceding comments and whether there's a blank line before it
+#[derive(Clone)]
+struct ItemWithComments {
+    comments: Vec<Comment>,
+    node: NodeOrToken<SyntaxNode, SyntaxToken>,
+    blank_line_before: bool,
+}
+
 /// Main node formatting dispatcher
 pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
     match node.kind() {
@@ -81,12 +90,14 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             let mut extern_crates: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
             let mut mod_decls: Vec<(Vec<Comment>, SyntaxNode)> = Vec::new();
             let mut use_items_with_comments = Vec::new();
-            let mut other_items: Vec<ra_ap_syntax::NodeOrToken<SyntaxNode, SyntaxToken>> =
-                Vec::new();
+            let mut other_items: Vec<ItemWithComments> = Vec::new();
 
-            let mut pending_comments = Vec::new();
+            let mut pending_comments: Vec<Comment> = Vec::new();
+            let mut pending_blank_line = false;
 
-            for child in node.children_with_tokens() {
+            let children: Vec<_> = node.children_with_tokens().collect();
+
+            for (idx, child) in children.iter().enumerate() {
                 match child {
                     NodeOrToken::Node(n) => {
                         match n.kind() {
@@ -95,22 +106,37 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                     if attr.excl_token().is_some() {
                                         inner_attrs
                                             .push((std::mem::take(&mut pending_comments), attr));
+                                        pending_blank_line = false;
                                     } else {
-                                        other_items.push(NodeOrToken::Node(n));
+                                        other_items.push(ItemWithComments {
+                                            comments: std::mem::take(&mut pending_comments),
+                                            node: NodeOrToken::Node(n.clone()),
+                                            blank_line_before: pending_blank_line,
+                                        });
+                                        pending_blank_line = false;
                                     }
                                 }
                             }
                             SyntaxKind::EXTERN_CRATE => {
-                                extern_crates.push((std::mem::take(&mut pending_comments), n));
+                                extern_crates
+                                    .push((std::mem::take(&mut pending_comments), n.clone()));
+                                pending_blank_line = false;
                             }
                             SyntaxKind::MODULE => {
                                 if let Some(module) = Module::cast(n.clone())
                                     && module.item_list().is_none()
                                 {
-                                    mod_decls.push((std::mem::take(&mut pending_comments), n));
+                                    mod_decls
+                                        .push((std::mem::take(&mut pending_comments), n.clone()));
+                                    pending_blank_line = false;
                                     continue;
                                 }
-                                other_items.push(NodeOrToken::Node(n));
+                                other_items.push(ItemWithComments {
+                                    comments: std::mem::take(&mut pending_comments),
+                                    node: NodeOrToken::Node(n.clone()),
+                                    blank_line_before: pending_blank_line,
+                                });
+                                pending_blank_line = false;
                             }
                             SyntaxKind::USE => {
                                 if let Some(use_) = Use::cast(n.clone()) {
@@ -119,17 +145,17 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
 
                                     // Now collect trailing comments/content after this use
                                     let mut trailing = Vec::new();
-                                    let mut next = use_.syntax().next_sibling_or_token();
+                                    let mut next_idx = idx + 1;
 
-                                    while let Some(sibling) = next {
-                                        match sibling {
+                                    while next_idx < children.len() {
+                                        match &children[next_idx] {
                                             NodeOrToken::Token(t)
                                                 if t.kind() == SyntaxKind::COMMENT =>
                                             {
                                                 if let Some(comment) = Comment::cast(t.clone()) {
                                                     trailing.push(comment);
                                                 }
-                                                next = t.next_sibling_or_token();
+                                                next_idx += 1;
                                             }
                                             NodeOrToken::Token(t)
                                                 if t.kind() == SyntaxKind::WHITESPACE =>
@@ -140,31 +166,54 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
                                                     // Double newline = end of comment block
                                                     break;
                                                 }
-                                                next = t.next_sibling_or_token();
+                                                next_idx += 1;
                                             }
                                             _ => break,
                                         }
                                     }
 
                                     use_items_with_comments.push((before, use_, trailing));
+                                    pending_blank_line = false;
                                 }
                             }
                             _ => {
-                                other_items.push(NodeOrToken::Node(n));
+                                other_items.push(ItemWithComments {
+                                    comments: std::mem::take(&mut pending_comments),
+                                    node: NodeOrToken::Node(n.clone()),
+                                    blank_line_before: pending_blank_line,
+                                });
+                                pending_blank_line = false;
                             }
                         }
                     }
                     NodeOrToken::Token(t) => {
-                        if t.kind() == SyntaxKind::COMMENT
-                            && let Some(comment) = Comment::cast(t)
-                        {
-                            if comment.is_inner() && comment.kind().doc.is_some() {
-                                module_inner_docs.push(comment);
-                            } else {
-                                pending_comments.push(comment);
+                        if t.kind() == SyntaxKind::COMMENT {
+                            if let Some(comment) = Comment::cast(t.clone()) {
+                                if comment.is_inner() && comment.kind().doc.is_some() {
+                                    module_inner_docs.push(comment);
+                                } else {
+                                    pending_comments.push(comment);
+                                }
+                            }
+                        } else if t.kind() == SyntaxKind::WHITESPACE {
+                            // Check for blank lines
+                            if t.text().matches('\n').count() >= 2 {
+                                pending_blank_line = true;
                             }
                         }
                     }
+                }
+            }
+
+            // If there are leftover pending comments (at the end of file), add them to other_items
+            if !pending_comments.is_empty() {
+                for comment in pending_comments {
+                    other_items.push(ItemWithComments {
+                        comments: vec![],
+                        node: NodeOrToken::Token(SyntaxToken::from(comment.syntax().clone())),
+                        blank_line_before: pending_blank_line,
+                    });
+                    pending_blank_line = false;
                 }
             }
 
@@ -230,7 +279,6 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             // 5. Use statements with their trailing comments (SORTED)
             if !use_items_with_comments.is_empty() {
                 sort_and_format_imports(&use_items_with_comments, buf, indent);
-
                 if !other_items.is_empty() {
                     buf.push('\n');
                 }
@@ -246,17 +294,34 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
             };
 
             for item in other_items {
-                match item {
+                // Output preceding comments
+                for comment in &item.comments {
+                    // Add blank line before comment block if there was one in original
+                    if item.blank_line_before && last_kind.is_some() {
+                        buf.push('\n');
+                    }
+                    buf.push_str(comment.text());
+                    buf.push('\n');
+                }
+
+                match item.node {
                     NodeOrToken::Node(n) => {
                         let current_kind = n.kind();
-                        if should_add_blank_line(last_kind, current_kind) {
+                        // Add blank line between major items (but comments already added their blank line)
+                        if item.comments.is_empty()
+                            && should_add_blank_line(last_kind, current_kind)
+                        {
                             buf.push('\n');
                         }
                         format_node(&n, buf, indent);
                         last_kind = Some(current_kind);
                     }
                     NodeOrToken::Token(t) => {
-                        buf.push_str(t.text());
+                        // Standalone token (like a trailing comment)
+                        if t.kind() == SyntaxKind::COMMENT {
+                            buf.push_str(t.text());
+                            buf.push('\n');
+                        }
                     }
                 }
             }

@@ -95,9 +95,10 @@ impl<'a> SymbolCollector<'a> {
     pub fn collect(&mut self, module: Module) {
         let _p = tracing::info_span!("SymbolCollector::collect", ?module).entered();
         tracing::info!(?module, "SymbolCollector::collect");
-        // The initial work is the root module we're collecting, additional work will
-        // be populated as we traverse the module's definitions.
 
+        // The initial work is the root module we're collecting, additional work will
+
+        // be populated as we traverse the module's definitions.
         self.work.push(SymbolCollectorWork { module_id: module.into(), parent: None });
 
         while let Some(work) = self.work.pop() {
@@ -173,8 +174,8 @@ impl<'a> SymbolCollector<'a> {
                 ModuleDefId::EnumVariantId(_) => {}
             }
         };
-        // Nested trees are very common, so a cache here will hit a lot.
 
+        // Nested trees are very common, so a cache here will hit a lot.
         let import_child_source_cache = &mut FxHashMap::default();
 
         let is_explicit_import = |vis| match vis {
@@ -325,8 +326,8 @@ impl<'a> SymbolCollector<'a> {
         }
         let body_id = body_id.into();
         let body = self.db.body(body_id);
-        // Descend into the blocks and enqueue collection of all modules within.
 
+        // Descend into the blocks and enqueue collection of all modules within.
         for (_, def_map) in body.blocks(self.db) {
             for (id, _) in def_map.modules() {
                 self.work.push(SymbolCollectorWork {

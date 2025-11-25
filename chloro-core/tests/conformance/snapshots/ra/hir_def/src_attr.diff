@@ -53,15 +53,6 @@ Rustfmt size:  32850 bytes
  }
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-         Some(TtElement::Leaf(tt::Leaf::Ident(ident))) => ident.sym.clone(),
-         Some(_) => return Some(DocExpr::Invalid),
-     };
--
-     // Peek
-+
-     let ret = match it.peek() {
-         Some(TtElement::Leaf(tt::Leaf::Punct(punct))) if punct.char == '=' => {
-             it.next();
  mod tests {
      //! This module contains tests for doc-expression parsing.
      //! Currently, it tests `#[doc(hidden)]` and `#[doc(alias)]`.

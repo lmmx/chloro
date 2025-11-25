@@ -62,8 +62,8 @@ impl DiscoverCommand {
                 }
             })
             .collect();
-        // TODO: are we sure the extra env should be empty?
 
+        // TODO: are we sure the extra env should be empty?
         let mut cmd = toolchain::command(command, current_dir, &FxHashMap::default());
         cmd.args(args);
 

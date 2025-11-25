@@ -179,8 +179,8 @@ pub fn expand_speculative(
 
     let span_map = RealSpanMap::absolute(span.anchor.file_id);
     let span_map = SpanMapRef::RealSpanMap(&span_map);
-    // Build the subtree and token mapping for the speculative args
 
+    // Build the subtree and token mapping for the speculative args
     let (mut tt, undo_info) = match loc.kind {
         MacroCallKind::FnLike { .. } => (
             syntax_bridge::syntax_node_to_token_tree(
@@ -280,9 +280,10 @@ pub fn expand_speculative(
         }
         _ => None,
     };
-    // Do the actual expansion, we need to directly expand the proc macro due to the attribute args
-    // Otherwise the expand query will fetch the non speculative attribute args and pass those instead.
 
+    // Do the actual expansion, we need to directly expand the proc macro due to the attribute args
+
+    // Otherwise the expand query will fetch the non speculative attribute args and pass those instead.
     let mut speculative_expansion = match loc.def.kind {
         MacroDefKind::ProcMacro(ast, expander, _) => {
             let span = db.proc_macro_span(ast);
@@ -664,8 +665,8 @@ fn macro_expand(
             (ExpandResult { value: res.value, err: res.err }, span)
         }
     };
-    // Skip checking token tree limit for include! macro call
 
+    // Skip checking token tree limit for include! macro call
     if !loc.def.is_include() {
         // Set a hard limit for the expanded tt
         if let Err(value) = check_tt_count(&tt) {
@@ -719,8 +720,8 @@ fn expand_proc_macro(
             span_with_mixed_site_ctxt(db, span, id.into(), loc.def.edition),
         )
     };
-    // Set a hard limit for the expanded tt
 
+    // Set a hard limit for the expanded tt
     if let Err(value) = check_tt_count(&tt) {
         return value.map(|()| Arc::new(tt::TopSubtree::empty(tt::DelimSpan::from_single(span))));
     }

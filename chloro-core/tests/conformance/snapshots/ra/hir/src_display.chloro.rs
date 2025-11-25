@@ -34,8 +34,8 @@ impl<'db> HirDisplay<'db> for Function {
         let data = db.function_signature(self.id);
         let container = self.as_assoc_item(db).map(|it| it.container(db));
         let mut module = self.module(db);
-        // Write container (trait or impl)
 
+        // Write container (trait or impl)
         let container_params = match container {
             Some(AssocItemContainer::Trait(trait_)) => {
                 let (params, params_store) = f.db.generic_params_and_store(trait_.id.into());
@@ -61,9 +61,10 @@ impl<'db> HirDisplay<'db> for Function {
             }
             None => None,
         };
-        // Write signature of the function
-        // Block-local impls are "hoisted" to the nearest (non-block) module.
 
+        // Write signature of the function
+
+        // Block-local impls are "hoisted" to the nearest (non-block) module.
         if let Some(AssocItemContainer::Impl(_)) = container {
             module = module.nearest_non_block_module(db);
         }
@@ -101,8 +102,8 @@ impl<'db> HirDisplay<'db> for Function {
             first = false;
             skip_self = 1;
         }
-        // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
 
+        // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
         let body = db.body(self.id.into());
         for (type_ref, param) in data.params.iter().zip(self.assoc_fn_params(db)).skip(skip_self) {
             if !first {
@@ -127,10 +128,12 @@ impl<'db> HirDisplay<'db> for Function {
         }
 
         f.write_char(')')?;
-        // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
-        // Use ugly pattern match to strip the Future trait.
-        // Better way?
 
+        // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
+
+        // Use ugly pattern match to strip the Future trait.
+
+        // Better way?
         let ret_type = if !data.is_async() {
             data.ret_type
         } else if let Some(ret_type) = data.ret_type {
@@ -166,8 +169,8 @@ impl<'db> HirDisplay<'db> for Function {
                 }
             }
         }
-        // Write where clauses
 
+        // Write where clauses
         let has_written_where = write_where_clause(GenericDefId::FunctionId(self.id), f)?;
         if let Some((container_params, container_params_store)) = container_params {
             if !has_written_where {
@@ -652,8 +655,8 @@ fn write_where_predicates<'db>(
     f: &mut HirFormatter<'_, 'db>,
 ) -> Result<(), HirDisplayError> {
     use WherePredicate::*;
-    // unnamed type targets are displayed inline with the argument itself, e.g. `f: impl Y`.
 
+    // unnamed type targets are displayed inline with the argument itself, e.g. `f: impl Y`.
     let is_unnamed_type_target = |target: TypeRefId| {
         matches!(store[target],
             TypeRef::TypeParam(id) if f.db.generic_params(id.parent())[id.local_id()].name().is_none()

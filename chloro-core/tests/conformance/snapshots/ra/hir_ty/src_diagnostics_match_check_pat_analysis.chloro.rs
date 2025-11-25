@@ -414,19 +414,27 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         ty: &Self::Ty,
     ) -> Result<rustc_pattern_analysis::constructor::ConstructorSet<Self>, Self::Error> {
         let cx = self;
+
         // Unhandled types are treated as non-exhaustive. Being explicit here instead of falling
+
         // to catchall arm to ease further implementation.
-
         let unhandled = || ConstructorSet::Unlistable;
-        // This determines the set of all possible constructors for the type `ty`. For numbers,
-        // arrays and slices we use ranges and variable-length slices when appropriate.
-        //
-        // If the `exhaustive_patterns` feature is enabled, we make sure to omit constructors that
-        // are statically impossible. E.g., for `Option<!>`, we do not include `Some(_)` in the
-        // returned list of constructors.
-        // Invariant: this is empty if and only if the type is uninhabited (as determined by
-        // `cx.is_uninhabited()`).
 
+        // This determines the set of all possible constructors for the type `ty`. For numbers,
+
+        // arrays and slices we use ranges and variable-length slices when appropriate.
+
+        //
+
+        // If the `exhaustive_patterns` feature is enabled, we make sure to omit constructors that
+
+        // are statically impossible. E.g., for `Option<!>`, we do not include `Some(_)` in the
+
+        // returned list of constructors.
+
+        // Invariant: this is empty if and only if the type is uninhabited (as determined by
+
+        // `cx.is_uninhabited()`).
         Ok(match ty.kind() {
             TyKind::Bool => ConstructorSet::Bool,
             TyKind::Char => unhandled(),
@@ -487,19 +495,33 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         write!(f, "<write_variant_name unsupported>")
         // We lack the database here ...
         // let variant = ty.as_adt().and_then(|(adt, _)| Self::variant_id_for_adt(db, ctor, adt));
+
         // if let Some(variant) = variant {
+
         //     match variant {
+
         //         VariantId::EnumVariantId(v) => {
+
         //             write!(f, "{}", db.enum_variant_data(v).name.display(db))?;
+
         //         }
+
         //         VariantId::StructId(s) => {
+
         //             write!(f, "{}", db.struct_data(s).name.display(db))?
+
         //         }
+
         //         VariantId::UnionId(u) => {
+
         //             write!(f, "{}", db.union_data(u).name.display(db))?
+
         //         }
+
         //     }
+
         // }
+
         // Ok(())
     }
 

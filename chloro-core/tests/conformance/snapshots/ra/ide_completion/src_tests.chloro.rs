@@ -123,8 +123,8 @@ fn completion_list_with_config_raw(
     trigger_character: Option<char>,
 ) -> Vec<CompletionItem> {
     let _tracing = setup_tracing();
-    // filter out all but one built-in type completion for smaller test outputs
 
+    // filter out all but one built-in type completion for smaller test outputs
     let items = get_all_items(config, ra_fixture, trigger_character);
     items
         .into_iter()

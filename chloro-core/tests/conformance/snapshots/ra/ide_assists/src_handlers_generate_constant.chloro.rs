@@ -11,6 +11,46 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+
+// Assist: generate_constant
+
+//
+
+// Generate a named constant.
+
+//
+
+// ```
+
+// struct S { i: usize }
+
+// impl S { pub fn new(n: usize) {} }
+
+// fn main() {
+
+//     let v = S::new(CAPA$0CITY);
+
+// }
+
+// ```
+
+// ->
+
+// ```
+
+// struct S { i: usize }
+
+// impl S { pub fn new(n: usize) {} }
+
+// fn main() {
+
+//     const CAPACITY: usize = $0;
+
+//     let v = S::new(CAPACITY);
+
+// }
+
+// ```
 pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let constant_token = ctx.find_node_at_offset::<ast::NameRef>()?;
     if constant_token.to_string().chars().any(|it| !(it.is_uppercase() || it == '_')) {

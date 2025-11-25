@@ -66,15 +66,6 @@ Rustfmt size:  31299 bytes
      generation: DiagnosticsGeneration,
      sender: Sender<FlycheckMessage>,
      config: FlycheckConfig,
-         let Some(command_receiver) = &self.command_receiver else {
-             return inbox.recv().ok().map(Event::RequestStateChange);
-         };
--
-         // Biased to give restarts a preference so check outputs don't block a restart or stop
-+
-         select_biased! {
-             recv(inbox) -> msg => msg.ok().map(Event::RequestStateChange),
-             recv(command_receiver) -> msg => Some(Event::CheckEvent(msg.ok())),
  #[allow(clippy::large_enum_variant)]
  enum CargoCheckMessage {
      CompilerArtifact(cargo_metadata::Artifact),

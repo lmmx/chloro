@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65572 bytes
+Chloro size:   65578 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -106,13 +106,13 @@ Rustfmt size:  65944 bytes
          self.for_trait_and_self_ty(trait_, self_ty).next().is_some()
      }
  
- ) -> SmallVec<[Crate; 2]> {
-     let _p = tracing::info_span!("incoherent_inherent_impl_crates").entered();
      let mut res = SmallVec::new();
--
-     // should pass crate for finger print and do reverse deps
  
+     // should pass crate for finger print and do reverse deps
+-
      for krate in db.transitive_deps(krate) {
+         let impls = db.inherent_impls_in_crate(krate);
+         if impls.map.get(&fp).is_some_and(|v| !v.is_empty()) {
      }
  }
  
@@ -122,36 +122,30 @@ Rustfmt size:  65944 bytes
  pub(crate) fn iterate_method_candidates<'db, T>(
      ty: &Canonical<'db, Ty<'db>>,
      table: &mut InferenceTable<'db>,
-     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), env.env, trait_ref);
- 
      let selection = infcx.select(&obligation).ok()??;
--
+ 
      // Currently, we use a fulfillment context to completely resolve
-     // all nested obligations. This is because they can inform the
-     // inference of the impl's type parameters.
 +
+     // all nested obligations. This is because they can inform the
++
+     // inference of the impl's type parameters.
      let mut ocx = ObligationCtxt::new(infcx);
      let impl_source = selection.map(|obligation| ocx.register_obligation(obligation));
- 
-         }
-     };
      //   - At least one of the types `T0..=Tn`` must be a local type. Let `Ti`` be the first such type.
--
+ 
      // FIXME: param coverage
-     //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
 +
+     //   - No uncovered type parameters `P1..=Pn` may appear in `T0..Ti`` (excluding `Ti`)
      let is_not_orphan = trait_ref.args.types().any(|ty| match unwrap_fundamental(ty).kind() {
          TyKind::Adt(adt_def, _) => is_local(adt_def.def_id().0.module(db).krate()),
-         TyKind::Error(_) => true,
- ) -> ControlFlow<()> {
-     let db = table.db;
      let env = table.trait_env.clone();
--
+ 
      // For trait object types and placeholder types with trait bounds, the methods of the trait and
-     // its super traits are considered inherent methods. This matters because these methods have
-     // higher priority than the other traits' methods, which would be considered in
-     // `iterate_trait_method_candidates()` only after this function.
 +
+     // its super traits are considered inherent methods. This matters because these methods have
++
+     // higher priority than the other traits' methods, which would be considered in
++
+     // `iterate_trait_method_candidates()` only after this function.
      match self_ty.kind() {
          TyKind::Param(_) => {
-             let env = table.trait_env.clone();

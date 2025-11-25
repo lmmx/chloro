@@ -37,8 +37,8 @@ fn integrated_highlighting_benchmark() {
     if std::env::var("RUN_SLOW_BENCHES").is_err() {
         return;
     }
-    // Load rust-analyzer itself.
 
+    // Load rust-analyzer itself.
     let workspace_to_load = project_root();
     let file = "./crates/rust-analyzer/src/config.rs";
 
@@ -105,8 +105,8 @@ fn integrated_completion_benchmark() {
     if std::env::var("RUN_SLOW_BENCHES").is_err() {
         return;
     }
-    // Load rust-analyzer itself.
 
+    // Load rust-analyzer itself.
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
 
@@ -139,8 +139,8 @@ fn integrated_completion_benchmark() {
         let path = VfsPath::from(AbsPathBuf::assert(file));
         file_id(&vfs, &path)
     };
-    // kick off parsing and index population
 
+    // kick off parsing and index population
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -305,8 +305,8 @@ fn integrated_diagnostics_benchmark() {
     if std::env::var("RUN_SLOW_BENCHES").is_err() {
         return;
     }
-    // Load rust-analyzer itself.
 
+    // Load rust-analyzer itself.
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
 

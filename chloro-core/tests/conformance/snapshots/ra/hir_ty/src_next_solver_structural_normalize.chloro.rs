@@ -35,10 +35,12 @@ impl<'db> At<'_, 'db> {
         }
 
         let new_infer = self.infcx.next_term_var_of_kind(term);
-        // We simply emit an `alias-eq` goal here, since that will take care of
-        // normalizing the LHS of the projection until it is a rigid projection
-        // (or a not-yet-defined opaque in scope).
 
+        // We simply emit an `alias-eq` goal here, since that will take care of
+
+        // normalizing the LHS of the projection until it is a rigid projection
+
+        // (or a not-yet-defined opaque in scope).
         let obligation = Obligation::new(
             self.infcx.interner,
             self.cause.clone(),

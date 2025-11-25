@@ -206,8 +206,8 @@ fn insert_use_with_alias_option(
     {
         ted::insert(ted::Position::first_child_of(use_item.syntax()), attr);
     }
-    // merge into existing imports if possible
 
+    // merge into existing imports if possible
     if let Some(mb) = mb {
         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
         for existing_use in

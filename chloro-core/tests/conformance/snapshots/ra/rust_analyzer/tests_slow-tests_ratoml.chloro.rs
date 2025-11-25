@@ -120,8 +120,8 @@ impl RatomlTest {
                 text: "".to_owned(),
             },
         });
-        // See if deleting ratoml file will make the config of interest to return to its default value.
 
+        // See if deleting ratoml file will make the config of interest to return to its default value.
         self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
             text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
             text: Some("".to_owned()),
@@ -210,6 +210,135 @@ enum Value {
     );
 }
 
+/// Checks if client config can be modified.
+
+/// FIXME @alibektas : This test is atm not valid.
+
+/// Asking for client config from the client is a 2 way communication
+
+/// which we cannot imitate with the current slow-tests infrastructure.
+
+/// See rust-analyzer::handlers::notifications#197
+
+//     #[test]
+
+//     fn client_config_update() {
+
+//         setup();
+
+//         let server = RatomlTest::new(
+
+//             vec![
+
+//                 r#"
+
+// //- /p1/Cargo.toml
+
+// [package]
+
+// name = "p1"
+
+// version = "0.1.0"
+
+// edition = "2021"
+
+// "#,
+
+//                 r#"
+
+// //- /p1/src/lib.rs
+
+// enum Value {
+
+//     Number(i32),
+
+//     Text(String),
+
+// }"#,
+
+//             ],
+
+//             vec!["p1"],
+
+//             None,
+
+//         );
+
+//         assert!(!server.query(QueryType::AssistEmitMustUse, 1));
+
+//         // a.notification::<DidChangeConfiguration>(DidChangeConfigurationParams {
+
+//         //     settings: json!({
+
+//         //         "assists" : {
+
+//         //             "emitMustUse" : true
+
+//         //         }
+
+//         //     }),
+
+//         // });
+
+//         assert!(server.query(QueryType::AssistEmitMustUse, 1));
+
+//     }
+
+//     #[test]
+
+//     fn ratoml_create_ratoml_basic() {
+
+//         let server = RatomlTest::new(
+
+//             vec![
+
+//                 r#"
+
+// //- /p1/Cargo.toml
+
+// [package]
+
+// name = "p1"
+
+// version = "0.1.0"
+
+// edition = "2021"
+
+// "#,
+
+//                 r#"
+
+// //- /p1/rust-analyzer.toml
+
+// assist.emitMustUse = true
+
+// "#,
+
+//                 r#"
+
+// //- /p1/src/lib.rs
+
+// enum Value {
+
+//     Number(i32),
+
+//     Text(String),
+
+// }
+
+// "#,
+
+//             ],
+
+//             vec!["p1"],
+
+//             None,
+
+//         );
+
+//         assert!(server.query(QueryType::AssistEmitMustUse, 2));
+
+//     }
 #[test]
 fn ratoml_user_config_detected() {
     if skip_slow_tests() {
@@ -746,6 +875,131 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
     );
 }
 
+/// If a root is non-local, so we cannot find what its parent is
+
+/// in our `config.local_root_parent_map`. So if any config should
+
+/// apply, it must be looked for starting from the client level.
+
+/// FIXME @alibektas : "locality" is according to ra that, which is simply in the file system.
+
+/// This doesn't really help us with what we want to achieve here.
+
+//     #[test]
+
+//     fn ratoml_non_local_crates_start_inheriting_from_client() {
+
+//         let server = RatomlTest::new(
+
+//             vec![
+
+//                 r#"
+
+// //- /p1/Cargo.toml
+
+// [package]
+
+// name = "p1"
+
+// version = "0.1.0"
+
+// edition = "2021"
+
+// [dependencies]
+
+// p2 = { path = "../p2" }
+
+// "#,
+
+//                 r#"
+
+// //- /p1/src/lib.rs
+
+// enum Value {
+
+//     Number(i32),
+
+//     Text(String),
+
+// }
+
+// use p2;
+
+// pub fn add(left: usize, right: usize) -> usize {
+
+//     p2::add(left, right)
+
+// }
+
+// #[cfg(test)]
+
+// mod tests {
+
+//     use super::*;
+
+//     #[test]
+
+//     fn it_works() {
+
+//         let result = add(2, 2);
+
+//         assert_eq!(result, 4);
+
+//     }
+
+// }"#,
+
+//                 r#"
+
+// //- /p2/Cargo.toml
+
+// [package]
+
+// name = "p2"
+
+// version = "0.1.0"
+
+// edition = "2021"
+
+// # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+// [dependencies]
+
+// "#,
+
+//                 r#"
+
+// //- /p2/rust-analyzer.toml
+
+// # DEF
+
+// assist.emitMustUse = true
+
+// "#,
+
+//                 r#"
+
+// //- /p2/src/lib.rs
+
+// enum Value {
+
+//     Number(i32),
+
+//     Text(String),
+
+// }"#,
+
+//             ],
+
+//             vec!["p1", "p2"],
+
+//             None,
+
+//         );
+
+//         assert!(!server.query(QueryType::AssistEmitMustUse, 5));
+
+//     }
 #[test]
 fn ratoml_in_root_is_workspace() {
     if skip_slow_tests() {

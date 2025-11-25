@@ -224,6 +224,7 @@ impl RustAnalyzer {
     }
 }
 
+// generated end
 #[derive(Debug, PartialEq, Eq)]
 pub enum OutputFormat {
     Csv,

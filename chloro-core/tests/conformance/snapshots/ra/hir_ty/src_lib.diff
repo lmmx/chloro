@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22050 bytes
+Chloro size:   22052 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -223,17 +223,15 @@ Rustfmt size:  22967 bytes
      let value = match t.clone().try_fold_with(&mut error_replacer) {
          Ok(t) => t,
          Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
-         .associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
- 
      let mut table = InferenceTable::new(db, trait_env.clone(), None);
--
+ 
      // Register two obligations:
-     // - Self: FnOnce<?args_ty>
-     // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
 +
+     // - Self: FnOnce<?args_ty>
++
+     // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
      let args_ty = table.next_ty_var();
      let args = [self_ty, args_ty];
-     let trait_ref = TraitRef::new(table.interner(), fn_once_trait.into(), args);
  where
      T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>,
  {

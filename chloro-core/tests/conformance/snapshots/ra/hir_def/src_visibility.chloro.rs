@@ -92,9 +92,10 @@ impl Visibility {
         // visibility as the containing module (even though no items are directly nameable from
         // there, getting this right is important for method resolution).
         // In that case, we adjust the visibility of `to_module` to point to the containing module.
-        // Additional complication: `to_module` might be in `from_module`'s `DefMap`, which we're
-        // currently computing, so we must not call the `def_map` query for it.
 
+        // Additional complication: `to_module` might be in `from_module`'s `DefMap`, which we're
+
+        // currently computing, so we must not call the `def_map` query for it.
         let def_map_block = def_map.block_id();
         loop {
             match (to_module.block, def_map_block) {
@@ -111,8 +112,8 @@ impl Visibility {
             }
             break;
         }
-        // from_module needs to be a descendant of to_module
 
+        // from_module needs to be a descendant of to_module
         let mut def_map = def_map;
         let mut parent_arc;
         loop {

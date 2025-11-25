@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32377 bytes
-Chloro size:   32358 bytes
+Chloro size:   32363 bytes
 Rustfmt size:  32377 bytes
 
 ✗ Outputs DIFFER
@@ -37,13 +37,15 @@ Rustfmt size:  32377 bytes
  };
  
  pub(crate) fn complete_postfix(
-     postfix_snippet("ref", "&expr", &format!("&{receiver_text}")).add_to(acc, ctx.db);
-     postfix_snippet("refm", "&mut expr", &format!("&mut {receiver_text}")).add_to(acc, ctx.db);
      postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
--
-     // The rest of the postfix completions create an expression that moves an argument,
-     // so it's better to consider references now to avoid breaking the compilation
  
+     // The rest of the postfix completions create an expression that moves an argument,
+-    // so it's better to consider references now to avoid breaking the compilation
+ 
++    // so it's better to consider references now to avoid breaking the compilation
+     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
+     let mut receiver_text =
+         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
  
      postfix_snippet("box", "Box::new(expr)", &format!("Box::new({receiver_text})"))
          .add_to(acc, ctx.db);
@@ -53,16 +55,13 @@ Rustfmt size:  32377 bytes
      postfix_snippet("dbgr", "dbg!(&expr)", &format!("dbg!(&{receiver_text})")).add_to(acc, ctx.db);
      postfix_snippet("call", "function(expr)", &format!("${{1}}({receiver_text})"))
          .add_to(acc, ctx.db);
-     }
-     let file_text = sema.db.file_text(range.file_id.file_id(sema.db));
      let mut text = file_text.text(sema.db)[range.range].to_owned();
--
+ 
      // The receiver texts should be interpreted as-is, as they are expected to be
-     // normal Rust expressions.
 +
+     // normal Rust expressions.
      escape_snippet_bits(&mut text);
      text
- }
  #[cfg(test)]
  mod tests {
      use expect_test::expect;
@@ -161,15 +160,6 @@ Rustfmt size:  32377 bytes
      fn postfix_completion_for_block(kind: &str) {
          check_edit(kind, r#"fn main() { foo.$0 }"#, &format!("fn main() {{ {kind} {{ foo }} }}"));
          check_edit(
-                 &format!("fn main() {{ {kind} {{ const {{1}} }} }}"),
-             );
-         }
--
-         // completion will not be triggered
-+
-         check_edit(
-             kind,
-             r#"fn main() { let x = true else {panic!()}.$0}"#,
              &format!("fn main() {{ let x = true else {{panic!()}}.{kind} $0}}"),
          );
      }
@@ -177,19 +167,19 @@ Rustfmt size:  32377 bytes
      #[test]
      fn custom_postfix_completion() {
          let config = CompletionConfig {
- fn main() { ControlFlow::Break(42) }
- "#,
          );
--
+ 
          // The receiver texts should be escaped, see comments in `get_receiver_text()`
-         // for detail.
-         //
-         // Note that the last argument is what *lsp clients would see* rather than
-         // what users would see. Unescaping happens thereafter.
 +
+         // for detail.
++
+         //
++
+         // Note that the last argument is what *lsp clients would see* rather than
++
+         // what users would see. Unescaping happens thereafter.
          check_edit_with_config(
              config.clone(),
-             "break",
  "#,
          );
      }
@@ -204,6 +194,10 @@ Rustfmt size:  32377 bytes
      #[test]
      fn postfix_custom_snippets_completion_for_references() {
          // https://github.com/rust-lang/rust-analyzer/issues/7929
+-
+         let snippet = Snippet::new(
+             &[],
+             &["ok".into()],
              "#,
          );
      }

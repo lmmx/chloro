@@ -44,12 +44,3 @@ Rustfmt size:  34201 bytes
      while let (Some(parent), [kind, rest @ ..]) = (node.parent(), kinds) {
          if parent.kind() != *kind {
              return false;
-         node = parent.into();
-         kinds = rest;
-     }
--
-     // Only true if we matched all expected kinds
-+
-     kinds.is_empty()
- }
- 

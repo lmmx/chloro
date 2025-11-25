@@ -114,15 +114,6 @@ Rustfmt size:  23945 bytes
  
      if full_path.segment()?.name_ref()? != *name_ref {
          // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
-         // struct we want to edit.
-         return None;
-     }
--
-     // FIXME: Processing RecordPat and RecordExpr for unordered fields, and insert RestPat
-+
-     let parent = full_path.syntax().parent()?;
-     match_ast! {
-         match parent {
              for r in refs {
                  if let Some(name_ref) = r.name.as_name_ref() {
                      // Only edit the field reference if it's part of a `.field` access

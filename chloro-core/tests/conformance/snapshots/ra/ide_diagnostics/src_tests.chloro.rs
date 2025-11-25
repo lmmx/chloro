@@ -320,8 +320,8 @@ fn minicore_smoke_test() {
         config.disabled.insert("remove-unnecessary-else".to_owned());
         check_diagnostics_with_config(config, &source);
     }
-    // Checks that there is no diagnostic in minicore for each flag.
 
+    // Checks that there is no diagnostic in minicore for each flag.
     for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
         if flag == "clone" {
             // Clone without copy has `moved-out-of-ref`, so ignoring.

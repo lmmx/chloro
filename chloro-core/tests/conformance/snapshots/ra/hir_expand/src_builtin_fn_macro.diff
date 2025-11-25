@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32290 bytes
-Chloro size:   30941 bytes
+Chloro size:   30944 bytes
 Rustfmt size:  32290 bytes
 
 ✗ Outputs DIFFER
@@ -64,42 +64,6 @@ Rustfmt size:  32290 bytes
  fn mk_pound(span: Span) -> tt::Leaf {
      crate::tt::Leaf::Punct(crate::tt::Punct { char: '#', spacing: crate::tt::Spacing::Alone, span })
  }
-     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
- 
-     let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
--
-     // Pass the original arguments
-+
-     let subtree = WithDelimiter {
-         delimiter: tt::Delimiter {
-             open: call_site_span,
-         },
-         token_trees: tt.token_trees(),
-     };
--
-     // Expand to a macro call `$crate::panic::panic_{edition}`
-+
-     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
- 
-     ExpandResult::ok(call)
-     } else {
-         sym::unreachable_2015
-     };
--
-     // Pass the original arguments
-+
-     let mut subtree = tt.clone();
-     *subtree.top_subtree_delimiter_mut() = tt::Delimiter {
-         open: call_site_span,
-         close: call_site_span,
-         kind: tt::DelimiterKind::Parenthesis,
-     };
--
-     // Expand to a macro call `$crate::panic::panic_{edition}`
-+
-     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
- 
-     ExpandResult::ok(call)
          _ => ExpandError::other(span, "`compile_error!` argument must be a string"),
      };
  
@@ -111,15 +75,14 @@ Rustfmt size:  32290 bytes
  }
  
  fn concat_expand(
-             );
-         }
      };
--
+ 
      // FIXME: we're not able to read excluded files (which is most of them because
-     // it's unusual to `include_str!` a Rust file), but we can return an empty string.
-     // Ideally, we'd be able to offer a precise expansion if the user asks for macro
-     // expansion.
 +
+     // it's unusual to `include_str!` a Rust file), but we can return an empty string.
++
+     // Ideally, we'd be able to offer a precise expansion if the user asks for macro
++
+     // expansion.
      let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
          Ok(file_id) => file_id,
-         Err(_) => {

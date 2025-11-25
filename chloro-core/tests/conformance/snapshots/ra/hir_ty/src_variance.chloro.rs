@@ -55,16 +55,24 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     }
     let mut variances =
         Context { generics, variances: vec![Variance::Bivariant; count], db }.solve();
-    // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
-    // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
-    // So why do we do this? Because, with the new solver, the effects of bivariance are catastrophic:
-    // it leads to not relating types properly, and to very, very hard to debug bugs (speaking from experience).
-    // Furthermore, our variance infra is known to not handle cycles properly. Therefore, at least until we fix
-    // cycles, and perhaps forever at least for out tests, not allowing bivariance makes sense.
-    // Why specifically invariance? I don't have a strong reason, mainly that invariance is a stronger relationship
-    // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
-    // bivariance, at least while we don't handle lifetimes anyway.
 
+    // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
+
+    // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
+
+    // So why do we do this? Because, with the new solver, the effects of bivariance are catastrophic:
+
+    // it leads to not relating types properly, and to very, very hard to debug bugs (speaking from experience).
+
+    // Furthermore, our variance infra is known to not handle cycles properly. Therefore, at least until we fix
+
+    // cycles, and perhaps forever at least for out tests, not allowing bivariance makes sense.
+
+    // Why specifically invariance? I don't have a strong reason, mainly that invariance is a stronger relationship
+
+    // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
+
+    // bivariance, at least while we don't handle lifetimes anyway.
     for variance in &mut variances {
         if *variance == Variance::Bivariant {
             *variance = Variance::Invariant;
@@ -74,6 +82,21 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     VariancesOf::new_from_iter(interner, variances)
 }
 
+// pub(crate) fn variances_of_cycle_fn(
+
+//     _db: &dyn HirDatabase,
+
+//     _result: &Option<Arc<[Variance]>>,
+
+//     _count: u32,
+
+//     _def: GenericDefId,
+
+// ) -> salsa::CycleRecoveryAction<Option<Arc<[Variance]>>> {
+
+//     salsa::CycleRecoveryAction::Iterate
+
+// }
 fn glb(v1: Variance, v2: Variance) -> Variance {
     // Greatest lower bound of the variance lattice as defined in The Paper:
     //
@@ -101,8 +124,8 @@ pub(crate) fn variances_of_cycle_initial(
     let interner = DbInterner::new_with(db, None, None);
     let generics = generics(db, def);
     let count = generics.len();
-    // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
 
+    // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
     VariancesOf::new_from_iter(interner, std::iter::repeat_n(Variance::Invariant, count))
 }
 
@@ -144,16 +167,17 @@ impl<'db> Context<'db> {
             _ => {}
         }
         let mut variances = self.variances;
-        // Const parameters are always invariant.
-        // Make all const parameters invariant.
 
+        // Const parameters are always invariant.
+
+        // Make all const parameters invariant.
         for (idx, param) in self.generics.iter_id().enumerate() {
             if let GenericParamId::ConstParamId(_) = param {
                 variances[idx] = Variance::Invariant;
             }
         }
-        // Functions are permitted to have unused generic parameters: make those invariant.
 
+        // Functions are permitted to have unused generic parameters: make those invariant.
         if let GenericDefId::FunctionId(_) = self.generics.def() {
             variances
                 .iter_mut()

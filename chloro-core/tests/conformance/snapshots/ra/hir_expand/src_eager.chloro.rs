@@ -50,11 +50,14 @@ pub fn expand_eager_macro_input(
     eager_callback: EagerCallBackFn<'_>,
 ) -> ExpandResult<Option<MacroCallId>> {
     let expand_to = ExpandTo::from_call_site(macro_call);
-    // Note:
-    // When `lazy_expand` is called, its *parent* file must already exist.
-    // Here we store an eager macro id for the argument expanded subtree
-    // for that purpose.
 
+    // Note:
+
+    // When `lazy_expand` is called, its *parent* file must already exist.
+
+    // Here we store an eager macro id for the argument expanded subtree
+
+    // for that purpose.
     let loc = MacroCallLoc {
         def,
         krate,
@@ -154,12 +157,12 @@ fn eager_macro_recur(
     let original = curr.value.clone_for_update();
 
     let mut replacements = Vec::new();
-    // FIXME: We only report a single error inside of eager expansions
 
+    // FIXME: We only report a single error inside of eager expansions
     let mut error = None;
     let mut children = original.preorder_with_tokens();
-    // Collect replacement
 
+    // Collect replacement
     while let Some(child) = children.next() {
         let call = match child {
             WalkEvent::Enter(SyntaxElement::Node(child)) => match ast::MacroCall::cast(child) {

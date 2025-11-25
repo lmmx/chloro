@@ -208,13 +208,13 @@ impl<'db> InferenceContext<'_, 'db> {
         let mut inner_tys = Vec::with_capacity(n_uncovered_patterns + subs.len());
 
         inner_tys.extend(expectations_iter.by_ref().take(n_uncovered_patterns + subs.len()));
-        // Process pre
 
+        // Process pre
         for (ty, pat) in inner_tys.iter_mut().zip(pre) {
             *ty = self.infer_pat(*pat, *ty, default_bm, decl);
         }
-        // Process post
 
+        // Process post
         for (ty, pat) in inner_tys.iter_mut().skip(pre.len() + n_uncovered_patterns).zip(post) {
             *ty = self.infer_pat(*pat, *ty, default_bm, decl);
         }
@@ -266,8 +266,8 @@ impl<'db> InferenceContext<'_, 'db> {
                 self.result.pat_adjustments.insert(pat, pat_adjustments);
             }
         }
-        // Lose mutability.
 
+        // Lose mutability.
         let default_bm = default_bm;
         let expected = expected;
 
@@ -488,9 +488,10 @@ impl<'db> InferenceContext<'_, 'db> {
         decl: Option<DeclContext>,
     ) -> Ty<'db> {
         let expected = self.table.structurally_resolve_type(expected);
-        // If `expected` is an infer ty, we try to equate it to an array if the given pattern
-        // allows it. See issue #16609
 
+        // If `expected` is an infer ty, we try to equate it to an array if the given pattern
+
+        // allows it. See issue #16609
         if self.pat_is_irrefutable(decl)
             && expected.is_ty_var()
             && let Some(resolved_array_ty) =

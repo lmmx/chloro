@@ -71,6 +71,117 @@ impl CompletionFieldsToResolve {
     }
 }
 
+//FIXME: split the following feature into fine-grained features.
+
+// Feature: Magic Completions
+
+//
+
+// In addition to usual reference completion, rust-analyzer provides some ✨magic✨
+
+// completions as well:
+
+//
+
+// Keywords like `if`, `else` `while`, `loop` are completed with braces, and cursor
+
+// is placed at the appropriate position. Even though `if` is easy to type, you
+
+// still want to complete it, to get ` { }` for free! `return` is inserted with a
+
+// space or `;` depending on the return type of the function.
+
+//
+
+// When completing a function call, `()` are automatically inserted. If a function
+
+// takes arguments, the cursor is positioned inside the parenthesis.
+
+//
+
+// There are postfix completions, which can be triggered by typing something like
+
+// `foo().if`. The word after `.` determines postfix completion. Possible variants are:
+
+//
+
+// - `expr.if` -> `if expr {}` or `if let ... {}` for `Option` or `Result`
+
+// - `expr.match` -> `match expr {}`
+
+// - `expr.while` -> `while expr {}` or `while let ... {}` for `Option` or `Result`
+
+// - `expr.ref` -> `&expr`
+
+// - `expr.refm` -> `&mut expr`
+
+// - `expr.let` -> `let $0 = expr;`
+
+// - `expr.lete` -> `let $1 = expr else { $0 };`
+
+// - `expr.letm` -> `let mut $0 = expr;`
+
+// - `expr.not` -> `!expr`
+
+// - `expr.dbg` -> `dbg!(expr)`
+
+// - `expr.dbgr` -> `dbg!(&expr)`
+
+// - `expr.call` -> `(expr)`
+
+//
+
+// There also snippet completions:
+
+//
+
+// #### Expressions
+
+//
+
+// - `pd` -> `eprintln!(" = {:?}", );`
+
+// - `ppd` -> `eprintln!(" = {:#?}", );`
+
+//
+
+// #### Items
+
+//
+
+// - `tfn` -> `#[test] fn feature(){}`
+
+// - `tmod` ->
+
+// ```rust
+
+// #[cfg(test)]
+
+// mod tests {
+
+//     use super::*;
+
+//
+
+//     #[test]
+
+//     fn test_name() {}
+
+// }
+
+// ```
+
+//
+
+// And the auto import completions, enabled with the `rust-analyzer.completion.autoimport.enable` setting and the corresponding LSP client capabilities.
+
+// Those are the additional completion options with automatic `use` import and options from all project importable items,
+
+// fuzzy matched against the completion input.
+
+//
+
+// ![Magic Completions](https://user-images.githubusercontent.com/48062697/113020667-b72ab880-917a-11eb-8778-716cf26a0eb3.gif)
 /// Main entry point for completion. We run completion as a two-phase process.
 ///
 /// First, we look at the position and collect a so-called `CompletionContext`.
@@ -129,8 +240,8 @@ pub fn completions(
 ) -> Option<Vec<CompletionItem>> {
     let (ctx, analysis) = &CompletionContext::new(db, position, config, trigger_character)?;
     let mut completions = Completions::default();
-    // prevent `(` from triggering unwanted completion noise
 
+    // prevent `(` from triggering unwanted completion noise
     if trigger_character == Some('(') {
         if let CompletionAnalysis::NameRef(NameRefContext {
             kind:
@@ -144,10 +255,12 @@ pub fn completions(
         }
         return Some(completions.into());
     }
-    // when the user types a bare `_` (that is it does not belong to an identifier)
-    // the user might just wanted to type a `_` for type inference or pattern discarding
-    // so try to suppress completions in those cases
 
+    // when the user types a bare `_` (that is it does not belong to an identifier)
+
+    // the user might just wanted to type a `_` for type inference or pattern discarding
+
+    // so try to suppress completions in those cases
     if trigger_character == Some('_')
         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE
         && let CompletionAnalysis::NameRef(NameRefContext {

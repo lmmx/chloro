@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1977 bytes
-Chloro size:   1977 bytes
+Chloro size:   1979 bytes
 Rustfmt size:  2003 bytes
 
 ✗ Outputs DIFFER
@@ -31,14 +31,12 @@ Rustfmt size:  2003 bytes
      }
  
      pub(crate) fn structurally_normalize_term(
-         }
- 
          let new_infer = self.infcx.next_term_var_of_kind(term);
--
+ 
          // We simply emit an `alias-eq` goal here, since that will take care of
-         // normalizing the LHS of the projection until it is a rigid projection
-         // (or a not-yet-defined opaque in scope).
 +
+         // normalizing the LHS of the projection until it is a rigid projection
++
+         // (or a not-yet-defined opaque in scope).
          let obligation = Obligation::new(
              self.infcx.interner,
-             self.cause.clone(),

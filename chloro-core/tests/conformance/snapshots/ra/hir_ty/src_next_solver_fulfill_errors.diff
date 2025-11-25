@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50684 bytes
-Chloro size:   50079 bytes
+Chloro size:   50099 bytes
 Rustfmt size:  50684 bytes
 
 ✗ Outputs DIFFER
@@ -45,47 +45,57 @@ Rustfmt size:  50684 bytes
      ConstEquate(ExpectedFound<Const<'db>>, TypeError<'db>),
      Ambiguity {
          /// Overflow is only `Some(suggest_recursion_limit)` when using the next generation
-             [] => return self.detect_error_from_empty_candidates(goal),
-             _ => return ControlFlow::Break(self.obligation.clone()),
          };
--
+ 
          // // Don't walk into impls that have `do_not_recommend`.
-         // if let inspect::ProbeKind::TraitCandidate {
-         //     source: CandidateSource::Impl(impl_def_id),
-         //     trace!("#[do_not_recommend] -> exit");
-         //     return ControlFlow::Break(self.obligation.clone());
-         // }
--
-         // FIXME: Also, what about considering >1 layer up the stack? May be necessary
-         // for normalizes-to.
 +
+         // if let inspect::ProbeKind::TraitCandidate {
++
+         //     source: CandidateSource::Impl(impl_def_id),
++
+         //     result: _,
++
+         // } = candidate.kind()
++
+         //     && interner.do_not_recommend_impl(impl_def_id)
++
+         // {
++
+         //     trace!("#[do_not_recommend] -> exit");
++
+         //     return ControlFlow::Break(self.obligation.clone());
++
+         // }
+ 
+         // FIXME: Also, what about considering >1 layer up the stack? May be necessary
++
+         // for normalizes-to.
          let child_mode = match pred.kind().skip_binder() {
              PredicateKind::Clause(ClauseKind::Trait(trait_pred)) => {
-                 ChildMode::Trait(pred.kind().rebind(trait_pred))
-         };
- 
          let nested_goals = candidate.instantiate_nested_goals();
--
+ 
          // If the candidate requires some `T: FnPtr` bound which does not hold should not be treated as
-         // an actual candidate, instead we should treat them as if the impl was never considered to
-         // have potentially applied. As if `impl<A, R> Trait for for<..> fn(..A) -> R` was written
-         //
-         // We do this as a separate loop so that we do not choose to tell the user about some nested
-         // goal before we encounter a `T: FnPtr` nested goal.
 +
+         // an actual candidate, instead we should treat them as if the impl was never considered to
++
+         // have potentially applied. As if `impl<A, R> Trait for for<..> fn(..A) -> R` was written
++
+         // instead of `impl<T: FnPtr> Trait for T`.
++
+         //
++
+         // We do this as a separate loop so that we do not choose to tell the user about some nested
++
+         // goal before we encounter a `T: FnPtr` nested goal.
          for nested_goal in &nested_goals {
              if let Some(poly_trait_pred) = nested_goal.goal().predicate.as_trait_clause()
-                 && interner
- 
-             self.with_derived_obligation(obligation, |this| nested_goal.visit_with(this))?;
          }
--
+ 
          // alias-relate may fail because the lhs or rhs can't be normalized,
-         // and therefore is treated as rigid.
 +
+         // and therefore is treated as rigid.
          if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
              goal.infcx().visit_proof_tree_at_depth(
-                 goal.goal().with(interner, ClauseKind::WellFormed(lhs)),
  
  #[derive(Debug, Copy, Clone)]
  enum ChildMode<'db> {
@@ -117,17 +127,15 @@ Rustfmt size:  50684 bytes
      /// Compute the predicates that are required for a type to be well-formed.
      ///
      /// This is only intended to be used in the new solver, since it does not
-         term: Term<'db>,
-     ) -> Option<PredicateObligations<'db>> {
          debug_assert_eq!(term, infcx.resolve_vars_if_possible(term));
--
+ 
          // However, if `arg` IS an unresolved inference variable, returns `None`,
-         // because we are not able to make any progress at all. This is to prevent
-         // cycles where we say "?0 is WF if ?0 is WF".
 +
+         // because we are not able to make any progress at all. This is to prevent
++
+         // cycles where we say "?0 is WF if ?0 is WF".
          if term.is_infer() {
              return None;
-         }
          wf.add_wf_preds_for_term(term);
          Some(wf.out)
      }

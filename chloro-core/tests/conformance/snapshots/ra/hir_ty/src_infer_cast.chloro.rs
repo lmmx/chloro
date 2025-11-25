@@ -112,8 +112,8 @@ impl<'db> CastCheck<'db> {
     ) -> Result<(), InferenceDiagnostic<'db>> {
         self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
         self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
-        // This should always come first so that we apply the coercion, which impacts infer vars.
 
+        // This should always come first so that we apply the coercion, which impacts infer vars.
         if ctx
             .coerce(
                 self.source_expr.into(),
@@ -140,10 +140,12 @@ impl<'db> CastCheck<'db> {
                 cast_ty: self.cast_ty,
             });
         }
-        // Chalk doesn't support trait upcasting and fails to solve some obvious goals
-        // when the trait environment contains some recursive traits (See issue #18047)
-        // We skip cast checks for such cases for now, until the next-gen solver.
 
+        // Chalk doesn't support trait upcasting and fails to solve some obvious goals
+
+        // when the trait environment contains some recursive traits (See issue #18047)
+
+        // We skip cast checks for such cases for now, until the next-gen solver.
         if contains_dyn_trait(self.cast_ty) {
             return Ok(());
         }
@@ -204,8 +206,8 @@ impl<'db> CastCheck<'db> {
                 },
                 _ => return Err(CastError::NonScalar),
             };
-        // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
 
+        // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
         match (t_from, t_cast) {
             (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
             (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),

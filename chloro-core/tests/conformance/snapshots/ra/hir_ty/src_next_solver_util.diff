@@ -89,15 +89,6 @@ Rustfmt size:  28638 bytes
      fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer {
          use Integer::*;
          match ity {
-             // repr(Rust) enums try to be as small as possible
-             Integer::I8
-         };
--
-         // If there are no negative values, we can use the unsigned fit.
-+
-         if min >= 0 {
-             (std::cmp::max(unsigned_fit, at_least), false)
-         } else {
  
  pub trait FloatExt {
      fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;

@@ -78,7 +78,6 @@ pub(super) fn lower_body(
     // with the inner macro, and that will cause confusion because they won't be the same as `ROOT`
     // even though they should be the same. Also, when the body comes from multiple expansions, their
     // hygiene is different.
-
     let mut self_param = None;
     let mut source_map_self_param = None;
     let mut params = vec![];
@@ -984,8 +983,8 @@ impl ExprCollector<'_> {
         if !self.check_cfg(&expr) {
             return None;
         }
-        // FIXME: Move some of these arms out into separate methods for clarity
 
+        // FIXME: Move some of these arms out into separate methods for clarity
         Some(match expr {
             ast::Expr::IfExpr(e) => {
                 let then_branch = self.collect_block_opt(e.then_branch());
@@ -1699,20 +1698,32 @@ impl ExprCollector<'_> {
             (self.hygiene_id_for(label.syntax().text_range()), self.collect_label(label))
         });
         let body = self.collect_labelled_block_opt(label, e.loop_body());
+
         // Labels can also be used in the condition expression, like this:
-        // ```
-        // fn main() {
-        //     let mut optional = Some(0);
-        //     'my_label: while let Some(a) = match optional {
-        //         None => break 'my_label,
-        //         Some(val) => Some(val),
-        //     } {
-        //         println!("{}", a);
-        //         optional = None;
-        //     }
-        // }
+
         // ```
 
+        // fn main() {
+
+        //     let mut optional = Some(0);
+
+        //     'my_label: while let Some(a) = match optional {
+
+        //         None => break 'my_label,
+
+        //         Some(val) => Some(val),
+
+        //     } {
+
+        //         println!("{}", a);
+
+        //         optional = None;
+
+        //     }
+
+        // }
+
+        // ```
         let condition = match label {
             Some((label_hygiene, label)) => self.with_labeled_rib(label, label_hygiene, |this| {
                 this.collect_expr_opt(e.condition())
@@ -1940,7 +1951,6 @@ impl ExprCollector<'_> {
             }
         };
         // No need to push macro and parsing errors as they'll be recreated from `macro_calls()`.
-
         match res.value {
             Some((mark, expansion)) => {
                 // Keep collecting even with expansion errors so we can provide completions and
@@ -2148,6 +2158,7 @@ impl ExprCollector<'_> {
             None => self.collect_block_opt(expr),
         }
     }
+
     // region: patterns
 
     fn collect_pat_top(&mut self, pat: Option<ast::Pat>) -> PatId {
@@ -2421,8 +2432,8 @@ impl ExprCollector<'_> {
         // Find the location of the `..`, if there is one. Note that we do not
         // consider the possibility of there being multiple `..` here.
         let ellipsis = args.iter().position(|p| p.is_right()).map(|it| it as u32);
-        // We want to skip the `..` pattern here, since we account for it above.
 
+        // We want to skip the `..` pattern here, since we account for it above.
         let mut args: Vec<_> = args.into_iter().filter_map(Either::left).collect();
         // if there is a leading comma, the user is most likely to type out a leading pattern
         // so we insert a missing pattern at the beginning for IDE features
@@ -2465,6 +2476,7 @@ impl ExprCollector<'_> {
             _ => Either::Left(self.collect_pat(pat, binding_list)),
         }
     }
+
     // endregion: patterns
 
     /// Returns `None` (and emits diagnostics) when `owner` if `#[cfg]`d out, and `Some(())` when
@@ -2487,6 +2499,7 @@ impl ExprCollector<'_> {
     fn add_definition_to_binding(&mut self, binding_id: BindingId, pat_id: PatId) {
         self.store.binding_definitions.entry(binding_id).or_default().push(pat_id);
     }
+
     // region: labels
 
     fn collect_label(&mut self, ast_label: ast::Label) -> LabelId {
@@ -2690,9 +2703,10 @@ impl ExprCollector<'_> {
                 HygieneId::ROOT,
             ),
         };
-        // Create a list of all _unique_ (argument, format trait) combinations.
-        // E.g. "{0} {0:x} {0} {1}" -> [(0, Display), (0, LowerHex), (1, Display)]
 
+        // Create a list of all _unique_ (argument, format trait) combinations.
+
+        // E.g. "{0} {0:x} {0} {1}" -> [(0, Display), (0, LowerHex), (1, Display)]
         let mut argmap = FxIndexSet::default();
         for piece in fmt.template.iter() {
             let FormatArgsPiece::Placeholder(placeholder) = piece else { continue };
@@ -2749,9 +2763,10 @@ impl ExprCollector<'_> {
                 mutability: Mutability::Shared,
             })
         };
-        // Assume that rustc version >= 1.89.0 iff lang item `format_arguments` exists
-        // but `format_unsafe_arg` does not
 
+        // Assume that rustc version >= 1.89.0 iff lang item `format_arguments` exists
+
+        // but `format_unsafe_arg` does not
         let fmt_args =
             || crate::lang_item::lang_item(self.db, self.module.krate(), LangItem::FormatArguments);
         let fmt_unsafe_arg =
@@ -2826,14 +2841,20 @@ impl ExprCollector<'_> {
                 mutability: Mutability::Shared,
             })
         };
-        // Generate:
-        //     <core::fmt::Arguments>::new_v1_formatted(
-        //         lit_pieces,
-        //         args,
-        //         format_options,
-        //         unsafe { ::core::fmt::UnsafeArg::new() }
-        //     )
 
+        // Generate:
+
+        //     <core::fmt::Arguments>::new_v1_formatted(
+
+        //         lit_pieces,
+
+        //         args,
+
+        //         format_options,
+
+        //         unsafe { ::core::fmt::UnsafeArg::new() }
+
+        //     )
         let new_v1_formatted = LangItem::FormatArguments.ty_rel_path(
             self.db,
             self.module.krate(),
@@ -3003,9 +3024,10 @@ impl ExprCollector<'_> {
             };
             (vec![let_stmt1, let_stmt2], self.alloc_expr_desugared(Expr::Path(args_name.into())))
         };
-        // Generate:
-        //     &args
 
+        // Generate:
+
+        //     &args
         let args = self.alloc_expr_desugared(Expr::Ref {
             expr: args,
             rawness: Rawness::Ref,
@@ -3298,6 +3320,7 @@ impl ExprCollector<'_> {
         };
         self.alloc_expr_desugared(Expr::Call { callee: new_fn, args: Box::new([arg]) })
     }
+
     // endregion: format
 
     fn lang_path(&self, lang: LangItem) -> Option<Path> {

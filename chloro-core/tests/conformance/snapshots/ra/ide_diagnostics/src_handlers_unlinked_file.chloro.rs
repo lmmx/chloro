@@ -77,7 +77,6 @@ fn fixes(
 ) -> Option<Vec<Assist>> {
     // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
     // suggest that as a fix.
-
     let db = ctx.sema.db;
 
     let source_root = ctx.sema.db.file_source_root(file_id).source_root_id(db);
@@ -95,8 +94,8 @@ fn fixes(
         }
         _ => (parent, module_name.to_owned()),
     };
-    // check crate roots, i.e. main.rs, lib.rs, ...
 
+    // check crate roots, i.e. main.rs, lib.rs, ...
     let relevant_crates = db.relevant_crates(file_id);
     'crates: for &krate in &*relevant_crates {
         // FIXME: This shouldnt need to access the crate def map directly
@@ -138,9 +137,10 @@ fn fixes(
             trigger_range,
         );
     }
-    // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
-    // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
 
+    // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
+
+    // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
         let (name, _) = path.name_and_extension()?;
@@ -222,9 +222,10 @@ fn make_fixes(
         ModuleSource::Module(it) => it.item_list()?.items(),
         ModuleSource::BlockExpr(_) => return None,
     };
-    // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's
-    // probably `#[cfg]`d out).
 
+    // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's
+
+    // probably `#[cfg]`d out).
     for item in items.clone() {
         if let ast::Item::Module(m) = item
             && let Some(name) = m.name()
@@ -235,8 +236,8 @@ fn make_fixes(
             return None;
         }
     }
-    // If there are existing `mod m;` items, append after them (after the first group of them, rather).
 
+    // If there are existing `mod m;` items, append after them (after the first group of them, rather).
     match items.clone().skip_while(|item| !is_outline_mod(item)).take_while(is_outline_mod).last() {
         Some(last) => {
             cov_mark::hit!(unlinked_file_append_to_existing_mods);

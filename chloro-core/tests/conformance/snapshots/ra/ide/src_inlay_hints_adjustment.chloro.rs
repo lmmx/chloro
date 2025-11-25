@@ -34,8 +34,8 @@ pub(super) fn hints(
     if config.adjustment_hints == AdjustmentHints::Never {
         return None;
     }
-    // ParenExpr resolve to their contained expressions HIR so they will dupe these hints
 
+    // ParenExpr resolve to their contained expressions HIR so they will dupe these hints
     if let ast::Expr::ParenExpr(_) = expr {
         return None;
     }

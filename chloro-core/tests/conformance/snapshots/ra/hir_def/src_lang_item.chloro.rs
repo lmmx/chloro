@@ -180,14 +180,20 @@ pub fn lang_item(
     {
         return Some(target);
     }
-    // Our `CrateGraph` eagerly inserts sysroot dependencies like `core` or `std` into dependencies
-    // even if the target crate has `#![no_std]`, `#![no_core]` or shadowed sysroot dependencies
-    // like `dependencies.std.path = ".."`. So we use `extern_prelude()` instead of
-    // `CrateData.dependencies` here, which has already come through such sysroot complexities
-    // while nameres.
-    //
-    // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
 
+    // Our `CrateGraph` eagerly inserts sysroot dependencies like `core` or `std` into dependencies
+
+    // even if the target crate has `#![no_std]`, `#![no_core]` or shadowed sysroot dependencies
+
+    // like `dependencies.std.path = ".."`. So we use `extern_prelude()` instead of
+
+    // `CrateData.dependencies` here, which has already come through such sysroot complexities
+
+    // while nameres.
+
+    //
+
+    // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
     crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
         // Some crates declares themselves as extern crate like `extern crate self as core`.
         // Ignore these to prevent cycles.

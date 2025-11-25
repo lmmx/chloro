@@ -21,30 +21,10 @@ Rustfmt size:  13679 bytes
  #[track_caller]
  fn file_id(vfs: &vfs::Vfs, path: &VfsPath) -> vfs::FileId {
      match vfs.file_id(path) {
-     if std::env::var("RUN_SLOW_BENCHES").is_err() {
-         return;
-     }
--
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/rust-analyzer/src/config.rs";
- 
-     if std::env::var("RUN_SLOW_BENCHES").is_err() {
-         return;
-     }
--
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/hir/src/lib.rs";
- 
-         let path = VfsPath::from(AbsPathBuf::assert(file));
-         file_id(&vfs, &path)
      };
--
-     // kick off parsing and index population
  
+     // kick off parsing and index population
+-
      let completion_offset = {
          let _it = stdx::timeit("change");
          let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -95,15 +75,6 @@ Rustfmt size:  13679 bytes
          analysis.completions(&config, position, None).unwrap();
      }
  }
-     if std::env::var("RUN_SLOW_BENCHES").is_err() {
-         return;
-     }
--
-     // Load rust-analyzer itself.
-+
-     let workspace_to_load = project_root();
-     let file = "./crates/hir/src/lib.rs";
- 
          term_search_borrowck: true,
      };
      host.analysis()

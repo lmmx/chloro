@@ -171,7 +171,6 @@ impl<'db> ExprValidator<'db> {
             return;
         }
         // Check that the number of arguments matches the number of parameters.
-
         if self.infer.expr_type_mismatches().next().is_some() {
             // FIXME: Due to shortcomings in the current type system implementation, only emit
             // this diagnostic if there are no type mismatches in the containing function.
@@ -262,9 +261,10 @@ impl<'db> ExprValidator<'db> {
                 Ok(report) => report,
                 Err(()) => return,
             };
-        // FIXME Report unreachable arms
-        // https://github.com/rust-lang/rust/blob/f31622a50/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L200
 
+        // FIXME Report unreachable arms
+
+        // https://github.com/rust-lang/rust/blob/f31622a50/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L200
         let witnesses = report.non_exhaustiveness_witnesses;
         if !witnesses.is_empty() {
             self.diagnostics.push(BodyValidationDiagnostic::MissingMatchArms {

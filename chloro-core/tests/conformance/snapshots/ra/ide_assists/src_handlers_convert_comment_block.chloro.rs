@@ -57,8 +57,8 @@ fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
 fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     // Find all the comments we'll be collapsing into a block
     let comments = relevant_line_comments(&comment);
-    // Establish the target of our edit based on the comments we found
 
+    // Establish the target of our edit based on the comments we found
     let target = TextRange::new(
         comments[0].syntax().text_range().start(),
         comments.last()?.syntax().text_range().end(),
@@ -98,8 +98,8 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     // The prefix identifies the kind of comment we're dealing with
     let prefix = comment.prefix();
     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
-    // These tokens are allowed to exist between comments
 
+    // These tokens are allowed to exist between comments
     let skippable = |not: &SyntaxElement| {
         not.clone()
             .into_token()
@@ -107,8 +107,8 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
             .map(|w| !w.spans_multiple_lines())
             .unwrap_or(false)
     };
-    // Find all preceding comments (in reverse order) that have the same prefix
 
+    // Find all preceding comments (in reverse order) that have the same prefix
     let prev_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Prev)
@@ -118,7 +118,6 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .flatten()
         .skip(1);
     // skip the first element so we don't duplicate it in next_comments
-
     let next_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Next)
@@ -137,8 +136,8 @@ pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) ->
     let text = comm.text();
     let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);
     let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
-    // Don't add the indentation if the line is empty
 
+    // Don't add the indentation if the line is empty
     if contents.is_empty() { contents.to_owned() } else { indentation.to_string() + contents }
 }
 

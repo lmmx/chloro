@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13477 bytes
+Chloro size:   13480 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
@@ -48,18 +48,17 @@ Rustfmt size:  13520 bytes
      pub fn display_verbatim<'a>(
          &'a self,
          db: &'a dyn crate::db::ExpandDatabase,
-         };
-         mod_path.segments.push(name);
      }
--
+ 
      // handle local_inner_macros :
-     // Basically, even in rustc it is quite hacky:
-     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
-     // We follow what it did anyway :)
 +
+     // Basically, even in rustc it is quite hacky:
++
+     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
++
+     // We follow what it did anyway :)
      if mod_path.segments.len() == 1
          && mod_path.kind == PathKind::Plain
-         && let Some(_macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
      result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
  }
  

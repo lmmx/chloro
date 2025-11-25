@@ -112,8 +112,8 @@ impl SemanticTokensBuilder {
                 push_char -= self.prev_char;
             }
         }
-        // A token cannot be multiline
 
+        // A token cannot be multiline
         let token_len = range.end.character - range.start.character;
 
         let token = SemanticToken {

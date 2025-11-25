@@ -290,10 +290,12 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     /// Not legal during a snapshot.
     pub fn take_and_reset_data(&mut self) -> RegionConstraintData<'db> {
         assert!(!UndoLogs::<UndoLog<'db>>::in_snapshot(&self.undo_log));
-        // If you add a new field to `RegionConstraintCollector`, you
-        // should think carefully about whether it needs to be cleared
-        // or updated in some way.
 
+        // If you add a new field to `RegionConstraintCollector`, you
+
+        // should think carefully about whether it needs to be cleared
+
+        // or updated in some way.
         let RegionConstraintStorage {
             var_infos: _,
             data,
@@ -302,20 +304,26 @@ impl<'db> RegionConstraintCollector<'db, '_> {
             unification_table: _,
             any_unifications,
         } = self.storage;
-        // Clear the tables of (lubs, glbs), so that we will create
-        // fresh regions if we do a LUB operation. As it happens,
-        // LUB/GLB are not performed by the MIR type-checker, which is
-        // the one that uses this method, but it's good to be correct.
 
+        // Clear the tables of (lubs, glbs), so that we will create
+
+        // fresh regions if we do a LUB operation. As it happens,
+
+        // LUB/GLB are not performed by the MIR type-checker, which is
+
+        // the one that uses this method, but it's good to be correct.
         lubs.clear();
         glbs.clear();
 
         let data = mem::take(data);
-        // Clear all unifications and recreate the variables a "now
-        // un-unified" state. Note that when we unify `a` and `b`, we
-        // also insert `a <= b` and a `b <= a` edges, so the
-        // `RegionConstraintData` contains the relationship here.
 
+        // Clear all unifications and recreate the variables a "now
+
+        // un-unified" state. Note that when we unify `a` and `b`, we
+
+        // also insert `a <= b` and a `b <= a` edges, so the
+
+        // `RegionConstraintData` contains the relationship here.
         if *any_unifications {
             *any_unifications = false;
             // Manually inlined `self.unification_table_mut()` as `self` is used in the closure.
@@ -403,7 +411,6 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     #[instrument(skip(self), level = "debug")]
     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
         // cannot add constraints once regions are resolved
-
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");

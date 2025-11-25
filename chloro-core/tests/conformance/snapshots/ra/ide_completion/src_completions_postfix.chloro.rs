@@ -83,9 +83,10 @@ pub(crate) fn complete_postfix(
     postfix_snippet("ref", "&expr", &format!("&{receiver_text}")).add_to(acc, ctx.db);
     postfix_snippet("refm", "&mut expr", &format!("&mut {receiver_text}")).add_to(acc, ctx.db);
     postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
-    // The rest of the postfix completions create an expression that moves an argument,
-    // so it's better to consider references now to avoid breaking the compilation
 
+    // The rest of the postfix completions create an expression that moves an argument,
+
+    // so it's better to consider references now to avoid breaking the compilation
     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
     let mut receiver_text =
         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
@@ -315,9 +316,10 @@ fn get_receiver_text(
     }
     let file_text = sema.db.file_text(range.file_id.file_id(sema.db));
     let mut text = file_text.text(sema.db)[range.range].to_owned();
-    // The receiver texts should be interpreted as-is, as they are expected to be
-    // normal Rust expressions.
 
+    // The receiver texts should be interpreted as-is, as they are expected to be
+
+    // normal Rust expressions.
     escape_snippet_bits(&mut text);
     text
 }
@@ -837,8 +839,8 @@ fn main() {
                 &format!("fn main() {{ {kind} {{ const {{1}} }} }}"),
             );
         }
-        // completion will not be triggered
 
+        // completion will not be triggered
         check_edit(
             kind,
             r#"fn main() { let x = true else {panic!()}.$0}"#,
@@ -875,12 +877,16 @@ use core::ops::ControlFlow;
 fn main() { ControlFlow::Break(42) }
 "#,
         );
-        // The receiver texts should be escaped, see comments in `get_receiver_text()`
-        // for detail.
-        //
-        // Note that the last argument is what *lsp clients would see* rather than
-        // what users would see. Unescaping happens thereafter.
 
+        // The receiver texts should be escaped, see comments in `get_receiver_text()`
+
+        // for detail.
+
+        //
+
+        // Note that the last argument is what *lsp clients would see* rather than
+
+        // what users would see. Unescaping happens thereafter.
         check_edit_with_config(
             config.clone(),
             "break",
@@ -962,7 +968,6 @@ fn main() {
     #[test]
     fn postfix_custom_snippets_completion_for_references() {
         // https://github.com/rust-lang/rust-analyzer/issues/7929
-
         let snippet = Snippet::new(
             &[],
             &["ok".into()],

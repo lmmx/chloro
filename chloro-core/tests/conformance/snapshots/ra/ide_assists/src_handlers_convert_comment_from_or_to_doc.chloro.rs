@@ -169,8 +169,8 @@ fn comment_to_doc(
 /// ```
 fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     use syntax::SyntaxKind::*;
-    // if the comment is not on its own line, then we do not propose anything.
 
+    // if the comment is not on its own line, then we do not propose anything.
     match comment.syntax().prev_token() {
         Some(prev) => {
             // There was a previous token, now check if it was a newline
@@ -179,9 +179,10 @@ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
         // There is no previous token, this is the start of the file.
         None => return Some(CommentPlacement::Inner),
     }
-    // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
-    // `use` or `const`.
 
+    // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
+
+    // `use` or `const`.
     let parent = comment.syntax().parent();
     let par_kind = parent.as_ref().map(|parent| parent.kind());
     matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
@@ -195,8 +196,8 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     // The prefix identifies the kind of comment we're dealing with
     let prefix = comment.prefix();
     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
-    // These tokens are allowed to exist between comments
 
+    // These tokens are allowed to exist between comments
     let skippable = |not: &SyntaxElement| {
         not.clone()
             .into_token()
@@ -204,8 +205,8 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
             .map(|w| !w.spans_multiple_lines())
             .unwrap_or(false)
     };
-    // Find all preceding comments (in reverse order) that have the same prefix
 
+    // Find all preceding comments (in reverse order) that have the same prefix
     let prev_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Prev)
@@ -215,7 +216,6 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .flatten()
         .skip(1);
     // skip the first element so we don't duplicate it in next_comments
-
     let next_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Next)

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18737 bytes
-Chloro size:   18195 bytes
+Chloro size:   18196 bytes
 Rustfmt size:  18737 bytes
 
 ✗ Outputs DIFFER
@@ -46,16 +46,13 @@ Rustfmt size:  18737 bytes
  pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let current_arm = ctx.find_node_at_trimmed_offset::<ast::MatchArm>()?;
      // Don't try to handle arms with guards for now - can add support for this later
-     let current_arm_types = get_arm_types(ctx, &current_arm);
-     let multi_arm_selection = !ctx.has_empty_selection()
          && ctx.selection_trimmed().end() > current_arm.syntax().text_range().end();
--
+ 
      // We check if the following match arms match this one. We could, but don't,
-     // compare to the previous match arm as well.
 +
+     // compare to the previous match arm as well.
      let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
          .take_while(|arm| match arm.expr() {
-             Some(expr) if arm.guard().is_none() => {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

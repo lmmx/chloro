@@ -81,15 +81,6 @@ Rustfmt size:  21705 bytes
          SourceChange {
              source_file_edits,
              file_system_edits: Vec::new(),
-             .collect_vec();
- 
-         snippet_ranges.sort_by_key(|(_, range)| range.start());
--
-         // Ensure that none of the ranges overlap
-+
-         let disjoint_ranges = snippet_ranges
-             .iter()
-             .zip(snippet_ranges.iter().skip(1))
      pub file_id: FileId,
      pub source_change: SourceChange,
      pub command: Option<Command>,
@@ -130,9 +121,8 @@ Rustfmt size:  21705 bytes
 +                self.source_change.insert_source_and_snippet_edit(file_id, edit, snippet_edit);
              }
          }
--
+ 
          // Apply mutable edits
-+
          let snippet_edit = self.snippet_builder.take().map(|builder| {
              SnippetEdit::new(
 -                builder
@@ -232,10 +222,8 @@ Rustfmt size:  21705 bytes
          snippet_builder.places.push(snippet);
          self.source_change.is_snippet = true;
      }
- 
-     pub fn finish(mut self) -> SourceChange {
          self.commit();
--
+ 
          // Only one file can have snippet edits
 -        stdx::never!(self
 -            .source_change
@@ -244,7 +232,6 @@ Rustfmt size:  21705 bytes
 -            .filter(|(_, (_, snippet_edit))| snippet_edit.is_some())
 -            .at_most_one()
 -            .is_err());
-+
 +        stdx::never!(
 +            self.source_change
 +                .source_file_edits

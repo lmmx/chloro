@@ -169,8 +169,8 @@ fn impl_def_from_trait(
 ) -> Option<ast::Impl> {
     let trait_ = trait_?;
     let target_scope = sema.scope(annotated_name.syntax())?;
-    // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
 
+    // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
     let ignore_items = if trait_.module(sema.db).krate().origin(sema.db).is_local() {
         IgnoreAssocItems::No
     } else {

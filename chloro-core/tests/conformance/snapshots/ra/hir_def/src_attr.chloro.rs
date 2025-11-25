@@ -475,8 +475,8 @@ fn next_doc_expr<S: Copy>(mut it: TtIter<'_, S>) -> Option<DocExpr> {
         Some(TtElement::Leaf(tt::Leaf::Ident(ident))) => ident.sym.clone(),
         Some(_) => return Some(DocExpr::Invalid),
     };
-    // Peek
 
+    // Peek
     let ret = match it.peek() {
         Some(TtElement::Leaf(tt::Leaf::Punct(punct))) if punct.char == '=' => {
             it.next();

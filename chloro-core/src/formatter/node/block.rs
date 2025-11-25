@@ -1,3 +1,4 @@
+// chloro-core/src/formatter/node/block.rs
 use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode, ast};
 
 use super::try_format_record_expr;
@@ -17,6 +18,7 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
         .rposition(|child| matches!(child, NodeOrToken::Node(_)));
 
     let mut prev_was_item = false;
+    let mut prev_was_comment = false;
 
     for (idx, child) in children.iter().enumerate() {
         match child {
@@ -39,12 +41,14 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         {
                             buf.push_str(";\n");
                             prev_was_item = true;
+                            prev_was_comment = false;
                             continue;
                         }
                         // Fall through to default
                         buf.push_str(&n.text().to_string());
                         buf.push_str(";\n");
                         prev_was_item = true;
+                        prev_was_comment = false;
                     }
 
                     SyntaxKind::RECORD_EXPR if is_last_node => {
@@ -55,12 +59,14 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         {
                             buf.push('\n');
                             prev_was_item = true;
+                            prev_was_comment = false;
                             continue;
                         }
                         // Fall through to default
                         buf.push_str(&n.text().to_string());
                         buf.push('\n');
                         prev_was_item = true;
+                        prev_was_comment = false;
                     }
 
                     _ => {
@@ -69,15 +75,23 @@ pub fn format_stmt_list(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         buf.push_str(&n.text().to_string());
                         buf.push('\n');
                         prev_was_item = true;
+                        prev_was_comment = false;
                     }
                 }
             }
             NodeOrToken::Token(t) => match t.kind() {
                 SyntaxKind::COMMENT => {
+                    // Check for blank line before comment
+                    if (prev_was_item || prev_was_comment)
+                        && should_have_blank_line_before(&children, idx)
+                    {
+                        buf.push('\n');
+                    }
                     write_indent(buf, indent);
                     buf.push_str(t.text());
                     buf.push('\n');
-                    prev_was_item = true;
+                    prev_was_item = false;
+                    prev_was_comment = true;
                 }
                 SyntaxKind::WHITESPACE => continue,
                 _ => {}

@@ -92,9 +92,10 @@ impl RaFixtureAnalysis {
         let value = literal.value().ok()?;
 
         let mut mapper = RangeMapper::default();
-        // This is used for the `Injector`, to resolve precise location in the string literal,
-        // which will then be used to resolve precise location in the enclosing file.
 
+        // This is used for the `Injector`, to resolve precise location in the string literal,
+
+        // which will then be used to resolve precise location in the enclosing file.
         let mut offset_with_indent = TextSize::new(0);
         // This is used to resolve the location relative to the virtual file into a location
         // relative to the indentation-trimmed file which will then (by the `Injector`) used
@@ -173,8 +174,8 @@ impl RaFixtureAnalysis {
         let combined_len = TextSize::of(&combined);
         let (analysis, tmp_file_ids, sysroot_files) =
             RootDatabase::from_ra_fixture(&combined, minicore).ok()?;
-        // We use a `Vec` because we know the `FileId`s will always be close.
 
+        // We use a `Vec` because we know the `FileId`s will always be close.
         let mut virtual_file_id_to_line = Vec::new();
         for &(file_id, line) in &tmp_file_ids {
             virtual_file_id_to_line.resize(file_id.index() as usize + 1, usize::MAX);
@@ -440,6 +441,29 @@ impl UpmapFromRaFixture for TextRange {
     }
 }
 
+// Deliberately do not implement that, as it's easy to get things misbehave and be treated with the wrong FileId:
+
+//
+
+// impl UpmapFromRaFixture for FileId {
+
+//     fn upmap_from_ra_fixture(
+
+//         self,
+
+//         _analysis: &RaFixtureAnalysis,
+
+//         _virtual_file_id: FileId,
+
+//         real_file_id: FileId,
+
+//     ) -> Result<Self, ()> {
+
+//         Ok(real_file_id)
+
+//     }
+
+// }
 impl UpmapFromRaFixture for FilePositionWrapper<FileId> {
     fn upmap_from_ra_fixture(
         self,

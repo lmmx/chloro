@@ -200,8 +200,8 @@ fn resolve_assoc_or_field(
             return None;
         }
     };
-    // Resolve inherent items first, then trait items, then fields.
 
+    // Resolve inherent items first, then trait items, then fields.
     if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
         return Some(assoc_item_def);
     }
@@ -247,11 +247,14 @@ fn resolve_impl_trait_item<'db>(
     let traits_in_scope = resolver.traits_in_scope(db);
 
     let mut result = None;
-    // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
-    // attributes here. Use path resolution directly instead.
-    //
-    // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
 
+    // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
+
+    // attributes here. Use path resolution directly instead.
+
+    //
+
+    // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
     _ = method_resolution::iterate_path_candidates(
         &canonical,
         db,

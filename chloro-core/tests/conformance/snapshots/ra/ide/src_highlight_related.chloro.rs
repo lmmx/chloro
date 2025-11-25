@@ -407,9 +407,10 @@ fn hl_exit_points(
 
         push_to_highlights(file_id, range);
     });
-    // We should handle `return` separately, because when it is used in a `try` block,
-    // it will exit the outside function instead of the block itself.
 
+    // We should handle `return` separately, because when it is used in a `try` block,
+
+    // it will exit the outside function instead of the block itself.
     WalkExpandedExprCtx::new(sema)
         .with_check_ctx(&WalkExpandedExprCtx::is_async_const_block_or_closure)
         .walk(&body, &mut |_, expr| {

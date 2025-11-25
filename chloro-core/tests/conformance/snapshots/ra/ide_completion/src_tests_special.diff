@@ -15,21 +15,6 @@ Rustfmt size:  27179 bytes
  use ide_db::SymbolKind;
  
  use crate::{
-         x.full_function_signatures = true;
-         x
-     };
--
-     // reduced signature
-+
-     let completion = do_completion_with_config(TEST_CONFIG, src, kind);
-     assert!(completion[0].detail.is_some());
-     reduced.assert_eq(completion[0].detail.as_ref().unwrap());
--
-     // full signature
-+
-     let completion = do_completion_with_config(FULL_SIGNATURES_CONFIG, src, kind);
-     assert!(completion[0].detail.is_some());
-     full.assert_eq(completion[0].detail.as_ref().unwrap());
  #[test]
  fn fn_generic_params_const_param_snippet() {
      check_edit("const", "fn foo<c$0>() {}", "fn foo<const $1: $0>() {}");

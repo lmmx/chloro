@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18922 bytes
-Chloro size:   18922 bytes
+Chloro size:   18923 bytes
 Rustfmt size:  19198 bytes
 
 ✗ Outputs DIFFER
@@ -24,30 +24,19 @@ Rustfmt size:  19198 bytes
  
  use crate::{HasCrate, Module, ModuleDef, Semantics};
  
-     pub fn collect(&mut self, module: Module) {
-         let _p = tracing::info_span!("SymbolCollector::collect", ?module).entered();
          tracing::info!(?module, "SymbolCollector::collect");
--
+ 
          // The initial work is the root module we're collecting, additional work will
++
          // be populated as we traverse the module's definitions.
 -        self.work.push(SymbolCollectorWork {
 -            module_id: module.into(),
 -            parent: None,
 -        });
-+
 +        self.work.push(SymbolCollectorWork { module_id: module.into(), parent: None });
  
          while let Some(work) = self.work.pop() {
              self.do_work(work);
-                 ModuleDefId::EnumVariantId(_) => {}
-             }
-         };
--
-         // Nested trees are very common, so a cache here will hit a lot.
-+
-         let import_child_source_cache = &mut FxHashMap::default();
- 
-         let is_explicit_import = |vis| match vis {
              let source = import_child_source_cache
                  .entry(i.use_)
                  .or_insert_with(|| i.use_.child_source(this.db));
@@ -71,15 +60,6 @@ Rustfmt size:  19198 bytes
                  None => None,
              };
              let Some(name_syntax) = name_syntax else {
-         }
-         let body_id = body_id.into();
-         let body = self.db.body(body_id);
--
-         // Descend into the blocks and enqueue collection of all modules within.
-+
-         for (_, def_map) in body.blocks(self.db) {
-             for (id, _) in def_map.modules() {
-                 self.work.push(SymbolCollectorWork {
              hir_display_with_store(impl_data.self_ty, &impl_data.store)
                  .display(
                      self.db,

@@ -336,9 +336,10 @@ fn compute_closure_type_params(
         .chain(containing_impl.iter().flat_map(|(param_list, _)| param_list.type_or_const_params()))
         .filter_map(|param| Some(param.name()?.text().to_smolstr()))
         .collect::<FxHashSet<_>>();
-    // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
-    // by checking if it is mentioned by another parameter we need to include.
 
+    // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
+
+    // by checking if it is mentioned by another parameter we need to include.
     let mut reached_fixpoint = false;
     let mut container_where_bounds_indices = Vec::new();
     let mut impl_where_bounds_indices = Vec::new();
@@ -388,8 +389,8 @@ fn compute_closure_type_params(
             }
         }
     }
-    // Order matters here (for beauty). First the outer impl parameters, then the direct container's.
 
+    // Order matters here (for beauty). First the outer impl parameters, then the direct container's.
     let include_params = containing_impl
         .iter()
         .flat_map(|(impl_params, _)| {
@@ -420,9 +421,10 @@ fn compute_closure_type_params(
         .collect::<Vec<_>>();
     let where_clause =
         (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
-    // FIXME: Consider generic parameters that do not appear in params/return type/captures but
-    // written explicitly inside the closure.
 
+    // FIXME: Consider generic parameters that do not appear in params/return type/captures but
+
+    // written explicitly inside the closure.
     (Some(make::generic_param_list(include_params)), where_clause)
 }
 

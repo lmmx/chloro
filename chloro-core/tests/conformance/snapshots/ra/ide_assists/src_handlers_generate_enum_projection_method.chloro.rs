@@ -94,8 +94,8 @@ fn generate_enum_projection_method(
     };
 
     let fn_name = format!("{fn_name_prefix}_{}", &to_lower_snake_case(&variant_name.text()));
-    // Return early if we've found an existing new fn
 
+    // Return early if we've found an existing new fn
     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
 
     let target = variant.syntax().text_range();

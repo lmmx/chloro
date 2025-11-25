@@ -1,3 +1,4 @@
+// chloro-core/src/formatter/node/enumdef.rs
 use ra_ap_syntax::{
     AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
@@ -51,8 +52,13 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         for (idx, child) in children.iter().enumerate() {
             match child {
                 NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
-                    // Check if this comment is attached to the next variant
+                    // Check if this comment is attached to the next variant (i.e., a doc-style comment)
+                    // If not attached, output it as a standalone comment
                     if !is_comment_attached_to_next_variant(&children, idx) {
+                        // Check if there's a blank line before this comment for spacing
+                        if should_have_blank_line_before_comment(&children, idx) {
+                            buf.push('\n');
+                        }
                         write_indent(buf, indent + 4);
                         buf.push_str(t.text());
                         buf.push('\n');
@@ -60,7 +66,7 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
                 NodeOrToken::Node(n) if n.kind() == SyntaxKind::VARIANT => {
                     if let Some(variant) = ast::Variant::cast(n.clone()) {
-                        // Collect comments immediately before this variant
+                        // Collect comments immediately before this variant (attached comments)
                         let comments = collect_preceding_comments_in_list(&children, idx);
                         for comment in &comments {
                             write_indent(buf, indent + 4);
@@ -113,6 +119,17 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             }
                         }
                         buf.push_str(",\n");
+
+                        // Check for trailing comment on same line as variant
+                        if let Some(trailing) = get_trailing_comment(&children, idx) {
+                            // Remove the last newline and add the trailing comment
+                            if buf.ends_with(",\n") {
+                                buf.pop(); // remove \n
+                                buf.push(' ');
+                                buf.push_str(&trailing);
+                                buf.push('\n');
+                            }
+                        }
                     }
                 }
                 _ => {}
@@ -124,6 +141,60 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
         buf.push_str(" {}");
     }
     buf.push('\n');
+}
+
+/// Check if there should be a blank line before a comment at the given index
+fn should_have_blank_line_before_comment(
+    children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
+    comment_idx: usize,
+) -> bool {
+    for i in (0..comment_idx).rev() {
+        match &children[i] {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    if t.text().matches('\n').count() >= 2 {
+                        return true;
+                    }
+                } else if t.kind() == SyntaxKind::COMMENT {
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(_) => return false,
+        }
+    }
+    false
+}
+
+/// Get trailing comment on the same line after an item
+fn get_trailing_comment(
+    children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
+    item_idx: usize,
+) -> Option<String> {
+    // Look at the tokens immediately after this item
+    for child in children.iter().skip(item_idx + 1) {
+        match child {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    // If whitespace contains a newline, no trailing comment
+                    if t.text().contains('\n') {
+                        return None;
+                    }
+                    // Otherwise continue looking
+                } else if t.kind() == SyntaxKind::COMMENT {
+                    return Some(t.text().to_string());
+                } else if t.kind() == SyntaxKind::COMMA {
+                    // Skip comma, continue looking
+                    continue;
+                } else {
+                    return None;
+                }
+            }
+            NodeOrToken::Node(_) => return None,
+        }
+    }
+    None
 }
 
 /// Collect comments immediately before an item at the given index in a children list

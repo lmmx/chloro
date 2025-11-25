@@ -281,24 +281,25 @@ impl<'db> ProofTreeVisitor<'db> for Select {
     fn visit_goal(&mut self, goal: &InspectGoal<'_, 'db>) -> Self::Result {
         let mut candidates = goal.candidates();
         candidates.retain(|cand| cand.result().is_ok());
-        // No candidates -- not implemented.
 
+        // No candidates -- not implemented.
         if candidates.is_empty() {
             return ControlFlow::Break(Err(SelectionError::Unimplemented));
         }
-        // One candidate, no need to winnow.
 
+        // One candidate, no need to winnow.
         if candidates.len() == 1 {
             return ControlFlow::Break(Ok(to_selection(candidates.into_iter().next().unwrap())));
         }
-        // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
-        // codegen, and only on the good path.
 
+        // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
+
+        // codegen, and only on the good path.
         if matches!(goal.result().unwrap(), Certainty::Maybe { .. }) {
             return ControlFlow::Break(Ok(None));
         }
-        // We need to winnow. See comments on `candidate_should_be_dropped_in_favor_of`.
 
+        // We need to winnow. See comments on `candidate_should_be_dropped_in_favor_of`.
         let mut i = 0;
         while i < candidates.len() {
             let should_drop_i = (0..candidates.len())
