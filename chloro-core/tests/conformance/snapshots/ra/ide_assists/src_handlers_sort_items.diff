@@ -130,15 +130,12 @@ Rustfmt size:  13263 bytes
      match field_list {
          Some(ast::FieldList::RecordFieldList(it)) => add_sort_fields_assist(acc, it),
          _ => {
-     item_list: ast::AssocItemList,
- ) -> Option<()> {
      let selection = ctx.selection_trimmed();
--
+ 
      // ignore assist if the selection intersects with an associated item.
 -    if item_list
 -        .assoc_items()
 -        .any(|item| item.syntax().text_range().intersect(selection).is_some())
-+
 +    if item_list.assoc_items().any(|item| item.syntax().text_range().intersect(selection).is_some())
      {
          return None;

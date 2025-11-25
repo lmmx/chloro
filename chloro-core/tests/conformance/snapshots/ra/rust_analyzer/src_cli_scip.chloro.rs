@@ -87,15 +87,15 @@ impl flags::Scip {
         };
 
         let mut documents = Vec::new();
-        // All TokenIds where an Occurrence has been emitted that references a symbol.
 
+        // All TokenIds where an Occurrence has been emitted that references a symbol.
         let mut token_ids_referenced: FxHashSet<TokenId> = FxHashSet::default();
         // All TokenIds where the SymbolInformation has been written to the document.
         let mut token_ids_emitted: FxHashSet<TokenId> = FxHashSet::default();
         // All FileIds emitted as documents.
         let mut file_ids_emitted: FxHashSet<FileId> = FxHashSet::default();
-        // All non-local symbols encountered, for detecting duplicate symbol errors.
 
+        // All non-local symbols encountered, for detecting duplicate symbol errors.
         let mut nonlocal_symbols_emitted: FxHashSet<String> = FxHashSet::default();
         // List of (source_location, symbol) for duplicate symbol errors to report.
         let mut duplicate_symbol_errors: Vec<(String, String)> = Vec::new();
@@ -126,8 +126,8 @@ impl flags::Scip {
                     true
                 }
             };
-        // Generates symbols from token monikers.
 
+        // Generates symbols from token monikers.
         let mut symbol_generator = SymbolGenerator::default();
 
         for StaticIndexedFile { file_id, tokens, .. } in si.files {
@@ -220,8 +220,8 @@ impl flags::Scip {
                 panic!("Invariant violation: file emitted multiple times.");
             }
         }
-        // Collect all symbols referenced by the files but not defined within them.
 
+        // Collect all symbols referenced by the files but not defined within them.
         let mut external_symbols = Vec::new();
         for id in token_ids_referenced.difference(&token_ids_emitted) {
             let id = *id;

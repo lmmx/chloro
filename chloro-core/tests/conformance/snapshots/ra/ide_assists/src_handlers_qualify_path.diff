@@ -59,12 +59,6 @@ Rustfmt size:  27284 bytes
  
      let candidate = import_assets.import_candidate();
      let qualify_candidate = match candidate {
-             QualifyCandidate::TraitMethod(ctx.sema.db, mcall_expr)
-         }
-     };
--
-     // we aren't interested in different namespaces
-+
      proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
      proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
  

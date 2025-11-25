@@ -27,8 +27,8 @@ pub(crate) fn complete_dot(
 
     let has_parens = matches!(dot_access.kind, DotAccessKind::Method);
     let traits_in_scope = ctx.traits_in_scope();
-    // Suggest .await syntax for types that implement Future trait
 
+    // Suggest .await syntax for types that implement Future trait
     if let Some(future_output) = receiver_ty.into_future_output(ctx.db) {
         let await_str = SmolStr::new_static("await");
         let mut item = CompletionItem::new(

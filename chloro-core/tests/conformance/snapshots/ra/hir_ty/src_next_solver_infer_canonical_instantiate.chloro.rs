@@ -161,8 +161,8 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
         if !c.has_type_flags(TypeFlags::HAS_CANONICAL_BOUND) {
             return c;
         }
-        // FIXME: We might need cache here for perf like rustc
 
+        // FIXME: We might need cache here for perf like rustc
         c.super_fold_with(self)
     }
 }

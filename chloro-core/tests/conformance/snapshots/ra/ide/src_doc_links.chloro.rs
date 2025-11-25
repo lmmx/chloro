@@ -417,9 +417,10 @@ fn rewrite_intra_doc_link(
 
     url = url.join(&file).ok()?;
     url.set_fragment(frag);
-    // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
-    // as the title.
 
+    // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
+
+    // as the title.
     let title = match link_type {
         LinkType::Email
         | LinkType::Autolink
@@ -536,9 +537,10 @@ fn get_doc_base_urls(
         .and_then(|krate| db.toolchain_channel(krate.into()))
         .unwrap_or(ReleaseChannel::Nightly)
         .as_str();
-    // special case base url of `BuiltinType` to core
-    // https://github.com/rust-lang/rust-analyzer/issues/12250
 
+    // special case base url of `BuiltinType` to core
+
+    // https://github.com/rust-lang/rust-analyzer/issues/12250
     if let Definition::BuiltinType(..) = def {
         let web_link = Url::parse(&format!("https://doc.rust-lang.org/{channel}/core/")).ok();
         let system_link = system_doc.and_then(|it| it.join("core/").ok());

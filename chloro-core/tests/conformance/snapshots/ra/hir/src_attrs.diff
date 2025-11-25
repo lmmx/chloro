@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11937 bytes
-Chloro size:   11452 bytes
+Chloro size:   11455 bytes
 Rustfmt size:  12307 bytes
 
 ✗ Outputs DIFFER
@@ -126,7 +126,6 @@ Rustfmt size:  12307 bytes
 -                return None;
 -            }
 -        };
--
 +            alias.ty(db)
 +        }
 +        TypeNs::BuiltinType(id) => BuiltinType::from(id).ty(db),
@@ -147,11 +146,9 @@ Rustfmt size:  12307 bytes
 +            return None;
 +        }
 +    };
+ 
      // Resolve inherent items first, then trait items, then fields.
-+
      if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
-         return Some(assoc_item_def);
-     }
  ) -> Option<DocLinkDef> {
      let canonical = ty.canonical(db);
      let krate = ty.krate(db);
@@ -165,15 +162,16 @@ Rustfmt size:  12307 bytes
      let traits_in_scope = resolver.traits_in_scope(db);
  
      let mut result = None;
--
+ 
      // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
-     // attributes here. Use path resolution directly instead.
-     //
-     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
 +
+     // attributes here. Use path resolution directly instead.
++
+     //
++
+     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
      _ = method_resolution::iterate_path_candidates(
          &canonical,
-         db,
              // disambiguation) so we just pick the first one we find as well.
              result = as_module_def_if_namespace_matches(assoc_item_id.into(), ns);
  

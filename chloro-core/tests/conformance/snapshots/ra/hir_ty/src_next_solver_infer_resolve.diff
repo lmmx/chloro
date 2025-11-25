@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3045 bytes
+Chloro size:   3153 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -16,7 +16,10 @@ Rustfmt size:  3226 bytes
  
 -///////////////////////////////////////////////////////////////////////////
 -// OPPORTUNISTIC VAR RESOLVER
--
+ 
++///////////////////////////////////////////////////////////////////////////
++
++// OPPORTUNISTIC VAR RESOLVER
  /// The opportunistic resolver can be used at any time. It simply replaces
  /// type/const variables that have been unified with the things they have
  /// been unified with (similar to `shallow_resolve`, but deep). This is

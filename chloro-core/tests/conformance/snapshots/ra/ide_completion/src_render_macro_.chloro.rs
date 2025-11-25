@@ -125,9 +125,10 @@ fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static s
             }
         }
     }
-    // Insert a space before `{}`.
-    // We prefer the last one when some votes equal.
 
+    // Insert a space before `{}`.
+
+    // We prefer the last one when some votes equal.
     let (_vote, (bra, ket)) = votes
         .iter()
         .zip(&[(" {", "}"), ("[", "]"), ("(", ")")])

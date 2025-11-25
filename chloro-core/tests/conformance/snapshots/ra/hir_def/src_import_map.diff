@@ -31,15 +31,6 @@ Rustfmt size:  34403 bytes
              }
              format_to!(out, "\n");
          }
-             lhs_chars.cmp(rhs_chars)
-         });
-         importables.dedup();
--
-         // Build the FST, taking care not to insert duplicate values.
-+
-         let mut builder = fst::MapBuilder::memory();
-         let mut iter = importables
-             .iter()
              .dedup_by(|&(_, (_, lhs, _)), &(_, (_, rhs, _))| lhs.eq_ignore_ascii_case(rhs));
  
          let mut insert = |name: &str, start, end| {
@@ -70,15 +61,6 @@ Rustfmt size:  34403 bytes
      }
  
      pub fn import_info_for(&self, item: ItemInNs) -> Option<&[ImportInfo]> {
- 
-         let def_map = crate_def_map(db, krate);
-         let mut map = FxIndexMap::default();
--
-         // We look only into modules that are public(ly reexported), starting with the crate root.
-+
-         let root = def_map.module_id(DefMap::ROOT);
-         let mut worklist = vec![root];
-         let mut visited = FxHashSet::default();
  
              let visible_items = mod_data.scope.entries().filter_map(|(name, per_ns)| {
                  let per_ns = per_ns.filter_visibility(|vis| vis == Visibility::Public);

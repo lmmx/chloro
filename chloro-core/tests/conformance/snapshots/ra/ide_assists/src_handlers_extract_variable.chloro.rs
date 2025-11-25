@@ -12,6 +12,70 @@ use syntax::{
 
 use crate::{AssistContext, AssistId, Assists, utils::is_body_const};
 
+
+// Assist: extract_variable
+
+//
+
+// Extracts subexpression into a variable.
+
+//
+
+// ```
+
+// fn main() {
+
+//     $0(1 + 2)$0 * 4;
+
+// }
+
+// ```
+
+// ->
+
+// ```
+
+// fn main() {
+
+//     let $0var_name = 1 + 2;
+
+//     var_name * 4;
+
+// }
+
+// ```
+
+// Assist: extract_constant
+
+//
+
+// Extracts subexpression into a constant.
+
+//
+
+// ```
+
+// fn main() {
+
+//     $0(1 + 2)$0 * 4;
+
+// }
+
+// ```
+
+// ->
+
+// ```
+
+// fn main() {
+
+//     const $0VAR_NAME: i32 = 1 + 2;
+
+//     VAR_NAME * 4;
+
+// }
+
+// ```
 pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let node = if ctx.has_empty_selection() {
         if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
@@ -317,8 +381,8 @@ fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String>
         }
         _ => return None,
     };
-    // Entirely arbitrary
 
+    // Entirely arbitrary
     if inner.len() > 32 {
         return None;
     }

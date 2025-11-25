@@ -230,9 +230,10 @@ fn hover_offset(
             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, file_id)
             .ok();
     }
-    // prefer descending the same token kind in attribute expansions, in normal macros text
-    // equivalency is more important
 
+    // prefer descending the same token kind in attribute expansions, in normal macros text
+
+    // equivalency is more important
     let mut descended = sema.descend_into_macros(original_token.clone());
 
     let ranker = Ranker::from_token(&original_token);

@@ -98,11 +98,14 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
                 goal.predicate,
             ));
         }
-        // If there's a unique way to prove a given goal, recurse into
-        // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
-        // and a `(): Trait<?0>` goal we recurse into the impl and look at
-        // the nested `?0: FnOnce(u32)` goal.
 
+        // If there's a unique way to prove a given goal, recurse into
+
+        // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
+
+        // and a `(): Trait<?0>` goal we recurse into the impl and look at
+
+        // the nested `?0: FnOnce(u32)` goal.
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
         }
@@ -446,8 +449,8 @@ impl<'db> InferenceTable<'db> {
         let value = self.infer_ctxt.resolve_vars_if_possible(value);
 
         let mut goals = vec![];
-        // FIXME(next-solver): Handle `goals`.
 
+        // FIXME(next-solver): Handle `goals`.
         value.fold_with(&mut resolve_completely::Resolver::new(self, true, &mut goals))
     }
 

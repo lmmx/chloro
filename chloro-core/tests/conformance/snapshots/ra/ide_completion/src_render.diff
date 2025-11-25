@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98240 bytes
+Chloro size:   98243 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -51,16 +51,13 @@ Rustfmt size:  98473 bytes
      fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
          def.docs(self.db())
      }
-     // FIXME: Temporary workaround for handling aliased import.
-     // This should be removed after we have proper support for importing alias.
      // <https://github.com/rust-lang/rust-analyzer/issues/14079>
--
+ 
      // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
-     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
 +
+     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
      if import_edit.item_to_import == import_edit.original_item {
          import_edit.import_path.segments().last().cloned()
-     } else {
      }
  }
  
@@ -68,16 +65,13 @@ Rustfmt size:  98473 bytes
  fn match_types(
      ctx: &CompletionContext<'_>,
      ty1: &hir::Type<'_>,
-     completion_ty: &hir::Type<'_>,
- ) -> Option<CompletionRelevanceTypeMatch> {
      let expected_type = ctx.expected_type.as_ref()?;
--
+ 
      // We don't ever consider unit type to be an exact type match, since
-     // nearly always this is not meaningful to the user.
 +
+     // nearly always this is not meaningful to the user.
      if expected_type.is_unit() {
          return None;
-     }
  #[cfg(test)]
  mod tests {
      use std::cmp;
@@ -447,10 +441,7 @@ Rustfmt size:  98473 bytes
      #[test]
      fn constructor_order_relevance() {
          check_relevance(
-                 fn fn_other() fn() -> Result<u32> [type_could_unify]
-             "#]],
-         );
--
+ 
          //
      }
 -

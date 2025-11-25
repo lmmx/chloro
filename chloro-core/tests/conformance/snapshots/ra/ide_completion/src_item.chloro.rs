@@ -264,9 +264,10 @@ impl CompletionRelevance {
             function,
             is_skipping_completion,
         } = self;
-        // only applicable for completions within use items
-        // lower rank for conflicting import names
 
+        // only applicable for completions within use items
+
+        // lower rank for conflicting import names
         if is_name_already_imported {
             score -= 1;
         }
@@ -274,8 +275,8 @@ impl CompletionRelevance {
         if is_local {
             score += 1;
         }
-        // lower rank private things
 
+        // lower rank private things
         if !is_private_editable {
             score += 1;
         }
@@ -290,13 +291,13 @@ impl CompletionRelevance {
                 score -= 5;
             }
         }
-        // Lower rank for completions that skip `await` and `iter()`.
 
+        // Lower rank for completions that skip `await` and `iter()`.
         if is_skipping_completion {
             score -= 7;
         }
-        // lower rank for items that need an import
 
+        // lower rank for items that need an import
         if requires_import {
             score -= 1;
         }

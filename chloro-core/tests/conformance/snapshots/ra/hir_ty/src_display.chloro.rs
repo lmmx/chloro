@@ -417,8 +417,8 @@ impl<'db> HirFormatter<'_, 'db> {
         self.buf.clear();
         fmt::write(&mut self.buf, args)?;
         self.curr_size += self.buf.len();
-        // Then we write to the internal formatter from the buffer
 
+        // Then we write to the internal formatter from the buffer
         self.fmt.write_str(&self.buf).map_err(HirDisplayError::from)
     }
 
@@ -616,10 +616,12 @@ fn write_projection<'db>(
     }
     let trait_ref = alias.trait_ref(f.interner);
     let self_ty = trait_ref.self_ty();
-    // if we are projection on a type parameter, check if the projection target has bounds
-    // itself, if so, we render them directly as `impl Bound` instead of the less useful
-    // `<Param as Trait>::Assoc`
 
+    // if we are projection on a type parameter, check if the projection target has bounds
+
+    // itself, if so, we render them directly as `impl Bound` instead of the less useful
+
+    // `<Param as Trait>::Assoc`
     if !f.display_kind.is_source_code()
         && let TyKind::Param(param) = self_ty.kind()
         && !f.bounds_formatting_ctx.contains(alias)
@@ -2378,15 +2380,22 @@ impl<'db> HirDisplayWithExpressionStore<'db> for Path {
                 write!(f, "{name}")?
             }
         }
-        // Convert trait's `Self` bound back to the surface syntax. Note there is no associated
-        // trait, so there can only be one path segment that `has_self_type`. The `Self` type
-        // itself can contain further qualified path through, which will be handled by recursive
-        // `hir_fmt`s.
-        //
-        // `trait_mod::Trait<Self = type_mod::Type, Args>::Assoc`
-        // =>
-        // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
 
+        // Convert trait's `Self` bound back to the surface syntax. Note there is no associated
+
+        // trait, so there can only be one path segment that `has_self_type`. The `Self` type
+
+        // itself can contain further qualified path through, which will be handled by recursive
+
+        // `hir_fmt`s.
+
+        //
+
+        // `trait_mod::Trait<Self = type_mod::Type, Args>::Assoc`
+
+        // =>
+
+        // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
         let trait_self_ty = self.segments().iter().find_map(|seg| {
             let generic_args = seg.args_and_bindings?;
             generic_args.has_self_type.then(|| &generic_args.args[0])

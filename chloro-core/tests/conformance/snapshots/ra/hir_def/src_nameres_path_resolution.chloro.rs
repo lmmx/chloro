@@ -789,8 +789,8 @@ fn adjust_to_nearest_non_block_module<'db>(
 ) -> (&'db DefMap, LocalModuleId) {
     // INVARIANT: `local_id` in `def_map` must be a block module.
     stdx::always!(def_map.module_id(local_id).is_block_module());
-    // This needs to be a local variable due to our mighty lifetime.
 
+    // This needs to be a local variable due to our mighty lifetime.
     let mut def_map = def_map;
     loop {
         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");

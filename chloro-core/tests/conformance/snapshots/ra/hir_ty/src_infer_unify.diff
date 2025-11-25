@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34409 bytes
-Chloro size:   34231 bytes
+Chloro size:   34234 bytes
 Rustfmt size:  35032 bytes
 
 ✗ Outputs DIFFER
@@ -56,18 +56,17 @@ Rustfmt size:  35032 bytes
      where
          T: rustc_type_ir::TypeFoldable<DbInterner<'db>>,
      {
-                 goal.predicate,
-             ));
          }
--
+ 
          // If there's a unique way to prove a given goal, recurse into
-         // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
-         // and a `(): Trait<?0>` goal we recurse into the impl and look at
-         // the nested `?0: FnOnce(u32)` goal.
 +
+         // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
++
+         // and a `(): Trait<?0>` goal we recurse into the impl and look at
++
+         // the nested `?0: FnOnce(u32)` goal.
          if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
              candidate.visit_nested_no_probe(self)
-         }
      env: Arc<TraitEnvironment<'db>>,
      tys: &Canonical<'db, (Ty<'db>, Ty<'db>)>,
  ) -> bool {
@@ -136,12 +135,10 @@ Rustfmt size:  35032 bytes
      pub(crate) fn normalize_associated_types_in<T>(&mut self, ty: T) -> T
      where
          T: TypeFoldable<DbInterner<'db>> + Clone,
-         let value = self.infer_ctxt.resolve_vars_if_possible(value);
- 
          let mut goals = vec![];
--
-         // FIXME(next-solver): Handle `goals`.
  
+         // FIXME(next-solver): Handle `goals`.
+-
 -        value.fold_with(&mut resolve_completely::Resolver::new(
 -            self, true, &mut goals,
 -        ))

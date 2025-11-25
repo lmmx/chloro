@@ -20,8 +20,8 @@ pub(crate) fn replace_named_generic_with_impl(
     let type_param = ctx.find_node_at_offset::<ast::TypeParam>()?;
     // returns `P`
     let type_param_name = type_param.name()?;
-    // The list of type bounds / traits: `AsRef<Path>`
 
+    // The list of type bounds / traits: `AsRef<Path>`
     let type_bound_list = type_param.type_bound_list()?;
 
     let fn_ = type_param.syntax().ancestors().find_map(ast::Fn::cast)?;
@@ -29,14 +29,14 @@ pub(crate) fn replace_named_generic_with_impl(
 
     let type_param_hir_def = ctx.sema.to_def(&type_param)?;
     let type_param_def = Definition::GenericParam(hir::GenericParam::TypeParam(type_param_hir_def));
-    // get all usage references for the type param
 
+    // get all usage references for the type param
     let usage_refs = find_usages(&ctx.sema, &fn_, type_param_def, ctx.file_id());
     if usage_refs.is_empty() {
         return None;
     }
-    // All usage references need to be valid (inside the function param list)
 
+    // All usage references need to be valid (inside the function param list)
     if !check_valid_usages(&usage_refs, param_list_text_range) {
         return None;
     }
@@ -95,8 +95,8 @@ fn find_path_type(
 ) -> Option<PathType> {
     let path_type =
         sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
-    // Ignore any path types that look like `P::Assoc`
 
+    // Ignore any path types that look like `P::Assoc`
     if path_type.path()?.as_single_name_ref()?.text() != type_param_name.text() {
         return None;
     }
@@ -105,8 +105,8 @@ fn find_path_type(
 
     let mut in_generic_arg_list = false;
     let mut is_associated_type = false;
-    // walking the ancestors checks them in a heuristic way until the `Fn` node is reached.
 
+    // walking the ancestors checks them in a heuristic way until the `Fn` node is reached.
     for ancestor in ancestors {
         match_ast! {
             match ancestor {

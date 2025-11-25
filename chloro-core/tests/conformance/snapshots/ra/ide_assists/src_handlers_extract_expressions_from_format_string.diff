@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9537 bytes
+Chloro size:   9822 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -22,10 +22,16 @@ Rustfmt size:  9843 bytes
      SyntaxToken, T,
  };
  
--// Assist: extract_expressions_from_format_string
--//
--// Move an expression out of a format string.
--//
++use crate::{AssistContext, Assists, utils};
++
++
+ // Assist: extract_expressions_from_format_string
++
+ //
++
+ // Move an expression out of a format string.
++
+ //
 -// ```
 -// # //- minicore: fmt
 -// fn main() {
@@ -37,9 +43,30 @@ Rustfmt size:  9843 bytes
 -// fn main() {
 -//     print!("{var} {}"$0, x + 1);
 -// }
--// ```
-+use crate::{AssistContext, Assists, utils};
++
+ // ```
  
++// # //- minicore: fmt
++
++// fn main() {
++
++//     print!("{var} {x + 1}$0");
++
++// }
++
++// ```
++
++// ->
++
++// ```
++
++// fn main() {
++
++//     print!("{var} {}"$0, x + 1);
++
++// }
++
++// ```
  pub(crate) fn extract_expressions_from_format_string(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,

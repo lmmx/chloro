@@ -124,9 +124,10 @@ fn find_items(
     external_query: import_map::Query,
 ) -> impl Iterator<Item = (ItemInNs, Complete)> {
     let _p = tracing::info_span!("find_items").entered();
-    // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
-    // filter on our own.
 
+    // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
+
+    // filter on our own.
     let external_importables = krate.query_external_importables(db, external_query).map(
         |(external_importable, do_not_complete)| {
             let external_importable = match external_importable {
@@ -136,8 +137,8 @@ fn find_items(
             (external_importable, do_not_complete)
         },
     );
-    // Query the local crate using the symbol index.
 
+    // Query the local crate using the symbol index.
     let mut local_results = Vec::new();
     local_query.search(&symbol_index::crate_symbols(db, krate), |local_candidate| {
         let def = match local_candidate.def {

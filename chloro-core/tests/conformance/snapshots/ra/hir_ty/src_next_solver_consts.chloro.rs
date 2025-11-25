@@ -142,13 +142,18 @@ impl ParamConst {
                 _ => None,
             }
         });
-        // N.B. it may be tempting to fix ICEs by making this function return
-        // `Option<Ty<'db>>` instead of `Ty<'db>`; however, this is generally
-        // considered to be a bandaid solution, since it hides more important
-        // underlying issues with how we construct generics and predicates of
-        // items. It's advised to fix the underlying issue rather than trying
-        // to modify this function.
 
+        // N.B. it may be tempting to fix ICEs by making this function return
+
+        // `Option<Ty<'db>>` instead of `Ty<'db>`; however, this is generally
+
+        // considered to be a bandaid solution, since it hides more important
+
+        // underlying issues with how we construct generics and predicates of
+
+        // items. It's advised to fix the underlying issue rather than trying
+
+        // to modify this function.
         let ty = candidates.next().unwrap_or_else(|| {
             panic!("cannot find `{self:?}` in param-env: {env:#?}");
         });

@@ -36,34 +36,57 @@ impl RootDatabase {
         }
         change.apply(self);
     }
+
     // Feature: Memory Usage
+
     //
+
     // Clears rust-analyzer's internal database and prints memory usage statistics.
+
     //
+
     // | Editor  | Action Name |
+
     // |---------|-------------|
+
     // | VS Code | **rust-analyzer: Memory Usage (Clears Database)**
 
     pub fn per_query_memory_usage(&mut self) -> Vec<(String, Bytes, usize)> {
         let mut acc: Vec<(String, Bytes, usize)> = vec![];
-        // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
-        // where
-        //     QueryTable<'q, Q>: DebugQueryTable,
-        //     Q: Query,
-        //     <Q as Query>::Storage: 'q,
-        // {
-        //     struct EntryCounter(usize);
-        //     impl<K, V> FromIterator<TableEntry<K, V>> for EntryCounter {
-        //         fn from_iter<T>(iter: T) -> EntryCounter
-        //         where
-        //             T: IntoIterator<Item = TableEntry<K, V>>,
-        //         {
-        //             EntryCounter(iter.into_iter().count())
-        //         }
-        //     }
-        //     table.entries::<EntryCounter>().0
-        // }
 
+        // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
+
+        // where
+
+        //     QueryTable<'q, Q>: DebugQueryTable,
+
+        //     Q: Query,
+
+        //     <Q as Query>::Storage: 'q,
+
+        // {
+
+        //     struct EntryCounter(usize);
+
+        //     impl<K, V> FromIterator<TableEntry<K, V>> for EntryCounter {
+
+        //         fn from_iter<T>(iter: T) -> EntryCounter
+
+        //         where
+
+        //             T: IntoIterator<Item = TableEntry<K, V>>,
+
+        //         {
+
+        //             EntryCounter(iter.into_iter().count())
+
+        //         }
+
+        //     }
+
+        //     table.entries::<EntryCounter>().0
+
+        // }
         macro_rules! purge_each_query {
             ($($q:path)*) => {$(
                 let before = memory_usage().allocated;

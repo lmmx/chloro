@@ -60,8 +60,8 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             QualifyCandidate::TraitMethod(ctx.sema.db, mcall_expr)
         }
     };
-    // we aren't interested in different namespaces
 
+    // we aren't interested in different namespaces
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
 

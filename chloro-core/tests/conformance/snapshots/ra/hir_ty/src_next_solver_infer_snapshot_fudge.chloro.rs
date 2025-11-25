@@ -103,11 +103,14 @@ impl<'db> InferCtxt<'db> {
             let snapshot_vars = SnapshotVarData::new(self, variable_lengths);
             Ok((snapshot_vars, self.resolve_vars_if_possible(value)))
         })?;
-        // At this point, we need to replace any of the now-popped
-        // type/region variables that appear in `value` with a fresh
-        // variable of the appropriate kind. We can't do this during
-        // the probe because they would just get popped then too. =)
 
+        // At this point, we need to replace any of the now-popped
+
+        // type/region variables that appear in `value` with a fresh
+
+        // variable of the appropriate kind. We can't do this during
+
+        // the probe because they would just get popped then too. =)
         Ok(self.fudge_inference(snapshot_vars, value))
     }
 

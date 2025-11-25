@@ -178,15 +178,6 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_exprs_let_else_restrictions() {
          // `}` is not allowed before `else` here
-             remove_parentheses,
-             r#"fn f() { let _ = $0(S{}) else { return }; }"#,
-         );
--
-         // logic operators can't directly appear in the let-else
-+
-         check_assist_not_applicable(
-             remove_parentheses,
-             r#"fn f() { let _ = $0(false || false) else { return }; }"#,
              r#"fn f() { let _ = $0(true && true) else { return }; }"#,
          );
      }
@@ -229,12 +220,3 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_parens_indirect_calls() {
          check_assist(
-             r#"fn f<F>(call: F, arg: usize) where F: Fn(usize) { $0(call)(arg); }"#,
-             r#"fn f<F>(call: F, arg: usize) where F: Fn(usize) { call(arg); }"#,
-         );
--
-         // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
-+
-         check_assist_not_applicable(
-             remove_parentheses,
-             r#"

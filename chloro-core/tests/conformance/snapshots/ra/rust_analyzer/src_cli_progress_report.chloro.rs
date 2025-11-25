@@ -82,14 +82,14 @@ impl<'a> ProgressReport<'a> {
         {
             common_prefix_length += 1;
         }
-        // Backtrack to the first differing character
 
+        // Backtrack to the first differing character
         let mut output = String::new();
         output += &'\x08'.to_string().repeat(self.text.len() - common_prefix_length);
         // Output new suffix, using chars() iter to ensure unicode compatibility
         output.extend(text.chars().skip(common_prefix_length));
-        // If the new text is shorter than the old one: delete overlapping characters
 
+        // If the new text is shorter than the old one: delete overlapping characters
         if let Some(overlap_count) = self.text.len().checked_sub(text.len())
             && overlap_count > 0
         {
@@ -110,8 +110,8 @@ impl<'a> ProgressReport<'a> {
         if self.hidden {
             return;
         }
-        // Fill all last text to space and return the cursor
 
+        // Fill all last text to space and return the cursor
         let spaces = " ".repeat(self.text.len());
         let backspaces = "\x08".repeat(self.text.len());
         print!("{backspaces}{spaces}{backspaces}");

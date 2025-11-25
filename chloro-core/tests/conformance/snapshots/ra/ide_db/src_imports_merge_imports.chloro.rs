@@ -60,8 +60,8 @@ pub fn try_merge_imports(
     let lhs_tree = lhs.use_tree()?;
     let rhs_tree = rhs.use_tree()?;
     try_merge_trees_mut(&lhs_tree, &rhs_tree, merge_behavior)?;
-    // Ignore `None` result because normalization should not affect the merge result.
 
+    // Ignore `None` result because normalization should not affect the merge result.
     try_normalize_use_tree_mut(&lhs_tree, merge_behavior.into());
 
     Some(lhs)
@@ -77,8 +77,8 @@ pub fn try_merge_trees(
     let lhs = lhs.clone_subtree().clone_for_update();
     let rhs = rhs.clone_subtree().clone_for_update();
     try_merge_trees_mut(&lhs, &rhs, merge)?;
-    // Ignore `None` result because normalization should not affect the merge result.
 
+    // Ignore `None` result because normalization should not affect the merge result.
     try_normalize_use_tree_mut(&lhs, merge.into());
 
     Some(lhs)

@@ -1,5 +1,17 @@
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, Severity};
 
+
+// Diagnostic: macro-error
+
+//
+
+// This diagnostic is shown for macro expansion errors.
+
+// Diagnostic: attribute-expansion-disabled
+
+//
+
+// This diagnostic is shown for attribute proc macros when attribute expansions have been disabled.
 pub(crate) fn macro_error(ctx: &DiagnosticsContext<'_>, d: &hir::MacroError) -> Diagnostic {
     // Use more accurate position if available.
     let display_range = ctx.resolve_precise_location(&d.node, d.precise_location);
@@ -87,9 +99,10 @@ pub macro panic {
     #[test]
     fn include_macro_should_allow_empty_content() {
         let mut config = DiagnosticsConfig::test_sample();
-        // FIXME: This is a false-positive, the file is actually linked in via
-        // `include!` macro
 
+        // FIXME: This is a false-positive, the file is actually linked in via
+
+        // `include!` macro
         config.disabled.insert("unlinked-file".to_owned());
 
         check_diagnostics_with_config(

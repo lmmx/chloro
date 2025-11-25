@@ -461,9 +461,10 @@ pub(crate) fn handle_on_type_formatting(
     let mut position =
         try_default!(from_proto::file_position(&snap, params.text_document_position)?);
     let line_index = snap.file_line_index(position.file_id)?;
-    // in `ide`, the `on_type` invariant is that
-    // `text.char_at(position) == typed_char`.
 
+    // in `ide`, the `on_type` invariant is that
+
+    // `text.char_at(position) == typed_char`.
     position.offset -= TextSize::of('.');
 
     let text = snap.analysis.file_text(position.file_id)?;
@@ -476,8 +477,8 @@ pub(crate) fn handle_on_type_formatting(
         Some(it) => it,
         None => return Ok(None),
     };
-    // This should be a single-file edit
 
+    // This should be a single-file edit
     let (_, (text_edit, snippet_edit)) = edit.source_file_edits.into_iter().next().unwrap();
     stdx::always!(snippet_edit.is_none(), "on type formatting shouldn't use structured snippets");
 
@@ -604,8 +605,8 @@ pub(crate) fn handle_document_symbol(
         };
         symbols.push((symbol, node.parent));
     }
-    // Builds hierarchy from a flat list, in reverse order (so that the indices make sense)
 
+    // Builds hierarchy from a flat list, in reverse order (so that the indices make sense)
     let document_symbols = {
         let mut acc = Vec::new();
         while let Some((mut symbol, parent_idx)) = symbols.pop() {
@@ -799,8 +800,8 @@ pub(crate) fn handle_will_rename_files(
             snap.analysis.will_rename_file(file_id?, &new_name).ok()?
         })
         .collect();
-    // Drop file system edits since we're just renaming things on the same level
 
+    // Drop file system edits since we're just renaming things on the same level
     let mut source_changes = source_changes.into_iter();
     let mut source_change = source_changes.next().unwrap_or_default();
     source_change.file_system_edits.clear();
@@ -947,8 +948,8 @@ pub(crate) fn handle_parent_module(
             return Ok(Some(res));
         }
     }
-    // locate parent module by semantics
 
+    // locate parent module by semantics
     let position = try_default!(from_proto::file_position(&snap, params)?);
     let navs = snap.analysis.parent_module(position)?;
     let res = to_proto::goto_definition_response(&snap, None, navs)?;
@@ -1004,8 +1005,8 @@ pub(crate) fn handle_runnables(
             res.push(runnable);
         }
     }
-    // Add `cargo check` and `cargo test` for all targets of the whole package
 
+    // Add `cargo check` and `cargo test` for all targets of the whole package
     let config = snap.config.runnables(source_root);
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
@@ -1341,13 +1342,18 @@ pub(crate) fn handle_rename(
         .analysis
         .rename(position, &params.new_name, &config)?
         .map_err(to_proto::rename_error)?;
-    // this is kind of a hack to prevent double edits from happening when moving files
-    // When a module gets renamed by renaming the mod declaration this causes the file to move
-    // which in turn will trigger a WillRenameFiles request to the server for which we reply with a
-    // a second identical set of renames, the client will then apply both edits causing incorrect edits
-    // with this we only emit source_file_edits in the WillRenameFiles response which will do the rename instead
-    // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
 
+    // this is kind of a hack to prevent double edits from happening when moving files
+
+    // When a module gets renamed by renaming the mod declaration this causes the file to move
+
+    // which in turn will trigger a WillRenameFiles request to the server for which we reply with a
+
+    // a second identical set of renames, the client will then apply both edits causing incorrect edits
+
+    // with this we only emit source_file_edits in the WillRenameFiles response which will do the rename instead
+
+    // See https://github.com/microsoft/vscode-languageserver-node/issues/752 for more info
     if !change.file_system_edits.is_empty() && snap.config.will_rename() {
         change.source_file_edits.clear();
     }
@@ -1494,8 +1500,8 @@ pub(crate) fn handle_code_action(
 
         res.push(code_action)
     }
-    // Fixes from `cargo check`.
 
+    // Fixes from `cargo check`.
     for fix in snap
         .check_fixes
         .iter()
@@ -1948,8 +1954,8 @@ pub(crate) fn handle_semantic_tokens_full(
         snap.config.semantics_tokens_augments_syntax_tokens(),
         snap.config.highlighting_non_standard_tokens(),
     );
-    // Unconditionally cache the tokens
 
+    // Unconditionally cache the tokens
     snap.semantic_tokens_cache.lock().insert(params.text_document.uri, semantic_tokens.clone());
 
     Ok(Some(semantic_tokens.into()))
@@ -1989,8 +1995,8 @@ pub(crate) fn handle_semantic_tokens_full_delta(
         snap.semantic_tokens_cache.lock().insert(params.text_document.uri, semantic_tokens);
         return Ok(Some(delta.into()));
     }
-    // Clone first to keep the lock short
 
+    // Clone first to keep the lock short
     let semantic_tokens_clone = semantic_tokens.clone();
     snap.semantic_tokens_cache.lock().insert(params.text_document.uri, semantic_tokens_clone);
 
@@ -2335,9 +2341,10 @@ fn run_rustfmt(
 ) -> anyhow::Result<Option<Vec<lsp_types::TextEdit>>> {
     let file_id = try_default!(from_proto::file_id(snap, &text_document.uri)?);
     let file = snap.analysis.file_text(file_id)?;
-    // Determine the edition of the crate the file belongs to (if there's multiple, we pick the
-    // highest edition).
 
+    // Determine the edition of the crate the file belongs to (if there's multiple, we pick the
+
+    // highest edition).
     let Ok(editions) = snap
         .analysis
         .relevant_crates_for(file_id)?
@@ -2351,10 +2358,12 @@ fn run_rustfmt(
 
     let line_index = snap.file_line_index(file_id)?;
     let source_root_id = snap.analysis.source_root_id(file_id).ok();
-    // try to chdir to the file so we can respect `rustfmt.toml`
-    // FIXME: use `rustfmt --config-path` once
-    // https://github.com/rust-lang/rustfmt/issues/4660 gets fixed
 
+    // try to chdir to the file so we can respect `rustfmt.toml`
+
+    // FIXME: use `rustfmt --config-path` once
+
+    // https://github.com/rust-lang/rustfmt/issues/4660 gets fixed
     let current_dir = match text_document.uri.to_file_path() {
         Ok(mut path) => {
             // pop off file name

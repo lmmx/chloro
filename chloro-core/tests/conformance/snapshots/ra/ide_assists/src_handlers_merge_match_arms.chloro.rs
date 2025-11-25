@@ -21,9 +21,10 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     let current_arm_types = get_arm_types(ctx, &current_arm);
     let multi_arm_selection = !ctx.has_empty_selection()
         && ctx.selection_trimmed().end() > current_arm.syntax().text_range().end();
-    // We check if the following match arms match this one. We could, but don't,
-    // compare to the previous match arm as well.
 
+    // We check if the following match arms match this one. We could, but don't,
+
+    // compare to the previous match arm as well.
     let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
         .take_while(|arm| match arm.expr() {
             Some(expr) if arm.guard().is_none() => {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4244 bytes
-Chloro size:   4011 bytes
+Chloro size:   4165 bytes
 Rustfmt size:  4381 bytes
 
 ✗ Outputs DIFFER
@@ -45,13 +45,15 @@ Rustfmt size:  4381 bytes
      }
  }
  
-     _handle: CommandHandle<CargoTestMessage>,
  }
  
--// Example of a cargo test command:
+ // Example of a cargo test command:
 -//
 -// cargo test --package my-package --bin my_bin --no-fail-fast -- module::func -Z unstable-options --format=json
--
+ 
++//
++
++// cargo test --package my-package --bin my_bin --no-fail-fast -- module::func -Z unstable-options --format=json
  #[derive(Debug, Clone)]
  pub(crate) struct TestTarget {
      pub package: String,
@@ -64,9 +66,5 @@ Rustfmt size:  4381 bytes
 -            );
 +            tracing::warn!("Running test for unknown cargo target {:?}", test_target.kind);
          }
--
+ 
          // --no-fail-fast is needed to ensure that all requested tests will run
-+
-         cmd.arg("--no-fail-fast");
-         cmd.arg("--manifest-path");
-         cmd.arg(root.join("Cargo.toml"));

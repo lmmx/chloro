@@ -557,8 +557,8 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         } else {
             TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER
         };
-        // Fast path: nothing that needs to be canonicalized.
 
+        // Fast path: nothing that needs to be canonicalized.
         if !value.has_type_flags(needs_canonical_flags) {
             return base.unchecked_map(|b| (b, value));
         }
@@ -584,10 +584,12 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
                 .collect();
         }
         let out_value = value.fold_with(&mut canonicalizer);
-        // Once we have canonicalized `out_value`, it should not
-        // contain anything that ties it to this inference context
-        // anymore.
 
+        // Once we have canonicalized `out_value`, it should not
+
+        // contain anything that ties it to this inference context
+
+        // anymore.
         debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
 
         let canonical_variables =
@@ -623,12 +625,16 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
                 Ok(_) => {}
             }
         }
-        // This code is hot. `variables` and `var_values` are usually small
-        // (fewer than 8 elements ~95% of the time). They are SmallVec's to
-        // avoid allocations in those cases. We also don't use `indices` to
-        // determine if a kind has been seen before until the limit of 8 has
-        // been exceeded, to also avoid allocations for `indices`.
 
+        // This code is hot. `variables` and `var_values` are usually small
+
+        // (fewer than 8 elements ~95% of the time). They are SmallVec's to
+
+        // avoid allocations in those cases. We also don't use `indices` to
+
+        // determine if a kind has been seen before until the limit of 8 has
+
+        // been exceeded, to also avoid allocations for `indices`.
         if !var_values.spilled() {
             // `var_values` is stack-allocated. `indices` isn't used yet. Do a
             // direct linear search of `var_values`.

@@ -103,6 +103,7 @@ pub trait DefDatabase {
     /// Turns a MacroId into a MacroDefId, describing the macro's definition post name resolution.
     #[salsa::invoke(macro_def)]
     fn macro_def(&self, m: MacroId) -> MacroDefId;
+
     // region:data
 
     #[salsa::tracked]
@@ -203,6 +204,7 @@ pub trait DefDatabase {
         &self,
         e: TypeAliasId,
     ) -> (Arc<TypeAliasSignature>, Arc<ExpressionStoreSourceMap>);
+
     // endregion:data
 
     #[salsa::invoke(Body::body_with_source_map_query)]
@@ -232,6 +234,7 @@ pub trait DefDatabase {
         &self,
         def: GenericDefId,
     ) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>);
+
     // region:attrs
 
     #[salsa::invoke(Attrs::fields_attrs_query)]
@@ -249,10 +252,12 @@ pub trait DefDatabase {
     #[salsa::transparent]
     #[salsa::invoke(lang_item::lang_attr)]
     fn lang_attr(&self, def: AttrDefId) -> Option<LangItem>;
+
     // endregion:attrs
 
     #[salsa::invoke(ImportMap::import_map_query)]
     fn import_map(&self, krate: Crate) -> Arc<ImportMap>;
+
     // region:visibilities
 
     #[salsa::invoke(visibility::field_visibilities_query)]
@@ -260,6 +265,7 @@ pub trait DefDatabase {
 
     #[salsa::invoke(visibility::assoc_visibility_query)]
     fn assoc_visibility(&self, def: AssocItemId) -> Visibility;
+
     // endregion:visibilities
 
     #[salsa::invoke(crate::lang_item::notable_traits_in_deps)]

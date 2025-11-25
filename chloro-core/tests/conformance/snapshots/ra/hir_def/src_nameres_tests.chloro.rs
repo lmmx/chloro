@@ -551,7 +551,6 @@ fn no_std_prelude() {
 fn edition_specific_preludes() {
     // We can't test the 2015 prelude here since you can't reexport its contents with 2015's
     // absolute paths.
-
     check(
         r#"
         //- /main.rs edition:2018 crate:main deps:std

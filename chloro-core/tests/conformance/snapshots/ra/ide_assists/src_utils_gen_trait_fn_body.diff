@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33616 bytes
-Chloro size:   33616 bytes
+Chloro size:   33618 bytes
 Rustfmt size:  33768 bytes
 
 ✗ Outputs DIFFER
@@ -28,16 +28,13 @@ Rustfmt size:  33768 bytes
              None => Some(cmp),
          }
      }
-     fn gen_tuple_field(field_name: &str) -> ast::Pat {
-         ast::Pat::IdentPat(make::ident_pat(false, false, make::name(field_name)))
      }
--
+ 
      // Check that self type and rhs type match. We don't know how to implement the method
-     // automatically otherwise.
 +
+     // automatically otherwise.
      if let Some(trait_ref) = trait_ref {
          let self_ty = trait_ref.self_ty();
-         let rhs_ty = trait_ref.get_type_argument(1)?;
      fn gen_partial_eq_match(match_target: ast::Expr) -> Option<ast::Stmt> {
          let mut arms = vec![];
  
@@ -56,16 +53,13 @@ Rustfmt size:  33768 bytes
  
          arms.push(make::match_arm(
              make::ident_pat(false, false, make::name("ord")).into(),
-         let method = make::name_ref("partial_cmp");
-         make::expr_method_call(lhs, method, make::arg_list(Some(rhs))).into()
      }
--
+ 
      // Check that self type and rhs type match. We don't know how to implement the method
-     // automatically otherwise.
 +
+     // automatically otherwise.
      if let Some(trait_ref) = trait_ref {
          let self_ty = trait_ref.self_ty();
-         let rhs_ty = trait_ref.get_type_argument(1)?;
  }
  
  fn make_discriminant() -> Option<ast::Expr> {

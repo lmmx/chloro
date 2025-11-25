@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32624 bytes
-Chloro size:   12538 bytes
+Chloro size:   12544 bytes
 Rustfmt size:  32624 bytes
 
 ✗ Outputs DIFFER
@@ -29,20 +29,23 @@ Rustfmt size:  32624 bytes
  };
  
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-     {
-         return Some(target);
      }
--
+ 
      // Our `CrateGraph` eagerly inserts sysroot dependencies like `core` or `std` into dependencies
-     // even if the target crate has `#![no_std]`, `#![no_core]` or shadowed sysroot dependencies
-     // like `dependencies.std.path = ".."`. So we use `extern_prelude()` instead of
-     // while nameres.
-     //
-     // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
 +
+     // even if the target crate has `#![no_std]`, `#![no_core]` or shadowed sysroot dependencies
++
+     // like `dependencies.std.path = ".."`. So we use `extern_prelude()` instead of
++
+     // `CrateData.dependencies` here, which has already come through such sysroot complexities
++
+     // while nameres.
++
+     //
++
+     // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
      crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
          // Some crates declares themselves as extern crate like `extern crate self as core`.
-         // Ignore these to prevent cycles.
          db: &dyn DefDatabase,
          item: T,
          constructor: fn(T) -> LangItemTarget,

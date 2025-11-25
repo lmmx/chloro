@@ -990,10 +990,12 @@ pub(crate) fn url_from_abs_path(path: &AbsPath) -> lsp_types::Url {
         let start = scheme.len() + ':'.len_utf8();
         start..(start + drive_letter.len())
     };
-    // Note: lowercasing the `path` itself doesn't help, the `Url::parse`
-    // machinery *also* canonicalizes the drive letter. So, just massage the
-    // string in place.
 
+    // Note: lowercasing the `path` itself doesn't help, the `Url::parse`
+
+    // machinery *also* canonicalizes the drive letter. So, just massage the
+
+    // string in place.
     let mut url: String = url.into();
     url[driver_letter_range].make_ascii_lowercase();
     lsp_types::Url::parse(&url).unwrap()
@@ -1227,8 +1229,8 @@ fn merge_text_and_snippet_edits(
         // update the final source -> initial source mapping offset
         source_text_offset += offset_adjustment;
     }
-    // insert any remaining tabstops
 
+    // insert any remaining tabstops
     edits.extend(snippets.map(|(snippet_index, snippet_range)| {
         // adjust the snippet range into the corresponding initial source location
         let snippet_range = offset_range(snippet_range, source_text_offset);
@@ -1857,7 +1859,6 @@ pub(crate) mod command {
         // We cannot use the 'editor.action.showReferences' command directly
         // because that command requires vscode types which we convert in the handler
         // on the client side.
-
         lsp_types::Command {
             title,
             command: "rust-analyzer.showReferences".into(),
@@ -2067,8 +2068,8 @@ fn bar(_: usize) {}
         };
 
         let res = merge_text_and_snippet_edits(&line_index, edit, snippets, true);
-        // Ensure that none of the ranges overlap
 
+        // Ensure that none of the ranges overlap
         {
             let mut sorted = res.clone();
             sorted.sort_by_key(|edit| (edit.range.start, edit.range.end));
@@ -2823,8 +2824,8 @@ struct P {
         );
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(51.into())]);
-        // add an extra space between `ProcMacro` and `{` to insert the tabstop at
 
+        // add an extra space between `ProcMacro` and `{` to insert the tabstop at
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> ProcMacro {

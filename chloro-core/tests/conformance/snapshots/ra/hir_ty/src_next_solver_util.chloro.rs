@@ -213,8 +213,8 @@ impl IntegerExt for Integer {
             // repr(Rust) enums try to be as small as possible
             Integer::I8
         };
-        // If there are no negative values, we can use the unsigned fit.
 
+        // If there are no negative values, we can use the unsigned fit.
         if min >= 0 {
             (std::cmp::max(unsigned_fit, at_least), false)
         } else {

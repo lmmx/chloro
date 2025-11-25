@@ -7,12 +7,21 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+
+// NOTES :
+
+// We generate erroneous code if a function is declared const (E0379)
+
+// This is left to the user to correct as our only option is to remove the
+
+// function completely which we should not be doing.
 pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Get AST Node
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
-    // Check if cursor is to the left of assoc item list's L_CURLY.
-    // if no L_CURLY then return.
 
+    // Check if cursor is to the left of assoc item list's L_CURLY.
+
+    // if no L_CURLY then return.
     let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
 
     let cursor_offset = ctx.offset();
@@ -20,8 +29,8 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
     if cursor_offset >= l_curly_offset.start() {
         return None;
     }
-    // If impl is not inherent then we don't really need to go any further.
 
+    // If impl is not inherent then we don't really need to go any further.
     if impl_ast.for_token().is_some() {
         return None;
     }

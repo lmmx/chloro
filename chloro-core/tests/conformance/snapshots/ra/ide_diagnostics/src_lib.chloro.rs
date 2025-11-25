@@ -315,8 +315,8 @@ pub fn syntax_diagnostics(
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
 
     let (file_id, _) = editioned_file_id.unpack(db);
-    // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
 
+    // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
     db.parse_errors(editioned_file_id)
         .into_iter()
         .flatten()
@@ -349,10 +349,12 @@ pub fn semantic_diagnostics(
     let mut res = Vec::new();
 
     let parse = sema.parse(editioned_file_id);
-    // FIXME: This iterates the entire file which is a rather expensive operation.
-    // We should implement these differently in some form?
-    // Salsa caching + incremental re-parse would be better here
 
+    // FIXME: This iterates the entire file which is a rather expensive operation.
+
+    // We should implement these differently in some form?
+
+    // Salsa caching + incremental re-parse would be better here
     for node in parse.syntax().descendants() {
         handlers::useless_braces::useless_braces(db, &mut res, editioned_file_id, &node);
         handlers::field_shorthand::field_shorthand(db, &mut res, editioned_file_id, &node);
@@ -504,9 +506,10 @@ pub fn semantic_diagnostics(
             ))
         })
         .collect::<Vec<_>>();
-    // The edition isn't accurate (each diagnostics may have its own edition due to macros),
-    // but it's okay as it's only being used for error recovery.
 
+    // The edition isn't accurate (each diagnostics may have its own edition due to macros),
+
+    // but it's okay as it's only being used for error recovery.
     handle_lints(&ctx.sema, &mut lints, editioned_file_id.edition(db));
 
     res.retain(|d| d.severity != Severity::Allow);
@@ -743,8 +746,8 @@ fn cfg_attr_lint_attrs(
         NodeOrToken::Node(_) => true,
         NodeOrToken::Token(it) => !it.kind().is_trivia(),
     });
-    // Skip the condition.
 
+    // Skip the condition.
     for value in &mut iter {
         if value.as_token().is_some_and(|it| it.kind() == T![,]) {
             break;

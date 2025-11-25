@@ -16,15 +16,6 @@ Rustfmt size:  11841 bytes
  use ide_db::{
      imports::insert_use::{ImportGranularity, InsertUseConfig},
      FilePosition, MiniCore, RootDatabase, SnippetCap,
-     trigger_character: Option<char>,
- ) -> Vec<CompletionItem> {
-     let _tracing = setup_tracing();
--
-     // filter out all but one built-in type completion for smaller test outputs
-+
-     let items = get_all_items(config, ra_fixture, trigger_character);
-     items
-         .into_iter()
      let change_fixture = ChangeFixture::parse(&database, ra_fixture);
      database.enable_proc_attr_macros();
      database.apply_change(change_fixture.change);

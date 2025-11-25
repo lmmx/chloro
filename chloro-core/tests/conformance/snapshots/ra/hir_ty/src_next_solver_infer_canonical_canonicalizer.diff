@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29443 bytes
+Chloro size:   29449 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -80,26 +80,15 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
-         } else {
-             TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER
-         };
--
-         // Fast path: nothing that needs to be canonicalized.
-+
-         if !value.has_type_flags(needs_canonical_flags) {
-             return base.unchecked_map(|b| (b, value));
-         }
-                 .collect();
-         }
          let out_value = value.fold_with(&mut canonicalizer);
--
+ 
          // Once we have canonicalized `out_value`, it should not
-         // contain anything that ties it to this inference context
-         // anymore.
 +
+         // contain anything that ties it to this inference context
++
+         // anymore.
          debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
  
-         let canonical_variables =
              .max()
              .unwrap_or(UniverseIndex::ROOT);
  
@@ -125,19 +114,19 @@ Rustfmt size:  29841 bytes
  
          let var_values = &mut query_state.var_values;
  
-                 Ok(_) => {}
-             }
          }
--
+ 
          // This code is hot. `variables` and `var_values` are usually small
-         // (fewer than 8 elements ~95% of the time). They are SmallVec's to
-         // avoid allocations in those cases. We also don't use `indices` to
-         // determine if a kind has been seen before until the limit of 8 has
-         // been exceeded, to also avoid allocations for `indices`.
 +
+         // (fewer than 8 elements ~95% of the time). They are SmallVec's to
++
+         // avoid allocations in those cases. We also don't use `indices` to
++
+         // determine if a kind has been seen before until the limit of 8 has
++
+         // been exceeded, to also avoid allocations for `indices`.
          if !var_values.spilled() {
              // `var_values` is stack-allocated. `indices` isn't used yet. Do a
-             // direct linear search of `var_values`.
  
      fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
          let root_vid = self.infcx.sub_unification_table_root_var(vid);

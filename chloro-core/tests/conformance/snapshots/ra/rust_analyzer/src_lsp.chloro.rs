@@ -101,12 +101,16 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
         hasher.update(label_detail.len().to_ne_bytes());
         hasher.update(label_detail);
     }
-    // NB: do not hash edits or source range, as those may change between the time the client sends the resolve request
-    // and the time it receives it: some editors do allow changing the buffer between that, leading to ranges being different.
-    //
-    // Documentation hashing is skipped too, as it's a large blob to process,
-    // while not really making completion properties more unique as they are already.
 
+    // NB: do not hash edits or source range, as those may change between the time the client sends the resolve request
+
+    // and the time it receives it: some editors do allow changing the buffer between that, leading to ranges being different.
+
+    //
+
+    // Documentation hashing is skipped too, as it's a large blob to process,
+
+    // while not really making completion properties more unique as they are already.
     let kind_tag = item.kind.tag();
     hasher.update(kind_tag.len().to_ne_bytes());
     hasher.update(kind_tag);

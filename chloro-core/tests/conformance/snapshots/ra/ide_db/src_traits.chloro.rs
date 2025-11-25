@@ -30,9 +30,10 @@ pub fn get_missing_assoc_items(
         Some(it) => it,
         None => return vec![],
     };
-    // Names must be unique between constants and functions. However, type aliases
-    // may share the same name as a function or constant.
 
+    // Names must be unique between constants and functions. However, type aliases
+
+    // may share the same name as a function or constant.
     let mut impl_fns_consts = FxHashSet::default();
     let mut impl_type = FxHashSet::default();
     let edition = imp.module(sema.db).krate().edition(sema.db);

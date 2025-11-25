@@ -24,15 +24,6 @@ Rustfmt size:  5830 bytes
  }
  
  fn serialize_abs_pathbuf<S>(path: &AbsPathBuf, se: S) -> Result<S::Ok, S::Error>
-                 }
-             })
-             .collect();
--
-         // TODO: are we sure the extra env should be empty?
-+
-         let mut cmd = toolchain::command(command, current_dir, &FxHashMap::default());
-         cmd.args(args);
- 
  #[derive(Debug)]
  pub(crate) struct DiscoverHandle {
      _handle: CommandHandle<DiscoverProjectMessage>,

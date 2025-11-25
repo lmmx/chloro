@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12833 bytes
+Chloro size:   12839 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -50,20 +50,6 @@ Rustfmt size:  13097 bytes
      /// Whether to expand procedural macros during name resolution.
      #[salsa::input]
      fn expand_proc_attr_macros(&self) -> bool;
-     /// Turns a MacroId into a MacroDefId, describing the macro's definition post name resolution.
-     #[salsa::invoke(macro_def)]
-     fn macro_def(&self, m: MacroId) -> MacroDefId;
--
-     // region:data
- 
-     #[salsa::tracked]
-         &self,
-         e: TypeAliasId,
-     ) -> (Arc<TypeAliasSignature>, Arc<ExpressionStoreSourceMap>);
--
-     // endregion:data
- 
-     #[salsa::invoke(Body::body_with_source_map_query)]
      fn generic_params_and_store_and_source_map(
          &self,
          def: GenericDefId,
@@ -72,8 +58,8 @@ Rustfmt size:  13097 bytes
 -        Arc<ExpressionStore>,
 -        Arc<ExpressionStoreSourceMap>,
 -    );
--
 +    ) -> (Arc<GenericParams>, Arc<ExpressionStore>, Arc<ExpressionStoreSourceMap>);
+ 
      // region:attrs
  
      #[salsa::invoke(Attrs::fields_attrs_query)]
@@ -90,23 +76,6 @@ Rustfmt size:  13097 bytes
      #[salsa::invoke_interned(AttrsWithOwner::attrs_query)]
      fn attrs(&self, def: AttrDefId) -> Attrs;
  
-     #[salsa::transparent]
-     #[salsa::invoke(lang_item::lang_attr)]
-     fn lang_attr(&self, def: AttrDefId) -> Option<LangItem>;
--
-     // endregion:attrs
- 
-     #[salsa::invoke(ImportMap::import_map_query)]
-     fn import_map(&self, krate: Crate) -> Arc<ImportMap>;
--
-     // region:visibilities
- 
-     #[salsa::invoke(visibility::field_visibilities_query)]
- 
-     #[salsa::invoke(visibility::assoc_visibility_query)]
-     fn assoc_visibility(&self, def: AssocItemId) -> Visibility;
--
-     // endregion:visibilities
  
      #[salsa::invoke(crate::lang_item::notable_traits_in_deps)]
      fn notable_traits_in_deps(&self, krate: Crate) -> Arc<[Arc<[TraitId]>]>;

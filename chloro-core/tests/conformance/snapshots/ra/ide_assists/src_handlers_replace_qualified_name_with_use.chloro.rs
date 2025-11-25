@@ -24,8 +24,8 @@ pub(crate) fn replace_qualified_name_with_use(
     if original_path.qualifier().is_none() {
         original_path = original_path.parent_path()?;
     }
-    // only offer replacement for non assoc items
 
+    // only offer replacement for non assoc items
     match ctx.sema.resolve_path(&original_path)? {
         hir::PathResolution::Def(def) if def.as_assoc_item(ctx.sema.db).is_none() => (),
         _ => return None,
@@ -115,8 +115,8 @@ fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
     if !path_eq_no_generics(path.clone(), target) {
         return None;
     }
-    // Shorten `path`, leaving only its last segment.
 
+    // Shorten `path`, leaving only its last segment.
     if let Some(parent) = path.qualifier() {
         ted::remove(parent.syntax());
     }

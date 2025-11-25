@@ -128,7 +128,6 @@ fn should_hide_param_name_hint(
     //   parameter is a prefix/suffix of argument with _ splitting it off
     // - param starts with `ra_fixture`
     // - param is a well known name in a unary function
-
     let param_name = param_name.trim_matches('_');
     if param_name.is_empty() {
         return true;

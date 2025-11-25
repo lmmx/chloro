@@ -131,15 +131,6 @@ Rustfmt size:  11348 bytes
          // tuple variant
          check_edit_with_config(
              conf.clone(),
- }
- "#,
-         );
--
-         // record variant
-+
-         check_edit_with_config(
-             conf,
-             "Variant{}",
  "#,
          )
      }

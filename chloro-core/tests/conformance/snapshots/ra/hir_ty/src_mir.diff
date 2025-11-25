@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48416 bytes
+Chloro size:   48418 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -138,17 +138,15 @@ Rustfmt size:  50490 bytes
      OpaqueCast(T),
  }
  
-     ) -> Ty<'db> {
-         let interner = infcx.interner;
          let db = interner.db;
--
+ 
          // we only bail on mir building when there are type mismatches
-         // but error types may pop up resulting in us still attempting to build the mir
-         // so just propagate the error type
 +
+         // but error types may pop up resulting in us still attempting to build the mir
++
+         // so just propagate the error type
          if base.is_ty_error() {
              return Ty::new_error(interner, ErrorGuaranteed);
-         }
                  }
              },
              ProjectionElem::Field(Either::Right(f)) => match base.kind() {

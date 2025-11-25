@@ -319,6 +319,49 @@ fn f() { foo }
     );
 }
 
+// Would be nice if this was the case, but as attribute inputs are stored in the item tree, this is
+
+// not currently the case.
+
+// #[test]
+
+// fn typing_inside_an_attribute_arg_should_not_invalidate_def_map() {
+
+//     check_def_map_is_not_recomputed(
+
+//         r"
+
+// //- proc_macros: identity
+
+// //- /lib.rs
+
+// mod foo;
+
+// //- /foo/mod.rs
+
+// pub mod bar;
+
+// //- /foo/bar.rs
+
+// $0
+
+// #[proc_macros::identity]
+
+// fn f() {}
+
+// ",
+
+//         r"
+
+// #[proc_macros::identity(foo)]
+
+// fn f() {}
+
+// ",
+
+//     );
+
+// }
 #[test]
 fn typing_inside_macro_heavy_file_should_not_invalidate_def_map() {
     check_def_map_is_not_recomputed(
@@ -429,6 +472,55 @@ pub struct S {}
     );
 }
 
+// Would be nice if this was the case, but as attribute inputs are stored in the item tree, this is
+
+// not currently the case.
+
+// #[test]
+
+// fn typing_inside_a_derive_should_not_invalidate_def_map() {
+
+//     check_def_map_is_not_recomputed(
+
+//         r"
+
+// //- proc_macros: derive_identity
+
+// //- minicore:derive
+
+// //- /lib.rs
+
+// mod foo;
+
+// //- /foo/mod.rs
+
+// pub mod bar;
+
+// //- /foo/bar.rs
+
+// $0
+
+// #[derive(proc_macros::DeriveIdentity)]
+
+// #[allow()]
+
+// struct S;
+
+// ",
+
+//         r"
+
+// #[derive(proc_macros::DeriveIdentity)]
+
+// #[allow(dead_code)]
+
+// struct S;
+
+// ",
+
+//     );
+
+// }
 #[test]
 fn typing_inside_a_function_should_not_invalidate_item_expansions() {
     let (mut db, pos) = TestDB::with_position(

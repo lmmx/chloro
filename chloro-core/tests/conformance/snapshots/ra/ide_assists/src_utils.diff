@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44118 bytes
+Chloro size:   44475 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -70,10 +70,9 @@ Rustfmt size:  45288 bytes
  pub(crate) fn invert_boolean_expression_legacy(expr: ast::Expr) -> ast::Expr {
      invert_special_case_legacy(&expr).unwrap_or_else(|| make::expr_prefix(T![!], expr).into())
  }
-     }
  }
  
--// Uses a syntax-driven approach to find any impl blocks for the struct that
+ // Uses a syntax-driven approach to find any impl blocks for the struct that
 -// exist within the module/file
 -//
 -// Returns `None` if we've found an existing fn
@@ -81,7 +80,20 @@ Rustfmt size:  45288 bytes
 -// FIXME: change the new fn checking to a more semantic approach when that's more
 -// viable (e.g. we process proc macros, etc)
 -// FIXME: this partially overlaps with `find_impl_block_*`
--
+ 
++// exist within the module/file
++
++//
++
++// Returns `None` if we've found an existing fn
++
++//
++
++// FIXME: change the new fn checking to a more semantic approach when that's more
++
++// viable (e.g. we process proc macros, etc)
++
++// FIXME: this partially overlaps with `find_impl_block_*`
  /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
  /// where it takes a list of function names and check if they exist inside impl_, if
  /// even one match is found, it returns None.
@@ -114,28 +126,13 @@ Rustfmt size:  45288 bytes
  pub(crate) fn generate_trait_impl_text_intransitive(
      adt: &ast::Adt,
      trait_text: &str,
- 
-         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
      });
--
-     // FIXME: use syntax::make & mutable AST apis instead
-     // `trait_text` and `code` can't be opaque blobs of text
--    let mut buf = String::with_capacity(code.len());
  
-+    let mut buf = String::with_capacity(code.len());
-     // Copy any cfg attrs from the original adt
+     // FIXME: use syntax::make & mutable AST apis instead
 +
-     buf.push_str("\n\n");
-     let cfg_attrs = adt
-         .attrs()
-         .filter(|attr| attr.as_simple_call().map(|(name, _arg)| name == "cfg").unwrap_or(false));
-     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
--
-     // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
-+
-     buf.push_str("impl");
-     if let Some(generic_params) = &generic_params {
-         format_to!(buf, "{generic_params}");
+     // `trait_text` and `code` can't be opaque blobs of text
+     let mut buf = String::with_capacity(code.len());
+ 
  /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
  ///
  /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.

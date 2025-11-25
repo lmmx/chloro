@@ -144,6 +144,25 @@ impl Drop for DropScopeToken {
     }
 }
 
+// Uncomment this to make `DropScopeToken` a drop bomb. Unfortunately we can't do this in release, since
+
+// in cases that mir lowering fails, we don't handle (and don't need to handle) drop scopes so it will be
+
+// actually reached. `pop_drop_scope_assert_finished` will also detect this case, but doesn't show useful
+
+// stack trace.
+
+//
+
+// impl Drop for DropScopeToken {
+
+//     fn drop(&mut self) {
+
+//         never!("Drop scope doesn't popped");
+
+//     }
+
+// }
 impl MirLowerError<'_> {
     pub fn pretty_print(
         &self,

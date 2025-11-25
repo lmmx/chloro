@@ -81,6 +81,11 @@ pub(crate) struct CargoTestHandle {
     _handle: CommandHandle<CargoTestMessage>,
 }
 
+// Example of a cargo test command:
+
+//
+
+// cargo test --package my-package --bin my_bin --no-fail-fast -- module::func -Z unstable-options --format=json
 #[derive(Debug, Clone)]
 pub(crate) struct TestTarget {
     pub package: String,
@@ -114,8 +119,8 @@ impl CargoTestHandle {
         } else {
             tracing::warn!("Running test for unknown cargo target {:?}", test_target.kind);
         }
-        // --no-fail-fast is needed to ensure that all requested tests will run
 
+        // --no-fail-fast is needed to ensure that all requested tests will run
         cmd.arg("--no-fail-fast");
         cmd.arg("--manifest-path");
         cmd.arg(root.join("Cargo.toml"));

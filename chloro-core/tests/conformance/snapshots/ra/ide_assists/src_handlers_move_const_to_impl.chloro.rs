@@ -7,6 +7,12 @@ use syntax::{
 
 use crate::assist_context::{AssistContext, Assists};
 
+
+// NOTE: Code may break if the self type implements a trait that has associated const with the same
+
+// name, but it's pretty expensive to check that (`hir::Impl::all_for_type()`) and we assume that's
+
+// pretty rare case.
 pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let db = ctx.db();
     let const_: ast::Const = ctx.find_node_at_offset()?;
@@ -18,10 +24,12 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     }
 
     let parent_fn = const_.syntax().ancestors().find_map(ast::Fn::cast)?;
-    // NOTE: We can technically provide this assist for default methods in trait definitions, but
-    // it's somewhat complex to handle it correctly when the const's name conflicts with
-    // supertrait's item. We may want to consider implementing it in the future.
 
+    // NOTE: We can technically provide this assist for default methods in trait definitions, but
+
+    // it's somewhat complex to handle it correctly when the const's name conflicts with
+
+    // supertrait's item. We may want to consider implementing it in the future.
     let AssocItemContainer::Impl(impl_) =
         ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
     else {

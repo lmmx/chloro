@@ -30,12 +30,6 @@ Rustfmt size:  31474 bytes
  #[cfg(target_pointer_width = "64")]
  #[test]
  fn test_rainbow_highlighting() {
- }
- "#,
-     );
--
-     // The "x"
-+
      let highlights = &analysis
          .highlight_range(
              HL_CONFIG,

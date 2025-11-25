@@ -739,9 +739,10 @@ impl GlobalState {
             None,
             None,
         );
-        // crate graph construction relies on these paths, record them so when one of them gets
-        // deleted or created we trigger a reconstruction of the crate graph
 
+        // crate graph construction relies on these paths, record them so when one of them gets
+
+        // deleted or created we trigger a reconstruction of the crate graph
         self.crate_graph_file_dependencies.clear();
         self.detached_files = self
             .workspaces
@@ -974,8 +975,8 @@ pub(crate) fn should_refresh_for_change(
     if change_kind == ChangeKind::Modify {
         return false;
     }
-    // .cargo/config{.toml}
 
+    // .cargo/config{.toml}
     if path.extension().unwrap_or_default() != "rs" {
         let is_cargo_config = matches!(file_name, "config.toml" | "config")
             && path.parent().map(|parent| parent.as_str().ends_with(".cargo")).unwrap_or(false);

@@ -31,14 +31,15 @@ pub fn find_path(
     mut cfg: FindPathConfig,
 ) -> Option<ModPath> {
     let _p = tracing::info_span!("find_path").entered();
-    // - if the item is a builtin, it's in scope
 
+    // - if the item is a builtin, it's in scope
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
         return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
     }
-    // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
-    // default to plain paths.
 
+    // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
+
+    // default to plain paths.
     let item_module = item.module(db)?;
     if item_module.is_within_block() {
         prefix_kind = PrefixKind::Plain;
@@ -127,8 +128,8 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
             return Some(ModPath::from_segments(ctx.prefix.path_kind(), iter::once(scope_name)));
         }
     }
-    // - if the item is in the prelude, return the name from there
 
+    // - if the item is in the prelude, return the name from there
     if let Some(value) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(value.path);
     }
@@ -225,8 +226,8 @@ fn find_path_for_module(
             ));
         }
     }
-    // - if the module can be referenced as self, super or crate, do that
 
+    // - if the module can be referenced as self, super or crate, do that
     if let Some(kind) = is_kw_kind_relative_to_from(ctx.from_def_map, module_id, ctx.from)
         && (ctx.prefix != PrefixKind::ByCrate || kind == PathKind::Crate)
     {
@@ -237,8 +238,8 @@ fn find_path_for_module(
             prefer_due_to_prelude: false,
         });
     }
-    // - if the module is in the prelude, return it by that path
 
+    // - if the module is in the prelude, return it by that path
     let item = ItemInNs::Types(module_id.into());
     if let Some(choice) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(choice);
@@ -282,8 +283,8 @@ fn find_in_prelude(
     if !vis.is_visible_from(db, from) {
         return None;
     }
-    // Check if the name is in current scope and it points to the same def.
 
+    // Check if the name is in current scope and it points to the same def.
     let found_and_same_def =
         local_def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
             let per_ns = def_map[local_id].scope.get(name);
@@ -570,12 +571,16 @@ fn find_local_import_locations(
     mut cb: impl FnMut(&mut FxHashSet<(ItemInNs, ModuleId)>, &Name, ModuleId),
 ) {
     let _p = tracing::info_span!("find_local_import_locations").entered();
-    // `from` can import anything below `from` with visibility of at least `from`, and anything
-    // above `from` with any visibility. That means we do not need to descend into private siblings
-    // of `from` (and similar).
-    // Compute the initial worklist. We start with all direct child modules of `from` as well as all
-    // of its (recursive) parent modules.
 
+    // `from` can import anything below `from` with visibility of at least `from`, and anything
+
+    // above `from` with any visibility. That means we do not need to descend into private siblings
+
+    // of `from` (and similar).
+
+    // Compute the initial worklist. We start with all direct child modules of `from` as well as all
+
+    // of its (recursive) parent modules.
     let mut worklist = def_map[from.local_id]
         .children
         .values()
@@ -1447,8 +1452,8 @@ pub mod fmt {
                 BySelf (imports ✖): core::fmt::Error
             "#]],
         );
-        // Should also work (on a best-effort basis) if `no_std` is conditional.
 
+        // Should also work (on a best-effort basis) if `no_std` is conditional.
         check_found_path(
             r#"
 //- /main.rs crate:main deps:core,std

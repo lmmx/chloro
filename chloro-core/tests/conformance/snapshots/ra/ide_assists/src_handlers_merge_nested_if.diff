@@ -31,24 +31,6 @@ Rustfmt size:  7038 bytes
  pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let if_keyword = ctx.find_token_syntax_at_offset(T![if])?;
      let expr = ast::IfExpr::cast(if_keyword.parent()?)?;
-     if !cursor_in_range {
-         return None;
-     }
--
-     //should not apply to if with else branch.
-+
-     if expr.else_branch().is_some() {
-         return None;
-     }
-     }
- 
-     let cond_range = cond.syntax().text_range();
--
-     //check if the then branch is a nested if
-+
-     let then_branch = expr.then_branch()?;
-     let stmt = then_branch.stmt_list()?;
-     if stmt.statements().count() != 0 {
      let nested_if_then_branch = nested_if_to_merge.then_branch()?;
      let then_branch_range = then_branch.syntax().text_range();
  

@@ -46,15 +46,6 @@ Rustfmt size:  20506 bytes
  /// How imports should be grouped into use statements.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum ImportGranularity {
-     {
-         ted::insert(ted::Position::first_child_of(use_item.syntax()), attr);
-     }
--
-     // merge into existing imports if possible
-+
-     if let Some(mb) = mb {
-         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
-         for existing_use in
  
  #[derive(Eq, PartialEq, PartialOrd, Ord)]
  enum ImportGroup {

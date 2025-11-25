@@ -881,8 +881,8 @@ fn main() {
 }
 "#,
         );
-        // Fixed
 
+        // Fixed
         check_diagnostics(
             r#"
 //- minicore: sized
@@ -932,8 +932,8 @@ fn main() {
 }
 "#,
         );
-        // Fixed
 
+        // Fixed
         check_diagnostics(
             r#"
 //- minicore: sized

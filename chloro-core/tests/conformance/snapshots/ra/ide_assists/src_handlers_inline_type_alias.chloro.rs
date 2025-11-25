@@ -32,8 +32,8 @@ pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>)
     if !usages.at_least_one() {
         return None;
     }
-    // until this is ok
 
+    // until this is ok
     acc.add(
         AssistId::refactor_inline("inline_type_alias_uses"),
         "Inline type alias into all uses",
@@ -214,9 +214,10 @@ impl ConstAndTypeMap {
             cov_mark::hit!(too_many_generic_args);
             return None;
         }
-        // Any declaration generics that don't have a default value must have one
-        // provided by the instance.
 
+        // Any declaration generics that don't have a default value must have one
+
+        // provided by the instance.
         for (i, declaration_generic) in alias_generics.iter().enumerate() {
             let key = declaration_generic.replacement_key()?;
 
@@ -315,11 +316,14 @@ fn create_replacement(
 
 fn get_type_alias(ctx: &AssistContext<'_>, path: &ast::PathType) -> Option<ast::TypeAlias> {
     let resolved_path = ctx.sema.resolve_path(&path.path()?)?;
-    // We need the generics in the correct order to be able to map any provided
-    // instance generics to declaration generics. The `hir::TypeAlias` doesn't
-    // keep the order, so we must get the `ast::TypeAlias` from the hir
-    // definition.
 
+    // We need the generics in the correct order to be able to map any provided
+
+    // instance generics to declaration generics. The `hir::TypeAlias` doesn't
+
+    // keep the order, so we must get the `ast::TypeAlias` from the hir
+
+    // definition.
     if let PathResolution::Def(hir::ModuleDef::TypeAlias(ta)) = resolved_path {
         Some(ctx.sema.source(ta)?.value)
     } else {
@@ -379,9 +383,10 @@ fn generic_args_to_const_and_type_generics(
     generics: &Option<ast::GenericArgList>,
 ) -> Vec<ConstOrTypeGeneric> {
     let mut others = Vec::new();
-    // It's fine for there to be no instance generics because the declaration
-    // might have default values or they might be inferred.
 
+    // It's fine for there to be no instance generics because the declaration
+
+    // might have default values or they might be inferred.
     if let Some(generics) = generics {
         for arg in generics.generic_args() {
             match arg {

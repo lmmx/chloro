@@ -96,8 +96,8 @@ fn render(
     if snippet_cap.is_some() {
         rendered.literal.push_str("$0");
     }
-    // only show name in label if not adding parens
 
+    // only show name in label if not adding parens
     if !should_add_parens {
         kind = StructKind::Unit;
     }

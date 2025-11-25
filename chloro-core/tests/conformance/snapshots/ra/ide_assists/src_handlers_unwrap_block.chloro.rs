@@ -112,9 +112,10 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
     // (`unsafe`, `async` etc.).
     let after_open_brace_index = expr_str.find('{').map_or(0, |it| it + 1);
     let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);
-    // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
-    // then continue to remove trailing whitespace.
 
+    // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
+
+    // then continue to remove trailing whitespace.
     let expr_str = expr_str.trim_end_matches(whitespace_pat);
     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
 

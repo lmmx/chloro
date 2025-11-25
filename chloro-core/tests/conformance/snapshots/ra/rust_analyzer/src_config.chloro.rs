@@ -39,13 +39,6 @@ use triomphe::Arc;
 use vfs::{AbsPath, AbsPathBuf, VfsPath};
 use _config_data as config_data;
 use _default_str as default_str;
-// Conventions for configuration keys to preserve maximal extendability without breakage:
-//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
-//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
-//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
-//  - Don't use abbreviations unless really necessary
-//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
-// Deserialization definitions
 use _default_val as default_val;
 use _impl_for_config_data as impl_for_config_data;
 
@@ -58,6 +51,17 @@ use crate::{
 
 type FxIndexMap<K, V> = indexmap::IndexMap<K, V, rustc_hash::FxBuildHasher>;
 
+// Conventions for configuration keys to preserve maximal extendability without breakage:
+
+//  - Toggles (be it binary true/false or with more options in-between) should almost always suffix as `_enable`
+
+//    This has the benefit of namespaces being extensible, and if the suffix doesn't fit later it can be changed without breakage.
+
+//  - In general be wary of using the namespace of something verbatim, it prevents us from adding subkeys in the future
+
+//  - Don't use abbreviations unless really necessary
+
+//  - foo_command = overrides the subcommand, foo_overrideCommand allows full overwriting, extra args only applies for foo_command
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum MaxSubstitutionLength {
@@ -2241,6 +2245,7 @@ impl Config {
     }
 }
 
+// Deserialization definitions
 macro_rules! create_bool_or_string_serde {
     ($ident:ident<$bool:literal, $string:literal>) => {
         mod $ident {
@@ -3632,10 +3637,12 @@ mod tests {
             .trim_end()
             .to_owned();
         schema.push_str(",\n");
-        // Transform the asciidoc form link to markdown style.
-        //
-        // https://link[text] => [text](https://link)
 
+        // Transform the asciidoc form link to markdown style.
+
+        //
+
+        // https://link[text] => [text](https://link)
         let url_matches = schema.match_indices("https://");
         let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
         url_offsets.reverse();

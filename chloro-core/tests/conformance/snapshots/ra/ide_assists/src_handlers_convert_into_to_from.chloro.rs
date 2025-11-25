@@ -3,6 +3,8 @@ use syntax::ast::{self, AstNode, HasGenericArgs, HasName};
 
 use crate::{AssistContext, AssistId, Assists};
 
+
+// FIXME: this should be a diagnostic
 pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let src_type = impl_.self_ty()?;

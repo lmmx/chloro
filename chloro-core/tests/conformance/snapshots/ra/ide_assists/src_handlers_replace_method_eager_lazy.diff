@@ -86,15 +86,6 @@ Rustfmt size:  7319 bytes
  pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
      let scope = ctx.sema.scope(call.syntax())?;
-     let (_, receiver_ty) = callable.receiver_param(ctx.sema.db)?;
-     let n_params = callable.n_params() + 1;
-     let params = callable.params();
--
-     // FIXME: Check that the arg is of the form `() -> T`
-+
-     if !params.first()?.ty().impls_fnonce(ctx.sema.db) {
-         return None;
-     }
  fn into_call(param: &Expr) -> Expr {
      (|| {
          if let ast::Expr::ClosureExpr(closure) = param {

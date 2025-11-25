@@ -13,12 +13,3 @@ Rustfmt size:  10574 bytes
  use expect_test::expect;
  
  use crate::tests::{check, check_edit, check_with_base_items};
-             kw unsafe
-         "#]],
-     );
--
-     // Should suggest `fn`, `static`, `safe`, `unsafe`
-+
-     check_with_base_items(
-         r#"unsafe extern { $0 }"#,
-         expect![[r#"

@@ -508,12 +508,16 @@ impl GlobalState {
                 self.config = Arc::new(config);
             }
         }
-        // FIXME: `workspace_structure_change` is computed from `should_refresh_for_change` which is
-        // path syntax based. That is not sufficient for all cases so we should lift that check out
-        // into a `QueuedTask`, see `handle_did_save_text_document`.
-        // Or maybe instead of replacing that check, kick off a semantic one if the syntactic one
-        // didn't find anything (to make up for the lack of precision).
 
+        // FIXME: `workspace_structure_change` is computed from `should_refresh_for_change` which is
+
+        // path syntax based. That is not sufficient for all cases so we should lift that check out
+
+        // into a `QueuedTask`, see `handle_did_save_text_document`.
+
+        // Or maybe instead of replacing that check, kick off a semantic one if the syntactic one
+
+        // didn't find anything (to make up for the lack of precision).
         {
             if !matches!(&workspace_structure_change, Some((.., true))) {
                 _ = self

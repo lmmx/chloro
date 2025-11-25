@@ -150,8 +150,8 @@ mod tests {
             remove_parentheses,
             r#"fn f() { let _ = $0(S{}) else { return }; }"#,
         );
-        // logic operators can't directly appear in the let-else
 
+        // logic operators can't directly appear in the let-else
         check_assist_not_applicable(
             remove_parentheses,
             r#"fn f() { let _ = $0(false || false) else { return }; }"#,
@@ -227,8 +227,8 @@ mod tests {
             r#"fn f<F>(call: F, arg: usize) where F: Fn(usize) { $0(call)(arg); }"#,
             r#"fn f<F>(call: F, arg: usize) where F: Fn(usize) { call(arg); }"#,
         );
-        // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
 
+        // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
         check_assist_not_applicable(
             remove_parentheses,
             r#"

@@ -481,6 +481,21 @@ fn check_pat_variant_nested_or_literal_with_depth(
     }
 }
 
+// Uses a syntax-driven approach to find any impl blocks for the struct that
+
+// exist within the module/file
+
+//
+
+// Returns `None` if we've found an existing fn
+
+//
+
+// FIXME: change the new fn checking to a more semantic approach when that's more
+
+// viable (e.g. we process proc macros, etc)
+
+// FIXME: this partially overlaps with `find_impl_block_*`
 /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
 /// where it takes a list of function names and check if they exist inside impl_, if
 /// even one match is found, it returns None.
@@ -616,19 +631,20 @@ fn generate_impl_text_inner(
 
         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
     });
+
     // FIXME: use syntax::make & mutable AST apis instead
+
     // `trait_text` and `code` can't be opaque blobs of text
-
     let mut buf = String::with_capacity(code.len());
-    // Copy any cfg attrs from the original adt
 
+    // Copy any cfg attrs from the original adt
     buf.push_str("\n\n");
     let cfg_attrs = adt
         .attrs()
         .filter(|attr| attr.as_simple_call().map(|(name, _arg)| name == "cfg").unwrap_or(false));
     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
-    // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
 
+    // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
     buf.push_str("impl");
     if let Some(generic_params) = &generic_params {
         format_to!(buf, "{generic_params}");

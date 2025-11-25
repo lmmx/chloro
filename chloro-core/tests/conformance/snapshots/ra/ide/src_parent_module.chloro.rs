@@ -11,14 +11,32 @@ use syntax::{
 
 use crate::NavigationTarget;
 
+
+// Feature: Parent Module
+
+//
+
+// Navigates to the parent module of the current module.
+
+//
+
+// | Editor  | Action Name |
+
+// |---------|-------------|
+
+// | VS Code | **rust-analyzer: Locate parent module** |
+
+//
+
+// ![Parent Module](https://user-images.githubusercontent.com/48062697/113065580-04c21800-91b1-11eb-9a32-00086161c0bd.gif)
 /// This returns `Vec` because a module may be included from several places.
 pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
 
     let mut module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
-    // If cursor is literally on `mod foo`, go to the grandpa.
 
+    // If cursor is literally on `mod foo`, go to the grandpa.
     if let Some(m) = &module
         && !m
             .item_list()

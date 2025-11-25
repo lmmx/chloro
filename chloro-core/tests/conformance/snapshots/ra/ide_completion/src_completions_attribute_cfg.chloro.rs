@@ -13,8 +13,8 @@ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
         completion.insert_text(format!(r#""{item}""#));
         acc.add(completion.build(ctx.db));
     };
-    // FIXME: Move this into context/analysis.rs
 
+    // FIXME: Move this into context/analysis.rs
     let previous = ctx
         .original_token
         .prev_token()

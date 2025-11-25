@@ -2,38 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30737 bytes
-Chloro size:   30736 bytes
+Chloro size:   30739 bytes
 Rustfmt size:  31432 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         let data = db.function_signature(self.id);
-         let container = self.as_assoc_item(db).map(|it| it.container(db));
-         let mut module = self.module(db);
--
-         // Write container (trait or impl)
-+
-         let container_params = match container {
-             Some(AssocItemContainer::Trait(trait_)) => {
-                 let (params, params_store) = f.db.generic_params_and_store(trait_.id.into());
-             }
-             None => None,
-         };
--
-         // Write signature of the function
--
-         // Block-local impls are "hoisted" to the nearest (non-block) module.
-+
-         if let Some(AssocItemContainer::Impl(_)) = container {
-             module = module.nearest_non_block_module(db);
-         }
-             first = false;
-             skip_self = 1;
-         }
--
+ 
          // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
-+
          let body = db.body(self.id.into());
 -        for (type_ref, param) in data
 -            .params
@@ -45,26 +21,15 @@ Rustfmt size:  31432 bytes
              if !first {
                  f.write_str(", ")?;
              } else {
-         }
- 
          f.write_char(')')?;
--
+ 
          // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
-         // Use ugly pattern match to strip the Future trait.
-         // Better way?
 +
+         // Use ugly pattern match to strip the Future trait.
++
+         // Better way?
          let ret_type = if !data.is_async() {
              data.ret_type
-         } else if let Some(ret_type) = data.ret_type {
-                 }
-             }
-         }
--
-         // Write where clauses
-+
-         let has_written_where = write_where_clause(GenericDefId::FunctionId(self.id), f)?;
-         if let Some((container_params, container_params_store)) = container_params {
-             if !has_written_where {
                  let mut it = variant_data.fields().iter().peekable();
  
                  while let Some((id, _)) = it.next() {
@@ -149,15 +114,6 @@ Rustfmt size:  31432 bytes
          && params
              .iter_type_or_consts()
              .filter_map(|it| it.1.type_param())
-     f: &mut HirFormatter<'_, 'db>,
- ) -> Result<(), HirDisplayError> {
-     use WherePredicate::*;
--
-     // unnamed type targets are displayed inline with the argument itself, e.g. `f: impl Y`.
-+
-     let is_unnamed_type_target = |target: TypeRefId| {
-         matches!(store[target],
-             TypeRef::TypeParam(id) if f.db.generic_params(id.parent())[id.local_id()].name().is_none()
          (TypeBound { target: t1, .. }, TypeBound { target: t2, .. }) => t1 == t2,
          (Lifetime { target: t1, .. }, Lifetime { target: t2, .. }) => t1 == t2,
          (

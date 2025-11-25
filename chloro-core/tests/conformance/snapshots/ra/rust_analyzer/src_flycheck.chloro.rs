@@ -388,8 +388,8 @@ impl FlycheckActor {
         let Some(command_receiver) = &self.command_receiver else {
             return inbox.recv().ok().map(Event::RequestStateChange);
         };
-        // Biased to give restarts a preference so check outputs don't block a restart or stop
 
+        // Biased to give restarts a preference so check outputs don't block a restart or stop
         select_biased! {
             recv(inbox) -> msg => msg.ok().map(Event::RequestStateChange),
             recv(command_receiver) -> msg => Some(Event::CheckEvent(msg.ok())),

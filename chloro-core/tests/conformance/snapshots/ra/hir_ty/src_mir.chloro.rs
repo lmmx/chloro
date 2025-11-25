@@ -166,10 +166,12 @@ impl<V, T> ProjectionElem<V, T> {
     ) -> Ty<'db> {
         let interner = infcx.interner;
         let db = interner.db;
-        // we only bail on mir building when there are type mismatches
-        // but error types may pop up resulting in us still attempting to build the mir
-        // so just propagate the error type
 
+        // we only bail on mir building when there are type mismatches
+
+        // but error types may pop up resulting in us still attempting to build the mir
+
+        // so just propagate the error type
         if base.is_ty_error() {
             return Ty::new_error(interner, ErrorGuaranteed);
         }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23115 bytes
-Chloro size:   23122 bytes
+Chloro size:   23123 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -36,97 +36,13 @@ Rustfmt size:  23115 bytes
  use self::case_conv::{to_camel_case, to_lower_snake_case, to_upper_snake_case};
  
  pub fn incorrect_case(db: &dyn HirDatabase, owner: ModuleDefId) -> Vec<IncorrectCase> {
-             cov_mark::hit!(extern_func_incorrect_case_ignored);
-             return;
          }
--
+ 
          // Check the function name.
-         // Skipped if function is an associated item of a trait implementation.
 +
+         // Skipped if function is an associated item of a trait implementation.
          if !self.is_trait_impl_container(container) {
              let data = self.db.function_signature(func);
- 
-         } else {
-             cov_mark::hit!(trait_impl_assoc_func_name_incorrect_case_ignored);
-         }
--
-         // Check the patterns inside the function body.
-+
-         self.validate_func_body(func);
-     }
- 
-                 _ => None,
-             })
-             .peekable();
--
-         // XXX: only look at source_map if we do have missing fields
-+
-         if pats_replacements.peek().is_none() {
-             return;
-         }
-             CaseType::UpperCamelCase,
-             IdentType::Structure,
-         );
--
-         // Check the field names.
-+
-         self.validate_struct_fields(struct_id);
-     }
- 
-                 )
-             })
-             .peekable();
--
-         // XXX: Only look at sources if we do have incorrect names.
-+
-         if struct_fields_replacements.peek().is_none() {
-             return;
-         }
- 
-     fn validate_enum(&mut self, enum_id: EnumId) {
-         let data = self.db.enum_signature(enum_id);
--
-         // Check the enum name.
-+
-         self.create_incorrect_case_diagnostic_for_item_name(
-             enum_id,
-             &data.name,
-             CaseType::UpperCamelCase,
-             IdentType::Enum,
-         );
--
-         // Check the variant names.
-+
-         self.validate_enum_variants(enum_id)
-     }
- 
-                 })
-             })
-             .peekable();
--
-         // XXX: only look at sources if we do have incorrect names
-+
-         if enum_variants_replacements.peek().is_none() {
-             return;
-         }
-                 )
-             })
-             .peekable();
--
-         // XXX: only look at sources if we do have incorrect names
-+
-         if variant_field_replacements.peek().is_none() {
-             return;
-         }
-             cov_mark::hit!(trait_impl_assoc_type_incorrect_case_ignored);
-             return;
-         }
--
-         // Check the type alias name.
-+
-         let data = self.db.type_alias_signature(type_alias_id);
-         self.create_incorrect_case_diagnostic_for_item_name(
-             type_alias_id,
          name: &Name,
          expected_case: CaseType,
          ident_type: IdentType,

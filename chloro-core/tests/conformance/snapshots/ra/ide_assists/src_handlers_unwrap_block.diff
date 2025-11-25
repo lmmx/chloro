@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15678 bytes
+Chloro size:   15679 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -94,16 +94,13 @@ Rustfmt size:  16309 bytes
          })
      }
  }
-     // (`unsafe`, `async` etc.).
-     let after_open_brace_index = expr_str.find('{').map_or(0, |it| it + 1);
      let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);
--
+ 
      // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
-     // then continue to remove trailing whitespace.
 +
+     // then continue to remove trailing whitespace.
      let expr_str = expr_str.trim_end_matches(whitespace_pat);
      let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

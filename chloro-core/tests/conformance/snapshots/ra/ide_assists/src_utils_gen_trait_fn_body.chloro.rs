@@ -434,9 +434,10 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
     fn gen_tuple_field(field_name: &str) -> ast::Pat {
         ast::Pat::IdentPat(make::ident_pat(false, false, make::name(field_name)))
     }
-    // Check that self type and rhs type match. We don't know how to implement the method
-    // automatically otherwise.
 
+    // Check that self type and rhs type match. We don't know how to implement the method
+
+    // automatically otherwise.
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();
         let rhs_ty = trait_ref.get_type_argument(1)?;
@@ -623,9 +624,10 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
         let method = make::name_ref("partial_cmp");
         make::expr_method_call(lhs, method, make::arg_list(Some(rhs))).into()
     }
-    // Check that self type and rhs type match. We don't know how to implement the method
-    // automatically otherwise.
 
+    // Check that self type and rhs type match. We don't know how to implement the method
+
+    // automatically otherwise.
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();
         let rhs_ty = trait_ref.get_type_argument(1)?;

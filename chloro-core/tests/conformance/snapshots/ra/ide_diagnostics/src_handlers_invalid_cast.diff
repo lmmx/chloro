@@ -233,15 +233,6 @@ Rustfmt size:  27895 bytes
      #[test]
      fn rustc_issue_84213() {
          check_diagnostics(
- }
- "#,
-         );
--
-         // Fixed
-+
-         check_diagnostics(
-             r#"
- //- minicore: sized
  "#,
          );
      }
@@ -256,15 +247,6 @@ Rustfmt size:  27895 bytes
      #[test]
      fn rustc_issue_89497() {
          check_diagnostics(
- }
- "#,
-         );
--
-         // Fixed
-+
-         check_diagnostics(
-             r#"
- //- minicore: sized
  "#,
          );
      }

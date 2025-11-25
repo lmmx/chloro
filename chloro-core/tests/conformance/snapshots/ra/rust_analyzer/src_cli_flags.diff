@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11613 bytes
-Chloro size:   7966 bytes
+Chloro size:   7983 bytes
 Rustfmt size:  11613 bytes
 
 ✗ Outputs DIFFER
@@ -337,5 +337,7 @@ Rustfmt size:  11613 bytes
  }
 -// generated end
  
++// generated end
  #[derive(Debug, PartialEq, Eq)]
  pub enum OutputFormat {
+     Csv,

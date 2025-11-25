@@ -236,8 +236,8 @@ impl Analysis {
         // FIXME: cfg options
         // Default to enable test for single file.
         let mut cfg_options = CfgOptions::default();
-        // FIXME: This is less than ideal
 
+        // FIXME: This is less than ideal
         let proc_macro_cwd = Arc::new(
             TryFrom::try_from(&*std::env::current_dir().unwrap().as_path().to_string_lossy())
                 .unwrap(),

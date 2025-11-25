@@ -111,7 +111,6 @@ fn main() {
 #[test]
 fn test_winapi_struct() {
     // from https://github.com/retep998/winapi-rs/blob/a7ef2bca086aae76cf6c4ce4c2552988ed9798ad/src/macros.rs#L366
-
     check(
         r#"
 macro_rules! STRUCT {

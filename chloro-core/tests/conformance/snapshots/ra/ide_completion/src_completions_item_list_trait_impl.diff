@@ -42,15 +42,6 @@ Rustfmt size:  36630 bytes
      #[test]
      fn no_completion_inside_fn() {
          check_no_kw(
- ",
-             expect![[""]],
-         );
--
-         // https://github.com/rust-lang/rust-analyzer/pull/5976#issuecomment-692332191
-+
-         check_no_kw(
-             r"
- trait Test { fn test(); fn test2(); }
              "#]],
          );
      }
@@ -114,15 +105,6 @@ Rustfmt size:  36630 bytes
      #[test]
      fn complete_without_name() {
          let test = |completion: &str, hint: &str, completed: &str, next_sibling: &str| {
-                 ),
-             )
-         };
--
-         // Enumerate some possible next siblings.
-+
-         for next_sibling in [
-             "",
-             "fn other_fn() {}", // `const $0 fn` -> `const fn`
              test("const CONST", "const $0", "const CONST: u16 = $0;", next_sibling);
          }
      }

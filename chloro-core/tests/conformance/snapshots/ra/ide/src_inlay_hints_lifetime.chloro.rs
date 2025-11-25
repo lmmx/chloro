@@ -142,8 +142,8 @@ pub(super) fn fn_path_hints(
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
-    // FIXME: Support general path types
 
+    // FIXME: Support general path types
     let (param_list, ret_type) = func.path().as_ref().and_then(path_as_fn)?;
     let parent_for_binder = func
         .syntax()
@@ -303,8 +303,8 @@ fn hints_(
             allocated_lifetimes.push(name);
         });
     }
-    // fetch output lifetime if elision rule applies
 
+    // fetch output lifetime if elision rule applies
     let output = match potential_lt_refs.as_slice() {
         [(_, _, lifetime, _), ..] if self_param.is_some() || potential_lt_refs.len() == 1 => {
             match lifetime {
@@ -322,9 +322,10 @@ fn hints_(
     if allocated_lifetimes.is_empty() && output.is_none() {
         return None;
     }
-    // apply hints
-    // apply output if required
 
+    // apply hints
+
+    // apply output if required
     if let (Some(output_lt), Some(r)) = (&output, ret_type)
         && let Some(ty) = r.ty()
     {
@@ -368,8 +369,8 @@ fn hints_(
             acc.push(mk_lt_hint(t, lt.to_string()));
         }
     }
-    // generate generic param list things
 
+    // generate generic param list things
     match (generic_param_list, allocated_lifetimes.as_slice()) {
         (_, []) => (),
         (Some(gpl), allocated_lifetimes) => {

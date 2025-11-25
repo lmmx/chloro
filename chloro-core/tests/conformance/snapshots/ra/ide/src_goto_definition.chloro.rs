@@ -218,9 +218,10 @@ fn try_lookup_include_path(
     file_id: FileId,
 ) -> Option<NavigationTarget> {
     let file = token.file_id.macro_file()?;
-    // Check that we are in the eager argument expansion of an include macro
-    // that is we are the string input of it
 
+    // Check that we are in the eager argument expansion of an include macro
+
+    // that is we are the string input of it
     if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
         .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
     {

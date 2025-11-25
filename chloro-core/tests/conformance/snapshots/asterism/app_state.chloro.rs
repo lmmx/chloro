@@ -93,8 +93,8 @@ impl AppState {
         };
 
         let tree_nodes = Self::build_tree(&files, &sections);
-        // Find first navigable node
 
+        // Find first navigable node
         let initial_index = tree_nodes.iter().position(|n| n.navigable).unwrap_or(0);
 
         Self {
@@ -116,9 +116,10 @@ impl AppState {
 
     fn build_tree(files: &[PathBuf], sections: &[Section]) -> Vec<TreeNode> {
         let mut nodes = Vec::new();
-        // Determine if this is difftastic mode by checking if multiple sections share the same file_path
-        // (in markdown mode, each section has a unique file path or sections are from the same file)
 
+        // Determine if this is difftastic mode by checking if multiple sections share the same file_path
+
+        // (in markdown mode, each section has a unique file path or sections are from the same file)
         let mut file_section_counts: HashMap<String, usize> = HashMap::new();
         for section in sections {
             *file_section_counts
@@ -226,8 +227,8 @@ impl AppState {
     /// Rebuild tree after sections change (e.g., after save)
     pub fn rebuild_tree(&mut self) {
         self.tree_nodes = Self::build_tree(&self.files, &self.sections);
-        // Try to maintain current position by finding same section
 
+        // Try to maintain current position by finding same section
         if let Some(current_section_idx) = self.get_current_section_index() {
             if let Some(node_idx) = self
                 .tree_nodes
@@ -306,8 +307,8 @@ impl AppState {
                 .collect();
             doc_map.insert(key, lines);
         }
-        // Match edits to sections and pre-populate editor content
 
+        // Match edits to sections and pre-populate editor content
         for section in &mut self.sections {
             let key = format!(
                 "{}:{}:{}",
@@ -355,8 +356,8 @@ impl AppState {
         };
 
         let section = &self.sections[section_idx];
-        // Handle difftastic chunks differently
 
+        // Handle difftastic chunks differently
         if let Some(chunk_type) = &section.chunk_type {
             let content = match chunk_type {
                 ChunkType::Added => {
@@ -463,8 +464,8 @@ impl AppState {
 
         let mut plan = EditPlan { edits: vec![edit] };
         plan.apply()?;
-        // Reload sections
 
+        // Reload sections
         let format = MarkdownFormat;
         if let Ok(new_sections) =
             input::extract_sections(&PathBuf::from(&section.file_path), &format)
@@ -524,8 +525,8 @@ impl AppState {
     pub fn navigate_to_parent(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
         let parent_section_idx = self.sections[section_idx].parent_index?;
-        // Find tree node with this section index
 
+        // Find tree node with this section index
         self.tree_nodes
             .iter()
             .position(|n| n.section_index == Some(parent_section_idx))
@@ -546,16 +547,16 @@ impl AppState {
     #[must_use]
     pub fn navigate_to_next_descendant(&self) -> Option<usize> {
         let section_idx = self.get_current_section_index()?;
-        // First try immediate children
 
+        // First try immediate children
         if let Some(first_child) = self.sections[section_idx].children_indices.first() {
             return self
                 .tree_nodes
                 .iter()
                 .position(|n| n.section_index == Some(*first_child));
         }
-        // Otherwise find next section at deeper level
 
+        // Otherwise find next section at deeper level
         for i in (section_idx + 1)..self.sections.len() {
             if self.sections[i].level > self.sections[section_idx].level {
                 return self
@@ -674,6 +675,7 @@ impl AppState {
         let indent = self.get_indent();
         self.wrap_width.saturating_sub(indent)
     }
+
     // --- Section List Movement ---
 
     /// Start moving the current section
@@ -826,8 +828,8 @@ impl AppState {
         if self.move_state != MoveState::Moved {
             return Ok(());
         }
-        // Group sections by file
 
+        // Group sections by file
         let mut file_sections: HashMap<String, Vec<&Section>> = HashMap::new();
         for section in &self.sections {
             file_sections
@@ -835,13 +837,13 @@ impl AppState {
                 .or_default()
                 .push(section);
         }
-        // Process each file
 
+        // Process each file
         for (file_path, sections) in file_sections {
             Self::rewrite_file_sections(&file_path, &sections)?;
         }
-        // Reload sections to get updated positions
 
+        // Reload sections to get updated positions
         let format = MarkdownFormat;
         let mut new_sections = Vec::new();
         for file in &self.files {

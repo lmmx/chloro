@@ -48,15 +48,6 @@ Rustfmt size:  18486 bytes
  pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let mut bin_expr = if let Some(not) = ctx.find_token_syntax_at_offset(T![!])
          && let Some(NodeOrToken::Node(next)) = not.next_sibling_or_token()
- 
-     let op = bin_expr.op_kind()?;
-     let op_range = bin_expr.op_token()?.text_range();
--
-     // Walk up the tree while we have the same binary operator
-+
-     while let Some(parent_expr) = bin_expr.syntax().parent().and_then(ast::BinExpr::cast) {
-         match parent_expr.op_kind() {
-             Some(parent_op) if parent_op == op => {
      )
  }
  

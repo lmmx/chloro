@@ -48,10 +48,12 @@ pub(crate) fn handle_work_done_progress_cancel(
     {
         flycheck.cancel();
     }
-    // Just ignore this. It is OK to continue sending progress
-    // notifications for this token, as the client can't know when
-    // we accepted notification.
 
+    // Just ignore this. It is OK to continue sending progress
+
+    // notifications for this token, as the client can't know when
+
+    // we accepted notification.
     Ok(())
 }
 

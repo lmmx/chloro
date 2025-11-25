@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33579 bytes
+Chloro size:   33582 bytes
 Rustfmt size:  33895 bytes
 
 ✗ Outputs DIFFER
@@ -93,36 +93,22 @@ Rustfmt size:  33895 bytes
      pub snippet_cap: Option<SnippetCap>,
      pub insert_use: InsertUseConfig,
      pub prefer_no_std: bool,
-         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
- 
-     let (file_id, _) = editioned_file_id.unpack(db);
--
-     // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
-+
-     db.parse_errors(editioned_file_id)
-         .into_iter()
-         .flatten()
-     let mut res = Vec::new();
- 
      let parse = sema.parse(editioned_file_id);
--
+ 
      // FIXME: This iterates the entire file which is a rather expensive operation.
-     // We should implement these differently in some form?
-     // Salsa caching + incremental re-parse would be better here
 +
+     // We should implement these differently in some form?
++
+     // Salsa caching + incremental re-parse would be better here
      for node in parse.syntax().descendants() {
          handlers::useless_braces::useless_braces(db, &mut res, editioned_file_id, &node);
-         handlers::field_shorthand::field_shorthand(db, &mut res, editioned_file_id, &node);
-             ))
-         })
          .collect::<Vec<_>>();
--
+ 
      // The edition isn't accurate (each diagnostics may have its own edition due to macros),
-     // but it's okay as it's only being used for error recovery.
 +
+     // but it's okay as it's only being used for error recovery.
      handle_lints(&ctx.sema, &mut lints, editioned_file_id.edition(db));
  
-     res.retain(|d| d.severity != Severity::Allow);
      groups: Vec<&'static str>,
  }
  
@@ -141,12 +127,3 @@ Rustfmt size:  33895 bytes
  
  fn build_lints_map(
      lints: &'static [Lint],
-         NodeOrToken::Node(_) => true,
-         NodeOrToken::Token(it) => !it.kind().is_trivia(),
-     });
--
-     // Skip the condition.
-+
-     for value in &mut iter {
-         if value.as_token().is_some_and(|it| it.kind() == T![,]) {
-             break;

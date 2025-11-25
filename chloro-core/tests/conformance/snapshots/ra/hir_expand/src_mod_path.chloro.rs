@@ -272,11 +272,14 @@ fn convert_path(
         };
         mod_path.segments.push(name);
     }
-    // handle local_inner_macros :
-    // Basically, even in rustc it is quite hacky:
-    // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
-    // We follow what it did anyway :)
 
+    // handle local_inner_macros :
+
+    // Basically, even in rustc it is quite hacky:
+
+    // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
+
+    // We follow what it did anyway :)
     if mod_path.segments.len() == 1
         && mod_path.kind == PathKind::Plain
         && let Some(_macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)

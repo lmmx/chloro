@@ -68,8 +68,8 @@ pub(crate) fn complete_item_snippet(
     if !ctx.config.snippets.is_empty() {
         add_custom_completions(acc, ctx, cap, SnippetScope::Item);
     }
-    // Test-related snippets shouldn't be shown in blocks.
 
+    // Test-related snippets shouldn't be shown in blocks.
     if let ItemListKind::SourceFile | ItemListKind::Module = kind {
         let mut item = snippet(
             ctx,

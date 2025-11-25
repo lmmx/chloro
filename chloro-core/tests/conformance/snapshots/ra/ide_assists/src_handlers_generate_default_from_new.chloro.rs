@@ -77,8 +77,8 @@ fn generate_trait_impl_text_from_impl(
 
     let mut buf = String::with_capacity(code.len());
     buf.push_str("\n\n");
-    // `impl{generic_params} {trait_text} for {impl_.self_ty()}`
 
+    // `impl{generic_params} {trait_text} for {impl_.self_ty()}`
     buf.push_str("impl");
     if let Some(generic_params) = &generic_params {
         format_to!(buf, "{generic_params}")

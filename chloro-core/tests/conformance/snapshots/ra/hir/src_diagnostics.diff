@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   31452 bytes
+Chloro size:   31857 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -63,20 +63,34 @@ Rustfmt size:  33220 bytes
          )*
      };
  }
--// FIXME Accept something like the following in the macro call instead
--// diagnostics![
--// pub struct BreakOutsideOfLoop {
--//     pub expr: InFile<AstPtr<ast::Expr>>,
--//     pub is_break: bool,
--//     pub bad_value_break: bool,
--// }, ...
--// or more concisely
--// BreakOutsideOfLoop {
--//     expr: InFile<AstPtr<ast::Expr>>,
--//     is_break: bool,
--//     bad_value_break: bool,
--// }, ...
--// ]
++
+ // FIXME Accept something like the following in the macro call instead
++
+ // diagnostics![
++
+ // pub struct BreakOutsideOfLoop {
++
+ //     pub expr: InFile<AstPtr<ast::Expr>>,
++
+ //     pub is_break: bool,
++
+ //     pub bad_value_break: bool,
++
+ // }, ...
++
+ // or more concisely
++
+ // BreakOutsideOfLoop {
++
+ //     expr: InFile<AstPtr<ast::Expr>>,
++
+ //     is_break: bool,
++
+ //     bad_value_break: bool,
++
+ // }, ...
++
+ // ]
 -
 -diagnostics![AnyDiagnostic<'db> ->
 -    AwaitOutsideOfAsync,

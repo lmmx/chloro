@@ -228,6 +228,7 @@ impl<T> From<InRealFile<T>> for InFile<T> {
     }
 }
 
+// region:transpose impls
 impl<FileKind, T> InFileWrapper<FileKind, Option<T>> {
     pub fn transpose(self) -> Option<InFileWrapper<FileKind, T>> {
         Some(InFileWrapper::new(self.file_id, self.value?))
@@ -243,6 +244,7 @@ impl<FileKind, L, R> InFileWrapper<FileKind, Either<L, R>> {
     }
 }
 
+// endregion:transpose impls
 trait FileIdToSyntax {
     fn file_syntax(self, db: &dyn db::ExpandDatabase) -> SyntaxNode;
 }
@@ -574,8 +576,8 @@ impl<N: AstNode> InFile<N> {
             &db.expansion_span_map(file_id),
             self.value.syntax().text_range(),
         )?;
-        // FIXME: This heuristic is brittle and with the right macro may select completely unrelated nodes?
 
+        // FIXME: This heuristic is brittle and with the right macro may select completely unrelated nodes?
         let anc = db.parse(editioned_file_id).syntax_node().covering_element(range);
         let value = anc.ancestors().find_map(N::cast)?;
         Some(InRealFile::new(editioned_file_id, value))

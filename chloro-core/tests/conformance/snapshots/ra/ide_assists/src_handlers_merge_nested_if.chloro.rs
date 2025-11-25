@@ -17,8 +17,8 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     if !cursor_in_range {
         return None;
     }
-    //should not apply to if with else branch.
 
+    //should not apply to if with else branch.
     if expr.else_branch().is_some() {
         return None;
     }
@@ -30,8 +30,8 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     }
 
     let cond_range = cond.syntax().text_range();
-    //check if the then branch is a nested if
 
+    //check if the then branch is a nested if
     let then_branch = expr.then_branch()?;
     let stmt = then_branch.stmt_list()?;
     if stmt.statements().count() != 0 {

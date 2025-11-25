@@ -471,10 +471,12 @@ pub fn callable_sig_from_fn_trait<'db>(
         .associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
 
     let mut table = InferenceTable::new(db, trait_env.clone(), None);
-    // Register two obligations:
-    // - Self: FnOnce<?args_ty>
-    // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
 
+    // Register two obligations:
+
+    // - Self: FnOnce<?args_ty>
+
+    // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
     let args_ty = table.next_ty_var();
     let args = [self_ty, args_ty];
     let trait_ref = TraitRef::new(table.interner(), fn_once_trait.into(), args);

@@ -65,8 +65,8 @@ pub(super) fn collect_defs(
 ) -> (DefMap, LocalDefMap) {
     let krate = &def_map.krate.data(db);
     let cfg_options = def_map.krate.cfg_options(db);
-    // populate external prelude and dependency list
 
+    // populate external prelude and dependency list
     let mut deps =
         FxIndexMap::with_capacity_and_hasher(krate.dependencies.len(), Default::default());
     for dep in &krate.dependencies {
@@ -252,8 +252,8 @@ impl<'db> DefCollector<'db> {
         let crate_data = Arc::get_mut(&mut self.def_map.data).unwrap();
 
         let mut process = true;
-        // Process other crate-level attributes.
 
+        // Process other crate-level attributes.
         for attr in &*attrs {
             if let Some(cfg) = attr.cfg()
                 && self.cfg_options.check(&cfg) == Some(false)
@@ -376,8 +376,8 @@ impl<'db> DefCollector<'db> {
 
     fn resolution_loop(&mut self) {
         let _p = tracing::info_span!("DefCollector::resolution_loop").entered();
-        // main name resolution fixed-point loop.
 
+        // main name resolution fixed-point loop.
         let mut i = 0;
         'resolve_attr: loop {
             let _p = tracing::info_span!("resolve_macros loop").entered();
@@ -497,7 +497,6 @@ impl<'db> DefCollector<'db> {
 
     fn inject_prelude(&mut self) {
         // See compiler/rustc_builtin_macros/src/standard_library_imports.rs
-
         if self.def_map.data.no_core {
             // libcore does not get a prelude.
             return;
@@ -638,10 +637,12 @@ impl<'db> DefCollector<'db> {
     ) {
         // Textual scoping
         self.define_legacy_macro(module_id, name.clone(), macro_.into());
-        // Module scoping
-        // In Rust, `#[macro_export]` macros are unconditionally visible at the
-        // crate root, even if the parent modules is **not** visible.
 
+        // Module scoping
+
+        // In Rust, `#[macro_export]` macros are unconditionally visible at the
+
+        // crate root, even if the parent modules is **not** visible.
         if export {
             let module_id = DefMap::ROOT;
             self.def_map.modules[module_id].scope.declare(macro_.into());
@@ -768,11 +769,14 @@ impl<'db> DefCollector<'db> {
                 }
             })
             .collect();
-        // Resolve all indeterminate resolved imports again
-        // As some of the macros will expand newly import shadowing partial resolved imports
-        // FIXME: We maybe could skip this, if we handle the indeterminate imports in `resolve_imports`
-        // correctly
 
+        // Resolve all indeterminate resolved imports again
+
+        // As some of the macros will expand newly import shadowing partial resolved imports
+
+        // FIXME: We maybe could skip this, if we handle the indeterminate imports in `resolve_imports`
+
+        // correctly
         let mut indeterminate_imports = std::mem::take(&mut self.indeterminate_imports);
         indeterminate_imports.retain_mut(|(directive, partially_resolved)| {
             let partially_resolved = partially_resolved.availability();
@@ -825,8 +829,8 @@ impl<'db> DefCollector<'db> {
                 resolved_def.filter_visibility(|v| matches!(v, Visibility::Public)),
             );
         }
-        // Check whether all namespaces are resolved.
 
+        // Check whether all namespaces are resolved.
         if resolved_def.is_full() {
             PartialResolvedImport::Resolved(resolved_def)
         } else {
@@ -1613,8 +1617,8 @@ impl<'db> DefCollector<'db> {
                 MacroDirectiveKind::Attr { .. } => {}
             }
         }
-        // Emit diagnostics for all remaining unresolved imports.
 
+        // Emit diagnostics for all remaining unresolved imports.
         for import in &self.unresolved_imports {
             let &ImportDirective {
                 module_id,
@@ -1664,12 +1668,13 @@ impl ModCollector<'_, '_> {
         let krate = self.def_collector.def_map.krate;
         let is_crate_root =
             self.module_id == DefMap::ROOT && self.def_collector.def_map.block.is_none();
+
         // Note: don't assert that inserted value is fresh: it's simply not true
+
         // for macros.
-
         self.def_collector.mod_dirs.insert(self.module_id, self.mod_dir.clone());
-        // Prelude module is always considered to be `#[macro_use]`.
 
+        // Prelude module is always considered to be `#[macro_use]`.
         if let Some((prelude_module, _use)) = self.def_collector.def_map.prelude {
             // Don't insert macros from the prelude into blocks, as they can be shadowed by other macros.
             if prelude_module.krate != krate && is_crate_root {
@@ -1955,10 +1960,12 @@ impl ModCollector<'_, '_> {
                 }
             }
         };
-        // extern crates should be processed eagerly instead of deferred to resolving.
-        // `#[macro_use] extern crate` is hoisted to imports macros before collecting
-        // any other items.
 
+        // extern crates should be processed eagerly instead of deferred to resolving.
+
+        // `#[macro_use] extern crate` is hoisted to imports macros before collecting
+
+        // any other items.
         if is_crate_root {
             items
                 .iter()
@@ -2248,8 +2255,8 @@ impl ModCollector<'_, '_> {
         } else {
             false
         };
-        // Case 1: builtin macros
 
+        // Case 1: builtin macros
         let expander = if attrs.by_key(sym::rustc_builtin_macro).exists() {
             // `#[rustc_builtin_macro = "builtin_name"]` overrides the `macro_rules!` name.
             let name;
@@ -2318,8 +2325,8 @@ impl ModCollector<'_, '_> {
         let mac = &self.item_tree[ast_id];
         let attrs = self.item_tree.attrs(self.def_collector.db, krate, ast_id.upcast());
         let f_ast_id = InFile::new(self.file_id(), ast_id.upcast());
-        // Case 1: builtin macros
 
+        // Case 1: builtin macros
         let mut helpers_opt = None;
         let expander = if attrs.by_key(sym::rustc_builtin_macro).exists() {
             if let Some(expander) = find_builtin_macro(&mac.name) {
@@ -2394,10 +2401,12 @@ impl ModCollector<'_, '_> {
         let &MacroCall { ref path, expand_to, ctxt } = &self.item_tree[ast_id];
         let ast_id = AstIdWithPath::new(self.file_id(), ast_id, path.clone());
         let db = self.def_collector.db;
-        // FIXME: Immediately expanding in "Case 1" is insufficient since "Case 2" may also define
-        // new legacy macros that create textual scopes. We need a way to resolve names in textual
-        // scopes without eager expansion.
 
+        // FIXME: Immediately expanding in "Case 1" is insufficient since "Case 2" may also define
+
+        // new legacy macros that create textual scopes. We need a way to resolve names in textual
+
+        // scopes without eager expansion.
         let mut eager_callback_buffer = vec![];
         // Case 1: try to resolve macro calls with single-segment name and expand macro_rules
         if let Ok(res) = macro_call_as_call_id(
@@ -2452,8 +2461,8 @@ impl ModCollector<'_, '_> {
                 return;
             }
         }
-        // Case 2: resolve in module scope, expand during name resolution.
 
+        // Case 2: resolve in module scope, expand during name resolution.
         self.def_collector.unresolved_macros.push(MacroDirective {
             module_id: self.module_id,
             depth: self.macro_depth + 1,

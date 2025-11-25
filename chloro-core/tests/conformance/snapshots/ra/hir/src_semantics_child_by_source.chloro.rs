@@ -241,8 +241,8 @@ impl ChildBySource for GenericDefId {
             GenericParams::generic_params_and_store_and_source_map(db, *self);
         let mut toc_idx_iter = generic_params.iter_type_or_consts().map(|(idx, _)| idx);
         let lts_idx_iter = generic_params.iter_lt().map(|(idx, _)| idx);
-        // For traits the first type index is `Self`, skip it.
 
+        // For traits the first type index is `Self`, skip it.
         if let GenericDefId::TraitId(_) = *self {
             toc_idx_iter.next().unwrap(); // advance_by(1);
         }

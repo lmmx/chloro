@@ -382,6 +382,28 @@ impl VariantDef {
     }
 }
 
+/*
+/// Definition of a variant -- a struct's fields or an enum variant.
+#[derive(Debug, HashStable, TyEncodable, TyDecodable)]
+pub struct VariantDef {
+    /// `DefId` that identifies the variant itself.
+    /// If this variant belongs to a struct or union, then this is a copy of its `DefId`.
+    pub def_id: DefId,
+    /// `DefId` that identifies the variant's constructor.
+    /// If this variant is a struct variant, then this is `None`.
+    pub ctor: Option<(CtorKind, DefId)>,
+    /// Variant or struct name, maybe empty for anonymous adt (struct or union).
+    pub name: Symbol,
+    /// Discriminant of this variant.
+    pub discr: VariantDiscr,
+    /// Fields of this variant.
+    pub fields: IndexVec<FieldIdx, FieldDef>,
+    /// The error guarantees from parser, if any.
+    tainted: Option<ErrorGuaranteed>,
+    /// Flags of the variant (e.g. is field list non-exhaustive)?
+    flags: VariantFlags,
+}
+*/
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct AdtFlags {
     is_enum: bool,
@@ -1241,8 +1263,8 @@ impl<'db> Interner for DbInterner<'db> {
             return false; /* No Sized trait, can't require it! */
         };
         let sized_def_id = sized_id.into();
-        // Search for a predicate like `Self : Sized` amongst the trait bounds.
 
+        // Search for a predicate like `Self : Sized` amongst the trait bounds.
         let predicates = self.predicates_of(def_id);
         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
             ClauseKind::Trait(ref trait_pred) => {
@@ -1800,8 +1822,8 @@ impl<'db> Interner for DbInterner<'db> {
                 _ => None,
             },
         };
-        // The last field of the structure has to exist and contain type/const parameters.
 
+        // The last field of the structure has to exist and contain type/const parameters.
         let variant = def.non_enum_variant();
         let fields = variant.fields(self.db());
         let Some((tail_field, prefix_fields)) = fields.split_last() else {
@@ -1816,9 +1838,10 @@ impl<'db> Interner for DbInterner<'db> {
                 unsizing_params.insert(i);
             }
         }
-        // Ensure none of the other fields mention the parameters used
-        // in unsizing.
 
+        // Ensure none of the other fields mention the parameters used
+
+        // in unsizing.
         for field in prefix_fields {
             for arg in field_types[field.0].instantiate_identity().walk() {
                 if let Some(i) = maybe_unsizing_param_idx(arg) {
@@ -1893,8 +1916,8 @@ impl<'db> Interner for DbInterner<'db> {
         let mut result = Vec::new();
 
         crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
-        // Collect coroutines.
 
+        // Collect coroutines.
         let body = self.db.body(def_id);
         body.exprs().for_each(|(expr_id, expr)| {
             if matches!(
@@ -2221,8 +2244,8 @@ mod tls_db {
         #[inline]
         fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
-            // SAFETY: The db is attached, so it must be valid.
 
+            // SAFETY: The db is attached, so it must be valid.
             op(unsafe { db.as_ref() })
         }
     }

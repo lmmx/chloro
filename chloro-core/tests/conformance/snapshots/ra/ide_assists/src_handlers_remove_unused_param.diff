@@ -54,14 +54,11 @@ Rustfmt size:  10803 bytes
 -        .children()
 -        .find_map(ast::SelfParam::cast)
 -        .is_some();
--
 +    let is_self_present =
 +        param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
+ 
      // check if fn is in impl Trait for ..
-+
      if func
-         .syntax()
-         .parent() // AssocItemList
                  editor.delete(element);
              }
              for (file_id, references) in fn_def.usages(&ctx.sema).all() {

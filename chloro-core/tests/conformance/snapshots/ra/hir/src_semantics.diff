@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 101650 bytes
-Chloro size:   98839 bytes
+Chloro size:   98843 bytes
 Rustfmt size:  101650 bytes
 
 ✗ Outputs DIFFER
@@ -134,37 +134,24 @@ Rustfmt size:  101650 bytes
          value.parent_ancestors().any(|ancestor| {
              if ast::MacroCall::can_cast(ancestor.kind()) {
                  return true;
- 
-         let db = self.db;
-         let span = db.span_map(file_id).span_for_range(token.text_range());
--
-         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
-+
-         let process_expansion_for_token =
-             |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
-                 let InMacroFile { file_id, value: mapped_tokens } = ctx
-                 stack.push((HirFileId::from(file_id), mapped_tokens));
-                 res
              };
--
+ 
          // A stack of tokens to process, along with the file they came from
-         // These are tracked to know which macro calls we still have to look into
-         // the tokens themselves aren't that interesting as the span that is being used to map
-         // things down never changes.
 +
+         // These are tracked to know which macro calls we still have to look into
++
+         // the tokens themselves aren't that interesting as the span that is being used to map
++
+         // things down never changes.
          let mut stack: Vec<(_, SmallVec<[_; 2]>)> = vec![];
          let include = file_id
-             .file_id()
-         }
- 
          let mut m_cache = self.macro_call_cache.borrow_mut();
--
+ 
          // Filters out all tokens that contain the given range (usually the macro call), any such
-         // token is redundant as the corresponding macro call has already been processed
 +
+         // token is redundant as the corresponding macro call has already been processed
          let filter_duplicates = |tokens: &mut SmallVec<_>, range: TextRange| {
              tokens.retain(|(t, _): &mut (SyntaxToken, _)| !range.contains_range(t.text_range()))
-         };
          None
      }
  

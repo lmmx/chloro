@@ -41,19 +41,30 @@ pub fn parallel_prime_caches(
         EndModuleSymbols,
         Cancelled(Cancelled),
     }
-    // The setup here is a bit complicated. We try to make best use of compute resources.
-    // The idea is that if we have a def map available to compute, we should do that first.
-    // This is because def map is a dependency of both import map and symbols. So if we have
-    // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
-    // compute the def maps of dependencies, the existing symbols and the symbols of the
-    // new crate, all in parallel. But if we compute the symbols, after that we will only
-    // have the def map to compute, and the rest of the CPU cores will rest, which is not
-    // good.
-    // However, it's better to compute symbols/import map than to compute a def map that
-    // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
-    // Such def map will just block on the dependency, which is just wasted time. So better
-    // to compute the symbols/import map of an already computed def map in that time.
 
+    // The setup here is a bit complicated. We try to make best use of compute resources.
+
+    // The idea is that if we have a def map available to compute, we should do that first.
+
+    // This is because def map is a dependency of both import map and symbols. So if we have
+
+    // e.g. a def map and a symbols, if we compute the def map we can, after it completes,
+
+    // compute the def maps of dependencies, the existing symbols and the symbols of the
+
+    // new crate, all in parallel. But if we compute the symbols, after that we will only
+
+    // have the def map to compute, and the rest of the CPU cores will rest, which is not
+
+    // good.
+
+    // However, it's better to compute symbols/import map than to compute a def map that
+
+    // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
+
+    // Such def map will just block on the dependency, which is just wasted time. So better
+
+    // to compute the symbols/import map of an already computed def map in that time.
     let (reverse_deps, mut to_be_done_deps) = {
         let all_crates = db.all_crates();
         let to_be_done_deps = all_crates
@@ -164,9 +175,10 @@ pub fn parallel_prime_caches(
     let mut crate_def_maps_done = 0;
     let (mut crate_import_maps_total, mut crate_import_maps_done) = (0usize, 0usize);
     let (mut module_symbols_total, mut module_symbols_done) = (0usize, 0usize);
-    // an index map is used to preserve ordering so we can sort the progress report in order of
-    // "longest crate to index" first
 
+    // an index map is used to preserve ordering so we can sort the progress report in order of
+
+    // "longest crate to index" first
     let mut crates_currently_indexing =
         FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
 

@@ -36,15 +36,6 @@ Rustfmt size:  3645 bytes
  pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let let_kw = ctx.find_token_syntax_at_offset(T![let])?;
      let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
-     let pat = let_stmt.pat()?;
-     let ty = let_stmt.ty();
-     let init = let_stmt.initializer()?;
--
-     // This only applies for tuple patterns, types, and initializers.
-+
-     let tuple_pat = match pat {
-         ast::Pat::TuplePat(pat) => pat,
-         _ => return None,
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

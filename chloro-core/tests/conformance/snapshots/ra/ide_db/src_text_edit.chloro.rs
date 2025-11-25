@@ -129,8 +129,8 @@ impl TextEdit {
         if !check_disjoint(&mut iter_merge.clone()) {
             return Err(other);
         }
-        // Only dedup deletions and replacements, keep all insertions
 
+        // Only dedup deletions and replacements, keep all insertions
         self.indels = iter_merge.dedup_by(|a, b| a == b && !a.delete.is_empty()).cloned().collect();
         Ok(())
     }

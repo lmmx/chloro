@@ -141,22 +141,31 @@ impl<'db> InferenceContext<'_, 'db> {
         if is_read == ExprIsRead::Yes {
             return true;
         }
-        // We only care about place exprs. Anything else returns an immediate
-        // which would constitute a read. We don't care about distinguishing
-        // "syntactic" place exprs since if the base of a field projection is
-        // not a place then it would've been UB to read from it anyways since
-        // that constitutes a read.
 
+        // We only care about place exprs. Anything else returns an immediate
+
+        // which would constitute a read. We don't care about distinguishing
+
+        // "syntactic" place exprs since if the base of a field projection is
+
+        // not a place then it would've been UB to read from it anyways since
+
+        // that constitutes a read.
         if !self.is_syntactic_place_expr(expr) {
             return true;
         }
-        // rustc queries parent hir node of `expr` here and determine whether
-        // the current `expr` is read of value per its parent.
-        // But since we don't have hir node, we cannot follow such "bottom-up"
-        // method.
-        // So, we pass down such readness from the parent expression through the
-        // recursive `infer_expr*` calls in a "top-down" manner.
 
+        // rustc queries parent hir node of `expr` here and determine whether
+
+        // the current `expr` is read of value per its parent.
+
+        // But since we don't have hir node, we cannot follow such "bottom-up"
+
+        // method.
+
+        // So, we pass down such readness from the parent expression through the
+
+        // recursive `infer_expr*` calls in a "top-down" manner.
         is_read == ExprIsRead::Yes
     }
 
@@ -1097,8 +1106,8 @@ impl<'db> InferenceContext<'_, 'db> {
         let prev_diverges = mem::replace(&mut self.diverges, Diverges::Maybe);
         let prev_ret_ty = mem::replace(&mut self.return_ty, ret_ty);
         let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(ret_ty));
-        // FIXME: We should handle async blocks like we handle closures
 
+        // FIXME: We should handle async blocks like we handle closures
         let expected = &Expectation::has_type(ret_ty);
         let (_, inner_ty) = self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
             let ty = this.infer_block(tgt_expr, *id, statements, *tail, None, expected);
@@ -1388,9 +1397,10 @@ impl<'db> InferenceContext<'_, 'db> {
                 return ret_ty;
             }
         };
-        // HACK: We can use this substitution for the function because the function itself doesn't
-        // have its own generic parameters.
 
+        // HACK: We can use this substitution for the function because the function itself doesn't
+
+        // have its own generic parameters.
         let args = GenericArgs::new_from_iter(self.interner(), [lhs_ty.into(), rhs_ty.into()]);
 
         self.write_method_resolution(tgt_expr, func, args);
@@ -2046,8 +2056,8 @@ impl<'db> InferenceContext<'_, 'db> {
                     .ok()
             })
             .unwrap_or_default();
-        // If there are no external expectations at the call site, just use the types from the function defn
 
+        // If there are no external expectations at the call site, just use the types from the function defn
         let expected_input_tys = if let Some(expected_input_tys) = &expected_input_tys {
             assert_eq!(expected_input_tys.len(), formal_input_tys.len());
             expected_input_tys
@@ -2057,11 +2067,14 @@ impl<'db> InferenceContext<'_, 'db> {
 
         let minimum_input_count = expected_input_tys.len();
         let provided_arg_count = provided_args.len() - skip_indices.len();
-        // Keep track of whether we *could possibly* be satisfied, i.e. whether we're on the happy path
-        // if the wrong number of arguments were supplied, we CAN'T be satisfied,
-        // and if we're c_variadic, the supplied arguments must be >= the minimum count from the function
-        // otherwise, they need to be identical, because rust doesn't currently support variadic functions
 
+        // Keep track of whether we *could possibly* be satisfied, i.e. whether we're on the happy path
+
+        // if the wrong number of arguments were supplied, we CAN'T be satisfied,
+
+        // and if we're c_variadic, the supplied arguments must be >= the minimum count from the function
+
+        // otherwise, they need to be identical, because rust doesn't currently support variadic functions
         let args_count_matches = if c_variadic {
             provided_arg_count >= minimum_input_count
         } else {
@@ -2075,10 +2088,12 @@ impl<'db> InferenceContext<'_, 'db> {
                 found: provided_args.len(),
             });
         }
-        // We introduce a helper function to demand that a given argument satisfy a given input
-        // This is more complicated than just checking type equality, as arguments could be coerced
-        // This version writes those types back so further type checking uses the narrowed types
 
+        // We introduce a helper function to demand that a given argument satisfy a given input
+
+        // This is more complicated than just checking type equality, as arguments could be coerced
+
+        // This version writes those types back so further type checking uses the narrowed types
         let demand_compatible = |this: &mut InferenceContext<'_, 'db>, idx| {
             let formal_input_ty: Ty<'db> = formal_input_tys[idx];
             let expected_input_ty: Ty<'db> = expected_input_tys[idx];
@@ -2140,12 +2155,16 @@ impl<'db> InferenceContext<'_, 'db> {
                 Err(err) => Err((Some(err), coerced_ty, checked_ty)),
             }
         };
-        // Check the arguments.
-        // We do this in a pretty awful way: first we type-check any arguments
-        // that are not closures, then we type-check the closures. This is so
-        // that we have more information about the types of arguments when we
-        // type-check the functions. This isn't really the right way to do this.
 
+        // Check the arguments.
+
+        // We do this in a pretty awful way: first we type-check any arguments
+
+        // that are not closures, then we type-check the closures. This is so
+
+        // that we have more information about the types of arguments when we
+
+        // type-check the functions. This isn't really the right way to do this.
         for check_closures in [false, true] {
             // More awful hacks: before we check argument types, try to do
             // an "opportunistic" trait resolution of any trait bounds on
@@ -2375,8 +2394,8 @@ impl<'db> InferenceContext<'_, 'db> {
         let Some(legacy_const_generics_indices) = &data.legacy_const_generics_indices else {
             return Default::default();
         };
-        // only use legacy const generics if the param count matches with them
 
+        // only use legacy const generics if the param count matches with them
         if data.params.len() + legacy_const_generics_indices.len() != args.len() {
             if args.len() <= data.params.len() {
                 return Default::default();
@@ -2388,8 +2407,8 @@ impl<'db> InferenceContext<'_, 'db> {
                 return indices;
             }
         }
-        // check legacy const parameters
 
+        // check legacy const parameters
         for arg_idx in legacy_const_generics_indices.iter().copied() {
             if arg_idx >= args.len() as u32 {
                 continue;
