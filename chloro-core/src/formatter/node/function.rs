@@ -3,7 +3,7 @@ use ra_ap_syntax::{
     ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
 };
 
-use super::format_block_expr_contents;
+use super::{format_block_expr_contents, format_stmt_list};
 use crate::formatter::write_indent;
 
 pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
@@ -205,7 +205,7 @@ pub fn format_function(node: &SyntaxNode, buf: &mut String, indent: usize) {
         let stmt_list = body.stmt_list();
         if let Some(stmt_list) = stmt_list {
             // Use our block formatting which handles record expressions
-            super::block::format_stmt_list(stmt_list.syntax(), buf, indent + 4);
+            format_stmt_list(stmt_list.syntax(), buf, indent + 4);
         } else {
             // Fallback: Process body contents directly
             for child in body.syntax().children_with_tokens() {
