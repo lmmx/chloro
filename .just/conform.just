@@ -133,6 +133,6 @@ update-readme-conf:
 
     textum replace \
       "<!-- just: conf-md -->" \
-      "$'\n'${NEW_CONTENT}$'\n'" \
+      $'\n'"${NEW_CONTENT}"$'\n' \
       --until "<!-- /just: conf-md -->" \
       README.md

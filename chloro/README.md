@@ -31,7 +31,8 @@ as tested on rust-analyzer's [crates][ra-crates]:
 
 [ra-crates]: https://github.com/rust-lang/rust-analyzer/blob/master/crates/syntax/src/ast/generated.rs
 
-<!-- just: conf-md -->$'\n'**Summary:** +122,778 / -13,586
+<!-- just: conf-md -->
+**Summary:** +122,778 / -13,586
 
 | **Top 5 <del>Removed</del> Lines** | **Top 5 <ins>Added</ins> Lines** |
 |---|---|
@@ -60,7 +61,8 @@ as tested on rust-analyzer's [crates][ra-crates]:
 | 17 | 20 | 35 | 7.0% | 176 | 2,529 | [`ide_assists/src_handlers_extract_variable`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_extract_variable.diff) |
 | 18 | 23 | 34 | 7.1% | 177 | 2,505 | [`rust_analyzer/src_handlers_request`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/rust_analyzer/src_handlers_request.diff) |
 | 19 | 12 | 76 | 3.7% | 120 | 3,236 | [`ide_completion/src_render`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_completion/src_render.diff) |
-| 20 | 45 | 21 | 12.0% | 216 | 1,803 | [`ide_assists/src_handlers_generate_delegate_trait`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_delegate_trait.diff) |$'\n'<!-- /just: conf-md -->
+| 20 | 45 | 21 | 12.0% | 216 | 1,803 | [`ide_assists/src_handlers_generate_delegate_trait`](https://github.com/lmmx/chloro/blob/master/chloro-core/tests/conformance/snapshots/ra/ide_assists/src_handlers_generate_delegate_trait.diff) |
+<!-- /just: conf-md -->
 
 ## Installation
 
