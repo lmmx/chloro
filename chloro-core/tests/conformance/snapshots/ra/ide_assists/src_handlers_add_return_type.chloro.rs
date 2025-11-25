@@ -11,6 +11,7 @@ pub(crate) fn add_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         return None;
     }
     let ty = ty.display_source_code(ctx.db(), module.into(), true).ok()?;
+
     acc.add(
         AssistId::refactor_rewrite("add_return_type"),
         match fn_type {

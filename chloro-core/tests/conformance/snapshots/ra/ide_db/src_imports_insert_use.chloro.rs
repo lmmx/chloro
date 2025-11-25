@@ -156,6 +156,7 @@ pub fn insert_use_as_alias(scope: &ImportScope, path: ast::Path, cfg: &InsertUse
         .find_map(ast::UseTree::cast)
         .expect("Failed to make ast node `Rename`");
     let alias = node.rename();
+
     insert_use_with_alias_option(scope, path, cfg, alias);
 }
 
@@ -193,6 +194,7 @@ fn insert_use_with_alias_option(
             ImportGranularityGuess::One => Some(MergeBehavior::One),
         };
     }
+
     let mut use_tree = make::use_tree(path, None, alias, false);
     if mb == Some(MergeBehavior::One) && use_tree.path().is_some() {
         use_tree = use_tree.clone_for_update();
@@ -205,6 +207,7 @@ fn insert_use_with_alias_option(
         ted::insert(ted::Position::first_child_of(use_item.syntax()), attr);
     }
     // merge into existing imports if possible
+
     if let Some(mb) = mb {
         let filter = |it: &_| !(cfg.skip_glob_imports && ast::Use::is_simple_glob(it));
         for existing_use in
@@ -257,10 +260,12 @@ impl ImportGroup {
         if use_tree.path().is_none() && use_tree.use_tree_list().is_some() {
             return ImportGroup::One;
         }
+
         let Some(first_segment) = use_tree.path().as_ref().and_then(ast::Path::first_segment)
         else {
             return ImportGroup::ExternCrate;
         };
+
         let kind = first_segment.kind().unwrap_or(PathSegmentKind::SelfKw);
         match kind {
             PathSegmentKind::SelfKw => ImportGroup::ThisModule,
@@ -307,9 +312,11 @@ fn guess_granularity_from_scope(scope: &ImportScope) -> ImportGranularityGuess {
     .filter_map(use_stmt);
     let mut res = ImportGranularityGuess::Unknown;
     let Some((mut prev, mut prev_vis, mut prev_attrs)) = use_stmts.next() else { return res };
+
     let is_tree_one_style =
         |use_tree: &ast::UseTree| use_tree.path().is_none() && use_tree.use_tree_list().is_some();
     let mut seen_one_style_groups = Vec::new();
+
     loop {
         if is_tree_one_style(&prev) {
             if res != ImportGranularityGuess::One {
@@ -384,6 +391,7 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
             let tree = use_.use_tree()?;
             Some((tree, node))
         });
+
     if group_imports {
         // Iterator that discards anything that's not in the required grouping
         // This implementation allows the user to rearrange their import groups as this only takes the first group that fits
@@ -440,6 +448,7 @@ fn insert_use_(scope: &ImportScope, use_item: ast::Use, group_imports: bool) {
             return;
         }
     }
+
     let l_curly = match &scope.kind {
         ImportScopeKind::File(_) => None,
         // don't insert the imports before the item list/block expr's opening curly brace

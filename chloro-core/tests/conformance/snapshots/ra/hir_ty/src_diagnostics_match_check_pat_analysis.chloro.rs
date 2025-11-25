@@ -98,6 +98,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
                 return Err(());
             }
         }
+
         let place_validity = PlaceValidity::from_bool(known_valid_scrutinee.unwrap_or(true));
         // Measured to take ~100ms on modern hardware.
         let complexity_limit = 500000;
@@ -141,8 +142,10 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         variant: VariantId,
     ) -> impl Iterator<Item = (LocalFieldId, Ty<'db>)> {
         let (_, substs) = ty.as_adt().unwrap();
+
         let field_tys = self.db.field_types(variant);
         let fields_len = variant.fields(self.db).fields().len() as u32;
+
         (0..fields_len).map(|idx| LocalFieldId::from_raw(idx.into())).map(move |fid| {
             let ty = field_tys[fid].instantiate(self.infcx.interner, substs);
             let ty = self
@@ -159,6 +162,7 @@ impl<'a, 'db> MatchCheckCtx<'a, 'db> {
         let ctor;
         let mut fields: Vec<_>;
         let arity;
+
         match pat.kind.as_ref() {
             PatKind::Binding { subpattern: Some(subpat), .. } => return self.lower_pat(subpat),
             PatKind::Binding { subpattern: None, .. } | PatKind::Wild => {
@@ -412,6 +416,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         let cx = self;
         // Unhandled types are treated as non-exhaustive. Being explicit here instead of falling
         // to catchall arm to ease further implementation.
+
         let unhandled = || ConstructorSet::Unlistable;
         // This determines the set of all possible constructors for the type `ty`. For numbers,
         // arrays and slices we use ranges and variable-length slices when appropriate.
@@ -421,6 +426,7 @@ impl<'a, 'db> PatCx for MatchCheckCtx<'a, 'db> {
         // returned list of constructors.
         // Invariant: this is empty if and only if the type is uninhabited (as determined by
         // `cx.is_uninhabited()`).
+
         Ok(match ty.kind() {
             TyKind::Bool => ConstructorSet::Bool,
             TyKind::Char => unhandled(),

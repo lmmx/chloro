@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10572 bytes
+Chloro size:   10575 bytes
 Rustfmt size:  10574 bytes
 
 ✗ Outputs DIFFER
@@ -18,19 +18,7 @@ Rustfmt size:  10574 bytes
      );
 -
      // Should suggest `fn`, `static`, `safe`, `unsafe`
++
      check_with_base_items(
          r#"unsafe extern { $0 }"#,
-             kw unsafe
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"unsafe extern { pub safe $0 }"#,
-         expect![[r#"
-             kw static
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"unsafe extern { pub unsafe $0 }"#,
          expect![[r#"

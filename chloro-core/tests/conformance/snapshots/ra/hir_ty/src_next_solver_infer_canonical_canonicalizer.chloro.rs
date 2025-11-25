@@ -42,6 +42,7 @@ impl<'db> Default for OriginalQueryValues<'db> {
     fn default() -> Self {
         let mut universe_map = SmallVec::default();
         universe_map.push(UniverseIndex::ROOT);
+
         Self { universe_map, var_values: SmallVec::default() }
     }
 }
@@ -80,6 +81,7 @@ impl<'db> InferCtxt<'db> {
             &CanonicalizeFreeRegionsOtherThanStatic,
             query_state,
         );
+
         let canonical = Canonicalizer::canonicalize_with_base(
             canonical_param_env,
             value,
@@ -174,6 +176,7 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
         mut r: Region<'db>,
     ) -> Region<'db> {
         let infcx = canonicalizer.infcx;
+
         if let RegionKind::ReVar(vid) = r.kind() {
             r = infcx
                 .inner
@@ -185,6 +188,7 @@ impl CanonicalizeMode for CanonicalizeQueryResponse {
                      opportunistically resolved to {r:?}",
             );
         };
+
         match r.kind() {
             RegionKind::ReLateParam(_)
             | RegionKind::ReErased
@@ -499,6 +503,7 @@ impl<'cx, 'db> TypeFolder<DbInterner<'db>> for Canonicalizer<'cx, 'db> {
             }
             _ => {}
         }
+
         if ct.flags().intersects(self.needs_canonical_flags) {
             ct.super_fold_with(self)
         } else {
@@ -553,9 +558,11 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER
         };
         // Fast path: nothing that needs to be canonicalized.
+
         if !value.has_type_flags(needs_canonical_flags) {
             return base.unchecked_map(|b| (b, value));
         }
+
         let mut canonicalizer = Canonicalizer {
             infcx,
             tcx,
@@ -580,14 +587,18 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         // Once we have canonicalized `out_value`, it should not
         // contain anything that ties it to this inference context
         // anymore.
+
         debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
+
         let canonical_variables =
             CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
+
         let max_universe = canonical_variables
             .iter()
             .map(|cvar| cvar.universe())
             .max()
             .unwrap_or(UniverseIndex::ROOT);
+
         Canonical { max_universe, variables: canonical_variables, value: (base.value, out_value) }
     }
 
@@ -597,7 +608,9 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
     /// potentially a free region).
     fn canonical_var(&mut self, info: CanonicalVarKind<'db>, kind: GenericArg<'db>) -> BoundVar {
         let Canonicalizer { variables, query_state, indices, .. } = self;
+
         let var_values = &mut query_state.var_values;
+
         let universe = info.universe();
         if universe != UniverseIndex::ROOT {
             assert!(self.canonicalize_mode.preserve_universes());
@@ -615,6 +628,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         // avoid allocations in those cases. We also don't use `indices` to
         // determine if a kind has been seen before until the limit of 8 has
         // been exceeded, to also avoid allocations for `indices`.
+
         if !var_values.spilled() {
             // `var_values` is stack-allocated. `indices` isn't used yet. Do a
             // direct linear search of `var_values`.
@@ -666,6 +680,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
         if self.query_state.universe_map.len() == 1 {
             return self.variables;
         }
+
         let reverse_universe_map: FxHashMap<UniverseIndex, UniverseIndex> = self
             .query_state
             .universe_map
@@ -673,6 +688,7 @@ impl<'cx, 'db> Canonicalizer<'cx, 'db> {
             .enumerate()
             .map(|(idx, universe)| (*universe, UniverseIndex::from_usize(idx)))
             .collect();
+
         self.variables
             .iter()
             .map(|v| match *v {

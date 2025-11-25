@@ -24,6 +24,7 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
     if !expr.if_token()?.text_range().contains_inclusive(ctx.offset()) {
         return None;
     }
+
     let cond = expr.condition().filter(|cond| !is_pattern_cond(cond.clone()))?;
     let then = expr.then_branch()?;
     let else_ = match expr.else_branch()? {
@@ -33,7 +34,9 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
             return None;
         }
     };
+
     let (none_variant, some_variant) = option_variants(&ctx.sema, expr.syntax())?;
+
     let (invert_cond, closure_body) = match (
         block_is_none_variant(&ctx.sema, &then, none_variant),
         block_is_none_variant(&ctx.sema, &else_, none_variant),
@@ -42,10 +45,12 @@ pub(crate) fn convert_if_to_bool_then(acc: &mut Assists, ctx: &AssistContext<'_>
         (invert @ false, true) => (invert, ast::Expr::BlockExpr(then)),
         _ => return None,
     };
+
     if is_invalid_body(&ctx.sema, some_variant, &closure_body) {
         cov_mark::hit!(convert_if_to_bool_then_pattern_invalid_body);
         return None;
     }
+
     let target = expr.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_if_to_bool_then"),
@@ -132,6 +137,7 @@ pub(crate) fn convert_bool_then_to_if(acc: &mut Assists, ctx: &AssistContext<'_>
     if !assoc.implementing_ty(ctx.sema.db)?.is_bool() {
         return None;
     }
+
     let target = mcall.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_bool_then_to_if"),

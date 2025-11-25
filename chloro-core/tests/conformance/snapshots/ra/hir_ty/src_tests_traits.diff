@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 107313 bytes
-Chloro size:   107121 bytes
+Chloro size:   107127 bytes
 Rustfmt size:  107313 bytes
 
 ✗ Outputs DIFFER
@@ -16,48 +16,6 @@ Rustfmt size:  107313 bytes
  use super::{check, check_infer, check_infer_with_mismatches, check_no_mismatches, check_types};
  
  #[test]
-             165..172 'z.foo()': u64
-         "#]],
-     );
--
-     check_infer_with_mismatches(
-         r#"
- //- minicore: fn, coerce_unsized, dispatch_from_dyn
- }
-         "#,
-     );
--
-     check_no_mismatches(
-         r#"
- auto trait Send {}
- }
-         "#,
-     );
--
-     check_infer_with_mismatches(
-         r#"
- auto trait Send {}
-             150..151 't': &'? {unknown}
-         "#]],
-     );
--
-     check_no_mismatches(
-         r#"
- auto trait Send {}
- }
-         "#,
-     );
--
-     check_types(
-         r#"
- trait Trait {
- }
-         "#,
-     );
--
-     check_no_mismatches(
-         r#"
- auto trait Send {}
      );
  }
  

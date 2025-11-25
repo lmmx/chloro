@@ -34,6 +34,7 @@ pub(crate) fn file_structure(
 ) -> Vec<StructureNode> {
     let mut res = Vec::new();
     let mut stack = Vec::new();
+
     for event in file.syntax().preorder_with_tokens() {
         match event {
             WalkEvent::Enter(NodeOrToken::Node(node)) => {
@@ -69,6 +70,7 @@ fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<Str
     fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
         decl_with_detail(&node, None, kind)
     }
+
     fn decl_with_type_ref<N: HasName + HasAttrs>(
         node: &N,
         type_ref: Option<ast::Type>,
@@ -81,6 +83,7 @@ fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<Str
         });
         decl_with_detail(node, detail, kind)
     }
+
     fn decl_with_detail<N: HasName + HasAttrs>(
         node: &N,
         detail: Option<String>,
@@ -98,6 +101,7 @@ fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<Str
             deprecated: node.attrs().filter_map(|x| x.simple_name()).any(|x| x == "deprecated"),
         })
     }
+
     fn collapse_ws(node: &SyntaxNode, output: &mut String) {
         let mut can_insert_ws = false;
         node.text().for_each_chunk(|chunk| {
@@ -115,6 +119,7 @@ fn structure_node(node: &SyntaxNode, config: &FileStructureConfig) -> Option<Str
             }
         })
     }
+
     match_ast! {
         match node {
             ast::Fn(it) => {
@@ -236,6 +241,7 @@ fn structure_token(token: SyntaxToken) -> Option<StructureNode> {
             });
         }
     }
+
     None
 }
 

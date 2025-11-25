@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4748 bytes
-Chloro size:   4449 bytes
+Chloro size:   4452 bytes
 Rustfmt size:  4748 bytes
 
 ✗ Outputs DIFFER
@@ -40,21 +40,6 @@ Rustfmt size:  4748 bytes
  pub(crate) fn move_bounds_to_where_clause(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<()> {
-     let type_param_list = ctx.find_node_at_offset::<ast::GenericParamList>()?;
--
-     let mut type_params = type_param_list.generic_params();
-     if type_params.all(|p| match p {
-         ast::GenericParam::TypeParam(t) => t.type_bound_list().is_none(),
-     }) {
-         return None;
-     }
--
-     let parent = type_param_list.syntax().parent()?;
--
-     let target = type_param_list.syntax().text_range();
-     acc.add(
-         AssistId::refactor_rewrite("move_bounds_to_where_clause"),
  #[cfg(test)]
  mod tests {
      use super::*;

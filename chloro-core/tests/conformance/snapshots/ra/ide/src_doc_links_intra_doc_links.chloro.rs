@@ -15,6 +15,7 @@ const MACROS: (&[&str], &[&str]) = (&["macro", "derive"], &["!"]);
 /// * `fn@from_intra_spec` -> ("from_intra_spec", `Namespace::Values`)
 pub(super) fn parse_intra_doc_link(s: &str) -> (&str, Option<hir::Namespace>) {
     let s = s.trim_matches('`');
+
     [
         (hir::Namespace::Types, TYPES),
         (hir::Namespace::Values, VALUES),

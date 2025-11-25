@@ -77,6 +77,7 @@ impl<'db> TypeFolder<DbInterner<'db>> for ReplaceInferWithError<'db> {
         if !t.has_infer() {
             return t;
         }
+
         if t.is_infer() {
             Ty::new_error(self.interner, ErrorGuaranteed)
         } else {
@@ -88,6 +89,7 @@ impl<'db> TypeFolder<DbInterner<'db>> for ReplaceInferWithError<'db> {
         if !c.has_infer() {
             return c;
         }
+
         if c.is_ct_infer() {
             Const::new_error(self.interner, ErrorGuaranteed)
         } else {

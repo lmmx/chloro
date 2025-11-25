@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14485 bytes
-Chloro size:   14364 bytes
+Chloro size:   14366 bytes
 Rustfmt size:  14808 bytes
 
 ✗ Outputs DIFFER
@@ -110,13 +110,6 @@ Rustfmt size:  14808 bytes
      else {
          return Err(LayoutError::InvalidSimdType);
      };
--
-     let e_len = try_const_usize(db, e_len).ok_or(LayoutError::HasErrorConst)? as u64;
-     let e_ly = db.layout_of_ty(e_ty, env)?;
--
-     let cx = LayoutCx::new(dl);
-     Ok(Arc::new(cx.calc.simd_type(e_ly, e_len, repr_packed)?))
- }
      let cx = LayoutCx::new(dl);
      let infer_ctxt = interner.infer_ctxt().build(TypingMode::PostAnalysis);
      let cause = ObligationCause::dummy();

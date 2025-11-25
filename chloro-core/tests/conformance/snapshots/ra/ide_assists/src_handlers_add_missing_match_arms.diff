@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51270 bytes
-Chloro size:   50300 bytes
+Chloro size:   50320 bytes
 Rustfmt size:  51735 bytes
 
 ✗ Outputs DIFFER
@@ -56,28 +56,7 @@ Rustfmt size:  51735 bytes
  pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
      let match_arm_list = match_expr.match_arm_list()?;
-     let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
--
-     if cursor_at_trivial_match_arm_list(ctx, &match_expr, &match_arm_list).is_none() {
-         let arm_list_range = ctx.sema.original_range(match_arm_list.syntax()).range;
-         let cursor_in_range = arm_list_range.contains_range(ctx.selection_trimmed());
-             return None;
-         }
-     }
--
-     let expr = match_expr.expr()?;
--
-     let mut has_catch_all_arm = false;
--
-     let top_lvl_pats: Vec<_> = match_arm_list
-         .arms()
-         .filter_map(|arm| Some((arm.pat()?, arm.guard().is_some())))
-         // Exclude top level wildcards so that they are expanded by this assist, retains status quo in #8129.
-         .filter(|pat| !matches!(pat, Pat::WildcardPat(_)))
-         .collect();
--
-     let make = SyntaxFactory::with_mappings();
--
+ 
      let scope = ctx.sema.scope(expr.syntax())?;
      let module = scope.module();
 -    let cfg = ctx
@@ -127,21 +106,6 @@ Rustfmt size:  51735 bytes
  
          let variants_of_enums = vec![variants; len];
  
-     } else {
-         return None;
-     };
--
-     let mut needs_catch_all_arm = is_non_exhaustive && !has_catch_all_arm;
--
-     if !needs_catch_all_arm
-         && ((has_hidden_variants && has_catch_all_arm) || missing_pats.peek().is_none())
-     {
-         return None;
-     }
--
-     acc.add(
-         AssistId::quick_fix("add_missing_match_arms"),
-         "Fill match arms",
          cov_mark::hit!(add_missing_match_arms_empty_body);
          return Some(());
      }
@@ -149,11 +113,17 @@ Rustfmt size:  51735 bytes
      // match x {
      //     bar => baz,
      //     $0
+     // }
++
+     if let Some(last_arm) = match_arm_list.arms().last() {
+         let last_arm_range = last_arm.syntax().text_range();
+         let match_expr_range = match_expr.syntax().text_range();
              return Some(());
          }
      }
 -
      // match { _$0 => {...} }
++
      let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
      let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;
 -    let arm_match_expr = arm
@@ -165,9 +135,6 @@ Rustfmt size:  51735 bytes
      if arm_match_expr == *match_expr {
          cov_mark::hit!(add_missing_match_arms_trivial_arm);
          return Some(());
-     }
--
-     None
  }
  
  fn is_variant_missing(existing_pats: &[Pat], var: &Pat) -> bool {
@@ -321,13 +288,6 @@ Rustfmt size:  51735 bytes
      #[test]
      fn all_boolean_tuple_arms_provided() {
          check_assist_not_applicable(
- }
- "#,
-         );
--
-         check_assist_not_applicable(
-             add_missing_match_arms,
-             r#"
  "#,
          )
      }
@@ -342,27 +302,6 @@ Rustfmt size:  51735 bytes
      #[test]
      fn fill_boolean_array() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
  "#,
          )
      }
@@ -370,13 +309,6 @@ Rustfmt size:  51735 bytes
      #[test]
      fn partial_fill_boolean_tuple() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
  "#,
          )
      }
@@ -454,13 +386,6 @@ Rustfmt size:  51735 bytes
      #[test]
      fn add_missing_match_arms_tuple_of_enum_partial() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
  "#,
          )
      }
@@ -496,13 +421,6 @@ Rustfmt size:  51735 bytes
      #[test]
      fn test_fill_match_arm_refs() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             add_missing_match_arms,
-             r#"
  "#,
          );
      }
@@ -736,8 +654,10 @@ Rustfmt size:  51735 bytes
          );
 -
          // multiple tuple struct patterns
++
          check_assist(
              add_missing_match_arms,
+             r#"
  "#,
          );
      }

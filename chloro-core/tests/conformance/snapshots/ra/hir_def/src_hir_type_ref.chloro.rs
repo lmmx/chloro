@@ -192,6 +192,7 @@ impl TypeRef {
 
     pub fn walk(this: TypeRefId, map: &ExpressionStore, f: &mut impl FnMut(&TypeRef)) {
         go(this, f, map);
+
         fn go(type_ref: TypeRefId, f: &mut impl FnMut(&TypeRef), map: &ExpressionStore) {
             let type_ref = &map[type_ref];
             f(type_ref);
@@ -217,6 +218,7 @@ impl TypeRef {
                 TypeRef::Never | TypeRef::Placeholder | TypeRef::Error | TypeRef::TypeParam(_) => {}
             };
         }
+
         fn go_path(path: &Path, f: &mut impl FnMut(&TypeRef), map: &ExpressionStore) {
             if let Some(type_ref) = path.type_anchor() {
                 go(type_ref, f, map);

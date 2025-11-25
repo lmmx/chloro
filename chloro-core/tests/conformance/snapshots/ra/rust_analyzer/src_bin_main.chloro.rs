@@ -40,14 +40,18 @@ fn main() -> anyhow::Result<ExitCode> {
 
 fn actual_main() -> anyhow::Result<ExitCode> {
     let flags = flags::RustAnalyzer::from_env_or_exit();
+
     #[cfg(debug_assertions)]
     if flags.wait_dbg || env::var("RA_WAIT_DBG").is_ok() {
         wait_for_debugger();
     }
+
     if let Err(e) = setup_logging(flags.log_file.clone()) {
         eprintln!("Failed to setup logging: {e:#}");
     }
+
     let verbosity = flags.verbosity();
+
     match flags.subcommand {
         flags::RustAnalyzerCmd::LspServer(cmd) => 'lsp_server: {
             if cmd.print_config_schema {
@@ -126,12 +130,14 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
             }
         }
     }
+
     if env::var("RUST_BACKTRACE").is_err() {
         // SAFETY: This is safe because this is single-threaded.
         unsafe {
             env::set_var("RUST_BACKTRACE", "short");
         }
     }
+
     let log_file = env::var("RA_LOG_FILE").ok().map(PathBuf::from).or(log_file_flag);
     let log_file = match log_file {
         Some(path) => {
@@ -145,10 +151,12 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
         }
         None => None,
     };
+
     let writer = match log_file {
         Some(file) => BoxMakeWriter::new(Arc::new(file)),
         None => BoxMakeWriter::new(std::io::stderr),
     };
+
     rust_analyzer::tracing::Config {
         writer,
         // Deliberately enable all `warn` logs if the user has not set RA_LOG, as there is usually
@@ -159,6 +167,7 @@ fn setup_logging(log_file_flag: Option<PathBuf>) -> anyhow::Result<()> {
         json_profile_filter: std::env::var("RA_PROFILE_JSON").ok(),
     }
     .init()?;
+
     Ok(())
 }
 
@@ -174,13 +183,17 @@ fn with_extra_thread(
 ) -> anyhow::Result<()> {
     let handle =
         stdx::thread::Builder::new(thread_intent, thread_name).stack_size(STACK_SIZE).spawn(f)?;
+
     handle.join()?;
+
     Ok(())
 }
 
 fn run_server() -> anyhow::Result<()> {
     tracing::info!("server version {} will start", rust_analyzer::version());
+
     let (connection, io_threads) = Connection::stdio();
+
     let (initialize_id, initialize_params) = match connection.initialize_start() {
         Ok(it) => it,
         Err(e) => {
@@ -190,6 +203,7 @@ fn run_server() -> anyhow::Result<()> {
             return Err(e.into());
         }
     };
+
     tracing::info!("InitializeParams: {}", initialize_params);
     let lsp_types::InitializeParams {
         root_uri,
@@ -200,6 +214,7 @@ fn run_server() -> anyhow::Result<()> {
         ..
     } = from_json::<lsp_types::InitializeParams>("InitializeParams", &initialize_params)?;
     // lsp-types has a typo in the `/capabilities/workspace/diagnostics` field, its typoed as `diagnostic`
+
     if let Some(val) = initialize_params.pointer("/capabilities/workspace/diagnostics")
         && let Ok(diag_caps) = from_json::<lsp_types::DiagnosticWorkspaceClientCapabilities>(
             "DiagnosticWorkspaceClientCapabilities",
@@ -209,6 +224,7 @@ fn run_server() -> anyhow::Result<()> {
         tracing::info!("Patching lsp-types workspace diagnostics capabilities: {diag_caps:#?}");
         capabilities.workspace.get_or_insert_default().diagnostic.get_or_insert(diag_caps);
     }
+
     let root_path = match root_uri
         .and_then(|it| it.to_file_path().ok())
         .map(patch_path_prefix)
@@ -221,6 +237,7 @@ fn run_server() -> anyhow::Result<()> {
             AbsPathBuf::assert_utf8(cwd)
         }
     };
+
     if let Some(client_info) = &client_info {
         tracing::info!(
             "Client '{}' {}",
@@ -228,6 +245,7 @@ fn run_server() -> anyhow::Result<()> {
             client_info.version.as_deref().unwrap_or_default()
         );
     }
+
     let workspace_roots = workspace_folders
         .map(|workspaces| {
             workspaces
@@ -260,7 +278,9 @@ fn run_server() -> anyhow::Result<()> {
             connection.sender.send(lsp_server::Message::Notification(not)).unwrap();
         }
     }
+
     let server_capabilities = rust_analyzer::server_capabilities(&config);
+
     let initialize_result = lsp_types::InitializeResult {
         capabilities: server_capabilities,
         server_info: Some(lsp_types::ServerInfo {
@@ -269,13 +289,16 @@ fn run_server() -> anyhow::Result<()> {
         }),
         offset_encoding: None,
     };
+
     let initialize_result = serde_json::to_value(initialize_result).unwrap();
+
     if let Err(e) = connection.initialize_finish(initialize_id, initialize_result) {
         if e.channel_is_disconnected() {
             io_threads.join()?;
         }
         return Err(e.into());
     }
+
     if config.discover_workspace_config().is_none()
         && !config.has_linked_projects()
         && config.detached_files().is_empty()
@@ -284,12 +307,14 @@ fn run_server() -> anyhow::Result<()> {
     }
     // If the io_threads have an error, there's usually an error on the main
     // loop too because the channels are closed. Ensure we report both errors.
+
     match (rust_analyzer::main_loop(config, connection), io_threads.join()) {
         (Err(loop_e), Err(join_e)) => anyhow::bail!("{loop_e}\n{join_e}"),
         (Ok(_), Err(join_e)) => anyhow::bail!("{join_e}"),
         (Err(loop_e), Ok(_)) => anyhow::bail!("{loop_e}"),
         (Ok(_), Ok(_)) => {}
     }
+
     tracing::info!("server did shut down");
     Ok(())
 }

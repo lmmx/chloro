@@ -87,6 +87,7 @@ pub(crate) fn signature_help(
     let edition =
         sema.attach_first_edition(file_id).map(|it| it.edition(db)).unwrap_or(Edition::CURRENT);
     let display_target = sema.first_crate(file_id)?.to_display_target(db);
+
     for node in token.parent_ancestors() {
         match_ast! {
             match node {
@@ -152,6 +153,7 @@ pub(crate) fn signature_help(
             break;
         }
     }
+
     None
 }
 
@@ -164,8 +166,10 @@ fn signature_help_for_call(
 ) -> Option<SignatureHelp> {
     let (callable, active_parameter) =
         callable_for_arg_list(sema, arg_list, token.text_range().start())?;
+
     let mut res =
         SignatureHelp { doc: None, signature: String::new(), parameters: vec![], active_parameter };
+
     let db = sema.db;
     let mut fn_params = None;
     match callable.kind() {
@@ -242,6 +246,7 @@ fn signature_help_for_call(
             None => format_to!(res.signature, "impl {fn_trait}"),
         },
     }
+
     res.signature.push('(');
     {
         if let Some((self_param, _)) = callable.receiver_param(db) {
@@ -274,6 +279,7 @@ fn signature_help_for_call(
         }
     }
     res.signature.push(')');
+
     let mut render = |ret_type: hir::Type<'_>| {
         if !ret_type.is_unit() {
             format_to!(res.signature, " -> {}", ret_type.display(db, display_target));
@@ -310,6 +316,7 @@ fn signature_help_for_generics(
         parameters: vec![],
         active_parameter: None,
     };
+
     let db = sema.db;
     match generics_def {
         hir::GenericDef::Function(it) => {
@@ -347,6 +354,7 @@ fn signature_help_for_generics(
             return None;
         }
     }
+
     let params = generics_def.params(sema.db);
     let num_lifetime_params =
         params.iter().take_while(|param| matches!(param, GenericParam::LifetimeParam(_))).count();
@@ -355,6 +363,7 @@ fn signature_help_for_generics(
         active_parameter += num_lifetime_params;
     }
     res.active_parameter = Some(active_parameter);
+
     res.signature.push('<');
     let mut buf = String::new();
     for param in params {
@@ -386,6 +395,7 @@ fn signature_help_for_generics(
         add_assoc_type_bindings(db, &mut res, tr, arg_list, edition);
     }
     res.signature.push('>');
+
     Some(res)
 }
 
@@ -400,6 +410,7 @@ fn add_assoc_type_bindings(
         // Assoc type bindings are only valid in type bound position.
         return;
     }
+
     let present_bindings = args
         .generic_args()
         .filter_map(|arg| match arg {
@@ -407,12 +418,14 @@ fn add_assoc_type_bindings(
             _ => None,
         })
         .collect::<BTreeSet<_>>();
+
     let mut buf = String::new();
     for binding in &present_bindings {
         buf.clear();
         format_to!(buf, "{} = …", binding);
         res.push_generic_param(&buf);
     }
+
     for item in tr.items_with_supertraits(db) {
         if let AssocItem::TypeAlias(ty) = item {
             let name = ty.name(db).display_no_db(edition).to_smolstr();
@@ -484,6 +497,7 @@ fn signature_help_for_tuple_struct_pat(
         active_parameter: None,
     };
     let db = sema.db;
+
     let fields: Vec<_> = if let PathResolution::Def(ModuleDef::Variant(variant)) = path_res {
         let en = variant.parent_enum(db);
 
@@ -533,6 +547,7 @@ fn signature_help_for_tuple_pat(
     let pat = pat.into();
     let ty = sema.type_of_pat(&pat)?;
     let fields = ty.original.tuple_fields(db);
+
     Some(signature_help_for_tuple_pat_ish(
         db,
         SignatureHelp {
@@ -563,6 +578,7 @@ fn signature_help_for_tuple_expr(
             .take_while(|t| t.text_range().start() <= token.text_range().start())
             .count(),
     );
+
     let db = sema.db;
     let mut res = SignatureHelp {
         doc: None,
@@ -596,13 +612,16 @@ fn signature_help_for_record_<'db>(
         .filter(|t| t.kind() == T![,])
         .take_while(|t| t.text_range().start() <= token.text_range().start())
         .count();
+
     let mut res = SignatureHelp {
         doc: None,
         signature: String::new(),
         parameters: vec![],
         active_parameter: Some(active_parameter),
     };
+
     let fields;
+
     let db = sema.db;
     let path_res = sema.resolve_path(path)?;
     if let PathResolution::Def(ModuleDef::Variant(variant)) = path_res {
@@ -637,6 +656,7 @@ fn signature_help_for_record_<'db>(
             _ => return None,
         }
     }
+
     let mut fields =
         fields.into_iter().map(|field| (field.name(db), Some(field))).collect::<FxIndexMap<_, _>>();
     let mut buf = String::new();
@@ -682,10 +702,12 @@ fn signature_help_for_tuple_pat_ish<'db>(
     let rest_pat = field_pats.find(|it| matches!(it, ast::Pat::RestPat(_)));
     let is_left_of_rest_pat =
         rest_pat.is_none_or(|it| token.text_range().start() < it.syntax().text_range().end());
+
     let commas = pat
         .children_with_tokens()
         .filter_map(NodeOrToken::into_token)
         .filter(|t| t.kind() == T![,]);
+
     res.active_parameter = {
         Some(if is_left_of_rest_pat {
             commas.take_while(|t| t.text_range().start() <= token.text_range().start()).count()
@@ -699,6 +721,7 @@ fn signature_help_for_tuple_pat_ish<'db>(
             fields.len().saturating_sub(1).saturating_sub(n_commas)
         })
     };
+
     let mut buf = String::new();
     for ty in fields {
         format_to!(buf, "{}", ty.display_truncated(db, Some(20), display_target));
@@ -2540,6 +2563,7 @@ fn main() {
                          ^^^^^^
             "#]],
         );
+
         check(
             r#"
 //- minicore: sized, fn

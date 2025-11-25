@@ -229,6 +229,7 @@ impl Analysis {
         let mut file_set = FileSet::default();
         file_set.insert(file_id, VfsPath::new_virtual_path("/main.rs".to_owned()));
         let source_root = SourceRoot::new_local(file_set);
+
         let mut change = ChangeWithProcMacros::default();
         change.set_roots(vec![source_root]);
         let mut crate_graph = CrateGraphBuilder::default();
@@ -236,6 +237,7 @@ impl Analysis {
         // Default to enable test for single file.
         let mut cfg_options = CfgOptions::default();
         // FIXME: This is less than ideal
+
         let proc_macro_cwd = Arc::new(
             TryFrom::try_from(&*std::env::current_dir().unwrap().as_path().to_string_lossy())
                 .unwrap(),
@@ -259,6 +261,7 @@ impl Analysis {
         );
         change.change_file(file_id, Some(text));
         change.set_crate_graph(crate_graph);
+
         host.apply_change(change);
         (host.analysis(), file_id)
     }
@@ -442,6 +445,7 @@ impl Analysis {
         if !typing::TRIGGER_CHARS.contains(&char_typed) {
             return Ok(None);
         }
+
         self.with_db(|db| typing::on_char_typed(db, position, char_typed))
     }
 
@@ -796,6 +800,7 @@ impl Analysis {
             Some(it) => it.contains(&AssistKind::QuickFix),
             None => true,
         };
+
         self.with_db(|db| {
             let diagnostic_assists = if diagnostics_config.enabled && include_fixes {
                 ide_diagnostics::full_diagnostics(db, diagnostics_config, &resolve, frange.file_id)

@@ -51,12 +51,14 @@ impl EditPlan {
     /// Returns an error if file operations, patching, or line number conversion fails.
     pub fn apply(&mut self) -> io::Result<()> {
         let mut file_groups: HashMap<String, Vec<&Edit>> = HashMap::new();
+
         for edit in &self.edits {
             file_groups
                 .entry(edit.file_name.clone())
                 .or_default()
                 .push(edit);
         }
+
         for (file_name, edits) in file_groups {
             let mut patchset = PatchSet::new();
 
@@ -91,6 +93,7 @@ impl EditPlan {
                 std::fs::write(&file_name, new_content)?;
             }
         }
+
         Ok(())
     }
 }

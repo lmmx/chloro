@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3906 bytes
-Chloro size:   3895 bytes
+Chloro size:   3897 bytes
 Rustfmt size:  4014 bytes
 
 ✗ Outputs DIFFER
@@ -27,19 +27,6 @@ Rustfmt size:  4014 bytes
                          |trait_| trait_.syntax() == path.syntax(),
                      )
                  })
-             dyn_.syntax().text_range()
-         }
-     };
--
-     acc.push(InlayHint {
-         range,
-         kind: InlayKind::Dyn,
-         pad_right: true,
-         resolve_parent: Some(range),
-     });
--
-     Some(())
- }
  
  #[cfg(test)]
  mod tests {

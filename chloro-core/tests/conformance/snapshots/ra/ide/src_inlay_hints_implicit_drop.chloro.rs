@@ -29,11 +29,16 @@ pub(super) fn hints(
     if !config.implicit_drop_hints {
         return None;
     }
+
     let def = sema.to_def(node)?;
     let def: DefWithBody = def.into();
+
     let (hir, source_map) = sema.db.body_with_source_map(def.into());
+
     let mir = sema.db.mir_body(def.into()).ok()?;
+
     let local_to_binding = mir.local_to_binding_map();
+
     for (_, bb) in mir.basic_blocks.iter() {
         let terminator = bb.terminator.as_ref()?;
         if let TerminatorKind::Drop { place, .. } = terminator.kind {
@@ -121,6 +126,7 @@ pub(super) fn hints(
             })
         }
     }
+
     Some(())
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35956 bytes
-Chloro size:   34711 bytes
+Chloro size:   34739 bytes
 Rustfmt size:  36650 bytes
 
 ✗ Outputs DIFFER
@@ -67,15 +67,6 @@ Rustfmt size:  36650 bytes
  pub(crate) fn on_char_typed(
      db: &RootDatabase,
      position: FilePosition,
-     if !stdx::always!(char_matches_position) {
-         return None;
-     }
--
-     let edit = on_char_typed_(file, position.offset, char_typed, edition)?;
--
-     let mut sc = SourceChange::from_text_edit(position.file_id, edit.edit);
-     sc.is_snippet = edit.is_snippet;
-     Some(sc)
  }
  
  fn conv(edit: TextEdit) -> ExtendedTextEdit {
@@ -115,7 +106,7 @@ Rustfmt size:  36650 bytes
 +        '<' => ('>', SyntaxKind::L_ANGLE, &[ast::Type::can_cast as FilterFn] as &[FilterFn]),
          _ => return None,
      };
--
+ 
 -    let brace_token = file
 -        .tree()
 -        .syntax()
@@ -127,12 +118,13 @@ Rustfmt size:  36650 bytes
      }
 -
      // Remove the opening bracket to get a better parse tree, and reparse.
++
      let range = brace_token.text_range();
      if !stdx::always!(range.len() == TextSize::of(opening_bracket)) {
          return None;
      }
      let reparsed = file.reparse(range, "", edition).tree();
--
+ 
 -    if let Some(edit) = on_delimited_node_typed(
 -        &reparsed,
 -        offset,
@@ -145,16 +137,10 @@ Rustfmt size:  36650 bytes
 +    {
          return Some(edit);
      }
--
-     match opening_bracket {
-         '{' => on_left_brace_typed(&reparsed, offset),
-         '<' => on_left_angle_typed(&file.tree(), &reparsed, offset),
-     if segment.syntax().text_range().start() != offset {
-         return None;
-     }
--
+ 
+ 
      let tree: ast::UseTree = find_node_at_offset(reparsed.syntax(), offset)?;
--
+ 
 -    Some(TextEdit::insert(
 -        tree.syntax().text_range().end() + TextSize::of("{"),
 -        "}".to_owned(),
@@ -176,16 +162,12 @@ Rustfmt size:  36650 bytes
      let mut node = node
          .ancestors()
          .take_while(|n| n.text_range().start() == offset && filter(n.kind()))
-         .last()?;
--
-     if let Some(parent) = node.parent().filter(|it| filter(it.kind())) {
-         let all_prev_sib_attr = {
-             let mut node = node.clone();
              node = parent;
          }
      }
 -
      // Insert the closing bracket right after the node.
++
      Some(TextEdit::insert(
          node.text_range().end() + TextSize::of(opening_bracket),
          closing_bracket.to_string(),
@@ -198,19 +180,7 @@ Rustfmt size:  36650 bytes
  fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
      let text = file.syntax().text();
      let has_newline = iter::successors(Some(offset), |&offset| Some(offset + TextSize::new(1)))
-     if has_newline {
-         return None;
-     }
--
-     if let Some(edit) = let_stmt(file, offset) {
-         return Some(edit);
-     }
-     if let Some(edit) = assign_to_eq(file, offset) {
-         return Some(edit);
-     }
--
-     return None;
--
+ 
      fn assign_expr(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
          let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
 -        if !matches!(
@@ -234,9 +204,6 @@ Rustfmt size:  36650 bytes
              return None;
          }
          let offset = expr.syntax().text_range().end();
-         Some(TextEdit::insert(offset, ";".to_owned()))
-     }
--
      /// `a =$0 b;` removes the semicolon if an expression is valid in this context.
      fn assign_to_eq(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
          let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
@@ -249,13 +216,6 @@ Rustfmt size:  36650 bytes
              return None;
          }
  
- 
-         Some(TextEdit::delete(semi.text_range()))
-     }
--
-     fn let_stmt(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
-         let let_stmt: ast::LetStmt = find_node_at_offset(file.syntax(), offset)?;
-         if let_stmt.semicolon_token().is_some() {
          if expr_range.contains(offset) && offset != expr_range.start() {
              return None;
          }
@@ -291,29 +251,13 @@ Rustfmt size:  36650 bytes
 +        file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
      // if prior is fn call over multiple lines dont indent
      // or if previous is method call over multiples lines keep that indent
++
      let current_indent = {
-         suffix
-     };
-     let current_indent_len = TextSize::of(current_indent);
--
-     let parent = whitespace.syntax().parent()?;
-     // Make sure dot is a part of call chain
-     let receiver = if let Some(field_expr) = ast::FieldExpr::cast(parent.clone()) {
-     } else {
-         return None;
-     };
--
-     let receiver_is_multiline = receiver.syntax().text().find_char('\n').is_some();
-     let target_indent = match (receiver, receiver_is_multiline) {
-         // if receiver is multiline field or method call, just take the previous `.` indentation
-         None => IndentLevel::from_node(&parent) + 1,
-     }
-     .to_string();
--
-     if current_indent_len == TextSize::of(&target_indent) {
+         let text = whitespace.text();
+         let (_prefix, suffix) = text.rsplit_once('\n')?;
          return None;
      }
--
+ 
 -    Some(TextEdit::replace(
 -        TextRange::new(offset - current_indent_len, offset),
 -        target_indent,
@@ -327,15 +271,10 @@ Rustfmt size:  36650 bytes
      let file_text = reparsed.syntax().text();
 -
      // Find the next non-whitespace char in the line, check if its a `>`
++
      let mut next_offset = offset;
      while file_text.char_at(next_offset) == Some(' ') {
-     if file_text.char_at(next_offset) == Some('>') {
-         return None;
-     }
--
-     if ancestors_at_offset(file.syntax(), offset)
-         .take_while(|n| !ast::Item::can_cast(n.kind()))
-         .any(|n| {
+         next_offset += TextSize::of(' ')
          })
      {
          // Insert the closing bracket right after
@@ -369,17 +308,8 @@ Rustfmt size:  36650 bytes
 +    let trait_type =
 +        ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
      let kind = ancestors.next()?.kind();
--
-     if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
-     {
-         let mut builder = TextEdit::builder();
-         return None;
-     }
-     find_node_at_offset::<ast::RetType>(file.syntax(), offset)?;
--
-     Some(TextEdit::insert(after_arrow, " ".to_owned()))
- }
  
+     if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
  #[cfg(test)]
  mod tests {
      use test_utils::{assert_eq_text, extract_offset};
@@ -402,10 +332,7 @@ Rustfmt size:  36650 bytes
      fn type_char(
          char_typed: char,
          #[rust_analyzer::rust_fixture] ra_fixture_before: &str,
-     ) {
-         let actual = do_type_char(char_typed, ra_fixture_before)
-             .unwrap_or_else(|| panic!("typing `{char_typed}` did nothing"));
--
+ 
          assert_eq_text!(ra_fixture_after, &actual);
      }
 -
@@ -508,13 +435,6 @@ Rustfmt size:  36650 bytes
      #[test]
      fn adds_closing_brace_for_use_tree() {
          type_char(
- use {Thing as _};
-             "#,
-         );
--
-         type_char_noop(
-             '{',
-             r#"
              "#,
          );
      }
@@ -571,13 +491,6 @@ Rustfmt size:  36650 bytes
      #[test]
      fn parenthesis_noop_in_use_tree() {
          type_char_noop(
- use $0Thing as _;
-             "#,
-         );
--
-         type_char_noop(
-             '(',
-             r#"
              "#,
          );
      }
@@ -585,13 +498,6 @@ Rustfmt size:  36650 bytes
      #[test]
      fn adds_closing_angle_bracket_for_generic_args() {
          type_char(
- }
-             "#,
-         );
--
-         type_char(
-             '<',
-             r#"
              "#,
          );
      }

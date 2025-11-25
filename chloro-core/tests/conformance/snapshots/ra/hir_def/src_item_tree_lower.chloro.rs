@@ -82,6 +82,7 @@ impl<'a> Ctx<'a> {
             })
             .flat_map(|item| self.lower_mod_item(&item))
             .collect();
+
         if let Some(ast::Expr::MacroExpr(tail_macro)) = stmts.expr()
             && let Some(call) = tail_macro.macro_call()
         {
@@ -90,6 +91,7 @@ impl<'a> Ctx<'a> {
                 self.top_level.push(mod_item);
             }
         }
+
         self.tree.vis.arena = self.visibilities.into_iter().collect();
         self.tree.top_level = self.top_level.into_boxed_slice();
         self.tree
@@ -144,6 +146,7 @@ impl<'a> Ctx<'a> {
         };
         let attrs = RawAttrs::new(self.db, item, self.span_map());
         self.add_attrs(mod_item.ast_id(), attrs);
+
         Some(mod_item)
     }
 
@@ -167,6 +170,7 @@ impl<'a> Ctx<'a> {
         let shape = adt_shape(strukt.kind());
         let res = Struct { name, visibility, shape };
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Struct(res));
+
         Some(ast_id)
     }
 
@@ -191,8 +195,11 @@ impl<'a> Ctx<'a> {
     fn lower_function(&mut self, func: &ast::Fn) -> Option<ItemTreeAstId<Function>> {
         let visibility = self.lower_visibility(func);
         let name = func.name()?.as_name();
+
         let ast_id = self.source_ast_id_map.ast_id(func);
+
         let res = Function { name, visibility };
+
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Function(res));
         Some(ast_id)
     }
@@ -253,6 +260,7 @@ impl<'a> Ctx<'a> {
         let name = trait_def.name()?.as_name();
         let visibility = self.lower_visibility(trait_def);
         let ast_id = self.source_ast_id_map.ast_id(trait_def);
+
         let def = Trait { name, visibility };
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Trait(def));
         Some(ast_id)
@@ -273,6 +281,7 @@ impl<'a> Ctx<'a> {
         let (use_tree, _) = lower_use_tree(self.db, use_item.use_tree()?, &mut |range| {
             self.span_map().span_for_range(range).ctx
         })?;
+
         let res = Use { visibility, use_tree };
         self.tree.big_data.insert(ast_id.upcast(), BigModItem::Use(res));
         Some(ast_id)
@@ -288,6 +297,7 @@ impl<'a> Ctx<'a> {
         });
         let visibility = self.lower_visibility(extern_crate);
         let ast_id = self.source_ast_id_map.ast_id(extern_crate);
+
         let res = ExternCrate { name, alias, visibility };
         self.tree.big_data.insert(ast_id.upcast(), BigModItem::ExternCrate(res));
         Some(ast_id)
@@ -310,6 +320,7 @@ impl<'a> Ctx<'a> {
     fn lower_macro_rules(&mut self, m: &ast::MacroRules) -> Option<ItemTreeAstId<MacroRules>> {
         let name = m.name()?;
         let ast_id = self.source_ast_id_map.ast_id(m);
+
         let res = MacroRules { name: name.as_name() };
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::MacroRules(res));
         Some(ast_id)
@@ -317,8 +328,10 @@ impl<'a> Ctx<'a> {
 
     fn lower_macro_def(&mut self, m: &ast::MacroDef) -> Option<ItemTreeAstId<Macro2>> {
         let name = m.name()?;
+
         let ast_id = self.source_ast_id_map.ast_id(m);
         let visibility = self.lower_visibility(m);
+
         let res = Macro2 { name: name.as_name(), visibility };
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::Macro2(res));
         Some(ast_id)
@@ -345,6 +358,7 @@ impl<'a> Ctx<'a> {
                 })
                 .collect()
         });
+
         let res = ExternBlock { children };
         self.tree.small_data.insert(ast_id.upcast(), SmallModItem::ExternBlock(res));
         ast_id

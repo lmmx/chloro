@@ -85,6 +85,7 @@ pub(crate) fn real_span_map(
     use syntax::ast::HasModuleItem;
     let mut pairs = vec![(syntax::TextSize::new(0), span::ROOT_ERASED_FILE_AST_ID)];
     let ast_id_map = db.ast_id_map(editioned_file_id.into());
+
     let tree = db.parse(editioned_file_id).tree();
     // This is an incrementality layer. Basically we can't use absolute ranges for our spans as that
     // would mean we'd invalidate everything whenever we type. So instead we make the text ranges
@@ -99,6 +100,7 @@ pub(crate) fn real_span_map(
     // them again, something we might get access to in the future. But even then, proc-macros doing
     // this kind of joining makes them as stable as the AstIdMap (which is basically changing on
     // every input of the file)…
+
     let item_to_entry =
         |item: ast::Item| (item.syntax().text_range().start(), ast_id_map.ast_id(&item).erase());
     // Top level items make for great anchors as they are the most stable and a decent boundary
@@ -133,6 +135,7 @@ pub(crate) fn real_span_map(
         }
         _ => (),
     });
+
     Arc::new(RealSpanMap::from_file(
         editioned_file_id.editioned_file_id(db),
         pairs.into_boxed_slice(),

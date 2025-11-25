@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28638 bytes
-Chloro size:   28509 bytes
+Chloro size:   28521 bytes
 Rustfmt size:  28638 bytes
 
 ✗ Outputs DIFFER
@@ -89,27 +89,15 @@ Rustfmt size:  28638 bytes
      fn from_uint_ty<C: HasDataLayout>(cx: &C, ity: UintTy) -> Integer {
          use Integer::*;
          match ity {
-         // which can fit all i128 values, so the result remains unaffected.
-         let unsigned_fit = Integer::fit_unsigned(std::cmp::max(min as u128, max as u128));
-         let signed_fit = std::cmp::max(Integer::fit_signed(min), Integer::fit_signed(max));
--
-         if let Some(ity) = repr.int {
-             let discr = Integer::from_attr(&interner, ity);
-             let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
-             }
-             return (discr, ity.is_signed());
-         }
--
-         let at_least = if repr.c() {
-             // This is usually I32, however it can be different on some platforms,
-             // notably hexagon and arm-none/thumb-none
              // repr(Rust) enums try to be as small as possible
              Integer::I8
          };
 -
          // If there are no negative values, we can use the unsigned fit.
++
          if min >= 0 {
              (std::cmp::max(unsigned_fit, at_least), false)
+         } else {
  
  pub trait FloatExt {
      fn to_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
@@ -124,20 +112,6 @@ Rustfmt size:  28638 bytes
      fn to_int_ty<'db>(&self, interner: DbInterner<'db>) -> Ty<'db>;
  }
  
-                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
-             );
-         }
--
-         t.super_visit_with(self)
-     }
- 
-                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
-             );
-         }
--
-         c.super_visit_with(self)
-     }
- 
      }
  }
  
@@ -151,16 +125,6 @@ Rustfmt size:  28638 bytes
      pub interner: DbInterner<'db>,
      pub ty_op: F,
      pub lt_op: G,
-         Some(TyFingerprint::Dyn(trait_id)) => Some(trait_id.module(db)),
-         _ => None,
-     };
--
-     let mut def_blocks =
-         [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
--
-     let block_impls = iter::successors(block, |&block_id| {
-         cov_mark::hit!(block_local_impls);
-         block_id.loc(db).module.containing_block()
      ControlFlow::Continue(())
  }
  
@@ -168,32 +132,3 @@ Rustfmt size:  28638 bytes
  pub fn sizedness_constraint_for_ty<'db>(
      interner: DbInterner<'db>,
      sizedness: SizedTraitKind,
-     ty: Ty<'db>,
- ) -> Option<Ty<'db>> {
-     use rustc_type_ir::TyKind::*;
--
-     match ty.kind() {
-         // these are always sized
-         Bool | Char | Int(..) | Uint(..) | Float(..) | RawPtr(..) | Ref(..) | FnDef(..)
-                 .opportunistic_resolve_var(self.infcx.interner, vid),
-             _ => r0,
-         };
--
-         let r2 = match r1.kind() {
-             RegionKind::RePlaceholder(p) => {
-                 let replace_var = self.mapped_regions.get(&p);
-             }
-             _ => r1,
-         };
--
-         tracing::debug!(?r0, ?r1, ?r2, "fold_region");
--
-         r2
-     }
- 
-             }
-         }
-     }
--
-     false
- }

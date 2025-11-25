@@ -7,6 +7,7 @@ pub(crate) fn to_camel_case(ident: &str) -> Option<String> {
     if is_camel_case(ident) {
         return None;
     }
+
     Some(stdx::to_camel_case(ident))
 }
 
@@ -18,6 +19,7 @@ pub(crate) fn to_lower_snake_case(ident: &str) -> Option<String> {
     } else if is_upper_snake_case(ident) {
         return Some(ident.to_lowercase());
     }
+
     Some(stdx::to_lower_snake_case(ident))
 }
 
@@ -29,6 +31,7 @@ pub(crate) fn to_upper_snake_case(ident: &str) -> Option<String> {
     } else if is_lower_snake_case(ident) {
         return Some(ident.to_uppercase());
     }
+
     Some(stdx::to_upper_snake_case(ident))
 }
 
@@ -37,6 +40,7 @@ fn is_camel_case(name: &str) -> bool {
     if name.is_empty() {
         return true;
     }
+
     let mut fst = None;
     // start with a non-lowercase letter rather than non-uppercase
     // ones (some scripts don't have a concept of upper/lowercase)
@@ -68,6 +72,7 @@ fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
         return true;
     }
     let ident = ident.trim_matches('_');
+
     let mut allow_underscore = true;
     ident.chars().all(|c| {
         allow_underscore = match c {
@@ -89,6 +94,7 @@ mod tests {
     fn check<F: Fn(&str) -> Option<String>>(fun: F, input: &str, expect: Expect) {
         // `None` is translated to empty string, meaning that there is nothing to fix.
         let output = fun(input).unwrap_or_default();
+
         expect.assert_eq(&output);
     }
     #[test]

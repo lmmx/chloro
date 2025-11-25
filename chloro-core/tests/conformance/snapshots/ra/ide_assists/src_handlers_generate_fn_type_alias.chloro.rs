@@ -12,11 +12,13 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
     let func = &name.syntax().parent()?;
     let func_node = ast::Fn::cast(func.clone())?;
     let param_list = func_node.param_list()?;
+
     let assoc_owner = func.ancestors().nth(2).and_then(Either::<ast::Trait, ast::Impl>::cast);
     // This is where we'll insert the type alias, since type aliases in `impl`s or `trait`s are not supported
     let insertion_node = assoc_owner
         .as_ref()
         .map_or_else(|| func, |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax));
+
     for style in ParamStyle::ALL {
         acc.add_group(
             &GroupLabel("Generate a type alias for function...".into()),
@@ -91,6 +93,7 @@ pub(crate) fn generate_fn_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>)
             },
         );
     }
+
     Some(())
 }
 
@@ -107,6 +110,7 @@ impl ParamStyle {
             ParamStyle::Named => "generate_fn_type_alias_named",
             ParamStyle::Unnamed => "generate_fn_type_alias_unnamed",
         };
+
         AssistId::generate(s)
     }
 

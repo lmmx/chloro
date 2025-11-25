@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6625 bytes
-Chloro size:   6610 bytes
+Chloro size:   6611 bytes
 Rustfmt size:  6782 bytes
 
 ✗ Outputs DIFFER
@@ -33,7 +33,7 @@ Rustfmt size:  6782 bytes
      else {
          return;
      };
--
+ 
      ctx.process_all_names_raw(&mut |name, res| {
 -        if matches!(
 -            res,

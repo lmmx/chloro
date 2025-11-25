@@ -24,6 +24,7 @@ fn try_extend_selection(
     frange: FileRange,
 ) -> Option<TextRange> {
     let range = frange.range;
+
     let string_kinds = [COMMENT, STRING, BYTE_STRING, C_STRING];
     let list_kinds = [
         RECORD_PAT_FIELD_LIST,
@@ -44,6 +45,7 @@ fn try_extend_selection(
         TUPLE_PAT,
         WHERE_CLAUSE,
     ];
+
     if range.is_empty() {
         let offset = range.start();
         let mut leaves = root.token_at_offset(offset);
@@ -79,21 +81,26 @@ fn try_extend_selection(
         NodeOrToken::Node(node) => node,
     };
     // if we are in single token_tree, we maybe live in macro or attr
+
     if node.kind() == TOKEN_TREE
         && let Some(macro_call) = node.ancestors().find_map(ast::MacroCall::cast)
         && let Some(range) = extend_tokens_from_range(sema, macro_call, range)
     {
         return Some(range);
     }
+
     if node.text_range() != range {
         return Some(node.text_range());
     }
+
     let node = shallowest_node(&node);
+
     if node.parent().is_some_and(|n| list_kinds.contains(&n.kind()))
         && let Some(range) = extend_list_item(&node)
     {
         return Some(range);
     }
+
     node.parent().map(|it| it.text_range())
 }
 
@@ -107,8 +114,10 @@ fn extend_tokens_from_range(
         NodeOrToken::Node(it) => (it.first_token()?, it.last_token()?),
         NodeOrToken::Token(it) => (it.clone(), it),
     };
+
     let mut first_token = skip_trivia_token(first_token, Direction::Next)?;
     let mut last_token = skip_trivia_token(last_token, Direction::Prev)?;
+
     while !original_range.contains_range(first_token.text_range()) {
         first_token = skip_trivia_token(first_token.next_token()?, Direction::Next)?;
     }
@@ -116,6 +125,7 @@ fn extend_tokens_from_range(
         last_token = skip_trivia_token(last_token.prev_token()?, Direction::Prev)?;
     }
     // compute original mapped token range
+
     let extended = {
         let fst_expanded = sema.descend_into_macros_single_exact(first_token.clone());
         let lst_expanded = sema.descend_into_macros_single_exact(last_token.clone());
@@ -128,6 +138,7 @@ fn extend_tokens_from_range(
         lca
     };
     // Compute parent node range
+
     let validate = || {
         let extended = &extended;
         move |token: &SyntaxToken| -> bool {
@@ -140,18 +151,21 @@ fn extend_tokens_from_range(
         }
     };
     // Find the first and last text range under expanded parent
+
     let first = successors(Some(first_token), |token| {
         let token = token.prev_token()?;
         skip_trivia_token(token, Direction::Prev)
     })
     .take_while(validate())
     .last()?;
+
     let last = successors(Some(last_token), |token| {
         let token = token.next_token()?;
         skip_trivia_token(token, Direction::Next)
     })
     .take_while(validate())
     .last()?;
+
     let range = first.text_range().cover(last.text_range());
     if range.contains_range(original_range) && original_range != range { Some(range) } else { None }
 }
@@ -167,19 +181,25 @@ fn extend_single_word_in_comment_or_string(
 ) -> Option<TextRange> {
     let text: &str = leaf.text();
     let cursor_position: u32 = (offset - leaf.text_range().start()).into();
+
     let (before, after) = text.split_at(cursor_position as usize);
+
     fn non_word_char(c: char) -> bool {
         !(c.is_alphanumeric() || c == '_')
     }
+
     let start_idx = before.rfind(non_word_char)? as u32;
     let end_idx = after.find(non_word_char).unwrap_or(after.len()) as u32;
+
     // FIXME: use `ceil_char_boundary` from `std::str` when it gets stable
     // https://github.com/rust-lang/rust/issues/93743
     fn ceil_char_boundary(text: &str, index: u32) -> u32 {
         (index..).find(|&index| text.is_char_boundary(index as usize)).unwrap_or(text.len() as u32)
     }
+
     let from: TextSize = ceil_char_boundary(text, start_idx + 1).into();
     let to: TextSize = (cursor_position + end_idx).into();
+
     let range = TextRange::new(from, to);
     if range.is_empty() { None } else { Some(range + leaf.text_range().start()) }
 }
@@ -224,6 +244,7 @@ fn extend_list_item(node: &SyntaxNode) -> Option<TextRange> {
     fn is_single_line_ws(node: &SyntaxToken) -> bool {
         node.kind() == WHITESPACE && !node.text().contains('\n')
     }
+
     fn nearby_delimiter(
         delimiter_kind: SyntaxKind,
         node: &SyntaxNode,
@@ -238,10 +259,12 @@ fn extend_list_item(node: &SyntaxNode) -> Option<TextRange> {
             .and_then(|it| it.into_token())
             .filter(|node| node.kind() == delimiter_kind)
     }
+
     let delimiter = match node.kind() {
         TYPE_BOUND => T![+],
         _ => T![,],
     };
+
     if let Some(delimiter_node) = nearby_delimiter(delimiter, node, Direction::Next) {
         // Include any following whitespace when delimiter is after list item.
         let final_node = delimiter_node
@@ -255,6 +278,7 @@ fn extend_list_item(node: &SyntaxNode) -> Option<TextRange> {
     if let Some(delimiter_node) = nearby_delimiter(delimiter, node, Direction::Prev) {
         return Some(TextRange::new(delimiter_node.text_range().start(), node.text_range().end()));
     }
+
     None
 }
 
@@ -293,6 +317,7 @@ mod tests {
         let before = analysis.file_text(position.file_id).unwrap();
         let range = TextRange::empty(position.offset);
         let mut frange = FileRange { file_id: position.file_id, range };
+
         for &after in afters {
             frange.range = analysis.extend_selection(frange).unwrap();
             let actual = &before[frange.range];
@@ -311,10 +336,13 @@ mod tests {
         do_check(r#"fn foo(x: i32, $0y: i32) {}"#, &["y", "y: i32", ", y: i32"]);
         do_check(r#"fn foo(x: i32, $0y: i32, ) {}"#, &["y", "y: i32", "y: i32, "]);
         do_check(r#"fn foo(x: i32,$0y: i32) {}"#, &["y", "y: i32", ",y: i32"]);
+
         do_check(r#"const FOO: [usize; 2] = [ 22$0 , 33];"#, &["22", "22 , "]);
         do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0];"#, &["33", ", 33"]);
         do_check(r#"const FOO: [usize; 2] = [ 22 , 33$0 ,];"#, &["33", "33 ,", "[ 22 , 33 ,]"]);
+
         do_check(r#"fn main() { (1, 2$0) }"#, &["2", ", 2", "(1, 2)"]);
+
         do_check(
             r#"
 const FOO: [usize; 2] = [
@@ -323,6 +351,7 @@ const FOO: [usize; 2] = [
 ]"#,
             &["33", "33,"],
         );
+
         do_check(
             r#"
 const FOO: [usize; 2] = [
@@ -373,6 +402,7 @@ fn bar(){}
     "#,
             &["1", "// 1 + 1", "// fn foo() {\n// 1 + 1\n// }"],
         );
+
         do_check(
             r#"
 // #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -386,6 +416,7 @@ fn bar(){}
                 "// #[derive(Debug, Clone, Copy, PartialEq, Eq)]\n// pub enum Direction {\n//     Next,\n//     Prev\n// }",
             ],
         );
+
         do_check(
             r#"
 /*
@@ -394,7 +425,9 @@ _bar1$0*/
 "#,
             &["_bar1", "/*\nfoo\n_bar1*/"],
         );
+
         do_check(r#"//!$0foo_2 bar"#, &["foo_2", "//!foo_2 bar"]);
+
         do_check(r#"/$0/foo bar"#, &["//foo bar"]);
     }
     #[test]

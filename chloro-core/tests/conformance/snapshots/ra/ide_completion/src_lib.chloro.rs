@@ -130,6 +130,7 @@ pub fn completions(
     let (ctx, analysis) = &CompletionContext::new(db, position, config, trigger_character)?;
     let mut completions = Completions::default();
     // prevent `(` from triggering unwanted completion noise
+
     if trigger_character == Some('(') {
         if let CompletionAnalysis::NameRef(NameRefContext {
             kind:
@@ -146,6 +147,7 @@ pub fn completions(
     // when the user types a bare `_` (that is it does not belong to an identifier)
     // the user might just wanted to type a `_` for type inference or pattern discarding
     // so try to suppress completions in those cases
+
     if trigger_character == Some('_')
         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE
         && let CompletionAnalysis::NameRef(NameRefContext {
@@ -162,6 +164,7 @@ pub fn completions(
     {
         return None;
     }
+
     {
         let acc = &mut completions;
 
@@ -196,6 +199,7 @@ pub fn completions(
             CompletionAnalysis::UnexpandedAttrTT { .. } | CompletionAnalysis::String { .. } => (),
         }
     }
+
     Some(completions.into())
 }
 
@@ -209,17 +213,21 @@ pub fn resolve_completion_edits(
 ) -> Option<Vec<TextEdit>> {
     let _p = tracing::info_span!("resolve_completion_edits").entered();
     let sema = hir::Semantics::new(db);
+
     let editioned_file_id = sema.attach_first_edition(file_id)?;
+
     let original_file = sema.parse(editioned_file_id);
     let original_token =
         syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
     let position_for_import = &original_token.parent()?;
     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
+
     let current_module = sema.scope(position_for_import)?.module();
     let current_crate = current_module.krate();
     let current_edition = current_crate.edition(db);
     let new_ast = scope.clone_for_update();
     let mut import_insert = TextEdit::builder();
+
     imports.into_iter().for_each(|full_import_path| {
         insert_use::insert_use(
             &new_ast,
@@ -227,6 +235,7 @@ pub fn resolve_completion_edits(
             &config.insert_use,
         );
     });
+
     diff(scope.as_syntax_node(), new_ast.as_syntax_node()).into_text_edit(&mut import_insert);
     Some(vec![import_insert.finish()])
 }

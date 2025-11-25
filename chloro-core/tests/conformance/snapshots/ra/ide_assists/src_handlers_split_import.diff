@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2116 bytes
-Chloro size:   1930 bytes
+Chloro size:   1933 bytes
 Rustfmt size:  2254 bytes
 
 ✗ Outputs DIFFER
@@ -27,21 +27,18 @@ Rustfmt size:  2254 bytes
  pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let colon_colon = ctx.find_token_syntax_at_offset(T![::])?;
      let path = ast::Path::cast(colon_colon.parent()?)?.qualifier()?;
--
+ 
 -    let use_tree = path
 -        .top_path()
 -        .syntax()
 -        .ancestors()
 -        .find_map(ast::UseTree::cast)?;
--
 +    let use_tree = path.top_path().syntax().ancestors().find_map(ast::UseTree::cast)?;
+ 
      let has_errors = use_tree
          .syntax()
-         .descendants_with_tokens()
-     if has_errors || last_segment.is_none() {
-         return None;
      }
--
+ 
      let target = colon_colon.text_range();
 -    acc.add(
 -        AssistId::refactor_rewrite("split_import"),

@@ -35,12 +35,16 @@ impl<'db> InferenceContext<'_, 'db> {
             self.table.fulfillment_cx.pending_obligations()
         );
         // All type checking constraints were added, try to fallback unsolved variables.
+
         self.table.select_obligations_where_possible();
+
         debug!(
             "type-inference-fallback post selection obligations: {:#?}",
             self.table.fulfillment_cx.pending_obligations()
         );
+
         let fallback_occurred = self.fallback_types();
+
         if !fallback_occurred {
             return;
         }
@@ -67,6 +71,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // If we had tried to fallback the opaque inference variable to `MyType`,
         // we will generate a confusing type-check error that does not explicitly
         // refer to opaque types.
+
         self.table.select_obligations_where_possible();
     }
 
@@ -74,29 +79,36 @@ impl<'db> InferenceContext<'_, 'db> {
         if self.krate().data(self.db).edition.at_least_2024() {
             return DivergingFallbackBehavior::ToNever;
         }
+
         if self.resolver.def_map().is_unstable_feature_enabled(&sym::never_type_fallback) {
             return DivergingFallbackBehavior::ContextDependent;
         }
+
         DivergingFallbackBehavior::ToUnit
     }
 
     fn fallback_types(&mut self) -> bool {
         // Check if we have any unresolved variables. If not, no need for fallback.
         let unresolved_variables = self.table.infer_ctxt.unresolved_variables();
+
         if unresolved_variables.is_empty() {
             return false;
         }
+
         let diverging_fallback_behavior = self.diverging_fallback_behavior();
+
         let diverging_fallback =
             self.calculate_diverging_fallback(&unresolved_variables, diverging_fallback_behavior);
         // We do fallback in two passes, to try to generate
         // better error messages.
         // The first time, we do *not* replace opaque types.
+
         let mut fallback_occurred = false;
         for ty in unresolved_variables {
             debug!("unsolved_variable = {:?}", ty);
             fallback_occurred |= self.fallback_if_possible(ty, &diverging_fallback);
         }
+
         fallback_occurred
     }
 
@@ -132,6 +144,7 @@ impl<'db> InferenceContext<'_, 'db> {
             },
         };
         debug!("fallback_if_possible(ty={:?}): defaulting to `{:?}`", ty, fallback);
+
         self.demand_eqtype(ty, fallback);
         true
     }
@@ -211,9 +224,11 @@ impl<'db> InferenceContext<'_, 'db> {
         debug!("calculate_diverging_fallback({:?})", unresolved_variables);
         // Construct a coercion graph where an edge `A -> B` indicates
         // a type variable is that is coerced
+
         let coercion_graph = self.create_coercion_graph();
         // Extract the unsolved type inference variable vids; note that some
         // unsolved variables are integer/float variables and are excluded.
+
         let unsolved_vids = unresolved_variables.iter().filter_map(|ty| ty.ty_vid());
         // Compute the diverging root vids D -- that is, the root vid of
         // those type variables that (a) are the target of a coercion from
@@ -221,6 +236,7 @@ impl<'db> InferenceContext<'_, 'db> {
         //
         // These variables are the ones that are targets for fallback to
         // either `!` or `()`.
+
         let diverging_roots: FxHashSet<TyVid> = self
             .table
             .diverging_type_vars
@@ -238,6 +254,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // type variable. These will typically default to `!`, unless
         // we find later that they are *also* reachable from some
         // other type variable outside this set.
+
         let mut roots_reachable_from_diverging = Dfs::empty(&coercion_graph);
         let mut diverging_vids = vec![];
         let mut non_diverging_vids = vec![];
@@ -259,6 +276,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 non_diverging_vids.push(unsolved_vid);
             }
         }
+
         debug!(
             "calculate_diverging_fallback: roots_reachable_from_diverging={:?}",
             roots_reachable_from_diverging,
@@ -267,6 +285,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // diverging variable, and then compute the set reachable from
         // N0, which we call N. These are the *non-diverging* type
         // variables. (Note that this set consists of "root variables".)
+
         let mut roots_reachable_from_non_diverging = Dfs::empty(&coercion_graph);
         for &non_diverging_vid in &non_diverging_vids {
             let root_vid = self.table.infer_ctxt.root_var(non_diverging_vid);
@@ -280,12 +299,15 @@ impl<'db> InferenceContext<'_, 'db> {
             "calculate_diverging_fallback: roots_reachable_from_non_diverging={:?}",
             roots_reachable_from_non_diverging,
         );
+
         debug!("obligations: {:#?}", self.table.fulfillment_cx.pending_obligations());
         // For each diverging variable, figure out whether it can
         // reach a member of N. If so, it falls back to `()`. Else
         // `!`.
+
         let mut diverging_fallback =
             FxHashMap::with_capacity_and_hasher(diverging_vids.len(), FxBuildHasher);
+
         for &diverging_vid in &diverging_vids {
             let diverging_ty = Ty::new_var(self.interner(), diverging_vid);
             let root_vid = self.table.infer_ctxt.root_var(diverging_vid);
@@ -350,6 +372,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
             }
         }
+
         diverging_fallback
     }
 

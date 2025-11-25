@@ -23,6 +23,7 @@ pub(crate) fn remove_dbg(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             .filter_map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast))
             .collect()
     };
+
     let replacements =
         macro_calls.into_iter().filter_map(compute_dbg_replacement).collect::<Vec<_>>();
     let target = replacements
@@ -61,6 +62,7 @@ fn compute_dbg_replacement(
     {
         return None;
     }
+
     let mac_input = tt.syntax().children_with_tokens().skip(1).take_while(|it| *it != r_delim);
     let input_expressions = mac_input.chunk_by(|tok| tok.kind() == T![,]);
     let input_expressions = input_expressions
@@ -70,6 +72,7 @@ fn compute_dbg_replacement(
         .filter(|tokens| !tokens.iter().all(|it| it.kind().is_trivia()))
         .map(|tokens| syntax::hacks::parse_expr_from_str(&tokens.iter().join(""), Edition::CURRENT))
         .collect::<Option<Vec<ast::Expr>>>()?;
+
     let parent = macro_expr.syntax().parent()?;
     Some(match &*input_expressions {
         // dbg!()
@@ -190,11 +193,13 @@ fn replace_nested_dbgs(expanded: ast::Expr) -> ast::Expr {
 
         return replaced;
     }
+
     let expanded = expanded.clone_subtree();
     let mut editor = SyntaxEditor::new(expanded.syntax().clone());
     // We need to collect to avoid mutation during traversal.
     let macro_exprs: Vec<_> =
         expanded.syntax().descendants().filter_map(ast::MacroExpr::cast).collect();
+
     for mac in macro_exprs {
         let expr_opt = match compute_dbg_replacement(mac.clone()) {
             Some((_, expr)) => expr,

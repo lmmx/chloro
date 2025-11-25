@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2414 bytes
-Chloro size:   2157 bytes
+Chloro size:   2158 bytes
 Rustfmt size:  2432 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,6 @@ Rustfmt size:  2432 bytes
  pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let attr: ast::Attr = ctx.find_node_at_offset()?;
      let func = attr.syntax().parent().and_then(ast::Fn::cast)?;
-     let attr = test_related_attribute_syn(&func)?;
--
-     match has_ignore_attribute(&func) {
-         None => acc.add(
-             AssistId::refactor("toggle_ignore"),
  }
  
  fn has_ignore_attribute(fn_def: &ast::Fn) -> Option<ast::Attr> {

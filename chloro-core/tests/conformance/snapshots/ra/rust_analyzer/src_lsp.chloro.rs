@@ -78,6 +78,7 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
             hasher.update([discriminant]);
         }
     }
+
     let mut hasher = TentHash::new();
     hasher.update([
         u8::from(is_ref_completion),
@@ -85,13 +86,16 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
         u8::from(item.deprecated),
         u8::from(item.trigger_call_info),
     ]);
+
     hasher.update(item.label.primary.len().to_ne_bytes());
     hasher.update(&item.label.primary);
+
     hasher.update([u8::from(item.label.detail_left.is_some())]);
     if let Some(label_detail) = &item.label.detail_left {
         hasher.update(label_detail.len().to_ne_bytes());
         hasher.update(label_detail);
     }
+
     hasher.update([u8::from(item.label.detail_right.is_some())]);
     if let Some(label_detail) = &item.label.detail_right {
         hasher.update(label_detail.len().to_ne_bytes());
@@ -102,17 +106,22 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
     //
     // Documentation hashing is skipped too, as it's a large blob to process,
     // while not really making completion properties more unique as they are already.
+
     let kind_tag = item.kind.tag();
     hasher.update(kind_tag.len().to_ne_bytes());
     hasher.update(kind_tag);
+
     hasher.update(item.lookup.len().to_ne_bytes());
     hasher.update(&item.lookup);
+
     hasher.update([u8::from(item.detail.is_some())]);
     if let Some(detail) = &item.detail {
         hasher.update(detail.len().to_ne_bytes());
         hasher.update(detail);
     }
+
     hash_completion_relevance(&mut hasher, &item.relevance);
+
     hasher.update([u8::from(item.ref_match.is_some())]);
     if let Some((ref_mode, text_size)) = &item.ref_match {
         let discriminant = match ref_mode {
@@ -123,10 +132,12 @@ pub(crate) fn completion_item_hash(item: &CompletionItem, is_ref_completion: boo
         hasher.update([discriminant]);
         hasher.update(u32::from(*text_size).to_ne_bytes());
     }
+
     hasher.update(item.import_to_add.len().to_ne_bytes());
     for import_path in &item.import_to_add {
         hasher.update(import_path.len().to_ne_bytes());
         hasher.update(import_path);
     }
+
     hasher.finalize()
 }

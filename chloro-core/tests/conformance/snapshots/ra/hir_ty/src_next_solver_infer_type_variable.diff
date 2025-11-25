@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14353 bytes
-Chloro size:   14151 bytes
+Chloro size:   14155 bytes
 Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
@@ -83,28 +83,26 @@ Rustfmt size:  14730 bytes
 -        let eq_key = self
 -            .eq_relations()
 -            .new_key(TypeVariableValue::Unknown { universe });
--
 +    pub(crate) fn new_var(
 +        &mut self,
 +        universe: UniverseIndex,
 +        origin: TypeVariableOrigin,
 +    ) -> TyVid {
 +        let eq_key = self.eq_relations().new_key(TypeVariableValue::Unknown { universe });
+ 
          let sub_key = self.sub_unification_table().new_key(());
          debug_assert_eq!(eq_key.vid, sub_key.vid);
--
          let index = self.storage.values.push(TypeVariableData { origin });
          debug_assert_eq!(eq_key.vid, index);
--
+ 
 -        debug!(
 -            "new_var(index={:?}, universe={:?}, origin={:?})",
 -            eq_key.vid, universe, origin
 -        );
--
 +        debug!("new_var(index={:?}, universe={:?}, origin={:?})", eq_key.vid, universe, origin);
+ 
          index
      }
- 
          value_count: usize,
      ) -> (Range<TyVid>, Vec<TypeVariableOrigin>) {
          let range = TyVid::from_usize(value_count)..TyVid::from_usize(self.num_vars());

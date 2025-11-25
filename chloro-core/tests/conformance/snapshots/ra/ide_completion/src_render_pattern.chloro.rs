@@ -18,12 +18,15 @@ pub(crate) fn render_struct_pat(
     local_name: Option<Name>,
 ) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_struct_pat").entered();
+
     let fields = strukt.fields(ctx.db());
     let (visible_fields, fields_omitted) = visible_fields(ctx.completion, &fields, strukt)?;
+
     if visible_fields.is_empty() {
         // Matching a struct without matching its fields is pointless, unlike matching a Variant without its fields
         return None;
     }
+
     let name = local_name.unwrap_or_else(|| strukt.name(ctx.db()));
     let (name, escaped_name) =
         (name.as_str(), name.display(ctx.db(), ctx.completion.edition).to_smolstr());
@@ -31,7 +34,9 @@ pub(crate) fn render_struct_pat(
     let label = format_literal_label(name, kind, ctx.snippet_cap());
     let lookup = format_literal_lookup(name, kind);
     let pat = render_pat(&ctx, pattern_ctx, &escaped_name, kind, &visible_fields, fields_omitted)?;
+
     let db = ctx.db();
+
     Some(build_completion(ctx, label, lookup, pat, strukt, strukt.ty(db), false))
 }
 
@@ -44,9 +49,11 @@ pub(crate) fn render_variant_pat(
     path: Option<&hir::ModPath>,
 ) -> Option<CompletionItem> {
     let _p = tracing::info_span!("render_variant_pat").entered();
+
     let fields = variant.fields(ctx.db());
     let (visible_fields, fields_omitted) = visible_fields(ctx.completion, &fields, variant)?;
     let enum_ty = variant.parent_enum(ctx.db()).ty(ctx.db());
+
     let (name, escaped_name) = match path {
         Some(path) => (
             path.display_verbatim(ctx.db()).to_smolstr(),
@@ -61,6 +68,7 @@ pub(crate) fn render_variant_pat(
             )
         }
     };
+
     let (label, lookup, pat) = match path_ctx {
         Some(PathCompletionCtx { has_call_parens: true, .. }) => {
             (name.clone(), name, escaped_name.to_string())
@@ -80,6 +88,7 @@ pub(crate) fn render_variant_pat(
             (label, lookup, pat)
         }
     };
+
     Some(build_completion(
         ctx,
         label,
@@ -101,9 +110,11 @@ fn build_completion(
     is_variant_missing: bool,
 ) -> CompletionItem {
     let mut relevance = ctx.completion_relevance();
+
     if is_variant_missing {
         relevance.type_match = super::compute_type_match(ctx.completion, &adt_ty);
     }
+
     let mut item = CompletionItem::new(
         CompletionItemKind::Binding,
         ctx.source_range(),
@@ -142,6 +153,7 @@ fn render_pat(
         ),
         StructKind::Unit => name.to_owned(),
     };
+
     let needs_ascription = matches!(
         pattern_ctx,
         PatternContext {

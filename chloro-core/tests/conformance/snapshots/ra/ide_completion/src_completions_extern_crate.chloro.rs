@@ -9,6 +9,7 @@ use super::Completions;
 
 pub(crate) fn complete_extern_crate(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let imported_extern_crates: Vec<Name> = ctx.scope.extern_crate_decls().collect();
+
     for (name, module) in ctx.scope.extern_crates() {
         if imported_extern_crates.contains(&name) {
             continue;
@@ -42,7 +43,9 @@ pub mod good_mod{}
 extern crate oth$0
 mod other_mod {}
 "#;
+
         let completion_list = completion_list_no_kw(case);
+
         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
     }
     #[test]
@@ -59,7 +62,9 @@ extern crate other_crate_b;
 extern crate oth$0
 mod other_mod {}
 "#;
+
         let completion_list = completion_list_no_kw(case);
+
         assert_eq!("md other_crate_a\n".to_owned(), completion_list);
     }
 }

@@ -157,5 +157,6 @@ pub fn fold_tys<'db, T: TypeFoldable<DbInterner<'db>>>(
             (self.callback)(t)
         }
     }
+
     t.fold_with(&mut Folder { interner, callback })
 }

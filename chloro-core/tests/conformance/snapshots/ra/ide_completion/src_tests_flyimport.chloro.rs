@@ -18,6 +18,7 @@ fn check_with_config(
     let (db, position) = crate::tests::position(ra_fixture);
     let (ctx, analysis) =
         crate::context::CompletionContext::new(&db, position, &config, None).unwrap();
+
     let mut acc = crate::completions::Completions::default();
     hir::attach_db(ctx.db, || {
         if let CompletionAnalysis::Name(NameContext { kind: NameKind::IdentPat(pat_ctx), .. }) =
@@ -42,6 +43,7 @@ fn check_with_config(
             }
         }
     });
+
     expect.assert_eq(&super::render_completion_list(Vec::from(acc)));
 }
 
@@ -129,6 +131,7 @@ fn main() {
 #[test]
 fn short_paths_are_prefix_matched() {
     cov_mark::check!(flyimport_prefix_on_short_path);
+
     check(
         r#"
 //- /lib.rs crate:dep
@@ -269,12 +272,14 @@ fn trait_function_fuzzy_completion() {
             dep::test_mod::TestStruct::wei$0
         }
         "#;
+
     check(
         fixture,
         expect![[r#"
             fn weird_function() (use dep::test_mod::TestTrait) fn()
         "#]],
     );
+
     check_edit(
         "weird_function",
         fixture,
@@ -313,12 +318,14 @@ fn trait_const_fuzzy_completion() {
             dep::test_mod::TestStruct::spe$0
         }
         "#;
+
     check(
         fixture,
         expect![[r#"
             ct SPECIAL_CONST (use dep::test_mod::TestTrait) u8
         "#]],
     );
+
     check_edit(
         "SPECIAL_CONST",
         fixture,
@@ -358,12 +365,14 @@ fn trait_method_fuzzy_completion() {
             test_struct.ran$0
         }
         "#;
+
     check(
         fixture,
         expect![[r#"
             me random_method() (use dep::test_mod::TestTrait) fn(&self)
         "#]],
     );
+
     check_edit(
         "random_method",
         fixture,
@@ -401,12 +410,14 @@ fn main() {
     t.$0
 }
 "#;
+
     check(
         fixture,
         expect![[r#"
             me some_method() (use foo::TestTrait) fn(&self)
         "#]],
     );
+
     check_edit(
         "some_method",
         fixture,
@@ -446,12 +457,14 @@ fn main() {
     t.$0
 }
 "#;
+
     check(
         fixture,
         expect![[r#"
             me some_method() (use foo::TestTrait) fn(&self)
         "#]],
     );
+
     check_edit(
         "some_method",
         fixture,
@@ -492,12 +505,14 @@ fn completion<T: Wrapper>(whatever: T) {
     whatever.inner().$0
 }
 "#;
+
     check(
         fixture,
         expect![[r#"
             me not_in_scope() (use foo::NotInScope) fn(&self)
         "#]],
     );
+
     check_edit(
         "not_in_scope",
         fixture,
@@ -533,6 +548,7 @@ fn main() {
     a.$0
 }
 "#;
+
     check(
         fixture,
         expect![[r#"
@@ -561,12 +577,14 @@ fn main() {
     dep::test_mod::TestAlias::ran$0
 }
 "#;
+
     check(
         fixture,
         expect![[r#"
             fn random_method() (use dep::test_mod::TestTrait) fn()
         "#]],
     );
+
     check_edit(
         "random_method",
         fixture,
@@ -735,6 +753,7 @@ fn main() {
             me random_method() (use dep::test_mod::TestTrait) fn(&self) DEPRECATED
         "#]],
     );
+
     check(
         r#"
 //- /lib.rs crate:dep
@@ -801,6 +820,7 @@ fn main() {
     Ite$0
 }"#;
     let mut config = TEST_CONFIG;
+
     config.insert_use.prefix_kind = hir::PrefixKind::ByCrate;
     check_edit_with_config(
         config.clone(),
@@ -819,6 +839,7 @@ fn main() {
     Item
 }"#,
     );
+
     config.insert_use.prefix_kind = hir::PrefixKind::BySelf;
     check_edit_with_config(
         config.clone(),
@@ -839,6 +860,7 @@ fn main() {
     Item
 }"#,
     );
+
     config.insert_use.prefix_kind = hir::PrefixKind::Plain;
     check_edit_with_config(
         config,
@@ -879,6 +901,7 @@ fn main() {
 }"#;
     let mut config = TEST_CONFIG;
     config.prefer_absolute = true;
+
     check_edit_with_config(
         config.clone(),
         "Item",
@@ -906,12 +929,14 @@ mod foo {
 fn main() {
     bar::baz::Ite$0
 }"#;
+
     check(
         fixture,
         expect![[r#"
             st Item (use foo::bar) Item
         "#]],
     );
+
     check_edit(
         "Item",
         fixture,
@@ -946,12 +971,14 @@ mod foo {
 fn main() {
     Item::TEST_A$0
 }"#;
+
     check(
         fixture,
         expect![[r#"
             ct TEST_ASSOC (use foo::Item) usize
         "#]],
     );
+
     check_edit(
         "TEST_ASSOC",
         fixture,
@@ -988,12 +1015,14 @@ mod foo {
 fn main() {
     bar::Item::TEST_A$0
 }"#;
+
     check(
         fixture,
         expect![[r#"
             ct TEST_ASSOC (use foo::bar) usize
         "#]],
     );
+
     check_edit(
         "TEST_ASSOC",
         fixture,
@@ -1087,6 +1116,7 @@ fn main() {
             ct TEST_CONST (use foo::TEST_CONST) usize
         "#]],
     );
+
     check(
         r#"
 mod foo {
@@ -1104,6 +1134,7 @@ fn main() {
             fn test_function() (use foo::test_function) fn() -> i32
         "#]],
     );
+
     check(
         r#"
 mod foo {
@@ -1177,6 +1208,7 @@ trait Foo {
 "#,
         expect![[r#""#]],
     );
+
     check(
         r#"
 mod m {
@@ -1191,6 +1223,7 @@ impl Foo {
 "#,
         expect![[r#""#]],
     );
+
     check(
         r#"
 mod m {
@@ -1456,6 +1489,7 @@ enum Foo {
 }"#,
         expect![[r#""#]],
     );
+
     check(
         r#"
 mod foo {

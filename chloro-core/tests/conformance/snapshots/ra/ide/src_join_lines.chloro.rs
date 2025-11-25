@@ -32,6 +32,7 @@ pub(crate) fn join_lines(
     } else {
         range
     };
+
     let mut edit = TextEdit::builder();
     match file.syntax().covering_element(range) {
         NodeOrToken::Node(node) => {
@@ -54,6 +55,7 @@ fn remove_newlines(
         Some(range) => range,
         None => return,
     };
+
     let range = intersection - token.text_range().start();
     let text = token.text();
     for (pos, _) in text[range].bytes().enumerate().filter(|&(_, b)| b == b'\n') {
@@ -101,10 +103,12 @@ fn remove_newline(
         return;
     }
     // The node is between two other nodes
+
     let (prev, next) = match (token.prev_sibling_or_token(), token.next_sibling_or_token()) {
         (Some(prev), Some(next)) => (prev, next),
         _ => return,
     };
+
     if config.remove_trailing_comma && prev.kind() == T![,] {
         match next.kind() {
             T![')'] | T![']'] => {
@@ -127,6 +131,7 @@ fn remove_newline(
             _ => (),
         }
     }
+
     if config.join_else_if
         && let (Some(prev), Some(_next)) = (as_if_expr(&prev), as_if_expr(&next))
     {
@@ -139,9 +144,11 @@ fn remove_newline(
             }
         }
     }
+
     if config.join_assignments && join_assignments(edit, &prev, &next).is_some() {
         return;
     }
+
     if config.unwrap_trivial_blocks {
         // Special case that turns something like:
         //
@@ -166,6 +173,7 @@ fn remove_newline(
             return;
         }
     }
+
     if let (Some(_), Some(next)) = (
         prev.as_token().cloned().and_then(ast::Comment::cast),
         next.as_token().cloned().and_then(ast::Comment::cast),
@@ -178,6 +186,7 @@ fn remove_newline(
         return;
     }
     // Remove newline but add a computed amount of whitespace characters
+
     edit.replace(token.text_range(), compute_ws(prev.kind(), next.kind()).to_owned());
 }
 
@@ -187,15 +196,19 @@ fn join_single_expr_block(edit: &mut TextEditBuilder, token: &SyntaxToken) -> Op
         return None;
     }
     let expr = extract_trivial_expression(&block_expr)?;
+
     let block_range = block_expr.syntax().text_range();
     let mut buf = expr.syntax().text().to_string();
     // Match block needs to have a comma after the block
+
     if let Some(match_arm) = block_expr.syntax().parent().and_then(ast::MatchArm::cast)
         && match_arm.comma_token().is_none()
     {
         buf.push(',');
     }
+
     edit.replace(block_range, buf);
+
     Some(())
 }
 
@@ -220,6 +233,7 @@ fn join_assignments(
         ast::Pat::IdentPat(it) => it,
         _ => return None,
     };
+
     let expr_stmt = ast::ExprStmt::cast(next.as_node()?.clone())?;
     let bin_expr = match expr_stmt.expr()? {
         ast::Expr::BinExpr(it) => it,
@@ -230,10 +244,12 @@ fn join_assignments(
     }
     let lhs = bin_expr.lhs()?;
     let name_ref = expr_as_name_ref(&lhs)?;
+
     if name_ref.to_string() != let_ident_pat.syntax().to_string() {
         cov_mark::hit!(join_assignments_mismatch);
         return None;
     }
+
     edit.delete(let_stmt.semicolon_token()?.text_range().cover(lhs.syntax().text_range()));
     Some(())
 }
@@ -283,10 +299,13 @@ mod tests {
             unwrap_trivial_blocks: true,
             join_assignments: true,
         };
+
         let (before_cursor_pos, before) = extract_offset(ra_fixture_before);
         let file = SourceFile::parse(&before, span::Edition::CURRENT).ok().unwrap();
+
         let range = TextRange::empty(before_cursor_pos);
         let result = join_lines(&config, &file, range);
+
         let actual = {
             let mut actual = before;
             result.apply(&mut actual);
@@ -308,6 +327,7 @@ mod tests {
             unwrap_trivial_blocks: true,
             join_assignments: true,
         };
+
         let (sel, before) = extract_range(ra_fixture_before);
         let parse = SourceFile::parse(&before, span::Edition::CURRENT);
         let result = join_lines(&config, &parse.tree(), sel);
@@ -461,6 +481,7 @@ fn foo(e: Result<U, V>) {
 }",
         );
         // comma with whitespace between brace and ,
+
         check_join_lines(
             r"
 fn foo(e: Result<U, V>) {
@@ -480,6 +501,7 @@ fn foo(e: Result<U, V>) {
 }",
         );
         // comma with newline between brace and ,
+
         check_join_lines(
             r"
 fn foo(e: Result<U, V>) {
@@ -517,6 +539,7 @@ fn foo() {
 }",
         );
         // single arg tuple with whitespace between brace and comma
+
         check_join_lines(
             r"
 fn foo() {
@@ -530,6 +553,7 @@ fn foo() {
 }",
         );
         // single arg tuple with newline between brace and comma
+
         check_join_lines(
             r"
 fn foo() {
@@ -785,6 +809,7 @@ $0fn foo() { 92
 }
         ",
         );
+
         check_join_lines(
             r"
 fn foo() {
@@ -800,6 +825,7 @@ fn foo() {
 }
         ",
         );
+
         check_join_lines(
             r"
 fn foo() {
@@ -815,6 +841,7 @@ fn foo() {
 }
         ",
         );
+
         check_join_lines(
             r"
 fn foo() {
@@ -851,6 +878,7 @@ fn main() {
 "#,
             );
         }
+
         {
             cov_mark::check!(join_string_literal_close_quote);
             check_join_lines(
@@ -880,6 +908,7 @@ fn main() {
 "#,
             );
         }
+
         check_join_lines(
             r#"
 fn main() {
@@ -978,6 +1007,7 @@ fn foo() {
 }
 "#,
         );
+
         cov_mark::check!(join_assignments_mismatch);
         check_join_lines(
             r#"
@@ -994,6 +1024,7 @@ fn foo() {
 }
 "#,
         );
+
         cov_mark::check!(join_assignments_already_initialized);
         check_join_lines(
             r#"

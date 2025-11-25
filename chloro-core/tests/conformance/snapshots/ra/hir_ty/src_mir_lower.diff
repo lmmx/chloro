@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95102 bytes
+Chloro size:   95103 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -126,13 +126,6 @@ Rustfmt size:  95826 bytes
  impl MirLowerError<'_> {
      pub fn pretty_print(
          &self,
-         let interner = DbInterner::new_with(db, Some(env.krate), env.block);
-         // FIXME(next-solver): Is `non_body_analysis()` correct here? Don't we want to reveal opaque types defined by this body?
-         let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
--
-         MirLowerCtx {
-             result: mir,
-             db,
      owner: DefWithBodyId,
      body: &Body,
      infer: &InferenceResult<'db>,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16513 bytes
-Chloro size:   16661 bytes
+Chloro size:   16663 bytes
 Rustfmt size:  16513 bytes
 
 ✗ Outputs DIFFER
@@ -57,17 +57,3 @@ Rustfmt size:  16513 bytes
      /// Passing type as reference (with `&`)
      Reference(Box<Expr<'db>>),
      /// Indicates possibility of many different options that all evaluate to `ty`
-     /// List the traits used in type tree
-     pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
-         let mut res = Vec::new();
--
-         if let Expr::Method { func, params, .. } = self {
-             res.extend(params.iter().flat_map(|it| it.traits_used(db)));
-             if let Some(it) = func.as_assoc_item(db)
-                 res.push(it);
-             }
-         }
--
-         res
-     }
- 

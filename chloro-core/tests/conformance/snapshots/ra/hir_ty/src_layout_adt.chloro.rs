@@ -144,6 +144,7 @@ fn repr_discr(
     // which can fit all i128 values, so the result remains unaffected.
     let unsigned_fit = Integer::fit_unsigned(cmp::max(min as u128, max as u128));
     let signed_fit = cmp::max(Integer::fit_signed(min), Integer::fit_signed(max));
+
     if let Some(ity) = repr.int {
         let discr = Integer::from_attr(dl, ity);
         let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
@@ -152,6 +153,7 @@ fn repr_discr(
         }
         return Ok((discr, ity.is_signed()));
     }
+
     let at_least = if repr.c() {
         // This is usually I32, however it can be different on some platforms,
         // notably hexagon and arm-none/thumb-none
@@ -161,6 +163,7 @@ fn repr_discr(
         Integer::I8
     };
     // If there are no negative values, we can use the unsigned fit.
+
     Ok(if min >= 0 {
         (cmp::max(unsigned_fit, at_least), false)
     } else {

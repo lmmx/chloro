@@ -15,6 +15,7 @@ pub(crate) fn remove_else_branches(acc: &mut Assists, ctx: &AssistContext<'_>) -
                 .clone()
                 .into()
         })?;
+
     let target = TextRange::cover(else_token.text_range(), else_branches.text_range());
     acc.add(
         AssistId::refactor("remove_else_branches"),

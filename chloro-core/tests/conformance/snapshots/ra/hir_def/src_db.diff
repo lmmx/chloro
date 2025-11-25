@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13066 bytes
-Chloro size:   12831 bytes
+Chloro size:   12833 bytes
 Rustfmt size:  13097 bytes
 
 ✗ Outputs DIFFER
@@ -121,17 +121,3 @@ Rustfmt size:  13097 bytes
  fn include_macro_invoc(
      db: &dyn DefDatabase,
      krate: Crate,
-             }
-         }
-     }
--
-     false
- }
- 
-             MacroExpander::BuiltInEager(it) => MacroDefKind::BuiltInEager(in_file, it),
-         }
-     };
--
-     match id {
-         MacroId::Macro2Id(it) => {
-             let loc: Macro2Loc = it.lookup(db);

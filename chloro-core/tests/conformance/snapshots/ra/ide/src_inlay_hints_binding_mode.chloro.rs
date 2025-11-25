@@ -21,6 +21,7 @@ pub(super) fn hints(
     if !config.binding_mode_hints {
         return None;
     }
+
     let outer_paren_pat = pat.syntax().ancestors().skip(1).map_while(ast::ParenPat::cast).last();
     let range = outer_paren_pat.as_ref().map_or_else(
         || match pat {
@@ -94,6 +95,7 @@ pub(super) fn hints(
         hint.pad_right = was_mut_last;
         acc.push(hint);
     }
+
     if let hints @ [_, ..] = &mut acc[acc_base..] {
         let edit = config.lazy_text_edit(|| {
             let mut edit = TextEditBuilder::default();
@@ -115,6 +117,7 @@ pub(super) fn hints(
         });
         hints.iter_mut().for_each(|h| h.text_edit = Some(edit.clone()));
     }
+
     Some(())
 }
 

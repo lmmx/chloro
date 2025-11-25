@@ -14,6 +14,7 @@ pub(crate) fn move_bounds_to_where_clause(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let type_param_list = ctx.find_node_at_offset::<ast::GenericParamList>()?;
+
     let mut type_params = type_param_list.generic_params();
     if type_params.all(|p| match p {
         ast::GenericParam::TypeParam(t) => t.type_bound_list().is_none(),
@@ -22,7 +23,9 @@ pub(crate) fn move_bounds_to_where_clause(
     }) {
         return None;
     }
+
     let parent = type_param_list.syntax().parent()?;
+
     let target = type_param_list.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("move_bounds_to_where_clause"),

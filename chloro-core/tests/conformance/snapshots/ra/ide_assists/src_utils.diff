@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44092 bytes
+Chloro size:   44118 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -63,20 +63,6 @@ Rustfmt size:  45288 bytes
  pub(crate) fn unwrap_trivial_block(block_expr: ast::BlockExpr) -> ast::Expr {
      extract_trivial_expression(&block_expr)
          .filter(|expr| !expr.syntax().text().contains_char('\n'))
-     {
-         return None;
-     }
--
-     if let Some(expr) = stmt_list.tail_expr() {
-         if has_anything_else(expr.syntax()) {
-             return None;
-             _ => default_methods == DefaultMethods::No,
-         })
-         .collect();
--
-     fn has_def_name(item: &InFile<ast::AssocItem>) -> bool {
-         match &item.value {
-             ast::AssocItem::Fn(def) => def.name(),
      invert_special_case(make, &expr).unwrap_or_else(|| make.expr_prefix(T![!], expr).into())
  }
  
@@ -84,29 +70,6 @@ Rustfmt size:  45288 bytes
  pub(crate) fn invert_boolean_expression_legacy(expr: ast::Expr) -> ast::Expr {
      invert_special_case_legacy(&expr).unwrap_or_else(|| make::expr_prefix(T![!], expr).into())
  }
- 
- pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
-     let first_node_text = |pat: &ast::Pat| pat.syntax().first_child().map(|node| node.text());
--
-     let pat_head = match pat {
-         ast::Pat::IdentPat(bind_pat) => match bind_pat.pat() {
-             Some(p) => first_node_text(&p),
-         },
-         pat => first_node_text(pat),
-     };
--
-     let var_head = first_node_text(var);
--
-     pat_head == var_head
- }
- 
-     if depth_after_refutable > 1 {
-         return true;
-     }
--
-     match pat {
-         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::RefPat(_) => false,
- 
      }
  }
  
@@ -122,33 +85,6 @@ Rustfmt size:  45288 bytes
  /// `find_struct_impl` looks for impl of a struct, but this also has additional feature
  /// where it takes a list of function names and check if they exist inside impl_, if
  /// even one match is found, it returns None.
- ) -> Option<Option<ast::Impl>> {
-     let db = ctx.db();
-     let module = adt.syntax().parent()?;
--
-     let struct_def = ctx.sema.to_def(adt)?;
--
-     let block = module.descendants().filter_map(ast::Impl::cast).find_map(|impl_blk| {
-         let blk = ctx.sema.to_def(&impl_blk)?;
- 
- 
-         if !(same_ty && not_trait_impl) { None } else { Some(impl_blk) }
-     });
--
-     if let Some(ref impl_blk) = block
-         && has_any_fn(impl_blk, names)
-     {
-         return None;
-     }
--
-     Some(block)
- }
- 
-             }
-         }
-     }
--
-     false
  }
  
  /// Find the end of the `impl` block for the given `ast::Impl`.
@@ -184,9 +120,11 @@ Rustfmt size:  45288 bytes
 -
      // FIXME: use syntax::make & mutable AST apis instead
      // `trait_text` and `code` can't be opaque blobs of text
-     let mut buf = String::with_capacity(code.len());
--
+-    let mut buf = String::with_capacity(code.len());
+ 
++    let mut buf = String::with_capacity(code.len());
      // Copy any cfg attrs from the original adt
++
      buf.push_str("\n\n");
      let cfg_attrs = adt
          .attrs()
@@ -194,22 +132,10 @@ Rustfmt size:  45288 bytes
      cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
 -
      // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
++
      buf.push_str("impl");
      if let Some(generic_params) = &generic_params {
-     if let Some(generic_params) = generic_params {
-         format_to!(buf, "{}", generic_params.to_generic_args());
-     }
--
-     match adt.where_clause() {
-         Some(where_clause) => {
-             format_to!(buf, "\n{where_clause}\n{{\n{code}\n}}");
-             format_to!(buf, " {{\n{code}\n}}");
-         }
-     }
--
-     buf
- }
- 
+         format_to!(buf, "{generic_params}");
  /// and lifetime parameters, with `<trait>` appended to `impl`'s generic parameters' bounds.
  ///
  /// This is useful for traits like `PartialEq`, since `impl<T> PartialEq for U<T>` often requires `T: PartialEq`.
@@ -220,27 +146,6 @@ Rustfmt size:  45288 bytes
 +    trait_: ast::Type,
 +) -> ast::Impl {
      generate_impl_inner(is_unsafe, adt, Some(trait_), true, None)
- }
- 
-     let generic_args =
-         generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
-     let ty = make::ty_path(make::ext::ident_path(&adt.name().unwrap().text()));
--
-     let cfg_attrs =
-         adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
-     match trait_ {
-         buf.push('\n');
-     }
-     buf.push_str(method);
--
-     let start_offset = impl_def
-         .and_then(|impl_def| find_impl_block_end(impl_def, &mut buf))
-         .unwrap_or_else(|| {
-             buf = generate_impl_text(adt, &buf);
-             adt.syntax().text_range().end()
-         });
--
-     builder.insert(start_offset, buf);
  }
  
  
@@ -260,19 +165,6 @@ Rustfmt size:  45288 bytes
      Result,
  }
  
-                 format!("Result<&{first_type_argument_name}, &{second_type_argument_name}>")
-             }
-         };
--
-         make::ty(&ty)
-     }
- 
-     pub(crate) fn getter(&self, field_name: String) -> ast::Expr {
-         let expr = make::expr_field(make::ext::expr_self(), &field_name);
--
-         match self.conversion {
-             ReferenceConversionType::Copy => expr,
-             ReferenceConversionType::AsRefStr
      }
  }
  
@@ -294,27 +186,6 @@ Rustfmt size:  45288 bytes
      let ty_ref = ty.add_reference(hir::Mutability::Shared);
      let target_ref = target.add_reference(hir::Mutability::Shared);
      ty_ref.could_coerce_to(db, &target_ref)
-     famous_defs: &FamousDefs<'_, '_>,
- ) -> Option<(ReferenceConversionType, bool)> {
-     let str_type = hir::BuiltinType::str().ty(db);
--
-     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
-         .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
- }
- ) -> Option<(ReferenceConversionType, bool)> {
-     let type_argument = ty.type_arguments().next()?;
-     let slice_type = hir::Type::new_slice(type_argument);
--
-     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
-         ReferenceConversionType::AsRefSlice,
-         could_deref_to_target(ty, &slice_type, db),
-     famous_defs: &FamousDefs<'_, '_>,
- ) -> Option<(ReferenceConversionType, bool)> {
-     let type_argument = ty.type_arguments().next()?;
--
-     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
-         .then_some((
-             ReferenceConversionType::Dereferenced,
      }
      res
  }
@@ -336,20 +207,6 @@ Rustfmt size:  45288 bytes
  #[test]
  fn test_string_prefix() {
      assert_eq!(Some(""), string_prefix(r#""abc""#));
- /// Assumes that the input syntax node is a valid syntax tree.
- pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree, SyntaxToken>> {
-     let mut tt_stack = vec![(None, vec![])];
--
-     for element in node.descendants_with_tokens() {
-         let NodeOrToken::Token(token) = element else { continue };
- 
-             }
-         }
-     }
--
-     tt_stack.pop().expect("parent token tree was closed before it was completed").1
- }
- 
      is_const
  }
  

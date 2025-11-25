@@ -107,9 +107,12 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         if a == b {
             return Ok(a);
         }
+
         let infcx = self.infcx;
+
         let a = infcx.shallow_resolve(a);
         let b = infcx.shallow_resolve(b);
+
         match (a.kind(), b.kind()) {
             // If one side is known to be a variable and one is not,
             // create a variable (`v`) to represent the LUB. Make sure to
@@ -177,6 +180,7 @@ impl<'db> TypeRelation<DbInterner<'db>> for LatticeOp<'_, 'db> {
         if a == b {
             return Ok(a);
         }
+
         if a.skip_binder().has_escaping_bound_vars() || b.skip_binder().has_escaping_bound_vars() {
             // When higher-ranked types are involved, computing the GLB/LUB is
             // very challenging, switch to invariance. This is obviously

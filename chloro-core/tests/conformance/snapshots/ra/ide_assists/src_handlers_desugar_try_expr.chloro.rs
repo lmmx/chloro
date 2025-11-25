@@ -14,9 +14,12 @@ use crate::assist_context::{AssistContext, Assists};
 pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let question_tok = ctx.find_token_syntax_at_offset(T![?])?;
     let try_expr = question_tok.parent().and_then(ast::TryExpr::cast)?;
+
     let expr = try_expr.expr()?;
     let expr_type_info = ctx.sema.type_of_expr(&expr)?;
+
     let try_enum = TryEnum::from_ty(&ctx.sema, &expr_type_info.original)?;
+
     let target = try_expr.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("desugar_try_expr_match"),
@@ -59,6 +62,7 @@ pub(crate) fn desugar_try_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             edit.replace_ast::<ast::Expr>(try_expr.clone().into(), expr_match.into());
         },
     );
+
     if let Some(let_stmt) = try_expr.syntax().parent().and_then(ast::LetStmt::cast)
         && let_stmt.let_else().is_none()
     {

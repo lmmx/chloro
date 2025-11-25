@@ -146,6 +146,7 @@ pub(crate) fn hover(
     } else {
         hover_ranged(sema, frange, file, config, edition, display_target)
     }?;
+
     if let HoverDocFormat::PlainText = config.format {
         res.info.markup = remove_markdown(res.info.markup.as_str()).into();
     }
@@ -177,6 +178,7 @@ fn hover_offset(
         kind if kind.is_trivia() => 0,
         _ => 1,
     })?;
+
     if let Some(doc_comment) = token_as_doc_comment(&original_token) {
         cov_mark::hit!(no_highlight_on_comment_hover);
         return doc_comment.get_definition_with_descend_at(sema, offset, |def, node, range| {
@@ -195,6 +197,7 @@ fn hover_offset(
             Some(RangeInfo::new(range, res))
         });
     }
+
     if let Some((range, _, _, resolution)) =
         sema.check_for_format_args_template(original_token.clone(), offset)
     {
@@ -212,6 +215,7 @@ fn hover_offset(
         );
         return Some(RangeInfo::new(range, res));
     }
+
     if let Some(literal) = ast::String::cast(original_token.clone())
         && let Some((analysis, fixture_analysis)) =
             Analysis::from_ra_fixture(sema, literal.clone(), &literal, config.minicore)
@@ -228,9 +232,13 @@ fn hover_offset(
     }
     // prefer descending the same token kind in attribute expansions, in normal macros text
     // equivalency is more important
+
     let mut descended = sema.descend_into_macros(original_token.clone());
+
     let ranker = Ranker::from_token(&original_token);
+
     descended.sort_by_cached_key(|tok| !ranker.rank_token(tok));
+
     let mut res = vec![];
     for token in descended {
         let is_same_kind = token.kind() == ranker.kind;
@@ -371,6 +379,7 @@ fn hover_offset(
             res.push(result)
         }
     }
+
     res.into_iter()
         .unique()
         .reduce(|mut acc: HoverResult, HoverResult { markup, actions }| {
@@ -450,6 +459,7 @@ pub(crate) fn hover_for_definition(
         Definition::BuiltinType(_) => sema.scope(scope_node).map(|it| FamousDefs(sema, it.krate())),
         _ => None,
     };
+
     let db = sema.db;
     let def_ty = match def {
         Definition::Local(it) => Some(it.ty(db)),
@@ -467,6 +477,7 @@ pub(crate) fn hover_for_definition(
     };
     let notable_traits = def_ty.map(|ty| notable_traits(db, &ty)).unwrap_or_default();
     let subst_types = subst.map(|subst| subst.types(db));
+
     let (markup, range_map) = render::definition(
         sema.db,
         def,
@@ -502,6 +513,7 @@ fn notable_traits<'db>(
         // impls any trait, and we don't want to show it as having any notable trait.
         return Vec::new();
     }
+
     db.notable_traits_in_deps(ty.krate(db).into())
         .iter()
         .flat_map(|it| &**it)
@@ -535,6 +547,7 @@ fn show_implementations_action(
             offset: nav_target.focus_or_full_range().start(),
         })
     }
+
     let adt = match def {
         Definition::Trait(it) => {
             return it.try_to_nav(sema).map(UpmappingResult::call_site).map(to_action);
@@ -598,17 +611,20 @@ fn goto_type_action_for_def(
             targets.push(item);
         }
     };
+
     for &(trait_, ref assocs) in notable_traits {
         push_new_def(trait_.into());
         assocs.iter().filter_map(|(ty, _)| ty.as_ref()).for_each(|ty| {
             walk_and_push_ty(db, ty, &mut push_new_def);
         });
     }
+
     if let Ok(generic_def) = GenericDef::try_from(def) {
         generic_def.type_or_const_params(db).into_iter().for_each(|it| {
             walk_and_push_ty(db, &it.ty(db), &mut push_new_def);
         });
     }
+
     let ty = match def {
         Definition::Local(it) => Some(it.ty(db)),
         Definition::Field(field) => Some(field.ty(db).to_type(db)),
@@ -628,11 +644,13 @@ fn goto_type_action_for_def(
     if let Some(ty) = ty {
         walk_and_push_ty(db, &ty, &mut push_new_def);
     }
+
     if let Some(subst_types) = subst_types {
         for (_, ty) in subst_types {
             walk_and_push_ty(db, &ty, &mut push_new_def);
         }
     }
+
     HoverAction::goto_type_from_targets(sema, targets, edition)
 }
 
@@ -663,6 +681,7 @@ fn walk_and_push_ty(
 fn dedupe_or_merge_hover_actions(actions: Vec<HoverAction>) -> Vec<HoverAction> {
     let mut deduped_actions = Vec::with_capacity(actions.len());
     let mut go_to_type_targets = FxIndexSet::default();
+
     let mut seen_implementation = false;
     let mut seen_reference = false;
     let mut seen_runnable = false;
@@ -691,10 +710,12 @@ fn dedupe_or_merge_hover_actions(actions: Vec<HoverAction>) -> Vec<HoverAction> 
             }
         };
     }
+
     if !go_to_type_targets.is_empty() {
         deduped_actions.push(HoverAction::GoToType(
             go_to_type_targets.into_iter().sorted_by(|a, b| a.mod_path.cmp(&b.mod_path)).collect(),
         ));
     }
+
     deduped_actions
 }

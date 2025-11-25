@@ -83,11 +83,14 @@ pub(super) fn try_expr(
             }
         };
     };
+
     if inner_ty == body_ty {
         return None;
     }
+
     let mut inner_ty = inner_ty;
     let mut s = "Try Target".to_owned();
+
     let adts = inner_ty.as_adt().zip(body_ty.as_adt());
     if let Some((hir::Adt::Enum(inner), hir::Adt::Enum(body))) = adts {
         let famous_defs = FamousDefs(sema, sema.scope(try_expr.syntax())?.krate());
@@ -114,7 +117,9 @@ pub(super) fn try_expr(
             }
         }
     }
+
     let mut res = HoverResult::default();
+
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
     let mut push_new_def = |item: hir::ModuleDef| {
         if !targets.contains(&item) {
@@ -126,13 +131,16 @@ pub(super) fn try_expr(
     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
         res.actions.push(actions);
     }
+
     let inner_ty = inner_ty.display(sema.db, display_target).to_string();
     let body_ty = body_ty.display(sema.db, display_target).to_string();
     let ty_len_max = inner_ty.len().max(body_ty.len());
+
     let l = "Propagated as: ".len() - " Type: ".len();
     let static_text_len_diff = l as isize - s.len() as isize;
     let tpad = static_text_len_diff.max(0) as usize;
     let ppad = static_text_len_diff.min(0).unsigned_abs();
+
     res.markup = format!(
         "```text\n{} Type: {:>pad0$}\nPropagated as: {:>pad1$}\n```\n",
         s,
@@ -155,6 +163,7 @@ pub(super) fn deref_expr(
     let inner_ty = sema.type_of_expr(&deref_expr.expr()?)?.original;
     let TypeInfo { original, adjusted } =
         sema.type_of_expr(&ast::Expr::from(deref_expr.clone()))?;
+
     let mut res = HoverResult::default();
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
     let mut push_new_def = |item: hir::ModuleDef| {
@@ -164,6 +173,7 @@ pub(super) fn deref_expr(
     };
     walk_and_push_ty(sema.db, &inner_ty, &mut push_new_def);
     walk_and_push_ty(sema.db, &original, &mut push_new_def);
+
     res.markup = if let Some(adjusted_ty) = adjusted {
         walk_and_push_ty(sema.db, &adjusted_ty, &mut push_new_def);
         let original = original.display(sema.db, display_target).to_string();
@@ -203,6 +213,7 @@ pub(super) fn deref_expr(
     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
         res.actions.push(actions);
     }
+
     Some(res)
 }
 
@@ -245,6 +256,7 @@ pub(super) fn underscore(
     // }
     // FIXME: https://github.com/rust-lang/rust-analyzer/issues/11762, this currently always returns Unknown
     // type_info(sema, config, sema.resolve_type(&ast::Type::InferType(it))?, None)
+
     None
 }
 
@@ -260,8 +272,10 @@ pub(super) fn keyword(
     }
     let parent = token.parent()?;
     let famous_defs = FamousDefs(sema, sema.scope(&parent)?.krate());
+
     let KeywordHint { description, keyword_mod, actions } =
         keyword_hints(sema, token, parent, edition, display_target);
+
     let doc_owner = find_std_module(&famous_defs, &keyword_mod, edition)?;
     let (docs, range_map) = doc_owner.docs_with_rangemap(sema.db)?;
     let (markup, range_map) =
@@ -284,6 +298,7 @@ pub(super) fn struct_rest_pat(
     // if there are no missing fields, the end result is a hover that shows ".."
     // should be left in to indicate that there are no more fields in the pattern
     // example, S {a: 1, b: 2, ..} when struct S {a: u32, b: u32}
+
     let mut res = HoverResult::default();
     let mut targets: Vec<hir::ModuleDef> = Vec::new();
     let mut push_new_def = |item: hir::ModuleDef| {
@@ -294,6 +309,7 @@ pub(super) fn struct_rest_pat(
     for (_, t) in &missing_fields {
         walk_and_push_ty(sema.db, t, &mut push_new_def);
     }
+
     res.markup = {
         let mut s = String::from(".., ");
         for (f, _) in &missing_fields {
@@ -331,6 +347,7 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
         }
         _ => return None,
     };
+
     let tmp;
     let needle = if is_clippy {
         tmp = format!("clippy::{}", token.text());
@@ -338,6 +355,7 @@ pub(super) fn try_for_lint(attr: &ast::Attr, token: &SyntaxToken) -> Option<Hove
     } else {
         token.text()
     };
+
     let lint =
         lints.binary_search_by_key(&needle, |lint| lint.label).ok().map(|idx| &lints[idx])?;
     Some(HoverResult {
@@ -596,6 +614,7 @@ pub(super) fn definition(
         }
         _ => None,
     };
+
     let layout_info = || match def {
         Definition::Field(it) => render_memory_layout(
             config.memory_layout,
@@ -664,6 +683,7 @@ pub(super) fn definition(
         ),
         _ => None,
     };
+
     let drop_info = || {
         if !config.show_drop_glue {
             return None;
@@ -745,6 +765,7 @@ pub(super) fn definition(
 
         Some(rendered_drop_glue.to_owned())
     };
+
     let dyn_compatibility_info = || match def {
         Definition::Trait(it) => {
             let mut dyn_compatibility_info = String::new();
@@ -753,10 +774,12 @@ pub(super) fn definition(
         }
         _ => None,
     };
+
     let variance_info = || match def {
         Definition::GenericParam(it) => it.variance(db).as_ref().map(ToString::to_string),
         _ => None,
     };
+
     let mut extra = String::new();
     if render_extras {
         if let Some(notable_traits) =
@@ -791,6 +814,7 @@ pub(super) fn definition(
         desc.push_str(" = ");
         desc.push_str(&value);
     }
+
     let subst_types = match config.max_subst_ty_len {
         SubstTyLen::Hide => String::new(),
         SubstTyLen::LimitTo(_) | SubstTyLen::Unlimited => {
@@ -815,6 +839,7 @@ pub(super) fn definition(
                 .unwrap_or_default()
         }
     };
+
     markup(
         docs.map(Into::into),
         range_map,
@@ -843,6 +868,7 @@ pub(super) fn literal(
         sema.type_of_expr(&ast::Expr::Literal(lit))?
     }
     .original;
+
     let value = match_ast! {
         match token {
             ast::String(string)     => string.value().as_ref().map_err(|e| format!("{e:?}")).map(ToString::to_string),
@@ -882,6 +908,7 @@ pub(super) fn literal(
         }
     };
     let ty = ty.display(sema.db, display_target);
+
     let mut s = format!("```rust\n{ty}\n```\n---\n\n");
     match value {
         Ok(value) => {
@@ -968,6 +995,7 @@ fn type_info(
         }
     };
     walk_and_push_ty(db, &original, &mut push_new_def);
+
     res.markup = if let Some(adjusted_ty) = adjusted {
         walk_and_push_ty(db, &adjusted_ty, &mut push_new_def);
 
@@ -1039,6 +1067,7 @@ fn closure_ty(
     c.capture_types(sema.db).into_iter().for_each(|ty| {
         walk_and_push_ty(sema.db, &ty, &mut push_new_def);
     });
+
     let adjusted = if let Some(adjusted_ty) = adjusted {
         walk_and_push_ty(sema.db, adjusted_ty, &mut push_new_def);
         format!(
@@ -1051,6 +1080,7 @@ fn closure_ty(
         String::new()
     };
     let mut markup = format!("```rust\n{}\n```", c.display_with_impl(sema.db, display_target));
+
     if let Some(trait_) = c.fn_trait(sema.db).get_id(sema.db, original.krate(sema.db).into()) {
         push_new_def(hir::Trait::from(trait_).into())
     }
@@ -1064,6 +1094,7 @@ fn closure_ty(
         format_to!(markup, "\n---\n{layout}");
     }
     format_to!(markup, "{adjusted}\n\n## Captures\n{}", captures_rendered,);
+
     let mut res = HoverResult::default();
     if let Some(actions) = HoverAction::goto_type_from_targets(sema, targets, edition) {
         res.actions.push(actions);
@@ -1099,18 +1130,22 @@ fn markup(
     subst_types: String,
 ) -> (Markup, Option<DocsRangeMap>) {
     let mut buf = String::new();
+
     if let Some(mod_path) = mod_path
         && !mod_path.is_empty()
     {
         format_to!(buf, "```rust\n{}\n```\n\n", mod_path);
     }
     format_to!(buf, "```rust\n{}\n```", rust);
+
     if let Some(extra) = extra {
         buf.push_str(&extra);
     }
+
     if !subst_types.is_empty() {
         format_to!(buf, "\n___\n{subst_types}");
     }
+
     if let Some(doc) = docs {
         format_to!(buf, "\n___\n\n");
         let offset = TextSize::new(buf.len() as u32);
@@ -1132,7 +1167,9 @@ fn render_memory_layout(
 ) -> Option<String> {
     let config = config?;
     let layout = layout().ok()?;
+
     let mut label = String::new();
+
     if let Some(render) = config.size {
         let size = match tag(&layout) {
             Some(tag) => layout.size() as usize - tag,
@@ -1149,6 +1186,7 @@ fn render_memory_layout(
         }
         format_to!(label, ", ");
     }
+
     if let Some(render) = config.alignment {
         let align = layout.align();
         format_to!(label, "align = ");
@@ -1164,6 +1202,7 @@ fn render_memory_layout(
         }
         format_to!(label, ", ");
     }
+
     if let Some(render) = config.offset
         && let Some(offset) = offset(&layout)
     {
@@ -1180,6 +1219,7 @@ fn render_memory_layout(
         }
         format_to!(label, ", ");
     }
+
     if let Some(render) = config.padding
         && let Some((padding_name, padding)) = padding(&layout)
     {
@@ -1196,6 +1236,7 @@ fn render_memory_layout(
         }
         format_to!(label, ", ");
     }
+
     if config.niches
         && let Some(niches) = layout.niches()
     {

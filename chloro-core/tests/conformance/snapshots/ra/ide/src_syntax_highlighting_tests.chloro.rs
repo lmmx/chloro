@@ -1204,12 +1204,14 @@ struct Foo {
 "#,
     );
     // The "x"
+
     let highlights = &analysis
         .highlight_range(
             HL_CONFIG,
             FileRange { file_id, range: TextRange::at(45.into(), 1.into()) },
         )
         .unwrap();
+
     assert_eq!(&highlights[0].highlight.to_string(), "field.declaration.public");
 }
 
@@ -1272,8 +1274,10 @@ fn benchmark_syntax_highlighting_long_struct() {
     if skip_slow_tests() {
         return;
     }
+
     let fixture = bench_fixture::big_struct();
     let (analysis, file_id) = fixture::file(&fixture);
+
     let hash = {
         let _pt = bench("syntax highlighting long struct");
         analysis
@@ -1291,6 +1295,7 @@ fn syntax_highlighting_not_quadratic() {
     if skip_slow_tests() {
         return;
     }
+
     let mut al = AssertLinear::default();
     while al.next_round() {
         for i in 6..=10 {
@@ -1320,8 +1325,10 @@ fn benchmark_syntax_highlighting_parser() {
     if skip_slow_tests() {
         return;
     }
+
     let fixture = bench_fixture::glorious_old_parser();
     let (analysis, file_id) = fixture::file(&fixture);
+
     let hash = {
         let _pt = bench("syntax highlighting parser");
         analysis

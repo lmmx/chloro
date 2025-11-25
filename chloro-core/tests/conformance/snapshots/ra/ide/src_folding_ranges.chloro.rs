@@ -42,7 +42,9 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
     let mut visited_comments = FxHashSet::default();
     let mut visited_nodes = FxHashSet::default();
     // regions can be nested, here is a LIFO buffer
+
     let mut region_starts: Vec<TextSize> = vec![];
+
     for element in file.syntax().descendants_with_tokens() {
         // Fold items that span multiple lines
         if let Some(kind) = fold_kind(element.kind()) {
@@ -154,6 +156,7 @@ pub(crate) fn folding_ranges(file: &SourceFile) -> Vec<Fold> {
             }
         }
     }
+
     res
 }
 
@@ -190,6 +193,7 @@ where
     if !visited.insert(first.syntax().clone()) {
         return None;
     }
+
     let (mut last, mut last_vis) = (first.clone(), first.visibility());
     for element in first.syntax().siblings_with_tokens(Direction::Next) {
         let node = match element {
@@ -219,6 +223,7 @@ where
         // Stop if we find an item of a different kind or with a different visibility.
         break;
     }
+
     if first != last {
         Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
     } else {
@@ -241,10 +246,12 @@ fn contiguous_range_for_comment(
 ) -> Option<TextRange> {
     visited.insert(first.clone());
     // Only fold comments of the same flavor
+
     let group_kind = first.kind();
     if !group_kind.shape.is_line() {
         return None;
     }
+
     let mut last = first.clone();
     for element in first.syntax().siblings_with_tokens(Direction::Next) {
         match element {
@@ -274,6 +281,7 @@ fn contiguous_range_for_comment(
             NodeOrToken::Node(_) => break,
         };
     }
+
     if first != last {
         Some(TextRange::new(first.syntax().text_range().start(), last.syntax().text_range().end()))
     } else {
@@ -299,14 +307,17 @@ mod tests {
     #[track_caller]
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
         let (ranges, text) = extract_tags(ra_fixture, "fold");
+
         let parse = SourceFile::parse(&text, span::Edition::CURRENT);
         let mut folds = folding_ranges(&parse.tree());
         folds.sort_by_key(|fold| (fold.range.start(), fold.range.end()));
+
         assert_eq!(
             folds.len(),
             ranges.len(),
             "The amount of folds is different than the expected amount"
         );
+
         for (fold, (range, attr)) in folds.iter().zip(ranges.into_iter()) {
             assert_eq!(fold.range.start(), range.start(), "mismatched start of folding ranges");
             assert_eq!(fold.range.end(), range.end(), "mismatched end of folding ranges");

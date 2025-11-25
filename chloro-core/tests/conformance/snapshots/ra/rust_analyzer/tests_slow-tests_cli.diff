@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9436 bytes
-Chloro size:   9220 bytes
+Chloro size:   9221 bytes
 Rustfmt size:  9436 bytes
 
 ✗ Outputs DIFFER
@@ -19,9 +19,3 @@ Rustfmt size:  9436 bytes
  #[test]
  fn lsif_contains_generated_constant() {
      if skip_slow_tests() {
-         return;
-     }
--
-     let stdout = Project::with_fixture(
-         r#"
- //- /Cargo.toml

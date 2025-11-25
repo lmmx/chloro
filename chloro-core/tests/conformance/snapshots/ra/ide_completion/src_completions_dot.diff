@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35861 bytes
-Chloro size:   35796 bytes
+Chloro size:   35813 bytes
 Rustfmt size:  35861 bytes
 
 ✗ Outputs DIFFER
@@ -20,51 +20,15 @@ Rustfmt size:  35861 bytes
  };
  
  /// Complete dot accesses, i.e. fields or methods.
-         DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
-         _ => return,
-     };
--
+ 
      let has_parens = matches!(dot_access.kind, DotAccessKind::Method);
      let traits_in_scope = ctx.traits_in_scope();
 -
      // Suggest .await syntax for types that implement Future trait
++
      if let Some(future_output) = receiver_ty.into_future_output(ctx.db) {
          let await_str = SmolStr::new_static("await");
-             });
-         }
-     }
--
-     complete_fields(
-         acc,
-         ctx,
-     complete_methods(ctx, receiver_ty, &traits_in_scope, |func| {
-         acc.add_method(ctx, dot_access, func, None, None)
-     });
--
-     if ctx.config.enable_auto_iter && !receiver_ty.strip_references().impls_iterator(ctx.db) {
-         // FIXME:
-         // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
-         PathExprCtx { self_param: Some(self_param), .. } => self_param,
-         _ => return,
-     };
--
-     let ty = self_param.ty(ctx.db);
-     complete_fields(
-         acc,
-         // is also an inherent method, especially considering that it may be private, and filtered later).
-         seen_methods: FxHashSet<Function>,
-     }
--
-     impl<F> MethodCandidateCallback for Callback<'_, F>
-     where
-         F: FnMut(hir::Function),
-             ControlFlow::Continue(())
-         }
-     }
--
-     receiver.iterate_method_candidates_split_inherent(
-         ctx.db,
-         &ctx.scope,
+         let mut item = CompletionItem::new(
  #[cfg(test)]
  mod tests {
      use expect_test::expect;
@@ -116,27 +80,6 @@ Rustfmt size:  35861 bytes
      #[test]
      fn test_visibility_filtering() {
          check_no_kw(
-                 fd pub_field u32
-             "#]],
-         );
--
-         check_no_kw(
-             r#"
- //- /lib.rs crate:lib new_source_root:library
-                 fd pub_field u32
-             "#]],
-         );
--
-         check_no_kw(
-             r#"
- //- /lib.rs crate:lib new_source_root:library
-                 fd 1 f64
-             "#]],
-         );
--
-         check_no_kw(
-             r#"
- //- /lib.rs crate:lib new_source_root:local
              "#]],
          );
      }
@@ -144,27 +87,6 @@ Rustfmt size:  35861 bytes
      #[test]
      fn test_visibility_filtering_with_private_editable_enabled() {
          check_with_private_editable(
-                 fd super_field   u32
-             "#]],
-         );
--
-         check_with_private_editable(
-             r#"
- //- /lib.rs crate:lib new_source_root:library
-                 fd pub_field u32
-             "#]],
-         );
--
-         check_with_private_editable(
-             r#"
- //- /lib.rs crate:lib new_source_root:library
-                 fd 1 f64
-             "#]],
-         );
--
-         check_with_private_editable(
-             r#"
- //- /lib.rs crate:lib new_source_root:local
              "#]],
          );
      }
@@ -396,13 +318,6 @@ Rustfmt size:  35861 bytes
      #[test]
      fn test_struct_function_field_completion() {
          check_no_kw(
-                 fd fn_field fn()
-             "#]],
-         );
--
-         check_edit(
-             "fn_field",
-             r#"
  "#,
          );
      }
@@ -410,13 +325,6 @@ Rustfmt size:  35861 bytes
      #[test]
      fn test_tuple_function_field_completion() {
          check_no_kw(
-                 fd 1 fn()
-             "#]],
-         );
--
-         check_edit(
-             "1",
-             r#"
  "#,
          )
      }
@@ -424,20 +332,6 @@ Rustfmt size:  35861 bytes
      #[test]
      fn test_fn_field_dot_access_method_has_parens_false() {
          check_no_kw(
-                 me bar(…) fn(self, T) -> T
-             "#]],
-         );
--
-         check_edit(
-             "baz",
-             r#"
- }
- "#,
-         );
--
-         check_edit(
-             "bar",
-             r#"
  "#,
          );
      }

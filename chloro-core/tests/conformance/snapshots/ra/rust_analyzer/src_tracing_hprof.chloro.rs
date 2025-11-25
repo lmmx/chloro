@@ -72,6 +72,7 @@ where
         let (write_filter, allowed_names) = WriteFilter::from_spec(spec);
         // this filter the first pass for `tracing`: these are all the "profiling" spans, but things like
         // span depth or duration are not filtered here: that only occurs at write time.
+
         let profile_filter = filter::filter_fn(move |metadata| {
             let allowed = match &allowed_names {
                 Some(names) => names.contains(metadata.name()),
@@ -85,6 +86,7 @@ where
                 && metadata.name() != "compute_exhaustiveness_and_usefulness"
                 && !metadata.target().starts_with("chalk")
         });
+
         Self { aggregate: true, write_filter, _inner: PhantomData }.with_filter(profile_filter)
     }
 }
@@ -98,6 +100,7 @@ struct Data {
 impl Data {
     fn new(attrs: &Attributes<'_>) -> Self {
         let mut data = Self { start: Instant::now(), children: Vec::new(), fields: String::new() };
+
         let mut visitor = DataVisitor { string: &mut data.fields };
         attrs.record(&mut visitor);
         data
@@ -130,6 +133,7 @@ where
 {
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let span = ctx.span(id).unwrap();
+
         let data = Data::new(attrs);
         span.extensions_mut().insert(data);
     }
@@ -141,6 +145,7 @@ where
         let span = ctx.span(&id).unwrap();
         let data = span.extensions_mut().remove::<Data>().unwrap();
         let mut node = data.into_node(span.name());
+
         match span.parent() {
             Some(parent_span) => {
                 parent_span.extensions_mut().get_mut::<Data>().unwrap().children.push(node);
@@ -198,6 +203,7 @@ impl Node {
         if self.children.is_empty() {
             return;
         }
+
         self.children.sort_by_key(|it| it.name);
         let mut idx = 0;
         for i in 1..self.children.len() {
@@ -234,6 +240,7 @@ impl WriteFilter {
         } else {
             Duration::new(0, 0)
         };
+
         let depth = if let Some(idx) = spec.rfind('@') {
             let depth: usize = spec[idx + 1..].parse().expect("invalid profile depth");
             spec = &spec[..idx];

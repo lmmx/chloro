@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12531 bytes
-Chloro size:   11136 bytes
+Chloro size:   11142 bytes
 Rustfmt size:  12665 bytes
 
 ✗ Outputs DIFFER
@@ -126,10 +126,6 @@ Rustfmt size:  12665 bytes
      #[test]
      fn test_quote_hash_token_tree() {
          let a = mk_ident("hello");
--
-         let quoted = quote!(DUMMY =>#a);
-         assert_eq!(quoted.to_string(), "hello");
-         let t = format!("{quoted:#?}");
                IDENT   hello 937550:Root[0000, 0]@0..0#ROOT2024"#]]
          .assert_eq(&t);
      }
@@ -137,14 +133,9 @@ Rustfmt size:  12665 bytes
      #[test]
      fn test_quote_simple_derive_copy() {
          let name = mk_ident("Foo");
--
-         let quoted = quote! {DUMMY =>
-             impl Clone for #name {
-                 fn clone(&self) -> Self {
-                 }
              }
          };
--
+ 
 -        assert_eq!(
 -            quoted.to_string(),
 -            "impl Clone for Foo {fn clone (& self) -> Self {Self {}}}"
@@ -161,22 +152,7 @@ Rustfmt size:  12665 bytes
 -        let fields = fields
 -            .iter()
 -            .map(|it| quote!(DUMMY =>#it: self.#it.clone(), ));
--
 +        let fields = fields.iter().map(|it| quote!(DUMMY =>#it: self.#it.clone(), ));
+ 
          let mut builder = tt::TopSubtreeBuilder::new(crate::tt::Delimiter {
              kind: crate::tt::DelimiterKind::Brace,
-             open: DUMMY,
-         });
-         fields.for_each(|field| builder.extend_with_tt(field.view().as_token_trees()));
-         let list = builder.build();
--
-         let quoted = quote! {DUMMY =>
-             impl Clone for #struct_name {
-                 fn clone(&self) -> Self {
-                 }
-             }
-         };
--
-         assert_eq!(
-             quoted.to_string(),
-             "impl Clone for Foo {fn clone (& self) -> Self {Self {name : self . name . clone () , id : self . id . clone () ,}}}"

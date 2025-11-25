@@ -10,18 +10,22 @@ pub(crate) fn reformat_number_literal(acc: &mut Assists, ctx: &AssistContext<'_>
         ast::LiteralKind::IntNumber(it) => it,
         _ => return None,
     };
+
     let text = literal.text();
     if text.contains('_') {
         return remove_separators(acc, literal);
     }
+
     let (prefix, value, suffix) = literal.split_into_parts();
     if value.len() < MIN_NUMBER_OF_DIGITS_TO_FORMAT {
         return None;
     }
+
     let radix = literal.radix();
     let mut converted = prefix.to_owned();
     converted.push_str(&add_group_separators(value, group_size(radix)));
     converted.push_str(suffix);
+
     let group_id = GroupLabel("Reformat number literal".into());
     let label = format!("Convert {literal} to {converted}");
     let range = literal.syntax().text_range();
@@ -63,6 +67,7 @@ fn add_group_separators(s: &str, group_size: usize) -> String {
         }
         chars.push(ch);
     }
+
     chars.into_iter().rev().collect()
 }
 
@@ -89,6 +94,7 @@ mod tests {
             ("1234567890", 2, "12_34_56_78_90"),
             ("1234567890", 1, "1_2_3_4_5_6_7_8_9_0"),
         ];
+
         for case in cases {
             let (input, group_size, expected) = case;
             assert_eq!(add_group_separators(input, group_size), expected)
@@ -104,6 +110,7 @@ mod tests {
             ("const _: i32 = 10000i32$0;", "10000i32"),
             ("const _: i32 = 0b_10_0i32$0;", "0b_10_0i32"),
         ];
+
         for case in cases {
             check_assist_target(reformat_number_literal, case.0, case.1);
         }
@@ -120,6 +127,7 @@ mod tests {
             "const _: i32 = 0xFF$0;",
             "const _: i32 = 0xFFFF$0;",
         ];
+
         for case in cases {
             check_assist_not_applicable(reformat_number_literal, case);
         }
@@ -150,6 +158,7 @@ mod tests {
             ),
             ("const _: i32 = 1_0_0_0_i32$0;", "const _: i32 = 1000i32;", "Remove digit separators"),
         ];
+
         for case in cases {
             let (before, after, label) = case;
             check_assist_by_label(reformat_number_literal, before, after, label);

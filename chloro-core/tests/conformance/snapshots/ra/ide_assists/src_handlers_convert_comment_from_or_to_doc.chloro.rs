@@ -11,6 +11,7 @@ pub(crate) fn convert_comment_from_or_to_doc(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let comment = ctx.find_token_at_offset::<ast::Comment>()?;
+
     match comment.kind().doc {
         Some(_) => doc_to_comment(acc, comment),
         None => can_be_doc_comment(&comment).and_then(|style| comment_to_doc(acc, comment, style)),
@@ -23,6 +24,7 @@ fn doc_to_comment(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     } else {
         comment.syntax().text_range()
     };
+
     acc.add(
         AssistId::refactor_rewrite("doc_to_comment"),
         "Replace doc comment with comment",
@@ -73,6 +75,7 @@ fn comment_to_doc(
     } else {
         comment.syntax().text_range()
     };
+
     acc.add(
         AssistId::refactor_rewrite("comment_to_doc"),
         "Replace comment with doc comment",
@@ -167,6 +170,7 @@ fn comment_to_doc(
 fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     use syntax::SyntaxKind::*;
     // if the comment is not on its own line, then we do not propose anything.
+
     match comment.syntax().prev_token() {
         Some(prev) => {
             // There was a previous token, now check if it was a newline
@@ -177,6 +181,7 @@ fn can_be_doc_comment(comment: &ast::Comment) -> Option<CommentPlacement> {
     }
     // check if comment is followed by: `struct`, `trait`, `mod`, `fn`, `type`, `extern crate`,
     // `use` or `const`.
+
     let parent = comment.syntax().parent();
     let par_kind = parent.as_ref().map(|parent| parent.kind());
     matches!(par_kind, Some(STRUCT | TRAIT | MODULE | FN | TYPE_ALIAS | EXTERN_CRATE | USE | CONST))
@@ -191,6 +196,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     let prefix = comment.prefix();
     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
     // These tokens are allowed to exist between comments
+
     let skippable = |not: &SyntaxElement| {
         not.clone()
             .into_token()
@@ -199,6 +205,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
             .unwrap_or(false)
     };
     // Find all preceding comments (in reverse order) that have the same prefix
+
     let prev_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Prev)
@@ -208,6 +215,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .flatten()
         .skip(1);
     // skip the first element so we don't duplicate it in next_comments
+
     let next_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Next)
@@ -215,6 +223,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
         .take_while(|opt_com| opt_com.is_some())
         .flatten();
+
     let mut comments: Vec<_> = prev_comments.collect();
     comments.reverse();
     comments.extend(next_comments);

@@ -24,13 +24,16 @@ fn check_external_docs(
 ) {
     let (analysis, position) = fixture::position(ra_fixture);
     let links = analysis.external_docs(position, target_dir, sysroot).unwrap();
+
     let web_url = links.web_url;
     let local_url = links.local_url;
+
     match (expect_web_url, web_url) {
         (Some(expect), Some(url)) => expect.assert_eq(&url),
         (None, None) => (),
         _ => panic!("Unexpected web url"),
     }
+
     match (expect_local_url, local_url) {
         (Some(expect), Some(url)) => expect.assert_eq(&url),
         (None, None) => (),
@@ -49,6 +52,7 @@ fn check_rewrite(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect
 
 fn check_doc_links(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
     let key_fn = |&(FileRange { file_id, range }, _): &_| (file_id, range.start());
+
     let (analysis, position, mut expected) = fixture::annotations(ra_fixture);
     expected.sort_by_key(key_fn);
     let sema = &Semantics::new(&analysis.db);
@@ -616,6 +620,7 @@ mod M$0 {
 }
 "#,
     );
+
     check_doc_links(
         r#"
 mod M$0 {
@@ -758,6 +763,7 @@ pub mod $0Foo{
 "#,
         expect![[r#"[Foo](https://docs.rs/foo/*/foo/Foo/index.html)"#]],
     );
+
     check_rewrite(
         r#"
 //- /main.rs crate:foo

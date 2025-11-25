@@ -126,6 +126,7 @@ impl Runnable {
 
 pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
     let sema = Semantics::new(db);
+
     let mut res = Vec::new();
     // Record all runnables that come from macro expansions here instead.
     // In case an expansion creates multiple runnables we want to name them to avoid emitting a bunch of equally named runnables.
@@ -169,9 +170,11 @@ pub(crate) fn runnables(db: &RootDatabase, file_id: FileId) -> Vec<Runnable> {
             });
         }
     });
+
     sema.file_to_module_defs(file_id)
         .map(|it| runnable_mod_outline_definition(&sema, it))
         .for_each(|it| add_opt(it, None));
+
     res.extend(in_macro_expansion.into_iter().flat_map(|(_, runnables)| {
         let use_name_in_title = runnables.len() != 1;
         runnables.into_iter().map(move |mut r| {
@@ -191,7 +194,9 @@ pub(crate) fn related_tests(
     let sema = Semantics::new(db);
     let mut res: FxIndexSet<Runnable> = FxIndexSet::default();
     let syntax = sema.parse_guess_edition(position.file_id).syntax().clone();
+
     find_related_tests(&sema, &syntax, position, search_scope, &mut res);
+
     res.into_iter().sorted_by(cmp_runnables).collect()
 }
 
@@ -265,6 +270,7 @@ fn find_related_tests_in_module(
         _ => return,
     };
     let mod_source = parent_module.definition_source_range(sema.db);
+
     let file_id = mod_source.file_id.original_file(sema.db);
     let mod_scope = SearchScope::file_range(hir::FileRange { file_id, range: mod_source.value });
     let fn_pos = FilePosition {
@@ -327,6 +333,7 @@ pub(crate) fn runnable_fn(
             return None;
         }
     };
+
     let fn_source = sema.source(def)?;
     let nav = NavigationTarget::from_named(
         sema.db,
@@ -334,8 +341,10 @@ pub(crate) fn runnable_fn(
         SymbolKind::Function,
     )
     .call_site();
+
     let file_range = fn_source.syntax().original_file_range_with_macro_call_input(sema.db);
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
+
     let cfg = def.attrs(sema.db).cfg();
     Some(Runnable { use_name_in_title: false, nav, kind, cfg, update_test })
 }
@@ -358,9 +367,11 @@ pub(crate) fn runnable_mod(
             })
         })
         .join("::");
+
     let attrs = def.attrs(sema.db);
     let cfg = attrs.cfg();
     let nav = NavigationTarget::from_module_to_decl(sema.db, def).call_site();
+
     let module_source = sema.module_definition_node(def);
     let module_syntax = module_source.file_syntax(sema.db);
     let file_range = hir::FileRange {
@@ -368,6 +379,7 @@ pub(crate) fn runnable_mod(
         range: module_syntax.text_range(),
     };
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
+
     Some(Runnable {
         use_name_in_title: false,
         nav,
@@ -402,10 +414,12 @@ pub(crate) fn runnable_impl(
     let mut test_id = format!("{}{params}", adt_name.display(sema.db, edition));
     test_id.retain(|c| c != ' ');
     let test_id = TestId::Path(test_id);
+
     let impl_source = sema.source(*def)?;
     let impl_syntax = impl_source.syntax();
     let file_range = impl_syntax.original_file_range_with_macro_call_input(sema.db);
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
+
     Some(Runnable {
         use_name_in_title: false,
         nav,
@@ -425,6 +439,7 @@ fn runnable_mod_outline_definition(
     def: hir::Module,
 ) -> Option<Runnable> {
     def.as_source_file_id(sema.db)?;
+
     if !has_test_function_or_multiple_test_submodules(sema, &def, has_cfg_test(def.attrs(sema.db)))
     {
         return None;
@@ -439,8 +454,10 @@ fn runnable_mod_outline_definition(
             })
         })
         .join("::");
+
     let attrs = def.attrs(sema.db);
     let cfg = attrs.cfg();
+
     let mod_source = sema.module_definition_node(def);
     let mod_syntax = mod_source.file_syntax(sema.db);
     let file_range = hir::FileRange {
@@ -448,6 +465,7 @@ fn runnable_mod_outline_definition(
         range: mod_syntax.text_range(),
     };
     let update_test = UpdateTest::find_snapshot_macro(sema, file_range);
+
     Some(Runnable {
         use_name_in_title: false,
         nav: def.to_nav(sema.db).call_site(),
@@ -506,8 +524,10 @@ fn module_def_doctest(sema: &Semantics<'_, RootDatabase>, def: Definition) -> Op
         format_to!(path, "{}", def_name.display(db, edition));
         Some(path)
     })();
+
     let test_id = path
         .map_or_else(|| TestId::Name(def_name.display_no_db(edition).to_smolstr()), TestId::Path);
+
     let mut nav = match def {
         Definition::Module(def) => NavigationTarget::from_module_to_decl(db, def),
         def => def.try_to_nav(sema)?,
@@ -542,6 +562,7 @@ fn has_runnable_doc_test(attrs: &hir::Attrs) -> bool {
     const RUSTDOC_FENCES: [&str; 2] = ["```", "~~~"];
     const RUSTDOC_CODE_BLOCK_ATTRIBUTES_RUNNABLE: &[&str] =
         &["", "rust", "should_panic", "edition2015", "edition2018", "edition2021"];
+
     docs_from_attrs(attrs).is_some_and(|doc| {
         let mut in_code_block = false;
 
@@ -571,6 +592,7 @@ fn has_test_function_or_multiple_test_submodules(
     consider_exported_main: bool,
 ) -> bool {
     let mut number_of_test_submodules = 0;
+
     for item in module.declarations(sema.db) {
         match item {
             hir::ModuleDef::Function(f) => {
@@ -595,6 +617,7 @@ fn has_test_function_or_multiple_test_submodules(
             _ => (),
         }
     }
+
     number_of_test_submodules > 1
 }
 
@@ -649,6 +672,7 @@ impl UpdateTest {
             }
             map.insert(krate_name, res);
         }
+
         let mod_paths = SNAPSHOT_TEST_MACROS.get_or_init(|| {
             let mut map = FxHashMap::default();
             init(Self::EXPECT_CRATE, Self::EXPECT_MACROS, &mut map);
@@ -656,6 +680,7 @@ impl UpdateTest {
             init(Self::SNAPBOX_CRATE, Self::SNAPBOX_MACROS, &mut map);
             map
         });
+
         let search_scope = SearchScope::file_range(file_range);
         let find_macro = |paths: &[[Symbol; 2]]| {
             for path in paths {
@@ -673,6 +698,7 @@ impl UpdateTest {
             }
             false
         };
+
         UpdateTest {
             expect_test: find_macro(mod_paths.get(Self::EXPECT_CRATE).unwrap()),
             insta: find_macro(mod_paths.get(Self::INSTA_CRATE).unwrap()),
@@ -691,6 +717,7 @@ impl UpdateTest {
         if self.snapbox {
             builder.push("Snapbox");
         }
+
         let res: SmolStr = builder.join(" + ").into();
         if res.is_empty() {
             None

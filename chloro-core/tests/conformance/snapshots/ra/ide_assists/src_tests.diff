@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39798 bytes
-Chloro size:   39532 bytes
+Chloro size:   39548 bytes
 Rustfmt size:  40546 bytes
 
 ✗ Outputs DIFFER
@@ -75,18 +75,10 @@ Rustfmt size:  40546 bytes
 -        file_id: file_id.file_id(&db),
 -        range: selection.into(),
 -    };
--
 +    let frange = ide_db::FileRange { file_id: file_id.file_id(&db), range: selection.into() };
+ 
      let assist = assists(&db, &TEST_CONFIG, AssistResolveStrategy::All, frange)
          .into_iter()
-         .find(|assist| assist.id.0 == assist_id)
-                     .join(", ")
-             )
-         });
--
-     let actual = {
-         let source_change = assist
-             .source_change
  }
  
  #[track_caller]
@@ -107,31 +99,16 @@ Rustfmt size:  40546 bytes
 -        .file_text(file_with_caret_id.file_id(&db))
 -        .text(&db)
 -        .to_string();
--
++    let text_without_caret = db.file_text(file_with_caret_id.file_id(&db)).text(&db).to_string();
+ 
 -    let frange = hir::FileRange {
 -        file_id: file_with_caret_id,
 -        range: range_or_offset.into(),
 -    };
--
-+    let text_without_caret = db.file_text(file_with_caret_id.file_id(&db)).text(&db).to_string();
 +    let frange = hir::FileRange { file_id: file_with_caret_id, range: range_or_offset.into() };
+ 
      let sema = Semantics::new(&db);
      let ctx = AssistContext::new(sema, &config, frange);
-     let resolve = match expected {
-         handler(&mut acc, &ctx);
-     });
-     let mut res = acc.finish();
--
-     let assist = match assist_label {
-         Some(label) => res.into_iter().find(|resolved| resolved.label == label),
-         None if res.is_empty() => None,
-         // Pick the first as that is the one with the highest priority
-         None => Some(res.swap_remove(0)),
-     };
--
-     match (assist, expected) {
-         (Some(assist), ExpectedResult::After(after)) => {
-             let source_change = assist
  
              for file_system_edit in source_change.file_system_edits {
                  let (dst, contents) = match file_system_edit {
@@ -154,7 +131,7 @@ Rustfmt size:  40546 bytes
 +        FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
      let assists = assists(&db, &TEST_CONFIG, AssistResolveStrategy::None, frange);
      let mut assists = assists.iter();
--
+ 
 -    assert_eq!(
 -        assists.next().expect("expected assist").label,
 -        "Change visibility to pub(crate)"
@@ -188,11 +165,6 @@ Rustfmt size:  40546 bytes
      assert_eq!(assists.next().map(|it| it.label.to_string()), None);
  }
  
- }
- "#,
-     );
--
-     let assists = assists(
          &db,
          &TEST_CONFIG,
          AssistResolveStrategy::None,
@@ -203,10 +175,7 @@ Rustfmt size:  40546 bytes
 +        FileRange { file_id: frange.file_id.file_id(&db), range: frange.range },
      );
      let expected = labels(&assists);
--
-     expect![[r#"
-         Extract into...
-         Replace if let with match
+ 
              &db,
              &cfg,
              AssistResolveStrategy::None,
@@ -218,13 +187,6 @@ Rustfmt size:  40546 bytes
          );
          let expected = labels(&assists);
  
-         "#]]
-         .assert_eq(&expected);
-     }
--
-     {
-         let mut cfg = TEST_CONFIG;
-         cfg.allowed = Some(vec![AssistKind::RefactorExtract]);
              &db,
              &cfg,
              AssistResolveStrategy::None,
@@ -236,13 +198,6 @@ Rustfmt size:  40546 bytes
          );
          let expected = labels(&assists);
  
-         "#]]
-         .assert_eq(&expected);
-     }
--
-     {
-         let mut cfg = TEST_CONFIG;
-         cfg.allowed = Some(vec![AssistKind::QuickFix]);
              &db,
              &cfg,
              AssistResolveStrategy::None,
@@ -254,15 +209,6 @@ Rustfmt size:  40546 bytes
          );
          let expected = labels(&assists);
  
- }
- "#,
-     );
--
-     let mut cfg = TEST_CONFIG;
-     cfg.allowed = Some(vec![AssistKind::RefactorExtract]);
--
-     {
-         let assists = assists(
              &db,
              &cfg,
              AssistResolveStrategy::None,
@@ -274,13 +220,6 @@ Rustfmt size:  40546 bytes
          );
          assert_eq!(4, assists.len());
          let mut assists = assists.into_iter();
-         "#]]
-         .assert_debug_eq(&extract_into_function_assist);
-     }
--
-     {
-         let assists = assists(
-             &db,
                  assist_kind: AssistKind::RefactorExtract,
                  assist_subtype: None,
              }),
@@ -292,13 +231,6 @@ Rustfmt size:  40546 bytes
          );
          assert_eq!(4, assists.len());
          let mut assists = assists.into_iter();
-         "#]]
-         .assert_debug_eq(&extract_into_function_assist);
-     }
--
-     {
-         let assists = assists(
-             &db,
                  assist_kind: AssistKind::RefactorExtract,
                  assist_subtype: None,
              }),
@@ -310,12 +242,6 @@ Rustfmt size:  40546 bytes
          );
          assert_eq!(4, assists.len());
          let mut assists = assists.into_iter();
-         "#]]
-         .assert_debug_eq(&extract_into_function_assist);
-     }
--
-     {
-         let assists = assists(
              &db,
              &cfg,
              AssistResolveStrategy::All,

@@ -73,6 +73,7 @@ fn check_nth_fix_with_config(
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
     let after = trim_indent(ra_fixture_after);
+
     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
     let diagnostic = hir::attach_db(&db, || {
         super::full_diagnostics(
@@ -100,6 +101,7 @@ fn check_nth_fix_with_config(
         }
         actual
     };
+
     assert!(
         fix.target.contains_inclusive(file_position.offset),
         "diagnostic fix range {:?} does not touch cursor position {:?}",
@@ -124,6 +126,7 @@ pub(crate) fn check_has_fix(
     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
 ) {
     let after = trim_indent(ra_fixture_after);
+
     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
     let mut conf = DiagnosticsConfig::test_sample();
     conf.expr_fill_default = ExprFillDefaultMode::Default;
@@ -204,6 +207,7 @@ pub(crate) fn check_diagnostics_with_config(
     #[rust_analyzer::rust_fixture] ra_fixture: &str,
 ) {
     let _tracing = setup_tracing();
+
     let (db, files) = RootDatabase::with_many_files(ra_fixture);
     let mut annotations = files
         .iter()
@@ -281,12 +285,15 @@ pub(crate) fn check_diagnostics_with_config(
 fn test_disabled_diagnostics() {
     let mut config = DiagnosticsConfig::test_sample();
     config.disabled.insert("E0583".into());
+
     let (db, file_id) = RootDatabase::with_single_file(r#"mod foo;"#);
     let file_id = file_id.file_id(&db);
+
     let diagnostics = hir::attach_db(&db, || {
         super::full_diagnostics(&db, &config, &AssistResolveStrategy::All, file_id)
     });
     assert!(diagnostics.is_empty());
+
     let diagnostics = hir::attach_db(&db, || {
         super::full_diagnostics(
             &db,
@@ -303,6 +310,7 @@ fn minicore_smoke_test() {
     if test_utils::skip_slow_tests() {
         return;
     }
+
     fn check(minicore: MiniCore) {
         let source = minicore.source_code(MiniCore::RAW_SOURCE);
         let mut config = DiagnosticsConfig::test_sample();
@@ -313,6 +321,7 @@ fn minicore_smoke_test() {
         check_diagnostics_with_config(config, &source);
     }
     // Checks that there is no diagnostic in minicore for each flag.
+
     for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
         if flag == "clone" {
             // Clone without copy has `moved-out-of-ref`, so ignoring.

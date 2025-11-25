@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14759 bytes
-Chloro size:   13861 bytes
+Chloro size:   13889 bytes
 Rustfmt size:  14777 bytes
 
 ✗ Outputs DIFFER
@@ -32,35 +32,6 @@ Rustfmt size:  14777 bytes
  pub(crate) fn sugar_impl_future_into_async(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<()> {
-     let ret_type: ast::RetType = ctx.find_node_at_offset()?;
-     let function = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
--
-     if function.async_token().is_some() || function.const_token().is_some() {
-         return None;
-     }
--
-     let ast::Type::ImplTraitType(return_impl_trait) = ret_type.ty()? else {
-         return None;
-     };
--
-     let main_trait_path = return_impl_trait
-         .type_bound_list()?
-         .bounds()
-             _ => None,
-         })
-         .next()?;
--
-     let trait_type = ctx.sema.resolve_trait(&main_trait_path)?;
-     let scope = ctx.sema.scope(main_trait_path.syntax())?;
-     if trait_type != FamousDefs(&ctx.sema, scope.krate()).core_future_Future()? {
-         return None;
-     }
-     let future_output = unwrap_future_output(main_trait_path)?;
--
-     acc.add(
-         AssistId::refactor_rewrite("sugar_impl_future_into_async"),
-         "Convert `impl Future` into async",
      )
  }
  
@@ -85,17 +56,7 @@ Rustfmt size:  14777 bytes
  pub(crate) fn desugar_async_into_impl_future(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<()> {
-     let async_token = ctx.find_token_syntax_at_offset(SyntaxKind::ASYNC_KW)?;
-     let function = async_token.parent().and_then(ast::Fn::cast)?;
--
-     let rparen = function.param_list()?.r_paren_token()?;
-     let return_type = match function.ret_type() {
-         // unable to get a `ty` makes the action inapplicable
-         // No type means `-> ()`
-         None => None,
-     };
--
+ 
      let scope = ctx.sema.scope(function.syntax())?;
      let module = scope.module();
 -    let cfg = ctx
@@ -105,11 +66,6 @@ Rustfmt size:  14777 bytes
      let future_trait = FamousDefs(&ctx.sema, scope.krate()).core_future_Future()?;
      let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(future_trait), cfg)?;
      let edition = scope.krate().edition(ctx.db());
-     let trait_path = trait_path.display(ctx.db(), edition);
--
-     acc.add(
-         AssistId::refactor_rewrite("desugar_async_into_impl_future"),
-         "Convert async into `impl Future`",
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -117,13 +73,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_with_use() {
          check_assist(
-     }
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
      "#,
          );
      }
@@ -131,27 +80,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn desugar_with_use() {
          check_assist(
-     }
-     "#,
-         );
--
-         check_assist(
-             desugar_async_into_impl_future,
-             r#"
-     }
-     "#,
-         );
--
-         check_assist(
-             desugar_async_into_impl_future,
-             r#"
-     }
-     "#,
-         );
--
-         check_assist(
-             desugar_async_into_impl_future,
-             r#"
      "#,
          );
      }
@@ -159,13 +87,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_without_use() {
          check_assist(
-     }
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
      "#,
          );
      }
@@ -173,13 +94,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn desugar_without_use() {
          check_assist(
-     }
-     "#,
-         );
--
-         check_assist(
-             desugar_async_into_impl_future,
-             r#"
      "#,
          );
      }
@@ -187,27 +101,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn not_applicable() {
          check_assist_not_applicable(
-     }
-     "#,
-         );
--
-         check_assist_not_applicable(
-             sugar_impl_future_into_async,
-             r#"
-     }
-     "#,
-         );
--
-         check_assist_not_applicable(
-             sugar_impl_future_into_async,
-             r#"
-     }
-     "#,
-         );
--
-         check_assist_not_applicable(
-             desugar_async_into_impl_future,
-             r#"
      "#,
          );
      }
@@ -215,13 +108,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_definition_with_use() {
          check_assist(
-     async fn foo();
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
      "#,
          );
      }
@@ -229,13 +115,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_definition_without_use() {
          check_assist(
-     async fn foo();
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
      "#,
          );
      }
@@ -243,34 +122,6 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_more_types() {
          check_assist(
-     async fn foo();
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async fn foo() -> usize;
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async fn foo() -> (usize);
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async fn foo() -> (usize, usize);
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
      "#,
          );
      }
@@ -278,38 +129,3 @@ Rustfmt size:  14777 bytes
      #[test]
      fn sugar_with_modifiers() {
          check_assist_not_applicable(
-     const fn foo() -> impl core::future::F$0uture<Output = ()>;
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-             pub(crate) async unsafe fn foo() -> usize;
-         "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async unsafe fn foo();
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async unsafe extern "C" fn foo();
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"
-     async fn foo<T>() -> T;
-     "#,
-         );
--
-         check_assist(
-             sugar_impl_future_into_async,
-             r#"

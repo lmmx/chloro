@@ -192,6 +192,7 @@ impl IntegerExt for Integer {
         // which can fit all i128 values, so the result remains unaffected.
         let unsigned_fit = Integer::fit_unsigned(std::cmp::max(min as u128, max as u128));
         let signed_fit = std::cmp::max(Integer::fit_signed(min), Integer::fit_signed(max));
+
         if let Some(ity) = repr.int {
             let discr = Integer::from_attr(&interner, ity);
             let fit = if ity.is_signed() { signed_fit } else { unsigned_fit };
@@ -203,6 +204,7 @@ impl IntegerExt for Integer {
             }
             return (discr, ity.is_signed());
         }
+
         let at_least = if repr.c() {
             // This is usually I32, however it can be different on some platforms,
             // notably hexagon and arm-none/thumb-none
@@ -212,6 +214,7 @@ impl IntegerExt for Integer {
             Integer::I8
         };
         // If there are no negative values, we can use the unsigned fit.
+
         if min >= 0 {
             (std::cmp::max(unsigned_fit, at_least), false)
         } else {
@@ -334,6 +337,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for MaxUniverse {
                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
             );
         }
+
         t.super_visit_with(self)
     }
 
@@ -343,6 +347,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for MaxUniverse {
                 self.max_universe.as_u32().max(placeholder.universe.as_u32()),
             );
         }
+
         c.super_visit_with(self)
     }
 
@@ -408,8 +413,10 @@ pub(crate) fn for_trait_impls(
         Some(TyFingerprint::Dyn(trait_id)) => Some(trait_id.module(db)),
         _ => None,
     };
+
     let mut def_blocks =
         [trait_module.containing_block(), type_module.and_then(|it| it.containing_block())];
+
     let block_impls = iter::successors(block, |&block_id| {
         cov_mark::hit!(block_local_impls);
         block_id.loc(db).module.containing_block()
@@ -441,6 +448,7 @@ pub fn sizedness_constraint_for_ty<'db>(
     ty: Ty<'db>,
 ) -> Option<Ty<'db>> {
     use rustc_type_ir::TyKind::*;
+
     match ty.kind() {
         // these are always sized
         Bool | Char | Int(..) | Uint(..) | Float(..) | RawPtr(..) | Ref(..) | FnDef(..)
@@ -651,6 +659,7 @@ impl<'db> TypeFolder<DbInterner<'db>> for PlaceholderReplacer<'_, 'db> {
                 .opportunistic_resolve_var(self.infcx.interner, vid),
             _ => r0,
         };
+
         let r2 = match r1.kind() {
             RegionKind::RePlaceholder(p) => {
                 let replace_var = self.mapped_regions.get(&p);
@@ -671,7 +680,9 @@ impl<'db> TypeFolder<DbInterner<'db>> for PlaceholderReplacer<'_, 'db> {
             }
             _ => r1,
         };
+
         tracing::debug!(?r0, ?r1, ?r2, "fold_region");
+
         r2
     }
 
@@ -783,5 +794,6 @@ pub fn sizedness_fast_path<'db>(
             }
         }
     }
+
     false
 }

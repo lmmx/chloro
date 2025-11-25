@@ -143,6 +143,7 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         for goal in self.instantiate_nested_goals() {
             try_visit!(goal.visit_with(visitor));
         }
+
         V::Result::output()
     }
 
@@ -154,6 +155,7 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         let infcx = self.goal.infcx;
         let param_env = self.goal.goal.param_env;
         let mut orig_values = self.goal.orig_values.to_vec();
+
         let mut instantiated_goals = vec![];
         for step in &self.steps {
             match **step {
@@ -172,6 +174,7 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                 | inspect::ProbeStep::NestedProbe(_) => unreachable!(),
             }
         }
+
         let () = instantiate_canonical_state(
             infcx,
             Span::dummy(),
@@ -179,12 +182,14 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
             &mut orig_values,
             self.final_state,
         );
+
         if let Some(term_hack) = &self.goal.normalizes_to_term_hack {
             // FIXME: We ignore the expected term of `NormalizesTo` goals
             // when computing the result of its candidates. This is
             // scuffed.
             let _ = term_hack.constrain_and(infcx, param_env, |_| {});
         }
+
         instantiated_goals
             .into_iter()
             .map(|(source, goal)| self.instantiate_proof_tree_for_nested_goal(source, goal))
@@ -198,6 +203,7 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
         let infcx = self.goal.infcx;
         let param_env = self.goal.goal.param_env;
         let mut orig_values = self.goal.orig_values.to_vec();
+
         for step in &self.steps {
             match **step {
                 inspect::ProbeStep::RecordImplArgs { impl_args } => {
@@ -230,6 +236,7 @@ impl<'a, 'db> InspectCandidate<'a, 'db> {
                 | inspect::ProbeStep::NestedProbe(_) => unreachable!(),
             }
         }
+
         panic!("expected impl args probe step for `instantiate_impl_args`");
     }
 
@@ -370,6 +377,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
                 }
             }
         }
+
         match probe.kind {
             inspect::ProbeKind::ProjectionCompatibility
             | inspect::ProbeKind::ShadowedEnvProbing => {
@@ -429,6 +437,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         source: GoalSource,
     ) -> Self {
         let infcx = <&SolverContext<'db>>::from(infcx);
+
         let inspect::GoalEvaluation { uncanonicalized_goal, orig_values, final_revision, result } =
             root;
         // If there's a normalizes-to goal, AND the evaluation result with the result of
@@ -438,6 +447,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
                 term_hack_and_nested_certainty.map_or(Ok(Certainty::Yes), |(_, c)| c)?;
             Ok(ok.value.certainty.and(nested_goals_certainty))
         });
+
         InspectGoal {
             infcx,
             depth,
@@ -454,6 +464,7 @@ impl<'a, 'db> InspectGoal<'a, 'db> {
         if self.depth < visitor.config().max_depth {
             try_visit!(visitor.visit_goal(self));
         }
+
         V::Result::output()
     }
 }

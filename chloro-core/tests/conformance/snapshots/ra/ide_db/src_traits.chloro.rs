@@ -13,6 +13,7 @@ pub fn resolve_target_trait(
 ) -> Option<hir::Trait> {
     let ast_path =
         impl_def.trait_().map(|it| it.syntax().clone()).and_then(ast::PathType::cast)?.path()?;
+
     match sema.resolve_path(&ast_path) {
         Some(hir::PathResolution::Def(hir::ModuleDef::Trait(def))) => Some(def),
         _ => None,
@@ -31,9 +32,11 @@ pub fn get_missing_assoc_items(
     };
     // Names must be unique between constants and functions. However, type aliases
     // may share the same name as a function or constant.
+
     let mut impl_fns_consts = FxHashSet::default();
     let mut impl_type = FxHashSet::default();
     let edition = imp.module(sema.db).krate().edition(sema.db);
+
     for item in imp.items(sema.db) {
         match item {
             hir::AssocItem::Function(it) => {
@@ -49,6 +52,7 @@ pub fn get_missing_assoc_items(
             }
         }
     }
+
     resolve_target_trait(sema, impl_def).map_or(vec![], |target_trait| {
         target_trait
             .items(sema.db)
@@ -132,6 +136,7 @@ mod tests {
     fn check_trait(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
+
         let file = sema.parse(position.file_id);
         let impl_block: ast::Impl =
             sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
@@ -145,6 +150,7 @@ mod tests {
     fn check_missing_assoc(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let (db, position) = position(ra_fixture);
         let sema = Semantics::new(&db);
+
         let file = sema.parse(position.file_id);
         let impl_block: ast::Impl =
             sema.find_node_at_offset_with_descend(file.syntax(), position.offset).unwrap();
@@ -213,6 +219,7 @@ impl Foo for u8 {
                 FOO
                 bar"#]],
         );
+
         check_missing_assoc(
             r#"
 pub trait Foo {
@@ -226,6 +233,7 @@ impl Foo for u8 {
             expect![[r#"
                 bar"#]],
         );
+
         check_missing_assoc(
             r#"
 pub trait Foo {
@@ -238,6 +246,7 @@ impl Foo for u8 {
 }"#,
             expect![[r#""#]],
         );
+
         check_missing_assoc(
             r#"
 pub struct Foo;
@@ -246,6 +255,7 @@ impl Foo {
 }"#,
             expect![[r#""#]],
         );
+
         check_missing_assoc(
             r#"
 trait Tr {

@@ -167,6 +167,7 @@ impl TestDB {
         let file_module = self.module_for_file(position.file_id.file_id(self));
         let mut def_map = file_module.def_map(self);
         let module = self.mod_at_position(def_map, position);
+
         def_map = match self.block_at_position(def_map, position) {
             Some(it) => it,
             None => return def_map.module_id(module),
@@ -221,6 +222,7 @@ impl TestDB {
                 res = module;
             }
         }
+
         res
     }
 
@@ -259,9 +261,11 @@ impl TestDB {
             }
         }
         // Find the innermost block expression that has a `DefMap`.
+
         let def_with_body = fn_def?.into();
         let source_map = self.body_with_source_map(def_with_body).1;
         let scopes = self.expr_scopes(def_with_body);
+
         let root_syntax_node = self.parse(position.file_id).syntax_node();
         let scope_iter =
             algo::ancestors_at_offset(&root_syntax_node, position.offset).filter_map(|node| {
@@ -274,6 +278,7 @@ impl TestDB {
                 let scope = scopes.scope_for(expr_id).unwrap();
                 Some(scope)
             });
+
         for scope in scope_iter {
             let mut containing_blocks =
                 scopes.scope_chain(Some(scope)).filter_map(|scope| scopes.block(scope));
@@ -282,6 +287,7 @@ impl TestDB {
                 return Some(block);
             }
         }
+
         None
     }
 

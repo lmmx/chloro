@@ -10,13 +10,16 @@ pub(crate) fn convert_nested_function_to_closure(
 ) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let function = name.syntax().parent().and_then(ast::Fn::cast)?;
+
     if !is_nested_function(&function) || is_generic(&function) || has_modifiers(&function) {
         return None;
     }
+
     let target = function.syntax().text_range();
     let body = function.body()?;
     let name = function.name()?;
     let param_list = function.param_list()?;
+
     acc.add(
         AssistId::refactor_rewrite("convert_nested_function_to_closure"),
         "Convert nested function to closure",

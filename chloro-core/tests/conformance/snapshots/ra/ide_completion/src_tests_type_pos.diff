@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27572 bytes
-Chloro size:   27559 bytes
+Chloro size:   27573 bytes
 Rustfmt size:  27572 bytes
 
 ✗ Outputs DIFFER
@@ -17,97 +17,71 @@ Rustfmt size:  27572 bytes
          "#]],
      );
 -
-     check_with_base_items(
-         r#"
- trait MyTrait<T, U> {
-             kw self::
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"
- trait MyTrait<T, U> {
-             kw self::
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"
- trait MyTrait<T, U = u8> {
-             kw self::
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"
- trait MyTrait<T, U = u8> {
-             kw self::
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"
- trait MyTrait {
-             kw self::
-         "#]],
-     );
--
-     check_with_base_items(
-         r#"
- trait MyTrait {
-             kw self::
-         "#]],
-     );
--
      // Method generic params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Associated type generic params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Type generic params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Type alias generic params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Enum variant params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Trait params
++
      check_with_base_items(
          r#"
+     const X: usize = 0;
              kw self::
          "#]],
      );
 -
      // Trait alias params
++
      check_with_base_items(
          r#"
+     #![feature(trait_alias)]
              kw self::
          "#]],
      );
 -
      // Omitted lifetime params
++
      check_with_base_items(
          r#"
+ struct S<'a, 'b, const C: usize, T>(core::marker::PhantomData<&'a &'b T>);

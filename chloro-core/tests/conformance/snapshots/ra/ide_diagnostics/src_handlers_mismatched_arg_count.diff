@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10574 bytes
-Chloro size:   10265 bytes
+Chloro size:   10270 bytes
 Rustfmt size:  10774 bytes
 
 ✗ Outputs DIFFER
@@ -68,13 +68,6 @@ Rustfmt size:  10774 bytes
      #[test]
      fn simple_free_fn_zero() {
          check_diagnostics(
-            //^^^ error: expected 0 arguments, found 1
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- fn zero() {}
  "#,
          );
      }
@@ -82,13 +75,6 @@ Rustfmt size:  10774 bytes
      #[test]
      fn simple_free_fn_one() {
          check_diagnostics(
-           //^^ error: expected 1 argument, found 0
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- fn one(_arg: u8) {}
  "#,
          );
      }
@@ -96,13 +82,6 @@ Rustfmt size:  10774 bytes
      #[test]
      fn method_as_fn() {
          check_diagnostics(
- }          //^^ error: expected 1 argument, found 0
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- struct S;
  "#,
          );
      }
@@ -110,13 +89,6 @@ Rustfmt size:  10774 bytes
      #[test]
      fn method_with_arg() {
          check_diagnostics(
-             }         //^^ error: expected 1 argument, found 0
-             "#,
-         );
--
-         check_diagnostics(
-             r#"
- struct S;
  "#,
          );
      }
@@ -152,13 +124,6 @@ Rustfmt size:  10774 bytes
      #[test]
      fn rest_pat_in_macro_expansion() {
          check_diagnostics(
- }
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- #![allow(dead_code)]
  "#,
          );
      }

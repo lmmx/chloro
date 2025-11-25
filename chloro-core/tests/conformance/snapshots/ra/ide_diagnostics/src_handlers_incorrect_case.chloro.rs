@@ -31,14 +31,17 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Option<Vec<Ass
     let root = ctx.sema.db.parse_or_expand(d.file);
     let name_node = d.ident.to_node(&root);
     let def = NameClass::classify(&ctx.sema, &name_node)?.defined()?;
+
     let name_node = InFile::new(d.file, name_node.syntax());
     let frange = name_node.original_file_range_rooted(ctx.sema.db);
+
     let label = format!("Rename to {}", d.suggested_text);
     let mut res = unresolved_fix("change_case", &label, frange.range);
     if ctx.resolve.should_resolve(&res.id) {
         let source_change = def.rename(&ctx.sema, &d.suggested_text, RenameDefinition::Yes);
         res.source_change = Some(source_change.ok().unwrap_or_default());
     }
+
     Some(vec![res])
 }
 
@@ -63,6 +66,7 @@ pub fn some_fn(val: TestStruct) -> TestStruct {
 }
 "#,
         );
+
         check_fix(
             r#"
 pub fn some_fn(NonSnakeCase$0: u8) -> u8 {
@@ -75,6 +79,7 @@ pub fn some_fn(non_snake_case: u8) -> u8 {
 }
 "#,
         );
+
         check_fix(
             r#"
 pub fn SomeFn$0(val: u8) -> u8 {
@@ -87,6 +92,7 @@ pub fn some_fn(val: u8) -> u8 {
 }
 "#,
         );
+
         check_fix(
             r#"
 fn some_fn() {
@@ -101,6 +107,7 @@ fn some_fn() {
 }
 "#,
         );
+
         check_fix(
             r#"
 static S: i32 = M::A;
@@ -803,6 +810,7 @@ fn func() {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 struct Foo(u8);
@@ -815,6 +823,7 @@ fn func() {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 fn main() {
@@ -834,6 +843,7 @@ fn main() {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 enum Foo { V1, V2 }
@@ -860,6 +870,7 @@ fn func() {
 }
 "#,
         );
+
         check_fix(
             r#"
 //- minicore: iterators

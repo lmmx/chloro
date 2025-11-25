@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19253 bytes
-Chloro size:   19323 bytes
+Chloro size:   19327 bytes
 Rustfmt size:  20465 bytes
 
 ✗ Outputs DIFFER
@@ -191,10 +191,9 @@ Rustfmt size:  20465 bytes
              }
              HirFileId::MacroFile(m)
                  if matches!(m.kind(db), MacroKind::Attr | MacroKind::AttrBuiltIn) =>
-             }
              _ => return None,
          };
--
+ 
 -        let FileRange {
 -            file_id: editioned_file_id,
 -            range,
@@ -203,11 +202,6 @@ Rustfmt size:  20465 bytes
              db,
              &db.expansion_span_map(file_id),
              self.value.borrow().text_range(),
-         )?;
--
-         let kind = self.kind();
-         let value = db
-             .parse(editioned_file_id)
          self,
          db: &dyn db::ExpandDatabase,
      ) -> Option<(FileRange, SyntaxContext)> {
@@ -345,10 +339,9 @@ Rustfmt size:  20465 bytes
              }
              HirFileId::MacroFile(m) => m,
          };
-         if !matches!(file_id.kind(db), MacroKind::Attr | MacroKind::AttrBuiltIn) {
              return None;
          }
--
+ 
 -        let FileRange {
 -            file_id: editioned_file_id,
 -            range,
@@ -364,6 +357,7 @@ Rustfmt size:  20465 bytes
 -            .parse(editioned_file_id)
 -            .syntax_node()
 -            .covering_element(range);
++
 +        let anc = db.parse(editioned_file_id).syntax_node().covering_element(range);
          let value = anc.ancestors().find_map(N::cast)?;
          Some(InRealFile::new(editioned_file_id, value))

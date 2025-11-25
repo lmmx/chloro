@@ -22,10 +22,12 @@ pub(crate) fn convert_named_struct_to_tuple_struct(
         .map(Either::Left)
         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
     let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+
     if ctx.offset() > field_list.syntax().text_range().start() {
         // Assist could be distracting after the braces
         return None;
     }
+
     let record_fields = match field_list {
         ast::FieldList::RecordFieldList(it) => it,
         ast::FieldList::TupleFieldList(_) => return None,
@@ -34,6 +36,7 @@ pub(crate) fn convert_named_struct_to_tuple_struct(
         Either::Left(s) => Either::Left(ctx.sema.to_def(s)?),
         Either::Right(v) => Either::Right(ctx.sema.to_def(v)?),
     };
+
     acc.add(
         AssistId::refactor_rewrite("convert_named_struct_to_tuple_struct"),
         "Convert to tuple struct",
@@ -67,8 +70,10 @@ fn edit_struct_def(
     });
     let tuple_fields = ast::make::tuple_field_list(tuple_fields);
     let record_fields_text_range = record_fields.syntax().text_range();
+
     edit.edit_file(ctx.vfs_file_id());
     edit.replace(record_fields_text_range, tuple_fields.syntax().text());
+
     if let Either::Left(strukt) = strukt {
         if let Some(w) = strukt.where_clause() {
             let mut where_clause = w.to_string();
@@ -94,6 +99,7 @@ fn edit_struct_def(
             edit.insert(record_fields_text_range.end(), ";");
         }
     }
+
     if let Some(tok) = record_fields
         .l_curly_token()
         .and_then(|tok| tok.prev_token())
@@ -113,6 +119,7 @@ fn edit_struct_references(
         Either::Right(v) => Definition::Variant(v),
     };
     let usages = strukt_def.usages(&ctx.sema).include_self_refs().all();
+
     for (file_id, refs) in usages {
         edit.edit_file(file_id.file_id(ctx.db()));
         for r in refs {
@@ -133,12 +140,14 @@ fn process_struct_name_reference(
     // A `PathSegment` always belongs to a `Path`, so there's at least one `Path` at this point.
     let full_path =
         path_segment.syntax().parent()?.ancestors().map_while(ast::Path::cast).last()?;
+
     if full_path.segment()?.name_ref()? != *name_ref {
         // `name_ref` isn't the last segment of the path, so `full_path` doesn't point to the
         // struct we want to edit.
         return None;
     }
     // FIXME: Processing RecordPat and RecordExpr for unordered fields, and insert RestPat
+
     let parent = full_path.syntax().parent()?;
     match_ast! {
         match parent {
@@ -177,6 +186,7 @@ fn process_struct_name_reference(
             _ => {}
         }
     }
+
     Some(())
 }
 
@@ -310,6 +320,7 @@ struct A(Inner);
 fn foo(A(..): A) {}
 "#,
         );
+
         check_assist(
             convert_named_struct_to_tuple_struct,
             r#"
@@ -522,6 +533,7 @@ impl Outer {
     }
 }"#,
         );
+
         check_assist(
             convert_named_struct_to_tuple_struct,
             r#"
@@ -794,6 +806,7 @@ impl Outer {
     }
 }"#,
         );
+
         check_assist(
             convert_named_struct_to_tuple_struct,
             r#"

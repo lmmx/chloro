@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8087 bytes
-Chloro size:   7986 bytes
+Chloro size:   7988 bytes
 Rustfmt size:  8281 bytes
 
 ✗ Outputs DIFFER
@@ -93,12 +93,3 @@ Rustfmt size:  8281 bytes
      }
  }
  
-     pred: impl Upcast<DbInterner<'db>, Predicate<'db>>,
- ) -> bool {
-     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), param_env, pred);
--
-     let result = infcx.evaluate_obligation(&obligation);
-     debug!(?result);
--
-     result.must_apply_modulo_regions()
- }

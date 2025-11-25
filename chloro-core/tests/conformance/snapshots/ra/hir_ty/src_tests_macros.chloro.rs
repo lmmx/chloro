@@ -875,6 +875,7 @@ fn main() {
 }
     "#;
     let fixture = format!("{fixture}\n//- /foo.rs\n{data}");
+
     {
         let _b = bench("include macro");
         check_types(&fixture);

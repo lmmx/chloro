@@ -8,17 +8,21 @@ use crate::{AssistContext, AssistId, Assists};
 
 pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
+
     let cursor_in_range =
         parens.l_paren_token()?.text_range().contains_range(ctx.selection_trimmed())
             || parens.r_paren_token()?.text_range().contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
+
     let expr = parens.expr()?;
+
     let parent = parens.syntax().parent()?;
     if expr.needs_parens_in(&parent) {
         return None;
     }
+
     let target = parens.syntax().text_range();
     acc.add(
         AssistId::refactor("remove_parentheses"),
@@ -67,6 +71,7 @@ mod tests {
     #[test]
     fn remove_parens_closure() {
         check_assist(remove_parentheses, r#"fn f() { &$0(|| 42) }"#, r#"fn f() { &|| 42 }"#);
+
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(|| 42).f() }"#);
     }
     #[test]
@@ -146,6 +151,7 @@ mod tests {
             r#"fn f() { let _ = $0(S{}) else { return }; }"#,
         );
         // logic operators can't directly appear in the let-else
+
         check_assist_not_applicable(
             remove_parentheses,
             r#"fn f() { let _ = $0(false || false) else { return }; }"#,
@@ -162,6 +168,7 @@ mod tests {
             r#"fn f() { match () { _ =>$0(()) } }"#,
             r#"fn f() { match () { _ => () } }"#,
         );
+
         check_assist(
             remove_parentheses,
             r#"fn x() -> u8 { { [$0({ 0 } + 1)] } }"#,
@@ -191,6 +198,7 @@ mod tests {
             r#"fn x() -> u8 { $0(({ 0 } + 1)) }"#,
             r#"fn x() -> u8 { ({ 0 } + 1) }"#,
         );
+
         check_assist(
             remove_parentheses,
             r#"fn x() -> u8 { (($0{ 0 } + 1)) }"#,
@@ -204,6 +212,7 @@ mod tests {
             r#"fn f() { 2 + $0(return 2) }"#,
             r#"fn f() { 2 + return 2 }"#,
         );
+
         check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(return 2) + 2 }"#);
     }
     #[test]
@@ -219,6 +228,7 @@ mod tests {
             r#"fn f<F>(call: F, arg: usize) where F: Fn(usize) { call(arg); }"#,
         );
         // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
+
         check_assist_not_applicable(
             remove_parentheses,
             r#"

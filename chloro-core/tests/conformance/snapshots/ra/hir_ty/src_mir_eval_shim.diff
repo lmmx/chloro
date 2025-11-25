@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 69401 bytes
-Chloro size:   69393 bytes
+Chloro size:   69401 bytes
 Rustfmt size:  69401 bytes
 
 ✗ Outputs DIFFER
@@ -37,53 +37,10 @@ Rustfmt size:  69401 bytes
  macro_rules! from_bytes {
      ($ty:tt, $value:expr) => {
          ($ty::from_le_bytes(match ($value).try_into() {
-         if self.not_special_fn_cache.borrow().contains(&def) {
-             return Ok(false);
-         }
--
-         let function_data = self.db.function_signature(def);
-         let attrs = self.db.attrs(def.into());
-         let is_intrinsic = FunctionSignature::is_intrinsic(self.db, def);
--
-         if is_intrinsic {
-             return self.exec_intrinsic(
-                 function_data.name.as_str(),
-                 )
-                 .map(|()| true);
-         }
--
-         let alloc_fn =
-             attrs.iter().filter_map(|it| it.path().as_ident()).map(|it| it.symbol()).find(|it| {
-                 [
-     fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
-         use LangItem::*;
-         let attrs = self.db.attrs(def.into());
--
-         if attrs.by_key(sym::rustc_const_panic_str).exists() {
-             // `#[rustc_const_panic_str]` is treated like `lang = "begin_panic"` by rustc CTFE.
-             return Some(LangItem::BeginPanic);
-         }
--
-         let candidate = attrs.lang_item()?;
-         // We want to execute these functions with special logic
-         // `PanicFmt` is not detected here as it's redirected later.
-         if [BeginPanic, SliceLen, DropInPlace].contains(&candidate) {
-             return Some(candidate);
-         }
--
-         None
-     }
- 
-     ) -> Result<'db, ()> {
-         // We are a single threaded runtime with no UB checking and no optimization, so
-         // we can implement atomic intrinsics as normal functions.
--
          if name.starts_with("singlethreadfence_") || name.starts_with("fence_") {
              return Ok(());
          }
 -
          // The rest of atomic intrinsics have exactly one generic arg
--
+ 
          let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
-             return Err(MirEvalError::InternalError(
-                 "atomic intrinsic generic arg is not provided".into(),

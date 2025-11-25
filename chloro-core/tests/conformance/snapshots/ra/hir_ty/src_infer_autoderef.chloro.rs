@@ -29,6 +29,7 @@ impl<'db> Autoderef<'_, 'db> {
         if steps.is_empty() {
             return InferOk { obligations: PredicateObligations::new(), value: vec![] };
         }
+
         let targets = steps.iter().skip(1).map(|&(ty, _)| ty).chain(iter::once(self.final_ty()));
         let steps: Vec<_> = steps
             .iter()
@@ -42,6 +43,7 @@ impl<'db> Autoderef<'_, 'db> {
             .zip(targets)
             .map(|(autoderef, target)| Adjustment { kind: Adjust::Deref(autoderef), target })
             .collect();
+
         InferOk {
             obligations: self.take_obligations(),
             value: steps,

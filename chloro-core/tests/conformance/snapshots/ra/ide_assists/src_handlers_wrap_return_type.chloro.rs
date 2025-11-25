@@ -27,10 +27,12 @@ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             _ => return None,
         }
     };
+
     let type_ref = &ret_type.ty()?;
     let ty = ctx.sema.resolve_type(type_ref)?;
     let ty_adt = ty.as_adt();
     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(type_ref.syntax())?.krate());
+
     for kind in WrapperKind::ALL {
         let Some(core_wrapper) = kind.core_type(&famous_defs) else {
             continue;
@@ -133,6 +135,7 @@ pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             },
         );
     }
+
     Some(())
 }
 
@@ -149,6 +152,7 @@ impl WrapperKind {
             WrapperKind::Option => "wrap_return_type_in_option",
             WrapperKind::Result => "wrap_return_type_in_result",
         };
+
         AssistId::refactor_rewrite(s)
     }
 
@@ -193,6 +197,7 @@ fn wrapper_alias<'db>(
         hir::PathKind::Plain,
         iter::once(hir::Name::new_symbol_root(wrapper)),
     );
+
     ctx.sema.resolve_mod_path(ast_ret_type.syntax(), &wrapper_path).and_then(|def| {
         def.filter_map(|def| match def.into_module_def() {
             hir::ModuleDef::TypeAlias(alias) => {
@@ -775,6 +780,7 @@ fn foo() -> Option<i32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -932,6 +938,7 @@ fn foo(the_field: u32) -> Option<u32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1015,6 +1022,7 @@ fn foo() -> Option<i32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1056,6 +1064,7 @@ fn foo(the_field: u32) -> Option<u32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1085,6 +1094,7 @@ fn foo(the_field: u32) -> Option<u32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1116,6 +1126,7 @@ fn foo(the_field: u32) -> Option<u32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1169,6 +1180,7 @@ fn foo() -> Option<i32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1218,6 +1230,7 @@ fn foo() -> Option<i32> {
 "#,
             WrapperKind::Option.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1806,6 +1819,7 @@ fn foo() -> Result<i32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -1963,6 +1977,7 @@ fn foo(the_field: u32) -> Result<u32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2046,6 +2061,7 @@ fn foo() -> Result<i32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2087,6 +2103,7 @@ fn foo(the_field: u32) -> Result<u32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2116,6 +2133,7 @@ fn foo(the_field: u32) -> Result<u32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2147,6 +2165,7 @@ fn foo(the_field: u32) -> Result<u32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2200,6 +2219,7 @@ fn foo() -> Result<i32> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2249,6 +2269,7 @@ fn foo() -> Result<i32> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2333,6 +2354,7 @@ fn foo() -> Result<i32, ${0:_}> {
 "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2352,6 +2374,7 @@ fn foo() -> Result<i32, ${0:_}> {
             "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"
@@ -2371,6 +2394,7 @@ fn foo() -> Result<'_, i32, ${0:_}> {
             "#,
             WrapperKind::Result.label(),
         );
+
         check_assist_by_label(
             wrap_return_type,
             r#"

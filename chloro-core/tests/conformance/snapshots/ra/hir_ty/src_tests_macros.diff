@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30351 bytes
-Chloro size:   30349 bytes
+Chloro size:   30350 bytes
 Rustfmt size:  30351 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,3 @@ Rustfmt size:  30351 bytes
  use super::{check_infer, check_types};
  
  #[test]
- }
-     "#;
-     let fixture = format!("{fixture}\n//- /foo.rs\n{data}");
--
-     {
-         let _b = bench("include macro");
-         check_types(&fixture);

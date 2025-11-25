@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9578 bytes
-Chloro size:   9506 bytes
+Chloro size:   9513 bytes
 Rustfmt size:  9883 bytes
 
 ✗ Outputs DIFFER
@@ -15,11 +15,6 @@ Rustfmt size:  9883 bytes
  /// Parser for a format-like string. It is more allowing in terms of string contents,
  /// as we expect variable placeholders to be filled with expressions.
  ///
-         MaybeIncorrect,
-         FormatOpts,
-     }
--
-     let mut state = State::NotArg;
      let mut current_expr = String::new();
      let mut extracted_expressions = Vec::new();
      let mut output = String::new();
@@ -27,11 +22,10 @@ Rustfmt size:  9883 bytes
      // Count of open braces inside of an expression.
      // We assume that user knows what they're doing, thus we treat it like a correct pattern, e.g.
      // "{MyStruct { val_a: 0, val_b: 1 }}".
++
      let mut inexpr_open_count = 0;
--
+ 
      let mut chars = input.chars().peekable();
-     while let Some(chr) = chars.next() {
-         match (state, chr) {
                      // if the expression consists of a single number, like "0" or "12", it can refer to
                      // format args in the order they are specified.
                      // see: https://doc.rust-lang.org/std/fmt/#positional-parameters
@@ -43,17 +37,6 @@ Rustfmt size:  9883 bytes
                          output.push_str(trimmed);
                      } else if matches!(state, State::Expr) {
                          extracted_expressions.push(Arg::Expr(trimmed.into()));
-             }
-         }
-     }
--
-     if state != State::NotArg {
-         return Err(());
-     }
--
-     Ok((output, extracted_expressions))
- }
- 
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -63,10 +46,7 @@ Rustfmt size:  9883 bytes
      fn check(input: &str, expect: &Expect) {
          let (output, exprs) = parse_format_exprs(input).unwrap_or(("-".to_owned(), vec![]));
          let outcome_repr = if !exprs.is_empty() {
-         } else {
-             output
-         };
--
+ 
          expect.assert_eq(&outcome_repr);
      }
 -
@@ -117,8 +97,6 @@ Rustfmt size:  9883 bytes
              ("{foo::bar::baz()}", expect![["{}; foo::bar::baz()"]]),
              ("{foo::bar():?}", expect![["{:?}; foo::bar()"]]),
          ];
--
-         for (input, output) in test_vector {
              check(input, output)
          }
      }

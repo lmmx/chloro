@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4500 bytes
-Chloro size:   4499 bytes
+Chloro size:   4501 bytes
 Rustfmt size:  5051 bytes
 
 ✗ Outputs DIFFER
@@ -72,9 +72,8 @@ Rustfmt size:  5051 bytes
 -        .expect("expected a marker ($0)");
 +    let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
      let offset = range_or_offset.expect_offset();
--
+ 
      let db = &host.db;
-     let annotations = change_fixture
          .files
          .iter()
          .flat_map(|&file_id| {
@@ -110,13 +109,6 @@ Rustfmt size:  5051 bytes
  }
  
  /// Creates analysis from a multi-file fixture with annotations without $0
-     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
-     host.db.enable_proc_attr_macros();
-     host.db.apply_change(change_fixture.change);
--
-     let db = &host.db;
-     let annotations = change_fixture
-         .files
          .flat_map(|&file_id| {
              let file_text = host.analysis().file_text(file_id.file_id(db)).unwrap();
              let annotations = extract_annotations(&file_text);

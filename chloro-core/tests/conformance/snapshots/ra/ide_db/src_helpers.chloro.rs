@@ -38,6 +38,7 @@ pub fn pick_token<T: AstToken>(mut tokens: TokenAtOffset<SyntaxToken>) -> Option
 /// Converts the mod path struct into its ast representation.
 pub fn mod_path_to_ast(path: &hir::ModPath, edition: Edition) -> ast::Path {
     let _p = tracing::info_span!("mod_path_to_ast").entered();
+
     let mut segments = Vec::new();
     let mut is_abs = false;
     match path.kind {
@@ -49,6 +50,7 @@ pub fn mod_path_to_ast(path: &hir::ModPath, edition: Edition) -> ast::Path {
         }
         hir::PathKind::Abs => is_abs = true,
     }
+
     segments.extend(path.segments().iter().map(|segment| {
         make::path_segment(make::name_ref(&segment.display_no_db(edition).to_smolstr()))
     }));
@@ -77,6 +79,7 @@ pub fn visit_file_defs(
         cb(def.into());
     }
     module.impl_defs(db).into_iter().for_each(|impl_| cb(impl_.into()));
+
     let is_root = module.is_crate_root();
     module
         .legacy_macros(db)
@@ -91,6 +94,7 @@ pub fn lint_eq_or_in_group(lint: &str, lint_is: &str) -> bool {
     if lint == lint_is {
         return true;
     }
+
     if let Some(group) = generated::lints::DEFAULT_LINT_GROUPS
         .iter()
         .chain(generated::lints::CLIPPY_LINT_GROUPS.iter())

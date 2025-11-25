@@ -17,10 +17,12 @@ pub(crate) fn generate_derive(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         .filter(|(name, _arg)| name == "derive")
         .map(|(_name, arg)| arg)
         .next();
+
     let delimiter = match &derive_attr {
         None => None,
         Some(tt) => Some(tt.right_delimiter_token()?),
     };
+
     acc.add(AssistId::generate("generate_derive"), "Add `#[derive]`", target, |edit| {
         match derive_attr {
             None => {

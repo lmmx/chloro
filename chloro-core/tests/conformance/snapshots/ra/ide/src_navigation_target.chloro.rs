@@ -195,6 +195,7 @@ impl NavigationTarget {
     ) -> UpmappingResult<NavigationTarget> {
         let name =
             value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
+
         orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 NavigationTarget::from_syntax(file_id, name.clone(), focus_range, full_range, kind)
@@ -458,12 +459,14 @@ where
 impl ToNav for hir::Module {
     fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
         let InFile { file_id, value } = self.definition_source(db);
+
         let name = self.name(db).map(|it| it.symbol().clone()).unwrap_or_else(|| sym::underscore);
         let (syntax, focus) = match &value {
             ModuleSource::SourceFile(node) => (node.syntax(), None),
             ModuleSource::Module(node) => (node.syntax(), node.name()),
             ModuleSource::BlockExpr(node) => (node.syntax(), None),
         };
+
         orig_range_with_focus(db, file_id, syntax, focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 NavigationTarget::from_syntax(
@@ -492,10 +495,12 @@ impl TryToNav for hir::Impl {
         let db = sema.db;
         let InFile { file_id, value } = self.source(db)?;
         let derive_path = self.as_builtin_derive_path(db);
+
         let (file_id, focus, syntax) = match &derive_path {
             Some(attr) => (attr.file_id.into(), None, attr.value.syntax()),
             None => (file_id, value.self_ty(), value.syntax()),
         };
+
         Some(orig_range_with_focus(db, file_id, syntax, focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 NavigationTarget::from_syntax(
@@ -522,6 +527,7 @@ impl TryToNav for hir::ExternCrateDecl {
             .rename()
             .map_or_else(|| value.name_ref().map(Either::Left), |it| it.name().map(Either::Right));
         let krate = self.module(db).krate();
+
         Some(orig_range_with_focus(db, file_id, value.syntax(), focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 let mut res = NavigationTarget::from_syntax(
@@ -549,6 +555,7 @@ impl TryToNav for hir::Field {
         let db = sema.db;
         let src = self.source(db)?;
         let krate = self.parent_def(db).module(db).krate();
+
         let field_source = match &src.value {
             FieldSource::Named(it) => {
                 NavigationTarget::from_named(db, src.with_value(it), SymbolKind::Field).map(
@@ -650,6 +657,7 @@ impl ToNav for LocalSource {
             Either::Left(bind_pat) => (bind_pat.syntax(), bind_pat.name()),
             Either::Right(it) => (it.syntax(), it.name()),
         };
+
         orig_range_with_focus(db, file_id, node, name).map(
             |(FileRange { file_id, range: full_range }, focus_range)| {
                 let name = local.name(db).symbol().clone();
@@ -690,6 +698,7 @@ impl TryToNav for hir::Label {
         let db = sema.db;
         let InFile { file_id, value } = self.source(db)?;
         let name = self.name(db).symbol().clone();
+
         Some(orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
@@ -714,6 +723,7 @@ impl TryToNav for hir::TypeParam {
         let db = sema.db;
         let InFile { file_id, value } = self.merge().source(db)?;
         let name = self.name(db).symbol().clone();
+
         let value = match value {
             Either::Left(ast::TypeOrConstParam::Type(x)) => Either::Left(x),
             Either::Left(ast::TypeOrConstParam::Const(_)) => {
@@ -722,11 +732,13 @@ impl TryToNav for hir::TypeParam {
             }
             Either::Right(x) => Either::Right(x),
         };
+
         let syntax = match &value {
             Either::Left(type_param) => type_param.syntax(),
             Either::Right(trait_) => trait_.syntax(),
         };
         let focus = value.as_ref().either(|it| it.name(), |it| it.name());
+
         Some(orig_range_with_focus(db, file_id, syntax, focus).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
@@ -760,6 +772,7 @@ impl TryToNav for hir::LifetimeParam {
         let db = sema.db;
         let InFile { file_id, value } = self.source(db)?;
         let name = self.name(db).symbol().clone();
+
         Some(orig_range(db, file_id, value.syntax()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
@@ -784,6 +797,7 @@ impl TryToNav for hir::ConstParam {
         let db = sema.db;
         let InFile { file_id, value } = self.merge().source(db)?;
         let name = self.name(db).symbol().clone();
+
         let value = match value {
             Either::Left(ast::TypeOrConstParam::Const(x)) => x,
             _ => {
@@ -791,6 +805,7 @@ impl TryToNav for hir::ConstParam {
                 return None;
             }
         };
+
         Some(orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
             |(FileRange { file_id, range: full_range }, focus_range)| NavigationTarget {
                 file_id,
@@ -845,9 +860,11 @@ impl TryToNav for hir::BuiltinType {
             .find(|&krate| matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Std)))
             .map(Crate::from)?;
         let edition = krate.edition(db);
+
         let fd = FamousDefs(sema, krate);
         let primitive_mod = format!("prim_{}", self.name().display(fd.0.db, edition));
         let doc_owner = find_std_module(&fd, &primitive_mod, edition)?;
+
         Some(doc_owner.to_nav(db))
     }
 }
@@ -917,10 +934,13 @@ pub(crate) fn orig_range_with_focus_r(
     focus_range: Option<TextRange>,
 ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
     let Some(name) = focus_range else { return orig_range_r(db, hir_file, value) };
+
     let call_kind = || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).kind;
+
     let def_range =
         || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
     // FIXME: Also make use of the syntax context to determine which site we are at?
+
     let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
     let ((call_site_range, call_site_focus), def_site) =
         match InFile::new(hir_file, name).original_node_file_range_opt(db) {
@@ -992,6 +1012,7 @@ pub(crate) fn orig_range_with_focus_r(
             // lost name? can't happen for single tokens
             None => return orig_range_r(db, hir_file, value),
         };
+
     UpmappingResult {
         call_site: (
             call_site_range.into_file_id(db),
@@ -1061,6 +1082,7 @@ enum FooInner { }
 fn foo() { enum FooInner { } }
 "#,
         );
+
         let navs = analysis.symbol_search(Query::new("FooInner".to_owned()), !0).unwrap();
         expect![[r#"
             [
@@ -1097,6 +1119,7 @@ fn foo() {}
 struct Foo;
 "#,
         );
+
         let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
         assert_eq!(navs.len(), 2)
     }
@@ -1110,11 +1133,13 @@ static __FOO_CALLSITE: () = ();
 "#,
         );
         // It doesn't show the hidden symbol
+
         let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
         assert_eq!(navs.len(), 2);
         let navs = analysis.symbol_search(Query::new("_foo".to_owned()), !0).unwrap();
         assert_eq!(navs.len(), 0);
         // Unless we explicitly search for a `__` prefix
+
         let query = Query::new("__foo".to_owned());
         let navs = analysis.symbol_search(query, !0).unwrap();
         assert_eq!(navs.len(), 1);

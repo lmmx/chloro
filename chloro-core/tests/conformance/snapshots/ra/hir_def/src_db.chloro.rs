@@ -320,6 +320,7 @@ fn crate_supports_no_std(db: &dyn DefDatabase, crate_id: Crate) -> bool {
             }
         }
     }
+
     false
 }
 
@@ -334,6 +335,7 @@ fn macro_def(db: &dyn DefDatabase, id: MacroId) -> MacroDefId {
             MacroExpander::BuiltInEager(it) => MacroDefKind::BuiltInEager(in_file, it),
         }
     };
+
     match id {
         MacroId::Macro2Id(it) => {
             let loc: Macro2Loc = it.lookup(db);

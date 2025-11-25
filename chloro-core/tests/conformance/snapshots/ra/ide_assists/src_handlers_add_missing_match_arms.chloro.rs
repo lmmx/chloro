@@ -18,6 +18,7 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
     let match_expr = ctx.find_node_at_offset_with_descend::<ast::MatchExpr>()?;
     let match_arm_list = match_expr.match_arm_list()?;
     let arm_list_range = ctx.sema.original_range_opt(match_arm_list.syntax())?;
+
     if cursor_at_trivial_match_arm_list(ctx, &match_expr, &match_arm_list).is_none() {
         let arm_list_range = ctx.sema.original_range(match_arm_list.syntax()).range;
         let cursor_in_range = arm_list_range.contains_range(ctx.selection_trimmed());
@@ -26,8 +27,11 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
             return None;
         }
     }
+
     let expr = match_expr.expr()?;
+
     let mut has_catch_all_arm = false;
+
     let top_lvl_pats: Vec<_> = match_arm_list
         .arms()
         .filter_map(|arm| Some((arm.pat()?, arm.guard().is_some())))
@@ -46,7 +50,9 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
         // Exclude top level wildcards so that they are expanded by this assist, retains status quo in #8129.
         .filter(|pat| !matches!(pat, Pat::WildcardPat(_)))
         .collect();
+
     let make = SyntaxFactory::with_mappings();
+
     let scope = ctx.sema.scope(expr.syntax())?;
     let module = scope.module();
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(scope.krate()));
@@ -175,12 +181,15 @@ pub(crate) fn add_missing_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>)
     } else {
         return None;
     };
+
     let mut needs_catch_all_arm = is_non_exhaustive && !has_catch_all_arm;
+
     if !needs_catch_all_arm
         && ((has_hidden_variants && has_catch_all_arm) || missing_pats.peek().is_none())
     {
         return None;
     }
+
     acc.add(
         AssistId::quick_fix("add_missing_match_arms"),
         "Fill match arms",
@@ -310,6 +319,7 @@ fn cursor_at_trivial_match_arm_list(
     //     bar => baz,
     //     $0
     // }
+
     if let Some(last_arm) = match_arm_list.arms().last() {
         let last_arm_range = last_arm.syntax().text_range();
         let match_expr_range = match_expr.syntax().text_range();
@@ -319,6 +329,7 @@ fn cursor_at_trivial_match_arm_list(
         }
     }
     // match { _$0 => {...} }
+
     let wild_pat = ctx.find_node_at_offset_with_descend::<ast::WildcardPat>()?;
     let arm = wild_pat.syntax().parent().and_then(ast::MatchArm::cast)?;
     let arm_match_expr = arm.syntax().ancestors().nth(2).and_then(ast::MatchExpr::cast)?;
@@ -326,6 +337,7 @@ fn cursor_at_trivial_match_arm_list(
         cov_mark::hit!(add_missing_match_arms_trivial_arm);
         return Some(());
     }
+
     None
 }
 
@@ -657,6 +669,7 @@ fn foo(a: bool) {
 }
 "#,
         );
+
         check_assist_not_applicable(
             add_missing_match_arms,
             r#"
@@ -712,6 +725,7 @@ fn foo(a: bool) {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -729,6 +743,7 @@ fn foo(a: bool) {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -749,6 +764,7 @@ fn foo(a: bool) {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -790,6 +806,7 @@ fn foo(a: bool) {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -1133,6 +1150,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -1273,6 +1291,7 @@ fn foo(a: &A) {
 }
 "#,
         );
+
         check_assist(
             add_missing_match_arms,
             r#"
@@ -2029,6 +2048,7 @@ fn f() {
 "#,
         );
         // multiple tuple struct patterns
+
         check_assist(
             add_missing_match_arms,
             r#"

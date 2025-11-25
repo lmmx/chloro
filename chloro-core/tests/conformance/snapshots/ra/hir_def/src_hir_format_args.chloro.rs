@@ -194,6 +194,7 @@ pub(crate) fn parse(
     };
     let mut parser =
         parse::Parser::new(&text, str_style, fmt_snippet, false, parse::ParseMode::Format);
+
     let mut pieces = Vec::new();
     while let Some(piece) = parser.next() {
         if !parser.errors.is_empty() {
@@ -211,14 +212,17 @@ pub(crate) fn parse(
             orphans: vec![],
         };
     }
+
     let to_span = |inner_span: std::ops::Range<usize>| {
         is_source_literal.then(|| {
             TextRange::new(inner_span.start.try_into().unwrap(), inner_span.end.try_into().unwrap())
         })
     };
+
     let mut used = vec![false; args.explicit_args().len()];
     let mut invalid_refs = Vec::new();
     let mut numeric_references_to_named_arg = Vec::new();
+
     enum ArgRef<'a> {
         Index(usize),
         Name(&'a str, Option<TextRange>),
@@ -275,9 +279,11 @@ pub(crate) fn parse(
         };
         FormatArgPosition { index, kind, span }
     };
+
     let mut template = Vec::new();
     let mut unfinished_literal = String::new();
     let mut placeholder_index = 0;
+
     for piece in pieces {
         match piece {
             parse::Piece::Lit(s) => {
@@ -406,12 +412,15 @@ pub(crate) fn parse(
             }
         }
     }
+
     if !unfinished_literal.is_empty() {
         template.push(FormatArgsPiece::Literal(Symbol::intern(&unfinished_literal)));
     }
+
     if !invalid_refs.is_empty() {
         // FIXME: Diagnose
     }
+
     let unused = used
         .iter()
         .enumerate()
@@ -421,9 +430,11 @@ pub(crate) fn parse(
             (args.explicit_args()[i].expr, named)
         })
         .collect::<Vec<_>>();
+
     if !unused.is_empty() {
         // FIXME: Diagnose
     }
+
     FormatArgs {
         template: template.into_boxed_slice(),
         arguments: args.finish(),

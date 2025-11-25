@@ -98,6 +98,7 @@ impl GlobalState {
                 &self.config.lru_query_capacities_config().cloned().unwrap_or_default(),
             );
         }
+
         if self.config.linked_or_discovered_projects() != old_config.linked_or_discovered_projects()
         {
             let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
@@ -105,6 +106,7 @@ impl GlobalState {
         } else if self.config.flycheck(None) != old_config.flycheck(None) {
             self.reload_flycheck();
         }
+
         if self.analysis_host.raw_database().expand_proc_attr_macros()
             != self.config.expand_proc_attr_macros()
         {
@@ -113,10 +115,12 @@ impl GlobalState {
                 Durability::HIGH,
             );
         }
+
         if self.config.cargo(None) != old_config.cargo(None) {
             let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
             self.fetch_workspaces_queue.request_op("cargo config changed".to_owned(), req)
         }
+
         if self.config.cfg_set_test(None) != old_config.cfg_set_test(None) {
             let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
             self.fetch_workspaces_queue.request_op("cfg_set_test config changed".to_owned(), req)
@@ -130,6 +134,7 @@ impl GlobalState {
             message: None,
         };
         let mut message = String::new();
+
         if !self.config.cargo_autoreload_config(None)
             && self.is_quiescent()
             && self.fetch_workspaces_queue.op_requested()
@@ -138,6 +143,7 @@ impl GlobalState {
             status.health |= lsp_ext::Health::Warning;
             message.push_str("Auto-reloading is disabled and the workspace has changed, a manual workspace reload is required.\n\n");
         }
+
         if self.build_deps_changed {
             status.health |= lsp_ext::Health::Warning;
             message.push_str(
@@ -160,6 +166,7 @@ impl GlobalState {
             message.push_str(err);
             message.push('\n');
         }
+
         if self.config.linked_or_discovered_projects().is_empty()
             && self.config.detached_files().is_empty()
         {
@@ -183,6 +190,7 @@ impl GlobalState {
             }
             message.push_str("\n\n");
         }
+
         if !self.workspaces.is_empty() {
             self.check_workspaces_msrv().for_each(|e| {
                 status.health |= lsp_ext::Health::Warning;
@@ -261,9 +269,11 @@ impl GlobalState {
                 }
             }
         }
+
         if !message.is_empty() {
             status.message = Some(message.trim_end().to_owned());
         }
+
         status
     }
 
@@ -274,6 +284,7 @@ impl GlobalState {
         force_crate_graph_reload: bool,
     ) {
         info!(%cause, "will fetch workspaces");
+
         self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, {
             let linked_projects = self.config.linked_or_discovered_projects();
             let detached_files: Vec<_> = self
@@ -378,6 +389,7 @@ impl GlobalState {
         let workspaces = Arc::clone(&self.workspaces);
         let config = self.config.cargo(None);
         let root_path = self.config.root_path().clone();
+
         self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
             sender.send(Task::FetchBuildData(BuildDataProgress::Begin)).unwrap();
 
@@ -407,6 +419,7 @@ impl GlobalState {
         info!(%cause, "will load proc macros");
         let ignored_proc_macros = self.config.ignored_proc_macros(None).clone();
         let proc_macro_clients = self.proc_macro_clients.clone();
+
         self.task_pool.handle.spawn_with_sender(ThreadIntent::Worker, move |sender| {
             sender.send(Task::LoadProcMacros(ProcMacroProgress::Begin)).unwrap();
 
@@ -456,12 +469,14 @@ impl GlobalState {
     pub(crate) fn switch_workspaces(&mut self, cause: Cause) {
         let _p = tracing::info_span!("GlobalState::switch_workspaces").entered();
         tracing::info!(%cause, "will switch workspaces");
+
         let Some(FetchWorkspaceResponse { workspaces, force_crate_graph_reload }) =
             self.fetch_workspaces_queue.last_op_result()
         else {
             return;
         };
         let switching_from_empty_workspace = self.workspaces.is_empty();
+
         info!(%cause, ?force_crate_graph_reload, %switching_from_empty_workspace);
         if self.fetch_workspace_error().is_err() && !switching_from_empty_workspace {
             if *force_crate_graph_reload {
@@ -471,13 +486,16 @@ impl GlobalState {
             // if we don't have any workspace at all yet.
             return;
         }
+
         let workspaces =
             workspaces.iter().filter_map(|res| res.as_ref().ok().cloned()).collect::<Vec<_>>();
+
         let same_workspaces = workspaces.len() == self.workspaces.len()
             && workspaces
                 .iter()
                 .zip(self.workspaces.iter())
                 .all(|(l, r)| l.eq_ignore_build_data(r));
+
         if same_workspaces {
             if switching_from_empty_workspace {
                 // Switching from empty to empty is a no-op
@@ -544,6 +562,7 @@ impl GlobalState {
                 }
             }
         }
+
         if let FilesWatcher::Client = self.config.files().watcher {
             let filter = self
                 .workspaces
@@ -635,12 +654,14 @@ impl GlobalState {
                 |_, _| (),
             );
         }
+
         let files_config = self.config.files();
         let project_folders = ProjectFolders::new(
             &self.workspaces,
             &files_config.exclude,
             Config::user_config_dir_path().as_deref(),
         );
+
         if (self.proc_macro_clients.len() < self.workspaces.len() || !same_workspaces)
             && self.config.expand_proc_macros()
         {
@@ -689,6 +710,7 @@ impl GlobalState {
                 }))
             }))
         }
+
         let watch = match files_config.watcher {
             FilesWatcher::Client => vec![],
             FilesWatcher::Server => project_folders.watch,
@@ -701,8 +723,10 @@ impl GlobalState {
         });
         self.source_root_config = project_folders.source_root_config;
         self.local_roots_parent_map = Arc::new(self.source_root_config.source_root_parent_map());
+
         info!(?cause, "recreating the crate graph");
         self.recreate_crate_graph(cause, switching_from_empty_workspace);
+
         info!("did switch workspaces");
     }
 
@@ -717,6 +741,7 @@ impl GlobalState {
         );
         // crate graph construction relies on these paths, record them so when one of them gets
         // deleted or created we trigger a reconstruction of the crate graph
+
         self.crate_graph_file_dependencies.clear();
         self.detached_files = self
             .workspaces
@@ -726,6 +751,7 @@ impl GlobalState {
                 _ => None,
             })
             .collect();
+
         self.incomplete_crate_graph = false;
         let (crate_graph, proc_macro_paths) = {
             // Create crate graph from all the workspaces
@@ -768,6 +794,7 @@ impl GlobalState {
             change.set_crate_graph(crate_graph);
             self.fetch_proc_macros_queue.request_op(cause, (change, proc_macro_paths));
         }
+
         self.report_progress(
             "Building CrateGraph",
             crate::lsp::utils::Progress::End,
@@ -784,11 +811,13 @@ impl GlobalState {
 
     pub(super) fn fetch_workspace_error(&self) -> Result<(), String> {
         let mut buf = String::new();
+
         let Some(FetchWorkspaceResponse { workspaces, .. }) =
             self.fetch_workspaces_queue.last_op_result()
         else {
             return Ok(());
         };
+
         if workspaces.is_empty() && self.config.discover_workspace_config().is_none() {
             stdx::format_to!(buf, "rust-analyzer failed to fetch workspace");
         } else {
@@ -798,19 +827,23 @@ impl GlobalState {
                 }
             }
         }
+
         if buf.is_empty() {
             return Ok(());
         }
+
         Err(buf)
     }
 
     pub(super) fn fetch_build_data_error(&self) -> Result<(), String> {
         let mut buf = String::new();
+
         let Some(FetchBuildDataResponse { build_scripts, .. }) =
             &self.fetch_build_data_queue.last_op_result()
         else {
             return Ok(());
         };
+
         for script in build_scripts {
             match script {
                 Ok(data) => {
@@ -822,6 +855,7 @@ impl GlobalState {
                 Err(err) => stdx::format_to!(buf, "{:#}\n", err),
             }
         }
+
         if buf.is_empty() { Ok(()) } else { Err(buf) }
     }
 
@@ -832,6 +866,7 @@ impl GlobalState {
         let invocation_strategy = config.invocation_strategy();
         let next_gen =
             self.flycheck.iter().map(FlycheckHandle::generation).max().unwrap_or_default() + 1;
+
         self.flycheck = match invocation_strategy {
             crate::flycheck::InvocationStrategy::Once => {
                 vec![FlycheckHandle::spawn(
@@ -909,6 +944,7 @@ pub fn ws_to_crate_graph(
         crate_graph.extend(other, &mut crate_proc_macros);
         proc_macro_paths.push(crate_proc_macros);
     }
+
     crate_graph.shrink_to_fit();
     proc_macro_paths.shrink_to_fit();
     (crate_graph, proc_macro_paths)
@@ -921,25 +957,31 @@ pub(crate) fn should_refresh_for_change(
 ) -> bool {
     const IMPLICIT_TARGET_FILES: &[&str] = &["build.rs", "src/main.rs", "src/lib.rs"];
     const IMPLICIT_TARGET_DIRS: &[&str] = &["src/bin", "examples", "tests", "benches"];
+
     let file_name = match path.file_name() {
         Some(it) => it,
         None => return false,
     };
+
     if let "Cargo.toml" | "Cargo.lock" = file_name {
         return true;
     }
+
     if additional_paths.contains(&file_name) {
         return true;
     }
+
     if change_kind == ChangeKind::Modify {
         return false;
     }
     // .cargo/config{.toml}
+
     if path.extension().unwrap_or_default() != "rs" {
         let is_cargo_config = matches!(file_name, "config.toml" | "config")
             && path.parent().map(|parent| parent.as_str().ends_with(".cargo")).unwrap_or(false);
         return is_cargo_config;
     }
+
     if IMPLICIT_TARGET_FILES.iter().any(|it| path.as_str().ends_with(it)) {
         return true;
     }
@@ -968,6 +1010,7 @@ fn eq_ignore_underscore(s1: &str, s2: &str) -> bool {
     if s1.len() != s2.len() {
         return false;
     }
+
     s1.as_bytes().iter().zip(s2.as_bytes()).all(|(c1, c2)| {
         let c1_underscore = c1 == &b'_' || c1 == &b'-';
         let c2_underscore = c2 == &b'_' || c2 == &b'-';

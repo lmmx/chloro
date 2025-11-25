@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4492 bytes
-Chloro size:   4485 bytes
+Chloro size:   4491 bytes
 Rustfmt size:  4581 bytes
 
 ✗ Outputs DIFFER
@@ -15,17 +15,6 @@ Rustfmt size:  4581 bytes
  use super::{DefMap, MacroSubNs};
  
  pub enum ResolvedAttr {
-         attr: &Attr,
-     ) -> Result<ResolvedAttr, UnresolvedMacro> {
-         // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`
--
-         if self.is_builtin_or_registered_attr(&ast_id.path) {
-             return Ok(ResolvedAttr::Other);
-         }
--
-         let resolved_res = self.resolve_path_fp_with_macro(
-             local_def_map,
-             db,
                      return Ok(ResolvedAttr::Other);
                  }
              }
@@ -36,26 +25,8 @@ Rustfmt size:  4581 bytes
 -            }
 +            None => return Err(UnresolvedMacro { path: ast_id.path.as_ref().clone() }),
          };
--
-         Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
-             db,
-             &ast_id,
-         if path.kind != PathKind::Plain {
-             return false;
-         }
--
-         let segments = path.segments();
--
-         if let Some(name) = segments.first() {
-             let name = name.symbol();
-             let pred = |n: &_| *n == *name;
  
-         _ => None,
-     };
--
-     def.make_call(
-         db,
-         krate,
+         Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
  ) -> Result<(MacroId, MacroDefId, MacroCallId), UnresolvedMacro> {
      let (macro_id, def_id) = resolver(&item_attr.path)
          .filter(|(_, def_id)| def_id.is_derive())

@@ -17,21 +17,28 @@ pub(crate) fn generate_setter(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     //
     // This is the only part where implementation diverges a bit,
     // subsequent code is generic for both of these modes
+
     let (strukt, info_of_record_fields, mut fn_names) = extract_and_parse(ctx, AssistType::Set)?;
     // No record fields to do work on :(
+
     if info_of_record_fields.is_empty() {
         return None;
     }
     // Prepend set_ to fn names.
+
     fn_names.iter_mut().for_each(|name| *name = format!("set_{name}"));
     // Return early if we've found an existing fn
+
     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
     // Computing collective text range of all record fields in selected region
+
     let target: TextRange = info_of_record_fields
         .iter()
         .map(|record_field_info| record_field_info.target)
         .reduce(|acc, target| acc.cover(target))?;
+
     let setter_info = AssistInfo { impl_def, strukt, assist_type: AssistType::Set };
+
     acc.add_group(
         &GroupLabel("Generate getter/setter".to_owned()),
         AssistId::generate("generate_setter"),
@@ -81,22 +88,27 @@ pub(crate) fn generate_getter_impl(
     if info_of_record_fields.is_empty() {
         return None;
     }
+
     let impl_def = find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &fn_names)?;
+
     let (id, label) = if mutable {
         ("generate_getter_mut", "Generate a mut getter method")
     } else {
         ("generate_getter", "Generate a getter method")
     };
     // Computing collective text range of all record fields in selected region
+
     let target: TextRange = info_of_record_fields
         .iter()
         .map(|record_field_info| record_field_info.target)
         .reduce(|acc, target| acc.cover(target))?;
+
     let getter_info = AssistInfo {
         impl_def,
         strukt,
         assist_type: if mutable { AssistType::MutGet } else { AssistType::Get },
     };
+
     acc.add_group(
         &GroupLabel("Generate getter/setter".to_owned()),
         AssistId::generate(id),
@@ -144,16 +156,19 @@ fn generate_getter_from_info(
             )
         })
     };
+
     let self_param = if matches!(info.assist_type, AssistType::MutGet) {
         make::mut_self_param()
     } else {
         make::self_param()
     };
+
     let strukt = &info.strukt;
     let fn_name = make::name(&record_field_info.fn_name);
     let params = make::param_list(Some(self_param), []);
     let ret_type = Some(make::ret_type(ty));
     let body = make::block_expr([], Some(body));
+
     make::fn_(
         None,
         strukt.visibility(),
@@ -177,17 +192,20 @@ fn generate_setter_from_info(info: &AssistInfo, record_field_info: &RecordFieldI
     let field_ty = &record_field_info.field_ty;
     // Make the param list
     // `(&mut self, $field_name: $field_ty)`
+
     let field_param =
         make::param(make::ident_pat(false, false, make::name(field_name)).into(), field_ty.clone());
     let params = make::param_list(Some(make::mut_self_param()), [field_param]);
     // Make the assignment body
     // `self.$field_name = $field_name`
+
     let self_expr = make::ext::expr_self();
     let lhs = make::expr_field(self_expr, field_name);
     let rhs = make::expr_path(make::ext::ident_path(field_name));
     let assign_stmt = make::expr_stmt(make::expr_assignment(lhs, rhs).into());
     let body = make::block_expr([assign_stmt.into()], None);
     // Make the setter fn
+
     make::fn_(
         None,
         strukt.visibility(),
@@ -228,6 +246,7 @@ fn extract_and_parse(
         return Some((parent_struct, info_of_record_fields, field_names));
     }
     // Single Record Field mode
+
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
     let record_field_info = parse_record_field(field, &assist_type)?;
@@ -242,6 +261,7 @@ fn extract_and_parse_record_fields(
 ) -> Option<(Vec<RecordFieldInfo>, Vec<String>)> {
     let mut field_names: Vec<String> = vec![];
     let field_list = node.field_list()?;
+
     match field_list {
         ast::FieldList::RecordFieldList(ele) => {
             let info_of_record_fields_in_selection = ele
@@ -273,11 +293,14 @@ fn parse_record_field(
 ) -> Option<RecordFieldInfo> {
     let field_name = record_field.name()?;
     let field_ty = record_field.ty()?;
+
     let mut fn_name = to_lower_snake_case(&field_name.to_string());
     if matches!(assist_type, AssistType::MutGet) {
         format_to!(fn_name, "_mut");
     }
+
     let target = record_field.syntax().text_range();
+
     Some(RecordFieldInfo { field_name, field_ty, fn_name, target })
 }
 
@@ -288,6 +311,7 @@ fn build_source_change(
     assist_info: AssistInfo,
 ) {
     let record_fields_count = info_of_record_fields.len();
+
     let impl_def = if let Some(impl_def) = &assist_info.impl_def {
         // We have an existing impl to add to
         builder.make_mut(impl_def.clone())
@@ -305,7 +329,9 @@ fn build_source_change(
 
         impl_def
     };
+
     let assoc_item_list = impl_def.get_or_create_assoc_item_list();
+
     for (i, record_field_info) in info_of_record_fields.iter().enumerate() {
         // Make the new getter or setter fn
         let new_fn = match assist_info.assist_type {
@@ -352,6 +378,7 @@ impl Context {
 }
 "#,
         );
+
         check_assist(
             generate_getter_mut,
             r#"
@@ -393,6 +420,7 @@ impl Context {
 }
 "#,
         );
+
         check_assist_no_snippet_cap(
             generate_getter_mut,
             r#"
@@ -429,6 +457,7 @@ impl Context {
 }
 "#,
         );
+
         check_assist_not_applicable(
             generate_getter_mut,
             r#"
@@ -584,6 +613,7 @@ impl S {
     fn test_convert_reference_type() {
         cov_mark::check_count!(convert_reference_type, 6);
         // Copy
+
         check_assist(
             generate_getter,
             r#"
@@ -601,6 +631,7 @@ impl S {
 "#,
         );
         // AsRef<str>
+
         check_assist(
             generate_getter,
             r#"
@@ -632,6 +663,7 @@ impl S {
 "#,
         );
         // AsRef<T>
+
         check_assist(
             generate_getter,
             r#"
@@ -667,6 +699,7 @@ impl S {
 "#,
         );
         // AsRef<[T]>
+
         check_assist(
             generate_getter,
             r#"
@@ -698,6 +731,7 @@ impl S {
 "#,
         );
         // Option
+
         check_assist(
             generate_getter,
             r#"
@@ -719,6 +753,7 @@ impl S {
 "#,
         );
         // Result
+
         check_assist(
             generate_getter,
             r#"

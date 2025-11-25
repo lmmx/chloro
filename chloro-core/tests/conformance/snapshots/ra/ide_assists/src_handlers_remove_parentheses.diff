@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8964 bytes
-Chloro size:   8751 bytes
+Chloro size:   8761 bytes
 Rustfmt size:  9394 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  9394 bytes
 -// ```
  pub(crate) fn remove_parentheses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let parens = ctx.find_node_at_offset::<ast::ParenExpr>()?;
--
+ 
 -    let cursor_in_range = parens
 -        .l_paren_token()?
 -        .text_range()
@@ -43,17 +43,6 @@ Rustfmt size:  9394 bytes
      if !cursor_in_range {
          return None;
      }
--
-     let expr = parens.expr()?;
--
-     let parent = parens.syntax().parent()?;
-     if expr.needs_parens_in(&parent) {
-         return None;
-     }
--
-     let target = parens.syntax().text_range();
-     acc.add(
-         AssistId::refactor("remove_parentheses"),
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -102,8 +91,8 @@ Rustfmt size:  9394 bytes
 -            r#"fn f() { &$0(|| 42) }"#,
 -            r#"fn f() { &|| 42 }"#,
 -        );
--
 +        check_assist(remove_parentheses, r#"fn f() { &$0(|| 42) }"#, r#"fn f() { &|| 42 }"#);
+ 
          check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(|| 42).f() }"#);
      }
 -
@@ -194,8 +183,10 @@ Rustfmt size:  9394 bytes
          );
 -
          // logic operators can't directly appear in the let-else
++
          check_assist_not_applicable(
              remove_parentheses,
+             r#"fn f() { let _ = $0(false || false) else { return }; }"#,
              r#"fn f() { let _ = $0(true && true) else { return }; }"#,
          );
      }
@@ -203,13 +194,6 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_parens_weird_places() {
          check_assist(
-             r#"fn f() { match () { _ =>$0(()) } }"#,
-             r#"fn f() { match () { _ => () } }"#,
-         );
--
-         check_assist(
-             remove_parentheses,
-             r#"fn x() -> u8 { { [$0({ 0 } + 1)] } }"#,
              r#"fn x() -> u8 { { [{ 0 } + 1] } }"#,
          );
      }
@@ -231,13 +215,6 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_parens_double_paren_stmt() {
          check_assist(
-             r#"fn x() -> u8 { $0(({ 0 } + 1)) }"#,
-             r#"fn x() -> u8 { ({ 0 } + 1) }"#,
-         );
--
-         check_assist(
-             remove_parentheses,
-             r#"fn x() -> u8 { (($0{ 0 } + 1)) }"#,
              r#"fn x() -> u8 { ({ 0 } + 1) }"#,
          );
      }
@@ -245,10 +222,7 @@ Rustfmt size:  9394 bytes
      #[test]
      fn remove_parens_im_tired_of_naming_tests() {
          check_assist(
-             r#"fn f() { 2 + $0(return 2) }"#,
-             r#"fn f() { 2 + return 2 }"#,
-         );
--
+ 
          check_assist_not_applicable(remove_parentheses, r#"fn f() { $0(return 2) + 2 }"#);
      }
 -
@@ -260,5 +234,7 @@ Rustfmt size:  9394 bytes
          );
 -
          // Parentheses are necessary when calling a function-like pointer that is a member of a struct or union.
++
          check_assist_not_applicable(
              remove_parentheses,
+             r#"

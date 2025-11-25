@@ -444,6 +444,7 @@ where
             }
         }
     }
+
     let mut error_replacer =
         ErrorReplacer { vars: Vec::new(), binder: rustc_type_ir::DebruijnIndex::ZERO, interner };
     let value = match t.clone().try_fold_with(&mut error_replacer) {
@@ -468,10 +469,12 @@ pub fn callable_sig_from_fn_trait<'db>(
     let output_assoc_type = fn_once_trait
         .trait_items(db)
         .associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
+
     let mut table = InferenceTable::new(db, trait_env.clone(), None);
     // Register two obligations:
     // - Self: FnOnce<?args_ty>
     // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
+
     let args_ty = table.next_ty_var();
     let args = [self_ty, args_ty];
     let trait_ref = TraitRef::new(table.interner(), fn_once_trait.into(), args);
@@ -480,6 +483,7 @@ pub fn callable_sig_from_fn_trait<'db>(
         rustc_type_ir::AliasTyKind::Projection,
         AliasTy::new(table.interner(), output_assoc_type.into(), args),
     );
+
     let pred = Predicate::upcast_from(trait_ref, table.interner());
     if !table.try_obligation(pred).no_solution() {
         table.register_obligation(pred);
@@ -529,6 +533,7 @@ impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
         if let TyKind::Param(param) = ty.kind() {
             self.params.insert(param.id.into());
         }
+
         ty.super_visit_with(self);
     }
 
@@ -536,6 +541,7 @@ impl<'db> rustc_type_ir::TypeVisitor<DbInterner<'db>> for ParamCollector {
         if let ConstKind::Param(param) = konst.kind() {
             self.params.insert(param.id.into());
         }
+
         konst.super_visit_with(self);
     }
 }
@@ -580,10 +586,12 @@ pub fn setup_tracing() -> Option<tracing::subscriber::DefaultGuard> {
     use std::sync::LazyLock;
     use tracing_subscriber::{Registry, layer::SubscriberExt};
     use tracing_tree::HierarchicalLayer;
+
     static ENABLE: LazyLock<bool> = LazyLock::new(|| env::var("CHALK_DEBUG").is_ok());
     if !*ENABLE {
         return None;
     }
+
     let filter: tracing_subscriber::filter::Targets =
         env::var("CHALK_DEBUG").ok().and_then(|it| it.parse().ok()).unwrap_or_default();
     let layer = HierarchicalLayer::default()

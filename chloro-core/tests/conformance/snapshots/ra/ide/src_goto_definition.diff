@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 71259 bytes
-Chloro size:   70513 bytes
+Chloro size:   70569 bytes
 Rustfmt size:  71259 bytes
 
 ✗ Outputs DIFFER
@@ -68,28 +68,6 @@ Rustfmt size:  71259 bytes
  pub(crate) fn goto_definition(
      db: &RootDatabase,
      FilePosition { file_id, offset }: FilePosition,
-             Some(RangeInfo::new(link_range, nav.collect()))
-         });
-     }
--
-     if let Some((range, _, _, resolution)) =
-         sema.check_for_format_args_template(original_token.clone(), offset)
-     {
-             },
-         ));
-     }
--
-     if let Some(navs) = handle_control_flow_keywords(sema, &original_token) {
-         return Some(RangeInfo::new(original_token.text_range(), navs));
-     }
--
-     let tokens = sema.descend_into_macros_no_opaque(original_token.clone(), false);
-     let mut navs = Vec::new();
-     for token in tokens {
-         }));
-     }
-     let navs = navs.into_iter().unique().collect();
--
      Some(RangeInfo::new(original_token.text_range(), navs))
  }
  
@@ -97,128 +75,16 @@ Rustfmt size:  71259 bytes
  fn find_definition_for_known_blanket_dual_impls(
      sema: &Semantics<'_, RootDatabase>,
      original_token: &SyntaxToken,
-     let callable = sema.resolve_method_call_as_callable(&method_call)?;
-     let CallableKind::Function(f) = callable.kind() else { return None };
-     let assoc = f.as_assoc_item(sema.db)?;
--
-     let return_type = callable.return_type();
-     let fd = FamousDefs(sema, return_type.krate(sema.db));
--
-     let t = match assoc.container(sema.db) {
-         hir::AssocItemContainer::Trait(t) => t,
-         hir::AssocItemContainer::Impl(impl_)
-         }
-         hir::AssocItemContainer::Impl(_) => return None,
-     };
--
-     let fn_name = f.name(sema.db);
-     let f = if fn_name == sym::into && fd.core_convert_Into() == Some(t) {
-         let dual = fd.core_convert_From()?;
      file_id: FileId,
  ) -> Option<NavigationTarget> {
      let file = token.file_id.macro_file()?;
 -
      // Check that we are in the eager argument expansion of an include macro
      // that is we are the string input of it
++
      if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
-         return None;
-     }
-     let path = token.value.value().ok()?;
--
-     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
-     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
-     Some(NavigationTarget {
-     let extern_crate = token.parent()?.ancestors().find_map(ast::ExternCrate::cast)?;
-     let extern_crate = sema.to_def(&extern_crate)?;
-     let krate = extern_crate.resolved_crate(sema.db)?;
--
-     for mod_def in krate.root_module().declarations(sema.db) {
-         if let ModuleDef::Macro(mac) = mod_def
-             && mac.name(sema.db).as_str() == token.text()
-             return Some(nav.call_site);
-         }
-     }
--
-     None
- }
- 
-         }
-         None
-     };
--
-     sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec()
- }
- 
- ) -> Option<Vec<NavigationTarget>> {
-     let db = sema.db;
-     let token_kind = token.kind();
--
-     let navs = find_fn_or_blocks(sema, token)
-         .into_iter()
-         .filter_map(|node| {
-         })
-         .flatten()
-         .collect_vec();
--
-     Some(navs)
- }
- 
-             .filter_map(|token| node_filter(token.parent()?))
-             .collect_vec()
-     };
--
-     match token.kind() {
-         T![match] => find_nodes(|node| Some(ast::MatchExpr::cast(node)?.syntax().clone())),
-         T![=>] => find_nodes(|node| Some(ast::MatchArm::cast(node)?.syntax().clone())),
-     token: &SyntaxToken,
- ) -> Option<Vec<NavigationTarget>> {
-     let db = sema.db;
--
-     let navs = match token.kind() {
-         T![match] => find_branch_root(sema, token)
-             .into_iter()
- 
-         _ => return Some(Vec::new()),
-     };
--
-     Some(navs)
- }
- 
-             (None, _) => true,
-             (Some(_), None) => false,
-         };
--
-     let find_ancestors = |token: SyntaxToken| {
-         for anc in sema.token_ancestors_with_macros(token).filter_map(ast::Expr::cast) {
-             let node = match &anc {
-         }
-         None
-     };
--
-     sema.descend_into_macros(token.clone())
-         .into_iter()
-         .filter_map(find_ancestors)
-     token: &SyntaxToken,
- ) -> Option<Vec<NavigationTarget>> {
-     let db = sema.db;
--
-     let navs = find_loops(sema, token)?
-         .into_iter()
-         .filter_map(|expr| {
-         })
-         .flatten()
-         .collect_vec();
--
-     Some(navs)
- }
- 
-     focus_range: Option<TextRange>,
- ) -> UpmappingResult<NavigationTarget> {
-     let kind = SymbolKind::Label;
--
-     let value_range = value.syntax().text_range();
-     let navs = navigation_target::orig_range_with_focus_r(db, file_id, value_range, focus_range);
-     navs.map(|(hir::FileRangeWrapper { file_id, range }, focus_range)| {
+         .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
+     {
      use crate::{GotoDefinitionConfig, fixture};
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;
@@ -230,27 +96,14 @@ Rustfmt size:  71259 bytes
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
-             .unwrap()
-             .expect("no definition found")
-             .info;
--
-         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
-         let navs = navs
-             .into_iter()
-             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
-             .sorted_by_key(cmp)
-             .collect::<Vec<_>>();
--
+ 
          assert_eq!(expected, navs);
      }
 -
      fn check_unresolved(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position) = fixture::position(ra_fixture);
          let navs = analysis
-             .unwrap()
-             .expect("no definition found")
-             .info;
--
+ 
          assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
      }
 -
@@ -355,13 +208,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_in_included_file_inside_mod() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- //- minicore:include
  "#,
          );
      }
@@ -411,13 +257,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_for_module_declaration() {
          check(
- //^file
- "#,
-         );
--
-         check(
-             r#"
- //- /lib.rs
  "#,
          );
      }
@@ -558,20 +397,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_definition_on_self() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- enum Foo { A }
- }
- "#,
-         );
--
-         check(
-             r#"
- enum Foo { A }
  "#,
          );
      }
@@ -579,13 +404,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_definition_on_self_in_trait_impl() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- struct Foo;
  "#,
          );
      }
@@ -593,76 +411,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_when_used_on_definition_name_itself() {
          check(
-      //^^^
-             "#,
-         );
--
-         check(
-             r#"
- struct Foo {
- } //^^^^^
- "#,
-         );
--
-         check(
-             r#"
- fn foo_test$0() { }
-  //^^^^^^^^
- "#,
-         );
--
-         check(
-             r#"
- enum Foo$0 { Variant }
-    //^^^
- "#,
-         );
--
-         check(
-             r#"
- enum Foo {
- }
- "#,
-         );
--
-         check(
-             r#"
- static INNER$0: &str = "";
-      //^^^^^
- "#,
-         );
--
-         check(
-             r#"
- const INNER$0: &str = "";
-     //^^^^^
- "#,
-         );
--
-         check(
-             r#"
- type Thing$0 = Option<()>;
-    //^^^^^
- "#,
-         );
--
-         check(
-             r#"
- trait Foo$0 { }
-     //^^^
- "#,
-         );
--
-         check(
-             r#"
- trait Foo$0 = ;
-     //^^^
- "#,
-         );
--
-         check(
-             r#"
- mod bar$0 { }
  "#,
          );
      }
@@ -705,13 +453,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_within_macro() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- macro_rules! id {
  "#,
          );
      }
@@ -901,20 +642,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_for_intra_doc_link_outer_same_file() {
          check(
-      //^
-             "#,
-         );
--
-         check(
-             r#"
- /// [`S$0`]
-      //^
-             "#,
-         );
--
-         check(
-             r#"
- /// [`S$0`]
              "#,
          );
      }
@@ -922,20 +649,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_def_for_intra_doc_link_inner_same_file() {
          check(
-      //^
-             "#,
-         );
--
-         check(
-             r#"
- mod m {
-      //^
-             "#,
-         );
--
-         check(
-             r#"
- fn f() {
              "#,
          );
      }
@@ -1114,13 +827,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_bin_op_multiple_impl() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- //- minicore: add
  "#,
          );
      }
@@ -1128,13 +834,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn path_call_multiple_trait_impl() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- trait Trait<T> {
  "#,
          )
      }
@@ -1142,20 +841,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn query_impls_in_nearest_block() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- struct S1;
- }
- "#,
-         );
--
-         check(
-             r#"
- struct S1;
  "#,
          );
      }
@@ -1170,13 +855,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn goto_macro_def_from_macro_use() {
          check(
- }
-             "#,
-         );
--
-         check(
-             r#"
- //- /main.rs crate:main deps:mac
              "#,
          );
      }
@@ -1373,13 +1051,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn type_alias_shadow_by_module() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- mod foo {
  "#,
          );
      }
@@ -1394,20 +1065,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn const_shadow_by_module() {
          check(
- }
- "#,
-         );
--
-         check(
-             r#"
- pub mod foo {
- }
- "#,
-         );
--
-         check(
-             r#"
- pub mod foo {
  "#,
          );
      }
@@ -1415,27 +1072,6 @@ Rustfmt size:  71259 bytes
      #[test]
      fn offset_of() {
          check(
- }
-         "#,
-         );
--
-         check(
-             r#"
- //- minicore: offset_of
- }
-         "#,
-         );
--
-         check(
-             r#"
- //- minicore: offset_of
- }
-         "#,
-         );
--
-         check(
-             r#"
- //- minicore: offset_of
          "#,
          );
      }

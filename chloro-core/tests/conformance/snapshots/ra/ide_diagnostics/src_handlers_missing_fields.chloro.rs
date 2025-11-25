@@ -26,12 +26,14 @@ pub(crate) fn missing_fields(ctx: &DiagnosticsContext<'_>, d: &hir::MissingField
     for field in &d.missed_fields {
         format_to!(message, "- {}\n", field.display(ctx.sema.db, ctx.edition));
     }
+
     let ptr = InFile::new(
         d.file,
         d.field_list_parent_path
             .map(SyntaxNodePtr::from)
             .unwrap_or_else(|| d.field_list_parent.into()),
     );
+
     Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError("E0063"), message, ptr)
         .stable()
         .with_fixes(fixes(ctx, d))
@@ -46,11 +48,14 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
     if d.missed_fields.iter().any(|it| it.as_tuple_index().is_some()) {
         return None;
     }
+
     let root = ctx.sema.db.parse_or_expand(d.file);
+
     let current_module =
         ctx.sema.scope(d.field_list_parent.to_node(&root).syntax()).map(|it| it.module());
     let range = InFile::new(d.file, d.field_list_parent.text_range())
         .original_node_file_range_rooted_opt(ctx.sema.db)?;
+
     let build_text_edit = |new_syntax: &SyntaxNode, old_syntax| {
         let edit = {
             let old_range = ctx.sema.original_range_opt(old_syntax)?;
@@ -77,6 +82,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingFields) -> Option<Vec<Ass
             range.range,
         )])
     };
+
     match &d.field_list_parent.to_node(&root) {
         Either::Left(field_list_parent) => {
             let missing_fields = ctx.sema.record_literal_missing_fields(field_list_parent);
@@ -173,6 +179,7 @@ fn make_ty(
             ty.display_source_code(db, module.into(), false).ok().unwrap_or_else(|| "_".to_owned())
         }
     };
+
     make::ty(&ty_str)
 }
 
@@ -198,12 +205,14 @@ fn get_default_constructor(
             return Some(make::ext::default_bool());
         }
     }
+
     let krate = ctx
         .sema
         .file_to_module_def(d.file.original_file(ctx.sema.db).file_id(ctx.sema.db))?
         .krate();
     let module = krate.root_module();
     // Look for a ::new() associated function
+
     let has_new_func = ty
         .iterate_assoc_items(ctx.sema.db, krate, |assoc_item| {
             if let AssocItem::Function(func) = assoc_item
@@ -216,6 +225,7 @@ fn get_default_constructor(
             None
         })
         .is_some();
+
     let famous_defs = FamousDefs(&ctx.sema, krate);
     if has_new_func {
         Some(make::ext::expr_ty_new(&make_ty(ty, ctx.sema.db, module, ctx.edition)))
@@ -411,6 +421,7 @@ fn test_fn() {
 "#,
         );
         // make sure the assist doesn't fill non Unit variants
+
         check_fix(
             r#"
 struct Empty {};
@@ -786,6 +797,7 @@ fn f() {
     #[test]
     fn import_extern_crate_clash_with_inner_item() {
         // This is more of a resolver test, but doesn't really work with the hir_def testsuite.
+
         check_diagnostics(
             r#"
 //- /lib.rs crate:lib deps:jwt

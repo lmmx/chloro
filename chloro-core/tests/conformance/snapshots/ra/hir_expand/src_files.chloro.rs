@@ -383,11 +383,13 @@ impl<SN: Borrow<SyntaxNode>> InFile<SN> {
             }
             _ => return None,
         };
+
         let FileRange { file_id: editioned_file_id, range } = map_node_range_up_rooted(
             db,
             &db.expansion_span_map(file_id),
             self.value.borrow().text_range(),
         )?;
+
         let kind = self.kind();
         let value = db
             .parse(editioned_file_id)
@@ -566,12 +568,14 @@ impl<N: AstNode> InFile<N> {
         if !matches!(file_id.kind(db), MacroKind::Attr | MacroKind::AttrBuiltIn) {
             return None;
         }
+
         let FileRange { file_id: editioned_file_id, range } = map_node_range_up_rooted(
             db,
             &db.expansion_span_map(file_id),
             self.value.syntax().text_range(),
         )?;
         // FIXME: This heuristic is brittle and with the right macro may select completely unrelated nodes?
+
         let anc = db.parse(editioned_file_id).syntax_node().covering_element(range);
         let value = anc.ancestors().find_map(N::cast)?;
         Some(InRealFile::new(editioned_file_id, value))

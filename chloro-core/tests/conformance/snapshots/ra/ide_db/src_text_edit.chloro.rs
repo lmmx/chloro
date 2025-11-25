@@ -102,6 +102,7 @@ impl TextEdit {
             }
             _ => (),
         }
+
         let text_size = TextSize::of(&*text);
         let mut total_len = text_size;
         let mut max_total_len = text_size;
@@ -110,12 +111,15 @@ impl TextEdit {
             total_len -= indel.delete.len();
             max_total_len = max(max_total_len, total_len);
         }
+
         if let Some(additional) = max_total_len.checked_sub(text_size) {
             text.reserve(additional.into());
         }
+
         for indel in self.indels.iter().rev() {
             indel.apply(text);
         }
+
         assert_eq!(TextSize::of(&*text), total_len);
     }
 
@@ -126,6 +130,7 @@ impl TextEdit {
             return Err(other);
         }
         // Only dedup deletions and replacements, keep all insertions
+
         self.indels = iter_merge.dedup_by(|a, b| a == b && !a.delete.is_empty()).cloned().collect();
         Ok(())
     }
@@ -254,8 +259,10 @@ mod tests {
         builder.replace(range(3, 4), "1".to_owned());
         builder.delete(range(11, 13));
         builder.insert(22.into(), "_5555".to_owned());
+
         let text_edit = builder.finish();
         text_edit.apply(&mut text);
+
         assert_eq!(text, "_1111_2222_3333_4444_5555_6666")
     }
     #[test]
@@ -264,6 +271,7 @@ mod tests {
         let mut builder = TextEditBuilder::default();
         builder.delete(range(1, 5));
         builder.delete(range(13, 17));
+
         let edit2 = builder.finish();
         assert!(edit1.union(edit2).is_ok());
         assert_eq!(edit1.indels.len(), 3);
@@ -273,9 +281,11 @@ mod tests {
         let mut builder1 = TextEditBuilder::default();
         builder1.delete(range(7, 11));
         builder1.delete(range(13, 17));
+
         let mut builder2 = TextEditBuilder::default();
         builder2.delete(range(1, 5));
         builder2.delete(range(13, 17));
+
         let mut edit1 = builder1.finish();
         let edit2 = builder2.finish();
         assert!(edit1.union(edit2).is_ok());
@@ -293,6 +303,7 @@ mod tests {
         builder.replace(range(1, 3), "aa".into());
         builder.replace(range(5, 7), "bb".into());
         let edit = builder.finish();
+
         assert_eq!(edit.indels.len(), 2);
     }
     #[test]
@@ -300,6 +311,7 @@ mod tests {
         let mut builder = TextEditBuilder::default();
         builder.replace(range(1, 3), "aa".into());
         builder.replace(range(3, 5), "bb".into());
+
         let edit = builder.finish();
         assert_eq!(edit.indels.len(), 1);
         assert_eq!(edit.indels[0].insert, "aabb");
@@ -312,6 +324,7 @@ mod tests {
         builder.replace(range(3, 5), "www".into());
         builder.replace(range(5, 8), "".into());
         builder.replace(range(8, 9), "ub".into());
+
         let edit = builder.finish();
         assert_eq!(edit.indels.len(), 1);
         assert_eq!(edit.indels[0].insert, "auwwwub");

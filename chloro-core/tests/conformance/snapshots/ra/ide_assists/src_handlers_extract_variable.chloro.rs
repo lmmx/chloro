@@ -34,16 +34,20 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             NodeOrToken::Token(it) => it.parent()?,
         }
     };
+
     let node = node.ancestors().take_while(|anc| anc.text_range() == node.text_range()).last()?;
     let range = node.text_range();
+
     let to_extract = node
         .descendants()
         .take_while(|it| range.contains_range(it.text_range()))
         .find_map(valid_target_expr)?;
+
     let ty = ctx.sema.type_of_expr(&to_extract).map(TypeInfo::adjusted);
     if matches!(&ty, Some(ty_info) if ty_info.is_unit()) {
         return None;
     }
+
     let parent = to_extract.syntax().parent().and_then(ast::Expr::cast);
     // Any expression that autoderefs may need adjustment.
     let mut needs_adjust = parent.as_ref().is_some_and(|it| match it {
@@ -210,6 +214,7 @@ pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             },
         );
     }
+
     Some(())
 }
 
@@ -250,6 +255,7 @@ impl ExtractionKind {
             ExtractionKind::Constant => "extract_constant",
             ExtractionKind::Static => "extract_static",
         };
+
         AssistId::refactor_extract(s)
     }
 
@@ -278,6 +284,7 @@ impl ExtractionKind {
                 return (field.to_string(), field.syntax().clone());
             }
         }
+
         let mut name_generator =
             suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(to_extract.syntax()));
         let var_name = if let Some(literal_name) = get_literal_name(ctx, to_extract) {
@@ -285,10 +292,12 @@ impl ExtractionKind {
         } else {
             name_generator.for_variable(to_extract, &ctx.sema)
         };
+
         let var_name = match self {
             ExtractionKind::Variable => var_name.to_lowercase(),
             ExtractionKind::Constant | ExtractionKind::Static => var_name.to_uppercase(),
         };
+
         (var_name, to_extract.syntax().clone())
     }
 }
@@ -297,6 +306,7 @@ fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String>
     let ast::Expr::Literal(literal) = expr else {
         return None;
     };
+
     let inner = match literal.kind() {
         ast::LiteralKind::String(string) => string.value().ok()?.into_owned(),
         ast::LiteralKind::ByteString(byte_string) => {
@@ -308,9 +318,11 @@ fn get_literal_name(ctx: &AssistContext<'_>, expr: &ast::Expr) -> Option<String>
         _ => return None,
     };
     // Entirely arbitrary
+
     if inner.len() > 32 {
         return None;
     }
+
     match LexedStr::single_token(ctx.edition(), &inner) {
         Some((SyntaxKind::IDENT, None)) => Some(inner),
         _ => None,
@@ -367,6 +379,7 @@ impl Anchor {
                 }
                 None
             });
+
         match kind {
             ExtractionKind::Constant | ExtractionKind::Static if result.is_none() => {
                 to_extract.syntax().ancestors().find_map(|node| {
@@ -418,6 +431,7 @@ fn main() -> i32 {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -434,6 +448,7 @@ fn main() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -450,6 +465,7 @@ fn main() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -464,6 +480,7 @@ fn main() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -478,6 +495,7 @@ fn main() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -524,6 +542,7 @@ fn main() -> i32 {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -540,6 +559,7 @@ fn main() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -554,6 +574,7 @@ fn main() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -568,6 +589,7 @@ fn main() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -614,6 +636,7 @@ fn main() -> i32 {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -630,6 +653,7 @@ fn main() {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -644,6 +668,7 @@ fn main() {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -658,6 +683,7 @@ fn main() {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -690,6 +716,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist_not_applicable(
             extract_variable,
             r#"
@@ -1221,6 +1248,7 @@ fn foo() -> u32 {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1238,6 +1266,7 @@ fn foo() -> u32 {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1569,6 +1598,7 @@ fn main() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1592,6 +1622,7 @@ fn main() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1649,6 +1680,7 @@ fn foo() {
     #[test]
     fn extract_var_target() {
         check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
+
         check_assist_target(
             extract_variable,
             r#"
@@ -1694,6 +1726,7 @@ const FOO: i32 = foo(X);
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1715,6 +1748,7 @@ mod foo {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1748,6 +1782,7 @@ impl Hello for Bar {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1793,6 +1828,7 @@ const FOO: i32 = foo(X);
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1814,6 +1850,7 @@ mod foo {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -1847,6 +1884,7 @@ impl Hello for Bar {
 "#,
             "Extract into static",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -2407,6 +2445,7 @@ fn foo() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -2424,6 +2463,7 @@ fn foo() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -2463,6 +2503,7 @@ fn foo() {
 "#,
             "Extract into variable",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"
@@ -2480,6 +2521,7 @@ fn foo() {
 "#,
             "Extract into constant",
         );
+
         check_assist_by_label(
             extract_variable,
             r#"

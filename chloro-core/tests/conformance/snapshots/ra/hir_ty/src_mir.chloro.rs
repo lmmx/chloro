@@ -169,9 +169,11 @@ impl<V, T> ProjectionElem<V, T> {
         // we only bail on mir building when there are type mismatches
         // but error types may pop up resulting in us still attempting to build the mir
         // so just propagate the error type
+
         if base.is_ty_error() {
             return Ty::new_error(interner, ErrorGuaranteed);
         }
+
         if matches!(base.kind(), TyKind::Alias(..)) {
             let mut ocx = ObligationCtxt::new(infcx);
             // FIXME: we should get this from caller
@@ -181,6 +183,7 @@ impl<V, T> ProjectionElem<V, T> {
                 Err(_) => return Ty::new_error(interner, ErrorGuaranteed),
             }
         }
+
         match self {
             ProjectionElem::Deref => match base.kind() {
                 TyKind::RawPtr(inner, _) | TyKind::Ref(_, inner, _) => inner,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45712 bytes
-Chloro size:   45133 bytes
+Chloro size:   45157 bytes
 Rustfmt size:  45712 bytes
 
 ✗ Outputs DIFFER
@@ -52,33 +52,6 @@ Rustfmt size:  45712 bytes
  pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
      let parent = ret_type.syntax().parent()?;
-             _ => return None,
-         }
-     };
--
-     let type_ref = &ret_type.ty()?;
-     let Some(hir::Adt::Enum(ret_enum)) = ctx.sema.resolve_type(type_ref)?.as_adt() else {
-         return None;
-     };
--
-     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(type_ref.syntax())?.krate());
--
-     let kind = UnwrapperKind::ALL
-         .iter()
-         .find(|k| matches!(k.core_type(&famous_defs), Some(core_type) if ret_enum == core_type))?;
--
-     let happy_type = extract_wrapped_type(type_ref)?;
--
-     acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
-         let mut editor = builder.make_editor(&parent);
-         let make = SyntaxFactory::with_mappings();
-             UnwrapperKind::Option => "unwrap_option_return_type",
-             UnwrapperKind::Result => "unwrap_result_return_type",
-         };
--
-         AssistId::refactor_rewrite(s)
-     }
- 
      }
  }
  
@@ -107,8 +80,10 @@ Rustfmt size:  45712 bytes
          );
 -
          // Unformatted return type
++
          check_assist_by_label(
              unwrap_return_type,
+             r#"
              "Unwrap Option return type",
          );
      }
@@ -270,13 +245,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_option_return_type_simple_with_tail_block_like_match_return_expr() {
          check_assist_by_label(
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Option return type",
          );
      }
@@ -305,13 +273,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_option_return_type_simple_with_closure() {
          check_assist_by_label(
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Option return type",
          );
      }
@@ -319,34 +280,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_option_return_type_simple_with_weird_forms() {
          check_assist_by_label(
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Option return type",
          );
      }
@@ -354,20 +287,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_option_return_type_nested_type() {
          check_assist_by_label(
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Option return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Option return type",
          );
      }
@@ -387,8 +306,10 @@ Rustfmt size:  45712 bytes
          );
 -
          // Unformatted return type
++
          check_assist_by_label(
              unwrap_return_type,
+             r#"
              "Unwrap Result return type",
          );
      }
@@ -536,13 +457,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_result_return_type_simple_with_tail_block_like_match_return_expr() {
          check_assist_by_label(
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Result return type",
          );
      }
@@ -571,13 +485,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_result_return_type_simple_with_closure() {
          check_assist_by_label(
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Result return type",
          );
      }
@@ -585,34 +492,6 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_result_return_type_simple_with_weird_forms() {
          check_assist_by_label(
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
              "Unwrap Result return type",
          );
      }
@@ -620,17 +499,3 @@ Rustfmt size:  45712 bytes
      #[test]
      fn unwrap_result_return_type_nested_type() {
          check_assist_by_label(
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"
- "#,
-             "Unwrap Result return type",
-         );
--
-         check_assist_by_label(
-             unwrap_return_type,
-             r#"

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48209 bytes
+Chloro size:   48212 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -145,20 +145,10 @@ Rustfmt size:  50490 bytes
          // we only bail on mir building when there are type mismatches
          // but error types may pop up resulting in us still attempting to build the mir
          // so just propagate the error type
++
          if base.is_ty_error() {
              return Ty::new_error(interner, ErrorGuaranteed);
          }
--
-         if matches!(base.kind(), TyKind::Alias(..)) {
-             let mut ocx = ObligationCtxt::new(infcx);
-             // FIXME: we should get this from caller
-                 Err(_) => return Ty::new_error(interner, ErrorGuaranteed),
-             }
-         }
--
-         match self {
-             ProjectionElem::Deref => match base.kind() {
-                 TyKind::RawPtr(inner, _) | TyKind::Ref(_, inner, _) => inner,
                  }
              },
              ProjectionElem::Field(Either::Right(f)) => match base.kind() {

@@ -146,6 +146,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // "syntactic" place exprs since if the base of a field projection is
         // not a place then it would've been UB to read from it anyways since
         // that constitutes a read.
+
         if !self.is_syntactic_place_expr(expr) {
             return true;
         }
@@ -155,6 +156,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // method.
         // So, we pass down such readness from the parent expression through the
         // recursive `infer_expr*` calls in a "top-down" manner.
+
         is_read == ExprIsRead::Yes
     }
 
@@ -290,6 +292,7 @@ impl<'db> InferenceContext<'_, 'db> {
         is_read: ExprIsRead,
     ) -> Ty<'db> {
         self.db.unwind_if_revision_cancelled();
+
         let expr = &self.body[tgt_expr];
         tracing::trace!(?expr);
         let ty = match expr {
@@ -1095,6 +1098,7 @@ impl<'db> InferenceContext<'_, 'db> {
         let prev_ret_ty = mem::replace(&mut self.return_ty, ret_ty);
         let prev_ret_coercion = self.return_coercion.replace(CoerceMany::new(ret_ty));
         // FIXME: We should handle async blocks like we handle closures
+
         let expected = &Expectation::has_type(ret_ty);
         let (_, inner_ty) = self.with_breakable_ctx(BreakableKind::Border, None, None, |this| {
             let ty = this.infer_block(tgt_expr, *id, statements, *tail, None, expected);
@@ -1113,9 +1117,11 @@ impl<'db> InferenceContext<'_, 'db> {
                 ty
             }
         });
+
         self.diverges = prev_diverges;
         self.return_ty = prev_ret_ty;
         self.return_coercion = prev_ret_coercion;
+
         self.lower_async_block_type_impl_trait(inner_ty, tgt_expr)
     }
 
@@ -1215,7 +1221,9 @@ impl<'db> InferenceContext<'_, 'db> {
             Some(TyKind::Array(st, _) | TyKind::Slice(st)) => st,
             _ => self.table.next_ty_var(),
         };
+
         let krate = self.resolver.krate();
+
         let expected = Expectation::has_type(elem_ty);
         let (elem_ty, len) = match array {
             Array::ElementList { elements, .. } if elements.is_empty() => {
@@ -1305,6 +1313,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 self.infer_expr_no_expect(expr, ExprIsRead::Yes);
             }
         }
+
         self.types.never
     }
 
@@ -1353,6 +1362,7 @@ impl<'db> InferenceContext<'_, 'db> {
         };
         let lhs_ty = self.infer_expr(lhs, &lhs_expectation, is_read);
         let rhs_ty = self.table.next_ty_var();
+
         let trait_func = lang_items_for_bin_op(op).and_then(|(name, lang_item)| {
             let trait_id = self.resolve_lang_item(lang_item)?.as_trait()?;
             let func = trait_id.trait_items(self.db).method_by_name(&name)?;
@@ -1380,11 +1390,16 @@ impl<'db> InferenceContext<'_, 'db> {
         };
         // HACK: We can use this substitution for the function because the function itself doesn't
         // have its own generic parameters.
+
         let args = GenericArgs::new_from_iter(self.interner(), [lhs_ty.into(), rhs_ty.into()]);
+
         self.write_method_resolution(tgt_expr, func, args);
+
         let method_ty = self.db.value_ty(func.into()).unwrap().instantiate(self.interner(), args);
         self.register_obligations_for_call(method_ty);
+
         self.infer_expr_coerce(rhs, &Expectation::has_type(rhs_ty), ExprIsRead::Yes);
+
         let ret_ty = match method_ty.callable_sig(self.interner()) {
             Some(sig) => {
                 let sig = sig.skip_binder();
@@ -1416,7 +1431,9 @@ impl<'db> InferenceContext<'_, 'db> {
             }
             None => self.err_ty(),
         };
+
         let ret_ty = self.process_remote_user_written_ty(ret_ty);
+
         if self.is_builtin_binop(lhs_ty, rhs_ty, op) {
             // use knowledge of built-in binary ops, which can sometimes help inference
             let builtin_ret = self.enforce_builtin_binop_types(lhs_ty, rhs_ty, op);
@@ -1444,6 +1461,7 @@ impl<'db> InferenceContext<'_, 'db> {
             let prev_block = self.table.infer_ctxt.interner.block.replace(block_id);
             (prev_env, prev_block)
         });
+
         let (break_ty, ty) =
             self.with_breakable_ctx(BreakableKind::Block, Some(coerce_ty), label, |this| {
                 for stmt in statements {
@@ -1560,6 +1578,7 @@ impl<'db> InferenceContext<'_, 'db> {
             self.table.trait_env = prev_env;
             self.table.infer_ctxt.interner.block = prev_block;
         }
+
         break_ty.unwrap_or(ty)
     }
 
@@ -1615,6 +1634,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 .instantiate(interner, parameters);
             Some((Either::Left(field_id), ty))
         });
+
         Some(match res {
             Some((field_id, ty)) => {
                 let adjustments = autoderef.adjust_steps();
@@ -1643,11 +1663,13 @@ impl<'db> InferenceContext<'_, 'db> {
     ) -> Ty<'db> {
         // Field projections don't constitute reads.
         let receiver_ty = self.infer_expr_inner(receiver, &Expectation::none(), ExprIsRead::No);
+
         if name.is_missing() {
             // Bail out early, don't even try to look up field. Also, we don't issue an unresolved
             // field diagnostic because this is a syntax error rather than a semantic error.
             return self.err_ty();
         }
+
         match self.lookup_field(receiver_ty, name) {
             Some((ty, field_id, adjustments, is_public)) => {
                 self.write_expr_adj(receiver, adjustments.into_boxed_slice());
@@ -1784,6 +1806,7 @@ impl<'db> InferenceContext<'_, 'db> {
         expected: &Expectation<'db>,
     ) -> Ty<'db> {
         self.register_obligations_for_call(callee_ty);
+
         self.check_call_arguments(
             tgt_expr,
             param_tys,
@@ -1807,6 +1830,7 @@ impl<'db> InferenceContext<'_, 'db> {
     ) -> Ty<'db> {
         let receiver_ty = self.infer_expr_inner(receiver, &Expectation::none(), ExprIsRead::Yes);
         let receiver_ty = self.table.try_structurally_resolve_type(receiver_ty);
+
         if matches!(receiver_ty.kind(), TyKind::Error(_) | TyKind::Infer(InferTy::TyVar(_))) {
             // Don't probe on error type, or on a fully unresolved infer var.
             // FIXME: Emit an error if we're probing on an infer var (type annotations needed).
@@ -1816,7 +1840,9 @@ impl<'db> InferenceContext<'_, 'db> {
             }
             return receiver_ty;
         }
+
         let canonicalized_receiver = self.canonicalize(receiver_ty);
+
         let resolved = method_resolution::lookup_method(
             &canonicalized_receiver,
             &mut self.table,
@@ -1968,6 +1994,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
             };
         self.table.unify(formal_receiver_ty, receiver_ty);
+
         self.check_call_arguments(tgt_expr, &param_tys, ret_ty, expected, args, &[], is_varargs);
         self.table.normalize_associated_types_in(ret_ty)
     }
@@ -2020,23 +2047,27 @@ impl<'db> InferenceContext<'_, 'db> {
             })
             .unwrap_or_default();
         // If there are no external expectations at the call site, just use the types from the function defn
+
         let expected_input_tys = if let Some(expected_input_tys) = &expected_input_tys {
             assert_eq!(expected_input_tys.len(), formal_input_tys.len());
             expected_input_tys
         } else {
             formal_input_tys
         };
+
         let minimum_input_count = expected_input_tys.len();
         let provided_arg_count = provided_args.len() - skip_indices.len();
         // Keep track of whether we *could possibly* be satisfied, i.e. whether we're on the happy path
         // if the wrong number of arguments were supplied, we CAN'T be satisfied,
         // and if we're c_variadic, the supplied arguments must be >= the minimum count from the function
         // otherwise, they need to be identical, because rust doesn't currently support variadic functions
+
         let args_count_matches = if c_variadic {
             provided_arg_count >= minimum_input_count
         } else {
             provided_arg_count == minimum_input_count
         };
+
         if !args_count_matches {
             self.push_diagnostic(InferenceDiagnostic::MismatchedArgCount {
                 call_expr,
@@ -2047,6 +2078,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // We introduce a helper function to demand that a given argument satisfy a given input
         // This is more complicated than just checking type equality, as arguments could be coerced
         // This version writes those types back so further type checking uses the narrowed types
+
         let demand_compatible = |this: &mut InferenceContext<'_, 'db>, idx| {
             let formal_input_ty: Ty<'db> = formal_input_tys[idx];
             let expected_input_ty: Ty<'db> = expected_input_tys[idx];
@@ -2113,6 +2145,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // that are not closures, then we type-check the closures. This is so
         // that we have more information about the types of arguments when we
         // type-check the functions. This isn't really the right way to do this.
+
         for check_closures in [false, true] {
             // More awful hacks: before we check argument types, try to do
             // an "opportunistic" trait resolution of any trait bounds on
@@ -2160,6 +2193,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 }
             }
         }
+
         if !args_count_matches {}
     }
 
@@ -2173,6 +2207,7 @@ impl<'db> InferenceContext<'_, 'db> {
             ctx: &'a mut InferenceContext<'b, 'db>,
             expr: ExprId,
         }
+
         impl<'db> GenericArgsLowerer<'db> for LowererCtx<'_, '_, 'db> {
             fn report_len_mismatch(
                 &mut self,
@@ -2274,6 +2309,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 unreachable!("we set `LifetimeElisionKind::Infer`")
             }
         }
+
         substs_from_args_and_bindings(
             self.db,
             self.body,
@@ -2334,11 +2370,13 @@ impl<'db> InferenceContext<'_, 'db> {
             }
             _ => return Default::default(),
         };
+
         let data = self.db.function_signature(func);
         let Some(legacy_const_generics_indices) = &data.legacy_const_generics_indices else {
             return Default::default();
         };
         // only use legacy const generics if the param count matches with them
+
         if data.params.len() + legacy_const_generics_indices.len() != args.len() {
             if args.len() <= data.params.len() {
                 return Default::default();
@@ -2351,6 +2389,7 @@ impl<'db> InferenceContext<'_, 'db> {
             }
         }
         // check legacy const parameters
+
         for arg_idx in legacy_const_generics_indices.iter().copied() {
             if arg_idx >= args.len() as u32 {
                 continue;
@@ -2386,10 +2425,12 @@ impl<'db> InferenceContext<'_, 'db> {
         // Special-case a single layer of referencing, so that things like `5.0 + &6.0f32` work (See rust-lang/rust#57447).
         let lhs = self.deref_ty_if_possible(lhs);
         let rhs = self.deref_ty_if_possible(rhs);
+
         let (op, is_assign) = match op {
             BinaryOp::Assignment { op: Some(inner) } => (BinaryOp::ArithOp(inner), true),
             _ => (op, false),
         };
+
         let output_ty = match op {
             BinaryOp::LogicOp(_) => {
                 let bool_ = self.types.bool;
@@ -2422,6 +2463,7 @@ impl<'db> InferenceContext<'_, 'db> {
 
             BinaryOp::Assignment { .. } => unreachable!("handled above"),
         };
+
         if is_assign { self.types.unit } else { output_ty }
     }
 
@@ -2429,10 +2471,12 @@ impl<'db> InferenceContext<'_, 'db> {
         // Special-case a single layer of referencing, so that things like `5.0 + &6.0f32` work (See rust-lang/rust#57447).
         let lhs = self.deref_ty_if_possible(lhs);
         let rhs = self.deref_ty_if_possible(rhs);
+
         let op = match op {
             BinaryOp::Assignment { op: Some(inner) } => BinaryOp::ArithOp(inner),
             _ => op,
         };
+
         match op {
             BinaryOp::LogicOp(_) => true,
 

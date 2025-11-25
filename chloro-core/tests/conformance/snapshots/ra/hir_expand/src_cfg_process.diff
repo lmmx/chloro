@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14552 bytes
-Chloro size:   14357 bytes
+Chloro size:   14361 bytes
 Rustfmt size:  14552 bytes
 
 ✗ Outputs DIFFER
@@ -30,13 +30,6 @@ Rustfmt size:  14552 bytes
      EverythingElse,
  }
  
-     let meta_path = meta.path()?;
-     debug!("Removing {:?}", meta_path.syntax());
-     remove.insert(meta_path.syntax().clone().into());
--
-     let meta_tt = meta.token_tree()?;
-     debug!("meta_tt {}", meta_tt);
-     let mut stage = CfgExprStage::StrippigCfgExpr;
      }
      Some(remove)
  }
@@ -51,20 +44,6 @@ Rustfmt size:  14552 bytes
  fn process_enum(
      db: &dyn ExpandDatabase,
      variants: VariantList,
-         _ => false,
-     };
-     let mut remove = FxHashSet::default();
--
-     let item = ast::Item::cast(node.clone())?;
-     for attr in item.attrs() {
-         if let Some(enabled) = check_cfg_attr(db, &attr, loc.krate) {
-             }
-         }
-     }
--
-     if is_derive {
-         // Only derives get their code cfg-clean, normal attribute macros process only the cfg at their level
-         // (cfg_attr is handled above, cfg is handled in the def map).
      }
      Some(remove)
  }
@@ -94,10 +73,3 @@ Rustfmt size:  14552 bytes
      fn check_dnf_from_syntax(input: &str, expect: Expect) {
          let parse = SourceFile::parse(input, span::Edition::CURRENT);
          let node = match parse.tree().syntax().descendants().find_map(Attr::cast) {
-         };
-         let node = node.clone_subtree();
-         assert_eq!(node.syntax().text_range().start(), 0.into());
--
-         let cfg = parse_from_attr_token_tree(&node.meta().unwrap().token_tree().unwrap()).unwrap();
-         let actual = format!("#![cfg({})]", DnfExpr::new(&cfg));
-         expect.assert_eq(&actual);

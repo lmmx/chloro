@@ -432,6 +432,7 @@ mod p {
             st RightType WrongType
         "#]],
     );
+
     check_edit(
         "RightType",
         r#"
@@ -561,6 +562,7 @@ fn foo(self) {
             ev Baz Baz
         "#]],
     );
+
     check_no_kw(
         r#"
 //- /main.rs crate:main deps:e
@@ -926,6 +928,7 @@ fn foo { /* test */::$0 }
             md core
         "#]],
     );
+
     check_with_trigger_character(
         r#"
 fn foo { crate::$0 }
@@ -935,6 +938,7 @@ fn foo { crate::$0 }
             fn foo() fn()
         "#]],
     );
+
     check_with_trigger_character(
         r#"
 fn foo { crate:$0 }
@@ -955,6 +959,7 @@ fn foo { crate::$0 }
             fn foo() fn()
         "#]],
     );
+
     check_with_trigger_character(
         r#"
 fn foo { crate:$0 }
@@ -1337,10 +1342,12 @@ fn check_signatures(src: &str, kind: CompletionItemKind, reduced: Expect, full: 
         x
     };
     // reduced signature
+
     let completion = do_completion_with_config(TEST_CONFIG, src, kind);
     assert!(completion[0].detail.is_some());
     reduced.assert_eq(completion[0].detail.as_ref().unwrap());
     // full signature
+
     let completion = do_completion_with_config(FULL_SIGNATURES_CONFIG, src, kind);
     assert!(completion[0].detail.is_some());
     full.assert_eq(completion[0].detail.as_ref().unwrap());
@@ -1357,6 +1364,7 @@ fn main() { fo$0 }
         expect!("fn(&'x mut T) -> u8"),
         expect!("pub fn foo<'x, T>(x: &'x mut T) -> u8 where T: Clone,"),
     );
+
     check_signatures(
         r#"
 struct Foo;
@@ -1371,6 +1379,7 @@ fn main() { Bar::b$0 }
         expect!("const fn(Foo) -> !"),
         expect!("pub const fn baz(x: Foo) -> !"),
     );
+
     check_signatures(
         r#"
 struct Foo;

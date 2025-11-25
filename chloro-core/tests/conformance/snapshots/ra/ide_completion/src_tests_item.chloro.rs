@@ -168,6 +168,7 @@ $0
 pub(crate) $0
 "#,
     );
+
     check_edit(
         "pub",
         r"
@@ -177,6 +178,7 @@ $0
 pub $0
 "#,
     );
+
     check_edit(
         "pub(super)",
         r"
@@ -186,6 +188,7 @@ $0
 pub(super) $0
 "#,
     );
+
     check_edit(
         "in",
         r"
@@ -225,6 +228,7 @@ struct S {}
 impl Copy for $0
 "#,
     );
+
     check_edit(
         "where",
         r#"

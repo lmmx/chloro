@@ -113,6 +113,7 @@ pub(crate) fn assist_kind(kind: lsp_types::CodeActionKind) -> Option<AssistKind>
         k if k == &lsp_types::CodeActionKind::REFACTOR_REWRITE => AssistKind::RefactorRewrite,
         _ => return None,
     };
+
     Some(assist_kind)
 }
 

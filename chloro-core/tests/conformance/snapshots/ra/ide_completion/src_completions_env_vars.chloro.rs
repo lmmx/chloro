@@ -67,11 +67,13 @@ pub(crate) fn complete_cargo_env_vars(
         }
     }
     let range = original.text_range_between_quotes()?;
+
     CARGO_DEFINED_VARS.iter().for_each(|&(var, detail)| {
         let mut item = CompletionItem::new(CompletionItemKind::Keyword, range, var, ctx.edition);
         item.detail(detail);
         item.add_to(acc, ctx.db);
     });
+
     Some(())
 }
 
@@ -119,6 +121,7 @@ fn main() {
                 let foo = "CA$0";
             }
         "#;
+
         let completions = completion_list(fixture);
         assert!(completions.is_empty(), "Completions weren't empty: {completions}");
     }
@@ -134,6 +137,7 @@ fn main() {
 
             }
         "#;
+
         let completions = completion_list(fixture);
         assert!(completions.is_empty(), "Completions weren't empty: {completions}");
     }
@@ -148,6 +152,7 @@ fn main() {
                 let foo = env!("CA$0");
             }
         "#;
+
         let completions = completion_list(fixture);
         assert!(completions.is_empty(), "Completions weren't empty: {completions}")
     }

@@ -150,9 +150,11 @@ pub(crate) fn find_all_refs(
         }
     };
     // Find references for control-flow keywords.
+
     if let Some(res) = handle_control_flow_keywords(sema, position) {
         return Some(vec![res]);
     }
+
     if let Some(token) = syntax.token_at_offset(position.offset).left_biased()
         && let Some(token) = ast::String::cast(token.clone())
         && let Some((analysis, fixture_analysis)) =
@@ -166,6 +168,7 @@ pub(crate) fn find_all_refs(
             .upmap_from_ra_fixture(&fixture_analysis, virtual_file_id, position.file_id)
             .ok();
     }
+
     match name_for_constructor_search(&syntax, position) {
         Some(name) => {
             let def = match NameClass::classify(sema, &name)? {
@@ -201,9 +204,11 @@ pub(crate) fn find_defs(
                 | T![Self]
         )
     })?;
+
     if let Some((.., resolution)) = sema.check_for_format_args_template(token.clone(), offset) {
         return resolution.map(Definition::from).map(|it| vec![it]);
     }
+
     Some(
         sema.descend_into_macros_exact(token)
             .into_iter()
@@ -402,6 +407,7 @@ fn handle_control_flow_keywords(
         T![=>] => 3,
         _ => 1,
     })?;
+
     let references = match token.kind() {
         T![fn] | T![return] | T![try] => highlight_related::highlight_exit_points(sema, token),
         T![async] => highlight_related::highlight_yield_points(sema, token),
@@ -423,6 +429,7 @@ fn handle_control_flow_keywords(
         (file_id.file_id(sema.db), ranges)
     })
     .collect();
+
     Some(ReferenceSearchResult { declaration: None, references })
 }
 
@@ -455,6 +462,7 @@ fn test() {
                 FileId(0) 75..84 test
             "#]],
         );
+
         check(
             r#"
 fn test_func() {}
@@ -1050,6 +1058,7 @@ pub(super) struct Foo$0 {
             //- /bar.rs
             fn f() { super::quux(); }
         "#;
+
         check_with_scope(
             code,
             None,
@@ -1060,6 +1069,7 @@ pub(super) struct Foo$0 {
                 FileId(2) 16..20
             "#]],
         );
+
         check_with_scope(
             code,
             Some(&mut |db| {
@@ -1463,6 +1473,7 @@ fn main() {
             minicore: MiniCore::default(),
         };
         let refs = analysis.find_all_refs(pos, &config).unwrap().unwrap();
+
         let mut actual = String::new();
         for mut refs in refs {
             actual += "\n\n";

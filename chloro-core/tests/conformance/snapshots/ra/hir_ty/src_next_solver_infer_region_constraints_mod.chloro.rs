@@ -293,6 +293,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // If you add a new field to `RegionConstraintCollector`, you
         // should think carefully about whether it needs to be cleared
         // or updated in some way.
+
         let RegionConstraintStorage {
             var_infos: _,
             data,
@@ -305,13 +306,16 @@ impl<'db> RegionConstraintCollector<'db, '_> {
         // fresh regions if we do a LUB operation. As it happens,
         // LUB/GLB are not performed by the MIR type-checker, which is
         // the one that uses this method, but it's good to be correct.
+
         lubs.clear();
         glbs.clear();
+
         let data = mem::take(data);
         // Clear all unifications and recreate the variables a "now
         // un-unified" state. Note that when we unify `a` and `b`, we
         // also insert `a <= b` and a `b <= a` edges, so the
         // `RegionConstraintData` contains the relationship here.
+
         if *any_unifications {
             *any_unifications = false;
             // Manually inlined `self.unification_table_mut()` as `self` is used in the closure.
@@ -320,6 +324,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
                     universe: self.storage.var_infos[key.vid].universe,
                 });
         }
+
         data
     }
 
@@ -339,6 +344,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
 
     pub(super) fn new_region_var(&mut self, universe: UniverseIndex) -> RegionVid {
         let vid = self.storage.var_infos.push(RegionVariableInfo { universe });
+
         let u_vid = self.unification_table_mut().new_key(RegionVariableValue::Unknown { universe });
         assert_eq!(vid, u_vid.vid);
         self.undo_log.push(AddVar(vid));
@@ -349,6 +355,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     fn add_constraint(&mut self, constraint: Constraint<'db>) {
         // cannot add constraints once regions are resolved
         debug!("RegionConstraintCollector: add_constraint({:?})", constraint);
+
         let index = self.storage.data.constraints.len();
         self.storage.data.constraints.push(constraint);
         self.undo_log.push(AddConstraint(index));
@@ -396,6 +403,7 @@ impl<'db> RegionConstraintCollector<'db, '_> {
     #[instrument(skip(self), level = "debug")]
     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
         // cannot add constraints once regions are resolved
+
         match (sub.kind(), sup.kind()) {
             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");

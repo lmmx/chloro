@@ -743,6 +743,7 @@ impl<'db> InferenceContext<'_, 'db> {
             }
             None => *result = Some(ck),
         };
+
         self.walk_pat_inner(
             pat,
             &mut update_result,
@@ -1210,6 +1211,7 @@ impl<'db> InferenceContext<'_, 'db> {
         {
             self.closure_dependencies.entry(c).or_default().push(dep);
         }
+
         fn dep_creates_cycle(
             closure_dependencies: &FxHashMap<InternedClosureId, Vec<InternedClosureId>>,
             visited: &mut FxHashSet<InternedClosureId>,

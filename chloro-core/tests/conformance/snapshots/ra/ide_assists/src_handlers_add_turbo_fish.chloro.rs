@@ -34,19 +34,23 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
                 ast::CallableExpr::MethodCall(it) => Some(Either::Right(it)),
             }
         })?;
+
     let already_has_turbofish = match &turbofish_target {
         Either::Left(path_segment) => path_segment.generic_arg_list().is_some(),
         Either::Right(method_call) => method_call.generic_arg_list().is_some(),
     };
+
     if already_has_turbofish {
         cov_mark::hit!(add_turbo_fish_one_fish_is_enough);
         return None;
     }
+
     let name_ref = match &turbofish_target {
         Either::Left(path_segment) => path_segment.name_ref()?,
         Either::Right(method_call) => method_call.name_ref()?,
     };
     let ident = name_ref.ident_token()?;
+
     let def = match NameRefClass::classify(&ctx.sema, &name_ref)? {
         NameRefClass::Definition(def, _) => def,
         NameRefClass::FieldShorthand { .. } | NameRefClass::ExternCrateShorthand { .. } => {
@@ -62,6 +66,7 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         cov_mark::hit!(add_turbo_fish_non_generic);
         return None;
     }
+
     if let Some(let_stmt) = ctx.find_node_at_offset::<ast::LetStmt>() {
         if let_stmt.colon_token().is_none() {
             let_stmt.pat()?;
@@ -104,12 +109,14 @@ pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
             cov_mark::hit!(add_type_ascription_already_typed);
         }
     }
+
     let number_of_arguments = generics
         .iter()
         .filter(|param| {
             matches!(param, hir::GenericParam::TypeParam(_) | hir::GenericParam::ConstParam(_))
         })
         .count();
+
     acc.add(
         AssistId::refactor_rewrite("add_turbo_fish"),
         "Add `::<>`",

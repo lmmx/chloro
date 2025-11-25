@@ -24,9 +24,11 @@ pub(crate) fn complete_dot(
         DotAccess { receiver_ty: Some(receiver_ty), .. } => &receiver_ty.original,
         _ => return,
     };
+
     let has_parens = matches!(dot_access.kind, DotAccessKind::Method);
     let traits_in_scope = ctx.traits_in_scope();
     // Suggest .await syntax for types that implement Future trait
+
     if let Some(future_output) = receiver_ty.into_future_output(ctx.db) {
         let await_str = SmolStr::new_static("await");
         let mut item = CompletionItem::new(
@@ -70,6 +72,7 @@ pub(crate) fn complete_dot(
             });
         }
     }
+
     complete_fields(
         acc,
         ctx,
@@ -81,6 +84,7 @@ pub(crate) fn complete_dot(
     complete_methods(ctx, receiver_ty, &traits_in_scope, |func| {
         acc.add_method(ctx, dot_access, func, None, None)
     });
+
     if ctx.config.enable_auto_iter && !receiver_ty.strip_references().impls_iterator(ctx.db) {
         // FIXME:
         // Checking for the existence of `iter()` is complicated in our setup, because we need to substitute
@@ -141,6 +145,7 @@ pub(crate) fn complete_undotted_self(
         PathExprCtx { self_param: Some(self_param), .. } => self_param,
         _ => return,
     };
+
     let ty = self_param.ty(ctx.db);
     complete_fields(
         acc,
@@ -229,6 +234,7 @@ fn complete_methods(
         // is also an inherent method, especially considering that it may be private, and filtered later).
         seen_methods: FxHashSet<Function>,
     }
+
     impl<F> MethodCandidateCallback for Callback<'_, F>
     where
         F: FnMut(hir::Function),
@@ -259,6 +265,7 @@ fn complete_methods(
             ControlFlow::Continue(())
         }
     }
+
     receiver.iterate_method_candidates_split_inherent(
         ctx.db,
         &ctx.scope,
@@ -384,6 +391,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd pub_field u32
             "#]],
         );
+
         check_no_kw(
             r#"
 //- /lib.rs crate:lib new_source_root:library
@@ -402,6 +410,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd pub_field u32
             "#]],
         );
+
         check_no_kw(
             r#"
 //- /lib.rs crate:lib new_source_root:library
@@ -418,6 +427,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd 1 f64
             "#]],
         );
+
         check_no_kw(
             r#"
 //- /lib.rs crate:lib new_source_root:local
@@ -478,6 +488,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd super_field   u32
             "#]],
         );
+
         check_with_private_editable(
             r#"
 //- /lib.rs crate:lib new_source_root:library
@@ -496,6 +507,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd pub_field u32
             "#]],
         );
+
         check_with_private_editable(
             r#"
 //- /lib.rs crate:lib new_source_root:library
@@ -512,6 +524,7 @@ fn foo(a: lib::m::A) { a.$0 }
                 fd 1 f64
             "#]],
         );
+
         check_with_private_editable(
             r#"
 //- /lib.rs crate:lib new_source_root:local
@@ -1247,6 +1260,7 @@ fn foo() { S { va_field: 0, fn_field: || {} }.fi$0() }
                 fd fn_field fn()
             "#]],
         );
+
         check_edit(
             "fn_field",
             r#"
@@ -1273,6 +1287,7 @@ fn foo() {
                 fd 1 fn()
             "#]],
         );
+
         check_edit(
             "1",
             r#"
@@ -1310,6 +1325,7 @@ fn baz() {
                 me bar(…) fn(self, T) -> T
             "#]],
         );
+
         check_edit(
             "baz",
             r#"
@@ -1335,6 +1351,7 @@ fn baz() {
 }
 "#,
         );
+
         check_edit(
             "bar",
             r#"

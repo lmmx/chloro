@@ -792,6 +792,7 @@ struct Foo;
 "#,
         expect![[r#""#]],
     );
+
     check(
         r#"
 //- minicore: derive, copy

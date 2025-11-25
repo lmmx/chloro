@@ -61,6 +61,7 @@ impl<'a> AssistContext<'a> {
         frange: FileRange,
     ) -> AssistContext<'a> {
         let source_file = sema.parse(frange.file_id);
+
         let start = frange.range.start();
         let end = frange.range.end();
         let left = source_file.syntax().token_at_offset(start);
@@ -71,6 +72,7 @@ impl<'a> AssistContext<'a> {
             right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
         let left = left.map(|t| t.text_range().start().clamp(start, end));
         let right = right.map(|t| t.text_range().end().clamp(start, end));
+
         let trimmed_range = match (left, right) {
             (Some(left), Some(right)) if left <= right => TextRange::new(left, right),
             // Selection solely consists of whitespace so just fall back to the original
@@ -78,6 +80,7 @@ impl<'a> AssistContext<'a> {
         };
         let token_at_offset = source_file.syntax().token_at_offset(frange.range.start());
         let covering_element = source_file.syntax().covering_element(trimmed_range);
+
         AssistContext {
             config,
             sema,
@@ -213,6 +216,7 @@ impl Assists {
         if !self.is_allowed(&id) {
             return None;
         }
+
         let mut command = None;
         let source_change = if self.resolve.should_resolve(&id) {
             let mut builder = SourceChangeBuilder::new(self.file);
@@ -222,6 +226,7 @@ impl Assists {
         } else {
             None
         };
+
         let label = Label::new(label);
         let group = group.cloned();
         self.buf.push(Assist { id, label, group, target, source_change, command });

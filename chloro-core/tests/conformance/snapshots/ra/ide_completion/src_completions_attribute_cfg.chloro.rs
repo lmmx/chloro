@@ -14,6 +14,7 @@ pub(crate) fn complete_cfg(acc: &mut Completions, ctx: &CompletionContext<'_>) {
         acc.add(completion.build(ctx.db));
     };
     // FIXME: Move this into context/analysis.rs
+
     let previous = ctx
         .original_token
         .prev_token()

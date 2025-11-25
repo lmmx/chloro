@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12384 bytes
+Chloro size:   12390 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -41,42 +41,3 @@ Rustfmt size:  12418 bytes
      /// The snapshot in which this context was created. Using the context
      /// outside of this snapshot leads to subtle bugs if the snapshot
      /// gets rolled back. Because of this we explicitly check that we only
-                 break;
-             }
-         }
--
-         errors
-     }
- 
-         if !errors.is_empty() {
-             return errors;
-         }
--
-         self.collect_remaining_errors(infcx)
-     }
- 
-             | TypingMode::PostAnalysis => return Default::default(),
-         };
-         let stalled_coroutines = stalled_coroutines.inner();
--
-         if stalled_coroutines.is_empty() {
-             return Default::default();
-         }
--
-         self.obligations
-             .drain_pending(|obl| {
-                 infcx.probe(|_| {
- 
-     fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
-         inspect_goal.goal().predicate.visit_with(self)?;
--
-         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
-             candidate.visit_nested_no_probe(self)
-         } else {
-         if !self.cache.insert(ty) {
-             return ControlFlow::Continue(());
-         }
--
-         if let TyKind::Coroutine(def_id, _) = ty.kind()
-             && self.stalled_coroutines.contains(&def_id.into())
-         {

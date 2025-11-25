@@ -18,6 +18,7 @@ pub(crate) fn complete_derive_path(
     existing_derives: &ExistingDerives,
 ) {
     let core = ctx.famous_defs().core();
+
     match qualified {
         Qualified::With {
             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),

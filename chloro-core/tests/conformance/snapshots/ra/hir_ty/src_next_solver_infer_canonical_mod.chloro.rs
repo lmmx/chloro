@@ -66,6 +66,7 @@ impl<'db> InferCtxt<'db> {
         let universes: IndexVec<UniverseIndex, _> = std::iter::once(self.universe())
             .chain((1..=canonical.max_universe.as_u32()).map(|_| self.create_next_universe()))
             .collect();
+
         let var_values = CanonicalVarValues::instantiate(
             self.interner,
             canonical.variables,

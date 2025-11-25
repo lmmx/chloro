@@ -42,6 +42,7 @@ impl Node {
     fn add(&mut self, hl_range: HlRange) {
         assert!(self.hl_range.range.contains_range(hl_range.range));
         // Fast path
+
         if let Some(last) = self.nested.last_mut() {
             if last.hl_range.range.contains_range(hl_range.range) {
                 return last.add(hl_range);
@@ -50,13 +51,16 @@ impl Node {
                 return self.nested.push(Node::new(hl_range));
             }
         }
+
         let overlapping =
             equal_range_by(&self.nested, |n| TextRange::ordering(n.hl_range.range, hl_range.range));
+
         if overlapping.len() == 1
             && self.nested[overlapping.start].hl_range.range.contains_range(hl_range.range)
         {
             return self.nested[overlapping.start].add(hl_range);
         }
+
         let nested = self
             .nested
             .splice(overlapping.clone(), iter::once(Node::new(hl_range)))

@@ -24,15 +24,18 @@ impl flags::Scip {
     pub fn run(self) -> anyhow::Result<()> {
         eprintln!("Generating SCIP start...");
         let now = Instant::now();
+
         let no_progress = &|s| eprintln!("rust-analyzer: Loading {s}");
         let root =
             vfs::AbsPathBuf::assert_utf8(std::env::current_dir()?.join(&self.path)).normalize();
+
         let mut config = crate::config::Config::new(
             root.clone(),
             lsp_types::ClientCapabilities::default(),
             vec![],
             None,
         );
+
         if let Some(p) = self.config_path {
             let mut file = std::io::BufReader::new(std::fs::File::open(p)?);
             let json = serde_json::from_reader(&mut file)?;
@@ -60,12 +63,15 @@ impl flags::Scip {
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let analysis = host.analysis();
+
         let vendored_libs_config = if self.exclude_vendored_libraries {
             VendoredLibrariesConfig::Excluded
         } else {
             VendoredLibrariesConfig::Included { workspace_root: &root.clone().into() }
         };
+
         let si = StaticIndex::compute(&analysis, vendored_libs_config);
+
         let metadata = scip_types::Metadata {
             version: scip_types::ProtocolVersion::UnspecifiedProtocolVersion.into(),
             tool_info: Some(scip_types::ToolInfo {
@@ -79,14 +85,17 @@ impl flags::Scip {
             text_document_encoding: scip_types::TextEncoding::UTF8.into(),
             special_fields: Default::default(),
         };
+
         let mut documents = Vec::new();
         // All TokenIds where an Occurrence has been emitted that references a symbol.
+
         let mut token_ids_referenced: FxHashSet<TokenId> = FxHashSet::default();
         // All TokenIds where the SymbolInformation has been written to the document.
         let mut token_ids_emitted: FxHashSet<TokenId> = FxHashSet::default();
         // All FileIds emitted as documents.
         let mut file_ids_emitted: FxHashSet<FileId> = FxHashSet::default();
         // All non-local symbols encountered, for detecting duplicate symbol errors.
+
         let mut nonlocal_symbols_emitted: FxHashSet<String> = FxHashSet::default();
         // List of (source_location, symbol) for duplicate symbol errors to report.
         let mut duplicate_symbol_errors: Vec<(String, String)> = Vec::new();
@@ -118,7 +127,9 @@ impl flags::Scip {
                 }
             };
         // Generates symbols from token monikers.
+
         let mut symbol_generator = SymbolGenerator::default();
+
         for StaticIndexedFile { file_id, tokens, .. } in si.files {
             symbol_generator.clear_document_local_state();
 
@@ -210,6 +221,7 @@ impl flags::Scip {
             }
         }
         // Collect all symbols referenced by the files but not defined within them.
+
         let mut external_symbols = Vec::new();
         for id in token_ids_referenced.difference(&token_ids_emitted) {
             let id = *id;
@@ -244,12 +256,14 @@ impl flags::Scip {
             );
             external_symbols.push(compute_symbol_info(symbol.clone(), enclosing_symbol, token));
         }
+
         let index = scip_types::Index {
             metadata: Some(metadata).into(),
             documents,
             external_symbols,
             special_fields: Default::default(),
         };
+
         if !duplicate_symbol_errors.is_empty() {
             eprintln!("{DUPLICATE_SYMBOLS_MESSAGE}");
             for (source_location, symbol) in duplicate_symbol_errors {
@@ -258,9 +272,11 @@ impl flags::Scip {
                 eprintln!();
             }
         }
+
         let out_path = self.output.unwrap_or_else(|| PathBuf::from(r"index.scip"));
         scip::write_message_to_file(out_path, index)
             .map_err(|err| anyhow::format_err!("Failed to write scip to file: {}", err))?;
+
         eprintln!("Generating SCIP finished {:?}", now.elapsed());
         Ok(())
     }
@@ -291,6 +307,7 @@ fn compute_symbol_info(
         Some(doc) => vec![doc.as_str().to_owned()],
         None => vec![],
     };
+
     let position_encoding = scip_types::PositionEncoding::UTF8CodeUnitOffsetFromLineStart.into();
     let signature_documentation = token.signature.clone().map(|text| scip_types::Document {
         relative_path: "".to_owned(),
@@ -330,6 +347,7 @@ fn get_line_index(db: &RootDatabase, file_id: FileId) -> LineIndex {
 fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32> {
     let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
     let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
+
     if start_line == end_line {
         vec![start_line as i32, start_col as i32, end_col as i32]
     } else {
@@ -340,6 +358,7 @@ fn text_range_to_scip_range(line_index: &LineIndex, range: TextRange) -> Vec<i32
 fn text_range_to_string(relative_path: &str, line_index: &LineIndex, range: TextRange) -> String {
     let LineCol { line: start_line, col: start_col } = line_index.index.line_col(range.start());
     let LineCol { line: end_line, col: end_col } = line_index.index.line_col(range.end());
+
     format!("{relative_path}:{start_line}:{start_col}-{end_line}:{end_col}")
 }
 
@@ -501,6 +520,7 @@ mod test {
     #[track_caller]
     fn check_symbol(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: &str) {
         let (host, position) = position(ra_fixture);
+
         let analysis = host.analysis();
         let si = StaticIndex::compute(
             &analysis,
@@ -508,7 +528,9 @@ mod test {
                 workspace_root: &VfsPath::new_virtual_path("/workspace".to_owned()),
             },
         );
+
         let FilePosition { file_id, offset } = position;
+
         let mut found_symbol = None;
         for file in &si.files {
             if file.file_id != file_id {
@@ -538,10 +560,12 @@ mod test {
                 }
             }
         }
+
         if expected.is_empty() {
             assert!(found_symbol.is_none(), "must have no symbols {found_symbol:?}");
             return;
         }
+
         assert!(found_symbol.is_some(), "must have one symbol {found_symbol:?}");
         assert_eq!(found_symbol.unwrap(), expected);
     }
@@ -815,9 +839,11 @@ pub mod example_mod {
     #[test]
     fn documentation_matches_doc_comment() {
         let s = "/// foo\nfn bar() {}";
+
         let mut host = AnalysisHost::default();
         let change_fixture = ChangeFixture::parse(host.raw_database(), s);
         host.raw_database_mut().apply_change(change_fixture.change);
+
         let analysis = host.analysis();
         let si = StaticIndex::compute(
             &analysis,
@@ -825,10 +851,12 @@ pub mod example_mod {
                 workspace_root: &VfsPath::new_virtual_path("/workspace".to_owned()),
             },
         );
+
         let file = si.files.first().unwrap();
         let (_, token_id) = file.tokens.get(1).unwrap();
         // first token is file module, second is `bar`
         let token = si.tokens.get(*token_id).unwrap();
+
         assert_eq!(token.documentation.as_ref().map(|d| d.as_str()), Some("foo"));
     }
 }

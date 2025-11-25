@@ -34,15 +34,21 @@ impl RatomlTest {
     ) -> Self {
         let tmp_dir = TestDir::new();
         let tmp_path = tmp_dir.path().to_owned();
+
         let full_fixture = fixtures.join("\n");
+
         let mut project = Project::with_fixture(&full_fixture).tmp_dir(tmp_dir);
+
         for root in roots {
             project = project.root(root);
         }
+
         if let Some(client_config) = client_config {
             project = project.with_config(client_config);
         }
+
         let server = project.server_with_lock(true).wait_until_workspace_is_loaded();
+
         let mut case = Self { urls: vec![], server, tmp_path };
         let urls = fixtures.iter().map(|fixture| case.fixture_path(fixture)).collect::<Vec<_>>();
         case.urls = urls;
@@ -51,14 +57,19 @@ impl RatomlTest {
 
     fn fixture_path(&self, fixture: &str) -> Url {
         let mut lines = fixture.trim().split('\n');
+
         let mut path =
             lines.next().expect("All files in a fixture are expected to have at least one line.");
+
         if path.starts_with("//- minicore") {
             path = lines.next().expect("A minicore line must be followed by a path.")
         }
+
         path = path.strip_prefix("//- ").expect("Path must be preceded by a //- prefix ");
+
         let spl = path[1..].split('/');
         let mut path = self.tmp_path.clone();
+
         let mut spl = spl.into_iter();
         if let Some(first) = spl.next() {
             if first == "$$CONFIG_DIR$$" {
@@ -70,6 +81,7 @@ impl RatomlTest {
         for piece in spl {
             path = path.join(piece);
         }
+
         Url::parse(
             format!("file://{}", path.into_string().replace("C:\\", "/c:/").replace('\\', "/"))
                 .as_str(),
@@ -79,6 +91,7 @@ impl RatomlTest {
 
     fn create(&mut self, fixture_path: &str, text: String) {
         let url = self.fixture_path(fixture_path);
+
         self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri: url.clone(),
@@ -87,6 +100,7 @@ impl RatomlTest {
                 text: String::new(),
             },
         });
+
         self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
             text_document: VersionedTextDocumentIdentifier { uri: url, version: 0 },
             content_changes: vec![TextDocumentContentChangeEvent {
@@ -107,6 +121,7 @@ impl RatomlTest {
             },
         });
         // See if deleting ratoml file will make the config of interest to return to its default value.
+
         self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
             text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
             text: Some("".to_owned()),
@@ -122,6 +137,7 @@ impl RatomlTest {
                 text: String::new(),
             },
         });
+
         self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
             text_document: VersionedTextDocumentIdentifier {
                 uri: self.urls[file_idx].clone(),
@@ -163,6 +179,7 @@ fn ratoml_client_config_basic() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -185,6 +202,7 @@ enum Value {
             }
         })),
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
@@ -197,6 +215,7 @@ fn ratoml_user_config_detected() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -219,6 +238,7 @@ enum Value {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         2,
@@ -231,6 +251,7 @@ fn ratoml_create_user_config() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -250,6 +271,7 @@ enum Value {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
@@ -268,6 +290,7 @@ fn ratoml_modify_user_config() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -289,6 +312,7 @@ assist.emitMustUse = true"#,
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
@@ -307,6 +331,7 @@ fn ratoml_delete_user_config() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -328,6 +353,7 @@ assist.emitMustUse = true"#,
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         1,
@@ -347,6 +373,7 @@ fn ratoml_inherit_config_from_ws_root() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -384,6 +411,7 @@ pub fn add(left: usize, right: usize) -> usize {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -396,6 +424,7 @@ fn ratoml_modify_ratoml_at_ws_root() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -433,6 +462,7 @@ pub fn add(left: usize, right: usize) -> usize {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -451,6 +481,7 @@ fn ratoml_delete_ratoml_at_ws_root() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -488,6 +519,7 @@ pub fn add(left: usize, right: usize) -> usize {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -506,6 +538,7 @@ fn ratoml_add_immediate_child_to_ws_root() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -543,6 +576,7 @@ pub fn add(left: usize, right: usize) -> usize {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -562,6 +596,7 @@ fn ratoml_rm_ws_root_ratoml_child_has_client_as_parent_now() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -599,6 +634,7 @@ pub fn add(left: usize, right: usize) -> usize {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -617,6 +653,7 @@ fn ratoml_crates_both_roots() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -654,6 +691,7 @@ enum Value {
         vec!["p1", "p2"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -671,6 +709,7 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -699,6 +738,7 @@ fn ratoml_multiple_ratoml_in_single_source_root() {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::AssistEmitMustUse,
         3,
@@ -711,6 +751,7 @@ fn ratoml_in_root_is_workspace() {
     if skip_slow_tests() {
         return;
     }
+
     let server = RatomlTest::new(
         vec![
             r#"
@@ -733,6 +774,7 @@ fn main() {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
@@ -745,6 +787,7 @@ fn ratoml_root_is_updateable() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -767,6 +810,7 @@ fn main() {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,
@@ -785,6 +829,7 @@ fn ratoml_root_is_deletable() {
     if skip_slow_tests() {
         return;
     }
+
     let mut server = RatomlTest::new(
         vec![
             r#"
@@ -807,6 +852,7 @@ fn main() {
         vec!["p1"],
         None,
     );
+
     server.query(
         InternalTestingFetchConfigOption::CheckWorkspace,
         2,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6298 bytes
-Chloro size:   6295 bytes
+Chloro size:   6298 bytes
 Rustfmt size:  6451 bytes
 
 ✗ Outputs DIFFER
@@ -49,10 +49,7 @@ Rustfmt size:  6451 bytes
  }
  
  /// Finds the appropriate Integer type and signedness for the given
-     // which can fit all i128 values, so the result remains unaffected.
-     let unsigned_fit = Integer::fit_unsigned(cmp::max(min as u128, max as u128));
-     let signed_fit = cmp::max(Integer::fit_signed(min), Integer::fit_signed(max));
--
+ 
      if let Some(ity) = repr.int {
          let discr = Integer::from_attr(dl, ity);
 -        let fit = if ity.is_signed() {
@@ -64,16 +61,12 @@ Rustfmt size:  6451 bytes
          if discr < fit {
              return Err(LayoutError::UserReprTooSmall);
          }
-         return Ok((discr, ity.is_signed()));
-     }
--
-     let at_least = if repr.c() {
-         // This is usually I32, however it can be different on some platforms,
-         // notably hexagon and arm-none/thumb-none
          // repr(Rust) enums try to be as small as possible
          Integer::I8
      };
 -
      // If there are no negative values, we can use the unsigned fit.
++
      Ok(if min >= 0 {
          (cmp::max(unsigned_fit, at_least), false)
+     } else {

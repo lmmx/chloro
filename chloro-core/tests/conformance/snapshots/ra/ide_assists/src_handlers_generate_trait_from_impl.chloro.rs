@@ -12,20 +12,26 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     // Check if cursor is to the left of assoc item list's L_CURLY.
     // if no L_CURLY then return.
+
     let l_curly = impl_ast.assoc_item_list()?.l_curly_token()?;
+
     let cursor_offset = ctx.offset();
     let l_curly_offset = l_curly.text_range();
     if cursor_offset >= l_curly_offset.start() {
         return None;
     }
     // If impl is not inherent then we don't really need to go any further.
+
     if impl_ast.for_token().is_some() {
         return None;
     }
+
     let impl_assoc_items = impl_ast.assoc_item_list()?;
     let first_element = impl_assoc_items.assoc_items().next();
     first_element.as_ref()?;
+
     let impl_name = impl_ast.self_ty()?;
+
     acc.add(
         AssistId::generate("generate_trait_from_impl"),
         "Generate trait from impl",
@@ -92,6 +98,7 @@ pub(crate) fn generate_trait_from_impl(acc: &mut Assists, ctx: &AssistContext<'_
             builder.add_file_edits(ctx.vfs_file_id(), editor);
         },
     );
+
     Some(())
 }
 

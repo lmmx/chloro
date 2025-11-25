@@ -36,9 +36,11 @@ impl DefMap {
         attr: &Attr,
     ) -> Result<ResolvedAttr, UnresolvedMacro> {
         // NB: does not currently work for derive helpers as they aren't recorded in the `DefMap`
+
         if self.is_builtin_or_registered_attr(&ast_id.path) {
             return Ok(ResolvedAttr::Other);
         }
+
         let resolved_res = self.resolve_path_fp_with_macro(
             local_def_map,
             db,
@@ -60,6 +62,7 @@ impl DefMap {
             }
             None => return Err(UnresolvedMacro { path: ast_id.path.as_ref().clone() }),
         };
+
         Ok(ResolvedAttr::Macro(attr_macro_as_call_id(
             db,
             &ast_id,
@@ -73,7 +76,9 @@ impl DefMap {
         if path.kind != PathKind::Plain {
             return false;
         }
+
         let segments = path.segments();
+
         if let Some(name) = segments.first() {
             let name = name.symbol();
             let pred = |n: &_| *n == *name;
@@ -108,6 +113,7 @@ pub(super) fn attr_macro_as_call_id(
 
         _ => None,
     };
+
     def.make_call(
         db,
         krate,

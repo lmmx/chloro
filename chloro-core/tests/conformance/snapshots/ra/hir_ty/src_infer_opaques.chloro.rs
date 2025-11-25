@@ -25,6 +25,7 @@ impl<'db> InferenceContext<'_, 'db> {
         // We clone the opaques instead of stealing them here as they are still used for
         // normalization in the next generation trait solver.
         let opaque_types: Vec<_> = self.table.infer_ctxt.clone_opaque_types();
+
         self.compute_definition_site_hidden_types(opaque_types);
     }
 }
@@ -70,12 +71,14 @@ impl<'db> InferenceContext<'_, 'db> {
             *entry = self.table.infer_ctxt.resolve_vars_if_possible(*entry);
         }
         debug!(?opaque_types);
+
         let interner = self.interner();
         let TypingMode::Analysis { defining_opaque_types_and_generators } =
             self.table.infer_ctxt.typing_mode()
         else {
             unreachable!();
         };
+
         for def_id in defining_opaque_types_and_generators {
             let def_id = match def_id {
                 SolverDefId::InternedOpaqueTyId(it) => it,
@@ -131,6 +134,7 @@ impl<'db> InferenceContext<'_, 'db> {
         if hidden_type.ty.has_non_region_infer() {
             return UsageKind::UnconstrainedHiddenType(hidden_type);
         }
+
         let cause = ObligationCause::new();
         let at = self.table.infer_ctxt.at(&cause, self.table.trait_env.env);
         let hidden_type = match at.deeply_normalize(hidden_type) {

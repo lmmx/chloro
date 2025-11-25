@@ -34,6 +34,7 @@ pub(crate) fn field_is_private_fixes(
     let def_crate = private_field.krate(sema.db);
     let usage_crate = sema.file_to_module_def(usage_file_id.file_id(sema.db))?.krate();
     let mut visibility_text = if usage_crate == def_crate { "pub(crate) " } else { "pub " };
+
     let source = private_field.source(sema.db)?;
     let existing_visibility = match &source.value {
         hir::FieldSource::Named(it) => it.visibility(),
@@ -57,6 +58,7 @@ pub(crate) fn field_is_private_fixes(
         range.file_id.file_id(sema.db),
         TextEdit::replace(range.range, visibility_text.into()),
     );
+
     Some(vec![fix(
         "increase_field_visibility",
         "Increase field visibility",

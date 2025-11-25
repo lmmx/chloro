@@ -111,6 +111,7 @@ pub(super) fn assoc_const<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
+
     defs.iter()
         .filter_map(|def| match def {
             ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
@@ -732,6 +733,7 @@ pub(super) fn make_tuple<'a, 'lt, 'db, DB: HirDatabase>(
 ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
     let db = ctx.sema.db;
     let module = ctx.scope.module();
+
     lookup
         .types_wishlist()
         .clone()

@@ -32,16 +32,19 @@ pub fn find_path(
 ) -> Option<ModPath> {
     let _p = tracing::info_span!("find_path").entered();
     // - if the item is a builtin, it's in scope
+
     if let ItemInNs::Types(ModuleDefId::BuiltinType(builtin)) = item {
         return Some(ModPath::from_segments(PathKind::Plain, iter::once(builtin.as_name())));
     }
     // within block modules, forcing a `self` or `crate` prefix will not allow using inner items, so
     // default to plain paths.
+
     let item_module = item.module(db)?;
     if item_module.is_within_block() {
         prefix_kind = PrefixKind::Plain;
     }
     cfg.prefer_no_std = cfg.prefer_no_std || db.crate_supports_no_std(from.krate());
+
     find_path_inner(
         &FindPathCtx {
             db,
@@ -111,6 +114,7 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
         return find_path_for_module(ctx, &mut FxHashSet::default(), module_id, true, max_len)
             .map(|choice| choice.path);
     }
+
     let may_be_in_scope = match ctx.prefix {
         PrefixKind::Plain | PrefixKind::BySelf => true,
         PrefixKind::ByCrate => ctx.from.is_crate_root(),
@@ -124,9 +128,11 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
         }
     }
     // - if the item is in the prelude, return the name from there
+
     if let Some(value) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(value.path);
     }
+
     if let Some(ModuleDefId::EnumVariantId(variant)) = item.as_module_def_id() {
         // - if the item is an enum variant, refer to it via the enum
         let loc = variant.lookup(ctx.db);
@@ -140,6 +146,7 @@ fn find_path_inner(ctx: &FindPathCtx<'_>, item: ItemInNs, max_len: usize) -> Opt
         // enum; that's very weird, but there might still be a reexport of the
         // variant somewhere
     }
+
     let mut best_choice = None;
     calculate_best_path(ctx, &mut FxHashSet::default(), item, max_len, &mut best_choice);
     best_choice.map(|choice| choice.path)
@@ -195,6 +202,7 @@ fn find_path_for_module(
             return Some(Choice::new(ctx.cfg.prefer_prelude, kind, name.clone(), Stable));
         }
     }
+
     let may_be_in_scope = match ctx.prefix {
         PrefixKind::Plain | PrefixKind::BySelf => true,
         PrefixKind::ByCrate => ctx.from.is_crate_root(),
@@ -218,6 +226,7 @@ fn find_path_for_module(
         }
     }
     // - if the module can be referenced as self, super or crate, do that
+
     if let Some(kind) = is_kw_kind_relative_to_from(ctx.from_def_map, module_id, ctx.from)
         && (ctx.prefix != PrefixKind::ByCrate || kind == PathKind::Crate)
     {
@@ -229,6 +238,7 @@ fn find_path_for_module(
         });
     }
     // - if the module is in the prelude, return it by that path
+
     let item = ItemInNs::Types(module_id.into());
     if let Some(choice) = find_in_prelude(ctx.db, ctx.from_def_map, item, ctx.from) {
         return Some(choice);
@@ -273,6 +283,7 @@ fn find_in_prelude(
         return None;
     }
     // Check if the name is in current scope and it points to the same def.
+
     let found_and_same_def =
         local_def_map.with_ancestor_maps(db, from.local_id, &mut |def_map, local_id| {
             let per_ns = def_map[local_id].scope.get(name);
@@ -283,6 +294,7 @@ fn find_in_prelude(
             };
             Some(same_def)
         });
+
     if found_and_same_def.unwrap_or(true) {
         Some(Choice::new(false, PathKind::Plain, name.clone(), Stable))
     } else {
@@ -334,6 +346,7 @@ fn calculate_best_path(
         return;
     }
     ctx.fuel.set(fuel - 1);
+
     if item.krate(ctx.db) == Some(ctx.from.krate) {
         // Item was defined in the same crate that wants to import it. It cannot be found in any
         // dependency in this case.
@@ -562,6 +575,7 @@ fn find_local_import_locations(
     // of `from` (and similar).
     // Compute the initial worklist. We start with all direct child modules of `from` as well as all
     // of its (recursive) parent modules.
+
     let mut worklist = def_map[from.local_id]
         .children
         .values()
@@ -569,9 +583,11 @@ fn find_local_import_locations(
         .chain(iter::successors(from.containing_module(db), |m| m.containing_module(db)))
         .zip(iter::repeat(false))
         .collect::<Vec<_>>();
+
     let def_map = def_map.crate_root().def_map(db);
     let mut block_def_map;
     let mut cursor = 0;
+
     while let Some(&mut (module, ref mut processed)) = worklist.get_mut(cursor) {
         cursor += 1;
         if !visited_modules.insert((item, module)) {
@@ -669,6 +685,7 @@ mod tests {
             db.span_map(pos.file_id.into()).as_ref().span_for_range(range).ctx
         })
         .unwrap();
+
         let (def_map, local_def_map) = module.local_def_map(&db);
         let resolved = def_map
             .resolve_path(
@@ -685,6 +702,7 @@ mod tests {
             .map(ItemInNs::Types)
             .or_else(|| resolved.take_values().map(ItemInNs::Values))
             .expect("path does not resolve to a type or value");
+
         let mut res = String::new();
         for (prefix, ignore_local_imports) in
             [PrefixKind::Plain, PrefixKind::ByCrate, PrefixKind::BySelf]
@@ -957,6 +975,7 @@ pub mod ast {
                 BySelf (imports ✖): syntax::ast::ModuleItem
             "#]],
         );
+
         check_found_path(
             r#"
 //- /main.rs crate:main deps:syntax
@@ -1429,6 +1448,7 @@ pub mod fmt {
             "#]],
         );
         // Should also work (on a best-effort basis) if `no_std` is conditional.
+
         check_found_path(
             r#"
 //- /main.rs crate:main deps:core,std
@@ -1771,6 +1791,7 @@ $0
                 BySelf (imports ✖): dep
             "#]],
         );
+
         check_found_path(
             r#"
 //- /main.rs crate:main deps:dep
@@ -1981,6 +2002,7 @@ pub mod foo {
             BySelf (imports ✖): krate::foo::Foo
         "#]],
         );
+
         check_found_path_absolute(
             ra_fixture,
             "krate::foo::Foo",

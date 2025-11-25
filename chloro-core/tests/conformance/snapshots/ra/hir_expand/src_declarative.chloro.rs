@@ -78,6 +78,7 @@ impl DeclarativeMacroExpander {
     ) -> Arc<DeclarativeMacroExpander> {
         let (root, map) = crate::db::parse_with_map(db, id.file_id);
         let root = root.syntax_node();
+
         let transparency = |node| {
             // ... would be nice to have the item tree here
             let attrs = RawAttrs::new_expanded(db, node, map.as_ref(), def_crate.cfg_options(db));

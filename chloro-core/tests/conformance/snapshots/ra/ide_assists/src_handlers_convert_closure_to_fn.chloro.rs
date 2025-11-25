@@ -31,8 +31,10 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let closure_ty = ctx.sema.type_of_expr(&closure.clone().into())?;
     let callable = closure_ty.original.as_callable(ctx.db())?;
     let closure_ty = closure_ty.original.as_closure()?;
+
     let mut ret_ty = callable.return_type();
     let mut closure_mentioned_generic_params = ret_ty.generic_params(ctx.db());
+
     let mut params = callable
         .params()
         .into_iter()
@@ -51,6 +53,7 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
             }
         })
         .collect::<Option<Vec<_>>>()?;
+
     let mut body = closure.body()?.clone_for_update();
     let mut is_gen = false;
     let mut is_async = closure.async_token().is_some();
@@ -101,6 +104,7 @@ pub(crate) fn convert_closure_to_fn(acc: &mut Assists, ctx: &AssistContext<'_>) 
             wrap_body_in_block = false;
         }
     };
+
     acc.add(
         AssistId::refactor_rewrite("convert_closure_to_fn"),
         "Convert closure to fn",
@@ -296,6 +300,7 @@ fn compute_closure_type_params(
     if mentioned_generic_params.is_empty() {
         return (None, None);
     }
+
     let mut mentioned_names = mentioned_generic_params
         .iter()
         .filter_map(|param| match param {
@@ -306,6 +311,7 @@ fn compute_closure_type_params(
             hir::GenericParam::LifetimeParam(_) => None,
         })
         .collect::<FxHashSet<_>>();
+
     let Some((container_params, container_where, container)) =
         closure.syntax().ancestors().find_map(ast::AnyHasGenericParams::cast).and_then(
             |container| {
@@ -324,6 +330,7 @@ fn compute_closure_type_params(
     } else {
         None
     };
+
     let all_params = container_params
         .type_or_const_params()
         .chain(containing_impl.iter().flat_map(|(param_list, _)| param_list.type_or_const_params()))
@@ -331,6 +338,7 @@ fn compute_closure_type_params(
         .collect::<FxHashSet<_>>();
     // A fixpoint algorithm to detect (very roughly) if we need to include a generic parameter
     // by checking if it is mentioned by another parameter we need to include.
+
     let mut reached_fixpoint = false;
     let mut container_where_bounds_indices = Vec::new();
     let mut impl_where_bounds_indices = Vec::new();
@@ -381,6 +389,7 @@ fn compute_closure_type_params(
         }
     }
     // Order matters here (for beauty). First the outer impl parameters, then the direct container's.
+
     let include_params = containing_impl
         .iter()
         .flat_map(|(impl_params, _)| {
@@ -413,6 +422,7 @@ fn compute_closure_type_params(
         (!include_where_bounds.is_empty()).then(|| make::where_clause(include_where_bounds));
     // FIXME: Consider generic parameters that do not appear in params/return type/captures but
     // written explicitly inside the closure.
+
     (Some(make::generic_param_list(include_params)), where_clause)
 }
 
@@ -433,6 +443,7 @@ fn wrap_capture_in_deref_if_needed(
         }
         expr
     }
+
     let capture_name = make::expr_path(make::path_from_text(&capture_name.text()));
     if capture_kind == CaptureKind::Move || is_ref {
         return capture_name;
@@ -484,6 +495,7 @@ fn handle_calls(
     if captures_as_args.is_empty() {
         return;
     }
+
     match closure_name {
         Some(closure_name) => {
             let Some(closure_def) = ctx.sema.to_def(closure_name) else { return };
@@ -529,6 +541,7 @@ fn handle_call(
         skip_trivia_token(token, Direction::Prev).is_some_and(|token| token.kind() == T![,])
     });
     let has_existing_args = args.args().next().is_some();
+
     let FileRangeWrapper { file_id, range } = ctx.sema.original_range_opt(args.syntax())?;
     let first_arg_indent = args.args().next().map(|it| it.indent_level());
     let arg_list_indent = args.indent_level();
@@ -544,6 +557,7 @@ fn handle_call(
     }
     text = text[..text.len() - 1].trim_end();
     let offset = TextSize::new(text.len().try_into().unwrap());
+
     let mut to_insert = String::new();
     if has_existing_args && !has_trailing_comma {
         to_insert.push(',');
@@ -578,8 +592,10 @@ fn handle_call(
     if has_trailing_comma {
         to_insert.push(',');
     }
+
     builder.edit_file(file_id.file_id(ctx.db()));
     builder.insert(offset, to_insert);
+
     Some(())
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12569 bytes
-Chloro size:   12167 bytes
+Chloro size:   12177 bytes
 Rustfmt size:  12721 bytes
 
 ✗ Outputs DIFFER
@@ -45,13 +45,9 @@ Rustfmt size:  12721 bytes
  pub(crate) fn fix_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      add_vis_to_referenced_module_def(acc, ctx)
  }
-     let ScopeDef::ModuleDef(def) = def else {
-         return None;
-     };
--
      let current_module = ctx.sema.scope(path.syntax())?.module();
      let target_module = def.module(ctx.db())?;
--
+ 
 -    if def
 -        .visibility(ctx.db())
 -        .is_visible_from(ctx.db(), current_module.into())
@@ -59,23 +55,9 @@ Rustfmt size:  12721 bytes
 +    if def.visibility(ctx.db()).is_visible_from(ctx.db(), current_module.into()) {
          return None;
      };
--
-     let (vis_owner, target, target_file, target_name) = target_data_for_def(ctx.db(), def)?;
--
-     let missing_visibility = if current_module.krate() == target_module.krate() {
-         make::visibility_pub_crate()
-     } else {
-         make::visibility_pub()
-     };
--
-     let assist_label = match target_name {
-         None => format!("Change visibility to {missing_visibility}"),
-         Some(name) => {
-             )
+ 
          }
      };
-+    acc.add(AssistId::quick_fix("fix_visibility"), assist_label, target, |edit| {
-+        edit.edit_file(target_file);
  
 -    acc.add(
 -        AssistId::quick_fix("fix_visibility"),
@@ -83,12 +65,14 @@ Rustfmt size:  12721 bytes
 -        target,
 -        |edit| {
 -            edit.edit_file(target_file);
-+        let vis_owner = edit.make_mut(vis_owner);
-+        vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
++    acc.add(AssistId::quick_fix("fix_visibility"), assist_label, target, |edit| {
++        edit.edit_file(target_file);
  
 -            let vis_owner = edit.make_mut(vis_owner);
 -            vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
--
++        let vis_owner = edit.make_mut(vis_owner);
++        vis_owner.set_visibility(Some(missing_visibility.clone_for_update()));
+ 
 -            if let Some((cap, vis)) = ctx.config.snippet_cap.zip(vis_owner.visibility()) {
 -                edit.add_tabstop_before(cap, vis);
 -            }
@@ -101,13 +85,6 @@ Rustfmt size:  12721 bytes
  }
  
  fn target_data_for_def(
-             file_id.original_file(db).file_id(db),
-         ))
-     }
--
-     let target_name;
-     let (offset, target, target_file) = match def {
-         hir::ModuleDef::Function(f) => {
              let in_file_source = m.declaration_source(db)?;
              let file_id = in_file_source.file_id.original_file(db);
              let range = in_file_source.value.syntax().text_range();
@@ -120,13 +97,6 @@ Rustfmt size:  12721 bytes
          }
          // FIXME
          hir::ModuleDef::Macro(_) => return None,
-         // Enum variants can't be private, we can't modify builtin types
-         hir::ModuleDef::Variant(_) | hir::ModuleDef::BuiltinType(_) => return None,
-     };
--
-     Some((offset, target, target_file, target_name))
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -192,20 +162,6 @@ Rustfmt size:  12721 bytes
      #[test]
      fn fix_visibility_of_module() {
          check_assist(
-             r"mod foo { $0pub(crate) mod bar { fn bar() {} } }
-               fn main() { foo::bar::bar(); } ",
-         );
--
-         check_assist(
-             fix_visibility,
-             r"
- }
- ",
-         );
--
-         check_assist_not_applicable(
-             fix_visibility,
-             r"mod foo { pub mod bar { pub fn bar() {} } }
                fn main() { foo::bar$0::bar(); } ",
          );
      }

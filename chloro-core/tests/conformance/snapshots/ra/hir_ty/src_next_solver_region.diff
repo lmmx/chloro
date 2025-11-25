@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11467 bytes
+Chloro size:   11469 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -26,20 +26,6 @@ Rustfmt size:  11829 bytes
      }
  
      pub fn is_placeholder(&self) -> bool {
- 
-     pub fn type_flags(&self) -> TypeFlags {
-         let mut flags = TypeFlags::empty();
--
-         match &self.inner() {
-             RegionKind::ReVar(..) => {
-                 flags |= TypeFlags::HAS_FREE_REGIONS;
-                 flags |= TypeFlags::HAS_ERROR;
-             }
-         }
--
-         flags
-     }
- }
  
  #[derive(Copy, Clone, PartialEq, Eq, Hash)]
  pub struct EarlyParamRegion {

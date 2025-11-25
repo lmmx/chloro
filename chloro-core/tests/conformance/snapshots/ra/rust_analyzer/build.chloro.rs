@@ -13,9 +13,11 @@ fn main() {
 
 fn set_rerun() {
     println!("cargo:rerun-if-env-changed=CFG_RELEASE");
+
     let mut manifest_dir = PathBuf::from(
         env::var("CARGO_MANIFEST_DIR").expect("`CARGO_MANIFEST_DIR` is always set by cargo."),
     );
+
     while manifest_dir.parent().is_some() {
         let head_ref = manifest_dir.join(".git/HEAD");
         if head_ref.exists() {
@@ -25,6 +27,7 @@ fn set_rerun() {
 
         manifest_dir.pop();
     }
+
     println!("cargo:warning=Could not find `.git/HEAD` from manifest dir!");
 }
 

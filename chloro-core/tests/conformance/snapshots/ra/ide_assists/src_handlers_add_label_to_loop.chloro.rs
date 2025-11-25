@@ -15,6 +15,7 @@ pub(crate) fn add_label_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     if loop_expr.label().is_some() {
         return None;
     }
+
     acc.add(
         AssistId::generate("add_label_to_loop"),
         "Add Label",
@@ -64,6 +65,7 @@ fn insert_label_after_token(
     let label = make.lifetime("'l");
     let elements = vec![tokens::single_space().into(), label.syntax().clone().into()];
     editor.insert_all(Position::after(token), elements);
+
     if let Some(cap) = ctx.config.snippet_cap {
         editor.add_annotation(label.syntax(), builder.make_placeholder_snippet(cap));
     }

@@ -125,6 +125,7 @@ pub fn crate_symbols(db: &dyn HirDatabase, krate: Crate) -> Box<[&SymbolIndex]> 
 
 pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
     let _p = tracing::info_span!("world_symbols", query = ?query.query).entered();
+
     let indices: Vec<_> = if query.libs {
         LibraryRoots::get(db)
             .roots(db)
@@ -148,6 +149,7 @@ pub fn world_symbols(db: &RootDatabase, query: Query) -> Vec<FileSymbol> {
             crates.into_iter().map(|krate| crate_symbols(db, krate.into())).collect();
         indices.iter().flat_map(|indices| indices.iter().cloned()).collect()
     };
+
     let mut res = vec![];
     query.search::<()>(&indices, |f| {
         res.push(f.clone());
@@ -203,6 +205,7 @@ impl SymbolIndex {
         struct InternedModuleId {
             id: hir::ModuleId,
         }
+
         #[salsa::tracked(returns(ref))]
         fn module_symbols(db: &dyn HirDatabase, module: InternedModuleId<'_>) -> SymbolIndex {
             let _p = tracing::info_span!("module_symbols").entered();
@@ -217,6 +220,7 @@ impl SymbolIndex {
                 ))
             })
         }
+
         module_symbols(db, InternedModuleId::new(db, hir::ModuleId::from(module)))
     }
 }
@@ -249,9 +253,13 @@ impl SymbolIndex {
             let rhs_chars = rhs.name.as_str().chars().map(|c| c.to_ascii_lowercase());
             lhs_chars.cmp(rhs_chars)
         }
+
         symbols.par_sort_by(cmp);
+
         let mut builder = fst::MapBuilder::memory();
+
         let mut last_batch_start = 0;
+
         for idx in 0..symbols.len() {
             if let Some(next_symbol) = symbols.get(idx + 1)
                 && cmp(&symbols[last_batch_start], next_symbol) == Ordering::Equal
@@ -268,6 +276,7 @@ impl SymbolIndex {
 
             builder.insert(key, value).unwrap();
         }
+
         let map = builder
             .into_inner()
             .and_then(|mut buf| {
@@ -291,6 +300,7 @@ impl SymbolIndex {
     fn range_to_map_value(start: usize, end: usize) -> u64 {
         debug_assert![start <= (u32::MAX as usize)];
         debug_assert![end <= (u32::MAX as usize)];
+
         ((start as u64) << 32) | end as u64
     }
 
@@ -471,6 +481,7 @@ pub(self) use crate::b_mod::StructInModB as ThisStruct;
 pub(self) use crate::Trait as IsThisJustATrait;
 "#,
         );
+
         let symbols: Vec<_> = Crate::from(db.test_crate())
             .modules(&db)
             .into_iter()
@@ -480,6 +491,7 @@ pub(self) use crate::Trait as IsThisJustATrait;
                 (module_id, symbols)
             })
             .collect();
+
         expect_file!["./test_data/test_symbol_index_collection.txt"].assert_debug_eq(&symbols);
     }
     #[test]
@@ -495,6 +507,7 @@ struct Struct;
 struct Duplicate;
         "#,
         );
+
         let symbols: Vec<_> = Crate::from(db.test_crate())
             .modules(&db)
             .into_iter()
@@ -504,6 +517,7 @@ struct Duplicate;
                 (module_id, symbols)
             })
             .collect();
+
         expect_file!["./test_data/test_doc_alias.txt"].assert_debug_eq(&symbols);
     }
     #[test]
@@ -518,13 +532,16 @@ pub use foo::Foo;
 pub struct Foo;
 "#,
         );
+
         let mut local_roots = FxHashSet::default();
         local_roots.insert(WORKSPACE);
         LocalRoots::get(&db).set_roots(&mut db).to(local_roots);
+
         let mut query = Query::new("Foo".to_owned());
         let mut symbols = world_symbols(&db, query.clone());
         symbols.sort_by_key(|x| x.is_import);
         expect_file!["./test_data/test_symbols_with_imports.txt"].assert_debug_eq(&symbols);
+
         query.exclude_imports();
         let symbols = world_symbols(&db, query);
         expect_file!["./test_data/test_symbols_exclude_imports.txt"].assert_debug_eq(&symbols);

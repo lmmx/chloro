@@ -841,6 +841,7 @@ mod foo;
 "#,
         |_| (),
     );
+
     compute_crate_def_map(
         r#"
 //- /lib.rs

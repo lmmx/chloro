@@ -117,6 +117,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
     fn lower_pattern_unadjusted(&mut self, pat: PatId) -> Pat<'db> {
         let mut ty = self.infer[pat];
         let variant = self.infer.variant_resolution_for_pat(pat);
+
         let kind = match self.body[pat] {
             hir_def::hir::Pat::Wild => PatKind::Wild,
 
@@ -197,6 +198,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
                 PatKind::Wild
             }
         };
+
         Pat { ty, kind: Box::new(kind) }
     }
 
@@ -210,6 +212,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
             self.errors.push(PatternError::ExtraFields);
             return Vec::new();
         }
+
         pats.iter()
             .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
             .map(|(i, &subpattern)| FieldPat {
@@ -262,7 +265,9 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
 
     fn lower_path(&mut self, pat: PatId, _path: &Path) -> Pat<'db> {
         let ty = self.infer[pat];
+
         let pat_from_kind = |kind| Pat { ty, kind: Box::new(kind) };
+
         match self.infer.variant_resolution_for_pat(pat) {
             Some(_) => pat_from_kind(self.lower_variant_or_leaf(pat, ty, Vec::new())),
             None => {
@@ -274,6 +279,7 @@ impl<'a, 'db> PatCtxt<'a, 'db> {
 
     fn lower_lit(&mut self, expr: hir_def::hir::ExprId) -> PatKind<'db> {
         use hir_def::hir::{Expr, Literal::Bool};
+
         match self.body[expr] {
             Expr::Literal(Bool(value)) => PatKind::LiteralBool { value },
             _ => {

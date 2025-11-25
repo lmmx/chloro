@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7279 bytes
-Chloro size:   7276 bytes
+Chloro size:   7277 bytes
 Rustfmt size:  7507 bytes
 
 ✗ Outputs DIFFER
@@ -40,13 +40,6 @@ Rustfmt size:  7507 bytes
              scope,
              snippet,
              description,
- 
- fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
-     let import_cfg = ctx.config.find_path_config(ctx.is_nightly);
--
-     let resolve = |import| {
-         let item = ctx.scope.resolve_mod_path(import).next()?;
-         let path = ctx.module.find_use_path(
      for path in requires.iter() {
          let use_path = ModPath::from_segments(
              hir::PathKind::Plain,

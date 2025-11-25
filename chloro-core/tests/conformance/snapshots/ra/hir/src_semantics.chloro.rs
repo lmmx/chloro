@@ -390,6 +390,7 @@ impl<'db> SemanticsImpl<'db> {
         let file_id = self
             .attach_first_edition(file_id)
             .unwrap_or_else(|| EditionedFileId::new(self.db, file_id, Edition::CURRENT));
+
         let tree = self.db.parse(file_id).tree();
         self.cache(tree.syntax().clone(), file_id.into());
         tree
@@ -479,6 +480,7 @@ impl<'db> SemanticsImpl<'db> {
     ) -> Option<ExpandResult<SyntaxNode>> {
         let file_id = self.to_def(macro_call)?;
         let macro_call = self.db.lookup_intern_macro_call(file_id);
+
         let skip = matches!(
             macro_call.def.kind,
             hir_expand::MacroDefKind::BuiltIn(
@@ -501,6 +503,7 @@ impl<'db> SemanticsImpl<'db> {
             // showing these to the user
             return None;
         }
+
         let node = self.expand(file_id);
         Some(node)
     }
@@ -895,6 +898,7 @@ impl<'db> SemanticsImpl<'db> {
             None => return res,
         };
         let file = self.find_file(node.syntax());
+
         if first == last {
             // node is just the token, so descend the token
             self.descend_into_macros_all(
@@ -1031,6 +1035,7 @@ impl<'db> SemanticsImpl<'db> {
         let mut r = smallvec![];
         let text = token.text();
         let kind = token.kind();
+
         self.descend_into_macros_cb(token.clone(), |InFile { value, file_id: _ }, ctx| {
             let mapped_kind = value.kind();
             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
@@ -1056,6 +1061,7 @@ impl<'db> SemanticsImpl<'db> {
         let mut r = smallvec![];
         let text = token.text();
         let kind = token.kind();
+
         self.descend_into_macros_cb(token.clone(), |InFile { value, file_id }, ctx| {
             let mapped_kind = value.kind();
             let any_ident_match = || kind.is_any_identifier() && value.kind().is_any_identifier();
@@ -1109,9 +1115,11 @@ impl<'db> SemanticsImpl<'db> {
         f: &mut dyn FnMut(InFile<SyntaxToken>, SyntaxContext) -> ControlFlow<T>,
     ) -> Option<T> {
         let _p = tracing::info_span!("descend_into_macros_impl").entered();
+
         let db = self.db;
         let span = db.span_map(file_id).span_for_range(token.text_range());
         // Process the expansion of a call, pushing all tokens with our span in the expansion back onto our stack
+
         let process_expansion_for_token =
             |ctx: &mut SourceToDefCtx<'_, '_>, stack: &mut Vec<_>, macro_file| {
                 let InMacroFile { file_id, value: mapped_tokens } = ctx
@@ -1129,6 +1137,7 @@ impl<'db> SemanticsImpl<'db> {
         // These are tracked to know which macro calls we still have to look into
         // the tokens themselves aren't that interesting as the span that is being used to map
         // things down never changes.
+
         let mut stack: Vec<(_, SmallVec<[_; 2]>)> = vec![];
         let include = file_id
             .file_id()
@@ -1142,12 +1151,15 @@ impl<'db> SemanticsImpl<'db> {
                 stack.push((file_id, smallvec![(token, span.ctx)]));
             }
         }
+
         let mut m_cache = self.macro_call_cache.borrow_mut();
         // Filters out all tokens that contain the given range (usually the macro call), any such
         // token is redundant as the corresponding macro call has already been processed
+
         let filter_duplicates = |tokens: &mut SmallVec<_>, range: TextRange| {
             tokens.retain(|(t, _): &mut (SyntaxToken, _)| !range.contains_range(t.text_range()))
         };
+
         while let Some((expansion, ref mut tokens)) = stack.pop() {
             // Reverse the tokens so we prefer first tokens (to accommodate for popping from the
             // back)
@@ -1535,8 +1547,11 @@ impl<'db> SemanticsImpl<'db> {
             hir_ty::next_solver::Mutability::Not => Mutability::Shared,
             hir_ty::next_solver::Mutability::Mut => Mutability::Mut,
         };
+
         let analyzer = self.analyze(expr.syntax())?;
+
         let (mut source_ty, _) = analyzer.type_of_expr(self.db, expr)?;
+
         analyzer.expr_adjustments(expr).map(|it| {
             it.iter()
                 .map(|adjust| {
@@ -1771,6 +1786,7 @@ impl<'db> SemanticsImpl<'db> {
         if mac.is_asm_like(self.db) {
             return true;
         }
+
         let Some(sa) = self.analyze(macro_call.syntax()) else { return false };
         let macro_call = self.find_file(macro_call.syntax()).with_value(macro_call);
         match macro_call.map(|it| it.syntax().parent().and_then(ast::MacroExpr::cast)).transpose() {
@@ -1908,6 +1924,7 @@ impl<'db> SemanticsImpl<'db> {
 
     pub fn body_for(&self, node: InFile<&SyntaxNode>) -> Option<DefWithBody> {
         let container = self.with_ctx(|ctx| ctx.find_container(node))?;
+
         match container {
             ChildContainer::DefWithBodyId(def) => Some(def.into()),
             _ => None,
@@ -1942,7 +1959,9 @@ impl<'db> SemanticsImpl<'db> {
         infer_body: bool,
     ) -> Option<SourceAnalyzer<'db>> {
         let _p = tracing::info_span!("SemanticsImpl::analyze_impl").entered();
+
         let container = self.with_ctx(|ctx| ctx.find_container(node))?;
+
         let resolver = match container {
             ChildContainer::DefWithBodyId(def) => {
                 return Some(if infer_body {
@@ -2028,6 +2047,7 @@ impl<'db> SemanticsImpl<'db> {
         else {
             return false;
         };
+
         let def = match &enclosing_item {
             Either::Left(ast::Item::Fn(it)) if it.unsafe_token().is_some() => return true,
             Either::Left(ast::Item::Fn(it)) => {
@@ -2044,8 +2064,11 @@ impl<'db> SemanticsImpl<'db> {
         };
         let Some(def) = def else { return false };
         let enclosing_node = enclosing_item.as_ref().either(|i| i.syntax(), |v| v.syntax());
+
         let (body, source_map) = self.db.body_with_source_map(def);
+
         let file_id = self.find_file(expr.syntax()).file_id;
+
         let Some(mut parent) = expr.syntax().parent() else { return false };
         loop {
             if &parent == enclosing_node {
@@ -2088,6 +2111,7 @@ fn macro_call_to_macro_id(
 ) -> Option<MacroId> {
     let db: &dyn ExpandDatabase = ctx.db;
     let loc = db.lookup_intern_macro_call(macro_call_id);
+
     match loc.def.ast_id() {
         Either::Left(it) => {
             let node = match it.file_id {
@@ -2252,6 +2276,7 @@ impl<'db> SemanticsScope<'db> {
                 ast::PathSegmentKind::CrateKw => kind = PathKind::Crate,
             }
         }
+
         resolve_hir_path(
             self.db,
             &self.resolver,
@@ -2370,6 +2395,7 @@ impl RenameConflictsVisitor<'_> {
             }
             _ => {}
         }
+
         self.body.walk_child_exprs(expr, |expr| self.rename_conflicts(expr));
     }
 }

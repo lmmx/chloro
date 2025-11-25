@@ -55,12 +55,15 @@ pub(crate) fn inlay_hints(
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
     let file = sema.parse(file_id);
     let file = file.syntax();
+
     let mut acc = Vec::new();
+
     let Some(scope) = sema.scope(file) else {
         return acc;
     };
     let famous_defs = FamousDefs(&sema, scope.krate());
     let display_target = famous_defs.1.to_display_target(sema.db);
+
     let ctx = &mut InlayHintCtx::default();
     let mut hints = |event| {
         if let Some(node) = handle_event(ctx, event) {
@@ -105,16 +108,20 @@ pub(crate) fn inlay_hints_resolve(
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
     let file = sema.parse(file_id);
     let file = file.syntax();
+
     let scope = sema.scope(file)?;
     let famous_defs = FamousDefs(&sema, scope.krate());
     let mut acc = Vec::new();
+
     let display_target = famous_defs.1.to_display_target(sema.db);
+
     let ctx = &mut InlayHintCtx::default();
     let mut hints = |event| {
         if let Some(node) = handle_event(ctx, event) {
             hints(&mut acc, ctx, &famous_defs, config, file_id, display_target, node);
         }
     };
+
     let mut preorder = file.preorder();
     while let Some(event) = preorder.next() {
         // FIXME: This can miss some hints that require the parent of the range to calculate
@@ -180,6 +187,7 @@ fn hints(
     if let Some(any_has_generic_args) = ast::AnyHasGenericArgs::cast(node.clone()) {
         generic_param::hints(hints, famous_defs, config, any_has_generic_args);
     }
+
     match_ast! {
         match node {
             ast::Expr(expr) => {
@@ -647,6 +655,7 @@ impl HirWrite for InlayHintLabelBuilder<'_> {
     fn start_location_link(&mut self, def: ModuleDefId) {
         never!(self.location.is_some(), "location link is already started");
         self.make_new_part();
+
         self.location = Some(if self.resolve {
             LazyProperty::Lazy
         } else {
@@ -737,6 +746,7 @@ fn label_of_ty(
             }
         })
     }
+
     let mut label_builder = InlayHintLabelBuilder {
         sema,
         last_part: String::new(),
@@ -765,11 +775,13 @@ fn hint_iterator<'db>(
     let iter_trait = famous_defs.core_iter_Iterator()?;
     let iter_mod = famous_defs.core_iter()?;
     // Assert that this struct comes from `core::iter`.
+
     if !(strukt.visibility(db) == hir::Visibility::Public
         && strukt.module(db).path_to_root(db).contains(&iter_mod))
     {
         return None;
     }
+
     if ty.impls_trait(db, iter_trait, &[]) {
         let assoc_type_item = iter_trait.items(db).into_iter().find_map(|item| match item {
             hir::AssocItem::TypeAlias(alias) if alias.name(db) == sym::Item => Some(alias),
@@ -779,6 +791,7 @@ fn hint_iterator<'db>(
             return Some((iter_trait, assoc_type_item, ty));
         }
     }
+
     None
 }
 
@@ -881,6 +894,7 @@ mod tests {
             .sorted_by_key(|(range, _)| range.start())
             .collect::<Vec<_>>();
         expected.sort_by_key(|(range, _)| range.start());
+
         assert_eq!(expected, actual, "\nExpected:\n{expected:#?}\n\nActual:\n{actual:#?}");
     }
     #[track_caller]
@@ -905,6 +919,7 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
+
         let edits = inlay_hints
             .into_iter()
             .filter_map(|hint| hint.text_edit?.computed())
@@ -913,6 +928,7 @@ mod tests {
                 acc
             })
             .expect("no edit returned");
+
         let mut actual = analysis.file_text(file_id).unwrap().to_string();
         edits.apply(&mut actual);
         expect.assert_eq(&actual);
@@ -924,8 +940,10 @@ mod tests {
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
         let inlay_hints = analysis.inlay_hints(&config, file_id, None).unwrap();
+
         let edits: Vec<_> =
             inlay_hints.into_iter().filter_map(|hint| hint.text_edit?.computed()).collect();
+
         assert!(edits.is_empty(), "unexpected edits: {edits:?}");
     }
     #[test]

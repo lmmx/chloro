@@ -50,6 +50,7 @@ fn add_missing_impl_members_inner(
     let _p = tracing::info_span!("add_missing_impl_members_inner").entered();
     let impl_def = ctx.find_node_at_offset::<ast::Impl>()?;
     let impl_ = ctx.sema.to_def(&impl_def)?;
+
     if ctx.token_at_offset().all(|t| {
         t.parent_ancestors()
             .take_while(|node| node != impl_def.syntax())
@@ -57,10 +58,13 @@ fn add_missing_impl_members_inner(
     }) {
         return None;
     }
+
     let target_scope = ctx.sema.scope(impl_def.syntax())?;
     let trait_ref = impl_.trait_ref(ctx.db())?;
     let trait_ = trait_ref.trait_();
+
     let mut ign_item = ignore_items;
+
     if let IgnoreAssocItems::DocHiddenAttrPresent = ignore_items {
         // Relax condition for local crates.
         let db = ctx.db();
@@ -68,15 +72,18 @@ fn add_missing_impl_members_inner(
             ign_item = IgnoreAssocItems::No;
         }
     }
+
     let missing_items = filter_assoc_items(
         &ctx.sema,
         &ide_db::traits::get_missing_assoc_items(&ctx.sema, &impl_def),
         mode,
         ign_item,
     );
+
     if missing_items.is_empty() {
         return None;
     }
+
     let target = impl_def.syntax().text_range();
     acc.add(AssistId::quick_fix(assist_id), label, target, |edit| {
         let new_item = add_trait_assoc_items_to_impl(

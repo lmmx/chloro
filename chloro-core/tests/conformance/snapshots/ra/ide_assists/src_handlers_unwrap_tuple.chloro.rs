@@ -13,6 +13,7 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let ty = let_stmt.ty();
     let init = let_stmt.initializer()?;
     // This only applies for tuple patterns, types, and initializers.
+
     let tuple_pat = match pat {
         ast::Pat::TuplePat(pat) => pat,
         _ => return None,
@@ -25,6 +26,7 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         ast::Expr::TupleExpr(expr) => expr,
         _ => return None,
     };
+
     if tuple_pat.fields().count() != tuple_init.fields().count() {
         return None;
     }
@@ -33,7 +35,9 @@ pub(crate) fn unwrap_tuple(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     {
         return None;
     }
+
     let parent = let_kw.parent()?;
+
     acc.add(
         AssistId::refactor_rewrite("unwrap_tuple"),
         "Unwrap tuple",
@@ -82,6 +86,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             unwrap_tuple,
             r#"
@@ -114,6 +119,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             unwrap_tuple,
             r#"

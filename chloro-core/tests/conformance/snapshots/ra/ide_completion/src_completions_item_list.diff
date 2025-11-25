@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6052 bytes
-Chloro size:   6040 bytes
+Chloro size:   6051 bytes
 Rustfmt size:  6074 bytes
 
 ✗ Outputs DIFFER
@@ -27,47 +27,30 @@ Rustfmt size:  6074 bytes
      let _p = tracing::info_span!("complete_item_list").entered();
 -
      // We handle completions for trait-impls in [`item_list::trait_impl`]
++
      if path_ctx.is_trivial_path() && !matches!(kind, ItemListKind::TraitImpl(_)) {
          add_keywords(acc, ctx, Some(kind));
      }
--
-     match qualified {
-         Qualified::With {
-             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
- 
  fn add_keywords(acc: &mut Completions, ctx: &CompletionContext<'_>, kind: Option<&ItemListKind>) {
      let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
--
+ 
 -    let in_item_list = matches!(
 -        kind,
 -        Some(ItemListKind::SourceFile | ItemListKind::Module) | None
 -    );
 +    let in_item_list = matches!(kind, Some(ItemListKind::SourceFile | ItemListKind::Module) | None);
      let in_assoc_non_trait_impl = matches!(kind, Some(ItemListKind::Impl | ItemListKind::Trait));
--
+ 
      let in_extern_block = matches!(kind, Some(ItemListKind::ExternBlock { .. }));
-     let in_unsafe_extern_block =
-         matches!(kind, Some(ItemListKind::ExternBlock { is_unsafe: true }));
--
-     let in_trait = matches!(kind, Some(ItemListKind::Trait));
-     let in_inherent_impl = matches!(kind, Some(ItemListKind::Impl));
-     let in_block = kind.is_none();
--
-     let no_vis_qualifiers = ctx.qualifier_ctx.vis_node.is_none();
      let has_unsafe_kw = ctx.qualifier_ctx.unsafe_tok.is_some();
      let has_async_kw = ctx.qualifier_ctx.async_tok.is_some();
      let has_safe_kw = ctx.qualifier_ctx.safe_tok.is_some();
 -
      // Some keywords are invalid after non-vis qualifiers, so we handle them first.
++
      if (has_unsafe_kw || has_safe_kw) && in_extern_block {
          add_keyword("fn", "fn $1($2);");
          add_keyword("static", "static $1: $2;");
-         return;
-     }
--
-     if has_unsafe_kw || has_async_kw {
-         if !has_unsafe_kw {
-             add_keyword("unsafe", "unsafe $0");
  
          return;
      }
@@ -75,6 +58,7 @@ Rustfmt size:  6074 bytes
      // ...and the rest deals with cases without any non-vis qualifiers.
 -
      // Visibility qualifiers
++
      if !in_trait && !in_block && no_vis_qualifiers {
          add_keyword("pub(crate)", "pub(crate) $0");
          add_keyword("pub(super)", "pub(super) $0");
@@ -82,12 +66,7 @@ Rustfmt size:  6074 bytes
      }
 -
      // Keywords that are valid in `item_list`
++
      if in_item_list {
          add_keyword("enum", "enum $1 {\n    $0\n}");
-             add_keyword("impl for", "impl $1 for $2 {\n    $0\n}");
-         }
-     }
--
-     if in_extern_block {
-         add_keyword("unsafe", "unsafe $0");
-         if in_unsafe_extern_block {
+         add_keyword("mod", "mod $0");

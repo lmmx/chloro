@@ -21,10 +21,12 @@ pub(crate) fn convert_tuple_struct_to_named_struct(
         .map(Either::Left)
         .or_else(|| ctx.find_node_at_offset::<ast::Variant>().map(Either::Right))?;
     let field_list = strukt_or_variant.as_ref().either(|s| s.field_list(), |v| v.field_list())?;
+
     if ctx.offset() > field_list.syntax().text_range().start() {
         // Assist could be distracting after the braces
         return None;
     }
+
     let tuple_fields = match field_list {
         ast::FieldList::TupleFieldList(it) => it,
         ast::FieldList::RecordFieldList(_) => return None,
@@ -68,6 +70,7 @@ fn edit_struct_def(
     let make = SyntaxFactory::without_mappings();
     let record_fields = make.record_field_list(record_fields);
     let tuple_fields_before = Position::before(tuple_fields.syntax());
+
     if let Either::Left(strukt) = strukt {
         if let Some(w) = strukt.where_clause() {
             editor.delete(w.syntax());
@@ -88,6 +91,7 @@ fn edit_struct_def(
     } else {
         editor.insert(tuple_fields_before, ast::make::tokens::single_space());
     }
+
     editor.replace(tuple_fields.syntax(), record_fields.syntax());
 }
 
@@ -102,6 +106,7 @@ fn edit_struct_references(
         Either::Right(v) => Definition::Variant(v),
     };
     let usages = strukt_def.usages(&ctx.sema).include_self_refs().all();
+
     let edit_node = |node: SyntaxNode| -> Option<SyntaxNode> {
         let make = SyntaxFactory::without_mappings();
         match_ast! {
@@ -144,6 +149,7 @@ fn edit_struct_references(
             }
         }
     };
+
     for (file_id, refs) in usages {
         let source = ctx.sema.parse(file_id);
         let source = source.syntax();
@@ -242,6 +248,7 @@ fn generate_record_pat_list(
         pat.fields().position(|p| ast::RestPat::can_cast(p.syntax().kind())).unwrap_or(names.len());
     let before_rest = pat.fields().zip(names).take(rest_idx);
     let after_rest = pure_fields.zip(names.iter().skip(rest_len)).skip(rest_idx);
+
     let fields = before_rest
         .chain(after_rest)
         .map(|(pat, name)| ast::make::record_pat_field(ast::make::name_ref(&name.text()), pat));
@@ -333,6 +340,7 @@ struct A { field1: Inner }
 fn foo(A { .. }: A) {}
 "#,
         );
+
         check_assist(
             convert_tuple_struct_to_named_struct,
             r#"
@@ -588,6 +596,7 @@ impl Outer {
     }
 }"#,
         );
+
         check_assist(
             convert_tuple_struct_to_named_struct,
             r#"
@@ -882,6 +891,7 @@ impl Outer {
     }
 }"#,
         );
+
         check_assist(
             convert_tuple_struct_to_named_struct,
             r#"

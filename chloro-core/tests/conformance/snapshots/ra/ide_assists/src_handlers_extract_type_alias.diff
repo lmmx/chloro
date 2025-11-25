@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10661 bytes
-Chloro size:   10406 bytes
+Chloro size:   10410 bytes
 Rustfmt size:  10661 bytes
 
 ✗ Outputs DIFFER
@@ -38,32 +38,6 @@ Rustfmt size:  10661 bytes
  pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if ctx.has_empty_selection() {
          return None;
-     }
--
-     let ty = ctx.find_node_at_range::<ast::Type>()?;
-     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
-     let assoc_owner =
-         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
-     );
-     let target = ty.syntax().text_range();
--
-     acc.add(
-         AssistId::refactor_extract("extract_type_alias"),
-         "Extract type as type alias",
-             _ => false,
-         }
-     }
--
-     let mut generics = Vec::new();
-     walk_ty(ty, &mut |ty| {
-         match ty {
-         ast::GenericParam::LifetimeParam(_) => 0,
-         ast::GenericParam::TypeParam(_) => 1,
-     });
--
-     Some(generics).filter(|it| !it.is_empty())
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

@@ -27,6 +27,7 @@ pub(crate) fn destructure_tuple_binding_impl(
 ) -> Option<()> {
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;
+
     if with_sub_pattern {
         acc.add(
             AssistId::refactor_rewrite("destructure_tuple_binding_in_sub_pattern"),
@@ -35,12 +36,14 @@ pub(crate) fn destructure_tuple_binding_impl(
             |edit| destructure_tuple_edit_impl(ctx, edit, &data, true),
         );
     }
+
     acc.add(
         AssistId::refactor_rewrite("destructure_tuple_binding"),
         if with_sub_pattern { "Destructure tuple in place" } else { "Destructure tuple" },
         data.ident_pat.syntax().text_range(),
         |edit| destructure_tuple_edit_impl(ctx, edit, &data, false),
     );
+
     Some(())
 }
 
@@ -52,6 +55,7 @@ fn destructure_tuple_edit_impl(
 ) {
     let assignment_edit = edit_tuple_assignment(ctx, edit, data, in_sub_pattern);
     let current_file_usages_edit = edit_tuple_usages(data, edit, ctx, in_sub_pattern);
+
     assignment_edit.apply();
     if let Some(usages_edit) = current_file_usages_edit {
         usages_edit.into_iter().for_each(|usage_edit| usage_edit.apply(edit))
@@ -66,6 +70,7 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
         cov_mark::hit!(destructure_tuple_subpattern);
         return None;
     }
+
     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
     let ref_type = if ty.is_mutable_reference() {
         Some(RefType::Mutable)
@@ -82,6 +87,7 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
         cov_mark::hit!(destructure_tuple_no_tuple);
         return None;
     }
+
     let usages = ctx.sema.to_def(&ident_pat).and_then(|def| {
         Definition::Local(def)
             .usages(&ctx.sema)
@@ -91,8 +97,10 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
             .next()
             .map(|(_, refs)| refs.to_vec())
     });
+
     let mut name_generator =
         suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(ident_pat.syntax()));
+
     let field_names = field_types
         .into_iter()
         .enumerate()
@@ -104,6 +112,7 @@ fn collect_data(ident_pat: IdentPat, ctx: &AssistContext<'_>) -> Option<TupleDat
             .to_string()
         })
         .collect::<Vec<_>>();
+
     Some(TupleData { ident_pat, ref_type, field_names, usages })
 }
 
@@ -126,6 +135,7 @@ fn edit_tuple_assignment(
     in_sub_pattern: bool,
 ) -> AssignmentEdit {
     let ident_pat = edit.make_mut(data.ident_pat.clone());
+
     let tuple_pat = {
         let original = &data.ident_pat;
         let is_ref = original.ref_token().is_some();
@@ -141,6 +151,7 @@ fn edit_tuple_assignment(
         .as_ref()
         .and_then(ast::RecordPatField::for_field_name)
         .is_some_and(|field| field.colon_token().is_none());
+
     if let Some(cap) = ctx.config.snippet_cap {
         // place cursor on first tuple name
         if let Some(ast::Pat::IdentPat(first_pat)) = tuple_pat.fields().next() {
@@ -150,6 +161,7 @@ fn edit_tuple_assignment(
             )
         }
     }
+
     AssignmentEdit { ident_pat, tuple_pat, in_sub_pattern, is_shorthand_field }
 }
 
@@ -187,6 +199,7 @@ fn edit_tuple_usages(
     // We also defer editing usages in the current file first since
     // tree mutation in the same file breaks when `builder.edit_file`
     // is called
+
     let edits = data
         .usages
         .as_ref()?
@@ -194,6 +207,7 @@ fn edit_tuple_usages(
         .iter()
         .filter_map(|r| edit_tuple_usage(ctx, edit, r, data, in_sub_pattern))
         .collect_vec();
+
     Some(edits)
 }
 
@@ -222,6 +236,7 @@ fn edit_tuple_field_usage(
 ) -> EditTupleUsage {
     let field_name = &data.field_names[index.index];
     let field_name = make::expr_path(make::ext::ident_path(field_name));
+
     if data.ref_type.is_some() {
         let (replace_expr, ref_data) = determine_ref_and_parens(ctx, &index.field_expr);
         let replace_expr = builder.make_mut(replace_expr);
@@ -272,6 +287,7 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
     //     PATH_EXPR
     //      PAREN_EXRP*
     //       FIELD_EXPR
+
     let node = usage
         .name
         .syntax()
@@ -280,6 +296,7 @@ fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIn
         .skip(1) // PATH_EXPR
         .find(|s| !ast::ParenExpr::can_cast(s.kind()))?;
     // skip parentheses
+
     if let Some(field_expr) = ast::FieldExpr::cast(node) {
         let idx = field_expr.name_ref()?.as_tuple_field()?;
         if idx < data.field_names.len() {

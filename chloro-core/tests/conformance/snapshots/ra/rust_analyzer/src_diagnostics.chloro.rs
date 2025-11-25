@@ -158,6 +158,7 @@ impl DiagnosticCollection {
         if self.check.len() <= flycheck_id {
             self.check.resize_with(flycheck_id + 1, WorkspaceFlycheckDiagnostic::default);
         }
+
         let check = &mut self.check[flycheck_id];
         let package = check.per_package.entry(package_id.clone()).or_insert_with(|| {
             PackageFlycheckDiagnostic { generation, per_file: FxHashMap::default() }
@@ -173,6 +174,7 @@ impl DiagnosticCollection {
                 return;
             }
         }
+
         if let Some(fix) = fix {
             let check_fixes = Arc::make_mut(&mut self.check_fixes);
             if check_fixes.len() <= flycheck_id {
@@ -198,6 +200,7 @@ impl DiagnosticCollection {
                 (generation, diagnostics, &mut self.native_semantic)
             }
         };
+
         for (file_id, mut diagnostics) in diagnostics {
             diagnostics.sort_by_key(|it| (it.range.start, it.range.end));
 
@@ -275,6 +278,7 @@ pub(crate) fn fetch_native_diagnostics(
     let _ctx = DbPanicContext::enter("fetch_native_diagnostics".to_owned());
     // the diagnostics produced may point to different files not requested by the concrete request,
     // put those into here and filter later
+
     let mut odd_ones = Vec::new();
     let mut diagnostics = subscriptions[slice]
         .iter()
@@ -310,6 +314,7 @@ pub(crate) fn fetch_native_diagnostics(
         })
         .collect::<Vec<_>>();
     // Add back any diagnostics that point to files we are subscribed to
+
     for (file_id, group) in odd_ones
         .into_iter()
         .sorted_by_key(|it| it.range.file_id)

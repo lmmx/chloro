@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5229 bytes
-Chloro size:   5277 bytes
+Chloro size:   5280 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -32,17 +32,7 @@ Rustfmt size:  5418 bytes
      }
  
      pub(super) fn resolve_declaration(
-         attr_path: Option<&str>,
-     ) -> Result<(EditionedFileId, bool, ModDir), Box<[String]>> {
-         let name = name.as_str();
--
-         let mut candidate_files = ArrayVec::<_, 2>::new();
-         match attr_path {
-             Some(attr_path) => {
-                 candidate_files.push(format!("{}{}/mod.rs", self.dir_path.0, name));
-             }
-         };
--
+ 
          let orig_file_id = file_id.original_file_respecting_includes(db);
          for candidate in candidate_files.iter() {
 -            let path = AnchoredPath {
@@ -96,8 +86,7 @@ Rustfmt size:  5418 bytes
 -        } else {
 -            &self.0
 -        };
--
 +        let base = if relative_to_parent { self.parent().unwrap() } else { &self.0 };
+ 
          if attr.starts_with("./") {
              attr = &attr["./".len()..];
-         }

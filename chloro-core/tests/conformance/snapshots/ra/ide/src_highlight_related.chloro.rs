@@ -48,6 +48,7 @@ pub(crate) fn highlight_related(
         .attach_first_edition(file_id)
         .unwrap_or_else(|| EditionedFileId::current_edition(sema.db, file_id));
     let syntax = sema.parse(file_id).syntax().clone();
+
     let token = pick_best_token(syntax.token_at_offset(offset), |kind| match kind {
         T![?] => 4, // prefer `?` when the cursor is sandwiched like in `await$0?`
         T![->] | T![=>] => 4,
@@ -284,6 +285,7 @@ fn highlight_references(
             }
         }
     }
+
     res.extend(usages);
     if res.is_empty() { None } else { Some(res.into_iter().collect()) }
 }
@@ -293,12 +295,14 @@ pub(crate) fn highlight_branch_exit_points(
     token: SyntaxToken,
 ) -> FxHashMap<EditionedFileId, Vec<HighlightedRange>> {
     let mut highlights: HighlightMap = FxHashMap::default();
+
     let push_to_highlights = |file_id, range, highlights: &mut HighlightMap| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
             let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
+
     let push_tail_expr = |tail: Option<ast::Expr>, highlights: &mut HighlightMap| {
         let Some(tail) = tail else {
             return;
@@ -310,6 +314,7 @@ pub(crate) fn highlight_branch_exit_points(
             push_to_highlights(file_id, Some(range), highlights);
         });
     };
+
     let nodes = goto_definition::find_branch_root(sema, &token).into_iter();
     match token.kind() {
         T![match] => {
@@ -360,6 +365,7 @@ pub(crate) fn highlight_branch_exit_points(
         }
         _ => {}
     }
+
     highlights
         .into_iter()
         .map(|(file_id, ranges)| (file_id, ranges.into_iter().collect()))
@@ -372,17 +378,20 @@ fn hl_exit_points(
     body: ast::Expr,
 ) -> Option<HighlightMap> {
     let mut highlights: FxHashMap<EditionedFileId, FxHashSet<_>> = FxHashMap::default();
+
     let mut push_to_highlights = |file_id, range| {
         if let Some(FileRange { file_id, range }) = original_frange(sema.db, file_id, range) {
             let hrange = HighlightedRange { category: ReferenceCategory::empty(), range };
             highlights.entry(file_id).or_default().insert(hrange);
         }
     };
+
     if let Some(tok) = def_token {
         let file_id = sema.hir_file_for(&tok.parent()?);
         let range = Some(tok.text_range());
         push_to_highlights(file_id, range);
     }
+
     WalkExpandedExprCtx::new(sema).walk(&body, &mut |_, expr| {
         let file_id = sema.hir_file_for(expr.syntax());
 
@@ -400,6 +409,7 @@ fn hl_exit_points(
     });
     // We should handle `return` separately, because when it is used in a `try` block,
     // it will exit the outside function instead of the block itself.
+
     WalkExpandedExprCtx::new(sema)
         .with_check_ctx(&WalkExpandedExprCtx::is_async_const_block_or_closure)
         .walk(&body, &mut |_, expr| {
@@ -412,10 +422,12 @@ fn hl_exit_points(
 
             push_to_highlights(file_id, range);
         });
+
     let tail = match body {
         ast::Expr::BlockExpr(b) => b.tail_expr(),
         e => Some(e),
     };
+
     if let Some(tail) = tail {
         for_each_tail_expr(&tail, &mut |tail| {
             let file_id = sema.hir_file_for(tail.syntax());
@@ -456,6 +468,7 @@ pub(crate) fn highlight_exit_points(
         };
         merge_map(&mut res, new_map);
     }
+
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
@@ -533,9 +546,11 @@ pub(crate) fn highlight_break_points(
 
         Some(highlights)
     }
+
     let Some(loops) = goto_definition::find_loops(sema, &token) else {
         return FxHashMap::default();
     };
+
     let mut res = FxHashMap::default();
     let token_kind = token.kind();
     for expr in loops {
@@ -548,6 +563,7 @@ pub(crate) fn highlight_break_points(
         };
         merge_map(&mut res, new_map);
     }
+
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
@@ -592,6 +608,7 @@ pub(crate) fn highlight_yield_points(
 
         Some(highlights)
     }
+
     let mut res = FxHashMap::default();
     for anc in goto_definition::find_fn_or_blocks(sema, &token) {
         let new_map = match_ast! {
@@ -622,6 +639,7 @@ pub(crate) fn highlight_yield_points(
         };
         merge_map(&mut res, new_map);
     }
+
     res.into_iter().map(|(file_id, ranges)| (file_id, ranges.into_iter().collect())).collect()
 }
 
@@ -721,6 +739,7 @@ impl<'a> WalkExpandedExprCtx<'a> {
         if let Some(expr) = expanded.expr() {
             self.walk(&expr, cb);
         }
+
         for stmt in expanded.statements() {
             if let ast::Stmt::ExprStmt(stmt) = stmt
                 && let Some(expr) = stmt.expr()
@@ -782,6 +801,7 @@ pub(crate) fn highlight_unsafe_points(
 
         Some(highlights)
     }
+
     hl(sema, &token, token.parent().and_then(ast::BlockExpr::cast)).unwrap_or_default()
 }
 
@@ -808,9 +828,12 @@ mod tests {
         config: HighlightRelatedConfig,
     ) {
         let (analysis, pos, annotations) = fixture::annotations(ra_fixture);
+
         let hls = analysis.highlight_related(config, pos).unwrap().unwrap_or_default();
+
         let mut expected =
             annotations.into_iter().map(|(r, access)| (r.range, access)).collect::<Vec<_>>();
+
         let mut actual: Vec<(TextRange, String)> = hls
             .into_iter()
             .map(|hl| {
@@ -822,6 +845,7 @@ mod tests {
             .collect();
         actual.sort_by_key(|(range, _)| range.start());
         expected.sort_by_key(|(range, _)| range.start());
+
         assert_eq!(expected, actual);
     }
     #[test]
@@ -1576,6 +1600,7 @@ fn function(field: u32) {
     #[test]
     fn test_hl_disabled_ref_local() {
         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 fn foo() {
@@ -1589,6 +1614,7 @@ fn foo() {
     #[test]
     fn test_hl_disabled_ref_local_preserved_break() {
         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 fn foo() {
@@ -1602,6 +1628,7 @@ fn foo() {
 "#,
             config.clone(),
         );
+
         check_with_config(
             r#"
 fn foo() {
@@ -1621,6 +1648,7 @@ fn foo() {
     #[test]
     fn test_hl_disabled_ref_local_preserved_yield() {
         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 async fn foo() {
@@ -1632,6 +1660,7 @@ async fn foo() {
 "#,
             config.clone(),
         );
+
         check_with_config(
             r#"
     async fn foo() {
@@ -1649,6 +1678,7 @@ async fn foo() {
     #[test]
     fn test_hl_disabled_ref_local_preserved_exit() {
         let config = HighlightRelatedConfig { references: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 fn foo() -> i32 {
@@ -1664,6 +1694,7 @@ fn foo() -> i32 {
 "#,
             config.clone(),
         );
+
         check_with_config(
             r#"
   fn foo() ->$0 i32 {
@@ -1685,6 +1716,7 @@ fn foo() -> i32 {
     #[test]
     fn test_hl_disabled_break() {
         let config = HighlightRelatedConfig { break_points: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 fn foo() {
@@ -1699,6 +1731,7 @@ fn foo() {
     #[test]
     fn test_hl_disabled_yield() {
         let config = HighlightRelatedConfig { yield_points: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 async$0 fn foo() {
@@ -1711,6 +1744,7 @@ async$0 fn foo() {
     #[test]
     fn test_hl_disabled_exit() {
         let config = HighlightRelatedConfig { exit_points: false, ..ENABLED_CONFIG };
+
         check_with_config(
             r#"
 fn foo() ->$0 i32 {

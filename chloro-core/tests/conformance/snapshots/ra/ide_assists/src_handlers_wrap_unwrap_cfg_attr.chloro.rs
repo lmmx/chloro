@@ -137,8 +137,10 @@ fn wrap_derive(
     let range = attr.syntax().text_range();
     let token_tree = attr.token_tree()?;
     let mut path_text = String::new();
+
     let mut cfg_derive_tokens = Vec::new();
     let mut new_derive = Vec::new();
+
     for tt in token_tree.token_trees_and_tokens() {
         let NodeOrToken::Token(token) = tt else {
             continue;
@@ -196,6 +198,7 @@ fn wrap_derive(
         editor.add_mappings(make.finish_with_mappings());
         edit.add_file_edits(ctx.vfs_file_id(), editor);
     };
+
     acc.add(
         AssistId::refactor("wrap_unwrap_cfg_attr"),
         format!("Wrap #[derive({path_text})] in `cfg_attr`",),

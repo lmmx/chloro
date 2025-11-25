@@ -5,7 +5,9 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let colon_colon = ctx.find_token_syntax_at_offset(T![::])?;
     let path = ast::Path::cast(colon_colon.parent()?)?.qualifier()?;
+
     let use_tree = path.top_path().syntax().ancestors().find_map(ast::UseTree::cast)?;
+
     let has_errors = use_tree
         .syntax()
         .descendants_with_tokens()
@@ -14,6 +16,7 @@ pub(crate) fn split_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     if has_errors || last_segment.is_none() {
         return None;
     }
+
     let target = colon_colon.text_range();
     acc.add(AssistId::refactor_rewrite("split_import"), "Split import", target, |edit| {
         let use_tree = edit.make_mut(use_tree.clone());

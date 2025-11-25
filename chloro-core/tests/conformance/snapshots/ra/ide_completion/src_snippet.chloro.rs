@@ -163,6 +163,7 @@ impl Snippet {
 
 fn import_edits(ctx: &CompletionContext<'_>, requires: &[ModPath]) -> Option<Vec<LocatedImport>> {
     let import_cfg = ctx.config.find_path_config(ctx.is_nightly);
+
     let resolve = |import| {
         let item = ctx.scope.resolve_mod_path(import).next()?;
         let path = ctx.module.find_use_path(

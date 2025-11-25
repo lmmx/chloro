@@ -31,10 +31,13 @@ pub(crate) fn unlinked_file(
     } else {
         "This file is not included anywhere in the module tree, so rust-analyzer can't offer IDE services."
     };
+
     let message = format!(
         "{message}\n\nIf you're intentionally working on unowned files, you can silence this warning by adding \"unlinked-file\" to rust-analyzer.diagnostics.disabled in your settings."
     );
+
     let mut unused = true;
+
     if fixes.is_none() {
         // If we don't have a fix, the unlinked-file diagnostic is not
         // actionable. This generally means that rust-analyzer hasn't
@@ -54,6 +57,7 @@ pub(crate) fn unlinked_file(
         // since we're only highlighting a small region.
         unused = false;
     }
+
     acc.push(
         Diagnostic::new(
             DiagnosticCode::Ra("unlinked-file", Severity::WeakWarning),
@@ -73,9 +77,12 @@ fn fixes(
 ) -> Option<Vec<Assist>> {
     // If there's an existing module that could add `mod` or `pub mod` items to include the unlinked file,
     // suggest that as a fix.
+
     let db = ctx.sema.db;
+
     let source_root = ctx.sema.db.file_source_root(file_id).source_root_id(db);
     let source_root = ctx.sema.db.source_root(source_root).source_root(db);
+
     let our_path = source_root.path_for_file(&file_id)?;
     let parent = our_path.parent()?;
     let (module_name, _) = our_path.name_and_extension()?;
@@ -89,6 +96,7 @@ fn fixes(
         _ => (parent, module_name.to_owned()),
     };
     // check crate roots, i.e. main.rs, lib.rs, ...
+
     let relevant_crates = db.relevant_crates(file_id);
     'crates: for &krate in &*relevant_crates {
         // FIXME: This shouldnt need to access the crate def map directly
@@ -132,6 +140,7 @@ fn fixes(
     }
     // if we aren't adding to a crate root, walk backwards such that we support `#[path = ...]` overrides if possible
     // build all parent paths of the form `../module_name/mod.rs` and `../module_name.rs`
+
     let paths = iter::successors(Some(parent), |prev| prev.parent()).filter_map(|path| {
         let parent = path.parent()?;
         let (name, _) = path.name_and_extension()?;
@@ -186,6 +195,7 @@ fn fixes(
             );
         }
     }
+
     None
 }
 
@@ -198,12 +208,15 @@ fn make_fixes(
     fn is_outline_mod(item: &ast::Item) -> bool {
         matches!(item, ast::Item::Module(m) if m.item_list().is_none())
     }
+
     let mod_decl = format!("mod {new_mod_name};");
     let pub_mod_decl = format!("pub mod {new_mod_name};");
     let pub_crate_mod_decl = format!("pub(crate) mod {new_mod_name};");
+
     let mut mod_decl_builder = TextEdit::builder();
     let mut pub_mod_decl_builder = TextEdit::builder();
     let mut pub_crate_mod_decl_builder = TextEdit::builder();
+
     let mut items = match &source {
         ModuleSource::SourceFile(it) => it.items(),
         ModuleSource::Module(it) => it.item_list()?.items(),
@@ -211,6 +224,7 @@ fn make_fixes(
     };
     // If there's an existing `mod m;` statement matching the new one, don't emit a fix (it's
     // probably `#[cfg]`d out).
+
     for item in items.clone() {
         if let ast::Item::Module(m) = item
             && let Some(name) = m.name()
@@ -222,6 +236,7 @@ fn make_fixes(
         }
     }
     // If there are existing `mod m;` items, append after them (after the first group of them, rather).
+
     match items.clone().skip_while(|item| !is_outline_mod(item)).take_while(is_outline_mod).last() {
         Some(last) => {
             cov_mark::hit!(unlinked_file_append_to_existing_mods);
@@ -265,6 +280,7 @@ fn make_fixes(
             }
         }
     }
+
     Some(vec![
         fix(
             "add_mod_declaration",

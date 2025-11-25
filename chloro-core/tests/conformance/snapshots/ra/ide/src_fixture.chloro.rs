@@ -60,6 +60,7 @@ pub(crate) fn annotations(
     host.db.apply_change(change_fixture.change);
     let (file_id, range_or_offset) = change_fixture.file_position.expect("expected a marker ($0)");
     let offset = range_or_offset.expect_offset();
+
     let db = &host.db;
     let annotations = change_fixture
         .files
@@ -83,6 +84,7 @@ pub(crate) fn annotations_without_marker(
     let change_fixture = ChangeFixture::parse(&host.db, ra_fixture);
     host.db.enable_proc_attr_macros();
     host.db.apply_change(change_fixture.change);
+
     let db = &host.db;
     let annotations = change_fixture
         .files

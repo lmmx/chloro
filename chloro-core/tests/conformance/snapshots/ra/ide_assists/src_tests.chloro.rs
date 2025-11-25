@@ -258,6 +258,7 @@ fn check_doc_test(assist_id: &str, before: &str, after: &str) {
     let (db, file_id, selection) = RootDatabase::with_range_or_offset(before);
     let before = db.file_text(file_id.file_id(&db)).text(&db).to_string();
     let frange = ide_db::FileRange { file_id: file_id.file_id(&db), range: selection.into() };
+
     let assist = assists(&db, &TEST_CONFIG, AssistResolveStrategy::All, frange)
         .into_iter()
         .find(|assist| assist.id.0 == assist_id)
@@ -272,6 +273,7 @@ fn check_doc_test(assist_id: &str, before: &str, after: &str) {
                     .join(", ")
             )
         });
+
     let actual = {
         let source_change = assist
             .source_change
@@ -320,7 +322,9 @@ fn check_with_config(
     let (mut db, file_with_caret_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
     db.enable_proc_attr_macros();
     let text_without_caret = db.file_text(file_with_caret_id.file_id(&db)).text(&db).to_string();
+
     let frange = hir::FileRange { file_id: file_with_caret_id, range: range_or_offset.into() };
+
     let sema = Semantics::new(&db);
     let ctx = AssistContext::new(sema, &config, frange);
     let resolve = match expected {
@@ -333,12 +337,14 @@ fn check_with_config(
         handler(&mut acc, &ctx);
     });
     let mut res = acc.finish();
+
     let assist = match assist_label {
         Some(label) => res.into_iter().find(|resolved| resolved.label == label),
         None if res.is_empty() => None,
         // Pick the first as that is the one with the highest priority
         None => Some(res.swap_remove(0)),
     };
+
     match (assist, expected) {
         (Some(assist), ExpectedResult::After(after)) => {
             let source_change = assist
@@ -431,6 +437,7 @@ fn assist_order_field_struct() {
         FileRange { file_id: file_id.file_id(&db), range: TextRange::empty(before_cursor_pos) };
     let assists = assists(&db, &TEST_CONFIG, AssistResolveStrategy::None, frange);
     let mut assists = assists.iter();
+
     assert_eq!(assists.next().expect("expected assist").label, "Change visibility to pub(crate)");
     assert_eq!(assists.next().expect("expected assist").label, "Generate a getter method");
     assert_eq!(assists.next().expect("expected assist").label, "Generate a mut getter method");
@@ -453,6 +460,7 @@ pub fn test_some_range(a: int) -> bool {
 }
 "#,
     );
+
     let assists = assists(
         &db,
         &TEST_CONFIG,
@@ -460,6 +468,7 @@ pub fn test_some_range(a: int) -> bool {
         FileRange { file_id: frange.file_id.file_id(&db), range: frange.range },
     );
     let expected = labels(&assists);
+
     expect![[r#"
         Extract into...
         Replace if let with match
@@ -498,6 +507,7 @@ pub fn test_some_range(a: int) -> bool {
         "#]]
         .assert_eq(&expected);
     }
+
     {
         let mut cfg = TEST_CONFIG;
         cfg.allowed = Some(vec![AssistKind::RefactorExtract]);
@@ -514,6 +524,7 @@ pub fn test_some_range(a: int) -> bool {
         "#]]
         .assert_eq(&expected);
     }
+
     {
         let mut cfg = TEST_CONFIG;
         cfg.allowed = Some(vec![AssistKind::QuickFix]);
@@ -542,8 +553,10 @@ pub fn test_some_range(a: int) -> bool {
 }
 "#,
     );
+
     let mut cfg = TEST_CONFIG;
     cfg.allowed = Some(vec![AssistKind::RefactorExtract]);
+
     {
         let assists = assists(
             &db,
@@ -638,6 +651,7 @@ pub fn test_some_range(a: int) -> bool {
         "#]]
         .assert_debug_eq(&extract_into_function_assist);
     }
+
     {
         let assists = assists(
             &db,
@@ -736,6 +750,7 @@ pub fn test_some_range(a: int) -> bool {
         "#]]
         .assert_debug_eq(&extract_into_function_assist);
     }
+
     {
         let assists = assists(
             &db,
@@ -880,6 +895,7 @@ pub fn test_some_range(a: int) -> bool {
         "#]]
         .assert_debug_eq(&extract_into_function_assist);
     }
+
     {
         let assists = assists(
             &db,

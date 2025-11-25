@@ -825,6 +825,7 @@ pub macro Clone {}
 fn unresolved_attributes_fall_back_track_per_file_moditems() {
     // Tests that we track per-file ModItems when ignoring an unresolved attribute.
     // Just tracking the `ModItem` leads to `Foo` getting ignored.
+
     check(
         r#"
         //- /main.rs crate:main
@@ -1041,6 +1042,7 @@ pub fn derive_macro_2(_item: TokenStream) -> TokenStream {
 #[test]
 fn proc_macro_censoring() {
     // Make sure that only proc macros are publicly exported from proc-macro crates.
+
     check(
         r#"
 //- /main.rs crate:main deps:macros
@@ -1094,6 +1096,7 @@ pub fn derive_macro_2(_item: TokenStream) -> TokenStream {
     );
     let krate = *db.all_crates().last().expect("no crate graph present");
     let def_map = crate_def_map(&db, krate);
+
     assert_eq!(def_map.data.exported_derives.len(), 1);
     match def_map.data.exported_derives.values().next() {
         Some(helpers) => match &**helpers {
@@ -1165,6 +1168,7 @@ m!(
 fn eager_macro_correctly_resolves_contents() {
     // Eager macros resolve any contained macros when expanded. This should work correctly with the
     // usual name resolution rules, so both of these `include!`s should include the right file.
+
     check(
         r#"
 //- /lib.rs
@@ -1442,17 +1446,20 @@ fn proc_attr(a: TokenStream, b: TokenStream) -> TokenStream { a }
     );
     let krate = *db.all_crates().last().expect("no crate graph present");
     let def_map = crate_def_map(&db, krate);
+
     let root_module = &def_map[DefMap::ROOT].scope;
     assert!(
         root_module.legacy_macros().count() == 0,
         "`#[macro_use]` shouldn't bring macros into textual macro scope",
     );
+
     let actual = def_map
         .macro_use_prelude
         .keys()
         .map(|name| name.display(&db, Edition::CURRENT).to_string())
         .sorted()
         .join("\n");
+
     expect![[r#"
         legacy
         macro20

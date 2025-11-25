@@ -9,6 +9,7 @@ pub(crate) fn goto_type_definition(
     FilePosition { file_id, offset }: FilePosition,
 ) -> Option<RangeInfo<Vec<NavigationTarget>>> {
     let sema = hir::Semantics::new(db);
+
     let file: ast::SourceFile = sema.parse_guess_edition(file_id);
     let token: SyntaxToken =
         pick_best_token(file.syntax().token_at_offset(offset), |kind| match kind {
@@ -17,6 +18,7 @@ pub(crate) fn goto_type_definition(
             T![;] => 1,
             _ => 2,
         })?;
+
     let mut res = Vec::new();
     let mut push = |def: Definition| {
         if let Some(navs) = def.try_to_nav(&sema) {
@@ -57,6 +59,7 @@ pub(crate) fn goto_type_definition(
         }
         return Some(RangeInfo::new(range, res));
     }
+
     let range = token.text_range();
     sema.descend_into_macros_no_opaque(token, false)
         .into_iter()
@@ -106,6 +109,7 @@ mod tests {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
         let navs = analysis.goto_type_definition(position).unwrap().unwrap().info;
         assert!(!navs.is_empty(), "navigation is empty");
+
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()

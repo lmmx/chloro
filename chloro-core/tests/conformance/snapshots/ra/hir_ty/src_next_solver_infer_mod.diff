@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49331 bytes
+Chloro size:   49342 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -188,26 +188,6 @@ Rustfmt size:  49754 bytes
      /// when projecting an associated type
      AssocTypeProjection(SolverDefId),
  }
- impl fmt::Display for FixupError {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-         use TyOrConstInferVar::*;
--
-         match self.unresolved {
-             TyInt(_) => write!(
-                 f,
-                 if r.is_error() { self.infcx.next_region_var() } else { r }
-             }
-         }
--
-         ty.fold_with(&mut Folder { infcx: self })
-     }
- 
- 
-     pub fn type_is_copy_modulo_regions(&self, param_env: ParamEnv<'db>, ty: Ty<'db>) -> bool {
-         let ty = self.resolve_vars_if_possible(ty);
--
-         let Some(copy_def_id) =
-             LangItem::Copy.resolve_trait(self.interner.db, self.interner.krate.unwrap())
          else {
              return false;
          };
@@ -215,20 +195,11 @@ Rustfmt size:  49754 bytes
          // This can get called from typeck (by euv), and `moves_by_default`
          // rightly refuses to work with inference variables, but
          // moves_by_default has a cache, which we want to use in other
-             }
-             _ => {}
-         }
--
-         self.enter_forall(predicate, |SubtypePredicate { a_is_expected, a, b }| {
-             if a_is_expected {
-                 Ok(self.at(cause, param_env).sub(a, b))
-     /// universe index of `TyVar(vid)`.
-     pub fn probe_ty_var(&self, vid: TyVid) -> Result<Ty<'db>, UniverseIndex> {
-         use self::type_variable::TypeVariableValue;
--
-         match self.inner.borrow_mut().type_variables().probe(vid) {
-             TypeVariableValue::Known { value } => Ok(value),
-             TypeVariableValue::Unknown { universe } => Err(universe),
+         // cases.
++
+         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
+     }
+ 
          }
      }
  
@@ -242,34 +213,6 @@ Rustfmt size:  49754 bytes
      pub fn instantiate_binder_with_fresh_vars<T>(
          &self,
          _lbrct: BoundRegionConversionTime,
-         if let Some(inner) = value.clone().no_bound_vars() {
-             return inner;
-         }
--
-         let bound_vars = value.clone().bound_vars();
-         let mut args = Vec::with_capacity(bound_vars.len());
--
-         for bound_var_kind in bound_vars {
-             let arg: GenericArg<'db> = match bound_var_kind {
-                 BoundVarKind::Ty(_) => self.next_ty_var().into(),
-             };
-             args.push(arg);
-         }
--
-         struct ToFreshVars<'db> {
-             args: Vec<GenericArg<'db>>,
-         }
--
-         impl<'db> BoundVarReplacerDelegate<'db> for ToFreshVars<'db> {
-             fn replace_region(&mut self, br: BoundRegion) -> Region<'db> {
-                 self.args[br.var.index()].expect_region()
-     ) -> impl Fn(TyOrConstInferVar) -> bool + Captures<'db> + 'a {
-         // This hoists the borrow/release out of the loop body.
-         let inner = self.inner.try_borrow();
--
-         move |infer_var: TyOrConstInferVar| match (infer_var, &inner) {
-             (TyOrConstInferVar::Ty(ty_var), Ok(inner)) => {
-                 use self::type_variable::TypeVariableValue;
      TyInt(IntVid),
      /// Equivalent to `Infer(FloatVar(_))`.
      TyFloat(FloatVid),

@@ -22,12 +22,14 @@ pub(crate) fn destructure_struct_binding(
 ) -> Option<()> {
     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
     let data = collect_data(ident_pat, ctx)?;
+
     acc.add(
         AssistId::refactor_rewrite("destructure_struct_binding"),
         "Destructure struct binding",
         data.ident_pat.syntax().text_range(),
         |edit| destructure_struct_binding_impl(ctx, edit, &data),
     );
+
     Some(())
 }
 
@@ -60,32 +62,41 @@ struct StructEditData {
 fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<StructEditData> {
     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
     let hir::Adt::Struct(struct_type) = ty.strip_references().as_adt()? else { return None };
+
     let module = ctx.sema.scope(ident_pat.syntax())?.module();
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
     let struct_def = hir::ModuleDef::from(struct_type);
     let kind = struct_type.kind(ctx.db());
     let struct_def_path = module.find_path(ctx.db(), struct_def, cfg)?;
+
     let is_non_exhaustive = struct_def.attrs(ctx.db())?.by_key(sym::non_exhaustive).exists();
     let is_foreign_crate = struct_def.module(ctx.db()).is_some_and(|m| m.krate() != module.krate());
+
     let fields = struct_type.fields(ctx.db());
     let n_fields = fields.len();
+
     let visible_fields =
         fields.into_iter().filter(|field| field.is_visible_from(ctx.db(), module)).collect_vec();
+
     if visible_fields.is_empty() {
         return None;
     }
+
     let has_private_members =
         (is_non_exhaustive && is_foreign_crate) || visible_fields.len() < n_fields;
     // If private members are present, we can only destructure records
+
     if !matches!(kind, hir::StructKind::Record) && has_private_members {
         return None;
     }
+
     let is_ref = ty.is_reference();
     let need_record_field_name = ident_pat
         .syntax()
         .parent()
         .and_then(ast::RecordPatField::cast)
         .is_some_and(|field| field.colon_token().is_none());
+
     let usages = ctx
         .sema
         .to_def(&ident_pat)
@@ -99,7 +110,9 @@ fn collect_data(ident_pat: ast::IdentPat, ctx: &AssistContext<'_>) -> Option<Str
                 .map(|(_, refs)| refs.to_vec())
         })
         .unwrap_or_default();
+
     let names_in_scope = get_names_in_scope(ctx, &ident_pat, &usages).unwrap_or_default();
+
     Some(StructEditData {
         name: ident_pat.name()?,
         ident_pat,
@@ -125,9 +138,11 @@ fn get_names_in_scope(
     }
     // If available, find names visible to the last usage of the binding
     // else, find names visible to the binding itself
+
     let last_usage = last_usage(usages);
     let node = last_usage.as_ref().unwrap_or(ident_pat.syntax());
     let scope = ctx.sema.scope(node)?;
+
     let mut names = FxHashSet::default();
     scope.process_all_names(&mut |name, scope| {
         if let hir::ScopeDef::Local(_) = scope {
@@ -145,9 +160,11 @@ fn destructure_pat(
 ) {
     let ident_pat = &data.ident_pat;
     let name = &data.name;
+
     let struct_path = mod_path_to_ast(&data.struct_def_path, data.edition);
     let is_ref = ident_pat.ref_token().is_some();
     let is_mut = ident_pat.mut_token().is_some();
+
     let make = SyntaxFactory::with_mappings();
     let new_pat = match data.kind {
         hir::StructKind::Tuple => {
@@ -180,11 +197,13 @@ fn destructure_pat(
     };
     // If the binding is nested inside a record, we need to wrap the new
     // destructured pattern in a non-shorthand record field
+
     let destructured_pat = if data.need_record_field_name {
         make.record_pat_field(make.name_ref(&name.to_string()), new_pat).syntax().clone()
     } else {
         new_pat.syntax().clone()
     };
+
     editor.add_mappings(make.finish_with_mappings());
     editor.replace(data.ident_pat.syntax(), destructured_pat);
 }

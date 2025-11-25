@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7506 bytes
-Chloro size:   7502 bytes
+Chloro size:   7506 bytes
 Rustfmt size:  7929 bytes
 
 ✗ Outputs DIFFER
@@ -16,13 +16,6 @@ Rustfmt size:  7929 bytes
  use span::Edition;
  
  use crate::{
- pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
-     // we need to take care a bit here to avoid infinite loops in case of cycles
-     // (i.e. if we have `trait A: B; trait B: A;`)
--
-     let mut result = smallvec![trait_];
-     let mut i = 0;
-     while let Some(&t) = result.get(i) {
              WherePredicate::Lifetime { .. } => None,
          })
          .filter(|(_, bound_modifier)| matches!(bound_modifier, TraitBoundModifier::None))
@@ -39,11 +32,6 @@ Rustfmt size:  7929 bytes
          .for_each(cb);
  }
  
-     if data.is_unsafe() {
-         return Unsafety::Unsafe;
-     }
--
-     if data.has_target_feature() && target_feature_is_safe == TargetFeatureIsSafeInTarget::No {
          // RFC 2396 <https://rust-lang.github.io/rfcs/2396-target-feature-1.1.html>.
          let callee_target_features =
              TargetFeatures::from_attrs_no_implications(&db.attrs(func.into()));
@@ -55,17 +43,6 @@ Rustfmt size:  7929 bytes
              return Unsafety::Unsafe;
          }
      }
--
-     if data.is_deprecated_safe_2024() {
-         if call_edition.at_least_2024() {
-             return Unsafety::Unsafe;
-             return Unsafety::DeprecatedSafe2024;
-         }
-     }
--
-     let loc = func.lookup(db);
-     match loc.container {
-         hir_def::ItemContainerId::ExternBlockId(block) => {
              if is_intrinsic_block {
                  // legacy intrinsics
                  // extern "rust-intrinsic" intrinsics are unsafe unless they have the rustc_safe_intrinsic attribute

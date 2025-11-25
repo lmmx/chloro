@@ -38,6 +38,7 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
         (Some(let_expr), _) => let_expr.expr()?,
         (None, cond) => cond?,
     };
+
     let mut pat_seen = false;
     let mut cond_bodies = Vec::new();
     for if_expr in if_exprs {
@@ -63,12 +64,15 @@ pub(crate) fn replace_if_let_with_match(acc: &mut Assists, ctx: &AssistContext<'
         body.indent(IndentLevel(1));
         cond_bodies.push((cond, guard, body));
     }
+
     if !pat_seen && cond_bodies.len() != 1 {
         // Don't offer turning an if (chain) without patterns into a match,
         // unless its a simple `if cond { .. } (else { .. })`
         return None;
     }
+
     let let_ = if pat_seen { " let" } else { "" };
+
     acc.add(
         AssistId::refactor_rewrite("replace_if_let_with_match"),
         format!("Replace if{let_} with match"),
@@ -167,6 +171,7 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
     if !cursor_in_range {
         return None;
     }
+
     let mut arms = match_arm_list.arms();
     let (first_arm, second_arm) = (arms.next()?, arms.next()?);
     if arms.next().is_some() || second_arm.guard().is_some() {
@@ -175,6 +180,7 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
     if first_arm.guard().is_some() && ctx.edition() < Edition::Edition2024 {
         return None;
     }
+
     let (if_let_pat, guard, then_expr, else_expr) = pick_pattern_and_expr_order(
         &ctx.sema,
         first_arm.pat()?,
@@ -186,6 +192,7 @@ pub(crate) fn replace_match_with_if_let(acc: &mut Assists, ctx: &AssistContext<'
     )?;
     let scrutinee = match_expr.expr()?;
     let guard = guard.and_then(|it| it.condition());
+
     let let_ = match &if_let_pat {
         ast::Pat::LiteralPat(p)
             if p.literal()
@@ -551,6 +558,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -607,6 +615,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -652,6 +661,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -881,6 +891,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -943,6 +954,7 @@ fn foo(x: Result<i32, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -994,6 +1006,7 @@ fn foo(x: Result<&[i32], ()>) {
 }
         "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1017,6 +1030,7 @@ fn foo(x: Result<[&'static str; 2], ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1040,6 +1054,7 @@ fn foo(x: Result<[&'static str; 2], ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1063,6 +1078,7 @@ fn foo(x: Result<&[&'static str], ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1086,6 +1102,7 @@ fn foo(x: Result<&[&'static str], ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1161,6 +1178,7 @@ fn foo(x: Result<(i32, i32, i32), ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1210,6 +1228,7 @@ fn foo(x: Result<i32, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1233,6 +1252,7 @@ fn foo(x: Result<(i32, i32), ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1308,6 +1328,7 @@ fn foo(x: Result<(i32, i32), ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1441,6 +1462,7 @@ fn foo(x: Result<MyStruct, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1474,6 +1496,7 @@ fn foo(x: Result<MyStruct, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1507,6 +1530,7 @@ fn foo(x: Result<MyStruct, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1566,6 +1590,7 @@ fn foo(x: Result<i32, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1589,6 +1614,7 @@ fn foo(x: Result<i32, ()>) {
 }
 "#,
         );
+
         check_assist(
             replace_if_let_with_match,
             r#"
@@ -1766,6 +1792,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_match_with_if_let,
             r#"

@@ -20,6 +20,7 @@ pub(crate) fn goto_implementation(
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(file_id);
     let syntax = source_file.syntax().clone();
+
     let original_token = pick_best_token(syntax.token_at_offset(offset), |kind| match kind {
         IDENT | T![self] | INT_NUMBER => 1,
         _ => 0,
@@ -86,6 +87,7 @@ pub(crate) fn goto_implementation(
         })
         .flatten()
         .collect();
+
     Some(RangeInfo { range, info: navs })
 }
 
@@ -142,8 +144,11 @@ mod tests {
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
     ) {
         let (analysis, position, expected) = fixture::annotations(ra_fixture);
+
         let navs = analysis.goto_implementation(config, position).unwrap().unwrap().info;
+
         let cmp = |frange: &FileRange| (frange.file_id, frange.range.start());
+
         let actual = navs
             .into_iter()
             .map(|nav| FileRange { file_id: nav.file_id, range: nav.focus_or_full_range() })

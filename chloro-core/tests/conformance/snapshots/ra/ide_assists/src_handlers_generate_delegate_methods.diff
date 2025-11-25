@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17091 bytes
-Chloro size:   16587 bytes
+Chloro size:   16591 bytes
 Rustfmt size:  17091 bytes
 
 ✗ Outputs DIFFER
@@ -65,27 +65,6 @@ Rustfmt size:  17091 bytes
  pub(crate) fn generate_delegate_methods(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if !ctx.config.code_action_grouping {
          return None;
-     }
--
-     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
-     let strukt_name = strukt.name()?;
-     let current_module = ctx.sema.scope(strukt.syntax())?.module();
-     let current_edition = current_module.krate().edition(ctx.db());
--
-     let (field_name, field_ty, target) = match ctx.find_node_at_offset::<ast::RecordField>() {
-         Some(field) => {
-             let field_name = field.name()?;
-             (field_list_index.to_string(), field_ty, field.syntax().text_range())
-         }
-     };
--
-     let sema_field_ty = ctx.sema.resolve_type(&field_ty)?;
-     let mut methods = vec![];
-     let mut seen_names = FxHashSet::default();
--
-     for ty in sema_field_ty.autoderef(ctx.db()) {
-         let krate = ty.krate(ctx.db());
-         ty.iterate_assoc_items(ctx.db(), krate, |item| {
      use crate::tests::{
          check_assist, check_assist_not_applicable, check_assist_not_applicable_no_grouping,
      };

@@ -35,40 +35,55 @@ fn if_expr_to_guarded_return(
         Some(_) => return None,
         _ => None,
     };
+
     let cond = if_expr.condition()?;
+
     let if_token_range = if_expr.if_token()?.text_range();
     let if_cond_range = cond.syntax().text_range();
+
     let cursor_in_range =
         if_token_range.cover(if_cond_range).contains_range(ctx.selection_trimmed());
     if !cursor_in_range {
         return None;
     }
+
     let let_chains = flat_let_chain(cond);
+
     let then_branch = if_expr.then_branch()?;
     let then_block = then_branch.stmt_list()?;
+
     let parent_block = if_expr.syntax().parent()?.ancestors().find_map(ast::BlockExpr::cast)?;
+
     if parent_block.tail_expr()? != if_expr.clone().into() {
         return None;
     }
     // check for early return and continue
+
     if is_early_block(&then_block) || is_never_block(&ctx.sema, &then_branch) {
         return None;
     }
+
     let parent_container = parent_block.syntax().parent()?;
+
     let early_expression = else_block
         .or_else(|| {
             early_expression(parent_container, &ctx.sema).map(ast::make::tail_only_block_expr)
         })?
         .reset_indent();
+
     then_block.syntax().first_child_or_token().map(|t| t.kind() == T!['{'])?;
+
     then_block.syntax().last_child_or_token().filter(|t| t.kind() == T!['}'])?;
+
     let then_block_items = then_block.dedent(IndentLevel(1));
+
     let end_of_then = then_block_items.syntax().last_child_or_token()?;
     let end_of_then = if end_of_then.prev_sibling_or_token().map(|n| n.kind()) == Some(WHITESPACE) {
         end_of_then.prev_sibling_or_token()?
     } else {
         end_of_then
     };
+
     let target = if_expr.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_to_guarded_return"),
@@ -127,17 +142,22 @@ fn let_stmt_to_guarded_return(
 ) -> Option<()> {
     let pat = let_stmt.pat()?;
     let expr = let_stmt.initializer()?;
+
     let let_token_range = let_stmt.let_token()?.text_range();
     let let_pattern_range = pat.syntax().text_range();
     let cursor_in_range =
         let_token_range.cover(let_pattern_range).contains_range(ctx.selection_trimmed());
+
     if !cursor_in_range || let_stmt.let_else().is_some() {
         return None;
     }
+
     let try_enum =
         ctx.sema.type_of_expr(&expr).and_then(|ty| TryEnum::from_ty(&ctx.sema, &ty.adjusted()))?;
+
     let happy_pattern = try_enum.happy_pattern(pat);
     let target = let_stmt.syntax().text_range();
+
     let early_expression: ast::Expr = {
         let parent_block =
             let_stmt.syntax().parent()?.ancestors().find_map(ast::BlockExpr::cast)?;
@@ -145,6 +165,7 @@ fn let_stmt_to_guarded_return(
 
         early_expression(parent_container, &ctx.sema)?
     };
+
     acc.add(
         AssistId::refactor_rewrite("convert_to_guarded_return"),
         "Convert to guarded return",
@@ -189,6 +210,7 @@ fn early_expression(
     {
         return Some(return_none_expr());
     }
+
     Some(match parent_container.kind() {
         WHILE_EXPR | LOOP_EXPR | FOR_EXPR => make::expr_continue(None),
         FN | CLOSURE_EXPR => make::expr_return(None),
@@ -207,6 +229,7 @@ fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
             chains.push(rhs);
         }
     };
+
     while let ast::Expr::BinExpr(bin_expr) = &expr
         && bin_expr.op_kind() == Some(ast::BinaryOp::LogicOp(ast::LogicOp::And))
         && let (Some(lhs), Some(rhs)) = (bin_expr.lhs(), bin_expr.rhs())
@@ -214,6 +237,7 @@ fn flat_let_chain(mut expr: ast::Expr) -> Vec<ast::Expr> {
         reduce_cond(rhs);
         expr = lhs;
     }
+
     reduce_cond(expr);
     chains.reverse();
     chains
@@ -407,6 +431,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -476,6 +501,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -500,6 +526,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -525,6 +552,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -554,6 +582,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -892,6 +921,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"
@@ -908,6 +938,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_to_guarded_return,
             r#"

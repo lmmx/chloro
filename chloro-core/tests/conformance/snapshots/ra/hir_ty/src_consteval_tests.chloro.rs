@@ -833,6 +833,7 @@ fn ifs() {
         "#,
         10,
     );
+
     check_number(
         r#"
     const fn max(a: &i32, b: &i32) -> &i32 {
@@ -2378,6 +2379,7 @@ fn consts() {
     "#,
         6,
     );
+
     check_number(
         r#"
     const F1: i32 = 2147483647;
@@ -2386,6 +2388,7 @@ fn consts() {
     "#,
         2147483622,
     );
+
     check_number(
         r#"
     const F1: i32 = -2147483648;
@@ -2394,6 +2397,7 @@ fn consts() {
     "#,
         -2147483630,
     );
+
     check_number(
         r#"
     const F1: i32 = 10;
@@ -2402,6 +2406,7 @@ fn consts() {
     "#,
         -10,
     );
+
     check_number(
         r#"
     const F1: i32 = 25;
@@ -2410,6 +2415,7 @@ fn consts() {
     "#,
         0,
     );
+
     check_number(
         r#"
     const A: i32 = -2147483648;
@@ -2417,6 +2423,7 @@ fn consts() {
     "#,
         0,
     );
+
     check_number(
         r#"
     const GOAL: i64 = (-2147483648_i32) as i64;
@@ -2773,6 +2780,7 @@ fn exec_limits() {
     if skip_slow_tests() {
         return;
     }
+
     check_fail(
         r#"
     const GOAL: usize = loop {};

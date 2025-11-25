@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12273 bytes
-Chloro size:   12265 bytes
+Chloro size:   12274 bytes
 Rustfmt size:  12328 bytes
 
 ✗ Outputs DIFFER
@@ -23,27 +23,6 @@ Rustfmt size:  12328 bytes
  /// Takes a multi-file input fixture with annotated cursor positions,
  /// and checks that:
  ///  * a diagnostic is produced
-     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
- ) {
-     let after = trim_indent(ra_fixture_after);
--
-     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
-     let diagnostic = hir::attach_db(&db, || {
-         super::full_diagnostics(
-         }
-         actual
-     };
--
-     assert!(
-         fix.target.contains_inclusive(file_position.offset),
-         "diagnostic fix range {:?} does not touch cursor position {:?}",
-     #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
- ) {
-     let after = trim_indent(ra_fixture_after);
--
-     let (db, file_position) = RootDatabase::with_position(ra_fixture_before);
-     let mut conf = DiagnosticsConfig::test_sample();
-     conf.expr_fill_default = ExprFillDefaultMode::Default;
      })
      .pop()
      .unwrap();
@@ -65,42 +44,15 @@ Rustfmt size:  12328 bytes
      check_diagnostics_with_config(config, ra_fixture)
  }
  
-     #[rust_analyzer::rust_fixture] ra_fixture: &str,
- ) {
-     let _tracing = setup_tracing();
--
-     let (db, files) = RootDatabase::with_many_files(ra_fixture);
-     let mut annotations = files
-         .iter()
- fn test_disabled_diagnostics() {
-     let mut config = DiagnosticsConfig::test_sample();
-     config.disabled.insert("E0583".into());
--
-     let (db, file_id) = RootDatabase::with_single_file(r#"mod foo;"#);
-     let file_id = file_id.file_id(&db);
--
-     let diagnostics = hir::attach_db(&db, || {
-         super::full_diagnostics(&db, &config, &AssistResolveStrategy::All, file_id)
-     });
-     assert!(diagnostics.is_empty());
--
-     let diagnostics = hir::attach_db(&db, || {
-         super::full_diagnostics(
-             &db,
-     if test_utils::skip_slow_tests() {
-         return;
-     }
--
-     fn check(minicore: MiniCore) {
-         let source = minicore.source_code(MiniCore::RAW_SOURCE);
-         let mut config = DiagnosticsConfig::test_sample();
          config.disabled.insert("remove-unnecessary-else".to_owned());
          check_diagnostics_with_config(config, &source);
      }
 -
      // Checks that there is no diagnostic in minicore for each flag.
++
      for flag in MiniCore::available_flags(MiniCore::RAW_SOURCE) {
          if flag == "clone" {
+             // Clone without copy has `moved-out-of-ref`, so ignoring.
      }
      // And one time for all flags, to check codes which are behind multiple flags + prevent name collisions
      eprintln!("Checking all minicore flags");

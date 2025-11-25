@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4757 bytes
-Chloro size:   4751 bytes
+Chloro size:   4756 bytes
 Rustfmt size:  4729 bytes
 
 ✗ Outputs DIFFER
@@ -15,33 +15,15 @@ Rustfmt size:  4729 bytes
  
  use crate::{
      context::{ItemListKind, PathCompletionCtx, PathExprCtx, Qualified},
-     if !ctx.qualifier_ctx.none() {
-         return;
-     }
--
-     let cap = match ctx.config.snippet_cap {
-         Some(it) => it,
-         None => return,
-     };
--
-     if !ctx.config.snippets.is_empty() {
-         add_custom_completions(acc, ctx, cap, SnippetScope::Expr);
-     }
--
-     if in_block_expr {
-         snippet(ctx, cap, "pd", "eprintln!(\"$0 = {:?}\", $0);").add_to(acc, ctx.db);
-         snippet(ctx, cap, "ppd", "eprintln!(\"$0 = {:#?}\", $0);").add_to(acc, ctx.db);
-         Some(it) => it,
-         None => return,
-     };
--
      if !ctx.config.snippets.is_empty() {
          add_custom_completions(acc, ctx, cap, SnippetScope::Item);
      }
 -
      // Test-related snippets shouldn't be shown in blocks.
++
      if let ItemListKind::SourceFile | ItemListKind::Module = kind {
          let mut item = snippet(
+             ctx,
  }
  
  fn snippet(ctx: &CompletionContext<'_>, cap: SnippetCap, label: &str, snippet: &str) -> Builder {

@@ -54,6 +54,7 @@ pub(crate) fn complete_expr_path(
     if !ctx.qualifier_ctx.none() {
         return;
     }
+
     let &PathExprCtx {
         in_block_expr,
         after_if_expr,
@@ -71,10 +72,12 @@ pub(crate) fn complete_expr_path(
         in_match_guard,
         ..
     } = expr_ctx;
+
     let (has_raw_token, has_const_token, has_mut_token) = ref_expr_parent
         .as_ref()
         .map(|it| (it.raw_token().is_some(), it.const_token().is_some(), it.mut_token().is_some()))
         .unwrap_or((false, false, false));
+
     let wants_raw_token = ref_expr_parent.is_some() && !has_raw_token && after_amp;
     let wants_const_token =
         ref_expr_parent.is_some() && has_raw_token && !has_const_token && !has_mut_token;
@@ -83,16 +86,19 @@ pub(crate) fn complete_expr_path(
     } else {
         false
     };
+
     let scope_def_applicable = |def| match def {
         ScopeDef::GenericParam(hir::GenericParam::LifetimeParam(_)) | ScopeDef::Label(_) => false,
         ScopeDef::ModuleDef(hir::ModuleDef::Macro(mac)) => mac.is_fn_like(ctx.db),
         _ => true,
     };
+
     let add_assoc_item = |acc: &mut Completions, item| match item {
         hir::AssocItem::Function(func) => acc.add_function(ctx, path_ctx, func, None),
         hir::AssocItem::Const(ct) => acc.add_const(ctx, ct),
         hir::AssocItem::TypeAlias(ty) => acc.add_type_alias(ctx, ty),
     };
+
     match qualified {
         // We exclude associated types/consts of excluded traits here together with methods,
         // even though we don't exclude them when completing in type position, because it's easier.
@@ -447,12 +453,15 @@ pub(crate) fn complete_expr_path(
 
 pub(crate) fn complete_expr(acc: &mut Completions, ctx: &CompletionContext<'_>) {
     let _p = tracing::info_span!("complete_expr").entered();
+
     if !ctx.config.enable_term_search {
         return;
     }
+
     if !ctx.qualifier_ctx.none() {
         return;
     }
+
     if let Some(ty) = &ctx.expected_type {
         // Ignore unit types as they are not very interesting
         if ty.is_unit() || ty.is_unknown() {

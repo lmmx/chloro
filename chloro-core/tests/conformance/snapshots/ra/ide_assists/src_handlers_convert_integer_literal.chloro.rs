@@ -14,8 +14,10 @@ pub(crate) fn convert_integer_literal(acc: &mut Assists, ctx: &AssistContext<'_>
     let radix = literal.radix();
     let value = literal.value().ok()?;
     let suffix = literal.suffix();
+
     let range = literal.syntax().text_range();
     let group_id = GroupLabel("Convert integer base".into());
+
     for &target_radix in Radix::ALL {
         if target_radix == radix {
             continue;
@@ -43,6 +45,7 @@ pub(crate) fn convert_integer_literal(acc: &mut Assists, ctx: &AssistContext<'_>
             |builder| builder.replace(range, converted),
         );
     }
+
     Some(())
 }
 
@@ -85,18 +88,21 @@ mod tests {
     #[test]
     fn convert_decimal_integer() {
         let before = "const _: i32 = 1000$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0b1111101000;",
             "Convert 1000 to 0b1111101000",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0o1750;",
             "Convert 1000 to 0o1750",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
@@ -107,18 +113,21 @@ mod tests {
     #[test]
     fn convert_hexadecimal_integer() {
         let before = "const _: i32 = 0xFF$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0b11111111;",
             "Convert 0xFF to 0b11111111",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0o377;",
             "Convert 0xFF to 0o377",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
@@ -129,18 +138,21 @@ mod tests {
     #[test]
     fn convert_binary_integer() {
         let before = "const _: i32 = 0b11111111$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0o377;",
             "Convert 0b11111111 to 0o377",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 255;",
             "Convert 0b11111111 to 255",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
@@ -151,18 +163,21 @@ mod tests {
     #[test]
     fn convert_octal_integer() {
         let before = "const _: i32 = 0o377$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0b11111111;",
             "Convert 0o377 to 0b11111111",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 255;",
             "Convert 0o377 to 255",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
@@ -173,18 +188,21 @@ mod tests {
     #[test]
     fn convert_integer_with_underscores() {
         let before = "const _: i32 = 1_00_0$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0b1111101000;",
             "Convert 1_00_0 to 0b1111101000",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0o1750;",
             "Convert 1_00_0 to 0o1750",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
@@ -195,18 +213,21 @@ mod tests {
     #[test]
     fn convert_integer_with_suffix() {
         let before = "const _: i32 = 1000i32$0;";
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0b1111101000i32;",
             "Convert 1000i32 to 0b1111101000i32",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,
             "const _: i32 = 0o1750i32;",
             "Convert 1000i32 to 0o1750i32",
         );
+
         check_assist_by_label(
             convert_integer_literal,
             before,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8378 bytes
+Chloro size:   8383 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -38,11 +38,6 @@ Rustfmt size:  8697 bytes
      covering_element: SyntaxElement,
  }
  
-         frange: FileRange,
-     ) -> AssistContext<'a> {
-         let source_file = sema.parse(frange.file_id);
--
-         let start = frange.range.start();
          let end = frange.range.end();
          let left = source_file.syntax().token_at_offset(start);
          let right = source_file.syntax().token_at_offset(end);
@@ -58,17 +53,7 @@ Rustfmt size:  8697 bytes
 +            right.left_biased().and_then(|t| algo::skip_whitespace_token(t, Direction::Prev));
          let left = left.map(|t| t.text_range().start().clamp(start, end));
          let right = right.map(|t| t.text_range().end().clamp(start, end));
--
-         let trimmed_range = match (left, right) {
-             (Some(left), Some(right)) if left <= right => TextRange::new(left, right),
-             // Selection solely consists of whitespace so just fall back to the original
-         };
-         let token_at_offset = source_file.syntax().token_at_offset(frange.range.start());
-         let covering_element = source_file.syntax().covering_element(trimmed_range);
--
-         AssistContext {
-             config,
-             sema,
+ 
          self.sema.db
      }
  
@@ -129,17 +114,7 @@ Rustfmt size:  8697 bytes
      }
  
      fn add_impl(
-         if !self.is_allowed(&id) {
-             return None;
-         }
--
-         let mut command = None;
-         let source_change = if self.resolve.should_resolve(&id) {
-             let mut builder = SourceChangeBuilder::new(self.file);
-         } else {
-             None
-         };
--
+ 
          let label = Label::new(label);
          let group = group.cloned();
 -        self.buf.push(Assist {

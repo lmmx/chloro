@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9162 bytes
+Chloro size:   9166 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -64,18 +64,6 @@ Rustfmt size:  10026 bytes
                  );
                  Ok(a)
              }
-         if a == b {
-             return Ok(a);
-         }
--
-         let infcx = self.infcx;
--
-         let a = infcx.shallow_resolve(a);
-         let b = infcx.shallow_resolve(b);
--
-         match (a.kind(), b.kind()) {
-             // If one side is known to be a variable and one is not,
-             // create a variable (`v`) to represent the LUB. Make sure to
              }
  
              (
@@ -96,13 +84,6 @@ Rustfmt size:  10026 bytes
              ) if a_def_id == b_def_id => super_combine_tys(infcx, self, a, b),
  
              _ => super_combine_tys(infcx, self, a, b),
-         if a == b {
-             return Ok(a);
-         }
--
-         if a.skip_binder().has_escaping_bound_vars() || b.skip_binder().has_escaping_bound_vars() {
-             // When higher-ranked types are involved, computing the GLB/LUB is
-             // very challenging, switch to invariance. This is obviously
              self.relate_with_variance(Variance::Invariant, VarianceDiagInfo::default(), a, b)?;
              Ok(a)
          } else {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7655 bytes
-Chloro size:   7641 bytes
+Chloro size:   7649 bytes
 Rustfmt size:  7898 bytes
 
 ✗ Outputs DIFFER
@@ -56,7 +56,7 @@ Rustfmt size:  7898 bytes
      } else {
          ctx.source_range()
      };
--
+ 
 -    let (name, escaped_name) = (
 -        name.as_str(),
 -        name.display(ctx.db(), completion.edition).to_smolstr(),
@@ -71,13 +71,10 @@ Rustfmt size:  7898 bytes
 -    } else {
 -        ("", "")
 -    };
--
 +    let (bra, ket) = if is_fn_like { guess_macro_braces(name, docs_str) } else { ("", "") };
+ 
      let needs_bang = is_fn_like && !is_use_path && !has_macro_bang;
--
-     let mut item = CompletionItem::new(
-         SymbolKind::from(macro_.kind(completion.db)),
-         source_range,
+ 
          completion.edition,
      );
      item.set_deprecated(ctx.is_deprecated(macro_))
@@ -89,10 +86,7 @@ Rustfmt size:  7898 bytes
 +        .detail(macro_.display(completion.db, completion.display_target).to_string())
          .set_documentation(docs)
          .set_relevance(ctx.completion_relevance());
--
-     match ctx.snippet_cap() {
-         Some(cap) if needs_bang && !has_call_parens => {
-             let snippet = format!("{escaped_name}!{bra}$0{ket}");
+ 
              item.insert_snippet(cap, snippet).lookup_by(lookup);
          }
          _ if needs_bang => {
@@ -102,20 +96,16 @@ Rustfmt size:  7898 bytes
          }
          _ => {
              cov_mark::hit!(dont_insert_macro_call_parens_unnecessary);
-     if let Some(import_to_add) = ctx.import_to_add {
-         item.add_import(import_to_add);
-     }
--
-     item
- }
- 
              }
          }
      }
 -
      // Insert a space before `{}`.
      // We prefer the last one when some votes equal.
++
      let (_vote, (bra, ket)) = votes
+         .iter()
+         .zip(&[(" {", "}"), ("[", "]"), ("(", ")")])
  #[cfg(test)]
  mod tests {
      use crate::tests::check_edit;
@@ -123,13 +113,6 @@ Rustfmt size:  7898 bytes
      #[test]
      fn dont_insert_macro_call_parens_unnecessary() {
          cov_mark::check!(dont_insert_macro_call_parens_unnecessary);
- use foo::frobnicate;
- "#,
-         );
--
-         check_edit(
-             "frobnicate",
-             r#"
  "#,
          );
      }
@@ -144,13 +127,6 @@ Rustfmt size:  7898 bytes
      #[test]
      fn guesses_macro_braces() {
          check_edit(
- fn main() { vec![$0] }
- "#,
-         );
--
-         check_edit(
-             "foo!",
-             r#"
  "#,
          )
      }

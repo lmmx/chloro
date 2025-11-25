@@ -16,6 +16,7 @@ pub(crate) fn complete_type_path(
     location: &TypeLocation,
 ) {
     let _p = tracing::info_span!("complete_type_path").entered();
+
     let scope_def_applicable = |def| {
         use hir::{GenericParam::*, ModuleDef::*};
         match def {
@@ -42,6 +43,7 @@ pub(crate) fn complete_type_path(
             | ScopeDef::GenericParam(TypeParam(_)) => location.complete_types(),
         }
     };
+
     let add_assoc_item = |acc: &mut Completions, item| match item {
         hir::AssocItem::Const(ct) if matches!(location, TypeLocation::GenericArg { .. }) => {
             acc.add_const(ctx, ct)
@@ -49,6 +51,7 @@ pub(crate) fn complete_type_path(
         hir::AssocItem::Function(_) | hir::AssocItem::Const(_) => (),
         hir::AssocItem::TypeAlias(ty) => acc.add_type_alias(ctx, ty),
     };
+
     match qualified {
         Qualified::TypeAnchor { ty: None, trait_: None } => ctx
             .traits_in_scope()

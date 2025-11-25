@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19839 bytes
-Chloro size:   19789 bytes
+Chloro size:   19800 bytes
 Rustfmt size:  20426 bytes
 
 ✗ Outputs DIFFER
@@ -48,55 +48,6 @@ Rustfmt size:  20426 bytes
              Ok(Certainty::AMBIGUOUS)
          } else {
              Err(NoSolution)
-         for goal in self.instantiate_nested_goals() {
-             try_visit!(goal.visit_with(visitor));
-         }
--
-         V::Result::output()
-     }
- 
-         let infcx = self.goal.infcx;
-         let param_env = self.goal.goal.param_env;
-         let mut orig_values = self.goal.orig_values.to_vec();
--
-         let mut instantiated_goals = vec![];
-         for step in &self.steps {
-             match **step {
-                 | inspect::ProbeStep::NestedProbe(_) => unreachable!(),
-             }
-         }
--
-         let () = instantiate_canonical_state(
-             infcx,
-             Span::dummy(),
-             &mut orig_values,
-             self.final_state,
-         );
--
-         if let Some(term_hack) = &self.goal.normalizes_to_term_hack {
-             // FIXME: We ignore the expected term of `NormalizesTo` goals
-             // when computing the result of its candidates. This is
-             // scuffed.
-             let _ = term_hack.constrain_and(infcx, param_env, |_| {});
-         }
--
-         instantiated_goals
-             .into_iter()
-             .map(|(source, goal)| self.instantiate_proof_tree_for_nested_goal(source, goal))
-         let infcx = self.goal.infcx;
-         let param_env = self.goal.goal.param_env;
-         let mut orig_values = self.goal.orig_values.to_vec();
--
-         for step in &self.steps {
-             match **step {
-                 inspect::ProbeStep::RecordImplArgs { impl_args } => {
-                 | inspect::ProbeStep::NestedProbe(_) => unreachable!(),
-             }
-         }
--
-         panic!("expected impl args probe step for `instantiate_impl_args`");
-     }
- 
          match goal.predicate.kind().no_bound_vars() {
              Some(PredicateKind::NormalizesTo(NormalizesTo { alias, term })) => {
                  let unconstrained_term = infcx.next_term_var_of_kind(term);
@@ -163,17 +114,9 @@ Rustfmt size:  20426 bytes
                      ));
                  }
                  inspect::ProbeStep::NestedProbe(ref probe) => {
-                 }
-             }
-         }
--
-         match probe.kind {
-             inspect::ProbeKind::ProjectionCompatibility
-             | inspect::ProbeKind::ShadowedEnvProbing => {
-         source: GoalSource,
      ) -> Self {
          let infcx = <&SolverContext<'db>>::from(infcx);
--
+ 
 -        let inspect::GoalEvaluation {
 -            uncanonicalized_goal,
 -            orig_values,
@@ -185,20 +128,6 @@ Rustfmt size:  20426 bytes
          // If there's a normalizes-to goal, AND the evaluation result with the result of
          // constraining the normalizes-to RHS and computing the nested goals.
          let result = result.and_then(|ok| {
-                 term_hack_and_nested_certainty.map_or(Ok(Certainty::Yes), |(_, c)| c)?;
-             Ok(ok.value.certainty.and(nested_goals_certainty))
-         });
--
-         InspectGoal {
-             infcx,
-             depth,
-         if self.depth < visitor.config().max_depth {
-             try_visit!(visitor.visit_goal(self));
-         }
--
-         V::Result::output()
-     }
- }
  
  /// The public API to interact with proof trees.
  pub(crate) trait ProofTreeVisitor<'db> {

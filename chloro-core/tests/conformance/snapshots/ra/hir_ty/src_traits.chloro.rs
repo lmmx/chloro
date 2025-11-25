@@ -132,10 +132,15 @@ pub fn next_trait_solve_in_ctxt<'db, 'a>(
     goal: Goal<'db, Predicate<'db>>,
 ) -> Result<(HasChanged, Certainty), rustc_type_ir::solve::NoSolution> {
     tracing::info!(?goal);
+
     let context = <&SolverContext<'db>>::from(infer_ctxt);
+
     let res = context.evaluate_root_goal(goal, Span::dummy(), None);
+
     let res = res.map(|r| (r.has_changed, r.certainty));
+
     tracing::debug!("solve_nextsolver({:?}) => {:?}", goal, res);
+
     res
 }
 
@@ -244,9 +249,11 @@ fn implements_trait_unique_impl<'db>(
     let interner = DbInterner::new_with(db, Some(env.krate), env.block);
     // FIXME(next-solver): I believe this should be `PostAnalysis`.
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+
     let args = create_args(&infcx);
     let trait_ref = rustc_type_ir::TraitRef::new_from_args(interner, trait_.into(), args);
     let goal = Goal::new(interner, env.env, trait_ref);
+
     let result = crate::traits::next_trait_solve_in_ctxt(&infcx, goal);
     matches!(result, Ok((_, Certainty::Yes)))
 }

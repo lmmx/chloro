@@ -31,6 +31,7 @@ pub(crate) fn typed_hole(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -
             fixes(ctx, d),
         )
     };
+
     Diagnostic::new(DiagnosticCode::RustcHardError("typed-hole"), message, display_range)
         .stable()
         .with_fixes(fixes)
@@ -42,6 +43,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Ass
     let (original_range, _) =
         d.expr.as_ref().map(|it| it.to_node(&root)).syntax().original_file_range_opt(db)?;
     let scope = ctx.sema.scope(d.expr.value.to_node(&root).syntax())?;
+
     let term_search_ctx = TermSearchCtx {
         sema: &ctx.sema,
         scope: &scope,
@@ -54,7 +56,9 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Ass
         },
     };
     let paths = term_search(&term_search_ctx);
+
     let mut formatter = |_: &hir::Type<'_>| String::from("_");
+
     let assists: Vec<Assist> = d
         .expected
         .is_unknown()
@@ -88,6 +92,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypedHole<'_>) -> Option<Vec<Ass
             command: None,
         })
         .collect();
+
     if !assists.is_empty() { Some(assists) } else { None }
 }
 

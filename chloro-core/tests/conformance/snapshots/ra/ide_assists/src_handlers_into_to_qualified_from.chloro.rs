@@ -40,6 +40,7 @@ pub(crate) fn into_to_qualified_from(acc: &mut Assists, ctx: &AssistContext<'_>)
             },
         );
     }
+
     Some(())
 }
 

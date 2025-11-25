@@ -14,10 +14,12 @@ pub(crate) fn move_guard_to_arm_body(acc: &mut Assists, ctx: &AssistContext<'_>)
     }
     let space_before_guard = guard.syntax().prev_sibling_or_token();
     let space_after_arrow = match_arm.fat_arrow_token()?.next_sibling_or_token();
+
     let guard_condition = guard.condition()?.reset_indent();
     let arm_expr = match_arm.expr()?;
     let then_branch = make::block_expr(None, Some(arm_expr.reset_indent().indent(1.into())));
     let if_expr = make::expr_if(guard_condition, then_branch, None).indent(arm_expr.indent_level());
+
     let target = guard.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("move_guard_to_arm_body"),
@@ -50,6 +52,7 @@ pub(crate) fn move_arm_cond_to_match_guard(
     let match_arm: MatchArm = ctx.find_node_at_offset::<MatchArm>()?;
     let match_pat = match_arm.pat()?;
     let arm_body = match_arm.expr()?;
+
     let mut replace_node = None;
     let if_expr: IfExpr = IfExpr::cast(arm_body.syntax().clone()).or_else(|| {
         let block_expr = BlockExpr::cast(arm_body.syntax().clone())?;
@@ -63,9 +66,11 @@ pub(crate) fn move_arm_cond_to_match_guard(
     if ctx.offset() > if_expr.then_branch()?.syntax().text_range().start() {
         return None;
     }
+
     let replace_node = replace_node.unwrap_or_else(|| if_expr.syntax().clone());
     let needs_dedent = replace_node != *if_expr.syntax();
     let (conds_blocks, tail) = parse_if_chain(if_expr)?;
+
     acc.add(
         AssistId::refactor_rewrite("move_arm_cond_to_match_guard"),
         "Move condition to match guard",

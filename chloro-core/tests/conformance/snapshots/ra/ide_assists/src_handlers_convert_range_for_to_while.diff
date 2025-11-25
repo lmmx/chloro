@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6359 bytes
-Chloro size:   6060 bytes
+Chloro size:   6061 bytes
 Rustfmt size:  6555 bytes
 
 ✗ Outputs DIFFER
@@ -56,12 +56,6 @@ Rustfmt size:  6555 bytes
      let iterable = for_.iterable()?;
      let (start, end, step, inclusive) = extract_range(&iterable)?;
      let name = pat.name()?;
-     let body = for_.loop_body()?;
-     let last = previous_non_trivia_token(body.stmt_list()?.r_curly_token()?)?;
--
-     let description = if end.is_some() {
-         "Replace with while expression"
-     } else {
                  elements.extend([
                      make.token(T![while]).syntax_element(),
                      make.whitespace(" ").syntax_element(),

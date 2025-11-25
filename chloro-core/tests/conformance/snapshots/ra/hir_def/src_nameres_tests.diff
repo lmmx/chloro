@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15742 bytes
-Chloro size:   15741 bytes
+Chloro size:   15742 bytes
 Rustfmt size:  15742 bytes
 
 ✗ Outputs DIFFER
@@ -16,10 +16,3 @@ Rustfmt size:  15742 bytes
  use test_fixture::WithFixture;
  
  use crate::{
- fn edition_specific_preludes() {
-     // We can't test the 2015 prelude here since you can't reexport its contents with 2015's
-     // absolute paths.
--
-     check(
-         r#"
-         //- /main.rs edition:2018 crate:main deps:std

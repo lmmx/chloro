@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13077 bytes
+Chloro size:   13082 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -86,7 +86,7 @@ Rustfmt size:  13526 bytes
 -                .resize_with(flycheck_id + 1, WorkspaceFlycheckDiagnostic::default);
 +            self.check.resize_with(flycheck_id + 1, WorkspaceFlycheckDiagnostic::default);
          }
--
+ 
          let check = &mut self.check[flycheck_id];
 -        let package = check
 -            .per_package
@@ -101,20 +101,6 @@ Rustfmt size:  13526 bytes
          // Getting message from old generation. Might happen in restarting checks.
          if package.generation > generation {
              return;
-                 return;
-             }
-         }
--
-         if let Some(fix) = fix {
-             let check_fixes = Arc::make_mut(&mut self.check_fixes);
-             if check_fixes.len() <= flycheck_id {
-                 (generation, diagnostics, &mut self.native_semantic)
-             }
-         };
--
-         for (file_id, mut diagnostics) in diagnostics {
-             diagnostics.sort_by_key(|it| (it.range.start, it.range.end));
- 
          &self,
          file_id: FileId,
      ) -> impl Iterator<Item = &lsp_types::Diagnostic> {
@@ -139,14 +125,19 @@ Rustfmt size:  13526 bytes
 -
      // the diagnostics produced may point to different files not requested by the concrete request,
      // put those into here and filter later
++
      let mut odd_ones = Vec::new();
+     let mut diagnostics = subscriptions[slice]
+         .iter()
              Some((file_id, diagnostics))
          })
          .collect::<Vec<_>>();
 -
      // Add back any diagnostics that point to files we are subscribed to
++
      for (file_id, group) in odd_ones
          .into_iter()
+         .sorted_by_key(|it| it.range.file_id)
      lsp_types::Diagnostic {
          range: lsp::to_proto::range(line_index, d.range.range),
          severity: Some(lsp::to_proto::diagnostic_severity(d.severity)),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25127 bytes
-Chloro size:   24255 bytes
+Chloro size:   24259 bytes
 Rustfmt size:  25127 bytes
 
 ✗ Outputs DIFFER
@@ -17,19 +17,6 @@ Rustfmt size:  25127 bytes
  pub(crate) fn missing_unsafe(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Diagnostic {
      let code = match d.lint {
          UnsafeLint::HardError => DiagnosticCode::RustcHardError("E0133"),
-     if d.node.file_id.is_macro() {
-         return None;
-     }
--
-     let root = ctx.sema.db.parse_or_expand(d.node.file_id);
-     let node = d.node.value.to_node(&root);
-     let expr = node.syntax().ancestors().find_map(ast::Expr::cast)?;
--
-     let node_to_add_unsafe_block = pick_best_node_to_add_unsafe_block(&expr)?;
--
-     let mut replacement = format!("unsafe {{ {} }}", node_to_add_unsafe_block.text());
-     if let Some(expr) = ast::Expr::cast(node_to_add_unsafe_block.clone())
-         && needs_parentheses(&expr)
      Some(vec![fix("add_unsafe", "Add unsafe block", source_change, expr.syntax().text_range())])
  }
  
@@ -222,13 +209,6 @@ Rustfmt size:  25127 bytes
      #[test]
      fn orphan_unsafe_format_args() {
          // Checks that we don't place orphan arguments for formatting under an unsafe block.
- }
-         "#,
-         );
--
-         check_diagnostics(
-             r#"
- //- minicore: fmt
          "#,
          );
      }

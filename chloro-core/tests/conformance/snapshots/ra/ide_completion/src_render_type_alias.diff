@@ -2,36 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1934 bytes
-Chloro size:   1930 bytes
+Chloro size:   1934 bytes
 Rustfmt size:  1934 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
-     with_eq: bool,
- ) -> Option<CompletionItem> {
-     let db = ctx.db();
--
-     let name = type_alias.name(db);
-     let (name, escaped_name) = if with_eq {
-         (
-         (name.as_str().to_smolstr(), name.display_no_db(ctx.completion.edition).to_smolstr())
-     };
-     let detail = type_alias.display(db, ctx.completion.display_target).to_string();
--
-     let mut item = CompletionItem::new(
-         SymbolKind::TypeAlias,
-         ctx.source_range(),
-         .set_deprecated(ctx.is_deprecated(type_alias) || ctx.is_deprecated_assoc_item(type_alias))
-         .detail(detail)
-         .set_relevance(ctx.completion_relevance());
--
-     if let Some(actm) = type_alias.as_assoc_item(db)
-         && let Some(trt) = actm.container_or_implemented_trait(db)
-     {
-         item.trait_name(trt.name(db).display_no_db(ctx.completion.edition).to_smolstr());
-     }
-     item.insert_text(escaped_name);
--
-     Some(item.build(ctx.db()))
- }
+✓ Outputs are IDENTICAL

@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4260 bytes
-Chloro size:   4259 bytes
+Chloro size:   4260 bytes
 Rustfmt size:  4260 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- } //^^^ Foo
- "#,
-     );
--
-     check_types_source_code(
-         r#"
- struct Foo<K, T = u8> { k: K, t: T }
+✓ Outputs are IDENTICAL

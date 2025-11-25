@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 34792 bytes
-Chloro size:   34309 bytes
+Chloro size:   34315 bytes
 Rustfmt size:  34938 bytes
 
 ✗ Outputs DIFFER
@@ -27,27 +27,6 @@ Rustfmt size:  34938 bytes
  pub(crate) fn file_structure(
      file: &SourceFile,
      config: &FileStructureConfig,
- ) -> Vec<StructureNode> {
-     let mut res = Vec::new();
-     let mut stack = Vec::new();
--
-     for event in file.syntax().preorder_with_tokens() {
-         match event {
-             WalkEvent::Enter(NodeOrToken::Node(node)) => {
-     fn decl<N: HasName + HasAttrs>(node: N, kind: StructureNodeKind) -> Option<StructureNode> {
-         decl_with_detail(&node, None, kind)
-     }
--
-     fn decl_with_type_ref<N: HasName + HasAttrs>(
-         node: &N,
-         type_ref: Option<ast::Type>,
-         });
-         decl_with_detail(node, detail, kind)
-     }
--
-     fn decl_with_detail<N: HasName + HasAttrs>(
-         node: &N,
-         detail: Option<String>,
              node_range: node.syntax().text_range(),
              kind,
              detail,
@@ -58,17 +37,7 @@ Rustfmt size:  34938 bytes
 +            deprecated: node.attrs().filter_map(|x| x.simple_name()).any(|x| x == "deprecated"),
          })
      }
--
-     fn collapse_ws(node: &SyntaxNode, output: &mut String) {
-         let mut can_insert_ws = false;
-         node.text().for_each_chunk(|chunk| {
-             }
-         })
-     }
--
-     match_ast! {
-         match node {
-             ast::Fn(it) => {
+ 
      if let Some(comment) = ast::Comment::cast(token) {
          let text = comment.text().trim();
  
@@ -81,12 +50,6 @@ Rustfmt size:  34938 bytes
          {
              return Some(StructureNode {
                  parent: None,
-             });
-         }
-     }
--
-     None
- }
  
  #[cfg(test)]
  mod tests {

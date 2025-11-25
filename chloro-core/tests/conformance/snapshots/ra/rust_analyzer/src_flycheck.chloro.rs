@@ -389,6 +389,7 @@ impl FlycheckActor {
             return inbox.recv().ok().map(Event::RequestStateChange);
         };
         // Biased to give restarts a preference so check outputs don't block a restart or stop
+
         select_biased! {
             recv(inbox) -> msg => msg.ok().map(Event::RequestStateChange),
             recv(command_receiver) -> msg => Some(Event::CheckEvent(msg.ok())),
@@ -780,6 +781,7 @@ impl CargoParser<CargoCheckMessage> for CargoCheckParser {
                 }
             };
         }
+
         error.push_str(line);
         error.push('\n');
         None

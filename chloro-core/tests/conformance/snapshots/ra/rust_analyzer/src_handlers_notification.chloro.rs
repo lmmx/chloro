@@ -51,6 +51,7 @@ pub(crate) fn handle_work_done_progress_cancel(
     // Just ignore this. It is OK to continue sending progress
     // notifications for this token, as the client can't know when
     // we accepted notification.
+
     Ok(())
 }
 
@@ -59,6 +60,7 @@ pub(crate) fn handle_did_open_text_document(
     params: DidOpenTextDocumentParams,
 ) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_open_text_document").entered();
+
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         let already_exists = state
             .mem_docs
@@ -100,6 +102,7 @@ pub(crate) fn handle_did_change_text_document(
     params: DidChangeTextDocumentParams,
 ) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_change_text_document").entered();
+
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         let Some(DocumentData { version, data }) = state.mem_docs.get_mut(&path) else {
             tracing::error!(?path, "unexpected DidChangeTextDocument");
@@ -128,6 +131,7 @@ pub(crate) fn handle_did_close_text_document(
     params: DidCloseTextDocumentParams,
 ) -> anyhow::Result<()> {
     let _p = tracing::info_span!("handle_did_close_text_document").entered();
+
     if let Ok(path) = from_proto::vfs_path(&params.text_document.uri) {
         if state.mem_docs.remove(&path).is_err() {
             tracing::error!("orphan DidCloseTextDocument: {}", path);
@@ -201,6 +205,7 @@ pub(crate) fn handle_did_save_text_document(
             flycheck.restart_workspace(None);
         }
     }
+
     Ok(())
 }
 
@@ -244,6 +249,7 @@ pub(crate) fn handle_did_change_configuration(
             }
         },
     );
+
     Ok(())
 }
 
@@ -252,12 +258,14 @@ pub(crate) fn handle_did_change_workspace_folders(
     params: DidChangeWorkspaceFoldersParams,
 ) -> anyhow::Result<()> {
     let config = Arc::make_mut(&mut state.config);
+
     for workspace in params.event.removed {
         let Ok(path) = workspace.uri.to_file_path() else { continue };
         let Ok(path) = Utf8PathBuf::from_path_buf(path) else { continue };
         let Ok(path) = AbsPathBuf::try_from(path) else { continue };
         config.remove_workspace(&path);
     }
+
     let added = params
         .event
         .added
@@ -266,12 +274,14 @@ pub(crate) fn handle_did_change_workspace_folders(
         .filter_map(|it| Utf8PathBuf::from_path_buf(it).ok())
         .filter_map(|it| AbsPathBuf::try_from(it).ok());
     config.add_workspaces(added);
+
     if !config.has_linked_projects() && config.detached_files().is_empty() {
         config.rediscover_workspaces();
 
         let req = FetchWorkspaceRequest { path: None, force_crate_graph_reload: false };
         state.fetch_workspaces_queue.request_op("client workspaces changed".to_owned(), req);
     }
+
     Ok(())
 }
 
@@ -289,6 +299,7 @@ pub(crate) fn handle_did_change_watched_files(
 
 fn run_flycheck(state: &mut GlobalState, vfs_path: VfsPath) -> bool {
     let _p = tracing::info_span!("run_flycheck").entered();
+
     let file_id = state.vfs.read().0.file_id(&vfs_path);
     if let Some((file_id, vfs::FileExcluded::No)) = file_id {
         let world = state.snapshot();

@@ -31,7 +31,9 @@ impl<'db> InferCtxt<'db> {
         if let Some(inner) = binder.clone().no_bound_vars() {
             return inner;
         }
+
         let next_universe = self.create_next_universe();
+
         let delegate = FnMutDelegate {
             regions: &mut |br: BoundRegion| {
                 Region::new_placeholder(
@@ -52,6 +54,7 @@ impl<'db> InferCtxt<'db> {
                 )
             },
         };
+
         debug!(?next_universe);
         self.interner.replace_bound_vars_uncached(binder, delegate)
     }

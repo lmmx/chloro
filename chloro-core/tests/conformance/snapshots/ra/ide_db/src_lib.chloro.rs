@@ -340,6 +340,7 @@ impl<'a> Ranker<'a> {
     /// represents how close the token is to the given kind and text.
     pub fn rank_token(&self, tok: &syntax::SyntaxToken) -> usize {
         let tok_kind = tok.kind();
+
         let exact_same_kind = tok_kind == self.kind;
         let both_idents = exact_same_kind || (tok_kind.is_any_identifier() && self.ident_kind);
         let same_text = tok.text() == self.text;

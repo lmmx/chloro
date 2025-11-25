@@ -30,8 +30,10 @@ impl TestDir {
         // on *every* OS, as on windows `canonicalize` itself creates problems.
         #[cfg(target_os = "macos")]
         let temp_dir = temp_dir.canonicalize().unwrap();
+
         let base = temp_dir.join("testdir");
         let pid = std::process::id();
+
         static CNT: AtomicUsize = AtomicUsize::new(0);
         for _ in 0..100 {
             let cnt = CNT.fetch_add(1, Ordering::Relaxed);
@@ -82,8 +84,10 @@ impl Drop for TestDir {
         if self.keep {
             return;
         }
+
         let filetype = fs::symlink_metadata(&self.path).unwrap().file_type();
         let actual_path = filetype.is_symlink().then(|| fs::read_link(&self.path).unwrap());
+
         if let Some(actual_path) = actual_path {
             remove_dir_all(Utf8Path::from_path(&actual_path).unwrap()).unwrap_or_else(|err| {
                 panic!(
@@ -92,6 +96,7 @@ impl Drop for TestDir {
                 )
             })
         }
+
         remove_dir_all(&self.path).unwrap_or_else(|err| {
             panic!("failed to remove temporary directory {}: {err}", self.path)
         });

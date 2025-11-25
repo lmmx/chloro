@@ -63,6 +63,7 @@ pub(crate) fn goto_definition(
             Some(RangeInfo::new(link_range, nav.collect()))
         });
     }
+
     if let Some((range, _, _, resolution)) =
         sema.check_for_format_args_template(original_token.clone(), offset)
     {
@@ -74,9 +75,11 @@ pub(crate) fn goto_definition(
             },
         ));
     }
+
     if let Some(navs) = handle_control_flow_keywords(sema, &original_token) {
         return Some(RangeInfo::new(original_token.text_range(), navs));
     }
+
     let tokens = sema.descend_into_macros_no_opaque(original_token.clone(), false);
     let mut navs = Vec::new();
     for token in tokens {
@@ -135,6 +138,7 @@ pub(crate) fn goto_definition(
         }));
     }
     let navs = navs.into_iter().unique().collect();
+
     Some(RangeInfo::new(original_token.text_range(), navs))
 }
 
@@ -146,8 +150,10 @@ fn find_definition_for_known_blanket_dual_impls(
     let callable = sema.resolve_method_call_as_callable(&method_call)?;
     let CallableKind::Function(f) = callable.kind() else { return None };
     let assoc = f.as_assoc_item(sema.db)?;
+
     let return_type = callable.return_type();
     let fd = FamousDefs(sema, return_type.krate(sema.db));
+
     let t = match assoc.container(sema.db) {
         hir::AssocItemContainer::Trait(t) => t,
         hir::AssocItemContainer::Impl(impl_)
@@ -166,6 +172,7 @@ fn find_definition_for_known_blanket_dual_impls(
         }
         hir::AssocItemContainer::Impl(_) => return None,
     };
+
     let fn_name = f.name(sema.db);
     let f = if fn_name == sym::into && fd.core_convert_Into() == Some(t) {
         let dual = fd.core_convert_From()?;
@@ -213,12 +220,14 @@ fn try_lookup_include_path(
     let file = token.file_id.macro_file()?;
     // Check that we are in the eager argument expansion of an include macro
     // that is we are the string input of it
+
     if !iter::successors(Some(file), |file| file.parent(sema.db).macro_file())
         .any(|file| file.is_include_like_macro(sema.db) && file.eager_arg(sema.db).is_none())
     {
         return None;
     }
     let path = token.value.value().ok()?;
+
     let file_id = sema.db.resolve_path(AnchoredPath { anchor: file_id, path: &path })?;
     let size = sema.db.file_text(file_id).text(sema.db).len().try_into().ok()?;
     Some(NavigationTarget {
@@ -241,6 +250,7 @@ fn try_lookup_macro_def_in_macro_use(
     let extern_crate = token.parent()?.ancestors().find_map(ast::ExternCrate::cast)?;
     let extern_crate = sema.to_def(&extern_crate)?;
     let krate = extern_crate.resolved_crate(sema.db)?;
+
     for mod_def in krate.root_module().declarations(sema.db) {
         if let ModuleDef::Macro(mac) = mod_def
             && mac.name(sema.db).as_str() == token.text()
@@ -249,6 +259,7 @@ fn try_lookup_macro_def_in_macro_use(
             return Some(nav.call_site);
         }
     }
+
     None
 }
 
@@ -325,6 +336,7 @@ pub(crate) fn find_fn_or_blocks(
         }
         None
     };
+
     sema.descend_into_macros(token.clone()).into_iter().filter_map(find_ancestors).collect_vec()
 }
 
@@ -334,6 +346,7 @@ fn nav_for_exit_points(
 ) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
     let token_kind = token.kind();
+
     let navs = find_fn_or_blocks(sema, token)
         .into_iter()
         .filter_map(|node| {
@@ -397,6 +410,7 @@ fn nav_for_exit_points(
         })
         .flatten()
         .collect_vec();
+
     Some(navs)
 }
 
@@ -410,6 +424,7 @@ pub(crate) fn find_branch_root(
             .filter_map(|token| node_filter(token.parent()?))
             .collect_vec()
     };
+
     match token.kind() {
         T![match] => find_nodes(|node| Some(ast::MatchExpr::cast(node)?.syntax().clone())),
         T![=>] => find_nodes(|node| Some(ast::MatchArm::cast(node)?.syntax().clone())),
@@ -437,6 +452,7 @@ fn nav_for_branch_exit_points(
     token: &SyntaxToken,
 ) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
+
     let navs = match token.kind() {
         T![match] => find_branch_root(sema, token)
             .into_iter()
@@ -479,6 +495,7 @@ fn nav_for_branch_exit_points(
 
         _ => return Some(Vec::new()),
     };
+
     Some(navs)
 }
 
@@ -500,6 +517,7 @@ pub(crate) fn find_loops(
             (None, _) => true,
             (Some(_), None) => false,
         };
+
     let find_ancestors = |token: SyntaxToken| {
         for anc in sema.token_ancestors_with_macros(token).filter_map(ast::Expr::cast) {
             let node = match &anc {
@@ -518,6 +536,7 @@ pub(crate) fn find_loops(
         }
         None
     };
+
     sema.descend_into_macros(token.clone())
         .into_iter()
         .filter_map(find_ancestors)
@@ -530,6 +549,7 @@ fn nav_for_break_points(
     token: &SyntaxToken,
 ) -> Option<Vec<NavigationTarget>> {
     let db = sema.db;
+
     let navs = find_loops(sema, token)?
         .into_iter()
         .filter_map(|expr| {
@@ -548,6 +568,7 @@ fn nav_for_break_points(
         })
         .flatten()
         .collect_vec();
+
     Some(navs)
 }
 
@@ -561,6 +582,7 @@ fn expr_to_nav(
     focus_range: Option<TextRange>,
 ) -> UpmappingResult<NavigationTarget> {
     let kind = SymbolKind::Label;
+
     let value_range = value.syntax().text_range();
     let navs = navigation_target::orig_range_with_focus_r(db, file_id, value_range, focus_range);
     navs.map(|(hir::FileRangeWrapper { file_id, range }, focus_range)| {
@@ -588,6 +610,7 @@ mod tests {
             .unwrap()
             .expect("no definition found")
             .info;
+
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()
@@ -599,6 +622,7 @@ mod tests {
             .map(|(FileRange { file_id, range }, _)| FileRange { file_id, range })
             .sorted_by_key(cmp)
             .collect::<Vec<_>>();
+
         assert_eq!(expected, navs);
     }
     fn check_unresolved(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
@@ -608,6 +632,7 @@ mod tests {
             .unwrap()
             .expect("no definition found")
             .info;
+
         assert!(navs.is_empty(), "didn't expect this to resolve anywhere: {navs:?}")
     }
     fn check_name(expected_name: &str, #[rust_analyzer::rust_fixture] ra_fixture: &str) {
@@ -836,6 +861,7 @@ fn foo() {
 }
 "#,
         );
+
         check(
             r#"
 //- minicore:include
@@ -967,6 +993,7 @@ mod $0foo;
 //^file
 "#,
         );
+
         check(
             r#"
 //- /lib.rs
@@ -1291,6 +1318,7 @@ impl Foo {
 }
 "#,
         );
+
         check(
             r#"
 enum Foo { A }
@@ -1302,6 +1330,7 @@ impl Foo {
 }
 "#,
         );
+
         check(
             r#"
 enum Foo { A }
@@ -1329,6 +1358,7 @@ impl Make for Foo {
 }
 "#,
         );
+
         check(
             r#"
 struct Foo;
@@ -1352,6 +1382,7 @@ struct Foo$0 { value: u32 }
      //^^^
             "#,
         );
+
         check(
             r#"
 struct Foo {
@@ -1359,18 +1390,21 @@ struct Foo {
 } //^^^^^
 "#,
         );
+
         check(
             r#"
 fn foo_test$0() { }
  //^^^^^^^^
 "#,
         );
+
         check(
             r#"
 enum Foo$0 { Variant }
    //^^^
 "#,
         );
+
         check(
             r#"
 enum Foo {
@@ -1381,36 +1415,42 @@ enum Foo {
 }
 "#,
         );
+
         check(
             r#"
 static INNER$0: &str = "";
      //^^^^^
 "#,
         );
+
         check(
             r#"
 const INNER$0: &str = "";
     //^^^^^
 "#,
         );
+
         check(
             r#"
 type Thing$0 = Option<()>;
    //^^^^^
 "#,
         );
+
         check(
             r#"
 trait Foo$0 { }
     //^^^
 "#,
         );
+
         check(
             r#"
 trait Foo$0 = ;
     //^^^
 "#,
         );
+
         check(
             r#"
 mod bar$0 { }
@@ -1533,6 +1573,7 @@ fn foo() {
 }
 "#,
         );
+
         check(
             r#"
 macro_rules! id {
@@ -1924,6 +1965,7 @@ struct S;
      //^
             "#,
         );
+
         check(
             r#"
 /// [`S$0`]
@@ -1932,6 +1974,7 @@ struct S;
      //^
             "#,
         );
+
         check(
             r#"
 /// [`S$0`]
@@ -1955,6 +1998,7 @@ struct S;
      //^
             "#,
         );
+
         check(
             r#"
 mod m {
@@ -1964,6 +2008,7 @@ struct S;
      //^
             "#,
         );
+
         check(
             r#"
 fn f() {
@@ -2643,6 +2688,7 @@ fn f() {
 }
 "#,
         );
+
         check(
             r#"
 //- minicore: add
@@ -2682,6 +2728,7 @@ fn main() {
 }
 "#,
         );
+
         check(
             r#"
 trait Trait<T> {
@@ -2722,6 +2769,7 @@ fn f1() {
 }
 "#,
         );
+
         check(
             r#"
 struct S1;
@@ -2747,6 +2795,7 @@ fn f12() {
 }
 "#,
         );
+
         check(
             r#"
 struct S1;
@@ -2790,6 +2839,7 @@ macro_rules! foo {
 }
             "#,
         );
+
         check(
             r#"
 //- /main.rs crate:main deps:mac
@@ -3388,6 +3438,7 @@ fn item<bar: Qux>() {
 }
 "#,
         );
+
         check(
             r#"
 mod foo {
@@ -3444,6 +3495,7 @@ fn main() {
 }
 "#,
         );
+
         check(
             r#"
 pub mod foo {
@@ -3465,6 +3517,7 @@ fn main() {
 }
 "#,
         );
+
         check(
             r#"
 pub mod foo {
@@ -3501,6 +3554,7 @@ fn foo() {
 }
         "#,
         );
+
         check(
             r#"
 //- minicore: offset_of
@@ -3515,6 +3569,7 @@ fn foo() {
 }
         "#,
         );
+
         check(
             r#"
 //- minicore: offset_of
@@ -3533,6 +3588,7 @@ fn foo() {
 }
         "#,
         );
+
         check(
             r#"
 //- minicore: offset_of

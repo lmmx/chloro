@@ -19,6 +19,7 @@ pub(crate) fn remove_unnecessary_else(
         // FIXME: Our infra can't handle allow from within macro expansions rn
         return None;
     }
+
     let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
         if_expr.else_token().as_ref().map(SyntaxToken::text_range)
     });
@@ -36,6 +37,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
     let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
     let if_expr = d.if_expr.value.to_node(&root);
     let if_expr = ctx.sema.original_ast_node(if_expr)?;
+
     let mut indent = IndentLevel::from_node(if_expr.syntax());
     let has_parent_if_expr = if_expr.syntax().parent().and_then(ast::IfExpr::cast).is_some();
     if has_parent_if_expr {
@@ -78,11 +80,13 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveUnnecessaryElse) -> Option<Vec<
             ),
         )
     };
+
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(
         d.if_expr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
         edit,
     );
+
     Some(vec![fix(
         "remove_unnecessary_else",
         "Remove unnecessary else block",

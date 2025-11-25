@@ -84,8 +84,10 @@ pub(super) fn expand_and_analyze<'db>(
         derive_ctx: None,
     });
     // add the relative offset back, so that left_biased finds the proper token
+
     let original_offset = expansion.original_offset + relative_offset;
     let token = expansion.original_file.token_at_offset(original_offset).left_biased()?;
+
     hir::attach_db(sema.db, || analyze(sema, expansion, original_token, &token)).map(
         |(analysis, expected, qualifier_ctx)| AnalysisResult {
             analysis,
@@ -151,6 +153,7 @@ fn expand_maybe_stop(
     }
     // We can't check whether the fake expansion is inside macro call, because that requires semantic info.
     // But hopefully checking just the real one should be enough.
+
     if token_at_offset_ignore_whitespace(&original_file.value, original_offset + relative_offset)
         .is_some_and(|original_token| {
             !sema.is_inside_macro_call(original_file.with_value(&original_token))
@@ -179,6 +182,7 @@ fn expand(
     relative_offset: TextSize,
 ) -> Option<ExpansionResult> {
     let _p = tracing::info_span!("CompletionContext::expand").entered();
+
     let parent_item =
         |item: &ast::Item| item.syntax().ancestors().skip(1).find_map(ast::Item::cast);
     let original_node = token_at_offset_ignore_whitespace(&original_file.value, original_offset)
@@ -194,6 +198,7 @@ fn expand(
         |(a, b)| parent_item(a).zip(parent_item(b)),
     );
     // first try to expand attributes as these are always the outermost macro calls
+
     'ancestors: for (actual_item, item_with_fake_ident) in ancestor_items {
         match (
             sema.expand_attr_macro(&actual_item),
@@ -252,12 +257,14 @@ fn expand(
         }
     }
     // No attributes have been expanded, so look for macro_call! token trees or derive token trees
+
     let orig_tt = ancestors_at_offset(&original_file.value, original_offset)
         .map_while(Either::<ast::TokenTree, ast::Meta>::cast)
         .last()?;
     let spec_tt = ancestors_at_offset(&speculative_file, fake_ident_token.text_range().start())
         .map_while(Either::<ast::TokenTree, ast::Meta>::cast)
         .last()?;
+
     let (tts, attrs) = match (orig_tt, spec_tt) {
         (Either::Left(orig_tt), Either::Left(spec_tt)) => {
             let attrs = orig_tt
@@ -280,6 +287,7 @@ fn expand(
         _ => return None,
     };
     // Expand pseudo-derive expansion aka `derive(Debug$0)`
+
     if let Some((orig_attr, spec_attr)) = attrs {
         if let (Some(actual_expansion), Some((fake_expansion, fake_mapped_tokens))) = (
             sema.expand_derive_as_pseudo_attr_macro(&orig_attr),
@@ -369,6 +377,7 @@ fn expand(
         return None;
     }
     // Expand fn-like macro calls
+
     let (orig_tt, spec_tt) = tts?;
     let (actual_macro_call, macro_call_with_fake_ident) = (
         orig_tt.syntax().parent().and_then(ast::MacroCall::cast)?,
@@ -377,10 +386,12 @@ fn expand(
     let mac_call_path0 = actual_macro_call.path().as_ref().map(|s| s.syntax().text());
     let mac_call_path1 = macro_call_with_fake_ident.path().as_ref().map(|s| s.syntax().text());
     // inconsistent state, stop expanding
+
     if mac_call_path0 != mac_call_path1 {
         return None;
     }
     let speculative_args = macro_call_with_fake_ident.token_tree()?;
+
     match (
         sema.expand_macro_call(&actual_macro_call),
         sema.speculative_expand_macro_call(&actual_macro_call, &speculative_args, fake_ident_token),
@@ -444,6 +455,7 @@ fn analyze<'db>(
         fake_ident_token,
         derive_ctx,
     } = expansion_result;
+
     if original_token.kind() != self_token.kind()
         // FIXME: This check can be removed once we use speculative database forking for completions
         && !(original_token.kind().is_punct() || original_token.kind().is_trivia())
@@ -453,6 +465,7 @@ fn analyze<'db>(
         return None;
     }
     // Overwrite the path kind for derives
+
     if let Some((original_file, file_with_fake_ident, offset, origin_attr)) = derive_ctx {
         if let Some(ast::NameLike::NameRef(name_ref)) =
             find_node_at_offset(&file_with_fake_ident, offset)
@@ -478,6 +491,7 @@ fn analyze<'db>(
         }
         return None;
     }
+
     let Some(name_like) = find_node_at_offset(&speculative_file, speculative_offset) else {
         let analysis = if let Some(original) = ast::String::cast(original_token.clone()) {
             CompletionAnalysis::String { original, expanded: ast::String::cast(self_token.clone()) }
@@ -505,6 +519,7 @@ fn analyze<'db>(
         };
         return Some((analysis, (None, None), QualifierCtx::default()));
     };
+
     let expected = expected_type_and_name(sema, self_token, &name_like);
     let mut qual_ctx = QualifierCtx::default();
     let analysis = match name_like {
@@ -557,6 +572,7 @@ fn expected_type_and_name<'db>(
         Some(it) => it,
         None => return (None, None),
     };
+
     let strip_refs = |mut ty: Type<'db>| match name_like {
         ast::NameLike::NameRef(n) => {
             let p = match n.syntax().parent() {
@@ -591,6 +607,7 @@ fn expected_type_and_name<'db>(
         }
         _ => ty,
     };
+
     let (ty, name) = loop {
         break match_ast! {
             match node {
@@ -775,6 +792,7 @@ fn classify_lifetime(
     if parent.kind() == SyntaxKind::ERROR {
         return None;
     }
+
     let lifetime =
         find_node_at_offset::<ast::Lifetime>(original_file, lifetime.syntax().text_range().start());
     let kind = match_ast! {
@@ -789,6 +807,7 @@ fn classify_lifetime(
             },
         }
     };
+
     Some(LifetimeContext { kind })
 }
 
@@ -840,7 +859,9 @@ fn classify_name_ref<'db>(
     parent: SyntaxNode,
 ) -> Option<(NameRefContext<'db>, QualifierCtx)> {
     let nameref = find_node_at_offset(original_file, original_offset);
+
     let make_res = |kind| (NameRefContext { nameref: nameref.clone(), kind }, Default::default());
+
     if let Some(record_field) = ast::RecordExprField::for_field_name(&name_ref) {
         let dot_prefix = previous_non_trivia_token(name_ref.syntax().clone())
             .is_some_and(|it| T![.] == it.kind());
@@ -868,6 +889,7 @@ fn classify_name_ref<'db>(
         });
         return Some(make_res(kind));
     }
+
     let field_expr_handle = |receiver, node| {
         let receiver = find_opt_node_in_file(original_file, receiver);
         let receiver_is_ambiguous_float_literal = match &receiver {
@@ -909,6 +931,7 @@ fn classify_name_ref<'db>(
         });
         Some(make_res(kind))
     };
+
     let segment = match_ast! {
         match parent {
             ast::PathSegment(segment) => segment,
@@ -936,8 +959,10 @@ fn classify_name_ref<'db>(
             _ => return None,
         }
     };
+
     let path = segment.parent_path();
     let original_path = find_node_in_file_compensated(sema, original_file, &path);
+
     let mut path_ctx = PathCompletionCtx {
         has_call_parens: false,
         has_macro_bang: false,
@@ -949,6 +974,7 @@ fn classify_name_ref<'db>(
         has_type_args: false,
         use_tree_parent: false,
     };
+
     let func_update_record = |syn: &SyntaxNode| {
         if let Some(record_expr) = syn.ancestors().nth(2).and_then(ast::RecordExpr::cast) {
             find_node_in_file_compensated(sema, original_file, &record_expr)
@@ -1011,6 +1037,7 @@ fn classify_name_ref<'db>(
     // expression or an item list.
     // The following code checks if the body is missing, if it is we either cut off the body
     // from the item or it was missing in the first place
+
     let inbetween_body_and_decl_check = |node: SyntaxNode| {
         if let Some(NodeOrToken::Node(n)) =
             syntax::algo::non_trivia_sibling(node.into(), syntax::Direction::Prev)
@@ -1038,6 +1065,7 @@ fn classify_name_ref<'db>(
         }
         None
     };
+
     let generic_arg_location = |arg: ast::GenericArg| {
         let mut override_location = None;
         let location = find_opt_node_in_file_compensated(
@@ -1161,6 +1189,7 @@ fn classify_name_ref<'db>(
             corresponding_param,
         })
     };
+
     let type_location = |node: &SyntaxNode| {
         let parent = node.parent()?;
         let res = match_ast! {
@@ -1222,6 +1251,7 @@ fn classify_name_ref<'db>(
         };
         Some(res)
     };
+
     let make_path_kind_expr = |expr: ast::Expr| {
         let it = expr.syntax();
         let in_block_expr = is_in_block(it);
@@ -1331,6 +1361,7 @@ fn classify_name_ref<'db>(
         let location = type_location(ty.syntax());
         PathKind::Type { location: location.unwrap_or(TypeLocation::Other) }
     };
+
     let kind_item = |it: &SyntaxNode| {
         let parent = it.parent()?;
         let kind = match_ast! {
@@ -1364,6 +1395,7 @@ fn classify_name_ref<'db>(
         };
         Some(kind)
     };
+
     let mut kind_macro_call = |it: ast::MacroCall| {
         path_ctx.has_macro_bang = it.excl_token().is_some();
         let parent = it.syntax().parent()?;
@@ -1405,6 +1437,7 @@ fn classify_name_ref<'db>(
         Some(PathKind::Attr { attr_ctx: AttrCtx { kind, annotated_item_kind, derive_helpers } })
     };
     // Infer the path kind
+
     let parent = path.syntax().parent()?;
     let kind = 'find_kind: {
         if parent.kind() == SyntaxKind::ERROR {
@@ -1500,9 +1533,11 @@ fn classify_name_ref<'db>(
             }
         }
     };
+
     path_ctx.kind = kind;
     path_ctx.has_type_args = segment.generic_arg_list().is_some();
     // calculate the qualifier context
+
     if let Some((qualifier, use_tree_parent)) = path_or_use_tree_qualifier(&path) {
         path_ctx.use_tree_parent = use_tree_parent;
         if !use_tree_parent && segment.coloncolon_token().is_some() {
@@ -1558,6 +1593,7 @@ fn classify_name_ref<'db>(
     {
         path_ctx.qualified = Qualified::Absolute;
     }
+
     let mut qualifier_ctx = QualifierCtx::default();
     if path_ctx.is_trivial_path() {
         // fetch the full expression that may have qualifiers attached to it
@@ -1640,7 +1676,9 @@ fn pattern_context_for(
     pat: ast::Pat,
 ) -> PatternContext {
     let mut param_ctx = None;
+
     let mut missing_variants = vec![];
+
     let (refutability, has_type_ascription) =
     pat
         .syntax()
@@ -1723,6 +1761,7 @@ fn pattern_context_for(
         _ => (None, None),
     };
     // Only suggest name in let-stmt or fn param
+
     let should_suggest_name = matches!(
             &pat,
             ast::Pat::IdentPat(it)
@@ -1732,6 +1771,7 @@ fn pattern_context_for(
                     ast::LetStmt::can_cast(kind) || ast::Param::can_cast(kind)
                 })
     );
+
     PatternContext {
         refutability,
         param_ctx,
@@ -1755,6 +1795,7 @@ fn fetch_immediate_impl_or_trait(
     let mut ancestors = ancestors_in_file_compensated(sema, original_file, node)?
         .filter_map(ast::Item::cast)
         .filter(|it| !matches!(it, ast::Item::MacroCall(_)));
+
     match ancestors.next()? {
         ast::Item::Const(_) | ast::Item::Fn(_) | ast::Item::TypeAlias(_) => (),
         ast::Item::Impl(it) => return Some(Either::Left(it)),

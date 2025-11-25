@@ -528,6 +528,7 @@ impl AdtDef {
                 (flags, variants, repr)
             }
         };
+
         AdtDef::new_(db, AdtDefInner { id: def_id, variants, flags, repr })
     }
 
@@ -581,6 +582,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
         };
         let id: VariantId = struct_id.into();
         let field_types = interner.db().field_types(id);
+
         field_types.iter().last().map(|f| *f.1)
     }
 
@@ -604,6 +606,7 @@ impl<'db> inherent::AdtDef<DbInterner<'db>> for AdtDef {
                 .flat_map(|&(variant_id, _, _)| field_tys(variant_id.into()))
                 .collect(),
         };
+
         EarlyBinder::bind(tys)
     }
 
@@ -1153,6 +1156,7 @@ impl<'db> Interner for DbInterner<'db> {
 
     fn parent(self, def_id: Self::DefId) -> Self::DefId {
         use hir_def::Lookup;
+
         let container = match def_id {
             SolverDefId::FunctionId(it) => it.lookup(self.db()).container,
             SolverDefId::TypeAliasId(it) => it.lookup(self.db()).container,
@@ -1183,6 +1187,7 @@ impl<'db> Interner for DbInterner<'db> {
             | SolverDefId::Ctor(..)
             | SolverDefId::InternedOpaqueTyId(..) => panic!(),
         };
+
         match container {
             ItemContainerId::ImplId(it) => it.into(),
             ItemContainerId::TraitId(it) => it.into(),
@@ -1237,6 +1242,7 @@ impl<'db> Interner for DbInterner<'db> {
         };
         let sized_def_id = sized_id.into();
         // Search for a predicate like `Self : Sized` amongst the trait bounds.
+
         let predicates = self.predicates_of(def_id);
         elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
             ClauseKind::Trait(ref trait_pred) => {
@@ -1326,6 +1332,7 @@ impl<'db> Interner for DbInterner<'db> {
             rustc_type_ir::TyKind::Param(param) => param.index == 0,
             _ => false,
         };
+
         let predicates: Vec<(Clause<'db>, Span)> = self
             .db()
             .generic_predicates(def_id.0.into())
@@ -1359,6 +1366,7 @@ impl<'db> Interner for DbInterner<'db> {
                 _ => false,
             }
         }
+
         let predicates: Vec<(Clause<'db>, Span)> = self
             .db()
             .generic_predicates(def_id.try_into().unwrap())
@@ -1614,6 +1622,7 @@ impl<'db> Interner for DbInterner<'db> {
             TyKind::Infer(InferTy::FloatVar(..)) => &ALL_FLOAT_FPS,
             _ => self_ty_fp.as_slice(),
         };
+
         if fps.is_empty() {
             _ = for_trait_impls(
                 self.db(),
@@ -1665,6 +1674,7 @@ impl<'db> Interner for DbInterner<'db> {
 
     fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
         let Some(krate) = self.krate else { return };
+
         for impls in self.db.trait_impls_in_deps(krate).iter() {
             for impl_id in impls.for_trait(trait_def_id.0) {
                 let impl_data = self.db.impl_signature(impl_id);
@@ -1778,6 +1788,7 @@ impl<'db> Interner for DbInterner<'db> {
     fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
         let def = AdtDef::new(id.0, self);
         let num_params = self.generics_of(id.into()).count();
+
         let maybe_unsizing_param_idx = |arg: GenericArg<'db>| match arg.kind() {
             GenericArgKind::Type(ty) => match ty.kind() {
                 rustc_type_ir::TyKind::Param(p) => Some(p.index),
@@ -1790,11 +1801,13 @@ impl<'db> Interner for DbInterner<'db> {
             },
         };
         // The last field of the structure has to exist and contain type/const parameters.
+
         let variant = def.non_enum_variant();
         let fields = variant.fields(self.db());
         let Some((tail_field, prefix_fields)) = fields.split_last() else {
             return UnsizingParams(DenseBitSet::new_empty(num_params));
         };
+
         let field_types = self.db().field_types(variant.id());
         let mut unsizing_params = DenseBitSet::new_empty(num_params);
         let ty = field_types[tail_field.0];
@@ -1805,6 +1818,7 @@ impl<'db> Interner for DbInterner<'db> {
         }
         // Ensure none of the other fields mention the parameters used
         // in unsizing.
+
         for field in prefix_fields {
             for arg in field_types[field.0].instantiate_identity().walk() {
                 if let Some(i) = maybe_unsizing_param_idx(arg) {
@@ -1812,6 +1826,7 @@ impl<'db> Interner for DbInterner<'db> {
                 }
             }
         }
+
         UnsizingParams(unsizing_params)
     }
 
@@ -1849,6 +1864,7 @@ impl<'db> Interner for DbInterner<'db> {
                 Const::new_bound(self.interner, DebruijnIndex::ZERO, BoundConst { var })
             }
         }
+
         let mut map = Default::default();
         let delegate = Anonymize { interner: self, map: &mut map };
         let inner = self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate);
@@ -1875,8 +1891,10 @@ impl<'db> Interner for DbInterner<'db> {
             return SolverDefIds::default();
         };
         let mut result = Vec::new();
+
         crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
         // Collect coroutines.
+
         let body = self.db.body(def_id);
         body.exprs().for_each(|(expr_id, expr)| {
             if matches!(
@@ -1893,6 +1911,7 @@ impl<'db> Interner for DbInterner<'db> {
                 result.push(coroutine.into());
             }
         });
+
         SolverDefIds::new_from_iter(self, result)
     }
 
@@ -2135,6 +2154,7 @@ mod tls_db {
             struct DbGuard<'s> {
                 state: Option<&'s Attached>,
             }
+
             impl<'s> DbGuard<'s> {
                 #[inline]
                 fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
@@ -2157,6 +2177,7 @@ mod tls_db {
                     }
                 }
             }
+
             impl Drop for DbGuard<'_> {
                 #[inline]
                 fn drop(&mut self) {
@@ -2166,6 +2187,7 @@ mod tls_db {
                     }
                 }
             }
+
             let _guard = DbGuard::new(self, db);
             op()
         }
@@ -2176,6 +2198,7 @@ mod tls_db {
                 state: &'s Attached,
                 prev: Option<NonNull<dyn HirDatabase>>,
             }
+
             impl<'s> DbGuard<'s> {
                 #[inline]
                 fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
@@ -2183,12 +2206,14 @@ mod tls_db {
                     Self { state: attached, prev }
                 }
             }
+
             impl Drop for DbGuard<'_> {
                 #[inline]
                 fn drop(&mut self) {
                     self.state.database.set(self.prev);
                 }
             }
+
             let _guard = DbGuard::new(self, db);
             op()
         }
@@ -2197,6 +2222,7 @@ mod tls_db {
         fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
             let db = self.database.get().expect("Try to use attached db, but not db is attached");
             // SAFETY: The db is attached, so it must be valid.
+
             op(unsafe { db.as_ref() })
         }
     }

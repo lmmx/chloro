@@ -19,7 +19,9 @@ pub(super) fn hints(
     if !config.sized_bound {
         return None;
     }
+
     let sized_trait = famous_defs.core_marker_Sized();
+
     for param in params.type_or_const_params() {
         match param {
             ast::TypeOrConstParam::Type(type_param) => {
@@ -72,6 +74,7 @@ pub(super) fn hints(
             ast::TypeOrConstParam::Const(_) => (),
         }
     }
+
     Some(())
 }
 

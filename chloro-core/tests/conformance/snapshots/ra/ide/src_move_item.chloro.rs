@@ -20,6 +20,7 @@ pub(crate) fn move_item(
 ) -> Option<TextEdit> {
     let sema = Semantics::new(db);
     let file = sema.parse_guess_edition(range.file_id);
+
     let item = if range.range.is_empty() {
         SyntaxElement::Token(pick_best_token(
             file.syntax().token_at_offset(range.range.start()),
@@ -32,6 +33,7 @@ pub(crate) fn move_item(
     } else {
         file.syntax().covering_element(range.range)
     };
+
     find_ancestors(item, direction, range.range)
 }
 
@@ -44,6 +46,7 @@ fn find_ancestors(
         SyntaxElement::Node(node) => node,
         SyntaxElement::Token(token) => token.parent()?,
     };
+
     let movable = [
         SyntaxKind::ARG_LIST,
         SyntaxKind::GENERIC_PARAM_LIST,
@@ -76,9 +79,11 @@ fn find_ancestors(
         SyntaxKind::MACRO_RULES,
         SyntaxKind::MACRO_DEF,
     ];
+
     let ancestor = once(root.clone())
         .chain(root.ancestors())
         .find(|ancestor| movable.contains(&ancestor.kind()))?;
+
     move_in_direction(&ancestor, direction, range)
 }
 
@@ -112,6 +117,7 @@ fn swap_sibling_in_list<A: AstNode + Clone, I: Iterator<Item = A>>(
         Direction::Up => r.syntax().text_range().contains_range(range),
         Direction::Down => l.syntax().text_range().contains_range(range),
     });
+
     if let Some((l, r)) = list_lookup {
         Some(replace_nodes(range, l.syntax(), r.syntax()))
     } else {
@@ -140,6 +146,7 @@ fn replace_nodes<'a>(
     } else {
         None
     };
+
     let first_with_cursor = match cursor_offset {
         Some(offset) => {
             let mut item_text = first.text().to_string();
@@ -148,9 +155,12 @@ fn replace_nodes<'a>(
         }
         None => first.text().to_string(),
     };
+
     let mut edit = TextEditBuilder::default();
+
     diff(first, second).into_text_edit(&mut edit);
     edit.replace(second.text_range(), first_with_cursor);
+
     edit.finish()
 }
 

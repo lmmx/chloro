@@ -33,6 +33,7 @@ pub(crate) trait ChildBySource {
 impl ChildBySource for TraitId {
     fn child_by_source_to(&self, db: &dyn DefDatabase, res: &mut DynMap, file_id: HirFileId) {
         let data = self.trait_items(db);
+
         data.macro_calls().filter(|(ast_id, _)| ast_id.file_id == file_id).for_each(
             |(ast_id, call_id)| {
                 let ptr = ast_id.to_ptr(db);
@@ -195,7 +196,9 @@ impl ChildBySource for EnumId {
         if file_id != loc.id.file_id {
             return;
         }
+
         let ast_id_map = db.ast_id_map(loc.id.file_id);
+
         self.enum_variants(db).variants.iter().for_each(|&(variant, _, _)| {
             res[keys::ENUM_VARIANT].insert(ast_id_map.get(variant.lookup(db).id.value), variant);
         });
@@ -213,9 +216,11 @@ impl ChildBySource for DefWithBodyId {
         if let &DefWithBodyId::VariantId(v) = self {
             VariantId::EnumVariantId(v).child_by_source_to(db, res, file_id)
         }
+
         sm.expansions().filter(|(ast, _)| ast.file_id == file_id).for_each(|(ast, &exp_id)| {
             res[keys::MACRO_CALL].insert(ast.value, exp_id);
         });
+
         for (block, def_map) in body.blocks(db) {
             // All block expressions are merged into the same map, because they logically all add
             // inner items to the containing `DefWithBodyId`.
@@ -231,14 +236,17 @@ impl ChildBySource for GenericDefId {
         if gfile_id != file_id {
             return;
         }
+
         let (generic_params, _, source_map) =
             GenericParams::generic_params_and_store_and_source_map(db, *self);
         let mut toc_idx_iter = generic_params.iter_type_or_consts().map(|(idx, _)| idx);
         let lts_idx_iter = generic_params.iter_lt().map(|(idx, _)| idx);
         // For traits the first type index is `Self`, skip it.
+
         if let GenericDefId::TraitId(_) = *self {
             toc_idx_iter.next().unwrap(); // advance_by(1);
         }
+
         if let Some(generic_params_list) = generic_params_list {
             for (local_id, ast_param) in
                 toc_idx_iter.zip(generic_params_list.type_or_const_params())
@@ -258,6 +266,7 @@ impl ChildBySource for GenericDefId {
                 res[keys::LIFETIME_PARAM].insert(AstPtr::new(&ast_param), id);
             }
         }
+
         source_map
             .expansions()
             .filter(|(ast, _)| ast.file_id == file_id)

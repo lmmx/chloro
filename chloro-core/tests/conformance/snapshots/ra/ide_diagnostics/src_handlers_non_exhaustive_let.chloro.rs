@@ -52,6 +52,7 @@ fn main() {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 //- minicore: future, option
@@ -63,6 +64,7 @@ fn main() {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 //- minicore: option
@@ -85,6 +87,7 @@ fn test(x: Result<i32, !>) {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 //- minicore: result

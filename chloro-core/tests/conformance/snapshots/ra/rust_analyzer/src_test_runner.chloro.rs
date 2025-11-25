@@ -60,6 +60,7 @@ impl CargoParser<CargoTestMessage> for CargoTestOutputParser {
     fn from_line(&self, line: &str, _error: &mut String) -> Option<CargoTestMessage> {
         let mut deserializer = serde_json::Deserializer::from_str(line);
         deserializer.disable_recursion_limit();
+
         Some(CargoTestMessage {
             target: self.target.clone(),
             output: if let Ok(message) = CargoTestOutput::deserialize(&mut deserializer) {
@@ -100,8 +101,10 @@ impl CargoTestHandle {
         cmd.env("RUSTC_BOOTSTRAP", "1");
         cmd.arg("--color=always");
         cmd.arg("test");
+
         cmd.arg("--package");
         cmd.arg(&test_target.package);
+
         if let TargetKind::Lib { .. } = test_target.kind {
             // no name required with lib because there can only be one lib target per package
             cmd.arg("--lib");
@@ -112,6 +115,7 @@ impl CargoTestHandle {
             tracing::warn!("Running test for unknown cargo target {:?}", test_target.kind);
         }
         // --no-fail-fast is needed to ensure that all requested tests will run
+
         cmd.arg("--no-fail-fast");
         cmd.arg("--manifest-path");
         cmd.arg(root.join("Cargo.toml"));
@@ -122,9 +126,11 @@ impl CargoTestHandle {
         }
         cmd.args(["-Z", "unstable-options"]);
         cmd.arg("--format=json");
+
         for extra_arg in options.extra_test_bin_args {
             cmd.arg(extra_arg);
         }
+
         Ok(Self {
             _handle: CommandHandle::spawn(
                 cmd,

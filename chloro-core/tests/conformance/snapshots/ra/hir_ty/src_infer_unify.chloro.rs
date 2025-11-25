@@ -73,6 +73,7 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
         if inspect_goal.result() == Ok(Certainty::Yes) {
             return;
         }
+
         let db = self.ctx.interner();
         let goal = inspect_goal.goal();
         if self.ctx.predicate_has_self_ty(goal.predicate, self.self_ty)
@@ -101,6 +102,7 @@ impl<'a, 'db> ProofTreeVisitor<'db> for NestedObligationsForSelfTy<'a, 'db> {
         // that candidate. This means that for `impl<F: FnOnce(u32)> Trait<F> for () {}`
         // and a `(): Trait<?0>` goal we recurse into the impl and look at
         // the nested `?0: FnOnce(u32)` goal.
+
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
         }
@@ -228,6 +230,7 @@ impl<'db> InferenceTable<'db> {
             let goal = obligation.as_goal();
             self.infer_ctxt.visit_proof_tree(goal, &mut visitor);
         }
+
         obligations_for_self_ty.retain_mut(|obligation| {
             obligation.predicate = self.infer_ctxt.resolve_vars_if_possible(obligation.predicate);
             !obligation.predicate.has_placeholders()
@@ -262,6 +265,7 @@ impl<'db> InferenceTable<'db> {
 
     fn type_matches_expected_vid(&self, expected_vid: TyVid, ty: Ty<'db>) -> bool {
         let ty = self.shallow_resolve(ty);
+
         match ty.kind() {
             TyKind::Infer(rustc_type_ir::TyVar(found_vid)) => {
                 self.infer_ctxt.root_var(expected_vid) == self.infer_ctxt.root_var(found_vid)
@@ -367,6 +371,7 @@ impl<'db> InferenceTable<'db> {
             fallback_const: &'a mut dyn FnMut(DebruijnIndex, InferConst) -> Const<'db>,
             fallback_region: &'a mut dyn FnMut(DebruijnIndex, RegionVid) -> Region<'db>,
         }
+
         impl<'db> TypeFolder<DbInterner<'db>> for Resolver<'_, 'db> {
             fn cx(&self) -> DbInterner<'db> {
                 self.table.interner()
@@ -414,6 +419,7 @@ impl<'db> InferenceTable<'db> {
                 }
             }
         }
+
         t.fold_with(&mut Resolver {
             table: self,
             binder: DebruijnIndex::ZERO,
@@ -438,8 +444,10 @@ impl<'db> InferenceTable<'db> {
         T: TypeFoldable<DbInterner<'db>>,
     {
         let value = self.infer_ctxt.resolve_vars_if_possible(value);
+
         let mut goals = vec![];
         // FIXME(next-solver): Handle `goals`.
+
         value.fold_with(&mut resolve_completely::Resolver::new(self, true, &mut goals))
     }
 
@@ -465,10 +473,13 @@ impl<'db> InferenceTable<'db> {
         if !t.has_non_region_infer() {
             return t;
         }
+
         let t = self.infer_ctxt.resolve_vars_if_possible(t);
+
         if !t.has_non_region_infer() {
             return t;
         }
+
         self.select_obligations_where_possible();
         self.infer_ctxt.resolve_vars_if_possible(t)
     }
@@ -560,6 +571,7 @@ impl<'db> InferenceTable<'db> {
     pub(crate) fn try_obligation(&mut self, predicate: Predicate<'db>) -> NextTraitSolveResult {
         let goal = next_solver::Goal { param_env: self.trait_env.env, predicate };
         let canonicalized = self.canonicalize(goal);
+
         next_trait_solve_canonical_in_ctxt(&self.infer_ctxt, canonicalized)
     }
 
@@ -606,6 +618,7 @@ impl<'db> InferenceTable<'db> {
         if obligation.has_escaping_bound_vars() {
             panic!("escaping bound vars in predicate {:?}", obligation);
         }
+
         self.fulfillment_cx.register_predicate_obligation(&self.infer_ctxt, obligation);
     }
 
@@ -750,11 +763,13 @@ impl<'db> InferenceTable<'db> {
                 _ => None,
             }
         }
+
         let mut ty = ty;
         ty = self.eagerly_normalize_and_resolve_shallow_in(ty);
         if let Some(sized) = short_circuit_trivial_tys(ty) {
             return sized;
         }
+
         {
             let mut structs = SmallVec::<[_; 8]>::new();
             // Must use a loop here and not recursion because otherwise users will conduct completely
@@ -781,6 +796,7 @@ impl<'db> InferenceTable<'db> {
                 };
             }
         }
+
         let Some(sized) = LangItem::Sized.resolve_trait(self.db, self.trait_env.krate) else {
             return false;
         };
@@ -853,6 +869,7 @@ mod resolve_completely {
             } else {
                 value
             };
+
             value.fold_with(&mut ReplaceInferWithError::new(self.ctx.interner()))
         }
     }

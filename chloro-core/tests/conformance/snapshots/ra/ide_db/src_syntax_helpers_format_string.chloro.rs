@@ -51,6 +51,7 @@ pub fn lex_format_specifiers(
         .iter()
         .filter_map(|(range, res)| Some((*range, *res.as_ref().ok()?)))
         .peekable();
+
     while let Some((range, first_char)) = chars.next() {
         if let '{' = first_char {
             // Format specifier, see syntax at https://doc.rust-lang.org/std/fmt/index.html#syntax
@@ -235,6 +236,7 @@ pub fn lex_format_specifiers(
             read_escaped_format_specifier(&mut chars, &mut callback);
         }
     }
+
     fn skip_char_and_emit<I, F>(
         chars: &mut std::iter::Peekable<I>,
         emit: FormatSpecifier,
@@ -246,6 +248,7 @@ pub fn lex_format_specifiers(
         let (range, _) = chars.next().unwrap();
         callback(range, emit);
     }
+
     fn read_integer<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
     where
         I: Iterator<Item = (TextRange, char)>,
@@ -263,6 +266,7 @@ pub fn lex_format_specifiers(
         }
         callback(range, FormatSpecifier::Integer);
     }
+
     fn read_identifier<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
     where
         I: Iterator<Item = (TextRange, char)>,
@@ -280,6 +284,7 @@ pub fn lex_format_specifiers(
         }
         callback(range, FormatSpecifier::Identifier);
     }
+
     fn read_escaped_format_specifier<I, F>(chars: &mut std::iter::Peekable<I>, callback: &mut F)
     where
         I: Iterator<Item = (TextRange, char)>,

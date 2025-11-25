@@ -51,6 +51,7 @@ impl DiscoverCommand {
     ) -> io::Result<DiscoverHandle> {
         let command = &self.command[0];
         let args = &self.command[1..];
+
         let args: Vec<String> = args
             .iter()
             .map(|arg| {
@@ -62,8 +63,10 @@ impl DiscoverCommand {
             })
             .collect();
         // TODO: are we sure the extra env should be empty?
+
         let mut cmd = toolchain::command(command, current_dir, &FxHashMap::default());
         cmd.args(args);
+
         Ok(DiscoverHandle {
             _handle: CommandHandle::spawn(cmd, DiscoverProjectParser, self.sender.clone(), None)?,
             span: info_span!("discover_command").entered(),
@@ -160,15 +163,19 @@ fn test_deserialization() {
     let message: DiscoverProjectData =
         serde_json::from_str(message).expect("Unable to deserialize message");
     assert!(matches!(message, DiscoverProjectData::Progress { .. }));
+
     let message = r#"
     {"kind": "error", "error":"failed to deserialize command output","source":"command"}
     "#;
+
     let message: DiscoverProjectData =
         serde_json::from_str(message).expect("Unable to deserialize message");
     assert!(matches!(message, DiscoverProjectData::Error { .. }));
+
     let message = r#"
     {"kind": "finished", "project": {"sysroot": "foo", "crates": [], "runnables": []}, "buildfile":"rust-analyzer/BUILD"}
     "#;
+
     let message: DiscoverProjectData =
         serde_json::from_str(message).expect("Unable to deserialize message");
     assert!(matches!(message, DiscoverProjectData::Finished { .. }));

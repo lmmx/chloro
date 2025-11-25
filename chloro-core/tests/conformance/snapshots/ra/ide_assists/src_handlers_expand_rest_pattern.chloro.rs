@@ -18,11 +18,13 @@ fn expand_record_rest_pattern(
         cov_mark::hit!(no_missing_fields);
         return None;
     }
+
     let old_field_list = record_pat.record_pat_field_list()?;
     let old_range = ctx.sema.original_range_opt(old_field_list.syntax())?;
     if old_range.file_id != ctx.file_id() {
         return None;
     }
+
     let edition = ctx.sema.scope(record_pat.syntax())?.krate().edition(ctx.db());
     acc.add(
         AssistId::refactor_rewrite("expand_record_rest_pattern"),
@@ -70,16 +72,20 @@ fn expand_tuple_struct_rest_pattern(
         },
         _ => return None,
     };
+
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.fields())?;
+
     if fields.len().saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
         cov_mark::hit!(no_missing_fields_tuple_struct);
         return None;
     }
+
     let old_range = ctx.sema.original_range_opt(pat.syntax())?;
     if old_range.file_id != ctx.file_id() {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("expand_tuple_struct_rest_pattern"),
         "Fill tuple struct fields",
@@ -121,16 +127,20 @@ fn expand_tuple_rest_pattern(
 ) -> Option<()> {
     let fields = ctx.sema.type_of_pat(&pat.clone().into())?.original.tuple_fields(ctx.db());
     let len = fields.len();
+
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.fields())?;
+
     if len.saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
         cov_mark::hit!(no_missing_fields_tuple);
         return None;
     }
+
     let old_range = ctx.sema.original_range_opt(pat.syntax())?;
     if old_range.file_id != ctx.file_id() {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("expand_tuple_rest_pattern"),
         "Fill tuple fields",
@@ -166,16 +176,20 @@ fn expand_slice_rest_pattern(
     rest_pat: ast::RestPat,
 ) -> Option<()> {
     let (ty, len) = ctx.sema.type_of_pat(&pat.clone().into())?.original.as_array(ctx.db())?;
+
     let rest_pat = rest_pat.into();
     let (prefix_count, suffix_count) = calculate_counts(&rest_pat, pat.pats())?;
+
     if len.saturating_sub(prefix_count).saturating_sub(suffix_count) == 0 {
         cov_mark::hit!(no_missing_fields_slice);
         return None;
     }
+
     let old_range = ctx.sema.original_range_opt(pat.syntax())?;
     if old_range.file_id != ctx.file_id() {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("expand_slice_rest_pattern"),
         "Fill slice fields",

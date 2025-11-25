@@ -61,6 +61,7 @@ pub(crate) fn goto_declaration(
         })
         .flatten()
         .collect();
+
     if info.is_empty() {
         goto_definition(db, position, config)
     } else {
@@ -84,6 +85,7 @@ mod tests {
         if navs.is_empty() {
             panic!("unresolved reference")
         }
+
         let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
         let navs = navs
             .into_iter()

@@ -46,6 +46,7 @@ pub(crate) fn render_record_lit(
             fmt_field(format_args!("()"), format_args!(""))
         }
     });
+
     let types = fields.iter().format_with(", ", |field, f| {
         f(&format_args!(
             "{}: {}",
@@ -53,6 +54,7 @@ pub(crate) fn render_record_lit(
             field.ty(ctx.db).display(ctx.db, ctx.display_target)
         ))
     });
+
     RenderedLiteral {
         literal: format!("{path} {{ {completions} }}"),
         detail: format!("{path} {{ {types} }}"),
@@ -77,9 +79,11 @@ pub(crate) fn render_tuple_lit(
             f(&format_args!("()"))
         }
     });
+
     let types = fields
         .iter()
         .format_with(", ", |field, f| f(&field.ty(ctx.db).display(ctx.db, ctx.display_target)));
+
     RenderedLiteral {
         literal: format!("{path}({completions})"),
         detail: format!("{path}({types})"),

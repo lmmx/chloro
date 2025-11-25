@@ -200,8 +200,10 @@ pub(crate) fn const_eval_discriminant_variant<'db>(
         };
         return Ok(value);
     }
+
     let repr = db.enum_signature(loc.parent).repr;
     let is_signed = repr.and_then(|repr| repr.int).is_none_or(|int| int.is_signed());
+
     let mir_body = db.monomorphized_mir_body(
         def,
         GenericArgs::new_from_iter(interner, []),

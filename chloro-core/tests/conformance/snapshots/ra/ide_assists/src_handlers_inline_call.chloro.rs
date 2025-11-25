@@ -36,12 +36,16 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let ast_func = name.syntax().parent().and_then(ast::Fn::cast)?;
     let func_body = ast_func.body()?;
     let param_list = ast_func.param_list()?;
+
     let function = ctx.sema.to_def(&ast_func)?;
+
     let params = get_fn_params(ctx.sema.db, function, &param_list)?;
+
     let usages = Definition::Function(function).usages(&ctx.sema);
     if !usages.at_least_one() {
         return None;
     }
+
     let is_recursive_fn = usages
         .clone()
         .in_scope(&SearchScope::file_range(FileRange {
@@ -53,6 +57,7 @@ pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         cov_mark::hit!(inline_into_callers_recursive);
         return None;
     }
+
     acc.add(
         AssistId::refactor_inline("inline_into_callers"),
         "Inline into all callers",
@@ -148,21 +153,25 @@ pub(crate) fn inline_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             (ctx.sema.resolve_method_call(call)?, format!("Inline `{name_ref}`"))
         }
     };
+
     let fn_source = ctx.sema.source(function)?;
     let fn_body = fn_source.value.body()?;
     let param_list = fn_source.value.param_list()?;
+
     let FileRange { file_id, range } = fn_source.syntax().original_file_range_rooted(ctx.sema.db);
     if file_id == ctx.file_id() && range.contains(ctx.offset()) {
         cov_mark::hit!(inline_call_recursive);
         return None;
     }
     let params = get_fn_params(ctx.sema.db, function, &param_list)?;
+
     if call_info.arguments.len() != params.len() {
         // Can't inline the function because they've passed the wrong number of
         // arguments to this function
         cov_mark::hit!(inline_call_incorrect_number_of_arguments);
         return None;
     }
+
     let syntax = call_info.node.syntax().clone();
     acc.add(AssistId::refactor_inline("inline_call"), label, syntax.text_range(), |builder| {
         let replacement = inline(&ctx.sema, file_id, function, &fn_body, &params, &call_info);
@@ -219,6 +228,7 @@ fn get_fn_params<'db>(
     param_list: &ast::ParamList,
 ) -> Option<Vec<(ast::Pat, Option<ast::Type>, hir::Param<'db>)>> {
     let mut assoc_fn_params = function.assoc_fn_params(db).into_iter();
+
     let mut params = Vec::new();
     if let Some(self_param) = param_list.self_param() {
         // Keep `ref` and `mut` and transform them into `&` and `mut` later
@@ -236,6 +246,7 @@ fn get_fn_params<'db>(
     for param in param_list.params() {
         params.push((param.pat()?, param.ty(), assoc_fn_params.next()?));
     }
+
     Some(params)
 }
 
@@ -295,6 +306,7 @@ fn inline(
             }
         })
         .collect();
+
     if function.self_param(sema.db).is_some() {
         let this = || {
             make::name_ref("this")
@@ -317,6 +329,7 @@ fn inline(
     // We should place the following code after last usage of `usages_for_locals`
     // because `ted::replace` will change the offset in syntax tree, which makes
     // `FileReference` incorrect
+
     if let Some(imp) =
         sema.ancestors_with_macros(fn_body.syntax().clone()).find_map(ast::Impl::cast)
         && !node.syntax().ancestors().any(|anc| &anc == imp.syntax())
@@ -332,8 +345,10 @@ fn inline(
             ted::replace(self_tok, replace_with);
         }
     }
+
     let mut func_let_vars: BTreeSet<String> = BTreeSet::new();
     // grab all of the local variable declarations in the function
+
     for stmt in fn_body.statements() {
         if let Some(let_stmt) = ast::LetStmt::cast(stmt.syntax().to_owned()) {
             for has_token in let_stmt.syntax().children_with_tokens() {
@@ -345,8 +360,10 @@ fn inline(
             }
         }
     }
+
     let mut let_stmts = Vec::new();
     // Inline parameter expressions or generate `let` statements depending on whether inlining works or not.
+
     for ((pat, param_ty, param), usages, expr) in izip!(params, param_use_nodes, arguments) {
         // izip confuses RA due to our lack of hygiene info currently losing us type info causing incorrect errors
         let usages: &[ast::PathExpr] = &usages;
@@ -453,6 +470,7 @@ fn inline(
             }
         }
     }
+
     if let Some(generic_arg_list) = generic_arg_list.clone()
         && let Some((target, source)) = &sema.scope(node.syntax()).zip(sema.scope(fn_body.syntax()))
     {
@@ -464,6 +482,7 @@ fn inline(
             body = new_body;
         }
     }
+
     let is_async_fn = function.is_async(sema.db);
     if is_async_fn {
         cov_mark::hit!(inline_call_async_fn);
@@ -481,11 +500,13 @@ fn inline(
             ted::insert(ted::Position::after(position.clone()), let_stmt.syntax().clone());
         });
     }
+
     let original_indentation = match node {
         ast::CallableExpr::Call(it) => it.indent_level(),
         ast::CallableExpr::MethodCall(it) => it.indent_level(),
     };
     body.reindent_to(original_indentation);
+
     let no_stmts = body.statements().next().is_none();
     match body.tail_expr() {
         Some(expr) if matches!(expr, ast::Expr::ClosureExpr(_)) && no_stmts => {

@@ -650,6 +650,7 @@ impl MacroCallLoc {
         {
             return Some(it);
         }
+
         None
     }
 }
@@ -696,11 +697,13 @@ impl MacroCallKind {
                 HirFileId::FileId(file_id) => break file_id,
             }
         };
+
         let range = match kind {
             MacroCallKind::FnLike { ast_id, .. } => ast_id.to_ptr(db).text_range(),
             MacroCallKind::Derive { ast_id, .. } => ast_id.to_ptr(db).text_range(),
             MacroCallKind::Attr { ast_id, .. } => ast_id.to_ptr(db).text_range(),
         };
+
         FileRange { range, file_id }
     }
 
@@ -719,6 +722,7 @@ impl MacroCallKind {
                 HirFileId::FileId(file_id) => break file_id,
             }
         };
+
         let range = match kind {
             MacroCallKind::FnLike { ast_id, .. } => {
                 let node = ast_id.to_node(db);
@@ -750,6 +754,7 @@ impl MacroCallKind {
                     .text_range()
             }
         };
+
         FileRange { range, file_id }
     }
 
@@ -809,6 +814,7 @@ impl ExpansionInfo {
         let tokens = self.exp_map.ranges_with_span_exact(span).flat_map(move |(range, ctx)| {
             self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
         });
+
         Some(InMacroFile::new(self.expanded.file_id, tokens))
     }
 
@@ -823,6 +829,7 @@ impl ExpansionInfo {
         let tokens = self.exp_map.ranges_with_span(span).flat_map(move |(range, ctx)| {
             self.expanded.value.covering_element(range).into_token().zip(Some(ctx))
         });
+
         Some(InMacroFile::new(self.expanded.file_id, tokens))
     }
 
@@ -884,10 +891,13 @@ impl ExpansionInfo {
     pub fn new(db: &dyn ExpandDatabase, macro_file: MacroCallId) -> ExpansionInfo {
         let _p = tracing::info_span!("ExpansionInfo::new").entered();
         let loc = db.lookup_intern_macro_call(macro_file);
+
         let arg_tt = loc.kind.arg(db);
         let arg_map = db.span_map(arg_tt.file_id);
+
         let (parse, exp_map) = db.parse_macro_expansion(macro_file).value;
         let expanded = InMacroFile { file_id: macro_file, value: parse.syntax_node() };
+
         ExpansionInfo { expanded, loc, arg: arg_tt, exp_map, arg_map }
     }
 }
@@ -904,6 +914,7 @@ pub fn map_node_range_up_rooted(
     let Span { range, anchor, ctx: _ } = spans.next()?;
     let mut start = range.start();
     let mut end = range.end();
+
     for span in spans {
         if span.anchor != anchor {
             return None;
@@ -929,6 +940,7 @@ pub fn map_node_range_up(
     let Span { range, anchor, ctx } = spans.next()?;
     let mut start = range.start();
     let mut end = range.end();
+
     for span in spans {
         if span.anchor != anchor || span.ctx != ctx {
             return None;
@@ -1006,13 +1018,16 @@ pub enum ExpandTo {
 impl ExpandTo {
     pub fn from_call_site(call: &ast::MacroCall) -> ExpandTo {
         use syntax::SyntaxKind::*;
+
         let syn = call.syntax();
+
         let parent = match syn.parent() {
             Some(it) => it,
             None => return ExpandTo::Statements,
         };
         // FIXME: macros in statement position are treated as expression statements, they should
         // probably be their own statement kind. The *grand*parent indicates what's valid.
+
         if parent.kind() == MACRO_EXPR
             && parent
                 .parent()
@@ -1020,6 +1035,7 @@ impl ExpandTo {
         {
             return ExpandTo::Statements;
         }
+
         match parent.kind() {
             MACRO_ITEMS | SOURCE_FILE | ITEM_LIST => ExpandTo::Items,
             MACRO_STMTS | EXPR_STMT | STMT_LIST => ExpandTo::Statements,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2455 bytes
-Chloro size:   2456 bytes
+Chloro size:   2460 bytes
 Rustfmt size:  2593 bytes
 
 ✗ Outputs DIFFER
@@ -38,11 +38,6 @@ Rustfmt size:  2593 bytes
      }
  }
  
- {
-     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
-         let span = ctx.span(id).unwrap();
--
-         let data = JsonData::new(attrs.metadata().name());
          span.extensions_mut().insert(data);
      }
  
@@ -52,15 +47,9 @@ Rustfmt size:  2593 bytes
  
      fn on_close(&self, id: Id, ctx: Context<'_, S>) {
          #[derive(serde_derive::Serialize)]
-             name: &'static str,
-             elapsed_ms: u128,
-         }
--
-         let span = ctx.span(&id).unwrap();
-         let Some(data) = span.extensions_mut().remove::<JsonData>() else {
              return;
          };
--
+ 
 -        let data = JsonDataInner {
 -            name: data.name,
 -            elapsed_ms: data.start.elapsed().as_millis(),
@@ -76,10 +65,3 @@ Rustfmt size:  2593 bytes
      }
  }
  
-         } else {
-             Some(FxHashSet::from_iter(spec.split('|').map(String::from)))
-         };
--
-         Self { allowed_names }
-     }
- }

@@ -43,6 +43,7 @@ fn completes_items_from_standard_library() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /Cargo.toml
@@ -59,6 +60,7 @@ use std::collections::Spam;
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
             server.doc_id("src/lib.rs"),
@@ -76,6 +78,7 @@ fn resolves_inlay_hints() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /Cargo.toml
@@ -92,6 +95,7 @@ fn f() {
     )
     .server()
     .wait_until_workspace_is_loaded();
+
     let res = server.send_request::<InlayHintRequest>(InlayHintParams {
         range: Range::new(Position::new(0, 0), Position::new(3, 1)),
         text_document: server.doc_id("src/lib.rs"),
@@ -117,6 +121,7 @@ fn completes_items_from_standard_library_in_cargo_script() {
     if skip_slow_tests() || std::env::var("CI").is_ok() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /dependency/Cargo.toml
@@ -147,6 +152,7 @@ use dependency2::Spam;
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
             server.doc_id("src/lib.rs"),
@@ -157,6 +163,7 @@ use dependency2::Spam;
         work_done_progress_params: WorkDoneProgressParams::default(),
     });
     assert!(res.to_string().contains("SpecialHashMap"), "{}", res.to_string());
+
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
             server.doc_id("src/lib.rs"),
@@ -167,6 +174,7 @@ use dependency2::Spam;
         work_done_progress_params: WorkDoneProgressParams::default(),
     });
     assert!(!res.to_string().contains("SpecialHashMap"));
+
     server.write_file_and_save(
         "src/lib.rs",
         r#"#!/usr/bin/env -S cargo +nightly -Zscript
@@ -179,8 +187,11 @@ use dependency2::Spam;
 "#
         .to_owned(),
     );
+
     let server = server.wait_until_workspace_is_loaded();
+
     std::thread::sleep(std::time::Duration::from_secs(3));
+
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
             server.doc_id("src/lib.rs"),
@@ -191,6 +202,7 @@ use dependency2::Spam;
         work_done_progress_params: WorkDoneProgressParams::default(),
     });
     assert!(!res.to_string().contains("SpecialHashMap"));
+
     let res = server.send_request::<Completion>(CompletionParams {
         text_document_position: TextDocumentPositionParams::new(
             server.doc_id("src/lib.rs"),
@@ -208,6 +220,7 @@ fn test_runnables_project() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /foo/Cargo.toml
@@ -235,6 +248,7 @@ fn main() {}
     .root("bar")
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<Runnables>(
         RunnablesParams { text_document: server.doc_id("foo/tests/spam.rs"), position: None },
         json!([
@@ -334,6 +348,7 @@ fn test_path_dependency_runnables() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /consumer/Cargo.toml
@@ -382,6 +397,7 @@ mod tests {
     .root("devdependency")
     .server()
     .wait_until_workspace_is_loaded();
+
     for runnable in ["consumer", "dependency", "devdependency"] {
         server.request::<Runnables>(
             RunnablesParams {
@@ -418,6 +434,7 @@ fn test_runnables_cwd() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /foo/Cargo.toml
@@ -445,6 +462,7 @@ fn otherpkg() {}
     .root("foo")
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<Runnables>(
         RunnablesParams { text_document: server.doc_id("foo/mainpkg/src/main.rs"), position: None },
         json!([
@@ -469,6 +487,7 @@ fn otherpkg() {}
             "{...}"
         ]),
     );
+
     server.request::<Runnables>(
         RunnablesParams { text_document: server.doc_id("foo/otherpkg/src/lib.rs"), position: None },
         json!([
@@ -500,6 +519,7 @@ fn test_format_document() {
     if skip_slow_tests() {
         return;
     }
+
     let server = project(
         r#"
 //- /Cargo.toml
@@ -517,6 +537,7 @@ pub use std::collections::HashMap;
 "#,
     )
     .wait_until_workspace_is_loaded();
+
     server.request::<Formatting>(
         DocumentFormattingParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -547,6 +568,7 @@ fn test_format_document_2018() {
     if skip_slow_tests() {
         return;
     }
+
     let server = project(
         r#"
 //- /Cargo.toml
@@ -568,6 +590,7 @@ pub use std::collections::HashMap;
 "#,
     )
     .wait_until_workspace_is_loaded();
+
     server.request::<Formatting>(
         DocumentFormattingParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -605,6 +628,7 @@ fn test_format_document_unchanged() {
     if skip_slow_tests() {
         return;
     }
+
     let server = project(
         r#"
 //- /Cargo.toml
@@ -617,6 +641,7 @@ fn main() {}
 "#,
     )
     .wait_until_workspace_is_loaded();
+
     server.request::<Formatting>(
         DocumentFormattingParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -639,6 +664,7 @@ fn test_format_document_range() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /Cargo.toml
@@ -660,6 +686,7 @@ fn main() {
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<RangeFormatting>(
         DocumentRangeFormattingParams {
             range: Range {
@@ -701,6 +728,7 @@ fn test_missing_module_code_action() {
     if skip_slow_tests() {
         return;
     }
+
     let server = project(
         r#"
 //- /Cargo.toml
@@ -715,6 +743,7 @@ fn main() {}
 "#,
     )
     .wait_until_workspace_is_loaded();
+
     server.request::<CodeActionRequest>(
         CodeActionParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -750,6 +779,7 @@ fn main() {}
             }
         ]),
     );
+
     server.request::<CodeActionRequest>(
         CodeActionParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -767,8 +797,11 @@ fn test_missing_module_code_action_in_json_project() {
     if skip_slow_tests() {
         return;
     }
+
     let tmp_dir = TestDir::new();
+
     let path = tmp_dir.path();
+
     let project = json!({
         "roots": [path],
         "crates": [ {
@@ -778,6 +811,7 @@ fn test_missing_module_code_action_in_json_project() {
             "cfg": [ "cfg_atom_1", "feature=\"cfg_1\""],
         } ]
     });
+
     let code = format!(
         r#"
 //- /.rust-project.json
@@ -789,8 +823,10 @@ mod bar;
 fn main() {{}}
 "#,
     );
+
     let server =
         Project::with_fixture(&code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
+
     server.request::<CodeActionRequest>(
         CodeActionParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -826,6 +862,7 @@ fn main() {{}}
             }
         ]),
     );
+
     server.request::<CodeActionRequest>(
         CodeActionParams {
             text_document: server.doc_id("src/lib.rs"),
@@ -844,6 +881,7 @@ fn diagnostics_dont_block_typing() {
         // FIXME: This test is failing too frequently (therefore we disable it on CI).
         return;
     }
+
     let librs: String = (0..10).fold(String::new(), |mut acc, i| format_to_acc!(acc, "mod m{i};"));
     let libs: String = (0..10).fold(String::new(), |mut acc, i| {
         format_to_acc!(acc, "//- /src/m{i}.rs\nfn foo() {{}}\n\n")
@@ -868,6 +906,7 @@ fn main() {{}}
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     for i in 0..10 {
         server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
@@ -902,6 +941,7 @@ fn preserves_dos_line_endings() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         "
 //- /Cargo.toml
@@ -915,6 +955,7 @@ version = \"0.0.0\"
     )
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<OnEnter>(
         TextDocumentPositionParams {
             text_document: server.doc_id("src/main.rs"),
@@ -990,9 +1031,11 @@ fn main() {
 }
 "###,
     );
+
     if root_contains_symlink {
         server = server.with_root_dir_contains_symlink();
     }
+
     let server = server
         .with_config(serde_json::json!({
             "cargo": {
@@ -1007,6 +1050,7 @@ fn main() {
         }))
         .server()
         .wait_until_workspace_is_loaded();
+
     let res = server.send_request::<HoverRequest>(HoverParams {
         text_document_position_params: TextDocumentPositionParams::new(
             server.doc_id("src/main.rs"),
@@ -1015,6 +1059,7 @@ fn main() {
         work_done_progress_params: Default::default(),
     });
     assert!(res.to_string().contains("&str"));
+
     let res = server.send_request::<HoverRequest>(HoverParams {
         text_document_position_params: TextDocumentPositionParams::new(
             server.doc_id("src/main.rs"),
@@ -1023,6 +1068,7 @@ fn main() {
         work_done_progress_params: Default::default(),
     });
     assert!(res.to_string().contains("&str"));
+
     server.request::<GotoTypeDefinition>(
         GotoDefinitionParams {
             text_document_position_params: TextDocumentPositionParams::new(
@@ -1048,6 +1094,7 @@ fn main() {
             "targetUri": "file:///[..]src/main.rs"
         }]),
     );
+
     server.request::<GotoTypeDefinition>(
         GotoDefinitionParams {
             text_document_position_params: TextDocumentPositionParams::new(
@@ -1098,6 +1145,7 @@ fn resolve_proc_macro() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r###"
 //- /foo/Cargo.toml
@@ -1177,6 +1225,7 @@ pub fn foo(_input: TokenStream) -> TokenStream {
     .root("bar")
     .server()
     .wait_until_workspace_is_loaded();
+
     let res = server.send_request::<HoverRequest>(HoverParams {
         text_document_position_params: TextDocumentPositionParams::new(
             server.doc_id("foo/src/main.rs"),
@@ -1185,6 +1234,7 @@ pub fn foo(_input: TokenStream) -> TokenStream {
         work_done_progress_params: Default::default(),
     });
     let value = res.get("contents").unwrap().get("value").unwrap().as_str().unwrap();
+
     expect![[r#"
 
         ```rust
@@ -1202,10 +1252,12 @@ fn test_will_rename_files_same_level() {
     if skip_slow_tests() {
         return;
     }
+
     let tmp_dir = TestDir::new();
     let tmp_dir_path = tmp_dir.path().to_owned();
     let tmp_dir_str = tmp_dir_path.as_str();
     let base_path = PathBuf::from(format!("file://{tmp_dir_str}"));
+
     let code = r#"
 //- /Cargo.toml
 [package]
@@ -1236,6 +1288,7 @@ use crate::old_folder::nested::foo as bar;
     let server =
         Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
     //rename same level file
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1270,6 +1323,7 @@ use crate::old_folder::nested::foo as bar;
         }),
     );
     //rename file from mod.rs to foo.rs
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1280,6 +1334,7 @@ use crate::old_folder::nested::foo as bar;
         json!(null),
     );
     //rename file from foo.rs to mod.rs
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1290,6 +1345,7 @@ use crate::old_folder::nested::foo as bar;
         json!(null),
     );
     //rename same level file
+
     server.request::<WillRenameFiles>(
         RenameFilesParams {
             files: vec![FileRename {
@@ -1351,6 +1407,7 @@ fn test_exclude_config_works() {
     if skip_slow_tests() {
         return;
     }
+
     let server = Project::with_fixture(
         r#"
 //- /foo/Cargo.toml
@@ -1382,7 +1439,9 @@ foo = { path = "../foo" }
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
+
     let server = Project::with_fixture(
         r#"
 //- /foo/Cargo.toml
@@ -1419,5 +1478,6 @@ version = "0.0.0"
     }))
     .server()
     .wait_until_workspace_is_loaded();
+
     server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
 }

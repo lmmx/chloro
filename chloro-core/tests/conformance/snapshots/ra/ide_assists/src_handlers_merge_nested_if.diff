@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6943 bytes
-Chloro size:   6598 bytes
+Chloro size:   6605 bytes
 Rustfmt size:  7038 bytes
 
 ✗ Outputs DIFFER
@@ -36,40 +36,21 @@ Rustfmt size:  7038 bytes
      }
 -
      //should not apply to if with else branch.
++
      if expr.else_branch().is_some() {
          return None;
      }
--
-     let cond = expr.condition()?;
-     //should not apply for if-let
-     if is_pattern_cond(cond.clone()) {
-         return None;
      }
--
+ 
      let cond_range = cond.syntax().text_range();
 -
      //check if the then branch is a nested if
++
      let then_branch = expr.then_branch()?;
      let stmt = then_branch.stmt_list()?;
      if stmt.statements().count() != 0 {
-         return None;
-     }
--
-     let nested_if_to_merge = then_branch.tail_expr().and_then(|e| match e {
-         ast::Expr::IfExpr(e) => Some(e),
-         _ => None,
-     if is_pattern_cond(nested_if_cond.clone()) {
-         return None;
-     }
--
      let nested_if_then_branch = nested_if_to_merge.then_branch()?;
      let then_branch_range = then_branch.syntax().text_range();
-+    acc.add(AssistId::refactor_rewrite("merge_nested_if"), "Merge nested if", if_range, |edit| {
-+        let cond_text = if has_logic_op_or(&cond) {
-+            format!("({})", cond.syntax().text())
-+        } else {
-+            cond.syntax().text().to_string()
-+        };
  
 -    acc.add(
 -        AssistId::refactor_rewrite("merge_nested_if"),
@@ -81,10 +62,11 @@ Rustfmt size:  7038 bytes
 -            } else {
 -                cond.syntax().text().to_string()
 -            };
-+        let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
-+            format!("({})", nested_if_cond.syntax().text())
++    acc.add(AssistId::refactor_rewrite("merge_nested_if"), "Merge nested if", if_range, |edit| {
++        let cond_text = if has_logic_op_or(&cond) {
++            format!("({})", cond.syntax().text())
 +        } else {
-+            nested_if_cond.syntax().text().to_string()
++            cond.syntax().text().to_string()
 +        };
  
 -            let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
@@ -92,10 +74,15 @@ Rustfmt size:  7038 bytes
 -            } else {
 -                nested_if_cond.syntax().text().to_string()
 -            };
-+        let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
++        let nested_if_cond_text = if has_logic_op_or(&nested_if_cond) {
++            format!("({})", nested_if_cond.syntax().text())
++        } else {
++            nested_if_cond.syntax().text().to_string()
++        };
  
 -            let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
--
++        let replace_cond = format!("{cond_text} && {nested_if_cond_text}");
+ 
 -            edit.replace(cond_range, replace_cond);
 -            edit.replace(then_branch_range, nested_if_then_branch.syntax().text());
 -        },

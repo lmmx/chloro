@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10526 bytes
-Chloro size:   10255 bytes
+Chloro size:   10261 bytes
 Rustfmt size:  10803 bytes
 
 ✗ Outputs DIFFER
@@ -58,22 +58,10 @@ Rustfmt size:  10803 bytes
 +    let is_self_present =
 +        param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
      // check if fn is in impl Trait for ..
++
      if func
          .syntax()
-         cov_mark::hit!(trait_impl);
-         return None;
-     }
--
-     let mut param_position = func.param_list()?.params().position(|it| it == param)?;
-     // param_list() does not take the self param into consideration, hence this additional check
-     // is required. For associated functions, param_position is incremented here. For inherent
-         let func = ctx.sema.to_def(&func)?;
-         Definition::Function(func)
-     };
--
-     let param_def = {
-         let local = ctx.sema.to_def(&ident_pat)?;
-         Definition::Local(local)
+         .parent() // AssocItemList
                  editor.delete(element);
              }
              for (file_id, references) in fn_def.usages(&ctx.sema).all() {
@@ -89,10 +77,8 @@ Rustfmt size:  10803 bytes
              }
              builder.add_file_edits(ctx.vfs_file_id(), editor);
          },
-     let possible_ranges = references
-         .into_iter()
          .filter_map(|usage| process_usage(&source_file, usage, arg_to_remove, is_self_present));
--
+ 
      for element_range in possible_ranges {
 -        let Some(SyntaxElement::Node(parent)) = element_range.iter().cloned().reduce(|a, b| {
 -            least_common_ancestor_element(&a, &b)
@@ -107,20 +93,6 @@ Rustfmt size:  10803 bytes
              continue;
          };
          let mut editor = builder.make_editor(&parent);
-         let arg = call_expr.arg_list()?.args().nth(arg_to_remove)?;
-         return Some(elements_to_remove(arg.syntax()));
-     }
--
-     let method_call_expr_opt: Option<ast::MethodCallExpr> =
-         find_node_at_range(source_file.syntax(), range);
-     if let Some(method_call_expr) = method_call_expr_opt {
-         let arg = method_call_expr.arg_list()?.args().nth(arg_to_remove)?;
-         return Some(elements_to_remove(arg.syntax()));
-     }
--
-     None
- }
- 
      });
      if let Some((dir, token)) = up_to_comma {
          let after = token.siblings_with_tokens(dir).nth(1).unwrap();

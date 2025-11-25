@@ -150,6 +150,7 @@ impl<'db> SolverDelegate for SolverContext<'db> {
         // lifetime for its member constraints which then results in
         // unexpected region errors.
         goals.push(Goal::new(interner, param_env, ClauseKind::WellFormed(hidden_ty.into())));
+
         let replace_opaques_in = |clause: Clause<'db>| {
             fold_tys(interner, clause, |ty| match ty.kind() {
                 // Replace all other mentions of the same opaque type with the hidden type,
@@ -161,6 +162,7 @@ impl<'db> SolverDelegate for SolverContext<'db> {
                 _ => ty,
             })
         };
+
         let db = interner.db;
         let (opaques_table, opaque_idx) = match opaque_id.loc(db) {
             ImplTraitId::ReturnTypeImplTrait(func, opaque_idx) => {
@@ -303,6 +305,7 @@ impl<'db> SolverDelegate for SolverContext<'db> {
                 }
             }
         }
+
         let pred = goal.predicate.kind();
         match pred.no_bound_vars()? {
             PredicateKind::Clause(ClauseKind::RegionOutlives(_outlives)) => Some(Certainty::Yes),

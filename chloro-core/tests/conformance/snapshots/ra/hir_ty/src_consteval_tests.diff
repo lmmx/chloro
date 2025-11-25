@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 57017 bytes
-Chloro size:   56990 bytes
+Chloro size:   56998 bytes
 Rustfmt size:  57422 bytes
 
 ✗ Outputs DIFFER
@@ -114,55 +114,6 @@ Rustfmt size:  57422 bytes
  }
  
  #[test]
-         "#,
-         10,
-     );
--
-     check_number(
-         r#"
-     const fn max(a: &i32, b: &i32) -> &i32 {
-     "#,
-         6,
-     );
--
-     check_number(
-         r#"
-     const F1: i32 = 2147483647;
-     "#,
-         2147483622,
-     );
--
-     check_number(
-         r#"
-     const F1: i32 = -2147483648;
-     "#,
-         -2147483630,
-     );
--
-     check_number(
-         r#"
-     const F1: i32 = 10;
-     "#,
-         -10,
-     );
--
-     check_number(
-         r#"
-     const F1: i32 = 25;
-     "#,
-         0,
-     );
--
-     check_number(
-         r#"
-     const A: i32 = -2147483648;
-     "#,
-         0,
-     );
--
-     check_number(
-         r#"
-     const GOAL: i64 = (-2147483648_i32) as i64;
  }
  
  #[test]
@@ -177,13 +128,6 @@ Rustfmt size:  57422 bytes
  #[should_panic]
  fn anonymous_const_block() {
      check_number(
-     if skip_slow_tests() {
-         return;
-     }
--
-     check_fail(
-         r#"
-     const GOAL: usize = loop {};
          z[1]
      };
      "#,

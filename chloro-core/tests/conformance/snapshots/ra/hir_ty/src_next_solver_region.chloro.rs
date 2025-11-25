@@ -93,6 +93,7 @@ impl<'db> Region<'db> {
 
     pub fn type_flags(&self) -> TypeFlags {
         let mut flags = TypeFlags::empty();
+
         match &self.inner() {
             RegionKind::ReVar(..) => {
                 flags |= TypeFlags::HAS_FREE_REGIONS;
@@ -131,6 +132,7 @@ impl<'db> Region<'db> {
                 flags |= TypeFlags::HAS_ERROR;
             }
         }
+
         flags
     }
 }

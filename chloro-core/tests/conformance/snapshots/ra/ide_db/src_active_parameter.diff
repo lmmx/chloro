@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6837 bytes
-Chloro size:   6829 bytes
+Chloro size:   6833 bytes
 Rustfmt size:  6998 bytes
 
 ✗ Outputs DIFFER
@@ -46,11 +46,10 @@ Rustfmt size:  6998 bytes
 -            it.arg_list()
 -                .is_some_and(|it| it.syntax().text_range().contains(offset))
 -        })?;
--
 +        .find(|it| it.arg_list().is_some_and(|it| it.syntax().text_range().contains(offset)))?;
+ 
      callable_for_node(sema, &calling_node, offset)
  }
- 
      at: TextSize,
  ) -> Option<(hir::Callable<'db>, Option<usize>)> {
      debug_assert!(arg_list.syntax().text_range().contains(at));
@@ -62,21 +61,3 @@ Rustfmt size:  6998 bytes
      callable_for_node(sema, &callable, at)
  }
  
-             _ => return None,
-         }
-     };
--
-     let active_param = generic_arg_list
-         .syntax()
-         .children_with_tokens()
-         .filter(|t| t.kind() == T![,])
-         .take_while(|t| t.text_range().start() <= token.text_range().start())
-         .count();
--
-     let first_arg_is_non_lifetime = generic_arg_list
-         .generic_args()
-         .next()
-         .is_some_and(|arg| !matches!(arg, ast::GenericArg::LifetimeArg(_)));
--
-     Some((def, active_param, first_arg_is_non_lifetime, variant))
- }

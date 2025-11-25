@@ -16,10 +16,12 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     {
         return None;
     }
+
     let parent_fn = const_.syntax().ancestors().find_map(ast::Fn::cast)?;
     // NOTE: We can technically provide this assist for default methods in trait definitions, but
     // it's somewhat complex to handle it correctly when the const's name conflicts with
     // supertrait's item. We may want to consider implementing it in the future.
+
     let AssocItemContainer::Impl(impl_) =
         ctx.sema.to_def(&parent_fn)?.as_assoc_item(db)?.container(db)
     else {
@@ -28,9 +30,11 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     if impl_.trait_(db).is_some() {
         return None;
     }
+
     let def = ctx.sema.to_def(&const_)?;
     let name = def.name(db)?;
     let items = impl_.source(db)?.value.assoc_item_list()?;
+
     let ty = impl_.self_ty(db);
     // If there exists another associated item with the same name, skip the assist.
     if ty
@@ -45,6 +49,7 @@ pub(crate) fn move_const_to_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("move_const_to_impl"),
         "Move const to impl block",
@@ -204,6 +209,7 @@ impl S {
     }
 "#,
         );
+
         check_assist_not_applicable(
             move_const_to_impl,
             r#"

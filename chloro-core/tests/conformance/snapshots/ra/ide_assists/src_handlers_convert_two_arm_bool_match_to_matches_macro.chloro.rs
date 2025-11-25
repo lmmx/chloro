@@ -23,6 +23,7 @@ pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
     let second_arm_expr = second_arm.expr()?;
     let first_arm_body = is_bool_literal_expr(&ctx.sema, &first_arm_expr)?;
     let second_arm_body = is_bool_literal_expr(&ctx.sema, &second_arm_expr)?;
+
     if !matches!(
         (&first_arm_body, &second_arm_body),
         (Literal(true), Literal(false))
@@ -32,8 +33,10 @@ pub(crate) fn convert_two_arm_bool_match_to_matches_macro(
         cov_mark::hit!(non_invert_bool_literal_arms);
         return None;
     }
+
     let target_range = ctx.sema.original_range(match_expr.syntax()).range;
     let expr = match_expr.expr()?;
+
     acc.add(
         AssistId::refactor_rewrite("convert_two_arm_bool_match_to_matches_macro"),
         "Convert to matches!",
@@ -84,9 +87,11 @@ fn is_bool_literal_expr(
     {
         return Some(ArmBodyExpression::Literal(b));
     }
+
     if !sema.type_of_expr(expr)?.original.is_bool() {
         return None;
     }
+
     Some(ArmBodyExpression::Expression(expr.clone()))
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16012 bytes
-Chloro size:   15674 bytes
+Chloro size:   15678 bytes
 Rustfmt size:  16309 bytes
 
 ✗ Outputs DIFFER
@@ -48,7 +48,7 @@ Rustfmt size:  16309 bytes
 -            .find(|it| ast::MatchExpr::can_cast(it.kind()))?
 +        parent = parent.ancestors().find(|it| ast::MatchExpr::can_cast(it.kind()))?
      }
--
+ 
      let kind = parent.kind();
      if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
          acc.add(assist_id, assist_label, target, |builder| {
@@ -100,12 +100,10 @@ Rustfmt size:  16309 bytes
 -
      // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
      // then continue to remove trailing whitespace.
++
      let expr_str = expr_str.trim_end_matches(whitespace_pat);
      let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
--
-     expr_str
-         .lines()
-         .map(|line| line.replacen("    ", "", 1)) // Delete indentation
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -234,13 +232,6 @@ Rustfmt size:  16309 bytes
      #[test]
      fn nested_single_line() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             unwrap_block,
-             r#"
  "#,
          );
      }

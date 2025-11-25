@@ -122,6 +122,7 @@ impl ModPath {
         if self.kind != PathKind::Plain {
             return None;
         }
+
         match &*self.segments {
             [name] => Some(name),
             _ => None,
@@ -214,6 +215,7 @@ fn convert_path(
     span_for_range: &mut dyn FnMut(::tt::TextRange) -> SyntaxContext,
 ) -> Option<ModPath> {
     let mut segments = path.segments();
+
     let segment = &segments.next()?;
     let handle_super_kw = &mut |init_deg| {
         let mut deg = init_deg;
@@ -234,6 +236,7 @@ fn convert_path(
 
         Some(ModPath::from_segments(PathKind::Super(deg), next_segment))
     };
+
     let mut mod_path = match segment.kind()? {
         ast::PathSegmentKind::Name(name_ref) => {
             if name_ref.text() == "$crate" {
@@ -261,6 +264,7 @@ fn convert_path(
             return None;
         }
     };
+
     for segment in segments {
         let name = match segment.kind()? {
             ast::PathSegmentKind::Name(name) => name.as_name(),
@@ -272,6 +276,7 @@ fn convert_path(
     // Basically, even in rustc it is quite hacky:
     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
     // We follow what it did anyway :)
+
     if mod_path.segments.len() == 1
         && mod_path.kind == PathKind::Plain
         && let Some(_macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
@@ -286,6 +291,7 @@ fn convert_path(
             }
         }
     }
+
     Some(mod_path)
 }
 
@@ -350,6 +356,7 @@ pub fn resolve_crate_root(db: &dyn ExpandDatabase, mut ctxt: SyntaxContext) -> O
     while let Some((mark, Transparency::SemiTransparent)) = iter.next() {
         result_mark = Some(mark);
     }
+
     result_mark.map(|call| db.lookup_intern_macro_call(call.into()).def.krate)
 }
 

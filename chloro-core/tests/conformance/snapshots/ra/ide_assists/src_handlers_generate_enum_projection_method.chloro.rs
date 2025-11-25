@@ -72,9 +72,11 @@ fn generate_enum_projection_method(
         happy_case,
         sad_case,
     } = props;
+
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let variant_name = variant.name()?;
     let parent_enum = ast::Adt::Enum(variant.parent_enum());
+
     let (pattern_suffix, field_type, bound_name) = match variant.kind() {
         ast::StructKind::Record(record) => {
             let (field,) = record.fields().collect_tuple()?;
@@ -90,9 +92,12 @@ fn generate_enum_projection_method(
         }
         ast::StructKind::Unit => return None,
     };
+
     let fn_name = format!("{fn_name_prefix}_{}", &to_lower_snake_case(&variant_name.text()));
     // Return early if we've found an existing new fn
+
     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
+
     let target = variant.syntax().text_range();
     acc.add_group(
         &GroupLabel("Generate an `is_`,`as_`, or `try_into_` for this enum variant".to_owned()),

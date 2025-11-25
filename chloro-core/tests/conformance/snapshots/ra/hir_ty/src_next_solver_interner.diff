@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   80022 bytes
+Chloro size:   80048 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -217,10 +217,9 @@ Rustfmt size:  84055 bytes
  impl std::hash::Hash for AdtDefInner {
      #[inline]
      fn hash<H: std::hash::Hasher>(&self, s: &mut H) {
-                 (flags, variants, repr)
              }
          };
--
+ 
 -        AdtDef::new_(
 -            db,
 -            AdtDefInner {
@@ -234,13 +233,6 @@ Rustfmt size:  84055 bytes
      }
  
      pub fn inner(&self) -> &AdtDefInner {
-         };
-         let id: VariantId = struct_id.into();
-         let field_types = interner.db().field_types(id);
--
-         field_types.iter().last().map(|f| *f.1)
-     }
- 
          let db = interner.db();
          // FIXME: this is disabled just to match the behavior with chalk right now
          let _field_tys = |id: VariantId| {
@@ -252,13 +244,6 @@ Rustfmt size:  84055 bytes
          };
          let field_tys = |_id: VariantId| vec![];
          let tys: Vec<_> = match self.inner().id {
-                 .flat_map(|&(variant_id, _, _)| field_tys(variant_id.into()))
-                 .collect(),
-         };
--
-         EarlyBinder::bind(tys)
-     }
- 
          sizedness: SizedTraitKind,
      ) -> Option<EarlyBinder<DbInterner<'db>, Ty<'db>>> {
          if self.is_struct() {
@@ -456,27 +441,15 @@ Rustfmt size:  84055 bytes
  
      fn debug_assert_existential_args_compatible(
          self,
- 
-     fn parent(self, def_id: Self::DefId) -> Self::DefId {
-         use hir_def::Lookup;
--
-         let container = match def_id {
-             SolverDefId::FunctionId(it) => it.lookup(self.db()).container,
-             SolverDefId::TypeAliasId(it) => it.lookup(self.db()).container,
-             | SolverDefId::Ctor(..)
-             | SolverDefId::InternedOpaqueTyId(..) => panic!(),
-         };
--
-         match container {
-             ItemContainerId::ImplId(it) => it.into(),
-             ItemContainerId::TraitId(it) => it.into(),
              return false; /* No Sized trait, can't require it! */
          };
          let sized_def_id = sized_id.into();
 -
          // Search for a predicate like `Self : Sized` amongst the trait bounds.
++
          let predicates = self.predicates_of(def_id);
          elaborate(self, predicates.iter_identity()).any(|pred| match pred.kind().skip_binder() {
+             ClauseKind::Trait(ref trait_pred) => {
          explicit_item_bounds(self, def_id).map_bound(|bounds| {
              Clauses::new_from_iter(
                  self,
@@ -510,20 +483,6 @@ Rustfmt size:  84055 bytes
          let predicates: Vec<_> = predicates.iter().cloned().collect();
          EarlyBinder::bind(predicates.into_iter())
      }
-             rustc_type_ir::TyKind::Param(param) => param.index == 0,
-             _ => false,
-         };
--
-         let predicates: Vec<(Clause<'db>, Span)> = self
-             .db()
-             .generic_predicates(def_id.0.into())
-                 _ => false,
-             }
-         }
--
-         let predicates: Vec<(Clause<'db>, Span)> = self
-             .db()
-             .generic_predicates(def_id.try_into().unwrap())
          self,
          impl_id: Self::ImplId,
      ) -> EarlyBinder<Self, impl IntoIterator<Item = Self::Clause>> {
@@ -583,13 +542,6 @@ Rustfmt size:  84055 bytes
      }
  
      fn for_each_relevant_impl(
-             TyKind::Infer(InferTy::FloatVar(..)) => &ALL_FLOAT_FPS,
-             _ => self_ty_fp.as_slice(),
-         };
--
-         if fps.is_empty() {
-             _ = for_trait_impls(
-                 self.db(),
                      for i in impls.for_trait(trait_) {
                          use rustc_type_ir::TypeVisitable;
                          let contains_errors = self.db().impl_trait(i).map_or(false, |b| {
@@ -610,13 +562,6 @@ Rustfmt size:  84055 bytes
                              });
                              if contains_errors {
                                  continue;
- 
-     fn for_each_blanket_impl(self, trait_def_id: Self::TraitId, mut f: impl FnMut(Self::ImplId)) {
-         let Some(krate) = self.krate else { return };
--
-         for impls in self.db.trait_impls_in_deps(krate).iter() {
-             for impl_id in impls.for_trait(trait_def_id.0) {
-                 let impl_data = self.db.impl_signature(impl_id);
          let body = self.db.body(owner);
          matches!(
              body[expr_id],
@@ -629,45 +574,27 @@ Rustfmt size:  84055 bytes
          )
      }
  
-     fn unsizing_params_for_adt(self, id: Self::AdtId) -> Self::UnsizingParams {
-         let def = AdtDef::new(id.0, self);
-         let num_params = self.generics_of(id.into()).count();
--
-         let maybe_unsizing_param_idx = |arg: GenericArg<'db>| match arg.kind() {
-             GenericArgKind::Type(ty) => match ty.kind() {
-                 rustc_type_ir::TyKind::Param(p) => Some(p.index),
                  _ => None,
              },
          };
 -
          // The last field of the structure has to exist and contain type/const parameters.
++
          let variant = def.non_enum_variant();
          let fields = variant.fields(self.db());
          let Some((tail_field, prefix_fields)) = fields.split_last() else {
-             return UnsizingParams(DenseBitSet::new_empty(num_params));
-         };
--
-         let field_types = self.db().field_types(variant.id());
-         let mut unsizing_params = DenseBitSet::new_empty(num_params);
-         let ty = field_types[tail_field.0];
                  unsizing_params.insert(i);
              }
          }
 -
          // Ensure none of the other fields mention the parameters used
          // in unsizing.
++
          for field in prefix_fields {
-                 }
-             }
+             for arg in field_types[field.0].instantiate_identity().walk() {
+                 if let Some(i) = maybe_unsizing_param_idx(arg) {
          }
--
-         UnsizingParams(unsizing_params)
-     }
  
-                 Const::new_bound(self.interner, DebruijnIndex::ZERO, BoundConst { var })
-             }
-         }
--
          let mut map = Default::default();
 -        let delegate = Anonymize {
 -            interner: self,
@@ -689,19 +616,14 @@ Rustfmt size:  84055 bytes
              return SolverDefIds::default();
          };
          let mut result = Vec::new();
--
+ 
          crate::opaques::opaque_types_defined_by(self.db, def_id, &mut result);
 -
          // Collect coroutines.
++
          let body = self.db.body(def_id);
          body.exprs().for_each(|(expr_id, expr)| {
-                 result.push(coroutine.into());
-             }
-         });
--
-         SolverDefIds::new_from_iter(self, result)
-     }
- 
+             if matches!(
              CallableDefId::FunctionId(id) => id,
              _ => return false,
          };
@@ -820,13 +742,6 @@ Rustfmt size:  84055 bytes
      impl Attached {
          #[inline]
          fn attach<R>(&self, db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
-             struct DbGuard<'s> {
-                 state: Option<&'s Attached>,
-             }
--
-             impl<'s> DbGuard<'s> {
-                 #[inline]
-                 fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
                          None => {
                              // Otherwise, set the database.
                              attached.database.set(Some(NonNull::from(db)));
@@ -837,23 +752,6 @@ Rustfmt size:  84055 bytes
                          }
                      }
                  }
-             }
--
-             impl Drop for DbGuard<'_> {
-                 #[inline]
-                 fn drop(&mut self) {
-                     }
-                 }
-             }
--
-             let _guard = DbGuard::new(self, db);
-             op()
-         }
-                 state: &'s Attached,
-                 prev: Option<NonNull<dyn HirDatabase>>,
-             }
--
-             impl<'s> DbGuard<'s> {
                  #[inline]
                  fn new(attached: &'s Attached, db: &dyn HirDatabase) -> Self {
                      let prev = attached.database.replace(Some(NonNull::from(db)));
@@ -864,17 +762,7 @@ Rustfmt size:  84055 bytes
 +                    Self { state: attached, prev }
                  }
              }
--
-             impl Drop for DbGuard<'_> {
-                 #[inline]
-                 fn drop(&mut self) {
-                     self.state.database.set(self.prev);
-                 }
-             }
--
-             let _guard = DbGuard::new(self, db);
-             op()
-         }
+ 
  
          #[inline]
          fn with<R>(&self, op: impl FnOnce(&dyn HirDatabase) -> R) -> R {
@@ -885,6 +773,7 @@ Rustfmt size:  84055 bytes
 -
 +            let db = self.database.get().expect("Try to use attached db, but not db is attached");
              // SAFETY: The db is attached, so it must be valid.
++
              op(unsafe { db.as_ref() })
          }
      }

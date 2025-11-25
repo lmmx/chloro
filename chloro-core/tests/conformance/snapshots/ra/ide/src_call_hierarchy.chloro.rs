@@ -46,9 +46,11 @@ pub(crate) fn incoming_calls(
     FilePosition { file_id, offset }: FilePosition,
 ) -> Option<Vec<CallItem>> {
     let sema = &Semantics::new(db);
+
     let file = sema.parse_guess_edition(file_id);
     let file = file.syntax();
     let mut calls = CallLocations::default();
+
     let references = sema
         .find_nodes_at_offset_with_descend(file, offset)
         .filter_map(move |node| match node {
@@ -63,6 +65,7 @@ pub(crate) fn incoming_calls(
             ast::NameLike::Lifetime(_) => None,
         })
         .flat_map(|func| func.usages(sema).all());
+
     for (_, references) in references {
         let references =
             references.iter().filter_map(|FileReference { name, .. }| name.as_name_ref());
@@ -88,6 +91,7 @@ pub(crate) fn incoming_calls(
             }
         }
     }
+
     Some(calls.into_items())
 }
 
@@ -104,6 +108,7 @@ pub(crate) fn outgoing_calls(
         _ => 0,
     })?;
     let mut calls = CallLocations::default();
+
     sema.descend_into_macros_exact(token)
         .into_iter()
         .filter_map(|it| it.parent_ancestors().nth(1).and_then(ast::Item::cast))
@@ -147,6 +152,7 @@ pub(crate) fn outgoing_calls(
         })
         .flatten()
         .for_each(|(nav, range)| calls.add(nav, range.into_file_id(db)));
+
     Some(calls.into_items())
 }
 
@@ -188,16 +194,20 @@ mod tests {
                 )))
             )
         }
+
         let config = crate::CallHierarchyConfig { exclude_tests, minicore: MiniCore::default() };
         let (analysis, pos) = fixture::position(ra_fixture);
+
         let mut navs = analysis.call_hierarchy(pos, &config).unwrap().unwrap().info;
         assert_eq!(navs.len(), 1);
         let nav = navs.pop().unwrap();
         expected_nav.assert_eq(&nav.debug_render());
+
         let item_pos =
             FilePosition { file_id: nav.file_id, offset: nav.focus_or_full_range().start() };
         let incoming_calls = analysis.incoming_calls(&config, item_pos).unwrap().unwrap();
         expected_incoming.assert_eq(&incoming_calls.into_iter().map(debug_render).join("\n"));
+
         let outgoing_calls = analysis.outgoing_calls(&config, item_pos).unwrap().unwrap();
         expected_outgoing.assert_eq(&outgoing_calls.into_iter().map(debug_render).join("\n"));
     }
@@ -401,6 +411,7 @@ fn main() {
             expect!["main Function FileId(0) 31..52 34..38 : FileId(0):47..48"],
             expect!["b Function FileId(0) 20..29 23..24 : FileId(0):13..14"],
         );
+
         check_hierarchy(
             false,
             r#"
@@ -693,6 +704,7 @@ fn f3() {
                 f2 Function FileId(0) 54..81 57..59 : FileId(0):39..41
                 f3 Function FileId(0) 83..118 94..96 : FileId(0):45..47"#]],
         );
+
         check_hierarchy(
             true,
             r#"

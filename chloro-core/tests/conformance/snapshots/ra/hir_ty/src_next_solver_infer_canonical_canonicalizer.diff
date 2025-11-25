@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29427 bytes
+Chloro size:   29443 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -24,10 +24,9 @@ Rustfmt size:  29841 bytes
      /// This is equivalent to `CanonicalVarValues`, but using a
      /// `SmallVec` yields a significant performance win.
      pub var_values: SmallVec<[GenericArg<'db>; 8]>,
-     fn default() -> Self {
          let mut universe_map = SmallVec::default();
          universe_map.push(UniverseIndex::ROOT);
--
+ 
 -        Self {
 -            universe_map,
 -            var_values: SmallVec::default(),
@@ -36,13 +35,6 @@ Rustfmt size:  29841 bytes
      }
  }
  
-             &CanonicalizeFreeRegionsOtherThanStatic,
-             query_state,
-         );
--
-         let canonical = Canonicalizer::canonicalize_with_base(
-             canonical_param_env,
-             value,
              query_state,
          )
          .unchecked_map(|(param_env, value)| ParamEnvAnd { param_env, value });
@@ -61,20 +53,6 @@ Rustfmt size:  29841 bytes
      fn preserve_universes(&self) -> bool;
  }
  
-         mut r: Region<'db>,
-     ) -> Region<'db> {
-         let infcx = canonicalizer.infcx;
--
-         if let RegionKind::ReVar(vid) = r.kind() {
-             r = infcx
-                 .inner
-                      opportunistically resolved to {r:?}",
-             );
-         };
--
-         match r.kind() {
-             RegionKind::ReLateParam(_)
-             | RegionKind::ReErased
          canonicalizer: &mut Canonicalizer<'_, 'db>,
          r: Region<'db>,
      ) -> Region<'db> {
@@ -102,25 +80,15 @@ Rustfmt size:  29841 bytes
      binder_index: DebruijnIndex,
  }
  
-             }
-             _ => {}
-         }
--
-         if ct.flags().intersects(self.needs_canonical_flags) {
-             ct.super_fold_with(self)
-         } else {
          } else {
              TypeFlags::HAS_INFER | TypeFlags::HAS_PLACEHOLDER
          };
 -
          // Fast path: nothing that needs to be canonicalized.
++
          if !value.has_type_flags(needs_canonical_flags) {
              return base.unchecked_map(|b| (b, value));
          }
--
-         let mut canonicalizer = Canonicalizer {
-             infcx,
-             tcx,
                  .collect();
          }
          let out_value = value.fold_with(&mut canonicalizer);
@@ -128,17 +96,13 @@ Rustfmt size:  29841 bytes
          // Once we have canonicalized `out_value`, it should not
          // contain anything that ties it to this inference context
          // anymore.
++
          debug_assert!(!out_value.has_infer() && !out_value.has_placeholders());
--
+ 
          let canonical_variables =
-             CanonicalVars::new_from_iter(tcx, canonicalizer.universe_canonicalized_variables());
--
-         let max_universe = canonical_variables
-             .iter()
-             .map(|cvar| cvar.universe())
              .max()
              .unwrap_or(UniverseIndex::ROOT);
--
+ 
 -        Canonical {
 -            max_universe,
 -            variables: canonical_variables,
@@ -157,13 +121,10 @@ Rustfmt size:  29841 bytes
 -            indices,
 -            ..
 -        } = self;
--
 +        let Canonicalizer { variables, query_state, indices, .. } = self;
+ 
          let var_values = &mut query_state.var_values;
--
-         let universe = info.universe();
-         if universe != UniverseIndex::ROOT {
-             assert!(self.canonicalize_mode.preserve_universes());
+ 
                  Ok(_) => {}
              }
          }
@@ -171,6 +132,12 @@ Rustfmt size:  29841 bytes
          // This code is hot. `variables` and `var_values` are usually small
          // (fewer than 8 elements ~95% of the time). They are SmallVec's to
          // avoid allocations in those cases. We also don't use `indices` to
+         // determine if a kind has been seen before until the limit of 8 has
+         // been exceeded, to also avoid allocations for `indices`.
++
+         if !var_values.spilled() {
+             // `var_values` is stack-allocated. `indices` isn't used yet. Do a
+             // direct linear search of `var_values`.
  
      fn get_or_insert_sub_root(&mut self, vid: TyVid) -> BoundVar {
          let root_vid = self.infcx.sub_unification_table_root_var(vid);
@@ -183,18 +150,6 @@ Rustfmt size:  29841 bytes
          BoundVar::from(idx)
      }
  
-         if self.query_state.universe_map.len() == 1 {
-             return self.variables;
-         }
--
-         let reverse_universe_map: FxHashMap<UniverseIndex, UniverseIndex> = self
-             .query_state
-             .universe_map
-             .enumerate()
-             .map(|(idx, universe)| (*universe, UniverseIndex::from_usize(idx)))
-             .collect();
--
-         self.variables
              .iter()
              .map(|v| match *v {
                  CanonicalVarKind::Int | CanonicalVarKind::Float => *v,

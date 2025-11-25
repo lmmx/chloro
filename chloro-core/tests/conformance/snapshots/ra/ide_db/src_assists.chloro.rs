@@ -56,6 +56,7 @@ impl AssistKind {
         if self == other {
             return true;
         }
+
         match self {
             AssistKind::Generate => true,
             AssistKind::Refactor => matches!(

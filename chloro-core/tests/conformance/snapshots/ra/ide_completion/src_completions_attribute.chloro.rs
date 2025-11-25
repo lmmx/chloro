@@ -45,6 +45,7 @@ pub(crate) fn complete_known_attribute_input(
     let segments = segments.iter().map(|n| n.text()).collect::<Vec<_>>();
     let segments = segments.iter().map(|t| t.as_str()).collect::<Vec<_>>();
     let tt = attribute.token_tree()?;
+
     match segments.as_slice() {
         ["repr"] => repr::complete_repr(acc, ctx, tt),
         ["feature"] => lint::complete_lint(
@@ -88,6 +89,7 @@ pub(crate) fn complete_attribute_path(
     &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx,
 ) {
     let is_inner = kind == AttrKind::Inner;
+
     for (derive_helper, derive_name) in derive_helpers {
         let mut item = CompletionItem::new(
             SymbolKind::Attribute,
@@ -98,6 +100,7 @@ pub(crate) fn complete_attribute_path(
         item.detail(format!("derive helper of `{derive_name}`"));
         item.add_to(acc, ctx.db);
     }
+
     match qualified {
         Qualified::With {
             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
@@ -138,6 +141,7 @@ pub(crate) fn complete_attribute_path(
     }
     let qualifier_path =
         if let Qualified::With { path, .. } = qualified { Some(path) } else { None };
+
     let attributes = annotated_item_kind.and_then(|kind| {
         if ast::Expr::can_cast(kind) {
             Some(EXPR_ATTRIBUTES)
@@ -145,6 +149,7 @@ pub(crate) fn complete_attribute_path(
             KIND_TO_ATTRIBUTES.get(&kind).copied()
         }
     });
+
     let add_completion = |attr_completion: &AttrCompletion| {
         // if we don't already have the qualifiers of the completion, then
         // add the missing parts to the label and snippet
@@ -180,6 +185,7 @@ pub(crate) fn complete_attribute_path(
             item.add_to(acc, ctx.db);
         }
     };
+
     match attributes {
         Some(applicable) => applicable
             .iter()
@@ -421,6 +427,7 @@ fn parse_comma_sep_expr(input: ast::TokenTree) -> Option<Vec<ast::Expr>> {
 fn attributes_are_sorted() {
     let mut attrs = ATTRIBUTES.iter().map(|attr| attr.key());
     let mut prev = attrs.next().unwrap();
+
     attrs.for_each(|next| {
         assert!(
             prev < next,

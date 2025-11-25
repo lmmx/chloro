@@ -24,15 +24,20 @@ pub(crate) fn unwrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             _ => return None,
         }
     };
+
     let type_ref = &ret_type.ty()?;
     let Some(hir::Adt::Enum(ret_enum)) = ctx.sema.resolve_type(type_ref)?.as_adt() else {
         return None;
     };
+
     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(type_ref.syntax())?.krate());
+
     let kind = UnwrapperKind::ALL
         .iter()
         .find(|k| matches!(k.core_type(&famous_defs), Some(core_type) if ret_enum == core_type))?;
+
     let happy_type = extract_wrapped_type(type_ref)?;
+
     acc.add(kind.assist_id(), kind.label(), type_ref.syntax().text_range(), |builder| {
         let mut editor = builder.make_editor(&parent);
         let make = SyntaxFactory::with_mappings();
@@ -154,6 +159,7 @@ impl UnwrapperKind {
             UnwrapperKind::Option => "unwrap_option_return_type",
             UnwrapperKind::Result => "unwrap_result_return_type",
         };
+
         AssistId::refactor_rewrite(s)
     }
 
@@ -245,6 +251,7 @@ fn foo() {}
             "Unwrap Option return type",
         );
         // Unformatted return type
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -805,6 +812,7 @@ fn foo() -> i32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -962,6 +970,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1045,6 +1054,7 @@ fn foo() -> i32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1086,6 +1096,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1115,6 +1126,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1146,6 +1158,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1195,6 +1208,7 @@ fn foo() -> Result<i32, ()> {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1210,6 +1224,7 @@ fn foo() -> Result<Option<i32>, ()> {
 "#,
             "Unwrap Option return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1262,6 +1277,7 @@ fn foo() {}
             "Unwrap Result return type",
         );
         // Unformatted return type
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1762,6 +1778,7 @@ fn foo() -> i32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -1919,6 +1936,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2002,6 +2020,7 @@ fn foo() -> i32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2043,6 +2062,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2072,6 +2092,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2103,6 +2124,7 @@ fn foo(the_field: u32) -> u32 {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2152,6 +2174,7 @@ fn foo() -> Option<i32> {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"
@@ -2167,6 +2190,7 @@ fn foo() -> Option<Result<i32, ()>> {
 "#,
             "Unwrap Result return type",
         );
+
         check_assist_by_label(
             unwrap_return_type,
             r#"

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2269 bytes
-Chloro size:   2269 bytes
+Chloro size:   2270 bytes
 Rustfmt size:  2269 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,3 @@ Rustfmt size:  2269 bytes
  
  use crate::{
      syntax_highlighting::{highlight::highlight_def, highlights::Highlights},
- 
-         return;
-     }
--
-     if let Some(parts) = sema.as_format_args_parts(string) {
-         parts.into_iter().for_each(|(range, res)| {
-             if let Some(res) = res {

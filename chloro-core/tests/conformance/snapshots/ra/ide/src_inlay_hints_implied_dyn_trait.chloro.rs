@@ -48,6 +48,7 @@ pub(super) fn hints(
             dyn_.syntax().text_range()
         }
     };
+
     acc.push(InlayHint {
         range,
         kind: InlayKind::Dyn,
@@ -60,6 +61,7 @@ pub(super) fn hints(
         pad_right: true,
         resolve_parent: Some(range),
     });
+
     Some(())
 }
 

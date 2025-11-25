@@ -35,6 +35,7 @@ impl<'db> HirDisplay<'db> for Function {
         let container = self.as_assoc_item(db).map(|it| it.container(db));
         let mut module = self.module(db);
         // Write container (trait or impl)
+
         let container_params = match container {
             Some(AssocItemContainer::Trait(trait_)) => {
                 let (params, params_store) = f.db.generic_params_and_store(trait_.id.into());
@@ -62,11 +63,14 @@ impl<'db> HirDisplay<'db> for Function {
         };
         // Write signature of the function
         // Block-local impls are "hoisted" to the nearest (non-block) module.
+
         if let Some(AssocItemContainer::Impl(_)) = container {
             module = module.nearest_non_block_module(db);
         }
         let module_id = module.id;
+
         write_visibility(module_id, self.visibility(db), f)?;
+
         if data.is_default() {
             f.write_str("default ")?;
         }
@@ -85,8 +89,11 @@ impl<'db> HirDisplay<'db> for Function {
             write!(f, "extern \"{}\" ", abi.as_str())?;
         }
         write!(f, "fn {}", data.name.display(f.db, f.edition()))?;
+
         write_generic_params(GenericDefId::FunctionId(self.id), f)?;
+
         f.write_char('(')?;
+
         let mut first = true;
         let mut skip_self = 0;
         if let Some(self_param) = self.self_param(db) {
@@ -95,6 +102,7 @@ impl<'db> HirDisplay<'db> for Function {
             skip_self = 1;
         }
         // FIXME: Use resolved `param.ty` once we no longer discard lifetimes
+
         let body = db.body(self.id.into());
         for (type_ref, param) in data.params.iter().zip(self.assoc_fn_params(db)).skip(skip_self) {
             if !first {
@@ -110,16 +118,19 @@ impl<'db> HirDisplay<'db> for Function {
             f.write_str(": ")?;
             type_ref.hir_fmt(f, &data.store)?;
         }
+
         if data.is_varargs() {
             if !first {
                 f.write_str(", ")?;
             }
             f.write_str("...")?;
         }
+
         f.write_char(')')?;
         // `FunctionData::ret_type` will be `::core::future::Future<Output = ...>` for async fns.
         // Use ugly pattern match to strip the Future trait.
         // Better way?
+
         let ret_type = if !data.is_async() {
             data.ret_type
         } else if let Some(ret_type) = data.ret_type {
@@ -145,6 +156,7 @@ impl<'db> HirDisplay<'db> for Function {
         } else {
             None
         };
+
         if let Some(ret_type) = ret_type {
             match &data.store[ret_type] {
                 TypeRef::Tuple(tup) if tup.is_empty() => {}
@@ -155,6 +167,7 @@ impl<'db> HirDisplay<'db> for Function {
             }
         }
         // Write where clauses
+
         let has_written_where = write_where_clause(GenericDefId::FunctionId(self.id), f)?;
         if let Some((container_params, container_params_store)) = container_params {
             if !has_written_where {
@@ -176,15 +189,19 @@ fn write_impl_header<'db>(
     f: &mut HirFormatter<'_, 'db>,
 ) -> Result<(), HirDisplayError> {
     let db = f.db;
+
     f.write_str("impl")?;
     let def_id = GenericDefId::ImplId(impl_.id);
     write_generic_params(def_id, f)?;
+
     if let Some(trait_) = impl_.trait_(db) {
         let trait_data = db.trait_signature(trait_.id);
         write!(f, " {} for", trait_data.name.display(db, f.edition()))?;
     }
+
     f.write_char(' ')?;
     impl_.self_ty(db).hir_fmt(f)?;
+
     Ok(())
 }
 
@@ -233,6 +250,7 @@ impl<'db> HirDisplay<'db> for Struct {
         write!(f, "{}", self.name(f.db).display(f.db, f.edition()))?;
         let def_id = GenericDefId::AdtId(AdtId::StructId(self.id));
         write_generic_params(def_id, f)?;
+
         let variant_data = self.variant_fields(f.db);
         match self.kind(f.db) {
             StructKind::Tuple => {
@@ -259,6 +277,7 @@ impl<'db> HirDisplay<'db> for Struct {
             }
             StructKind::Unit => _ = write_where_clause(def_id, f)?,
         }
+
         Ok(())
     }
 }
@@ -270,10 +289,12 @@ impl<'db> HirDisplay<'db> for Enum {
         write!(f, "{}", self.name(f.db).display(f.db, f.edition()))?;
         let def_id = GenericDefId::AdtId(AdtId::EnumId(self.id));
         write_generic_params(def_id, f)?;
+
         let has_where_clause = write_where_clause(def_id, f)?;
         if let Some(limit) = f.entity_limit {
             write_variants(&self.variants(f.db), has_where_clause, limit, f)?;
         }
+
         Ok(())
     }
 }
@@ -285,6 +306,7 @@ impl<'db> HirDisplay<'db> for Union {
         write!(f, "{}", self.name(f.db).display(f.db, f.edition()))?;
         let def_id = GenericDefId::AdtId(AdtId::UnionId(self.id));
         write_generic_params(def_id, f)?;
+
         let has_where_clause = write_where_clause(def_id, f)?;
         if let Some(limit) = f.entity_limit {
             write_fields(&self.fields(f.db), has_where_clause, limit, false, f)?;
@@ -323,6 +345,7 @@ fn write_fields<'db>(
 
         f.write_str("}")?;
     }
+
     Ok(())
 }
 
@@ -362,6 +385,7 @@ fn write_variants<'db>(
         }
         f.write_str("}")?;
     }
+
     Ok(())
 }
 
@@ -471,6 +495,7 @@ impl<'db> HirDisplay<'db> for TypeParam {
                 _ => false,
             })
             .collect::<Vec<_>>();
+
         match param_data {
             TypeOrConstParamData::TypeParamData(p) => match p.provenance {
                 TypeParamProvenance::TypeParamList | TypeParamProvenance::TraitSelf => {
@@ -490,9 +515,11 @@ impl<'db> HirDisplay<'db> for TypeParam {
                 write!(f, "{}", p.name.display(f.db, f.edition()))?;
             }
         }
+
         if f.omit_verbose_types() {
             return Ok(());
         }
+
         let sized_trait = LangItem::Sized.resolve_trait(f.db, krate);
         let has_only_sized_bound =
             predicates.iter().all(move |pred| match pred.kind().skip_binder() {
@@ -542,6 +569,7 @@ fn write_generic_params<'db>(
         return Ok(());
     }
     f.write_char('<')?;
+
     let mut first = true;
     let mut delim = |f: &mut HirFormatter<'_, 'db>| {
         if first {
@@ -582,6 +610,7 @@ fn write_generic_params<'db>(
             }
         }
     }
+
     f.write_char('>')?;
     Ok(())
 }
@@ -594,8 +623,10 @@ fn write_where_clause<'db>(
     if !has_disaplayable_predicates(f.db, &params, &store) {
         return Ok(false);
     }
+
     f.write_str("\nwhere")?;
     write_where_predicates(&params, &store, f)?;
+
     Ok(true)
 }
 
@@ -622,11 +653,13 @@ fn write_where_predicates<'db>(
 ) -> Result<(), HirDisplayError> {
     use WherePredicate::*;
     // unnamed type targets are displayed inline with the argument itself, e.g. `f: impl Y`.
+
     let is_unnamed_type_target = |target: TypeRefId| {
         matches!(store[target],
             TypeRef::TypeParam(id) if f.db.generic_params(id.parent())[id.local_id()].name().is_none()
         )
     };
+
     let check_same_target = |pred1: &WherePredicate, pred2: &WherePredicate| match (pred1, pred2) {
         (TypeBound { target: t1, .. }, TypeBound { target: t2, .. }) => t1 == t2,
         (Lifetime { target: t1, .. }, Lifetime { target: t2, .. }) => t1 == t2,
@@ -636,6 +669,7 @@ fn write_where_predicates<'db>(
         ) => l1 == l2 && t1 == t2,
         _ => false,
     };
+
     let mut iter = params.where_predicates().iter().peekable();
     while let Some(pred) = iter.next() {
         if matches!(pred, TypeBound { target, .. } if is_unnamed_type_target(*target)) {
@@ -672,6 +706,7 @@ fn write_where_predicates<'db>(
         }
         f.write_str(",")?;
     }
+
     Ok(())
 }
 
@@ -722,6 +757,7 @@ impl<'db> HirDisplay<'db> for Trait {
         write_trait_header(self, f)?;
         let def_id = GenericDefId::TraitId(self.id);
         let has_where_clause = write_where_clause(def_id, f)?;
+
         if let Some(limit) = f.entity_limit {
             let assoc_items = self.items(f.db);
             let count = assoc_items.len().min(limit);
@@ -750,6 +786,7 @@ impl<'db> HirDisplay<'db> for Trait {
                 f.write_str("}")?;
             }
         }
+
         Ok(())
     }
 }

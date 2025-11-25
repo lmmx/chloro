@@ -52,9 +52,11 @@ impl<'db> Evaluator<'db> {
         if self.not_special_fn_cache.borrow().contains(&def) {
             return Ok(false);
         }
+
         let function_data = self.db.function_signature(def);
         let attrs = self.db.attrs(def.into());
         let is_intrinsic = FunctionSignature::is_intrinsic(self.db, def);
+
         if is_intrinsic {
             return self.exec_intrinsic(
                 function_data.name.as_str(),
@@ -83,6 +85,7 @@ impl<'db> Evaluator<'db> {
                 )
                 .map(|()| true);
         }
+
         let alloc_fn =
             attrs.iter().filter_map(|it| it.path().as_ident()).map(|it| it.symbol()).find(|it| {
                 [
@@ -287,16 +290,19 @@ impl<'db> Evaluator<'db> {
     fn detect_lang_function(&self, def: FunctionId) -> Option<LangItem> {
         use LangItem::*;
         let attrs = self.db.attrs(def.into());
+
         if attrs.by_key(sym::rustc_const_panic_str).exists() {
             // `#[rustc_const_panic_str]` is treated like `lang = "begin_panic"` by rustc CTFE.
             return Some(LangItem::BeginPanic);
         }
+
         let candidate = attrs.lang_item()?;
         // We want to execute these functions with special logic
         // `PanicFmt` is not detected here as it's redirected later.
         if [BeginPanic, SliceLen, DropInPlace].contains(&candidate) {
             return Some(candidate);
         }
+
         None
     }
 
@@ -1416,10 +1422,12 @@ impl<'db> Evaluator<'db> {
     ) -> Result<'db, ()> {
         // We are a single threaded runtime with no UB checking and no optimization, so
         // we can implement atomic intrinsics as normal functions.
+
         if name.starts_with("singlethreadfence_") || name.starts_with("fence_") {
             return Ok(());
         }
         // The rest of atomic intrinsics have exactly one generic arg
+
         let Some(ty) = generic_args.as_slice().first().and_then(|it| it.ty()) else {
             return Err(MirEvalError::InternalError(
                 "atomic intrinsic generic arg is not provided".into(),

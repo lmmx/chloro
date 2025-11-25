@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3645 bytes
-Chloro size:   3372 bytes
+Chloro size:   3378 bytes
 Rustfmt size:  3645 bytes
 
 ✗ Outputs DIFFER
@@ -41,24 +41,10 @@ Rustfmt size:  3645 bytes
      let init = let_stmt.initializer()?;
 -
      // This only applies for tuple patterns, types, and initializers.
++
      let tuple_pat = match pat {
          ast::Pat::TuplePat(pat) => pat,
-         ast::Expr::TupleExpr(expr) => expr,
          _ => return None,
-     };
--
-     if tuple_pat.fields().count() != tuple_init.fields().count() {
-         return None;
-     }
-     {
-         return None;
-     }
--
-     let parent = let_kw.parent()?;
--
-     acc.add(
-         AssistId::refactor_rewrite("unwrap_tuple"),
-         "Unwrap tuple",
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;
@@ -68,13 +54,6 @@ Rustfmt size:  3645 bytes
      #[test]
      fn unwrap_tuples() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             unwrap_tuple,
-             r#"
  "#,
          );
      }
@@ -82,10 +61,3 @@ Rustfmt size:  3645 bytes
      #[test]
      fn unwrap_tuple_with_types() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             unwrap_tuple,
-             r#"

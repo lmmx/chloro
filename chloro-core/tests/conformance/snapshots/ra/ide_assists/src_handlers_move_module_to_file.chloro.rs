@@ -15,18 +15,22 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn move_module_to_file(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let module_ast = ctx.find_node_at_offset::<ast::Module>()?;
     let module_items = module_ast.item_list()?;
+
     let l_curly_offset = module_items.syntax().text_range().start();
     if l_curly_offset <= ctx.offset() {
         cov_mark::hit!(available_before_curly);
         return None;
     }
     let target = TextRange::new(module_ast.syntax().text_range().start(), l_curly_offset);
+
     let module_name = module_ast.name()?;
     // get to the outermost module syntax so we can grab the module of file we are in
+
     let outermost_mod_decl =
         iter::successors(Some(module_ast.clone()), |module| module.parent()).last()?;
     let module_def = ctx.sema.to_def(&outermost_mod_decl)?;
     let parent_module = module_def.parent(ctx.db())?;
+
     acc.add(
         AssistId::refactor_extract("move_module_to_file"),
         "Extract module to file",
@@ -119,6 +123,7 @@ mod expr;
 struct A {}
 "#,
         );
+
         check_assist(
             move_module_to_file,
             r#"
@@ -139,6 +144,7 @@ mod expr;
 struct A {}
 "#,
         );
+
         check_assist(
             move_module_to_file,
             r#"

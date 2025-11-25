@@ -40,10 +40,13 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::MissingUnsafe) -> Option<Vec<Ass
     if d.node.file_id.is_macro() {
         return None;
     }
+
     let root = ctx.sema.db.parse_or_expand(d.node.file_id);
     let node = d.node.value.to_node(&root);
     let expr = node.syntax().ancestors().find_map(ast::Expr::cast)?;
+
     let node_to_add_unsafe_block = pick_best_node_to_add_unsafe_block(&expr)?;
+
     let mut replacement = format!("unsafe {{ {} }}", node_to_add_unsafe_block.text());
     if let Some(expr) = ast::Expr::cast(node_to_add_unsafe_block.clone())
         && needs_parentheses(&expr)
@@ -676,6 +679,7 @@ fn foo() {
 }
         "#,
         );
+
         check_diagnostics(
             r#"
 //- minicore: fmt

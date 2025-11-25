@@ -51,6 +51,7 @@ pub(crate) fn add_format_like_completions(
         Some(it) => it,
         None => return,
     };
+
     if let Ok((mut out, mut exprs)) = parse_format_exprs(receiver_text.text()) {
         // Escape any snippet bits in the out text and any of the exprs.
         escape_snippet_bits(&mut out);
@@ -87,6 +88,7 @@ mod tests {
                 r#"log::info!("{} {ident} {} {}", $1, $2, 2 + 2)"#,
             ),
         ];
+
         for (kind, input, output) in test_vector {
             let (parsed_string, exprs) = parse_format_exprs(input).unwrap();
             let exprs = with_placeholders(exprs);
@@ -100,6 +102,7 @@ mod tests {
             ("println!", "{ident}", r#"println!("{ident}")"#),
             ("format!", "{ident:?}", r#"format!("{ident:?}")"#),
         ];
+
         for (kind, input, output) in test_vector {
             let (parsed_string, _exprs) = parse_format_exprs(input).unwrap();
             let snippet = format!(r#"{kind}("{parsed_string}")"#);

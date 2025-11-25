@@ -52,6 +52,7 @@ impl flags::AnalysisStats {
             let seed = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
             Rand32::new(seed)
         };
+
         let cargo_config = CargoConfig {
             sysroot: match self.no_sysroot {
                 true => None,
@@ -66,9 +67,12 @@ impl flags::AnalysisStats {
             ..Default::default()
         };
         let no_progress = &|_| ();
+
         let mut db_load_sw = self.stop_watch();
+
         let path = AbsPathBuf::assert_utf8(env::current_dir()?.join(&self.path));
         let manifest = ProjectManifest::discover_single(&path)?;
+
         let mut workspace = ProjectWorkspace::load(manifest, &cargo_config, no_progress)?;
         let metadata_time = db_load_sw.elapsed();
         let load_cargo_config = LoadCargoConfig {
@@ -86,6 +90,7 @@ impl flags::AnalysisStats {
             },
             prefill_caches: false,
         };
+
         let build_scripts_time = if self.disable_build_scripts {
             None
         } else {
@@ -94,6 +99,7 @@ impl flags::AnalysisStats {
             workspace.set_build_scripts(bs);
             Some(build_scripts_sw.elapsed())
         };
+
         let (db, vfs, _proc_macro) =
             load_workspace(workspace.clone(), &cargo_config.extra_env, &load_cargo_config)?;
         eprint!("{:<20} {}", "Database loaded:", db_load_sw.elapsed());
@@ -102,25 +108,32 @@ impl flags::AnalysisStats {
             eprint!("; build {build_scripts_time}");
         }
         eprintln!(")");
+
         let mut host = AnalysisHost::with_database(db);
         let db = host.raw_database();
+
         let mut analysis_sw = self.stop_watch();
+
         let mut krates = Crate::all(db);
         if self.randomize {
             shuffle(&mut rng, &mut krates);
         }
+
         let mut item_tree_sw = self.stop_watch();
         let source_roots = krates
             .iter()
             .cloned()
             .map(|krate| db.file_source_root(krate.root_file(db)).source_root_id(db))
             .unique();
+
         let mut dep_loc = 0;
         let mut workspace_loc = 0;
         let mut dep_item_trees = 0;
         let mut workspace_item_trees = 0;
+
         let mut workspace_item_stats = PrettyItemStats::default();
         let mut dep_item_stats = PrettyItemStats::default();
+
         for source_root_id in source_roots {
             let source_root = db.source_root(source_root_id).source_root(db);
             for file_id in source_root.iter() {
@@ -154,6 +167,7 @@ impl flags::AnalysisStats {
         }
         eprintln!("  item trees: {workspace_item_trees}");
         let item_tree_time = item_tree_sw.elapsed();
+
         eprintln!(
             "  dependency lines of code: {}, item trees: {}",
             UsizeWithUnderscore(dep_loc),
@@ -173,9 +187,11 @@ impl flags::AnalysisStats {
         //     total_macro_file_size += syntax_len(val.syntax_node())
         // }
         // eprintln!("source files: {total_file_size}, macro files: {total_macro_file_size}");
+
         eprintln!("{:<20} {}", "Item Tree Collection:", item_tree_time);
         report_metric("item tree time", item_tree_time.time.as_millis() as u64, "ms");
         eprintln!("  Total Statistics:");
+
         let mut crate_def_map_sw = self.stop_watch();
         let mut num_crates = 0;
         let mut visited_modules = FxHashSet::default();
@@ -192,17 +208,21 @@ impl flags::AnalysisStats {
                 visit_queue.push(module);
             }
         }
+
         if self.randomize {
             shuffle(&mut rng, &mut visit_queue);
         }
+
         eprint!("    crates: {num_crates}");
         let mut num_decls = 0;
         let mut bodies = Vec::new();
         let mut adts = Vec::new();
         let mut file_ids = Vec::new();
+
         let mut num_traits = 0;
         let mut num_macro_rules_macros = 0;
         let mut num_proc_macros = 0;
+
         while let Some(module) = visit_queue.pop() {
             if visited_modules.insert(module) {
                 file_ids.extend(module.as_source_file_id(db));
@@ -260,6 +280,7 @@ impl flags::AnalysisStats {
                 .filter(|it| matches!(it, DefWithBody::Const(_) | DefWithBody::Static(_)))
                 .count(),
         );
+
         eprintln!("  Workspace:");
         eprintln!(
             "    traits: {num_traits}, macro_rules macros: {num_macro_rules_macros}, proc_macros: {num_proc_macros}"
@@ -270,6 +291,7 @@ impl flags::AnalysisStats {
             UsizeWithUnderscore(workspace_item_trees),
         );
         eprintln!("    usages: {workspace_item_stats}");
+
         eprintln!("  Dependencies:");
         eprintln!(
             "    lines of code: {}, item trees: {}",
@@ -277,12 +299,15 @@ impl flags::AnalysisStats {
             UsizeWithUnderscore(dep_item_trees),
         );
         eprintln!("    declarations: {dep_item_stats}");
+
         let crate_def_map_time = crate_def_map_sw.elapsed();
         eprintln!("{:<20} {}", "Item Collection:", crate_def_map_time);
         report_metric("crate def map time", crate_def_map_time.time.as_millis() as u64, "ms");
+
         if self.randomize {
             shuffle(&mut rng, &mut bodies);
         }
+
         hir::attach_db(db, || {
             if !self.skip_lowering {
                 self.run_body_lowering(db, &vfs, &bodies, verbosity);
@@ -304,17 +329,23 @@ impl flags::AnalysisStats {
                 self.run_const_eval(db, &bodies, verbosity);
             }
         });
+
         file_ids.sort();
         file_ids.dedup();
+
         if self.run_all_ide_things {
             self.run_ide_things(host.analysis(), &file_ids, db, &vfs, verbosity);
         }
+
         if self.run_term_search {
             self.run_term_search(&workspace, db, &vfs, &file_ids, verbosity);
         }
+
         hir::clear_tls_solver_cache();
+
         let db = host.raw_database_mut();
         db.trigger_lru_eviction();
+
         let total_span = analysis_sw.elapsed();
         eprintln!("{:<20} {total_span}", "Total:");
         report_metric("total time", total_span.time.as_millis() as u64, "ms");
@@ -322,9 +353,11 @@ impl flags::AnalysisStats {
             report_metric("total instructions", instructions, "#instr");
         }
         report_metric("total memory", total_span.memory.allocated.megabytes() as u64, "MB");
+
         if verbosity.is_verbose() {
             print_memory_usage(host, vfs);
         }
+
         Ok(())
     }
 
@@ -372,6 +405,7 @@ impl flags::AnalysisStats {
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
             _ => ProgressReport::new(len),
         };
+
         let mut sw = self.stop_watch();
         let mut all = 0;
         let mut fail = 0;
@@ -419,11 +453,13 @@ impl flags::AnalysisStats {
             all_targets: true,
             ..Default::default()
         };
+
         let mut bar = match verbosity {
             Verbosity::Quiet | Verbosity::Spammy => ProgressReport::hidden(),
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
             _ => ProgressReport::new(file_ids.len()),
         };
+
         #[derive(Debug, Default)]
         struct Acc {
             tail_expr_syntax_hits: u64,
@@ -432,9 +468,11 @@ impl flags::AnalysisStats {
             error_codes: FxHashMap<String, u32>,
             syntax_errors: u32,
         }
+
         let mut acc: Acc = Default::default();
         bar.tick();
         let mut sw = self.stop_watch();
+
         for &file_id in file_ids {
             let file_id = file_id.editioned_file_id(db);
             let sema = hir::Semantics::new(db);
@@ -593,6 +631,7 @@ impl flags::AnalysisStats {
             bar.inc(1);
         }
         let term_search_time = sw.elapsed();
+
         bar.println(format!(
             "Tail Expr syntactic hits: {}/{} ({}%)",
             acc.tail_expr_syntax_hits,
@@ -623,6 +662,7 @@ impl flags::AnalysisStats {
         ));
         bar.println(format!("{:<20} {}", "Term search:", term_search_time));
         report_metric("term search time", term_search_time.time.as_millis() as u64, "ms");
+
         bar.finish_and_clear();
     }
 
@@ -686,6 +726,7 @@ impl flags::AnalysisStats {
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
             _ => ProgressReport::new(bodies.len()),
         };
+
         if self.parallel {
             let mut inference_sw = self.stop_watch();
             bodies
@@ -697,6 +738,7 @@ impl flags::AnalysisStats {
                 .count();
             eprintln!("{:<20} {}", "Parallel Inference:", inference_sw.elapsed());
         }
+
         let mut inference_sw = self.stop_watch();
         bar.tick();
         let mut num_exprs = 0;
@@ -974,6 +1016,7 @@ impl flags::AnalysisStats {
             // endregion:patterns
             bar.inc(1);
         }
+
         bar.finish_and_clear();
         let inference_time = inference_sw.elapsed();
         eprintln!(
@@ -1015,6 +1058,7 @@ impl flags::AnalysisStats {
             _ if self.output.is_some() => ProgressReport::hidden(),
             _ => ProgressReport::new(bodies.len()),
         };
+
         let mut sw = self.stop_watch();
         bar.tick();
         for &body_id in bodies {
@@ -1054,6 +1098,7 @@ impl flags::AnalysisStats {
             db.body(body_id.into());
             bar.inc(1);
         }
+
         bar.finish_and_clear();
         let body_lowering_time = sw.elapsed();
         eprintln!("{:<20} {}", "Body lowering:", body_lowering_time);
@@ -1075,7 +1120,9 @@ impl flags::AnalysisStats {
             _ if self.parallel || self.output.is_some() => ProgressReport::hidden(),
             _ => ProgressReport::new(len),
         };
+
         let mut sw = self.stop_watch();
+
         let mut bar = create_bar();
         for &file_id in file_ids {
             let msg = format!("diagnostics: {}", vfs.file_path(file_id.file_id(db)));
@@ -1109,6 +1156,7 @@ impl flags::AnalysisStats {
             bar.inc(1);
         }
         bar.finish_and_clear();
+
         let mut bar = create_bar();
         for &file_id in file_ids {
             let msg = format!("inlay hints: {}", vfs.file_path(file_id.file_id(db)));
@@ -1152,6 +1200,7 @@ impl flags::AnalysisStats {
             bar.inc(1);
         }
         bar.finish_and_clear();
+
         let mut bar = create_bar();
         let annotation_config = AnnotationConfig {
             binary_target: true,
@@ -1177,6 +1226,7 @@ impl flags::AnalysisStats {
             bar.inc(1);
         }
         bar.finish_and_clear();
+
         let ide_time = sw.elapsed();
         eprintln!("{:<20} {} ({} files)", "IDE:", ide_time, file_ids.len());
     }
@@ -1302,6 +1352,7 @@ fn shuffle<T>(rng: &mut Rand32, slice: &mut [T]) {
     for i in 0..slice.len() {
         randomize_first(rng, &mut slice[i..]);
     }
+
     fn randomize_first<T>(rng: &mut Rand32, slice: &mut [T]) {
         assert!(!slice.is_empty());
         let idx = rng.rand_range(0..slice.len() as u32) as usize;
@@ -1319,16 +1370,20 @@ struct UsizeWithUnderscore(usize);
 impl fmt::Display for UsizeWithUnderscore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let num_str = self.0.to_string();
+
         if num_str.len() <= 3 {
             return write!(f, "{num_str}");
         }
+
         let mut result = String::new();
+
         for (count, ch) in num_str.chars().rev().enumerate() {
             if count > 0 && count % 3 == 0 {
                 result.push('_');
             }
             result.push(ch);
         }
+
         let result = result.chars().rev().collect::<String>();
         write!(f, "{result}")
     }

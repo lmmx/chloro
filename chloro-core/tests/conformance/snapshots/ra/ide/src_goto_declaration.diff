@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6351 bytes
-Chloro size:   5895 bytes
+Chloro size:   5897 bytes
 Rustfmt size:  6484 bytes
 
 ✗ Outputs DIFFER
@@ -58,11 +58,6 @@ Rustfmt size:  6484 bytes
              item.try_to_nav(&sema)
          })
          .flatten()
-         .collect();
--
-     if info.is_empty() {
-         goto_definition(db, position, config)
-     } else {
  mod tests {
      use ide_db::{FileRange, MiniCore};
      use itertools::Itertools;
@@ -78,10 +73,6 @@ Rustfmt size:  6484 bytes
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
          let (analysis, position, expected) = fixture::annotations(ra_fixture);
          let navs = analysis
-         if navs.is_empty() {
-             panic!("unresolved reference")
-         }
--
          let cmp = |&FileRange { file_id, range }: &_| (file_id, range.start());
          let navs = navs
              .into_iter()

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44403 bytes
-Chloro size:   37913 bytes
+Chloro size:   37915 bytes
 Rustfmt size:  45085 bytes
 
 ✗ Outputs DIFFER
@@ -583,10 +583,8 @@ Rustfmt size:  45085 bytes
 -            )
 +            (src.file_id, ast::HasGenericParams::generic_param_list(&src.value))
          }
--
+ 
          match self {
-             GenericDefId::FunctionId(it) => file_id_and_params_of_item_loc(db, it),
-             GenericDefId::TypeAliasId(it) => file_id_and_params_of_item_loc(db, it),
      StructId(StructId),
      EnumVariantId(EnumVariantId),
  }
@@ -725,11 +723,6 @@ Rustfmt size:  45085 bytes
          MacroCallId,
      ),
  ) -> Result<ExpandResult<Option<MacroCallId>>, UnresolvedMacro> {
-     let def = resolver(path).ok_or_else(|| UnresolvedMacro { path: path.clone() })?;
--
-     let res = match def.kind {
-         MacroDefKind::BuiltInEager(..) => expand_eager_macro_input(
-             db,
              value: Some(def.make_call(
                  db,
                  krate,

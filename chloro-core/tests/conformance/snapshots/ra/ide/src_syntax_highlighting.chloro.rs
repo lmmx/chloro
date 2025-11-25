@@ -72,6 +72,7 @@ pub(crate) fn highlight(
         .attach_first_edition(file_id)
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
     // Determine the root based on the given range.
+
     let (root, range_to_highlight) = {
         let file = sema.parse(file_id);
         let source_file = file.syntax();
@@ -86,6 +87,7 @@ pub(crate) fn highlight(
             None => (source_file.clone(), source_file.text_range()),
         }
     };
+
     let mut hl = highlights::Highlights::new(root.text_range());
     let krate = sema.scope(&root).map(|it| it.krate());
     traverse(&mut hl, &sema, config, InRealFile::new(file_id, &root), krate, range_to_highlight);
@@ -101,10 +103,12 @@ fn traverse(
     range_to_highlight: TextRange,
 ) {
     let is_unlinked = sema.file_to_module_def(file_id.file_id(sema.db)).is_none();
+
     enum AttrOrDerive {
         Attr(ast::Item),
         Derive(ast::Item),
     }
+
     impl AttrOrDerive {
         fn item(&self) -> &ast::Item {
             match self {
@@ -112,20 +116,25 @@ fn traverse(
             }
         }
     }
+
     let empty = FxHashSet::default();
     // FIXME: accommodate range highlighting
+
     let mut tt_level = 0;
     // FIXME: accommodate range highlighting
     let mut attr_or_derive_item = None;
     // FIXME: these are not perfectly accurate, we determine them by the real file's syntax tree
     // an attribute nested in a macro call will not emit `inside_attribute`
+
     let mut inside_attribute = false;
     // FIXME: accommodate range highlighting
+
     let mut body_stack: Vec<Option<DefWithBody>> = vec![];
     let mut per_body_cache: FxHashMap<DefWithBody, (FxHashSet<_>, FxHashMap<Name, u32>)> =
         FxHashMap::default();
     // Walk all nodes, keeping track of whether we are inside a macro or not.
     // If in macro, expand it first and highlight the expanded code.
+
     let mut preorder = root.preorder_with_tokens();
     while let Some(event) = preorder.next() {
         use WalkEvent::{Enter, Leave};
@@ -406,6 +415,7 @@ fn descend_token(
         return token.map(NodeOrToken::Token).into();
     }
     let ranker = Ranker::from_token(&token.value);
+
     let mut t = None;
     let mut r = 0;
     sema.descend_into_macros_breakable(token.clone().into(), |tok, _ctx| {
@@ -434,6 +444,7 @@ fn descend_token(
         }
         ControlFlow::Continue(())
     });
+
     let token = t.unwrap_or_else(|| token.into());
     token.map(|token| match token.parent().and_then(ast::NameLike::cast) {
         // Remap the token into the wrapping single token nodes

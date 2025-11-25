@@ -8,6 +8,7 @@ use crate::{AssistContext, AssistId, Assists};
 
 pub(crate) fn add_braces(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (expr_type, expr) = get_replacement_node(ctx)?;
+
     acc.add(
         AssistId::refactor_rewrite("add_braces"),
         match expr_type {
@@ -60,9 +61,11 @@ fn get_replacement_node(ctx: &AssistContext<'_>) -> Option<(ParentType, ast::Exp
     } else {
         return None;
     };
+
     if matches!(body, ast::Expr::BlockExpr(_)) {
         return None;
     }
+
     Some((parent_type, body))
 }
 

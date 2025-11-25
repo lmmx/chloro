@@ -23,6 +23,7 @@ pub(crate) fn convert_for_loop_to_while_let(
         cov_mark::hit!(not_available_in_body);
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("convert_for_loop_to_while_let"),
         "Replace this for loop with `while let`",
@@ -104,6 +105,7 @@ fn is_ref_and_impls_iter_method(
     let scope = sema.scope(iterable.syntax())?;
     let krate = scope.krate();
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
+
     let has_wanted_method = ty
         .iterate_method_candidates(sema.db, &scope, None, Some(&wanted_method), |func| {
             if func.ret_type(sema.db).impls_trait(sema.db, iter_trait, &[]) {
@@ -115,6 +117,7 @@ fn is_ref_and_impls_iter_method(
     if !has_wanted_method {
         return None;
     }
+
     Some((expr_behind_ref, wanted_method))
 }
 

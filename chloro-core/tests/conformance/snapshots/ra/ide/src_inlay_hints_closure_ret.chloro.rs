@@ -21,17 +21,21 @@ pub(super) fn hints(
     if config.closure_return_type_hints == ClosureReturnTypeHints::Never {
         return None;
     }
+
     let ret_type = closure.ret_type().map(|rt| (rt.thin_arrow_token(), rt.ty().is_some()));
     let arrow = match ret_type {
         Some((_, true)) => return None,
         Some((arrow, _)) => arrow,
         None => None,
     };
+
     let has_block_body = closure_has_block_body(&closure);
     if !has_block_body && config.closure_return_type_hints == ClosureReturnTypeHints::WithBlock {
         return None;
     }
+
     let param_list = closure.param_list()?;
+
     let resolve_parent = Some(closure.syntax().text_range());
     let descended_closure = sema.descend_node_into_attributes(closure.clone()).pop()?;
     let ty = sema.type_of_expr(&ast::Expr::ClosureExpr(descended_closure.clone()))?.adjusted();
@@ -40,19 +44,24 @@ pub(super) fn hints(
     if arrow.is_none() && ty.is_unit() {
         return None;
     }
+
     let mut label = label_of_ty(famous_defs, config, &ty, display_target)?;
+
     if arrow.is_none() {
         label.prepend_str(" -> ");
     }
+
     let offset_to_insert_ty =
         arrow.as_ref().map_or_else(|| param_list.syntax().text_range(), |t| t.text_range()).end();
     // Insert braces if necessary
+
     let insert_braces = |builder: &mut TextEditBuilder| {
         if !has_block_body && let Some(range) = closure.body().map(|b| b.syntax().text_range()) {
             builder.insert(range.start(), "{ ".to_owned());
             builder.insert(range.end(), " }".to_owned());
         }
     };
+
     let text_edit = ty_to_text_edit(
         sema,
         config,
@@ -62,6 +71,7 @@ pub(super) fn hints(
         &insert_braces,
         if arrow.is_none() { " -> " } else { "" },
     );
+
     acc.push(InlayHint {
         range: param_list.syntax().text_range(),
         kind: InlayKind::Type,

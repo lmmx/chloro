@@ -115,15 +115,18 @@ impl<'db> LookupTable<'db> {
             .iter()
             .find(|(t, _)| t.could_unify_with_deeply(db, ty))
             .map(|(t, tts)| tts.exprs(t));
+
         if res.is_none() {
             self.types_wishlist.insert(ty.clone());
         }
         // Collapse suggestions if there are many
+
         if let Some(res) = &res
             && res.len() > self.many_threshold
         {
             return Some(vec![Expr::Many(ty.clone())]);
         }
+
         res
     }
 
@@ -154,15 +157,18 @@ impl<'db> LookupTable<'db> {
                             .collect()
                     })
             });
+
         if res.is_none() {
             self.types_wishlist.insert(ty.clone());
         }
         // Collapse suggestions if there are many
+
         if let Some(res) = &res
             && res.len() > self.many_threshold
         {
             return Some(vec![Expr::Many(ty.clone())]);
         }
+
         res
     }
 
@@ -268,11 +274,14 @@ pub fn term_search<'db, DB: HirDatabase>(ctx: &'db TermSearchCtx<'db, DB>) -> Ve
     let module = ctx.scope.module();
     let mut defs = FxHashSet::default();
     defs.insert(ScopeDef::ModuleDef(ModuleDef::Module(module)));
+
     ctx.scope.process_all_names(&mut |_, def| {
         defs.insert(def);
     });
+
     let mut lookup = LookupTable::new(ctx.config.many_alternatives_threshold, ctx.goal.clone());
     let fuel = std::cell::Cell::new(ctx.config.fuel);
+
     let should_continue = &|| {
         let remaining = fuel.get();
         fuel.set(remaining.saturating_sub(1));
@@ -282,10 +291,12 @@ pub fn term_search<'db, DB: HirDatabase>(ctx: &'db TermSearchCtx<'db, DB>) -> Ve
         remaining > 0
     };
     // Try trivial tactic first, also populates lookup table
+
     let mut solutions: Vec<Expr<'db>> = tactics::trivial(ctx, &defs, &mut lookup).collect();
     // Use well known types tactic before iterations as it does not depend on other tactics
     solutions.extend(tactics::famous_types(ctx, &defs, &mut lookup));
     solutions.extend(tactics::assoc_const(ctx, &defs, &mut lookup));
+
     while should_continue() {
         solutions.extend(tactics::data_constructor(ctx, &defs, &mut lookup, should_continue));
         solutions.extend(tactics::free_function(ctx, &defs, &mut lookup, should_continue));
@@ -294,5 +305,6 @@ pub fn term_search<'db, DB: HirDatabase>(ctx: &'db TermSearchCtx<'db, DB>) -> Ve
         solutions.extend(tactics::impl_static_method(ctx, &defs, &mut lookup, should_continue));
         solutions.extend(tactics::make_tuple(ctx, &defs, &mut lookup, should_continue));
     }
+
     solutions.into_iter().filter(|it| !it.is_many()).unique().collect()
 }

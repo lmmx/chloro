@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9213 bytes
-Chloro size:   9203 bytes
+Chloro size:   9204 bytes
 Rustfmt size:  9281 bytes
 
 ✗ Outputs DIFFER
@@ -24,13 +24,6 @@ Rustfmt size:  9281 bytes
  use super::{MirBody, MirLowerError, Operand, OperandKind, Rvalue, StatementKind, TerminatorKind};
  
  struct Filler<'db> {
-         if !ty.has_type_flags(TypeFlags::HAS_ALIAS | TypeFlags::HAS_PARAM) {
-             return Ok(ty);
-         }
--
-         match ty.kind() {
-             TyKind::Alias(..) => {
-                 // First instantiate params.
      ) -> Self {
          let interner = DbInterner::new_with(db, Some(env.krate), env.block);
          let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);

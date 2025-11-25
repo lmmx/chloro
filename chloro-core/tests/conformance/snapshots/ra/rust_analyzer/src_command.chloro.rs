@@ -52,6 +52,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
         // Because cargo only outputs one JSON object per line, we can
         // simply skip a line if it doesn't parse, which just ignores any
         // erroneous output.
+
         let mut stdout = outfile.as_ref().and_then(|path| {
             _ = std::fs::create_dir_all(path);
             Some(BufWriter::new(std::fs::File::create(path.join("stdout")).ok()?))
@@ -60,6 +61,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
             _ = std::fs::create_dir_all(path);
             Some(BufWriter::new(std::fs::File::create(path.join("stderr")).ok()?))
         });
+
         let mut stdout_errors = String::new();
         let mut stderr_errors = String::new();
         let mut read_at_least_one_stdout_message = false;
@@ -100,6 +102,7 @@ impl<T: Sized + Send + 'static> CargoActor<T> {
                 }
             },
         );
+
         let read_at_least_one_message =
             read_at_least_one_stdout_message || read_at_least_one_stderr_message;
         let mut error = stdout_errors;
@@ -150,17 +153,21 @@ impl<T: Sized + Send + 'static> CommandHandle<T> {
         out_file: Option<Utf8PathBuf>,
     ) -> std::io::Result<Self> {
         command.stdout(Stdio::piped()).stderr(Stdio::piped()).stdin(Stdio::null());
+
         let program = command.get_program().into();
         let arguments = command.get_args().map(|arg| arg.into()).collect::<Vec<OsString>>();
         let current_dir = command.get_current_dir().map(|arg| arg.to_path_buf());
+
         let mut child = StdCommandWrap::from(command);
         #[cfg(unix)]
         child.wrap(process_wrap::std::ProcessSession);
         #[cfg(windows)]
         child.wrap(process_wrap::std::JobObject);
         let mut child = child.spawn().map(JodGroupChild)?;
+
         let stdout = child.0.stdout().take().unwrap();
         let stderr = child.0.stderr().take().unwrap();
+
         let actor = CargoActor::<T>::new(parser, sender, stdout, stderr);
         let thread =
             stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "CommandHandle")

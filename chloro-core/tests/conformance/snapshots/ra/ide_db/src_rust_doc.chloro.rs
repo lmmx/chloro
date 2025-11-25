@@ -5,7 +5,9 @@ use crate::documentation::Documentation;
 pub fn is_rust_fence(s: &str) -> bool {
     let mut seen_rust_tags = false;
     let mut seen_other_tags = false;
+
     let tokens = s.trim().split([',', ' ', '\t']).map(str::trim).filter(|t| !t.is_empty());
+
     for token in tokens {
         match token {
             "should_panic" | "no_run" | "ignore" | "allow_fail" => {
@@ -24,6 +26,7 @@ pub fn is_rust_fence(s: &str) -> bool {
             _ => seen_other_tags = true,
         }
     }
+
     !seen_other_tags || seen_rust_tags
 }
 
@@ -37,6 +40,7 @@ fn format_docs_(src: &str) -> String {
     let mut processed_lines = Vec::new();
     let mut in_code_block = false;
     let mut is_rust = false;
+
     for mut line in src.lines() {
         if in_code_block && is_rust && code_line_ignored_by_rustdoc(line) {
             continue;
@@ -139,6 +143,7 @@ Some comment.
 ```
 let a = 1;
 ```"#;
+
         assert_eq!(
             format_docs_(comment),
             "```rust\nfn main(){}\n```\nSome comment.\n```rust\nlet a = 1;\n```"
@@ -154,6 +159,7 @@ Some comment.
 ```
 let a = 1;
 ```"#;
+
         assert_eq!(
             format_docs_(comment),
             "```text\nfiller\ntext\n```\nSome comment.\n```rust\nlet a = 1;\n```"
@@ -165,6 +171,7 @@ let a = 1;
 let s = "foo
 ## bar # baz";
 ```"#;
+
         assert_eq!(format_docs_(comment), "```rust\nlet s = \"foo\n# bar # baz\";\n```");
     }
     #[test]

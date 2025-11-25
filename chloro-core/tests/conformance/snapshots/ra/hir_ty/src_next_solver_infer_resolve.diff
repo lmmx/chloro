@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3153 bytes
-Chloro size:   3043 bytes
+Chloro size:   3045 bytes
 Rustfmt size:  3226 bytes
 
 ✗ Outputs DIFFER
@@ -31,20 +31,6 @@ Rustfmt size:  3226 bytes
      }
  }
  
-         if !t.has_infer() {
-             return t;
-         }
--
-         if t.is_infer() {
-             Ty::new_error(self.interner, ErrorGuaranteed)
-         } else {
-         if !c.has_infer() {
-             return c;
-         }
--
-         if c.is_ct_infer() {
-             Const::new_error(self.interner, ErrorGuaranteed)
-         } else {
      }
  
      fn fold_region(&mut self, r: Region<'db>) -> Region<'db> {

@@ -93,6 +93,7 @@ impl Completions {
 
     pub(crate) fn add_nameref_keywords_with_colon(&mut self, ctx: &CompletionContext<'_>) {
         ["self::", "crate::"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super::");
         }
@@ -100,6 +101,7 @@ impl Completions {
 
     pub(crate) fn add_nameref_keywords(&mut self, ctx: &CompletionContext<'_>) {
         ["self", "crate"].into_iter().for_each(|kw| self.add_keyword(ctx, kw));
+
         if ctx.depth_from_crate_root > 0 {
             self.add_keyword(ctx, "super");
         }
@@ -134,6 +136,7 @@ impl Completions {
     ) {
         let mut item =
             CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+
         match ctx.config.snippet_cap {
             Some(cap) => {
                 if incomplete_let && snippet.ends_with('}') {
@@ -159,6 +162,7 @@ impl Completions {
     ) {
         let mut item =
             CompletionItem::new(CompletionItemKind::Keyword, ctx.source_range(), kw, ctx.edition);
+
         match ctx.config.snippet_cap {
             Some(cap) => item.insert_snippet(cap, snippet),
             None => item.insert_text(if snippet.contains('$') { kw } else { snippet }),
@@ -445,6 +449,7 @@ impl Completions {
             self.add_variant_pat(ctx, pat_ctx, Some(path_ctx), variant, local_name);
             return;
         }
+
         if let Some(builder) =
             render_variant_lit(RenderContext::new(ctx), path_ctx, local_name, variant, None)
         {
@@ -644,12 +649,15 @@ fn enum_variants_with_paths(
 
         cb(acc, ctx, variant, self_path);
     };
+
     let variants = enum_.variants(ctx.db);
+
     if let Some(impl_) = impl_.and_then(|impl_| ctx.sema.to_def(impl_))
         && impl_.self_ty(ctx.db).as_adt() == Some(hir::Adt::Enum(enum_))
     {
         variants.iter().for_each(|variant| process_variant(*variant));
     }
+
     for variant in variants {
         if let Some(path) = ctx.module.find_path(
             ctx.db,

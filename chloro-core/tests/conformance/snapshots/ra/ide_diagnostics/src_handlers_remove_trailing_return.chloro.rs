@@ -13,6 +13,7 @@ pub(crate) fn remove_trailing_return(
         // FIXME: Our infra can't handle allow from within macro expansions rn
         return None;
     }
+
     let display_range = adjusted_display_range(ctx, d.return_expr, &|return_expr| {
         return_expr
             .syntax()
@@ -35,15 +36,18 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &RemoveTrailingReturn) -> Option<Vec<A
     let root = ctx.sema.db.parse_or_expand(d.return_expr.file_id);
     let return_expr = d.return_expr.value.to_node(&root);
     let stmt = return_expr.syntax().parent().and_then(ast::ExprStmt::cast);
+
     let FileRange { range, file_id } =
         ctx.sema.original_range_opt(stmt.as_ref().map_or(return_expr.syntax(), AstNode::syntax))?;
     if Some(file_id) != d.return_expr.file_id.file_id() {
         return None;
     }
+
     let replacement =
         return_expr.expr().map_or_else(String::new, |expr| format!("{}", expr.syntax().text()));
     let edit = TextEdit::replace(range, replacement);
     let source_change = SourceChange::from_text_edit(file_id.file_id(ctx.sema.db), edit);
+
     Some(vec![fix(
         "remove_trailing_return",
         "Replace return <expr>; with <expr>",

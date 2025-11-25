@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19519 bytes
-Chloro size:   19509 bytes
+Chloro size:   19515 bytes
 Rustfmt size:  20051 bytes
 
 ✗ Outputs DIFFER
@@ -29,20 +29,10 @@ Rustfmt size:  20051 bytes
 -    let links = analysis
 -        .external_docs(position, target_dir, sysroot)
 -        .unwrap();
--
 +    let links = analysis.external_docs(position, target_dir, sysroot).unwrap();
+ 
      let web_url = links.web_url;
      let local_url = links.local_url;
--
-     match (expect_web_url, web_url) {
-         (Some(expect), Some(url)) => expect.assert_eq(&url),
-         (None, None) => (),
-         _ => panic!("Unexpected web url"),
-     }
--
-     match (expect_local_url, local_url) {
-         (Some(expect), Some(url)) => expect.assert_eq(&url),
-         (None, None) => (),
      let (analysis, position) = fixture::position(ra_fixture);
      let sema = &Semantics::new(&analysis.db);
      let (cursor_def, docs, range) = def_under_cursor(sema, &position);
@@ -54,12 +44,6 @@ Rustfmt size:  20051 bytes
      expect.assert_eq(&res)
  }
  
- fn check_doc_links(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
-     let key_fn = |&(FileRange { file_id, range }, _): &_| (file_id, range.start());
--
-     let (analysis, position, mut expected) = fixture::annotations(ra_fixture);
-     expected.sort_by_key(key_fn);
-     let sema = &Semantics::new(&analysis.db);
          .into_iter()
          .flat_map(|(text_range, link, ns)| {
              let attr = range.map(text_range);
@@ -255,17 +239,3 @@ Rustfmt size:  20051 bytes
          Some("/sysroot"),
      );
  }
- }
- "#,
-     );
--
-     check_doc_links(
-         r#"
- mod M$0 {
- "#,
-         expect![[r#"[Foo](https://docs.rs/foo/*/foo/Foo/index.html)"#]],
-     );
--
-     check_rewrite(
-         r#"
- //- /main.rs crate:foo

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2739 bytes
-Chloro size:   2244 bytes
+Chloro size:   2246 bytes
 Rustfmt size:  2888 bytes
 
 ✗ Outputs DIFFER
@@ -51,10 +51,8 @@ Rustfmt size:  2888 bytes
      #[test]
      fn test_matching_brace() {
          fn do_check(before: &str, after: &str) {
-             let actual = add_cursor(&before, new_pos);
-             assert_eq_text!(after, &actual);
          }
--
+ 
          do_check("struct Foo { a: i32, }$0", "struct Foo $0{ a: i32, }");
 -        do_check(
 -            "fn main() { |x: i32|$0 x * 2;}",
@@ -69,8 +67,3 @@ Rustfmt size:  2888 bytes
          do_check(
              "fn func(x) { return (2 * (x + 3)$0) + 5;}",
              "fn func(x) { return $0(2 * (x + 3)) + 5;}",
-         );
--
-         {
-             cov_mark::check!(pipes_not_braces);
-             do_check(

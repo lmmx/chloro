@@ -7,12 +7,16 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let src_type = impl_.self_ty()?;
     let ast_trait = impl_.trait_()?;
+
     let module = ctx.sema.scope(impl_.syntax())?.module();
+
     let trait_ = resolve_target_trait(&ctx.sema, &impl_)?;
     if trait_ != FamousDefs(&ctx.sema, module.krate()).core_convert_Into()? {
         return None;
     }
+
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
+
     let src_type_path = {
         let src_type_path = src_type.syntax().descendants().find_map(ast::Path::cast)?;
         let src_type_def = match ctx.sema.resolve_path(&src_type_path) {
@@ -24,12 +28,14 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
             module.krate().edition(ctx.db()),
         )
     };
+
     let dest_type = match &ast_trait {
         ast::Type::PathType(path) => {
             path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
         }
         _ => return None,
     };
+
     let into_fn = impl_.assoc_item_list()?.assoc_items().find_map(|item| {
         if let ast::AssocItem::Fn(f) = item
             && f.name()?.text() == "into"
@@ -38,15 +44,18 @@ pub(crate) fn convert_into_to_from(acc: &mut Assists, ctx: &AssistContext<'_>) -
         };
         None
     })?;
+
     let into_fn_name = into_fn.name()?;
     let into_fn_params = into_fn.param_list()?;
     let into_fn_return = into_fn.ret_type()?;
+
     let selfs = into_fn
         .body()?
         .syntax()
         .descendants()
         .filter_map(ast::NameRef::cast)
         .filter(|name| name.text() == "self" || name.text() == "Self");
+
     acc.add(
         AssistId::refactor_rewrite("convert_into_to_from"),
         "Convert Into to From",

@@ -25,6 +25,7 @@ pub(crate) fn convert_bool_to_enum(acc: &mut Assists, ctx: &AssistContext<'_>) -
     let BoolNodeData { target_node, name, ty_annotation, initializer, definition } =
         find_bool_node(ctx)?;
     let target_module = ctx.sema.scope(&target_node)?.module().nearest_non_block_module(ctx.db());
+
     let target = name.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_bool_to_enum"),
@@ -62,6 +63,7 @@ struct BoolNodeData {
 /// Attempts to find an appropriate node to apply the action to.
 fn find_bool_node(ctx: &AssistContext<'_>) -> Option<BoolNodeData> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
+
     if let Some(ident_pat) = name.syntax().parent().and_then(ast::IdentPat::cast) {
         let def = ctx.sema.to_def(&ident_pat)?;
         if !def.ty(ctx.db()).is_bool() {
@@ -146,6 +148,7 @@ fn replace_bool_expr(edit: &mut SourceChangeBuilder, expr: ast::Expr) {
 fn bool_expr_to_enum_expr(expr: ast::Expr) -> ast::Expr {
     let true_expr = make::expr_path(make::path_from_text("Bool::True"));
     let false_expr = make::expr_path(make::path_from_text("Bool::False"));
+
     if let ast::Expr::Literal(literal) = &expr {
         match literal.kind() {
             ast::LiteralKind::Bool(true) => true_expr,
@@ -296,6 +299,7 @@ fn augment_references_with_imports(
     target_module: &hir::Module,
 ) -> Vec<FileReferenceWithImport> {
     let mut visited_modules = FxHashSet::default();
+
     let edition = target_module.krate().edition(ctx.db());
     references
         .into_iter()
@@ -342,10 +346,12 @@ fn augment_references_with_imports(
 
 fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
     let bin_expr = name.syntax().ancestors().find_map(ast::BinExpr::cast)?;
+
     if !bin_expr.lhs()?.syntax().descendants().contains(name.syntax()) {
         cov_mark::hit!(dont_assign_incorrect_ref);
         return None;
     }
+
     if let Some(ast::BinaryOp::Assignment { op: None }) = bin_expr.op_kind() {
         bin_expr.rhs()
     } else {
@@ -355,10 +361,12 @@ fn find_assignment_usage(name: &ast::NameLike) -> Option<ast::Expr> {
 
 fn find_negated_usage(name: &ast::NameLike) -> Option<(ast::PrefixExpr, ast::Expr)> {
     let prefix_expr = name.syntax().ancestors().find_map(ast::PrefixExpr::cast)?;
+
     if !matches!(prefix_expr.expr()?, ast::Expr::PathExpr(_) | ast::Expr::FieldExpr(_)) {
         cov_mark::hit!(dont_overwrite_expression_inside_negation);
         return None;
     }
+
     if let Some(ast::UnaryOp::Not) = prefix_expr.op_kind() {
         let inner_expr = prefix_expr.expr()?;
         Some((prefix_expr, inner_expr))
@@ -375,6 +383,7 @@ fn find_record_expr_usage(
     let name_ref = name.as_name_ref()?;
     let record_field = ast::RecordExprField::for_field_name(name_ref)?;
     let initializer = record_field.expr()?;
+
     match target_definition {
         Definition::Field(expected_field) if got_field == expected_field => {
             Some((record_field, initializer))
@@ -386,6 +395,7 @@ fn find_record_expr_usage(
 fn find_record_pat_field_usage(name: &ast::NameLike) -> Option<ast::Pat> {
     let record_pat_field = name.syntax().parent().and_then(ast::RecordPatField::cast)?;
     let pat = record_pat_field.pat()?;
+
     match pat {
         ast::Pat::IdentPat(_) | ast::Pat::LiteralPat(_) | ast::Pat::WildcardPat(_) => Some(pat),
         _ => None,
@@ -395,15 +405,18 @@ fn find_record_pat_field_usage(name: &ast::NameLike) -> Option<ast::Pat> {
 fn find_assoc_const_usage(name: &ast::NameLike) -> Option<(ast::Type, ast::Expr)> {
     let const_ = name.syntax().parent().and_then(ast::Const::cast)?;
     const_.syntax().parent().and_then(ast::AssocItemList::cast)?;
+
     Some((const_.ty()?, const_.body()?))
 }
 
 fn find_method_call_expr_usage(name: &ast::NameLike) -> Option<ast::Expr> {
     let method_call = name.syntax().ancestors().find_map(ast::MethodCallExpr::cast)?;
     let receiver = method_call.receiver()?;
+
     if !receiver.syntax().descendants().contains(name.syntax()) {
         return None;
     }
+
     Some(receiver)
 }
 
@@ -416,6 +429,7 @@ fn add_enum_def(
     target_module: &hir::Module,
 ) -> Option<()> {
     let insert_before = node_to_insert_before(target_node);
+
     if ctx
         .sema
         .scope(&insert_before)?
@@ -426,6 +440,7 @@ fn add_enum_def(
     {
         return None;
     }
+
     let make_enum_pub = usages
         .iter()
         .flat_map(|(_, refs)| refs)
@@ -435,12 +450,15 @@ fn add_enum_def(
         })
         .any(|module| module.nearest_non_block_module(ctx.db()) != *target_module);
     let enum_def = make_bool_enum(make_enum_pub);
+
     let indent = IndentLevel::from_node(&insert_before);
     enum_def.reindent_to(indent);
+
     edit.insert(
         insert_before.text_range().start(),
         format!("{}\n\n{indent}", enum_def.syntax().text()),
     );
+
     Some(())
 }
 

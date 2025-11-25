@@ -12,10 +12,12 @@ pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_
     let token = ctx.find_token_syntax_at_offset(STRING).and_then(ast::String::cast)?;
     let value = token.value().ok()?;
     let target = token.syntax().text_range();
+
     if value.chars().take(2).count() != 1 {
         return None;
     }
     let quote_offsets = token.quote_offsets()?;
+
     acc.add(
         AssistId::refactor_rewrite("replace_string_with_char"),
         "Replace string with char",
@@ -36,6 +38,7 @@ pub(crate) fn replace_string_with_char(acc: &mut Assists, ctx: &AssistContext<'_
 pub(crate) fn replace_char_with_string(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let token = ctx.find_token_syntax_at_offset(CHAR)?;
     let target = token.text_range();
+
     acc.add(
         AssistId::refactor_rewrite("replace_char_with_string"),
         "Replace char with string",

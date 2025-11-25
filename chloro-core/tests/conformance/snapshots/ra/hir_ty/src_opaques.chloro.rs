@@ -33,6 +33,7 @@ pub(crate) fn opaque_types_defined_by(
             result,
         );
     }
+
     let extend_with_taits = |type_alias| {
         extend_with_opaques(
             db,
@@ -42,6 +43,7 @@ pub(crate) fn opaque_types_defined_by(
         );
     };
     // Collect opaques from assoc items.
+
     let extend_with_atpit_from_assoc_items = |assoc_items: &[(Name, AssocItemId)]| {
         assoc_items
             .iter()
@@ -68,6 +70,7 @@ pub(crate) fn opaque_types_defined_by(
         DefWithBodyId::StaticId(_) | DefWithBodyId::VariantId(_) => {}
     }
     // FIXME: Collect opaques from `#[define_opaque]`.
+
     fn extend_with_opaques<'db>(
         db: &'db dyn HirDatabase,
         opaques: Option<Arc<EarlyBinder<'db, ImplTraits<'db>>>>,
@@ -109,10 +112,13 @@ pub(crate) fn tait_hidden_types<'db>(
     let mut ocx = ObligationCtxt::new(&infcx);
     let cause = ObligationCause::dummy();
     let param_env = db.trait_environment(type_alias.into()).env;
+
     let defining_bodies = tait_defining_bodies(db, &loc);
+
     let taits_count = db
         .type_alias_impl_traits(type_alias)
         .map_or(0, |taits| (*taits).as_ref().skip_binder().impl_traits.len());
+
     let mut result = ArenaMap::with_capacity(taits_count);
     for defining_body in defining_bodies {
         let infer = db.infer(defining_body);
@@ -136,8 +142,10 @@ pub(crate) fn tait_hidden_types<'db>(
             }
         }
     }
+
     _ = ocx.try_evaluate_obligations();
     // Fill missing entries.
+
     for idx in 0..taits_count {
         let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(idx as u32));
         match result.entry(idx) {
@@ -151,6 +159,7 @@ pub(crate) fn tait_hidden_types<'db>(
             }
         }
     }
+
     result
 }
 
@@ -181,5 +190,6 @@ fn tait_defining_bodies(
         _ => {}
     }
     // FIXME: Support general TAITs, or decisively decide not to.
+
     Vec::new()
 }

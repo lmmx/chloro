@@ -10,24 +10,29 @@ use crate::assist_context::{AssistContext, Assists};
 pub(crate) fn generate_enum_variant(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let path: ast::Path = ctx.find_node_at_offset()?;
     let parent = PathParent::new(&path)?;
+
     if ctx.sema.resolve_path(&path).is_some() {
         // No need to generate anything if the path resolves
         return None;
     }
+
     let name_ref = path.segment()?.name_ref()?;
     if name_ref.text().starts_with(char::is_lowercase) {
         // Don't suggest generating variant if the name starts with a lowercase letter
         return None;
     }
+
     let Some(hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Enum(e)))) =
         ctx.sema.resolve_path(&path.qualifier()?)
     else {
         return None;
     };
+
     let target = path.syntax().text_range();
     let name_ref: &ast::NameRef = &name_ref;
     let db = ctx.db();
     let InRealFile { file_id, value: enum_node } = e.source(db)?.original_ast_node_rooted(db)?;
+
     acc.add(AssistId::generate("generate_enum_variant"), "Generate variant", target, |builder| {
         let mut editor = builder.make_editor(enum_node.syntax());
         let make = SyntaxFactory::with_mappings();
@@ -51,6 +56,7 @@ enum PathParent {
 impl PathParent {
     fn new(path: &ast::Path) -> Option<Self> {
         let parent = path.syntax().parent()?;
+
         match_ast! {
             match parent {
                 ast::PathExpr(it) => Some(PathParent::PathExpr(it)),
@@ -77,6 +83,7 @@ impl PathParent {
         make: &SyntaxFactory,
     ) -> Option<ast::FieldList> {
         let scope = ctx.sema.scope(self.syntax())?;
+
         match self {
             PathParent::PathExpr(it) => {
                 let call_expr = ast::CallExpr::cast(it.syntax().parent()?)?;

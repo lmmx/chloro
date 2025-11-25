@@ -31,6 +31,7 @@ pub(super) fn highlight_escape_char(stack: &mut Highlights, char: &Char) {
         // lifetimes). Nonetheless, parser errors should already be emitted.
         return;
     }
+
     let text = char.text();
     let Some(text) = text
         .strip_prefix('\'')
@@ -39,6 +40,7 @@ pub(super) fn highlight_escape_char(stack: &mut Highlights, char: &Char) {
     else {
         return;
     };
+
     let range = TextRange::at(
         char.syntax().text_range().start() + TextSize::from(1),
         TextSize::from(text.len() as u32),
@@ -51,6 +53,7 @@ pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
         // See `highlight_escape_char` for why no error highlighting here.
         return;
     }
+
     let text = byte.text();
     let Some(text) = text
         .strip_prefix("b'")
@@ -59,6 +62,7 @@ pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
     else {
         return;
     };
+
     let range = TextRange::at(
         byte.syntax().text_range().start() + TextSize::from(2),
         TextSize::from(text.len() as u32),

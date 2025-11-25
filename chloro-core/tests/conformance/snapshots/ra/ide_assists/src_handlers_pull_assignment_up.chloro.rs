@@ -13,16 +13,19 @@ use crate::{
 
 pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let assign_expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
+
     let op_kind = assign_expr.op_kind()?;
     if op_kind != (ast::BinaryOp::Assignment { op: None }) {
         cov_mark::hit!(test_cant_pull_non_assignments);
         return None;
     }
+
     let mut collector = AssignmentsCollector {
         sema: &ctx.sema,
         common_lhs: assign_expr.lhs()?,
         assignments: Vec::new(),
     };
+
     let node: Either<ast::IfExpr, ast::MatchExpr> = ctx.find_node_at_offset()?;
     let tgt: ast::Expr = if let Either::Left(if_expr) = node {
         let if_expr = std::iter::successors(Some(if_expr), |it| {
@@ -37,12 +40,14 @@ pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     } else {
         return None;
     };
+
     if let Some(parent) = tgt.syntax().parent()
         && matches!(parent.kind(), syntax::SyntaxKind::BIN_EXPR | syntax::SyntaxKind::LET_STMT)
     {
         return None;
     }
     let target = tgt.syntax().text_range();
+
     let edit_tgt = tgt.syntax().clone_subtree();
     let assignments: Vec<_> = collector
         .assignments
@@ -60,6 +65,7 @@ pub(crate) fn pull_assignment_up(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             ))
         })
         .collect();
+
     let mut editor = SyntaxEditor::new(edit_tgt);
     for (stmt, rhs) in assignments {
         let mut stmt = stmt.syntax().clone();
@@ -104,12 +110,14 @@ impl AssignmentsCollector<'_> {
                 _ => return None,
             }
         }
+
         Some(())
     }
 
     fn collect_if(&mut self, if_expr: &ast::IfExpr) -> Option<()> {
         let then_branch = if_expr.then_branch()?;
         self.collect_block(&then_branch)?;
+
         match if_expr.else_branch()? {
             ast::ElseBranch::Block(block) => self.collect_block(&block),
             ast::ElseBranch::IfExpr(expr) => {
@@ -124,9 +132,11 @@ impl AssignmentsCollector<'_> {
             ast::Stmt::ExprStmt(stmt) => stmt.expr(),
             ast::Stmt::Item(_) | ast::Stmt::LetStmt(_) => None,
         })?;
+
         if let ast::Expr::BinExpr(expr) = last_expr {
             return self.collect_expr(&expr);
         }
+
         None
     }
 

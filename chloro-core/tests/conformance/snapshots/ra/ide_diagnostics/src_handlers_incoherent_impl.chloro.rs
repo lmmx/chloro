@@ -13,6 +13,7 @@ pub(crate) fn incoherent_impl(
             node.self_ty()?.syntax().text_range().end(),
         ))
     });
+
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0210"),
         "cannot define inherent `impl` for foreign type".to_owned(),

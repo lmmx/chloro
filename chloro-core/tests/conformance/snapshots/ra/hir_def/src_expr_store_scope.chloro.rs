@@ -192,6 +192,7 @@ impl ExprScopes {
         if let Pat::Bind { id, .. } = *pattern {
             self.add_bindings(store, scope, id, store.binding_hygiene(id));
         }
+
         pattern.walk_child_pats(|pat| self.add_pat_bindings(store, scope, pat));
     }
 
@@ -253,9 +254,11 @@ fn compute_expr_scopes(
 ) {
     let make_label =
         |label: &Option<LabelId>| label.map(|label| (label, store[label].name.clone()));
+
     let compute_expr_scopes = |scopes: &mut ExprScopes, expr: ExprId, scope: &mut ScopeId| {
         compute_expr_scopes(expr, store, scopes, scope)
     };
+
     scopes.set_scope(expr, *scope);
     match &store[expr] {
         Expr::Block { statements, tail, id, label } => {
@@ -328,6 +331,7 @@ mod tests {
     fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
         let krate = db.test_crate();
         let crate_def_map = crate_def_map(db, krate);
+
         let module = crate_def_map.modules_for_file(db, file_id).next().unwrap();
         let (_, def) = crate_def_map[module].scope.entries().next().unwrap();
         match def.take_values().unwrap() {
@@ -345,21 +349,27 @@ mod tests {
             buf.push_str(&code[off..]);
             buf
         };
+
         let (db, position) = TestDB::with_position(&code);
         let editioned_file_id = position.file_id;
         let offset = position.offset;
+
         let (file_id, _) = editioned_file_id.unpack(&db);
+
         let file_syntax = db.parse(editioned_file_id).syntax_node();
         let marker: ast::PathExpr = find_node_at_offset(&file_syntax, offset).unwrap();
         let function = find_function(&db, file_id);
+
         let scopes = db.expr_scopes(function.into());
         let (_body, source_map) = db.body_with_source_map(function.into());
+
         let expr_id = source_map
             .node_expr(InFile { file_id: editioned_file_id.into(), value: &marker.into() })
             .unwrap()
             .as_expr()
             .unwrap();
         let scope = scopes.scope_for(expr_id);
+
         let actual = scopes
             .scope_chain(scope)
             .flat_map(|scope| scopes.entries(scope))
@@ -489,14 +499,19 @@ fn foo() {
         let (db, position) = TestDB::with_position(ra_fixture);
         let editioned_file_id = position.file_id;
         let offset = position.offset;
+
         let (file_id, _) = editioned_file_id.unpack(&db);
+
         let file = db.parse(editioned_file_id).ok().unwrap();
         let expected_name = find_node_at_offset::<ast::Name>(file.syntax(), expected_offset.into())
             .expect("failed to find a name at the target offset");
         let name_ref: ast::NameRef = find_node_at_offset(file.syntax(), offset).unwrap();
+
         let function = find_function(&db, file_id);
+
         let scopes = db.expr_scopes(function.into());
         let (_, source_map) = db.body_with_source_map(function.into());
+
         let expr_scope = {
             let expr_ast = name_ref.syntax().ancestors().find_map(ast::Expr::cast).unwrap();
             let expr_id = source_map
@@ -506,9 +521,11 @@ fn foo() {
                 .unwrap();
             scopes.scope_for(expr_id).unwrap()
         };
+
         let resolved = scopes.resolve_name_in_scope(expr_scope, &name_ref.as_name()).unwrap();
         let pat_src =
             source_map.pat_syntax(source_map.patterns_for_binding(resolved.binding())[0]).unwrap();
+
         let local_name = pat_src.value.syntax_node_ptr().to_node(file.syntax());
         assert_eq!(local_name.text_range(), expected_name.syntax().text_range());
     }

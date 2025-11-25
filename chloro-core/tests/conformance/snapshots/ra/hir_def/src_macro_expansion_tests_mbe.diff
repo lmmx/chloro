@@ -2,30 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36173 bytes
-Chloro size:   36170 bytes
+Chloro size:   36173 bytes
 Rustfmt size:  36173 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- }
- "#]],
-     );
--
-     check(
-         r#"
- macro_rules! m {
- #[test]
- fn test_parse_macro_def_rules() {
-     cov_mark::check!(parse_macro_def_rules);
--
-     check(
-         r#"
- macro m {
- const VALUE: u8 = 0;
- "#]],
-     );
--
-     check(
-         r#"
- macro_rules! m {
+✓ Outputs are IDENTICAL

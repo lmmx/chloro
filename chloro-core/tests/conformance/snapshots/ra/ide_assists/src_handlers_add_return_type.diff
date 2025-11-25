@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11998 bytes
-Chloro size:   11648 bytes
+Chloro size:   11649 bytes
 Rustfmt size:  12025 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,6 @@ Rustfmt size:  12025 bytes
      if ty.is_unit() {
          return None;
      }
-     let ty = ty.display_source_code(ctx.db(), module.into(), true).ok()?;
--
-     acc.add(
-         AssistId::refactor_rewrite("add_return_type"),
-         match fn_type {
  
  enum FnType {
      Function,

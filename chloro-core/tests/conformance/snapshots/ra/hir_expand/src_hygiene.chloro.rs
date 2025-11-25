@@ -79,12 +79,14 @@ pub(super) fn apply_mark(
     if transparency == Transparency::Opaque {
         return apply_mark_internal(db, ctxt, call_id, transparency, edition);
     }
+
     let call_site_ctxt = db.lookup_intern_macro_call(call_id.into()).ctxt;
     let mut call_site_ctxt = if transparency == Transparency::SemiTransparent {
         call_site_ctxt.normalize_to_macros_2_0(db)
     } else {
         call_site_ctxt.normalize_to_macro_rules(db)
     };
+
     if call_site_ctxt.is_root() {
         return apply_mark_internal(db, ctxt, call_id, transparency, edition);
     }
@@ -97,6 +99,7 @@ pub(super) fn apply_mark(
     // so that the macros 2.0 definition remains hygienic.
     //
     // See the example at `test/ui/hygiene/legacy_interaction.rs`.
+
     for (call_id, transparency) in ctxt.marks(db) {
         call_site_ctxt = apply_mark_internal(db, call_site_ctxt, call_id, transparency, edition);
     }
@@ -111,17 +114,21 @@ fn apply_mark_internal(
     edition: Edition,
 ) -> SyntaxContext {
     let call_id = Some(call_id);
+
     let mut opaque = ctxt.opaque(db);
     let mut opaque_and_semitransparent = ctxt.opaque_and_semitransparent(db);
+
     if transparency >= Transparency::Opaque {
         let parent = opaque;
         opaque = SyntaxContext::new(db, call_id, transparency, edition, parent, identity, identity);
     }
+
     if transparency >= Transparency::SemiTransparent {
         let parent = opaque_and_semitransparent;
         opaque_and_semitransparent =
             SyntaxContext::new(db, call_id, transparency, edition, parent, |_| opaque, identity);
     }
+
     let parent = ctxt;
     SyntaxContext::new(
         db,

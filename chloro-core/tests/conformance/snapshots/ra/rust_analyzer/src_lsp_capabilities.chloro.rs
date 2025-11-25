@@ -277,6 +277,7 @@ impl ClientCapabilities {
             Some(general) => general.position_encodings.as_deref().unwrap_or_default(),
             None => &[],
         };
+
         for enc in client_encodings {
             if enc == &PositionEncodingKind::UTF8 {
                 return PositionEncoding::Utf8;
@@ -285,6 +286,7 @@ impl ClientCapabilities {
             }
             // NB: intentionally prefer just about anything else to utf-16.
         }
+
         PositionEncoding::Wide(WideEncoding::Utf16)
     }
 

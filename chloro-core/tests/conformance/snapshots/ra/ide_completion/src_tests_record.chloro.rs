@@ -70,6 +70,7 @@ fn foo(baz: Baz) {
             kw ref
         "#]],
     );
+
     check(
         r#"
 //- minicore:result
@@ -160,6 +161,7 @@ fn foo(f: Struct) {
 #[test]
 fn in_functional_update() {
     cov_mark::check!(functional_update);
+
     check(
         r#"
 //- minicore:default
@@ -311,6 +313,7 @@ pub(crate) struct S {
 }
 "#,
     );
+
     check_edit(
         "pub",
         r"
@@ -324,6 +327,7 @@ pub struct S {
 }
 "#,
     );
+
     check_edit(
         "pub(super)",
         r"

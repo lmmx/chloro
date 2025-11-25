@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27018 bytes
-Chloro size:   26728 bytes
+Chloro size:   26739 bytes
 Rustfmt size:  27018 bytes
 
 ✗ Outputs DIFFER
@@ -28,23 +28,6 @@ Rustfmt size:  27018 bytes
  pub(crate) fn incorrect_case(ctx: &DiagnosticsContext<'_>, d: &hir::IncorrectCase) -> Diagnostic {
      let code = match d.expected_case {
          CaseType::LowerSnakeCase => DiagnosticCode::RustcLint("non_snake_case"),
-     let root = ctx.sema.db.parse_or_expand(d.file);
-     let name_node = d.ident.to_node(&root);
-     let def = NameClass::classify(&ctx.sema, &name_node)?.defined()?;
--
-     let name_node = InFile::new(d.file, name_node.syntax());
-     let frange = name_node.original_file_range_rooted(ctx.sema.db);
--
-     let label = format!("Rename to {}", d.suggested_text);
-     let mut res = unresolved_fix("change_case", &label, frange.range);
-     if ctx.resolve.should_resolve(&res.id) {
-         let source_change = def.rename(&ctx.sema, &d.suggested_text, RenameDefinition::Yes);
-         res.source_change = Some(source_change.ok().unwrap_or_default());
-     }
--
-     Some(vec![res])
- }
- 
  #[cfg(test)]
  mod change_case {
      use crate::tests::{check_diagnostics, check_diagnostics_with_disabled, check_fix};
@@ -52,34 +35,6 @@ Rustfmt size:  27018 bytes
      #[test]
      fn test_rename_incorrect_case() {
          check_fix(
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- pub fn some_fn(NonSnakeCase$0: u8) -> u8 {
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- pub fn SomeFn$0(val: u8) -> u8 {
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- fn some_fn() {
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- static S: i32 = M::A;
  "#,
          );
      }
@@ -364,27 +319,6 @@ Rustfmt size:  27018 bytes
      #[test]
      fn test_match() {
          check_diagnostics(
- }
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- struct Foo(u8);
- }
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- fn main() {
- }
- "#,
-         );
--
-         check_diagnostics(
-             r#"
- enum Foo { V1, V2 }
  "#,
          );
      }
@@ -392,13 +326,6 @@ Rustfmt size:  27018 bytes
      #[test]
      fn test_for_loop() {
          check_diagnostics(
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- //- minicore: iterators
  "#,
          );
      }

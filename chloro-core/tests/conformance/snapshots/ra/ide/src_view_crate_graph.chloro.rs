@@ -22,6 +22,7 @@ pub(crate) fn view_crate_graph(db: &RootDatabase, full: bool) -> Result<String, 
         })
         .collect();
     let graph = DotCrateGraph { crates_to_render };
+
     let mut dot = Vec::new();
     dot::render(&graph, &mut dot).unwrap();
     Ok(String::from_utf8(dot).unwrap())

@@ -7,15 +7,19 @@ pub(crate) fn add_lifetime_to_type(acc: &mut Assists, ctx: &AssistContext<'_>) -
     if ref_type_focused.lifetime().is_some() {
         return None;
     }
+
     let node = ctx.find_node_at_offset::<ast::Adt>()?;
     let has_lifetime = node
         .generic_param_list()
         .is_some_and(|gen_list| gen_list.lifetime_params().next().is_some());
+
     if has_lifetime {
         return None;
     }
+
     let ref_types = fetch_borrowed_types(&node)?;
     let target = node.syntax().text_range();
+
     acc.add(AssistId::generate("add_lifetime_to_type"), "Add lifetime", target, |builder| {
         match node.generic_param_list() {
             Some(gen_param) => {
@@ -72,6 +76,7 @@ fn fetch_borrowed_types(node: &ast::Adt) -> Option<Vec<ast::RefType>> {
                 .collect()
         }
     };
+
     if ref_types.is_empty() { None } else { Some(ref_types) }
 }
 
@@ -102,6 +107,7 @@ fn find_ref_types_from_field_list(field_list: &ast::FieldList) -> Option<Vec<ast
             })
             .collect(),
     };
+
     if ref_types.is_empty() { None } else { Some(ref_types) }
 }
 
@@ -116,21 +122,25 @@ mod tests {
             r#"struct Foo { a: &$0i32 }"#,
             r#"struct Foo<'a> { a: &'a i32 }"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"struct Foo { a: &$0i32, b: &usize }"#,
             r#"struct Foo<'a> { a: &'a i32, b: &'a usize }"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"struct Foo { a: &$0i32, b: usize }"#,
             r#"struct Foo<'a> { a: &'a i32, b: usize }"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"struct Foo<T> { a: &$0T, b: usize }"#,
             r#"struct Foo<'a, T> { a: &'a T, b: usize }"#,
         );
+
         check_assist_not_applicable(add_lifetime_to_type, r#"struct Foo<'a> { a: &$0'a i32 }"#);
         check_assist_not_applicable(add_lifetime_to_type, r#"struct Foo { a: &'a$0 i32 }"#);
     }
@@ -141,16 +151,19 @@ mod tests {
             r#"enum Foo { Bar { a: i32 }, Other, Tuple(u32, &$0u32)}"#,
             r#"enum Foo<'a> { Bar { a: i32 }, Other, Tuple(u32, &'a u32)}"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"enum Foo { Bar { a: &$0i32 }}"#,
             r#"enum Foo<'a> { Bar { a: &'a i32 }}"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"enum Foo<T> { Bar { a: &$0i32, b: &T }}"#,
             r#"enum Foo<'a, T> { Bar { a: &'a i32, b: &'a T }}"#,
         );
+
         check_assist_not_applicable(
             add_lifetime_to_type,
             r#"enum Foo<'a> { Bar { a: &$0'a i32 }}"#,
@@ -164,16 +177,19 @@ mod tests {
             r#"union Foo { a: &$0i32 }"#,
             r#"union Foo<'a> { a: &'a i32 }"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"union Foo { a: &$0i32, b: &usize }"#,
             r#"union Foo<'a> { a: &'a i32, b: &'a usize }"#,
         );
+
         check_assist(
             add_lifetime_to_type,
             r#"union Foo<T> { a: &$0T, b: usize }"#,
             r#"union Foo<'a, T> { a: &'a T, b: usize }"#,
         );
+
         check_assist_not_applicable(add_lifetime_to_type, r#"struct Foo<'a> { a: &'a $0i32 }"#);
     }
 }

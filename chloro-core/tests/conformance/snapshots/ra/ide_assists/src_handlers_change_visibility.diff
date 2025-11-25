@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9744 bytes
-Chloro size:   9549 bytes
+Chloro size:   9553 bytes
 Rustfmt size:  10260 bytes
 
 ✗ Outputs DIFFER
@@ -28,13 +28,6 @@ Rustfmt size:  10260 bytes
  pub(crate) fn change_visibility(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      if let Some(vis) = ctx.find_node_at_offset::<ast::Visibility>() {
          return change_vis(acc, vis);
-                 | T![macro]
-         )
-     });
--
-     let (offset, target) = if let Some(keyword) = item_keyword {
-         let parent = keyword.parent()?;
- 
          }
          (vis_offset(&parent), keyword.text_range())
      } else if let Some(field_name) = ctx.find_node_at_offset::<ast::Name>() {
@@ -46,25 +39,17 @@ Rustfmt size:  10260 bytes
          if field.name()? != field_name {
              cov_mark::hit!(change_visibility_field_false_positive);
              return None;
-     } else {
-         return None;
-     };
--
-     acc.add(
-         AssistId::refactor_rewrite("change_visibility"),
-         "Change visibility to pub(crate)",
  }
  
  fn can_add(node: &SyntaxNode) -> bool {
 -    const LEGAL: &[SyntaxKind] = &[
 -        CONST, STATIC, TYPE_ALIAS, FN, MODULE, STRUCT, ENUM, TRAIT, USE, MACRO_DEF,
 -    ];
--
 +    const LEGAL: &[SyntaxKind] =
 +        &[CONST, STATIC, TYPE_ALIAS, FN, MODULE, STRUCT, ENUM, TRAIT, USE, MACRO_DEF];
+ 
      LEGAL.contains(&node.kind()) && {
          let Some(p) = node.parent() else {
-             return false;
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};
@@ -196,7 +181,7 @@ Rustfmt size:  10260 bytes
      #[test]
      fn not_applicable_for_enum_variant_fields() {
          check_assist_not_applicable(change_visibility, r"pub enum Foo { Foo1($0i32) }");
--
+ 
          check_assist_not_applicable(change_visibility, r"pub enum Foo { Foo1 { $0n: i32 } }");
      }
 -

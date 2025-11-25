@@ -14,6 +14,7 @@ use crate::{
 
 pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
+
     let field_list = match strukt.kind() {
         StructKind::Record(named) => {
             named.fields().filter_map(|f| Some((f.name()?, f.ty()?))).collect::<Vec<_>>()
@@ -40,9 +41,12 @@ pub(crate) fn generate_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         StructKind::Unit => return None,
     };
     // Return early if we've found an existing new fn
+
     let impl_def =
         find_struct_impl(ctx, &ast::Adt::Struct(strukt.clone()), &[String::from("new")])?;
+
     let current_module = ctx.sema.scope(strukt.syntax())?.module();
+
     let target = strukt.syntax().text_range();
     acc.add(AssistId::generate("generate_new"), "Generate `new`", target, |builder| {
         let trivial_constructors = field_list
@@ -275,6 +279,7 @@ impl Foo {
 "#,
         );
         // make sure the assist only works on unit variants
+
         check_assist(
             generate_new,
             r#"
@@ -450,6 +455,7 @@ impl Foo {
 }
 "#,
         );
+
         check_assist(
             generate_new,
             r#"
@@ -653,6 +659,7 @@ impl Foo {
 }
 "#,
         );
+
         check_assist_not_applicable(
             generate_new,
             r#"
@@ -802,6 +809,7 @@ impl Foo {
 "#,
         );
         // make sure the assist only works on unit variants
+
         check_assist(
             generate_new,
             r#"
@@ -955,6 +963,7 @@ impl Foo {
 }
 "#,
         );
+
         check_assist_not_applicable(
             generate_new,
             r#"

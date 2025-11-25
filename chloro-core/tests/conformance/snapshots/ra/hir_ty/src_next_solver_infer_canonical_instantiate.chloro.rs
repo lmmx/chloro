@@ -162,6 +162,7 @@ impl<'db, 'a> TypeFolder<DbInterner<'db>> for CanonicalInstantiator<'db, 'a> {
             return c;
         }
         // FIXME: We might need cache here for perf like rustc
+
         c.super_fold_with(self)
     }
 }

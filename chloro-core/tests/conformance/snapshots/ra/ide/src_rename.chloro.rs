@@ -73,6 +73,7 @@ pub(crate) fn prepare_rename(
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
     let syntax = source_file.syntax();
+
     let res = find_definitions(&sema, syntax, position, &Name::new_symbol_root(sym::underscore))?
         .filter(|(_, _, def, _, _)| def.range_for_rename(&sema).is_some())
         .map(|(frange, kind, _, _, _)| {
@@ -94,6 +95,7 @@ pub(crate) fn prepare_rename(
             (e @ Err(_), _) | (_, e @ Err(_)) => e,
             _ => bail!("inconsistent text range"),
         });
+
     match res {
         // ensure at least one definition was found
         Some(res) => res.map(|range| RangeInfo::new(range, ())),
@@ -113,11 +115,14 @@ pub(crate) fn rename(
         .ok_or_else(|| format_err!("No references found at position"))?;
     let source_file = sema.parse(file_id);
     let syntax = source_file.syntax();
+
     let edition = file_id.edition(db);
     let (new_name, kind) = IdentifierKind::classify(edition, new_name)?;
+
     let defs = find_definitions(&sema, syntax, position, &new_name)?;
     let alias_fallback =
         alias_fallback(syntax, position, &new_name.display(db, edition).to_string());
+
     let ops: RenameResult<Vec<SourceChange>> = match alias_fallback {
         Some(_) => ok_if_any(
             defs
@@ -178,6 +183,7 @@ pub(crate) fn rename(
             def.rename(&sema, new_name.as_str(), rename_def)
         })),
     };
+
     ops?.into_iter()
         .chain(alias_fallback)
         .reduce(|acc, elem| acc.merge(elem))
@@ -207,11 +213,14 @@ fn alias_fallback(
         .token_at_offset(offset)
         .flat_map(|syntax| syntax.parent_ancestors())
         .find_map(ast::UseTree::cast)?;
+
     let last_path_segment = use_tree.path()?.segments().last()?.name_ref()?;
     if !last_path_segment.syntax().text_range().contains_inclusive(offset) {
         return None;
     };
+
     let mut builder = SourceChangeBuilder::new(file_id);
+
     match use_tree.rename() {
         Some(rename) => {
             let offset = rename.syntax().text_range();
@@ -222,6 +231,7 @@ fn alias_fallback(
             builder.insert(offset, format!(" as {new_name}"));
         }
     }
+
     Some(builder.finish())
 }
 
@@ -233,6 +243,7 @@ fn find_definitions(
 ) -> RenameResult<impl Iterator<Item = (FileRange, SyntaxKind, Definition, Name, RenameDefinition)>> {
     let maybe_format_args =
         syntax.token_at_offset(offset).find(|t| matches!(t.kind(), SyntaxKind::STRING));
+
     if let Some((range, _, _, Some(resolution))) =
         maybe_format_args.and_then(|token| sema.check_for_format_args_template(token, offset))
     {
@@ -245,6 +256,7 @@ fn find_definitions(
         )]
         .into_iter());
     }
+
     let original_ident = syntax
         .token_at_offset(offset)
         .max_by_key(|t| {
@@ -340,6 +352,7 @@ fn find_definitions(
                 }
             })
         });
+
     let res: RenameResult<Vec<_>> = ok_if_any(symbols.filter_map(Result::transpose));
     match res {
         Ok(v) => {
@@ -446,13 +459,16 @@ fn rename_to_self(
     if never!(local.is_self(sema.db)) {
         bail!("rename_to_self invoked on self");
     }
+
     let fn_def = match local.parent(sema.db) {
         hir::DefWithBody::Function(func) => func,
         _ => bail!("Cannot rename local to self outside of function"),
     };
+
     if fn_def.self_param(sema.db).is_some() {
         bail!("Method already has a self parameter");
     }
+
     let params = fn_def.assoc_fn_params(sema.db);
     let first_param = params
         .first()
@@ -465,6 +481,7 @@ fn rename_to_self(
         }
         None => bail!("rename_to_self invoked on destructuring parameter"),
     }
+
     let assoc_item = fn_def
         .as_assoc_item(sema.db)
         .ok_or_else(|| format_err!("Cannot rename parameter to self for free function"))?;
@@ -484,12 +501,15 @@ fn rename_to_self(
             (ty, if first_param_ty.is_mutable_reference() { "&mut self" } else { "&self" })
         })
     };
+
     if ty != impl_ty {
         bail!("Parameter type differs from impl block type");
     }
+
     let InFile { file_id, value: param_source } = sema
         .source(first_param.clone())
         .ok_or_else(|| format_err!("No source for parameter found"))?;
+
     let def = Definition::Local(local);
     let usages = def.usages(sema).all();
     let mut source_change = SourceChange::default();
@@ -702,12 +722,15 @@ fn rename_self_to_param(
         cov_mark::hit!(rename_self_to_self);
         return Ok(SourceChange::default());
     }
+
     let fn_def = match local.parent(sema.db) {
         hir::DefWithBody::Function(func) => func,
         _ => bail!("Cannot rename local to self outside of function"),
     };
+
     let InFile { file_id, value: self_param } =
         sema.source(self_param).ok_or_else(|| format_err!("cannot find function source"))?;
+
     let def = Definition::Local(local);
     let usages = def.usages(sema).all();
     let edit = text_edit_from_self_param(
@@ -739,6 +762,7 @@ fn rename_self_to_param(
 fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> Option<TextEdit> {
     let mut replacement_text = new_name;
     replacement_text.push_str(": ");
+
     if self_param.amp_token().is_some() {
         replacement_text.push('&');
     }
@@ -748,7 +772,9 @@ fn text_edit_from_self_param(self_param: &ast::SelfParam, new_name: String) -> O
     if self_param.amp_token().and(self_param.mut_token()).is_some() {
         replacement_text.push_str("mut ");
     }
+
     replacement_text.push_str("Self");
+
     Some(TextEdit::replace(self_param.syntax().text_range(), replacement_text))
 }
 
@@ -871,6 +897,7 @@ mod tests {
             .into_iter()
             .map(|(id, (text_edit, _))| (id, text_edit.into_iter().collect::<Vec<_>>()))
             .collect::<Vec<_>>();
+
         format!(
             "source_file_edits: {:#?}\nfile_system_edits: {:#?}\n",
             source_file_edits, source_change.file_system_edits
@@ -1911,6 +1938,7 @@ fn bar() {
                 file_system_edits: []
             "#]],
         );
+
         check_expect(
             "dyn",
             r#"
@@ -1950,6 +1978,7 @@ fn bar() {
                 file_system_edits: []
             "#]],
         );
+
         check_expect(
             "r#dyn",
             r#"
@@ -2039,6 +2068,7 @@ fn bar() {
                 file_system_edits: []
             "#]],
         );
+
         check_expect(
             "abc",
             r#"

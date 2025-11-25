@@ -21,6 +21,7 @@ pub struct TreeDiff {
 impl TreeDiff {
     pub fn into_text_edit(&self, builder: &mut TextEditBuilder) {
         let _p = tracing::info_span!("into_text_edit").entered();
+
         for (anchor, to) in &self.insertions {
             let offset = match anchor {
                 TreeDiffInsertPos::After(it) => it.text_range().end(),
@@ -49,16 +50,19 @@ impl TreeDiff {
 /// This function tries to find a fine-grained diff.
 pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
     let _p = tracing::info_span!("diff").entered();
+
     let mut diff = TreeDiff {
         replacements: FxHashMap::default(),
         insertions: FxIndexMap::default(),
         deletions: Vec::new(),
     };
     let (from, to) = (from.clone().into(), to.clone().into());
+
     if !syntax_element_eq(&from, &to) {
         go(&mut diff, from, to);
     }
     return diff;
+
     fn syntax_element_eq(lhs: &SyntaxElement, rhs: &SyntaxElement) -> bool {
         lhs.kind() == rhs.kind()
             && lhs.text_range().len() == rhs.text_range().len()
@@ -70,6 +74,7 @@ pub fn diff(from: &SyntaxNode, to: &SyntaxNode) -> TreeDiff {
                 _ => false,
             }
     }
+
     // FIXME: this is horribly inefficient. I bet there's a cool algorithm to diff trees properly.
     fn go(diff: &mut TreeDiff, lhs: SyntaxElement, rhs: SyntaxElement) {
         let (lhs, rhs) = match lhs.as_node().zip(rhs.as_node()) {
@@ -492,12 +497,15 @@ fn main() {
         let from_node = SourceFile::parse(from, Edition::CURRENT).tree().syntax().clone();
         let to_node = SourceFile::parse(to, Edition::CURRENT).tree().syntax().clone();
         let diff = super::diff(&from_node, &to_node);
+
         let line_number =
             |syn: &SyntaxElement| from[..syn.text_range().start().into()].lines().count();
+
         let fmt_syntax = |syn: &SyntaxElement| match syn.kind() {
             SyntaxKind::WHITESPACE => format!("{:?}", syn.to_string()),
             _ => format!("{syn}"),
         };
+
         let insertions =
             diff.insertions.iter().format_with("\n", |(k, v), f| -> Result<(), std::fmt::Error> {
                 f(&format!(
@@ -510,6 +518,7 @@ fn main() {
                     v.iter().format_with("\n-> ", |v, f| f(&fmt_syntax(v)))
                 ))
             });
+
         let replacements = diff
             .replacements
             .iter()
@@ -517,14 +526,17 @@ fn main() {
             .format_with("\n", |(k, v), f| {
                 f(&format!("Line {}: {k:?} -> {}", line_number(k), fmt_syntax(v)))
             });
+
         let deletions = diff
             .deletions
             .iter()
             .format_with("\n", |v, f| f(&format!("Line {}: {}", line_number(v), fmt_syntax(v))));
+
         let actual = format!(
             "insertions:\n\n{insertions}\n\nreplacements:\n\n{replacements}\n\ndeletions:\n\n{deletions}\n"
         );
         expected_diff.assert_eq(&actual);
+
         let mut from = from.to_owned();
         let mut text_edit = TextEdit::builder();
         diff.into_text_edit(&mut text_edit);

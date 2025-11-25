@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 31299 bytes
-Chloro size:   31318 bytes
+Chloro size:   31320 bytes
 Rustfmt size:  31299 bytes
 
 ✗ Outputs DIFFER
@@ -71,8 +71,10 @@ Rustfmt size:  31299 bytes
          };
 -
          // Biased to give restarts a preference so check outputs don't block a restart or stop
++
          select_biased! {
              recv(inbox) -> msg => msg.ok().map(Event::RequestStateChange),
+             recv(command_receiver) -> msg => Some(Event::CheckEvent(msg.ok())),
  #[allow(clippy::large_enum_variant)]
  enum CargoCheckMessage {
      CompilerArtifact(cargo_metadata::Artifact),
@@ -84,10 +86,3 @@ Rustfmt size:  31299 bytes
  }
  
  struct CargoCheckParser;
-                 }
-             };
-         }
--
-         error.push_str(line);
-         error.push('\n');
-         None

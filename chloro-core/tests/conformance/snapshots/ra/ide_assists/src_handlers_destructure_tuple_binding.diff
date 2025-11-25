@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 44220 bytes
-Chloro size:   43540 bytes
+Chloro size:   43557 bytes
 Rustfmt size:  44616 bytes
 
 ✗ Outputs DIFFER
@@ -61,17 +61,7 @@ Rustfmt size:  44616 bytes
  pub(crate) fn destructure_tuple_binding_impl(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<()> {
-     let ident_pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
-     let data = collect_data(ident_pat, ctx)?;
--
-     if with_sub_pattern {
-         acc.add(
-             AssistId::refactor_rewrite("destructure_tuple_binding_in_sub_pattern"),
-             |edit| destructure_tuple_edit_impl(ctx, edit, &data, true),
-         );
-     }
--
+ 
      acc.add(
          AssistId::refactor_rewrite("destructure_tuple_binding"),
 -        if with_sub_pattern {
@@ -83,14 +73,7 @@ Rustfmt size:  44616 bytes
          data.ident_pat.syntax().text_range(),
          |edit| destructure_tuple_edit_impl(ctx, edit, &data, false),
      );
--
-     Some(())
- }
  
- ) {
-     let assignment_edit = edit_tuple_assignment(ctx, edit, data, in_sub_pattern);
-     let current_file_usages_edit = edit_tuple_usages(data, edit, ctx, in_sub_pattern);
--
      assignment_edit.apply();
      if let Some(usages_edit) = current_file_usages_edit {
 -        usages_edit
@@ -100,34 +83,9 @@ Rustfmt size:  44616 bytes
      }
  }
  
-         cov_mark::hit!(destructure_tuple_subpattern);
-         return None;
-     }
--
-     let ty = ctx.sema.type_of_binding_in_pat(&ident_pat)?;
-     let ref_type = if ty.is_mutable_reference() {
-         Some(RefType::Mutable)
-         cov_mark::hit!(destructure_tuple_no_tuple);
-         return None;
-     }
--
-     let usages = ctx.sema.to_def(&ident_pat).and_then(|def| {
-         Definition::Local(def)
-             .usages(&ctx.sema)
-             .next()
-             .map(|(_, refs)| refs.to_vec())
-     });
--
-     let mut name_generator =
-         suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(ident_pat.syntax()));
--
-     let field_names = field_types
-         .into_iter()
-         .enumerate()
-             .to_string()
          })
          .collect::<Vec<_>>();
--
+ 
 -    Some(TupleData {
 -        ident_pat,
 -        ref_type,
@@ -152,19 +110,6 @@ Rustfmt size:  44616 bytes
  fn edit_tuple_assignment(
      ctx: &AssistContext<'_>,
      edit: &mut SourceChangeBuilder,
-     in_sub_pattern: bool,
- ) -> AssignmentEdit {
-     let ident_pat = edit.make_mut(data.ident_pat.clone());
--
-     let tuple_pat = {
-         let original = &data.ident_pat;
-         let is_ref = original.ref_token().is_some();
-         .as_ref()
-         .and_then(ast::RecordPatField::for_field_name)
-         .is_some_and(|field| field.colon_token().is_none());
--
-     if let Some(cap) = ctx.config.snippet_cap {
-         // place cursor on first tuple name
          if let Some(ast::Pat::IdentPat(first_pat)) = tuple_pat.fields().next() {
              edit.add_tabstop_before(
                  cap,
@@ -175,7 +120,7 @@ Rustfmt size:  44616 bytes
              )
          }
      }
--
+ 
 -    AssignmentEdit {
 -        ident_pat,
 -        tuple_pat,
@@ -204,30 +149,13 @@ Rustfmt size:  44616 bytes
          } else {
              ted::replace(self.ident_pat.syntax(), self.tuple_pat.syntax())
          }
-     // We also defer editing usages in the current file first since
-     // tree mutation in the same file breaks when `builder.edit_file`
-     // is called
--
-     let edits = data
-         .usages
-         .as_ref()?
-         .iter()
-         .filter_map(|r| edit_tuple_usage(ctx, edit, r, data, in_sub_pattern))
-         .collect_vec();
--
+ 
      Some(edits)
  }
 +
  fn edit_tuple_usage(
      ctx: &AssistContext<'_>,
      builder: &mut SourceChangeBuilder,
- ) -> EditTupleUsage {
-     let field_name = &data.field_names[index.index];
-     let field_name = make::expr_path(make::ext::ident_path(field_name));
--
-     if data.ref_type.is_some() {
-         let (replace_expr, ref_data) = determine_ref_and_parens(ctx, &index.field_expr);
-         let replace_expr = builder.make_mut(replace_expr);
          EditTupleUsage::ReplaceExpr(field_expr.into(), field_name)
      }
  }
@@ -255,20 +183,13 @@ Rustfmt size:  44616 bytes
  fn detect_tuple_index(usage: &FileReference, data: &TupleData) -> Option<TupleIndex> {
      // usage is IDENT
      // IDENT
-     //     PATH_EXPR
-     //      PAREN_EXRP*
-     //       FIELD_EXPR
--
-     let node = usage
-         .name
-         .syntax()
          .ancestors()
          .skip_while(|s| !ast::PathExpr::can_cast(s.kind()))
          .skip(1) // PATH_EXPR
 -        .find(|s| !ast::ParenExpr::can_cast(s.kind()))?; // skip parentheses
--
 +        .find(|s| !ast::ParenExpr::can_cast(s.kind()))?;
 +    // skip parentheses
+ 
      if let Some(field_expr) = ast::FieldExpr::cast(node) {
          let idx = field_expr.name_ref()?.as_tuple_field()?;
          if idx < data.field_names.len() {

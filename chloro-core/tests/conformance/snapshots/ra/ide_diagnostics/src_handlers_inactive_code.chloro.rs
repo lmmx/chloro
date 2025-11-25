@@ -11,8 +11,10 @@ pub(crate) fn inactive_code(
     if d.node.file_id.is_macro() {
         return None;
     }
+
     let inactive = DnfExpr::new(&d.cfg).why_inactive(&d.opts);
     let mut message = "code is inactive due to #[cfg] directives".to_owned();
+
     if let Some(inactive) = inactive {
         let inactive_reasons = inactive.to_string();
 
@@ -80,6 +82,7 @@ fn f() {
     #[test]
     fn inactive_item() {
         // Additional tests in `cfg` crate. This only tests disabled cfgs.
+
         check(
             r#"
     #[cfg(no)] pub fn f() {}

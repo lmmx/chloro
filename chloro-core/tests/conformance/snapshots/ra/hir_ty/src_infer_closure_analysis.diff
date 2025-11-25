@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52289 bytes
-Chloro size:   52215 bytes
+Chloro size:   52217 bytes
 Rustfmt size:  52289 bytes
 
 ✗ Outputs DIFFER
@@ -42,17 +42,3 @@ Rustfmt size:  52289 bytes
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub(crate) struct HirPlace<'db> {
      pub(crate) local: BindingId,
-             }
-             None => *result = Some(ck),
-         };
--
-         self.walk_pat_inner(
-             pat,
-             &mut update_result,
-         {
-             self.closure_dependencies.entry(c).or_default().push(dep);
-         }
--
-         fn dep_creates_cycle(
-             closure_dependencies: &FxHashMap<InternedClosureId, Vec<InternedClosureId>>,
-             visited: &mut FxHashSet<InternedClosureId>,

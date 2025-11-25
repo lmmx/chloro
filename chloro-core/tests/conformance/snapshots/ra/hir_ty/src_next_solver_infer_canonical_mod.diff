@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6444 bytes
-Chloro size:   6444 bytes
+Chloro size:   6445 bytes
 Rustfmt size:  6615 bytes
 
 ✗ Outputs DIFFER
@@ -33,13 +33,6 @@ Rustfmt size:  6615 bytes
  
  impl<'db> InferCtxt<'db> {
      /// Creates an instantiation S for the canonical value with fresh inference
-         let universes: IndexVec<UniverseIndex, _> = std::iter::once(self.universe())
-             .chain((1..=canonical.max_universe.as_u32()).map(|_| self.create_next_universe()))
-             .collect();
--
-         let var_values = CanonicalVarValues::instantiate(
-             self.interner,
-             canonical.variables,
  
              CanonicalVarKind::PlaceholderTy(PlaceholderTy { universe, bound }) => {
                  let universe_mapped = universe_map(universe);

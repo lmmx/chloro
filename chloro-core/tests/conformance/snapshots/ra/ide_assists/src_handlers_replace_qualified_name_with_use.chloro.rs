@@ -20,10 +20,12 @@ pub(crate) fn replace_qualified_name_with_use(
         cov_mark::hit!(not_applicable_in_use);
         return None;
     }
+
     if original_path.qualifier().is_none() {
         original_path = original_path.parent_path()?;
     }
     // only offer replacement for non assoc items
+
     match ctx.sema.resolve_path(&original_path)? {
         hir::PathResolution::Def(def) if def.as_assoc_item(ctx.sema.db).is_none() => (),
         _ => return None,
@@ -34,6 +36,7 @@ pub(crate) fn replace_qualified_name_with_use(
         hir::PathResolution::Def(module @ hir::ModuleDef::Module(_)) => module,
         _ => return None,
     };
+
     let starts_with_name_ref = !matches!(
         original_path.first_segment().and_then(|it| it.kind()),
         Some(
@@ -49,6 +52,7 @@ pub(crate) fn replace_qualified_name_with_use(
             mod_.find_use_path(ctx.sema.db, module, ctx.config.insert_use.prefix_kind, cfg)
         })
         .flatten();
+
     let scope = ImportScope::find_insert_use_container(original_path.syntax(), &ctx.sema)?;
     let target = original_path.syntax().text_range();
     acc.add(
@@ -112,12 +116,14 @@ fn maybe_replace_path(path: ast::Path, target: ast::Path) -> Option<()> {
         return None;
     }
     // Shorten `path`, leaving only its last segment.
+
     if let Some(parent) = path.qualifier() {
         ted::remove(parent.syntax());
     }
     if let Some(double_colon) = path.coloncolon_token() {
         ted::remove(&double_colon);
     }
+
     Some(())
 }
 

@@ -558,6 +558,7 @@ fn foo() {
             kw ref
         "#]],
     );
+
     check(
         r#"
 enum Enum {
@@ -603,6 +604,7 @@ fn f(t: Ty) {
             ct ABC const ABC: Self
         "#]],
     );
+
     check(
         r#"
 enum MyEnum {}
@@ -624,6 +626,7 @@ fn f(e: MyEnum) {
             ct B pub const B: i32
         "#]],
     );
+
     check(
         r#"
 union U {
@@ -648,6 +651,7 @@ fn f(u: U) {
             ct D pub const D: i32
         "#]],
     );
+
     check(
         r#"
 #![rustc_coherence_is_core]
@@ -847,6 +851,7 @@ fn foo() {
 }
 "#,
     );
+
     check_edit(
         "ref",
         r#"
@@ -881,6 +886,7 @@ fn foo() {
 }
 "#,
     );
+
     check_edit(
         "s1",
         r#"
@@ -897,6 +903,7 @@ fn foo(s1: S1) {
 "#,
     );
     // Tests for &adt
+
     check_edit(
         "s1",
         r#"
@@ -915,6 +922,7 @@ fn foo() {
 "#,
     );
     // Do not suggest reserved keywords
+
     check(
         r#"
 struct Struct;

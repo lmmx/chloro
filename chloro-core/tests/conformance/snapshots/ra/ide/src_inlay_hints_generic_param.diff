@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9092 bytes
-Chloro size:   9040 bytes
+Chloro size:   9046 bytes
 Rustfmt size:  9092 bytes
 
 ✗ Outputs DIFFER
@@ -27,39 +27,6 @@ Rustfmt size:  9092 bytes
  use super::param_name::is_argument_similar_to_param_name;
  
  pub(crate) fn hints(
-     if !(type_hints || lifetime_hints || const_hints) {
-         return None;
-     }
--
-     let generic_arg_list = node.generic_arg_list()?;
--
-     let (generic_def, _, _, _) =
-         generic_def_for_node(sema, &generic_arg_list, &node.syntax().first_token()?)?;
--
-     let mut args = generic_arg_list.generic_args().peekable();
-     let start_with_lifetime = matches!(args.peek()?, ast::GenericArg::LifetimeArg(_));
-     let params = generic_def.params(sema.db).into_iter().filter(|p| {
-         }
-         true
-     });
--
-     let hints = params.zip(args).filter_map(|(param, arg)| {
-         if matches!(arg, ast::GenericArg::AssocTypeArg(_)) {
-             return None;
-             resolve_parent: Some(node.syntax().text_range()),
-         })
-     });
--
-     acc.extend(hints);
-     Some(())
- }
-             type_path(&ty).map(Either::Right).map(Either::Left)
-         }
-     };
--
-     fn type_path(ty: &ast::Type) -> Option<ast::Path> {
-         match ty {
-             ast::Type::ArrayType(it) => type_path(&it.ty()?),
  #[cfg(test)]
  mod tests {
      use crate::{

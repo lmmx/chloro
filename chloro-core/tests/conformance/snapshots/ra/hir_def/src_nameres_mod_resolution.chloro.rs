@@ -69,6 +69,7 @@ impl ModDir {
         attr_path: Option<&str>,
     ) -> Result<(EditionedFileId, bool, ModDir), Box<[String]>> {
         let name = name.as_str();
+
         let mut candidate_files = ArrayVec::<_, 2>::new();
         match attr_path {
             Some(attr_path) => {
@@ -79,6 +80,7 @@ impl ModDir {
                 candidate_files.push(format!("{}{}/mod.rs", self.dir_path.0, name));
             }
         };
+
         let orig_file_id = file_id.original_file_respecting_includes(db);
         for candidate in candidate_files.iter() {
             let path = AnchoredPath { anchor: orig_file_id.file_id(db), path: candidate.as_str() };
@@ -153,6 +155,7 @@ impl DirPath {
     /// construction to `FileLoader`.
     fn join_attr(&self, mut attr: &str, relative_to_parent: bool) -> String {
         let base = if relative_to_parent { self.parent().unwrap() } else { &self.0 };
+
         if attr.starts_with("./") {
             attr = &attr["./".len()..];
         }

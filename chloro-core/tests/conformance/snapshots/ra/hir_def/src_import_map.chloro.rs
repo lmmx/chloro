@@ -77,7 +77,9 @@ impl ImportMap {
 
     pub(crate) fn import_map_query(db: &dyn DefDatabase, krate: Crate) -> Arc<Self> {
         let _p = tracing::info_span!("import_map_query").entered();
+
         let map = Self::collect_import_map(db, krate);
+
         let mut importables: Vec<_> = map
             .iter()
             // We've only collected items, whose name cannot be tuple field so unwrapping is fine.
@@ -94,14 +96,17 @@ impl ImportMap {
         });
         importables.dedup();
         // Build the FST, taking care not to insert duplicate values.
+
         let mut builder = fst::MapBuilder::memory();
         let mut iter = importables
             .iter()
             .enumerate()
             .dedup_by(|&(_, (_, lhs, _)), &(_, (_, rhs, _))| lhs.eq_ignore_ascii_case(rhs));
+
         let mut insert = |name: &str, start, end| {
             builder.insert(name.to_ascii_lowercase(), ((start as u64) << 32) | end as u64).unwrap()
         };
+
         if let Some((mut last, (_, name, _))) = iter.next() {
             debug_assert_eq!(last, 0);
             let mut last_name = name;
@@ -112,6 +117,7 @@ impl ImportMap {
             }
             insert(last_name, last, importables.len());
         }
+
         let importables = importables.into_iter().map(|(item, _, idx)| (item, idx)).collect();
         Arc::new(ImportMap { item_to_info_map: map, fst: builder.into_map(), importables })
     }
@@ -122,12 +128,15 @@ impl ImportMap {
 
     fn collect_import_map(db: &dyn DefDatabase, krate: Crate) -> ImportMapIndex {
         let _p = tracing::info_span!("collect_import_map").entered();
+
         let def_map = crate_def_map(db, krate);
         let mut map = FxIndexMap::default();
         // We look only into modules that are public(ly reexported), starting with the crate root.
+
         let root = def_map.module_id(DefMap::ROOT);
         let mut worklist = vec![root];
         let mut visited = FxHashSet::default();
+
         while let Some(module) = worklist.pop() {
             if !visited.insert(module) {
                 continue;
@@ -274,6 +283,7 @@ impl fmt::Debug for ImportMap {
                 }
             })
             .collect();
+
         importable_names.sort();
         f.write_str(&importable_names.join("\n"))
     }
@@ -400,9 +410,12 @@ pub fn search_dependencies(
     query: &Query,
 ) -> FxHashSet<(ItemInNs, Complete)> {
     let _p = tracing::info_span!("search_dependencies", ?query).entered();
+
     let import_maps: Vec<_> =
         krate.data(db).dependencies.iter().map(|dep| db.import_map(dep.crate_id)).collect();
+
     let mut op = fst::map::OpBuilder::new();
+
     match query.search_mode {
         SearchMode::Exact => {
             let automaton = fst::automaton::Str::new(&query.lowercased);
@@ -461,6 +474,7 @@ fn search_maps(
             res.extend(iter);
         }
     }
+
     res
 }
 
@@ -487,6 +501,7 @@ mod tests {
                     format!("- {path} ({ns})")
                 })
                 .collect();
+
             importable_paths.sort();
             importable_paths.join("\n")
         }
@@ -510,6 +525,7 @@ mod tests {
                     .is_some_and(|it| it.crate_name().as_str() == crate_name)
             })
             .expect("could not find crate");
+
         let actual = search_dependencies(&db, krate, &query)
             .into_iter()
             .filter_map(|(dependency, _)| {
@@ -554,10 +570,13 @@ mod tests {
             ModuleDefId::TypeAliasId(id) => (AssocItemId::from(id), id.lookup(db).container),
             _ => return None,
         };
+
         let ItemContainerId::TraitId(trait_id) = container else {
             return None;
         };
+
         let trait_info = dependency_imports.import_info_for(ItemInNs::Types(trait_id.into()))?;
+
         let trait_items = TraitItems::query(db, trait_id);
         let (assoc_item_name, _) = trait_items
             .items
@@ -573,6 +592,7 @@ mod tests {
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         let db = TestDB::with_files(ra_fixture);
         let all_crates = db.all_crates();
+
         let actual = all_crates
             .iter()
             .copied()
@@ -586,13 +606,16 @@ mod tests {
             })
             .sorted()
             .collect::<String>();
+
         expect.assert_eq(&actual)
     }
     fn render_path(db: &dyn DefDatabase, info: &ImportInfo) -> String {
         let mut module = info.container;
         let mut segments = vec![&info.name];
+
         let def_map = module.def_map(db);
         assert!(def_map.block_id().is_none(), "block local items should not be in `ImportMap`");
+
         while let Some(parent) = module.containing_module(db) {
             let parent_data = &def_map[parent.local_id];
             let (name, _) =
@@ -600,6 +623,7 @@ mod tests {
             segments.push(name);
             module = parent;
         }
+
         segments.iter().rev().map(|it| it.display(db, Edition::CURRENT)).join("::")
     }
     #[test]
@@ -797,6 +821,7 @@ mod tests {
                 - Thing (v)
             "#]],
         );
+
         check(
             r"
             //- /lib.rs crate:lib
@@ -829,6 +854,7 @@ mod tests {
             }
         }
     "#;
+
         check_search(
             ra_fixture,
             "main",
@@ -856,6 +882,7 @@ mod tests {
             }
         }
     "#;
+
         check_search(
             ra_fixture,
             "main",
@@ -866,6 +893,7 @@ mod tests {
                 dep::fmt::Display::format_method (a)
             "#]],
         );
+
         check_search(
             ra_fixture,
             "main",
@@ -900,6 +928,7 @@ pub mod fmt {
     pub struct NotImportableFromMain;
 }
 "#;
+
         check_search(
             ra_fixture,
             "main",
@@ -913,6 +942,7 @@ pub mod fmt {
                 dep::format (f)
             "#]],
         );
+
         check_search(
             ra_fixture,
             "main",
@@ -951,6 +981,7 @@ pub mod fmt {
                 pub struct NotImportableFromMain;
             }
         "#;
+
         check_search(
             ra_fixture,
             "main",
@@ -973,6 +1004,7 @@ pub mod fmt {
             pub struct fmt;
             pub struct FMT;
         "#;
+
         check_search(
             ra_fixture,
             "main",
@@ -984,6 +1016,7 @@ pub mod fmt {
                 dep::fmt (v)
             "#]],
         );
+
         check_search(
             ra_fixture,
             "main",
@@ -1001,6 +1034,7 @@ pub mod fmt {
             //- /dep.rs crate:dep
             pub fn あい() {}
         "#;
+
         check_search(
             ra_fixture,
             "main",

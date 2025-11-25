@@ -9,12 +9,14 @@ pub(crate) fn replace_is_method_with_if_let_method(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let has_cond = ctx.find_node_at_offset::<Either<ast::IfExpr, ast::WhileExpr>>()?;
+
     let cond = either::for_both!(&has_cond, it => it.condition())?;
     let cond = cover_let_chain(cond, ctx.selection_trimmed())?;
     let call_expr = match cond {
         ast::Expr::MethodCallExpr(call) => call,
         _ => return None,
     };
+
     let name_ref = call_expr.name_ref()?;
     match name_ref.text().as_str() {
         "is_some" | "is_ok" => {
@@ -86,6 +88,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_is_method_with_if_let_method,
             r#"
@@ -135,6 +138,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_is_method_with_if_let_method,
             r#"
@@ -186,6 +190,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_is_method_with_if_let_method,
             r#"
@@ -203,6 +208,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             replace_is_method_with_if_let_method,
             r#"

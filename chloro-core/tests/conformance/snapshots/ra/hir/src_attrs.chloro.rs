@@ -126,7 +126,9 @@ fn resolve_doc_path_on_(
         AttrDefId::ExternCrateId(it) => it.resolver(db),
         AttrDefId::GenericParamId(_) => return None,
     };
+
     let mut modpath = doc_modpath_from_str(link)?;
+
     let resolved = resolver.resolve_module_path_in_items(db, &modpath);
     if resolved.is_none() {
         let last_name = modpath.pop_segment()?;
@@ -157,6 +159,7 @@ fn resolve_assoc_or_field(
     // FIXME: This does not handle `Self` on trait definitions, which we should resolve to the
     // trait itself.
     let base_def = resolver.resolve_path_in_type_ns_fully(db, &path)?;
+
     let ty = match base_def {
         TypeNs::SelfType(id) => Impl::from(id).self_ty(db),
         TypeNs::GenericParam(_) => {
@@ -198,12 +201,15 @@ fn resolve_assoc_or_field(
         }
     };
     // Resolve inherent items first, then trait items, then fields.
+
     if let Some(assoc_item_def) = resolve_assoc_item(db, &ty, &name, ns) {
         return Some(assoc_item_def);
     }
+
     if let Some(impl_trait_item_def) = resolve_impl_trait_item(db, resolver, &ty, &name, ns) {
         return Some(impl_trait_item_def);
     }
+
     let variant_def = match ty.as_adt()? {
         Adt::Struct(it) => it.into(),
         Adt::Union(it) => it.into(),
@@ -239,11 +245,13 @@ fn resolve_impl_trait_item<'db>(
         .generic_def()
         .map_or_else(|| crate::TraitEnvironment::empty(krate.id), |d| db.trait_environment(d));
     let traits_in_scope = resolver.traits_in_scope(db);
+
     let mut result = None;
     // `ty.iterate_path_candidates()` require a scope, which is not available when resolving
     // attributes here. Use path resolution directly instead.
     //
     // FIXME: resolve type aliases (which are not yielded by iterate_path_candidates)
+
     _ = method_resolution::iterate_path_candidates(
         &canonical,
         db,
@@ -260,6 +268,7 @@ fn resolve_impl_trait_item<'db>(
             if result.is_some() { ControlFlow::Break(()) } else { ControlFlow::Continue(()) }
         },
     );
+
     result
 }
 
@@ -284,6 +293,7 @@ fn as_module_def_if_namespace_matches(
         AssocItem::Const(it) => (ModuleDef::Const(it), Namespace::Values),
         AssocItem::TypeAlias(it) => (ModuleDef::TypeAlias(it), Namespace::Types),
     };
+
     (ns.unwrap_or(expected_ns) == expected_ns).then_some(DocLinkDef::ModuleDef(def))
 }
 

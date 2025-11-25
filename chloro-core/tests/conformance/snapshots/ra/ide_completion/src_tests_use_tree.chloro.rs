@@ -17,6 +17,7 @@ use crate::{impl$0};
             kw self
         "#]],
     );
+
     check(
         r#"
 struct implThing;
@@ -312,6 +313,7 @@ pub use $0;
 fn pub_suggest_use_tree_super_acc_to_depth_in_tree() {
     // https://github.com/rust-lang/rust-analyzer/issues/12439
     // Check discussion in https://github.com/rust-lang/rust-analyzer/pull/12447
+
     check(
         r#"
 mod foo {
@@ -326,6 +328,7 @@ mod foo {
         "#]],
     );
     // Not suggest super when at crate root
+
     check(
         r#"
 mod foo {
@@ -338,6 +341,7 @@ mod foo {
             md foo
         "#]],
     );
+
     check(
         r#"
 mod foo {
@@ -351,6 +355,7 @@ mod foo {
         "#]],
     );
     // Not suggest super after another kw in path ( here it is foo1 )
+
     check(
         r#"
 mod foo {

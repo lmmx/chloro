@@ -48,6 +48,7 @@ pub(crate) fn useless_braces(
             )])),
         );
     }
+
     Some(())
 }
 
@@ -104,6 +105,7 @@ mod a {
 }
 "#,
         );
+
         let mut config = DiagnosticsConfig::test_sample();
         config.disabled.insert("syntax-error".to_owned());
         check_diagnostics_with_config(

@@ -12,6 +12,7 @@ pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) 
     if let Some(prev) = comment.syntax().prev_token() {
         Whitespace::cast(prev).filter(|w| w.text().contains('\n'))?;
     }
+
     match comment.kind().shape {
         ast::CommentShape::Block => block_to_line(acc, comment),
         ast::CommentShape::Line => line_to_block(acc, comment),
@@ -20,6 +21,7 @@ pub(crate) fn convert_comment_block(acc: &mut Assists, ctx: &AssistContext<'_>) 
 
 fn block_to_line(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     let target = comment.syntax().text_range();
+
     acc.add(
         AssistId::refactor_rewrite("block_to_line"),
         "Replace block comment with line comments",
@@ -56,10 +58,12 @@ fn line_to_block(acc: &mut Assists, comment: ast::Comment) -> Option<()> {
     // Find all the comments we'll be collapsing into a block
     let comments = relevant_line_comments(&comment);
     // Establish the target of our edit based on the comments we found
+
     let target = TextRange::new(
         comments[0].syntax().text_range().start(),
         comments.last()?.syntax().text_range().end(),
     );
+
     acc.add(
         AssistId::refactor_rewrite("line_to_block"),
         "Replace line comments with a single block comment",
@@ -95,6 +99,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
     let prefix = comment.prefix();
     let same_prefix = |c: &ast::Comment| c.prefix() == prefix;
     // These tokens are allowed to exist between comments
+
     let skippable = |not: &SyntaxElement| {
         not.clone()
             .into_token()
@@ -103,6 +108,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
             .unwrap_or(false)
     };
     // Find all preceding comments (in reverse order) that have the same prefix
+
     let prev_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Prev)
@@ -112,6 +118,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .flatten()
         .skip(1);
     // skip the first element so we don't duplicate it in next_comments
+
     let next_comments = comment
         .syntax()
         .siblings_with_tokens(Direction::Next)
@@ -119,6 +126,7 @@ pub(crate) fn relevant_line_comments(comment: &ast::Comment) -> Vec<Comment> {
         .map(|not| not.into_token().and_then(Comment::cast).filter(same_prefix))
         .take_while(|opt_com| opt_com.is_some())
         .flatten();
+
     let mut comments: Vec<_> = prev_comments.collect();
     comments.reverse();
     comments.extend(next_comments);
@@ -130,6 +138,7 @@ pub(crate) fn line_comment_text(indentation: IndentLevel, comm: ast::Comment) ->
     let contents_without_prefix = text.strip_prefix(comm.prefix()).unwrap_or(text);
     let contents = contents_without_prefix.strip_prefix(' ').unwrap_or(contents_without_prefix);
     // Don't add the indentation if the line is empty
+
     if contents.is_empty() { contents.to_owned() } else { indentation.to_string() + contents }
 }
 

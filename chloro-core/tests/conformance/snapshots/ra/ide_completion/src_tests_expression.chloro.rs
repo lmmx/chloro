@@ -491,6 +491,7 @@ fn completes_let_else() {
             sn ppd
         "#]],
     );
+
     check(
         r#"fn main() { let _ = 2 el$0 }"#,
         expect![[r#"
@@ -531,6 +532,7 @@ fn completes_let_else() {
             sn ppd
         "#]],
     );
+
     check_edit(
         "else",
         r#"
@@ -546,6 +548,7 @@ fn main() {
 }
 "#,
     );
+
     check_edit(
         "else",
         r#"
@@ -561,6 +564,7 @@ fn main() {
 }
 "#,
     );
+
     check_edit(
         "else",
         r#"
@@ -576,6 +580,7 @@ fn main() {
 }
 "#,
     );
+
     check_edit(
         "else",
         r#"
@@ -744,6 +749,7 @@ fn foo() {
 #[test]
 fn shadowing_shows_single_completion() {
     cov_mark::check!(shadowing_shows_single_completion);
+
     check(
         r#"
 fn foo() {
@@ -1098,6 +1104,7 @@ fn break_unit_no_block() {
         r#"fn f() { loop { break; match () { () => $0 } } }"#,
         r#"fn f() { loop { break; match () { () => break } } }"#,
     );
+
     check_edit(
         "break",
         r#"fn f() { loop { match () { () => $0 } } }"#,
@@ -3290,6 +3297,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             (1, 2).foo();
         }"#,
     );
+
     check_edit(
         "let",
         r#"
@@ -3303,6 +3311,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             (1, 2)
         }"#,
     );
+
     check_edit(
         "let",
         r#"
@@ -3316,6 +3325,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             -2
         }"#,
     );
+
     check_edit(
         "let",
         r#"
@@ -3329,6 +3339,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             [1, 2]
         }"#,
     );
+
     check_edit(
         "let",
         r#"
@@ -3342,6 +3353,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             *b"01"
         }"#,
     );
+
     check(
         r#"
         fn foo() {
@@ -3385,6 +3397,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             sn ppd
         "#]],
     );
+
     check(
         r#"
         fn foo() {
@@ -3409,6 +3422,7 @@ fn let_in_previous_line_of_ambiguous_expr() {
             kw while let
         "#]],
     );
+
     check(
         r#"
         fn foo() {
@@ -3466,6 +3480,7 @@ fn field_in_previous_line_of_ambiguous_expr() {
             sn unsafe    unsafe {}
         "#]],
     );
+
     check(
         r#"
         struct Foo { field: i32 }
@@ -3528,6 +3543,7 @@ fn fn_field_in_previous_line_of_ambiguous_expr() {
             sn unsafe    unsafe {}
         "#]],
     );
+
     check_edit(
         "field",
         r#"

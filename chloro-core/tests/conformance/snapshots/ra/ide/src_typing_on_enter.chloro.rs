@@ -18,9 +18,11 @@ pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<Text
     let parse = db.parse(editioned_file_id_wrapper);
     let file = parse.tree();
     let token = file.syntax().token_at_offset(position.offset).left_biased()?;
+
     if let Some(comment) = ast::Comment::cast(token.clone()) {
         return on_enter_in_comment(&comment, &file, position.offset);
     }
+
     if token.kind() == L_CURLY {
         // Typing enter after the `{` of a block expression, where the `}` is on the same line
         if let Some(edit) = find_node_at_offset(file.syntax(), position.offset - TextSize::of('{'))
@@ -38,6 +40,7 @@ pub(crate) fn on_enter(db: &RootDatabase, position: FilePosition) -> Option<Text
             return Some(edit);
         }
     }
+
     None
 }
 
@@ -49,11 +52,13 @@ fn on_enter_in_comment(
     if comment.kind().shape.is_block() {
         return None;
     }
+
     let prefix = comment.prefix();
     let comment_range = comment.syntax().text_range();
     if offset < comment_range.start() + TextSize::of(prefix) {
         return None;
     }
+
     let mut remove_trailing_whitespace = false;
     // Continuing single-line non-doc comments (like this one :) ) is annoying
     if prefix == "//" && comment_range.end() == offset {
@@ -64,6 +69,7 @@ fn on_enter_in_comment(
             return None;
         }
     }
+
     let indent = node_indent(file, comment.syntax())?;
     let inserted = format!("\n{indent}{prefix} $0");
     let delete = if remove_trailing_whitespace {
@@ -79,9 +85,11 @@ fn on_enter_in_comment(
 
 fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
     let contents = block_contents(&block)?;
+
     if block.syntax().text().contains_char('\n') {
         return None;
     }
+
     let indent = IndentLevel::from_node(block.syntax());
     let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
     edit.union(TextEdit::insert(contents.text_range().end(), format!("\n{indent}"))).ok()?;
@@ -92,6 +100,7 @@ fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> 
     if list.syntax().text().contains_char('\n') {
         return None;
     }
+
     let indent = IndentLevel::from_node(list.syntax());
     let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
     edit.union(TextEdit::insert(list.r_curly_token()?.text_range().start(), format!("\n{indent}")))
@@ -101,6 +110,7 @@ fn on_enter_in_use_tree_list(list: ast::UseTreeList, position: FilePosition) -> 
 
 fn block_contents(block: &ast::BlockExpr) -> Option<SyntaxNode> {
     let mut node = block.tail_expr().map(|e| e.syntax().clone());
+
     for stmt in block.statements() {
         if node.is_some() {
             // More than 1 node in the block
@@ -109,6 +119,7 @@ fn block_contents(block: &ast::BlockExpr) -> Option<SyntaxNode> {
 
         node = Some(stmt.syntax().clone());
     }
+
     node
 }
 
@@ -151,6 +162,7 @@ mod tests {
     fn apply_on_enter(before: &str) -> Option<String> {
         let (analysis, position) = fixture::position(before);
         let result = analysis.on_enter(position).unwrap()?;
+
         let mut actual = analysis.file_text(position.file_id).unwrap().to_string();
         result.apply(&mut actual);
         Some(actual)
@@ -181,6 +193,7 @@ fn foo() {
 }
 ",
         );
+
         do_check(
             r"
 impl S {
@@ -196,6 +209,7 @@ impl S {
 }
 ",
         );
+
         do_check(
             r"
 ///$0 Some docs

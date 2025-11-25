@@ -111,9 +111,11 @@ impl fmt::Debug for CompletionItem {
         if self.deprecated {
             s.field("deprecated", &true);
         }
+
         if self.relevance != CompletionRelevance::default() {
             s.field("relevance", &self.relevance);
         }
+
         if let Some((ref_mode, offset)) = self.ref_match {
             let prefix = match ref_mode {
                 CompletionItemRefMode::Reference(mutability) => match mutability {
@@ -264,6 +266,7 @@ impl CompletionRelevance {
         } = self;
         // only applicable for completions within use items
         // lower rank for conflicting import names
+
         if is_name_already_imported {
             score -= 1;
         }
@@ -272,9 +275,11 @@ impl CompletionRelevance {
             score += 1;
         }
         // lower rank private things
+
         if !is_private_editable {
             score += 1;
         }
+
         if let Some(trait_) = trait_ {
             // lower rank trait methods unless its notable
             if !trait_.notable_trait {
@@ -286,10 +291,12 @@ impl CompletionRelevance {
             }
         }
         // Lower rank for completions that skip `await` and `iter()`.
+
         if is_skipping_completion {
             score -= 7;
         }
         // lower rank for items that need an import
+
         if requires_import {
             score -= 1;
         }
@@ -327,6 +334,7 @@ impl CompletionRelevance {
 
             score += fn_score;
         };
+
         score
     }
 
@@ -441,6 +449,7 @@ impl CompletionItem {
         // is only set if there is an exact type match.
         let mut relevance = self.relevance;
         relevance.type_match = Some(CompletionRelevanceTypeMatch::Exact);
+
         self.ref_match.map(|(mode, offset)| {
             let prefix = match mode {
                 CompletionItemRefMode::Reference(Mutability::Shared) => "&",
@@ -494,9 +503,11 @@ impl Builder {
 
     pub(crate) fn build(self, db: &RootDatabase) -> CompletionItem {
         let _p = tracing::info_span!("item::Builder::build").entered();
+
         let label = self.label;
         let mut lookup = self.lookup.unwrap_or_else(|| label.clone());
         let insert_text = self.insert_text.unwrap_or_else(|| label.to_string());
+
         let mut detail_left = None;
         if !self.doc_aliases.is_empty() {
             let doc_aliases = self.doc_aliases.iter().join(", ");
@@ -537,15 +548,18 @@ impl Builder {
                 if detail_left.is_empty() { "" } else { " " },
             );
         }
+
         let text_edit = match self.text_edit {
             Some(it) => it,
             None => TextEdit::replace(self.source_range, insert_text),
         };
+
         let import_to_add = self
             .imports_to_add
             .into_iter()
             .map(|import| import.import_path.display(db, self.edition).to_string())
             .collect();
+
         CompletionItem {
             source_range: self.source_range,
             label: CompletionItemLabel {
@@ -692,6 +706,7 @@ mod tests {
     ///     a.score < b.score == c.score < d.score
     fn check_relevance_score_ordered(expected_relevance_order: Vec<Vec<CompletionRelevance>>) {
         let expected = format!("{expected_relevance_order:#?}");
+
         let actual_relevance_order = expected_relevance_order
             .into_iter()
             .flatten()
@@ -710,7 +725,9 @@ mod tests {
                 },
             )
             .1;
+
         let actual = format!("{actual_relevance_order:#?}");
+
         assert_eq_text!(&expected, &actual);
     }
     #[test]
@@ -757,6 +774,7 @@ mod tests {
             }],
             vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::Exact), ..default }],
         ];
+
         check_relevance_score_ordered(expected_relevance_order);
     }
 }

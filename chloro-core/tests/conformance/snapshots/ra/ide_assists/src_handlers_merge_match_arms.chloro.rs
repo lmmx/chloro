@@ -23,6 +23,7 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         && ctx.selection_trimmed().end() > current_arm.syntax().text_range().end();
     // We check if the following match arms match this one. We could, but don't,
     // compare to the previous match arm as well.
+
     let arms_to_merge = successors(Some(current_arm), |it| neighbor(it, Direction::Next))
         .take_while(|arm| match arm.expr() {
             Some(expr) if arm.guard().is_none() => {
@@ -43,9 +44,11 @@ pub(crate) fn merge_match_arms(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
             _ => false,
         })
         .collect::<Vec<_>>();
+
     if arms_to_merge.len() <= 1 {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("merge_match_arms"),
         "Merge match arms",
@@ -91,6 +94,7 @@ fn are_same_types(
             _ => return false,
         }
     }
+
     true
 }
 
@@ -99,6 +103,7 @@ fn get_arm_types<'db>(
     arm: &ast::MatchArm,
 ) -> FxHashMap<String, Option<Type<'db>>> {
     let mut mapping: FxHashMap<String, Option<Type<'db>>> = FxHashMap::default();
+
     fn recurse<'db>(
         map: &mut FxHashMap<String, Option<Type<'db>>>,
         ctx: &AssistContext<'db>,
@@ -141,6 +146,7 @@ fn get_arm_types<'db>(
             }
         }
     }
+
     recurse(&mut mapping, context, &arm.pat());
     mapping
 }

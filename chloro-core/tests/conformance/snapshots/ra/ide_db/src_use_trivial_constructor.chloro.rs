@@ -34,5 +34,6 @@ pub fn use_trivial_constructor(
         }
         _ => {}
     }
+
     None
 }

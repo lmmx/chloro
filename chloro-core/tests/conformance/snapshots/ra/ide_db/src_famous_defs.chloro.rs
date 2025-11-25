@@ -214,6 +214,7 @@ impl FamousDefs<'_, '_> {
         if krate.origin(db) == CrateOrigin::Lang(origin) {
             return Some(krate);
         }
+
         let res = krate
             .dependencies(db)
             .into_iter()

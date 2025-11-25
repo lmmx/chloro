@@ -61,7 +61,9 @@ impl DocsRangeMap {
         if !line_docs_range.contains_range(range) {
             return None;
         }
+
         let relative_range = range - line_docs_range.start();
+
         let InFile { file_id, value: source } = self.source_map.source_of_id(idx);
         match source {
             Either::Left(attr) => {

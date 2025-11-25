@@ -18,6 +18,7 @@ pub(crate) fn convert_while_to_loop(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let while_expr = while_kw.parent().and_then(ast::WhileExpr::cast)?;
     let while_body = while_expr.loop_body()?;
     let while_cond = while_expr.condition()?;
+
     let target = while_expr.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_while_to_loop"),
@@ -199,6 +200,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             convert_while_to_loop,
             r#"

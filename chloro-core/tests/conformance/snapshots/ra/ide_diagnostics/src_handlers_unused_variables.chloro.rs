@@ -73,6 +73,7 @@ fn fixes(
     let name = var_name.display(db, edition).to_smolstr();
     let name = name.strip_prefix("r#").unwrap_or(&name);
     let new_name = if is_shorthand_field { format!("{name}: _{name}") } else { format!("_{name}") };
+
     Some(vec![Assist {
         id: AssistId::quick_fix("unscore_unused_variable_name"),
         label: Label::new(format!("Rename unused {name} to {new_name}")),
@@ -187,6 +188,7 @@ fn main() {
 }
 "#,
         );
+
         check_fix(
             r#"
 fn main() {
@@ -199,6 +201,7 @@ fn main() {
 }
 "#,
         );
+
         check_fix(
             r#"
 struct Foo { f1: i32, f2: i64 }
@@ -223,6 +226,7 @@ fn main() {
 }
 "#,
         );
+
         check_fix(
             r#"
 fn main() {

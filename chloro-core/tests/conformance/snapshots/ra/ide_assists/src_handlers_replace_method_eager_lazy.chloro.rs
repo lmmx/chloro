@@ -9,15 +9,19 @@ use crate::{AssistContext, Assists};
 pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;
+
     let last_arg = call.arg_list()?.args().next()?;
     let method_name = call.name_ref()?;
+
     let callable = ctx.sema.resolve_method_call_as_callable(&call)?;
     let (_, receiver_ty) = callable.receiver_param(ctx.sema.db)?;
     let n_params = callable.n_params() + 1;
+
     let method_name_lazy = format!(
         "{method_name}{}",
         if method_name.text().ends_with("or") { "_else" } else { "_with" }
     );
+
     receiver_ty.iterate_method_candidates_with_traits(
         ctx.sema.db,
         &scope,
@@ -36,6 +40,7 @@ pub(crate) fn replace_with_lazy_method(acc: &mut Assists, ctx: &AssistContext<'_
             valid.then_some(func)
         },
     )?;
+
     acc.add(
         AssistId::refactor_rewrite("replace_with_lazy_method"),
         format!("Replace {method_name} with {method_name_lazy}"),
@@ -62,20 +67,25 @@ fn into_closure(param: &Expr) -> Expr {
 pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let scope = ctx.sema.scope(call.syntax())?;
+
     let last_arg = call.arg_list()?.args().next()?;
     let method_name = call.name_ref()?;
+
     let callable = ctx.sema.resolve_method_call_as_callable(&call)?;
     let (_, receiver_ty) = callable.receiver_param(ctx.sema.db)?;
     let n_params = callable.n_params() + 1;
     let params = callable.params();
     // FIXME: Check that the arg is of the form `() -> T`
+
     if !params.first()?.ty().impls_fnonce(ctx.sema.db) {
         return None;
     }
+
     let method_name_text = method_name.text();
     let method_name_eager = method_name_text
         .strip_suffix("_else")
         .or_else(|| method_name_text.strip_suffix("_with"))?;
+
     receiver_ty.iterate_method_candidates_with_traits(
         ctx.sema.db,
         &scope,
@@ -88,6 +98,7 @@ pub(crate) fn replace_with_eager_method(acc: &mut Assists, ctx: &AssistContext<'
             valid.then_some(func)
         },
     )?;
+
     acc.add(
         AssistId::refactor_rewrite("replace_with_eager_method"),
         format!("Replace {method_name} with {method_name_eager}"),

@@ -43,6 +43,7 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for Filler<'db> {
         if !ty.has_type_flags(TypeFlags::HAS_ALIAS | TypeFlags::HAS_PARAM) {
             return Ok(ty);
         }
+
         match ty.kind() {
             TyKind::Alias(..) => {
                 // First instantiate params.

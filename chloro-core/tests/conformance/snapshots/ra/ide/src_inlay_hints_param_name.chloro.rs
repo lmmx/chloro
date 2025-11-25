@@ -24,6 +24,7 @@ pub(super) fn hints(
     if !config.parameter_hints {
         return None;
     }
+
     let (callable, arg_list) = get_callable(sema, &expr)?;
     let unary_function = callable.n_params() == 1;
     let function_name = match callable.kind() {
@@ -84,6 +85,7 @@ pub(super) fn hints(
                 resolve_parent: Some(expr.syntax().text_range()),
             }
         });
+
     acc.extend(hints);
     Some(())
 }
@@ -126,13 +128,16 @@ fn should_hide_param_name_hint(
     //   parameter is a prefix/suffix of argument with _ splitting it off
     // - param starts with `ra_fixture`
     // - param is a well known name in a unary function
+
     let param_name = param_name.trim_matches('_');
     if param_name.is_empty() {
         return true;
     }
+
     if param_name.starts_with("ra_fixture") {
         return true;
     }
+
     if unary_function {
         if let Some(function_name) = function_name
             && is_param_name_suffix_of_fn_name(param_name, function_name)
@@ -143,6 +148,7 @@ fn should_hide_param_name_hint(
             return true;
         }
     }
+
     is_argument_expr_similar_to_param_name(sema, argument, param_name)
 }
 
@@ -188,6 +194,7 @@ pub(super) fn is_argument_similar_to_param_name(
     debug_assert!(!param_name.is_empty());
     let param_name = param_name.split('_');
     let argument = argument.iter().flat_map(|it| it.text_non_mutable().split('_'));
+
     let prefix_match = zip(argument.clone(), param_name.clone())
         .all(|(arg, param)| arg.eq_ignore_ascii_case(param));
     let postfix_match = || {

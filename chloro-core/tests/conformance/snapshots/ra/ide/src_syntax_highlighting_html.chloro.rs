@@ -32,6 +32,7 @@ pub(crate) fn highlight_as_html_with_config(
             l = rng.rand_range(40..91),
         )
     }
+
     let hl_ranges = highlight(db, config, file_id.file_id(db), None);
     let text = file.to_string();
     let mut buf = String::new();

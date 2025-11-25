@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21087 bytes
-Chloro size:   20812 bytes
+Chloro size:   20826 bytes
 Rustfmt size:  21244 bytes
 
 ✗ Outputs DIFFER
@@ -35,25 +35,32 @@ Rustfmt size:  21244 bytes
      };
 -
      // This applies to all uses that are selected, or are ancestors of our selection.
++
      let uses_up = selected_el.ancestors().skip(1).filter_map(ast::Use::cast);
      let uses_down = selected_el
+         .descendants()
          .filter(|x| x.text_range().intersect(ctx.selection_trimmed()).is_some())
          .filter_map(ast::Use::cast);
      let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
 -
      // Maps use nodes to the scope that we should search through to find
-     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
--
+-    let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
+ 
++    let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
      // iterator over all unused use trees
++
      let mut unused = uses
          .into_iter()
+         .flat_map(|u| u.syntax().descendants().filter_map(ast::UseTree::cast))
              }
          })
          .peekable();
 -
      // Peek so we terminate early if an unused use is found. Only do the rest of the work if the user selects the assist.
++
      if unused.peek().is_some() {
          acc.add(
+             AssistId::quick_fix("remove_unused_imports"),
      t: &hir::Trait,
  ) -> bool {
      !std::iter::once((Definition::Trait(*t), u.rename()))
@@ -64,20 +71,6 @@ Rustfmt size:  21244 bytes
 -        )
 +        .chain(t.items(ctx.db()).into_iter().map(|item| (item.into(), None)))
          .any(|(d, rename)| used_once_in_scope(ctx, d, rename, scope))
- }
- 
-     scopes: &Vec<SearchScope>,
- ) -> bool {
-     let mut found = false;
--
-     for scope in scopes {
-         let mut search_non_import = |_, r: FileReference| {
-             // The import itself is a use; we must skip that.
-             break;
-         }
-     }
--
-     found
  }
  
  fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScope> {
@@ -92,13 +85,6 @@ Rustfmt size:  21244 bytes
              (file_id, Some(call_source.text_range()))
          } else {
              (
-             )
-         }
-     };
--
-     fn split_at_subrange(first: TextRange, second: TextRange) -> (TextRange, Option<TextRange>) {
-         let intersect = first.intersect(second);
-         if let Some(intersect) = intersect {
              let start_range = TextRange::new(first.start(), intersect.start());
  
              if intersect.end() < first.end() {
@@ -110,20 +96,6 @@ Rustfmt size:  21244 bytes
              } else {
                  (start_range, None)
              }
-             (first, None)
-         }
-     }
--
-     let mut scopes = Vec::new();
-     if let Some(range) = range {
-         let mut ranges = vec![range];
-     } else {
-         scopes.push(SearchScope::single_file(file_id));
-     }
--
-     scopes
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -294,13 +266,6 @@ Rustfmt size:  21244 bytes
      #[test]
      fn use_as_alias() {
          check_assist_not_applicable(
- fn test(_: Bar) {}
- "#,
-         );
--
-         check_assist(
-             remove_unused_imports,
-             r#"
  "#,
          );
      }
@@ -308,20 +273,6 @@ Rustfmt size:  21244 bytes
      #[test]
      fn test_unused_macro() {
          check_assist(
- fn main() {}
- "#,
-         );
--
-         check_assist_not_applicable(
-             remove_unused_imports,
-             r#"
- }
- "#,
-         );
--
-         check_assist_not_applicable(
-             remove_unused_imports,
-             r#"
  "#,
          );
      }
@@ -329,17 +280,3 @@ Rustfmt size:  21244 bytes
      #[test]
      fn test_conflict_derive_macro() {
          check_assist_not_applicable(
- struct S;
- "#,
-         );
--
-         check_assist_not_applicable(
-             remove_unused_imports,
-             r#"
- struct S;
- "#,
-         );
--
-         check_assist_not_applicable(
-             remove_unused_imports,
-             r#"
