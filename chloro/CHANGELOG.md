@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.7](https://github.com/lmmx/chloro/compare/chloro-v0.6.6...chloro-v0.6.7) - 2025-11-25
+
+### <!-- 2 -->Bug Fixes
+
+- avoid comment dropping ([#38](https://github.com/lmmx/chloro/pull/38))
+
 ## [0.6.6](https://github.com/lmmx/chloro/compare/chloro-v0.6.5...chloro-v0.6.6) - 2025-11-25
 
 ### <!-- 2 -->Bug Fixes
