@@ -11,6 +11,7 @@ pub(crate) fn replace_let_with_if_let(acc: &mut Assists, ctx: &AssistContext<'_>
     let let_stmt = let_kw.parent().and_then(ast::LetStmt::cast)?;
     let init = let_stmt.initializer()?;
     let original_pat = let_stmt.pat()?;
+
     let target = let_kw.text_range();
     acc.add(
         AssistId::refactor_rewrite("replace_let_with_if_let"),

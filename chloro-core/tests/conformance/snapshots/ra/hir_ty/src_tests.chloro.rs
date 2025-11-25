@@ -74,6 +74,7 @@ fn check_impl(
 ) {
     let _tracing = setup_tracing();
     let (db, files) = TestDB::with_many_files(ra_fixture);
+
     crate::attach_db(&db, || {
         let mut had_annotations = false;
         let mut mismatches = FxHashMap::default();
@@ -277,6 +278,7 @@ fn infer(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
 fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
     let _tracing = setup_tracing();
     let (db, file_id) = TestDB::with_single_file(content);
+
     crate::attach_db(&db, || {
         let mut buf = String::new();
 
@@ -440,6 +442,7 @@ pub(crate) fn visit_module(
             }
         }
     }
+
     fn visit_scope(
         db: &TestDB,
         crate_def_map: &DefMap,
@@ -483,6 +486,7 @@ pub(crate) fn visit_module(
             }
         }
     }
+
     fn visit_body(db: &TestDB, body: &Body, cb: &mut dyn FnMut(ModuleDefId)) {
         for (_, def_map) in body.blocks(db) {
             for (mod_id, _) in def_map.modules() {
@@ -549,6 +553,7 @@ fn salsa_bug() {
         }
     ",
     );
+
     crate::attach_db(&db, || {
         let module = db.module_for_file(pos.file_id.file_id(&db));
         let crate_def_map = module.def_map(&db);
@@ -562,6 +567,7 @@ fn salsa_bug() {
             });
         });
     });
+
     let new_text = "
         //- /lib.rs
         trait Index {
@@ -586,7 +592,9 @@ fn salsa_bug() {
             x.push(1);
         }
     ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     crate::attach_db(&db, || {
         let module = db.module_for_file(pos.file_id.file_id(&db));
         let crate_def_map = module.def_map(&db);

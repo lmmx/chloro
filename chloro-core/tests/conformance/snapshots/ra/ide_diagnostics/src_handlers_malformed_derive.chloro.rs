@@ -5,6 +5,7 @@ pub(crate) fn malformed_derive(
     d: &hir::MalformedDerive,
 ) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.node);
+
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0777"),
         "malformed derive input, derive attributes are of the form `#[derive(Derive1, Derive2, ...)]`",

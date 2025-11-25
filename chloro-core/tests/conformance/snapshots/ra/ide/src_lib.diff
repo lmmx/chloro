@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33665 bytes
-Chloro size:   33090 bytes
+Chloro size:   33095 bytes
 Rustfmt size:  33868 bytes
 
 ✗ Outputs DIFFER
@@ -202,20 +202,15 @@ Rustfmt size:  33868 bytes
      pub fn from_single_file(text: String) -> (Analysis, FileId) {
          let mut host = AnalysisHost::default();
          let file_id = FileId::from_raw(0);
-         let mut file_set = FileSet::default();
-         file_set.insert(file_id, VfsPath::new_virtual_path("/main.rs".to_owned()));
-         let source_root = SourceRoot::new_local(file_set);
--
-         let mut change = ChangeWithProcMacros::default();
-         change.set_roots(vec![source_root]);
-         let mut crate_graph = CrateGraphBuilder::default();
          // FIXME: cfg options
          // Default to enable test for single file.
          let mut cfg_options = CfgOptions::default();
 -
          // FIXME: This is less than ideal
++
          let proc_macro_cwd = Arc::new(
              TryFrom::try_from(&*std::env::current_dir().unwrap().as_path().to_string_lossy())
+                 .unwrap(),
              cfg_options,
              None,
              Env::default(),
@@ -227,13 +222,6 @@ Rustfmt size:  33868 bytes
              false,
              proc_macro_cwd,
              Arc::new(CrateWorkspaceData {
-         );
-         change.change_file(file_id, Some(text));
-         change.set_crate_graph(crate_graph);
--
-         host.apply_change(change);
-         (host.analysis(), file_id)
-     }
      ) -> Option<(Analysis, RaFixtureAnalysis)> {
          let analysis =
              RaFixtureAnalysis::analyze_ra_fixture(sema, literal, expanded, minicore, on_cursor)?;
@@ -270,13 +258,6 @@ Rustfmt size:  33868 bytes
          self.with_db(|db| {
              let editioned_file_id_wrapper =
                  EditionedFileId::current_edition(&self.db, frange.file_id);
-         if !typing::TRIGGER_CHARS.contains(&char_typed) {
-             return Ok(None);
-         }
--
-         self.with_db(|db| typing::on_char_typed(db, position, char_typed))
-     }
- 
      ) -> Cancellable<Vec<InlayHint>> {
          self.with_db(|db| inlay_hints::inlay_hints(db, file_id, range, config))
      }
@@ -284,13 +265,6 @@ Rustfmt size:  33868 bytes
      pub fn inlay_hints_resolve(
          &self,
          config: &InlayHintsConfig<'_>,
-             Some(it) => it.contains(&AssistKind::QuickFix),
-             None => true,
-         };
--
-         self.with_db(|db| {
-             let diagnostic_assists = if diagnostics_config.enabled && include_fixes {
-                 ide_diagnostics::full_diagnostics(db, diagnostics_config, &resolve, frange.file_id)
              let mut match_finder =
                  ide_ssr::MatchFinder::in_context(db, resolve_context, selections)?;
              match_finder.add_rule(rule)?;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27449 bytes
+Chloro size:   27467 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
@@ -83,17 +83,6 @@ Rustfmt size:  27860 bytes
  impl fmt::Debug for CompletionItem {
      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
          let mut s = f.debug_struct("CompletionItem");
-         if self.deprecated {
-             s.field("deprecated", &true);
-         }
--
-         if self.relevance != CompletionRelevance::default() {
-             s.field("relevance", &self.relevance);
-         }
--
-         if let Some((ref_mode, offset)) = self.ref_match {
-             let prefix = match ref_mode {
-                 CompletionItemRefMode::Reference(mutability) => match mutability {
      /// true when there is an `await.method()` or `iter().method()` completion.
      pub is_skipping_completion: bool,
  }
@@ -107,38 +96,34 @@ Rustfmt size:  27860 bytes
 -
          // only applicable for completions within use items
          // lower rank for conflicting import names
++
          if is_name_already_imported {
+             score -= 1;
+         }
          if is_local {
              score += 1;
          }
 -
          // lower rank private things
++
          if !is_private_editable {
              score += 1;
          }
--
-         if let Some(trait_) = trait_ {
-             // lower rank trait methods unless its notable
-             if !trait_.notable_trait {
                  score -= 5;
              }
          }
 -
          // Lower rank for completions that skip `await` and `iter()`.
++
          if is_skipping_completion {
              score -= 7;
          }
 -
          // lower rank for items that need an import
++
          if requires_import {
              score -= 1;
- 
-             score += fn_score;
-         };
--
-         score
-     }
- 
+         }
      UnresolvedReference,
      Expression,
  }
@@ -148,42 +133,6 @@ Rustfmt size:  27860 bytes
  impl CompletionItemKind {
      pub fn tag(self) -> &'static str {
          match self {
-         // is only set if there is an exact type match.
-         let mut relevance = self.relevance;
-         relevance.type_match = Some(CompletionRelevanceTypeMatch::Exact);
--
-         self.ref_match.map(|(mode, offset)| {
-             let prefix = match mode {
-                 CompletionItemRefMode::Reference(Mutability::Shared) => "&",
- 
-     pub(crate) fn build(self, db: &RootDatabase) -> CompletionItem {
-         let _p = tracing::info_span!("item::Builder::build").entered();
--
-         let label = self.label;
-         let mut lookup = self.lookup.unwrap_or_else(|| label.clone());
-         let insert_text = self.insert_text.unwrap_or_else(|| label.to_string());
--
-         let mut detail_left = None;
-         if !self.doc_aliases.is_empty() {
-             let doc_aliases = self.doc_aliases.iter().join(", ");
-                 if detail_left.is_empty() { "" } else { " " },
-             );
-         }
--
-         let text_edit = match self.text_edit {
-             Some(it) => it,
-             None => TextEdit::replace(self.source_range, insert_text),
-         };
--
-         let import_to_add = self
-             .imports_to_add
-             .into_iter()
-             .map(|import| import.import_path.display(db, self.edition).to_string())
-             .collect();
--
-         CompletionItem {
-             source_range: self.source_range,
-             label: CompletionItemLabel {
              import_to_add,
          }
      }
@@ -292,29 +241,10 @@ Rustfmt size:  27860 bytes
      /// Check that these are CompletionRelevance are sorted in ascending order
      /// by their relevance score.
      ///
-     ///     a.score < b.score == c.score < d.score
-     fn check_relevance_score_ordered(expected_relevance_order: Vec<Vec<CompletionRelevance>>) {
-         let expected = format!("{expected_relevance_order:#?}");
--
-         let actual_relevance_order = expected_relevance_order
-             .into_iter()
-             .flatten()
-                 },
-             )
-             .1;
--
-         let actual = format!("{actual_relevance_order:#?}");
--
+ 
          assert_eq_text!(&expected, &actual);
      }
 -
      #[test]
      fn relevance_score() {
          use CompletionRelevance as Cr;
-             }],
-             vec![Cr { postfix_match: Some(CompletionRelevancePostfixMatch::Exact), ..default }],
-         ];
--
-         check_relevance_score_ordered(expected_relevance_order);
-     }
- }

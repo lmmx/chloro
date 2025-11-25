@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4250 bytes
-Chloro size:   4215 bytes
+Chloro size:   4216 bytes
 Rustfmt size:  4308 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-             l = rng.rand_range(40..91),
-         )
-     }
--
-     let hl_ranges = highlight(db, config, file_id.file_id(db), None);
-     let text = file.to_string();
-     let mut buf = String::new();
          let class = r.highlight.to_string().replace('.', " ");
          let color = match (rainbow, r.binding_hash) {
              (true, Some(hash)) => {

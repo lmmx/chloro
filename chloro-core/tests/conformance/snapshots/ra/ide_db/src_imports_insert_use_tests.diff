@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29250 bytes
-Chloro size:   29241 bytes
+Chloro size:   29250 bytes
 Rustfmt size:  29734 bytes
 
 ✗ Outputs DIFFER
@@ -22,41 +22,55 @@ Rustfmt size:  29734 bytes
      // Default configuration
      // empty files will get two trailing newlines
      // this is due to the test case insert_no_imports above
++
+     check_crate(
+         "foo::bar",
+         "",
  
  ",
      );
 -
      // "not group" configuration
++
      check_with_config(
          "use external_crate2::bar::A",
+         r"",
  #[test]
  fn insert_empty_module() {
      cov_mark::check_count!(insert_empty_module, 2);
 -
      // Default configuration
++
      check(
          "foo::bar",
+         r"
  ",
          ImportGranularity::Item,
      );
 -
      // "not group" configuration
++
      check_with_config(
          "foo::bar",
+         r"mod x {$0}",
  #[test]
  fn insert_after_inner_attr() {
      cov_mark::check_count!(insert_empty_inner_attr, 2);
 -
      // Default configuration
++
      check_crate(
          "foo::bar",
+         r"#![allow(unused_imports)]",
  
  use foo::bar;",
      );
 -
      // "not group" configuration
++
      check_with_config(
          "foo::bar",
+         r"#![allow(unused_imports)]",
  
  #[test]
  fn merge_last_into_self() {
@@ -128,10 +142,8 @@ Rustfmt size:  29734 bytes
          .and_then(|it| ImportScope::find_insert_use_container(&it, sema))
          .unwrap_or_else(|| ImportScope {
              kind: ImportScopeKind::File(source_file),
-         .descendants()
-         .find_map(ast::Path::cast)
          .unwrap();
--
+ 
      insert_use(&file, path, config);
 -    let result = file
 -        .as_syntax_node()
@@ -195,20 +207,6 @@ Rustfmt size:  29734 bytes
  }
  
  fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior) {
-         .descendants()
-         .find_map(ast::Use::cast)
-         .unwrap();
--
-     let use1 = ast::SourceFile::parse(ra_fixture1, span::Edition::CURRENT)
-         .tree()
-         .syntax()
-         .descendants()
-         .find_map(ast::Use::cast)
-         .unwrap();
--
-     let result = try_merge_imports(&use0, &use1, mb);
-     assert_eq!(result.map(|u| u.to_string()), None);
- }
  
  fn check_guess(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: ImportGranularityGuess) {
      let syntax = ast::SourceFile::parse(ra_fixture, span::Edition::CURRENT).tree();

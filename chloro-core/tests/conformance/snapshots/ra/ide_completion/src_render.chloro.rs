@@ -100,6 +100,7 @@ impl<'a> RenderContext<'a> {
             Some(assoc) => assoc,
             None => return false,
         };
+
         let is_assoc_deprecated = match assoc {
             hir::AssocItem::Function(it) => self.is_deprecated(it),
             hir::AssocItem::Const(it) => self.is_deprecated(it),
@@ -145,6 +146,7 @@ pub(crate) fn render_field(
         .set_documentation(field.docs(db))
         .set_deprecated(is_deprecated)
         .lookup_by(name);
+
     let is_field_access = matches!(dot_access.kind, DotAccessKind::Field { .. });
     if !is_field_access || ty.is_fn() || ty.is_closure() {
         let mut builder = TextEdit::builder();
@@ -287,14 +289,18 @@ pub(crate) fn render_expr(
         i += 1;
         res
     };
+
     let mut label_formatter = |ty: &hir::Type<'_>| {
         ty.as_adt()
             .map(|adt| stdx::to_lower_snake_case(adt.name(ctx.db).as_str()))
             .unwrap_or_else(|| String::from("..."))
     };
+
     let cfg = ctx.config.find_path_config(ctx.is_nightly);
+
     let label =
         expr.gen_source_code(&ctx.scope, &mut label_formatter, cfg, ctx.display_target).ok()?;
+
     let source_range = match ctx.original_token.parent() {
         Some(node) => match node.ancestors().find_map(ast::Path::cast) {
             Some(path) => path.syntax().text_range(),
@@ -302,8 +308,10 @@ pub(crate) fn render_expr(
         },
         None => ctx.source_range(),
     };
+
     let mut item =
         CompletionItem::new(CompletionItemKind::Expression, source_range, label, ctx.edition);
+
     let snippet = format!(
         "{}$0",
         expr.gen_source_code(&ctx.scope, &mut snippet_formatter, cfg, ctx.display_target).ok()?
@@ -323,6 +331,7 @@ pub(crate) fn render_expr(
 
         item.add_import(LocatedImport::new_no_completion(path, trait_item, trait_item));
     }
+
     Some(item)
 }
 
@@ -336,6 +345,7 @@ fn get_import_name(
     // <https://github.com/rust-lang/rust-analyzer/issues/14079>
     // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
     // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
+
     if import_edit.item_to_import == import_edit.original_item {
         import_edit.import_path.segments().last().cloned()
     } else {
@@ -365,6 +375,7 @@ fn render_resolution_pat(
 ) -> Builder {
     let _p = tracing::info_span!("render_resolution_pat").entered();
     use hir::ModuleDef::*;
+
     if let ScopeDef::ModuleDef(Macro(mac)) = resolution {
         let ctx = ctx.import_to_add(import_to_add);
         render_macro_pat(ctx, pattern_ctx, local_name, mac)
@@ -382,7 +393,9 @@ fn render_resolution_path(
 ) -> Builder {
     let _p = tracing::info_span!("render_resolution_path").entered();
     use hir::ModuleDef::*;
+
     let krate = ctx.completion.display_target;
+
     match resolution {
         ScopeDef::ModuleDef(Macro(mac)) => {
             let ctx = ctx.import_to_add(import_to_add);
@@ -402,11 +415,13 @@ fn render_resolution_path(
         }
         _ => (),
     }
+
     let completion = ctx.completion;
     let cap = ctx.snippet_cap();
     let db = completion.db;
     let config = completion.config;
     let requires_import = import_to_add.is_some();
+
     let name = local_name.display_no_db(ctx.completion.edition).to_smolstr();
     let mut item = render_resolution_simple_(ctx, &local_name, import_to_add, resolution);
     if local_name.needs_escape(completion.edition) {
@@ -434,6 +449,7 @@ fn render_resolution_path(
                 .insert_snippet(cap, format!("{}<$0>", local_name.display(db, completion.edition)));
         }
     }
+
     let mut set_item_relevance = |ty: Type<'_>| {
         if !ty.is_unknown() {
             item.detail(ty.display(db, krate).to_string());
@@ -449,6 +465,7 @@ fn render_resolution_path(
 
         path_ref_match(completion, path_ctx, &ty, &mut item);
     };
+
     match resolution {
         ScopeDef::Local(local) => set_item_relevance(local.ty(db)),
         ScopeDef::ModuleDef(ModuleDef::Adt(adt)) | ScopeDef::AdtSelfType(adt) => {
@@ -469,6 +486,7 @@ fn render_resolution_path(
             ModuleDef::Trait(_) | ModuleDef::Module(_) | ModuleDef::TypeAlias(_),
         ) => (),
     };
+
     item
 }
 
@@ -479,9 +497,11 @@ fn render_resolution_simple_(
     resolution: ScopeDef,
 ) -> Builder {
     let _p = tracing::info_span!("render_resolution_simple_").entered();
+
     let db = ctx.db();
     let ctx = ctx.import_to_add(import_to_add);
     let kind = res_to_kind(resolution);
+
     let mut item = CompletionItem::new(
         kind,
         ctx.source_range(),
@@ -491,9 +511,11 @@ fn render_resolution_simple_(
     item.set_relevance(ctx.completion_relevance())
         .set_documentation(scope_def_docs(db, resolution))
         .set_deprecated(scope_def_is_deprecated(&ctx, resolution));
+
     if let Some(import_to_add) = ctx.import_to_add {
         item.add_import(import_to_add);
     }
+
     item.doc_aliases(ctx.doc_aliases);
     item
 }
@@ -573,9 +595,11 @@ fn compute_type_match(
     let expected_type = ctx.expected_type.as_ref()?;
     // We don't ever consider unit type to be an exact type match, since
     // nearly always this is not meaningful to the user.
+
     if expected_type.is_unit() {
         return None;
     }
+
     match_types(ctx, expected_type, completion_ty)
 }
 
@@ -604,6 +628,7 @@ fn compute_ref_match(
         };
         return Some(CompletionItemRefMode::Reference(mutability));
     }
+
     if let Some(completion_without_ref) = completion_without_ref
         && completion_without_ref == *expected_type
         && completion_without_ref.is_copy(ctx.db)
@@ -611,6 +636,7 @@ fn compute_ref_match(
         cov_mark::hit!(suggest_deref);
         return Some(CompletionItemRefMode::Dereference);
     }
+
     None
 }
 
@@ -674,6 +700,7 @@ mod tests {
                 .into_iter()
                 .map(|item| (item.detail.unwrap_or_default(), item.relevance.function))
                 .collect();
+
         expect.assert_debug_eq(&actual);
     }
     #[track_caller]
@@ -720,7 +747,9 @@ mod tests {
                 items
             })
             .collect::<String>();
+
         expect.assert_eq(&actual);
+
         fn display_relevance(relevance: CompletionRelevance) -> String {
             let relevance_factors = vec![
                 (relevance.type_match == Some(CompletionRelevanceTypeMatch::Exact), "type"),
@@ -1467,6 +1496,7 @@ fn main() { som$0 }
                 ]
             "#]],
         );
+
         check(
             r#"
 struct A { #[deprecated] the_field: u32 }
@@ -1582,6 +1612,7 @@ impl S {
                 ]
             "#]],
         );
+
         check_kinds(
             r#"
 use self::my$0;

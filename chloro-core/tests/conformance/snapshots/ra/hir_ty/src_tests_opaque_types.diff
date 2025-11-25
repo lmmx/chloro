@@ -2,16 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2955 bytes
-Chloro size:   2954 bytes
+Chloro size:   2955 bytes
 Rustfmt size:  2955 bytes
 
-✗ Outputs DIFFER
-
-=== DIFF (- rustfmt, + chloro) ===
- };
- "#,
-     );
--
-     check_infer_with_mismatches(
-         r#"
- trait Trait {}
+✓ Outputs are IDENTICAL

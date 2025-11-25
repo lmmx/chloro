@@ -220,6 +220,7 @@ impl SourceToDefCtx<'_, '_> {
                 ancestor.map(Either::<ast::Module, ast::BlockExpr>::cast).transpose()
             })
             .map(|it| it.transpose());
+
         let parent_module = match parent_declaration {
             Some(Either::Right(parent_block)) => self
                 .block_to_def(parent_block.as_ref())
@@ -232,6 +233,7 @@ impl SourceToDefCtx<'_, '_> {
                 self.file_to_def(file_id.file_id(self.db)).first().copied()
             }
         }?;
+
         let child_name = src.value.name()?.as_name();
         let def_map = parent_module.def_map(self.db);
         let &child_id = def_map[parent_module.local_id].children.get(&child_name)?;
@@ -389,6 +391,7 @@ impl SourceToDefCtx<'_, '_> {
     ) -> Option<(DefWithBodyId, LabelId)> {
         let container = self.find_pat_or_label_container(src.syntax_ref())?;
         let source_map = self.db.body_with_source_map(container).1;
+
         let label_id = source_map.node_label(src)?;
         Some((container, label_id))
     }
@@ -544,6 +547,7 @@ impl SourceToDefCtx<'_, '_> {
         if let Some(def) = def {
             return Some(def);
         }
+
         let def = self
             .file_to_def(src.file_id.original_file(self.db).file_id(self.db))
             .first()

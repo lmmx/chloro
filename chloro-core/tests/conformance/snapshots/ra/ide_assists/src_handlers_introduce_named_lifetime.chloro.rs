@@ -17,6 +17,7 @@ pub(crate) fn introduce_named_lifetime(acc: &mut Assists, ctx: &AssistContext<'_
     let lifetime =
         ctx.find_node_at_offset::<ast::Lifetime>().filter(|lifetime| lifetime.text() == "'_")?;
     let lifetime_loc = lifetime.lifetime_ident_token()?.text_range();
+
     if let Some(fn_def) = lifetime.syntax().ancestors().find_map(ast::Fn::cast) {
         generate_fn_def_assist(acc, fn_def, lifetime_loc, lifetime)
     } else if let Some(impl_def) = lifetime.syntax().ancestors().find_map(ast::Impl::cast) {

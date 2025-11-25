@@ -13,14 +13,17 @@ pub(crate) fn flip_comma(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
     let next = non_trivia_sibling(comma.clone().into(), Direction::Next)?;
     // Don't apply a "flip" in case of a last comma
     // that typically comes before punctuation
+
     if next.kind().is_punct() {
         return None;
     }
     // Don't apply a "flip" inside the macro call
     // since macro input are just mere tokens
+
     if comma.parent_ancestors().any(|it| it.kind() == SyntaxKind::MACRO_CALL) {
         return None;
     }
+
     let target = comma.text_range();
     acc.add(AssistId::refactor_rewrite("flip_comma"), "Flip comma", target, |builder| {
         let parent = comma.parent().unwrap();
@@ -46,14 +49,17 @@ fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, Synta
     let before: Vec<_> =
         tree_iter.by_ref().take_while(|it| it.as_token() != Some(&comma)).collect();
     let after: Vec<_> = tree_iter.collect();
+
     let not_ws = |element: &NodeOrToken<_, SyntaxToken>| match element {
         NodeOrToken::Token(token) => token.kind() != SyntaxKind::WHITESPACE,
         NodeOrToken::Node(_) => true,
     };
+
     let is_comma = |element: &NodeOrToken<_, SyntaxToken>| match element {
         NodeOrToken::Token(token) => token.kind() == T![,],
         NodeOrToken::Node(_) => false,
     };
+
     let prev_start_untrimmed = match before.iter().rposition(is_comma) {
         Some(pos) => pos + 1,
         None => 1,
@@ -61,12 +67,14 @@ fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, Synta
     let prev_end = 1 + before.iter().rposition(not_ws).unwrap();
     let prev_start = prev_start_untrimmed
         + before[prev_start_untrimmed..prev_end].iter().position(not_ws).unwrap();
+
     let next_start = after.iter().position(not_ws).unwrap();
     let next_end_untrimmed = match after.iter().position(is_comma) {
         Some(pos) => pos,
         None => after.len() - 1,
     };
     let next_end = 1 + after[..next_end_untrimmed].iter().rposition(not_ws).unwrap();
+
     let result = [
         &before[1..prev_start],
         &after[next_start..next_end],
@@ -77,6 +85,7 @@ fn flip_tree(tree: ast::TokenTree, comma: SyntaxToken) -> (ast::TokenTree, Synta
         &after[next_end..after.len() - 1],
     ]
     .concat();
+
     let make = SyntaxFactory::with_mappings();
     let new_token_tree = make.token_tree(tree.left_delimiter_token().unwrap().kind(), result);
     (new_token_tree, make.finish_with_mappings())

@@ -9,6 +9,7 @@ pub(crate) fn view_mir(db: &RootDatabase, position: FilePosition) -> String {
 fn body_mir(db: &RootDatabase, position: FilePosition) -> Option<String> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
+
     let item = ancestors_at_offset(source_file.syntax(), position.offset)
         .filter(|it| !ast::MacroCall::can_cast(it.kind()))
         .find_map(ast::Item::cast)?;

@@ -14,7 +14,9 @@ pub(crate) fn unwrap_type_to_generic_arg(
     let path = path_type.path()?;
     let segment = path.segment()?;
     let args_list = segment.generic_arg_list()?;
+
     let mut generic_arg = None;
+
     for arg in args_list.generic_args() {
         match arg {
             GenericArg::ConstArg(_) | GenericArg::LifetimeArg(_) => (),
@@ -24,7 +26,9 @@ pub(crate) fn unwrap_type_to_generic_arg(
             _ => return None,
         }
     }
+
     let generic_arg = generic_arg?;
+
     acc.add(
         AssistId::refactor_extract("unwrap_type_to_generic_arg"),
         format!("Unwrap type to type argument {generic_arg}"),

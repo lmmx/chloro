@@ -114,6 +114,7 @@ fn complete_trait_impl_name(
 
         TextRange::new(first_child.text_range().start(), ctx.source_range().end())
     };
+
     complete_trait_impl(acc, ctx, kind, replacement_range, &impl_def);
     Some(())
 }
@@ -214,15 +215,18 @@ fn add_function_impl_(
         fn_name.display(ctx.db, ctx.edition),
         if func.assoc_fn_params(ctx.db).is_empty() { "" } else { ".." }
     );
+
     let completion_kind = CompletionItemKind::SymbolKind(if func.has_self_param(ctx.db) {
         SymbolKind::Method
     } else {
         SymbolKind::Function
     });
+
     let mut item = CompletionItem::new(completion_kind, replacement_range, label, ctx.edition);
     item.lookup_by(format!("{}fn {}", async_, fn_name.display(ctx.db, ctx.edition)))
         .set_documentation(func.docs(ctx.db))
         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+
     if let Some(source) = ctx.sema.source(func)
         && let Some(transformed_fn) =
             get_transformed_fn(ctx, source.value, impl_def, async_sugaring)
@@ -265,6 +269,7 @@ fn get_transformed_assoc_item(
         trait_,
         ctx.sema.source(impl_def)?.value,
     );
+
     let assoc_item = assoc_item.clone_for_update();
     // FIXME: Paths in nested macros are not handled well. See
     // `macro_generated_assoc_item2` test.
@@ -289,6 +294,7 @@ fn get_transformed_fn(
         trait_,
         ctx.sema.source(impl_def)?.value,
     );
+
     let fn_ = fn_.clone_for_update();
     // FIXME: Paths in nested macros are not handled well. See
     // `macro_generated_assoc_item2` test.
@@ -356,12 +362,15 @@ fn add_type_alias_impl(
     impl_def: hir::Impl,
 ) {
     let alias_name = type_alias.name(ctx.db).as_str().to_smolstr();
+
     let label = format_smolstr!("type {alias_name} =");
+
     let mut item =
         CompletionItem::new(SymbolKind::TypeAlias, replacement_range, label, ctx.edition);
     item.lookup_by(format!("type {alias_name}"))
         .set_documentation(type_alias.docs(ctx.db))
         .set_relevance(CompletionRelevance { exact_name_match: true, ..Default::default() });
+
     if let Some(source) = ctx.sema.source(type_alias) {
         let assoc_item = ast::AssocItem::TypeAlias(source.value);
         if let Some(transformed_item) = get_transformed_assoc_item(ctx, assoc_item, impl_def) {
@@ -434,6 +443,7 @@ fn add_const_impl(
     impl_def: hir::Impl,
 ) {
     let const_name = const_.name(ctx.db).map(|n| n.display_no_db(ctx.edition).to_smolstr());
+
     if let Some(const_name) = const_name
         && let Some(source) = ctx.sema.source(const_)
     {
@@ -479,15 +489,20 @@ fn make_const_compl_syntax(
     } else {
         const_.syntax().clone()
     };
+
     let start = const_.text_range().start();
     let const_end = const_.text_range().end();
+
     let end = const_
         .children_with_tokens()
         .find(|s| s.kind() == T![;] || s.kind() == T![=])
         .map_or(const_end, |f| f.text_range().start());
+
     let len = end - start;
     let range = TextRange::new(0.into(), len);
+
     let syntax = const_.text().slice(range).to_string();
+
     format_smolstr!("{} =", syntax.trim_end())
 }
 
@@ -502,14 +517,18 @@ fn function_declaration(
     } else {
         node.syntax().clone()
     };
+
     let start = node.text_range().start();
     let end = node.text_range().end();
+
     let end = node
         .last_child_or_token()
         .filter(|s| s.kind() == T![;] || s.kind() == SyntaxKind::BLOCK_EXPR)
         .map_or(end, |f| f.text_range().start());
+
     let len = end - start;
     let syntax = node.text().slice(..len).to_string();
+
     syntax.trim_end().to_owned()
 }
 
@@ -537,6 +556,7 @@ impl Test for T {
                 bt u32 u32
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { fn test(); fn test2(); }
@@ -550,6 +570,7 @@ impl Test for T {
 ",
             expect![[""]],
         );
+
         check_no_kw(
             r"
 trait Test { fn test(); fn test2(); }
@@ -564,6 +585,7 @@ impl Test for T {
             expect![[""]],
         );
         // https://github.com/rust-lang/rust-analyzer/pull/5976#issuecomment-692332191
+
         check_no_kw(
             r"
 trait Test { fn test(); fn test2(); }
@@ -577,6 +599,7 @@ impl Test for T {
 ",
             expect![[r#""#]],
         );
+
         check_no_kw(
             r"
 trait Test { fn test(_: i32); fn test2(); }
@@ -595,6 +618,7 @@ impl Test for T {
                 bn self
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { fn test(_: fn()); fn test2(); }
@@ -623,6 +647,7 @@ impl Test for T {
 ",
             expect![[r#""#]],
         );
+
         check_no_kw(
             r"
 trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
@@ -639,6 +664,7 @@ impl Test for T {
                 bt u32 u32
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
@@ -655,6 +681,7 @@ impl Test for T {
                 bt u32 u32
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
@@ -673,6 +700,7 @@ impl Test for T {
                 bt u32 u32
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
@@ -686,6 +714,7 @@ impl Test for T {
 ",
             expect![[""]],
         );
+
         check_no_kw(
             r"
 trait Test { const TEST: u32; const TEST2: u32; type Test; fn test(); }
@@ -718,6 +747,7 @@ impl Test for T {
                 bt u32 u32
             "#]],
         );
+
         check_no_kw(
             r"
 trait Test { type Test; type Test2; fn test(); }
@@ -907,6 +937,7 @@ impl Test for () {
 }
 ",
         );
+
         check_edit(
             "const SOME_CONST",
             r#"
@@ -993,6 +1024,7 @@ impl Test for T {{
             )
         };
         // Enumerate some possible next siblings.
+
         for next_sibling in [
             "",
             "fn other_fn() {}", // `const $0 fn` -> `const fn`

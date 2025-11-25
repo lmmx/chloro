@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 15979 bytes
-Chloro size:   15832 bytes
+Chloro size:   15838 bytes
 Rustfmt size:  15979 bytes
 
 ✗ Outputs DIFFER
@@ -74,43 +74,6 @@ Rustfmt size:  15979 bytes
      /// An or-pattern, e.g. `p | q`.
      /// Invariant: `pats.len() >= 2`.
      Or {
-     fn lower_pattern_unadjusted(&mut self, pat: PatId) -> Pat<'db> {
-         let mut ty = self.infer[pat];
-         let variant = self.infer.variant_resolution_for_pat(pat);
--
-         let kind = match self.body[pat] {
-             hir_def::hir::Pat::Wild => PatKind::Wild,
- 
-                 PatKind::Wild
-             }
-         };
--
-         Pat { ty, kind: Box::new(kind) }
-     }
- 
-             self.errors.push(PatternError::ExtraFields);
-             return Vec::new();
-         }
--
-         pats.iter()
-             .enumerate_and_adjust(expected_len, ellipsis.map(|it| it as usize))
-             .map(|(i, &subpattern)| FieldPat {
- 
-     fn lower_path(&mut self, pat: PatId, _path: &Path) -> Pat<'db> {
-         let ty = self.infer[pat];
--
-         let pat_from_kind = |kind| Pat { ty, kind: Box::new(kind) };
--
-         match self.infer.variant_resolution_for_pat(pat) {
-             Some(_) => pat_from_kind(self.lower_variant_or_leaf(pat, ty, Vec::new())),
-             None => {
- 
-     fn lower_lit(&mut self, expr: hir_def::hir::ExprId) -> PatKind<'db> {
-         use hir_def::hir::{Expr, Literal::Bool};
--
-         match self.body[expr] {
-             Expr::Literal(Bool(value)) => PatKind::LiteralBool { value },
-             _ => {
      }
  }
  

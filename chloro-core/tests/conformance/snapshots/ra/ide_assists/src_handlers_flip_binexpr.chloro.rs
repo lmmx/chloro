@@ -10,10 +10,12 @@ pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     let expr = ctx.find_node_at_offset::<BinExpr>()?;
     let lhs = expr.lhs()?;
     let rhs = expr.rhs()?;
+
     let lhs = match &lhs {
         ast::Expr::BinExpr(bin_expr) if bin_expr.op_kind() == expr.op_kind() => bin_expr.rhs()?,
         _ => lhs,
     };
+
     let op_token = expr.op_token()?;
     // The assist should be applied only if the cursor is on the operator
     let cursor_in_range = op_token.text_range().contains_range(ctx.selection_trimmed());
@@ -25,6 +27,7 @@ pub(crate) fn flip_binexpr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     if let FlipAction::DontFlip = action {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("flip_binexpr"),
         "Flip binary expression",
@@ -72,12 +75,14 @@ pub(crate) fn flip_range_expr(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     let op = range_expr.op_token()?;
     let start = range_expr.start();
     let end = range_expr.end();
+
     if !op.text_range().contains_range(ctx.selection_trimmed()) {
         return None;
     }
     if start.is_none() && end.is_none() {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("flip_range_expr"),
         "Flip range expression",

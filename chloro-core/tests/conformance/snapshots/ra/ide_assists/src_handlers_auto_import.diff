@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45968 bytes
-Chloro size:   43169 bytes
+Chloro size:   43198 bytes
 Rustfmt size:  46663 bytes
 
 ✗ Outputs DIFFER
@@ -106,21 +106,16 @@ Rustfmt size:  46663 bytes
 -// ```
  pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let cfg = ctx.config.import_path_config();
--
-     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
-     let mut proposed_imports: Vec<_> = import_assets
-         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
-     if proposed_imports.is_empty() {
-         return None;
-     }
--
+ 
+ 
      let range = ctx.sema.original_range(&syntax_under_caret).range;
      let scope = ImportScope::find_insert_use_container(&syntax_under_caret, &ctx.sema)?;
 -
      // we aren't interested in different namespaces
++
      proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
      proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
--
+ 
 -    let current_module = ctx
 -        .sema
 -        .scope(scope.as_syntax_node())
@@ -139,8 +134,8 @@ Rustfmt size:  46663 bytes
 -    let edition = current_module
 -        .map(|it| it.krate().edition(ctx.db()))
 -        .unwrap_or(Edition::CURRENT);
--
 +    let edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
+ 
      let group_label = group_label(import_assets.import_candidate());
      for import in proposed_imports {
          let import_path = import.import_path;
@@ -177,10 +172,8 @@ Rustfmt size:  46663 bytes
                  let type_ = if is_method { "method" } else { "item" };
                  let group_label = GroupLabel(format!(
                      "Import a trait for {} {} by alias",
-             }
-         }
      };
--
+ 
      if let Some(path_under_caret) = ctx.find_node_at_offset_with_descend::<ast::Path>() {
 -        let expected = path_under_caret
 -            .top_path()
@@ -222,39 +215,12 @@ Rustfmt size:  46663 bytes
          }
      };
      GroupLabel(name)
-     current_module: Option<&Module>,
- ) -> i32 {
-     let mut score = 0;
--
-     let db = ctx.db();
--
-     let item_module = match import.item_to_import {
-         hir::ItemInNs::Types(item) | hir::ItemInNs::Values(item) => item.module(db),
-         hir::ItemInNs::Macros(makro) => Some(makro.module(db)),
-     };
--
-     if let Some(expected) = expected {
-         let ty = match import.item_to_import {
-             hir::ItemInNs::Types(module_def) | hir::ItemInNs::Values(module_def) => {
-             }
-         }
-     }
--
-     match item_module.zip(current_module) {
-         // get the distance between the imported path and the current module
-         // (prefer items that are more local)
-         // could not find relevant modules, so just use the length of the path as an estimate
-         None => return -(2 * import.import_path.len() as i32),
-     }
--
-     score
- }
- 
      // get the path starting from the item to the respective crate roots
      let mut current_path = current.path_to_root(db);
      let mut item_path = item.path_to_root(db);
 -
      // we want paths going from the root to the item
++
      current_path.reverse();
      item_path.reverse();
 -
@@ -264,21 +230,17 @@ Rustfmt size:  46663 bytes
 -        .zip(&item_path)
 -        .take_while(|(a, b)| a == b)
 -        .count();
--
+ 
 +    let prefix_length = current_path.iter().zip(&item_path).take_while(|(a, b)| a == b).count();
      // how many modules differ between the two paths (all modules, removing any duplicates)
-     let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
--
+-    let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
+ 
++    let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
      // cost of importing from another crate
++
      let crate_boundary_cost = if current.krate() == item.krate() {
          0
-     } else {
-         4
-     };
--
-     distinct_length + crate_boundary_cost
- }
- 
+     } else if item.krate().origin(db).is_local() {
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -299,21 +261,19 @@ Rustfmt size:  46663 bytes
 -            file_id,
 -            range: range_or_offset.into(),
 -        };
--
 +        let frange = FileRange { file_id, range: range_or_offset.into() };
+ 
          let sema = Semantics::new(&db);
          let config = TEST_CONFIG;
-         let ctx = AssistContext::new(sema, &config, frange);
-         let mut acc = Assists::new(&ctx, AssistResolveStrategy::All);
          auto_import(&mut acc, &ctx);
          let assists = acc.finish();
--
+ 
 -        let labels = assists
 -            .iter()
 -            .map(|assist| assist.label.to_string())
 -            .collect::<Vec<_>>();
--
 +        let labels = assists.iter().map(|assist| assist.label.to_string()).collect::<Vec<_>>();
+ 
          assert_eq!(labels, order);
      }
 -
@@ -327,10 +287,7 @@ Rustfmt size:  46663 bytes
      #[test]
      fn prefer_shorter_paths() {
          let before = r"
- //- /lib.rs crate:bar
- pub mod collections { pub mod hash_map { pub struct HashMap; } }
-         ";
--
+ 
          check_auto_import_order(
              before,
 -            &[
@@ -344,10 +301,7 @@ Rustfmt size:  46663 bytes
      #[test]
      fn prefer_same_crate() {
          let before = r"
- //- /lib.rs crate:foo
- pub struct HashMap;
-         ";
--
+ 
          check_auto_import_order(
              before,
 -            &[
@@ -361,10 +315,9 @@ Rustfmt size:  46663 bytes
      #[test]
      fn prefer_workspace() {
          let before = r"
- //- /lib.rs crate:bar library
  pub struct HashMap;
          ";
--
+ 
 -        check_auto_import_order(
 -            before,
 -            &["Import `foo::module::HashMap`", "Import `bar::HashMap`"],
@@ -375,10 +328,7 @@ Rustfmt size:  46663 bytes
      #[test]
      fn prefer_non_local_over_long_path() {
          let before = r"
- //- /lib.rs crate:bar library
- pub struct HashMap;
-         ";
--
+ 
          check_auto_import_order(
              before,
 -            &[
@@ -504,13 +454,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn associated_trait_function() {
          check_assist_by_label(
-             ",
-             "Import `test_mod::TestTrait`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `test_mod::TestTrait as _`",
          );
      }
@@ -525,13 +468,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn associated_trait_const() {
          check_assist_by_label(
-             ",
-             "Import `test_mod::TestTrait as _`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `test_mod::TestTrait`",
          );
      }
@@ -546,13 +482,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn trait_method() {
          check_assist_by_label(
-             ",
-             "Import `test_mod::TestTrait as _`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `test_mod::TestTrait`",
          );
      }
@@ -560,13 +489,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn trait_method_cross_crate() {
          check_assist_by_label(
-             ",
-             "Import `dep::test_mod::TestTrait as _`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `dep::test_mod::TestTrait`",
          );
      }
@@ -574,13 +496,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn assoc_fn_cross_crate() {
          check_assist_by_label(
-             ",
-             "Import `dep::test_mod::TestTrait as _`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `dep::test_mod::TestTrait`",
          );
      }
@@ -588,13 +503,6 @@ Rustfmt size:  46663 bytes
      #[test]
      fn assoc_const_cross_crate() {
          check_assist_by_label(
-             ",
-             "Import `dep::test_mod::TestTrait as _`",
-         );
--
-         check_assist_by_label(
-             auto_import,
-             r"
              "Import `dep::test_mod::TestTrait`",
          );
      }

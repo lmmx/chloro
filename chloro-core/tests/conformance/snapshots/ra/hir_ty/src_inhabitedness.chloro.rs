@@ -42,6 +42,7 @@ pub(crate) fn is_enum_variant_uninhabited_from<'db>(
     env: Arc<TraitEnvironment<'db>>,
 ) -> bool {
     let _p = tracing::info_span!("is_enum_variant_uninhabited_from").entered();
+
     let mut uninhabited_from = UninhabitedFrom::new(infcx, target_mod, env);
     let inhabitedness = uninhabited_from.visit_variant(variant.into(), subst);
     inhabitedness == BREAK_VISIBLY_UNINHABITED
@@ -73,6 +74,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
         }
         self.recursive_ty.insert(ty);
         self.max_depth -= 1;
+
         if matches!(ty.kind(), TyKind::Alias(..)) {
             let mut ocx = ObligationCtxt::new(self.infcx);
             match ocx.structurally_normalize_ty(&ObligationCause::dummy(), self.env.env, ty) {
@@ -80,6 +82,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for UninhabitedFrom<'_, 'db> {
                 Err(_) => return CONTINUE_OPAQUELY_INHABITED,
             }
         }
+
         let r = match ty.kind() {
             TyKind::Adt(adt, subst) => self.visit_adt(adt.def_id().0, subst),
             TyKind::Never => BREAK_VISIBLY_UNINHABITED,
@@ -150,9 +153,11 @@ impl<'a, 'db> UninhabitedFrom<'a, 'db> {
         if fields.is_empty() {
             return CONTINUE_OPAQUELY_INHABITED;
         }
+
         let is_enum = matches!(variant, VariantId::EnumVariantId(..));
         let field_tys = self.db().field_types(variant);
         let field_vis = if is_enum { None } else { Some(self.db().field_visibilities(variant)) };
+
         for (fid, _) in fields.iter() {
             self.visit_field(field_vis.as_ref().map(|it| it[fid]), &field_tys[fid], subst)?;
         }

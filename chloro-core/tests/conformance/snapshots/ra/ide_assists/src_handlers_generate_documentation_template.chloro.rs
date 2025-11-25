@@ -19,9 +19,11 @@ pub(crate) fn generate_documentation_template(
     if is_in_trait_impl(&ast_func, ctx) || ast_func.doc_comments().next().is_some() {
         return None;
     }
+
     let parent_syntax = ast_func.syntax();
     let text_range = parent_syntax.text_range();
     let indent_level = IndentLevel::from_node(parent_syntax);
+
     acc.add(
         AssistId::generate("generate_documentation_template"),
         "Generate a documentation template",
@@ -47,16 +49,19 @@ pub(crate) fn generate_doc_example(acc: &mut Assists, ctx: &AssistContext<'_>) -
     let last_doc_token =
         ast::AnyHasDocComments::cast(node.clone())?.doc_comments().last()?.syntax().clone();
     let next_token = skip_whitespace_token(last_doc_token.next_token()?, syntax::Direction::Next)?;
+
     let example = match_ast! {
         match node {
             ast::Fn(it) => make_example_for_fn(&it, ctx)?,
             _ => return None,
         }
     };
+
     let mut lines = string_vec_from(&["", "# Examples", "", "```"]);
     lines.extend(example.lines().map(String::from));
     lines.push("```".into());
     let indent_level = IndentLevel::from_node(&node);
+
     acc.add(
         AssistId::generate("generate_doc_example"),
         "Generate a documentation example",
@@ -75,17 +80,21 @@ fn make_example_for_fn(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<St
         // Doctests for private items can't actually name the item, so they're pretty useless.
         return None;
     }
+
     if is_in_trait_def(ast_func, ctx) {
         // This is not yet implemented.
         return None;
     }
+
     let mut example = String::new();
+
     let edition = ctx.sema.scope(ast_func.syntax())?.krate().edition(ctx.db());
     let use_path = build_path(ast_func, ctx, edition)?;
     let is_unsafe = ast_func.unsafe_token().is_some();
     let param_list = ast_func.param_list()?;
     let ref_mut_params = ref_mut_params(&param_list);
     let self_name = self_name(ast_func);
+
     format_to!(example, "use {use_path};\n\n");
     if let Some(self_name) = &self_name
         && let Some(mut_) = is_ref_mut_self(ast_func)
@@ -117,6 +126,7 @@ fn make_example_for_fn(ast_func: &ast::Fn, ctx: &AssistContext<'_>) -> Option<St
     for param_name in &ref_mut_params {
         format_to!(example, "assert_eq!({param_name}, );");
     }
+
     Some(example)
 }
 
@@ -255,6 +265,7 @@ fn can_panic(ast_func: &ast::Fn) -> Option<bool> {
     let assert_postfix = |s| {
         ["!(", "_eq!(", "_ne!(", "_matches!("].iter().any(|postfix| str::starts_with(s, postfix))
     };
+
     while !iter.as_str().is_empty() {
         let s = iter.as_str();
         iter.next();
@@ -270,6 +281,7 @@ fn can_panic(ast_func: &ast::Fn) -> Option<bool> {
             return Some(true);
         }
     }
+
     Some(false)
 }
 

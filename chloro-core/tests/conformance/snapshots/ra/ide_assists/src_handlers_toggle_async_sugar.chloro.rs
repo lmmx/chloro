@@ -13,12 +13,15 @@ pub(crate) fn sugar_impl_future_into_async(
 ) -> Option<()> {
     let ret_type: ast::RetType = ctx.find_node_at_offset()?;
     let function = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
+
     if function.async_token().is_some() || function.const_token().is_some() {
         return None;
     }
+
     let ast::Type::ImplTraitType(return_impl_trait) = ret_type.ty()? else {
         return None;
     };
+
     let main_trait_path = return_impl_trait
         .type_bound_list()?
         .bounds()
@@ -27,12 +30,14 @@ pub(crate) fn sugar_impl_future_into_async(
             _ => None,
         })
         .next()?;
+
     let trait_type = ctx.sema.resolve_trait(&main_trait_path)?;
     let scope = ctx.sema.scope(main_trait_path.syntax())?;
     if trait_type != FamousDefs(&ctx.sema, scope.krate()).core_future_Future()? {
         return None;
     }
     let future_output = unwrap_future_output(main_trait_path)?;
+
     acc.add(
         AssistId::refactor_rewrite("sugar_impl_future_into_async"),
         "Convert `impl Future` into async",
@@ -80,6 +85,7 @@ pub(crate) fn desugar_async_into_impl_future(
 ) -> Option<()> {
     let async_token = ctx.find_token_syntax_at_offset(SyntaxKind::ASYNC_KW)?;
     let function = async_token.parent().and_then(ast::Fn::cast)?;
+
     let rparen = function.param_list()?.r_paren_token()?;
     let return_type = match function.ret_type() {
         // unable to get a `ty` makes the action inapplicable
@@ -87,6 +93,7 @@ pub(crate) fn desugar_async_into_impl_future(
         // No type means `-> ()`
         None => None,
     };
+
     let scope = ctx.sema.scope(function.syntax())?;
     let module = scope.module();
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
@@ -94,6 +101,7 @@ pub(crate) fn desugar_async_into_impl_future(
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(future_trait), cfg)?;
     let edition = scope.krate().edition(ctx.db());
     let trait_path = trait_path.display(ctx.db(), edition);
+
     acc.add(
         AssistId::refactor_rewrite("desugar_async_into_impl_future"),
         "Convert async into `impl Future`",
@@ -160,6 +168,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -195,6 +204,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             desugar_async_into_impl_future,
             r#"
@@ -211,6 +221,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             desugar_async_into_impl_future,
             r#"
@@ -227,6 +238,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             desugar_async_into_impl_future,
             r#"
@@ -260,6 +272,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -291,6 +304,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist(
             desugar_async_into_impl_future,
             r#"
@@ -320,6 +334,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist_not_applicable(
             sugar_impl_future_into_async,
             r#"
@@ -332,6 +347,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist_not_applicable(
             sugar_impl_future_into_async,
             r#"
@@ -341,6 +357,7 @@ mod tests {
     }
     "#,
         );
+
         check_assist_not_applicable(
             desugar_async_into_impl_future,
             r#"
@@ -364,6 +381,7 @@ mod tests {
     async fn foo();
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -389,6 +407,7 @@ mod tests {
     async fn foo();
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -412,6 +431,7 @@ mod tests {
     async fn foo();
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -422,6 +442,7 @@ mod tests {
     async fn foo() -> usize;
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -432,6 +453,7 @@ mod tests {
     async fn foo() -> (usize);
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -442,6 +464,7 @@ mod tests {
     async fn foo() -> (usize, usize);
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -462,6 +485,7 @@ mod tests {
     const fn foo() -> impl core::future::F$0uture<Output = ()>;
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -472,6 +496,7 @@ mod tests {
             pub(crate) async unsafe fn foo() -> usize;
         "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -482,6 +507,7 @@ mod tests {
     async unsafe fn foo();
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -492,6 +518,7 @@ mod tests {
     async unsafe extern "C" fn foo();
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"
@@ -502,6 +529,7 @@ mod tests {
     async fn foo<T>() -> T;
     "#,
         );
+
         check_assist(
             sugar_impl_future_into_async,
             r#"

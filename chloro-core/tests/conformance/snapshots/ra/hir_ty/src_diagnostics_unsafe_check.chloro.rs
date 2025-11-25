@@ -32,12 +32,14 @@ pub struct MissingUnsafeResult {
 
 pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafeResult {
     let _p = tracing::info_span!("missing_unsafe").entered();
+
     let is_unsafe = match def {
         DefWithBodyId::FunctionId(it) => db.function_signature(it).is_unsafe(),
         DefWithBodyId::StaticId(_) | DefWithBodyId::ConstId(_) | DefWithBodyId::VariantId(_) => {
             false
         }
     };
+
     let mut res = MissingUnsafeResult { fn_is_unsafe: is_unsafe, ..MissingUnsafeResult::default() };
     let body = db.body(def);
     let infer = db.infer(def);
@@ -55,6 +57,7 @@ pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafe
     };
     let mut visitor = UnsafeVisitor::new(db, &infer, &body, def, &mut callback);
     visitor.walk_expr(body.body_expr);
+
     if !is_unsafe {
         // Unsafety in function parameter patterns (that can only be union destructuring)
         // cannot be inserted into an unsafe block, so even with `unsafe_op_in_unsafe_fn`
@@ -63,6 +66,7 @@ pub fn missing_unsafe(db: &dyn HirDatabase, def: DefWithBodyId) -> MissingUnsafe
             visitor.walk_pat(param);
         }
     }
+
     res
 }
 
@@ -234,6 +238,7 @@ impl<'db> UnsafeVisitor<'db> {
 
     fn walk_pat(&mut self, current: PatId) {
         let pat = &self.body[current];
+
         if self.inside_union_destructure {
             match pat {
                 Pat::Tuple { .. }
@@ -254,6 +259,7 @@ impl<'db> UnsafeVisitor<'db> {
                 Pat::Missing | Pat::Wild | Pat::Or(_) => {}
             }
         }
+
         match pat {
             Pat::Record { .. } => {
                 if let Some((AdtId::UnionId(_), _)) = self.infer[current].as_adt() {
@@ -273,6 +279,7 @@ impl<'db> UnsafeVisitor<'db> {
             &Pat::Expr(expr) => self.walk_expr(expr),
             _ => {}
         }
+
         self.body.walk_pats_shallow(current, |pat| self.walk_pat(pat));
     }
 
@@ -418,6 +425,7 @@ impl<'db> UnsafeVisitor<'db> {
             Expr::Const(e) => self.walk_expr(*e),
             _ => {}
         }
+
         self.body.walk_child_exprs_without_pats(current, |child| self.walk_expr(child));
     }
 

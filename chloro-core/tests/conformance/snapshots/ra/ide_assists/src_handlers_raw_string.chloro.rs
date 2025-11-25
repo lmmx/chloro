@@ -73,15 +73,20 @@ pub(crate) fn remove_hash(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     if !token.is_raw() {
         return None;
     }
+
     let text = token.text();
+
     let existing_hashes =
         text.chars().skip(token.raw_prefix().len()).take_while(|&it| it == '#').count();
+
     let text_range = token.syntax().text_range();
     let internal_text = &text[token.text_range_between_quotes()? - text_range.start()];
+
     if existing_hashes == required_hashes(internal_text) {
         cov_mark::hit!(cant_remove_required_hash);
         return None;
     }
+
     acc.add(AssistId::refactor_rewrite("remove_hash"), "Remove #", text_range, |edit| {
         let suffix = string_suffix(text).unwrap_or_default();
         let prefix = token.raw_prefix();
@@ -101,7 +106,9 @@ fn replace_literal(
     let node = token.parent().expect("no parent token");
     let mut edit = builder.make_editor(&node);
     let new_literal = literal(new);
+
     edit.replace(token, mut_token(new_literal));
+
     builder.add_file_edits(ctx.vfs_file_id(), edit);
 }
 

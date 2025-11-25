@@ -16,6 +16,7 @@ use crate::{AssistContext, AssistId, Assists, GroupLabel};
 
 pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let cfg = ctx.config.import_path_config();
+
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let mut proposed_imports: Vec<_> = import_assets
         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
@@ -23,17 +24,21 @@ pub(crate) fn auto_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     if proposed_imports.is_empty() {
         return None;
     }
+
     let range = ctx.sema.original_range(&syntax_under_caret).range;
     let scope = ImportScope::find_insert_use_container(&syntax_under_caret, &ctx.sema)?;
     // we aren't interested in different namespaces
+
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
+
     let current_module = ctx.sema.scope(scope.as_syntax_node()).map(|scope| scope.module());
     // prioritize more relevant imports
     proposed_imports.sort_by_key(|import| {
         Reverse(relevance_score(ctx, import, expected.as_ref(), current_module.as_ref()))
     });
     let edition = current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
+
     let group_label = group_label(import_assets.import_candidate());
     for import in proposed_imports {
         let import_path = import.import_path;
@@ -119,6 +124,7 @@ pub(super) fn find_importable_node<'a: 'db, 'db>(
             }
         }
     };
+
     if let Some(path_under_caret) = ctx.find_node_at_offset_with_descend::<ast::Path>() {
         let expected =
             path_under_caret.top_path().syntax().parent().and_then(Either::cast).and_then(expected);
@@ -165,11 +171,14 @@ pub(crate) fn relevance_score(
     current_module: Option<&Module>,
 ) -> i32 {
     let mut score = 0;
+
     let db = ctx.db();
+
     let item_module = match import.item_to_import {
         hir::ItemInNs::Types(item) | hir::ItemInNs::Values(item) => item.module(db),
         hir::ItemInNs::Macros(makro) => Some(makro.module(db)),
     };
+
     if let Some(expected) = expected {
         let ty = match import.item_to_import {
             hir::ItemInNs::Types(module_def) | hir::ItemInNs::Values(module_def) => {
@@ -198,6 +207,7 @@ pub(crate) fn relevance_score(
             }
         }
     }
+
     match item_module.zip(current_module) {
         // get the distance between the imported path and the current module
         // (prefer items that are more local)
@@ -208,6 +218,7 @@ pub(crate) fn relevance_score(
         // could not find relevant modules, so just use the length of the path as an estimate
         None => return -(2 * import.import_path.len() as i32),
     }
+
     score
 }
 
@@ -217,13 +228,17 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
     let mut current_path = current.path_to_root(db);
     let mut item_path = item.path_to_root(db);
     // we want paths going from the root to the item
+
     current_path.reverse();
     item_path.reverse();
     // length of the common prefix of the two paths
+
     let prefix_length = current_path.iter().zip(&item_path).take_while(|(a, b)| a == b).count();
     // how many modules differ between the two paths (all modules, removing any duplicates)
+
     let distinct_length = current_path.len() + item_path.len() - 2 * prefix_length;
     // cost of importing from another crate
+
     let crate_boundary_cost = if current.krate() == item.krate() {
         0
     } else if item.krate().origin(db).is_local() {
@@ -233,6 +248,7 @@ fn module_distance_heuristic(db: &dyn HirDatabase, current: &Module, item: &Modu
     } else {
         4
     };
+
     distinct_length + crate_boundary_cost
 }
 
@@ -249,13 +265,16 @@ mod tests {
     fn check_auto_import_order(before: &str, order: &[&str]) {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(before);
         let frange = FileRange { file_id, range: range_or_offset.into() };
+
         let sema = Semantics::new(&db);
         let config = TEST_CONFIG;
         let ctx = AssistContext::new(sema, &config, frange);
         let mut acc = Assists::new(&ctx, AssistResolveStrategy::All);
         auto_import(&mut acc, &ctx);
         let assists = acc.finish();
+
         let labels = assists.iter().map(|assist| assist.label.to_string()).collect::<Vec<_>>();
+
         assert_eq!(labels, order);
     }
     #[test]
@@ -283,6 +302,7 @@ pub mod collections { pub struct HashMap; }
 //- /lib.rs crate:bar
 pub mod collections { pub mod hash_map { pub struct HashMap; } }
         ";
+
         check_auto_import_order(
             before,
             &["Import `foo::collections::HashMap`", "Import `bar::collections::hash_map::HashMap`"],
@@ -303,6 +323,7 @@ mod collections {
 //- /lib.rs crate:foo
 pub struct HashMap;
         ";
+
         check_auto_import_order(
             before,
             &["Import `collections::hash_map::HashMap`", "Import `foo::HashMap`"],
@@ -322,6 +343,7 @@ pub mod module {
 //- /lib.rs crate:bar library
 pub struct HashMap;
         ";
+
         check_auto_import_order(before, &["Import `foo::module::HashMap`", "Import `bar::HashMap`"])
     }
     #[test]
@@ -342,6 +364,7 @@ pub mod deeply {
 //- /lib.rs crate:bar library
 pub struct HashMap;
         ";
+
         check_auto_import_order(
             before,
             &["Import `bar::HashMap`", "Import `foo::deeply::nested::module::HashMap`"],
@@ -745,6 +768,7 @@ fn main() {
             ",
             "Import `test_mod::TestTrait`",
         );
+
         check_assist_by_label(
             auto_import,
             r"
@@ -851,6 +875,7 @@ fn main() {
             ",
             "Import `test_mod::TestTrait as _`",
         );
+
         check_assist_by_label(
             auto_import,
             r"
@@ -959,6 +984,7 @@ fn main() {
             ",
             "Import `test_mod::TestTrait as _`",
         );
+
         check_assist_by_label(
             auto_import,
             r"
@@ -1029,6 +1055,7 @@ fn main() {
             ",
             "Import `dep::test_mod::TestTrait as _`",
         );
+
         check_assist_by_label(
             auto_import,
             r"
@@ -1088,6 +1115,7 @@ fn main() {
             ",
             "Import `dep::test_mod::TestTrait as _`",
         );
+
         check_assist_by_label(
             auto_import,
             r"
@@ -1145,6 +1173,7 @@ fn main() {
             ",
             "Import `dep::test_mod::TestTrait as _`",
         );
+
         check_assist_by_label(
             auto_import,
             r"

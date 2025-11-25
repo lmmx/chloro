@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32850 bytes
-Chloro size:   32851 bytes
+Chloro size:   32866 bytes
 Rustfmt size:  32850 bytes
 
 ✗ Outputs DIFFER
@@ -42,49 +42,6 @@ Rustfmt size:  32850 bytes
  };
  
  /// Desugared attributes of an item post `cfg_attr` expansion.
-         let Some(fields) = fields else {
-             return Arc::new(res);
-         };
--
-         let cfg_options = krate.cfg_options(db);
-         let span_map = db.span_map(file_id);
--
-         match fields {
-             ast::FieldList::RecordFieldList(fields) => {
-                 let mut idx = 0;
-                 }
-             }
-         }
--
-         res.shrink_to_fit();
-         Arc::new(res)
-     }
-             }
-         }
-     }
--
-     indices.into_boxed_slice()
- }
- 
- fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
-     use crate::builtin_type::{BuiltinInt, BuiltinUint};
-     use rustc_abi::{Align, Integer, IntegerType, ReprFlags, ReprOptions};
--
-     match tt.top_subtree().delimiter {
-         tt::Delimiter { kind: DelimiterKind::Parenthesis, .. } => {}
-         _ => return None,
-     }
--
-     let mut acc = ReprOptions::default();
-     let mut tts = tt.iter();
-     while let Some(tt) = tts.next() {
-         };
-         merge_repr(&mut acc, repr);
-     }
--
-     Some(acc)
- }
- 
      ///
      /// Note that a key can have multiple values that are all considered "active" at the same time.
      /// For example, `#[doc(alias = "x")]` and `#[doc(alias = "y")]`.
@@ -101,36 +58,10 @@ Rustfmt size:  32850 bytes
      };
 -
      // Peek
++
      let ret = match it.peek() {
          Some(TtElement::Leaf(tt::Leaf::Punct(punct))) if punct.char == '=' => {
-             AttrDefId::ExternCrateId(id) => any_has_attrs(db, id),
-             AttrDefId::UseId(id) => any_has_attrs(db, id),
-         };
--
-         AttrSourceMap::new(owner.as_ref().map(|node| node as &dyn HasAttrs))
-     }
- }
-             Some((file_id, def_site_cut)) if def_site_cut <= ast_idx => file_id,
-             _ => self.file_id,
-         };
--
-         self.source
-             .get(ast_idx)
-             .map(|it| InFile::new(file_id, it))
- ) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>> {
-     let mut res = ArenaMap::default();
-     let child_source = def.child_source(db);
--
-     for (idx, variant) in child_source.value.iter() {
-         res.insert(
-             idx,
-                 .either(|l| AstPtr::new(l).wrap_left(), |r| AstPtr::new(r).wrap_right()),
-         );
-     }
--
-     Arc::new(res)
- }
- 
+             it.next();
  mod tests {
      //! This module contains tests for doc-expression parsing.
      //! Currently, it tests `#[doc(hidden)]` and `#[doc(alias)]`.
@@ -156,19 +87,3 @@ Rustfmt size:  32850 bytes
      #[test]
      fn test_doc_expr_parser() {
          assert_parse_result("#![doc(hidden)]", DocAtom::Flag(Symbol::intern("hidden")).into());
--
-         assert_parse_result(
-             r#"#![doc(alias = "foo")]"#,
-             DocAtom::KeyValue { key: Symbol::intern("alias"), value: Symbol::intern("foo") }.into(),
-         );
--
-         assert_parse_result(
-             r#"#![doc(alias("foo"))]"#,
-             DocExpr::Alias([Symbol::intern("foo")].into()),
-                 [Symbol::intern("foo"), Symbol::intern("bar"), Symbol::intern("baz")].into(),
-             ),
-         );
--
-         assert_parse_result(
-             r#"
-         #[doc(alias("Bar", "Qux"))]

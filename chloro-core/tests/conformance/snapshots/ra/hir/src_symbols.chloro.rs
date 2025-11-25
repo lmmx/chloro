@@ -97,7 +97,9 @@ impl<'a> SymbolCollector<'a> {
         tracing::info!(?module, "SymbolCollector::collect");
         // The initial work is the root module we're collecting, additional work will
         // be populated as we traverse the module's definitions.
+
         self.work.push(SymbolCollectorWork { module_id: module.into(), parent: None });
+
         while let Some(work) = self.work.pop() {
             self.do_work(work);
         }
@@ -111,6 +113,7 @@ impl<'a> SymbolCollector<'a> {
         let _p = tracing::info_span!("SymbolCollector::do_work", ?work).entered();
         tracing::info!(?work, "SymbolCollector::do_work");
         self.db.unwind_if_revision_cancelled();
+
         let parent_name = work.parent.map(|name| Symbol::intern(name.as_str()));
         self.with_container_name(parent_name, |s| s.collect_from_module(work.module_id));
     }
@@ -171,13 +174,16 @@ impl<'a> SymbolCollector<'a> {
             }
         };
         // Nested trees are very common, so a cache here will hit a lot.
+
         let import_child_source_cache = &mut FxHashMap::default();
+
         let is_explicit_import = |vis| match vis {
             Visibility::Public => true,
             Visibility::PubCrate(_) => true,
             Visibility::Module(_, VisibilityExplicitness::Explicit) => true,
             Visibility::Module(_, VisibilityExplicitness::Implicit) => false,
         };
+
         let mut push_import = |this: &mut Self, i: ImportId, name: &Name, def: ModuleDefId, vis| {
             if collect_pub_only && vis != Visibility::Public {
                 return;
@@ -213,6 +219,7 @@ impl<'a> SymbolCollector<'a> {
                 do_not_complete: Complete::Yes,
             });
         };
+
         let push_extern_crate =
             |this: &mut Self, i: ExternCrateId, name: &Name, def: ModuleDefId, vis| {
                 if collect_pub_only && vis != Visibility::Public {
@@ -246,11 +253,14 @@ impl<'a> SymbolCollector<'a> {
                     do_not_complete: Complete::Yes,
                 });
             };
+
         let def_map = module_id.def_map(self.db);
         let scope = &def_map[module_id.local_id].scope;
+
         for impl_id in scope.impls() {
             self.collect_from_impl(impl_id);
         }
+
         for (name, Item { def, vis, import }) in scope.types() {
             if let Some(i) = import {
                 match i {
@@ -266,6 +276,7 @@ impl<'a> SymbolCollector<'a> {
             // self is a declaration
             push_decl(self, def, name, vis)
         }
+
         for (name, Item { def, vis, import }) in scope.macros() {
             if let Some(i) = import {
                 match i {
@@ -278,6 +289,7 @@ impl<'a> SymbolCollector<'a> {
             // self is a declaration
             push_decl(self, ModuleDefId::MacroId(def), name, vis)
         }
+
         for (name, Item { def, vis, import }) in scope.values() {
             if let Some(i) = import {
                 match i {
@@ -289,9 +301,11 @@ impl<'a> SymbolCollector<'a> {
             // self is a declaration
             push_decl(self, def, name, vis)
         }
+
         for const_id in scope.unnamed_consts() {
             self.collect_from_body(const_id, None);
         }
+
         for (name, id) in scope.legacy_macros() {
             for &id in id {
                 if id.module(self.db) == module_id {
@@ -312,6 +326,7 @@ impl<'a> SymbolCollector<'a> {
         let body_id = body_id.into();
         let body = self.db.body(body_id);
         // Descend into the blocks and enqueue collection of all modules within.
+
         for (_, def_map) in body.blocks(self.db) {
             for (id, _) in def_map.modules() {
                 self.work.push(SymbolCollectorWork {
@@ -397,7 +412,9 @@ impl<'a> SymbolCollector<'a> {
             ptr: SyntaxNodePtr::new(source.value.syntax()),
             name_ptr: AstPtr::new(&name_node).wrap_left(),
         };
+
         let mut do_not_complete = Complete::Yes;
+
         if let Some(attrs) = def.attrs(self.db) {
             do_not_complete = Complete::extract(matches!(def, ModuleDef::Trait(_)), &attrs);
             if let Some(trait_do_not_complete) = trait_do_not_complete {
@@ -417,6 +434,7 @@ impl<'a> SymbolCollector<'a> {
                 });
             }
         }
+
         self.symbols.insert(FileSymbol {
             name: name.symbol().clone(),
             def,
@@ -427,6 +445,7 @@ impl<'a> SymbolCollector<'a> {
             is_import: false,
             do_not_complete,
         });
+
         do_not_complete
     }
 
@@ -441,7 +460,9 @@ impl<'a> SymbolCollector<'a> {
             ptr: SyntaxNodePtr::new(module.syntax()),
             name_ptr: AstPtr::new(&name_node).wrap_left(),
         };
+
         let def = ModuleDef::Module(module_id.into());
+
         let mut do_not_complete = Complete::Yes;
         if let Some(attrs) = def.attrs(self.db) {
             do_not_complete = Complete::extract(matches!(def, ModuleDef::Trait(_)), &attrs);
@@ -459,6 +480,7 @@ impl<'a> SymbolCollector<'a> {
                 });
             }
         }
+
         self.symbols.insert(FileSymbol {
             name: name.symbol().clone(),
             def: ModuleDef::Module(module_id.into()),

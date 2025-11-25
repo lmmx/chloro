@@ -56,6 +56,7 @@ pub(crate) fn rewrite_links(
     let mut cb = broken_link_clone_cb;
     let doc = Parser::new_with_broken_link_callback(markdown, MARKDOWN_OPTIONS, Some(&mut cb))
         .into_offset_iter();
+
     let doc = map_links(doc, |target, title, range, link_type| {
         // This check is imperfect, there's some overlap between valid intra-doc links
         // and valid URLs so we choose to be too eager to try to resolve what might be
@@ -98,6 +99,7 @@ pub(crate) fn rewrite_links(
 /// Remove all links in markdown documentation.
 pub(crate) fn remove_links(markdown: &str) -> String {
     let mut drop_link = false;
+
     let mut cb = |_: BrokenLink<'_>| {
         let empty = InlineStr::try_from("").unwrap();
         Some((CowStr::Inlined(empty), CowStr::Inlined(empty)))
@@ -118,6 +120,7 @@ pub(crate) fn remove_links(markdown: &str) -> String {
         }
         _ => Some(evt),
     });
+
     let mut out = String::new();
     cmark_resume_with_options(
         doc,
@@ -144,6 +147,7 @@ pub(crate) fn external_docs(
         _ => 1,
     })?;
     let token = sema.descend_into_macros_single_exact(token);
+
     let node = token.parent()?;
     let definition = match_ast! {
         match node {
@@ -163,6 +167,7 @@ pub(crate) fn external_docs(
             _ => return None
         }
     };
+
     Some(get_doc_links(db, definition, target_dir, sysroot))
 }
 
@@ -287,6 +292,7 @@ impl DocCommentToken {
         // offset relative to the comments contents
         let original_start = doc_token.text_range().start();
         let relative_comment_offset = offset - original_start - prefix_len;
+
         sema.descend_into_macros(doc_token).into_iter().find_map(|t| {
             let (node, descended_prefix_len, is_inner) = match_ast!{
                 match t {
@@ -355,23 +361,29 @@ fn get_doc_links(
     let join_url = |base_url: Option<Url>, path: &str| -> Option<Url> {
         base_url.and_then(|url| url.join(path).ok())
     };
+
     let Some((target, file, frag)) = filename_and_frag_for_def(db, def) else {
         return Default::default();
     };
+
     let (mut web_url, mut local_url) = get_doc_base_urls(db, target, target_dir, sysroot);
+
     let append_mod = !matches!(def, Definition::Macro(m) if m.is_macro_export(db));
     if append_mod && let Some(path) = mod_path_of_def(db, target) {
         web_url = join_url(web_url, &path);
         local_url = join_url(local_url, &path);
     }
+
     web_url = join_url(web_url, &file);
     local_url = join_url(local_url, &file);
+
     if let Some(url) = web_url.as_mut() {
         url.set_fragment(frag.as_deref())
     }
     if let Some(url) = local_url.as_mut() {
         url.set_fragment(frag.as_deref())
     }
+
     DocumentationLinks {
         web_url: web_url.map(|it| it.into()),
         local_url: local_url.map(|it| it.into()),
@@ -387,21 +399,27 @@ fn rewrite_intra_doc_link(
     link_type: LinkType,
 ) -> Option<(String, String)> {
     let (link, ns) = parse_intra_doc_link(target);
+
     let (link, anchor) = match link.split_once('#') {
         Some((new_link, anchor)) => (new_link, Some(anchor)),
         None => (link, None),
     };
+
     let resolved = resolve_doc_path_for_def(db, def, link, ns, is_inner_doc)?;
     let mut url = get_doc_base_urls(db, resolved, None, None).0?;
+
     let (_, file, frag) = filename_and_frag_for_def(db, resolved)?;
     if let Some(path) = mod_path_of_def(db, resolved) {
         url = url.join(&path).ok()?;
     }
+
     let frag = anchor.or(frag.as_deref());
+
     url = url.join(&file).ok()?;
     url.set_fragment(frag);
     // We want to strip the keyword prefix from the title, but only if the target is implicitly the same
     // as the title.
+
     let title = match link_type {
         LinkType::Email
         | LinkType::Autolink
@@ -413,6 +431,7 @@ fn rewrite_intra_doc_link(
             strip_prefixes_suffixes(title).to_owned()
         }
     };
+
     Some((url.into(), title))
 }
 
@@ -421,11 +440,14 @@ fn rewrite_url_link(db: &RootDatabase, def: Definition, target: &str) -> Option<
     if !(target.contains('#') || target.contains(".html")) {
         return None;
     }
+
     let mut url = get_doc_base_urls(db, def, None, None).0?;
     let (def, file, frag) = filename_and_frag_for_def(db, def)?;
+
     if let Some(path) = mod_path_of_def(db, def) {
         url = url.join(&path).ok()?;
     }
+
     url = url.join(&file).ok()?;
     url.set_fragment(frag.as_deref());
     url.join(target).ok().map(Into::into)
@@ -451,6 +473,7 @@ fn map_links<'e>(
     // however in some cases we want to change the link type, for example,
     // `Shortcut` type parsed from Start/End tags doesn't make sense for url links
     let mut end_link_type: Option<LinkType> = None;
+
     events.map(move |(evt, range)| match evt {
         Event::Start(Tag::Link(link_type, ref target, _)) => {
             in_link = true;
@@ -515,11 +538,13 @@ fn get_doc_base_urls(
         .as_str();
     // special case base url of `BuiltinType` to core
     // https://github.com/rust-lang/rust-analyzer/issues/12250
+
     if let Definition::BuiltinType(..) = def {
         let web_link = Url::parse(&format!("https://doc.rust-lang.org/{channel}/core/")).ok();
         let system_link = system_doc.and_then(|it| it.join("core/").ok());
         return (web_link, system_link);
     };
+
     let Some(krate) = krate else { return Default::default() };
     let Some(display_name) = krate.display_name(db) else { return Default::default() };
     let (web_base, local_base) = match krate.origin(db) {
@@ -578,6 +603,7 @@ fn get_doc_base_urls(
         .and_then(|it| Url::parse(&it).ok())
         .and_then(|it| it.join(&format!("{display_name}/")).ok());
     let local_base = local_base.and_then(|it| it.join(&format!("{display_name}/")).ok());
+
     (web_base, local_base)
 }
 
@@ -600,6 +626,7 @@ fn filename_and_frag_for_def(
         let frag = get_assoc_item_fragment(db, assoc_item)?;
         return Some((def, file, Some(frag)));
     }
+
     let res = match def {
         Definition::Adt(adt) => match adt {
             Adt::Struct(s) => {
@@ -686,6 +713,7 @@ fn filename_and_frag_for_def(
         | Definition::InlineAsmRegOrRegClass(_)
         | Definition::InlineAsmOperand(_) => return None,
     };
+
     Some((def, res, None))
 }
 

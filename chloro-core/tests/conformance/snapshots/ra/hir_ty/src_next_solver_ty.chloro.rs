@@ -558,6 +558,7 @@ impl<'db> Ty<'db> {
 
     pub fn impl_trait_bounds(self, db: &'db dyn HirDatabase) -> Option<Vec<Clause<'db>>> {
         let interner = DbInterner::new_with(db, None, None);
+
         match self.kind() {
             TyKind::Alias(AliasTyKind::Opaque, opaque_ty) => {
                 match db.lookup_intern_impl_trait_id(opaque_ty.def_id.expect_opaque_ty()) {
@@ -821,6 +822,7 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Ty<'db> {
             | TyKind::Never
             | TyKind::Foreign(..) => return Ok(self),
         };
+
         Ok(if self.kind() == kind { self } else { Ty::new(folder.cx(), kind) })
     }
 
@@ -868,6 +870,7 @@ impl<'db> TypeSuperFoldable<DbInterner<'db>> for Ty<'db> {
             | TyKind::Never
             | TyKind::Foreign(..) => return self,
         };
+
         if self.kind() == kind { self } else { Ty::new(folder.cx(), kind) }
     }
 }

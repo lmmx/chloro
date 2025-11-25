@@ -34,6 +34,7 @@ pub(crate) fn complete_postfix(
     if !ctx.config.enable_postfix_completions {
         return;
     }
+
     let (dot_receiver, receiver_ty, receiver_is_ambiguous_float_literal) = match dot_access {
         DotAccess { receiver_ty: Some(ty), receiver: Some(it), kind, .. } => (
             it,
@@ -48,17 +49,22 @@ pub(crate) fn complete_postfix(
         _ => return,
     };
     let expr_ctx = &dot_access.ctx;
+
     let receiver_text =
         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
+
     let cap = match ctx.config.snippet_cap {
         Some(it) => it,
         None => return,
     };
+
     let postfix_snippet = match build_postfix_snippet_builder(ctx, cap, dot_receiver) {
         Some(it) => it,
         None => return,
     };
+
     let cfg = ctx.config.find_path_config(ctx.is_nightly);
+
     if let Some(drop_trait) = ctx.famous_defs().core_ops_Drop()
         && receiver_ty.impls_trait(ctx.db, drop_trait, &[])
         && let Some(drop_fn) = ctx.famous_defs().core_mem_drop()
@@ -73,11 +79,13 @@ pub(crate) fn complete_postfix(
         item.set_documentation(drop_fn.docs(ctx.db));
         item.add_to(acc, ctx.db);
     }
+
     postfix_snippet("ref", "&expr", &format!("&{receiver_text}")).add_to(acc, ctx.db);
     postfix_snippet("refm", "&mut expr", &format!("&mut {receiver_text}")).add_to(acc, ctx.db);
     postfix_snippet("deref", "*expr", &format!("*{receiver_text}")).add_to(acc, ctx.db);
     // The rest of the postfix completions create an expression that moves an argument,
     // so it's better to consider references now to avoid breaking the compilation
+
     let (dot_receiver_including_refs, prefix) = include_references(dot_receiver);
     let mut receiver_text =
         get_receiver_text(&ctx.sema, dot_receiver, receiver_is_ambiguous_float_literal);
@@ -87,9 +95,11 @@ pub(crate) fn complete_postfix(
             Some(it) => it,
             None => return,
         };
+
     if !ctx.config.snippets.is_empty() {
         add_custom_postfix_completions(acc, ctx, &postfix_snippet, &receiver_text);
     }
+
     postfix_snippet("box", "Box::new(expr)", &format!("Box::new({receiver_text})"))
         .add_to(acc, ctx.db);
     postfix_snippet("dbg", "dbg!(expr)", &format!("dbg!({receiver_text})")).add_to(acc, ctx.db);
@@ -97,6 +107,7 @@ pub(crate) fn complete_postfix(
     postfix_snippet("dbgr", "dbg!(&expr)", &format!("dbg!(&{receiver_text})")).add_to(acc, ctx.db);
     postfix_snippet("call", "function(expr)", &format!("${{1}}({receiver_text})"))
         .add_to(acc, ctx.db);
+
     let try_enum = TryEnum::from_ty(&ctx.sema, &receiver_ty.strip_references());
     let mut is_in_cond = false;
     if let Some(parent) = dot_receiver_including_refs.syntax().parent()
@@ -141,6 +152,7 @@ pub(crate) fn complete_postfix(
             _ => (),
         }
     }
+
     if !is_in_cond {
         match try_enum {
             Some(try_enum) => match try_enum {
@@ -240,6 +252,7 @@ pub(crate) fn complete_postfix(
             .add_to(acc, ctx.db);
         }
     }
+
     let block_should_be_wrapped = if let ast::Expr::BlockExpr(block) = dot_receiver {
         block.modifier().is_some() || !block.is_standalone()
     } else {
@@ -258,11 +271,13 @@ pub(crate) fn complete_postfix(
             format!("{open_paren}const {open_brace}{receiver_text}{close_brace}{close_paren}");
         postfix_snippet("const", "const {}", &const_completion_string).add_to(acc, ctx.db);
     }
+
     if let ast::Expr::Literal(literal) = dot_receiver_including_refs.clone()
         && let Some(literal_text) = ast::String::cast(literal.token())
     {
         add_format_like_completions(acc, ctx, &dot_receiver_including_refs, cap, &literal_text);
     }
+
     postfix_snippet(
         "return",
         "return expr",
@@ -272,6 +287,7 @@ pub(crate) fn complete_postfix(
         ),
     )
     .add_to(acc, ctx.db);
+
     if let Some(BreakableKind::Block | BreakableKind::Loop) = expr_ctx.in_breakable {
         postfix_snippet(
             "break",
@@ -301,6 +317,7 @@ fn get_receiver_text(
     let mut text = file_text.text(sema.db)[range.range].to_owned();
     // The receiver texts should be interpreted as-is, as they are expected to be
     // normal Rust expressions.
+
     escape_snippet_bits(&mut text);
     text
 }
@@ -316,12 +333,16 @@ fn escape_snippet_bits(text: &mut String) {
 
 fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
     let mut resulting_element = initial_element.clone();
+
     while let Some(field_expr) = resulting_element.syntax().parent().and_then(ast::FieldExpr::cast)
     {
         resulting_element = ast::Expr::from(field_expr);
     }
+
     let mut prefix = String::new();
+
     let mut found_ref_or_deref = false;
+
     while let Some(parent_deref_element) =
         resulting_element.syntax().parent().and_then(ast::PrefixExpr::cast)
     {
@@ -334,6 +355,7 @@ fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
 
         prefix.insert(0, '*');
     }
+
     while let Some(parent_ref_element) =
         resulting_element.syntax().parent().and_then(ast::RefExpr::cast)
     {
@@ -343,12 +365,14 @@ fn include_references(initial_element: &ast::Expr) -> (ast::Expr, String) {
 
         prefix.insert_str(0, if exclusive { "&mut " } else { "&" });
     }
+
     if !found_ref_or_deref {
         // If we do not find any ref/deref expressions, restore
         // all the progress of tree climbing
         prefix.clear();
         resulting_element = initial_element.clone();
     }
+
     (resulting_element, prefix)
 }
 
@@ -365,6 +389,7 @@ fn build_postfix_snippet_builder<'ctx>(
         return None;
     }
     let delete_range = TextRange::new(receiver_range.start(), ctx.source_range().end());
+
     // Wrapping impl Fn in an option ruins lifetime inference for the parameters in a way that
     // can't be annotated for the closure, hence fix it by constructing it without the Option first
     fn build<'ctx>(
@@ -798,6 +823,7 @@ fn main() {
             r#"fn main() { let x = if true {1} else {2}.$0 }"#,
             &format!("fn main() {{ let x = {kind} {{ if true {{1}} else {{2}} }} }}"),
         );
+
         if kind == "const" {
             check_edit(
                 kind,
@@ -812,6 +838,7 @@ fn main() {
             );
         }
         // completion will not be triggered
+
         check_edit(
             kind,
             r#"fn main() { let x = true else {panic!()}.$0}"#,
@@ -834,6 +861,7 @@ fn main() {
             ],
             ..TEST_CONFIG
         };
+
         check_edit_with_config(
             config.clone(),
             "break",
@@ -852,6 +880,7 @@ fn main() { ControlFlow::Break(42) }
         //
         // Note that the last argument is what *lsp clients would see* rather than
         // what users would see. Unescaping happens thereafter.
+
         check_edit_with_config(
             config.clone(),
             "break",
@@ -865,6 +894,7 @@ use core::ops::ControlFlow;
 fn main() { ControlFlow::Break('\\\\') }
 "#,
         );
+
         check_edit_with_config(
             config,
             "break",
@@ -932,6 +962,7 @@ fn main() {
     #[test]
     fn postfix_custom_snippets_completion_for_references() {
         // https://github.com/rust-lang/rust-analyzer/issues/7929
+
         let snippet = Snippet::new(
             &[],
             &["ok".into()],
@@ -941,18 +972,21 @@ fn main() {
             crate::SnippetScope::Expr,
         )
         .unwrap();
+
         check_edit_with_config(
             CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },
             "ok",
             r#"fn main() { &&42.o$0 }"#,
             r#"fn main() { Ok(&&42) }"#,
         );
+
         check_edit_with_config(
             CompletionConfig { snippets: vec![snippet.clone()], ..TEST_CONFIG },
             "ok",
             r#"fn main() { &&42.$0 }"#,
             r#"fn main() { Ok(&&42) }"#,
         );
+
         check_edit_with_config(
             CompletionConfig { snippets: vec![snippet], ..TEST_CONFIG },
             "ok",

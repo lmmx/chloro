@@ -49,6 +49,7 @@ impl fmt::Display for RecursiveMemoryLayout {
             }
             Ok(())
         }
+
         process(fmt, &self.nodes, 0, 0)
     }
 }
@@ -80,7 +81,9 @@ pub(crate) fn view_memory_layout(
             SyntaxKind::IDENT => 3,
             _ => 0,
         })?;
+
     let def = get_definition(&sema, token)?;
+
     let ty = match def {
         Definition::Adt(it) => it.ty(db),
         Definition::TypeAlias(it) => it.ty(db),
@@ -92,6 +95,7 @@ pub(crate) fn view_memory_layout(
         Definition::Static(it) => it.ty(db),
         _ => return None,
     };
+
     fn read_layout(
         nodes: &mut Vec<MemoryLayoutNode>,
         db: &RootDatabase,
@@ -162,6 +166,7 @@ pub(crate) fn view_memory_layout(
             }
         }
     }
+
     ty.layout(db)
         .map(|layout| {
             let item_name = match def {
@@ -203,6 +208,7 @@ mod tests {
         #[rust_analyzer::rust_fixture] ra_fixture: &str,
     ) -> Option<RecursiveMemoryLayout> {
         let (analysis, position, _) = fixture::annotations(ra_fixture);
+
         hir::attach_db(&analysis.db, || view_memory_layout(&analysis.db, position))
     }
     #[test]
@@ -358,6 +364,7 @@ type Foo$0 = X;
 "#,
         )
         .unwrap();
+
         let ml_b = make_memory_layout(
             r#"
 struct X$0 {
@@ -368,6 +375,7 @@ struct X$0 {
 "#,
         )
         .unwrap();
+
         assert_eq!(ml_a.to_string(), ml_b.to_string());
     }
 }

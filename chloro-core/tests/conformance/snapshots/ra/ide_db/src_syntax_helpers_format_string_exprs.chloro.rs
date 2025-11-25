@@ -50,6 +50,7 @@ pub fn parse_format_exprs(input: &str) -> Result<(String, Vec<Arg>), ()> {
         MaybeIncorrect,
         FormatOpts,
     }
+
     let mut state = State::NotArg;
     let mut current_expr = String::new();
     let mut extracted_expressions = Vec::new();
@@ -57,7 +58,9 @@ pub fn parse_format_exprs(input: &str) -> Result<(String, Vec<Arg>), ()> {
     // Count of open braces inside of an expression.
     // We assume that user knows what they're doing, thus we treat it like a correct pattern, e.g.
     // "{MyStruct { val_a: 0, val_b: 1 }}".
+
     let mut inexpr_open_count = 0;
+
     let mut chars = input.chars().peekable();
     while let Some(chr) = chars.next() {
         match (state, chr) {
@@ -168,9 +171,11 @@ pub fn parse_format_exprs(input: &str) -> Result<(String, Vec<Arg>), ()> {
             }
         }
     }
+
     if state != State::NotArg {
         return Err(());
     }
+
     Ok((output, extracted_expressions))
 }
 
@@ -185,6 +190,7 @@ mod tests {
         } else {
             output
         };
+
         expect.assert_eq(&outcome_repr);
     }
     #[test]
@@ -223,6 +229,7 @@ mod tests {
             ("{foo::bar::baz()}", expect![["{}; foo::bar::baz()"]]),
             ("{foo::bar():?}", expect![["{:?}; foo::bar()"]]),
         ];
+
         for (input, output) in test_vector {
             check(input, output)
         }

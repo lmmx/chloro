@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3643 bytes
-Chloro size:   3640 bytes
+Chloro size:   3643 bytes
 Rustfmt size:  3850 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         if let Some(inner) = binder.clone().no_bound_vars() {
-             return inner;
-         }
--
-         let next_universe = self.create_next_universe();
--
-         let delegate = FnMutDelegate {
              regions: &mut |br: BoundRegion| {
                  Region::new_placeholder(
                      self.interner,
@@ -46,7 +39,3 @@ Rustfmt size:  3850 bytes
                  )
              },
          };
--
-         debug!(?next_universe);
-         self.interner.replace_bound_vars_uncached(binder, delegate)
-     }

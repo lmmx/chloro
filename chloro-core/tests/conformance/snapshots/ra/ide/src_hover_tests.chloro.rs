@@ -49,8 +49,10 @@ fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id);
     let hovered_element = &content.text(&analysis.db)[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -73,8 +75,10 @@ fn check_hover_fields_limit(
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -97,8 +101,10 @@ fn check_hover_enum_variants_limit(
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -121,8 +127,10 @@ fn check_assoc_count(
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -136,8 +144,10 @@ fn check_hover_no_links(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect:
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -151,8 +161,10 @@ fn check_hover_no_memory_layout(#[rust_analyzer::rust_fixture] ra_fixture: &str,
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -170,8 +182,10 @@ fn check_hover_no_markdown(#[rust_analyzer::rust_fixture] ra_fixture: &str, expe
         )
         .unwrap()
         .unwrap();
+
     let content = analysis.db.file_text(position.file_id).text(&analysis.db);
     let hovered_element = &content[hover.range];
+
     let actual = format!("*{hovered_element}*\n{}\n", hover.info.markup);
     expect.assert_eq(&actual)
 }
@@ -353,6 +367,7 @@ fn main() {
             * `x` by immutable borrow
         "#]],
     );
+
     check(
         r#"
 //- minicore: copy
@@ -375,6 +390,7 @@ fn main() {
             This closure captures nothing
         "#]],
     );
+
     check(
         r#"
 //- minicore: copy
@@ -582,6 +598,7 @@ fn main() { let foo_test = fo$0o(); }
         "#]],
     );
     // Use literal `crate` in path
+
     check(
         r#"
 pub struct X;
@@ -603,6 +620,7 @@ fn main() { f$0oo(); }
         "#]],
     );
     // Check `super` in path
+
     check(
         r#"
 pub struct X;
@@ -827,6 +845,7 @@ fn main() {
         "#]],
     );
     // Hovering over the field in the definition
+
     check(
         r#"
 struct Foo { pub field_a$0: u32 }
@@ -1093,6 +1112,7 @@ fn hover_record_struct_limit() {
         "#]],
     );
     // No extra spaces within `{}` when there are no fields
+
     check_hover_fields_limit(
         5,
         r#"
@@ -1523,6 +1543,7 @@ const foo$0: u32 = {
             ```
         "#]],
     );
+
     check(
         r#"static foo$0: u32 = 456;"#,
         expect![[r#"
@@ -1537,6 +1558,7 @@ const foo$0: u32 = {
             ```
         "#]],
     );
+
     check(
         r#"const FOO$0: i32 = -2147483648;"#,
         expect![[r#"
@@ -1551,6 +1573,7 @@ const foo$0: u32 = {
             ```
         "#]],
     );
+
     check(
         r#"
         const FOO: i32 = -2147483648;
@@ -1665,6 +1688,7 @@ fn main() { So$0me(12); }
             ```
         "#]],
     );
+
     check(
         r#"
 enum Option<T> { Some(T) }
@@ -1716,6 +1740,7 @@ enum Option<T> {
             The None variant
         "#]],
     );
+
     check(
         r#"
 enum Option<T> {
@@ -2615,6 +2640,7 @@ fn main() { foo$0; }
             ```
         "#]],
     );
+
     check(
         r#"
 trait Foo<T> { type Bar<U>; }
@@ -3152,6 +3178,7 @@ fn test_hover_layout_padding_info() {
             size = 16 (0x10), align = 8, largest padding = 3, niches = 254, no Drop
         "#]],
     );
+
     check(
         r#"#[repr(align(32))]
         struct $0Foo {
@@ -3179,6 +3206,7 @@ fn test_hover_layout_padding_info() {
             size = 32 (0x20), align = 32 (0x20), largest padding = 19 (0x13), niches = 254, no Drop
         "#]],
     );
+
     check(
         r#"#[repr(C)]
         struct $0Foo {
@@ -3206,6 +3234,7 @@ fn test_hover_layout_padding_info() {
             size = 24 (0x18), align = 8, tail padding = 4, niches = 254, no Drop
         "#]],
     );
+
     check(
         r#"struct $0Foo(i16, u128, u64)"#,
         expect![[r#"
@@ -3246,6 +3275,7 @@ fn test_hover_no_memory_layout() {
             no Drop
         "#]],
     );
+
     check_hover_no_memory_layout(
         r#"
 //- minicore: copy
@@ -3269,6 +3299,7 @@ fn main() {
 #[test]
 fn test_hover_macro_generated_struct_fn_doc_comment() {
     cov_mark::check!(hover_macro_generated_struct_fn_doc_comment);
+
     check(
         r#"
 macro_rules! bar {
@@ -3306,6 +3337,7 @@ fn foo() { let bar = Bar; bar.fo$0o(); }
 #[test]
 fn test_hover_macro_generated_struct_fn_doc_attr() {
     cov_mark::check!(hover_macro_generated_struct_fn_doc_attr);
+
     check(
         r#"
 macro_rules! bar {
@@ -5508,6 +5540,7 @@ fn main() {
             true
         "#]],
     );
+
     check(
         r#"
 struct A {
@@ -5540,6 +5573,7 @@ fn main() {
             ```
         "#]],
     );
+
     check(
         r#"
 trait T {
@@ -5570,6 +5604,7 @@ fn main() {
             false
         "#]],
     );
+
     check(
         r#"
 trait T {
@@ -5602,6 +5637,7 @@ fn main() {
             false
         "#]],
     );
+
     check(
         r#"
 trait T {
@@ -5638,6 +5674,7 @@ fn main() {
         "#]],
     );
     // show hex for <10
+
     check(
         r#"
 /// This is a doc
@@ -7047,6 +7084,7 @@ fn f() { let expr = $01 + 2 * 3$0 }
             i32
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f() { let expr = 1 $0+ 2 * $03 }
@@ -7056,6 +7094,7 @@ fn f() { let expr = 1 $0+ 2 * $03 }
             i32
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f() { let expr = 1 + $02 * 3$0 }
@@ -7078,6 +7117,7 @@ fn f() { let expr = $0[1, 2, 3, 4]$0 }
             [i32; 4]
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f() { let expr = [1, 2, $03, 4]$0 }
@@ -7087,6 +7127,7 @@ fn f() { let expr = [1, 2, $03, 4]$0 }
             [i32; 4]
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f() { let expr = [1, 2, $03$0, 4] }
@@ -7110,6 +7151,7 @@ fn b() { $0f$0(&[1, 2, 3, 4, 5]); }
             fn f<i32>(&[i32])
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f<T>(a: &[T]) { }
@@ -7130,12 +7172,14 @@ fn f<T>(a: &[T]) { }
 fn b()$0 { f(&[1, 2, 3, 4, 5]); }$0
 "#,
     );
+
     check_hover_range_no_results(
         r#"
 fn f<T>$0(a: &[T]) { }
 fn b() { f(&[1, 2, 3,$0 4, 5]); }
 "#,
     );
+
     check_hover_range_no_results(
         r#"
 fn $0f() { let expr = [1, 2, 3, 4]$0 }
@@ -7155,6 +7199,7 @@ fn b() { $0f(&[1, 2, 3, 4, 5]); }$0
             ()
             ```"#]],
     );
+
     check_hover_range(
         r#"
 fn f() { let expr$0 = $0[1, 2, 3, 4] }
@@ -7179,6 +7224,7 @@ fn foo() {
                 i32
                 ```"#]],
     );
+
     check_hover_range(
         r#"
 fn foo() {
@@ -7505,6 +7551,7 @@ pub fn Foo {
             Doc inner comment for [`Foo`](https://docs.rs/ra_test_fixture/*/ra_test_fixture/fn.Foo.html)
         "#]],
     );
+
     check(
         r#"
 /// outer comment for [`Foo`]
@@ -7565,6 +7612,7 @@ pub fn Foo() {
             Doc inner comment for [`Foo`](https://docs.rs/ra_test_fixture/*/ra_test_fixture/fn.Foo.html)
         "#]],
     );
+
     check(
         r#"
 /// outer comment for [`Foo$0`]
@@ -7666,6 +7714,7 @@ pub struct Foo;
 #[test]
 fn hover_dollar_crate() {
     // $crate should be resolved to the right crate name.
+
     check(
         r#"
 //- /main.rs crate:main deps:dep
@@ -7794,6 +7843,7 @@ impl T$0 for () {}
             ```
         "#]],
     );
+
     check_assoc_count(
         1,
         r#"
@@ -7812,6 +7862,7 @@ impl T$0 for () {}
             ```
         "#]],
     );
+
     check_assoc_count(
         0,
         r#"
@@ -7834,6 +7885,7 @@ impl T$0 for () {}
             ```
         "#]],
     );
+
     check_assoc_count(
         2,
         r#"
@@ -7860,6 +7912,7 @@ impl T$0 for () {}
             ```
         "#]],
     );
+
     check_assoc_count(
         3,
         r#"
@@ -7886,6 +7939,7 @@ impl T$0 for () {}
             ```
         "#]],
     );
+
     check_assoc_count(
         4,
         r#"
@@ -8054,6 +8108,7 @@ fn main() {
             ```
         "#]],
     );
+
     check(
         r#"
 struct Struct {a: u32, b: u32, c: u8, d: u16};
@@ -8212,6 +8267,7 @@ fn test() {
             ```
         "#]],
     );
+
     check(
         r#"
 struct S;
@@ -8240,6 +8296,7 @@ fn test() {
             ```
         "#]],
     );
+
     check(
         r#"
 struct S;
@@ -8299,6 +8356,7 @@ fn test() {
             ```
         "#]],
     );
+
     check(
         r#"
 struct S;
@@ -8327,6 +8385,7 @@ fn test() {
             ```
         "#]],
     );
+
     check(
         r#"
 struct S;
@@ -9410,6 +9469,7 @@ fn foo() {
             ```
         "#]],
     );
+
     check(
         r#"
 //- /lib1.rs crate:with_edition_2018 edition:2018
@@ -9432,6 +9492,7 @@ fn foo() {
             ```
         "#]],
     );
+
     check(
         r#"
 //- /lib1.rs crate:escaping_needlessly edition:2015
@@ -9473,6 +9534,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with tuple pattern and mutable parameters
+
     check(
         r#"fn test_2$0((mut x, y): (i32, i32)) {}"#,
         expect![[r#"
@@ -9488,6 +9550,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a pattern in a reference type
+
     check(
         r#"fn test_3$0(&(a, b): &(i32, i32)) {}"#,
         expect![[r#"
@@ -9503,6 +9566,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with complex pattern (struct destructuring)
+
     check(
         r#"struct Point { x: i32, y: i32 } fn test_4$0(Point { x, y }: Point) {}"#,
         expect![[r#"
@@ -9518,6 +9582,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a nested pattern
+
     check(
         r#"fn test_5$0(((a, b), c): ((i32, i32), i32)) {}"#,
         expect![[r#"
@@ -9533,6 +9598,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with an unused variable in the pattern
+
     check(
         r#"fn test_6$0((_, y): (i32, i64)) {}"#,
         expect![[r#"
@@ -9548,6 +9614,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a complex pattern involving both tuple and struct
+
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_7$0((x, Foo { a, b }): (i32, Foo)) {}"#,
         expect![[r#"
@@ -9563,6 +9630,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with Enum and Or pattern
+
     check(
         r#"enum MyEnum { A(i32), B(i32) } fn test_8$0((MyEnum::A(x) | MyEnum::B(x)): MyEnum) {}"#,
         expect![[r#"
@@ -9578,6 +9646,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a pattern as a function parameter
+
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_9$0(Foo { a, b }: Foo) {}"#,
         expect![[r#"
@@ -9593,6 +9662,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a pattern as a function parameter with a different name
+
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_10$0(Foo { a, b: b1 }: Foo) {}"#,
         expect![[r#"
@@ -9608,6 +9678,7 @@ fn test_hover_function_with_pat_param() {
         "#]],
     );
     // Test case with a pattern as a function parameter with annotations
+
     check(
         r#"struct Foo { a: i32, b: i32 } fn test_10$0(Foo { a, b: mut b }: Foo) {}"#,
         expect![[r#"
@@ -9713,6 +9784,7 @@ type A$0 = B;
         "#]],
     );
     // Nested.
+
     check(
         r#"
 /// Docs for C
@@ -9745,6 +9817,7 @@ type A$0 = B;
         "#]],
     );
     // Showing the docs for aliased struct instead of intermediate type.
+
     check(
         r#"
 /// Docs for C
@@ -9778,6 +9851,7 @@ type A$0 = B;
         "#]],
     );
     // No docs found.
+
     check(
         r#"
 struct C;
@@ -9803,6 +9877,7 @@ type A$0 = B;
         "#]],
     );
     // Multiple nested crate.
+
     check(
         r#"
 //- /lib.rs crate:c
@@ -9925,6 +10000,7 @@ fn main() {
             size = 0, align = 1, no Drop
         "#]],
     );
+
     check(
         r#"
 pub struct Global;
@@ -9952,6 +10028,7 @@ fn main() {
             size = 0, align = 1, no Drop
         "#]],
     );
+
     check(
         r#"
 //- minicore: eq

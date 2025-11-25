@@ -11,6 +11,7 @@ fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str,
     let config = TEST_CONFIG;
     let (completion_context, _analysis) =
         hir::attach_db(&db, || CompletionContext::new(&db, pos, &config, None).unwrap());
+
     let ty = completion_context
         .expected_type
         .map(|t| {
@@ -19,8 +20,10 @@ fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str,
             })
         })
         .unwrap_or("?".to_owned());
+
     let name =
         completion_context.expected_name.map_or_else(|| "?".to_owned(), |name| name.to_string());
+
     expect.assert_eq(&format!("ty: {ty}, name: {name}"));
 }
 
@@ -313,6 +316,7 @@ fn foo() {
 "#,
         expect![[r#"ty: Foo, name: ?"#]],
     );
+
     check_expected_type_and_name(
         r#"
 enum Foo { Bar, Baz, Quux }
@@ -380,6 +384,7 @@ fn bar(f: impl FnOnce() -> u32) {}
 "#,
         expect![[r#"ty: u32, name: ?"#]],
     );
+
     check_expected_type_and_name(
         r#"
 //- minicore: fn

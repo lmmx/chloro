@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6718 bytes
-Chloro size:   6665 bytes
+Chloro size:   6667 bytes
 Rustfmt size:  6767 bytes
 
 ✗ Outputs DIFFER
@@ -47,13 +47,7 @@ Rustfmt size:  6767 bytes
 -    let ty = ocx
 -        .structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty)
 -        .unwrap_or(ty);
--
 +    let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+ 
      if !visited.insert(ty) {
          // Recursive type.
-         return DropGlue::None;
-     }
--
-     let db = infcx.interner.db;
-     match ty.kind() {
-         TyKind::Adt(adt_def, subst) => {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29602 bytes
-Chloro size:   29197 bytes
+Chloro size:   29209 bytes
 Rustfmt size:  30449 bytes
 
 ✗ Outputs DIFFER
@@ -162,10 +162,8 @@ Rustfmt size:  30449 bytes
                  definition_tree_id.file_id(),
                  ModuleSource::Module(
                      AstId::new(definition_tree_id.file_id(), definition).to_node(db),
-             .unwrap_or_default()
-     )
      .entered();
--
+ 
      let module_data = ModuleData::new(
 -        ModuleOrigin::CrateRoot {
 -            definition: krate.root_file_id(db),
@@ -173,7 +171,7 @@ Rustfmt size:  30449 bytes
 +        ModuleOrigin::CrateRoot { definition: krate.root_file_id(db) },
          Visibility::Public,
      );
--
+ 
 -    let def_map = DefMap::empty(
 -        crate_id,
 -        Arc::new(DefMapCrateData::new(krate.edition)),
@@ -185,17 +183,8 @@ Rustfmt size:  30449 bytes
      let (def_map, local_def_map) = collector::collect_defs(
          db,
          def_map,
-         TreeId::new(krate.root_file_id(db).into(), None),
-         None,
-     );
--
-     DefMapPair::new(db, def_map, local_def_map)
- }
- 
- #[salsa_macros::tracked(returns(ref))]
- pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
      let BlockLoc { ast_id, module } = block_id.lookup(db);
--
+ 
      let visibility = Visibility::Module(
 -        ModuleId {
 -            krate: module.krate,
@@ -212,12 +201,11 @@ Rustfmt size:  30449 bytes
 -        },
 -        visibility,
 -    );
--
 +    let module_data =
 +        ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
+ 
      let local_def_map = crate_local_def_map(db, module.krate);
      let def_map = DefMap::empty(
-         module.krate,
          module_data,
          Some(BlockInfo {
              block: block_id,
@@ -228,17 +216,7 @@ Rustfmt size:  30449 bytes
 +            parent: BlockRelativeModuleId { block: module.block, local_id: module.local_id },
          }),
      );
--
-     let (def_map, _) = collector::collect_defs(
-         db,
-         def_map,
-         let mut modules: Arena<ModuleData> = Arena::default();
-         let root = modules.alloc(module_data);
-         assert_eq!(root, Self::ROOT);
--
-         DefMap {
-             block,
-             modules,
+ 
              macro_def_to_macro_id: FxHashMap::default(),
          }
      }
@@ -246,13 +224,6 @@ Rustfmt size:  30449 bytes
      fn shrink_to_fit(&mut self) {
          // Exhaustive match to require handling new fields.
          let Self {
-             data: _,
-             macro_def_to_macro_id,
-         } = self;
--
-         macro_def_to_macro_id.shrink_to_fit();
-         macro_use_prelude.shrink_to_fit();
-         diagnostics.shrink_to_fit();
          &self,
          id: AstId<ast::Adt>,
      ) -> Option<&[(Name, MacroId, MacroCallId)]> {
@@ -320,13 +291,6 @@ Rustfmt size:  30449 bytes
      pub fn dump(&self, db: &dyn DefDatabase) -> String {
          let mut buf = String::new();
          let mut arc;
-         }
-         go(&mut buf, db, current_map, "crate", Self::ROOT);
-         return buf;
--
-         fn go(
-             buf: &mut String,
-             db: &dyn DefDatabase,
  
              map.modules[module].scope.dump(db, buf);
  
@@ -339,20 +303,6 @@ Rustfmt size:  30449 bytes
              {
                  let path = format!("{path}::{}", name.display(db, Edition::LATEST));
                  buf.push('\n');
-             arc = block.parent.def_map(db, self.krate);
-             current_map = arc;
-         }
--
-         format_to!(buf, "crate scope\n");
-         buf
-     }
-             }
-             block = parent.block;
-         }
--
-         None
-     }
- }
              ModuleOrigin::File { definition, .. } | ModuleOrigin::CrateRoot { definition } => {
                  definition.into()
              }
@@ -401,5 +351,7 @@ Rustfmt size:  30449 bytes
          };
 -
          // Eager macros aren't *guaranteed* to be bang macros, but they *are* all bang macros currently.
++
          match expander {
              MacroExpander::Declarative
+             | MacroExpander::BuiltIn(_)

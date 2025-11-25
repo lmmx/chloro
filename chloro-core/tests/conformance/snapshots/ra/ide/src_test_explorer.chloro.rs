@@ -61,6 +61,7 @@ fn discover_tests_in_module(
     only_in_this_file: bool,
 ) -> Vec<TestItem> {
     let sema = Semantics::new(db);
+
     let mut r = vec![];
     for c in module.children(db) {
         let module_name = c
@@ -120,6 +121,7 @@ pub(crate) fn discover_tests_in_crate_by_test_id(
 
 pub(crate) fn discover_tests_in_file(db: &RootDatabase, file_id: FileId) -> Vec<TestItem> {
     let sema = Semantics::new(db);
+
     let Some(module) = sema.file_to_module_def(file_id) else { return vec![] };
     let Some((mut tests, id)) = find_module_id_and_test_parents(&sema, module) else {
         return vec![];

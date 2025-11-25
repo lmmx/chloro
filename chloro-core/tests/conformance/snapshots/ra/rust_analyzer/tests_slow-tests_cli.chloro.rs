@@ -8,6 +8,7 @@ fn lsif_contains_generated_constant() {
     if skip_slow_tests() {
         return;
     }
+
     let stdout = Project::with_fixture(
         r#"
 //- /Cargo.toml

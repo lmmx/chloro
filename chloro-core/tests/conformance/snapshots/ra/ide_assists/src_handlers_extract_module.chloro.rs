@@ -24,15 +24,18 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     if ctx.has_empty_selection() {
         return None;
     }
+
     let node = ctx.covering_element();
     let node = match node {
         syntax::NodeOrToken::Node(n) => n,
         syntax::NodeOrToken::Token(t) => t.parent()?,
     };
+
     let mut curr_parent_module: Option<ast::Module> = None;
     if let Some(mod_syn_opt) = node.ancestors().find(|it| ast::Module::can_cast(it.kind())) {
         curr_parent_module = ast::Module::cast(mod_syn_opt);
     }
+
     let selection_range = ctx.selection_trimmed();
     let (mut module, module_text_range) = if let Some(item) = ast::Item::cast(node.clone()) {
         let module = extract_single_target(&item);
@@ -45,10 +48,12 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     if module.body_items.is_empty() {
         return None;
     }
+
     let mut old_item_indent = module.body_items[0].indent_level();
     let old_items: Vec<_> = module.use_items.iter().chain(&module.body_items).cloned().collect();
     // If the selection is inside impl block, we need to place new module outside impl block,
     // as impl blocks cannot contain modules
+
     let mut impl_parent: Option<ast::Impl> = None;
     let mut impl_child_count: usize = 0;
     if let Some(parent_assoc_list) = module.body_items[0].syntax().parent()
@@ -59,6 +64,7 @@ pub(crate) fn extract_module(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
         old_item_indent = impl_.indent_level();
         impl_parent = Some(impl_);
     }
+
     acc.add(
         AssistId::refactor_extract("extract_module"),
         "Extract Module",
@@ -168,8 +174,10 @@ fn generate_module_def(
     } else {
         use_items.iter().chain(body_items).cloned().collect()
     };
+
     let items = items.into_iter().map(|it| it.reset_indent().indent(IndentLevel(1))).collect_vec();
     let module_body = make::item_list(Some(items));
+
     let module_name = make::name(name);
     make::mod_(module_name, Some(module_body))
 }
@@ -182,6 +190,7 @@ fn make_use_stmt_of_node_with_super(node_syntax: &SyntaxNode) -> ast::Item {
         None,
         make::use_tree(make::join_paths(vec![super_path, node_path]), None, None, false),
     );
+
     ast::Item::from(use_)
 }
 
@@ -235,6 +244,7 @@ impl Module {
         //Here impl is not included as each item inside impl will be tied to the parent of
         //implementing block(a struct, enum, etc), if the parent is in selected module, it will
         //get updated by ADT section given below or if it is not, then we dont need to do any operation
+
         for item in &self.body_items {
             match_ast! {
                 match (item.syntax()) {
@@ -305,6 +315,7 @@ impl Module {
                 }
             }
         }
+
         (refs, adt_fields, use_stmts_to_be_inserted)
     }
 
@@ -323,6 +334,7 @@ impl Module {
         };
         let out_of_sel = |node: &SyntaxNode| !replace_range.contains_range(node.text_range());
         let mut use_stmts_set = FxHashSet::default();
+
         for (file_id, refs) in node_def.usages(&ctx.sema).all() {
             let source_file = ctx.sema.parse(file_id);
             let usages = refs.into_iter().filter_map(|FileReference { range, .. }| {
@@ -363,14 +375,18 @@ impl Module {
     fn change_visibility(&mut self, record_fields: Vec<SyntaxNode>) {
         let (mut replacements, record_field_parents, impls) =
             get_replacements_for_visibility_change(&mut self.body_items, false);
+
         let mut impl_items = impls
             .into_iter()
             .flat_map(|impl_| impl_.syntax().descendants())
             .filter_map(ast::Item::cast)
             .collect_vec();
+
         let (mut impl_item_replacements, _, _) =
             get_replacements_for_visibility_change(&mut impl_items, true);
+
         replacements.append(&mut impl_item_replacements);
+
         for (_, field_owner) in record_field_parents {
             for desc in field_owner.descendants().filter_map(ast::RecordField::cast) {
                 let is_record_field_present =
@@ -380,6 +396,7 @@ impl Module {
                 }
             }
         }
+
         for (vis, syntax) in replacements {
             let item = syntax.children_with_tokens().find(|node_or_token| {
                 match node_or_token.kind() {
@@ -401,6 +418,7 @@ impl Module {
     ) -> Vec<TextRange> {
         let mut imports_to_remove = vec![];
         let mut node_set = FxHashSet::default();
+
         for item in self.body_items.clone() {
             item.syntax()
                 .descendants()
@@ -429,6 +447,7 @@ impl Module {
                     }
                 })
         }
+
         imports_to_remove
     }
 
@@ -443,8 +462,10 @@ impl Module {
         let selection_range = ctx.selection_trimmed();
         let file_id = ctx.file_id();
         let usage_res = def.usages(&ctx.sema).in_scope(&SearchScope::single_file(file_id)).all();
+
         let file = ctx.sema.parse(file_id);
         // track uses which does not exists in `Use`
+
         let mut uses_exist_in_sel = false;
         let mut uses_exist_out_sel = false;
         'outside: for (_, refs) in usage_res.iter() {
@@ -462,6 +483,7 @@ impl Module {
                 }
             }
         }
+
         let (def_in_mod, def_out_sel) = check_def_in_mod_and_out_sel(
             def,
             ctx,
@@ -470,6 +492,7 @@ impl Module {
             file_id.file_id(ctx.db()),
         );
         // Find use stmt that use def in current file
+
         let use_stmt: Option<ast::Use> = usage_res
             .into_iter()
             .filter(|(use_file_id, _)| *use_file_id == file_id)
@@ -478,6 +501,7 @@ impl Module {
         let use_stmt_not_in_sel = use_stmt.as_ref().is_some_and(|use_stmt| {
             !selection_range.contains_range(use_stmt.syntax().text_range())
         });
+
         let mut use_tree_paths: Option<Vec<ast::Path>> = None;
         //Exists inside and outside selection
         // - Use stmt for item is present -> get the use_tree_str and reconstruct the path in new
@@ -489,6 +513,7 @@ impl Module {
         //- Def is outside: Import it inside with super
         //Exists inside selection but not outside -> Check for the import of it in original module,
         //get the use_tree_str, reconstruct the use stmt in new module
+
         let mut import_path_to_be_removed: Option<TextRange> = None;
         if uses_exist_in_sel && uses_exist_out_sel {
             //Changes to be made only inside new module
@@ -540,6 +565,7 @@ impl Module {
                 self.use_items.insert(0, super_use_node);
             }
         }
+
         if let Some(mut use_tree_paths) = use_tree_paths {
             use_tree_paths.reverse();
 
@@ -571,6 +597,7 @@ impl Module {
                 self.use_items.insert(0, ast::Item::from(use_));
             }
         }
+
         import_path_to_be_removed
     }
 
@@ -598,6 +625,7 @@ impl Module {
                 return Some((use_tree_str, None));
             }
         }
+
         None
     }
 }
@@ -644,6 +672,7 @@ fn check_def_in_mod_and_out_sel(
             }
         };
     }
+
     match def {
         Definition::Module(x) => {
             let source = x.definition_source(ctx.db());
@@ -670,6 +699,7 @@ fn check_def_in_mod_and_out_sel(
         Definition::TypeAlias(x) => check_item!(x),
         _ => {}
     }
+
     (false, false)
 }
 
@@ -684,6 +714,7 @@ fn get_replacements_for_visibility_change(
     let mut replacements = Vec::new();
     let mut record_field_parents = Vec::new();
     let mut impls = Vec::new();
+
     for item in items {
         if !is_clone_for_updated {
             *item = item.clone_for_update();
@@ -718,6 +749,7 @@ fn get_replacements_for_visibility_change(
             _ => (),
         }
     }
+
     (replacements, record_field_parents, impls)
 }
 
@@ -739,6 +771,7 @@ fn get_use_tree_paths_from_path(
             }
             None
         })?;
+
     Some(use_tree_str)
 }
 
@@ -1345,6 +1378,7 @@ mod modname {
             }
         ",
         );
+
         check_assist(
             extract_module,
             r"struct A {}

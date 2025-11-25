@@ -569,17 +569,20 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
             let mut ctx = self.at_path(path_id);
             return ctx.lower_ty_relative_path(ty, res, false);
         }
+
         let mut ctx = self.at_path(path_id);
         let (resolution, remaining_index) = match ctx.resolve_path_in_type_ns() {
             Some(it) => it,
             None => return (Ty::new_error(self.interner, ErrorGuaranteed), None),
         };
+
         if matches!(resolution, TypeNs::TraitId(_)) && remaining_index.is_none() {
             // trait object type without dyn
             let bound = TypeBound::Path(path_id, TraitBoundModifier::None);
             let ty = self.lower_dyn_trait(&[bound]);
             return (ty, None);
         }
+
         ctx.lower_partly_resolved_path(resolution, false)
     }
 
@@ -851,6 +854,7 @@ impl<'db, 'a> TyLoweringContext<'db, 'a> {
 
             Some(BoundExistentialPredicates::new_from_iter(interner, lowered_bounds))
         });
+
         if let Some(bounds) = bounds {
             let region = match lifetime {
                 Some(it) => match it.kind() {
@@ -1217,6 +1221,7 @@ pub(crate) fn impl_self_ty_with_diagnostics_query<'db>(
     impl_id: ImplId,
 ) -> (EarlyBinder<'db, Ty<'db>>, Diagnostics) {
     let resolver = impl_id.resolver(db);
+
     let impl_data = db.impl_signature(impl_id);
     let mut ctx = TyLoweringContext::new(
         db,
@@ -1293,6 +1298,7 @@ pub(crate) fn field_types_with_diagnostics_query<'db>(
     if fields.is_empty() {
         return (Arc::new(ArenaMap::default()), None);
     }
+
     let (resolver, def): (_, GenericDefId) = match variant_id {
         VariantId::StructId(it) => (it.resolver(db), it.into()),
         VariantId::UnionId(it) => (it.resolver(db), it.into()),
@@ -1338,6 +1344,7 @@ pub(crate) fn generic_predicates_for_param_query<'db>(
         LifetimeElisionKind::AnonymousReportError,
     );
     // we have to filter out all other predicates *first*, before attempting to lower them
+
     let predicate = |pred: &_, ctx: &mut TyLoweringContext<'_, '_>| match pred {
         WherePredicate::ForLifetime { target, bound, .. }
         | WherePredicate::TypeBound { target, bound, .. } => {
@@ -1415,6 +1422,7 @@ pub(crate) fn generic_predicates_for_param_query<'db>(
             }
         }
     }
+
     let args = GenericArgs::identity_for_item(interner, def.into());
     if !args.is_empty() {
         let explicitly_unsized_tys = ctx.unsized_types;
@@ -1484,6 +1492,7 @@ pub(crate) fn trait_environment_query<'db>(
     if generics.has_no_predicates() && generics.is_empty() {
         return TraitEnvironment::empty(def.krate(db));
     }
+
     let resolver = def.resolver(db);
     let mut ctx = TyLoweringContext::new(
         db,
@@ -1507,6 +1516,7 @@ pub(crate) fn trait_environment_query<'db>(
             }
         }
     }
+
     if let Some(trait_id) = def.assoc_trait_container(db) {
         // add `Self: Trait<T1, T2, ...>` to the environment in trait
         // function default implementations (and speculative code
@@ -1521,7 +1531,9 @@ pub(crate) fn trait_environment_query<'db>(
         ));
         clauses.push(clause);
     }
+
     let explicitly_unsized_tys = ctx.unsized_types;
+
     let sized_trait = LangItem::Sized.resolve_trait(db, resolver.krate());
     if let Some(sized_trait) = sized_trait {
         let (mut generics, mut def_id) =
@@ -1567,9 +1579,11 @@ pub(crate) fn trait_environment_query<'db>(
             }
         }
     }
+
     let clauses = rustc_type_ir::elaborate::elaborate(ctx.interner, clauses);
     let clauses = Clauses::new_from_iter(ctx.interner, clauses);
     let env = ParamEnv { clauses };
+
     TraitEnvironment::new(resolver.krate(), None, traits_in_scope.into_boxed_slice(), env)
 }
 
@@ -1626,6 +1640,7 @@ where
         def,
         LifetimeElisionKind::AnonymousReportError,
     );
+
     let mut predicates = Vec::new();
     for maybe_parent_generics in
         std::iter::successors(Some(&generics), |generics| generics.parent_generics())
@@ -1643,7 +1658,9 @@ where
             }
         }
     }
+
     let explicitly_unsized_tys = ctx.unsized_types;
+
     let sized_trait = LangItem::Sized.resolve_trait(db, resolver.krate());
     if let Some(sized_trait) = sized_trait {
         let mut add_sized_clause = |param_idx, param_id, param_data| {
@@ -1693,6 +1710,7 @@ where
     }
     // FIXME: rustc gathers more predicates by recursing through resulting trait predicates.
     // See https://github.com/rust-lang/rust/blob/76c5ed2847cdb26ef2822a3a165d710f6b772217/compiler/rustc_hir_analysis/src/collect/predicates_of.rs#L689-L715
+
     (
         GenericPredicates(predicates.is_empty().not().then(|| predicates.into())),
         create_diagnostics(ctx.diagnostics),
@@ -1710,7 +1728,9 @@ fn implicitly_sized_clauses<'a, 'subst, 'db>(
 ) -> Option<impl Iterator<Item = Clause<'db>> + Captures<'a> + Captures<'subst>> {
     let interner = DbInterner::new_with(db, Some(resolver.krate()), None);
     let sized_trait = LangItem::Sized.resolve_trait(db, resolver.krate())?;
+
     let trait_self_idx = trait_self_param_idx(db, def);
+
     Some(
         args.iter()
             .enumerate()
@@ -1769,6 +1789,7 @@ pub(crate) fn generic_defaults_with_diagnostics_query(
         return (GenericDefaults(None), None);
     }
     let resolver = def.resolver(db);
+
     let mut ctx = TyLoweringContext::new(
         db,
         &resolver,
@@ -1804,6 +1825,7 @@ pub(crate) fn generic_defaults_with_diagnostics_query(
         GenericDefaults(None)
     };
     return (defaults, diagnostics);
+
     fn handle_generic_param<'db>(
         ctx: &mut TyLoweringContext<'db, '_>,
         idx: usize,
@@ -1862,6 +1884,7 @@ fn fn_sig_for_fn<'db>(
         LifetimeElisionKind::for_fn_params(&data),
     );
     let params = data.params.iter().map(|&tr| ctx_params.lower_ty(tr));
+
     let ret = match data.ret_type {
         Some(ret_type) => {
             let mut ctx_ret = TyLoweringContext::new(
@@ -1876,6 +1899,7 @@ fn fn_sig_for_fn<'db>(
         }
         None => Ty::new_tup(interner, &[]),
     };
+
     let inputs_and_output = Tys::new_from_iter(interner, params.chain(Some(ret)));
     // If/when we track late bound vars, we need to switch this to not be `dummy`
     EarlyBinder::bind(rustc_type_ir::Binder::dummy(FnSig {
@@ -1900,6 +1924,7 @@ fn fn_sig_for_struct_constructor<'db>(
     let field_tys = db.field_types(def.into());
     let params = field_tys.iter().map(|(_, ty)| ty.skip_binder());
     let ret = type_for_adt(db, def.into()).skip_binder();
+
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
     EarlyBinder::bind(Binder::dummy(FnSig {
@@ -1918,6 +1943,7 @@ fn fn_sig_for_enum_variant_constructor<'db>(
     let params = field_tys.iter().map(|(_, ty)| ty.skip_binder());
     let parent = def.lookup(db).parent;
     let ret = type_for_adt(db, parent.into()).skip_binder();
+
     let inputs_and_output =
         Tys::new_from_iter(DbInterner::new_with(db, None, None), params.chain(Some(ret)));
     EarlyBinder::bind(Binder::dummy(FnSig {
@@ -1945,6 +1971,7 @@ pub(crate) fn associated_ty_item_bounds<'db>(
     // FIXME: we should never create non-existential predicates in the first place
     // For now, use an error type so we don't run into dummy binder issues
     let self_ty = Ty::new_error(interner, ErrorGuaranteed);
+
     let mut bounds = Vec::new();
     for bound in &type_alias_data.bounds {
         ctx.lower_type_bound(bound, self_ty, false).for_each(|pred| {
@@ -1992,6 +2019,7 @@ pub(crate) fn associated_ty_item_bounds<'db>(
             }
         });
     }
+
     if !ctx.unsized_types.contains(&self_ty)
         && let Some(sized_trait) = LangItem::Sized.resolve_trait(db, resolver.krate())
     {
@@ -2002,6 +2030,7 @@ pub(crate) fn associated_ty_item_bounds<'db>(
         )));
         bounds.push(sized_clause);
     }
+
     EarlyBinder::bind(BoundExistentialPredicates::new_from_iter(interner, bounds))
 }
 
@@ -2092,6 +2121,7 @@ fn named_associated_type_shorthand_candidates<'db, R>(
 
         None
     };
+
     match res {
         TypeNs::SelfType(impl_id) => {
             let trait_ref = db.impl_trait(impl_id)?;

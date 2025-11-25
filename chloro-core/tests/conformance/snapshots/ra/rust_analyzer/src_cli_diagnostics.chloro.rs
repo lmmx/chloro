@@ -13,6 +13,7 @@ use crate::cli::{flags, progress_report::ProgressReport};
 impl flags::Diagnostics {
     pub fn run(self) -> anyhow::Result<()> {
         const STACK_SIZE: usize = 1024 * 1024 * 8;
+
         let handle = stdx::thread::Builder::new(
             stdx::thread::ThreadIntent::LatencySensitive,
             "BIG_STACK_THREAD",
@@ -20,6 +21,7 @@ impl flags::Diagnostics {
         .stack_size(STACK_SIZE)
         .spawn(|| self.run_())
         .unwrap();
+
         handle.join()
     }
 
@@ -45,9 +47,11 @@ impl flags::Diagnostics {
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let analysis = host.analysis();
+
         let mut found_error = false;
         let mut visited_files = FxHashSet::default();
         let min_severity = self.severity.unwrap_or(flags::Severity::Weak);
+
         let work = all_modules(db)
             .into_iter()
             .filter(|module| {
@@ -57,6 +61,7 @@ impl flags::Diagnostics {
                 !source_root.is_library
             })
             .collect::<Vec<_>>();
+
         let mut bar = ProgressReport::new(work.len());
         for module in work {
             let file_id = module.definition_source_file_id(db).original_file(db);
@@ -102,12 +107,15 @@ impl flags::Diagnostics {
             bar.inc(1);
         }
         bar.finish_and_clear();
+
         println!();
         println!("diagnostic scan complete");
+
         if found_error {
             println!();
             anyhow::bail!("diagnostic error detected")
         }
+
         Ok(())
     }
 }
@@ -116,9 +124,11 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
     let mut worklist: Vec<_> =
         Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
     let mut modules = Vec::new();
+
     while let Some(module) = worklist.pop() {
         modules.push(module);
         worklist.extend(module.children(db));
     }
+
     modules
 }

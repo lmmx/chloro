@@ -34,9 +34,11 @@ pub(crate) fn remove_underscore(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     } else {
         return None;
     };
+
     if !def.usages(&ctx.sema).at_least_one() {
         return None;
     }
+
     let new_name = text.trim_start_matches('_');
     acc.add(
         AssistId::refactor("remove_underscore_from_used_variables"),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2489 bytes
-Chloro size:   2479 bytes
+Chloro size:   2480 bytes
 Rustfmt size:  2723 bytes
 
 ✗ Outputs DIFFER
@@ -37,13 +37,6 @@ Rustfmt size:  2723 bytes
  const MACROS: (&[&str], &[&str]) = (&["macro", "derive"], &["!"]);
  
  /// Extract the specified namespace from an intra-doc-link if one exists.
- /// * `fn@from_intra_spec` -> ("from_intra_spec", `Namespace::Values`)
- pub(super) fn parse_intra_doc_link(s: &str) -> (&str, Option<hir::Namespace>) {
-     let s = s.trim_matches('`');
--
-     [
-         (hir::Namespace::Types, TYPES),
-         (hir::Namespace::Values, VALUES),
      .find_map(|(ns, (prefixes, suffixes))| {
          if let Some(prefix) = prefixes.iter().find(|&&prefix| {
              s.starts_with(prefix)

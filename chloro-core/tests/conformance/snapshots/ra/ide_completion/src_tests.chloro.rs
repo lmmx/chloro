@@ -124,6 +124,7 @@ fn completion_list_with_config_raw(
 ) -> Vec<CompletionItem> {
     let _tracing = setup_tracing();
     // filter out all but one built-in type completion for smaller test outputs
+
     let items = get_all_items(config, ra_fixture, trigger_character);
     items
         .into_iter()
@@ -250,7 +251,9 @@ pub(crate) fn check_edit_with_config(
         panic!("can't find {what:?} completion in {completions:#?}")
     };
     let mut actual = db.file_text(position.file_id).text(&db).to_string();
+
     let mut combined_edit = completion.text_edit.clone();
+
     resolve_completion_edits(&db, &config, position, completion.import_to_add.iter().cloned())
         .into_iter()
         .flatten()
@@ -259,6 +262,7 @@ pub(crate) fn check_edit_with_config(
                 "Failed to apply completion resolve changes: change ranges overlap, but should not",
             )
         });
+
     combined_edit.apply(&mut actual);
     assert_eq_text!(&ra_fixture_after, &actual)
 }

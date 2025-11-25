@@ -54,13 +54,16 @@ pub fn try_merge_imports(
     if !eq_attrs(lhs.attrs(), rhs.attrs()) {
         return None;
     }
+
     let lhs = lhs.clone_subtree().clone_for_update();
     let rhs = rhs.clone_subtree().clone_for_update();
     let lhs_tree = lhs.use_tree()?;
     let rhs_tree = rhs.use_tree()?;
     try_merge_trees_mut(&lhs_tree, &rhs_tree, merge_behavior)?;
     // Ignore `None` result because normalization should not affect the merge result.
+
     try_normalize_use_tree_mut(&lhs_tree, merge_behavior.into());
+
     Some(lhs)
 }
 
@@ -75,7 +78,9 @@ pub fn try_merge_trees(
     let rhs = rhs.clone_subtree().clone_for_update();
     try_merge_trees_mut(&lhs, &rhs, merge)?;
     // Ignore `None` result because normalization should not affect the merge result.
+
     try_normalize_use_tree_mut(&lhs, merge.into());
+
     Some(lhs)
 }
 
@@ -660,6 +665,7 @@ fn use_tree_cmp_by_tree_list_glob_or_alias(
                 ),
         },
     };
+
     match (a.use_tree_list(), b.use_tree_list()) {
         (Some(_), None) => Ordering::Greater,
         (None, Some(_)) => Ordering::Less,
@@ -747,6 +753,7 @@ mod version_sort {
         ) -> Option<VersionChunk<'a>> {
             let mut end = self.start;
             let mut is_end_of_chunk = false;
+
             while let Some((idx, c)) = chars.next() {
                 end = self.start + idx;
 
@@ -757,6 +764,7 @@ mod version_sort {
                 is_end_of_chunk = true;
                 break;
             }
+
             let source = if is_end_of_chunk {
                 let value = &self.ident[self.start..end];
                 self.start = end;
@@ -766,8 +774,10 @@ mod version_sort {
                 self.start = self.ident.len();
                 value
             };
+
             let zeros = source.chars().take_while(|c| *c == '0').count();
             let value = source.parse::<usize>().ok()?;
+
             Some(VersionChunk::Number { value, zeros, source })
         }
 
@@ -777,6 +787,7 @@ mod version_sort {
         ) -> Option<VersionChunk<'a>> {
             let mut end = self.start;
             let mut is_end_of_chunk = false;
+
             while let Some((idx, c)) = chars.next() {
                 end = self.start + idx;
 
@@ -792,6 +803,7 @@ mod version_sort {
                 is_end_of_chunk = true;
                 break;
             }
+
             let source = if is_end_of_chunk {
                 let value = &self.ident[self.start..end];
                 self.start = end;
@@ -801,6 +813,7 @@ mod version_sort {
                 self.start = self.ident.len();
                 value
             };
+
             Some(VersionChunk::Str(source))
         }
     }
@@ -810,13 +823,16 @@ mod version_sort {
         fn next(&mut self) -> Option<Self::Item> {
             let mut chars = self.ident[self.start..].char_indices();
             let (_, next) = chars.next()?;
+
             if next == '_' {
                 self.start = self.start + next.len_utf8();
                 return Some(VersionChunk::Underscore);
             }
+
             if next.is_ascii_digit() {
                 return self.parse_numeric_chunk(chars);
             }
+
             self.parse_str_chunk(chars)
         }
     }
@@ -845,6 +861,7 @@ mod version_sort {
         let iter_a = VersionChunkIter::new(a);
         let iter_b = VersionChunkIter::new(b);
         let mut more_leading_zeros = MoreLeadingZeros::Equal;
+
         for either_or_both in iter_a.zip_longest(iter_b) {
             match either_or_both {
                 EitherOrBoth::Left(_) => return std::cmp::Ordering::Greater,
@@ -886,6 +903,7 @@ mod version_sort {
                 },
             }
         }
+
         match more_leading_zeros {
             MoreLeadingZeros::Equal => std::cmp::Ordering::Equal,
             MoreLeadingZeros::Left => std::cmp::Ordering::Less,

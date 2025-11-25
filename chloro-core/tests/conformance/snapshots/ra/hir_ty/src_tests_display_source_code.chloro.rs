@@ -28,6 +28,7 @@ fn main() {
 } //^^^ Foo
 "#,
     );
+
     check_types_source_code(
         r#"
 struct Foo<K, T = u8> { k: K, t: T }

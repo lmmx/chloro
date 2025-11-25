@@ -15,26 +15,32 @@ pub(crate) fn generate_is_empty_from_len(
 ) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
+
     if fn_name.text() != "len" {
         cov_mark::hit!(len_function_not_present);
         return None;
     }
+
     if fn_node.param_list()?.params().next().is_some() {
         cov_mark::hit!(len_function_with_parameters);
         return None;
     }
+
     let impl_ = fn_node.syntax().ancestors().find_map(ast::Impl::cast)?;
     let len_fn = get_impl_method(ctx, &impl_, &Name::new_symbol_root(sym::len))?;
     if !len_fn.ret_type(ctx.sema.db).is_usize() {
         cov_mark::hit!(len_fn_different_return_type);
         return None;
     }
+
     if get_impl_method(ctx, &impl_, &Name::new_symbol_root(sym::is_empty)).is_some() {
         cov_mark::hit!(is_empty_already_implemented);
         return None;
     }
+
     let node = len_fn.source(ctx.sema.db)?;
     let range = node.syntax().value.text_range();
+
     acc.add(
         AssistId::generate("generate_is_empty_from_len"),
         "Generate a is_empty impl from a len function",
@@ -59,6 +65,7 @@ fn get_impl_method(
 ) -> Option<hir::Function> {
     let db = ctx.sema.db;
     let impl_def: hir::Impl = ctx.sema.to_def(impl_)?;
+
     let scope = ctx.sema.scope(impl_.syntax())?;
     let ty = impl_def.self_ty(db);
     ty.iterate_method_candidates(db, &scope, None, Some(fn_name), Some)

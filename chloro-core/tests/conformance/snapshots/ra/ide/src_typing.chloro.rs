@@ -58,7 +58,9 @@ pub(crate) fn on_char_typed(
     if !stdx::always!(char_matches_position) {
         return None;
     }
+
     let edit = on_char_typed_(file, position.offset, char_typed, edition)?;
+
     let mut sc = SourceChange::from_text_edit(position.file_id, edit.edit);
     sc.is_snippet = edit.is_snippet;
     Some(sc)
@@ -106,21 +108,25 @@ fn on_opening_delimiter_typed(
         '<' => ('>', SyntaxKind::L_ANGLE, &[ast::Type::can_cast as FilterFn] as &[FilterFn]),
         _ => return None,
     };
+
     let brace_token = file.tree().syntax().token_at_offset(offset).right_biased()?;
     if brace_token.kind() != expected_ast_bracket {
         return None;
     }
     // Remove the opening bracket to get a better parse tree, and reparse.
+
     let range = brace_token.text_range();
     if !stdx::always!(range.len() == TextSize::of(opening_bracket)) {
         return None;
     }
     let reparsed = file.reparse(range, "", edition).tree();
+
     if let Some(edit) =
         on_delimited_node_typed(&reparsed, offset, opening_bracket, closing_bracket, allowed_kinds)
     {
         return Some(edit);
     }
+
     match opening_bracket {
         '{' => on_left_brace_typed(&reparsed, offset),
         '<' => on_left_angle_typed(&file.tree(), &reparsed, offset),
@@ -133,7 +139,9 @@ fn on_left_brace_typed(reparsed: &SourceFile, offset: TextSize) -> Option<TextEd
     if segment.syntax().text_range().start() != offset {
         return None;
     }
+
     let tree: ast::UseTree = find_node_at_offset(reparsed.syntax(), offset)?;
+
     Some(TextEdit::insert(tree.syntax().text_range().end() + TextSize::of("{"), "}".to_owned()))
 }
 
@@ -156,6 +164,7 @@ fn on_delimited_node_typed(
         .ancestors()
         .take_while(|n| n.text_range().start() == offset && filter(n.kind()))
         .last()?;
+
     if let Some(parent) = node.parent().filter(|it| filter(it.kind())) {
         let all_prev_sib_attr = {
             let mut node = node.clone();
@@ -175,6 +184,7 @@ fn on_delimited_node_typed(
         }
     }
     // Insert the closing bracket right after the node.
+
     Some(TextEdit::insert(
         node.text_range().end() + TextSize::of(opening_bracket),
         closing_bracket.to_string(),
@@ -194,6 +204,7 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     if has_newline {
         return None;
     }
+
     if let Some(edit) = let_stmt(file, offset) {
         return Some(edit);
     }
@@ -203,7 +214,9 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     if let Some(edit) = assign_to_eq(file, offset) {
         return Some(edit);
     }
+
     return None;
+
     fn assign_expr(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
         if !matches!(binop.op_kind(), Some(ast::BinaryOp::Assignment { op: None })) {
@@ -230,6 +243,7 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let offset = expr.syntax().text_range().end();
         Some(TextEdit::insert(offset, ";".to_owned()))
     }
+
     /// `a =$0 b;` removes the semicolon if an expression is valid in this context.
     fn assign_to_eq(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let binop: ast::BinExpr = find_node_at_offset(file.syntax(), offset)?;
@@ -248,6 +262,7 @@ fn on_eq_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
 
         Some(TextEdit::delete(semi.text_range()))
     }
+
     fn let_stmt(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         let let_stmt: ast::LetStmt = find_node_at_offset(file.syntax(), offset)?;
         if let_stmt.semicolon_token().is_some() {
@@ -276,12 +291,14 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         file.syntax().token_at_offset(offset).left_biased().and_then(ast::Whitespace::cast)?;
     // if prior is fn call over multiple lines dont indent
     // or if previous is method call over multiples lines keep that indent
+
     let current_indent = {
         let text = whitespace.text();
         let (_prefix, suffix) = text.rsplit_once('\n')?;
         suffix
     };
     let current_indent_len = TextSize::of(current_indent);
+
     let parent = whitespace.syntax().parent()?;
     // Make sure dot is a part of call chain
     let receiver = if let Some(field_expr) = ast::FieldExpr::cast(parent.clone()) {
@@ -291,6 +308,7 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     } else {
         return None;
     };
+
     let receiver_is_multiline = receiver.syntax().text().find_char('\n').is_some();
     let target_indent = match (receiver, receiver_is_multiline) {
         // if receiver is multiline field or method call, just take the previous `.` indentation
@@ -310,9 +328,11 @@ fn on_dot_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
         None => IndentLevel::from_node(&parent) + 1,
     }
     .to_string();
+
     if current_indent_len == TextSize::of(&target_indent) {
         return None;
     }
+
     Some(TextEdit::replace(TextRange::new(offset - current_indent_len, offset), target_indent))
 }
 
@@ -324,6 +344,7 @@ fn on_left_angle_typed(
 ) -> Option<TextEdit> {
     let file_text = reparsed.syntax().text();
     // Find the next non-whitespace char in the line, check if its a `>`
+
     let mut next_offset = offset;
     while file_text.char_at(next_offset) == Some(' ') {
         next_offset += TextSize::of(' ')
@@ -331,6 +352,7 @@ fn on_left_angle_typed(
     if file_text.char_at(next_offset) == Some('>') {
         return None;
     }
+
     if ancestors_at_offset(file.syntax(), offset)
         .take_while(|n| !ast::Item::can_cast(n.kind()))
         .any(|n| {
@@ -368,6 +390,7 @@ fn on_plus_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit> {
     let trait_type =
         ancestors.next().and_then(<Either<ast::DynTraitType, ast::ImplTraitType>>::cast)?;
     let kind = ancestors.next()?.kind();
+
     if ast::RefType::can_cast(kind) || ast::PtrType::can_cast(kind) || ast::RetType::can_cast(kind)
     {
         let mut builder = TextEdit::builder();
@@ -387,6 +410,7 @@ fn on_right_angle_typed(file: &SourceFile, offset: TextSize) -> Option<TextEdit>
         return None;
     }
     find_node_at_offset::<ast::RetType>(file.syntax(), offset)?;
+
     Some(TextEdit::insert(after_arrow, " ".to_owned()))
 }
 
@@ -416,6 +440,7 @@ mod tests {
     ) {
         let actual = do_type_char(char_typed, ra_fixture_before)
             .unwrap_or_else(|| panic!("typing `{char_typed}` did nothing"));
+
         assert_eq_text!(ra_fixture_after, &actual);
     }
     fn type_char_noop(char_typed: char, #[rust_analyzer::rust_fixture] ra_fixture_before: &str) {
@@ -952,6 +977,7 @@ use $0Thing as _;
 use {Thing as _};
             "#,
         );
+
         type_char_noop(
             '{',
             r#"
@@ -1221,6 +1247,7 @@ use some::path::$0to::{Item};
 use $0Thing as _;
             "#,
         );
+
         type_char_noop(
             '(',
             r#"
@@ -1249,6 +1276,7 @@ fn foo() {
 }
             "#,
         );
+
         type_char(
             '<',
             r#"

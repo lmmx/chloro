@@ -16,6 +16,7 @@ use crate::cli::flags;
 impl flags::UnresolvedReferences {
     pub fn run(self) -> anyhow::Result<()> {
         const STACK_SIZE: usize = 1024 * 1024 * 8;
+
         let handle = stdx::thread::Builder::new(
             stdx::thread::ThreadIntent::LatencySensitive,
             "BIG_STACK_THREAD",
@@ -23,6 +24,7 @@ impl flags::UnresolvedReferences {
         .stack_size(STACK_SIZE)
         .spawn(|| self.run_())
         .unwrap();
+
         handle.join()
     }
 
@@ -52,13 +54,16 @@ impl flags::UnresolvedReferences {
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let sema = Semantics::new(db);
+
         let mut visited_files = FxHashSet::default();
+
         let work = all_modules(db).into_iter().filter(|module| {
             let file_id = module.definition_source_file_id(db).original_file(db);
             let source_root = db.file_source_root(file_id.file_id(db)).source_root_id(db);
             let source_root = db.source_root(source_root).source_root(db);
             !source_root.is_library
         });
+
         for module in work {
             let file_id = module.definition_source_file_id(db).original_file(db);
             let file_id = file_id.file_id(db);
@@ -82,8 +87,10 @@ impl flags::UnresolvedReferences {
                 visited_files.insert(file_id);
             }
         }
+
         eprintln!();
         eprintln!("scan complete");
+
         Ok(())
     }
 }
@@ -92,10 +99,12 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
     let mut worklist: Vec<_> =
         Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
     let mut modules = Vec::new();
+
     while let Some(module) = worklist.pop() {
         modules.push(module);
         worklist.extend(module.children(db));
     }
+
     modules
 }
 
@@ -107,6 +116,7 @@ fn find_unresolved_references(
 ) -> Vec<TextRange> {
     let mut unresolved_references = all_unresolved_references(sema, file_id);
     // remove unresolved references which are within inactive code
+
     let mut diagnostics = Vec::new();
     module.diagnostics(db, &mut diagnostics, false);
     for diagnostic in diagnostics {
@@ -123,6 +133,7 @@ fn find_unresolved_references(
 
         unresolved_references.retain(|r| !range.range.contains_range(*r));
     }
+
     unresolved_references
 }
 
@@ -135,6 +146,7 @@ fn all_unresolved_references(
         .unwrap_or_else(|| EditionedFileId::current_edition(sema.db, file_id));
     let file = sema.parse(file_id);
     let root = file.syntax();
+
     let mut unresolved_references = Vec::new();
     for event in root.preorder() {
         let WalkEvent::Enter(syntax) = event else {

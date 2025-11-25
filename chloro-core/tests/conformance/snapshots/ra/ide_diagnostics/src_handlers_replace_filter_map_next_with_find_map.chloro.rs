@@ -29,16 +29,21 @@ fn fixes(
     let root = ctx.sema.db.parse_or_expand(d.file);
     let next_expr = d.next_expr.to_node(&root);
     let next_call = ast::MethodCallExpr::cast(next_expr.syntax().clone())?;
+
     let filter_map_call = ast::MethodCallExpr::cast(next_call.receiver()?.syntax().clone())?;
     let filter_map_name_range = filter_map_call.name_ref()?.ident_token()?.text_range();
     let filter_map_args = filter_map_call.arg_list()?;
+
     let range_to_replace =
         TextRange::new(filter_map_name_range.start(), next_expr.syntax().text_range().end());
     let replacement = format!("find_map{}", filter_map_args.syntax().text());
     let trigger_range = next_expr.syntax().text_range();
+
     let edit = TextEdit::replace(range_to_replace, replacement);
+
     let source_change =
         SourceChange::from_text_edit(d.file.original_file(ctx.sema.db).file_id(ctx.sema.db), edit);
+
     Some(vec![fix(
         "replace_with_find_map",
         "Replace filter_map(..).next() with find_map()",

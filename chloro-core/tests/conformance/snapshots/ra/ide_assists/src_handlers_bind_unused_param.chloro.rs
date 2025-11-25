@@ -8,8 +8,10 @@ use crate::assist_context::{AssistContext, Assists};
 
 pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let param: ast::Param = ctx.find_node_at_offset()?;
+
     let Some(ast::Pat::IdentPat(ident_pat)) = param.pat() else { return None };
     let name = ident_pat.name().filter(|n| !n.text().starts_with('_'))?;
+
     let param_def = {
         let local = ctx.sema.to_def(&ident_pat)?;
         Definition::Local(local)
@@ -18,10 +20,12 @@ pub(crate) fn bind_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         cov_mark::hit!(keep_used);
         return None;
     }
+
     let func = param.syntax().ancestors().find_map(ast::Fn::cast)?;
     let stmt_list = func.body()?.stmt_list()?;
     let l_curly_range = stmt_list.l_curly_token()?.text_range();
     let r_curly_range = stmt_list.r_curly_token()?.text_range();
+
     acc.add(
         AssistId::quick_fix("bind_unused_param"),
         format!("Bind as `let _ = {name};`"),

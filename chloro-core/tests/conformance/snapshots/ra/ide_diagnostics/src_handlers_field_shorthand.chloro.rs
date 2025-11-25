@@ -132,6 +132,7 @@ struct A(usize);
 fn main() { A { 0: 0 }; }
 "#,
         );
+
         check_fix(
             r#"
 struct A { a: &'static str }
@@ -148,6 +149,7 @@ fn main() {
 }
 "#,
         );
+
         check_fix(
             r#"
 struct A { a: &'static str, b: &'static str }
@@ -181,6 +183,7 @@ struct A(usize);
 fn f(a: A) { let A { 0: 0 } = a; }
 "#,
         );
+
         check_fix(
             r#"
 struct A { a: &'static str }
@@ -197,6 +200,7 @@ fn f(a: A) {
 }
 "#,
         );
+
         check_fix(
             r#"
 struct A { a: &'static str, b: &'static str }

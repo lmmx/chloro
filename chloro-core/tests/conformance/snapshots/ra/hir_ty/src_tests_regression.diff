@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 63433 bytes
-Chloro size:   63178 bytes
+Chloro size:   63179 bytes
 Rustfmt size:  63433 bytes
 
 ✗ Outputs DIFFER
@@ -17,10 +17,3 @@ Rustfmt size:  63433 bytes
  #[test]
  fn issue_4966() {
      check_infer(
-             108..109 'N': {unknown}
-         "#]],
-     );
--
-     check_infer(
-         r#"
- struct Foo<const N: usize>;

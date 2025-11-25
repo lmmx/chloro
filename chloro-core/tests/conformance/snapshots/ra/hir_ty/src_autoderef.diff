@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12836 bytes
+Chloro size:   12849 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -85,11 +85,10 @@ Rustfmt size:  13256 bytes
          }
 -
          // If we have reached the recursion limit, error gracefully.
++
          if self.state.steps.len() >= AUTODEREF_RECURSION_LIMIT {
              self.state.reached_recursion_limit = true;
              return None;
-         }
--
          if self.state.cur_ty.is_ty_var() {
              return None;
          }
@@ -103,25 +102,12 @@ Rustfmt size:  13256 bytes
 -            .state
 -            .cur_ty
 -            .builtin_deref(self.table.db, self.include_raw_pointers)
++
 +        let (kind, new_ty) = if let Some(ty) =
 +            self.state.cur_ty.builtin_deref(self.table.db, self.include_raw_pointers)
          {
              debug_assert_eq!(ty, self.table.infer_ctxt.resolve_vars_if_possible(ty));
              // NOTE: we may still need to normalize the built-in deref in case
-         } else {
-             return None;
-         };
--
-         self.state.steps.push(self.state.cur_ty, kind);
-         debug!(
-             "autoderef stage #{:?} is {:?} from {:?}",
-             (self.state.cur_ty, kind)
-         );
-         self.state.cur_ty = new_ty;
--
-         Some((self.state.cur_ty, self.step_count()))
-     }
- }
      fn overloaded_deref_ty(&mut self, ty: Ty<'db>) -> Option<Ty<'db>> {
          debug!("overloaded_deref_ty({:?})", ty);
          let interner = self.table.interner();
@@ -131,8 +117,9 @@ Rustfmt size:  13256 bytes
 -            trait_,
 -            trait_target,
 -        } = self.autoderef_traits()?;
--
++
 +        let AutoderefTraits { trait_, trait_target } = self.autoderef_traits()?;
+ 
          let trait_ref = TraitRef::new(interner, trait_.into(), [ty]);
 -        let obligation = Obligation::new(
 -            interner,
@@ -155,8 +142,6 @@ Rustfmt size:  13256 bytes
              debug!("overloaded_deref_ty: cannot match obligation");
              return None;
          }
--
-         let (normalized_ty, obligations) = structurally_normalize_ty(
              self.table,
              Ty::new_projection(interner, trait_target.into(), [ty]),
          )?;
@@ -166,7 +151,7 @@ Rustfmt size:  13256 bytes
 -        );
 +        debug!("overloaded_deref_ty({:?}) = ({:?}, {:?})", ty, normalized_ty, obligations);
          self.state.obligations.extend(obligations);
--
+ 
 -        Some(
 -            self.table
 -                .infer_ctxt
@@ -176,29 +161,19 @@ Rustfmt size:  13256 bytes
      }
  
      /// Returns the final type we ended up with, which may be an unresolved
-     if !errors.is_empty() {
-         unreachable!();
-     }
--
-     Some((normalized_ty, ocx.into_pending_obligations()))
- }
  
-     ty: Ty<'db>,
- ) -> Option<InferOk<'db, Ty<'db>>> {
-     let interner = table.interner();
--
      let trait_target = LangItem::DerefTarget.resolve_type_alias(table.db, table.trait_env.krate)?;
--
+ 
 -    let (normalized_ty, obligations) = structurally_normalize_ty(
 -        table,
 -        Ty::new_projection(interner, trait_target.into(), [ty]),
 -    )?;
--
++    let (normalized_ty, obligations) =
++        structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
+ 
 -    Some(InferOk {
 -        value: normalized_ty,
 -        obligations,
 -    })
-+    let (normalized_ty, obligations) =
-+        structurally_normalize_ty(table, Ty::new_projection(interner, trait_target.into(), [ty]))?;
 +    Some(InferOk { value: normalized_ty, obligations })
  }

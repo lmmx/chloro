@@ -36,6 +36,7 @@ pub(super) fn token(
             None => h.into(),
         });
     }
+
     let h = match token.kind() {
         STRING | BYTE_STRING | C_STRING => HlTag::StringLiteral.into(),
         INT_NUMBER | FLOAT_NUMBER => HlTag::NumericLiteral.into(),
@@ -112,6 +113,7 @@ fn punctuation(
 ) -> Highlight {
     let operator_parent = token.parent();
     let parent_kind = operator_parent.as_ref().map_or(EOF, SyntaxNode::kind);
+
     match (kind, parent_kind) {
         (T![?], TRY_EXPR) => HlTag::Operator(HlOperator::Other) | HlMod::ControlFlow,
         (T![&], BIN_EXPR) => HlOperator::Bitwise.into(),
@@ -282,6 +284,7 @@ fn highlight_name_ref(
     if let Some(res) = highlight_method_call_by_name_ref(sema, krate, &name_ref, is_unsafe_node) {
         return res;
     }
+
     let name_class = match NameRefClass::classify(sema, &name_ref) {
         Some(name_kind) => name_kind,
         None if syntactic_name_ref_highlighting => {
@@ -414,6 +417,7 @@ fn highlight_name_ref(
             h
         }
     };
+
     h.tag = match name_ref.token_kind() {
         T![Self] => HlTag::Symbol(SymbolKind::SelfType),
         T![self] => HlTag::Symbol(SymbolKind::SelfParam),
@@ -654,6 +658,7 @@ pub(super) fn highlight_def(
         }
         Definition::InlineAsmOperand(_) => Highlight::new(HlTag::Symbol(SymbolKind::Local)),
     };
+
     let def_crate = def.krate(db);
     let is_from_other_crate = def_crate != krate;
     let is_from_builtin_crate = def_crate.is_some_and(|def_crate| def_crate.is_builtin(db));
@@ -666,9 +671,11 @@ pub(super) fn highlight_def(
         false if def.visibility(db) == Some(hir::Visibility::Public) => h |= HlMod::Public,
         _ => (),
     }
+
     if is_from_builtin_crate {
         h |= HlMod::DefaultLibrary;
     }
+
     h
 }
 
@@ -689,7 +696,9 @@ fn highlight_method_call(
     is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
 ) -> Option<Highlight> {
     let func = sema.resolve_method_call(method_call)?;
+
     let mut h = SymbolKind::Method.into();
+
     let is_unsafe = is_unsafe_node(AstPtr::new(method_call).upcast::<ast::Expr>().wrap_left());
     if is_unsafe {
         h |= HlMod::Unsafe;
@@ -707,18 +716,22 @@ fn highlight_method_call(
     {
         h |= HlMod::Trait;
     }
+
     let def_crate = func.module(sema.db).krate();
     let is_from_other_crate = krate.as_ref().map_or(false, |krate| def_crate != *krate);
     let is_from_builtin_crate = def_crate.is_builtin(sema.db);
     let is_public = func.visibility(sema.db) == hir::Visibility::Public;
+
     if is_from_other_crate {
         h |= HlMod::Library;
     } else if is_public {
         h |= HlMod::Public;
     }
+
     if is_from_builtin_crate {
         h |= HlMod::DefaultLibrary;
     }
+
     if let Some(self_param) = func.self_param(sema.db) {
         match self_param.access(sema.db) {
             hir::Access::Shared => h |= HlMod::Reference,
@@ -741,10 +754,12 @@ fn highlight_method_call(
 
 fn highlight_name_by_syntax(name: ast::Name) -> Highlight {
     let default = HlTag::UnresolvedReference;
+
     let parent = match name.syntax().parent() {
         Some(it) => it,
         _ => return default.into(),
     };
+
     let tag = match parent.kind() {
         STRUCT => SymbolKind::Struct,
         ENUM => SymbolKind::Enum,
@@ -767,6 +782,7 @@ fn highlight_name_by_syntax(name: ast::Name) -> Highlight {
         ASM_OPERAND_NAMED => SymbolKind::Local,
         _ => return default.into(),
     };
+
     tag.into()
 }
 
@@ -777,10 +793,12 @@ fn highlight_name_ref_by_syntax(
     is_unsafe_node: &impl Fn(AstPtr<Either<ast::Expr, ast::Pat>>) -> bool,
 ) -> Highlight {
     let default = HlTag::UnresolvedReference;
+
     let parent = match name.syntax().parent() {
         Some(it) => it,
         _ => return default.into(),
     };
+
     match parent.kind() {
         EXTERN_CRATE => HlTag::Symbol(SymbolKind::Module) | HlMod::CrateRoot,
         METHOD_CALL_EXPR => ast::MethodCallExpr::cast(parent)
@@ -857,6 +875,7 @@ fn parents_match(
         kinds = rest;
     }
     // Only true if we matched all expected kinds
+
     kinds.is_empty()
 }
 

@@ -19,11 +19,14 @@ pub(crate) fn extract_expressions_from_format_string(
     let fmt_string = ctx.find_token_at_offset::<ast::String>()?;
     let tt = fmt_string.syntax().parent().and_then(ast::TokenTree::cast)?;
     let tt_delimiter = tt.left_delimiter_token()?.kind();
+
     let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
+
     let (new_fmt, extracted_args) = parse_format_exprs(fmt_string.text()).ok()?;
     if extracted_args.is_empty() {
         return None;
     }
+
     acc.add(
         AssistId(
             "extract_expressions_from_format_string",
@@ -143,6 +146,7 @@ pub(crate) fn extract_expressions_from_format_string(
             edit.add_file_edits(ctx.vfs_file_id(), editor);
         },
     );
+
     Some(())
 }
 

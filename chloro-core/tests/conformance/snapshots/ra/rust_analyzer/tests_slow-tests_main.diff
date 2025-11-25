@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 38709 bytes
-Chloro size:   38455 bytes
+Chloro size:   38515 bytes
 Rustfmt size:  39488 bytes
 
 ✗ Outputs DIFFER
@@ -20,33 +20,6 @@ Rustfmt size:  39488 bytes
  
  #[test]
  fn completes_items_from_standard_library() {
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /Cargo.toml
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     let res = server.send_request::<Completion>(CompletionParams {
-         text_document_position: TextDocumentPositionParams::new(
-             server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /Cargo.toml
-     )
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     let res = server.send_request::<InlayHintRequest>(InlayHintParams {
-         range: Range::new(Position::new(0, 0), Position::new(3, 1)),
          text_document: server.doc_id("src/lib.rs"),
          work_done_progress_params: WorkDoneProgressParams::default(),
      });
@@ -57,20 +30,6 @@ Rustfmt size:  39488 bytes
      let hint = hints.pop().unwrap();
      assert!(hint.data.is_some());
      assert!(
-     if skip_slow_tests() || std::env::var("CI").is_ok() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /dependency/Cargo.toml
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     let res = server.send_request::<Completion>(CompletionParams {
-         text_document_position: TextDocumentPositionParams::new(
-             server.doc_id("src/lib.rs"),
          partial_result_params: PartialResultParams::default(),
          work_done_progress_params: WorkDoneProgressParams::default(),
      });
@@ -79,47 +38,12 @@ Rustfmt size:  39488 bytes
 -        "{}",
 -        res.to_string()
 -    );
--
 +    assert!(res.to_string().contains("SpecialHashMap"), "{}", res.to_string());
+ 
      let res = server.send_request::<Completion>(CompletionParams {
          text_document_position: TextDocumentPositionParams::new(
-             server.doc_id("src/lib.rs"),
-         work_done_progress_params: WorkDoneProgressParams::default(),
-     });
-     assert!(!res.to_string().contains("SpecialHashMap"));
--
-     server.write_file_and_save(
-         "src/lib.rs",
-         r#"#!/usr/bin/env -S cargo +nightly -Zscript
- "#
-         .to_owned(),
-     );
--
-     let server = server.wait_until_workspace_is_loaded();
--
-     std::thread::sleep(std::time::Duration::from_secs(3));
--
-     let res = server.send_request::<Completion>(CompletionParams {
-         text_document_position: TextDocumentPositionParams::new(
-             server.doc_id("src/lib.rs"),
-         work_done_progress_params: WorkDoneProgressParams::default(),
-     });
-     assert!(!res.to_string().contains("SpecialHashMap"));
--
-     let res = server.send_request::<Completion>(CompletionParams {
-         text_document_position: TextDocumentPositionParams::new(
-             server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /foo/Cargo.toml
-     .root("bar")
-     .server()
      .wait_until_workspace_is_loaded();
--
+ 
      server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/tests/spam.rs"),
@@ -136,19 +60,6 @@ Rustfmt size:  39488 bytes
  #[test]
  fn test_path_dependency_runnables() {
      if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /consumer/Cargo.toml
-     .root("devdependency")
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     for runnable in ["consumer", "dependency", "devdependency"] {
-         server.request::<Runnables>(
-             RunnablesParams {
      }
  }
  
@@ -156,16 +67,8 @@ Rustfmt size:  39488 bytes
  #[test]
  fn test_runnables_cwd() {
      if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /foo/Cargo.toml
-     .root("foo")
-     .server()
      .wait_until_workspace_is_loaded();
--
+ 
      server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/mainpkg/src/main.rs"),
@@ -175,10 +78,8 @@ Rustfmt size:  39488 bytes
          json!([
              "{...}",
              {
-             "{...}"
-         ]),
      );
--
+ 
      server.request::<Runnables>(
 -        RunnablesParams {
 -            text_document: server.doc_id("foo/otherpkg/src/lib.rs"),
@@ -188,59 +89,6 @@ Rustfmt size:  39488 bytes
          json!([
              "{...}",
              {
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = project(
-         r#"
- //- /Cargo.toml
- "#,
-     )
-     .wait_until_workspace_is_loaded();
--
-     server.request::<Formatting>(
-         DocumentFormattingParams {
-             text_document: server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = project(
-         r#"
- //- /Cargo.toml
- "#,
-     )
-     .wait_until_workspace_is_loaded();
--
-     server.request::<Formatting>(
-         DocumentFormattingParams {
-             text_document: server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = project(
-         r#"
- //- /Cargo.toml
- "#,
-     )
-     .wait_until_workspace_is_loaded();
--
-     server.request::<Formatting>(
-         DocumentFormattingParams {
-             text_document: server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /Cargo.toml
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
      server.request::<RangeFormatting>(
          DocumentRangeFormattingParams {
              range: Range {
@@ -257,80 +105,18 @@ Rustfmt size:  39488 bytes
              },
              text_document: server.doc_id("src/lib.rs"),
              options: FormattingOptions {
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = project(
-         r#"
- //- /Cargo.toml
- "#,
-     )
-     .wait_until_workspace_is_loaded();
--
-     server.request::<CodeActionRequest>(
-         CodeActionParams {
-             text_document: server.doc_id("src/lib.rs"),
-             }
-         ]),
-     );
--
-     server.request::<CodeActionRequest>(
-         CodeActionParams {
-             text_document: server.doc_id("src/lib.rs"),
-     if skip_slow_tests() {
-         return;
-     }
--
-     let tmp_dir = TestDir::new();
--
-     let path = tmp_dir.path();
--
-     let project = json!({
-         "roots": [path],
-         "crates": [ {
-             "cfg": [ "cfg_atom_1", "feature=\"cfg_1\""],
-         } ]
-     });
--
-     let code = format!(
-         r#"
- //- /.rust-project.json
- fn main() {{}}
  "#,
      );
--
+ 
 -    let server = Project::with_fixture(&code)
 -        .tmp_dir(tmp_dir)
 -        .server()
 -        .wait_until_workspace_is_loaded();
--
 +    let server =
 +        Project::with_fixture(&code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
+ 
      server.request::<CodeActionRequest>(
          CodeActionParams {
-             text_document: server.doc_id("src/lib.rs"),
-             }
-         ]),
-     );
--
-     server.request::<CodeActionRequest>(
-         CodeActionParams {
-             text_document: server.doc_id("src/lib.rs"),
-         // FIXME: This test is failing too frequently (therefore we disable it on CI).
-         return;
-     }
--
-     let librs: String = (0..10).fold(String::new(), |mut acc, i| format_to_acc!(acc, "mod m{i};"));
-     let libs: String = (0..10).fold(String::new(), |mut acc, i| {
-         format_to_acc!(acc, "//- /src/m{i}.rs\nfn foo() {{}}\n\n")
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     for i in 0..10 {
-         server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
-             text_document: TextDocumentItem {
      server.request::<OnEnter>(
          TextDocumentPositionParams {
              text_document: server.doc_id("src/m0.rs"),
@@ -342,17 +128,6 @@ Rustfmt size:  39488 bytes
          },
          json!([{
              "insertTextFormat": 2,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         "
- //- /Cargo.toml
-     )
-     .server()
-     .wait_until_workspace_is_loaded();
--
      server.request::<OnEnter>(
          TextDocumentPositionParams {
              text_document: server.doc_id("src/main.rs"),
@@ -365,45 +140,6 @@ Rustfmt size:  39488 bytes
          json!([{
              "insertTextFormat": 2,
  }
- "###,
-     );
--
-     if root_contains_symlink {
-         server = server.with_root_dir_contains_symlink();
-     }
--
-     let server = server
-         .with_config(serde_json::json!({
-             "cargo": {
-         }))
-         .server()
-         .wait_until_workspace_is_loaded();
--
-     let res = server.send_request::<HoverRequest>(HoverParams {
-         text_document_position_params: TextDocumentPositionParams::new(
-             server.doc_id("src/main.rs"),
-         work_done_progress_params: Default::default(),
-     });
-     assert!(res.to_string().contains("&str"));
--
-     let res = server.send_request::<HoverRequest>(HoverParams {
-         text_document_position_params: TextDocumentPositionParams::new(
-             server.doc_id("src/main.rs"),
-         work_done_progress_params: Default::default(),
-     });
-     assert!(res.to_string().contains("&str"));
--
-     server.request::<GotoTypeDefinition>(
-         GotoDefinitionParams {
-             text_document_position_params: TextDocumentPositionParams::new(
-             "targetUri": "file:///[..]src/main.rs"
-         }]),
-     );
--
-     server.request::<GotoTypeDefinition>(
-         GotoDefinitionParams {
-             text_document_position_params: TextDocumentPositionParams::new(
- }
  
  #[test]
 -#[cfg(not(windows))] // windows requires elevated permissions to create symlinks
@@ -411,20 +147,6 @@ Rustfmt size:  39488 bytes
  fn root_contains_symlink_out_dirs_check() {
      if skip_slow_tests() {
          return;
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r###"
- //- /foo/Cargo.toml
-     .root("bar")
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     let res = server.send_request::<HoverRequest>(HoverParams {
-         text_document_position_params: TextDocumentPositionParams::new(
-             server.doc_id("foo/src/main.rs"),
          ),
          work_done_progress_params: Default::default(),
      });
@@ -435,23 +157,10 @@ Rustfmt size:  39488 bytes
 -        .unwrap()
 -        .as_str()
 -        .unwrap();
--
 +    let value = res.get("contents").unwrap().get("value").unwrap().as_str().unwrap();
+ 
      expect![[r#"
  
-         ```rust
-     if skip_slow_tests() {
-         return;
-     }
--
-     let tmp_dir = TestDir::new();
-     let tmp_dir_path = tmp_dir.path().to_owned();
-     let tmp_dir_str = tmp_dir_path.as_str();
-     let base_path = PathBuf::from(format!("file://{tmp_dir_str}"));
--
-     let code = r#"
- //- /Cargo.toml
- [package]
  //- /src/to_mod/foo.rs
  
  "#;
@@ -463,13 +172,16 @@ Rustfmt size:  39488 bytes
 +    let server =
 +        Project::with_fixture(code).tmp_dir(tmp_dir).server().wait_until_workspace_is_loaded();
      //rename same level file
++
      server.request::<WillRenameFiles>(
          RenameFilesParams {
+             files: vec![FileRename {
            ]
          }),
      );
 -
      //rename file from mod.rs to foo.rs
++
      server.request::<WillRenameFiles>(
          RenameFilesParams {
              files: vec![FileRename {
@@ -491,6 +203,7 @@ Rustfmt size:  39488 bytes
      );
 -
      //rename file from foo.rs to mod.rs
++
      server.request::<WillRenameFiles>(
          RenameFilesParams {
              files: vec![FileRename {
@@ -512,27 +225,7 @@ Rustfmt size:  39488 bytes
      );
 -
      //rename same level file
++
      server.request::<WillRenameFiles>(
          RenameFilesParams {
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = Project::with_fixture(
-         r#"
- //- /foo/Cargo.toml
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
--
-     let server = Project::with_fixture(
-         r#"
- //- /foo/Cargo.toml
-     }))
-     .server()
-     .wait_until_workspace_is_loaded();
--
-     server.request::<WorkspaceSymbolRequest>(Default::default(), json!([]));
- }
+             files: vec![FileRename {

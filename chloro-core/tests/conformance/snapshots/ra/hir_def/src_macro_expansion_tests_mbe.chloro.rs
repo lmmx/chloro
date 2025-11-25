@@ -579,6 +579,7 @@ fn baz() -> bool {
 }
 "#]],
     );
+
     check(
         r#"
 macro_rules! m {
@@ -811,6 +812,7 @@ fn bar() {}
 #[test]
 fn test_parse_macro_def_rules() {
     cov_mark::check!(parse_macro_def_rules);
+
     check(
         r#"
 macro m {
@@ -1620,6 +1622,7 @@ macro_rules! m {
 const VALUE: u8 = 0;
 "#]],
     );
+
     check(
         r#"
 macro_rules! m {

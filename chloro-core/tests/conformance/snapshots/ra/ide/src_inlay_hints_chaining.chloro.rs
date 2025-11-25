@@ -20,11 +20,14 @@ pub(super) fn hints(
     if !config.chaining_hints {
         return None;
     }
+
     if matches!(expr, ast::Expr::RecordExpr(_)) {
         return None;
     }
+
     let descended = sema.descend_node_into_attributes(expr.clone()).pop();
     let desc_expr = descended.as_ref().unwrap_or(expr);
+
     let mut tokens = expr
         .syntax()
         .siblings_with_tokens(Direction::Next)
@@ -36,6 +39,7 @@ pub(super) fn hints(
         });
     // Chaining can be defined as an expression whose next sibling tokens are newline and dot
     // Ignoring extra whitespace and comments
+
     let next = tokens.next()?.kind();
     if next == SyntaxKind::WHITESPACE {
         let mut next_next = tokens.next()?.kind();

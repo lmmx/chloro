@@ -46,6 +46,7 @@ pub(crate) fn import_on_the_fly_path(
         _ => None,
     };
     let import_assets = import_assets_for_path(ctx, &potential_import_name, qualifier.clone())?;
+
     import_on_the_fly(
         acc,
         ctx,
@@ -67,8 +68,10 @@ pub(crate) fn import_on_the_fly_pat(
     if let PatternContext { record_pat: Some(_), .. } = pattern_ctx {
         return None;
     }
+
     let potential_import_name = import_name(ctx);
     let import_assets = import_assets_for_path(ctx, &potential_import_name, None)?;
+
     import_on_the_fly_pat_(
         acc,
         ctx,
@@ -96,6 +99,7 @@ pub(crate) fn import_on_the_fly_dot(
         potential_import_name.clone(),
         receiver.syntax().clone(),
     )?;
+
     import_on_the_fly_method(
         acc,
         ctx,
@@ -115,7 +119,9 @@ fn import_on_the_fly(
     potential_import_name: String,
 ) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly", ?potential_import_name).entered();
+
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+
     let ns_filter = |import: &LocatedImport| {
         match (kind, import.original_item) {
             // Aren't handled in flyimport
@@ -160,7 +166,9 @@ fn import_on_the_fly(
         }
     };
     let user_input_lowercased = potential_import_name.to_lowercase();
+
     let import_cfg = ctx.config.import_path_config();
+
     import_assets
         .search_for_imports(&ctx.sema, import_cfg, ctx.config.insert_use.prefix_kind)
         .filter(ns_filter)
@@ -197,7 +205,9 @@ fn import_on_the_fly_pat_(
     potential_import_name: String,
 ) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly_pat_", ?potential_import_name).entered();
+
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+
     let ns_filter = |import: &LocatedImport| match import.original_item {
         ItemInNs::Macros(mac) => mac.is_fn_like(ctx.db),
         ItemInNs::Types(_) => true,
@@ -205,6 +215,7 @@ fn import_on_the_fly_pat_(
     };
     let user_input_lowercased = potential_import_name.to_lowercase();
     let cfg = ctx.config.import_path_config();
+
     import_assets
         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
         .filter(ns_filter)
@@ -240,9 +251,13 @@ fn import_on_the_fly_method(
     potential_import_name: String,
 ) -> Option<()> {
     let _p = tracing::info_span!("import_on_the_fly_method", ?potential_import_name).entered();
+
     ImportScope::find_insert_use_container(&position, &ctx.sema)?;
+
     let user_input_lowercased = potential_import_name.to_lowercase();
+
     let cfg = ctx.config.import_path_config();
+
     import_assets
         .search_for_imports(&ctx.sema, cfg, ctx.config.insert_use.prefix_kind)
         .filter(|import| {
@@ -270,6 +285,7 @@ fn import_on_the_fly_method(
 fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport) -> bool {
     let def = import.item_to_import.into_module_def();
     let is_exclude_flyimport = ctx.exclude_flyimport.get(&def).copied();
+
     if matches!(is_exclude_flyimport, Some(AutoImportExclusionType::Always))
         || !import.complete_in_flyimport.0
     {
@@ -290,6 +306,7 @@ fn filter_excluded_flyimport(ctx: &CompletionContext<'_>, import: &LocatedImport
 
 fn import_name(ctx: &CompletionContext<'_>) -> String {
     let token_kind = ctx.token.kind();
+
     if token_kind.is_any_identifier() { ctx.token.to_string() } else { String::new() }
 }
 
@@ -300,6 +317,7 @@ fn import_assets_for_path<'db>(
 ) -> Option<ImportAssets<'db>> {
     let _p =
         tracing::info_span!("import_assets_for_path", ?potential_import_name, ?qualifier).entered();
+
     let fuzzy_name_length = potential_import_name.len();
     let mut assets_for_path = ImportAssets::for_fuzzy_path(
         ctx.module,

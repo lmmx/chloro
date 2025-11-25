@@ -11,11 +11,13 @@ pub(crate) fn ssr_assists(
     frange: FileRange,
 ) -> Vec<Assist> {
     let mut ssr_assists = Vec::with_capacity(2);
+
     let (match_finder, comment_range) = match ide_ssr::ssr_from_comment(db, frange) {
         Some(ssr_data) => ssr_data,
         None => return ssr_assists,
     };
     let id = AssistId::refactor_rewrite("ssr");
+
     let (source_change_for_file, source_change_for_workspace) = if resolve.should_resolve(&id) {
         let edits = match_finder.edits();
 
@@ -30,10 +32,12 @@ pub(crate) fn ssr_assists(
     } else {
         (None, None)
     };
+
     let assists = vec![
         ("Apply SSR in file", source_change_for_file),
         ("Apply SSR in workspace", source_change_for_workspace),
     ];
+
     for (label, source_change) in assists.into_iter() {
         let assist = Assist {
             id,
@@ -46,6 +50,7 @@ pub(crate) fn ssr_assists(
 
         ssr_assists.push(assist);
     }
+
     ssr_assists
 }
 
@@ -81,6 +86,7 @@ mod tests {
             fn foo() {}
             "#;
         let assists = get_assists(ra_fixture, AssistResolveStrategy::All);
+
         assert_eq!(0, assists.len());
     }
     #[test]
@@ -98,8 +104,10 @@ mod tests {
             "#,
             AssistResolveStrategy::All,
         );
+
         assert_eq!(2, assists.len());
         let mut assists = assists.into_iter();
+
         let apply_in_file_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -143,6 +151,7 @@ mod tests {
             }
         "#]]
         .assert_debug_eq(&apply_in_file_assist);
+
         let apply_in_workspace_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -216,8 +225,10 @@ mod tests {
             "#,
             AssistResolveStrategy::None,
         );
+
         assert_eq!(2, assists.len());
         let mut assists = assists.into_iter();
+
         let apply_in_file_assist = assists.next().unwrap();
         expect![[r#"
             Assist {
@@ -238,6 +249,7 @@ mod tests {
             }
         "#]]
         .assert_debug_eq(&apply_in_file_assist);
+
         let apply_in_workspace_assist = assists.next().unwrap();
         expect![[r#"
             Assist {

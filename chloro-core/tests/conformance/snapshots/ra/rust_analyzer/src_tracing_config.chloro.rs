@@ -53,11 +53,14 @@ where
             .filter
             .parse()
             .with_context(|| format!("invalid log filter: `{}`", self.filter))?;
+
         let writer = self.writer;
+
         let ra_fmt_layer = tracing_subscriber::fmt::layer()
             .with_target(false)
             .with_ansi(false)
             .with_writer(writer);
+
         let ra_fmt_layer = match time::OffsetTime::local_rfc_3339() {
             Ok(timer) => {
                 // If we can get the time offset, format logs with the timezone.
@@ -70,6 +73,7 @@ where
             }
         }
         .with_filter(targets_filter);
+
         let chalk_layer = match self.chalk_filter {
             Some(chalk_filter) => {
                 let level: LevelFilter =
@@ -91,10 +95,12 @@ where
             None => None::<HierarchicalLayer>.with_filter(LevelFilter::OFF).boxed(),
         };
         // TODO: remove `.with_filter(LevelFilter::OFF)` on the `None` branch.
+
         let profiler_layer = match self.profile_filter {
             Some(spec) => Some(hprof::SpanTree::new(&spec)).with_filter(LevelFilter::INFO),
             None => None.with_filter(LevelFilter::OFF),
         };
+
         let json_profiler_layer = match self.json_profile_filter {
             Some(spec) => {
                 let filter = json::JsonFilter::from_spec(&spec);
@@ -110,12 +116,15 @@ where
             }
             None => None,
         };
+
         let subscriber = Registry::default()
             .with(ra_fmt_layer)
             .with(json_profiler_layer)
             .with(profiler_layer)
             .with(chalk_layer);
+
         tracing::subscriber::set_global_default(subscriber)?;
+
         Ok(())
     }
 }

@@ -34,9 +34,11 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 
         bin_expr
     };
+
     let op = bin_expr.op_kind()?;
     let op_range = bin_expr.op_token()?.text_range();
     // Walk up the tree while we have the same binary operator
+
     while let Some(parent_expr) = bin_expr.syntax().parent().and_then(ast::BinExpr::cast) {
         match parent_expr.op_kind() {
             Some(parent_op) if parent_op == op => {
@@ -45,20 +47,25 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
             _ => break,
         }
     }
+
     let op = bin_expr.op_kind()?;
     let (inv_token, prec) = match op {
         ast::BinaryOp::LogicOp(ast::LogicOp::And) => (SyntaxKind::PIPE2, ExprPrecedence::LOr),
         ast::BinaryOp::LogicOp(ast::LogicOp::Or) => (SyntaxKind::AMP2, ExprPrecedence::LAnd),
         _ => return None,
     };
+
     let make = SyntaxFactory::with_mappings();
+
     let demorganed = bin_expr.clone_subtree();
     let mut editor = SyntaxEditor::new(demorganed.syntax().clone());
     editor.replace(demorganed.op_token()?, make.token(inv_token));
+
     let mut exprs = VecDeque::from([
         (bin_expr.lhs()?, demorganed.lhs()?, prec),
         (bin_expr.rhs()?, demorganed.rhs()?, prec),
     ]);
+
     while let Some((expr, demorganed, prec)) = exprs.pop_front() {
         if let BinExpr(bin_expr) = &expr {
             if let BinExpr(cbin_expr) = &demorganed {
@@ -84,9 +91,11 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
             editor.replace(demorganed.syntax(), inv.syntax());
         }
     }
+
     editor.add_mappings(make.finish_with_mappings());
     let edit = editor.finish();
     let demorganed = ast::Expr::cast(edit.new_root().clone())?;
+
     acc.add_group(
         &GroupLabel("Apply De Morgan's law".to_owned()),
         AssistId::refactor_rewrite("apply_demorgan"),
@@ -134,8 +143,10 @@ pub(crate) fn apply_demorgan(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 pub(crate) fn apply_demorgan_iterator(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let method_call: ast::MethodCallExpr = ctx.find_node_at_offset()?;
     let (name, arg_expr) = validate_method_call_expr(ctx, &method_call)?;
+
     let ast::Expr::ClosureExpr(closure_expr) = arg_expr else { return None };
     let closure_body = closure_expr.body()?.clone_for_update();
+
     let op_range = method_call.syntax().text_range();
     let label = format!("Apply De Morgan's law to `Iterator::{}`", name.text().as_str());
     acc.add_group(
@@ -195,11 +206,14 @@ fn validate_method_call_expr(
         return None;
     }
     let arg_expr = method_call.arg_list()?.args().next()?;
+
     let sema = &ctx.sema;
+
     let receiver = method_call.receiver()?;
     let it_type = sema.type_of_expr(&receiver)?.adjusted();
     let module = sema.scope(receiver.syntax())?.module();
     let krate = module.krate();
+
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
     it_type.impls_trait(sema.db, iter_trait, &[]).then_some((name_ref, arg_expr))
 }

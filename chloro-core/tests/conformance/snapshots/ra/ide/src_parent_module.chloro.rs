@@ -15,8 +15,10 @@ use crate::NavigationTarget;
 pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<NavigationTarget> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
+
     let mut module = find_node_at_offset::<ast::Module>(source_file.syntax(), position.offset);
     // If cursor is literally on `mod foo`, go to the grandpa.
+
     if let Some(m) = &module
         && !m
             .item_list()
@@ -25,6 +27,7 @@ pub(crate) fn parent_module(db: &RootDatabase, position: FilePosition) -> Vec<Na
         cov_mark::hit!(test_resolve_parent_module_on_module_decl);
         module = m.syntax().ancestors().skip(1).find_map(ast::Module::cast);
     }
+
     match module {
         Some(module) => sema
             .to_def(&module)

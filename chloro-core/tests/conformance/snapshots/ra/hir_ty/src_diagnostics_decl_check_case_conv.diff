@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5852 bytes
-Chloro size:   5540 bytes
+Chloro size:   5546 bytes
 Rustfmt size:  6228 bytes
 
 ✗ Outputs DIFFER
@@ -17,24 +17,6 @@ Rustfmt size:  6228 bytes
  /// Converts an identifier to an UpperCamelCase form.
  /// Returns `None` if the string is already in UpperCamelCase.
  pub(crate) fn to_camel_case(ident: &str) -> Option<String> {
-     if is_camel_case(ident) {
-         return None;
-     }
--
-     Some(stdx::to_camel_case(ident))
- }
- 
-     } else if is_upper_snake_case(ident) {
-         return Some(ident.to_lowercase());
-     }
--
-     Some(stdx::to_lower_snake_case(ident))
- }
- 
-     } else if is_lower_snake_case(ident) {
-         return Some(ident.to_uppercase());
-     }
--
      Some(stdx::to_upper_snake_case(ident))
  }
  
@@ -43,12 +25,6 @@ Rustfmt size:  6228 bytes
  fn is_camel_case(name: &str) -> bool {
      let name = name.trim_matches('_');
      if name.is_empty() {
-         return true;
-     }
--
-     let mut fst = None;
-     // start with a non-lowercase letter rather than non-uppercase
-     // ones (some scripts don't have a concept of upper/lowercase)
      is_snake_case(ident, char::is_lowercase)
  }
  
@@ -57,12 +33,6 @@ Rustfmt size:  6228 bytes
  fn is_snake_case<F: Fn(char) -> bool>(ident: &str, wrong_case: F) -> bool {
      if ident.is_empty() {
          return true;
-     }
-     let ident = ident.trim_matches('_');
--
-     let mut allow_underscore = true;
-     ident.chars().all(|c| {
-         allow_underscore = match c {
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -72,7 +42,7 @@ Rustfmt size:  6228 bytes
      fn check<F: Fn(&str) -> Option<String>>(fun: F, input: &str, expect: Expect) {
          // `None` is translated to empty string, meaning that there is nothing to fix.
          let output = fun(input).unwrap_or_default();
--
+ 
          expect.assert_eq(&output);
      }
 -

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8687 bytes
-Chloro size:   8670 bytes
+Chloro size:   8682 bytes
 Rustfmt size:  8767 bytes
 
 ✗ Outputs DIFFER
@@ -18,19 +18,6 @@ Rustfmt size:  8767 bytes
  
  pub(crate) fn ssr_assists(
      db: &RootDatabase,
-     frange: FileRange,
- ) -> Vec<Assist> {
-     let mut ssr_assists = Vec::with_capacity(2);
--
-     let (match_finder, comment_range) = match ide_ssr::ssr_from_comment(db, frange) {
-         Some(ssr_data) => ssr_data,
-         None => return ssr_assists,
-     };
-     let id = AssistId::refactor_rewrite("ssr");
--
-     let (source_change_for_file, source_change_for_workspace) = if resolve.should_resolve(&id) {
-         let edits = match_finder.edits();
- 
  
          let source_change_for_workspace = SourceChange::from_iter(match_finder.edits());
  
@@ -42,22 +29,6 @@ Rustfmt size:  8767 bytes
      } else {
          (None, None)
      };
--
-     let assists = vec![
-         ("Apply SSR in file", source_change_for_file),
-         ("Apply SSR in workspace", source_change_for_workspace),
-     ];
--
-     for (label, source_change) in assists.into_iter() {
-         let assist = Assist {
-             id,
- 
-         ssr_assists.push(assist);
-     }
--
-     ssr_assists
- }
- 
          base_db::salsa::Setter as _, symbol_index::LocalRoots, FileRange, FxHashSet, RootDatabase,
      };
      use test_fixture::WithFixture;
@@ -81,33 +52,13 @@ Rustfmt size:  8767 bytes
      #[test]
      fn not_applicable_comment_not_ssr() {
          let ra_fixture = r#"
-             fn foo() {}
-             "#;
-         let assists = get_assists(ra_fixture, AssistResolveStrategy::All);
--
+ 
          assert_eq!(0, assists.len());
      }
 -
      #[test]
      fn resolve_edits_true() {
          let assists = get_assists(
-             "#,
-             AssistResolveStrategy::All,
-         );
--
-         assert_eq!(2, assists.len());
-         let mut assists = assists.into_iter();
--
-         let apply_in_file_assist = assists.next().unwrap();
-         expect![[r#"
-             Assist {
-             }
-         "#]]
-         .assert_debug_eq(&apply_in_file_assist);
--
-         let apply_in_workspace_assist = assists.next().unwrap();
-         expect![[r#"
-             Assist {
          "#]]
          .assert_debug_eq(&apply_in_workspace_assist);
      }
@@ -115,20 +66,3 @@ Rustfmt size:  8767 bytes
      #[test]
      fn resolve_edits_false() {
          let assists = get_assists(
-             "#,
-             AssistResolveStrategy::None,
-         );
--
-         assert_eq!(2, assists.len());
-         let mut assists = assists.into_iter();
--
-         let apply_in_file_assist = assists.next().unwrap();
-         expect![[r#"
-             Assist {
-             }
-         "#]]
-         .assert_debug_eq(&apply_in_file_assist);
--
-         let apply_in_workspace_assist = assists.next().unwrap();
-         expect![[r#"
-             Assist {

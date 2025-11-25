@@ -290,6 +290,7 @@ impl Definition {
             Definition::TupleField(_) => None,
             Definition::InlineAsmRegOrRegClass(_) | Definition::InlineAsmOperand(_) => None,
         };
+
         docs.or_else(|| {
             // docs are missing, for assoc items of trait impls try to fall back to the docs of the
             // original item of the trait
@@ -542,6 +543,7 @@ impl<'db> NameClass<'db> {
         name: &ast::Name,
     ) -> Option<NameClass<'db>> {
         let _p = tracing::info_span!("NameClass::classify").entered();
+
         let parent = name.syntax().parent()?;
         let definition = match_ast! {
             match parent {
@@ -558,6 +560,7 @@ impl<'db> NameClass<'db> {
             }
         };
         return Some(NameClass::Definition(definition));
+
         fn classify_item(
             sema: &Semantics<'_, RootDatabase>,
             item: ast::Item,
@@ -588,6 +591,7 @@ impl<'db> NameClass<'db> {
             };
             Some(definition)
         }
+
         fn classify_ident_pat<'db>(
             sema: &Semantics<'db, RootDatabase>,
             ident_pat: ast::IdentPat,
@@ -611,6 +615,7 @@ impl<'db> NameClass<'db> {
             }
             Some(NameClass::Definition(Definition::Local(local)))
         }
+
         fn classify_rename(
             sema: &Semantics<'_, RootDatabase>,
             rename: ast::Rename,
@@ -631,6 +636,7 @@ impl<'db> NameClass<'db> {
     ) -> Option<NameClass<'db>> {
         let _p = tracing::info_span!("NameClass::classify_lifetime", ?lifetime).entered();
         let parent = lifetime.syntax().parent()?;
+
         if let Some(it) = ast::LifetimeParam::cast(parent.clone()) {
             sema.to_def(&it).map(Into::into).map(Definition::GenericParam)
         } else if let Some(it) = ast::Label::cast(parent) {
@@ -734,7 +740,9 @@ impl<'db> NameRefClass<'db> {
         name_ref: &ast::NameRef,
     ) -> Option<NameRefClass<'db>> {
         let _p = tracing::info_span!("NameRefClass::classify", ?name_ref).entered();
+
         let parent = name_ref.syntax().parent()?;
+
         if let Some(record_field) = ast::RecordExprField::for_field_name(name_ref)
             && let Some((field, local, _, adt_subst)) =
                 sema.resolve_record_field_with_substitution(&record_field)
@@ -747,6 +755,7 @@ impl<'db> NameRefClass<'db> {
             };
             return Some(res);
         }
+
         if let Some(path) = ast::PathSegment::cast(parent.clone()).map(|it| it.parent_path()) {
             if path.parent_path().is_none()
                 && let Some(macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
@@ -761,6 +770,7 @@ impl<'db> NameRefClass<'db> {
                 .resolve_path_with_subst(&path)
                 .map(|(res, subst)| NameRefClass::Definition(res.into(), subst));
         }
+
         match_ast! {
             match parent {
                 ast::MethodCallExpr(method_call) => {

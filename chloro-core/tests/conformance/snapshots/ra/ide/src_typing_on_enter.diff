@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12984 bytes
-Chloro size:   11613 bytes
+Chloro size:   11627 bytes
 Rustfmt size:  13116 bytes
 
 ✗ Outputs DIFFER
@@ -70,50 +70,11 @@ Rustfmt size:  13116 bytes
 -        .syntax()
 -        .token_at_offset(position.offset)
 -        .left_biased()?;
--
 +    let token = file.syntax().token_at_offset(position.offset).left_biased()?;
+ 
      if let Some(comment) = ast::Comment::cast(token.clone()) {
          return on_enter_in_comment(&comment, &file, position.offset);
-     }
--
-     if token.kind() == L_CURLY {
-         // Typing enter after the `{` of a block expression, where the `}` is on the same line
-         if let Some(edit) = find_node_at_offset(file.syntax(), position.offset - TextSize::of('{'))
-             return Some(edit);
-         }
-     }
--
-     None
- }
  
-     if comment.kind().shape.is_block() {
-         return None;
-     }
--
-     let prefix = comment.prefix();
-     let comment_range = comment.syntax().text_range();
-     if offset < comment_range.start() + TextSize::of(prefix) {
-         return None;
-     }
--
-     let mut remove_trailing_whitespace = false;
-     // Continuing single-line non-doc comments (like this one :) ) is annoying
-     if prefix == "//" && comment_range.end() == offset {
-             return None;
-         }
-     }
--
-     let indent = node_indent(file, comment.syntax())?;
-     let inserted = format!("\n{indent}{prefix} $0");
-     let delete = if remove_trailing_whitespace {
- 
- fn on_enter_in_block(block: ast::BlockExpr, position: FilePosition) -> Option<TextEdit> {
-     let contents = block_contents(&block)?;
--
-     if block.syntax().text().contains_char('\n') {
-         return None;
-     }
--
      let indent = IndentLevel::from_node(block.syntax());
      let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
 -    edit.union(TextEdit::insert(
@@ -125,10 +86,7 @@ Rustfmt size:  13116 bytes
      Some(edit)
  }
  
-     if list.syntax().text().contains_char('\n') {
-         return None;
-     }
--
+ 
      let indent = IndentLevel::from_node(list.syntax());
      let mut edit = TextEdit::insert(position.offset, format!("\n{}$0", indent + 1));
 -    edit.union(TextEdit::insert(
@@ -141,17 +99,6 @@ Rustfmt size:  13116 bytes
      Some(edit)
  }
  
- fn block_contents(block: &ast::BlockExpr) -> Option<SyntaxNode> {
-     let mut node = block.tail_expr().map(|e| e.syntax().clone());
--
-     for stmt in block.statements() {
-         if node.is_some() {
-             // More than 1 node in the block
- 
-         node = Some(stmt.syntax().clone());
-     }
--
-     node
  }
  
  fn followed_by_comment(comment: &ast::Comment) -> bool {
@@ -184,8 +131,6 @@ Rustfmt size:  13116 bytes
      fn apply_on_enter(before: &str) -> Option<String> {
          let (analysis, position) = fixture::position(before);
          let result = analysis.on_enter(position).unwrap()?;
--
-         let mut actual = analysis.file_text(position.file_id).unwrap().to_string();
          result.apply(&mut actual);
          Some(actual)
      }
@@ -204,20 +149,6 @@ Rustfmt size:  13116 bytes
      #[test]
      fn continues_doc_comment() {
          do_check(
- }
- ",
-         );
--
-         do_check(
-             r"
- impl S {
- }
- ",
-         );
--
-         do_check(
-             r"
- ///$0 Some docs
  ",
          );
      }

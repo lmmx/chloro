@@ -10,9 +10,12 @@ use crate::{
 pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name: ast::NameRef = ctx.find_node_at_offset()?;
     let call = name.syntax().parent().and_then(ast::MethodCallExpr::cast)?;
+
     let ident = name.ident_token()?;
+
     let range = call.syntax().text_range();
     let resolved_call = ctx.sema.resolve_method_call(&call)?;
+
     let current_module = ctx.sema.scope(call.syntax())?.module();
     let current_edition = current_module.krate().edition(ctx.db());
     let target_module_def = ModuleDef::from(resolved_call);
@@ -23,7 +26,9 @@ pub(crate) fn qualify_method_call(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         item_for_path_search(ctx.sema.db, item_in_ns)?,
         cfg,
     )?;
+
     let qualify_candidate = QualifyCandidate::ImplMethod(ctx.sema.db, call, resolved_call);
+
     acc.add(
         AssistId::refactor_rewrite("qualify_method_call"),
         format!("Qualify `{ident}` method call"),

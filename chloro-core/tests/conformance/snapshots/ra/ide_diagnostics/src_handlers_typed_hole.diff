@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9501 bytes
-Chloro size:   9347 bytes
+Chloro size:   9352 bytes
 Rustfmt size:  9638 bytes
 
 ✗ Outputs DIFFER
@@ -34,10 +34,9 @@ Rustfmt size:  9638 bytes
      } else {
          (
              format!(
-             fixes(ctx, d),
          )
      };
--
+ 
 -    Diagnostic::new(
 -        DiagnosticCode::RustcHardError("typed-hole"),
 -        message,
@@ -62,23 +61,11 @@ Rustfmt size:  9638 bytes
 +    let (original_range, _) =
 +        d.expr.as_ref().map(|it| it.to_node(&root)).syntax().original_file_range_opt(db)?;
      let scope = ctx.sema.scope(d.expr.value.to_node(&root).syntax())?;
--
+ 
      let term_search_ctx = TermSearchCtx {
-         sema: &ctx.sema,
-         scope: &scope,
-         },
-     };
-     let paths = term_search(&term_search_ctx);
--
-     let mut formatter = |_: &hir::Type<'_>| String::from("_");
--
-     let assists: Vec<Assist> = d
-         .expected
-         .is_unknown()
-             command: None,
          })
          .collect();
--
+ 
 -    if !assists.is_empty() {
 -        Some(assists)
 -    } else {

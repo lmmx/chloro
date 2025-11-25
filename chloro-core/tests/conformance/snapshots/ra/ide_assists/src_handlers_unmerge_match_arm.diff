@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6719 bytes
-Chloro size:   6193 bytes
+Chloro size:   6195 bytes
 Rustfmt size:  6740 bytes
 
 ✗ Outputs DIFFER
@@ -50,12 +50,7 @@ Rustfmt size:  6740 bytes
 -
      // We don't need to check for leading pipe because it is directly under `MatchArm`
      // without `OrPat`.
--
-     let new_parent = match_arm.syntax().parent()?;
--
-     acc.add(
-         AssistId::refactor_rewrite("unmerge_match_arm"),
-         "Unmerge match arm",
+ 
              let new_pat = if pats_after.len() == 1 {
                  pats_after[0].clone()
              } else {

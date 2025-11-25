@@ -1717,6 +1717,7 @@ impl<'db> Evaluator<'db> {
         }
         let target_ty = self.coerce_unsized_look_through_fields(target_ty, for_ptr)?;
         let current_ty = self.coerce_unsized_look_through_fields(current_ty, for_ptr)?;
+
         self.unsizing_ptr_from_addr(target_ty, current_ty, addr)
     }
 
@@ -2037,7 +2038,9 @@ impl<'db> Evaluator<'db> {
         if r.size == 0 {
             return Ok(());
         }
+
         let oob = || MirEvalError::UndefinedBehavior("out of bounds memory write".to_owned());
+
         match (addr, r.addr) {
             (Stack(dst), Stack(src)) => {
                 if self.stack.len() < src + r.size || self.stack.len() < dst + r.size {
@@ -2069,6 +2072,7 @@ impl<'db> Evaluator<'db> {
                 )));
             }
         }
+
         Ok(())
     }
 
@@ -2860,6 +2864,7 @@ impl<'db> Evaluator<'db> {
             // we can ignore drop in them.
             return Ok(());
         };
+
         let generic_args = GenericArgs::new_from_iter(self.interner(), [ty.into()]);
         if let Ok(MirOrDynIndex::Mir(body)) =
             self.get_mir_or_dyn_index(drop_fn, generic_args, locals, span)

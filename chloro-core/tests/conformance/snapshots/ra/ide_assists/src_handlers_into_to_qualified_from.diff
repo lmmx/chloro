@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5102 bytes
-Chloro size:   4582 bytes
+Chloro size:   4583 bytes
 Rustfmt size:  5128 bytes
 
 ✗ Outputs DIFFER
@@ -60,13 +60,6 @@ Rustfmt size:  5128 bytes
          acc.add(
              AssistId::generate("into_to_qualified_from"),
              "Convert `into` to fully qualified `from`",
-             },
-         );
-     }
--
-     Some(())
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::check_assist;

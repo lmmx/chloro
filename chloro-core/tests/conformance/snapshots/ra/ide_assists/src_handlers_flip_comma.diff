@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5629 bytes
-Chloro size:   5422 bytes
+Chloro size:   5431 bytes
 Rustfmt size:  5831 bytes
 
 ✗ Outputs DIFFER
@@ -33,6 +33,7 @@ Rustfmt size:  5831 bytes
 -
      // Don't apply a "flip" in case of a last comma
      // that typically comes before punctuation
++
      if next.kind().is_punct() {
          return None;
      }
@@ -43,10 +44,11 @@ Rustfmt size:  5831 bytes
 -        .parent_ancestors()
 -        .any(|it| it.kind() == SyntaxKind::MACRO_CALL)
 -    {
++
 +    if comma.parent_ancestors().any(|it| it.kind() == SyntaxKind::MACRO_CALL) {
          return None;
      }
--
+ 
      let target = comma.text_range();
 -    acc.add(
 -        AssistId::refactor_rewrite("flip_comma"),
@@ -96,20 +98,8 @@ Rustfmt size:  5831 bytes
 +    let before: Vec<_> =
 +        tree_iter.by_ref().take_while(|it| it.as_token() != Some(&comma)).collect();
      let after: Vec<_> = tree_iter.collect();
--
+ 
      let not_ws = |element: &NodeOrToken<_, SyntaxToken>| match element {
-         NodeOrToken::Token(token) => token.kind() != SyntaxKind::WHITESPACE,
-         NodeOrToken::Node(_) => true,
-     };
--
-     let is_comma = |element: &NodeOrToken<_, SyntaxToken>| match element {
-         NodeOrToken::Token(token) => token.kind() == T![,],
-         NodeOrToken::Node(_) => false,
-     };
--
-     let prev_start_untrimmed = match before.iter().rposition(is_comma) {
-         Some(pos) => pos + 1,
-         None => 1,
      };
      let prev_end = 1 + before.iter().rposition(not_ws).unwrap();
      let prev_start = prev_start_untrimmed
@@ -117,8 +107,8 @@ Rustfmt size:  5831 bytes
 -            .iter()
 -            .position(not_ws)
 -            .unwrap();
--
 +        + before[prev_start_untrimmed..prev_end].iter().position(not_ws).unwrap();
+ 
      let next_start = after.iter().position(not_ws).unwrap();
      let next_end_untrimmed = match after.iter().position(is_comma) {
          Some(pos) => pos,
@@ -128,18 +118,10 @@ Rustfmt size:  5831 bytes
 -        .iter()
 -        .rposition(not_ws)
 -        .unwrap();
--
 +    let next_end = 1 + after[..next_end_untrimmed].iter().rposition(not_ws).unwrap();
+ 
      let result = [
          &before[1..prev_start],
-         &after[next_start..next_end],
-         &after[next_end..after.len() - 1],
-     ]
-     .concat();
--
-     let make = SyntaxFactory::with_mappings();
-     let new_token_tree = make.token_tree(tree.left_delimiter_token().unwrap().kind(), result);
-     (new_token_tree, make.finish_with_mappings())
  #[cfg(test)]
  mod tests {
      use super::*;

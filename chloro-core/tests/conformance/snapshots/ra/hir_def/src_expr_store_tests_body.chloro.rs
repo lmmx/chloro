@@ -10,6 +10,7 @@ use super::super::*;
 
 fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>, DefWithBodyId) {
     let db = TestDB::with_files(ra_fixture);
+
     let krate = db.fetch_test_crate();
     let def_map = crate_def_map(&db, krate);
     let mut fn_def = None;
@@ -22,18 +23,21 @@ fn lower(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> (TestDB, Arc<Body>,
         }
     }
     let fn_def = fn_def.unwrap().into();
+
     let body = db.body(fn_def);
     (db, body, fn_def)
 }
 
 fn def_map_at(#[rust_analyzer::rust_fixture] ra_fixture: &str) -> String {
     let (db, position) = TestDB::with_position(ra_fixture);
+
     let module = db.module_at_position(position);
     module.def_map(&db).dump(&db)
 }
 
 fn check_block_scopes_at(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
     let (db, position) = TestDB::with_position(ra_fixture);
+
     let module = db.module_at_position(position);
     let actual = module.def_map(&db).dump_block_scopes(&db);
     expect.assert_eq(&actual);
@@ -151,6 +155,7 @@ fn main() {
 }
 "#,
     );
+
     expect![[r#"
         fn main() {
             match builtin#lang(into_iter)(
@@ -184,6 +189,7 @@ fn main() {
 }
 "#,
     );
+
     expect![[r#"
         fn main() {
             let are = "are";
@@ -266,6 +272,7 @@ fn main() {
 }
 "#,
     );
+
     expect![[r#"
         fn main() {
             let are = "are";
@@ -369,6 +376,7 @@ impl SsrError {
 }
 "##,
     );
+
     assert_eq!(db.body_with_source_map(def).1.diagnostics(), &[]);
     expect![[r#"
         fn main() {
@@ -423,11 +431,14 @@ fn f(a: i32, b: u32) -> String {
 }
 "#,
     );
+
     let (_, source_map) = db.body_with_source_map(def);
     assert_eq!(source_map.diagnostics(), &[]);
+
     for (_, def_map) in body.blocks(&db) {
         assert_eq!(def_map.diagnostics(), &[]);
     }
+
     expect![[r#"
         fn f(a, b) {
             {
@@ -453,6 +464,7 @@ fn destructuring_assignment_tuple_macro() {
     // This is a funny one. `let m!()() = Bar()` is an error in rustc, because `m!()()` isn't a valid pattern,
     // but in destructuring assignment it is valid, because `m!()()` is a valid expression, and destructuring
     // assignments start their lives as expressions. So we have to do the same.
+
     let (db, body, def) = lower(
         r#"
 struct Bar();
@@ -466,11 +478,14 @@ fn foo() {
 }
 "#,
     );
+
     let (_, source_map) = db.body_with_source_map(def);
     assert_eq!(source_map.diagnostics(), &[]);
+
     for (_, def_map) in body.blocks(&db) {
         assert_eq!(def_map.diagnostics(), &[]);
     }
+
     expect![[r#"
         fn foo() {
             Bar() = Bar();
@@ -511,6 +526,7 @@ fn foo() {
 "#,
     );
     let printed = body.pretty_print(&db, owner, Edition::CURRENT);
+
     expect![[r#"
         fn foo() {
             let v @ u = 123;
@@ -548,6 +564,7 @@ const fn f(x: i32) -> i32 {
     }
 }"#,
     );
+
     let mtch_arms = body
         .assert_expr_only()
         .exprs
@@ -560,6 +577,7 @@ const fn f(x: i32) -> i32 {
             None
         })
         .unwrap();
+
     let MatchArm { pat, .. } = mtch_arms[1];
     match body[pat] {
         Pat::Range { start, end } => {

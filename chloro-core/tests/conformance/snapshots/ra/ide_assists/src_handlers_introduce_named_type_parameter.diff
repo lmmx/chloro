@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5391 bytes
-Chloro size:   5168 bytes
+Chloro size:   5169 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -38,10 +38,7 @@ Rustfmt size:  5418 bytes
 +    let param = impl_trait_type.syntax().ancestors().find_map(ast::Param::cast)?;
      let fn_ = param.syntax().ancestors().nth(2).and_then(ast::Fn::cast)?;
      let type_bound_list = impl_trait_type.type_bound_list()?;
--
-     let make = SyntaxFactory::with_mappings();
-     let target = fn_.syntax().text_range();
-     acc.add(
+ 
  #[cfg(test)]
  mod tests {
      use super::*;

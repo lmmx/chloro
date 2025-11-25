@@ -14,20 +14,26 @@ pub(crate) fn replace_turbofish_with_explicit_type(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let let_stmt = ctx.find_node_at_offset::<LetStmt>()?;
+
     let initializer = let_stmt.initializer()?;
+
     let generic_args = generic_arg_list(&initializer)?;
     // Find range of ::<_>
+
     let colon2 = generic_args.coloncolon_token()?;
     let r_angle = generic_args.r_angle_token()?;
     let turbofish_range = TextRange::new(colon2.text_range().start(), r_angle.text_range().end());
+
     let turbofish_args: Vec<GenericArg> = generic_args.generic_args().collect();
     // Find type of ::<_>
+
     if turbofish_args.len() != 1 {
         cov_mark::hit!(not_applicable_if_not_single_arg);
         return None;
     }
     // An improvement would be to check that this is correctly part of the return value of the
     // function call, or sub in the actual return type.
+
     let returned_type = match ctx.sema.type_of_expr(&initializer) {
         Some(returned_type) if !returned_type.original.contains_unknown() => {
             let module = ctx.sema.scope(let_stmt.syntax())?.module();
@@ -38,11 +44,13 @@ pub(crate) fn replace_turbofish_with_explicit_type(
             turbofish_args[0].to_string()
         }
     };
+
     let initializer_start = initializer.syntax().text_range().start();
     if ctx.offset() > turbofish_range.end() || ctx.offset() < initializer_start {
         cov_mark::hit!(not_applicable_outside_turbofish);
         return None;
     }
+
     if let_stmt.colon_token().is_none() {
         // If there's no colon in a let statement, then there is no explicit type.
         // let x = fn::<...>();
@@ -73,6 +81,7 @@ pub(crate) fn replace_turbofish_with_explicit_type(
             },
         );
     }
+
     None
 }
 

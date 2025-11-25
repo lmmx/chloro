@@ -20,7 +20,9 @@ pub(crate) fn complete_mod(
     if mod_under_caret.item_list().is_some() {
         return None;
     }
+
     let _p = tracing::info_span!("completion::complete_mod").entered();
+
     let mut current_module = ctx.module;
     // For `mod $0`, `ctx.module` is its parent, but for `mod f$0`, it's `mod f` itself, but we're
     // interested in its parent.
@@ -37,25 +39,30 @@ pub(crate) fn complete_mod(
             _ => {}
         }
     }
+
     let module_definition_file =
         current_module.definition_source_file_id(ctx.db).original_file(ctx.db);
     let source_root_id =
         ctx.db.file_source_root(module_definition_file.file_id(ctx.db)).source_root_id(ctx.db);
     let source_root = ctx.db.source_root(source_root_id).source_root(ctx.db);
+
     let directory_to_look_for_submodules = directory_to_look_for_submodules(
         current_module,
         ctx.db,
         source_root.path_for_file(&module_definition_file.file_id(ctx.db))?,
     )?;
+
     let existing_mod_declarations = current_module
         .children(ctx.db)
         .filter_map(|module| Some(module.name(ctx.db)?.display(ctx.db, ctx.edition).to_string()))
         .filter(|module| module != ctx.original_token.text())
         .collect::<FxHashSet<_>>();
+
     let module_declaration_file =
         current_module.declaration_source_range(ctx.db).map(|module_declaration_source_file| {
             module_declaration_source_file.file_id.original_file(ctx.db)
         });
+
     source_root
         .iter()
         .filter(|&submodule_candidate_file| {
@@ -99,6 +106,7 @@ pub(crate) fn complete_mod(
                 CompletionItem::new(SymbolKind::Module, ctx.source_range(), &label, ctx.edition);
             item.add_to(acc, ctx.db)
         });
+
     Some(())
 }
 
@@ -132,6 +140,7 @@ fn directory_to_look_for_submodules(
             }
         }
     }?;
+
     module_chain_to_containing_module_file(module, db)
         .into_iter()
         .filter_map(|module| module.name(db))

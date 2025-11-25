@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3554 bytes
-Chloro size:   3548 bytes
+Chloro size:   3551 bytes
 Rustfmt size:  3554 bytes
 
 ✗ Outputs DIFFER
@@ -21,13 +21,6 @@ Rustfmt size:  3554 bytes
  
  use crate::{
      completions::postfix::{build_postfix_snippet_builder, escape_snippet_bits},
-         Some(it) => it,
-         None => return,
-     };
--
-     if let Ok((mut out, mut exprs)) = parse_format_exprs(receiver_text.text()) {
-         // Escape any snippet bits in the out text and any of the exprs.
-         escape_snippet_bits(&mut out);
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -35,13 +28,6 @@ Rustfmt size:  3554 bytes
      #[test]
      fn test_into_suggestion() {
          let test_vector = &[
-                 r#"log::info!("{} {ident} {} {}", $1, $2, 2 + 2)"#,
-             ),
-         ];
--
-         for (kind, input, output) in test_vector {
-             let (parsed_string, exprs) = parse_format_exprs(input).unwrap();
-             let exprs = with_placeholders(exprs);
              assert_eq!(&snippet, output);
          }
      }
@@ -49,10 +35,3 @@ Rustfmt size:  3554 bytes
      #[test]
      fn test_into_suggestion_no_epxrs() {
          let test_vector = &[
-             ("println!", "{ident}", r#"println!("{ident}")"#),
-             ("format!", "{ident:?}", r#"format!("{ident:?}")"#),
-         ];
--
-         for (kind, input, output) in test_vector {
-             let (parsed_string, _exprs) = parse_format_exprs(input).unwrap();
-             let snippet = format!(r#"{kind}("{parsed_string}")"#);

@@ -16,16 +16,21 @@ pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>)
         LCur,
         RCur,
     }
+
     let makro = ctx.find_node_at_offset::<ast::MacroCall>()?;
+
     let cursor_offset = ctx.offset();
     let semicolon = macro_semicolon(&makro);
     let token_tree = makro.token_tree()?;
+
     let ltoken = token_tree.left_delimiter_token()?;
     let rtoken = token_tree.right_delimiter_token()?;
+
     if !ltoken.text_range().contains(cursor_offset) && !rtoken.text_range().contains(cursor_offset)
     {
         return None;
     }
+
     let token = match ltoken.kind() {
         T!['{'] => MacroDelims::LCur,
         T!['('] => MacroDelims::LPar,
@@ -35,6 +40,7 @@ pub(crate) fn toggle_macro_delimiter(acc: &mut Assists, ctx: &AssistContext<'_>)
         T!['}'] => MacroDelims::RCur,
         _ => return None,
     };
+
     acc.add(
         AssistId::refactor("toggle_macro_delimiter"),
         match token {
@@ -101,6 +107,7 @@ macro_rules! sth {
 sth!{ }
             "#,
         );
+
         check_assist(
             toggle_macro_delimiter,
             r#"

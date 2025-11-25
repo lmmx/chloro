@@ -85,6 +85,7 @@ pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<Infer
     let resolver = def.resolver(db);
     let body = db.body(def);
     let mut ctx = InferenceContext::new(db, def, &body, resolver);
+
     match def {
         DefWithBodyId::FunctionId(f) => {
             ctx.collect_fn(f);
@@ -116,23 +117,33 @@ pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<Infer
             };
         }
     }
+
     ctx.infer_body();
+
     ctx.infer_mut_body();
+
     ctx.handle_opaque_type_uses();
+
     ctx.type_inference_fallback();
     // Comment from rustc:
     // Even though coercion casts provide type hints, we check casts after fallback for
     // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
+
     let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
     for mut cast in cast_checks.into_iter() {
         if let Err(diag) = cast.check(&mut ctx) {
             ctx.diagnostics.push(diag);
         }
     }
+
     ctx.table.select_obligations_where_possible();
+
     ctx.infer_closures();
+
     ctx.table.select_obligations_where_possible();
+
     ctx.handle_opaque_type_uses();
+
     Arc::new(ctx.resolve_all())
 }
 
@@ -912,17 +923,21 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
     /// Clones `self` and calls `resolve_all()` on it.
     pub(crate) fn fixme_resolve_all_clone(&self) -> InferenceResult<'db> {
         let mut ctx = self.clone();
+
         ctx.type_inference_fallback();
         // Comment from rustc:
         // Even though coercion casts provide type hints, we check casts after fallback for
         // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
+
         let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
         for mut cast in cast_checks.into_iter() {
             if let Err(diag) = cast.check(&mut ctx) {
                 ctx.diagnostics.push(diag);
             }
         }
+
         ctx.table.select_obligations_where_possible();
+
         ctx.resolve_all()
     }
 
@@ -957,6 +972,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             coercion_casts: _,
             diagnostics: _,
         } = &mut result;
+
         for ty in type_of_expr.values_mut() {
             *ty = table.resolve_completely(*ty);
             *has_errors = *has_errors || ty.references_non_lt_error();
@@ -973,7 +989,9 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         }
         type_of_binding.shrink_to_fit();
         type_of_opaque.shrink_to_fit();
+
         *has_errors |= !type_mismatches.is_empty();
+
         for mismatch in (*type_mismatches).values_mut() {
             mismatch.expected = table.resolve_completely(mismatch.expected);
             mismatch.actual = table.resolve_completely(mismatch.actual);
@@ -1037,7 +1055,9 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             })
             .collect();
         result.tuple_field_access_types.shrink_to_fit();
+
         result.diagnostics = diagnostics;
+
         result
     }
 
@@ -1048,6 +1068,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             InferenceTyDiagnosticSource::Signature,
             LifetimeElisionKind::for_const(self.interner(), id.loc(self.db).container),
         );
+
         self.return_ty = return_ty;
     }
 
@@ -1058,6 +1079,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             InferenceTyDiagnosticSource::Signature,
             LifetimeElisionKind::Elided(self.types.re_static),
         );
+
         self.return_ty = return_ty;
     }
 
@@ -1071,6 +1093,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
         );
         // Check if function contains a va_list, if it does then we append it to the parameter types
         // that are collected from the function data
+
         if data.is_varargs() {
             let va_list_ty = match self.resolve_va_list() {
                 Some(va_list) => Ty::new_adt(
@@ -1114,6 +1137,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
             }
             None => self.types.unit,
         };
+
         self.return_coercion = Some(CoerceMany::new(self.return_ty));
     }
 
@@ -1609,6 +1633,7 @@ impl<'body, 'db> InferenceContext<'body, 'db> {
                 (self.err_ty(), None)
             }
         };
+
         fn forbid_unresolved_segments<'db>(
             ctx: &InferenceContext<'_, 'db>,
             result: (Ty<'db>, Option<VariantId>),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4228 bytes
-Chloro size:   4225 bytes
+Chloro size:   4227 bytes
 Rustfmt size:  4344 bytes
 
 ✗ Outputs DIFFER
@@ -19,17 +19,6 @@ Rustfmt size:  4344 bytes
  use syntax::ast::{self, AstNode};
  
  use crate::{
-     let ty = &sema.type_of_expr(&closure.clone().into())?.original;
-     let c = ty.as_closure()?;
-     let captures = c.captured_items(sema.db);
--
-     if captures.is_empty() {
-         return None;
-     }
--
-     let (range, label) = match closure.move_token() {
-         Some(t) => (t.text_range(), InlayHintLabel::default()),
-         None => {
                  // force cache the source file, otherwise sema lookup will potentially panic
                  _ = sema.parse_or_expand(source.file());
                  source.name().and_then(|name| {

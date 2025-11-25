@@ -254,6 +254,7 @@ pub(crate) fn completion_items(
     if config.completion_hide_deprecated() {
         items.retain(|item| !item.deprecated);
     }
+
     let max_relevance = items.iter().map(|it| it.relevance.score()).max().unwrap_or_default();
     let mut res = Vec::with_capacity(items.len());
     let client_commands = config.client_commands();
@@ -271,10 +272,12 @@ pub(crate) fn completion_items(
             item,
         );
     }
+
     if let Some(limit) = config.completion(None, MiniCore::default()).limit {
         res.sort_by(|item1, item2| item1.sort_text.cmp(&item2.sort_text));
         res.truncate(limit);
     }
+
     res
 }
 
@@ -292,14 +295,17 @@ fn completion_item(
 ) {
     let insert_replace_support = config.insert_replace_support().then_some(tdpp.position);
     let ref_match = item.ref_match();
+
     let mut additional_text_edits = Vec::new();
     let mut something_to_resolve = false;
+
     let filter_text = if fields_to_resolve.resolve_filter_text {
         something_to_resolve |= !item.lookup().is_empty();
         None
     } else {
         Some(item.lookup().to_owned())
     };
+
     let text_edit = if fields_to_resolve.resolve_text_edit {
         something_to_resolve |= true;
         None
@@ -330,6 +336,7 @@ fn completion_item(
         }
         Some(text_edit.unwrap())
     };
+
     let insert_text_format = item.is_snippet.then_some(lsp_types::InsertTextFormat::SNIPPET);
     let tags = if fields_to_resolve.resolve_tags {
         something_to_resolve |= item.deprecated;
@@ -347,18 +354,21 @@ fn completion_item(
     } else {
         None
     };
+
     let detail = if fields_to_resolve.resolve_detail {
         something_to_resolve |= item.detail.is_some();
         None
     } else {
         item.detail.clone()
     };
+
     let documentation = if fields_to_resolve.resolve_documentation {
         something_to_resolve |= item.documentation.is_some();
         None
     } else {
         item.documentation.clone().map(documentation)
     };
+
     let mut lsp_item = lsp_types::CompletionItem {
         label: item.label.primary.to_string(),
         detail,
@@ -376,6 +386,7 @@ fn completion_item(
         insert_text_format,
         ..Default::default()
     };
+
     if config.completion_label_details_support() {
         let has_label_details =
             item.label.detail_left.is_some() || item.label.detail_right.is_some();
@@ -390,7 +401,9 @@ fn completion_item(
     } else if let Some(label_detail) = &item.label.detail_left {
         lsp_item.label.push_str(label_detail.as_str());
     }
+
     set_score(&mut lsp_item, max_relevance, item.relevance);
+
     let imports = if config.completion(None, MiniCore::default()).enable_imports_on_the_fly
         && !item.import_to_add.is_empty()
     {
@@ -428,6 +441,7 @@ fn completion_item(
     } else {
         (None, None)
     };
+
     if let Some((label, indel, relevance)) = ref_match {
         let mut lsp_item_with_ref =
             lsp_types::CompletionItem { label, data: ref_resolve_data, ..lsp_item.clone() };
@@ -438,8 +452,10 @@ fn completion_item(
         set_score(&mut lsp_item_with_ref, max_relevance, relevance);
         acc.push(lsp_item_with_ref);
     };
+
     lsp_item.data = resolve_data;
     acc.push(lsp_item);
+
     fn set_score(
         res: &mut lsp_types::CompletionItem,
         max_relevance: u32,
@@ -521,13 +537,16 @@ pub(crate) fn signature_help(
             (label, params)
         }
     };
+
     let documentation = call_info.doc.filter(|_| config.docs).map(|doc| {
         lsp_types::Documentation::MarkupContent(lsp_types::MarkupContent {
             kind: lsp_types::MarkupKind::Markdown,
             value: format_docs(&doc),
         })
     });
+
     let active_parameter = call_info.active_parameter.map(|it| it as u32);
+
     let signature = lsp_types::SignatureInformation {
         label,
         documentation,
@@ -557,6 +576,7 @@ pub(crate) fn inlay_hint(
                 })
         })
     };
+
     let resolve_range_and_hash = hint_needs_resolve(&inlay_hint).map(|range| {
         (
             range,
@@ -566,6 +586,7 @@ pub(crate) fn inlay_hint(
             ),
         )
     });
+
     let mut something_to_resolve = false;
     let text_edits = inlay_hint
         .text_edit
@@ -589,6 +610,7 @@ pub(crate) fn inlay_hint(
         resolve_range_and_hash.is_some(),
         inlay_hint.label,
     )?;
+
     let data = match resolve_range_and_hash {
         Some((resolve_range, hash)) if something_to_resolve => Some(
             to_value(lsp_ext::InlayHintResolveData {
@@ -601,6 +623,7 @@ pub(crate) fn inlay_hint(
         ),
         _ => None,
     };
+
     Ok(lsp_types::InlayHint {
         position: match inlay_hint.position {
             ide::InlayHintPosition::Before => position(line_index, inlay_hint.range.start()),
@@ -714,6 +737,7 @@ pub(crate) fn semantic_tokens(
 ) -> lsp_types::SemanticTokens {
     let id = TOKEN_RESULT_COUNTER.fetch_add(1, Ordering::SeqCst).to_string();
     let mut builder = semantic_tokens::SemanticTokensBuilder::new(id);
+
     for highlight_range in highlights {
         if highlight_range.highlight.is_empty() {
             continue;
@@ -760,6 +784,7 @@ pub(crate) fn semantic_tokens(
             builder.push(range, token_index, modifier_bitset);
         }
     }
+
     builder.build()
 }
 
@@ -776,6 +801,7 @@ fn semantic_token_type_and_modifiers(
     highlight: Highlight,
 ) -> (lsp_types::SemanticTokenType, semantic_tokens::ModifierSet) {
     use semantic_tokens::{modifiers as mods, types};
+
     let ty = match highlight.tag {
         HlTag::Symbol(symbol) => match symbol {
             SymbolKind::Attribute => types::DECORATOR,
@@ -842,6 +868,7 @@ fn semantic_token_type_and_modifiers(
             HlPunct::MacroBang => types::MACRO_BANG,
         },
     };
+
     let mut mods = semantic_tokens::ModifierSet::default();
     for modifier in highlight.mods.iter() {
         let modifier = match modifier {
@@ -870,6 +897,7 @@ fn semantic_token_type_and_modifiers(
         };
         mods |= modifier;
     }
+
     (ty, mods)
 }
 
@@ -896,7 +924,9 @@ pub(crate) fn folding_range(
         | FoldKind::MatchArm
         | FoldKind::Function => None,
     };
+
     let range = range(line_index, fold.range);
+
     if line_folding_only {
         // Clients with line_folding_only == true (such as VSCode) will fold the whole end line
         // even if it contains text not in the folding range. To prevent that we exclude
@@ -951,6 +981,7 @@ pub(crate) fn url_from_abs_path(path: &AbsPath) -> lsp_types::Url {
         }
         _ => return url,
     }
+
     let driver_letter_range = {
         let (scheme, drive_letter, _rest) = match url.as_str().splitn(3, ':').collect_tuple() {
             Some(it) => it,
@@ -962,6 +993,7 @@ pub(crate) fn url_from_abs_path(path: &AbsPath) -> lsp_types::Url {
     // Note: lowercasing the `path` itself doesn't help, the `Url::parse`
     // machinery *also* canonicalizes the drive letter. So, just massage the
     // string in place.
+
     let mut url: String = url.into();
     url[driver_letter_range].make_ascii_lowercase();
     lsp_types::Url::parse(&url).unwrap()
@@ -1027,6 +1059,7 @@ fn location_info(
     target: NavigationTarget,
 ) -> Cancellable<(lsp_types::Url, lsp_types::Range, lsp_types::Range)> {
     let line_index = snap.file_line_index(target.file_id)?;
+
     let target_uri = url(snap, target.file_id);
     let target_range = range(&line_index, target.full_range);
     let target_selection_range =
@@ -1073,6 +1106,7 @@ fn merge_text_and_snippet_edits(
     let text_edits = edit.into_iter();
     // offset to go from the final source location to the original source location
     let mut source_text_offset = 0i32;
+
     let offset_range = |range: TextRange, offset: i32| -> TextRange {
         // map the snippet range from the target location into the original source location
         let start = u32::from(range.start()).checked_add_signed(offset).unwrap_or(0);
@@ -1080,6 +1114,7 @@ fn merge_text_and_snippet_edits(
 
         TextRange::new(start.into(), end.into())
     };
+
     for current_indel in text_edits {
         let new_range = {
             let insert_len =
@@ -1193,6 +1228,7 @@ fn merge_text_and_snippet_edits(
         source_text_offset += offset_adjustment;
     }
     // insert any remaining tabstops
+
     edits.extend(snippets.map(|(snippet_index, snippet_range)| {
         // adjust the snippet range into the corresponding initial source location
         let snippet_range = offset_range(snippet_range, source_text_offset);
@@ -1215,6 +1251,7 @@ fn merge_text_and_snippet_edits(
             client_supports_annotations,
         )
     }));
+
     edits
 }
 
@@ -1244,6 +1281,7 @@ pub(crate) fn snippet_text_document_edit(
             })
             .collect()
     };
+
     if snap.analysis.is_library_file(file_id)? && snap.config.change_annotation_support() {
         for edit in &mut edits {
             edit.annotation_id = Some(outside_workspace_annotation_id())
@@ -1317,6 +1355,7 @@ pub(crate) fn snippet_workspace_edit(
     mut source_change: SourceChange,
 ) -> Cancellable<lsp_ext::SnippetWorkspaceEdit> {
     let mut document_changes: Vec<lsp_ext::SnippetDocumentChangeOperation> = Vec::new();
+
     for op in &mut source_change.file_system_edits {
         if let FileSystemEdit::CreateFile { dst, initial_contents } = op {
             // replace with a placeholder to avoid cloneing the edit
@@ -1474,6 +1513,7 @@ pub(crate) fn code_action(
         data: None,
         command: None,
     };
+
     res.command = match assist.command {
         Some(assists::Command::TriggerParameterHints) if commands.trigger_parameter_hints => {
             Some(command::trigger_parameter_hints())
@@ -1481,6 +1521,7 @@ pub(crate) fn code_action(
         Some(assists::Command::Rename) if commands.rename => Some(command::rename()),
         _ => None,
     };
+
     match (assist.source_change, resolve_data) {
         (Some(it), _) => res.edit = Some(snippet_workspace_edit(snap, it)?),
         (None, Some((index, code_action_params, version))) => {
@@ -1509,6 +1550,7 @@ pub(crate) fn runnable(
     let target_spec = TargetSpec::for_file(snap, runnable.nav.file_id)?;
     let source_root = snap.analysis.source_root_id(runnable.nav.file_id).ok();
     let config = snap.config.runnables(source_root);
+
     match target_spec {
         Some(TargetSpec::Cargo(spec)) => {
             let workspace_root = spec.workspace_root.clone();
@@ -1815,6 +1857,7 @@ pub(crate) mod command {
         // We cannot use the 'editor.action.showReferences' command directly
         // because that command requires vscode types which we convert in the handler
         // on the client side.
+
         lsp_types::Command {
             title,
             command: "rust-analyzer.showReferences".into(),
@@ -1858,6 +1901,7 @@ pub(crate) mod command {
             let location = location(snap, range).ok()?;
             to_value(location).ok()?
         };
+
         Some(lsp_types::Command {
             title: nav.name.to_string(),
             command: "rust-analyzer.gotoLocation".into(),
@@ -1885,15 +1929,20 @@ pub(crate) fn make_update_runnable(
     update_test: UpdateTest,
 ) -> Option<lsp_ext::Runnable> {
     let label = update_test.label()?;
+
     let mut runnable = runnable.clone();
     runnable.label = format!("{} + {}", runnable.label, label);
+
     let lsp_ext::RunnableArgs::Cargo(r) = &mut runnable.args else {
         return None;
     };
+
     r.environment.extend(update_test.env().iter().map(|(k, v)| (k.to_string(), v.to_string())));
+
     if update_test.insta {
         r.cargo_args.insert(0, "insta".to_owned());
     }
+
     Some(runnable)
 }
 
@@ -1944,9 +1993,11 @@ fn main() {
         b::do_b();
     }
 }"#;
+
         let (analysis, file_id) = Analysis::from_single_file(text.to_owned());
         let folds = analysis.folding_ranges(file_id).unwrap();
         assert_eq!(folds.len(), 4);
+
         let line_index = LineIndex {
             index: Arc::new(ide::LineIndex::new(text)),
             endings: LineEndings::Unix,
@@ -1954,6 +2005,7 @@ fn main() {
         };
         let converted: Vec<lsp_types::FoldingRange> =
             folds.into_iter().map(|it| folding_range(text, &line_index, true, it)).collect();
+
         let expected_lines = [(0, 2), (4, 10), (5, 6), (7, 9)];
         assert_eq!(converted.len(), expected_lines.len());
         for (folding_range, (start_line, end_line)) in converted.iter().zip(expected_lines.iter()) {
@@ -1975,6 +2027,7 @@ fn foo() {
 /// ```
 fn bar(_: usize) {}
 "#;
+
         let (offset, text) = extract_offset(text);
         let (analysis, file_id) = Analysis::from_single_file(text);
         let help = signature_help(
@@ -2012,8 +2065,10 @@ fn bar(_: usize) {}
             endings,
             encoding: PositionEncoding::Utf8,
         };
+
         let res = merge_text_and_snippet_edits(&line_index, edit, snippets, true);
         // Ensure that none of the ranges overlap
+
         {
             let mut sorted = res.clone();
             sorted.sort_by_key(|edit| (edit.range.start, edit.range.end));
@@ -2023,6 +2078,7 @@ fn bar(_: usize) {}
                 .all(|(l, r)| l.range.end <= r.range.start || l == r);
             assert!(disjoint_ranges, "ranges overlap for {res:#?}");
         }
+
         expect.assert_debug_eq(&res);
     }
     #[test]
@@ -2034,6 +2090,7 @@ fn bar(_: usize) {}
             Snippet::Tabstop(1.into()),
             Snippet::Tabstop(1.into()),
         ]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2118,6 +2175,7 @@ fn bar(_: usize) {}
         edit.insert(3.into(), "def".to_owned());
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2164,6 +2222,7 @@ fn bar(_: usize) {}
         let edit = edit.finish();
         // Note: tabstops are positioned in the source where all text edits have been applied
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(10.into())]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2212,6 +2271,7 @@ fn bar(_: usize) {}
         let edit = edit.finish();
         let snippets =
             SnippetEdit::new(vec![Snippet::Tabstop(0.into()), Snippet::Tabstop(0.into())]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2279,6 +2339,7 @@ fn bar(_: usize) {}
         // Note: tabstops are positioned in the source where all text edits have been applied
         let snippets =
             SnippetEdit::new(vec![Snippet::Tabstop(7.into()), Snippet::Tabstop(7.into())]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2362,6 +2423,7 @@ fn bar(_: usize) {}
             Snippet::Tabstop(5.into()),
             Snippet::Tabstop(12.into()),
         ]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2398,6 +2460,7 @@ fn bar(_: usize) {}
             Snippet::Placeholder(TextRange::new(5.into(), 7.into())),
             Snippet::Placeholder(TextRange::new(10.into(), 12.into())),
         ]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2436,6 +2499,7 @@ fn bar(_: usize) {}
             Snippet::Placeholder(TextRange::new(1.into(), 9.into())),
             Snippet::Tabstop(25.into()),
         ]);
+
         check_rendered_snippets(
             edit,
             snippets,
@@ -2505,6 +2569,7 @@ fn bar(_: usize) {}
         );
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(51.into())]);
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> ProcMacro {
@@ -2567,6 +2632,7 @@ struct ProcMacro {
         );
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(43.into())]);
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> P {
@@ -2630,6 +2696,7 @@ struct P {
         let edit = edit.finish();
         let snippets =
             SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(51.into(), 59.into()))]);
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> ProcMacro {
@@ -2693,6 +2760,7 @@ struct ProcMacro {
         let edit = edit.finish();
         let snippets =
             SnippetEdit::new(vec![Snippet::Placeholder(TextRange::new(43.into(), 51.into()))]);
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> P {
@@ -2756,6 +2824,7 @@ struct P {
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(51.into())]);
         // add an extra space between `ProcMacro` and `{` to insert the tabstop at
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> ProcMacro {
@@ -2833,6 +2902,7 @@ struct ProcMacro {
         );
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(109.into())]);
+
         check_rendered_snippets_in_source(
             r"
 fn expander_to_proc_macro() -> ProcMacro {
@@ -2904,8 +2974,10 @@ struct ProcMacro {
         // unix -> dos conversion should be handled after placing snippets
         let mut edit = TextEdit::builder();
         edit.insert(6.into(), "\n\n->".to_owned());
+
         let edit = edit.finish();
         let snippets = SnippetEdit::new(vec![Snippet::Tabstop(10.into())]);
+
         check_rendered_snippets_in_source(
             "yeah\r\n<-tabstop here",
             edit,
@@ -2937,8 +3009,10 @@ struct ProcMacro {
     #[cfg(target_os = "windows")]
     fn test_lowercase_drive_letter() {
         use paths::Utf8Path;
+
         let url = url_from_abs_path(Utf8Path::new("C:\\Test").try_into().unwrap());
         assert_eq!(url.to_string(), "file:///c:/Test");
+
         let url = url_from_abs_path(Utf8Path::new(r#"\\localhost\C$\my_dir"#).try_into().unwrap());
         assert_eq!(url.to_string(), "file://localhost/C$/my_dir");
     }

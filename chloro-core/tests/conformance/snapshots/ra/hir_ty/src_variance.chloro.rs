@@ -47,6 +47,7 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
         }
         _ => return VariancesOf::new_from_iter(interner, []),
     }
+
     let generics = generics(db, def);
     let count = generics.len();
     if count == 0 {
@@ -63,11 +64,13 @@ pub(crate) fn variances_of(db: &dyn HirDatabase, def: GenericDefId) -> Variances
     // Why specifically invariance? I don't have a strong reason, mainly that invariance is a stronger relationship
     // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
     // bivariance, at least while we don't handle lifetimes anyway.
+
     for variance in &mut variances {
         if *variance == Variance::Bivariant {
             *variance = Variance::Invariant;
         }
     }
+
     VariancesOf::new_from_iter(interner, variances)
 }
 
@@ -99,6 +102,7 @@ pub(crate) fn variances_of_cycle_initial(
     let generics = generics(db, def);
     let count = generics.len();
     // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
+
     VariancesOf::new_from_iter(interner, std::iter::repeat_n(Variance::Invariant, count))
 }
 
@@ -142,18 +146,21 @@ impl<'db> Context<'db> {
         let mut variances = self.variances;
         // Const parameters are always invariant.
         // Make all const parameters invariant.
+
         for (idx, param) in self.generics.iter_id().enumerate() {
             if let GenericParamId::ConstParamId(_) = param {
                 variances[idx] = Variance::Invariant;
             }
         }
         // Functions are permitted to have unused generic parameters: make those invariant.
+
         if let GenericDefId::FunctionId(_) = self.generics.def() {
             variances
                 .iter_mut()
                 .filter(|&&mut v| v == Variance::Bivariant)
                 .for_each(|v| *v = Variance::Invariant);
         }
+
         variances
     }
 
@@ -272,6 +279,7 @@ impl<'db> Context<'db> {
             return;
         }
         let variances = self.db.variances_of(def_id);
+
         for (k, v) in args.iter().zip(variances) {
             match k {
                 GenericArg::Lifetime(lt) => self.add_constraints_from_region(lt, variance.xform(v)),
@@ -830,6 +838,7 @@ struct FixedPoint<T, U, V>(&'static FixedPoint<(), T, U>, V);
         //     })),
         // ));
         let (db, file_id) = TestDB::with_single_file(ra_fixture);
+
         crate::attach_db(&db, || {
             let mut defs: Vec<GenericDefId> = Vec::new();
             let module = db.module_for_file_opt(file_id.file_id(&db)).unwrap();

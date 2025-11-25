@@ -9,6 +9,7 @@ pub(crate) fn toggle_ignore(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
     let attr: ast::Attr = ctx.find_node_at_offset()?;
     let func = attr.syntax().parent().and_then(ast::Fn::cast)?;
     let attr = test_related_attribute_syn(&func)?;
+
     match has_ignore_attribute(&func) {
         None => acc.add(
             AssistId::refactor("toggle_ignore"),

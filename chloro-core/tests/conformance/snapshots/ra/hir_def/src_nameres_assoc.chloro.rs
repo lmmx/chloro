@@ -58,9 +58,11 @@ impl TraitItems {
                 DefDiagnostics::new(vec![]),
             );
         }
+
         let collector =
             AssocItemCollector::new(db, module_id, ItemContainerId::TraitId(tr), ast_id.file_id);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
+
         (TraitItems { macro_calls, items }, DefDiagnostics::new(diagnostics))
     }
 
@@ -111,10 +113,12 @@ impl ImplItems {
     pub fn of(db: &dyn DefDatabase, id: ImplId) -> (ImplItems, DefDiagnostics) {
         let _p = tracing::info_span!("impl_items_with_diagnostics_query").entered();
         let ItemLoc { container: module_id, id: ast_id } = id.lookup(db);
+
         let collector =
             AssocItemCollector::new(db, module_id, ItemContainerId::ImplId(id), ast_id.file_id);
         let source = ast_id.with_value(collector.ast_id_map.get(ast_id.value)).to_node(db);
         let (items, macro_calls, diagnostics) = collector.collect(source.assoc_item_list());
+
         (ImplItems { items, macro_calls }, DefDiagnostics::new(diagnostics))
     }
 }
@@ -193,6 +197,7 @@ impl<'a> AssocItemCollector<'a> {
             return;
         }
         let ast_id = InFile::new(self.file_id, ast_id.upcast());
+
         'attrs: for attr in &*attrs {
             let ast_id_with_path = AstIdWithPath { path: attr.path.clone(), ast_id };
 
@@ -236,6 +241,7 @@ impl<'a> AssocItemCollector<'a> {
                 }
             }
         }
+
         self.record_item(item);
     }
 
@@ -337,11 +343,13 @@ impl<'a> AssocItemCollector<'a> {
             tracing::warn!("macro expansion is too deep");
             return;
         }
+
         let (syntax, span_map) = self.db.parse_macro_expansion(macro_call_id).value;
         let old_file_id = mem::replace(&mut self.file_id, macro_call_id.into());
         let old_ast_id_map = mem::replace(&mut self.ast_id_map, self.db.ast_id_map(self.file_id));
         let old_span_map = mem::replace(&mut self.span_map, SpanMap::ExpansionSpanMap(span_map));
         self.depth += 1;
+
         let items = ast::MacroItems::cast(syntax.syntax_node()).expect("not `MacroItems`");
         for item in items.items() {
             let item = match item {
@@ -354,6 +362,7 @@ impl<'a> AssocItemCollector<'a> {
             };
             self.collect_item(item);
         }
+
         self.depth -= 1;
         self.file_id = old_file_id;
         self.ast_id_map = old_ast_id_map;

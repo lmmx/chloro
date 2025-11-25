@@ -354,6 +354,7 @@ impl<'db> Expr<'db> {
     /// List the traits used in type tree
     pub fn traits_used(&self, db: &dyn HirDatabase) -> Vec<Trait> {
         let mut res = Vec::new();
+
         if let Expr::Method { func, params, .. } = self {
             res.extend(params.iter().flat_map(|it| it.traits_used(db)));
             if let Some(it) = func.as_assoc_item(db)
@@ -362,6 +363,7 @@ impl<'db> Expr<'db> {
                 res.push(it);
             }
         }
+
         res
     }
 

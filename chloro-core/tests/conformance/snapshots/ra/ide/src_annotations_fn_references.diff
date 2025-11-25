@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2772 bytes
-Chloro size:   2763 bytes
+Chloro size:   2767 bytes
 Rustfmt size:  2808 bytes
 
 ✗ Outputs DIFFER
@@ -43,10 +43,6 @@ Rustfmt size:  2808 bytes
      #[test]
      fn test_find_all_methods() {
          let (analysis, pos) = fixture::position(
-             pub fn generic_fn<T>(arg: T) {}
-         "#,
-         );
--
          let refs = super::find_all_methods(&analysis.db, pos.file_id);
          check_result(&refs, &[3..=13, 27..=33, 47..=57]);
      }
@@ -54,10 +50,6 @@ Rustfmt size:  2808 bytes
      #[test]
      fn test_find_trait_methods() {
          let (analysis, pos) = fixture::position(
-             }
-         "#,
-         );
--
          let refs = super::find_all_methods(&analysis.db, pos.file_id);
          check_result(&refs, &[19..=22, 35..=38]);
      }
@@ -65,17 +57,10 @@ Rustfmt size:  2808 bytes
      #[test]
      fn test_skip_tests() {
          let (analysis, pos) = fixture::position(
-             }
-         "#,
-         );
--
          let refs = super::find_all_methods(&analysis.db, pos.file_id);
          check_result(&refs, &[28..=34]);
      }
 -
      fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
          assert_eq!(refs.len(), expected.len());
--
-         for (i, &(full, focus)) in refs.iter().enumerate() {
-             let range = &expected[i];
-             let item = focus.unwrap_or(full);
+ 

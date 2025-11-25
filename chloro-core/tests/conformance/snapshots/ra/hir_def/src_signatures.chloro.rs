@@ -65,6 +65,7 @@ impl StructSignature {
         let loc = id.lookup(db);
         let InFile { file_id, value: source } = loc.source(db);
         let attrs = db.attrs(id.into());
+
         let mut flags = StructFlags::empty();
         if attrs.by_key(sym::rustc_has_incoherent_inherent_impls).exists() {
             flags |= StructFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS;
@@ -84,6 +85,7 @@ impl StructSignature {
         }
         let repr = attrs.repr();
         let shape = adt_shape(source.kind());
+
         let (store, generic_params, source_map) = lower_generic_params(
             db,
             loc.container,
@@ -135,7 +137,9 @@ impl UnionSignature {
         if attrs.by_key(sym::fundamental).exists() {
             flags |= StructFlags::FUNDAMENTAL;
         }
+
         let repr = attrs.repr();
+
         let InFile { file_id, value: source } = loc.source(db);
         let (store, generic_params, source_map) = lower_generic_params(
             db,
@@ -174,7 +178,9 @@ impl EnumSignature {
         if attrs.by_key(sym::rustc_has_incoherent_inherent_impls).exists() {
             flags |= EnumFlags::RUSTC_HAS_INCOHERENT_INHERENT_IMPLS;
         }
+
         let repr = attrs.repr();
+
         let InFile { file_id, value: source } = loc.source(db);
         let (store, generic_params, source_map) = lower_generic_params(
             db,
@@ -184,6 +190,7 @@ impl EnumSignature {
             source.generic_param_list(),
             source.where_clause(),
         );
+
         (
             Arc::new(EnumSignature {
                 generic_params,
@@ -214,6 +221,7 @@ pub struct ConstSignature {
 impl ConstSignature {
     pub fn query(db: &dyn DefDatabase, id: ConstId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
+
         let module = loc.container.module(db);
         let attrs = db.attrs(id.into());
         let mut flags = ConstFlags::empty();
@@ -224,8 +232,10 @@ impl ConstSignature {
         if source.value.body().is_some() {
             flags.insert(ConstFlags::HAS_BODY);
         }
+
         let (store, source_map, type_ref) =
             crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
+
         (
             Arc::new(ConstSignature {
                 store: Arc::new(store),
@@ -255,15 +265,18 @@ impl StaticSignature {
         id: StaticId,
     ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
+
         let module = loc.container.module(db);
         let attrs = db.attrs(id.into());
         let mut flags = StaticFlags::empty();
         if attrs.by_key(sym::rustc_allow_incoherent_impl).exists() {
             flags |= StaticFlags::RUSTC_ALLOW_INCOHERENT_IMPL;
         }
+
         if matches!(loc.container, ItemContainerId::ExternBlockId(_)) {
             flags.insert(StaticFlags::EXTERN);
         }
+
         let source = loc.source(db);
         if source.value.body().is_some() {
             flags.insert(StaticFlags::HAS_BODY);
@@ -277,8 +290,10 @@ impl StaticSignature {
         if source.value.safe_token().is_some() {
             flags.insert(StaticFlags::EXPLICIT_SAFE);
         }
+
         let (store, source_map, type_ref) =
             crate::expr_store::lower::lower_type_ref(db, module, source.as_ref().map(|it| it.ty()));
+
         (
             Arc::new(StaticSignature {
                 store: Arc::new(store),
@@ -302,6 +317,7 @@ pub struct ImplSignature {
 impl ImplSignature {
     pub fn query(db: &dyn DefDatabase, id: ImplId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
+
         let mut flags = ImplFlags::empty();
         let src = loc.source(db);
         if src.value.unsafe_token().is_some() {
@@ -313,8 +329,10 @@ impl ImplSignature {
         if src.value.default_token().is_some() {
             flags.insert(ImplFlags::DEFAULT);
         }
+
         let (store, source_map, self_ty, target_trait, generic_params) =
             crate::expr_store::lower::lower_impl(db, loc.container, src, id);
+
         (
             Arc::new(ImplSignature {
                 store: Arc::new(store),
@@ -348,6 +366,7 @@ pub struct TraitSignature {
 impl TraitSignature {
     pub fn query(db: &dyn DefDatabase, id: TraitId) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
+
         let mut flags = TraitFlags::empty();
         let attrs = db.attrs(id.into());
         let source = loc.source(db);
@@ -383,14 +402,17 @@ impl TraitSignature {
                 }
             }
         }
+
         if skip_array_during_method_dispatch {
             flags |= TraitFlags::SKIP_ARRAY_DURING_METHOD_DISPATCH;
         }
         if skip_boxed_slice_during_method_dispatch {
             flags |= TraitFlags::SKIP_BOXED_SLICE_DURING_METHOD_DISPATCH;
         }
+
         let name = as_name_opt(source.value.name());
         let (store, source_map, generic_params) = lower_trait(db, loc.container, source, id);
+
         (
             Arc::new(TraitSignature { store: Arc::new(store), generic_params, flags, name }),
             Arc::new(source_map),
@@ -420,11 +442,13 @@ impl FunctionSignature {
     ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
         let module = loc.container.module(db);
+
         let mut flags = FnFlags::empty();
         let attrs = db.attrs(id.into());
         if attrs.by_key(sym::rustc_allow_incoherent_impl).exists() {
             flags.insert(FnFlags::RUSTC_ALLOW_INCOHERENT_IMPL);
         }
+
         if attrs.by_key(sym::target_feature).exists() {
             flags.insert(FnFlags::HAS_TARGET_FEATURE);
         }
@@ -432,7 +456,9 @@ impl FunctionSignature {
             flags.insert(FnFlags::RUSTC_INTRINSIC);
         }
         let legacy_const_generics_indices = attrs.rustc_legacy_const_generics();
+
         let source = loc.source(db);
+
         if source.value.unsafe_token().is_some() {
             if attrs.by_key(sym::rustc_deprecated_safe_2024).exists() {
                 flags.insert(FnFlags::DEPRECATED_SAFE_2024);
@@ -455,6 +481,7 @@ impl FunctionSignature {
         if source.value.body().is_some() {
             flags.insert(FnFlags::HAS_BODY);
         }
+
         let name = as_name_opt(source.value.name());
         let abi = source.value.abi().map(|abi| {
             abi.abi_string().map_or_else(|| sym::C, |it| Symbol::intern(it.text_without_quotes()))
@@ -555,6 +582,7 @@ impl TypeAliasSignature {
         id: TypeAliasId,
     ) -> (Arc<Self>, Arc<ExpressionStoreSourceMap>) {
         let loc = id.lookup(db);
+
         let mut flags = TypeAliasFlags::empty();
         let attrs = db.attrs(id.into());
         if attrs.by_key(sym::rustc_has_incoherent_inherent_impls).exists() {
@@ -570,6 +598,7 @@ impl TypeAliasSignature {
         let name = as_name_opt(source.value.name());
         let (store, source_map, generic_params, bounds, ty) =
             lower_type_alias(db, loc.container.module(db), source, id);
+
         (
             Arc::new(TypeAliasSignature {
                 store: Arc::new(store),
@@ -739,6 +768,7 @@ fn lower_fields<Field: ast::HasAttrs + ast::HasVisibility>(
             visibility_from_ast(db, vis, &mut |range| span_map.span_for_range(range).ctx)
         })
     });
+
     let mut arena = Arena::new();
     let mut idx = 0;
     let mut has_fields = false;
@@ -807,6 +837,7 @@ impl EnumVariants {
         let source = loc.source(db);
         let ast_id_map = db.ast_id_map(source.file_id);
         let span_map = db.span_map(source.file_id);
+
         let mut diagnostics = ThinVec::new();
         let cfg_options = loc.container.krate.cfg_options(db);
         let mut index = 0;
@@ -838,6 +869,7 @@ impl EnumVariants {
                 }
             })
             .collect();
+
         (EnumVariants { variants }, diagnostics.is_empty().not().then_some(diagnostics))
     }
 }

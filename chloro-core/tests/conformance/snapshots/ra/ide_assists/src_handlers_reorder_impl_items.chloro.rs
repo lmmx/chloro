@@ -11,19 +11,23 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ast = ctx.find_node_at_offset::<ast::Impl>()?;
     let items = impl_ast.assoc_item_list()?;
+
     let parent_node = match ctx.covering_element() {
         SyntaxElement::Node(n) => n,
         SyntaxElement::Token(t) => t.parent()?,
     };
     // restrict the range
     // if cursor is in assoc_items, abort
+
     let assoc_range = items.syntax().text_range();
     let cursor_position = ctx.offset();
     if assoc_range.contains_inclusive(cursor_position) {
         cov_mark::hit!(not_applicable_editing_assoc_items);
         return None;
     }
+
     let assoc_items = items.assoc_items().collect::<Vec<_>>();
+
     let path = impl_ast
         .trait_()
         .and_then(|t| match t {
@@ -31,6 +35,7 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
             _ => None,
         })?
         .path()?;
+
     let ranks = compute_item_ranks(&path, ctx)?;
     let sorted: Vec<_> = assoc_items
         .iter()
@@ -48,10 +53,12 @@ pub(crate) fn reorder_impl_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         })
         .collect();
     // Don't edit already sorted methods:
+
     if assoc_items == sorted {
         cov_mark::hit!(not_applicable_if_sorted);
         return None;
     }
+
     let target = items.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("reorder_impl_items"),
@@ -75,6 +82,7 @@ fn compute_item_ranks(
     ctx: &AssistContext<'_>,
 ) -> Option<FxHashMap<String, usize>> {
     let td = trait_definition(path, &ctx.sema)?;
+
     Some(
         td.items(ctx.db())
             .iter()

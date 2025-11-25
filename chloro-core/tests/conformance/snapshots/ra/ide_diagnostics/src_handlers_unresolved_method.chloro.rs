@@ -52,7 +52,9 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Opt
         // FIXME: add quickfix
         None
     };
+
     let assoc_func_fix = assoc_func_fix(ctx, d);
+
     let mut fixes = vec![];
     if let Some(field_fix) = field_fix {
         fixes.push(field_fix);
@@ -60,6 +62,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedMethodCall<'_>) -> Opt
     if let Some(assoc_func_fix) = assoc_func_fix {
         fixes.push(assoc_func_fix);
     }
+
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 

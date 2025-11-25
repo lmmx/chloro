@@ -11,6 +11,7 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
     if ctx.has_empty_selection() {
         return None;
     }
+
     let ty = ctx.find_node_at_range::<ast::Type>()?;
     let item = ty.syntax().ancestors().find_map(ast::Item::cast)?;
     let assoc_owner =
@@ -20,6 +21,7 @@ pub(crate) fn extract_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         |impl_| impl_.as_ref().either(AstNode::syntax, AstNode::syntax),
     );
     let target = ty.syntax().text_range();
+
     acc.add(
         AssistId::refactor_extract("extract_type_alias"),
         "Extract type as type alias",
@@ -89,6 +91,7 @@ fn collect_used_generics<'gp>(
             _ => false,
         }
     }
+
     let mut generics = Vec::new();
     walk_ty(ty, &mut |ty| {
         match ty {
@@ -167,6 +170,7 @@ fn collect_used_generics<'gp>(
         ast::GenericParam::LifetimeParam(_) => 0,
         ast::GenericParam::TypeParam(_) => 1,
     });
+
     Some(generics).filter(|it| !it.is_empty())
 }
 

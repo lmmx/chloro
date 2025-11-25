@@ -20,6 +20,7 @@ pub(crate) fn generate_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
 fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let strukt = ctx.find_node_at_offset::<ast::Struct>()?;
     let field = ctx.find_node_at_offset::<ast::RecordField>()?;
+
     let deref_type_to_generate = match existing_deref_impl(&ctx.sema, &strukt) {
         None => DerefType::Deref,
         Some(DerefType::Deref) => DerefType::DerefMut,
@@ -28,10 +29,12 @@ fn generate_record_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
             return None;
         }
     };
+
     let module = ctx.sema.to_def(&strukt)?.module(ctx.db());
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
     let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
+
     let field_type = field.ty()?;
     let field_name = field.name()?;
     let target = field.syntax().text_range();
@@ -59,6 +62,7 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
     let field = ctx.find_node_at_offset::<ast::TupleField>()?;
     let field_list = ctx.find_node_at_offset::<ast::TupleFieldList>()?;
     let field_list_index = field_list.syntax().children().position(|s| &s == field.syntax())?;
+
     let deref_type_to_generate = match existing_deref_impl(&ctx.sema, &strukt) {
         None => DerefType::Deref,
         Some(DerefType::Deref) => DerefType::DerefMut,
@@ -67,10 +71,12 @@ fn generate_tuple_deref(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
             return None;
         }
     };
+
     let module = ctx.sema.to_def(&strukt)?.module(ctx.db());
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(module.krate()));
     let trait_ = deref_type_to_generate.to_trait(&ctx.sema, module.krate())?;
     let trait_path = module.find_path(ctx.db(), ModuleDef::Trait(trait_), cfg)?;
+
     let field_type = field.ty()?;
     let target = field.syntax().text_range();
     acc.add(
@@ -132,9 +138,11 @@ fn existing_deref_impl(
 ) -> Option<DerefType> {
     let strukt = sema.to_def(strukt)?;
     let krate = strukt.module(sema.db).krate();
+
     let deref_trait = FamousDefs(sema, krate).core_ops_Deref()?;
     let deref_mut_trait = FamousDefs(sema, krate).core_ops_DerefMut()?;
     let strukt_type = strukt.ty(sema.db);
+
     if strukt_type.impls_trait(sema.db, deref_trait, &[]) {
         if strukt_type.impls_trait(sema.db, deref_mut_trait, &[]) {
             Some(DerefType::DerefMut)

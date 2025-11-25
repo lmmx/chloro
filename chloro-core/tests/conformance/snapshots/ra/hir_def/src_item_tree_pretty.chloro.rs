@@ -16,11 +16,14 @@ use crate::{
 pub(super) fn print_item_tree(db: &dyn DefDatabase, tree: &ItemTree, edition: Edition) -> String {
     let mut p =
         Printer { db, tree, buf: String::new(), indent_level: 0, needs_indent: true, edition };
+
     p.print_attrs(&tree.top_attrs, true, "\n");
     p.blank();
+
     for item in tree.top_level_items() {
         p.print_mod_item(*item);
     }
+
     let mut s = p.buf.trim_end_matches('\n').to_owned();
     s.push('\n');
     s
@@ -158,6 +161,7 @@ impl Printer<'_> {
 
     fn print_mod_item(&mut self, item: ModItemId) {
         self.print_attrs_of(item, "\n");
+
         match item {
             ModItemId::Use(ast_id) => {
                 let Use { visibility, use_tree } = &self.tree[ast_id];
@@ -302,6 +306,7 @@ impl Printer<'_> {
                 wln!(self, "macro {} {{ ... }}", name.display(self.db, self.edition));
             }
         }
+
         self.blank();
     }
 
@@ -325,6 +330,7 @@ impl Write for Printer<'_> {
             self.buf.push_str(line);
             self.needs_indent = line.ends_with('\n');
         }
+
         Ok(())
     }
 }

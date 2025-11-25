@@ -161,7 +161,9 @@ impl Generics {
             },
             TypeOrConstParamData::ConstParamData(_) => const_params += 1,
         });
+
         let lifetime_params = self.params.len_lifetimes();
+
         let parent_len = self.parent_generics().map_or(0, Generics::len);
         (parent_len, self_param, type_params, const_params, impl_trait_params, lifetime_params)
     }
@@ -254,6 +256,7 @@ pub(crate) fn parent_generic_def(db: &dyn DefDatabase, def: GenericDefId) -> Opt
         | GenericDefId::TraitId(_)
         | GenericDefId::ImplId(_) => return None,
     };
+
     match container {
         ItemContainerId::ImplId(it) => Some(it.into()),
         ItemContainerId::TraitId(it) => Some(it.into()),

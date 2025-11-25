@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8388 bytes
-Chloro size:   8175 bytes
+Chloro size:   8181 bytes
 Rustfmt size:  8479 bytes
 
 ✗ Outputs DIFFER
@@ -43,32 +43,26 @@ Rustfmt size:  8479 bytes
              cov_mark::hit!(add_explicit_type_not_applicable_in_fn_param);
              return None;
          }
-     } else {
-         return None;
-     };
--
+ 
      let module = ctx.sema.scope(pat.syntax())?.module();
      let pat_range = pat.syntax().text_range();
 -
      // Don't enable the assist if there is a type ascription without any placeholders
++
      if let Some(ty) = &ascribed_ty {
          let mut contains_infer_ty = false;
-             return None;
-         }
-     }
--
-     let ty = match (pat, expr) {
-         (ast::Pat::IdentPat(_), Some(expr)) => ctx.sema.type_of_expr(&expr)?,
+         walk_ty(ty, &mut |ty| {
          (pat, _) => ctx.sema.type_of_pat(&pat)?,
      }
      .adjusted();
 -
      // Fully unresolved or unnameable types can't be annotated
++
      if (ty.contains_unknown() && ty.type_arguments().count() == 0) || ty.is_closure() {
          cov_mark::hit!(add_explicit_type_not_applicable_if_ty_not_inferred);
          return None;
      }
--
+ 
 -    let inferred_type = ty
 -        .display_source_code(ctx.db(), module.into(), false)
 -        .ok()?;
@@ -183,13 +177,6 @@ Rustfmt size:  8479 bytes
      #[test]
      fn add_explicit_type_ascribes_closure_param() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             add_explicit_type,
-             r#"
  "#,
          );
      }

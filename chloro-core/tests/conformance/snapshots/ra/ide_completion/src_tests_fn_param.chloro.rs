@@ -62,6 +62,7 @@ fn bar(file_id: u32, $0) {}
             kw ref
         "#]],
     );
+
     check(
         r#"
 fn f(#[foo = "bar"] baz: u32,) {}

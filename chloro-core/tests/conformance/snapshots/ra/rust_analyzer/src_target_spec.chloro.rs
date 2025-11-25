@@ -33,6 +33,7 @@ impl TargetSpec {
             &[crate_id, ..] => crate_id,
             _ => return Ok(None),
         };
+
         Ok(global_state_snapshot.target_spec_for_crate(crate_id))
     }
 
@@ -116,8 +117,10 @@ impl CargoTargetSpec {
     ) -> (Vec<String>, Vec<String>) {
         let config = snap.config.runnables(None);
         let extra_test_binary_args = config.extra_test_binary_args;
+
         let mut cargo_args = Vec::new();
         let mut executable_args = Vec::new();
+
         match kind {
             RunnableKind::Test { test_id, attr } => {
                 cargo_args.push("test".to_owned());
@@ -157,6 +160,7 @@ impl CargoTargetSpec {
                 cargo_args.push(subcommand.to_owned());
             }
         }
+
         let (allowed_features, target_required_features) = if let Some(mut spec) = spec {
             let allowed_features = mem::take(&mut spec.features);
             let required_features = mem::take(&mut spec.required_features);
@@ -165,7 +169,9 @@ impl CargoTargetSpec {
         } else {
             (Default::default(), Default::default())
         };
+
         let cargo_config = snap.config.cargo(None);
+
         match &cargo_config.features {
             CargoFeatures::All => {
                 cargo_args.push("--all-features".to_owned());
@@ -204,6 +210,7 @@ impl CargoTargetSpec {
         buf.push("--package".to_owned());
         buf.push(self.package);
         // Can't mix --doc with other target flags
+
         if let RunnableKind::DocTest { .. } = kind {
             return;
         }
@@ -278,10 +285,13 @@ mod tests {
             );
             CfgExpr::parse(&tt)
         };
+
         let mut features = vec![];
         required_features(&cfg_expr, &mut features);
+
         let expected_features =
             expected_features.iter().map(|&it| SmolStr::new(it)).collect::<Vec<_>>();
+
         assert_eq!(features, expected_features);
     }
     #[test]

@@ -27,10 +27,13 @@ pub(crate) fn generate_single_field_struct_from(
         tracing::debug!(?adt);
         return None;
     };
+
     let sema = &ctx.sema;
     let (names, types) = get_fields(&strukt)?;
+
     let module = sema.scope(strukt.syntax())?.module();
     let constructors = make_constructors(ctx, module, &types);
+
     if constructors.iter().filter(|expr| expr.is_none()).count() != 1 {
         tracing::debug!(?constructors);
         return None;
@@ -40,9 +43,11 @@ pub(crate) fn generate_single_field_struct_from(
         tracing::debug!(?strukt, ?main_field_i);
         return None;
     }
+
     let main_field_name =
         names.as_ref().map_or(TokenText::borrowed("value"), |names| names[main_field_i].text());
     let main_field_ty = types[main_field_i].clone();
+
     acc.add(
         AssistId::generate("generate_single_field_struct_from"),
         "Generate single field `From`",
@@ -193,6 +198,7 @@ fn from_impl_exists(
     let interner = DbInterner::new_with(db, Some(krate.base()), None);
     use hir::next_solver::infer::DbInternerInferExt;
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+
     let strukt = strukt.instantiate_infer(&infcx);
     let field_ty = strukt.fields(db).get(main_field_i)?.ty(db);
     let struct_ty = strukt.ty(db);

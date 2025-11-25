@@ -9,14 +9,17 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
     let path = ctx.find_node_at_offset::<ast::Path>()?;
     let record =
         path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+
     let parent_node = match ctx.covering_element() {
         SyntaxElement::Node(n) => n,
         SyntaxElement::Token(t) => t.parent()?,
     };
+
     let ranks = compute_fields_ranks(&path, ctx)?;
     let get_rank_of_field = |of: Option<SmolStr>| {
         *ranks.get(of.unwrap_or_default().trim_start_matches("r#")).unwrap_or(&usize::MAX)
     };
+
     let field_list = match &record {
         Either::Left(it) => Either::Left(it.record_expr_field_list()?),
         Either::Right(it) => Either::Right(it.record_pat_field_list()?),
@@ -39,6 +42,7 @@ pub(crate) fn reorder_fields(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opti
             it,
         )),
     };
+
     let is_sorted = fields.as_ref().either(
         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
@@ -87,12 +91,14 @@ fn compute_fields_ranks(
         Some(hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Struct(it)))) => it,
         _ => return None,
     };
+
     let res = strukt
         .fields(ctx.db())
         .into_iter()
         .enumerate()
         .map(|(idx, field)| (field.name(ctx.db()).as_str().to_owned(), idx))
         .collect();
+
     Some(res)
 }
 

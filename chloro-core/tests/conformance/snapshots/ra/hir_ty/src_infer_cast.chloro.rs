@@ -31,6 +31,7 @@ pub(crate) enum CastTy<'db> {
     Float,
     FnPtr,
     Ptr(Ty<'db>, Mutability),
+    // `DynStar` is Not supported yet in r-a
 }
 
 impl<'db> CastTy<'db> {
@@ -71,6 +72,9 @@ pub enum CastError {
     NeedViaThinPtr,
     NeedViaInt,
     NonScalar,
+    // We don't want to report errors with unknown types currently.
+    // UnknownCastPtrKind,
+    // UnknownExprPtrKind,
 }
 
 impl CastError {
@@ -109,6 +113,7 @@ impl<'db> CastCheck<'db> {
         self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
         self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);
         // This should always come first so that we apply the coercion, which impacts infer vars.
+
         if ctx
             .coerce(
                 self.source_expr.into(),
@@ -122,9 +127,11 @@ impl<'db> CastCheck<'db> {
             ctx.result.coercion_casts.insert(self.source_expr);
             return Ok(());
         }
+
         if self.expr_ty.references_non_lt_error() || self.cast_ty.references_non_lt_error() {
             return Ok(());
         }
+
         if !self.cast_ty.flags().contains(TypeFlags::HAS_TY_INFER)
             && !ctx.table.is_sized(self.cast_ty)
         {
@@ -136,9 +143,11 @@ impl<'db> CastCheck<'db> {
         // Chalk doesn't support trait upcasting and fails to solve some obvious goals
         // when the trait environment contains some recursive traits (See issue #18047)
         // We skip cast checks for such cases for now, until the next-gen solver.
+
         if contains_dyn_trait(self.cast_ty) {
             return Ok(());
         }
+
         self.do_check(ctx).map_err(|e| e.into_diagnostic(self.expr, self.expr_ty, self.cast_ty))
     }
 
@@ -196,6 +205,7 @@ impl<'db> CastCheck<'db> {
                 _ => return Err(CastError::NonScalar),
             };
         // rustc checks whether the `expr_ty` is foreign adt with `non_exhaustive` sym
+
         match (t_from, t_cast) {
             (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
             (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),
@@ -258,6 +268,7 @@ impl<'db> CastCheck<'db> {
                 return Ok(());
             }
         }
+
         Err(CastError::IllegalCast)
     }
 
@@ -269,6 +280,7 @@ impl<'db> CastCheck<'db> {
     ) -> Result<(), CastError> {
         let src_kind = pointer_kind(src, ctx).map_err(|_| CastError::Unknown)?;
         let dst_kind = pointer_kind(dst, ctx).map_err(|_| CastError::Unknown)?;
+
         match (src_kind, dst_kind) {
             (Some(PointerKind::Error), _) | (_, Some(PointerKind::Error)) => Ok(()),
             // (_, None) => Err(CastError::UnknownCastPtrKind),
@@ -360,9 +372,11 @@ fn pointer_kind<'db>(
     ctx: &mut InferenceContext<'_, 'db>,
 ) -> Result<Option<PointerKind<'db>>, ()> {
     let ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(ty);
+
     if ctx.table.is_sized(ty) {
         return Ok(Some(PointerKind::Thin));
     }
+
     match ty.kind() {
         TyKind::Slice(_) | TyKind::Str => Ok(Some(PointerKind::Length)),
         TyKind::Dynamic(bounds, _) => Ok(Some(PointerKind::VTable(bounds))),
@@ -418,8 +432,11 @@ fn pointer_kind<'db>(
 
 fn contains_dyn_trait<'db>(ty: Ty<'db>) -> bool {
     use std::ops::ControlFlow;
+
     use rustc_type_ir::{TypeSuperVisitable, TypeVisitable, TypeVisitor};
+
     struct DynTraitVisitor;
+
     impl<'db> TypeVisitor<DbInterner<'db>> for DynTraitVisitor {
         type Result = ControlFlow<()>;
 
@@ -430,5 +447,6 @@ fn contains_dyn_trait<'db>(ty: Ty<'db>) -> bool {
             }
         }
     }
+
     ty.visit_with(&mut DynTraitVisitor).is_break()
 }

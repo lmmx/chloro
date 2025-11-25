@@ -155,6 +155,7 @@ impl SearchScope {
     /// Build a search scope spanning the entire crate graph of files.
     fn crate_graph(db: &RootDatabase) -> SearchScope {
         let mut entries = FxHashMap::default();
+
         let all_crates = db.all_crates();
         for &krate in all_crates.iter() {
             let crate_data = krate.data(db);
@@ -189,6 +190,7 @@ impl SearchScope {
     /// Build a search scope spanning the given crate.
     fn krate(db: &RootDatabase, of: hir::Crate) -> SearchScope {
         let root_file = of.root_file(db);
+
         let source_root_id = db.file_source_root(root_file).source_root_id(db);
         let source_root = db.source_root(source_root_id).source_root(db);
         SearchScope {
@@ -202,6 +204,7 @@ impl SearchScope {
     /// Build a search scope spanning the given module and all its submodules.
     pub fn module_and_children(db: &RootDatabase, module: hir::Module) -> SearchScope {
         let mut entries = FxHashMap::default();
+
         let (file_id, range) = {
             let InFile { file_id, value } = module.definition_source_range(db);
             if let Some(InRealFile { file_id, value: call_source }) = file_id.original_call_node(db)
@@ -212,6 +215,7 @@ impl SearchScope {
             }
         };
         entries.entry(file_id).or_insert(range);
+
         let mut to_visit: Vec<_> = module.children(db).collect();
         while let Some(module) = to_visit.pop() {
             if let Some(file_id) = module.as_source_file_id(db) {
@@ -247,6 +251,7 @@ impl SearchScope {
         if small.len() > large.len() {
             mem::swap(&mut small, &mut large)
         }
+
         let intersect_ranges =
             |r1: Option<TextRange>, r2: Option<TextRange>| -> Option<Option<TextRange>> {
                 match (r1, r2) {
@@ -262,6 +267,7 @@ impl SearchScope {
                 Some((file_id, r))
             })
             .collect();
+
         SearchScope::new(res)
     }
 }
@@ -279,21 +285,25 @@ impl IntoIterator for SearchScope {
 impl Definition {
     fn search_scope(&self, db: &RootDatabase) -> SearchScope {
         let _p = tracing::info_span!("search_scope").entered();
+
         if let Definition::BuiltinType(_) = self {
             return SearchScope::crate_graph(db);
         }
         // def is crate root
+
         if let &Definition::Module(module) = self
             && module.is_crate_root()
         {
             return SearchScope::reverse_dependencies(db, module.krate());
         }
+
         let module = match self.module(db) {
             Some(it) => it,
             None => return SearchScope::empty(),
         };
         let InFile { file_id, value: module_source } = module.definition_source(db);
         let file_id = file_id.original_file(db);
+
         if let Definition::Local(var) = self {
             let def = match var.parent(db) {
                 DefWithBody::Function(f) => f.source(db).map(|src| src.syntax().cloned()),
@@ -308,6 +318,7 @@ impl Definition {
                 None => SearchScope::single_file(file_id),
             };
         }
+
         if let Definition::InlineAsmOperand(op) = self {
             let def = match op.parent(db) {
                 DefWithBody::Function(f) => f.source(db).map(|src| src.syntax().cloned()),
@@ -322,6 +333,7 @@ impl Definition {
                 None => SearchScope::single_file(file_id),
             };
         }
+
         if let Definition::SelfType(impl_) = self {
             return match impl_.source(db).map(|src| src.syntax().cloned()) {
                 Some(def) => SearchScope::file_range(
@@ -330,6 +342,7 @@ impl Definition {
                 None => SearchScope::single_file(file_id),
             };
         }
+
         if let Definition::GenericParam(hir::GenericParam::LifetimeParam(param)) = self {
             let def = match param.parent(db) {
                 hir::GenericDef::Function(it) => it.source(db).map(|src| src.syntax().cloned()),
@@ -347,6 +360,7 @@ impl Definition {
                 None => SearchScope::single_file(file_id),
             };
         }
+
         if let Definition::Macro(macro_def) = self {
             return match macro_def.kind(db) {
                 hir::MacroKind::Declarative => {
@@ -364,9 +378,11 @@ impl Definition {
                 }
             };
         }
+
         if let Definition::DeriveHelper(_) = self {
             return SearchScope::reverse_dependencies(db, module.krate());
         }
+
         if let Some(vis) = self.visibility(db) {
             return match vis {
                 Visibility::Module(module, _) => {
@@ -376,6 +392,7 @@ impl Definition {
                 Visibility::Public => SearchScope::reverse_dependencies(db, module.krate()),
             };
         }
+
         let range = match module_source {
             ModuleSource::Module(m) => Some(m.syntax().text_range()),
             ModuleSource::BlockExpr(b) => Some(b.syntax().text_range()),
@@ -545,7 +562,9 @@ impl<'a> FindUsages<'a> {
         if self.scope.is_some() {
             return false;
         }
+
         let _p = tracing::info_span!("short_associated_function_fast_search").entered();
+
         let container = (|| {
             let Definition::Function(function) = self.def else {
                 return None;
@@ -570,6 +589,7 @@ impl<'a> FindUsages<'a> {
         let Some(container) = container else {
             return false;
         };
+
         fn has_any_name(node: &SyntaxNode, mut predicate: impl FnMut(&str) -> bool) -> bool {
             node.descendants().any(|node| {
                 match_ast! {
@@ -581,6 +601,7 @@ impl<'a> FindUsages<'a> {
                 }
             })
         }
+
         // This is a fixpoint algorithm with O(number of aliases), but most types have no or few aliases,
         // so this should stay fast.
         //
@@ -769,6 +790,7 @@ impl<'a> FindUsages<'a> {
 
             Some((completed, is_possibly_self))
         }
+
         fn search(
             this: &FindUsages<'_>,
             finder: &Finder<'_>,
@@ -805,14 +827,17 @@ impl<'a> FindUsages<'a> {
                 }
             }
         }
+
         let Some((container_possible_aliases, is_possibly_self)) =
             collect_possible_aliases(self.sema, container)
         else {
             return false;
         };
+
         cov_mark::hit!(short_associated_function_fast_search);
         // FIXME: If Rust ever gains the ability to `use Struct::method` we'll also need to account for free
         // functions.
+
         let finder = Finder::new(name.as_bytes());
         // The search for `Self` may return duplicate results with `ContainerName`, so deduplicate them.
         let mut self_positions = FxHashSet::default();
@@ -849,12 +874,14 @@ impl<'a> FindUsages<'a> {
                 sink,
             )
         });
+
         true
     }
 
     pub fn search(&self, sink: &mut dyn FnMut(EditionedFileId, FileReference) -> bool) {
         let _p = tracing::info_span!("FindUsages:search").entered();
         let sema = self.sema;
+
         let search_scope = {
             // FIXME: Is the trait scope needed for trait impl assoc items?
             let base =
@@ -864,6 +891,7 @@ impl<'a> FindUsages<'a> {
                 Some(scope) => base.intersection(scope),
             }
         };
+
         let name = match (self.rename, self.def) {
             (Some(rename), _) => {
                 if rename.underscore_token().is_some() {
@@ -905,10 +933,12 @@ impl<'a> FindUsages<'a> {
             None => return,
         };
         // FIXME: This should probably depend on the number of the results (specifically, the number of false results).
+
         if name.len() <= 7 && self.short_associated_function_fast_search(sink, &search_scope, name)
         {
             return;
         }
+
         let finder = &Finder::new(name);
         let include_self_kw_refs =
             self.include_self_kw_refs.as_ref().map(|ty| (ty, Finder::new("Self")));
@@ -961,6 +991,7 @@ impl<'a> FindUsages<'a> {
             }
         }
         // Search for `super` and `crate` resolving to our module
+
         if let Definition::Module(module) = self.def {
             let scope =
                 search_scope.intersection(&SearchScope::module_and_children(self.sema.db, module));
@@ -996,6 +1027,7 @@ impl<'a> FindUsages<'a> {
             }
         }
         // search for module `self` references in our module's definition source
+
         match self.def {
             Definition::Module(module) if self.search_self_mod => {
                 let src = module.definition_source(sema.db);
@@ -1052,6 +1084,7 @@ impl<'a> FindUsages<'a> {
             (None, None) => ty == *self_ty,
             _ => false,
         };
+
         match NameRefClass::classify(self.sema, name_ref) {
             Some(NameRefClass::Definition(Definition::SelfType(impl_), _))
                 if ty_eq(impl_.self_ty(self.sema.db)) =>
@@ -1293,12 +1326,14 @@ impl ReferenceCategory {
             result |= ReferenceCategory::TEST;
         }
         // Only Locals and Fields have accesses for now.
+
         if !matches!(def, Definition::Local(_) | Definition::Field(_)) {
             if is_name_ref_in_import(r) {
                 result |= ReferenceCategory::IMPORT;
             }
             return result;
         }
+
         let mode = r.syntax().ancestors().find_map(|node| {
             match_ast! {
                 match node {
@@ -1317,6 +1352,7 @@ impl ReferenceCategory {
                 }
             }
         }).unwrap_or(ReferenceCategory::READ);
+
         result | mode
     }
 }

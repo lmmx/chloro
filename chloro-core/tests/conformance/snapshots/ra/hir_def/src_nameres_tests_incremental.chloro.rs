@@ -30,6 +30,7 @@ fn check_def_map_is_not_recomputed(
         expecta,
     );
     db.set_file_text(pos.file_id.file_id(&db), ra_fixture_change);
+
     execute_assert_events(
         &db,
         || {
@@ -54,10 +55,13 @@ pub struct Bar;
 pub const BAZ: u32 = 0;
     "#,
     );
+
     for &krate in db.all_crates().iter() {
         crate_def_map(&db, krate);
     }
+
     let all_crates_before = db.all_crates();
+
     {
         // Add a dependency a -> b.
         let mut new_crate_graph = CrateGraphBuilder::default();
@@ -94,6 +98,7 @@ pub const BAZ: u32 = 0;
             .unwrap();
         new_crate_graph.set_in_db(&mut db);
     }
+
     let all_crates_after = db.all_crates();
     assert!(
         Arc::ptr_eq(&all_crates_before, &all_crates_after),
@@ -487,6 +492,7 @@ m!(Z);
             ]
         "#]],
     );
+
     let new_text = r#"
 m!(X);
 fn quux() { 92 }
@@ -494,6 +500,7 @@ m!(Y);
 m!(Z);
 "#;
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -533,6 +540,7 @@ pub static ST: u8 = 0;
 pub type Ty = ();
 "#,
     );
+
     execute_assert_events(
         &db,
         || {
@@ -548,9 +556,11 @@ pub type Ty = ();
             ]
         "#]],
     );
+
     let file_id = pos.file_id.file_id(&db);
     let file_text = db.file_text(file_id).text(&db);
     db.set_file_text(file_id, &format!("{file_text}\n"));
+
     execute_assert_events(
         &db,
         || {

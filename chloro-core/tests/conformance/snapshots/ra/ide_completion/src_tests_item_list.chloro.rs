@@ -544,6 +544,7 @@ fn inside_extern_blocks() {
         "#]],
     );
     // Should suggest `fn`, `static`, `safe`, `unsafe`
+
     check_with_base_items(
         r#"unsafe extern { $0 }"#,
         expect![[r#"
@@ -560,6 +561,7 @@ fn inside_extern_blocks() {
             kw unsafe
         "#]],
     );
+
     check_with_base_items(
         r#"unsafe extern { pub safe $0 }"#,
         expect![[r#"
@@ -567,6 +569,7 @@ fn inside_extern_blocks() {
             kw static
         "#]],
     );
+
     check_with_base_items(
         r#"unsafe extern { pub unsafe $0 }"#,
         expect![[r#"

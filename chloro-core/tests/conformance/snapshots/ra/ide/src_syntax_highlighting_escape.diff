@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2364 bytes
-Chloro size:   2362 bytes
+Chloro size:   2366 bytes
 Rustfmt size:  2422 bytes
 
 ✗ Outputs DIFFER
@@ -21,18 +21,6 @@ Rustfmt size:  2422 bytes
  pub(super) fn highlight_escape_string<T: IsString>(stack: &mut Highlights, string: &T) {
      let text = string.text();
      let start = string.syntax().text_range().start();
-         // lifetimes). Nonetheless, parser errors should already be emitted.
-         return;
-     }
--
-     let text = char.text();
-     let Some(text) = text
-         .strip_prefix('\'')
-     else {
-         return;
-     };
--
-     let range = TextRange::at(
          char.syntax().text_range().start() + TextSize::from(1),
          TextSize::from(text.len() as u32),
      );
@@ -45,18 +33,6 @@ Rustfmt size:  2422 bytes
  }
  
  pub(super) fn highlight_escape_byte(stack: &mut Highlights, byte: &Byte) {
-         // See `highlight_escape_char` for why no error highlighting here.
-         return;
-     }
--
-     let text = byte.text();
-     let Some(text) = text
-         .strip_prefix("b'")
-     else {
-         return;
-     };
--
-     let range = TextRange::at(
          byte.syntax().text_range().start() + TextSize::from(2),
          TextSize::from(text.len() as u32),
      );

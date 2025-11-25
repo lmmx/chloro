@@ -44,13 +44,16 @@ fn render(
     } else {
         ctx.source_range()
     };
+
     let (name, escaped_name) =
         (name.as_str(), name.display(ctx.db(), completion.edition).to_smolstr());
     let docs = ctx.docs(macro_);
     let docs_str = docs.as_ref().map(Documentation::as_str).unwrap_or_default();
     let is_fn_like = macro_.is_fn_like(completion.db);
     let (bra, ket) = if is_fn_like { guess_macro_braces(name, docs_str) } else { ("", "") };
+
     let needs_bang = is_fn_like && !is_use_path && !has_macro_bang;
+
     let mut item = CompletionItem::new(
         SymbolKind::from(macro_.kind(completion.db)),
         source_range,
@@ -61,6 +64,7 @@ fn render(
         .detail(macro_.display(completion.db, completion.display_target).to_string())
         .set_documentation(docs)
         .set_relevance(ctx.completion_relevance());
+
     match ctx.snippet_cap() {
         Some(cap) if needs_bang && !has_call_parens => {
             let snippet = format!("{escaped_name}!{bra}$0{ket}");
@@ -78,6 +82,7 @@ fn render(
     if let Some(import_to_add) = ctx.import_to_add {
         item.add_import(import_to_add);
     }
+
     item
 }
 
@@ -122,6 +127,7 @@ fn guess_macro_braces(macro_name: &str, docs: &str) -> (&'static str, &'static s
     }
     // Insert a space before `{}`.
     // We prefer the last one when some votes equal.
+
     let (_vote, (bra, ket)) = votes
         .iter()
         .zip(&[(" {", "}"), ("[", "]"), ("(", ")")])
@@ -149,6 +155,7 @@ macro_rules! frobnicate { () => () }
 use foo::frobnicate;
 "#,
         );
+
         check_edit(
             "frobnicate",
             r#"
@@ -210,6 +217,7 @@ macro_rules! vec { () => {} }
 fn main() { vec![$0] }
 "#,
         );
+
         check_edit(
             "foo!",
             r#"

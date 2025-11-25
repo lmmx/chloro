@@ -14,16 +14,22 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
     let unexpanded = ctx.find_node_at_offset::<ast::MacroCall>()?;
     let syntax = unexpanded.syntax();
     let goal_range = syntax.text_range();
+
     let parent = syntax.parent()?;
     let scope = ctx.sema.scope(&parent)?;
+
     let macro_call = ctx.sema.resolve_macro_call(&unexpanded)?;
+
     let famous_defs = FamousDefs(&ctx.sema, scope.krate());
     let std_todo = famous_defs.core_macros_todo()?;
     let std_unimplemented = famous_defs.core_macros_unimplemented()?;
+
     if macro_call != std_todo && macro_call != std_unimplemented {
         return None;
     }
+
     let target_ty = ctx.sema.type_of_expr(&ast::Expr::cast(parent.clone())?)?.adjusted();
+
     let term_search_ctx = TermSearchCtx {
         sema: &ctx.sema,
         scope: &scope,
@@ -35,10 +41,13 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
         },
     };
     let paths = hir::term_search::term_search(&term_search_ctx);
+
     if paths.is_empty() {
         return None;
     }
+
     let mut formatter = |_: &hir::Type<'_>| String::from("todo!()");
+
     let edition = scope.krate().edition(ctx.db());
     let paths = paths
         .into_iter()
@@ -52,8 +61,10 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             .ok()
         })
         .unique();
+
     let macro_name = macro_call.name(ctx.sema.db);
     let macro_name = macro_name.display(ctx.sema.db, edition);
+
     for code in paths {
         acc.add_group(
             &GroupLabel(String::from("Term search")),
@@ -65,6 +76,7 @@ pub(crate) fn term_search(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<
             },
         );
     }
+
     Some(())
 }
 
@@ -160,6 +172,7 @@ fn f() { let a = 0; let b: Foo = todo$0!(); }"#,
             r#"enum Foo<T = i32> { Foo(T) }
 fn f() { let a = 0; let b: Foo = Foo::Foo(a); }"#,
         );
+
         check_assist(
             term_search,
             r#"//- minicore: todo, unimplemented

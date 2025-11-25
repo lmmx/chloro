@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51149 bytes
+Chloro size:   51191 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -83,33 +83,6 @@ Rustfmt size:  52351 bytes
  pub(crate) fn extract_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let node = if ctx.has_empty_selection() {
          if let Some(t) = ctx.token_at_offset().find(|it| it.kind() == T![;]) {
-             NodeOrToken::Token(it) => it.parent()?,
-         }
-     };
--
-     let node = node.ancestors().take_while(|anc| anc.text_range() == node.text_range()).last()?;
-     let range = node.text_range();
--
-     let to_extract = node
-         .descendants()
-         .take_while(|it| range.contains_range(it.text_range()))
-         .find_map(valid_target_expr)?;
--
-     let ty = ctx.sema.type_of_expr(&to_extract).map(TypeInfo::adjusted);
-     if matches!(&ty, Some(ty_info) if ty_info.is_unit()) {
-         return None;
-     }
--
-     let parent = to_extract.syntax().parent().and_then(ast::Expr::cast);
-     // Any expression that autoderefs may need adjustment.
-     let mut needs_adjust = parent.as_ref().is_some_and(|it| match it {
-             },
-         );
-     }
--
-     Some(())
- }
- 
  }
  
  impl ExtractionKind {
@@ -119,58 +92,15 @@ Rustfmt size:  52351 bytes
  
      fn assist_id(&self) -> AssistId {
          let s = match self {
-             ExtractionKind::Constant => "extract_constant",
-             ExtractionKind::Static => "extract_static",
-         };
--
-         AssistId::refactor_extract(s)
-     }
- 
-                 return (field.to_string(), field.syntax().clone());
-             }
-         }
--
-         let mut name_generator =
-             suggest_name::NameGenerator::new_from_scope_locals(ctx.sema.scope(to_extract.syntax()));
-         let var_name = if let Some(literal_name) = get_literal_name(ctx, to_extract) {
-         } else {
-             name_generator.for_variable(to_extract, &ctx.sema)
-         };
--
-         let var_name = match self {
-             ExtractionKind::Variable => var_name.to_lowercase(),
-             ExtractionKind::Constant | ExtractionKind::Static => var_name.to_uppercase(),
-         };
--
-         (var_name, to_extract.syntax().clone())
-     }
- }
-     let ast::Expr::Literal(literal) = expr else {
-         return None;
-     };
--
-     let inner = match literal.kind() {
-         ast::LiteralKind::String(string) => string.value().ok()?.into_owned(),
-         ast::LiteralKind::ByteString(byte_string) => {
          }
          _ => return None,
      };
 -
      // Entirely arbitrary
++
      if inner.len() > 32 {
          return None;
      }
--
-     match LexedStr::single_token(ctx.edition(), &inner) {
-         Some((SyntaxKind::IDENT, None)) => Some(inner),
-         _ => None,
-                 }
-                 None
-             });
--
-         match kind {
-             ExtractionKind::Constant | ExtractionKind::Static if result.is_none() => {
-                 to_extract.syntax().ancestors().find_map(|node| {
  
  #[cfg(test)]
  mod tests {
@@ -187,41 +117,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_var_simple_without_select() {
          check_assist_by_label(
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into variable",
          );
      }
@@ -229,34 +124,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_const_simple_without_select() {
          check_assist_by_label(
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into constant",
          );
      }
@@ -264,34 +131,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_static_simple_without_select() {
          check_assist_by_label(
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into static",
          );
      }
@@ -299,13 +138,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn dont_extract_unit_expr_without_select() {
          check_assist_not_applicable(
- }
- "#,
-         );
--
-         check_assist_not_applicable(
-             extract_variable,
-             r#"
  }"#,
          );
      }
@@ -459,20 +291,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_var_does_not_add_extra_whitespace() {
          check_assist_by_label(
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into variable",
          );
      }
@@ -564,20 +382,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_macro_call() {
          check_assist_by_label(
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into static",
          );
      }
@@ -610,10 +414,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_var_target() {
          check_assist_target(extract_variable, r#"fn foo() -> u32 { $0return 2 + 2$0; }"#, "2 + 2");
--
-         check_assist_target(
-             extract_variable,
-             r#"
              "2 + 2",
          );
      }
@@ -628,27 +428,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_const_no_block_body() {
          check_assist_by_label(
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into constant",
          );
      }
@@ -656,27 +435,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_static_no_block_body() {
          check_assist_by_label(
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into static",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into static",
          );
      }
@@ -789,20 +547,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_string_literal() {
          check_assist_by_label(
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into static",
          );
      }
@@ -810,20 +554,6 @@ Rustfmt size:  52351 bytes
      #[test]
      fn extract_variable_string_literal_use_field_shorthand() {
          // When field shorthand is available, it should
- "#,
-             "Extract into variable",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
- "#,
-             "Extract into constant",
-         );
--
-         check_assist_by_label(
-             extract_variable,
-             r#"
              "Extract into static",
          );
      }

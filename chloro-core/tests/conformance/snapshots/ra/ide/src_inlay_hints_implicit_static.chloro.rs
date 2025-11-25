@@ -22,6 +22,7 @@ pub(super) fn hints(
     if config.lifetime_elision_hints != LifetimeElisionHints::Always {
         return None;
     }
+
     if let Either::Right(it) = &statik_or_const
         && ast::AssocItemList::can_cast(
             it.syntax().parent().map_or(SyntaxKind::EOF, |it| it.kind()),
@@ -29,6 +30,7 @@ pub(super) fn hints(
     {
         return None;
     }
+
     if let Some(ast::Type::RefType(ty)) = statik_or_const.either(|it| it.ty(), |it| it.ty())
         && ty.lifetime().is_none()
     {
@@ -47,6 +49,7 @@ pub(super) fn hints(
             resolve_parent: None,
         });
     }
+
     Some(())
 }
 

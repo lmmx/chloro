@@ -5,6 +5,7 @@ use crate::{AssistContext, AssistId, Assists};
 
 pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let variable = ctx.find_node_at_offset::<ast::PathExpr>()?;
+
     if let hir::PathResolution::Def(hir::ModuleDef::Const(konst)) =
         ctx.sema.resolve_path(&variable.path()?)?
     {

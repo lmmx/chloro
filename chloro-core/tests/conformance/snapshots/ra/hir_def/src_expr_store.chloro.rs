@@ -314,6 +314,7 @@ impl ExpressionStoreBuilder {
         ident_hygiene.shrink_to_fit();
         types.shrink_to_fit();
         lifetimes.shrink_to_fit();
+
         expr_map.shrink_to_fit();
         expr_map_back.shrink_to_fit();
         pat_map.shrink_to_fit();
@@ -338,8 +339,10 @@ impl ExpressionStoreBuilder {
             implicit_capture_to_source.shrink_to_fit();
         }
         expansions.shrink_to_fit();
+
         let has_exprs =
             !exprs.is_empty() || !labels.is_empty() || !pats.is_empty() || !bindings.is_empty();
+
         let store = {
             let expr_only = if has_exprs {
                 Some(Box::new(ExpressionOnlyStore {
@@ -356,6 +359,7 @@ impl ExpressionStoreBuilder {
             };
             ExpressionStore { expr_only, types, lifetimes }
         };
+
         let source_map = {
             let expr_only = if has_exprs || !expansions.is_empty() || !diagnostics.is_empty() {
                 Some(Box::new(ExpressionOnlySourceMap {
@@ -383,6 +387,7 @@ impl ExpressionStoreBuilder {
                 lifetime_map,
             }
         };
+
         (store, source_map)
     }
 }

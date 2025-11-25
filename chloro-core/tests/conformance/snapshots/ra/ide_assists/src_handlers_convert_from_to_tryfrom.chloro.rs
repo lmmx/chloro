@@ -8,13 +8,16 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let impl_ = ctx.find_node_at_offset::<ast::Impl>()?;
     let trait_ty = impl_.trait_()?;
+
     let module = ctx.sema.scope(impl_.syntax())?.module();
+
     let from_type = match &trait_ty {
         ast::Type::PathType(path) => {
             path.path()?.segment()?.generic_arg_list()?.generic_args().next()?
         }
         _ => return None,
     };
+
     let associated_items = impl_.assoc_item_list()?;
     let associated_l_curly = associated_items.l_curly_token()?;
     let from_fn = associated_items.assoc_items().find_map(|item| {
@@ -25,15 +28,19 @@ pub(crate) fn convert_from_to_tryfrom(acc: &mut Assists, ctx: &AssistContext<'_>
         };
         None
     })?;
+
     let from_fn_name = from_fn.name()?;
     let from_fn_return_type = from_fn.ret_type()?.ty()?;
+
     let return_exprs = from_fn.body()?.syntax().descendants().filter_map(ast::ReturnExpr::cast);
     let tail_expr = from_fn.body()?.tail_expr()?;
+
     if resolve_target_trait(&ctx.sema, &impl_)?
         != FamousDefs(&ctx.sema, module.krate()).core_convert_From()?
     {
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("convert_from_to_tryfrom"),
         "Convert From to TryFrom",

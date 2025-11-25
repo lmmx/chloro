@@ -20,13 +20,16 @@ pub(crate) fn complete_expr_snippet(
     if !ctx.qualifier_ctx.none() {
         return;
     }
+
     let cap = match ctx.config.snippet_cap {
         Some(it) => it,
         None => return,
     };
+
     if !ctx.config.snippets.is_empty() {
         add_custom_completions(acc, ctx, cap, SnippetScope::Expr);
     }
+
     if in_block_expr {
         snippet(ctx, cap, "pd", "eprintln!(\"$0 = {:?}\", $0);").add_to(acc, ctx.db);
         snippet(ctx, cap, "ppd", "eprintln!(\"$0 = {:#?}\", $0);").add_to(acc, ctx.db);
@@ -61,10 +64,12 @@ pub(crate) fn complete_item_snippet(
         Some(it) => it,
         None => return,
     };
+
     if !ctx.config.snippets.is_empty() {
         add_custom_completions(acc, ctx, cap, SnippetScope::Item);
     }
     // Test-related snippets shouldn't be shown in blocks.
+
     if let ItemListKind::SourceFile | ItemListKind::Module = kind {
         let mut item = snippet(
             ctx,

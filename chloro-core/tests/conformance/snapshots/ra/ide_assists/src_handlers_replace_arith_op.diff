@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6386 bytes
-Chloro size:   5654 bytes
+Chloro size:   5661 bytes
 Rustfmt size:  6494 bytes
 
 ✗ Outputs DIFFER
@@ -73,17 +73,6 @@ Rustfmt size:  6494 bytes
  pub(crate) fn replace_arith_with_wrapping(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
-     let (lhs, op, rhs) = parse_binary_op(ctx)?;
-     let op_expr = lhs.syntax().parent()?;
--
-     if !is_primitive_int(ctx, &lhs) || !is_primitive_int(ctx, &rhs) {
-         return None;
-     }
--
-     acc.add_group(
-         &GroupLabel("Replace arithmetic...".into()),
-         kind.assist_id(),
              let make = SyntaxFactory::with_mappings();
              let method_name = kind.method_name(op);
  
@@ -101,37 +90,6 @@ Rustfmt size:  6494 bytes
              let arith_expr =
                  make.expr_method_call(receiver, make.name_ref(&method_name), make.arg_list([rhs]));
              edit.replace(op_expr, arith_expr.syntax());
-         return None;
-     }
-     let expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
--
-     let op = match expr.op_kind() {
-         Some(BinaryOp::ArithOp(ArithOp::Add)) => ArithOp::Add,
-         Some(BinaryOp::ArithOp(ArithOp::Sub)) => ArithOp::Sub,
-         Some(BinaryOp::ArithOp(ArithOp::Div)) => ArithOp::Div,
-         _ => return None,
-     };
--
-     let lhs = expr.lhs()?;
-     let rhs = expr.rhs()?;
--
-     Some((lhs, op, rhs))
- }
- 
-             ArithKind::Checked => "replace_arith_with_checked",
-             ArithKind::Wrapping => "replace_arith_with_wrapping",
-         };
--
-         AssistId::refactor_rewrite(s)
-     }
- 
-             ArithKind::Wrapping => "wrapping_",
-             ArithKind::Saturating => "saturating_",
-         };
--
-         let suffix = match op {
-             ArithOp::Add => "add",
-             ArithOp::Sub => "sub",
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

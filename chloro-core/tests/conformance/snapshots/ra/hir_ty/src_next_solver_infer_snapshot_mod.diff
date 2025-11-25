@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4096 bytes
-Chloro size:   4090 bytes
+Chloro size:   4095 bytes
 Rustfmt size:  4239 bytes
 
 ✗ Outputs DIFFER
@@ -32,15 +32,6 @@ Rustfmt size:  4239 bytes
  pub struct CombinedSnapshot {
      pub(super) undo_snapshot: Snapshot,
  
-     pub(crate) fn start_snapshot(&self) -> CombinedSnapshot {
-         debug!("start_snapshot()");
--
-         let mut inner = self.inner.borrow_mut();
--
-         CombinedSnapshot {
-             undo_snapshot: inner.undo_log.start_snapshot(),
-             region_constraints_snapshot: inner.unwrap_region_constraints().start_snapshot(),
- 
      #[instrument(skip(self, snapshot), level = "debug")]
      pub(crate) fn rollback_to(&self, snapshot: CombinedSnapshot) {
 -        let CombinedSnapshot {
@@ -48,10 +39,10 @@ Rustfmt size:  4239 bytes
 -            region_constraints_snapshot,
 -            universe,
 -        } = snapshot;
--
 +        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot, universe } = snapshot;
+ 
          self.universe.set(universe);
--
+ 
          let mut inner = self.inner.borrow_mut();
          inner.rollback_to(undo_snapshot);
 -        inner
@@ -67,12 +58,11 @@ Rustfmt size:  4239 bytes
 -            region_constraints_snapshot: _,
 -            universe: _,
 -        } = snapshot;
--
 +        let CombinedSnapshot { undo_snapshot, region_constraints_snapshot: _, universe: _ } =
 +            snapshot;
+ 
          self.inner.borrow_mut().commit(undo_snapshot);
      }
- 
      }
  
      pub fn opaque_types_added_in_snapshot(&self, snapshot: &CombinedSnapshot) -> bool {

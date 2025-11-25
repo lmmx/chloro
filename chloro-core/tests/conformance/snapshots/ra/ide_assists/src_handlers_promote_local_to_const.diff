@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6477 bytes
-Chloro size:   5917 bytes
+Chloro size:   5921 bytes
 Rustfmt size:  6522 bytes
 
 ✗ Outputs DIFFER
@@ -46,28 +46,6 @@ Rustfmt size:  6522 bytes
  pub(crate) fn promote_local_to_const(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let pat = ctx.find_node_at_offset::<ast::IdentPat>()?;
      let name = pat.name()?;
-         return None;
-     }
-     let let_stmt = pat.syntax().parent().and_then(ast::LetStmt::cast)?;
--
-     let module = ctx.sema.scope(pat.syntax())?.module();
-     let local = ctx.sema.to_def(&pat)?;
-     let ty = ctx.sema.type_of_pat(&pat.into())?.original;
--
-     let ty = match ty.display_source_code(ctx.db(), module.into(), false) {
-         Ok(ty) => ty,
-         Err(_) => return None,
-     };
--
-     let initializer = let_stmt.initializer()?;
-     if !utils::is_body_const(&ctx.sema, &initializer) {
-         cov_mark::hit!(promote_local_non_const);
-         return None;
-     }
--
-     acc.add(
-         AssistId::refactor("promote_local_to_const"),
-         "Promote local to constant",
                  let name_ref = make.name_ref(&name);
  
                  for usage in usages {

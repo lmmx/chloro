@@ -33,6 +33,7 @@ pub fn parallel_prime_caches(
     cb: &(dyn Fn(ParallelPrimeCachesProgress) + Sync),
 ) {
     let _p = tracing::info_span!("parallel_prime_caches").entered();
+
     enum ParallelPrimeCacheWorkerProgress {
         BeginCrateDefMap { crate_id: Crate, crate_name: Symbol },
         EndCrateDefMap { crate_id: Crate },
@@ -52,6 +53,7 @@ pub fn parallel_prime_caches(
     // isn't ready yet, because one of its dependencies hasn't yet completed its def map.
     // Such def map will just block on the dependency, which is just wasted time. So better
     // to compute the symbols/import map of an already computed def map in that time.
+
     let (reverse_deps, mut to_be_done_deps) = {
         let all_crates = db.all_crates();
         let to_be_done_deps = all_crates
@@ -67,6 +69,7 @@ pub fn parallel_prime_caches(
         }
         (reverse_deps, to_be_done_deps)
     };
+
     let (def_map_work_sender, import_map_work_sender, symbols_work_sender, progress_receiver) = {
         let (progress_sender, progress_receiver) = crossbeam_channel::unbounded();
         let (def_map_work_sender, def_map_work_receiver) = crossbeam_channel::unbounded();
@@ -156,14 +159,17 @@ pub fn parallel_prime_caches(
 
         (def_map_work_sender, import_map_work_sender, symbols_work_sender, progress_receiver)
     };
+
     let crate_def_maps_total = db.all_crates().len();
     let mut crate_def_maps_done = 0;
     let (mut crate_import_maps_total, mut crate_import_maps_done) = (0usize, 0usize);
     let (mut module_symbols_total, mut module_symbols_done) = (0usize, 0usize);
     // an index map is used to preserve ordering so we can sort the progress report in order of
     // "longest crate to index" first
+
     let mut crates_currently_indexing =
         FxIndexMap::with_capacity_and_hasher(num_worker_threads, Default::default());
+
     for (&krate, &to_be_done_deps) in &to_be_done_deps {
         if to_be_done_deps != 0 {
             continue;
@@ -172,6 +178,7 @@ pub fn parallel_prime_caches(
         let name = crate_name(db, krate);
         def_map_work_sender.send((krate, name)).ok();
     }
+
     while crate_def_maps_done < crate_def_maps_total
         || crate_import_maps_done < crate_import_maps_total
         || module_symbols_done < module_symbols_total

@@ -2339,6 +2339,7 @@ fn test() {
             108..109 'N': {unknown}
         "#]],
     );
+
     check_infer(
         r#"
 struct Foo<const N: usize>;

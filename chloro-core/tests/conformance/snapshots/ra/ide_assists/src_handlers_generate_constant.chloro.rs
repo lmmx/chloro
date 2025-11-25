@@ -34,6 +34,7 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
         cov_mark::hit!(not_last_path_segment);
         return None;
     }
+
     let name_refs = path.segments().map(|s| s.name_ref());
     let mut outer_exists = false;
     let mut not_exist_name_ref = Vec::new();
@@ -64,6 +65,7 @@ pub(crate) fn generate_constant(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
                 (statement.syntax().text_range().start(), indent, None, format!("\n{indent}"))
             },
         );
+
     let text = get_text_for_generate_constant(not_exist_name_ref, indent, outer_exists, type_name)?;
     acc.add(AssistId::quick_fix("generate_constant"), "Generate constant", target, |builder| {
         if let Some(file_id) = file_id {

@@ -27,10 +27,12 @@ pub(crate) fn generate_from_impl_for_enum(
         }
         ast::StructKind::Unit => return None,
     };
+
     if existing_from_impl(&ctx.sema, &variant).is_some() {
         cov_mark::hit!(test_add_from_impl_already_exists);
         return None;
     }
+
     let target = variant.syntax().text_range();
     acc.add(
         AssistId::generate("generate_from_impl_for_enum"),
@@ -69,6 +71,7 @@ fn existing_from_impl(
     let interner = DbInterner::new_with(db, Some(krate.base()), None);
     use hir::next_solver::infer::DbInternerInferExt;
     let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+
     let variant = variant.instantiate_infer(&infcx);
     let enum_ = variant.parent_enum(sema.db);
     let field_ty = variant.fields(sema.db).first()?.ty(sema.db);

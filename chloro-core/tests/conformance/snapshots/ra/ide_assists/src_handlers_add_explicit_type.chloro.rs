@@ -27,9 +27,11 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
     } else {
         return None;
     };
+
     let module = ctx.sema.scope(pat.syntax())?.module();
     let pat_range = pat.syntax().text_range();
     // Don't enable the assist if there is a type ascription without any placeholders
+
     if let Some(ty) = &ascribed_ty {
         let mut contains_infer_ty = false;
         walk_ty(ty, &mut |ty| {
@@ -41,16 +43,19 @@ pub(crate) fn add_explicit_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
             return None;
         }
     }
+
     let ty = match (pat, expr) {
         (ast::Pat::IdentPat(_), Some(expr)) => ctx.sema.type_of_expr(&expr)?,
         (pat, _) => ctx.sema.type_of_pat(&pat)?,
     }
     .adjusted();
     // Fully unresolved or unnameable types can't be annotated
+
     if (ty.contains_unknown() && ty.type_arguments().count() == 0) || ty.is_closure() {
         cov_mark::hit!(add_explicit_type_not_applicable_if_ty_not_inferred);
         return None;
     }
+
     let inferred_type = ty.display_source_code(ctx.db(), module.into(), false).ok()?;
     acc.add(
         AssistId::refactor_rewrite("add_explicit_type"),
@@ -265,6 +270,7 @@ fn f() {
 }
 "#,
         );
+
         check_assist(
             add_explicit_type,
             r#"

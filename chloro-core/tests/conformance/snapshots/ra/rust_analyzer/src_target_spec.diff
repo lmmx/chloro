@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10531 bytes
-Chloro size:   10510 bytes
+Chloro size:   10520 bytes
 Rustfmt size:  11050 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-             &[crate_id, ..] => crate_id,
-             _ => return Ok(None),
-         };
--
-         Ok(global_state_snapshot.target_spec_for_crate(crate_id))
-     }
- 
          match kind {
              RunnableKind::Bin => {
                  for runnable in &self.shell_runnables {
@@ -37,16 +30,6 @@ Rustfmt size:  11050 bytes
                          let mut runnable = runnable.clone();
  
                          let replaced_args: Vec<_> = runnable
-     ) -> (Vec<String>, Vec<String>) {
-         let config = snap.config.runnables(None);
-         let extra_test_binary_args = config.extra_test_binary_args;
--
-         let mut cargo_args = Vec::new();
-         let mut executable_args = Vec::new();
--
-         match kind {
-             RunnableKind::Test { test_id, attr } => {
-                 cargo_args.push("test".to_owned());
              }
              RunnableKind::Bin => {
                  let subcommand = match spec {
@@ -58,21 +41,6 @@ Rustfmt size:  11050 bytes
                      _ => "run",
                  };
                  cargo_args.push(subcommand.to_owned());
-             }
-         }
--
-         let (allowed_features, target_required_features) = if let Some(mut spec) = spec {
-             let allowed_features = mem::take(&mut spec.features);
-             let required_features = mem::take(&mut spec.required_features);
-         } else {
-             (Default::default(), Default::default())
-         };
--
-         let cargo_config = snap.config.cargo(None);
--
-         match &cargo_config.features {
-             CargoFeatures::All => {
-                 cargo_args.push("--all-features".to_owned());
                      cargo_args.push(feature);
                  }
              }
@@ -100,8 +68,10 @@ Rustfmt size:  11050 bytes
          buf.push(self.package);
 -
          // Can't mix --doc with other target flags
++
          if let RunnableKind::DocTest { .. } = kind {
              return;
+         }
              features.push(value.to_string())
          }
          CfgExpr::All(preds) => {
@@ -135,20 +105,16 @@ Rustfmt size:  11050 bytes
              let tt = syntax_node_to_token_tree(
                  tt.syntax(),
                  &DummyTestSpanMap,
-             );
-             CfgExpr::parse(&tt)
-         };
--
          let mut features = vec![];
          required_features(&cfg_expr, &mut features);
--
+ 
 -        let expected_features = expected_features
 -            .iter()
 -            .map(|&it| SmolStr::new(it))
 -            .collect::<Vec<_>>();
--
 +        let expected_features =
 +            expected_features.iter().map(|&it| SmolStr::new(it)).collect::<Vec<_>>();
+ 
          assert_eq!(features, expected_features);
      }
 -

@@ -38,8 +38,10 @@ fn integrated_highlighting_benchmark() {
         return;
     }
     // Load rust-analyzer itself.
+
     let workspace_to_load = project_root();
     let file = "./crates/rust-analyzer/src/config.rs";
+
     let cargo_config = CargoConfig {
         sysroot: Some(project_model::RustLibSource::Discover),
         all_targets: true,
@@ -51,6 +53,7 @@ fn integrated_highlighting_benchmark() {
         with_proc_macro_server: ProcMacroServerChoice::Sysroot,
         prefill_caches: false,
     };
+
     let (db, vfs, _proc_macro) = {
         let _it = stdx::timeit("workspace loading");
         load_workspace_at(
@@ -62,16 +65,19 @@ fn integrated_highlighting_benchmark() {
         .unwrap()
     };
     let mut host = AnalysisHost::with_database(db);
+
     let file_id = {
         let file = workspace_to_load.join(file);
         let path = VfsPath::from(AbsPathBuf::assert(file));
         file_id(&vfs, &path)
     };
+
     {
         let _it = stdx::timeit("initial");
         let analysis = host.analysis();
         analysis.highlight_as_html(file_id, false).unwrap();
     }
+
     {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -83,7 +89,9 @@ fn integrated_highlighting_benchmark() {
         change.change_file(file_id, Some(text));
         host.apply_change(change);
     }
+
     let _g = crate::tracing::hprof::init("*>10");
+
     {
         let _it = stdx::timeit("after change");
         let _span = profile::cpu_span();
@@ -98,8 +106,10 @@ fn integrated_completion_benchmark() {
         return;
     }
     // Load rust-analyzer itself.
+
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
+
     let cargo_config = CargoConfig {
         sysroot: Some(project_model::RustLibSource::Discover),
         all_targets: true,
@@ -111,6 +121,7 @@ fn integrated_completion_benchmark() {
         with_proc_macro_server: ProcMacroServerChoice::Sysroot,
         prefill_caches: true,
     };
+
     let (db, vfs, _proc_macro) = {
         let _it = stdx::timeit("workspace loading");
         load_workspace_at(
@@ -122,12 +133,14 @@ fn integrated_completion_benchmark() {
         .unwrap()
     };
     let mut host = AnalysisHost::with_database(db);
+
     let file_id = {
         let file = workspace_to_load.join(file);
         let path = VfsPath::from(AbsPathBuf::assert(file));
         file_id(&vfs, &path)
     };
     // kick off parsing and index population
+
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -139,6 +152,7 @@ fn integrated_completion_benchmark() {
         host.apply_change(change);
         completion_offset
     };
+
     {
         let _span = profile::cpu_span();
         let analysis = host.analysis();
@@ -176,7 +190,9 @@ fn integrated_completion_benchmark() {
             FilePosition { file_id, offset: TextSize::try_from(completion_offset).unwrap() };
         analysis.completions(&config, position, None).unwrap();
     }
+
     let _g = crate::tracing::hprof::init("*>10");
+
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -190,6 +206,7 @@ fn integrated_completion_benchmark() {
         host.apply_change(change);
         completion_offset
     };
+
     {
         let _p = tracing::info_span!("unqualified path completion").entered();
         let _span = profile::cpu_span();
@@ -228,6 +245,7 @@ fn integrated_completion_benchmark() {
             FilePosition { file_id, offset: TextSize::try_from(completion_offset).unwrap() };
         analysis.completions(&config, position, None).unwrap();
     }
+
     let completion_offset = {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -241,6 +259,7 @@ fn integrated_completion_benchmark() {
         host.apply_change(change);
         completion_offset
     };
+
     {
         let _p = tracing::info_span!("dot completion").entered();
         let _span = profile::cpu_span();
@@ -287,8 +306,10 @@ fn integrated_diagnostics_benchmark() {
         return;
     }
     // Load rust-analyzer itself.
+
     let workspace_to_load = project_root();
     let file = "./crates/hir/src/lib.rs";
+
     let cargo_config = CargoConfig {
         sysroot: Some(project_model::RustLibSource::Discover),
         all_targets: true,
@@ -300,6 +321,7 @@ fn integrated_diagnostics_benchmark() {
         with_proc_macro_server: ProcMacroServerChoice::Sysroot,
         prefill_caches: true,
     };
+
     let (db, vfs, _proc_macro) = {
         let _it = stdx::timeit("workspace loading");
         load_workspace_at(
@@ -311,11 +333,13 @@ fn integrated_diagnostics_benchmark() {
         .unwrap()
     };
     let mut host = AnalysisHost::with_database(db);
+
     let file_id = {
         let file = workspace_to_load.join(file);
         let path = VfsPath::from(AbsPathBuf::assert(file));
         file_id(&vfs, &path)
     };
+
     let diagnostics_config = DiagnosticsConfig {
         enabled: false,
         proc_macros_enabled: true,
@@ -341,7 +365,9 @@ fn integrated_diagnostics_benchmark() {
     host.analysis()
         .full_diagnostics(&diagnostics_config, ide::AssistResolveStrategy::None, file_id)
         .unwrap();
+
     let _g = crate::tracing::hprof::init("*");
+
     {
         let _it = stdx::timeit("change");
         let mut text = host.analysis().file_text(file_id).unwrap().to_string();
@@ -350,6 +376,7 @@ fn integrated_diagnostics_benchmark() {
         change.change_file(file_id, Some(text));
         host.apply_change(change);
     };
+
     {
         let _p = tracing::info_span!("diagnostics").entered();
         let _span = profile::cpu_span();

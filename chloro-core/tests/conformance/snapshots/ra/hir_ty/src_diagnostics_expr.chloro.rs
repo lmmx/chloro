@@ -112,9 +112,11 @@ impl<'db> ExprValidator<'db> {
         let mut filter_map_next_checker = None;
         // we'll pass &mut self while iterating over body.exprs, so they need to be disjoint
         let body = Arc::clone(&self.body);
+
         if matches!(self.owner, DefWithBodyId::FunctionId(_)) {
             self.check_for_trailing_return(body.body_expr, &body);
         }
+
         for (id, expr) in body.exprs() {
             if let Some((variant, missed_fields, true)) =
                 record_literal_missing_fields(db, &self.infer, id, expr)
@@ -145,6 +147,7 @@ impl<'db> ExprValidator<'db> {
                 _ => {}
             }
         }
+
         for (id, pat) in body.pats() {
             if let Some((variant, missed_fields, true)) =
                 record_pattern_missing_fields(db, &self.infer, id, pat)
@@ -168,6 +171,7 @@ impl<'db> ExprValidator<'db> {
             return;
         }
         // Check that the number of arguments matches the number of parameters.
+
         if self.infer.expr_type_mismatches().next().is_some() {
             // FIXME: Due to shortcomings in the current type system implementation, only emit
             // this diagnostic if there are no type mismatches in the containing function.
@@ -200,7 +204,9 @@ impl<'db> ExprValidator<'db> {
         if scrut_ty.references_non_lt_error() {
             return;
         }
+
         let cx = MatchCheckCtx::new(self.owner.module(self.db()), &self.infcx, self.env.clone());
+
         let pattern_arena = Arena::new();
         let mut m_arms = Vec::with_capacity(arms.len());
         let mut has_lowering_errors = false;
@@ -249,6 +255,7 @@ impl<'db> ExprValidator<'db> {
             cov_mark::hit!(validate_match_bailed_out);
             return;
         }
+
         let known_valid_scrutinee = Some(self.is_known_valid_scrutinee(scrutinee_expr));
         let report =
             match cx.compute_match_usefulness(m_arms.as_slice(), scrut_ty, known_valid_scrutinee) {
@@ -257,6 +264,7 @@ impl<'db> ExprValidator<'db> {
             };
         // FIXME Report unreachable arms
         // https://github.com/rust-lang/rust/blob/f31622a50/compiler/rustc_mir_build/src/thir/pattern/check_match.rs#L200
+
         let witnesses = report.non_exhaustiveness_witnesses;
         if !witnesses.is_empty() {
             self.diagnostics.push(BodyValidationDiagnostic::MissingMatchArms {
@@ -274,6 +282,7 @@ impl<'db> ExprValidator<'db> {
 
     fn is_known_valid_scrutinee(&self, scrutinee_expr: ExprId) -> bool {
         let db = self.db();
+
         if self
             .infer
             .expr_adjustments
@@ -282,6 +291,7 @@ impl<'db> ExprValidator<'db> {
         {
             return false;
         }
+
         match &self.body[scrutinee_expr] {
             Expr::UnaryOp { op: UnaryOp::Deref, .. } => false,
             Expr::Path(path) => {
@@ -514,6 +524,7 @@ impl<'db> FilterMapNextChecker<'db> {
             self.prev_filter_map_expr_id = Some(current_expr_id);
             return None;
         }
+
         if *function_id == self.next_function_id?
             && let Some(prev_filter_map_expr_id) = self.prev_filter_map_expr_id
         {
@@ -525,6 +536,7 @@ impl<'db> FilterMapNextChecker<'db> {
                 return Some(());
             }
         }
+
         self.prev_filter_map_expr_id = None;
         None
     }
@@ -540,11 +552,14 @@ pub fn record_literal_missing_fields(
         Expr::RecordLit { fields, spread, .. } => (fields, spread.is_none()),
         _ => return None,
     };
+
     let variant_def = infer.variant_resolution_for_expr(id)?;
     if let VariantId::UnionId(_) = variant_def {
         return None;
     }
+
     let variant_data = variant_def.fields(db);
+
     let specified_fields: FxHashSet<_> = fields.iter().map(|f| &f.name).collect();
     let missed_fields: Vec<LocalFieldId> = variant_data
         .fields()
@@ -567,11 +582,14 @@ pub fn record_pattern_missing_fields(
         Pat::Record { path: _, args, ellipsis } => (args, !ellipsis),
         _ => return None,
     };
+
     let variant_def = infer.variant_resolution_for_pat(id)?;
     if let VariantId::UnionId(_) = variant_def {
         return None;
     }
+
     let variant_data = variant_def.fields(db);
+
     let specified_fields: FxHashSet<_> = fields.iter().map(|f| &f.name).collect();
     let missed_fields: Vec<LocalFieldId> = variant_data
         .fields()
@@ -601,6 +619,7 @@ fn types_of_subpatterns_do_match(pat: PatId, body: &Body, infer: &InferenceResul
             }
         }
     }
+
     let mut has_type_mismatches = false;
     walk(pat, body, infer, &mut has_type_mismatches);
     !has_type_mismatches
@@ -625,6 +644,7 @@ fn missing_match_arms<'a, 'db>(
             write!(f, "{}", pat.display(cx.db, display_target))
         }
     }
+
     let non_empty_enum = match scrut_ty.as_adt() {
         Some((AdtId::EnumId(e), _)) => !e.enum_variants(cx.db).variants.is_empty(),
         _ => false,

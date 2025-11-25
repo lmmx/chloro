@@ -77,6 +77,7 @@ pub fn print_body_hir(
             item_name(db, it, "<missing>")
         ),
     };
+
     let mut p = Printer {
         db,
         store: body,
@@ -119,7 +120,9 @@ pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: E
         ),
         VariantId::UnionId(it) => format!("union {}", item_name(db, it, "<missing>")),
     };
+
     let fields = owner.fields(db);
+
     let mut p = Printer {
         db,
         store: &fields.store,
@@ -133,6 +136,7 @@ pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: E
         FieldsShape::Tuple => wln!(p, "("),
         FieldsShape::Unit => (),
     }
+
     for (_, data) in fields.fields().iter() {
         let FieldData { name, type_ref, visibility, is_unsafe } = data;
         match visibility {
@@ -149,6 +153,7 @@ pub fn print_variant_body_hir(db: &dyn DefDatabase, owner: VariantId, edition: E
         w!(p, "{}: ", name.display(db, p.edition));
         p.print_type_ref(*type_ref);
     }
+
     match fields.shape {
         FieldsShape::Record => wln!(p, "}}"),
         FieldsShape::Tuple => wln!(p, ");"),
@@ -236,12 +241,15 @@ pub fn print_struct(
         FieldsShape::Tuple => wln!(p, "(...)"),
         FieldsShape::Unit => (),
     }
+
     print_where_clauses(db, generic_params, &mut p);
+
     match shape {
         FieldsShape::Record => wln!(p),
         FieldsShape::Tuple => wln!(p, ";"),
         FieldsShape::Unit => wln!(p, ";"),
     }
+
     p.buf
 }
 
@@ -300,8 +308,10 @@ pub fn print_function(
         w!(p, " -> ");
         p.print_type_ref(*ret_type);
     }
+
     print_where_clauses(db, generic_params, &mut p);
     wln!(p, " {{...}}");
+
     p.buf
 }
 
@@ -456,6 +466,7 @@ impl Write for Printer<'_> {
                 };
             }
         }
+
         Ok(())
     }
 }
@@ -499,6 +510,7 @@ impl Printer<'_> {
 
     fn print_expr(&mut self, expr: ExprId) {
         let expr = &self.store[expr];
+
         match expr {
             Expr::Missing => w!(self, "�"),
             Expr::Underscore => w!(self, "_"),
@@ -845,6 +857,7 @@ impl Printer<'_> {
 
     fn print_pat(&mut self, pat: PatId) {
         let pat = &self.store[pat];
+
         match pat {
             Pat::Missing => w!(self, "�"),
             Pat::Wild => w!(self, "_"),
@@ -1113,6 +1126,7 @@ impl Printer<'_> {
                 ),
             },
         }
+
         for (i, segment) in path.segments().iter().enumerate() {
             if i != 0 || !matches!(path.kind(), PathKind::Plain) {
                 w!(self, "::");
@@ -1173,6 +1187,7 @@ impl Printer<'_> {
 
     pub(crate) fn print_type_param(&mut self, param: TypeParamId) {
         let generic_params = self.db.generic_params(param.parent());
+
         match generic_params[param.local_id()].name() {
             Some(name) => w!(self, "{}", name.display(self.db, self.edition)),
             None => w!(self, "Param[{}]", param.local_id().into_raw()),

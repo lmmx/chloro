@@ -25,6 +25,7 @@ impl flags::RunTests {
         };
         let (ref db, _vfs, _proc_macro) =
             load_workspace_at(&self.path, &cargo_config, &load_cargo_config, &|_| {})?;
+
         let tests = all_modules(db)
             .into_iter()
             .flat_map(|x| x.declarations(db))
@@ -79,9 +80,11 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
         .map(|krate| krate.root_module())
         .collect();
     let mut modules = Vec::new();
+
     while let Some(module) = worklist.pop() {
         modules.push(module);
         worklist.extend(module.children(db));
     }
+
     modules
 }

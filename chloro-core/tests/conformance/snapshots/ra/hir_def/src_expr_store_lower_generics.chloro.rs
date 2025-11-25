@@ -87,6 +87,7 @@ impl GenericParamsCollector {
 
     pub(crate) fn finish(self) -> Arc<GenericParams> {
         let Self { mut lifetimes, mut type_or_consts, mut where_predicates, parent: _ } = self;
+
         if lifetimes.is_empty() && type_or_consts.is_empty() && where_predicates.is_empty() {
             static EMPTY: LazyLock<Arc<GenericParams>> = LazyLock::new(|| {
                 Arc::new(GenericParams {
@@ -97,6 +98,7 @@ impl GenericParamsCollector {
             });
             return Arc::clone(&EMPTY);
         }
+
         lifetimes.shrink_to_fit();
         type_or_consts.shrink_to_fit();
         where_predicates.shrink_to_fit();

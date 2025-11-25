@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27822 bytes
-Chloro size:   27620 bytes
+Chloro size:   27624 bytes
 Rustfmt size:  27822 bytes
 
 ✗ Outputs DIFFER
@@ -260,10 +260,6 @@ Rustfmt size:  27822 bytes
      #[test]
      fn no_panic_at_unimplemented_subpattern_type() {
          cov_mark::check_count!(validate_match_bailed_out, 1);
--
-         check_diagnostics(
-             r#"
- struct S { a: char}
  "#,
          );
      }
@@ -306,10 +302,6 @@ Rustfmt size:  27822 bytes
      #[test]
      fn record_struct_no_such_field() {
          cov_mark::check_count!(validate_match_bailed_out, 1);
--
-         check_diagnostics(
-             r#"
- struct Foo { }
  "#,
          );
      }
@@ -399,8 +391,10 @@ Rustfmt size:  27822 bytes
              cov_mark::check_count!(validate_match_bailed_out, 1);
 -
              // We don't currently check integer exhaustiveness.
++
              check_diagnostics(
                  r#"
+ fn main() {
  "#,
              );
          }
@@ -408,10 +402,6 @@ Rustfmt size:  27822 bytes
          #[test]
          fn reference_patterns_at_top_level() {
              cov_mark::check_count!(validate_match_bailed_out, 1);
--
-             check_diagnostics(
-                 r#"
- //- minicore: copy
              "#,
              );
          }

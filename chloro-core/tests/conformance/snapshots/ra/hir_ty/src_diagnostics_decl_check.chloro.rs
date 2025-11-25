@@ -59,6 +59,7 @@ impl fmt::Display for CaseType {
             CaseType::UpperSnakeCase => "UPPER_SNAKE_CASE",
             CaseType::UpperCamelCase => "UpperCamelCase",
         };
+
         repr.fmt(f)
     }
 }
@@ -95,6 +96,7 @@ impl fmt::Display for IdentType {
             IdentType::Variable => "Variable",
             IdentType::Variant => "Variant",
         };
+
         repr.fmt(f)
     }
 }
@@ -192,6 +194,7 @@ impl<'a> DeclValidator<'a> {
         }
         // Check the function name.
         // Skipped if function is an associated item of a trait implementation.
+
         if !self.is_trait_impl_container(container) {
             let data = self.db.function_signature(func);
 
@@ -212,6 +215,7 @@ impl<'a> DeclValidator<'a> {
             cov_mark::hit!(trait_impl_assoc_func_name_incorrect_case_ignored);
         }
         // Check the patterns inside the function body.
+
         self.validate_func_body(func);
     }
 
@@ -240,9 +244,11 @@ impl<'a> DeclValidator<'a> {
             })
             .peekable();
         // XXX: only look at source_map if we do have missing fields
+
         if pats_replacements.peek().is_none() {
             return;
         }
+
         let source_map = self.db.body_with_source_map(func.into()).1;
         for (id, replacement) in pats_replacements {
             let Ok(source_ptr) = source_map.pat_syntax(id) else {
@@ -293,6 +299,7 @@ impl<'a> DeclValidator<'a> {
             IdentType::Structure,
         );
         // Check the field names.
+
         self.validate_struct_fields(struct_id);
     }
 
@@ -317,11 +324,14 @@ impl<'a> DeclValidator<'a> {
             })
             .peekable();
         // XXX: Only look at sources if we do have incorrect names.
+
         if struct_fields_replacements.peek().is_none() {
             return;
         }
+
         let struct_loc = struct_id.lookup(self.db);
         let struct_src = struct_loc.source(self.db);
+
         let Some(ast::FieldList::RecordFieldList(struct_fields_list)) =
             struct_src.value.field_list()
         else {
@@ -369,6 +379,7 @@ impl<'a> DeclValidator<'a> {
     fn validate_enum(&mut self, enum_id: EnumId) {
         let data = self.db.enum_signature(enum_id);
         // Check the enum name.
+
         self.create_incorrect_case_diagnostic_for_item_name(
             enum_id,
             &data.name,
@@ -376,15 +387,18 @@ impl<'a> DeclValidator<'a> {
             IdentType::Enum,
         );
         // Check the variant names.
+
         self.validate_enum_variants(enum_id)
     }
 
     /// Check incorrect names for enum variants.
     fn validate_enum_variants(&mut self, enum_id: EnumId) {
         let data = enum_id.enum_variants(self.db);
+
         for (variant_id, _, _) in data.variants.iter() {
             self.validate_enum_variant_fields(*variant_id);
         }
+
         let edition = self.edition(enum_id);
         let mut enum_variants_replacements = data
             .variants
@@ -400,11 +414,14 @@ impl<'a> DeclValidator<'a> {
             })
             .peekable();
         // XXX: only look at sources if we do have incorrect names
+
         if enum_variants_replacements.peek().is_none() {
             return;
         }
+
         let enum_loc = enum_id.lookup(self.db);
         let enum_src = enum_loc.source(self.db);
+
         let Some(enum_variants_list) = enum_src.value.variant_list() else {
             always!(
                 enum_variants_replacements.peek().is_none(),
@@ -468,11 +485,14 @@ impl<'a> DeclValidator<'a> {
             })
             .peekable();
         // XXX: only look at sources if we do have incorrect names
+
         if variant_field_replacements.peek().is_none() {
             return;
         }
+
         let variant_loc = variant_id.lookup(self.db);
         let variant_src = variant_loc.source(self.db);
+
         let Some(ast::FieldList::RecordFieldList(variant_fields_list)) =
             variant_src.value.field_list()
         else {
@@ -523,6 +543,7 @@ impl<'a> DeclValidator<'a> {
             cov_mark::hit!(trait_impl_assoc_const_incorrect_case_ignored);
             return;
         }
+
         let data = self.db.const_signature(const_id);
         let Some(name) = &data.name else {
             return;
@@ -541,6 +562,7 @@ impl<'a> DeclValidator<'a> {
             cov_mark::hit!(extern_static_incorrect_case_ignored);
             return;
         }
+
         self.create_incorrect_case_diagnostic_for_item_name(
             static_id,
             &data.name,
@@ -556,6 +578,7 @@ impl<'a> DeclValidator<'a> {
             return;
         }
         // Check the type alias name.
+
         let data = self.db.type_alias_signature(type_alias_id);
         self.create_incorrect_case_diagnostic_for_item_name(
             type_alias_id,
@@ -590,6 +613,7 @@ impl<'a> DeclValidator<'a> {
         else {
             return;
         };
+
         let item_loc = item_id.lookup(self.db);
         let item_src = item_loc.source(self.db);
         self.create_incorrect_case_diagnostic_for_ast_node(
@@ -619,6 +643,7 @@ impl<'a> DeclValidator<'a> {
             );
             return;
         };
+
         let edition = file_id.original_file(self.db).edition(self.db);
         let diagnostic = IncorrectCase {
             file: file_id,
@@ -628,6 +653,7 @@ impl<'a> DeclValidator<'a> {
             ident_text: replacement.current_name.display(self.db, edition).to_string(),
             suggested_text: replacement.suggested_text,
         };
+
         self.sink.push(diagnostic);
     }
 

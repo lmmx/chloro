@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 24418 bytes
-Chloro size:   23641 bytes
+Chloro size:   23649 bytes
 Rustfmt size:  24577 bytes
 
 ✗ Outputs DIFFER
@@ -158,6 +158,10 @@ Rustfmt size:  24577 bytes
          // If you add a new field to `RegionConstraintCollector`, you
          // should think carefully about whether it needs to be cleared
          // or updated in some way.
++
+         let RegionConstraintStorage {
+             var_infos: _,
+             data,
              unification_table: _,
              any_unifications,
          } = self.storage;
@@ -166,21 +170,20 @@ Rustfmt size:  24577 bytes
          // fresh regions if we do a LUB operation. As it happens,
          // LUB/GLB are not performed by the MIR type-checker, which is
          // the one that uses this method, but it's good to be correct.
++
          lubs.clear();
          glbs.clear();
--
+ 
          let data = mem::take(data);
 -
          // Clear all unifications and recreate the variables a "now
          // un-unified" state. Note that when we unify `a` and `b`, we
          // also insert `a <= b` and a `b <= a` edges, so the
-                     universe: self.storage.var_infos[key.vid].universe,
-                 });
-         }
--
-         data
-     }
- 
+         // `RegionConstraintData` contains the relationship here.
++
+         if *any_unifications {
+             *any_unifications = false;
+             // Manually inlined `self.unification_table_mut()` as `self` is used in the closure.
  
      pub(super) fn start_snapshot(&self) -> RegionSnapshot {
          debug!("RegionConstraintCollector: start_snapshot");
@@ -191,10 +194,9 @@ Rustfmt size:  24577 bytes
      }
  
      pub(super) fn rollback_to(&mut self, snapshot: RegionSnapshot) {
- 
      pub(super) fn new_region_var(&mut self, universe: UniverseIndex) -> RegionVid {
          let vid = self.storage.var_infos.push(RegionVariableInfo { universe });
--
+ 
 -        let u_vid = self
 -            .unification_table_mut()
 -            .new_key(RegionVariableValue::Unknown { universe });
@@ -209,18 +211,10 @@ Rustfmt size:  24577 bytes
 -            "RegionConstraintCollector: add_constraint({:?})",
 -            constraint
 -        );
--
 +        debug!("RegionConstraintCollector: add_constraint({:?})", constraint);
+ 
          let index = self.storage.data.constraints.len();
          self.storage.data.constraints.push(constraint);
-         self.undo_log.push(AddConstraint(index));
-     #[instrument(skip(self), level = "debug")]
-     pub(super) fn make_subregion(&mut self, sub: Region<'db>, sup: Region<'db>) {
-         // cannot add constraints once regions are resolved
--
-         match (sub.kind(), sup.kind()) {
-             (RegionKind::ReBound(..), _) | (_, RegionKind::ReBound(..)) => {
-                 panic!("cannot relate bound region: {sub:?} <= {sup:?}");
      /// Returns `true` if this region constraint data contains no constraints, and `false`
      /// otherwise.
      pub fn is_empty(&self) -> bool {

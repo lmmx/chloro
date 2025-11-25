@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6415 bytes
-Chloro size:   6408 bytes
+Chloro size:   6411 bytes
 Rustfmt size:  6621 bytes
 
 ✗ Outputs DIFFER
@@ -21,10 +21,9 @@ Rustfmt size:  6621 bytes
  use ide_db::text_edit::TextEditBuilder;
  use syntax::ast::{self, AstNode};
  
-     if !config.binding_mode_hints {
          return None;
      }
--
+ 
 -    let outer_paren_pat = pat
 -        .syntax()
 -        .ancestors()
@@ -45,13 +44,6 @@ Rustfmt size:  6621 bytes
              it => it.syntax().text_range(),
          },
          |it| it.syntax().text_range(),
-         hint.pad_right = was_mut_last;
-         acc.push(hint);
-     }
--
-     if let hints @ [_, ..] = &mut acc[acc_base..] {
-         let edit = config.lazy_text_edit(|| {
-             let mut edit = TextEditBuilder::default();
              }
              edit.finish()
          });
@@ -60,10 +52,8 @@ Rustfmt size:  6621 bytes
 -            .for_each(|h| h.text_edit = Some(edit.clone()));
 +        hints.iter_mut().for_each(|h| h.text_edit = Some(edit.clone()));
      }
--
-     Some(())
- }
  
+     Some(())
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

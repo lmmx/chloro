@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11494 bytes
-Chloro size:   9337 bytes
+Chloro size:   9346 bytes
 Rustfmt size:  11494 bytes
 
 ✗ Outputs DIFFER
@@ -101,8 +101,10 @@ Rustfmt size:  11494 bytes
      let mut completions = Completions::default();
 -
      // prevent `(` from triggering unwanted completion noise
++
      if trigger_character == Some('(') {
          if let CompletionAnalysis::NameRef(NameRefContext {
+             kind:
          }
          return Some(completions.into());
      }
@@ -110,45 +112,7 @@ Rustfmt size:  11494 bytes
      // when the user types a bare `_` (that is it does not belong to an identifier)
      // the user might just wanted to type a `_` for type inference or pattern discarding
      // so try to suppress completions in those cases
-     {
-         return None;
-     }
--
-     {
-         let acc = &mut completions;
- 
-             CompletionAnalysis::UnexpandedAttrTT { .. } | CompletionAnalysis::String { .. } => (),
-         }
-     }
--
-     Some(completions.into())
- }
- 
- ) -> Option<Vec<TextEdit>> {
-     let _p = tracing::info_span!("resolve_completion_edits").entered();
-     let sema = hir::Semantics::new(db);
--
-     let editioned_file_id = sema.attach_first_edition(file_id)?;
--
-     let original_file = sema.parse(editioned_file_id);
-     let original_token =
-         syntax::AstNode::syntax(&original_file).token_at_offset(offset).left_biased()?;
-     let position_for_import = &original_token.parent()?;
-     let scope = ImportScope::find_insert_use_container(position_for_import, &sema)?;
--
-     let current_module = sema.scope(position_for_import)?.module();
-     let current_crate = current_module.krate();
-     let current_edition = current_crate.edition(db);
-     let new_ast = scope.clone_for_update();
-     let mut import_insert = TextEdit::builder();
--
-     imports.into_iter().for_each(|full_import_path| {
-         insert_use::insert_use(
-             &new_ast,
-             &config.insert_use,
-         );
-     });
--
-     diff(scope.as_syntax_node(), new_ast.as_syntax_node()).into_text_edit(&mut import_insert);
-     Some(vec![import_insert.finish()])
- }
++
+     if trigger_character == Some('_')
+         && ctx.original_token.kind() == syntax::SyntaxKind::UNDERSCORE
+         && let CompletionAnalysis::NameRef(NameRefContext {

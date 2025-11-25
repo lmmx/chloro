@@ -298,19 +298,24 @@ impl flags::Lsif {
         let root = ProjectManifest::discover_single(&path)?;
         eprintln!("Generating LSIF for project at {root}");
         let mut workspace = ProjectWorkspace::load(root, cargo_config, no_progress)?;
+
         let build_scripts = workspace.run_build_scripts(cargo_config, no_progress)?;
         workspace.set_build_scripts(build_scripts);
+
         let (db, vfs, _proc_macro) =
             load_workspace(workspace, &cargo_config.extra_env, &load_cargo_config)?;
         let host = AnalysisHost::with_database(db);
         let db = host.raw_database();
         let analysis = host.analysis();
+
         let vendored_libs_config = if self.exclude_vendored_libraries {
             VendoredLibrariesConfig::Excluded
         } else {
             VendoredLibrariesConfig::Included { workspace_root: &path.clone().into() }
         };
+
         let si = StaticIndex::compute(&analysis, vendored_libs_config);
+
         let mut lsif = LsifManager::new(&analysis, db, &vfs, out);
         lsif.add_vertex(lsif::Vertex::MetaData(lsif::MetaData {
             version: String::from("0.5.0"),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30303 bytes
+Chloro size:   30312 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -16,12 +16,6 @@ Rustfmt size:  30951 bytes
  use rustc_ast_ir::Mutability;
  use rustc_type_ir::{
      inherent::{AdtDef, IntoKind, SliceLike},
-         }
-         _ => return VariancesOf::new_from_iter(interner, []),
-     }
--
-     let generics = generics(db, def);
-     let count = generics.len();
      if count == 0 {
          return VariancesOf::new_from_iter(interner, []);
      }
@@ -37,10 +31,13 @@ Rustfmt size:  30951 bytes
      // FIXME(next-solver): This is *not* the correct behavior. I don't know if it has an actual effect,
      // since bivariance is prohibited in Rust, but rustc definitely does not fallback bivariance.
      // So why do we do this? Because, with the new solver, the effects of bivariance are catastrophic:
+     // Why specifically invariance? I don't have a strong reason, mainly that invariance is a stronger relationship
+     // (therefore, less room for mistakes) and that IMO incorrect covariance can be more problematic that incorrect
+     // bivariance, at least while we don't handle lifetimes anyway.
++
+     for variance in &mut variances {
+         if *variance == Variance::Bivariant {
              *variance = Variance::Invariant;
-         }
-     }
--
      VariancesOf::new_from_iter(interner, variances)
  }
  
@@ -61,8 +58,10 @@ Rustfmt size:  30951 bytes
      let count = generics.len();
 -
      // FIXME(next-solver): Returns `Invariance` and not `Bivariance` here, see the comment in the main query.
++
      VariancesOf::new_from_iter(interner, std::iter::repeat_n(Variance::Invariant, count))
  }
+ 
                      AdtId::StructId(s) => add_constraints_from_variant(VariantId::StructId(s)),
                      AdtId::UnionId(u) => add_constraints_from_variant(VariantId::UnionId(u)),
                      AdtId::EnumId(e) => {
@@ -94,21 +93,18 @@ Rustfmt size:  30951 bytes
 -
          // Const parameters are always invariant.
          // Make all const parameters invariant.
++
          for (idx, param) in self.generics.iter_id().enumerate() {
+             if let GenericParamId::ConstParamId(_) = param {
                  variances[idx] = Variance::Invariant;
              }
          }
 -
          // Functions are permitted to have unused generic parameters: make those invariant.
++
          if let GenericDefId::FunctionId(_) = self.generics.def() {
              variances
-                 .filter(|&&mut v| v == Variance::Bivariant)
-                 .for_each(|v| *v = Variance::Invariant);
-         }
--
-         variances
-     }
- 
+                 .iter_mut()
      /// in a context with the generics defined in `generics` and
      /// ambient variance `variance`
      fn add_constraints_from_ty(&mut self, ty: Ty<'db>, variance: Variance) {
@@ -143,13 +139,6 @@ Rustfmt size:  30951 bytes
              }
          }
      }
-             return;
-         }
-         let variances = self.db.variances_of(def_id);
--
-         for (k, v) in args.iter().zip(variances) {
-             match k {
-                 GenericArg::Lifetime(lt) => self.add_constraints_from_region(lt, variance.xform(v)),
  
  #[cfg(test)]
  mod tests {
@@ -306,10 +295,3 @@ Rustfmt size:  30951 bytes
      #[track_caller]
      fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expected: Expect) {
          // use tracing_subscriber::{layer::SubscriberExt, Layer};
-         //     })),
-         // ));
-         let (db, file_id) = TestDB::with_single_file(ra_fixture);
--
-         crate::attach_db(&db, || {
-             let mut defs: Vec<GenericDefId> = Vec::new();
-             let module = db.module_for_file_opt(file_id.file_id(&db)).unwrap();

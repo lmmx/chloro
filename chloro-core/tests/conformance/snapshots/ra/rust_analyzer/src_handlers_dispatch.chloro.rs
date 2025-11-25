@@ -66,6 +66,7 @@ impl RequestDispatcher<'_> {
         if let Ok(response) = result_to_response::<R>(req.id, result) {
             self.global_state.respond(response);
         }
+
         self
     }
 
@@ -87,13 +88,16 @@ impl RequestDispatcher<'_> {
             tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
         tracing::debug!(?params);
         let global_state_snapshot = self.global_state.snapshot();
+
         let result = panic::catch_unwind(move || {
             let _pctx = DbPanicContext::enter(panic_context);
             f(global_state_snapshot, params)
         });
+
         if let Ok(response) = thread_result_to_response::<R>(req.id, result) {
             self.global_state.respond(response);
         }
+
         self
     }
 
@@ -248,6 +252,7 @@ impl RequestDispatcher<'_> {
         let _guard =
             tracing::info_span!("request", method = ?req.method, "request_id" = ?req.id).entered();
         tracing::debug!(?params);
+
         let world = self.global_state.snapshot();
         if RUSTFMT {
             &mut self.global_state.fmt_pool.handle
@@ -268,6 +273,7 @@ impl RequestDispatcher<'_> {
                 }
             }
         });
+
         self
     }
 
@@ -403,7 +409,9 @@ impl NotificationDispatcher<'_> {
             Some(it) => it,
             None => return self,
         };
+
         let _guard = tracing::info_span!("notification", method = ?not.method).entered();
+
         let params = match not.extract::<N::Params>(N::METHOD) {
             Ok(it) => it,
             Err(ExtractError::JsonError { method, error }) => {
@@ -414,7 +422,9 @@ impl NotificationDispatcher<'_> {
                 return self;
             }
         };
+
         tracing::debug!(?params);
+
         let _pctx =
             DbPanicContext::enter(format!("\nversion: {}\nnotification: {}", version(), N::METHOD));
         if let Err(e) = f(self.global_state, params) {

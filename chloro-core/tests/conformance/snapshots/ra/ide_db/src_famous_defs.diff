@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7323 bytes
-Chloro size:   7323 bytes
+Chloro size:   7324 bytes
 Rustfmt size:  7435 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  7435 bytes
      pub fn builtin_crates(&self) -> impl Iterator<Item = Crate> {
          IntoIterator::into_iter([
              self.std(),
-         if krate.origin(db) == CrateOrigin::Lang(origin) {
-             return Some(krate);
-         }
--
-         let res = krate
-             .dependencies(db)
-             .into_iter()
          for segment in path {
              module = module.children(db).find_map(|child| {
                  let name = child.name(db)?;

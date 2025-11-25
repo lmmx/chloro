@@ -47,6 +47,7 @@ mod tests {
             pub fn generic_fn<T>(arg: T) {}
         "#,
         );
+
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[3..=13, 27..=33, 47..=57]);
     }
@@ -60,6 +61,7 @@ mod tests {
             }
         "#,
         );
+
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[19..=22, 35..=38]);
     }
@@ -79,11 +81,13 @@ mod tests {
             }
         "#,
         );
+
         let refs = super::find_all_methods(&analysis.db, pos.file_id);
         check_result(&refs, &[28..=34]);
     }
     fn check_result(refs: &[(TextRange, Option<TextRange>)], expected: &[RangeInclusive<u32>]) {
         assert_eq!(refs.len(), expected.len());
+
         for (i, &(full, focus)) in refs.iter().enumerate() {
             let range = &expected[i];
             let item = focus.unwrap_or(full);

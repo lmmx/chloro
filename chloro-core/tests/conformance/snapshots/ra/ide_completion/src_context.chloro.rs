@@ -649,6 +649,7 @@ impl CompletionContext<'_> {
         if let (Some(attrs), Some(krate)) = (scope_def.attrs(self.db), scope_def.krate(self.db)) {
             return self.is_doc_hidden(&attrs, krate);
         }
+
         false
     }
 
@@ -661,6 +662,7 @@ impl CompletionContext<'_> {
         if !self.check_stability(Some(attrs)) {
             return Visible::No;
         }
+
         if !vis.is_visible_from(self.db, self.module.into()) {
             if !self.config.enable_private_editable {
                 return Visible::No;
@@ -672,6 +674,7 @@ impl CompletionContext<'_> {
                 Visible::No
             };
         }
+
         if self.is_doc_hidden(attrs, defining_crate) { Visible::No } else { Visible::Yes }
     }
 
@@ -698,11 +701,13 @@ impl<'db> CompletionContext<'db> {
     ) -> Option<(CompletionContext<'db>, CompletionAnalysis<'db>)> {
         let _p = tracing::info_span!("CompletionContext::new").entered();
         let sema = Semantics::new(db);
+
         let editioned_file_id = sema.attach_first_edition(file_id)?;
         let original_file = sema.parse(editioned_file_id);
         // Insert a fake ident to get a valid parse tree. We will use this file
         // to determine context, though the original_file will be used for
         // actual completion.
+
         let file_with_fake_ident = {
             let (_, edition) = editioned_file_id.unpack(db);
             let parse = db.parse(editioned_file_id);
@@ -710,9 +715,11 @@ impl<'db> CompletionContext<'db> {
         };
         // always pick the token to the immediate left of the cursor, as that is what we are actually
         // completing on
+
         let original_token = original_file.syntax().token_at_offset(offset).left_biased()?;
         // try to skip completions on path with invalid colons
         // this approach works in normal path and inside token tree
+
         if original_token.kind() == T![:] {
             // return if no prev token before colon
             let prev_token = original_token.prev_token()?;
@@ -733,6 +740,7 @@ impl<'db> CompletionContext<'db> {
                 return None;
             }
         }
+
         let AnalysisResult {
             analysis,
             expected: (expected_type, expected_name),
@@ -747,15 +755,19 @@ impl<'db> CompletionContext<'db> {
             &original_token,
         )?;
         // adjust for macro input, this still fails if there is no token written yet
+
         let scope = sema.scope_at_offset(&token.parent()?, original_offset)?;
+
         let krate = scope.krate();
         let module = scope.module();
         let containing_function = scope.containing_function();
         let edition = krate.edition(db);
+
         let toolchain = db.toolchain_channel(krate.into());
         // `toolchain == None` means we're in some detached files. Since we have no information on
         // the toolchain being used, let's just allow unstable items to be listed.
         let is_nightly = matches!(toolchain, Some(base_db::ReleaseChannel::Nightly) | None);
+
         let mut locals = FxHashMap::default();
         scope.process_all_names(&mut |name, scope| {
             if let ScopeDef::Local(local) = scope {
@@ -767,12 +779,14 @@ impl<'db> CompletionContext<'db> {
                 locals.insert(name, local);
             }
         });
+
         let depth_from_crate_root = iter::successors(Some(module), |m| m.parent(db))
             // `BlockExpr` modules do not count towards module depth
             .filter(|m| !matches!(m.definition_source(db).value, ModuleSource::BlockExpr(_)))
             .count()
             // exclude `m` itself
             .saturating_sub(1);
+
         let exclude_traits: FxHashSet<_> = config
             .exclude_traits
             .iter()
@@ -785,6 +799,7 @@ impl<'db> CompletionContext<'db> {
                 )
             })
             .collect();
+
         let mut exclude_flyimport: FxHashMap<_, _> = config
             .exclude_flyimport
             .iter()
@@ -796,6 +811,7 @@ impl<'db> CompletionContext<'db> {
         exclude_flyimport
             .extend(exclude_traits.iter().map(|&t| (t.into(), AutoImportExclusionType::Always)));
         // FIXME: This should be part of `CompletionAnalysis` / `expand_and_analyze`
+
         let complete_semicolon = if config.add_semicolon_to_unit {
             let inside_closure_ret = token.parent_ancestors().try_for_each(|ancestor| {
                 match_ast! {
@@ -842,6 +858,7 @@ impl<'db> CompletionContext<'db> {
         } else {
             CompleteSemicolon::DoNotComplete
         };
+
         let display_target = krate.to_display_target(db);
         let ctx = CompletionContext {
             sema,

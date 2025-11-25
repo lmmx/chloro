@@ -282,19 +282,23 @@ impl<'db> ProofTreeVisitor<'db> for Select {
         let mut candidates = goal.candidates();
         candidates.retain(|cand| cand.result().is_ok());
         // No candidates -- not implemented.
+
         if candidates.is_empty() {
             return ControlFlow::Break(Err(SelectionError::Unimplemented));
         }
         // One candidate, no need to winnow.
+
         if candidates.len() == 1 {
             return ControlFlow::Break(Ok(to_selection(candidates.into_iter().next().unwrap())));
         }
         // Don't winnow until `Certainty::Yes` -- we don't need to winnow until
         // codegen, and only on the good path.
+
         if matches!(goal.result().unwrap(), Certainty::Maybe { .. }) {
             return ControlFlow::Break(Ok(None));
         }
         // We need to winnow. See comments on `candidate_should_be_dropped_in_favor_of`.
+
         let mut i = 0;
         while i < candidates.len() {
             let should_drop_i = (0..candidates.len())
@@ -309,6 +313,7 @@ impl<'db> ProofTreeVisitor<'db> for Select {
                 }
             }
         }
+
         ControlFlow::Break(Ok(to_selection(candidates.into_iter().next().unwrap())))
     }
 }
@@ -325,12 +330,14 @@ fn candidate_should_be_dropped_in_favor_of<'db>(
     if matches!(other.result().unwrap(), Certainty::Maybe { .. }) {
         return false;
     }
+
     let ProbeKind::TraitCandidate { source: victim_source, result: _ } = victim.kind() else {
         return false;
     };
     let ProbeKind::TraitCandidate { source: other_source, result: _ } = other.kind() else {
         return false;
     };
+
     match (victim_source, other_source) {
         (_, CandidateSource::CoherenceUnknowable) | (CandidateSource::CoherenceUnknowable, _) => {
             panic!("should not have assembled a CoherenceUnknowable candidate")
@@ -368,6 +375,7 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
     if let Certainty::Maybe { .. } = cand.shallow_certainty() {
         return None;
     }
+
     let nested = match cand.result().expect("expected positive result") {
         Certainty::Yes => Vec::new(),
         Certainty::Maybe { .. } => cand
@@ -383,6 +391,7 @@ fn to_selection<'db>(cand: InspectCandidate<'_, 'db>) -> Option<Selection<'db>> 
             })
             .collect(),
     };
+
     Some(match cand.kind() {
         ProbeKind::TraitCandidate { source, result: _ } => match source {
             CandidateSource::Impl(impl_def_id) => {

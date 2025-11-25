@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8217 bytes
-Chloro size:   7597 bytes
+Chloro size:   7598 bytes
 Rustfmt size:  8483 bytes
 
 ✗ Outputs DIFFER
@@ -55,10 +55,8 @@ Rustfmt size:  8483 bytes
 -        .into();
 +    let target_crate_id = ctx.sema.file_to_module_def(ctx.vfs_file_id())?.krate().into();
      let text_range = unexpanded.syntax().text_range();
--
+ 
      acc.add(
-         AssistId::refactor_inline("inline_macro"),
-         "Inline macro".to_owned(),
  #[cfg(test)]
  mod tests {
      use super::*;

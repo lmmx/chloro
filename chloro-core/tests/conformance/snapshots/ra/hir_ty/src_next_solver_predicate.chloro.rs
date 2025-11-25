@@ -141,6 +141,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
     ) -> rustc_type_ir::relate::RelateResult<DbInterner<'db>, Self> {
         let interner = relation.cx();
         // We need to perform this deduplication as we sometimes generate duplicate projections in `a`.
+
         let mut a_v: Vec<_> = a.into_iter().collect();
         let mut b_v: Vec<_> = b.into_iter().collect();
         // `skip_binder` here is okay because `stable_cmp` doesn't look at binders
@@ -155,6 +156,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
         if a_v.len() != b_v.len() {
             return Err(TypeError::ExistentialMismatch(ExpectedFound::new(a, b)));
         }
+
         let v = std::iter::zip(a_v, b_v).map(
             |(ep_a, ep_b): (
                 Binder<'_, ty::ExistentialPredicate<_>>,
@@ -180,6 +182,7 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for BoundExistentialPre
                 }
             },
         );
+
         CollectAndApply::collect_and_apply(v, |g| {
             BoundExistentialPredicates::new_from_iter(interner, g.iter().cloned())
         })
@@ -266,6 +269,7 @@ impl<'db> Predicate<'db> {
                 _ => None,
             })
             .transpose()?;
+
         Some(Predicate::new(DbInterner::conjure(), kind))
     }
 }
@@ -897,6 +901,7 @@ impl<'db> rustc_type_ir::inherent::Clause<DbInterner<'db>> for Clause<'db> {
         // 3) ['x] + ['b] -> ['x, 'b]
         let bound_vars =
             BoundVarKinds::new_from_iter(cx, trait_bound_vars.iter().chain(pred_bound_vars.iter()));
+
         let predicate: Predicate<'db> =
             ty::Binder::bind_with_vars(PredicateKind::Clause(new), bound_vars).upcast(cx);
         predicate.expect_clause()

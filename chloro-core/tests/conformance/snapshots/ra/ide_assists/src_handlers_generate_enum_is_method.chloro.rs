@@ -19,11 +19,14 @@ pub(crate) fn generate_enum_is_method(acc: &mut Assists, ctx: &AssistContext<'_>
         ast::StructKind::Tuple(_) => "(..)",
         ast::StructKind::Unit => "",
     };
+
     let enum_name = parent_enum.name()?;
     let enum_lowercase_name = to_lower_snake_case(&enum_name.to_string()).replace('_', " ");
     let fn_name = format!("is_{}", &to_lower_snake_case(&variant_name.text()));
     // Return early if we've found an existing new fn
+
     let impl_def = find_struct_impl(ctx, &parent_enum, slice::from_ref(&fn_name))?;
+
     let target = variant.syntax().text_range();
     acc.add_group(
         &GroupLabel("Generate an `is_`,`as_`, or `try_into_` for this enum variant".to_owned()),

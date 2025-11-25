@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4764 bytes
-Chloro size:   4754 bytes
+Chloro size:   4763 bytes
 Rustfmt size:  4820 bytes
 
 ✗ Outputs DIFFER
@@ -15,24 +15,7 @@ Rustfmt size:  4820 bytes
      /// Filtering syntax, set in a shell:
      /// ```text
      /// env RA_PROFILE_JSON=foo|bar|baz
-             .filter
-             .parse()
-             .with_context(|| format!("invalid log filter: `{}`", self.filter))?;
--
-         let writer = self.writer;
--
-         let ra_fmt_layer = tracing_subscriber::fmt::layer()
-             .with_target(false)
-             .with_ansi(false)
-             .with_writer(writer);
--
-         let ra_fmt_layer = match time::OffsetTime::local_rfc_3339() {
-             Ok(timer) => {
-                 // If we can get the time offset, format logs with the timezone.
-             }
-         }
-         .with_filter(targets_filter);
--
+ 
          let chalk_layer = match self.chalk_filter {
              Some(chalk_filter) => {
 -                let level: LevelFilter = chalk_filter
@@ -53,26 +36,7 @@ Rustfmt size:  4820 bytes
          };
 -
          // TODO: remove `.with_filter(LevelFilter::OFF)` on the `None` branch.
++
          let profiler_layer = match self.profile_filter {
              Some(spec) => Some(hprof::SpanTree::new(&spec)).with_filter(LevelFilter::INFO),
              None => None.with_filter(LevelFilter::OFF),
-         };
--
-         let json_profiler_layer = match self.json_profile_filter {
-             Some(spec) => {
-                 let filter = json::JsonFilter::from_spec(&spec);
-             }
-             None => None,
-         };
--
-         let subscriber = Registry::default()
-             .with(ra_fmt_layer)
-             .with(json_profiler_layer)
-             .with(profiler_layer)
-             .with(chalk_layer);
--
-         tracing::subscriber::set_global_default(subscriber)?;
--
-         Ok(())
-     }
- }

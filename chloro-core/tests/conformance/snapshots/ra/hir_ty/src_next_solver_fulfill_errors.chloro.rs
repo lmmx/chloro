@@ -87,6 +87,7 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(
     root_obligation: PredicateObligation<'db>,
 ) -> FulfillmentError<'db> {
     let obligation = find_best_leaf_obligation(infcx, &root_obligation, false);
+
     let code = match obligation.predicate.kind().skip_binder() {
         PredicateKind::Clause(ClauseKind::Projection(_)) => {
             FulfillmentErrorCode::Project(
@@ -138,6 +139,7 @@ pub(super) fn fulfillment_error_for_no_solution<'db>(
             panic!("unexpected goal: {obligation:?}")
         }
     };
+
     FulfillmentError { obligation, code, root_obligation }
 }
 
@@ -187,6 +189,7 @@ pub(super) fn fulfillment_error_for_stalled<'db>(
             }
         }
     });
+
     FulfillmentError {
         obligation: if refine_obligation {
             find_best_leaf_obligation(infcx, &root_obligation, true)
@@ -292,6 +295,7 @@ impl<'db> BestObligation<'db> {
                 }
             }
         }
+
         candidates
     }
 
@@ -305,6 +309,7 @@ impl<'db> BestObligation<'db> {
     ) -> ControlFlow<PredicateObligation<'db>> {
         let infcx = candidate.goal().infcx();
         let param_env = candidate.goal().goal().param_env;
+
         for obligation in wf::unnormalized_obligations(infcx, param_env, term).into_iter().flatten()
         {
             let nested_goal = candidate
@@ -318,6 +323,7 @@ impl<'db> BestObligation<'db> {
 
             self.with_derived_obligation(obligation, |this| nested_goal.visit_with(this))?;
         }
+
         ControlFlow::Break(self.obligation.clone())
     }
 
@@ -425,6 +431,7 @@ impl<'db> BestObligation<'db> {
     ) -> ControlFlow<PredicateObligation<'db>> {
         let interner = goal.infcx().interner;
         let pred_kind = goal.goal().predicate.kind();
+
         match pred_kind.no_bound_vars() {
             Some(PredicateKind::Clause(ClauseKind::Trait(pred))) => {
                 self.detect_error_in_self_ty_normalization(goal, pred.self_ty())?;
@@ -439,6 +446,7 @@ impl<'db> BestObligation<'db> {
             }
             Some(_) | None => {}
         }
+
         ControlFlow::Break(self.obligation.clone())
     }
 }
@@ -455,7 +463,9 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
             }
             _ => return ControlFlow::Continue(()),
         }
+
         let pred = goal.goal().predicate;
+
         let candidates = self.non_trivial_candidates(goal);
         let candidate = match candidates.as_slice() {
             [candidate] => candidate,
@@ -474,6 +484,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         // }
         // FIXME: Also, what about considering >1 layer up the stack? May be necessary
         // for normalizes-to.
+
         let child_mode = match pred.kind().skip_binder() {
             PredicateKind::Clause(ClauseKind::Trait(trait_pred)) => {
                 ChildMode::Trait(pred.kind().rebind(trait_pred))
@@ -497,6 +508,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
             }
             _ => ChildMode::PassThrough,
         };
+
         let nested_goals = candidate.instantiate_nested_goals();
         // If the candidate requires some `T: FnPtr` bound which does not hold should not be treated as
         // an actual candidate, instead we should treat them as if the impl was never considered to
@@ -505,6 +517,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         //
         // We do this as a separate loop so that we do not choose to tell the user about some nested
         // goal before we encounter a `T: FnPtr` nested goal.
+
         for nested_goal in &nested_goals {
             if let Some(poly_trait_pred) = nested_goal.goal().predicate.as_trait_clause()
                 && interner
@@ -514,6 +527,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
                 return ControlFlow::Break(self.obligation.clone());
             }
         }
+
         for nested_goal in nested_goals {
             trace!(nested_goal = ?(nested_goal.goal(), nested_goal.source(), nested_goal.result()));
 
@@ -552,6 +566,7 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
         }
         // alias-relate may fail because the lhs or rhs can't be normalized,
         // and therefore is treated as rigid.
+
         if let Some(PredicateKind::AliasRelate(lhs, rhs, _)) = pred.kind().no_bound_vars() {
             goal.infcx().visit_proof_tree_at_depth(
                 goal.goal().with(interner, ClauseKind::WellFormed(lhs)),
@@ -564,7 +579,9 @@ impl<'db> ProofTreeVisitor<'db> for BestObligation<'db> {
                 self,
             )?;
         }
+
         self.detect_trait_error_in_higher_ranked_projection(goal)?;
+
         ControlFlow::Break(self.obligation.clone())
     }
 }
@@ -622,9 +639,11 @@ mod wf {
         // However, if `arg` IS an unresolved inference variable, returns `None`,
         // because we are not able to make any progress at all. This is to prevent
         // cycles where we say "?0 is WF if ?0 is WF".
+
         if term.is_infer() {
             return None;
         }
+
         let mut wf =
             WfPredicates { infcx, param_env, out: PredicateObligations::new(), recursion_depth: 0 };
         wf.add_wf_preds_for_term(term);
@@ -681,6 +700,7 @@ mod wf {
             {
                 return Default::default();
             }
+
             self.interner()
                 .predicates_of(def_id)
                 .iter_instantiated(self.interner(), args)
@@ -770,7 +790,9 @@ mod wf {
 
         fn visit_ty(&mut self, t: Ty<'db>) -> Self::Result {
             debug!("wf bounds for t={:?} t.kind={:#?}", t, t.kind());
+
             let tcx = self.interner();
+
             match t.kind() {
                 TyKind::Bool
                 | TyKind::Char
@@ -996,11 +1018,13 @@ mod wf {
                     ));
                 }
             }
+
             t.super_visit_with(self)
         }
 
         fn visit_const(&mut self, c: Const<'db>) -> Self::Result {
             let tcx = self.interner();
+
             match c.kind() {
                 ConstKind::Unevaluated(uv) => {
                     if !c.has_escaping_bound_vars() {
@@ -1068,6 +1092,7 @@ mod wf {
                     // FIXME: Enforce that values are structurally-matchable.
                 }
             }
+
             c.super_visit_with(self)
         }
 
@@ -1094,9 +1119,11 @@ mod wf {
         existential_predicates: &[Binder<'db, ExistentialPredicate<'db>>],
     ) -> Vec<Region<'db>> {
         let erased_self_ty = Ty::new_unit(interner);
+
         let predicates = existential_predicates
             .iter()
             .map(|predicate| predicate.with_self_ty(interner, erased_self_ty));
+
         rustc_type_ir::elaborate::elaborate(interner, predicates)
             .filter_map(|pred| {
                 debug!(?pred);

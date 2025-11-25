@@ -100,8 +100,11 @@ impl LangItemTarget {
 #[salsa_macros::tracked(returns(ref))]
 pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangItems>> {
     let _p = tracing::info_span!("crate_lang_items_query").entered();
+
     let mut lang_items = LangItems::default();
+
     let crate_def_map = crate_def_map(db, krate);
+
     for (_, module_data) in crate_def_map.modules() {
         for impl_def in module_data.scope.impls() {
             lang_items.collect_lang_item(db, impl_def, LangItemTarget::ImplDef);
@@ -159,6 +162,7 @@ pub fn crate_lang_items(db: &dyn DefDatabase, krate: Crate) -> Option<Box<LangIt
             }
         }
     }
+
     if lang_items.items.is_empty() { None } else { Some(Box::new(lang_items)) }
 }
 
@@ -183,6 +187,7 @@ pub fn lang_item(
     // while nameres.
     //
     // See https://github.com/rust-lang/rust-analyzer/pull/20475 for details.
+
     crate_local_def_map(db, start_crate).local(db).extern_prelude().find_map(|(_, (krate, _))| {
         // Some crates declares themselves as extern crate like `extern crate self as core`.
         // Ignore these to prevent cycles.
@@ -229,8 +234,11 @@ pub(crate) fn notable_traits_in_deps(db: &dyn DefDatabase, krate: Crate) -> Arc<
 
 pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option<Arc<[TraitId]>> {
     let _p = tracing::info_span!("crate_notable_traits", ?krate).entered();
+
     let mut traits = Vec::new();
+
     let crate_def_map = crate_def_map(db, krate);
+
     for (_, module_data) in crate_def_map.modules() {
         for def in module_data.scope.declarations() {
             if let ModuleDefId::TraitId(trait_) = def
@@ -240,6 +248,7 @@ pub(crate) fn crate_notable_traits(db: &dyn DefDatabase, krate: Crate) -> Option
             }
         }
     }
+
     if traits.is_empty() { None } else { Some(traits.into_iter().collect()) }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5746 bytes
-Chloro size:   5740 bytes
+Chloro size:   5744 bytes
 Rustfmt size:  5860 bytes
 
 ✗ Outputs DIFFER
@@ -53,20 +53,6 @@ Rustfmt size:  5860 bytes
      #[test]
      fn test_check_expr_field_shorthand() {
          check_diagnostics(
- fn main() { A { 0: 0 }; }
- "#,
-         );
--
-         check_fix(
-             r#"
- struct A { a: &'static str }
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- struct A { a: &'static str, b: &'static str }
  "#,
          );
      }
@@ -74,17 +60,3 @@ Rustfmt size:  5860 bytes
      #[test]
      fn test_check_pat_field_shorthand() {
          check_diagnostics(
- fn f(a: A) { let A { 0: 0 } = a; }
- "#,
-         );
--
-         check_fix(
-             r#"
- struct A { a: &'static str }
- }
- "#,
-         );
--
-         check_fix(
-             r#"
- struct A { a: &'static str, b: &'static str }

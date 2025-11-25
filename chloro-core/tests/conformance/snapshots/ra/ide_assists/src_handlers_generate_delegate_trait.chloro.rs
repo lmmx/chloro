@@ -28,7 +28,9 @@ pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>
     if !ctx.config.code_action_grouping {
         return None;
     }
+
     let strukt = Struct::new(ctx.find_node_at_offset::<ast::Struct>()?)?;
+
     let field: Field = match ctx.find_node_at_offset::<ast::RecordField>() {
         Some(field) => Field::new(ctx, Either::Left(field))?,
         None => {
@@ -37,6 +39,7 @@ pub(crate) fn generate_delegate_trait(acc: &mut Assists, ctx: &AssistContext<'_>
             Field::new(ctx, either::Right((field, field_list)))?
         }
     };
+
     strukt.delegate(field, acc, ctx);
     Some(())
 }
@@ -57,8 +60,10 @@ impl Field {
         f: Either<ast::RecordField, (ast::TupleField, ast::TupleFieldList)>,
     ) -> Option<Field> {
         let db = ctx.sema.db;
+
         let module = ctx.sema.file_to_module_def(ctx.vfs_file_id())?;
         let edition = module.krate().edition(ctx.db());
+
         let (name, range, ty) = match f {
             Either::Left(f) => {
                 let name = f.name()?.to_string();
@@ -69,19 +74,23 @@ impl Field {
                 (name, f.syntax().text_range(), f.ty()?)
             }
         };
+
         let hir_ty = ctx.sema.resolve_type(&ty)?;
         let type_impls = hir::Impl::all_for_type(db, hir_ty.clone());
         let mut impls = Vec::with_capacity(type_impls.len());
+
         if let Some(tp) = hir_ty.as_type_param(db) {
             for tb in tp.trait_bounds(db) {
                 impls.push(Delegee::Bound(tb));
             }
         };
+
         for imp in type_impls {
             if let Some(tr) = imp.trait_(db).filter(|tr| tr.is_visible_from(db, module)) {
                 impls.push(Delegee::Impls(tr, imp))
             }
         }
+
         Some(Field { name, ty, range, impls, edition })
     }
 }
@@ -100,12 +109,15 @@ enum Delegee {
 impl Delegee {
     fn signature(&self, db: &dyn HirDatabase, edition: Edition) -> String {
         let mut s = String::new();
+
         let (Delegee::Bound(it) | Delegee::Impls(it, _)) = self;
+
         for m in it.module(db).path_to_root(db).iter().rev() {
             if let Some(name) = m.name(db) {
                 s.push_str(&format!("{}::", name.display_no_db(edition).to_smolstr()));
             }
         }
+
         s.push_str(&it.name(db).display_no_db(edition).to_smolstr());
         s
     }
@@ -125,6 +137,7 @@ impl Struct {
 
     pub(crate) fn delegate(&self, field: Field, acc: &mut Assists, ctx: &AssistContext<'_>) {
         let db = ctx.db();
+
         for (index, delegee) in field.impls.iter().enumerate() {
             let trait_ = match delegee {
                 Delegee::Bound(b) => b,
@@ -183,6 +196,7 @@ fn generate_impl(
     let ast_strukt = &strukt.strukt;
     let strukt_ty = make::ty_path(make::ext::ident_path(&strukt.name.to_string()));
     let strukt_params = ast_strukt.generic_param_list();
+
     match delegee {
         Delegee::Bound(delegee) => {
             let bound_def = ctx.sema.source(delegee.to_owned())?.value;
@@ -354,6 +368,7 @@ fn transform_impl<N: ast::AstNode>(
     let source_scope = ctx.sema.scope(old_impl.self_ty()?.syntax())?;
     let target_scope = ctx.sema.scope(strukt.syntax())?;
     let hir_old_impl = ctx.sema.to_impl_def(old_impl)?;
+
     let transform = args.as_ref().map_or_else(
         || PathTransform::generic_transformation(&target_scope, &source_scope),
         |args| {
@@ -365,6 +380,7 @@ fn transform_impl<N: ast::AstNode>(
             )
         },
     );
+
     N::cast(transform.apply(syntax.syntax()))
 }
 
@@ -405,6 +421,7 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
         .collect::<FxHashSet<_>>();
     // Keep where-clauses that have generics after substitution, and remove the
     // rest.
+
     let has_live_generics = |pred: &WherePred| {
         pred.syntax()
             .descendants_with_tokens()
@@ -413,6 +430,7 @@ fn remove_useless_where_clauses(trait_ty: &ast::Type, self_ty: &ast::Type, wc: a
             .not()
     };
     wc.predicates().filter(has_live_generics).for_each(|pred| wc.remove_predicate(pred));
+
     if wc.predicates().count() == 0 {
         // Remove useless whitespaces
         [syntax::Direction::Prev, syntax::Direction::Next]
@@ -445,6 +463,7 @@ fn generate_args_for_impl(
     // Create pairs of the args of `self_ty` and corresponding `field_ty` to
     // form the substitution list
     let mut arg_substs = FxHashMap::default();
+
     if let field_ty @ ast::Type::PathType(_) = field_ty {
         let field_args = field_ty.generic_arg_list().map(|gal| gal.generic_args());
         let self_ty_args = self_ty.generic_arg_list().map(|gal| gal.generic_args());
@@ -454,6 +473,7 @@ fn generate_args_for_impl(
             })
         }
     }
+
     let args = old_impl_args
         .map(|old_arg| {
             arg_substs.get(&old_arg.to_string()).map_or_else(
@@ -482,8 +502,10 @@ where
 {
     let hir_strukt = ctx.sema.to_struct_def(strukt)?;
     let hir_adt = hir::Adt::from(hir_strukt);
+
     let item = item.clone_for_update();
     let scope = ctx.sema.scope(item.syntax())?;
+
     let transform = PathTransform::adt_transformation(&scope, &scope, hir_adt, args.clone());
     N::cast(transform.apply(item.syntax()))
 }
@@ -583,6 +605,7 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
     // <Base as Trait<GenArgs>>::ConstName;
     // FIXME : We can't rely on `make::path_qualified` for now but it would be nice to replace the following with it.
     // make::path_qualified(qual_path_ty, path_expr_segment.as_single_segment().unwrap());
+
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let inner = make::item_const(
         item.attrs(),
@@ -592,6 +615,7 @@ fn const_assoc_item(item: syntax::ast::Const, qual_path_ty: ast::Path) -> Option
         make::expr_path(qualified_path),
     )
     .clone_for_update();
+
     Some(AssocItem::Const(inner))
 }
 
@@ -602,6 +626,7 @@ fn func_assoc_item(
 ) -> Option<AssocItem> {
     let path_expr_segment = make::path_from_text(item.name()?.to_string().as_str());
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
+
     let call = match item.param_list() {
         // Methods and funcs should be handled separately.
         // We ask if the func has a `self` param.
@@ -649,6 +674,7 @@ fn func_assoc_item(
         ),
     }
     .clone_for_update();
+
     let body = make::block_expr(vec![], Some(call.into())).clone_for_update();
     let func = make::fn_(
         item.attrs(),
@@ -665,6 +691,7 @@ fn func_assoc_item(
         item.gen_token().is_some(),
     )
     .clone_for_update();
+
     Some(AssocItem::Fn(func.indent(edit::IndentLevel(1))))
 }
 
@@ -673,6 +700,7 @@ fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<Ass
     let qualified_path = qualified_path(qual_path_ty, path_expr_segment);
     let ty = make::ty_path(qualified_path);
     let ident = item.name()?.to_string();
+
     let alias = make::ty_alias(
         item.attrs(),
         ident.as_str(),
@@ -682,6 +710,7 @@ fn ty_assoc_item(item: syntax::ast::TypeAlias, qual_path_ty: Path) -> Option<Ass
         Some((ty, None)),
     )
     .indent(edit::IndentLevel(1));
+
     Some(AssocItem::TypeAlias(alias))
 }
 

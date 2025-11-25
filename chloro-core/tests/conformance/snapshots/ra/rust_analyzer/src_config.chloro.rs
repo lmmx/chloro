@@ -711,7 +711,9 @@ impl Config {
     fn apply_change_with_sink(&self, change: ConfigChange) -> (Config, bool) {
         let mut config = self.clone();
         config.validation_errors = ConfigErrors::default();
+
         let mut should_update = false;
+
         if let Some(change) = change.user_config_change {
             tracing::info!("updating config from user config toml: {:#}", change);
             if let Ok(table) = toml::from_str(&change) {
@@ -735,6 +737,7 @@ impl Config {
                 should_update = true;
             }
         }
+
         if let Some(mut json) = change.client_config_change {
             tracing::info!("updating config from JSON: {:#}", json);
 
@@ -807,6 +810,7 @@ impl Config {
             }
             should_update = true;
         }
+
         if let Some(change) = change.ratoml_file_change {
             for (source_root_id, (kind, _, text)) in change {
                 match kind {
@@ -902,15 +906,18 @@ impl Config {
                 }
             }
         }
+
         if let Some(source_root_map) = change.source_map_change {
             config.source_root_parent_map = source_root_map;
         }
+
         if config.check_command(None).is_empty() {
             config.validation_errors.0.push(Arc::new(ConfigErrorInner::Json {
                 config_key: "/check/command".to_owned(),
                 error: serde_json::Error::custom("expected a non-empty string"),
             }));
         }
+
         (config, should_update)
     }
 
@@ -945,6 +952,7 @@ impl Config {
                 return;
             }
         }
+
         self.discovered_projects_from_command.push(ProjectJsonFromCommand { data, buildfile });
     }
 }
@@ -1264,6 +1272,7 @@ impl Config {
         client_info: Option<lsp_types::ClientInfo>,
     ) -> Self {
         static DEFAULT_CONFIG_DATA: OnceLock<&'static DefaultConfigData> = OnceLock::new();
+
         Config {
             caps: ClientCapabilities::new(caps),
             discovered_projects_from_filesystem: Vec::new(),
@@ -1306,6 +1315,7 @@ impl Config {
 
     pub fn json_schema() -> serde_json::Value {
         let mut s = FullConfigInput::json_schema();
+
         fn sort_objects_by_field(json: &mut serde_json::Value) {
             if let serde_json::Value::Object(object) = json {
                 let old = std::mem::take(object);
@@ -1537,6 +1547,7 @@ impl Config {
 
     pub fn inlay_hints<'a>(&self, minicore: MiniCore<'a>) -> InlayHintsConfig<'a> {
         let client_capability_fields = self.inlay_hint_resolve_support_properties();
+
         InlayHintsConfig {
             render_colons: self.inlayHints_renderColons().to_owned(),
             type_hints: self.inlayHints_typeHints_enable().to_owned(),
@@ -1700,6 +1711,7 @@ impl Config {
     fn discovered_projects(&self) -> Vec<ManifestOrProjectJson> {
         let exclude_dirs: Vec<_> =
             self.files_exclude().iter().map(|p| self.root_path.join(p)).collect();
+
         let mut projects = vec![];
         for fs_proj in &self.discovered_projects_from_filesystem {
             let manifest_path = fs_proj.manifest_path();
@@ -1710,12 +1722,14 @@ impl Config {
             let buf: Utf8PathBuf = manifest_path.to_path_buf().into();
             projects.push(ManifestOrProjectJson::Manifest(buf));
         }
+
         for dis_proj in &self.discovered_projects_from_command {
             projects.push(ManifestOrProjectJson::DiscoveredProjectJson {
                 data: dis_proj.data.clone(),
                 buildfile: dis_proj.buildfile.clone(),
             });
         }
+
         projects
     }
 
@@ -1726,6 +1740,7 @@ impl Config {
         } else {
             linked_projects.clone()
         };
+
         projects
             .iter()
             .filter_map(|linked_project| match linked_project {
@@ -1874,6 +1889,7 @@ impl Config {
             .map(AbsPathBuf::try_from)
             .filter_map(Result::ok)
             .collect();
+
         CargoConfig {
             all_targets: *self.cargo_allTargets(source_root),
             features: match &self.cargo_features(source_root) {
@@ -2178,7 +2194,9 @@ impl Config {
 
     pub fn client_commands(&self) -> ClientCommandsConfig {
         let commands = self.commands().map(|it| it.commands).unwrap_or_default();
+
         let get = |name: &str| commands.iter().any(|it| it == name);
+
         ClientCommandsConfig {
             run_single: get("rust-analyzer.runSingle"),
             debug_single: get("rust-analyzer.debugSingle"),
@@ -2337,6 +2355,7 @@ mod single_or_array {
         D: serde::Deserializer<'de>,
     {
         struct SingleOrVec;
+
         impl<'de> serde::de::Visitor<'de> for SingleOrVec {
             type Value = Vec<String>;
 
@@ -2358,6 +2377,7 @@ mod single_or_array {
                 Deserialize::deserialize(serde::de::value::SeqAccessDeserializer::new(seq))
             }
         }
+
         deserializer.deserialize_any(SingleOrVec)
     }
     pub(super) fn serialize<S>(vec: &[String], serializer: S) -> Result<S::Ok, S::Error>
@@ -2390,6 +2410,7 @@ where
     D: serde::de::Deserializer<'de>,
 {
     let path = String::deserialize(de)?;
+
     AbsPathBuf::try_from(path.as_ref())
         .map_err(|err| serde::de::Error::custom(format!("invalid path name: {err:?}")))
 }
@@ -2595,8 +2616,10 @@ enum MemoryLayoutHoverRenderKindDef {
 #[test]
 fn untagged_option_hover_render_kind() {
     let hex = MemoryLayoutHoverRenderKindDef::Hexadecimal;
+
     let ser = serde_json::to_string(&Some(hex)).unwrap();
     assert_eq!(&ser, "\"hexadecimal\"");
+
     let opt: Option<_> = serde_json::from_str("\"hexadecimal\"").unwrap();
     assert_eq!(opt, Some(hex));
 }
@@ -3020,6 +3043,7 @@ fn toml_pointer<'a>(toml: &'a toml::Table, pointer: &str) -> Option<&'a toml::Va
         }
         s.parse().ok()
     }
+
     if pointer.is_empty() {
         return None;
     }
@@ -3093,6 +3117,7 @@ fn field_props(field: &str, ty: &str, doc: &[&str], default: &str) -> serde_json
         "bad docs for {field}: {doc:?}"
     );
     let default = default.parse::<serde_json::Value>().unwrap();
+
     let mut map = serde_json::Map::default();
     macro_rules! set {
         ($($key:literal: $value:tt),*$(,)?) => {{$(
@@ -3101,6 +3126,7 @@ fn field_props(field: &str, ty: &str, doc: &[&str], default: &str) -> serde_json
     }
     set!("markdownDescription": doc);
     set!("default": default);
+
     match ty {
         "bool" => set!("type": "boolean"),
         "usize" => set!("type": "integer", "minimum": 0),
@@ -3532,6 +3558,7 @@ fn field_props(field: &str, ty: &str, doc: &[&str], default: &str) -> serde_json
         },
         _ => panic!("missing entry for {ty}: {default} (field {field})"),
     }
+
     map.into()
 }
 
@@ -3542,6 +3569,7 @@ fn validate_toml_table(
     error_sink: &mut Vec<(String, toml::de::Error)>,
 ) {
     let verify = |ptr: &String| known_ptrs.iter().any(|ptrs| ptrs.contains(&ptr.as_str()));
+
     let l = ptr.len();
     for (k, v) in toml {
         if !ptr.is_empty() {
@@ -3593,6 +3621,7 @@ mod tests {
     #[test]
     fn generate_package_json_config() {
         let s = Config::json_schema();
+
         let schema = format!("{s:#}");
         let mut schema = schema
             .trim_start_matches('[')
@@ -3606,6 +3635,7 @@ mod tests {
         // Transform the asciidoc form link to markdown style.
         //
         // https://link[text] => [text](https://link)
+
         let url_matches = schema.match_indices("https://");
         let mut url_offsets = url_matches.map(|(idx, _)| idx).collect::<Vec<usize>>();
         url_offsets.reverse();
@@ -3624,14 +3654,18 @@ mod tests {
                 schema.insert_str(idx, &link_text);
             }
         }
+
         let package_json_path = project_root().join("editors/code/package.json");
         let mut package_json = fs::read_to_string(&package_json_path).unwrap();
+
         let start_marker =
             "            {\n                \"title\": \"$generated-start\"\n            },\n";
         let end_marker =
             "            {\n                \"title\": \"$generated-end\"\n            }\n";
+
         let start = package_json.find(start_marker).unwrap() + start_marker.len();
         let end = package_json.find(end_marker).unwrap();
+
         let p = remove_ws(&package_json[start..end]);
         let s = remove_ws(&schema);
         if !p.contains(&s) {
@@ -3652,11 +3686,13 @@ mod tests {
     fn proc_macro_srv_null() {
         let mut config =
             Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
             "procMacro" : {
                 "server": null,
         }}));
+
         (config, _, _) = config.apply_change(change);
         assert_eq!(config.proc_macro_srv(), None);
     }
@@ -3669,6 +3705,7 @@ mod tests {
         "procMacro" : {
             "server": project_root().to_string(),
         }}));
+
         (config, _, _) = config.apply_change(change);
         assert_eq!(config.proc_macro_srv(), Some(AbsPathBuf::assert(project_root())));
     }
@@ -3676,12 +3713,16 @@ mod tests {
     fn proc_macro_srv_rel() {
         let mut config =
             Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+
         let mut change = ConfigChange::default();
+
         change.change_client_config(serde_json::json!({
         "procMacro" : {
             "server": "./server"
         }}));
+
         (config, _, _) = config.apply_change(change);
+
         assert_eq!(
             config.proc_macro_srv(),
             Some(AbsPathBuf::try_from(project_root().join("./server")).unwrap())
@@ -3691,10 +3732,13 @@ mod tests {
     fn cargo_target_dir_unset() {
         let mut config =
             Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+
         let mut change = ConfigChange::default();
+
         change.change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : null }
         }));
+
         (config, _, _) = config.apply_change(change);
         assert_eq!(config.cargo_targetDir(None), &None);
         assert!(matches!(
@@ -3709,11 +3753,14 @@ mod tests {
     fn cargo_target_dir_subdir() {
         let mut config =
             Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : true }
         }));
+
         (config, _, _) = config.apply_change(change);
+
         assert_eq!(config.cargo_targetDir(None), &Some(TargetDirectory::UseSubdirectory(true)));
         let ws_target_dir =
             Utf8PathBuf::from(std::env::var("CARGO_TARGET_DIR").unwrap_or("target".to_owned()));
@@ -3730,11 +3777,14 @@ mod tests {
     fn cargo_target_dir_relative_dir() {
         let mut config =
             Config::new(AbsPathBuf::assert(project_root()), Default::default(), vec![], None);
+
         let mut change = ConfigChange::default();
         change.change_client_config(serde_json::json!({
             "rust" : { "analyzerTargetDir" : "other_folder" }
         }));
+
         (config, _, _) = config.apply_change(change);
+
         assert_eq!(
             config.cargo_targetDir(None),
             &Some(TargetDirectory::Directory(Utf8PathBuf::from("other_folder")))

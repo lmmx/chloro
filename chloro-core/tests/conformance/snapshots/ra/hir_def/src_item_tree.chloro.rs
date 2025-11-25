@@ -92,6 +92,7 @@ impl fmt::Debug for RawVisibilityId {
 pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> Arc<ItemTree> {
     let _p = tracing::info_span!("file_item_tree_query", ?file_id).entered();
     static EMPTY: OnceLock<Arc<ItemTree>> = OnceLock::new();
+
     let ctx = lower::Ctx::new(db, file_id);
     let syntax = db.parse_or_expand(file_id);
     let mut item_tree = match_ast! {
@@ -148,8 +149,10 @@ pub(crate) fn file_item_tree_query(db: &dyn DefDatabase, file_id: HirFileId) -> 
 pub(crate) fn block_item_tree_query(db: &dyn DefDatabase, block: BlockId) -> Arc<ItemTree> {
     let _p = tracing::info_span!("block_item_tree_query", ?block).entered();
     static EMPTY: OnceLock<Arc<ItemTree>> = OnceLock::new();
+
     let loc = block.lookup(db);
     let block = loc.ast_id.to_node(db);
+
     let ctx = lower::Ctx::new(db, loc.ast_id.file_id);
     let mut item_tree = ctx.lower_block(&block);
     let ItemTree { top_level, top_attrs, attrs, vis, big_data, small_data } = &item_tree;
@@ -395,6 +398,7 @@ impl Index<RawVisibilityId> for ItemTree {
         static VIS_PRIV_EXPLICIT: RawVisibility =
             RawVisibility::PubSelf(VisibilityExplicitness::Explicit);
         static VIS_PUB_CRATE: RawVisibility = RawVisibility::PubCrate;
+
         match index {
             RawVisibilityId::PRIV_IMPLICIT => &VIS_PRIV_IMPLICIT,
             RawVisibilityId::PRIV_EXPLICIT => &VIS_PRIV_EXPLICIT,
@@ -671,6 +675,7 @@ impl UseTree {
                 (Some(_), _) => None,
             }
         }
+
         match &self.kind {
             UseTreeKind::Single { path, alias } => {
                 if let Some((path, kind)) = concat_mod_paths(prefix, path) {

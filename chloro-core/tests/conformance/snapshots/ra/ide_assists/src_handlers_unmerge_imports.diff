@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5845 bytes
-Chloro size:   5605 bytes
+Chloro size:   5611 bytes
 Rustfmt size:  6089 bytes
 
 ✗ Outputs DIFFER
@@ -31,22 +31,18 @@ Rustfmt size:  6089 bytes
 -// ```
  pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let tree = ctx.find_node_at_offset::<ast::UseTree>()?;
--
-     let tree_list = tree.syntax().parent().and_then(ast::UseTreeList::cast)?;
-     if tree_list.use_trees().count() < 2 {
-         cov_mark::hit!(skip_single_import);
-         return None;
-     }
--
+ 
+ 
      let use_ = tree_list.syntax().ancestors().find_map(ast::Use::cast)?;
      let path = resolve_full_path(&tree)?;
 -
      // If possible, explain what is going to be done.
++
      let label = match tree.path().and_then(|path| path.first_segment()) {
          Some(name) => format!("Unmerge use of `{name}`"),
          None => "Unmerge use".into(),
      };
--
+ 
      let target = tree.syntax().text_range();
 -    acc.add(
 -        AssistId::refactor_rewrite("unmerge_imports"),
@@ -106,10 +102,8 @@ Rustfmt size:  6089 bytes
  }
  
  fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {
-         .take_while(|n| n.kind() != SyntaxKind::USE)
-         .filter_map(ast::UseTree::cast)
          .filter_map(|t| t.path());
--
+ 
      let final_path = paths.reduce(|prev, next| make::path_concat(next, prev))?;
 -    if final_path
 -        .segment()
@@ -142,13 +136,6 @@ Rustfmt size:  6089 bytes
      #[test]
      fn unmerge_import() {
          check_assist(
- use std::fmt::Display;
- ",
-         );
--
-         check_assist(
-             unmerge_imports,
-             r"
  ",
          );
      }

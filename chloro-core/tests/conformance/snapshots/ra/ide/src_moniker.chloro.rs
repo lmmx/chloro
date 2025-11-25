@@ -181,6 +181,7 @@ pub(crate) fn moniker(
 
 pub(crate) fn def_to_kind(db: &RootDatabase, def: Definition) -> SymbolInformationKind {
     use SymbolInformationKind::*;
+
     match def {
         Definition::Macro(it) => match it.kind(db) {
             MacroKind::Derive
@@ -290,6 +291,7 @@ fn def_to_non_local_moniker(
     let krate = module.krate();
     let edition = krate.edition(db);
     // Add descriptors for this definition and every enclosing definition.
+
     let mut reverse_description = vec![];
     let mut def = definition;
     loop {
@@ -347,6 +349,7 @@ fn def_to_non_local_moniker(
     }
     reverse_description.reverse();
     let description = reverse_description;
+
     Some(Moniker {
         identifier: MonikerIdentifier {
             crate_name: krate.display_name(db)?.crate_name().to_string(),

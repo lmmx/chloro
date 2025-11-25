@@ -24,13 +24,16 @@ use crate::{
 pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
     let cfg = ctx.config.import_path_config();
+
     let mut proposed_imports: Vec<_> =
         import_assets.search_for_relative_paths(&ctx.sema, cfg).collect();
     if proposed_imports.is_empty() {
         return None;
     }
+
     let range = ctx.sema.original_range(&syntax_under_caret).range;
     let current_module = ctx.sema.scope(&syntax_under_caret).map(|scope| scope.module());
+
     let candidate = import_assets.import_candidate();
     let qualify_candidate = match candidate {
         ImportCandidate::Path(candidate) if !candidate.qualifier.is_empty() => {
@@ -58,8 +61,10 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
         }
     };
     // we aren't interested in different namespaces
+
     proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
     proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
+
     let current_edition =
         current_module.map(|it| it.krate().edition(ctx.db())).unwrap_or(Edition::CURRENT);
     // prioritize more relevant imports
@@ -71,6 +76,7 @@ pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
             current_module.as_ref(),
         ))
     });
+
     let group_label = group_label(candidate);
     for import in proposed_imports {
         acc.add_group(
@@ -141,6 +147,7 @@ impl QualifyCandidate<'_> {
         let generics =
             mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
         let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
+
         if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
             let receiver = match self_access {
                 hir::Access::Shared => make::expr_ref(receiver, false),
@@ -213,6 +220,7 @@ fn label(
     edition: Edition,
 ) -> String {
     let import_path = &import.import_path;
+
     match candidate {
         ImportCandidate::Path(candidate) if candidate.qualifier.is_empty() => {
             format!("Qualify as `{}`", import_path.display(db, edition))

@@ -9,9 +9,12 @@ use crate::{AssistContext, AssistId, Assists};
 pub(crate) fn flip_or_pattern(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     // Only flip on the `|` token
     let pipe = ctx.find_token_syntax_at_offset(T![|])?;
+
     let parent = ast::OrPat::cast(pipe.parent()?)?;
+
     let before = non_trivia_sibling(pipe.clone().into(), Direction::Prev)?.into_node()?;
     let after = non_trivia_sibling(pipe.clone().into(), Direction::Next)?.into_node()?;
+
     let target = pipe.text_range();
     acc.add(AssistId::refactor_rewrite("flip_or_pattern"), "Flip patterns", target, |builder| {
         let mut editor = builder.make_editor(parent.syntax());

@@ -90,6 +90,7 @@ impl Project<'_> {
         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
             if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
         });
+
         let FixtureWithProjectMeta {
             fixture,
             mini_core,
@@ -101,11 +102,13 @@ impl Project<'_> {
         assert!(proc_macro_names.is_empty());
         assert!(mini_core.is_none());
         assert!(toolchain.is_none());
+
         for entry in fixture {
             let path = tmp_dir.path().join(&entry.path['/'.len_utf8()..]);
             fs::create_dir_all(path.parent().unwrap()).unwrap();
             fs::write(path.as_path(), entry.text.as_bytes()).unwrap();
         }
+
         let tmp_dir_path = AbsPathBuf::assert(tmp_dir.path().to_path_buf());
         let mut buf = Vec::new();
         flags::Lsif::run(
@@ -136,6 +139,7 @@ impl Project<'_> {
     /// Using a `prelock` allows us to force a lock when we know we need it.
     pub(crate) fn server_with_lock(self, config_lock: bool) -> Server {
         static CONFIG_DIR_LOCK: Mutex<()> = Mutex::new(());
+
         let config_dir_guard = if config_lock {
             Some({
                 let guard = CONFIG_DIR_LOCK.lock();
@@ -150,9 +154,11 @@ impl Project<'_> {
         } else {
             None
         };
+
         let tmp_dir = self.tmp_dir.unwrap_or_else(|| {
             if self.root_dir_contains_symlink { TestDir::new_symlink() } else { TestDir::new() }
         });
+
         static INIT: Once = Once::new();
         INIT.call_once(|| {
             let _ = rust_analyzer::tracing::Config {
@@ -165,6 +171,7 @@ impl Project<'_> {
                 json_profile_filter: std::env::var("RA_PROFILE_JSON").ok(),
             };
         });
+
         let FixtureWithProjectMeta {
             fixture,
             mini_core,
@@ -176,6 +183,7 @@ impl Project<'_> {
         assert!(proc_macro_names.is_empty());
         assert!(mini_core.is_none());
         assert!(toolchain.is_none());
+
         for entry in fixture {
             if let Some(pth) = entry.path.strip_prefix("/$$CONFIG_DIR$$") {
                 let path = Config::user_config_dir_path().unwrap().join(&pth['/'.len_utf8()..]);
@@ -187,12 +195,14 @@ impl Project<'_> {
                 fs::write(path.as_path(), entry.text.as_bytes()).unwrap();
             }
         }
+
         let tmp_dir_path = AbsPathBuf::assert(tmp_dir.path().to_path_buf());
         let mut roots =
             self.roots.into_iter().map(|root| tmp_dir_path.join(root)).collect::<Vec<_>>();
         if roots.is_empty() {
             roots.push(tmp_dir_path.clone());
         }
+
         let mut config = Config::new(
             tmp_dir_path,
             lsp_types::ClientCapabilities {
@@ -255,11 +265,15 @@ impl Project<'_> {
             None,
         );
         let mut change = ConfigChange::default();
+
         change.change_client_config(self.config);
+
         let error_sink: ConfigErrors;
         (config, error_sink, _) = config.apply_change(change);
         assert!(error_sink.is_empty(), "{error_sink:?}");
+
         config.rediscover_workspaces();
+
         Server::new(config_dir_guard, tmp_dir.keep(), config)
     }
 }
@@ -285,9 +299,11 @@ impl Server {
         config: Config,
     ) -> Server {
         let (connection, client) = Connection::memory();
+
         let _thread = stdx::thread::Builder::new(stdx::thread::ThreadIntent::Worker, "test server")
             .spawn(move || main_loop(config, connection).unwrap())
             .expect("failed to spawn a thread");
+
         Server {
             req_id: Cell::new(1),
             dir,
@@ -338,6 +354,7 @@ impl Server {
     {
         let id = self.req_id.get();
         self.req_id.set(id.wrapping_add(1));
+
         let r = Request::new(id.into(), R::METHOD.to_owned(), params);
         self.send_request_(r)
     }
@@ -543,6 +560,7 @@ fn lines_match_works() {
     assert!(lines_match("a[..]", "a b"));
     assert!(lines_match("[..]", "a b"));
     assert!(lines_match("[..]b", "a b"));
+
     assert!(!lines_match("[..]b", "c"));
     assert!(!lines_match("b", "c"));
     assert!(!lines_match("b", "cb"));

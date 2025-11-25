@@ -5,6 +5,7 @@ pub(crate) fn invalid_derive_target(
     d: &hir::InvalidDeriveTarget,
 ) -> Diagnostic {
     let display_range = ctx.sema.diagnostics_display_range(d.node);
+
     Diagnostic::new(
         DiagnosticCode::RustcHardError("E0774"),
         "`derive` may only be applied to `struct`s, `enum`s and `union`s",

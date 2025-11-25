@@ -20,16 +20,19 @@ pub(crate) fn invert_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()
     if !cursor_in_range {
         return None;
     }
+
     let cond = expr.condition()?;
     // This assist should not apply for if-let.
     if is_pattern_cond(cond.clone()) {
         return None;
     }
+
     let then_node = expr.then_branch()?.syntax().clone();
     let else_block = match expr.else_branch()? {
         ast::ElseBranch::Block(it) => it,
         ast::ElseBranch::IfExpr(_) => return None,
     };
+
     acc.add(AssistId::refactor_rewrite("invert_if"), "Invert if", if_range, |edit| {
         let flip_cond = invert_boolean_expression_legacy(cond.clone());
         edit.replace_ast(cond, flip_cond);

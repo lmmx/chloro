@@ -340,6 +340,7 @@ impl AsmOptions {
 
     pub fn human_readable_names(&self) -> Vec<&'static str> {
         let mut options = vec![];
+
         if self.contains(AsmOptions::PURE) {
             options.push("pure");
         }
@@ -367,6 +368,7 @@ impl AsmOptions {
         if self.contains(AsmOptions::MAY_UNWIND) {
             options.push("may_unwind");
         }
+
         options
     }
 }

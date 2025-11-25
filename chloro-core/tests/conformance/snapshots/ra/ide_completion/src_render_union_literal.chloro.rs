@@ -17,6 +17,7 @@ pub(crate) fn render_union_literal(
     local_name: Option<Name>,
 ) -> Option<CompletionItem> {
     let name = local_name.unwrap_or_else(|| un.name(ctx.db()));
+
     let (qualified_name, escaped_qualified_name) = match path {
         Some(p) => (
             p.display_verbatim(ctx.db()).to_smolstr(),
@@ -42,12 +43,16 @@ pub(crate) fn render_union_literal(
         label,
         ctx.completion.edition,
     );
+
     item.lookup_by(lookup);
+
     let fields = un.fields(ctx.db());
     let (fields, fields_omitted) = visible_fields(ctx.completion, &fields, un)?;
+
     if fields.is_empty() {
         return None;
     }
+
     let literal = if ctx.snippet_cap().is_some() {
         format!(
             "{} {{ ${{1|{}|}}: ${{2:()}} }}$0",
@@ -72,6 +77,7 @@ pub(crate) fn render_union_literal(
             })
         )
     };
+
     let detail = format!(
         "{} {{ {}{} }}",
         qualified_name,
@@ -84,13 +90,16 @@ pub(crate) fn render_union_literal(
         }),
         if fields_omitted { ", .." } else { "" }
     );
+
     item.set_documentation(ctx.docs(un))
         .set_deprecated(ctx.is_deprecated(un))
         .detail(detail)
         .set_relevance(ctx.completion_relevance());
+
     match ctx.snippet_cap() {
         Some(snippet_cap) => item.insert_snippet(snippet_cap, literal).trigger_call_info(),
         None => item.insert_text(literal),
     };
+
     Some(item.build(ctx.db()))
 }

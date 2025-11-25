@@ -49,6 +49,7 @@ pub fn direct_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[T
 pub fn all_super_traits(db: &dyn DefDatabase, trait_: TraitId) -> SmallVec<[TraitId; 4]> {
     // we need to take care a bit here to avoid infinite loops in case of cycles
     // (i.e. if we have `trait A: B; trait B: A;`)
+
     let mut result = smallvec![trait_];
     let mut i = 0;
     while let Some(&t) = result.get(i) {
@@ -126,6 +127,7 @@ pub fn is_fn_unsafe_to_call(
     if data.is_unsafe() {
         return Unsafety::Unsafe;
     }
+
     if data.has_target_feature() && target_feature_is_safe == TargetFeatureIsSafeInTarget::No {
         // RFC 2396 <https://rust-lang.github.io/rfcs/2396-target-feature-1.1.html>.
         let callee_target_features =
@@ -134,6 +136,7 @@ pub fn is_fn_unsafe_to_call(
             return Unsafety::Unsafe;
         }
     }
+
     if data.is_deprecated_safe_2024() {
         if call_edition.at_least_2024() {
             return Unsafety::Unsafe;
@@ -141,6 +144,7 @@ pub fn is_fn_unsafe_to_call(
             return Unsafety::DeprecatedSafe2024;
         }
     }
+
     let loc = func.lookup(db);
     match loc.container {
         hir_def::ItemContainerId::ExternBlockId(block) => {

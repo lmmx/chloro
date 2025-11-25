@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72741 bytes
+Chloro size:   72766 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -81,43 +81,17 @@ Rustfmt size:  74236 bytes
  /// The entry point of type inference.
  pub(crate) fn infer_query(db: &dyn HirDatabase, def: DefWithBodyId) -> Arc<InferenceResult<'_>> {
      let _p = tracing::info_span!("infer_query").entered();
-     let resolver = def.resolver(db);
-     let body = db.body(def);
-     let mut ctx = InferenceContext::new(db, def, &body, resolver);
--
-     match def {
-         DefWithBodyId::FunctionId(f) => {
-             ctx.collect_fn(f);
-             };
-         }
-     }
--
-     ctx.infer_body();
--
-     ctx.infer_mut_body();
--
      ctx.handle_opaque_type_uses();
--
+ 
      ctx.type_inference_fallback();
 -
      // Comment from rustc:
      // Even though coercion casts provide type hints, we check casts after fallback for
      // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-             ctx.diagnostics.push(diag);
-         }
-     }
--
-     ctx.table.select_obligations_where_possible();
--
-     ctx.infer_closures();
--
-     ctx.table.select_obligations_where_possible();
--
-     ctx.handle_opaque_type_uses();
--
-     Arc::new(ctx.resolve_all())
- }
- 
++
+     let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
+     for mut cast in cast_checks.into_iter() {
+         if let Err(diag) = cast.check(&mut ctx) {
      UnresolvedIdent {
          id: ExprOrPatId,
      },
@@ -340,18 +314,16 @@ Rustfmt size:  74236 bytes
 -    // FIXME: Remove this.
      pub(crate) fn fixme_resolve_all_clone(&self) -> InferenceResult<'db> {
          let mut ctx = self.clone();
--
+ 
          ctx.type_inference_fallback();
 -
          // Comment from rustc:
          // Even though coercion casts provide type hints, we check casts after fallback for
          // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
-                 ctx.diagnostics.push(diag);
-             }
-         }
--
-         ctx.table.select_obligations_where_possible();
--
++
+         let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
+         for mut cast in cast_checks.into_iter() {
+             if let Err(diag) = cast.check(&mut ctx) {
          ctx.resolve_all()
      }
  
@@ -362,59 +334,16 @@ Rustfmt size:  74236 bytes
      fn resolve_all(self) -> InferenceResult<'db> {
          let InferenceContext {
              mut table, mut result, tuple_field_accesses_rev, diagnostics, ..
-             coercion_casts: _,
-             diagnostics: _,
-         } = &mut result;
--
-         for ty in type_of_expr.values_mut() {
-             *ty = table.resolve_completely(*ty);
-             *has_errors = *has_errors || ty.references_non_lt_error();
-         }
-         type_of_binding.shrink_to_fit();
-         type_of_opaque.shrink_to_fit();
--
-         *has_errors |= !type_mismatches.is_empty();
--
-         for mismatch in (*type_mismatches).values_mut() {
-             mismatch.expected = table.resolve_completely(mismatch.expected);
-             mismatch.actual = table.resolve_completely(mismatch.actual);
-             })
-             .collect();
-         result.tuple_field_access_types.shrink_to_fit();
--
-         result.diagnostics = diagnostics;
--
-         result
-     }
- 
-             InferenceTyDiagnosticSource::Signature,
-             LifetimeElisionKind::for_const(self.interner(), id.loc(self.db).container),
-         );
--
-         self.return_ty = return_ty;
-     }
- 
-             InferenceTyDiagnosticSource::Signature,
-             LifetimeElisionKind::Elided(self.types.re_static),
-         );
--
-         self.return_ty = return_ty;
-     }
- 
              LifetimeElisionKind::for_fn_params(&data),
              |ctx| data.params.iter().map(|&type_ref| ctx.lower_ty(type_ref)).collect::<Vec<_>>(),
          );
 -
          // Check if function contains a va_list, if it does then we append it to the parameter types
          // that are collected from the function data
++
          if data.is_varargs() {
-             }
-             None => self.types.unit,
-         };
--
-         self.return_coercion = Some(CoerceMany::new(self.return_ty));
-     }
- 
+             let va_list_ty = match self.resolve_va_list() {
+                 Some(va_list) => Ty::new_adt(
          self.result.pat_adjustments.entry(pat).or_default().extend(adjustments);
      }
  
@@ -436,13 +365,6 @@ Rustfmt size:  74236 bytes
          params: &[GenericArg<'db>],
      ) -> Ty<'db> {
          match assoc_ty {
-                 (self.err_ty(), None)
-             }
-         };
--
-         fn forbid_unresolved_segments<'db>(
-             ctx: &InferenceContext<'_, 'db>,
-             result: (Ty<'db>, Option<VariantId>),
  
  impl std::ops::BitAnd for Diverges {
      type Output = Self;

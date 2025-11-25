@@ -23,6 +23,7 @@ impl ExprCollector<'_> {
         let mut clobber_abis = FxIndexSet::default();
         let mut operands = vec![];
         let mut options = AsmOptions::empty();
+
         let mut named_pos: FxHashMap<usize, Symbol> = Default::default();
         let mut named_args: FxHashMap<Symbol, usize> = Default::default();
         let mut reg_args: FxHashSet<usize> = Default::default();
@@ -174,6 +175,7 @@ impl ExprCollector<'_> {
             };
             operands.push(op);
         }
+
         let mut mappings = vec![];
         let mut curarg = 0;
         if !options.contains(AsmOptions::RAW) {
@@ -268,6 +270,7 @@ impl ExprCollector<'_> {
                     }
                 })
         };
+
         let kind = if asm.global_asm_token().is_some() {
             InlineAsmKind::GlobalAsm
         } else if asm.naked_asm_token().is_some() {
@@ -275,6 +278,7 @@ impl ExprCollector<'_> {
         } else {
             InlineAsmKind::Asm
         };
+
         let idx = self.alloc_expr(
             Expr::InlineAsm(InlineAsm { operands: operands.into_boxed_slice(), options, kind }),
             syntax_ptr,

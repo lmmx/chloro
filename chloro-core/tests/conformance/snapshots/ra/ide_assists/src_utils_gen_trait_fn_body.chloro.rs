@@ -361,6 +361,7 @@ fn gen_hash_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
         let expr = make::expr_method_call(target, method, make::arg_list(Some(arg))).into();
         make::expr_stmt(expr).into()
     }
+
     let body = match adt {
         // `Hash` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => return None,
@@ -402,6 +403,7 @@ fn gen_hash_impl(adt: &ast::Adt) -> Option<ast::BlockExpr> {
             None => return None,
         },
     };
+
     Some(body)
 }
 
@@ -413,23 +415,28 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
             None => Some(cmp),
         }
     }
+
     fn gen_record_pat_field(field_name: &str, pat_name: &str) -> ast::RecordPatField {
         let pat = make::ext::simple_ident_pat(make::name(pat_name));
         let name_ref = make::name_ref(field_name);
         make::record_pat_field(name_ref, pat.into())
     }
+
     fn gen_record_pat(record_name: ast::Path, fields: Vec<ast::RecordPatField>) -> ast::RecordPat {
         let list = make::record_pat_field_list(fields, None);
         make::record_pat_with_fields(record_name, list)
     }
+
     fn gen_variant_path(variant: &ast::Variant) -> Option<ast::Path> {
         make::ext::path_from_idents(["Self", &variant.name()?.to_string()])
     }
+
     fn gen_tuple_field(field_name: &str) -> ast::Pat {
         ast::Pat::IdentPat(make::ident_pat(false, false, make::name(field_name)))
     }
     // Check that self type and rhs type match. We don't know how to implement the method
     // automatically otherwise.
+
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();
         let rhs_ty = trait_ref.get_type_argument(1)?;
@@ -437,6 +444,7 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
             return None;
         }
     }
+
     let body = match adt {
         // `PartialEq` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => return None,
@@ -588,6 +596,7 @@ fn gen_partial_eq(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<ast
             }
         },
     };
+
     Some(body)
 }
 
@@ -608,6 +617,7 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
         let list = make::match_arm_list(arms).indent(ast::edit::IndentLevel(1));
         Some(make::expr_stmt(make::expr_match(match_target, list).into()).into())
     }
+
     fn gen_partial_cmp_call(lhs: ast::Expr, rhs: ast::Expr) -> ast::Expr {
         let rhs = make::expr_ref(rhs, false);
         let method = make::name_ref("partial_cmp");
@@ -615,6 +625,7 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
     }
     // Check that self type and rhs type match. We don't know how to implement the method
     // automatically otherwise.
+
     if let Some(trait_ref) = trait_ref {
         let self_ty = trait_ref.self_ty();
         let rhs_ty = trait_ref.get_type_argument(1)?;
@@ -622,6 +633,7 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
             return None;
         }
     }
+
     let body = match adt {
         // `PartialOrd` cannot be derived for unions, so no default impl can be provided.
         ast::Adt::Union(_) => return None,
@@ -673,6 +685,7 @@ fn gen_partial_ord(adt: &ast::Adt, trait_ref: Option<TraitRef<'_>>) -> Option<as
             }
         },
     };
+
     Some(body)
 }
 

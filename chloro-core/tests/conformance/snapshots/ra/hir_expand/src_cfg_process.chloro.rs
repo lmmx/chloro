@@ -95,6 +95,7 @@ fn remove_tokens_within_cfg_attr(meta: Meta) -> Option<FxHashSet<SyntaxElement>>
     let meta_path = meta.path()?;
     debug!("Removing {:?}", meta_path.syntax());
     remove.insert(meta_path.syntax().clone().into());
+
     let meta_tt = meta.token_tree()?;
     debug!("meta_tt {}", meta_tt);
     let mut stage = CfgExprStage::StrippigCfgExpr;
@@ -202,6 +203,7 @@ pub(crate) fn process_cfg_attrs(
         _ => false,
     };
     let mut remove = FxHashSet::default();
+
     let item = ast::Item::cast(node.clone())?;
     for attr in item.attrs() {
         if let Some(enabled) = check_cfg_attr(db, &attr, loc.krate) {
@@ -216,6 +218,7 @@ pub(crate) fn process_cfg_attrs(
             }
         }
     }
+
     if is_derive {
         // Only derives get their code cfg-clean, normal attribute macros process only the cfg at their level
         // (cfg_attr is handled above, cfg is handled in the def map).
@@ -359,6 +362,7 @@ mod tests {
         };
         let node = node.clone_subtree();
         assert_eq!(node.syntax().text_range().start(), 0.into());
+
         let cfg = parse_from_attr_token_tree(&node.meta().unwrap().token_tree().unwrap()).unwrap();
         let actual = format!("#![cfg({})]", DnfExpr::new(&cfg));
         expect.assert_eq(&actual);

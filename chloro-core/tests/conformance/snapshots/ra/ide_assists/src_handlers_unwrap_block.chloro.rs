@@ -15,6 +15,7 @@ pub(crate) fn unwrap_block(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option
     if ast::MatchArm::can_cast(parent.kind()) {
         parent = parent.ancestors().find(|it| ast::MatchExpr::can_cast(it.kind()))?
     }
+
     let kind = parent.kind();
     if matches!(kind, SyntaxKind::STMT_LIST | SyntaxKind::EXPR_STMT) {
         acc.add(assist_id, assist_label, target, |builder| {
@@ -113,8 +114,10 @@ fn update_expr_string_with_pat(expr_str: String, whitespace_pat: &[char]) -> Str
     let expr_str = expr_str[after_open_brace_index..].trim_start_matches(whitespace_pat);
     // Remove trailing whitespace, index [..expr_str.len() - 1] to remove the trailing '}',
     // then continue to remove trailing whitespace.
+
     let expr_str = expr_str.trim_end_matches(whitespace_pat);
     let expr_str = expr_str[..expr_str.len() - 1].trim_end_matches(whitespace_pat);
+
     expr_str
         .lines()
         .map(|line| line.replacen("    ", "", 1)) // Delete indentation
@@ -626,6 +629,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist(
             unwrap_block,
             r#"

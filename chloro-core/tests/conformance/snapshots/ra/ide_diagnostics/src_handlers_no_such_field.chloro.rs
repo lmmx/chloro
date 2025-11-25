@@ -20,6 +20,7 @@ pub(crate) fn no_such_field(ctx: &DiagnosticsContext<'_>, d: &hir::NoSuchField) 
     } else {
         ("E0560", "no such field")
     };
+
     let node = d.field.map(Into::into);
     Diagnostic::new_with_syntax_node_ptr(ctx, DiagnosticCode::RustcHardError(code), message, node)
         .stable()
@@ -82,6 +83,7 @@ fn missing_record_expr_field_fixes(
         }
     };
     let def_file_id = def_file_id.original_file(sema.db);
+
     let new_field_type = sema.type_of_expr(&record_expr_field.expr()?)?.adjusted();
     if new_field_type.is_unknown() {
         return None;
@@ -91,28 +93,34 @@ fn missing_record_expr_field_fixes(
         make::name(record_expr_field.field_name()?.ident_token()?.text()),
         make::ty(&new_field_type.display_source_code(sema.db, module.into(), true).ok()?),
     );
+
     let last_field = record_fields.fields().last()?;
     let last_field_syntax = last_field.syntax();
     let indent = IndentLevel::from_node(last_field_syntax);
+
     let mut new_field = new_field.to_string();
     if usage_file_id != def_file_id {
         new_field = format!("pub(crate) {new_field}");
     }
     new_field = format!("\n{indent}{new_field}");
+
     let needs_comma = !last_field_syntax.to_string().ends_with(',');
     if needs_comma {
         new_field = format!(",{new_field}");
     }
+
     let source_change = SourceChange::from_text_edit(
         def_file_id.file_id(sema.db),
         TextEdit::insert(last_field_syntax.text_range().end(), new_field),
     );
+
     return Some(vec![fix(
         "create_field",
         "Create field",
         source_change,
         sema.original_range(record_expr_field.syntax()).range,
     )]);
+
     fn record_field_list(field_def_list: ast::FieldList) -> Option<ast::RecordFieldList> {
         match field_def_list {
             ast::FieldList::RecordFieldList(it) => Some(it),
@@ -401,6 +409,7 @@ fn f() {
 }
 "#,
         );
+
         check_fix(
             r#"
 mod m {

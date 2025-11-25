@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9816 bytes
-Chloro size:   9533 bytes
+Chloro size:   9537 bytes
 Rustfmt size:  9843 bytes
 
 ✗ Outputs DIFFER
@@ -51,24 +51,8 @@ Rustfmt size:  9843 bytes
 -        .and_then(ast::TokenTree::cast)?;
 +    let tt = fmt_string.syntax().parent().and_then(ast::TokenTree::cast)?;
      let tt_delimiter = tt.left_delimiter_token()?.kind();
--
-     let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
--
-     let (new_fmt, extracted_args) = parse_format_exprs(fmt_string.text()).ok()?;
-     if extracted_args.is_empty() {
-         return None;
-     }
--
-     acc.add(
-         AssistId(
-             "extract_expressions_from_format_string",
-             edit.add_file_edits(ctx.vfs_file_id(), editor);
-         },
-     );
--
-     Some(())
- }
  
+     let _ = ctx.sema.as_format_args_parts(&fmt_string)?;
  mod tests {
      use super::*;
      use crate::tests::{check_assist, check_assist_no_snippet_cap};

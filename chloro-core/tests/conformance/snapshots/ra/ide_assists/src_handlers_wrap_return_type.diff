@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 53059 bytes
-Chloro size:   52421 bytes
+Chloro size:   52445 bytes
 Rustfmt size:  53059 bytes
 
 ✗ Outputs DIFFER
@@ -49,32 +49,6 @@ Rustfmt size:  53059 bytes
  pub(crate) fn wrap_return_type(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
      let parent = ret_type.syntax().parent()?;
-             _ => return None,
-         }
-     };
--
-     let type_ref = &ret_type.ty()?;
-     let ty = ctx.sema.resolve_type(type_ref)?;
-     let ty_adt = ty.as_adt();
-     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(type_ref.syntax())?.krate());
--
-     for kind in WrapperKind::ALL {
-         let Some(core_wrapper) = kind.core_type(&famous_defs) else {
-             continue;
-             },
-         );
-     }
--
-     Some(())
- }
- 
-             WrapperKind::Option => "wrap_return_type_in_option",
-             WrapperKind::Result => "wrap_return_type_in_result",
-         };
--
-         AssistId::refactor_rewrite(s)
-     }
- 
      }
  }
  
@@ -82,13 +56,6 @@ Rustfmt size:  53059 bytes
  fn wrapper_alias<'db>(
      ctx: &AssistContext<'db>,
      make: &SyntaxFactory,
-         hir::PathKind::Plain,
-         iter::once(hir::Name::new_symbol_root(wrapper)),
-     );
--
-     ctx.sema.resolve_mod_path(ast_ret_type.syntax(), &wrapper_path).and_then(|def| {
-         def.filter_map(|def| match def.into_module_def() {
-             hir::ModuleDef::TypeAlias(alias) => {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist_by_label, check_assist_not_applicable_by_label};
@@ -252,13 +219,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_option_simple_with_tail_block_like_match_return_expr() {
          check_assist_by_label(
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Option.label(),
          );
      }
@@ -287,13 +247,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_option_simple_with_closure() {
          check_assist_by_label(
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Option.label(),
          );
      }
@@ -301,34 +254,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_option_simple_with_weird_forms() {
          check_assist_by_label(
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Option.label(),
          );
      }
@@ -336,13 +261,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_local_option_type() {
          check_assist_by_label(
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Option.label(),
          );
      }
@@ -350,13 +268,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_imported_local_option_type() {
          check_assist_by_label(
- "#,
-             WrapperKind::Option.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Option.label(),
          );
      }
@@ -532,13 +443,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_result_simple_with_tail_block_like_match_return_expr() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }
@@ -567,13 +471,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_result_simple_with_closure() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }
@@ -581,34 +478,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_result_simple_with_weird_forms() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }
@@ -616,13 +485,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_local_result_type() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }
@@ -630,13 +492,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_imported_local_result_type() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }
@@ -658,27 +513,6 @@ Rustfmt size:  53059 bytes
      #[test]
      fn wrap_return_type_in_local_result_type_multiple_generics() {
          check_assist_by_label(
- "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
-             "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
-             "#,
-             WrapperKind::Result.label(),
-         );
--
-         check_assist_by_label(
-             wrap_return_type,
-             r#"
              WrapperKind::Result.label(),
          );
      }

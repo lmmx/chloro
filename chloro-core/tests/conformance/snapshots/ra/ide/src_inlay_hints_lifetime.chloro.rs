@@ -28,6 +28,7 @@ pub(super) fn fn_hints(
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
+
     let param_list = func.param_list()?;
     let generic_param_list = func.generic_param_list();
     let ret_type = func.ret_type();
@@ -76,6 +77,7 @@ pub(super) fn fn_ptr_hints(
     if config.lifetime_elision_hints == LifetimeElisionHints::Never {
         return None;
     }
+
     let parent_for_binder = func
         .syntax()
         .ancestors()
@@ -83,6 +85,7 @@ pub(super) fn fn_ptr_hints(
         .take_while(|it| matches!(it.kind(), SyntaxKind::PAREN_TYPE | SyntaxKind::FOR_TYPE))
         .find_map(ast::ForType::cast)
         .and_then(|it| it.for_binder());
+
     let param_list = func.param_list()?;
     let generic_param_list = parent_for_binder.as_ref().and_then(|it| it.generic_param_list());
     let ret_type = func.ret_type();
@@ -140,6 +143,7 @@ pub(super) fn fn_path_hints(
         return None;
     }
     // FIXME: Support general path types
+
     let (param_list, ret_type) = func.path().as_ref().and_then(path_as_fn)?;
     let parent_for_binder = func
         .syntax()
@@ -148,6 +152,7 @@ pub(super) fn fn_path_hints(
         .take_while(|it| matches!(it.kind(), SyntaxKind::PAREN_TYPE | SyntaxKind::FOR_TYPE))
         .find_map(ast::ForType::cast)
         .and_then(|it| it.for_binder());
+
     let generic_param_list = parent_for_binder.as_ref().and_then(|it| it.generic_param_list());
     let for_kw = parent_for_binder.as_ref().and_then(|it| it.for_token());
     hints_(
@@ -204,6 +209,7 @@ fn hints_(
         Some(lt) => matches!(lt.text().as_str(), "'_"),
         None => true,
     };
+
     let mk_lt_hint = |t: SyntaxToken, label: String| InlayHint {
         range: t.text_range(),
         kind: InlayKind::Lifetime,
@@ -214,6 +220,7 @@ fn hints_(
         pad_right: true,
         resolve_parent: None,
     };
+
     let potential_lt_refs = {
         let mut acc: Vec<_> = vec![];
         if let Some(self_param) = &self_param {
@@ -251,6 +258,7 @@ fn hints_(
         });
         acc
     };
+
     let mut used_names: FxHashMap<SmolStr, usize> =
         ctx.lifetime_stacks.iter().flat_map(|it| it.iter()).cloned().zip(iter::repeat(0)).collect();
     // allocate names
@@ -268,6 +276,7 @@ fn hints_(
         }
     };
     let mut allocated_lifetimes = vec![];
+
     {
         let mut potential_lt_refs = potential_lt_refs.iter().filter(|&&(.., is_elided)| is_elided);
         if self_param.is_some() && potential_lt_refs.next().is_some() {
@@ -295,6 +304,7 @@ fn hints_(
         });
     }
     // fetch output lifetime if elision rule applies
+
     let output = match potential_lt_refs.as_slice() {
         [(_, _, lifetime, _), ..] if self_param.is_some() || potential_lt_refs.len() == 1 => {
             match lifetime {
@@ -308,11 +318,13 @@ fn hints_(
         }
         [..] => None,
     };
+
     if allocated_lifetimes.is_empty() && output.is_none() {
         return None;
     }
     // apply hints
     // apply output if required
+
     if let (Some(output_lt), Some(r)) = (&output, ret_type)
         && let Some(ty) = r.ty()
     {
@@ -343,9 +355,11 @@ fn hints_(
             _ => false,
         })
     }
+
     if config.lifetime_elision_hints == LifetimeElisionHints::SkipTrivial && is_trivial {
         return None;
     }
+
     let mut a = allocated_lifetimes.iter();
     for (_, amp_token, _, is_elided) in potential_lt_refs {
         if is_elided {
@@ -355,6 +369,7 @@ fn hints_(
         }
     }
     // generate generic param list things
+
     match (generic_param_list, allocated_lifetimes.as_slice()) {
         (_, []) => (),
         (Some(gpl), allocated_lifetimes) => {

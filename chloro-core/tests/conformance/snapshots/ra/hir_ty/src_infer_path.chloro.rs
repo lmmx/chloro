@@ -30,7 +30,9 @@ impl<'db> InferenceContext<'_, 'db> {
             ValuePathResolution::NonGeneric(ty) => return Some(ty),
         };
         let args = self.process_remote_user_written_ty(substs);
+
         self.add_required_obligations_for_value_path(generic_def, args);
+
         let ty = self.db.value_ty(value_def)?.instantiate(self.interner(), args);
         let ty = self.process_remote_user_written_ty(ty);
         Some(ty)
@@ -42,6 +44,7 @@ impl<'db> InferenceContext<'_, 'db> {
         id: ExprOrPatId,
     ) -> Option<ValuePathResolution<'db>> {
         let (value, self_subst) = self.resolve_value_path_inner(path, id, false)?;
+
         let value_def: ValueTyDefId = match value {
             ValueNs::FunctionId(it) => it.into(),
             ValueNs::ConstId(it) => it.into(),
@@ -82,12 +85,14 @@ impl<'db> InferenceContext<'_, 'db> {
                 return Some(ValuePathResolution::NonGeneric(self.db.const_param_ty_ns(it)));
             }
         };
+
         let generic_def = value_def.to_generic_def_id(self.db);
         if let GenericDefId::StaticId(_) = generic_def {
             // `Static` is the kind of item that can never be generic currently. We can just skip the binders to get its type.
             let ty = self.db.value_ty(value_def)?.skip_binder();
             return Some(ValuePathResolution::NonGeneric(ty));
         };
+
         let substs = if self_subst.is_some_and(|it| !it.is_empty())
             && matches!(value_def, ValueTyDefId::EnumVariantId(_))
         {
@@ -105,6 +110,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 path_ctx.substs_from_path(value_def, true, false)
             })
         };
+
         let parent_substs_len = self_subst.map_or(0, |it| it.len());
         let substs = GenericArgs::fill_rest(
             self.interner(),
@@ -112,6 +118,7 @@ impl<'db> InferenceContext<'_, 'db> {
             self_subst.iter().flat_map(|it| it.iter()).chain(substs.iter().skip(parent_substs_len)),
             |_, id, _| GenericArg::error_from_id(self.interner(), id),
         );
+
         Some(ValuePathResolution::GenericDef(value_def, generic_def, substs))
     }
 
@@ -198,6 +205,7 @@ impl<'db> InferenceContext<'_, 'db> {
             }
         };
         return Some((value, self_subst));
+
         #[inline]
         fn drop_ctx(mut ctx: TyLoweringContext<'_, '_>, no_diagnostics: bool) {
             if no_diagnostics {
@@ -220,11 +228,13 @@ impl<'db> InferenceContext<'_, 'db> {
             }));
         }
         // We need to add `Self: Trait` obligation when `def` is a trait assoc item.
+
         let container = match def {
             GenericDefId::FunctionId(id) => id.lookup(self.db).container,
             GenericDefId::ConstId(id) => id.lookup(self.db).container,
             _ => return,
         };
+
         if let ItemContainerId::TraitId(trait_) = container {
             let parent_len = generics(self.db, def).parent_generics().map_or(0, |g| g.len_self());
             let parent_subst = GenericArgs::new_from_iter(
@@ -274,6 +284,7 @@ impl<'db> InferenceContext<'_, 'db> {
             AssocItemId::ConstId(c) => ValueNs::ConstId(c),
             AssocItemId::TypeAliasId(_) => unreachable!(),
         };
+
         self.write_assoc_resolution(id, item, trait_ref.args);
         Some((def, trait_ref.args))
     }
@@ -287,10 +298,13 @@ impl<'db> InferenceContext<'_, 'db> {
         if ty.is_ty_error() {
             return None;
         }
+
         if let Some(result) = self.resolve_enum_variant_on_ty(ty, name, id) {
             return Some(result);
         }
+
         let canonical_ty = self.canonicalize(ty);
+
         let mut not_visible = None;
         let res = method_resolution::iterate_method_candidates(
             &canonical_ty,
@@ -317,6 +331,7 @@ impl<'db> InferenceContext<'_, 'db> {
             self.push_diagnostic(InferenceDiagnostic::UnresolvedAssocItem { id });
         }
         let (item, visible) = res?;
+
         let (def, container) = match item {
             AssocItemId::FunctionId(f) => (ValueNs::FunctionId(f), f.lookup(self.db).container),
             AssocItemId::ConstId(c) => (ValueNs::ConstId(c), c.lookup(self.db).container),
@@ -352,6 +367,7 @@ impl<'db> InferenceContext<'_, 'db> {
                 return None;
             }
         };
+
         self.write_assoc_resolution(id, item, substs);
         if !visible {
             self.push_diagnostic(InferenceDiagnostic::PrivateAssocItem { id, item });

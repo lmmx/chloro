@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7100 bytes
-Chloro size:   6919 bytes
+Chloro size:   6922 bytes
 Rustfmt size:  7241 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,11 @@ Rustfmt size:  7241 bytes
 -            .find_map(ast::Use::cast)?
 +        ctx.covering_element().ancestors().find_map(ast::Use::cast)?
      };
--
+ 
      let target = use_item.syntax().text_range();
      let normalized_use_item =
          try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
--
+ 
 -    acc.add(
 -        AssistId::refactor_rewrite("normalize_import"),
 -        "Normalize import",
@@ -90,6 +90,10 @@ Rustfmt size:  7241 bytes
          // This code compiles but transforming "bar::{self}" into "bar" causes a
          // compilation error (the name `bar` is defined multiple times).
          // Therefore, the normalize_input assist must not apply here.
++
+         check_assist_not_applicable(
+             normalize_import,
+             r"
  ",
          );
      }

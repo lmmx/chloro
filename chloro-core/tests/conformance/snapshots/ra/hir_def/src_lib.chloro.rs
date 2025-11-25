@@ -721,6 +721,12 @@ pub enum DefWithBodyId {
     StaticId(StaticId),
     ConstId(ConstId),
     VariantId(EnumVariantId),
+    // /// All fields of a variant are inference roots
+    // VariantId(VariantId),
+    // /// The signature can contain inference roots in a bunch of places
+    // /// like const parameters or const arguments in paths
+    // This should likely be kept on its own with a separate query
+    // GenericDefId(GenericDefId),
 }
 impl From<EnumVariantId> for DefWithBodyId {
     fn from(id: EnumVariantId) -> Self {
@@ -785,6 +791,7 @@ impl GenericDefId {
             let src = def.lookup(db).source(db);
             (src.file_id, ast::HasGenericParams::generic_param_list(&src.value))
         }
+
         match self {
             GenericDefId::FunctionId(it) => file_id_and_params_of_item_loc(db, it),
             GenericDefId::TypeAliasId(it) => file_id_and_params_of_item_loc(db, it),
@@ -1185,6 +1192,7 @@ pub fn macro_call_as_call_id(
     ),
 ) -> Result<ExpandResult<Option<MacroCallId>>, UnresolvedMacro> {
     let def = resolver(path).ok_or_else(|| UnresolvedMacro { path: path.clone() })?;
+
     let res = match def.kind {
         MacroDefKind::BuiltInEager(..) => expand_eager_macro_input(
             db,

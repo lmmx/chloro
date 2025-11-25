@@ -211,6 +211,7 @@ impl<'db> FulfillmentCtxt<'db> {
                 break;
             }
         }
+
         errors
     }
 
@@ -222,6 +223,7 @@ impl<'db> FulfillmentCtxt<'db> {
         if !errors.is_empty() {
             return errors;
         }
+
         self.collect_remaining_errors(infcx)
     }
 
@@ -243,9 +245,11 @@ impl<'db> FulfillmentCtxt<'db> {
             | TypingMode::PostAnalysis => return Default::default(),
         };
         let stalled_coroutines = stalled_coroutines.inner();
+
         if stalled_coroutines.is_empty() {
             return Default::default();
         }
+
         self.obligations
             .drain_pending(|obl| {
                 infcx.probe(|_| {
@@ -284,6 +288,7 @@ impl<'db> ProofTreeVisitor<'db> for StalledOnCoroutines<'_, 'db> {
 
     fn visit_goal(&mut self, inspect_goal: &super::inspect::InspectGoal<'_, 'db>) -> Self::Result {
         inspect_goal.goal().predicate.visit_with(self)?;
+
         if let Some(candidate) = inspect_goal.unique_applicable_candidate() {
             candidate.visit_nested_no_probe(self)
         } else {
@@ -299,6 +304,7 @@ impl<'db> TypeVisitor<DbInterner<'db>> for StalledOnCoroutines<'_, 'db> {
         if !self.cache.insert(ty) {
             return ControlFlow::Continue(());
         }
+
         if let TyKind::Coroutine(def_id, _) = ty.kind()
             && self.stalled_coroutines.contains(&def_id.into())
         {

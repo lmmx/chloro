@@ -169,9 +169,11 @@ impl<V, T> ProjectionElem<V, T> {
         // we only bail on mir building when there are type mismatches
         // but error types may pop up resulting in us still attempting to build the mir
         // so just propagate the error type
+
         if base.is_ty_error() {
             return Ty::new_error(interner, ErrorGuaranteed);
         }
+
         if matches!(base.kind(), TyKind::Alias(..)) {
             let mut ocx = ObligationCtxt::new(infcx);
             // FIXME: we should get this from caller
@@ -181,6 +183,7 @@ impl<V, T> ProjectionElem<V, T> {
                 Err(_) => return Ty::new_error(interner, ErrorGuaranteed),
             }
         }
+
         match self {
             ProjectionElem::Deref => match base.kind() {
                 TyKind::RawPtr(inner, _) | TyKind::Ref(_, inner, _) => inner,
@@ -366,6 +369,7 @@ pub enum AggregateKind<'db> {
     Adt(VariantId, GenericArgs<'db>),
     Union(UnionId, FieldId),
     Closure(Ty<'db>),
+    //Coroutine(LocalDefId, SubstsRef, Movability),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -567,6 +571,9 @@ pub enum TerminatorKind<'db> {
         /// `true` if this is from a call in HIR rather than from an overloaded
         /// operator. True for overloaded function call.
         from_hir_call: bool,
+        // This `Span` is the span of the function, without the dot and receiver
+        // (e.g. `foo(a, b)` in `x.foo(a, b)`
+        //fn_span: Span,
     },
     /// Evaluates the operand, which must have type `bool`. If it is not equal to `expected`,
     /// initiates a panic. Initiating a panic corresponds to a `Call` terminator with some

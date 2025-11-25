@@ -109,6 +109,7 @@ fn f() { zero(1); }
            //^^^ error: expected 0 arguments, found 1
 "#,
         );
+
         check_diagnostics(
             r#"
 fn zero() {}
@@ -125,6 +126,7 @@ fn f() { one(); }
           //^^ error: expected 1 argument, found 0
 "#,
         );
+
         check_diagnostics(
             r#"
 fn one(_arg: u8) {}
@@ -144,6 +146,7 @@ fn f() {
 }          //^^ error: expected 1 argument, found 0
 "#,
         );
+
         check_diagnostics(
             r#"
 struct S;
@@ -168,6 +171,7 @@ impl S { fn method(&self, _arg: u8) {} }
             }         //^^ error: expected 1 argument, found 0
             "#,
         );
+
         check_diagnostics(
             r#"
 struct S;
@@ -288,6 +292,7 @@ enum_str! {
 }
 "#,
         );
+
         check_diagnostics(
             r#"
 #![allow(dead_code)]

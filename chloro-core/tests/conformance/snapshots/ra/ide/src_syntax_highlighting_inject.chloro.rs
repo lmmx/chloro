@@ -39,9 +39,11 @@ pub(super) fn ra_fixture(
             });
         },
     )?;
+
     if let Some(range) = literal.open_quote_text_range() {
         hl.add(HlRange { range, highlight: HlTag::StringLiteral.into(), binding_hash: None })
     }
+
     for tmp_file_id in fixture_analysis.files() {
         for mut hl_range in analysis
             .highlight(
@@ -70,9 +72,11 @@ pub(super) fn ra_fixture(
             }
         }
     }
+
     if let Some(range) = literal.close_quote_text_range() {
         hl.add(HlRange { range, highlight: HlTag::StringLiteral.into(), binding_hash: None })
     }
+
     Some(())
 }
 
@@ -94,6 +98,7 @@ pub(super) fn doc_comment(
     };
     let src_file_id: HirFileId = src_file_id.into();
     // Extract intra-doc links and emit highlights for them.
+
     if let Some((docs, doc_mapping)) = docs_with_rangemap(sema.db, &attributes) {
         extract_definitions_from_docs(&docs)
             .into_iter()
@@ -123,13 +128,18 @@ pub(super) fn doc_comment(
             })
     }
     // Extract doc-test sources from the docs and calculate highlighting for them.
+
     let mut inj = RangeMapper::default();
     inj.add_unmapped("fn doctest() {\n");
+
     let attrs_source_map = attributes.source_map(sema.db);
+
     let mut is_codeblock = false;
     let mut is_doctest = false;
+
     let mut new_comments = Vec::new();
     let mut string;
+
     for attr in attributes.by_key(sym::doc).attrs() {
         let InFile { file_id, value: src } = attrs_source_map.source_of(attr);
         if file_id != src_file_id {
@@ -196,11 +206,15 @@ pub(super) fn doc_comment(
             inj.add_unmapped("\n");
         }
     }
+
     if new_comments.is_empty() {
         return; // no need to run an analysis on an empty file
     }
+
     inj.add_unmapped("\n}");
+
     let (analysis, tmp_file_id) = Analysis::from_single_file(inj.take_text());
+
     if let Ok(ranges) = analysis.with_db(|db| {
         super::highlight(
             db,
@@ -226,6 +240,7 @@ pub(super) fn doc_comment(
             }
         }
     }
+
     for range in new_comments {
         hl.add(HlRange {
             range,

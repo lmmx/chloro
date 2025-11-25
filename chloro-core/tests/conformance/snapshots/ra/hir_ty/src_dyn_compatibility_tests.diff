@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8624 bytes
-Chloro size:   8620 bytes
+Chloro size:   8622 bytes
 Rustfmt size:  8816 bytes
 
 ✗ Outputs DIFFER
@@ -49,7 +49,7 @@ Rustfmt size:  8816 bytes
 -        );
 +        assert_eq!(osvs, expected, "dyn-compatibility violations for `{name}` do not match;");
      }
--
+ 
      let remains: Vec<_> = expected.keys().collect();
 -    assert!(
 -        remains.is_empty(),
@@ -71,13 +71,6 @@ Rustfmt size:  8816 bytes
      );
  }
  
- "#,
-         [("Bar", vec![SizedSelf])],
-     );
--
-     check_dyn_compatibility(
-         r#"
- //- minicore: dispatch_from_dyn
  
  trait SuperTrait<T>: GatTrait {}
  "#,

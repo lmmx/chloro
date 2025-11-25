@@ -10,6 +10,7 @@ use crate::{
 
 fn insert_impl(editor: &mut SyntaxEditor, impl_: &ast::Impl, nominal: &impl Indent) {
     let indent = nominal.indent_level();
+
     impl_.indent(indent);
     editor.insert_all(
         Position::after(nominal.syntax()),
@@ -25,9 +26,11 @@ pub(crate) fn generate_impl(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
     let target = nominal.syntax().text_range();
+
     if ctx.find_node_at_offset::<ast::RecordFieldList>().is_some() {
         return None;
     }
+
     acc.add(
         AssistId::generate("generate_impl"),
         format!("Generate impl for `{name}`"),
@@ -55,9 +58,11 @@ pub(crate) fn generate_trait_impl(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let nominal = ctx.find_node_at_offset::<ast::Adt>()?;
     let name = nominal.name()?;
     let target = nominal.syntax().text_range();
+
     if ctx.find_node_at_offset::<ast::RecordFieldList>().is_some() {
         return None;
     }
+
     acc.add(
         AssistId::generate("generate_trait_impl"),
         format!("Generate trait impl for `{name}`"),
@@ -91,6 +96,7 @@ pub(crate) fn generate_impl_trait(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let trait_ = ast::Trait::cast(name.syntax().parent()?)?;
     let target_scope = ctx.sema.scope(trait_.syntax())?;
     let hir_trait = ctx.sema.to_def(&trait_)?;
+
     let target = trait_.syntax().text_range();
     acc.add(
         AssistId::generate("generate_impl_trait"),

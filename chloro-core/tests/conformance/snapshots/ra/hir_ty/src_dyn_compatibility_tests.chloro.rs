@@ -72,6 +72,7 @@ fn check_dyn_compatibility<'a>(
         });
         assert_eq!(osvs, expected, "dyn-compatibility violations for `{name}` do not match;");
     }
+
     let remains: Vec<_> = expected.keys().collect();
     assert!(remains.is_empty(), "Following traits do not exist in the test fixture; {remains:?}");
 }
@@ -209,6 +210,7 @@ trait Bar: Sized {
 "#,
         [("Bar", vec![SizedSelf])],
     );
+
     check_dyn_compatibility(
         r#"
 //- minicore: dispatch_from_dyn

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 4778 bytes
-Chloro size:   4778 bytes
+Chloro size:   4779 bytes
 Rustfmt size:  4862 bytes
 
 ✗ Outputs DIFFER
@@ -16,13 +16,6 @@ Rustfmt size:  4862 bytes
  use itertools::Itertools;
  use syntax::{SmolStr, ToSmolStr};
  
-     existing_derives: &ExistingDerives,
- ) {
-     let core = ctx.famous_defs().core();
--
-     match qualified {
-         Qualified::With {
-             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
  /// Standard Rust derives that have dependencies
  /// (the dependencies are needed so that the main derive don't break the compilation when added)
  const DEFAULT_DERIVE_DEPENDENCIES: &[DeriveDependencies] = &[

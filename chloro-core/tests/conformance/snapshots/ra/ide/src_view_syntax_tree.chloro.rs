@@ -15,7 +15,9 @@ pub(crate) fn view_syntax_tree(db: &RootDatabase, file_id: FileId) -> String {
     let sema = Semantics::new(db);
     let line_index = db.line_index(file_id);
     let parse = sema.parse_guess_edition(file_id);
+
     let ctx = SyntaxTreeCtx { line_index, in_string: None };
+
     syntax_node_to_json(parse.syntax(), &ctx)
 }
 
@@ -89,6 +91,7 @@ fn syntax_node_to_json(node: &SyntaxNode, ctx: &SyntaxTreeCtx) -> String {
             },
         }
     }
+
     result
 }
 
@@ -114,6 +117,7 @@ impl TextPosition {
 fn parse_rust_string(token: SyntaxToken, ctx: &SyntaxTreeCtx) -> Option<String> {
     let string_node = ast::String::cast(token)?;
     let text = string_node.value().ok()?;
+
     let mut trim_result = String::new();
     let mut marker_positions = Vec::new();
     let mut skipped = 0;
@@ -125,15 +129,20 @@ fn parse_rust_string(token: SyntaxToken, ctx: &SyntaxTreeCtx) -> Option<String> 
         last_end = start + part.len();
     }
     trim_result.push_str(&text[last_end..text.len()]);
+
     let parsed = SourceFile::parse(&trim_result, span::Edition::CURRENT);
+
     if !parsed.errors().is_empty() {
         return None;
     }
+
     let node: &SyntaxNode = &parsed.syntax_node();
+
     if node.children().count() == 0 {
         // C'mon, you should have at least one node other than SOURCE_FILE
         return None;
     }
+
     let ctx = SyntaxTreeCtx {
         line_index: ctx.line_index.clone(),
         in_string: Some(InStringCtx {
@@ -141,6 +150,7 @@ fn parse_rust_string(token: SyntaxToken, ctx: &SyntaxTreeCtx) -> Option<String> 
             marker_positions,
         }),
     };
+
     Some(syntax_node_to_json(node, &ctx))
 }
 
@@ -172,6 +182,7 @@ mod tests {
                 r#"{"type":"Node","kind":"SOURCE_FILE","start":[0,0,0],"end":[11,0,11],"children":[{"type":"Node","kind":"FN","start":[0,0,0],"end":[11,0,11],"children":[{"type":"Token","kind":"FN_KW","start":[0,0,0],"end":[2,0,2]},{"type":"Token","kind":"WHITESPACE","start":[2,0,2],"end":[3,0,3]},{"type":"Node","kind":"NAME","start":[3,0,3],"end":[6,0,6],"children":[{"type":"Token","kind":"IDENT","start":[3,0,3],"end":[6,0,6]}]},{"type":"Node","kind":"PARAM_LIST","start":[6,0,6],"end":[8,0,8],"children":[{"type":"Token","kind":"L_PAREN","start":[6,0,6],"end":[7,0,7]},{"type":"Token","kind":"R_PAREN","start":[7,0,7],"end":[8,0,8]}]},{"type":"Token","kind":"WHITESPACE","start":[8,0,8],"end":[9,0,9]},{"type":"Node","kind":"BLOCK_EXPR","start":[9,0,9],"end":[11,0,11],"children":[{"type":"Node","kind":"STMT_LIST","start":[9,0,9],"end":[11,0,11],"children":[{"type":"Token","kind":"L_CURLY","start":[9,0,9],"end":[10,0,10]},{"type":"Token","kind":"R_CURLY","start":[10,0,10],"end":[11,0,11]}]}]}]}]}"#
             ]],
         );
+
         check(
             r#"
 fn test() {
@@ -201,6 +212,7 @@ fn bar() {
             ]],
         );
         // With a raw string
+
         check(
             r###"fn test() {
     assert!(r#"
@@ -215,6 +227,7 @@ fn bar() {
             ]],
         );
         // With a raw string
+
         check(
             r###"fn test() {
     assert!(r$0#"

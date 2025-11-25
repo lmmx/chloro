@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11422 bytes
+Chloro size:   11424 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -50,10 +50,9 @@ Rustfmt size:  12398 bytes
          let (line_docs_range, idx, original_line_src_range) = self.mapping[found];
          if !line_docs_range.contains_range(range) {
              return None;
-         }
--
+ 
          let relative_range = range - line_docs_range.start();
--
+ 
 -        let InFile {
 -            file_id,
 -            value: source,

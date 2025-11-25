@@ -96,10 +96,12 @@ fn all_modules(db: &dyn HirDatabase) -> Vec<Module> {
     let mut worklist: Vec<_> =
         Crate::all(db).into_iter().map(|krate| krate.root_module()).collect();
     let mut modules = Vec::new();
+
     while let Some(module) = worklist.pop() {
         modules.push(module);
         worklist.extend(module.children(db));
     }
+
     modules
 }
 
@@ -112,6 +114,7 @@ fn documentation_for_definition(
         Definition::BuiltinType(_) => Some(FamousDefs(sema, sema.scope(scope_node)?.krate())),
         _ => None,
     };
+
     def.docs(
         sema.db,
         famous_defs.as_ref(),
@@ -223,6 +226,7 @@ impl StaticIndex<'_> {
             )
         });
         let mut result = StaticIndexedFile { file_id, inlay_hints, folds, tokens: vec![] };
+
         let mut add_token = |def: Definition, range: TextRange, scope_node: &SyntaxNode| {
             let id = if let Some(it) = self.def_map.get(&def) {
                 *it
@@ -265,11 +269,13 @@ impl StaticIndex<'_> {
             });
             result.tokens.push((range, id));
         };
+
         if let Some(module) = sema.file_to_module_def(file_id) {
             let def = Definition::Module(module);
             let range = root.text_range();
             add_token(def, range, &root);
         }
+
         for token in tokens {
             let range = token.text_range();
             let node = token.parent().unwrap();
@@ -391,6 +397,7 @@ mod tests {
         let mut range_set: FxHashMap<_, i32> = ranges.iter().map(|it| (it.0, 0)).collect();
         // Make sure that all references have at least one range. We use a HashMap instead of a
         // a HashSet so that we can have more than one reference at the same range.
+
         for (_, t) in s.tokens.iter() {
             for r in &t.references {
                 if r.is_definition {
@@ -467,6 +474,7 @@ enum E { X(Foo) }
                 workspace_root: &VfsPath::new_virtual_path("/workspace".to_owned()),
             },
         );
+
         check_references(
             r#"
 struct Foo;

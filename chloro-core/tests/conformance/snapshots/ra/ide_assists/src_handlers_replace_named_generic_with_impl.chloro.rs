@@ -21,20 +21,26 @@ pub(crate) fn replace_named_generic_with_impl(
     // returns `P`
     let type_param_name = type_param.name()?;
     // The list of type bounds / traits: `AsRef<Path>`
+
     let type_bound_list = type_param.type_bound_list()?;
+
     let fn_ = type_param.syntax().ancestors().find_map(ast::Fn::cast)?;
     let param_list_text_range = fn_.param_list()?.syntax().text_range();
+
     let type_param_hir_def = ctx.sema.to_def(&type_param)?;
     let type_param_def = Definition::GenericParam(hir::GenericParam::TypeParam(type_param_hir_def));
     // get all usage references for the type param
+
     let usage_refs = find_usages(&ctx.sema, &fn_, type_param_def, ctx.file_id());
     if usage_refs.is_empty() {
         return None;
     }
     // All usage references need to be valid (inside the function param list)
+
     if !check_valid_usages(&usage_refs, param_list_text_range) {
         return None;
     }
+
     let mut path_types_to_replace = Vec::new();
     for (_a, refs) in usage_refs.iter() {
         for usage_ref in refs {
@@ -45,7 +51,9 @@ pub(crate) fn replace_named_generic_with_impl(
             path_types_to_replace.push(param_node);
         }
     }
+
     let target = type_param.syntax().text_range();
+
     acc.add(
         AssistId::refactor_rewrite("replace_named_generic_with_impl"),
         "Replace named generic with impl trait",
@@ -88,13 +96,17 @@ fn find_path_type(
     let path_type =
         sema.ancestors_with_macros(param.syntax().clone()).find_map(ast::PathType::cast)?;
     // Ignore any path types that look like `P::Assoc`
+
     if path_type.path()?.as_single_name_ref()?.text() != type_param_name.text() {
         return None;
     }
+
     let ancestors = sema.ancestors_with_macros(path_type.syntax().clone());
+
     let mut in_generic_arg_list = false;
     let mut is_associated_type = false;
     // walking the ancestors checks them in a heuristic way until the `Fn` node is reached.
+
     for ancestor in ancestors {
         match_ast! {
             match ancestor {
@@ -126,6 +138,7 @@ fn find_path_type(
             }
         }
     }
+
     None
 }
 

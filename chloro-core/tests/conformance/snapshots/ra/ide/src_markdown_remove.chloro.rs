@@ -9,6 +9,7 @@ pub(crate) fn remove_markdown(markdown: &str) -> String {
     let mut out = String::new();
     out.reserve_exact(markdown.len());
     let parser = Parser::new(markdown);
+
     for event in parser {
         match event {
             Event::Text(text) | Event::Code(text) => out.push_str(&text),
@@ -22,12 +23,14 @@ pub(crate) fn remove_markdown(markdown: &str) -> String {
             | Event::TaskListMarker(_) => (),
         }
     }
+
     if let Some(mut p) = out.rfind(|c| c != '\n') {
         while !out.is_char_boundary(p + 1) {
             p += 1;
         }
         out.drain(p + 1..);
     }
+
     out
 }
 

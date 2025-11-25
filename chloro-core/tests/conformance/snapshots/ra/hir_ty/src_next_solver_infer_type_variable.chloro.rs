@@ -214,11 +214,15 @@ impl<'db> TypeVariableTable<'_, 'db> {
         origin: TypeVariableOrigin,
     ) -> TyVid {
         let eq_key = self.eq_relations().new_key(TypeVariableValue::Unknown { universe });
+
         let sub_key = self.sub_unification_table().new_key(());
         debug_assert_eq!(eq_key.vid, sub_key.vid);
+
         let index = self.storage.values.push(TypeVariableData { origin });
         debug_assert_eq!(eq_key.vid, index);
+
         debug!("new_var(index={:?}, universe={:?}, origin={:?})", eq_key.vid, universe, origin);
+
         index
     }
 

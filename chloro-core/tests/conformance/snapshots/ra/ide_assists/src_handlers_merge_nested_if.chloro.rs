@@ -18,21 +18,26 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
         return None;
     }
     //should not apply to if with else branch.
+
     if expr.else_branch().is_some() {
         return None;
     }
+
     let cond = expr.condition()?;
     //should not apply for if-let
     if is_pattern_cond(cond.clone()) {
         return None;
     }
+
     let cond_range = cond.syntax().text_range();
     //check if the then branch is a nested if
+
     let then_branch = expr.then_branch()?;
     let stmt = then_branch.stmt_list()?;
     if stmt.statements().count() != 0 {
         return None;
     }
+
     let nested_if_to_merge = then_branch.tail_expr().and_then(|e| match e {
         ast::Expr::IfExpr(e) => Some(e),
         _ => None,
@@ -45,8 +50,10 @@ pub(crate) fn merge_nested_if(acc: &mut Assists, ctx: &AssistContext<'_>) -> Opt
     if is_pattern_cond(nested_if_cond.clone()) {
         return None;
     }
+
     let nested_if_then_branch = nested_if_to_merge.then_branch()?;
     let then_branch_range = then_branch.syntax().text_range();
+
     acc.add(AssistId::refactor_rewrite("merge_nested_if"), "Merge nested if", if_range, |edit| {
         let cond_text = if has_logic_op_or(&cond) {
             format!("({})", cond.syntax().text())

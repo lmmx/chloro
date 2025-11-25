@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5700 bytes
-Chloro size:   5691 bytes
+Chloro size:   5696 bytes
 Rustfmt size:  5802 bytes
 
 ✗ Outputs DIFFER
@@ -14,19 +14,6 @@ Rustfmt size:  5802 bytes
  use ide_db::syntax_helpers::node_ext::macro_call_for_string_token;
  use syntax::{
      ast::{self, IsString},
-         }
-     }
-     let range = original.text_range_between_quotes()?;
--
-     CARGO_DEFINED_VARS.iter().for_each(|&(var, detail)| {
-         let mut item = CompletionItem::new(CompletionItemKind::Keyword, range, var, ctx.edition);
-         item.detail(detail);
-         item.add_to(acc, ctx.db);
-     });
--
-     Some(())
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_edit, completion_list};
@@ -48,10 +35,8 @@ Rustfmt size:  5802 bytes
      #[test]
      fn doesnt_complete_in_random_strings() {
          let fixture = r#"
-                 let foo = "CA$0";
-             }
          "#;
--
+ 
          let completions = completion_list(fixture);
 -        assert!(
 -            completions.is_empty(),
@@ -63,10 +48,8 @@ Rustfmt size:  5802 bytes
      #[test]
      fn doesnt_complete_in_random_macro() {
          let fixture = r#"
- 
-             }
          "#;
--
+ 
          let completions = completion_list(fixture);
 -        assert!(
 -            completions.is_empty(),
@@ -78,10 +61,8 @@ Rustfmt size:  5802 bytes
      #[test]
      fn doesnt_complete_for_shadowed_macro() {
          let fixture = r#"
-                 let foo = env!("CA$0");
-             }
          "#;
--
+ 
          let completions = completion_list(fixture);
 -        assert!(
 -            completions.is_empty(),

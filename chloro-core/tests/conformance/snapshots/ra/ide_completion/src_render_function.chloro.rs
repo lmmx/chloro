@@ -56,7 +56,9 @@ fn render(
     func_kind: FuncKind<'_>,
 ) -> Builder {
     let db = completion.db;
+
     let name = local_name.unwrap_or_else(|| func.name(db));
+
     let (call, escaped_call) = match &func_kind {
         FuncKind::Method(_, Some(receiver)) => (
             format_smolstr!("{}.{}", receiver, name.as_str()),
@@ -75,8 +77,10 @@ fn render(
         call.clone(),
         completion.edition,
     );
+
     let ret_type = func.ret_type(db);
     let assoc_item = func.as_assoc_item(db);
+
     let trait_info =
         assoc_item.and_then(|trait_| trait_.container_or_implemented_trait(db)).map(|trait_| {
             CompletionRelevanceTraitInfo {
@@ -84,6 +88,7 @@ fn render(
                 is_op_method: completion.is_ops_trait(trait_),
             }
         });
+
     let (has_dot_receiver, has_call_parens, cap) = match func_kind {
         FuncKind::Function(&PathCompletionCtx {
             kind: PathKind::Expr { .. },
@@ -101,6 +106,7 @@ fn render(
     let complete_call_parens = cap
         .filter(|_| !has_call_parens)
         .and_then(|cap| Some((cap, params(ctx.completion, func, &func_kind, has_dot_receiver)?)));
+
     let function = assoc_item
         .and_then(|assoc_item| assoc_item.implementing_ty(db))
         .map(|self_type| compute_return_type_match(db, &ctx, self_type, &ret_type))
@@ -109,6 +115,7 @@ fn render(
             has_self_param,
             return_type,
         });
+
     item.set_relevance(CompletionRelevance {
         type_match: if has_call_parens || complete_call_parens.is_some() {
             compute_type_match(completion, &ret_type)
@@ -121,6 +128,7 @@ fn render(
         is_skipping_completion: matches!(func_kind, FuncKind::Method(_, Some(_))),
         ..ctx.completion_relevance()
     });
+
     match func_kind {
         FuncKind::Function(path_ctx) => {
             super::path_ref_match(completion, path_ctx, &ret_type, &mut item);
@@ -134,6 +142,7 @@ fn render(
         }
         _ => (),
     }
+
     let detail = if ctx.completion.config.full_function_signatures {
         detail_full(ctx.completion, func)
     } else {
@@ -143,6 +152,7 @@ fn render(
         .set_deprecated(ctx.is_deprecated(func) || ctx.is_deprecated_assoc_item(func))
         .detail(detail)
         .lookup_by(name.as_str().to_smolstr());
+
     if let Some((cap, (self_param, params))) = complete_call_parens {
         add_call_parens(
             &mut item,
@@ -155,6 +165,7 @@ fn render(
             &ret_type,
         );
     }
+
     match ctx.import_to_add {
         Some(import_to_add) => {
             item.add_import(import_to_add);
@@ -167,6 +178,7 @@ fn render(
             }
         }
     }
+
     item.doc_aliases(ctx.doc_aliases);
     item
 }
@@ -209,6 +221,7 @@ pub(super) fn add_call_parens<'b>(
     ret_type: &hir::Type<'_>,
 ) -> &'b mut Builder {
     cov_mark::hit!(inserts_parens_for_function_calls);
+
     let (mut snippet, label_suffix) = if self_param.is_none() && params.is_empty() {
         (format!("{escaped_name}()$0"), "()")
     } else {
@@ -293,6 +306,7 @@ fn ref_of_param(ctx: &CompletionContext<'_>, arg: &str, ty: &hir::Type<'_>) -> &
 fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     let mut ret_ty = func.ret_type(ctx.db);
     let mut detail = String::new();
+
     if func.is_const(ctx.db) {
         format_to!(detail, "const ");
     }
@@ -305,6 +319,7 @@ fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     if func.is_unsafe_to_call(ctx.db, ctx.containing_function, ctx.edition) {
         format_to!(detail, "unsafe ");
     }
+
     detail.push_str("fn(");
     params_display(ctx, &mut detail, func);
     detail.push(')');
@@ -317,6 +332,7 @@ fn detail(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
 fn detail_full(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
     let signature = format!("{}", func.display(ctx.db, ctx.display_target));
     let mut detail = String::with_capacity(signature.len());
+
     for segment in signature.split_whitespace() {
         if !detail.is_empty() {
             detail.push(' ');
@@ -324,6 +340,7 @@ fn detail_full(ctx: &CompletionContext<'_>, func: hir::Function) -> String {
 
         detail.push_str(segment);
     }
+
     detail
 }
 
@@ -346,6 +363,7 @@ fn params_display(ctx: &CompletionContext<'_>, detail: &mut String, func: hir::F
             assoc_fn_params.iter().map(|p| p.ty().display(ctx.db, ctx.display_target)).format(", ")
         );
     }
+
     if func.is_varargs(ctx.db) {
         detail.push_str(", ...");
     }
@@ -359,6 +377,7 @@ fn params<'db>(
 ) -> Option<(Option<hir::SelfParam>, Vec<hir::Param<'db>>)> {
     ctx.config.callable.as_ref()?;
     // Don't add parentheses if the expected type is a function reference with the same signature.
+
     if let Some(expected) = ctx.expected_type.as_ref().filter(|e| e.is_fn())
         && let Some(expected) = expected.as_callable(ctx.db)
         && let Some(completed) = func.ty(ctx.db).as_callable(ctx.db)
@@ -367,6 +386,7 @@ fn params<'db>(
         cov_mark::hit!(no_call_parens_if_fn_ptr_needed);
         return None;
     }
+
     let self_param = if has_dot_receiver || matches!(func_kind, FuncKind::Method(_, Some(_))) {
         None
     } else {
@@ -395,6 +415,7 @@ fn no_args() {}
 fn main() { no_args();$0 }
 "#,
         );
+
         check_edit(
             "with_args",
             r#"
@@ -406,6 +427,7 @@ fn with_args(x: i32, y: String) {}
 fn main() { with_args(${1:x}, ${2:y});$0 }
 "#,
         );
+
         check_edit(
             "foo",
             r#"
@@ -423,6 +445,7 @@ impl S {
 fn bar(s: &S) { s.foo()$0 }
 "#,
         );
+
         check_edit(
             "foo",
             r#"
@@ -444,6 +467,7 @@ fn bar(s: &S) {
 }
 "#,
         );
+
         check_edit(
             "foo",
             r#"
@@ -657,6 +681,7 @@ fn g(foo: (), mut bar: u32)
 "#,
         );
         // has type param
+
         check_edit(
             "mut bar: u32",
             r#"
@@ -697,6 +722,7 @@ fn f(foo: (), #[baz = "qux"] mut bar: u32) {}
 fn g(foo: (), #[baz = "qux"] mut bar: u32)
 "#,
         );
+
         check_edit(
             r#"#[baz = "qux"] mut bar: u32"#,
             r#"
@@ -708,6 +734,7 @@ fn f(foo: (), #[baz = "qux"] mut bar: u32) {}
 fn g(foo: (), #[baz = "qux"] mut bar: u32)
 "#,
         );
+
         check_edit(
             r#", #[baz = "qux"] mut bar: u32"#,
             r#"

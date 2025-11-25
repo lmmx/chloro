@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10022 bytes
-Chloro size:   9894 bytes
+Chloro size:   9897 bytes
 Rustfmt size:  10253 bytes
 
 ✗ Outputs DIFFER
@@ -30,19 +30,9 @@ Rustfmt size:  10253 bytes
  pub(crate) fn unresolved_method(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::UnresolvedMethodCall<'_>,
-         // FIXME: add quickfix
-         None
-     };
--
-     let assoc_func_fix = assoc_func_fix(ctx, d);
--
-     let mut fixes = vec![];
-     if let Some(field_fix) = field_fix {
-         fixes.push(field_fix);
-     if let Some(assoc_func_fix) = assoc_func_fix {
          fixes.push(assoc_func_fix);
      }
--
+ 
 -    if fixes.is_empty() {
 -        None
 -    } else {

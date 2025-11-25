@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   31862 bytes
+Chloro size:   31866 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -83,17 +83,7 @@ Rustfmt size:  33070 bytes
 +                ancestor.map(Either::<ast::Module, ast::BlockExpr>::cast).transpose()
              })
              .map(|it| it.transpose());
--
-         let parent_module = match parent_declaration {
-             Some(Either::Right(parent_block)) => self
-                 .block_to_def(parent_block.as_ref())
-                 self.file_to_def(file_id.file_id(self.db)).first().copied()
-             }
-         }?;
--
-         let child_name = src.value.name()?.as_name();
-         let def_map = parent_module.def_map(self.db);
-         let &child_id = def_map[parent_module.local_id].children.get(&child_name)?;
+ 
          Some(def_map.module_id(child_id))
      }
  
@@ -237,13 +227,6 @@ Rustfmt size:  33070 bytes
      pub(super) fn label_to_def(
          &mut self,
          src: InFile<&ast::Label>,
-     ) -> Option<(DefWithBodyId, LabelId)> {
-         let container = self.find_pat_or_label_container(src.syntax_ref())?;
-         let source_map = self.db.body_with_source_map(container).1;
--
-         let label_id = source_map.node_label(src)?;
-         Some((container, label_id))
-     }
          let break_or_continue = ast::Expr::cast(src.value.syntax().parent()?)?;
          let container = self.find_pat_or_label_container(src.syntax_ref())?;
          let (body, source_map) = self.db.body_with_source_map(container);
@@ -345,13 +328,6 @@ Rustfmt size:  33070 bytes
          })
      }
  
-         if let Some(def) = def {
-             return Some(def);
-         }
--
-         let def = self
-             .file_to_def(src.file_id.original_file(self.db).file_id(self.db))
-             .first()
                  }
                  ast::Item::Enum(it) => this.enum_to_def(InFile::new(file_id, it)).map(Into::into),
                  ast::Item::Trait(it) => this.trait_to_def(InFile::new(file_id, it)).map(Into::into),

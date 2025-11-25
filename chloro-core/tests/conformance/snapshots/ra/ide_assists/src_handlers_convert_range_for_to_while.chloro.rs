@@ -24,6 +24,7 @@ pub(crate) fn convert_range_for_to_while(
     let name = pat.name()?;
     let body = for_.loop_body()?;
     let last = previous_non_trivia_token(body.stmt_list()?.r_curly_token()?)?;
+
     let description = if end.is_some() {
         "Replace with while expression"
     } else {

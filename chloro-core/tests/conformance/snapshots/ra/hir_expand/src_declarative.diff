@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6595 bytes
-Chloro size:   6590 bytes
+Chloro size:   6591 bytes
 Rustfmt size:  6864 bytes
 
 ✗ Outputs DIFFER
@@ -44,13 +44,6 @@ Rustfmt size:  6864 bytes
                  ExpandError::new(call_site, ExpandErrorKind::MacroDefinition),
              ),
              None => self
-     ) -> Arc<DeclarativeMacroExpander> {
-         let (root, map) = crate::db::parse_with_map(db, id.file_id);
-         let root = root.syntax_node();
--
-         let transparency = |node| {
-             // ... would be nice to have the item tree here
-             let attrs = RawAttrs::new_expanded(db, node, map.as_ref(), def_crate.cfg_options(db));
                  def_crate.data(db).edition
              } else {
                  // UNWRAP-SAFETY: Only the root context has no outer expansion

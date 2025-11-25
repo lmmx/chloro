@@ -17,10 +17,12 @@ pub(crate) fn generate_default_from_enum_variant(
     if !variant.syntax().text_range().contains_range(ctx.selection_trimmed()) {
         return None;
     }
+
     if existing_default_impl(&ctx.sema, &variant).is_some() {
         cov_mark::hit!(test_gen_default_impl_already_exists);
         return None;
     }
+
     let target = variant.syntax().text_range();
     acc.add(
         AssistId::generate("generate_default_from_enum_variant"),
@@ -49,8 +51,10 @@ fn existing_default_impl(
     let variant = sema.to_def(variant)?;
     let enum_ = variant.parent_enum(sema.db);
     let krate = enum_.module(sema.db).krate();
+
     let default_trait = FamousDefs(sema, krate).core_default_Default()?;
     let enum_type = enum_.ty(sema.db);
+
     if enum_type.impls_trait(sema.db, default_trait, &[]) { Some(()) } else { None }
 }
 

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14265 bytes
+Chloro size:   14266 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
@@ -44,6 +44,13 @@ Rustfmt size:  14546 bytes
          // N.B. it may be tempting to fix ICEs by making this function return
          // `Option<Ty<'db>>` instead of `Ty<'db>`; however, this is generally
          // considered to be a bandaid solution, since it hides more important
+         // underlying issues with how we construct generics and predicates of
+         // items. It's advised to fix the underlying issue rather than trying
+         // to modify this function.
++
+         let ty = candidates.next().unwrap_or_else(|| {
+             panic!("cannot find `{self:?}` in param-env: {env:#?}");
+         });
  #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, TypeFoldable, TypeVisitable)]
  pub struct ValueConst<'db> {
      pub ty: Ty<'db>,

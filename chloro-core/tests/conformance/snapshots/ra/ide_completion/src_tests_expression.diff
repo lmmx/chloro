@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75833 bytes
-Chloro size:   75818 bytes
+Chloro size:   75834 bytes
 Rustfmt size:  76019 bytes
 
 ✗ Outputs DIFFER
@@ -15,48 +15,6 @@ Rustfmt size:  76019 bytes
  
  use crate::{
      config::AutoImportExclusionType,
-             sn ppd
-         "#]],
-     );
--
-     check(
-         r#"fn main() { let _ = 2 el$0 }"#,
-         expect![[r#"
-             sn ppd
-         "#]],
-     );
--
-     check_edit(
-         "else",
-         r#"
- }
- "#,
-     );
--
-     check_edit(
-         "else",
-         r#"
- }
- "#,
-     );
--
-     check_edit(
-         "else",
-         r#"
- }
- "#,
-     );
--
-     check_edit(
-         "else",
-         r#"
- #[test]
- fn shadowing_shows_single_completion() {
-     cov_mark::check!(shadowing_shows_single_completion);
--
-     check(
-         r#"
- fn foo() {
  #[test]
  fn return_unit_block() {
      cov_mark::check!(return_unit_block);
@@ -87,13 +45,6 @@ Rustfmt size:  76019 bytes
  }
  
  #[test]
-         r#"fn f() { loop { break; match () { () => $0 } } }"#,
-         r#"fn f() { loop { break; match () { () => break } } }"#,
-     );
--
-     check_edit(
-         "break",
-         r#"fn f() { loop { match () { () => $0 } } }"#,
  
  #[test]
  fn let_in_condition() {
@@ -124,66 +75,3 @@ Rustfmt size:  76019 bytes
  }
  
  #[test]
-             (1, 2).foo();
-         }"#,
-     );
--
-     check_edit(
-         "let",
-         r#"
-             (1, 2)
-         }"#,
-     );
--
-     check_edit(
-         "let",
-         r#"
-             -2
-         }"#,
-     );
--
-     check_edit(
-         "let",
-         r#"
-             [1, 2]
-         }"#,
-     );
--
-     check_edit(
-         "let",
-         r#"
-             *b"01"
-         }"#,
-     );
--
-     check(
-         r#"
-         fn foo() {
-             sn ppd
-         "#]],
-     );
--
-     check(
-         r#"
-         fn foo() {
-             kw while let
-         "#]],
-     );
--
-     check(
-         r#"
-         fn foo() {
-             sn unsafe    unsafe {}
-         "#]],
-     );
--
-     check(
-         r#"
-         struct Foo { field: i32 }
-             sn unsafe    unsafe {}
-         "#]],
-     );
--
-     check_edit(
-         "field",
-         r#"

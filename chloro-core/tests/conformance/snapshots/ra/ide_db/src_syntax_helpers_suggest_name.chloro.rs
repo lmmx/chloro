@@ -111,6 +111,7 @@ impl NameGenerator {
                 }
             });
         }
+
         generator
     }
 
@@ -120,6 +121,7 @@ impl NameGenerator {
         let (prefix, suffix) = Self::split_numeric_suffix(name);
         let prefix = SmolStr::new(prefix);
         let suffix = suffix.unwrap_or(0);
+
         match self.pool.entry(prefix.clone()) {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
@@ -171,6 +173,7 @@ impl NameGenerator {
             .type_bound_list()
             .and_then(|bounds| bounds.syntax().text().char_at(0.into()))
             .unwrap_or('T');
+
         self.suggest_name(&c.to_string())
     }
 
@@ -197,6 +200,7 @@ impl NameGenerator {
         if let Some(name) = from_param(expr, sema) {
             return self.suggest_name(&name);
         }
+
         let mut next_expr = Some(expr.clone());
         while let Some(expr) = next_expr {
             let name = from_call(&expr)
@@ -222,6 +226,7 @@ impl NameGenerator {
                 _ => break,
             }
         }
+
         self.suggest_name("var_name")
     }
 
@@ -230,6 +235,7 @@ impl NameGenerator {
         let (prefix, suffix) = Self::split_numeric_suffix(name);
         let prefix = SmolStr::new(prefix);
         let suffix = suffix.unwrap_or(0);
+
         match self.pool.entry(prefix) {
             Entry::Vacant(entry) => {
                 entry.insert(suffix);
@@ -255,15 +261,19 @@ impl NameGenerator {
 
 fn normalize(name: &str) -> Option<SmolStr> {
     let name = to_lower_snake_case(name).to_smolstr();
+
     if USELESS_NAMES.contains(&name.as_str()) {
         return None;
     }
+
     if USELESS_NAME_PREFIXES.iter().any(|prefix| name.starts_with(prefix)) {
         return None;
     }
+
     if !is_valid_name(&name) {
         return None;
     }
+
     Some(name)
 }
 
@@ -276,6 +286,7 @@ fn is_valid_name(name: &str) -> bool {
 
 fn is_useless_method(method: &ast::MethodCallExpr) -> bool {
     let ident = method.name_ref().and_then(|it| it.ident_token());
+
     match ident {
         Some(ident) => USELESS_METHODS.contains(&ident.text()),
         None => false,
@@ -306,15 +317,18 @@ fn from_method_call(expr: &ast::Expr) -> Option<SmolStr> {
     };
     let ident = method.name_ref()?.ident_token()?;
     let mut name = ident.text();
+
     if USELESS_METHODS.contains(&name) {
         return None;
     }
+
     for prefix in USELESS_METHOD_PREFIXES {
         if let Some(suffix) = name.strip_prefix(prefix) {
             name = suffix;
             break;
         }
     }
+
     normalize(name)
 }
 
@@ -332,6 +346,7 @@ fn from_param(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<Sm
             _ => return None,
         }
     };
+
     let (idx, _) = arg_list.args().find_position(|it| it == expr).unwrap();
     let param = func.params().into_iter().nth(idx)?;
     let pat = sema.source(param)?.value.right()?.pat()?;
@@ -352,6 +367,7 @@ fn from_type(expr: &ast::Expr, sema: &Semantics<'_, RootDatabase>) -> Option<Smo
     let ty = sema.type_of_expr(expr)?.adjusted();
     let ty = ty.remove_ref().unwrap_or(ty);
     let edition = sema.scope(expr.syntax())?.krate().edition(sema.db);
+
     name_of_type(&ty, sema.db, edition)
 }
 
@@ -405,6 +421,7 @@ fn sequence_name<'db>(
     let Some(name) = name_of_type(inner_ty, db, edition) else {
         return items_str;
     };
+
     if name.ends_with(['s', 'x', 'y']) {
         // Given a type called e.g. "Boss", "Fox" or "Story", don't try to
         // create a plural.
@@ -441,7 +458,9 @@ mod tests {
         let (db, file_id, range_or_offset) = RootDatabase::with_range_or_offset(ra_fixture);
         let frange = FileRange { file_id, range: range_or_offset.into() };
         let sema = Semantics::new(&db);
+
         let source_file = sema.parse(frange.file_id);
+
         let element = source_file.syntax().covering_element(frange.range);
         let expr =
             element.ancestors().find_map(ast::Expr::cast).expect("selection is not an expression");
@@ -978,6 +997,7 @@ fn main() {
 "#,
             "bar",
         );
+
         check(
             r#"
 //- minicore: from
@@ -1020,6 +1040,7 @@ fn main() {
 "#,
             "bar",
         );
+
         check(
             r#"
 struct Foo;
@@ -1046,17 +1067,21 @@ fn main() {
         assert_eq!(generator.suggest_name("a"), "a1");
         assert_eq!(generator.suggest_name("a"), "a2");
         assert_eq!(generator.suggest_name("a"), "a3");
+
         assert_eq!(generator.suggest_name("b"), "b");
         assert_eq!(generator.suggest_name("b2"), "b2");
         assert_eq!(generator.suggest_name("b"), "b3");
         assert_eq!(generator.suggest_name("b"), "b4");
         assert_eq!(generator.suggest_name("b3"), "b5");
         // ---------
+
         let mut generator = NameGenerator::new_with_names(["a", "b", "b2", "c4"].into_iter());
         assert_eq!(generator.suggest_name("a"), "a1");
         assert_eq!(generator.suggest_name("a"), "a2");
+
         assert_eq!(generator.suggest_name("b"), "b3");
         assert_eq!(generator.suggest_name("b2"), "b4");
+
         assert_eq!(generator.suggest_name("c"), "c5");
     }
 }

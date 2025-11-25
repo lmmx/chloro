@@ -439,6 +439,7 @@ fn insert_empty_file() {
     // Default configuration
     // empty files will get two trailing newlines
     // this is due to the test case insert_no_imports above
+
     check_crate(
         "foo::bar",
         "",
@@ -447,6 +448,7 @@ fn insert_empty_file() {
 ",
     );
     // "not group" configuration
+
     check_with_config(
         "use external_crate2::bar::A",
         r"",
@@ -467,6 +469,7 @@ fn insert_empty_file() {
 fn insert_empty_module() {
     cov_mark::check_count!(insert_empty_module, 2);
     // Default configuration
+
     check(
         "foo::bar",
         r"
@@ -480,6 +483,7 @@ mod x {
         ImportGranularity::Item,
     );
     // "not group" configuration
+
     check_with_config(
         "foo::bar",
         r"mod x {$0}",
@@ -500,6 +504,7 @@ mod x {
 fn insert_after_inner_attr() {
     cov_mark::check_count!(insert_empty_inner_attr, 2);
     // Default configuration
+
     check_crate(
         "foo::bar",
         r"#![allow(unused_imports)]",
@@ -508,6 +513,7 @@ fn insert_after_inner_attr() {
 use foo::bar;",
     );
     // "not group" configuration
+
     check_with_config(
         "foo::bar",
         r"#![allow(unused_imports)]",
@@ -1350,6 +1356,7 @@ fn check_with_config(
         .descendants()
         .find_map(ast::Path::cast)
         .unwrap();
+
     insert_use(&file, path, config);
     let result = file.as_syntax_node().ancestors().last().unwrap().to_string();
     assert_eq_text!(&trim_indent(ra_fixture_after), &result);
@@ -1414,12 +1421,14 @@ fn check_merge_only_fail(ra_fixture0: &str, ra_fixture1: &str, mb: MergeBehavior
         .descendants()
         .find_map(ast::Use::cast)
         .unwrap();
+
     let use1 = ast::SourceFile::parse(ra_fixture1, span::Edition::CURRENT)
         .tree()
         .syntax()
         .descendants()
         .find_map(ast::Use::cast)
         .unwrap();
+
     let result = try_merge_imports(&use0, &use1, mb);
     assert_eq!(result.map(|u| u.to_string()), None);
 }

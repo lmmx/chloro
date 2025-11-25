@@ -92,6 +92,7 @@ impl Expander {
     ) -> Result<ExpandResult<Option<(Mark, Option<Parse<T>>)>>, UnresolvedMacro> {
         // FIXME: within_limit should support this, instead of us having to extract the error
         let mut unresolved_macro_err = None;
+
         let result = self.within_limit(db, |this| {
             let macro_call = this.in_file(&macro_call);
 
@@ -130,6 +131,7 @@ impl Expander {
                 }
             }
         });
+
         if let Some(err) = unresolved_macro_err { Err(err) } else { Ok(result) }
     }
 
@@ -183,6 +185,7 @@ impl Expander {
             cov_mark::hit!(overflow_but_not_me);
             return ExpandResult::ok(None);
         }
+
         let ExpandResult { value, err } = op(self);
         let Some(call_id) = value else {
             return ExpandResult { value: None, err };
@@ -195,7 +198,9 @@ impl Expander {
                 ExpandErrorKind::RecursionOverflow,
             ));
         }
+
         let res = db.parse_macro_expansion(call_id);
+
         let err = err.or(res.err);
         ExpandResult {
             value: {

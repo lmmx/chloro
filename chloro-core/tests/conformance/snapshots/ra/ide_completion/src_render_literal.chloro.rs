@@ -29,6 +29,7 @@ pub(crate) fn render_variant_lit(
 ) -> Option<Builder> {
     let _p = tracing::info_span!("render_variant_lit").entered();
     let db = ctx.db();
+
     let name = local_name.unwrap_or_else(|| variant.name(db));
     render(ctx, path_ctx, Variant::EnumVariant(variant), name, path)
 }
@@ -42,6 +43,7 @@ pub(crate) fn render_struct_literal(
 ) -> Option<Builder> {
     let _p = tracing::info_span!("render_struct_literal").entered();
     let db = ctx.db();
+
     let name = local_name.unwrap_or_else(|| strukt.name(db));
     render(ctx, path_ctx, Variant::Struct(strukt), name, path)
 }
@@ -60,6 +62,7 @@ fn render(
         PathCompletionCtx { has_call_parens: true, .. }
             | PathCompletionCtx { kind: PathKind::Use | PathKind::Type { .. }, .. }
     );
+
     let fields = thing.fields(completion)?;
     let (qualified_name, short_qualified_name, qualified) = match path {
         Some(path) => {
@@ -76,6 +79,7 @@ fn render(
         qualified_name.display(ctx.db(), completion.edition).to_string(),
     );
     let snippet_cap = ctx.snippet_cap();
+
     let mut rendered = match kind {
         StructKind::Tuple if should_add_parens => {
             render_tuple_lit(completion, snippet_cap, &fields, &escaped_qualified_name)
@@ -88,10 +92,12 @@ fn render(
             detail: escaped_qualified_name,
         },
     };
+
     if snippet_cap.is_some() {
         rendered.literal.push_str("$0");
     }
     // only show name in label if not adding parens
+
     if !should_add_parens {
         kind = StructKind::Unit;
     }
@@ -104,19 +110,24 @@ fn render(
     } else {
         format_literal_lookup(&qualified_name, kind)
     };
+
     let mut item = CompletionItem::new(
         CompletionItemKind::SymbolKind(thing.symbol_kind()),
         ctx.source_range(),
         label,
         completion.edition,
     );
+
     item.lookup_by(lookup);
     item.detail(rendered.detail);
+
     match snippet_cap {
         Some(snippet_cap) => item.insert_snippet(snippet_cap, rendered.literal).trigger_call_info(),
         None => item.insert_text(rendered.literal),
     };
+
     item.set_documentation(thing.docs(db)).set_deprecated(thing.is_deprecated(&ctx));
+
     let ty = thing.ty(db);
     item.set_relevance(CompletionRelevance {
         type_match: compute_type_match(ctx.completion, &ty),
@@ -128,7 +139,9 @@ fn render(
         }),
         ..ctx.completion_relevance()
     });
+
     super::path_ref_match(completion, path_ctx, &ty, &mut item);
+
     if let Some(import_to_add) = ctx.import_to_add {
         item.add_import(import_to_add);
     }

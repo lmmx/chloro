@@ -23,9 +23,11 @@ pub(super) fn hints(
     let ty = &sema.type_of_expr(&closure.clone().into())?.original;
     let c = ty.as_closure()?;
     let captures = c.captured_items(sema.db);
+
     if captures.is_empty() {
         return None;
     }
+
     let (range, label) = match closure.move_token() {
         Some(t) => (t.text_range(), InlayHintLabel::default()),
         None => {

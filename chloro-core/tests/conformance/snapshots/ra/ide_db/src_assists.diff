@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5963 bytes
-Chloro size:   5931 bytes
+Chloro size:   5932 bytes
 Rustfmt size:  5963 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         if self == other {
-             return true;
-         }
--
-         match self {
-             AssistKind::Generate => true,
-             AssistKind::Refactor => matches!(
  pub struct SingleResolve {
      /// The id of the assist.
      pub assist_id: String,

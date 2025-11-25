@@ -50,6 +50,7 @@ pub(crate) fn complete_record_expr_fields(
     &dot_prefix: &bool,
 ) {
     let ty = ctx.sema.type_of_expr(&Expr::RecordExpr(record_expr.clone()));
+
     let missing_fields = match ty.as_ref().and_then(|t| t.original.as_adt()) {
         Some(hir::Adt::Union(un)) => {
             // ctx.sema.record_literal_missing_fields will always return
@@ -232,6 +233,7 @@ impl Enum {
 "#,
         );
         // record variant
+
         check_edit_with_config(
             conf,
             "Variant{}",
@@ -286,6 +288,7 @@ impl Foo {
 }
             "#,
         );
+
         check_edit(
             "Self()",
             r#"

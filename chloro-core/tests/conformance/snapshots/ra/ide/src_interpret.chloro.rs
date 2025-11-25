@@ -20,6 +20,7 @@ pub(crate) fn interpret(db: &RootDatabase, position: FilePosition) -> String {
 fn find_and_interpret(db: &RootDatabase, position: FilePosition) -> Option<(Duration, String)> {
     let sema = Semantics::new(db);
     let source_file = sema.parse_guess_edition(position.file_id);
+
     let item = ancestors_at_offset(source_file.syntax(), position.offset)
         .filter(|it| !ast::MacroCall::can_cast(it.kind()))
         .find_map(ast::Item::cast)?;

@@ -55,10 +55,12 @@ pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Optio
         };
         (selection_range, edits?)
     };
+
     let parent_node = match ctx.covering_element() {
         SyntaxElement::Node(n) => n,
         SyntaxElement::Token(t) => t.parent()?,
     };
+
     acc.add(AssistId::refactor_rewrite("merge_imports"), "Merge imports", target, |builder| {
         let make = SyntaxFactory::with_mappings();
         let mut editor = builder.make_editor(&parent_node);
@@ -190,6 +192,7 @@ use std::fmt::{Debug, Display};
         );
         // The assist macro below calls `check_assist_import_one` 4 times with different input
         // use item variations based on the first 2 input parameters.
+
         cov_mark::check_count!(merge_with_use_item_neighbors, 4);
         check_assist_import_one_variations!(
             "std::fmt$0::{Display, Debug}",
@@ -616,6 +619,7 @@ use std::fmt::{Debug, Display, Write};
 use std::fmt::Result;
 ",
         );
+
         cov_mark::check!(merge_with_selected_use_item_neighbors);
         check_assist_import_one(
             merge_imports,
@@ -653,12 +657,14 @@ use std::{
     fmt::Result,
 };",
         );
+
         cov_mark::check!(merge_with_selected_use_tree_neighbors);
         check_assist(
             merge_imports,
             r"use std::{fmt::Result, $0fmt::Display, fmt::Debug$0};",
             r"use std::{fmt::Result, fmt::{Debug, Display}};",
         );
+
         cov_mark::check!(merge_with_selected_use_tree_neighbors);
         check_assist(
             merge_imports,

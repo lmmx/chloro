@@ -12,9 +12,11 @@ pub(crate) fn normalize_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
     } else {
         ctx.covering_element().ancestors().find_map(ast::Use::cast)?
     };
+
     let target = use_item.syntax().text_range();
     let normalized_use_item =
         try_normalize_import(&use_item, ctx.config.insert_use.granularity.into())?;
+
     acc.add(AssistId::refactor_rewrite("normalize_import"), "Normalize import", target, |builder| {
         builder.replace_ast(use_item, normalized_use_item);
     })
@@ -102,6 +104,7 @@ mod tests {
         // This code compiles but transforming "bar::{self}" into "bar" causes a
         // compilation error (the name `bar` is defined multiple times).
         // Therefore, the normalize_input assist must not apply here.
+
         check_assist_not_applicable(
             normalize_import,
             r"

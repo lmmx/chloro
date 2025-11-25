@@ -291,6 +291,7 @@ impl<'a, 'db> MirLowerCtx<'a, 'db> {
         let interner = DbInterner::new_with(db, Some(env.krate), env.block);
         // FIXME(next-solver): Is `non_body_analysis()` correct here? Don't we want to reveal opaque types defined by this body?
         let infcx = interner.infer_ctxt().build(TypingMode::non_body_analysis());
+
         MirLowerCtx {
             result: mir,
             db,

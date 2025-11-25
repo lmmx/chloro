@@ -30,10 +30,12 @@ pub(super) fn hints(
     if config.adjustment_hints_hide_outside_unsafe && !sema.is_inside_unsafe(expr) {
         return None;
     }
+
     if config.adjustment_hints == AdjustmentHints::Never {
         return None;
     }
     // ParenExpr resolve to their contained expressions HIR so they will dupe these hints
+
     if let ast::Expr::ParenExpr(_) = expr {
         return None;
     }
@@ -42,9 +44,11 @@ pub(super) fn hints(
     {
         return None;
     }
+
     let descended = sema.descend_node_into_attributes(expr.clone()).pop();
     let desc_expr = descended.as_ref().unwrap_or(expr);
     let mut adjustments = sema.expr_adjustments(desc_expr).filter(|it| !it.is_empty())?;
+
     if config.adjustment_hints_disable_reborrows {
         // Remove consecutive deref-ref, i.e. reborrows.
         let mut i = 0;
@@ -59,6 +63,7 @@ pub(super) fn hints(
             }
         }
     }
+
     if let ast::Expr::BlockExpr(_) | ast::Expr::IfExpr(_) | ast::Expr::MatchExpr(_) = desc_expr {
         // Don't show unnecessary reborrows for these, they will just repeat the inner ones again
         if matches!(
@@ -69,8 +74,10 @@ pub(super) fn hints(
             return None;
         }
     }
+
     let (postfix, needs_outer_parens, needs_inner_parens) =
         mode_and_needs_parens_for_adjustment_hints(expr, config.adjustment_hints_mode);
+
     let range = expr.syntax().text_range();
     let mut pre = InlayHint {
         range,
@@ -92,18 +99,22 @@ pub(super) fn hints(
         text_edit: None,
         resolve_parent: Some(range),
     };
+
     if needs_outer_parens || (postfix && needs_inner_parens) {
         pre.label.append_str("(");
     }
+
     if postfix && needs_inner_parens {
         post.label.append_str(")");
     }
+
     let mut iter = if postfix {
         Either::Left(adjustments.into_iter())
     } else {
         Either::Right(adjustments.into_iter().rev())
     };
     let iter: &mut dyn Iterator<Item = _> = iter.as_mut().either(|it| it as _, |it| it as _);
+
     let mut has_adjustments = false;
     let mut allow_edit = !postfix;
     for Adjustment { source, target, kind } in iter {
@@ -221,12 +232,14 @@ pub(super) fn hints(
     if !has_adjustments {
         return None;
     }
+
     if !postfix && needs_inner_parens {
         pre.label.append_str("(");
     }
     if needs_outer_parens || (!postfix && needs_inner_parens) {
         post.label.append_str(")");
     }
+
     let mut pre = pre.label.parts.is_empty().not().then_some(pre);
     let mut post = post.label.parts.is_empty().not().then_some(post);
     if pre.is_none() && post.is_none() {
@@ -271,6 +284,7 @@ fn mode_and_needs_parens_for_adjustment_hints(
     mode: AdjustmentHintsMode,
 ) -> (bool, bool, bool) {
     use {AdjustmentHintsMode::*, std::cmp::Ordering::*};
+
     match mode {
         Prefix | Postfix => {
             let postfix = matches!(mode, Postfix);

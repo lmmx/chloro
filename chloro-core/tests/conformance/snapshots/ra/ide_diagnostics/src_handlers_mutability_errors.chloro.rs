@@ -18,6 +18,7 @@ pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option
         // parent is an assignment expression.
         span = d.span.with_value(SyntaxNodePtr::new(&parent));
     };
+
     let fixes = (|| {
         if d.local.is_ref(ctx.sema.db) {
             // There is no simple way to add `mut` to `ref x` and `ref mut x`
@@ -39,6 +40,7 @@ pub(crate) fn need_mut(ctx: &DiagnosticsContext<'_>, d: &hir::NeedMut) -> Option
             use_range,
         )])
     })();
+
     Some(
         Diagnostic::new_with_syntax_node_ptr(
             ctx,
@@ -225,6 +227,7 @@ fn main() {
 }
 "#,
         );
+
         check_fix(
             r#"
 struct Foo(i32);
@@ -406,6 +409,7 @@ fn main() {
         // not emit `unused_mut` in this case, but since it works without `mut`, and
         // special casing it is not trivial, we emit it.
         // Update: now MIR based `unused-variable` is taking over `unused-mut` for the same reason.
+
         check_diagnostics(
             r#"
 fn main() {

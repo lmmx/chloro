@@ -63,11 +63,13 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Opti
     // Get the FileRange of the invalid field access
     let root = ctx.sema.db.parse_or_expand(d.expr.file_id);
     let expr = d.expr.value.to_node(&root).left()?;
+
     let error_range = ctx.sema.original_range_opt(expr.syntax())?;
     let field_name = d.name.as_str();
     // Convert the receiver to an ADT
     let adt = d.receiver.strip_references().as_adt()?;
     let target_module = adt.module(ctx.sema.db);
+
     let suggested_type = if let Some(new_field_type) =
         ctx.sema.type_of_expr(&expr).map(|v| v.adjusted()).filter(|it| !it.is_unknown())
     {
@@ -77,11 +79,13 @@ fn field_fix(ctx: &DiagnosticsContext<'_>, d: &hir::UnresolvedField<'_>) -> Opti
     } else {
         make::ty("()")
     };
+
     if !is_editable_crate(target_module.krate(), ctx.sema.db)
         || SyntaxKind::from_keyword(field_name, ctx.edition).is_some()
     {
         return None;
     }
+
     match adt {
         Adt::Struct(adt_struct) => {
             add_field_to_struct_fix(ctx, adt_struct, field_name, suggested_type, error_range)
@@ -105,8 +109,10 @@ fn add_variant_to_union(
     let field_list = adt_source.value.record_field_list()?;
     let range = adt_syntax.original_file_range_rooted(ctx.sema.db);
     let field_name = make::name(field_name);
+
     let (offset, record_field) =
         record_field_layout(None, field_name, suggested_type, field_list, adt_syntax.value)?;
+
     let mut src_change_builder = SourceChangeBuilder::new(range.file_id.file_id(ctx.sema.db));
     src_change_builder.insert(offset, record_field);
     Some(Assist {
@@ -248,6 +254,7 @@ fn record_field_layout(
     };
     let comma = if needs_comma { ",\n" } else { "\n" };
     let record_field = make::record_field(visibility, name, suggested_type);
+
     Some((offset, format!("{comma}{indent}{record_field}{trailing_new_line}")))
 }
 
@@ -411,6 +418,7 @@ fn foo() {
             }
             "#,
         );
+
         check_fix(
             r#"
             mod indent {

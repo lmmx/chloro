@@ -184,6 +184,7 @@ pub(crate) fn apply_document_changes(
     if content_changes.is_empty() {
         return text;
     }
+
     let mut line_index = LineIndex {
         // the index will be overwritten in the bottom loop's first iteration
         index: Arc::new(ide::LineIndex::new(&text)),
@@ -196,6 +197,7 @@ pub(crate) fn apply_document_changes(
     // Some clients (e.g. Code) sort the ranges in reverse. As an optimization, we
     // remember the last valid line in the index and only rebuild it if needed.
     // The VFS will normalize the end of lines to `\n`.
+
     let mut index_valid = !0u32;
     for change in content_changes {
         // The None case can't happen as we have handled it above already
@@ -270,6 +272,7 @@ mod tests {
                 }),+]
             };
         }
+
         let encoding = PositionEncoding::Wide(WideEncoding::Utf16);
         let text = apply_document_changes(encoding, "", vec![]);
         assert_eq!(text, "");
@@ -310,13 +313,16 @@ mod tests {
         let text =
             apply_document_changes(encoding, &text, c![0, 10; 1, 5 => "", 2, 0; 2, 12 => ""]);
         assert_eq!(text, "the quick \nthey have quiet dreams\n");
+
         let text = String::from("❤️");
         let text = apply_document_changes(encoding, &text, c![0, 0; 0, 0 => "a"]);
         assert_eq!(text, "a❤️");
+
         let text = String::from("a\nb");
         let text =
             apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "\nțc", 0, 1; 1, 1 => "d"]);
         assert_eq!(text, "adcb");
+
         let text = String::from("a\nb");
         let text =
             apply_document_changes(encoding, &text, c![0, 1; 1, 0 => "ț\nc", 0, 2; 0, 2 => "c"]);
@@ -325,6 +331,7 @@ mod tests {
     #[test]
     fn empty_completion_disjoint_tests() {
         let empty_completion = CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
+
         let disjoint_edit_1 = lsp_types::TextEdit::new(
             Range::new(Position::new(2, 2), Position::new(3, 3)),
             "new_text".to_owned(),
@@ -333,10 +340,12 @@ mod tests {
             Range::new(Position::new(3, 3), Position::new(4, 4)),
             "new_text".to_owned(),
         );
+
         let joint_edit = lsp_types::TextEdit::new(
             Range::new(Position::new(1, 1), Position::new(5, 5)),
             "new_text".to_owned(),
         );
+
         assert!(
             all_edits_are_disjoint(&empty_completion, &[]),
             "Empty completion has all its edits disjoint"
@@ -348,6 +357,7 @@ mod tests {
             ),
             "Empty completion is disjoint to whatever disjoint extra edits added"
         );
+
         assert!(
             !all_edits_are_disjoint(
                 &empty_completion,
@@ -370,6 +380,7 @@ mod tests {
             Range::new(Position::new(1, 1), Position::new(5, 5)),
             "new_text".to_owned(),
         );
+
         let mut completion_with_joint_edits =
             CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
         completion_with_joint_edits.additional_text_edits =
@@ -378,6 +389,7 @@ mod tests {
             !all_edits_are_disjoint(&completion_with_joint_edits, &[]),
             "Completion with disjoint edits fails the validation even with empty extra edits"
         );
+
         completion_with_joint_edits.text_edit =
             Some(CompletionTextEdit::Edit(disjoint_edit.clone()));
         completion_with_joint_edits.additional_text_edits = Some(vec![joint_edit.clone()]);
@@ -385,6 +397,7 @@ mod tests {
             !all_edits_are_disjoint(&completion_with_joint_edits, &[]),
             "Completion with disjoint edits fails the validation even with empty extra edits"
         );
+
         completion_with_joint_edits.text_edit =
             Some(CompletionTextEdit::InsertAndReplace(InsertReplaceEdit {
                 new_text: "new_text".to_owned(),
@@ -411,10 +424,12 @@ mod tests {
             Range::new(Position::new(1, 1), Position::new(5, 5)),
             "new_text".to_owned(),
         );
+
         let mut completion_with_disjoint_edits =
             CompletionItem::new_simple("label".to_owned(), "detail".to_owned());
         completion_with_disjoint_edits.text_edit = Some(CompletionTextEdit::Edit(disjoint_edit));
         let completion_with_disjoint_edits = completion_with_disjoint_edits;
+
         assert!(
             all_edits_are_disjoint(&completion_with_disjoint_edits, &[]),
             "Completion with disjoint edits is valid"

@@ -24,6 +24,7 @@ pub(super) fn enum_hints(
     if let DiscriminantHints::Never = config.discriminant_hints {
         return None;
     }
+
     let def = sema.to_def(&enum_)?;
     let data_carrying = def.is_data_carrying(sema.db);
     if matches!(config.discriminant_hints, DiscriminantHints::Fieldless) && data_carrying {
@@ -49,12 +50,15 @@ fn variant_hints(
     if variant.expr().is_some() {
         return None;
     }
+
     let eq_token = variant.eq_token();
     let name = variant.name()?;
+
     let descended = sema.descend_node_into_attributes(variant.clone()).pop();
     let desc_pat = descended.as_ref().unwrap_or(variant);
     let v = sema.to_def(desc_pat)?;
     let d = v.eval(sema.db);
+
     let range = match variant.field_list() {
         Some(field_list) => name.syntax().text_range().cover(field_list.syntax().text_range()),
         None => name.syntax().text_range(),
@@ -94,6 +98,7 @@ fn variant_hints(
         pad_right: false,
         resolve_parent: Some(enum_.syntax().text_range()),
     });
+
     Some(())
 }
 

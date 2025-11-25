@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1605 bytes
+Chloro size:   1607 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
@@ -28,7 +28,7 @@ Rustfmt size:  1772 bytes
 -            };
 +            return InferOk { obligations: PredicateObligations::new(), value: vec![] };
          }
--
+ 
 -        let targets = steps
 -            .iter()
 -            .skip(1)
@@ -47,7 +47,5 @@ Rustfmt size:  1772 bytes
 -            })
 +            .map(|(autoderef, target)| Adjustment { kind: Adjust::Deref(autoderef), target })
              .collect();
--
+ 
          InferOk {
-             obligations: self.take_obligations(),
-             value: steps,

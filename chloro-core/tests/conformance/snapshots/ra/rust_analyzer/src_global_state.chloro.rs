@@ -204,6 +204,7 @@ impl GlobalState {
             let handle = Box::new(handle) as Box<dyn vfs::loader::Handle>;
             Handle { handle, receiver }
         };
+
         let task_pool = {
             let (sender, receiver) = unbounded();
             let handle = TaskPool::new_with_threads(sender, config.main_loop_num_threads());
@@ -215,17 +216,21 @@ impl GlobalState {
             Handle { handle, receiver }
         };
         let cancellation_pool = thread::Pool::new(1);
+
         let task_queue = {
             let (sender, receiver) = unbounded();
             TaskQueue { sender, receiver }
         };
+
         let mut analysis_host = AnalysisHost::new(config.lru_parse_query_capacity());
         if let Some(capacities) = config.lru_query_capacities_config() {
             analysis_host.update_lru_capacities(capacities);
         }
         let (flycheck_sender, flycheck_receiver) = unbounded();
         let (test_run_sender, test_run_receiver) = unbounded();
+
         let (discover_sender, discover_receiver) = unbounded();
+
         let mut this = GlobalState {
             sender,
             req_queue: ReqQueue::default(),
@@ -303,12 +308,14 @@ impl GlobalState {
         // mapping is not ready until `AnalysisHost::apply_changes` has been called.
         let mut modified_ratoml_files: FxHashMap<FileId, (ChangeKind, vfs::VfsPath)> =
             FxHashMap::default();
+
         let mut change = ChangeWithProcMacros::default();
         let mut guard = self.vfs.write();
         let changed_files = guard.0.take_changes();
         if changed_files.is_empty() {
             return false;
         }
+
         let (change, modified_rust_files, workspace_structure_change) =
             self.cancellation_pool.scoped(|s| {
                 // start cancellation in parallel, this will kick off lru eviction
@@ -401,6 +408,7 @@ impl GlobalState {
                 }
                 (change, modified_rust_files, workspace_structure_change)
             });
+
         self.analysis_host.apply_change(change);
         if !modified_ratoml_files.is_empty()
             || !self.config.same_source_root_parent_map(&self.local_roots_parent_map)
@@ -505,6 +513,7 @@ impl GlobalState {
         // into a `QueuedTask`, see `handle_did_save_text_document`.
         // Or maybe instead of replacing that check, kick off a semantic one if the syntactic one
         // didn't find anything (to make up for the lack of precision).
+
         {
             if !matches!(&workspace_structure_change, Some((.., true))) {
                 _ = self
@@ -521,6 +530,7 @@ impl GlobalState {
                 self.enqueue_workspace_fetch(path, force_crate_graph_reload);
             }
         }
+
         true
     }
 
@@ -678,6 +688,7 @@ impl GlobalState {
             // FIXME: We should cancel the in-progress fetch here
             return;
         }
+
         self.fetch_ws_receiver = Some((
             crossbeam_channel::after(Duration::from_millis(100)),
             FetchWorkspaceRequest { path: Some(path), force_crate_graph_reload },
@@ -751,6 +762,7 @@ impl GlobalStateSnapshot {
         let file_id = self.analysis.crate_root(crate_id).ok()?;
         let path = self.vfs_read().file_path(file_id).clone();
         let path = path.as_path()?;
+
         for workspace in self.workspaces.iter() {
             match &workspace.kind {
                 ProjectWorkspaceKind::Cargo { cargo, .. }
@@ -792,6 +804,7 @@ impl GlobalStateSnapshot {
                 ProjectWorkspaceKind::DetachedFile { .. } => {}
             };
         }
+
         None
     }
 

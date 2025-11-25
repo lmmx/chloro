@@ -33,6 +33,7 @@ fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
                 | T![macro]
         )
     });
+
     let (offset, target) = if let Some(keyword) = item_keyword {
         let parent = keyword.parent()?;
 
@@ -64,6 +65,7 @@ fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     } else {
         return None;
     };
+
     acc.add(
         AssistId::refactor_rewrite("change_visibility"),
         "Change visibility to pub(crate)",
@@ -77,6 +79,7 @@ fn add_vis(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
 fn can_add(node: &SyntaxNode) -> bool {
     const LEGAL: &[SyntaxKind] =
         &[CONST, STATIC, TYPE_ALIAS, FN, MODULE, STRUCT, ENUM, TRAIT, USE, MACRO_DEF];
+
     LEGAL.contains(&node.kind()) && {
         let Some(p) = node.parent() else {
             return false;
@@ -223,6 +226,7 @@ mod tests {
     #[test]
     fn not_applicable_for_enum_variant_fields() {
         check_assist_not_applicable(change_visibility, r"pub enum Foo { Foo1($0i32) }");
+
         check_assist_not_applicable(change_visibility, r"pub enum Foo { Foo1 { $0n: i32 } }");
     }
     #[test]

@@ -45,6 +45,7 @@ where
             at, value, universes,
         )?;
     assert_eq!(coroutine_goals, vec![]);
+
     Ok(value)
 }
 
@@ -94,7 +95,9 @@ impl<'db> NormalizationFolder<'_, 'db> {
         let infcx = self.at.infcx;
         let interner = infcx.interner;
         let recursion_limit = interner.recursion_limit();
+
         self.depth += 1;
+
         let infer_term = infcx.next_term_var_of_kind(alias_term);
         let obligation = Obligation::new(
             interner,
@@ -102,6 +105,7 @@ impl<'db> NormalizationFolder<'_, 'db> {
             self.at.param_env,
             PredicateKind::AliasRelate(alias_term, infer_term, AliasRelationDirection::Equate),
         );
+
         if self.depth > recursion_limit {
             //     let term = alias_term.to_alias_term().unwrap();
             //     self.at.infcx.err_ctxt().report_overflow_error(
@@ -112,10 +116,12 @@ impl<'db> NormalizationFolder<'_, 'db> {
             //     );
             return Err(vec![NextSolverError::Overflow(obligation)]);
         }
+
         self.fulfill_cx.register_predicate_obligation(infcx, obligation);
         self.select_all_and_stall_coroutine_predicates()?;
         // Alias is guaranteed to be fully structurally resolved,
         // so we can super fold here.
+
         let term = infcx.resolve_vars_if_possible(infer_term);
         // super-folding the `term` will directly fold the `Ty` or `Const` so
         // we have to match on the term and super-fold them manually.
@@ -134,16 +140,19 @@ impl<'db> NormalizationFolder<'_, 'db> {
         if !errors.is_empty() {
             return Err(errors);
         }
+
         self.stalled_coroutine_goals.extend(
             self.fulfill_cx
                 .drain_stalled_obligations_for_coroutines(self.at.infcx)
                 .into_iter()
                 .map(|obl| obl.as_goal()),
         );
+
         let errors = self.fulfill_cx.collect_remaining_errors(self.at.infcx);
         if !errors.is_empty() {
             return Err(errors);
         }
+
         Ok(())
     }
 }
@@ -171,7 +180,9 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         if !ty.has_aliases() {
             return Ok(ty);
         }
+
         let TyKind::Alias(..) = ty.kind() else { return ty.try_super_fold_with(self) };
+
         if ty.has_escaping_bound_vars() {
             let (ty, mapped_regions, mapped_types, mapped_consts) =
                 BoundVarReplacer::replace_bound_vars(infcx, &mut self.universes, ty);
@@ -195,7 +206,9 @@ impl<'db> FallibleTypeFolder<DbInterner<'db>> for NormalizationFolder<'_, 'db> {
         if !ct.has_aliases() {
             return Ok(ct);
         }
+
         let ConstKind::Unevaluated(..) = ct.kind() else { return ct.try_super_fold_with(self) };
+
         if ct.has_escaping_bound_vars() {
             let (ct, mapped_regions, mapped_types, mapped_consts) =
                 BoundVarReplacer::replace_bound_vars(infcx, &mut self.universes, ct);

@@ -37,6 +37,7 @@ fn eval_goal(
     let ra_fixture = format!(
         "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\n{ra_fixture}",
     );
+
     let (db, file_ids) = TestDB::with_many_files(&ra_fixture);
     let adt_or_type_alias_id = file_ids
         .into_iter()
@@ -109,6 +110,7 @@ fn eval_expr(
     let ra_fixture = format!(
         "//- target_data_layout: {target_data_layout}\n{minicore}//- /main.rs crate:test\nfn main(){{let goal = {{{ra_fixture}}};}}",
     );
+
     let (db, file_id) = TestDB::with_single_file(&ra_fixture);
     crate::attach_db(&db, || {
         let module_id = db.module_for_file(file_id.file_id(&db));
@@ -301,6 +303,7 @@ fn repr_packed() {
         #[repr(Rust, packed(4))]
         struct Goal(i32);
     }
+
     check_size_and_align("#[repr(Rust, packed(5))] struct Goal(i32);", "", 4, 1);
 }
 

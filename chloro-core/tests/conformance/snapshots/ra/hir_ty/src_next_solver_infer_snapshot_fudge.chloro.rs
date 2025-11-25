@@ -35,6 +35,7 @@ fn const_vars_since_snapshot<'db>(
 ) -> (Range<ConstVid>, Vec<ConstVariableOrigin>) {
     let range = vars_since_snapshot(table, snapshot_var_len);
     let range = range.start.vid..range.end.vid;
+
     (
         range.clone(),
         iter_idx_range(range)
@@ -106,6 +107,7 @@ impl<'db> InferCtxt<'db> {
         // type/region variables that appear in `value` with a fresh
         // variable of the appropriate kind. We can't do this during
         // the probe because they would just get popped then too. =)
+
         Ok(self.fudge_inference(snapshot_vars, value))
     }
 
@@ -143,6 +145,7 @@ impl SnapshotVarData {
             vars_since_snapshot(&inner.int_unification_table(), vars_pre_snapshot.int_var_len);
         let float_vars =
             vars_since_snapshot(&inner.float_unification_table(), vars_pre_snapshot.float_var_len);
+
         let const_vars = const_vars_since_snapshot(
             &mut inner.const_unification_table(),
             vars_pre_snapshot.const_var_len,

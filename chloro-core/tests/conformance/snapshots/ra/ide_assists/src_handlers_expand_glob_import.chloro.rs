@@ -26,11 +26,14 @@ pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> 
         PathResolution::Def(ModuleDef::Adt(hir::Adt::Enum(e))) => Expandable::Enum(e),
         _ => return None,
     };
+
     let current_scope = ctx.sema.scope(&star.parent()?)?;
     let current_module = current_scope.module();
+
     if !is_visible_from(ctx, &target_module, current_module) {
         return None;
     }
+
     let target = parent.either(|n| n.syntax().clone(), |n| n.syntax().clone());
     acc.add(
         AssistId::refactor_rewrite("expand_glob_import"),
@@ -60,14 +63,17 @@ pub(crate) fn expand_glob_reexport(acc: &mut Assists, ctx: &AssistContext<'_>) -
         PathResolution::Def(ModuleDef::Adt(hir::Adt::Enum(e))) => Expandable::Enum(e),
         _ => return None,
     };
+
     let current_scope = ctx.sema.scope(&star.parent()?)?;
     let current_module = current_scope.module();
+
     if let VisibilityKind::PubSelf = get_export_visibility_kind(&use_item) {
         return None;
     }
     if !is_visible_from(ctx, &target_module, current_module) {
         return None;
     }
+
     let target = parent.either(|n| n.syntax().clone(), |n| n.syntax().clone());
     acc.add(
         AssistId::refactor_rewrite("expand_glob_reexport"),
@@ -105,10 +111,13 @@ fn build_expanded_import(
             _ => (false, current_module),
         }
     };
+
     let refs_in_target = find_refs_in_mod(ctx, target_module, visible_from, must_be_pub);
     let imported_defs = find_imported_defs(ctx, use_item);
+
     let filtered_defs =
         if reexport_public_items { refs_in_target } else { refs_in_target.used_refs(ctx) };
+
     let names_to_import = find_names_to_import(filtered_defs, imported_defs);
     let expanded = make::use_tree_list(names_to_import.iter().map(|n| {
         let path = make::ext::ident_path(
@@ -117,6 +126,7 @@ fn build_expanded_import(
         make::use_tree(path, None, None, false)
     }))
     .clone_for_update();
+
     let mut editor = builder.make_editor(use_tree.syntax());
     match use_tree.star_token() {
         Some(star) => {
@@ -165,11 +175,13 @@ fn find_parent_and_path(
             .map(|(u, p)| (Either::Right(u), p))
             .or_else(|| find_use_tree(n).map(|(u, p)| (Either::Left(u), p)))
     });
+
     fn find_use_tree_list(n: SyntaxNode) -> Option<(ast::UseTreeList, ast::Path)> {
         let use_tree_list = ast::UseTreeList::cast(n)?;
         let path = use_tree_list.parent_use_tree().path()?;
         Some((use_tree_list, path))
     }
+
     fn find_use_tree(n: SyntaxNode) -> Option<(ast::UseTree, ast::Path)> {
         let use_tree = ast::UseTree::cast(n)?;
         let path = use_tree.path()?;
@@ -274,6 +286,7 @@ fn is_visible_from(ctx: &AssistContext<'_>, expandable: &Expandable, from: Modul
             None => true,
         }
     }
+
     match expandable {
         Expandable::Module(module) => match module.parent(ctx.db()) {
             Some(parent) => {
@@ -515,6 +528,7 @@ fn qux(bar: Bar, baz: Baz) {
 }
 ",
         );
+
         check_assist(
             expand_glob_import,
             r"
@@ -562,6 +576,7 @@ fn qux(bar: Bar, baz: Baz) {
 }
 ",
         );
+
         check_assist(
             expand_glob_import,
             r"
@@ -637,6 +652,7 @@ fn qux(bar: Bar, baz: Baz) {
 }
 ",
         );
+
         check_assist(
             expand_glob_import,
             r"
@@ -712,6 +728,7 @@ fn qux(bar: Bar, baz: Baz) {
 }
 ",
         );
+
         check_assist(
             expand_glob_import,
             r"
@@ -845,6 +862,7 @@ fn main() {
 }
 ",
         );
+
         check_assist(
             expand_glob_import,
             r"
@@ -891,6 +909,7 @@ use foo::bar::*$0;
 fn baz(bar: Bar) {}
 ",
         );
+
         check_assist_not_applicable(
             expand_glob_import,
             r"

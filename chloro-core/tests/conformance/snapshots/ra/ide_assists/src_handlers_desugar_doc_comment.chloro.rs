@@ -16,10 +16,13 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     // Only allow doc comments
     let placement = comment.kind().doc?;
     // Only allow comments which are alone on their line
+
     if let Some(prev) = comment.syntax().prev_token() {
         Whitespace::cast(prev).filter(|w| w.text().contains('\n'))?;
     }
+
     let indentation = IndentLevel::from_token(comment.syntax()).to_string();
+
     let (target, comments) = match comment.kind().shape {
         ast::CommentShape::Block => (comment.syntax().text_range(), Either::Left(comment)),
         ast::CommentShape::Line => {
@@ -36,6 +39,7 @@ pub(crate) fn desugar_doc_comment(acc: &mut Assists, ctx: &AssistContext<'_>) ->
             )
         }
     };
+
     acc.add(
         AssistId::refactor_rewrite("desugar_doc_comment"),
         "Desugar doc-comment to attribute macro",

@@ -20,6 +20,7 @@ pub(crate) fn move_from_mod_rs(acc: &mut Assists, ctx: &AssistContext<'_>) -> Op
         cov_mark::hit!(not_all_selected);
         return None;
     }
+
     let target = source_file.syntax().text_range();
     let module_name = module.name(ctx.db())?.as_str().to_smolstr();
     let path = format!("../{module_name}.rs");

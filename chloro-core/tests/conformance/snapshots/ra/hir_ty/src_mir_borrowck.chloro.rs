@@ -355,6 +355,7 @@ fn borrow_regions<'db>(db: &'db dyn HirDatabase, body: &MirBody<'db>) -> Vec<Bor
             None => (),
         }
     }
+
     borrows.into_values().collect()
 }
 
@@ -536,6 +537,7 @@ fn mutability_of_locals<'db>(
     let db = infcx.interner.db;
     let mut result: ArenaMap<LocalId<'db>, MutabilityReason> =
         body.locals.iter().map(|it| (it.0, MutabilityReason::Unused)).collect();
+
     let ever_init_maps = ever_initialized_map(db, body);
     for (block_id, mut ever_init_map) in ever_init_maps.into_iter() {
         let block = &body.basic_blocks[block_id];

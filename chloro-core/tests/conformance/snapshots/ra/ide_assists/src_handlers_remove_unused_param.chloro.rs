@@ -21,6 +21,7 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
     let is_self_present =
         param.syntax().parent()?.children().find_map(ast::SelfParam::cast).is_some();
     // check if fn is in impl Trait for ..
+
     if func
         .syntax()
         .parent() // AssocItemList
@@ -31,6 +32,7 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         cov_mark::hit!(trait_impl);
         return None;
     }
+
     let mut param_position = func.param_list()?.params().position(|it| it == param)?;
     // param_list() does not take the self param into consideration, hence this additional check
     // is required. For associated functions, param_position is incremented here. For inherent
@@ -43,6 +45,7 @@ pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) ->
         let func = ctx.sema.to_def(&func)?;
         Definition::Function(func)
     };
+
     let param_def = {
         let local = ctx.sema.to_def(&ident_pat)?;
         Definition::Local(local)
@@ -84,6 +87,7 @@ fn process_usages(
     let possible_ranges = references
         .into_iter()
         .filter_map(|usage| process_usage(&source_file, usage, arg_to_remove, is_self_present));
+
     for element_range in possible_ranges {
         let Some(SyntaxElement::Node(parent)) = element_range
             .iter()
@@ -117,6 +121,7 @@ fn process_usage(
         let arg = call_expr.arg_list()?.args().nth(arg_to_remove)?;
         return Some(elements_to_remove(arg.syntax()));
     }
+
     let method_call_expr_opt: Option<ast::MethodCallExpr> =
         find_node_at_range(source_file.syntax(), range);
     if let Some(method_call_expr) = method_call_expr_opt {
@@ -132,6 +137,7 @@ fn process_usage(
         let arg = method_call_expr.arg_list()?.args().nth(arg_to_remove)?;
         return Some(elements_to_remove(arg.syntax()));
     }
+
     None
 }
 

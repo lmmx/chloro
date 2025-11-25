@@ -33,6 +33,7 @@ fn foo() {
                 a::dyn();$0
         "#]],
     );
+
     check(
         r#"
 //- /a.rs crate:a edition:2018
@@ -65,6 +66,7 @@ fn foo() {
                 a::r#dyn();$0
         "#]],
     );
+
     check(
         r#"
 //- /a.rs crate:a edition:2018

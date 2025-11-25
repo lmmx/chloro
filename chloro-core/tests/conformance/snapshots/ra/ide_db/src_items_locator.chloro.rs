@@ -27,6 +27,7 @@ pub fn items_with_name(
 ) -> impl Iterator<Item = (ItemInNs, Complete)> {
     let _p = tracing::info_span!("items_with_name", name = name.text(), assoc_item_search = ?assoc_item_search, crate = ?krate.display_name(db).map(|name| name.to_string()))
         .entered();
+
     let prefix = matches!(name, NameToImport::Prefix(..));
     let (local_query, external_query) = match name {
         NameToImport::Prefix(exact_name, case_sensitive)
@@ -65,6 +66,7 @@ pub fn items_with_name(
             (local_query, external_query)
         }
     };
+
     find_items(db, krate, local_query, external_query)
 }
 
@@ -78,6 +80,7 @@ pub fn items_with_name_in_module<T>(
 ) -> Option<T> {
     let _p = tracing::info_span!("items_with_name_in", name = name.text(), assoc_item_search = ?assoc_item_search, ?module)
         .entered();
+
     let prefix = matches!(name, NameToImport::Prefix(..));
     let local_query = match name {
         NameToImport::Prefix(exact_name, case_sensitive)
@@ -123,6 +126,7 @@ fn find_items(
     let _p = tracing::info_span!("find_items").entered();
     // NOTE: `external_query` includes `assoc_item_search`, so we don't need to
     // filter on our own.
+
     let external_importables = krate.query_external_importables(db, external_query).map(
         |(external_importable, do_not_complete)| {
             let external_importable = match external_importable {
@@ -133,6 +137,7 @@ fn find_items(
         },
     );
     // Query the local crate using the symbol index.
+
     let mut local_results = Vec::new();
     local_query.search(&symbol_index::crate_symbols(db, krate), |local_candidate| {
         let def = match local_candidate.def {

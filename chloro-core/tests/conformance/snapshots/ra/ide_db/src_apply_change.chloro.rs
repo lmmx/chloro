@@ -63,6 +63,7 @@ impl RootDatabase {
         //     }
         //     table.entries::<EntryCounter>().0
         // }
+
         macro_rules! purge_each_query {
             ($($q:path)*) => {$(
                 let before = memory_usage().allocated;
@@ -245,6 +246,7 @@ impl RootDatabase {
             // base_db::SourceRootQuery
             // base_db::SourceRootCratesQuery
         ];
+
         acc.sort_by_key(|it| std::cmp::Reverse(it.1));
         acc
     }

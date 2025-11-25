@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30934 bytes
-Chloro size:   30931 bytes
+Chloro size:   30933 bytes
 Rustfmt size:  32147 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  32147 bytes
  use super::{LookupTable, NewTypesKey, TermSearchCtx};
  
  /// # Trivial tactic
- ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
-     let db = ctx.sema.db;
-     let module = ctx.scope.module();
--
-     defs.iter()
-         .filter_map(|def| match def {
-             ScopeDef::ModuleDef(ModuleDef::Adt(it)) => Some(it),
                  // Note that we need special case for 0 param constructors because of multi cartesian
                  // product
                  let exprs: Vec<Expr<'_>> = if param_exprs.is_empty() {
@@ -203,13 +196,6 @@ Rustfmt size:  32147 bytes
                      .collect()
              };
  
- ) -> impl Iterator<Item = Expr<'db>> + use<'a, 'db, 'lt, DB> {
-     let db = ctx.sema.db;
-     let module = ctx.scope.module();
--
-     lookup
-         .types_wishlist()
-         .clone()
              }
  
              // Early exit if some param cannot be filled from lookup

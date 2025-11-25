@@ -266,6 +266,7 @@ fn parse_adt_from_syntax(
             (it.name(), it.generic_param_list(), it.where_clause(), AdtShape::Union)
         }
     };
+
     let mut param_type_set: FxHashSet<Name> = FxHashSet::default();
     let param_types = generic_param_list
         .into_iter()
@@ -320,6 +321,7 @@ fn parse_adt_from_syntax(
             AdtParam { name, const_ty, bounds }
         })
         .collect();
+
     let where_clause = if let Some(w) = where_clause {
         w.predicates()
             .map(|it| {
@@ -344,6 +346,7 @@ fn parse_adt_from_syntax(
     // It's cumbersome to deal with the distinct structures of ADTs, so let's just get untyped
     // `SyntaxNode` that contains fields and look for descendant `ast::PathType`s. Of note is that
     // we should not inspect `ast::PathType`s in parameter bounds and where clauses.
+
     let field_list = match adt {
         ast::Adt::Enum(it) => it.variant_list().map(|list| list.syntax().clone()),
         ast::Adt::Struct(it) => it.field_list().map(|list| list.syntax().clone()),
@@ -400,6 +403,7 @@ fn name_to_token(
         ExpandError::other(call_site, "missing name")
     })?;
     let span = token_map.span_at(name.syntax().text_range().start());
+
     let name_token = tt::Ident::new(name.text().as_ref(), span);
     Ok(name_token)
 }
@@ -503,6 +507,7 @@ fn expand_simple_derive_with_parsed(
             }
         })
         .unzip();
+
     if constrain_to_trait {
         where_block.extend(info.associated_types.iter().map(|it| {
             let it = it.clone();
@@ -510,6 +515,7 @@ fn expand_simple_derive_with_parsed(
             quote! {invoc_span => #it : #bound , }
         }));
     }
+
     let name = info.name;
     quote! {invoc_span =>
         impl < # #params #extra_impl_params > #trait_path for #name < # #args > where # #where_block { #trait_body }
@@ -1099,6 +1105,7 @@ fn coerce_pointee_expand(
             ExpandError::other(span, "invalid item"),
         );
     };
+
     {
         let mut pointee_has_maybe_sized_bound = false;
         if let Some(bounds) = pointee_param.type_bound_list() {
@@ -1132,8 +1139,11 @@ fn coerce_pointee_expand(
             );
         }
     }
+
     const ADDED_PARAM: &str = "__S";
+
     let where_clause = strukt.get_or_create_where_clause();
+
     {
         let mut new_predicates = Vec::new();
 
@@ -1256,6 +1266,7 @@ fn coerce_pointee_expand(
             where_clause.add_predicate(new_predicate);
         }
     }
+
     {
         // # Add `Unsize<__S>` bound to `#[pointee]` at the generic parameter location
         //
@@ -1285,6 +1296,7 @@ fn coerce_pointee_expand(
             .clone_for_update(),
         );
     }
+
     let self_for_traits = {
         // Replace the `#[pointee]` with `__S`.
         let mut type_param_idx = 0;
@@ -1325,9 +1337,11 @@ fn coerce_pointee_expand(
         )
         .clone_for_update()
     };
+
     let mut span_map = span::SpanMap::empty();
     // One span for them all.
     span_map.push(adt.syntax().text_range().end(), span);
+
     let self_for_traits = syntax_bridge::syntax_node_to_token_tree(
         self_for_traits.syntax(),
         &span_map,
@@ -1340,6 +1354,7 @@ fn coerce_pointee_expand(
             return ExpandResult::new(tt::TopSubtree::empty(tt::DelimSpan::from_single(span)), err);
         }
     };
+
     let self_for_traits2 = self_for_traits.clone();
     let krate = dollar_crate(span);
     let krate2 = krate.clone();
@@ -1360,6 +1375,7 @@ fn coerce_pointee_expand(
         quote! {span => __S },
     );
     return ExpandResult::ok(quote! {span => #dispatch_from_dyn #coerce_unsized });
+
     fn is_maybe_sized_bound(bound: ast::TypeBound) -> bool {
         if bound.question_mark_token().is_none() {
             return false;
@@ -1382,6 +1398,7 @@ fn coerce_pointee_expand(
             })
         }
     }
+
     /// Returns true if any substitution was performed.
     fn substitute_type_in_bound(ty: ast::Type, param_name: &str, replacement: &str) -> bool {
         return match ty {

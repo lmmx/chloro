@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27122 bytes
-Chloro size:   26676 bytes
+Chloro size:   26684 bytes
 Rustfmt size:  27284 bytes
 
 ✗ Outputs DIFFER
@@ -40,7 +40,7 @@ Rustfmt size:  27284 bytes
  pub(crate) fn qualify_path(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (import_assets, syntax_under_caret, expected) = find_importable_node(ctx)?;
      let cfg = ctx.config.import_path_config();
--
+ 
 -    let mut proposed_imports: Vec<_> = import_assets
 -        .search_for_relative_paths(&ctx.sema, cfg)
 -        .collect();
@@ -49,25 +49,25 @@ Rustfmt size:  27284 bytes
      if proposed_imports.is_empty() {
          return None;
      }
--
+ 
      let range = ctx.sema.original_range(&syntax_under_caret).range;
 -    let current_module = ctx
 -        .sema
 -        .scope(&syntax_under_caret)
 -        .map(|scope| scope.module());
--
 +    let current_module = ctx.sema.scope(&syntax_under_caret).map(|scope| scope.module());
+ 
      let candidate = import_assets.import_candidate();
      let qualify_candidate = match candidate {
-         ImportCandidate::Path(candidate) if !candidate.qualifier.is_empty() => {
              QualifyCandidate::TraitMethod(ctx.sema.db, mcall_expr)
          }
      };
 -
      // we aren't interested in different namespaces
++
      proposed_imports.sort_by(|a, b| a.import_path.cmp(&b.import_path));
      proposed_imports.dedup_by(|a, b| a.import_path == b.import_path);
--
+ 
 -    let current_edition = current_module
 -        .map(|it| it.krate().edition(ctx.db()))
 -        .unwrap_or(Edition::CURRENT);
@@ -76,13 +76,6 @@ Rustfmt size:  27284 bytes
      // prioritize more relevant imports
      proposed_imports.sort_by_key(|import| {
          Reverse(super::auto_import::relevance_score(
-             current_module.as_ref(),
-         ))
-     });
--
-     let group_label = group_label(candidate);
-     for import in proposed_imports {
-         acc.add_group(
      }
      Some(())
  }
@@ -117,17 +110,8 @@ Rustfmt size:  27284 bytes
 +        let generics =
 +            mcall_expr.generic_arg_list().as_ref().map_or_else(String::new, ToString::to_string);
          let arg_list = mcall_expr.arg_list().map(|arg_list| arg_list.args());
--
+ 
          if let Some(self_access) = hir_fn.self_param(db).map(|sp| sp.access(db)) {
-             let receiver = match self_access {
-                 hir::Access::Shared => make::expr_ref(receiver, false),
-     edition: Edition,
- ) -> String {
-     let import_path = &import.import_path;
--
-     match candidate {
-         ImportCandidate::Path(candidate) if candidate.qualifier.is_empty() => {
-             format!("Qualify as `{}`", import_path.display(db, edition))
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable, check_assist_target};

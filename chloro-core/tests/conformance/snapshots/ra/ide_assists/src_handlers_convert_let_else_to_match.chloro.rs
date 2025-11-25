@@ -26,6 +26,7 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
         return None;
     }
     let pat = let_stmt.pat()?;
+
     let make = SyntaxFactory::with_mappings();
     let mut idents = Vec::default();
     let pat_without_mut = remove_mut_and_collect_idents(&make, &pat, &mut idents)?;
@@ -40,6 +41,7 @@ pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'
             }
         })
         .collect::<Vec<_>>();
+
     acc.add(
         AssistId::refactor_rewrite("convert_let_else_to_match"),
         if bindings.is_empty() {

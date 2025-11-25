@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 940 bytes
-Chloro size:   780 bytes
+Chloro size:   781 bytes
 Rustfmt size:  940 bytes
 
 ✗ Outputs DIFFER
@@ -17,12 +17,6 @@ Rustfmt size:  940 bytes
  pub(crate) fn invalid_derive_target(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::InvalidDeriveTarget,
- ) -> Diagnostic {
-     let display_range = ctx.sema.diagnostics_display_range(d.node);
--
-     Diagnostic::new(
-         DiagnosticCode::RustcHardError("E0774"),
-         "`derive` may only be applied to `struct`s, `enum`s and `union`s",
  #[cfg(test)]
  mod tests {
      use crate::tests::check_diagnostics;

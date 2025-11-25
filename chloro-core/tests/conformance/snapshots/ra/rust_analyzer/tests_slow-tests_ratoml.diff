@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22465 bytes
-Chloro size:   19003 bytes
+Chloro size:   19049 bytes
 Rustfmt size:  23115 bytes
 
 ✗ Outputs DIFFER
@@ -36,26 +36,14 @@ Rustfmt size:  23115 bytes
      const EMIT_MUST_NOT_USE: &'static str = r#"assist.emitMustUse = false"#;
  
      fn new(
-     ) -> Self {
-         let tmp_dir = TestDir::new();
-         let tmp_path = tmp_dir.path().to_owned();
--
-         let full_fixture = fixtures.join("\n");
--
-         let mut project = Project::with_fixture(&full_fixture).tmp_dir(tmp_dir);
--
-         for root in roots {
-             project = project.root(root);
-         }
--
-         if let Some(client_config) = client_config {
              project = project.with_config(client_config);
          }
--
+ 
 -        let server = project
 -            .server_with_lock(true)
 -            .wait_until_workspace_is_loaded();
--
++        let server = project.server_with_lock(true).wait_until_workspace_is_loaded();
+ 
 -        let mut case = Self {
 -            urls: vec![],
 -            server,
@@ -65,44 +53,36 @@ Rustfmt size:  23115 bytes
 -            .iter()
 -            .map(|fixture| case.fixture_path(fixture))
 -            .collect::<Vec<_>>();
-+        let server = project.server_with_lock(true).wait_until_workspace_is_loaded();
 +        let mut case = Self { urls: vec![], server, tmp_path };
 +        let urls = fixtures.iter().map(|fixture| case.fixture_path(fixture)).collect::<Vec<_>>();
          case.urls = urls;
          case
      }
- 
      fn fixture_path(&self, fixture: &str) -> Url {
          let mut lines = fixture.trim().split('\n');
--
+ 
 -        let mut path = lines
 -            .next()
 -            .expect("All files in a fixture are expected to have at least one line.");
--
 +        let mut path =
 +            lines.next().expect("All files in a fixture are expected to have at least one line.");
+ 
          if path.starts_with("//- minicore") {
 -            path = lines
 -                .next()
 -                .expect("A minicore line must be followed by a path.")
 +            path = lines.next().expect("A minicore line must be followed by a path.")
          }
--
+ 
 -        path = path
 -            .strip_prefix("//- ")
 -            .expect("Path must be preceded by a //- prefix ");
--
 +        path = path.strip_prefix("//- ").expect("Path must be preceded by a //- prefix ");
+ 
          let spl = path[1..].split('/');
          let mut path = self.tmp_path.clone();
--
-         let mut spl = spl.into_iter();
-         if let Some(first) = spl.next() {
-             if first == "$$CONFIG_DIR$$" {
-         for piece in spl {
-             path = path.join(piece);
          }
--
+ 
          Url::parse(
 -            format!(
 -                "file://{}",
@@ -116,10 +96,9 @@ Rustfmt size:  23115 bytes
          )
          .unwrap()
      }
- 
      fn create(&mut self, fixture_path: &str, text: String) {
          let url = self.fixture_path(fixture_path);
--
+ 
 -        self.server
 -            .notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
 -                text_document: TextDocumentItem {
@@ -129,7 +108,15 @@ Rustfmt size:  23115 bytes
 -                    text: String::new(),
 -                },
 -            });
--
++        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
++            text_document: TextDocumentItem {
++                uri: url.clone(),
++                language_id: "rust".to_owned(),
++                version: 0,
++                text: String::new(),
++            },
++        });
+ 
 -        self.server
 -            .notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
 -                text_document: VersionedTextDocumentIdentifier {
@@ -142,14 +129,6 @@ Rustfmt size:  23115 bytes
 -                    text,
 -                }],
 -            });
-+        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
-+            text_document: TextDocumentItem {
-+                uri: url.clone(),
-+                language_id: "rust".to_owned(),
-+                version: 0,
-+                text: String::new(),
-+            },
-+        });
 +        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
 +            text_document: VersionedTextDocumentIdentifier { uri: url, version: 0 },
 +            content_changes: vec![TextDocumentContentChangeEvent {
@@ -187,6 +166,7 @@ Rustfmt size:  23115 bytes
 -                },
 -                text: Some("".to_owned()),
 -            });
++
 +        self.server.notification::<DidSaveTextDocument>(DidSaveTextDocumentParams {
 +            text_document: TextDocumentIdentifier { uri: self.urls[file_idx].clone() },
 +            text: Some("".to_owned()),
@@ -203,7 +183,15 @@ Rustfmt size:  23115 bytes
 -                    text: String::new(),
 -                },
 -            });
--
++        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
++            text_document: TextDocumentItem {
++                uri: self.urls[file_idx].clone(),
++                language_id: "rust".to_owned(),
++                version: 0,
++                text: String::new(),
++            },
++        });
+ 
 -        self.server
 -            .notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
 -                text_document: VersionedTextDocumentIdentifier {
@@ -216,14 +204,6 @@ Rustfmt size:  23115 bytes
 -                    text,
 -                }],
 -            });
-+        self.server.notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
-+            text_document: TextDocumentItem {
-+                uri: self.urls[file_idx].clone(),
-+                language_id: "rust".to_owned(),
-+                version: 0,
-+                text: String::new(),
-+            },
-+        });
 +        self.server.notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
 +            text_document: VersionedTextDocumentIdentifier {
 +                uri: self.urls[file_idx].clone(),
@@ -238,20 +218,6 @@ Rustfmt size:  23115 bytes
      }
  
      fn query(
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-             }
-         })),
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         1,
      );
  }
  
@@ -330,32 +296,6 @@ Rustfmt size:  23115 bytes
  #[test]
  fn ratoml_user_config_detected() {
      if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         2,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
          1,
          InternalTestingFetchConfigResponse::AssistEmitMustUse(false),
      );
@@ -367,89 +307,6 @@ Rustfmt size:  23115 bytes
      server.query(
          InternalTestingFetchConfigOption::AssistEmitMustUse,
          1,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         1,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         1,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
          3,
          InternalTestingFetchConfigResponse::AssistEmitMustUse(true),
      );
@@ -458,48 +315,6 @@ Rustfmt size:  23115 bytes
 -        RatomlTest::EMIT_MUST_NOT_USE.to_owned(),
 -    );
 +    server.create("//- /p1/p2/rust-analyzer.toml", RatomlTest::EMIT_MUST_NOT_USE.to_owned());
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1", "p2"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::AssistEmitMustUse,
-         3,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
      server.query(
          InternalTestingFetchConfigOption::AssistEmitMustUse,
          3,
@@ -581,44 +396,3 @@ Rustfmt size:  23115 bytes
  #[test]
  fn ratoml_in_root_is_workspace() {
      if skip_slow_tests() {
-         return;
-     }
--
-     let server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::CheckWorkspace,
-         2,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::CheckWorkspace,
-         2,
-     if skip_slow_tests() {
-         return;
-     }
--
-     let mut server = RatomlTest::new(
-         vec![
-             r#"
-         vec!["p1"],
-         None,
-     );
--
-     server.query(
-         InternalTestingFetchConfigOption::CheckWorkspace,
-         2,

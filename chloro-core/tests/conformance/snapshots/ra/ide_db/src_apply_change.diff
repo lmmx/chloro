@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10358 bytes
-Chloro size:   10228 bytes
+Chloro size:   10230 bytes
 Rustfmt size:  10358 bytes
 
 ✗ Outputs DIFFER
@@ -25,17 +25,3 @@ Rustfmt size:  10358 bytes
          // fn collect_query_count<'q, Q>(table: &QueryTable<'q, Q>) -> usize
          // where
          //     QueryTable<'q, Q>: DebugQueryTable,
-         //     }
-         //     table.entries::<EntryCounter>().0
-         // }
--
-         macro_rules! purge_each_query {
-             ($($q:path)*) => {$(
-                 let before = memory_usage().allocated;
-             // base_db::SourceRootQuery
-             // base_db::SourceRootCratesQuery
-         ];
--
-         acc.sort_by_key(|it| std::cmp::Reverse(it.1));
-         acc
-     }

@@ -27,6 +27,7 @@ pub(crate) fn replace_derive_with_manual_impl(
     if !macro_file.is_derive_attr_pseudo_expansion(ctx.db()) {
         return None;
     }
+
     let InFile { file_id, value } = macro_file.call_node(ctx.db());
     if file_id.is_macro() {
         // FIXME: make this work in macro files
@@ -40,13 +41,16 @@ pub(crate) fn replace_derive_with_manual_impl(
         .filter_map(ast::Attr::cast)
         .filter_map(|attr| attr.path())
         .collect::<Vec<_>>();
+
     let adt = value.parent().and_then(ast::Adt::cast)?;
     let attr = ast::Attr::cast(value)?;
     let args = attr.token_tree()?;
+
     let current_module = ctx.sema.scope(adt.syntax())?.module();
     let current_crate = current_module.krate();
     let current_edition = current_crate.edition(ctx.db());
     let cfg = ctx.config.find_path_config(ctx.sema.is_nightly(current_crate));
+
     let found_traits = items_locator::items_with_name(
         ctx.db(),
         current_crate,
@@ -64,6 +68,7 @@ pub(crate) fn replace_derive_with_manual_impl(
             .map(|path| mod_path_to_ast(path, current_edition))
             .zip(Some(trait_))
     });
+
     let mut no_traits_found = true;
     for (replace_trait_path, trait_) in found_traits.inspect(|_| no_traits_found = false) {
         add_assist(
@@ -98,6 +103,7 @@ fn add_assist(
     let target = attr.syntax().text_range();
     let annotated_name = adt.name()?;
     let label = format!("Convert to manual `impl {replace_trait_path} for {annotated_name}`");
+
     acc.add(AssistId::refactor("replace_derive_with_manual_impl"), label, target, |builder| {
         let insert_after = Position::after(adt.syntax());
         let impl_is_unsafe = trait_.map(|s| s.is_unsafe(ctx.db())).unwrap_or(false);
@@ -164,17 +170,21 @@ fn impl_def_from_trait(
     let trait_ = trait_?;
     let target_scope = sema.scope(annotated_name.syntax())?;
     // Keep assoc items of local crates even if they have #[doc(hidden)] attr.
+
     let ignore_items = if trait_.module(sema.db).krate().origin(sema.db).is_local() {
         IgnoreAssocItems::No
     } else {
         IgnoreAssocItems::DocHiddenAttrPresent
     };
+
     let trait_items =
         filter_assoc_items(sema, &trait_.items(sema.db), DefaultMethods::No, ignore_items);
+
     if trait_items.is_empty() {
         return None;
     }
     let impl_def = generate_trait_impl(impl_is_unsafe, adt, make::ty_path(trait_path.clone()));
+
     let assoc_items =
         add_trait_assoc_items_to_impl(sema, config, &trait_items, trait_, &impl_def, &target_scope);
     let assoc_item_list = if let Some((first, other)) =
@@ -196,6 +206,7 @@ fn impl_def_from_trait(
         make::assoc_item_list(None)
     }
     .clone_for_update();
+
     let impl_def = impl_def.clone_subtree();
     let mut editor = SyntaxEditor::new(impl_def.syntax().clone());
     editor.replace(impl_def.assoc_item_list()?.syntax(), assoc_item_list.syntax());
@@ -215,6 +226,7 @@ fn update_attribute(
         .filter(|t| t.to_string() != old_trait_path.to_string())
         .collect::<Vec<_>>();
     let has_more_derives = !new_derives.is_empty();
+
     if has_more_derives {
         // Make the paths into flat lists of tokens in a vec
         let tt = new_derives.iter().map(|path| path.syntax().clone()).map(|node| {
@@ -1264,6 +1276,7 @@ struct Foo {}
 struct Foo {}
             "#,
         );
+
         check_assist_not_applicable(
             replace_derive_with_manual_impl,
             r#"

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98209 bytes
+Chloro size:   98240 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -44,13 +44,6 @@ Rustfmt size:  98473 bytes
          }
      }
  
-             Some(assoc) => assoc,
-             None => return false,
-         };
--
-         let is_assoc_deprecated = match assoc {
-             hir::AssocItem::Function(it) => self.is_deprecated(it),
-             hir::AssocItem::Const(it) => self.is_deprecated(it),
                  .unwrap_or(false)
      }
  
@@ -58,127 +51,16 @@ Rustfmt size:  98473 bytes
      fn docs(&self, def: impl HasDocs) -> Option<Documentation> {
          def.docs(self.db())
      }
-         .set_documentation(field.docs(db))
-         .set_deprecated(is_deprecated)
-         .lookup_by(name);
--
-     let is_field_access = matches!(dot_access.kind, DotAccessKind::Field { .. });
-     if !is_field_access || ty.is_fn() || ty.is_closure() {
-         let mut builder = TextEdit::builder();
-         i += 1;
-         res
-     };
--
-     let mut label_formatter = |ty: &hir::Type<'_>| {
-         ty.as_adt()
-             .map(|adt| stdx::to_lower_snake_case(adt.name(ctx.db).as_str()))
-             .unwrap_or_else(|| String::from("..."))
-     };
--
-     let cfg = ctx.config.find_path_config(ctx.is_nightly);
--
-     let label =
-         expr.gen_source_code(&ctx.scope, &mut label_formatter, cfg, ctx.display_target).ok()?;
--
-     let source_range = match ctx.original_token.parent() {
-         Some(node) => match node.ancestors().find_map(ast::Path::cast) {
-             Some(path) => path.syntax().text_range(),
-         },
-         None => ctx.source_range(),
-     };
--
-     let mut item =
-         CompletionItem::new(CompletionItemKind::Expression, source_range, label, ctx.edition);
--
-     let snippet = format!(
-         "{}$0",
-         expr.gen_source_code(&ctx.scope, &mut snippet_formatter, cfg, ctx.display_target).ok()?
- 
-         item.add_import(LocatedImport::new_no_completion(path, trait_item, trait_item));
-     }
--
-     Some(item)
- }
- 
      // FIXME: Temporary workaround for handling aliased import.
      // This should be removed after we have proper support for importing alias.
      // <https://github.com/rust-lang/rust-analyzer/issues/14079>
 -
      // If `item_to_import` matches `original_item`, we are importing the item itself (not its parent module).
      // In this case, we can use the last segment of `import_path`, as it accounts for the aliased name.
++
      if import_edit.item_to_import == import_edit.original_item {
- ) -> Builder {
-     let _p = tracing::info_span!("render_resolution_pat").entered();
-     use hir::ModuleDef::*;
--
-     if let ScopeDef::ModuleDef(Macro(mac)) = resolution {
-         let ctx = ctx.import_to_add(import_to_add);
-         render_macro_pat(ctx, pattern_ctx, local_name, mac)
- ) -> Builder {
-     let _p = tracing::info_span!("render_resolution_path").entered();
-     use hir::ModuleDef::*;
--
-     let krate = ctx.completion.display_target;
--
-     match resolution {
-         ScopeDef::ModuleDef(Macro(mac)) => {
-             let ctx = ctx.import_to_add(import_to_add);
-         }
-         _ => (),
-     }
--
-     let completion = ctx.completion;
-     let cap = ctx.snippet_cap();
-     let db = completion.db;
-     let config = completion.config;
-     let requires_import = import_to_add.is_some();
--
-     let name = local_name.display_no_db(ctx.completion.edition).to_smolstr();
-     let mut item = render_resolution_simple_(ctx, &local_name, import_to_add, resolution);
-     if local_name.needs_escape(completion.edition) {
-                 .insert_snippet(cap, format!("{}<$0>", local_name.display(db, completion.edition)));
-         }
-     }
--
-     let mut set_item_relevance = |ty: Type<'_>| {
-         if !ty.is_unknown() {
-             item.detail(ty.display(db, krate).to_string());
- 
-         path_ref_match(completion, path_ctx, &ty, &mut item);
-     };
--
-     match resolution {
-         ScopeDef::Local(local) => set_item_relevance(local.ty(db)),
-         ScopeDef::ModuleDef(ModuleDef::Adt(adt)) | ScopeDef::AdtSelfType(adt) => {
-             ModuleDef::Trait(_) | ModuleDef::Module(_) | ModuleDef::TypeAlias(_),
-         ) => (),
-     };
--
-     item
- }
- 
-     resolution: ScopeDef,
- ) -> Builder {
-     let _p = tracing::info_span!("render_resolution_simple_").entered();
--
-     let db = ctx.db();
-     let ctx = ctx.import_to_add(import_to_add);
-     let kind = res_to_kind(resolution);
--
-     let mut item = CompletionItem::new(
-         kind,
-         ctx.source_range(),
-     item.set_relevance(ctx.completion_relevance())
-         .set_documentation(scope_def_docs(db, resolution))
-         .set_deprecated(scope_def_is_deprecated(&ctx, resolution));
--
-     if let Some(import_to_add) = ctx.import_to_add {
-         item.add_import(import_to_add);
-     }
--
-     item.doc_aliases(ctx.doc_aliases);
-     item
- }
+         import_edit.import_path.segments().last().cloned()
+     } else {
      }
  }
  
@@ -192,27 +74,10 @@ Rustfmt size:  98473 bytes
 -
      // We don't ever consider unit type to be an exact type match, since
      // nearly always this is not meaningful to the user.
++
      if expected_type.is_unit() {
          return None;
      }
--
-     match_types(ctx, expected_type, completion_ty)
- }
- 
-         };
-         return Some(CompletionItemRefMode::Reference(mutability));
-     }
--
-     if let Some(completion_without_ref) = completion_without_ref
-         && completion_without_ref == *expected_type
-         && completion_without_ref.is_copy(ctx.db)
-         cov_mark::hit!(suggest_deref);
-         return Some(CompletionItemRefMode::Dereference);
-     }
--
-     None
- }
- 
  #[cfg(test)]
  mod tests {
      use std::cmp;
@@ -246,10 +111,7 @@ Rustfmt size:  98473 bytes
      #[track_caller]
      fn check_function_relevance(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {
          let actual: Vec<_> =
-                 .into_iter()
-                 .map(|item| (item.detail.unwrap_or_default(), item.relevance.function))
-                 .collect();
--
+ 
          expect.assert_debug_eq(&actual);
      }
 -
@@ -270,15 +132,6 @@ Rustfmt size:  98473 bytes
      #[track_caller]
      fn check_relevance_(actual: Vec<CompletionItem>, expect: Expect) {
          let actual = actual
-                 items
-             })
-             .collect::<String>();
--
-         expect.assert_eq(&actual);
--
-         fn display_relevance(relevance: CompletionRelevance) -> String {
-             let relevance_factors = vec![
-                 (relevance.type_match == Some(CompletionRelevanceTypeMatch::Exact), "type"),
              format!("[{relevance_factors}]")
          }
      }
@@ -398,13 +251,6 @@ Rustfmt size:  98473 bytes
      #[test]
      fn sets_deprecated_flag_in_items() {
          check(
-                 ]
-             "#]],
-         );
--
-         check(
-             r#"
- struct A { #[deprecated] the_field: u32 }
              "#]],
          );
      }
@@ -412,13 +258,6 @@ Rustfmt size:  98473 bytes
      #[test]
      fn renders_docs() {
          check_kinds(
-                 ]
-             "#]],
-         );
--
-         check_kinds(
-             r#"
- use self::my$0;
              "#]],
          )
      }

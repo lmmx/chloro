@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10179 bytes
-Chloro size:   9927 bytes
+Chloro size:   9931 bytes
 Rustfmt size:  10254 bytes
 
 ✗ Outputs DIFFER
@@ -31,17 +31,8 @@ Rustfmt size:  10254 bytes
  pub(crate) fn remove_unnecessary_else(
      ctx: &DiagnosticsContext<'_>,
      d: &RemoveUnnecessaryElse,
-         // FIXME: Our infra can't handle allow from within macro expansions rn
-         return None;
-     }
--
-     let display_range = adjusted_display_range(ctx, d.if_expr, &|if_expr| {
-         if_expr.else_token().as_ref().map(SyntaxToken::text_range)
-     });
-     let root = ctx.sema.db.parse_or_expand(d.if_expr.file_id);
-     let if_expr = d.if_expr.value.to_node(&root);
      let if_expr = ctx.sema.original_ast_node(if_expr)?;
--
+ 
      let mut indent = IndentLevel::from_node(if_expr.syntax());
 -    let has_parent_if_expr = if_expr
 -        .syntax()
@@ -52,10 +43,7 @@ Rustfmt size:  10254 bytes
      if has_parent_if_expr {
          indent = indent + 1;
      }
-             ),
-         )
-     };
--
+ 
      let edit = TextEdit::replace(range, replacement);
      let source_change = SourceChange::from_text_edit(
 -        d.if_expr
@@ -65,10 +53,7 @@ Rustfmt size:  10254 bytes
 +        d.if_expr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
          edit,
      );
--
-     Some(vec![fix(
-         "remove_unnecessary_else",
-         "Remove unnecessary else block",
+ 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_diagnostics_with_disabled, check_fix};

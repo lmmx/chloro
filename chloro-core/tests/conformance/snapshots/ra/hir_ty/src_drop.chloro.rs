@@ -61,10 +61,12 @@ fn has_drop_glue_impl<'db>(
 ) -> DropGlue {
     let mut ocx = ObligationCtxt::new(infcx);
     let ty = ocx.structurally_normalize_ty(&ObligationCause::dummy(), env.env, ty).unwrap_or(ty);
+
     if !visited.insert(ty) {
         // Recursive type.
         return DropGlue::None;
     }
+
     let db = infcx.interner.db;
     match ty.kind() {
         TyKind::Adt(adt_def, subst) => {

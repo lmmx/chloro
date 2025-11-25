@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16507 bytes
+Chloro size:   16521 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -37,32 +37,6 @@ Rustfmt size:  17571 bytes
 -    // FIXME: This can become `Box<[Attr]>` if https://internals.rust-lang.org/t/layout-of-dst-box/21728?u=chrefr is accepted.
      entries: Option<ThinArc<(), Attr>>,
  }
- 
-         span_map: SpanMapRef<'_>,
-     ) -> Self {
-         let entries: Vec<_> = Self::attrs_iter::<true>(db, owner, span_map).collect();
--
-         let entries = if entries.is_empty() {
-             None
-         } else {
-             Some(ThinArc::from_header_and_iter((), entries.into_iter()))
-         };
--
-         RawAttrs { entries }
-     }
- 
-     ) -> Self {
-         let entries: Vec<_> =
-             Self::attrs_iter_expanded::<true>(db, owner, span_map, cfg_options).collect();
--
-         let entries = if entries.is_empty() {
-             None
-         } else {
-             Some(ThinArc::from_header_and_iter((), entries.into_iter()))
-         };
--
-         RawAttrs { entries }
-     }
  
          span_map: SpanMapRef<'_>,
      ) -> impl Iterator<Item = Attr> {
@@ -109,10 +83,6 @@ Rustfmt size:  17571 bytes
          if !has_cfg_attrs {
              return self;
          }
--
-         let cfg_options = krate.cfg_options(db);
-         let new_attrs = self
-             .iter()
      id: u32,
  }
  
@@ -170,12 +140,8 @@ Rustfmt size:  17571 bytes
                      )
                  ) {
                      input = path_split_savepoint.remaining();
-             }
-             (path, input)
-         };
--
          let path = Interned::new(ModPath::from_tt(db, path)?);
--
+ 
          let input = match (input.flat_tokens().first(), input.try_into_subtree()) {
 -            (_, Some(tree)) => Some(Box::new(AttrInput::TokenTree(
 -                tt::TopSubtree::from_subtree(tree),
@@ -210,22 +176,6 @@ Rustfmt size:  17571 bytes
          if !is_cfg_attr {
              return smallvec![self];
          }
--
-         let subtree = match self.token_tree_value() {
-             Some(it) => it,
-             _ => return smallvec![self.clone()],
-         };
--
-         let (cfg, parts) = match parse_cfg_attr_input(subtree) {
-             Some(it) => it,
-             None => return smallvec![self.clone()],
-         };
-         let index = self.id;
-         let attrs = parts.filter_map(|attr| Attr::from_tt(db, attr, index));
--
-         let cfg = TopSubtree::from_token_trees(subtree.top_subtree().delimiter, cfg);
-         let cfg = CfgExpr::parse(&cfg);
-         if cfg_options.check(&cfg) == Some(false) {
      pub fn string_value_unescape(&self) -> Option<Cow<'_, str>> {
          match self.input.as_deref()? {
              AttrInput::Literal(tt::Literal {
@@ -245,12 +195,6 @@ Rustfmt size:  17571 bytes
              _ => None,
          }
      }
-         db: &'a dyn ExpandDatabase,
-     ) -> Option<impl Iterator<Item = (ModPath, Span)> + 'a> {
-         let args = self.token_tree_value()?;
--
-         if args.top_subtree().delimiter.kind != DelimiterKind::Parenthesis {
-             return None;
          }
          let paths = args
              .token_trees()
@@ -264,18 +208,6 @@ Rustfmt size:  17571 bytes
              .filter_map(move |tts| {
                  let span = tts.flat_tokens().first()?.first_span();
                  Some((ModPath::from_tt(db, tts)?, span))
-             });
--
-         Some(paths)
-     }
- 
-             (Err(_), _) => has_error = true,
-         }
-     });
--
-     match (has_error, buf.capacity() == 0) {
-         (true, _) => None,
-         (false, false) => Some(Cow::Owned(buf)),
  pub fn collect_attrs(
      owner: &dyn ast::HasAttrs,
  ) -> impl Iterator<Item = (AttrId, Either<ast::Attr, ast::Comment>)> {
@@ -288,13 +220,6 @@ Rustfmt size:  17571 bytes
      let outer_attrs = ast::AttrDocCommentIter::from_syntax_node(owner.syntax())
          .filter(|el| match el {
              Either::Left(attr) => attr.kind().is_outer(),
-             _ => return None,
-         }
-     };
--
-     let attrs = ast::AttrDocCommentIter::from_syntax_node(&node).filter(|el| match el {
-         Either::Left(attr) => attr.kind().is_inner(),
-         Either::Right(comment) => comment.is_inner(),
      Some(attrs)
  }
  

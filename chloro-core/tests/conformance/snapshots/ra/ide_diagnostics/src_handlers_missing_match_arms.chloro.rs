@@ -728,6 +728,7 @@ fn main() {
     #[test]
     fn no_panic_at_unimplemented_subpattern_type() {
         cov_mark::check_count!(validate_match_bailed_out, 1);
+
         check_diagnostics(
             r#"
 struct S { a: char}
@@ -850,6 +851,7 @@ fn main() {
     #[test]
     fn record_struct_no_such_field() {
         cov_mark::check_count!(validate_match_bailed_out, 1);
+
         check_diagnostics(
             r#"
 struct Foo { }
@@ -1090,6 +1092,7 @@ pub struct UninhabitedStruct {
         fn integers() {
             cov_mark::check_count!(validate_match_bailed_out, 1);
             // We don't currently check integer exhaustiveness.
+
             check_diagnostics(
                 r#"
 fn main() {
@@ -1104,6 +1107,7 @@ fn main() {
         #[test]
         fn reference_patterns_at_top_level() {
             cov_mark::check_count!(validate_match_bailed_out, 1);
+
             check_diagnostics(
                 r#"
 //- minicore: copy

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3260 bytes
-Chloro size:   2946 bytes
+Chloro size:   2948 bytes
 Rustfmt size:  3367 bytes
 
 ✗ Outputs DIFFER
@@ -37,11 +37,6 @@ Rustfmt size:  3367 bytes
      // format_to!(buf, "\nDebug info:\n");
      // format_to!(buf, "{}\n", collect_query(AttrsQuery.in_db(db)));
      // format_to!(buf, "{} ast id maps\n", collect_query_count(AstIdMapQuery.in_db(db)));
-     // format_to!(buf, "{} block def maps\n", collect_query_count(BlockDefMapQuery.in_db(db)));
--
-     if let Some(file_id) = file_id {
-         format_to!(buf, "\nCrates for file {}:\n", file_id.index());
-         let crates = crate::parent_module::crates_for(db, file_id);
                  is_proc_macro,
                  proc_macro_cwd,
              } = crate_id.data(db);
@@ -67,9 +62,3 @@ Rustfmt size:  3367 bytes
              format_to!(buf, "    Enabled cfgs: {:?}\n", cfg_options);
              format_to!(buf, "    Potential cfgs: {:?}\n", potential_cfg_options);
              format_to!(buf, "    Env: {:?}\n", env);
-             format_to!(buf, "    Dependencies: {}\n", deps);
-         }
-     }
--
-     buf.trim().to_owned()
- }

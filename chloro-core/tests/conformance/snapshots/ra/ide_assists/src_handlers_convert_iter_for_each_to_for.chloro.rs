@@ -13,16 +13,21 @@ pub(crate) fn convert_iter_for_each_to_for(
     ctx: &AssistContext<'_>,
 ) -> Option<()> {
     let method = ctx.find_node_at_offset::<ast::MethodCallExpr>()?;
+
     let closure = match method.arg_list()?.args().next()? {
         ast::Expr::ClosureExpr(expr) => expr,
         _ => return None,
     };
+
     let (method, receiver) = validate_method_call_expr(ctx, method)?;
+
     let param_list = closure.param_list()?;
     let param = param_list.params().next()?.pat()?;
     let body = closure.body()?;
+
     let stmt = method.syntax().parent().and_then(ast::ExprStmt::cast);
     let range = stmt.as_ref().map_or(method.syntax(), AstNode::syntax).text_range();
+
     acc.add(
         AssistId::refactor_rewrite("convert_iter_for_each_to_for"),
         "Replace this `Iterator::for_each` with a for loop",
@@ -56,6 +61,7 @@ pub(crate) fn convert_for_loop_with_for_each(
         cov_mark::hit!(not_available_in_body);
         return None;
     }
+
     acc.add(
         AssistId::refactor_rewrite("convert_for_loop_with_for_each"),
         "Replace this for loop with `Iterator::for_each`",
@@ -112,6 +118,7 @@ fn is_ref_and_impls_iter_method(
     let scope = sema.scope(iterable.syntax())?;
     let krate = scope.krate();
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
+
     let has_wanted_method = ty
         .iterate_method_candidates(sema.db, &scope, None, Some(&wanted_method), |func| {
             if func.ret_type(sema.db).impls_trait(sema.db, iter_trait, &[]) {
@@ -123,6 +130,7 @@ fn is_ref_and_impls_iter_method(
     if !has_wanted_method {
         return None;
     }
+
     Some((expr_behind_ref, wanted_method, krate))
 }
 
@@ -153,12 +161,16 @@ fn validate_method_call_expr(
     if name_ref.text() != "for_each" {
         return None;
     }
+
     let sema = &ctx.sema;
+
     let receiver = expr.receiver()?;
     let expr = ast::Expr::MethodCallExpr(expr);
+
     let it_type = sema.type_of_expr(&receiver)?.adjusted();
     let module = sema.scope(receiver.syntax())?.module();
     let krate = module.krate();
+
     let iter_trait = FamousDefs(sema, krate).core_iter_Iterator()?;
     it_type.impls_trait(sema.db, iter_trait, &[]).then_some((expr, receiver))
 }

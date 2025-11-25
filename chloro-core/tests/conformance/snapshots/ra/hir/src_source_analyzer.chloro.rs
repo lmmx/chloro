@@ -89,6 +89,7 @@ pub(crate) enum BodyOrSig<'db> {
         def: GenericDefId,
         store: Arc<ExpressionStore>,
         source_map: Arc<ExpressionStoreSourceMap>,
+        // infer: Option<Arc<InferenceResult>>,
     },
 }
 
@@ -311,6 +312,7 @@ impl<'db> SourceAnalyzer<'db> {
                 infer.pat_adjustment(idx).and_then(|adjusts| adjusts.last().cloned())
             }
         };
+
         let ty = infer[expr_or_pat_id];
         let mk_ty = |ty: Ty<'db>| Type::new_with_resolver(db, &self.resolver, ty);
         Some((mk_ty(ty), coerced.map(mk_ty)))
@@ -394,6 +396,7 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<Function> {
         let expr_id = self.expr_id(call.clone().into())?.as_expr()?;
         let (f_in_trait, substs) = self.infer()?.method_resolution(expr_id)?;
+
         Some(self.resolve_impl_method_or_trait_def(db, f_in_trait, substs).into())
     }
 
@@ -533,10 +536,12 @@ impl<'db> SourceAnalyzer<'db> {
         await_expr: &ast::AwaitExpr,
     ) -> Option<FunctionId> {
         let mut ty = self.ty_of_expr(await_expr.expr()?)?;
+
         let into_future_trait = self
             .resolver
             .resolve_known_trait(db, &path![core::future::IntoFuture])
             .map(Trait::from);
+
         if let Some(into_future_trait) = into_future_trait {
             let type_ = Type::new_with_resolver(db, &self.resolver, ty);
             if type_.impls_trait(db, into_future_trait, &[]) {
@@ -553,6 +558,7 @@ impl<'db> SourceAnalyzer<'db> {
                 ty = future_trait.ty;
             }
         }
+
         let poll_fn = LangItem::FuturePoll.resolve_function(db, self.resolver.krate())?;
         // HACK: subst for `poll()` coincides with that for `Future` because `poll()` itself
         // doesn't have any generic parameters, so we skip building another subst for `poll()`.
@@ -593,11 +599,14 @@ impl<'db> SourceAnalyzer<'db> {
                 self.lang_trait_fn(db, LangItem::Neg, &Name::new_symbol_root(sym::neg))?
             }
         };
+
         let ty = self.ty_of_expr(prefix_expr.expr()?)?;
+
         let interner = DbInterner::new_with(db, None, None);
         // HACK: subst for all methods coincides with that for their trait because the methods
         // don't have any generic parameters, so we skip building another subst for the methods.
         let substs = GenericArgs::new_from_iter(interner, [ty.into()]);
+
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
@@ -608,6 +617,7 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<FunctionId> {
         let base_ty = self.ty_of_expr(index_expr.base()?)?;
         let index_ty = self.ty_of_expr(index_expr.index()?)?;
+
         let (_index_trait, index_fn) =
             self.lang_trait_fn(db, LangItem::Index, &Name::new_symbol_root(sym::index))?;
         let op_fn = self
@@ -638,12 +648,14 @@ impl<'db> SourceAnalyzer<'db> {
         let op = binop_expr.op_kind()?;
         let lhs = self.ty_of_expr(binop_expr.lhs()?)?;
         let rhs = self.ty_of_expr(binop_expr.rhs()?)?;
+
         let (_op_trait, op_fn) = lang_items_for_bin_op(op)
             .and_then(|(name, lang_item)| self.lang_trait_fn(db, lang_item, &name))?;
         // HACK: subst for `index()` coincides with that for `Index` because `index()` itself
         // doesn't have any generic parameters, so we skip building another subst for `index()`.
         let interner = DbInterner::new_with(db, None, None);
         let substs = GenericArgs::new_from_iter(interner, [lhs.into(), rhs.into()]);
+
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
@@ -653,11 +665,13 @@ impl<'db> SourceAnalyzer<'db> {
         try_expr: &ast::TryExpr,
     ) -> Option<FunctionId> {
         let ty = self.ty_of_expr(try_expr.expr()?)?;
+
         let op_fn = LangItem::TryTraitBranch.resolve_function(db, self.resolver.krate())?;
         // HACK: subst for `branch()` coincides with that for `Try` because `branch()` itself
         // doesn't have any generic parameters, so we skip building another subst for `branch()`.
         let interner = DbInterner::new_with(db, None, None);
         let substs = GenericArgs::new_from_iter(interner, [ty.into()]);
+
         Some(self.resolve_impl_method_or_trait_def(db, op_fn, substs))
     }
 
@@ -670,6 +684,7 @@ impl<'db> SourceAnalyzer<'db> {
         let expr = ast::Expr::from(record_expr);
         let expr_id = self.store_sm()?.node_expr(InFile::new(self.file_id, &expr))?;
         let interner = DbInterner::new_with(db, None, None);
+
         let ast_name = field.field_name()?;
         let local_name = ast_name.as_name();
         let local = if field.name_ref().is_some() {
@@ -732,6 +747,7 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<ModuleDef> {
         let expr_or_pat_id = self.pat_id(&pat.clone().into())?;
         let store = self.store()?;
+
         let path = match expr_or_pat_id {
             ExprOrPatId::ExprId(idx) => match &store[idx] {
                 Expr::Path(path) => path,
@@ -742,6 +758,7 @@ impl<'db> SourceAnalyzer<'db> {
                 _ => return None,
             },
         };
+
         let body_owner = self.resolver.body_owner();
         let res = resolve_hir_value_path(db, &self.resolver, body_owner, path, HygieneId::ROOT)?;
         match res {
@@ -766,9 +783,12 @@ impl<'db> SourceAnalyzer<'db> {
         let offset_of_expr = ast::OffsetOfExpr::cast(name_ref.syntax().parent()?)?;
         let container = offset_of_expr.ty()?;
         let container = self.type_of_type(db, &container)?;
+
         let trait_env = container.env;
+
         let interner = DbInterner::new_with(db, Some(trait_env.krate), trait_env.block);
         let infcx = interner.infer_ctxt().build(TypingMode::PostAnalysis);
+
         let mut container = Either::Right(container.ty);
         for field_name in offset_of_expr.fields() {
             if let Either::Right(container) = &mut container {
@@ -831,6 +851,7 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<(PathResolution, Option<GenericSubstitution<'db>>)> {
         let parent = path.syntax().parent();
         let parent = || parent.clone();
+
         let mut prefer_value_ns = false;
         let resolved = (|| {
             let infer = self.infer()?;
@@ -958,6 +979,7 @@ impl<'db> SourceAnalyzer<'db> {
             return resolved;
         }
         // FIXME: collectiong here shouldnt be necessary?
+
         let mut collector = ExprCollector::new(db, self.resolver.module(), self.file_id);
         let hir_path =
             collector.lower_path(path.clone(), &mut ExprCollector::impl_trait_error_allocator)?;
@@ -967,12 +989,14 @@ impl<'db> SourceAnalyzer<'db> {
         let (store, _) = collector.store.finish();
         // Case where path is a qualifier of a use tree, e.g. foo::bar::{Baz, Qux} where we are
         // trying to resolve foo::bar.
+
         if let Some(use_tree) = parent().and_then(ast::UseTree::cast)
             && use_tree.coloncolon_token().is_some()
         {
             return resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store)
                 .map(|it| (it, None));
         }
+
         let meta_path = path
             .syntax()
             .ancestors()
@@ -984,6 +1008,7 @@ impl<'db> SourceAnalyzer<'db> {
             .and_then(ast::Meta::cast);
         // Case where path is a qualifier of another path, e.g. foo::bar::Baz where we are
         // trying to resolve foo::bar.
+
         if let Some(parent_hir_path) = parent_hir_path {
             return match resolve_hir_path_qualifier(db, &self.resolver, &hir_path, &store) {
                 None if meta_path.is_some() => path
@@ -1185,8 +1210,10 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<Vec<(Field, Type<'db>)>> {
         let body = self.store()?;
         let infer = self.infer()?;
+
         let expr_id = self.expr_id(literal.clone().into())?;
         let substs = infer[expr_id].as_adt()?.1;
+
         let (variant, missing_fields, _exhaustive) = match expr_id {
             ExprOrPatId::ExprId(expr_id) => {
                 record_literal_missing_fields(db, infer, expr_id, &body[expr_id])?
@@ -1206,8 +1233,10 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Option<Vec<(Field, Type<'db>)>> {
         let body = self.store()?;
         let infer = self.infer()?;
+
         let pat_id = self.pat_id(&pattern.clone().into())?.as_pat()?;
         let substs = infer[pat_id].as_adt()?.1;
+
         let (variant, missing_fields, _exhaustive) =
             record_pattern_missing_fields(db, infer, pat_id, &body[pat_id])?;
         let res = self.missing_fields(db, substs, variant, missing_fields);
@@ -1223,6 +1252,7 @@ impl<'db> SourceAnalyzer<'db> {
     ) -> Vec<(Field, Type<'db>)> {
         let interner = DbInterner::new_with(db, None, None);
         let field_types = db.field_types(variant);
+
         missing_fields
             .into_iter()
             .map(|local_id| {
@@ -1466,6 +1496,7 @@ fn adjust(
         .filter(|&(range, _)| {
             range.start() <= offset && expr_range.contains_range(range) && range != expr_range
         });
+
     child_scopes
         .max_by(|&(r1, _), &(r2, _)| {
             if r1.contains_range(r2) {
@@ -1572,19 +1603,23 @@ fn resolve_hir_path_(
             None => Some(res),
         }
     };
+
     let body_owner = resolver.body_owner();
     let values = || resolve_hir_value_path(db, resolver, body_owner, path, hygiene);
+
     let items = || {
         resolver
             .resolve_module_path_in_items(db, path.mod_path()?)
             .take_types()
             .map(|it| PathResolution::Def(it.into()))
     };
+
     let macros = || {
         resolver
             .resolve_path_as_macro(db, path.mod_path()?, None)
             .map(|(def, _)| PathResolution::Def(ModuleDef::Macro(def.into())))
     };
+
     if resolve_per_ns {
         PathResolutionPerNs {
             type_ns: types().or_else(items),

@@ -134,6 +134,7 @@ static ALIAS: AliasTy = {
 };
 "#,
     );
+
     check_infer_with_mismatches(
         r#"
 trait Trait {}

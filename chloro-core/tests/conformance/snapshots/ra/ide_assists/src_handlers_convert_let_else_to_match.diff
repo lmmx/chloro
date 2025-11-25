@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14334 bytes
-Chloro size:   13992 bytes
+Chloro size:   13994 bytes
 Rustfmt size:  14420 bytes
 
 ✗ Outputs DIFFER
@@ -40,13 +40,6 @@ Rustfmt size:  14420 bytes
  pub(crate) fn convert_let_else_to_match(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      // Should focus on the `else` token to trigger
      let let_stmt = ctx
-         return None;
-     }
-     let pat = let_stmt.pat()?;
--
-     let make = SyntaxFactory::with_mappings();
-     let mut idents = Vec::default();
-     let pat_without_mut = remove_mut_and_collect_idents(&make, &pat, &mut idents)?;
          .filter_map(|ref pat| {
              // Identifiers which resolve to constants are not bindings
              if ctx.sema.resolve_bind_pat_to_const(pat).is_none() {
@@ -58,12 +51,6 @@ Rustfmt size:  14420 bytes
              } else {
                  None
              }
-         })
-         .collect::<Vec<_>>();
--
-     acc.add(
-         AssistId::refactor_rewrite("convert_let_else_to_match"),
-         if bindings.is_empty() {
              }
              non_mut_pat.into()
          }

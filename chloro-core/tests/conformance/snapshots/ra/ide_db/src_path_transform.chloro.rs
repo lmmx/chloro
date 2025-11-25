@@ -288,6 +288,7 @@ impl Ctx<'_> {
                     .replace(lifetime.syntax(), subst.clone_subtree().clone_for_update().syntax());
             }
         });
+
         editor.finish().new_root().clone()
     }
 
@@ -331,13 +332,16 @@ impl Ctx<'_> {
             }
             result
         }
+
         let root_path = path.clone_subtree();
+
         let result = find_child_paths_and_ident_pats(&root_path);
         let mut editor = SyntaxEditor::new(root_path.clone());
         for sub_path in result {
             let new = self.transform_path(sub_path.syntax());
             editor.replace(sub_path.syntax(), new);
         }
+
         let update_sub_item = editor.finish().new_root().clone().clone_subtree();
         let item = find_child_paths_and_ident_pats(&update_sub_item);
         let mut editor = SyntaxEditor::new(update_sub_item);
@@ -371,6 +375,7 @@ impl Ctx<'_> {
             return None;
         }
         let resolution = self.source_scope.speculative_resolve(path)?;
+
         match resolution {
             hir::PathResolution::TypeParam(tp) => {
                 if let Some(subst) = self.type_substs.get(&tp) {
@@ -537,8 +542,11 @@ impl Ctx<'_> {
         ident_pat: &ast::IdentPat,
     ) -> Option<()> {
         let name = ident_pat.name()?;
+
         let temp_path = make::path_from_text(&name.text());
+
         let resolution = self.source_scope.speculative_resolve(&temp_path)?;
+
         match resolution {
             hir::PathResolution::Def(def) if def.as_assoc_item(self.source_scope.db).is_none() => {
                 let cfg = FindPathConfig {
@@ -564,6 +572,7 @@ fn get_syntactic_substs(impl_def: ast::Impl) -> Option<AstSubsts> {
         _ => return None,
     };
     let generic_arg_list = path_type.path()?.segment()?.generic_arg_list()?;
+
     get_type_args_from_arg_list(generic_arg_list)
 }
 
@@ -583,6 +592,7 @@ fn get_type_args_from_arg_list(generic_arg_list: ast::GenericArgList) -> Option<
         ast::GenericArg::LifetimeArg(l_arg) => result.lifetimes.push(l_arg),
         _ => (),
     });
+
     Some(result)
 }
 
@@ -593,7 +603,9 @@ fn find_trait_for_assoc_item(
 ) -> Option<hir::Trait> {
     let db = scope.db;
     let trait_bounds = type_param.trait_bounds(db);
+
     let assoc_item_name = assoc_item.text();
+
     for trait_ in trait_bounds {
         let names = trait_.items(db).into_iter().filter_map(|item| match item {
             hir::AssocItem::TypeAlias(ta) => Some(ta.name(db)),
@@ -611,5 +623,6 @@ fn find_trait_for_assoc_item(
             }
         }
     }
+
     None
 }

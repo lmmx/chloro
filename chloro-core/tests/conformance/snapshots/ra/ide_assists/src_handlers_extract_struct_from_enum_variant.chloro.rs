@@ -29,12 +29,14 @@ pub(crate) fn extract_struct_from_enum_variant(
 ) -> Option<()> {
     let variant = ctx.find_node_at_offset::<ast::Variant>()?;
     let field_list = extract_field_list_if_applicable(&variant)?;
+
     let variant_name = variant.name()?;
     let variant_hir = ctx.sema.to_def(&variant)?;
     if existing_definition(ctx.db(), &variant_name, &variant_hir) {
         cov_mark::hit!(test_extract_enum_not_applicable_if_struct_exists);
         return None;
     }
+
     let enum_ast = variant.parent_enum();
     let enum_hir = ctx.sema.to_def(&enum_ast)?;
     let target = variant.syntax().text_range();
@@ -173,6 +175,7 @@ fn extract_generic_params(
     field_list: &Either<ast::RecordFieldList, ast::TupleFieldList>,
 ) -> Option<ast::GenericParamList> {
     let mut generics = known_generics.generic_params().map(|param| (param, false)).collect_vec();
+
     let tagged_one = match field_list {
         Either::Left(field_list) => field_list
             .fields()
@@ -183,12 +186,14 @@ fn extract_generic_params(
             .filter_map(|f| f.ty())
             .fold(false, |tagged, ty| tag_generics_in_variant(&ty, &mut generics) || tagged),
     };
+
     let generics = generics.into_iter().filter_map(|(param, tag)| tag.then_some(param));
     tagged_one.then(|| make::generic_param_list(generics))
 }
 
 fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, bool)]) -> bool {
     let mut tagged_one = false;
+
     for token in ty.syntax().descendants_with_tokens().filter_map(SyntaxElement::into_token) {
         for (param, tag) in generics.iter_mut().filter(|(_, tag)| !tag) {
             match param {
@@ -227,6 +232,7 @@ fn tag_generics_in_variant(ty: &ast::Type, generics: &mut [(ast::GenericParam, b
             }
         }
     }
+
     tagged_one
 }
 
@@ -238,11 +244,13 @@ fn create_struct_def(
     enum_: &ast::Enum,
 ) -> ast::Struct {
     let enum_vis = enum_.visibility();
+
     let insert_vis = |node: &'_ SyntaxNode, vis: &'_ SyntaxNode| {
         let vis = vis.clone_for_update();
         ted::insert(ted::Position::before(node), vis);
     };
     // for fields without any existing visibility, use visibility of enum
+
     let field_list: ast::FieldList = match field_list {
         Either::Left(field_list) => {
             if let Some(vis) = &enum_vis {
@@ -268,13 +276,16 @@ fn create_struct_def(
         }
     };
     let field_list = field_list.indent(IndentLevel::single());
+
     let strukt = make::struct_(enum_vis, name, generics, field_list).clone_for_update();
     // take comments from variant
+
     ted::insert_all(
         ted::Position::first_child_of(strukt.syntax()),
         take_all_comments(variant.syntax()),
     );
     // copy attributes from enum
+
     ted::insert_all(
         ted::Position::first_child_of(strukt.syntax()),
         enum_
@@ -284,6 +295,7 @@ fn create_struct_def(
             })
             .collect(),
     );
+
     strukt
 }
 
@@ -298,10 +310,12 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
         None => make::ty(&name.text()),
     };
     // change from a record to a tuple field list
+
     let tuple_field = make::tuple_field(None, ty);
     let field_list = make::tuple_field_list(iter::once(tuple_field)).clone_for_update();
     ted::replace(variant.field_list()?.syntax(), field_list.syntax());
     // remove any ws after the name
+
     if let Some(ws) = name
         .syntax()
         .siblings_with_tokens(syntax::Direction::Next)
@@ -309,6 +323,7 @@ fn update_variant(variant: &ast::Variant, generics: Option<ast::GenericParamList
     {
         ted::remove(SyntaxElement::Token(ws));
     }
+
     Some(())
 }
 
@@ -394,10 +409,12 @@ fn reference_to_node(
     let segment =
         reference.name.as_name_ref()?.syntax().parent().and_then(ast::PathSegment::cast)?;
     // filter out the reference in marco
+
     let segment_range = segment.syntax().text_range();
     if segment_range != reference.range {
         return None;
     }
+
     let parent = segment.parent_path().syntax().parent()?;
     let expr_or_pat = match_ast! {
         match parent {

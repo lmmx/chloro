@@ -176,9 +176,11 @@ fn stringify_expand(
     span: Span,
 ) -> ExpandResult<tt::TopSubtree> {
     let pretty = ::tt::pretty(tt.token_trees().flat_tokens());
+
     let expanded = quote! {span =>
         #pretty
     };
+
     ExpandResult::ok(expanded)
 }
 
@@ -189,7 +191,9 @@ fn assert_expand(
     span: Span,
 ) -> ExpandResult<tt::TopSubtree> {
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
+
     let mut iter = tt.iter();
+
     let cond = expect_fragment(
         &mut iter,
         parser::PrefixEntryPoint::Expr,
@@ -198,6 +202,7 @@ fn assert_expand(
     );
     _ = iter.expect_char(',');
     let rest = iter.remaining();
+
     let dollar_crate = dollar_crate(span);
     let panic_args = rest.iter();
     let mac = if use_panic_2021(db, span) {
@@ -211,6 +216,7 @@ fn assert_expand(
             #mac;
         }
     }};
+
     match cond.err {
         Some(err) => ExpandResult::new(expanded, err.into()),
         None => ExpandResult::ok(expanded),
@@ -226,9 +232,11 @@ fn file_expand(
     // FIXME: RA purposefully lacks knowledge of absolute file names
     // so just return "".
     let file_name = "file";
+
     let expanded = quote! {span =>
         #file_name
     };
+
     ExpandResult::ok(expanded)
 }
 
@@ -321,6 +329,7 @@ fn cfg_select_expand(
 ) -> ExpandResult<tt::TopSubtree> {
     let loc = db.lookup_intern_macro_call(id);
     let cfg_options = loc.krate.cfg_options(db);
+
     let mut iter = tt.iter();
     let mut expand_to = None;
     while let Some(next) = iter.peek() {
@@ -398,8 +407,10 @@ fn panic_expand(
 ) -> ExpandResult<tt::TopSubtree> {
     let dollar_crate = dollar_crate(span);
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
+
     let mac = if use_panic_2021(db, call_site_span) { sym::panic_2021 } else { sym::panic_2015 };
     // Pass the original arguments
+
     let subtree = WithDelimiter {
         delimiter: tt::Delimiter {
             open: call_site_span,
@@ -409,7 +420,9 @@ fn panic_expand(
         token_trees: tt.token_trees(),
     };
     // Expand to a macro call `$crate::panic::panic_{edition}`
+
     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
+
     ExpandResult::ok(call)
 }
 
@@ -421,12 +434,14 @@ fn unreachable_expand(
 ) -> ExpandResult<tt::TopSubtree> {
     let dollar_crate = dollar_crate(span);
     let call_site_span = span_with_call_site_ctxt(db, span, id.into(), Edition::CURRENT);
+
     let mac = if use_panic_2021(db, call_site_span) {
         sym::unreachable_2021
     } else {
         sym::unreachable_2015
     };
     // Pass the original arguments
+
     let mut subtree = tt.clone();
     *subtree.top_subtree_delimiter_mut() = tt::Delimiter {
         open: call_site_span,
@@ -434,7 +449,9 @@ fn unreachable_expand(
         kind: tt::DelimiterKind::Parenthesis,
     };
     // Expand to a macro call `$crate::panic::panic_{edition}`
+
     let call = quote!(call_site_span =>#dollar_crate::panic::#mac! #subtree);
+
     ExpandResult::ok(call)
 }
 
@@ -478,6 +495,7 @@ fn compile_error_expand(
         ] => ExpandError::other(span, Box::from(unescape_symbol(text).as_str())),
         _ => ExpandError::other(span, "`compile_error!` argument must be a string"),
     };
+
     ExpandResult {
         value: quote! {span =>},
         err: Some(err),
@@ -498,6 +516,7 @@ fn concat_expand(
         Some(_) => (),
         None => span = Some(s),
     };
+
     let mut i = 0;
     let mut iter = tt.iter();
     while let Some(mut t) = iter.next() {
@@ -830,14 +849,17 @@ fn include_str_expand(
     // it's unusual to `include_str!` a Rust file), but we can return an empty string.
     // Ideally, we'd be able to offer a precise expansion if the user asks for macro
     // expansion.
+
     let file_id = match relative_file(db, arg_id, path.as_str(), true, input_span) {
         Ok(file_id) => file_id,
         Err(_) => {
             return ExpandResult::ok(quote!(call_site =>""));
         }
     };
+
     let text = db.file_text(file_id.file_id(db));
     let text = &**text.text(db);
+
     ExpandResult::ok(quote!(call_site =>#text))
 }
 
@@ -861,6 +883,7 @@ fn env_expand(
             );
         }
     };
+
     let mut err = None;
     let s = get_env_inner(db, arg_id, &key).unwrap_or_else(|| {
         // The only variable rust-analyzer ever sets is `OUT_DIR`, so only diagnose that to avoid
@@ -879,6 +902,7 @@ fn env_expand(
         "UNRESOLVED_ENV_VAR".to_owned()
     });
     let expanded = quote! {span => #s };
+
     ExpandResult { value: expanded, err }
 }
 
@@ -905,6 +929,7 @@ fn option_env_expand(
             quote! {call_site => #dollar_crate::option::Option::Some(#s) }
         }
     };
+
     ExpandResult::ok(expanded)
 }
 

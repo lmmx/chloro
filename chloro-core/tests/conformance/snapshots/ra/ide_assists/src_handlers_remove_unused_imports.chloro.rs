@@ -24,6 +24,7 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
         syntax::NodeOrToken::Token(t) => t.parent()?,
     };
     // This applies to all uses that are selected, or are ancestors of our selection.
+
     let uses_up = selected_el.ancestors().skip(1).filter_map(ast::Use::cast);
     let uses_down = selected_el
         .descendants()
@@ -31,8 +32,10 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
         .filter_map(ast::Use::cast);
     let uses = uses_up.chain(uses_down).collect::<Vec<_>>();
     // Maps use nodes to the scope that we should search through to find
+
     let mut search_scopes = FxHashMap::<Module, Vec<SearchScope>>::default();
     // iterator over all unused use trees
+
     let mut unused = uses
         .into_iter()
         .flat_map(|u| u.syntax().descendants().filter_map(ast::UseTree::cast))
@@ -94,6 +97,7 @@ pub(crate) fn remove_unused_imports(acc: &mut Assists, ctx: &AssistContext<'_>) 
         })
         .peekable();
     // Peek so we terminate early if an unused use is found. Only do the rest of the work if the user selects the assist.
+
     if unused.peek().is_some() {
         acc.add(
             AssistId::quick_fix("remove_unused_imports"),
@@ -164,6 +168,7 @@ fn used_once_in_scope(
     scopes: &Vec<SearchScope>,
 ) -> bool {
     let mut found = false;
+
     for scope in scopes {
         let mut search_non_import = |_, r: FileReference| {
             // The import itself is a use; we must skip that.
@@ -182,6 +187,7 @@ fn used_once_in_scope(
             break;
         }
     }
+
     found
 }
 
@@ -202,6 +208,7 @@ fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScop
             )
         }
     };
+
     fn split_at_subrange(first: TextRange, second: TextRange) -> (TextRange, Option<TextRange>) {
         let intersect = first.intersect(second);
         if let Some(intersect) = intersect {
@@ -216,6 +223,7 @@ fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScop
             (first, None)
         }
     }
+
     let mut scopes = Vec::new();
     if let Some(range) = range {
         let mut ranges = vec![range];
@@ -242,6 +250,7 @@ fn module_search_scope(db: &RootDatabase, module: hir::Module) -> Vec<SearchScop
     } else {
         scopes.push(SearchScope::single_file(file_id));
     }
+
     scopes
 }
 
@@ -957,6 +966,7 @@ use foo::Foo as Bar$0;
 fn test(_: Bar) {}
 "#,
         );
+
         check_assist(
             remove_unused_imports,
             r#"
@@ -1014,6 +1024,7 @@ fn main() {}
 fn main() {}
 "#,
         );
+
         check_assist_not_applicable(
             remove_unused_imports,
             r#"
@@ -1028,6 +1039,7 @@ fn main() {
 }
 "#,
         );
+
         check_assist_not_applicable(
             remove_unused_imports,
             r#"
@@ -1065,6 +1077,7 @@ $0use bar::DeriveIdentity;$0
 struct S;
 "#,
         );
+
         check_assist_not_applicable(
             remove_unused_imports,
             r#"
@@ -1080,6 +1093,7 @@ $0use bar::DeriveIdentity;$0
 struct S;
 "#,
         );
+
         check_assist_not_applicable(
             remove_unused_imports,
             r#"

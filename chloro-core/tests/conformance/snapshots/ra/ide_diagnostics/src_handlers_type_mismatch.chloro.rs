@@ -55,6 +55,7 @@ pub(crate) fn type_mismatch(
 
 fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<Assist>> {
     let mut fixes = Vec::new();
+
     if let Some(expr_ptr) = d.expr_or_pat.value.cast::<ast::Expr>() {
         let expr_ptr = &InFile { file_id: d.expr_or_pat.file_id, value: expr_ptr };
         add_reference(ctx, d, expr_ptr, &mut fixes);
@@ -63,6 +64,7 @@ fn fixes(ctx: &DiagnosticsContext<'_>, d: &hir::TypeMismatch<'_>) -> Option<Vec<
         remove_semicolon(ctx, d, expr_ptr, &mut fixes);
         str_ref_to_owned(ctx, d, expr_ptr, &mut fixes);
     }
+
     if fixes.is_empty() { None } else { Some(fixes) }
 }
 
@@ -73,12 +75,15 @@ fn add_reference(
     acc: &mut Vec<Assist>,
 ) -> Option<()> {
     let range = ctx.sema.diagnostics_display_range((*expr_ptr).map(|it| it.into()));
+
     let (_, mutability) = d.expected.as_reference()?;
     let actual_with_ref = d.actual.add_reference(mutability);
     if !actual_with_ref.could_coerce_to(ctx.sema.db, &d.expected) {
         return None;
     }
+
     let ampersands = format!("&{}", mutability.as_keyword_for_ref());
+
     let edit = TextEdit::insert(range.range.start(), ampersands);
     let source_change = SourceChange::from_text_edit(range.file_id, edit);
     acc.push(fix("add_reference_here", "Add reference here", source_change, range.range));
@@ -95,20 +100,27 @@ fn add_missing_ok_or_some(
     let expr = expr_ptr.value.to_node(&root);
     let expr_range = expr.syntax().text_range();
     let scope = ctx.sema.scope(expr.syntax())?;
+
     let expected_adt = d.expected.as_adt()?;
     let expected_enum = expected_adt.as_enum()?;
+
     let famous_defs = FamousDefs(&ctx.sema, scope.krate());
     let core_result = famous_defs.core_result_Result();
     let core_option = famous_defs.core_option_Option();
+
     if Some(expected_enum) != core_result && Some(expected_enum) != core_option {
         return None;
     }
+
     let variant_name = if Some(expected_enum) == core_result { "Ok" } else { "Some" };
+
     let wrapped_actual_ty =
         expected_adt.ty_with_args(ctx.sema.db, std::iter::once(d.actual.clone()));
+
     if !d.expected.could_unify_with(ctx.sema.db, &wrapped_actual_ty) {
         return None;
     }
+
     if d.actual.is_unit() {
         if let Expr::BlockExpr(block) = &expr {
             if block.tail_expr().is_none() {
@@ -155,6 +167,7 @@ fn add_missing_ok_or_some(
             return Some(());
         }
     }
+
     let mut builder = TextEdit::builder();
     builder.insert(expr.syntax().text_range().start(), format!("{variant_name}("));
     builder.insert(expr.syntax().text_range().end(), ")".to_owned());
@@ -177,13 +190,16 @@ fn remove_unnecessary_wrapper(
     let root = db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     let expr = ctx.sema.original_ast_node(expr)?;
+
     let Expr::CallExpr(call_expr) = expr else {
         return None;
     };
+
     let callable = ctx.sema.resolve_expr_as_callable(&call_expr.expr()?)?;
     let CallableKind::TupleEnumVariant(variant) = callable.kind() else {
         return None;
     };
+
     let actual_enum = d.actual.as_adt()?.as_enum()?;
     let famous_defs = FamousDefs(&ctx.sema, ctx.sema.scope(call_expr.syntax())?.krate());
     let core_option = famous_defs.core_option_Option();
@@ -191,11 +207,14 @@ fn remove_unnecessary_wrapper(
     if Some(actual_enum) != core_option && Some(actual_enum) != core_result {
         return None;
     }
+
     let inner_type = variant.fields(db).first()?.ty_with_args(db, d.actual.type_arguments());
     if !d.expected.could_unify_with(db, &inner_type) {
         return None;
     }
+
     let inner_arg = call_expr.arg_list()?.args().next()?;
+
     let file_id = expr_ptr.file_id.original_file(db);
     let mut builder = SourceChangeBuilder::new(file_id.file_id(ctx.sema.db));
     let mut editor;
@@ -232,6 +251,7 @@ fn remove_unnecessary_wrapper(
             editor.replace(call_expr.syntax(), inner_arg.syntax());
         }
     }
+
     builder.add_file_edits(file_id.file_id(ctx.sema.db), editor);
     let name = format!("Remove unnecessary {}() wrapper", variant.name(db).as_str());
     acc.push(fix(
@@ -262,11 +282,13 @@ fn remove_semicolon(
         return None;
     }
     let semicolon_range = expr_before_semi.semicolon_token()?.text_range();
+
     let edit = TextEdit::delete(semicolon_range);
     let source_change = SourceChange::from_text_edit(
         expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
         edit,
     );
+
     acc.push(fix("remove_semicolon", "Remove this semicolon", source_change, semicolon_range));
     Some(())
 }
@@ -283,16 +305,20 @@ fn str_ref_to_owned(
     if !is_applicable {
         return None;
     }
+
     let root = ctx.sema.db.parse_or_expand(expr_ptr.file_id);
     let expr = expr_ptr.value.to_node(&root);
     let expr_range = expr.syntax().text_range();
+
     let to_owned = ".to_owned()".to_owned();
+
     let edit = TextEdit::insert(expr.syntax().text_range().end(), to_owned);
     let source_change = SourceChange::from_text_edit(
         expr_ptr.file_id.original_file(ctx.sema.db).file_id(ctx.sema.db),
         edit,
     );
     acc.push(fix("str_ref_to_owned", "Add .to_owned() here", source_change, expr_range));
+
     Some(())
 }
 
@@ -642,6 +668,7 @@ fn foo() -> Result<(), ()> {
 }
             "#,
         );
+
         check_fix(
             r#"
 //- minicore: result

@@ -54,6 +54,7 @@ pub fn expand_eager_macro_input(
     // When `lazy_expand` is called, its *parent* file must already exist.
     // Here we store an eager macro id for the argument expanded subtree
     // for that purpose.
+
     let loc = MacroCallLoc {
         def,
         krate,
@@ -65,7 +66,9 @@ pub fn expand_eager_macro_input(
     let (_, _, span) = db.macro_arg(arg_id);
     let ExpandResult { value: (arg_exp, arg_exp_map), err: parse_err } =
         db.parse_macro_expansion(arg_id);
+
     let mut arg_map = ExpansionSpanMap::empty();
+
     let ExpandResult { value: expanded_eager_input, err } = {
         eager_macro_recur(
             db,
@@ -83,16 +86,20 @@ pub fn expand_eager_macro_input(
     if cfg!(debug_assertions) {
         arg_map.finish();
     }
+
     let Some((expanded_eager_input, _mapping)) = expanded_eager_input else {
         return ExpandResult { value: None, err };
     };
+
     let mut subtree = syntax_bridge::syntax_node_to_token_tree(
         &expanded_eager_input,
         arg_map,
         span,
         DocCommentDesugarMode::Mbe,
     );
+
     subtree.top_subtree_delimiter_mut().kind = crate::tt::DelimiterKind::Invisible;
+
     let loc = MacroCallLoc {
         def,
         krate,
@@ -108,6 +115,7 @@ pub fn expand_eager_macro_input(
         },
         ctxt: call_site,
     };
+
     ExpandResult { value: Some(db.intern_macro_call(loc)), err }
 }
 
@@ -128,6 +136,7 @@ fn lazy_expand(
         call_site,
     );
     eager_callback(ast_id.map(|ast_id| (AstPtr::new(macro_call), ast_id)), id);
+
     db.parse_macro_expansion(id).map(|parse| (InFile::new(id.into(), parse.0), parse.1))
 }
 
@@ -143,11 +152,14 @@ fn eager_macro_recur(
     eager_callback: EagerCallBackFn<'_>,
 ) -> ExpandResult<Option<(SyntaxNode, TextSize)>> {
     let original = curr.value.clone_for_update();
+
     let mut replacements = Vec::new();
     // FIXME: We only report a single error inside of eager expansions
+
     let mut error = None;
     let mut children = original.preorder_with_tokens();
     // Collect replacement
+
     while let Some(child) = children.next() {
         let call = match child {
             WalkEvent::Enter(SyntaxElement::Node(child)) => match ast::MacroCall::cast(child) {
@@ -277,6 +289,7 @@ fn eager_macro_recur(
             None => offset += call.syntax().text_range().len(),
         }
     }
+
     replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
     ExpandResult {
         value: Some((original, offset)),

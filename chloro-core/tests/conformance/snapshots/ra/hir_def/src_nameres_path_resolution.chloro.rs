@@ -89,6 +89,7 @@ impl PerNs {
             let this = MacroSubNs::from_id(db, def.def);
             sub_namespace_match(Some(this), expected)
         });
+
         self
     }
 }
@@ -168,11 +169,14 @@ impl DefMap {
             shadow,
             expected_macro_subns,
         );
+
         if self.block.is_none() {
             // If we're in the root `DefMap`, we can resolve the path directly.
             return result;
         }
+
         let mut current_map = self;
+
         let mut merge = |new: ResolvePathResult| {
             result.resolved_def = result.resolved_def.or(new.resolved_def);
             if result.reached_fixedpoint == ReachedFixedPoint::No {
@@ -186,6 +190,7 @@ impl DefMap {
                 (None, new) => new,
             };
         };
+
         loop {
             match current_map.block {
                 Some(block) if original_module == Self::ROOT => {
@@ -357,6 +362,7 @@ impl DefMap {
                 }
             },
         };
+
         self.resolve_remaining_segments(
             db,
             mode,
@@ -413,6 +419,7 @@ impl DefMap {
                 return ResolvePathResult::empty(ReachedFixedPoint::Yes);
             }
         };
+
         self.resolve_remaining_segments(
             db,
             mode,
@@ -624,6 +631,7 @@ impl DefMap {
             curr_per_ns = curr_per_ns
                 .filter_visibility(|vis| vis.is_visible_from_def_map(db, self, original_module));
         }
+
         ResolvePathResult::new(
             curr_per_ns,
             ReachedFixedPoint::Yes,
@@ -671,6 +679,7 @@ impl DefMap {
                 Some(_) | None => from_scope.or(from_builtin),
             },
         };
+
         let extern_prelude = || {
             if self.block.is_some() && module == DefMap::ROOT {
                 // Don't resolve extern prelude in pseudo-modules of blocks, because
@@ -686,6 +695,7 @@ impl DefMap {
             }
             self.resolve_in_prelude(db, name)
         };
+
         from_legacy_macro
             .or(from_scope_or_builtin)
             .or_else(extern_prelude)
@@ -705,6 +715,7 @@ impl DefMap {
         let extern_prelude = self.resolve_name_in_extern_prelude(local_def_map, name);
         let macro_use_prelude = || self.resolve_in_macro_use_prelude(name);
         let prelude = || self.resolve_in_prelude(db, name);
+
         extern_prelude.or_else(macro_use_prelude).or_else(prelude)
     }
 
@@ -749,6 +760,7 @@ impl DefMap {
             }
             self.resolve_name_in_extern_prelude(local_def_map, name)
         };
+
         from_crate_root.or_else(from_extern_prelude)
     }
 
@@ -778,6 +790,7 @@ fn adjust_to_nearest_non_block_module<'db>(
     // INVARIANT: `local_id` in `def_map` must be a block module.
     stdx::always!(def_map.module_id(local_id).is_block_module());
     // This needs to be a local variable due to our mighty lifetime.
+
     let mut def_map = def_map;
     loop {
         let BlockInfo { parent, .. } = def_map.block.expect("block module without parent module");

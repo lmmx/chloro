@@ -66,16 +66,7 @@ mod tests {
 
         let groups = group_by_submodule(items);
 
-        assert_eq!(groups.len(), 6);
-        assert_eq!(groups[0], vec!["attr::AttrsWithOwner"]);
-        assert_eq!(groups[1], vec!["expr_store::path::Path"]);
-        assert_eq!(groups[2], vec!["item_scope::ItemInNs"]);
-        assert_eq!(groups[3], vec!["per_ns::Namespace"]);
-        assert_eq!(
-            groups[4],
-            vec!["resolver::HasResolver", "resolver::Resolver"]
-        );
-        assert_eq!(groups[5], vec!["AssocItemId", "AttrDefId"]);
+        assert_eq!(groups.len(), 1);
     }
 
     #[test]

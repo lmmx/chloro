@@ -24,13 +24,16 @@ use super::inline_call::split_refs_and_uses;
 pub(crate) fn inline_type_alias_uses(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let ast_alias = name.syntax().parent().and_then(ast::TypeAlias::cast)?;
+
     let hir_alias = ctx.sema.to_def(&ast_alias)?;
     let concrete_type = ast_alias.ty()?;
+
     let usages = Definition::TypeAlias(hir_alias).usages(&ctx.sema);
     if !usages.at_least_one() {
         return None;
     }
     // until this is ok
+
     acc.add(
         AssistId::refactor_inline("inline_type_alias_uses"),
         "Inline type alias into all uses",
@@ -102,6 +105,7 @@ pub(crate) fn inline_type_alias(acc: &mut Assists, ctx: &AssistContext<'_>) -> O
             replacement = inline(&alias, &alias_instance)?;
         }
     }
+
     acc.add(
         AssistId::refactor_inline("inline_type_alias"),
         "Inline type alias",
@@ -168,9 +172,11 @@ impl LifetimeMap {
             .filter_map(|lp| lp.lifetime())
             .map(|l| l.to_string())
             .collect_vec();
+
         for lifetime in &lifetimes {
             inner.insert(lifetime.to_string(), wildcard_lifetime.clone());
         }
+
         if let Some(instance_generic_args_list) = &instance_args {
             for (index, lifetime) in instance_generic_args_list
                 .lifetime_args()
@@ -188,6 +194,7 @@ impl LifetimeMap {
                 inner.insert(key.clone(), lifetime);
             }
         }
+
         Some(Self(inner))
     }
 }
@@ -202,12 +209,14 @@ impl ConstAndTypeMap {
         let mut inner = FxHashMap::default();
         let instance_generics = generic_args_to_const_and_type_generics(instance_args);
         let alias_generics = generic_param_list_to_const_and_type_generics(alias_generics);
+
         if instance_generics.len() > alias_generics.len() {
             cov_mark::hit!(too_many_generic_args);
             return None;
         }
         // Any declaration generics that don't have a default value must have one
         // provided by the instance.
+
         for (i, declaration_generic) in alias_generics.iter().enumerate() {
             let key = declaration_generic.replacement_key()?;
 
@@ -220,6 +229,7 @@ impl ConstAndTypeMap {
                 return None;
             }
         }
+
         Some(Self(inner))
     }
 }
@@ -258,8 +268,10 @@ fn create_replacement(
 ) -> SyntaxNode {
     let updated_concrete_type = concrete_type.syntax().clone_subtree();
     let mut editor = SyntaxEditor::new(updated_concrete_type.clone());
+
     let mut replacements: Vec<(SyntaxNode, SyntaxNode)> = Vec::new();
     let mut removals: Vec<NodeOrToken<SyntaxNode, _>> = Vec::new();
+
     for syntax in updated_concrete_type.descendants() {
         if let Some(old_lifetime) = ast::Lifetime::cast(syntax.clone()) {
             if let Some(new_lifetime) = lifetime_map.0.get(&old_lifetime.to_string()) {
@@ -290,9 +302,11 @@ fn create_replacement(
             replacements.push((syntax.clone(), new));
         }
     }
+
     for (old, new) in replacements {
         editor.replace(old, new);
     }
+
     for syntax in removals {
         editor.delete(syntax);
     }
@@ -305,6 +319,7 @@ fn get_type_alias(ctx: &AssistContext<'_>, path: &ast::PathType) -> Option<ast::
     // instance generics to declaration generics. The `hir::TypeAlias` doesn't
     // keep the order, so we must get the `ast::TypeAlias` from the hir
     // definition.
+
     if let PathResolution::Def(hir::ModuleDef::TypeAlias(ta)) = resolved_path {
         Some(ctx.sema.source(ta)?.value)
     } else {
@@ -346,6 +361,7 @@ fn generic_param_list_to_const_and_type_generics(
     generics: &ast::GenericParamList,
 ) -> Vec<ConstOrTypeGeneric> {
     let mut others = Vec::new();
+
     for param in generics.generic_params() {
         match param {
             ast::GenericParam::LifetimeParam(_) => {}
@@ -355,6 +371,7 @@ fn generic_param_list_to_const_and_type_generics(
             ast::GenericParam::TypeParam(tp) => others.push(ConstOrTypeGeneric::TypeParam(tp)),
         }
     }
+
     others
 }
 
@@ -364,6 +381,7 @@ fn generic_args_to_const_and_type_generics(
     let mut others = Vec::new();
     // It's fine for there to be no instance generics because the declaration
     // might have default values or they might be inferred.
+
     if let Some(generics) = generics {
         for arg in generics.generic_args() {
             match arg {
@@ -377,6 +395,7 @@ fn generic_args_to_const_and_type_generics(
             }
         }
     }
+
     others
 }
 
@@ -841,6 +860,7 @@ impl<T, const C: usize> Tr<'static, u8> for Strukt<'_, T, C> {
 }
 "#,
         );
+
         check_assist_not_applicable(
             inline_type_alias,
             r#"

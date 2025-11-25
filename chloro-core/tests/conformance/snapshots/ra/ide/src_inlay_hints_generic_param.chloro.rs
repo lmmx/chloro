@@ -24,9 +24,12 @@ pub(crate) fn hints(
     if !(type_hints || lifetime_hints || const_hints) {
         return None;
     }
+
     let generic_arg_list = node.generic_arg_list()?;
+
     let (generic_def, _, _, _) =
         generic_def_for_node(sema, &generic_arg_list, &node.syntax().first_token()?)?;
+
     let mut args = generic_arg_list.generic_args().peekable();
     let start_with_lifetime = matches!(args.peek()?, ast::GenericArg::LifetimeArg(_));
     let params = generic_def.params(sema.db).into_iter().filter(|p| {
@@ -40,6 +43,7 @@ pub(crate) fn hints(
         }
         true
     });
+
     let hints = params.zip(args).filter_map(|(param, arg)| {
         if matches!(arg, ast::GenericArg::AssocTypeArg(_)) {
             return None;
@@ -116,6 +120,7 @@ pub(crate) fn hints(
             resolve_parent: Some(node.syntax().text_range()),
         })
     });
+
     acc.extend(hints);
     Some(())
 }
@@ -137,6 +142,7 @@ fn get_segment_representation(
             type_path(&ty).map(Either::Right).map(Either::Left)
         }
     };
+
     fn type_path(ty: &ast::Type) -> Option<ast::Path> {
         match ty {
             ast::Type::ArrayType(it) => type_path(&it.ty()?),

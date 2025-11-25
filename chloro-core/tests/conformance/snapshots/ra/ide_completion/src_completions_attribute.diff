@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16250 bytes
-Chloro size:   16199 bytes
+Chloro size:   16206 bytes
 Rustfmt size:  16896 bytes
 
 ✗ Outputs DIFFER
@@ -47,10 +47,6 @@ Rustfmt size:  16896 bytes
      let segments = segments.iter().map(|n| n.text()).collect::<Vec<_>>();
      let segments = segments.iter().map(|t| t.as_str()).collect::<Vec<_>>();
      let tt = attribute.token_tree()?;
--
-     match segments.as_slice() {
-         ["repr"] => repr::complete_repr(acc, ctx, tt),
-         ["feature"] => lint::complete_lint(
      acc: &mut Completions,
      ctx: &CompletionContext<'_>,
      path_ctx @ PathCompletionCtx { qualified, .. }: &PathCompletionCtx<'_>,
@@ -62,17 +58,7 @@ Rustfmt size:  16896 bytes
 +    &AttrCtx { kind, annotated_item_kind, ref derive_helpers }: &AttrCtx,
  ) {
      let is_inner = kind == AttrKind::Inner;
--
-     for (derive_helper, derive_name) in derive_helpers {
-         let mut item = CompletionItem::new(
-             SymbolKind::Attribute,
-         item.detail(format!("derive helper of `{derive_name}`"));
-         item.add_to(acc, ctx.db);
-     }
--
-     match qualified {
-         Qualified::With {
-             resolution: Some(hir::PathResolution::Def(hir::ModuleDef::Module(module))),
+ 
          }
          Qualified::TypeAnchor { .. } | Qualified::With { .. } => {}
      }
@@ -81,18 +67,11 @@ Rustfmt size:  16896 bytes
 -    } else {
 -        None
 -    };
--
 +    let qualifier_path =
 +        if let Qualified::With { path, .. } = qualified { Some(path) } else { None };
+ 
      let attributes = annotated_item_kind.and_then(|kind| {
          if ast::Expr::can_cast(kind) {
-             Some(EXPR_ATTRIBUTES)
-             KIND_TO_ATTRIBUTES.get(&kind).copied()
-         }
-     });
--
-     let add_completion = |attr_completion: &AttrCompletion| {
-         // if we don't already have the qualifiers of the completion, then
          // add the missing parts to the label and snippet
          let mut label = attr_completion.label.to_owned();
          let mut snippet = attr_completion.snippet.map(|s| s.to_owned());
@@ -118,10 +97,6 @@ Rustfmt size:  16896 bytes
  
          if let Some(lookup) = attr_completion.lookup {
              item.lookup_by(lookup);
-             item.add_to(acc, ctx.db);
-         }
-     };
--
      match attributes {
          Some(applicable) => applicable
              .iter()
@@ -285,10 +260,3 @@ Rustfmt size:  16896 bytes
      attr("used", None, None),
      attr("warn(…)", Some("warn"), Some("warn(${0:lint})")),
      attr(
- fn attributes_are_sorted() {
-     let mut attrs = ATTRIBUTES.iter().map(|attr| attr.key());
-     let mut prev = attrs.next().unwrap();
--
-     attrs.for_each(|next| {
-         assert!(
-             prev < next,

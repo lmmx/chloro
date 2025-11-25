@@ -50,13 +50,16 @@ fn foo() -> i32 {
             ]
         "#]],
     );
+
     let new_text = "
 fn foo() -> i32 {
     1
     +
     1
 }";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -152,6 +155,7 @@ fn baz() -> i32 {
             ]
         "#]],
     );
+
     let new_text = "
 fn foo() -> f32 {
     1.0 + 2.0
@@ -163,7 +167,9 @@ fn baz() -> i32 {
     1 + 1
 }
 ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -238,6 +244,7 @@ $0",
             ]
         "#]],
     );
+
     let new_text = "
 fn foo() -> i32 {
     1 + 1
@@ -251,7 +258,9 @@ pub struct NewStruct {
     field: i32,
 }
 ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -307,6 +316,7 @@ $0",
             ]
         "#]],
     );
+
     let new_text = "
 fn foo() -> i32 {
     1 + 1
@@ -321,7 +331,9 @@ pub enum SomeEnum {
     B
 }
 ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -377,6 +389,7 @@ $0",
             ]
         "#]],
     );
+
     let new_text = "
 use std::collections::HashMap;
 
@@ -388,7 +401,9 @@ fn bar() -> f32 {
     2.0 * 3.0
 }
 ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -448,6 +463,7 @@ $0",
             ]
         "#]],
     );
+
     let new_text = "
 fn foo() -> i32 {
     1 + 1
@@ -467,7 +483,9 @@ impl SomeStruct {
     }
 }
 ";
+
     db.set_file_text(pos.file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {
@@ -515,6 +533,7 @@ fn main() {
     s.$0
 }",
     );
+
     execute_assert_events(
         &db,
         || {
@@ -594,6 +613,7 @@ fn main() {
             ]
         "#]],
     );
+
     let new_text = "
 //- /main.rs crate:main
 struct AnotherStruct;
@@ -610,7 +630,9 @@ fn main() {
     s.method();
     s.$0
 }";
+
     db.set_file_text(file_id.file_id(&db), new_text);
+
     execute_assert_events(
         &db,
         || {

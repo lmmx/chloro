@@ -132,8 +132,10 @@ impl Attrs {
         let Some(fields) = fields else {
             return Arc::new(res);
         };
+
         let cfg_options = krate.cfg_options(db);
         let span_map = db.span_map(file_id);
+
         match fields {
             ast::FieldList::RecordFieldList(fields) => {
                 let mut idx = 0;
@@ -158,6 +160,7 @@ impl Attrs {
                 }
             }
         }
+
         res.shrink_to_fit();
         Arc::new(res)
     }
@@ -323,6 +326,7 @@ fn parse_rustc_legacy_const_generics(tt: &crate::tt::TopSubtree) -> Box<[u32]> {
             }
         }
     }
+
     indices.into_boxed_slice()
 }
 
@@ -342,10 +346,12 @@ fn merge_repr(this: &mut ReprOptions, other: ReprOptions) {
 fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
     use crate::builtin_type::{BuiltinInt, BuiltinUint};
     use rustc_abi::{Align, Integer, IntegerType, ReprFlags, ReprOptions};
+
     match tt.top_subtree().delimiter {
         tt::Delimiter { kind: DelimiterKind::Parenthesis, .. } => {}
         _ => return None,
     }
+
     let mut acc = ReprOptions::default();
     let mut tts = tt.iter();
     while let Some(tt) = tts.next() {
@@ -414,6 +420,7 @@ fn parse_repr_tt(tt: &crate::tt::TopSubtree) -> Option<ReprOptions> {
         };
         merge_repr(&mut acc, repr);
     }
+
     Some(acc)
 }
 
@@ -469,6 +476,7 @@ fn next_doc_expr<S: Copy>(mut it: TtIter<'_, S>) -> Option<DocExpr> {
         Some(_) => return Some(DocExpr::Invalid),
     };
     // Peek
+
     let ret = match it.peek() {
         Some(TtElement::Leaf(tt::Leaf::Punct(punct))) if punct.char == '=' => {
             it.next();
@@ -678,6 +686,7 @@ impl AttrsWithOwner {
             AttrDefId::ExternCrateId(id) => any_has_attrs(db, id),
             AttrDefId::UseId(id) => any_has_attrs(db, id),
         };
+
         AttrSourceMap::new(owner.as_ref().map(|node| node as &dyn HasAttrs))
     }
 }
@@ -729,6 +738,7 @@ impl AttrSourceMap {
             Some((file_id, def_site_cut)) if def_site_cut <= ast_idx => file_id,
             _ => self.file_id,
         };
+
         self.source
             .get(ast_idx)
             .map(|it| InFile::new(file_id, it))
@@ -819,6 +829,7 @@ pub(crate) fn fields_attrs_source_map(
 ) -> Arc<ArenaMap<LocalFieldId, AstPtr<Either<ast::TupleField, ast::RecordField>>>> {
     let mut res = ArenaMap::default();
     let child_source = def.child_source(db);
+
     for (idx, variant) in child_source.value.iter() {
         res.insert(
             idx,
@@ -827,6 +838,7 @@ pub(crate) fn fields_attrs_source_map(
                 .either(|l| AstPtr::new(l).wrap_left(), |r| AstPtr::new(r).wrap_right()),
         );
     }
+
     Arc::new(res)
 }
 
@@ -860,10 +872,12 @@ mod tests {
     #[test]
     fn test_doc_expr_parser() {
         assert_parse_result("#![doc(hidden)]", DocAtom::Flag(Symbol::intern("hidden")).into());
+
         assert_parse_result(
             r#"#![doc(alias = "foo")]"#,
             DocAtom::KeyValue { key: Symbol::intern("alias"), value: Symbol::intern("foo") }.into(),
         );
+
         assert_parse_result(
             r#"#![doc(alias("foo"))]"#,
             DocExpr::Alias([Symbol::intern("foo")].into()),
@@ -874,6 +888,7 @@ mod tests {
                 [Symbol::intern("foo"), Symbol::intern("bar"), Symbol::intern("baz")].into(),
             ),
         );
+
         assert_parse_result(
             r#"
         #[doc(alias("Bar", "Qux"))]

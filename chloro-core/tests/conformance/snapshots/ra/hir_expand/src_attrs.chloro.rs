@@ -49,11 +49,13 @@ impl RawAttrs {
         span_map: SpanMapRef<'_>,
     ) -> Self {
         let entries: Vec<_> = Self::attrs_iter::<true>(db, owner, span_map).collect();
+
         let entries = if entries.is_empty() {
             None
         } else {
             Some(ThinArc::from_header_and_iter((), entries.into_iter()))
         };
+
         RawAttrs { entries }
     }
 
@@ -66,11 +68,13 @@ impl RawAttrs {
     ) -> Self {
         let entries: Vec<_> =
             Self::attrs_iter_expanded::<true>(db, owner, span_map, cfg_options).collect();
+
         let entries = if entries.is_empty() {
             None
         } else {
             Some(ThinArc::from_header_and_iter((), entries.into_iter()))
         };
+
         RawAttrs { entries }
     }
 
@@ -142,6 +146,7 @@ impl RawAttrs {
         if !has_cfg_attrs {
             return self;
         }
+
         let cfg_options = krate.cfg_options(db);
         let new_attrs = self
             .iter()
@@ -276,7 +281,9 @@ impl Attr {
             }
             (path, input)
         };
+
         let path = Interned::new(ModPath::from_tt(db, path)?);
+
         let input = match (input.flat_tokens().first(), input.try_into_subtree()) {
             (_, Some(tree)) => {
                 Some(Box::new(AttrInput::TokenTree(tt::TopSubtree::from_subtree(tree))))
@@ -307,16 +314,19 @@ impl Attr {
         if !is_cfg_attr {
             return smallvec![self];
         }
+
         let subtree = match self.token_tree_value() {
             Some(it) => it,
             _ => return smallvec![self.clone()],
         };
+
         let (cfg, parts) = match parse_cfg_attr_input(subtree) {
             Some(it) => it,
             None => return smallvec![self.clone()],
         };
         let index = self.id;
         let attrs = parts.filter_map(|attr| Attr::from_tt(db, attr, index));
+
         let cfg = TopSubtree::from_token_trees(subtree.top_subtree().delimiter, cfg);
         let cfg = CfgExpr::parse(&cfg);
         if cfg_options.check(&cfg) == Some(false) {
@@ -392,6 +402,7 @@ impl Attr {
         db: &'a dyn ExpandDatabase,
     ) -> Option<impl Iterator<Item = (ModPath, Span)> + 'a> {
         let args = self.token_tree_value()?;
+
         if args.top_subtree().delimiter.kind != DelimiterKind::Parenthesis {
             return None;
         }
@@ -402,6 +413,7 @@ impl Attr {
                 let span = tts.flat_tokens().first()?.first_span();
                 Some((ModPath::from_tt(db, tts)?, span))
             });
+
         Some(paths)
     }
 
@@ -432,6 +444,7 @@ fn unescape(s: &str) -> Option<Cow<'_, str>> {
             (Err(_), _) => has_error = true,
         }
     });
+
     match (has_error, buf.capacity() == 0) {
         (true, _) => None,
         (false, false) => Some(Cow::Owned(buf)),
@@ -475,6 +488,7 @@ fn inner_attributes(
             _ => return None,
         }
     };
+
     let attrs = ast::AttrDocCommentIter::from_syntax_node(&node).filter(|el| match el {
         Either::Left(attr) => attr.kind().is_inner(),
         Either::Right(comment) => comment.is_inner(),

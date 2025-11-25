@@ -47,6 +47,7 @@ pub(crate) fn generics(db: &dyn HirDatabase, def: SolverDefId) -> Generics {
         }));
         result
     };
+
     let (parent, own_params) = match (def.try_into(), def) {
         (Ok(def), _) => (
             parent_generic_def(db, def),
@@ -66,6 +67,7 @@ pub(crate) fn generics(db: &dyn HirDatabase, def: SolverDefId) -> Generics {
         _ => panic!("No generics for {def:?}"),
     };
     let parent_generics = parent.map(|def| Box::new(generics(db, def.into())));
+
     Generics {
         parent,
         parent_count: parent_generics.map_or(0, |g| g.parent_count + g.own_params.len()),

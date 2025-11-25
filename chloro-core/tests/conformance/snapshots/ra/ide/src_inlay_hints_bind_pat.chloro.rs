@@ -27,6 +27,7 @@ pub(super) fn hints(
     if !config.type_hints {
         return None;
     }
+
     let parent = pat.syntax().parent()?;
     let type_ascriptable = match_ast! {
         match parent {
@@ -53,21 +54,27 @@ pub(super) fn hints(
             _ => None
         }
     };
+
     let descended = sema.descend_node_into_attributes(pat.clone()).pop();
     let desc_pat = descended.as_ref().unwrap_or(pat);
     let ty = sema.type_of_binding_in_pat(desc_pat)?;
+
     if ty.is_unknown() {
         return None;
     }
+
     if sema.resolve_bind_pat_to_const(pat).is_some() {
         return None;
     }
+
     let mut label = label_of_ty(famous_defs, config, &ty, display_target)?;
+
     if config.hide_named_constructor_hints
         && is_named_constructor(sema, pat, &label.to_string()).is_some()
     {
         return None;
     }
+
     let text_edit = if let Some(colon_token) = &type_ascriptable {
         ty_to_text_edit(
             sema,
@@ -84,10 +91,12 @@ pub(super) fn hints(
     } else {
         None
     };
+
     let render_colons = config.render_colons && !matches!(type_ascriptable, Some(Some(_)));
     if render_colons {
         label.prepend_str(": ");
     }
+
     let text_range = match pat.name() {
         Some(name) => name.syntax().text_range(),
         None => pat.syntax().text_range(),
@@ -105,6 +114,7 @@ pub(super) fn hints(
         pad_right: false,
         resolve_parent: Some(pat.syntax().text_range()),
     });
+
     Some(())
 }
 
@@ -121,6 +131,7 @@ fn is_named_constructor(
             _ => None,
         }
     }?;
+
     let expr = sema.descend_node_into_attributes(expr.clone()).pop().unwrap_or(expr);
     // unwrap postfix expressions
     let expr = match expr {
@@ -137,6 +148,7 @@ fn is_named_constructor(
         _ => return None,
     };
     let path = expr.path()?;
+
     let callable = sema.type_of_expr(&ast::Expr::PathExpr(expr))?.original.as_callable(sema.db);
     let callable_kind = callable.map(|it| it.kind());
     let qual_seg = match callable_kind {
@@ -145,6 +157,7 @@ fn is_named_constructor(
         }
         _ => path.segment(),
     }?;
+
     let ctor_name = match qual_seg.kind()? {
         ast::PathSegmentKind::Name(name_ref) => {
             match qual_seg.generic_arg_list().map(|it| it.generic_args()) {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10280 bytes
-Chloro size:   10277 bytes
+Chloro size:   10280 bytes
 Rustfmt size:  10776 bytes
 
 ✗ Outputs DIFFER
@@ -16,24 +16,8 @@ Rustfmt size:  10776 bytes
  
  use crate::{
      context::{PathCompletionCtx, Qualified, TypeAscriptionTarget, TypeLocation},
-     location: &TypeLocation,
- ) {
-     let _p = tracing::info_span!("complete_type_path").entered();
--
-     let scope_def_applicable = |def| {
-         use hir::{GenericParam::*, ModuleDef::*};
-         match def {
-             | ScopeDef::GenericParam(TypeParam(_)) => location.complete_types(),
-         }
      };
--
-     let add_assoc_item = |acc: &mut Completions, item| match item {
-         hir::AssocItem::Const(ct) if matches!(location, TypeLocation::GenericArg { .. }) => {
-             acc.add_const(ctx, ct)
-         hir::AssocItem::Function(_) | hir::AssocItem::Const(_) => (),
-         hir::AssocItem::TypeAlias(ty) => acc.add_type_alias(ctx, ty),
-     };
--
+ 
      match qualified {
 -        Qualified::TypeAnchor {
 -            ty: None,

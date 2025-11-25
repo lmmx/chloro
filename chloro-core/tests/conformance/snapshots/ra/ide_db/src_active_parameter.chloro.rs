@@ -73,6 +73,7 @@ pub fn callable_for_token<'db>(
         .ancestors()
         .filter_map(ast::CallableExpr::cast)
         .find(|it| it.arg_list().is_some_and(|it| it.syntax().text_range().contains(offset)))?;
+
     callable_for_node(sema, &calling_node, offset)
 }
 
@@ -156,6 +157,7 @@ pub fn generic_def_for_node(
             _ => return None,
         }
     };
+
     let active_param = generic_arg_list
         .syntax()
         .children_with_tokens()
@@ -163,9 +165,11 @@ pub fn generic_def_for_node(
         .filter(|t| t.kind() == T![,])
         .take_while(|t| t.text_range().start() <= token.text_range().start())
         .count();
+
     let first_arg_is_non_lifetime = generic_arg_list
         .generic_args()
         .next()
         .is_some_and(|arg| !matches!(arg, ast::GenericArg::LifetimeArg(_)));
+
     Some((def, active_param, first_arg_is_non_lifetime, variant))
 }

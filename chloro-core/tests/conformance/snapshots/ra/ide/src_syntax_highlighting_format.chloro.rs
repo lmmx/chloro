@@ -36,6 +36,7 @@ pub(super) fn highlight_format_string(
 
         return;
     }
+
     if let Some(parts) = sema.as_format_args_parts(string) {
         parts.into_iter().for_each(|(range, res)| {
             if let Some(res) = res {

@@ -26,6 +26,7 @@ pub struct VersionInfo {
 impl fmt::Display for VersionInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.version)?;
+
         if let Some(ci) = &self.commit_info {
             write!(f, " ({} {})", ci.short_commit_hash, ci.commit_date)?;
         };
@@ -39,6 +40,7 @@ pub const fn version() -> VersionInfo {
         Some(x) => x,
         None => "0.0.0",
     };
+
     let release_channel = option_env!("CFG_RELEASE_CHANNEL");
     let commit_info = match (
         option_env!("RA_COMMIT_SHORT_HASH"),
@@ -50,5 +52,6 @@ pub const fn version() -> VersionInfo {
         }
         _ => None,
     };
+
     VersionInfo { version, release_channel, commit_info }
 }

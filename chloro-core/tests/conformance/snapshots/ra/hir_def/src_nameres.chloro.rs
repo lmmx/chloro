@@ -379,10 +379,12 @@ pub(crate) fn crate_local_def_map(db: &dyn DefDatabase, crate_id: Crate) -> DefM
             .unwrap_or_default()
     )
     .entered();
+
     let module_data = ModuleData::new(
         ModuleOrigin::CrateRoot { definition: krate.root_file_id(db) },
         Visibility::Public,
     );
+
     let def_map =
         DefMap::empty(crate_id, Arc::new(DefMapCrateData::new(krate.edition)), module_data, None);
     let (def_map, local_def_map) = collector::collect_defs(
@@ -391,18 +393,21 @@ pub(crate) fn crate_local_def_map(db: &dyn DefDatabase, crate_id: Crate) -> DefM
         TreeId::new(krate.root_file_id(db).into(), None),
         None,
     );
+
     DefMapPair::new(db, def_map, local_def_map)
 }
 
 #[salsa_macros::tracked(returns(ref))]
 pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
     let BlockLoc { ast_id, module } = block_id.lookup(db);
+
     let visibility = Visibility::Module(
         ModuleId { krate: module.krate, local_id: DefMap::ROOT, block: module.block },
         VisibilityExplicitness::Implicit,
     );
     let module_data =
         ModuleData::new(ModuleOrigin::BlockExpr { block: ast_id, id: block_id }, visibility);
+
     let local_def_map = crate_local_def_map(db, module.krate);
     let def_map = DefMap::empty(
         module.krate,
@@ -413,6 +418,7 @@ pub fn block_def_map(db: &dyn DefDatabase, block_id: BlockId) -> DefMap {
             parent: BlockRelativeModuleId { block: module.block, local_id: module.local_id },
         }),
     );
+
     let (def_map, _) = collector::collect_defs(
         db,
         def_map,
@@ -439,6 +445,7 @@ impl DefMap {
         let mut modules: Arena<ModuleData> = Arena::default();
         let root = modules.alloc(module_data);
         assert_eq!(root, Self::ROOT);
+
         DefMap {
             block,
             modules,
@@ -465,6 +472,7 @@ impl DefMap {
             data: _,
             macro_def_to_macro_id,
         } = self;
+
         macro_def_to_macro_id.shrink_to_fit();
         macro_use_prelude.shrink_to_fit();
         diagnostics.shrink_to_fit();
@@ -589,6 +597,7 @@ impl DefMap {
         }
         go(&mut buf, db, current_map, "crate", Self::ROOT);
         return buf;
+
         fn go(
             buf: &mut String,
             db: &dyn DefDatabase,
@@ -619,6 +628,7 @@ impl DefMap {
             arc = block.parent.def_map(db, self.krate);
             current_map = arc;
         }
+
         format_to!(buf, "crate scope\n");
         buf
     }
@@ -701,6 +711,7 @@ impl DefMap {
             }
             block = parent.block;
         }
+
         None
     }
 }
@@ -803,6 +814,7 @@ impl MacroSubNs {
             }
         };
         // Eager macros aren't *guaranteed* to be bang macros, but they *are* all bang macros currently.
+
         match expander {
             MacroExpander::Declarative
             | MacroExpander::BuiltIn(_)

@@ -63,6 +63,7 @@ pub fn extract_trivial_expression(block_expr: &ast::BlockExpr) -> Option<ast::Ex
     {
         return None;
     }
+
     if let Some(expr) = stmt_list.tail_expr() {
         if has_anything_else(expr.syntax()) {
             return None;
@@ -167,6 +168,7 @@ pub fn filter_assoc_items(
             _ => default_methods == DefaultMethods::No,
         })
         .collect();
+
     fn has_def_name(item: &InFile<ast::AssocItem>) -> bool {
         match &item.value {
             ast::AssocItem::Fn(def) => def.name(),
@@ -394,6 +396,7 @@ pub(crate) fn next_prev() -> impl Iterator<Item = Direction> {
 
 pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
     let first_node_text = |pat: &ast::Pat| pat.syntax().first_child().map(|node| node.text());
+
     let pat_head = match pat {
         ast::Pat::IdentPat(bind_pat) => match bind_pat.pat() {
             Some(p) => first_node_text(&p),
@@ -401,7 +404,9 @@ pub(crate) fn does_pat_match_variant(pat: &ast::Pat, var: &ast::Pat) -> bool {
         },
         pat => first_node_text(pat),
     };
+
     let var_head = first_node_text(var);
+
     pat_head == var_head
 }
 
@@ -423,6 +428,7 @@ fn check_pat_variant_nested_or_literal_with_depth(
     if depth_after_refutable > 1 {
         return true;
     }
+
     match pat {
         ast::Pat::RestPat(_) | ast::Pat::WildcardPat(_) | ast::Pat::RefPat(_) => false,
 
@@ -490,7 +496,9 @@ pub(crate) fn find_struct_impl(
 ) -> Option<Option<ast::Impl>> {
     let db = ctx.db();
     let module = adt.syntax().parent()?;
+
     let struct_def = ctx.sema.to_def(adt)?;
+
     let block = module.descendants().filter_map(ast::Impl::cast).find_map(|impl_blk| {
         let blk = ctx.sema.to_def(&impl_blk)?;
 
@@ -506,11 +514,13 @@ pub(crate) fn find_struct_impl(
 
         if !(same_ty && not_trait_impl) { None } else { Some(impl_blk) }
     });
+
     if let Some(ref impl_blk) = block
         && has_any_fn(impl_blk, names)
     {
         return None;
     }
+
     Some(block)
 }
 
@@ -525,6 +535,7 @@ fn has_any_fn(imp: &ast::Impl, names: &[String]) -> bool {
             }
         }
     }
+
     false
 }
 
@@ -607,14 +618,17 @@ fn generate_impl_text_inner(
     });
     // FIXME: use syntax::make & mutable AST apis instead
     // `trait_text` and `code` can't be opaque blobs of text
+
     let mut buf = String::with_capacity(code.len());
     // Copy any cfg attrs from the original adt
+
     buf.push_str("\n\n");
     let cfg_attrs = adt
         .attrs()
         .filter(|attr| attr.as_simple_call().map(|(name, _arg)| name == "cfg").unwrap_or(false));
     cfg_attrs.for_each(|attr| buf.push_str(&format!("{attr}\n")));
     // `impl{generic_params} {trait_text} for {name}{generic_params.to_generic_args()}`
+
     buf.push_str("impl");
     if let Some(generic_params) = &generic_params {
         format_to!(buf, "{generic_params}");
@@ -628,6 +642,7 @@ fn generate_impl_text_inner(
     if let Some(generic_params) = generic_params {
         format_to!(buf, "{}", generic_params.to_generic_args());
     }
+
     match adt.where_clause() {
         Some(where_clause) => {
             format_to!(buf, "\n{where_clause}\n{{\n{code}\n}}");
@@ -636,6 +651,7 @@ fn generate_impl_text_inner(
             format_to!(buf, " {{\n{code}\n}}");
         }
     }
+
     buf
 }
 
@@ -714,6 +730,7 @@ fn generate_impl_inner(
     let generic_args =
         generic_params.as_ref().map(|params| params.to_generic_args().clone_for_update());
     let ty = make::ty_path(make::ext::ident_path(&adt.name().unwrap().text()));
+
     let cfg_attrs =
         adt.attrs().filter(|attr| attr.as_simple_call().is_some_and(|(name, _arg)| name == "cfg"));
     match trait_ {
@@ -747,12 +764,14 @@ pub(crate) fn add_method_to_adt(
         buf.push('\n');
     }
     buf.push_str(method);
+
     let start_offset = impl_def
         .and_then(|impl_def| find_impl_block_end(impl_def, &mut buf))
         .unwrap_or_else(|| {
             buf = generate_impl_text(adt, &buf);
             adt.syntax().text_range().end()
         });
+
     builder.insert(start_offset, buf);
 }
 
@@ -821,11 +840,13 @@ impl<'db> ReferenceConversion<'db> {
                 format!("Result<&{first_type_argument_name}, &{second_type_argument_name}>")
             }
         };
+
         make::ty(&ty)
     }
 
     pub(crate) fn getter(&self, field_name: String) -> ast::Expr {
         let expr = make::expr_field(make::ext::expr_self(), &field_name);
+
         match self.conversion {
             ReferenceConversionType::Copy => expr,
             ReferenceConversionType::AsRefStr
@@ -881,6 +902,7 @@ fn handle_as_ref_str(
     famous_defs: &FamousDefs<'_, '_>,
 ) -> Option<(ReferenceConversionType, bool)> {
     let str_type = hir::BuiltinType::str().ty(db);
+
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&str_type))
         .then_some((ReferenceConversionType::AsRefStr, could_deref_to_target(ty, &str_type, db)))
 }
@@ -892,6 +914,7 @@ fn handle_as_ref_slice(
 ) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
     let slice_type = hir::Type::new_slice(type_argument);
+
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&slice_type)).then_some((
         ReferenceConversionType::AsRefSlice,
         could_deref_to_target(ty, &slice_type, db),
@@ -904,6 +927,7 @@ fn handle_dereferenced(
     famous_defs: &FamousDefs<'_, '_>,
 ) -> Option<(ReferenceConversionType, bool)> {
     let type_argument = ty.type_arguments().next()?;
+
     ty.impls_trait(db, famous_defs.core_convert_AsRef()?, slice::from_ref(&type_argument))
         .then_some((
             ReferenceConversionType::Dereferenced,
@@ -1063,6 +1087,7 @@ pub(crate) fn replace_record_field_expr(
 /// Assumes that the input syntax node is a valid syntax tree.
 pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree, SyntaxToken>> {
     let mut tt_stack = vec![(None, vec![])];
+
     for element in node.descendants_with_tokens() {
         let NodeOrToken::Token(token) = element else { continue };
 
@@ -1097,6 +1122,7 @@ pub(crate) fn tt_from_syntax(node: SyntaxNode) -> Vec<NodeOrToken<ast::TokenTree
             }
         }
     }
+
     tt_stack.pop().expect("parent token tree was closed before it was completed").1
 }
 

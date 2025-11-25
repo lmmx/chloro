@@ -10,6 +10,7 @@ pub(crate) fn complete_for_and_where(
     keyword_item: &ast::Item,
 ) {
     let mut add_keyword = |kw, snippet| acc.add_keyword_snippet(ctx, kw, snippet);
+
     match keyword_item {
         Item::Impl(it) => {
             if it.for_token().is_none() && it.trait_().is_none() && it.self_ty().is_some() {
@@ -85,6 +86,7 @@ fn foo(a: A) { a.$0 }
                 sn unsafe                                                           unsafe {}
             "#]],
         );
+
         check(
             r#"
 //- minicore: future
@@ -217,6 +219,7 @@ fn main() { let x = match $1 {
 }; }
 "#,
         );
+
         check_edit(
             "if",
             r#"
@@ -236,6 +239,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "else",
             r#"
@@ -257,6 +261,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "else if",
             r#"
@@ -276,6 +281,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "else if",
             r#"
@@ -295,6 +301,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "else",
             r#"
@@ -312,6 +319,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "loop",
             r#"
@@ -417,6 +425,7 @@ fn main() {
 }
 ",
         );
+
         check_edit(
             "if",
             r"
@@ -434,6 +443,7 @@ fn main() {
 }
 ",
         );
+
         check_edit(
             "if",
             r"
@@ -451,6 +461,7 @@ fn main() {
 }
 ",
         );
+
         check_edit(
             "if let",
             r"
@@ -488,6 +499,7 @@ fn main() {
 }
 ",
         );
+
         check_edit(
             "if let",
             r"
@@ -526,6 +538,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "if",
             r#"
@@ -564,6 +577,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "if",
             r#"
@@ -581,6 +595,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "if",
             r#"
@@ -598,6 +613,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "if",
             r#"
@@ -619,6 +635,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "if",
             r#"

@@ -96,6 +96,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
             disabled: false,
         },
     )];
+
     fn resolve(
         db: &dyn DefDatabase,
         def_map: &DefMap,
@@ -126,6 +127,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
             module.1.scope.macro_invoc(ast_id)
         })
     }
+
     let db = TestDB::with_files_extra_proc_macros(ra_fixture, extra_proc_macros);
     let krate = db.fetch_test_crate();
     let def_map = crate_def_map(&db, krate);
@@ -135,8 +137,10 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
         ModuleSource::SourceFile(it) => it,
         ModuleSource::Module(_) | ModuleSource::BlockExpr(_) => panic!(),
     };
+
     let mut text_edits = Vec::new();
     let mut expansions = Vec::new();
+
     for macro_call_node in source_file.syntax().descendants().filter_map(ast::MacroCall::cast) {
         let ast_id = db.ast_id_map(source.file_id).ast_id(&macro_call_node);
         let ast_id = InFile::new(source.file_id, ast_id);
@@ -146,6 +150,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
         let expansion_result = db.parse_macro_expansion(macro_call_id);
         expansions.push((macro_call_node.clone(), expansion_result));
     }
+
     for (call, exp) in expansions.into_iter().rev() {
         let mut tree = false;
         let mut expect_errors = false;
@@ -196,12 +201,14 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
         let range: Range<usize> = range.into();
         text_edits.push((range, expn_text));
     }
+
     text_edits.sort_by_key(|(range, _)| range.start);
     text_edits.reverse();
     let mut expanded_text = source_file.to_string();
     for (range, text) in text_edits {
         expanded_text.replace_range(range, &text);
     }
+
     for decl_id in def_map[local_id].scope.declarations() {
         // FIXME: I'm sure there's already better way to do this
         let src = match decl_id {
@@ -237,6 +244,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
             format_to!(expanded_text, "\n{}", pp)
         }
     }
+
     for impl_id in def_map[local_id].scope.impls() {
         let src = impl_id.lookup(&db).source(&db);
         if let Some(macro_file) = src.file_id.macro_file()
@@ -251,6 +259,7 @@ pub fn identity_when_valid(_attr: TokenStream, item: TokenStream) -> TokenStream
             format_to!(expanded_text, "\n{}", pp)
         }
     }
+
     expect.indent(false);
     expect.assert_eq(&expanded_text);
 }

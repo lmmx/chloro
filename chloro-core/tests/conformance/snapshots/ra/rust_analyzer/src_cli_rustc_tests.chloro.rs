@@ -71,17 +71,20 @@ impl Tester {
             set_test: true,
             ..Default::default()
         };
+
         let mut sysroot = Sysroot::discover(tmp_file.parent().unwrap(), &cargo_config.extra_env);
         let loaded_sysroot =
             sysroot.load_workspace(&RustSourceWorkspaceConfig::default_cargo(), false, &|_| ());
         if let Some(loaded_sysroot) = loaded_sysroot {
             sysroot.set_workspace(loaded_sysroot);
         }
+
         let target_data = target_data::get(
             QueryConfig::Rustc(&sysroot, tmp_file.parent().unwrap().as_ref()),
             None,
             &cargo_config.extra_env,
         );
+
         let workspace = ProjectWorkspace {
             kind: ProjectWorkspaceKind::DetachedFile {
                 file: ManifestPath::try_from(tmp_file).unwrap(),
@@ -150,6 +153,7 @@ impl Tester {
         change.change_file(self.root_file, Some(text));
         self.host.apply_change(change);
         let diagnostic_config = DiagnosticsConfig::test_sample();
+
         let res = std::thread::scope(|s| {
             let worker = Builder::new()
                 .stack_size(40 * 1024 * 1024)

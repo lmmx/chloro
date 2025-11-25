@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23725 bytes
-Chloro size:   23707 bytes
+Chloro size:   23711 bytes
 Rustfmt size:  23725 bytes
 
 ✗ Outputs DIFFER
@@ -23,27 +23,16 @@ Rustfmt size:  23725 bytes
  use super::label_of_ty;
  
  pub(super) fn hints(
-     if !config.chaining_hints {
-         return None;
-     }
--
-     if matches!(expr, ast::Expr::RecordExpr(_)) {
-         return None;
-     }
--
-     let descended = sema.descend_node_into_attributes(expr.clone()).pop();
-     let desc_expr = descended.as_ref().unwrap_or(expr);
--
-     let mut tokens = expr
-         .syntax()
-         .siblings_with_tokens(Direction::Next)
              SyntaxKind::COMMENT => false,
              _ => true,
          });
 -
      // Chaining can be defined as an expression whose next sibling tokens are newline and dot
      // Ignoring extra whitespace and comments
++
      let next = tokens.next()?.kind();
+     if next == SyntaxKind::WHITESPACE {
+         let mut next_next = tokens.next()?.kind();
  mod tests {
      use expect_test::{Expect, expect};
      use ide_db::text_edit::{TextRange, TextSize};

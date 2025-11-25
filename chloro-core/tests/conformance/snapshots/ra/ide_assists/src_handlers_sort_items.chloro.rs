@@ -13,6 +13,7 @@ pub(crate) fn sort_items(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<(
         cov_mark::hit!(not_applicable_if_no_selection);
         return None;
     }
+
     if let Some(struct_ast) = ctx.find_node_at_offset::<ast::Struct>() {
         add_sort_field_list_assist(acc, struct_ast.field_list())
     } else if let Some(union_ast) = ctx.find_node_at_offset::<ast::Union>() {
@@ -84,16 +85,20 @@ fn add_sort_methods_assist(
 ) -> Option<()> {
     let selection = ctx.selection_trimmed();
     // ignore assist if the selection intersects with an associated item.
+
     if item_list.assoc_items().any(|item| item.syntax().text_range().intersect(selection).is_some())
     {
         return None;
     }
+
     let methods = get_methods(&item_list);
     let sorted = sort_by_name(&methods);
+
     if methods == sorted {
         cov_mark::hit!(not_applicable_if_sorted_or_empty_or_single);
         return None;
     }
+
     acc.add_rewrite("Sort methods alphabetically", methods, sorted, item_list.syntax())
 }
 
@@ -103,20 +108,24 @@ fn add_sort_fields_assist(
 ) -> Option<()> {
     let fields: Vec<_> = record_field_list.fields().collect();
     let sorted = sort_by_name(&fields);
+
     if fields == sorted {
         cov_mark::hit!(not_applicable_if_sorted_or_empty_or_single);
         return None;
     }
+
     acc.add_rewrite("Sort fields alphabetically", fields, sorted, record_field_list.syntax())
 }
 
 fn add_sort_variants_assist(acc: &mut Assists, variant_list: ast::VariantList) -> Option<()> {
     let variants: Vec<_> = variant_list.variants().collect();
     let sorted = sort_by_name(&variants);
+
     if variants == sorted {
         cov_mark::hit!(not_applicable_if_sorted_or_empty_or_single);
         return None;
     }
+
     acc.add_rewrite("Sort variants alphabetically", variants, sorted, variant_list.syntax())
 }
 
@@ -184,6 +193,7 @@ impl $0S {
     #[test]
     fn not_applicable_if_no_selection() {
         cov_mark::check!(not_applicable_if_no_selection);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -211,6 +221,7 @@ trait Bar {
     #[test]
     fn not_applicable_if_trait_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -222,6 +233,7 @@ t$0rait Bar$0 {
     #[test]
     fn not_applicable_if_impl_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -234,6 +246,7 @@ $0impl Bar$0 {
     #[test]
     fn not_applicable_if_struct_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -244,6 +257,7 @@ $0struct Bar$0 ;
     #[test]
     fn not_applicable_if_struct_empty2() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -254,6 +268,7 @@ $0struct Bar$0 { };
     #[test]
     fn not_applicable_if_enum_empty() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -264,6 +279,7 @@ $0enum ZeroVariants$0 {};
     #[test]
     fn not_applicable_if_trait_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -278,6 +294,7 @@ t$0rait Bar$0 {
     #[test]
     fn not_applicable_if_impl_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -293,6 +310,7 @@ $0impl Bar$0 {
     #[test]
     fn not_applicable_if_struct_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -307,6 +325,7 @@ $0struct Bar$0 {
     #[test]
     fn not_applicable_if_union_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"
@@ -321,6 +340,7 @@ $0union Bar$0 {
     #[test]
     fn not_applicable_if_enum_sorted() {
         cov_mark::check!(not_applicable_if_sorted_or_empty_or_single);
+
         check_assist_not_applicable(
             sort_items,
             r#"

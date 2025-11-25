@@ -171,6 +171,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         tracing::debug!(?remaining_segments);
         let rem_seg_len = remaining_segments.len();
         tracing::debug!(?rem_seg_len);
+
         let ty = match resolution {
             TypeNs::TraitId(trait_) => {
                 let ty = match remaining_segments.len() {
@@ -265,7 +266,9 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 return (Ty::new_error(self.ctx.interner, ErrorGuaranteed), None);
             }
         };
+
         tracing::debug!(?ty);
+
         self.skip_resolved_segment();
         self.lower_ty_relative_path(ty, Some(resolution), infer_args)
     }
@@ -282,6 +285,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 });
             }
         };
+
         match resolution {
             TypeNs::SelfType(_) => {
                 prohibit_generics_on_resolved(GenericArgsProhibitedReason::SelfTy)
@@ -309,6 +313,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             | TypeNs::TypeAliasId(_)
             | TypeNs::TraitId(_) => {}
         }
+
         true
     }
 
@@ -324,11 +329,13 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
     pub(crate) fn resolve_path_in_type_ns(&mut self) -> Option<(TypeNs, Option<usize>)> {
         let (resolution, remaining_index, _, prefix_info) =
             self.ctx.resolver.resolve_path_in_type_ns_with_prefix_info(self.ctx.db, self.path)?;
+
         let segments = self.segments;
         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
             // `segments.is_empty()` can occur with `self`.
             return Some((resolution, remaining_index));
         }
+
         let (module_segments, resolved_segment_idx, enum_segment) = match remaining_index {
             None if prefix_info.enum_variant => {
                 (segments.strip_last_two(), segments.len() - 1, Some(segments.len() - 2))
@@ -336,9 +343,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             None => (segments.strip_last(), segments.len() - 1, None),
             Some(i) => (segments.take(i - 1), i - 1, None),
         };
+
         self.current_segment_idx = resolved_segment_idx;
         self.current_or_prev_segment =
             segments.get(resolved_segment_idx).expect("should have resolved segment");
+
         for (i, mod_segment) in module_segments.iter().enumerate() {
             if mod_segment.args_and_bindings.is_some() {
                 self.on_diagnostic(PathLoweringDiagnostic::GenericArgsProhibited {
@@ -347,6 +356,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 });
             }
         }
+
         if let Some(enum_segment) = enum_segment
             && segments.get(enum_segment).is_some_and(|it| it.args_and_bindings.is_some())
             && segments.get(enum_segment + 1).is_some_and(|it| it.args_and_bindings.is_some())
@@ -356,9 +366,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 reason: GenericArgsProhibitedReason::EnumVariant,
             });
         }
+
         if !self.handle_type_ns_resolution(&resolution) {
             return None;
         }
+
         Some((resolution, remaining_index))
     }
 
@@ -371,11 +383,13 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             self.path,
             hygiene_id,
         )?;
+
         let segments = self.segments;
         if segments.is_empty() || matches!(self.path, Path::LangItem(..)) {
             // `segments.is_empty()` can occur with `self`.
             return Some(res);
         }
+
         let (mod_segments, enum_segment, resolved_segment_idx) = match res {
             ResolveValueResult::Partial(_, unresolved_segment, _) => {
                 (segments.take(unresolved_segment - 1), None, unresolved_segment - 1)
@@ -387,9 +401,11 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             }
             ResolveValueResult::ValueNs(..) => (segments.strip_last(), None, segments.len() - 1),
         };
+
         self.current_segment_idx = resolved_segment_idx;
         self.current_or_prev_segment =
             segments.get(resolved_segment_idx).expect("should have resolved segment");
+
         for (i, mod_segment) in mod_segments.iter().enumerate() {
             if mod_segment.args_and_bindings.is_some() {
                 self.on_diagnostic(PathLoweringDiagnostic::GenericArgsProhibited {
@@ -398,6 +414,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 });
             }
         }
+
         if let Some(enum_segment) = enum_segment
             && segments.get(enum_segment).is_some_and(|it| it.args_and_bindings.is_some())
             && segments.get(enum_segment + 1).is_some_and(|it| it.args_and_bindings.is_some())
@@ -407,6 +424,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 reason: GenericArgsProhibitedReason::EnumVariant,
             });
         }
+
         match &res {
             ResolveValueResult::ValueNs(resolution, _) => {
                 let resolved_segment_idx = self.current_segment_u32();
@@ -521,6 +539,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         let interner = self.ctx.interner;
         let prev_current_segment_idx = self.current_segment_idx;
         let prev_current_segment = self.current_or_prev_segment;
+
         let generic_def = match resolved {
             ValueTyDefId::FunctionId(it) => it.into(),
             ValueTyDefId::StructId(it) => it.into(),
@@ -573,6 +592,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
         lowering_assoc_type_generics: bool,
     ) -> GenericArgs<'db> {
         let old_lifetime_elision = self.ctx.lifetime_elision.clone();
+
         if let Some(args) = self.current_or_prev_segment.args_and_bindings
             && args.parenthesized != GenericArgsParentheses::No
         {
@@ -604,6 +624,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             self.ctx.lifetime_elision =
                 LifetimeElisionKind::AnonymousCreateParameter { report_in_path: false };
         }
+
         let result = self.substs_from_args_and_bindings(
             self.current_or_prev_segment.args_and_bindings,
             def,
@@ -631,6 +652,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
             ctx: &'a mut PathLoweringContext<'b, 'c, 'db>,
             generics_source: PathGenericsSource,
         }
+
         impl<'db> GenericArgsLowerer<'db> for LowererCtx<'_, '_, '_, 'db> {
             fn report_len_mismatch(
                 &mut self,
@@ -788,6 +810,7 @@ impl<'a, 'b, 'db> PathLoweringContext<'a, 'b, 'db> {
                 });
             }
         }
+
         substs_from_args_and_bindings(
             self.ctx.db,
             self.ctx.store,
@@ -977,6 +1000,7 @@ fn check_generic_args_len<'db>(
     ctx: &mut impl GenericArgsLowerer<'db>,
 ) -> bool {
     let mut had_error = false;
+
     let (mut provided_lifetimes_count, mut provided_types_and_consts_count) = (0usize, 0usize);
     if let Some(args_and_bindings) = args_and_bindings {
         let args_no_self = &args_and_bindings.args[usize::from(args_and_bindings.has_self_type)..];
@@ -989,6 +1013,7 @@ fn check_generic_args_len<'db>(
             }
         }
     }
+
     let lifetime_args_len = def_generics.len_lifetimes_self();
     if provided_lifetimes_count == 0
         && lifetime_args_len > 0
@@ -1028,6 +1053,7 @@ fn check_generic_args_len<'db>(
         );
         had_error = true;
     }
+
     let defaults_count =
         def_generics.iter_self_type_or_consts().filter(|(_, param)| param.has_default()).count();
     let named_type_and_const_params_count = def_generics
@@ -1053,6 +1079,7 @@ fn check_generic_args_len<'db>(
         );
         had_error = true;
     }
+
     had_error
 }
 
@@ -1068,18 +1095,22 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
     ctx: &mut impl GenericArgsLowerer<'db>,
 ) -> GenericArgs<'db> {
     let interner = DbInterner::new_with(db, None, None);
+
     tracing::debug!(?args_and_bindings);
     // Order is
     // - Parent parameters
     // - Optional Self parameter
     // - Lifetime parameters
     // - Type or Const parameters
+
     let def_generics = generics(db, def);
     let args_slice = args_and_bindings.map(|it| &*it.args).unwrap_or_default();
     // We do not allow inference if there are specified args, i.e. we do not allow partial inference.
+
     let has_non_lifetime_args =
         args_slice.iter().any(|arg| !matches!(arg, HirGenericArg::Lifetime(_)));
     infer_args &= !has_non_lifetime_args;
+
     let had_count_error = check_generic_args_len(
         args_and_bindings,
         def,
@@ -1089,15 +1120,20 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
         lowering_assoc_type_generics,
         ctx,
     );
+
     let mut substs = Vec::with_capacity(def_generics.len());
+
     substs.extend(def_generics.iter_parent_id().map(|id| ctx.parent_arg(id)));
+
     let mut args = args_slice.iter().enumerate().peekable();
     let mut params = def_generics.iter_self().peekable();
     // If we encounter a type or const when we expect a lifetime, we infer the lifetimes.
     // If we later encounter a lifetime, we know that the arguments were provided in the
     // wrong order. `force_infer_lt` records the type or const that forced lifetimes to be
     // inferred, so we can use it for diagnostics later.
+
     let mut force_infer_lt = None;
+
     let has_self_arg = args_and_bindings.is_some_and(|it| it.has_self_type);
     // First, handle `Self` parameter. Consume it from the args if provided, otherwise from `explicit_self_ty`,
     // and lastly infer it.
@@ -1120,6 +1156,7 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
         params.next();
         substs.push(self_ty);
     }
+
     loop {
         // We're going to iterate through the generic arguments that the user
         // provided, matching them with the generic parameters we expect.
@@ -1239,6 +1276,7 @@ pub(crate) fn substs_from_args_and_bindings<'db>(
             (None, None) => break,
         }
     }
+
     GenericArgs::new_from_iter(interner, substs)
 }
 

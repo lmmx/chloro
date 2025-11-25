@@ -244,6 +244,7 @@ mod tests {
     #[test]
     fn test_quote_hash_token_tree() {
         let a = mk_ident("hello");
+
         let quoted = quote!(DUMMY =>#a);
         assert_eq!(quoted.to_string(), "hello");
         let t = format!("{quoted:#?}");
@@ -255,6 +256,7 @@ mod tests {
     #[test]
     fn test_quote_simple_derive_copy() {
         let name = mk_ident("Foo");
+
         let quoted = quote! {DUMMY =>
             impl Clone for #name {
                 fn clone(&self) -> Self {
@@ -262,6 +264,7 @@ mod tests {
                 }
             }
         };
+
         assert_eq!(quoted.to_string(), "impl Clone for Foo {fn clone (& self) -> Self {Self {}}}");
     }
     #[test]
@@ -274,6 +277,7 @@ mod tests {
         let struct_name = mk_ident("Foo");
         let fields = [mk_ident("name"), mk_ident("id")];
         let fields = fields.iter().map(|it| quote!(DUMMY =>#it: self.#it.clone(), ));
+
         let mut builder = tt::TopSubtreeBuilder::new(crate::tt::Delimiter {
             kind: crate::tt::DelimiterKind::Brace,
             open: DUMMY,
@@ -281,6 +285,7 @@ mod tests {
         });
         fields.for_each(|field| builder.extend_with_tt(field.view().as_token_trees()));
         let list = builder.build();
+
         let quoted = quote! {DUMMY =>
             impl Clone for #struct_name {
                 fn clone(&self) -> Self {
@@ -288,6 +293,7 @@ mod tests {
                 }
             }
         };
+
         assert_eq!(
             quoted.to_string(),
             "impl Clone for Foo {fn clone (& self) -> Self {Self {name : self . name . clone () , id : self . id . clone () ,}}}"

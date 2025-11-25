@@ -1576,6 +1576,7 @@ fn test(x: Trait, y: &Trait) -> u64 {
             165..172 'z.foo()': u64
         "#]],
     );
+
     check_infer_with_mismatches(
         r#"
 //- minicore: fn, coerce_unsized, dispatch_from_dyn
@@ -4076,6 +4077,7 @@ fn g(t: &(dyn Send + Sync)) {
 }
         "#,
     );
+
     check_no_mismatches(
         r#"
 auto trait Send {}
@@ -4088,6 +4090,7 @@ fn g(t: &(dyn Sync + T + Send)) {
 }
         "#,
     );
+
     check_infer_with_mismatches(
         r#"
 auto trait Send {}
@@ -4110,6 +4113,7 @@ fn g(t: &(dyn Sync + T2 + T1 + Send)) {
             150..151 't': &'? {unknown}
         "#]],
     );
+
     check_no_mismatches(
         r#"
 auto trait Send {}
@@ -4141,6 +4145,7 @@ fn g(t: &dyn Trait<U = (), T = ()>) {
 }
         "#,
     );
+
     check_types(
         r#"
 trait Trait {
@@ -4165,6 +4170,7 @@ fn g(t: &(dyn Send)) {
 }
         "#,
     );
+
     check_no_mismatches(
         r#"
 auto trait Send {}

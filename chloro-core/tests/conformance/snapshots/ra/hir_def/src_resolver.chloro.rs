@@ -202,9 +202,11 @@ impl<'db> Resolver<'db> {
         if skip_to_mod {
             return self.module_scope.resolve_path_in_type_ns(db, path);
         }
+
         let remaining_idx = || {
             if path.segments().len() == 1 { None } else { Some(1) }
         };
+
         for scope in self.scopes() {
             match scope {
                 Scope::ExprScope(_) | Scope::MacroDefScope(_) => continue,
@@ -366,6 +368,7 @@ impl<'db> Resolver<'db> {
         if skip_to_mod {
             return self.module_scope.resolve_path_in_value_ns(db, path);
         }
+
         if n_segments <= 1 {
             let mut hygiene_info = hygiene_info(db, hygiene_id);
             for scope in self.scopes() {
@@ -450,12 +453,14 @@ impl<'db> Resolver<'db> {
                 }
             }
         }
+
         if let Some(res) = self.module_scope.resolve_path_in_value_ns(db, path) {
             return Some(res);
         }
         // If a path of the shape `u16::from_le_bytes` failed to resolve at all, then we fall back
         // to resolving to the primitive type, to allow this to still work in the presence of
         // `use core::u16;`.
+
         if path.kind == PathKind::Plain
             && n_segments > 1
             && let Some(builtin) = BuiltinType::by_name(first_name)
@@ -465,6 +470,7 @@ impl<'db> Resolver<'db> {
                 ResolvePathResultPrefixInfo::default(),
             ));
         }
+
         None
     }
 
@@ -583,6 +589,7 @@ impl<'db> Resolver<'db> {
         def_map[module_id].scope.entries().for_each(|(name, def)| {
             res.add_per_ns(name, def);
         });
+
         def_map[module_id].scope.legacy_macros().for_each(|(name, macs)| {
             macs.iter().for_each(|&mac| {
                 res.add(name, ScopeDef::ModuleDef(ModuleDefId::MacroId(mac)));
@@ -640,6 +647,7 @@ impl<'db> Resolver<'db> {
         // FIXME(trait_alias): Trait alias brings aliased traits in scope! Note that supertraits of
         // aliased traits are NOT brought in scope (unless also aliased).
         let mut traits = FxHashSet::default();
+
         for scope in self.scopes() {
             match scope {
                 Scope::BlockScope(m) => traits.extend(m.def_map[m.module_id].scope.traits()),
@@ -656,6 +664,7 @@ impl<'db> Resolver<'db> {
             }
         }
         // Fill in the prelude traits
+
         if let Some((prelude, _use)) = self.module_scope.def_map.prelude() {
             let prelude_def_map = prelude.def_map(db);
             traits.extend(prelude_def_map[prelude.local_id].scope.traits());
@@ -863,6 +872,7 @@ impl<'db> Resolver<'db> {
                 // innermost module scope instead?
             }
         }
+
         let start = self.scopes.len();
         let innermost_scope = self.scopes().find(|scope| !matches!(scope, Scope::MacroDefScope(_)));
         match innermost_scope {
@@ -1053,6 +1063,7 @@ fn resolver_for_scope_<'db>(
 ) -> Resolver<'db> {
     let scope_chain = scopes.scope_chain(scope_id).collect::<Vec<_>>();
     r.scopes.reserve(scope_chain.len());
+
     for scope in scope_chain.into_iter().rev() {
         if let Some(block) = scopes.block(scope) {
             let def_map = block_def_map(db, block);
@@ -1254,12 +1265,14 @@ impl HasResolver for ModuleId {
     fn resolver(self, db: &dyn DefDatabase) -> Resolver<'_> {
         let (mut def_map, local_def_map) = self.local_def_map(db);
         let mut module_id = self.local_id;
+
         if !self.is_within_block() {
             return Resolver {
                 scopes: vec![],
                 module_scope: ModuleItemMap { def_map, local_def_map, module_id },
             };
         }
+
         let mut modules: SmallVec<[_; 1]> = smallvec![];
         while let Some(parent) = def_map.parent() {
             let block_def_map = mem::replace(&mut def_map, parent.def_map(db));

@@ -76,6 +76,7 @@ impl Body {
     ) -> (Arc<Body>, Arc<BodySourceMap>) {
         let _p = tracing::info_span!("body_with_source_map_query").entered();
         let mut params = None;
+
         let mut is_async_fn = false;
         let InFile { file_id, value: body } = {
             match def {
@@ -105,6 +106,7 @@ impl Body {
         };
         let module = def.module(db);
         let (body, source_map) = lower_body(db, def, file_id, module, params, body, is_async_fn);
+
         (Arc::new(body), Arc::new(source_map))
     }
 

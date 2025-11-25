@@ -306,6 +306,7 @@ impl<'db> ImportAssets<'db> {
         cfg: ImportPathConfig,
     ) -> impl Iterator<Item = LocatedImport> {
         let _p = tracing::info_span!("ImportAssets::search_for").entered();
+
         let scope = match sema.scope(&self.candidate_node) {
             Some(it) => it,
             None => return <FxIndexSet<_>>::default().into_iter(),
@@ -329,6 +330,7 @@ impl<'db> ImportAssets<'db> {
             )
             .filter(|path| path.len() > 1)
         };
+
         match &self.import_candidate {
             ImportCandidate::Path(path_candidate) => path_applicable_imports(
                 db,
@@ -376,6 +378,7 @@ fn path_applicable_imports(
     scope_filter: impl Fn(ItemInNs) -> bool + Copy,
 ) -> FxIndexSet<LocatedImport> {
     let _p = tracing::info_span!("ImportAssets::path_applicable_imports").entered();
+
     match &*path_candidate.qualifier {
         [] => {
             items_locator::items_with_name(
@@ -449,6 +452,7 @@ fn validate_resolvable(
     complete_in_flyimport: CompleteInFlyimport,
 ) -> SmallVec<[LocatedImport; 1]> {
     let _p = tracing::info_span!("ImportAssets::import_for_item").entered();
+
     let qualifier = (|| {
         let mut adjusted_resolved_qualifier = resolved_qualifier;
         if !unresolved_qualifier.is_empty() {
@@ -569,9 +573,11 @@ fn trait_applicable_items<'db>(
     scope_filter: impl Fn(hir::Trait) -> bool,
 ) -> FxIndexSet<LocatedImport> {
     let _p = tracing::info_span!("ImportAssets::trait_applicable_items").entered();
+
     let inherent_traits = trait_candidate.receiver_ty.applicable_inherent_traits(db);
     let env_traits = trait_candidate.receiver_ty.env_traits(db);
     let related_traits = inherent_traits.chain(env_traits).collect::<FxHashSet<_>>();
+
     let mut required_assoc_items = FxHashMap::default();
     let mut trait_candidates: FxHashSet<_> = items_locator::items_with_name(
         db,
@@ -594,6 +600,7 @@ fn trait_applicable_items<'db>(
         Some(assoc_item_trait.into())
     })
     .collect();
+
     let autoderef_method_receiver = {
         let mut deref_chain = trait_candidate.receiver_ty.autoderef(db).collect::<Vec<_>>();
         // As a last step, we can do array unsizing (that's the only unsizing that rustc does for method receivers!)
@@ -609,12 +616,14 @@ fn trait_applicable_items<'db>(
             .collect::<Vec<_>>()
     };
     // can be empty if the entire deref chain is has no valid trait impl fingerprints
+
     if autoderef_method_receiver.is_empty() {
         return Default::default();
     }
     // in order to handle implied bounds through an associated type, keep all traits if any
     // type in the deref chain matches `TyFingerprint::Unnameable`. This fingerprint
     // won't be in `TraitImpls` anyways, as `TraitImpls` only contains actual implementations.
+
     if !autoderef_method_receiver
         .iter()
         .any(|(_, fingerprint)| matches!(fingerprint, TyFingerprint::Unnameable))
@@ -647,8 +656,10 @@ fn trait_applicable_items<'db>(
             definitions_exist_in_trait_crate || definitions_exist_in_receiver_crate()
         });
     }
+
     let mut located_imports = FxIndexSet::default();
     let mut trait_import_paths = FxHashMap::default();
+
     if trait_assoc_item {
         trait_candidate.receiver_ty.iterate_path_candidates(
             db,
@@ -701,6 +712,7 @@ fn trait_applicable_items<'db>(
             },
         )
     };
+
     located_imports
 }
 

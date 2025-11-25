@@ -23,14 +23,17 @@ pub(crate) fn convert_tuple_return_type_to_struct(
 ) -> Option<()> {
     let ret_type = ctx.find_node_at_offset::<ast::RetType>()?;
     let type_ref = ret_type.ty()?;
+
     let ast::Type::TupleType(tuple_ty) = &type_ref else { return None };
     if tuple_ty.fields().any(|field| matches!(field, ast::Type::ImplTraitType(_))) {
         return None;
     }
+
     let fn_ = ret_type.syntax().parent().and_then(ast::Fn::cast)?;
     let fn_def = ctx.sema.to_def(&fn_)?;
     let fn_name = fn_.name()?;
     let target_module = ctx.sema.scope(fn_.syntax())?.module().nearest_non_block_module(ctx.db());
+
     let target = type_ref.syntax().text_range();
     acc.add(
         AssistId::refactor_rewrite("convert_tuple_return_type_to_struct"),
@@ -153,6 +156,7 @@ fn augment_references_with_imports(
     target_module: &hir::Module,
 ) -> Vec<(ast::NameLike, Option<(ImportScope, ast::Path)>)> {
     let mut visited_modules = FxHashSet::default();
+
     references
         .iter()
         .filter_map(|FileReference { name, .. }| {
@@ -213,19 +217,23 @@ fn add_tuple_struct_def(
         })
         .any(|module| module.nearest_non_block_module(ctx.db()) != *target_module);
     let visibility = if make_struct_pub { Some(make::visibility_pub()) } else { None };
+
     let field_list = ast::FieldList::TupleFieldList(make::tuple_field_list(
         tuple_ty.fields().map(|ty| make::tuple_field(visibility.clone(), ty)),
     ));
     let struct_name = make::name(struct_name);
     let struct_def = make::struct_(visibility, struct_name, None, field_list).clone_for_update();
+
     let indent = IndentLevel::from_node(parent);
     struct_def.reindent_to(indent);
+
     edit.insert(parent.text_range().start(), format!("{struct_def}\n\n{indent}"));
 }
 
 /// Replaces each returned tuple in `body` with the constructor of the tuple struct named `struct_name`.
 fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
     let mut exprs_to_wrap = Vec::new();
+
     let tail_cb = &mut |e: &_| tail_cb_impl(&mut exprs_to_wrap, e);
     walk_expr(&body, &mut |expr| {
         if let ast::Expr::ReturnExpr(ret_expr) = expr
@@ -235,6 +243,7 @@ fn replace_body_return_values(body: ast::Expr, struct_name: &str) {
         }
     });
     for_each_tail_expr(&body, tail_cb);
+
     for ret_expr in exprs_to_wrap {
         if let ast::Expr::TupleExpr(tuple_expr) = &ret_expr {
             let struct_constructor = make::expr_call(

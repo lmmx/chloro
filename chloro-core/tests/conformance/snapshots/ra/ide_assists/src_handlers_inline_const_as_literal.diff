@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19183 bytes
-Chloro size:   18494 bytes
+Chloro size:   18495 bytes
 Rustfmt size:  19179 bytes
 
 ✗ Outputs DIFFER
@@ -35,10 +35,7 @@ Rustfmt size:  19179 bytes
 -// ```
  pub(crate) fn inline_const_as_literal(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let variable = ctx.find_node_at_offset::<ast::PathExpr>()?;
--
-     if let hir::PathResolution::Def(hir::ModuleDef::Const(konst)) =
-         ctx.sema.resolve_path(&variable.path()?)?
-     {
+ 
          // FIXME: Add support to handle type aliases for builtin scalar types.
          validate_type_recursively(ctx, Some(&konst_ty), false, fuel)?;
  

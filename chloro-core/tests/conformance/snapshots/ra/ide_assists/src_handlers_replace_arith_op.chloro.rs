@@ -30,9 +30,11 @@ pub(crate) fn replace_arith_with_wrapping(
 fn replace_arith(acc: &mut Assists, ctx: &AssistContext<'_>, kind: ArithKind) -> Option<()> {
     let (lhs, op, rhs) = parse_binary_op(ctx)?;
     let op_expr = lhs.syntax().parent()?;
+
     if !is_primitive_int(ctx, &lhs) || !is_primitive_int(ctx, &rhs) {
         return None;
     }
+
     acc.add_group(
         &GroupLabel("Replace arithmetic...".into()),
         kind.assist_id(),
@@ -69,6 +71,7 @@ fn parse_binary_op(ctx: &AssistContext<'_>) -> Option<(ast::Expr, ArithOp, ast::
         return None;
     }
     let expr = ctx.find_node_at_offset::<ast::BinExpr>()?;
+
     let op = match expr.op_kind() {
         Some(BinaryOp::ArithOp(ArithOp::Add)) => ArithOp::Add,
         Some(BinaryOp::ArithOp(ArithOp::Sub)) => ArithOp::Sub,
@@ -76,8 +79,10 @@ fn parse_binary_op(ctx: &AssistContext<'_>) -> Option<(ast::Expr, ArithOp, ast::
         Some(BinaryOp::ArithOp(ArithOp::Div)) => ArithOp::Div,
         _ => return None,
     };
+
     let lhs = expr.lhs()?;
     let rhs = expr.rhs()?;
+
     Some((lhs, op, rhs))
 }
 
@@ -94,6 +99,7 @@ impl ArithKind {
             ArithKind::Checked => "replace_arith_with_checked",
             ArithKind::Wrapping => "replace_arith_with_wrapping",
         };
+
         AssistId::refactor_rewrite(s)
     }
 
@@ -111,6 +117,7 @@ impl ArithKind {
             ArithKind::Wrapping => "wrapping_",
             ArithKind::Saturating => "saturating_",
         };
+
         let suffix = match op {
             ArithOp::Add => "add",
             ArithOp::Sub => "sub",

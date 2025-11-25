@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39060 bytes
+Chloro size:   39085 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
@@ -84,9 +84,9 @@ Rustfmt size:  42083 bytes
 -            .name()
 -            .map(|it| Symbol::intern(&it.text()))
 -            .unwrap_or_else(|| sym::underscore);
--
 +        let name =
 +            value.name().map(|it| Symbol::intern(&it.text())).unwrap_or_else(|| sym::underscore);
+ 
          orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
 -            |(
 -                FileRange {
@@ -289,10 +289,9 @@ Rustfmt size:  42083 bytes
                  });
                  res.container_name = self.container_name(db);
                  res
- impl ToNav for hir::Module {
      fn to_nav(&self, db: &RootDatabase) -> UpmappingResult<NavigationTarget> {
          let InFile { file_id, value } = self.definition_source(db);
--
+ 
 -        let name = self
 -            .name(db)
 -            .map(|it| it.symbol().clone())
@@ -301,9 +300,8 @@ Rustfmt size:  42083 bytes
          let (syntax, focus) = match &value {
              ModuleSource::SourceFile(node) => (node.syntax(), None),
              ModuleSource::Module(node) => (node.syntax(), node.name()),
-             ModuleSource::BlockExpr(node) => (node.syntax(), None),
          };
--
+ 
          orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
@@ -316,15 +314,8 @@ Rustfmt size:  42083 bytes
                  NavigationTarget::from_syntax(
                      file_id,
                      name.clone(),
-         let db = sema.db;
-         let InFile { file_id, value } = self.source(db)?;
-         let derive_path = self.as_builtin_derive_path(db);
--
-         let (file_id, focus, syntax) = match &derive_path {
-             Some(attr) => (attr.file_id.into(), None, attr.value.syntax()),
-             None => (file_id, value.self_ty(), value.syntax()),
          };
--
+ 
          Some(orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
@@ -348,7 +339,7 @@ Rustfmt size:  42083 bytes
 +            .rename()
 +            .map_or_else(|| value.name_ref().map(Either::Left), |it| it.name().map(Either::Right));
          let krate = self.module(db).krate();
--
+ 
 -        Some(
 -            orig_range_with_focus(db, file_id, value.syntax(), focus).map(
 -                |(
@@ -394,13 +385,6 @@ Rustfmt size:  42083 bytes
      }
  }
  
-         let db = sema.db;
-         let src = self.source(db)?;
-         let krate = self.parent_def(db).module(db).krate();
--
-         let field_source = match &src.value {
-             FieldSource::Named(it) => {
-                 NavigationTarget::from_named(db, src.with_value(it), SymbolKind::Field).map(
                  )
              }
              FieldSource::Pos(it) => orig_range(db, src.file_id, it.syntax()).map(
@@ -415,10 +399,8 @@ Rustfmt size:  42083 bytes
                      NavigationTarget::from_syntax(
                          file_id,
                          Symbol::integer(self.index()),
-             Either::Left(bind_pat) => (bind_pat.syntax(), bind_pat.name()),
-             Either::Right(it) => (it.syntax(), it.name()),
          };
--
+ 
          orig_range_with_focus(db, file_id, node, name).map(
 -            |(
 -                FileRange {
@@ -431,10 +413,9 @@ Rustfmt size:  42083 bytes
                  let name = local.name(db).symbol().clone();
                  let kind = if local.is_self(db) {
                      SymbolKind::SelfParam
-         let db = sema.db;
          let InFile { file_id, value } = self.source(db)?;
          let name = self.name(db).symbol().clone();
--
+ 
 -        Some(
 -            orig_range_with_focus(db, file_id, value.syntax(), value.lifetime()).map(
 -                |(
@@ -472,23 +453,8 @@ Rustfmt size:  42083 bytes
      }
  }
  
-         let db = sema.db;
-         let InFile { file_id, value } = self.merge().source(db)?;
-         let name = self.name(db).symbol().clone();
--
-         let value = match value {
-             Either::Left(ast::TypeOrConstParam::Type(x)) => Either::Left(x),
-             Either::Left(ast::TypeOrConstParam::Const(_)) => {
-             }
-             Either::Right(x) => Either::Right(x),
-         };
--
-         let syntax = match &value {
-             Either::Left(type_param) => type_param.syntax(),
-             Either::Right(trait_) => trait_.syntax(),
-         };
          let focus = value.as_ref().either(|it| it.name(), |it| it.name());
--
+ 
          Some(orig_range_with_focus(db, file_id, syntax, focus).map(
 -            |(
 -                FileRange {
@@ -501,10 +467,8 @@ Rustfmt size:  42083 bytes
                  file_id,
                  name: name.clone(),
                  alias: None,
-         let db = sema.db;
-         let InFile { file_id, value } = self.source(db)?;
          let name = self.name(db).symbol().clone();
--
+ 
          Some(orig_range(db, file_id, value.syntax()).map(
 -            |(
 -                FileRange {
@@ -517,17 +481,9 @@ Rustfmt size:  42083 bytes
                  file_id,
                  name: name.clone(),
                  alias: None,
-         let db = sema.db;
-         let InFile { file_id, value } = self.merge().source(db)?;
-         let name = self.name(db).symbol().clone();
--
-         let value = match value {
-             Either::Left(ast::TypeOrConstParam::Const(x)) => x,
-             _ => {
-                 return None;
              }
          };
--
+ 
 -        Some(
 -            orig_range_with_focus(db, file_id, value.syntax(), value.name()).map(
 -                |(
@@ -620,21 +576,15 @@ Rustfmt size:  42083 bytes
 +            .find(|&krate| matches!(krate.data(db).origin, CrateOrigin::Lang(LangCrateOrigin::Std)))
              .map(Crate::from)?;
          let edition = krate.edition(db);
--
-         let fd = FamousDefs(sema, krate);
-         let primitive_mod = format!("prim_{}", self.name().display(fd.0.db, edition));
-         let doc_owner = find_std_module(&fd, &primitive_mod, edition)?;
--
-         Some(doc_owner.to_nav(db))
-     }
- }
+ 
      value: TextRange,
      focus_range: Option<TextRange>,
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
 -    let Some(name) = focus_range else {
 -        return orig_range_r(db, hir_file, value);
 -    };
--
++    let Some(name) = focus_range else { return orig_range_r(db, hir_file, value) };
+ 
 -    let call_kind = || {
 -        db.lookup_intern_macro_call(hir_file.macro_file().unwrap())
 -            .kind
@@ -645,21 +595,15 @@ Rustfmt size:  42083 bytes
 -            .def
 -            .definition_range(db)
 -    };
--
-+    let Some(name) = focus_range else { return orig_range_r(db, hir_file, value) };
 +    let call_kind = || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).kind;
+ 
 +    let def_range =
 +        || db.lookup_intern_macro_call(hir_file.macro_file().unwrap()).def.definition_range(db);
      // FIXME: Also make use of the syntax context to determine which site we are at?
++
      let value_range = InFile::new(hir_file, value).original_node_file_range_opt(db);
      let ((call_site_range, call_site_focus), def_site) =
-             // lost name? can't happen for single tokens
-             None => return orig_range_r(db, hir_file, value),
-         };
--
-     UpmappingResult {
-         call_site: (
-             call_site_range.into_file_id(db),
+         match InFile::new(hir_file, name).original_node_file_range_opt(db) {
  ) -> UpmappingResult<(FileRange, Option<TextRange>)> {
      UpmappingResult {
          call_site: (
@@ -691,10 +635,9 @@ Rustfmt size:  42083 bytes
      #[test]
      fn test_nav_for_symbol() {
          let (analysis, _) = fixture::file(
- fn foo() { enum FooInner { } }
  "#,
          );
--
+ 
 -        let navs = analysis
 -            .symbol_search(Query::new("FooInner".to_owned()), !0)
 -            .unwrap();
@@ -709,10 +652,9 @@ Rustfmt size:  42083 bytes
      #[test]
      fn test_world_symbols_are_case_sensitive() {
          let (analysis, _) = fixture::file(
- struct Foo;
  "#,
          );
--
+ 
 -        let navs = analysis
 -            .symbol_search(Query::new("foo".to_owned()), !0)
 -            .unwrap();
@@ -731,14 +673,18 @@ Rustfmt size:  42083 bytes
 -        let navs = analysis
 -            .symbol_search(Query::new("foo".to_owned()), !0)
 -            .unwrap();
-+        let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
-         assert_eq!(navs.len(), 2);
+-        assert_eq!(navs.len(), 2);
 -        let navs = analysis
 -            .symbol_search(Query::new("_foo".to_owned()), !0)
 -            .unwrap();
+-        assert_eq!(navs.len(), 0);
+ 
++        let navs = analysis.symbol_search(Query::new("foo".to_owned()), !0).unwrap();
++        assert_eq!(navs.len(), 2);
 +        let navs = analysis.symbol_search(Query::new("_foo".to_owned()), !0).unwrap();
-         assert_eq!(navs.len(), 0);
--
++        assert_eq!(navs.len(), 0);
          // Unless we explicitly search for a `__` prefix
++
          let query = Query::new("__foo".to_owned());
          let navs = analysis.symbol_search(query, !0).unwrap();
+         assert_eq!(navs.len(), 1);

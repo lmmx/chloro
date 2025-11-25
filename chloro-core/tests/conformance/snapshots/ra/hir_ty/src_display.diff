@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99215 bytes
+Chloro size:   99231 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -116,8 +116,10 @@ Rustfmt size:  99713 bytes
          self.curr_size += self.buf.len();
 -
          // Then we write to the internal formatter from the buffer
++
          self.fmt.write_str(&self.buf).map_err(HirDisplayError::from)
      }
+ 
      Diagnostics,
      /// Display types for inserting them in source files.
      /// The generated code should compile, so paths need to be qualified.
@@ -143,64 +145,10 @@ Rustfmt size:  99713 bytes
      // if we are projection on a type parameter, check if the projection target has bounds
      // itself, if so, we render them directly as `impl Bound` instead of the less useful
      // `<Param as Trait>::Assoc`
-             });
-         }
-     }
--
-     write!(f, "<")?;
-     self_ty.hir_fmt(f)?;
-     write!(f, " as ")?;
-         if f.should_truncate() {
-             return write!(f, "{TYPE_HINT_TRUNCATION}");
-         }
--
-         use TyKind;
-         match self.kind() {
-             TyKind::Never => write!(f, "!")?,
-     if parameters.is_empty() {
-         return Ok(());
-     }
--
-     let parameters_to_write = generic_args_sans_defaults(f, generic_def, parameters);
--
-     if !parameters_to_write.is_empty() {
-         write!(f, "<")?;
-         hir_fmt_generic_arguments(f, parameters_to_write, self_)?;
-         write!(f, ">")?;
-     }
--
-     Ok(())
- }
- 
-     if parameters.is_empty() {
-         return Ok(());
-     }
--
-     let parameters_to_write = generic_args_sans_defaults(f, generic_def, parameters);
--
-     if !parameters_to_write.is_empty() {
-         write!(f, "<")?;
-         hir_fmt_generic_arguments(f, parameters_to_write, self_)?;
-         write!(f, ">")?;
-     }
--
-     Ok(())
- }
- 
- ) -> Result<(), HirDisplayError> {
-     let mut first = true;
-     let lifetime_offset = parameters.iter().position(|arg| arg.region().is_some());
--
-     let (ty_or_const, lifetimes) = match lifetime_offset {
-         Some(offset) => parameters.split_at(offset),
-         None => (parameters, &[][..]),
-     self_: Option<Ty<'db>>,
- ) -> Result<(), HirDisplayError> {
-     let mut first = true;
--
-     for ty in tys {
-         if !mem::take(&mut first) {
-             write!(f, ", ")?;
++
+     if !f.display_kind.is_source_code()
+         && let TyKind::Param(param) = self_ty.kind()
+         && !f.bounds_formatting_ctx.contains(alias)
  #[derive(Clone, Copy, PartialEq, Eq)]
  pub enum SizedByDefault {
      NotSized,
@@ -228,13 +176,6 @@ Rustfmt size:  99713 bytes
  impl<'db> HirDisplayWithExpressionStore<'db> for LifetimeRefId {
      fn hir_fmt(
          &self,
-     ) -> Result<(), HirDisplayError> {
-         // FIXME
-         write!(f, "{{const}}")?;
--
-         Ok(())
-     }
- }
                  write!(f, "{name}")?
              }
          }
@@ -242,17 +183,10 @@ Rustfmt size:  99713 bytes
          // Convert trait's `Self` bound back to the surface syntax. Note there is no associated
          // trait, so there can only be one path segment that `has_self_type`. The `Self` type
          // itself can contain further qualified path through, which will be handled by recursive
-             write!(f, " as ")?;
-             // Now format the path of the trait...
-         }
--
-         for (seg_idx, segment) in self.segments().iter().enumerate() {
-             if !matches!(self.kind(), PathKind::Plain) || seg_idx > 0 {
-                 write!(f, "::")?;
-                 }
-             }
-         }
--
-         Ok(())
-     }
- }
+         // `trait_mod::Trait<Self = type_mod::Type, Args>::Assoc`
+         // =>
+         // `<type_mod::Type as trait_mod::Trait<Args>>::Assoc`
++
+         let trait_self_ty = self.segments().iter().find_map(|seg| {
+             let generic_args = seg.args_and_bindings?;
+             generic_args.has_self_type.then(|| &generic_args.args[0])

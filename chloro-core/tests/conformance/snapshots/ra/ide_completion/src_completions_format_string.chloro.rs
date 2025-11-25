@@ -20,6 +20,7 @@ pub(crate) fn format_string(
     let cursor = ctx.position.offset;
     let lit_start = ctx.original_token.text_range().start();
     let cursor_in_lit = cursor - lit_start;
+
     let prefix = &original.text()[..cursor_in_lit.into()];
     let braces = prefix.char_indices().rev().skip_while(|&(_, c)| c.is_alphanumeric()).next_tuple();
     let brace_offset = match braces {
@@ -28,6 +29,7 @@ pub(crate) fn format_string(
         Some(((idx, '{'), _)) => lit_start + TextSize::from(idx as u32 + 1),
         _ => return,
     };
+
     let source_range = TextRange::new(brace_offset, cursor);
     ctx.locals.iter().sorted_by_key(|&(k, _)| k.clone()).for_each(|(name, _)| {
         CompletionItem::new(
@@ -143,6 +145,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "FOOBAR",
             r#"
@@ -178,6 +181,7 @@ fn main() {
 }
 "#,
         );
+
         check_edit(
             "FOOBAR",
             r#"

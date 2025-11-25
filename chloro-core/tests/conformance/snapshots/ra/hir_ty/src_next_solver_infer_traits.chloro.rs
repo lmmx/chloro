@@ -233,7 +233,9 @@ fn pred_known_to_hold_modulo_regions<'db>(
     pred: impl Upcast<DbInterner<'db>, Predicate<'db>>,
 ) -> bool {
     let obligation = Obligation::new(infcx.interner, ObligationCause::dummy(), param_env, pred);
+
     let result = infcx.evaluate_obligation(&obligation);
     debug!(?result);
+
     result.must_apply_modulo_regions()
 }

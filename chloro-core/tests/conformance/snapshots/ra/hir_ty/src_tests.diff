@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22347 bytes
-Chloro size:   22129 bytes
+Chloro size:   22137 bytes
 Rustfmt size:  23079 bytes
 
 ✗ Outputs DIFFER
@@ -26,13 +26,6 @@ Rustfmt size:  23079 bytes
  #[track_caller]
  fn check_types(#[rust_analyzer::rust_fixture] ra_fixture: &str) {
      check_impl(ra_fixture, false, true, false)
- ) {
-     let _tracing = setup_tracing();
-     let (db, files) = TestDB::with_many_files(ra_fixture);
--
-     crate::attach_db(&db, || {
-         let mut had_annotations = false;
-         let mut mismatches = FxHashMap::default();
                  } else if expected.starts_with("adjustments:") {
                      adjustments.insert(
                          file_range,
@@ -93,13 +86,6 @@ Rustfmt size:  23079 bytes
          }
          if !mismatches.is_empty() {
              format_to!(buf, "Unchecked mismatch annotations:\n");
- fn infer_with_mismatches(content: &str, include_mismatches: bool) -> String {
-     let _tracing = setup_tracing();
-     let (db, file_id) = TestDB::with_single_file(content);
--
-     crate::attach_db(&db, || {
-         let mut buf = String::new();
- 
              for (node, ty) in &types {
                  let (range, text) =
                      if let Some(self_param) = ast::SelfParam::cast(node.value.clone()) {
@@ -117,13 +103,6 @@ Rustfmt size:  23079 bytes
                      };
                  let macro_prefix = if node.file_id != file_id { "!" } else { "" };
                  format_to!(
-             }
-         }
-     }
--
-     fn visit_scope(
-         db: &TestDB,
-         crate_def_map: &DefMap,
                      visit_body(db, &body, cb);
                  }
                  ModuleDefId::AdtId(hir_def::AdtId::EnumId(it)) => {
@@ -143,33 +122,3 @@ Rustfmt size:  23079 bytes
                  }
                  ModuleDefId::TraitId(it) => {
                      let trait_data = it.trait_items(db);
-             }
-         }
-     }
--
-     fn visit_body(db: &TestDB, body: &Body, cb: &mut dyn FnMut(ModuleDefId)) {
-         for (_, def_map) in body.blocks(db) {
-             for (mod_id, _) in def_map.modules() {
-         }
-     ",
-     );
--
-     crate::attach_db(&db, || {
-         let module = db.module_for_file(pos.file_id.file_id(&db));
-         let crate_def_map = module.def_map(&db);
-             });
-         });
-     });
--
-     let new_text = "
-         //- /lib.rs
-         trait Index {
-             x.push(1);
-         }
-     ";
--
-     db.set_file_text(pos.file_id.file_id(&db), new_text);
--
-     crate::attach_db(&db, || {
-         let module = db.module_for_file(pos.file_id.file_id(&db));
-         let crate_def_map = module.def_map(&db);

@@ -26,17 +26,22 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
     let ScopeDef::ModuleDef(def) = def else {
         return None;
     };
+
     let current_module = ctx.sema.scope(path.syntax())?.module();
     let target_module = def.module(ctx.db())?;
+
     if def.visibility(ctx.db()).is_visible_from(ctx.db(), current_module.into()) {
         return None;
     };
+
     let (vis_owner, target, target_file, target_name) = target_data_for_def(ctx.db(), def)?;
+
     let missing_visibility = if current_module.krate() == target_module.krate() {
         make::visibility_pub_crate()
     } else {
         make::visibility_pub()
     };
+
     let assist_label = match target_name {
         None => format!("Change visibility to {missing_visibility}"),
         Some(name) => {
@@ -46,6 +51,7 @@ fn add_vis_to_referenced_module_def(acc: &mut Assists, ctx: &AssistContext<'_>) 
             )
         }
     };
+
     acc.add(AssistId::quick_fix("fix_visibility"), assist_label, target, |edit| {
         edit.edit_file(target_file);
 
@@ -80,6 +86,7 @@ fn target_data_for_def(
             file_id.original_file(db).file_id(db),
         ))
     }
+
     let target_name;
     let (offset, target, target_file) = match def {
         hir::ModuleDef::Function(f) => {
@@ -122,6 +129,7 @@ fn target_data_for_def(
         // Enum variants can't be private, we can't modify builtin types
         hir::ModuleDef::Variant(_) | hir::ModuleDef::BuiltinType(_) => return None,
     };
+
     Some((offset, target, target_file, target_name))
 }
 
@@ -303,6 +311,7 @@ pub struct Foo { pub bar: () }
             r"mod foo { $0pub(crate) mod bar { fn bar() {} } }
               fn main() { foo::bar::bar(); } ",
         );
+
         check_assist(
             fix_visibility,
             r"
@@ -320,6 +329,7 @@ mod bar {
 }
 ",
         );
+
         check_assist_not_applicable(
             fix_visibility,
             r"mod foo { pub mod bar { pub fn bar() {} } }

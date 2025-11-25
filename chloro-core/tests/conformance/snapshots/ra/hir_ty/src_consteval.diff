@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10586 bytes
-Chloro size:   10281 bytes
+Chloro size:   10283 bytes
 Rustfmt size:  10586 bytes
 
 ✗ Outputs DIFFER
@@ -47,16 +47,6 @@ Rustfmt size:  10586 bytes
      intern_const_ref(
          db,
          &value.map_or(LiteralConstRef::Unknown, LiteralConstRef::UInt),
-         };
-         return Ok(value);
-     }
--
-     let repr = db.enum_signature(loc.parent).repr;
-     let is_signed = repr.and_then(|repr| repr.int).is_none_or(|int| int.is_signed());
--
-     let mir_body = db.monomorphized_mir_body(
-         def,
-         GenericArgs::new_from_iter(interner, []),
      Ok(c)
  }
  

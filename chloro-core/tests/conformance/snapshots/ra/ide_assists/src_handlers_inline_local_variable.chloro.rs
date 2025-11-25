@@ -26,6 +26,7 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
             None
         }?;
     let initializer_expr = let_stmt.initializer()?;
+
     let wrap_in_parens = references
         .into_iter()
         .filter_map(|FileReference { range, name, .. }| match name {
@@ -50,10 +51,12 @@ pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) 
             Some((name_ref, should_wrap))
         })
         .collect::<Option<Vec<_>>>()?;
+
     let target = match target {
         ast::NameOrNameRef::Name(it) => it.syntax().clone(),
         ast::NameOrNameRef::NameRef(it) => it.syntax().clone(),
     };
+
     acc.add(
         AssistId::refactor_inline("inline_local_variable"),
         "Inline variable",
@@ -121,6 +124,7 @@ fn inline_let(
         cov_mark::hit!(not_applicable_outside_of_bind_pat);
         return None;
     }
+
     let local = sema.to_def(&bind_pat)?;
     let UsageSearchResult { mut references } = Definition::Local(local).usages(sema).all();
     match references.remove(&file_id) {
@@ -149,6 +153,7 @@ fn inline_usage(
         cov_mark::hit!(test_not_inline_selection_too_broad);
         return None;
     }
+
     let local = match sema.resolve_path(&path)? {
         PathResolution::Local(local) => local,
         _ => return None,
@@ -157,17 +162,22 @@ fn inline_usage(
         cov_mark::hit!(test_not_inline_mut_variable_use);
         return None;
     }
+
     let sources = local.sources(sema.db);
     let [source] = sources.as_slice() else {
         // Not applicable with locals with multiple definitions (i.e. or patterns)
         return None;
     };
+
     let bind_pat = source.as_ident_pat()?;
+
     let let_stmt = ast::LetStmt::cast(bind_pat.syntax().parent()?)?;
+
     let UsageSearchResult { mut references } = Definition::Local(local).usages(sema).all();
     let mut references = references.remove(&file_id)?;
     let delete_let = references.len() == 1;
     references.retain(|fref| fref.name.as_name_ref() == Some(&name));
+
     Some(InlineData { let_stmt, delete_let, target: ast::NameOrNameRef::NameRef(name), references })
 }
 

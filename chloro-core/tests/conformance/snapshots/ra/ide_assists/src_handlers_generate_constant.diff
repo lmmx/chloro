@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 7755 bytes
-Chloro size:   7380 bytes
+Chloro size:   7382 bytes
 Rustfmt size:  8317 bytes
 
 ✗ Outputs DIFFER
@@ -80,11 +80,6 @@ Rustfmt size:  8317 bytes
      if path.parent_path().is_some() {
          cov_mark::hit!(not_last_path_segment);
          return None;
-     }
--
-     let name_refs = path.segments().map(|s| s.name_ref());
-     let mut outer_exists = false;
-     let mut not_exist_name_ref = Vec::new();
          let name_ref_class = NameRefClass::classify(&ctx.sema, &name_ref_value);
          match name_ref_class {
              Some(NameRefClass::Definition(Definition::Module(m), _)) => {
@@ -108,7 +103,7 @@ Rustfmt size:  8317 bytes
 +                (statement.syntax().text_range().start(), indent, None, format!("\n{indent}"))
              },
          );
--
+ 
      let text = get_text_for_generate_constant(not_exist_name_ref, indent, outer_exists, type_name)?;
 -    acc.add(
 -        AssistId::quick_fix("generate_constant"),

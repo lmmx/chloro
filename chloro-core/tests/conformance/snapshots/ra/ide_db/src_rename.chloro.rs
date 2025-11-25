@@ -97,6 +97,7 @@ impl Definition {
         } else {
             Edition::LATEST
         };
+
         match *self {
             Definition::Module(module) => rename_mod(sema, module, new_name),
             Definition::ToolModule(_) => {
@@ -223,6 +224,7 @@ impl Definition {
             Definition::DeriveHelper(_) => return None,
         };
         return res;
+
         fn name_range<D>(
             def: D,
             sema: &Semantics<'_, RootDatabase>,
@@ -244,9 +246,11 @@ fn rename_mod(
     new_name: &str,
 ) -> Result<SourceChange> {
     let mut source_change = SourceChange::default();
+
     if module.is_crate_root() {
         return Ok(source_change);
     }
+
     let InFile { file_id, value: def_source } = module.definition_source(sema.db);
     let edition = file_id.edition(sema.db);
     let (new_name, kind) = IdentifierKind::classify(edition, new_name)?;
@@ -294,6 +298,7 @@ fn rename_mod(
             })
         }
     }
+
     if let Some(src) = module.declaration_source(sema.db) {
         let file_id = src.file_id.original_file(sema.db);
         match src.value.name() {
@@ -313,6 +318,7 @@ fn rename_mod(
             _ => never!("Module source node is missing a name"),
         }
     }
+
     let def = Definition::Module(module);
     let usages = def.usages(sema).all();
     let ref_edits = usages.iter().map(|(file_id, references)| {
@@ -323,6 +329,7 @@ fn rename_mod(
         )
     });
     source_change.extend(ref_edits);
+
     Ok(source_change)
 }
 
@@ -334,6 +341,7 @@ fn rename_reference(
     edition: Edition,
 ) -> Result<SourceChange> {
     let (mut new_name, ident_kind) = IdentifierKind::classify(edition, new_name)?;
+
     if matches!(
         def,
         Definition::GenericParam(hir::GenericParam::LifetimeParam(_)) | Definition::Label(_)
@@ -370,8 +378,10 @@ fn rename_reference(
             }
         }
     }
+
     let def = convert_to_def_in_trait(sema.db, def);
     let usages = def.usages(sema).all();
+
     if !usages.is_empty() && ident_kind == IdentifierKind::Underscore {
         cov_mark::hit!(rename_underscore_multiple);
         bail!("Cannot rename reference to `_` as it is being referenced multiple times");
@@ -423,6 +433,7 @@ pub fn source_edit_from_references(
             edited_ranges.push(range.start());
         }
     }
+
     edit.finish()
 }
 
@@ -443,6 +454,7 @@ fn source_edit_from_name(
         edit.insert(ident_pat.syntax().text_range().start(), format!("{new_name}: "));
         return true;
     }
+
     false
 }
 
@@ -455,6 +467,7 @@ fn source_edit_from_name_ref(
     if name_ref.super_token().is_some() {
         return true;
     }
+
     if let Some(record_field) = ast::RecordExprField::for_name_ref(name_ref) {
         let rcf_name_ref = record_field.name_ref();
         let rcf_expr = record_field.expr();

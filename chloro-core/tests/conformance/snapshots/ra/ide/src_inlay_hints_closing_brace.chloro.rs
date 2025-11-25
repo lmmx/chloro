@@ -24,7 +24,9 @@ pub(super) fn hints(
     InRealFile { file_id, value: node }: InRealFile<SyntaxNode>,
 ) -> Option<()> {
     let min_lines = config.closing_brace_hints_min_lines?;
+
     let name = |it: ast::Name| it.syntax().text_range();
+
     let mut node = node.clone();
     let mut closing_token;
     let (label, name_range) = if let Some(item_list) = ast::AssocItemList::cast(node.clone()) {
@@ -116,6 +118,7 @@ pub(super) fn hints(
     } else {
         return None;
     };
+
     if let Some(mut next) = closing_token.next_token() {
         if next.kind() == T![;]
             && let Some(tok) = next.next_token()
@@ -128,11 +131,13 @@ pub(super) fn hints(
             return None;
         }
     }
+
     let mut lines = 1;
     node.text().for_each_chunk(|s| lines += s.matches('\n').count());
     if lines < min_lines {
         return None;
     }
+
     let linked_location =
         name_range.map(|range| FileRange { file_id: file_id.file_id(sema.db), range });
     acc.push(InlayHint {
@@ -145,6 +150,7 @@ pub(super) fn hints(
         pad_right: false,
         resolve_parent: Some(node.text_range()),
     });
+
     None
 }
 

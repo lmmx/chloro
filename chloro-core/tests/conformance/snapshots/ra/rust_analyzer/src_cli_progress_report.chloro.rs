@@ -75,6 +75,7 @@ impl<'a> ProgressReport<'a> {
         // Get length of common portion
         let mut common_prefix_length = 0;
         let common_length = usize::min(self.text.len(), text.len());
+
         while common_prefix_length < common_length
             && text.chars().nth(common_prefix_length).unwrap()
                 == self.text.chars().nth(common_prefix_length).unwrap()
@@ -82,17 +83,20 @@ impl<'a> ProgressReport<'a> {
             common_prefix_length += 1;
         }
         // Backtrack to the first differing character
+
         let mut output = String::new();
         output += &'\x08'.to_string().repeat(self.text.len() - common_prefix_length);
         // Output new suffix, using chars() iter to ensure unicode compatibility
         output.extend(text.chars().skip(common_prefix_length));
         // If the new text is shorter than the old one: delete overlapping characters
+
         if let Some(overlap_count) = self.text.len().checked_sub(text.len())
             && overlap_count > 0
         {
             output += &" ".repeat(overlap_count);
             output += &"\x08".repeat(overlap_count);
         }
+
         let _ = io::stdout().write(output.as_bytes());
         let _ = io::stdout().flush();
         text.clone_into(&mut self.text);
@@ -107,10 +111,12 @@ impl<'a> ProgressReport<'a> {
             return;
         }
         // Fill all last text to space and return the cursor
+
         let spaces = " ".repeat(self.text.len());
         let backspaces = "\x08".repeat(self.text.len());
         print!("{backspaces}{spaces}{backspaces}");
         let _ = io::stdout().flush();
+
         self.text = String::new();
     }
 }

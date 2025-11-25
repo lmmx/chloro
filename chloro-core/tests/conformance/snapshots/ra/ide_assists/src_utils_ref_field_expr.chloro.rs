@@ -20,6 +20,7 @@ pub(crate) fn determine_ref_and_parens(
     let s = field_expr.syntax();
     let mut ref_data = RefData { needs_deref: true, needs_parentheses: true };
     let mut target_node = field_expr.clone().into();
+
     let parent = match s.parent().map(ast::Expr::cast) {
         Some(Some(parent)) => parent,
         Some(None) => {
@@ -28,6 +29,7 @@ pub(crate) fn determine_ref_and_parens(
         }
         None => return (target_node, ref_data),
     };
+
     match parent {
         ast::Expr::ParenExpr(it) => {
             // already parens in place -> don't replace
@@ -106,6 +108,7 @@ pub(crate) fn determine_ref_and_parens(
             ref_data.needs_parentheses = false;
         }
     };
+
     (target_node, ref_data)
 }
 
@@ -121,9 +124,11 @@ impl RefData {
         if self.needs_deref {
             expr = make::expr_prefix(T![*], expr).into();
         }
+
         if self.needs_parentheses {
             expr = make::expr_paren(expr).into();
         }
+
         expr
     }
 }

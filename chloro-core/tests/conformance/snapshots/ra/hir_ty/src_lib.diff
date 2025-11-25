@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 22408 bytes
-Chloro size:   22042 bytes
+Chloro size:   22050 bytes
 Rustfmt size:  22967 bytes
 
 ✗ Outputs DIFFER
@@ -210,10 +210,9 @@ Rustfmt size:  22967 bytes
                      ))
                  }
                  RegionKind::ReVar(_) => error(),
-             }
          }
      }
--
+ 
 -    let mut error_replacer = ErrorReplacer {
 -        vars: Vec::new(),
 -        binder: rustc_type_ir::DebruijnIndex::ZERO,
@@ -224,36 +223,17 @@ Rustfmt size:  22967 bytes
      let value = match t.clone().try_fold_with(&mut error_replacer) {
          Ok(t) => t,
          Err(_) => panic!("Encountered unbound or inference vars in {t:?}"),
-     let output_assoc_type = fn_once_trait
-         .trait_items(db)
          .associated_type_by_name(&Name::new_symbol_root(sym::Output))?;
--
+ 
      let mut table = InferenceTable::new(db, trait_env.clone(), None);
 -
      // Register two obligations:
      // - Self: FnOnce<?args_ty>
      // - <Self as FnOnce<?args_ty>>::Output == ?ret_ty
-         rustc_type_ir::AliasTyKind::Projection,
-         AliasTy::new(table.interner(), output_assoc_type.into(), args),
-     );
--
-     let pred = Predicate::upcast_from(trait_ref, table.interner());
-     if !table.try_obligation(pred).no_solution() {
-         table.register_obligation(pred);
-         if let TyKind::Param(param) = ty.kind() {
-             self.params.insert(param.id.into());
-         }
--
-         ty.super_visit_with(self);
-     }
- 
-         if let ConstKind::Param(param) = konst.kind() {
-             self.params.insert(param.id.into());
-         }
--
-         konst.super_visit_with(self);
-     }
- }
++
+     let args_ty = table.next_ty_var();
+     let args = [self_ty, args_ty];
+     let trait_ref = TraitRef::new(table.interner(), fn_once_trait.into(), args);
  where
      T: ?Sized + rustc_type_ir::TypeVisitable<DbInterner<'db>>,
  {
@@ -280,12 +260,11 @@ Rustfmt size:  22967 bytes
 -    use tracing_subscriber::{layer::SubscriberExt, Registry};
 +    use tracing_subscriber::{Registry, layer::SubscriberExt};
      use tracing_tree::HierarchicalLayer;
--
+ 
      static ENABLE: LazyLock<bool> = LazyLock::new(|| env::var("CHALK_DEBUG").is_ok());
-     if !*ENABLE {
          return None;
      }
--
+ 
 -    let filter: tracing_subscriber::filter::Targets = env::var("CHALK_DEBUG")
 -        .ok()
 -        .and_then(|it| it.parse().ok())

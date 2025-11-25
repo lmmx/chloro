@@ -47,6 +47,7 @@ where
 {
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let span = ctx.span(id).unwrap();
+
         let data = JsonData::new(attrs.metadata().name());
         span.extensions_mut().insert(data);
     }
@@ -60,10 +61,12 @@ where
             name: &'static str,
             elapsed_ms: u128,
         }
+
         let span = ctx.span(&id).unwrap();
         let Some(data) = span.extensions_mut().remove::<JsonData>() else {
             return;
         };
+
         let data = JsonDataInner { name: data.name, elapsed_ms: data.start.elapsed().as_millis() };
         let mut out = serde_json::to_string(&data).expect("Unable to serialize data");
         out.push('\n');
@@ -83,6 +86,7 @@ impl JsonFilter {
         } else {
             Some(FxHashSet::from_iter(spec.split('|').map(String::from)))
         };
+
         Self { allowed_names }
     }
 }

@@ -194,6 +194,7 @@ pub(super) fn lower_path(
         generic_args.resize(segments.len(), None);
         generic_args.reverse();
     }
+
     if segments.is_empty() && kind == PathKind::Plain && type_anchor.is_none() {
         // plain empty paths don't exist, this means we got a single `self` segment as our path
         kind = PathKind::SELF;
@@ -202,6 +203,7 @@ pub(super) fn lower_path(
     // Basically, even in rustc it is quite hacky:
     // https://github.com/rust-lang/rust/blob/614f273e9388ddd7804d5cbc80b8865068a3744e/src/librustc_resolve/macros.rs#L456
     // We follow what it did anyway :)
+
     if segments.len() == 1
         && kind == PathKind::Plain
         && let Some(_macro_call) = path.syntax().parent().and_then(ast::MacroCall::cast)
@@ -216,12 +218,14 @@ pub(super) fn lower_path(
             }
         }
     }
+
     #[cfg(test)]
     {
         ast_segments.reverse();
         SEGMENT_LOWERING_MAP
             .with_borrow_mut(|map| map.extend(ast_segments.into_iter().zip(ast_segments_offset..)));
     }
+
     if let Some(last_segment_args @ Some(GenericArgs { has_self_type: true, .. })) =
         generic_args.last_mut()
     {
@@ -229,6 +233,7 @@ pub(super) fn lower_path(
         // and this causes panics in hir-ty lowering.
         *last_segment_args = None;
     }
+
     let mod_path = Interned::new(ModPath::from_segments(kind, segments));
     if type_anchor.is_none() && generic_args.is_empty() {
         return Some(Path::BarePath(mod_path));
@@ -239,6 +244,7 @@ pub(super) fn lower_path(
             generic_args: generic_args.into_boxed_slice(),
         })));
     }
+
     fn qualifier(path: &ast::Path) -> Option<ast::Path> {
         if let Some(q) = path.qualifier() {
             return Some(q);
@@ -256,6 +262,7 @@ pub(super) fn lower_path(
 pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<ast::PathSegment> {
     // Too tightly coupled to `lower_path()`, but unfortunately we cannot decouple them,
     // as keeping source maps for all paths segments will have a severe impact on memory usage.
+
     let mut segments = path.segments();
     if let Some(ast::PathSegmentKind::Type { trait_ref: Some(trait_ref), .. }) =
         segments.clone().next().and_then(|it| it.kind())
@@ -264,6 +271,7 @@ pub fn hir_segment_to_ast_segment(path: &ast::Path, segment_idx: u32) -> Option<
         return find_segment(trait_ref.path()?.segments().chain(segments), segment_idx);
     }
     return find_segment(segments, segment_idx);
+
     fn find_segment(
         segments: impl Iterator<Item = ast::PathSegment>,
         segment_idx: u32,

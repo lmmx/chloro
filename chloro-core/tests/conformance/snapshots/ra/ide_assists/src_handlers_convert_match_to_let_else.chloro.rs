@@ -16,13 +16,16 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
     if ctx.offset() > pat.syntax().text_range().end() {
         return None;
     }
+
     let Some(ast::Expr::MatchExpr(initializer)) = let_stmt.initializer() else { return None };
     let initializer_expr = initializer.expr()?;
+
     let (extracting_arm, diverging_arm) = find_arms(ctx, &initializer)?;
     if extracting_arm.guard().is_some() {
         cov_mark::hit!(extracting_arm_has_guard);
         return None;
     }
+
     let diverging_arm_expr = match diverging_arm.expr()?.dedent(1.into()) {
         ast::Expr::BlockExpr(block) if block.modifier().is_none() && block.label().is_none() => {
             block.to_string()
@@ -31,6 +34,7 @@ pub(crate) fn convert_match_to_let_else(acc: &mut Assists, ctx: &AssistContext<'
     };
     let extracting_arm_pat = extracting_arm.pat()?;
     let extracted_variable_positions = find_extracted_variable(ctx, &extracting_arm)?;
+
     acc.add(
         AssistId::refactor_rewrite("convert_match_to_let_else"),
         "Convert match to let-else",
@@ -54,6 +58,7 @@ fn find_arms(
     if arms.len() != 2 {
         return None;
     }
+
     let mut extracting = None;
     let mut diverging = None;
     for arm in arms {
@@ -63,6 +68,7 @@ fn find_arms(
             extracting = Some(arm);
         }
     }
+
     match (extracting, diverging) {
         (Some(extracting), Some(diverging)) => Some((extracting, diverging)),
         _ => {
@@ -243,6 +249,7 @@ fn foo(opt: Option<i32>) {
 }
 "#,
         );
+
         check_assist_not_applicable(
             convert_match_to_let_else,
             r#"
@@ -358,6 +365,7 @@ fn foo(opt: Option<()>) {
 }
     "#,
         );
+
         check_assist(
             convert_match_to_let_else,
             r#"
@@ -379,6 +387,7 @@ fn foo(opt: Option<()>) {
 }
     "#,
         );
+
         check_assist(
             convert_match_to_let_else,
             r#"

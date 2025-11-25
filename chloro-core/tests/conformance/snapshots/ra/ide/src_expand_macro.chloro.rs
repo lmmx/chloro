@@ -20,6 +20,7 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     let file_id = sema.attach_first_edition(position.file_id)?;
     let file = sema.parse(file_id);
     let krate = sema.file_to_module_def(file_id.file_id(db))?.krate().into();
+
     let tok = pick_best_token(file.syntax().token_at_offset(position.offset), |kind| match kind {
         SyntaxKind::IDENT => 1,
         _ => 0,
@@ -31,6 +32,7 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
     // #[derive($0Foo)]
     // struct Bar;
     // ```
+
     let derive = sema.descend_into_macros_exact(tok.clone()).into_iter().find_map(|descended| {
         let macro_file = sema.hir_file_for(&descended.parent()?).macro_file()?;
         if !macro_file.is_derive_attr_pseudo_expansion(db) {
@@ -70,9 +72,11 @@ pub(crate) fn expand_macro(db: &RootDatabase, position: FilePosition) -> Option<
         }
         Some(ExpandedMacro { name, expansion })
     });
+
     if derive.is_some() {
         return derive;
     }
+
     let syntax_token = sema.descend_into_macros_exact(tok);
     'tokens: for syntax_token in syntax_token {
         let mut anc = syntax_token.parent_ancestors();
@@ -162,6 +166,7 @@ fn expand(
 ) -> SyntaxNode {
     let children = expanded.descendants().filter_map(ast::Item::cast);
     let mut replacements = Vec::new();
+
     for child in children {
         if let Some(new_node) = expand_macro_recur(
             sema,
@@ -183,6 +188,7 @@ fn expand(
             replacements.push((child, new_node));
         }
     }
+
     replacements.into_iter().rev().for_each(|(old, new)| ted::replace(old.syntax(), new));
     expanded
 }
@@ -196,6 +202,7 @@ fn format(
     krate: Crate,
 ) -> String {
     let expansion = prettify_macro_expansion(db, expanded, span_map, krate).to_string();
+
     _format(db, kind, file_id, &expansion).unwrap_or(expansion)
 }
 
@@ -219,6 +226,7 @@ fn _format(
     expansion: &str,
 ) -> Option<String> {
     use ide_db::base_db::RootQueryDb;
+
     // hack until we get hygiene working (same character amount to preserve formatting as much as possible)
     const DOLLAR_CRATE_REPLACE: &str = "__r_a_";
     const BUILTIN_REPLACE: &str = "builtin__POUND";
@@ -231,21 +239,27 @@ fn _format(
         _ => ("", ""),
     };
     let expansion = format!("{prefix}{expansion}{suffix}");
+
     let &crate_id = db.relevant_crates(file_id).iter().next()?;
     let edition = crate_id.data(db).edition;
+
     #[allow(clippy::disallowed_methods)]
     let mut cmd = std::process::Command::new(toolchain::Tool::Rustfmt.path());
     cmd.arg("--edition");
     cmd.arg(edition.to_string());
+
     let mut rustfmt = cmd
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .spawn()
         .ok()?;
+
     std::io::Write::write_all(&mut rustfmt.stdin.as_mut()?, expansion.as_bytes()).ok()?;
+
     let output = rustfmt.wait_with_output().ok()?;
     let captured_stdout = String::from_utf8(output.stdout).ok()?;
+
     if output.status.success() && !captured_stdout.trim().is_empty() {
         let output = captured_stdout
             .replace(DOLLAR_CRATE_REPLACE, "$crate")

@@ -183,13 +183,16 @@ impl SnippetEdit {
                 }
             })
             .collect_vec();
+
         snippet_ranges.sort_by_key(|(_, range)| range.start());
         // Ensure that none of the ranges overlap
+
         let disjoint_ranges = snippet_ranges
             .iter()
             .zip(snippet_ranges.iter().skip(1))
             .all(|((_, left), (_, right))| left.end() <= right.start() || left == right);
         stdx::always!(disjoint_ranges);
+
         SnippetEdit(snippet_ranges)
     }
 
@@ -345,14 +348,17 @@ impl SourceChangeBuilder {
             }
         }
         // Apply mutable edits
+
         let snippet_edit = self.snippet_builder.take().map(|builder| {
             SnippetEdit::new(
                 builder.places.into_iter().flat_map(PlaceSnippet::finalize_position).collect(),
             )
         });
+
         if let Some(tm) = self.mutated_tree.take() {
             diff(&tm.immutable, &tm.mutable_clone).into_text_edit(&mut self.edit);
         }
+
         let edit = mem::take(&mut self.edit).finish();
         if !edit.is_empty() || snippet_edit.is_some() {
             self.source_change.insert_source_and_snippet_edit(self.file_id, edit, snippet_edit);
@@ -490,6 +496,7 @@ impl SourceChangeBuilder {
     pub fn finish(mut self) -> SourceChange {
         self.commit();
         // Only one file can have snippet edits
+
         stdx::never!(
             self.source_change
                 .source_file_edits
@@ -498,6 +505,7 @@ impl SourceChangeBuilder {
                 .at_most_one()
                 .is_err()
         );
+
         mem::take(&mut self.source_change)
     }
 }

@@ -389,6 +389,7 @@ fn main() {
 "#,
             &["E0308"],
         );
+
         check_diagnostics_with_disabled(
             r#"
 //- minicore: sized
@@ -881,6 +882,7 @@ fn main() {
 "#,
         );
         // Fixed
+
         check_diagnostics(
             r#"
 //- minicore: sized
@@ -931,6 +933,7 @@ fn main() {
 "#,
         );
         // Fixed
+
         check_diagnostics(
             r#"
 //- minicore: sized

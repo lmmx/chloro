@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49552 bytes
-Chloro size:   48209 bytes
+Chloro size:   48416 bytes
 Rustfmt size:  50490 bytes
 
 ✗ Outputs DIFFER
@@ -145,20 +145,10 @@ Rustfmt size:  50490 bytes
          // we only bail on mir building when there are type mismatches
          // but error types may pop up resulting in us still attempting to build the mir
          // so just propagate the error type
++
          if base.is_ty_error() {
              return Ty::new_error(interner, ErrorGuaranteed);
          }
--
-         if matches!(base.kind(), TyKind::Alias(..)) {
-             let mut ocx = ObligationCtxt::new(infcx);
-             // FIXME: we should get this from caller
-                 Err(_) => return Ty::new_error(interner, ErrorGuaranteed),
-             }
-         }
--
-         match self {
-             ProjectionElem::Deref => match base.kind() {
-                 TyKind::RawPtr(inner, _) | TyKind::Ref(_, inner, _) => inner,
                  }
              },
              ProjectionElem::Field(Either::Right(f)) => match base.kind() {
@@ -227,13 +217,6 @@ Rustfmt size:  50490 bytes
      }
  }
  
-     Adt(VariantId, GenericArgs<'db>),
-     Union(UnionId, FieldId),
-     Closure(Ty<'db>),
--    //Coroutine(LocalDefId, SubstsRef, Movability),
- }
- 
- #[derive(Debug, Clone, Hash, PartialEq, Eq)]
      /// Possible values. The locations to branch to in each case
      /// are found in the corresponding indices from the `targets` vector.
      values: SmallVec<[u128; 1]>,
@@ -323,12 +306,8 @@ Rustfmt size:  50490 bytes
      /// Roughly speaking, evaluates the `func` operand and the arguments, and starts execution of
      /// the referred to function. The operand types must match the argument types of the function.
      /// The return place type must match the return type. The type of the `func` operand must be
-         /// `true` if this is from a call in HIR rather than from an overloaded
-         /// operator. True for overloaded function call.
-         from_hir_call: bool,
--        // This `Span` is the span of the function, without the dot and receiver
--        // (e.g. `foo(a, b)` in `x.foo(a, b)`
--        //fn_span: Span,
+         // (e.g. `foo(a, b)` in `x.foo(a, b)`
+         //fn_span: Span,
      },
 -
      /// Evaluates the operand, which must have type `bool`. If it is not equal to `expected`,

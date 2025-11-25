@@ -237,6 +237,7 @@ impl DiagnosticsConfig {
     pub fn test_sample() -> Self {
         use hir::PrefixKind;
         use ide_db::imports::insert_use::ImportGranularity;
+
         Self {
             enabled: true,
             proc_macros_enabled: Default::default(),
@@ -303,15 +304,19 @@ pub fn syntax_diagnostics(
     file_id: FileId,
 ) -> Vec<Diagnostic> {
     let _p = tracing::info_span!("syntax_diagnostics").entered();
+
     if config.disabled.contains("syntax-error") {
         return Vec::new();
     }
+
     let sema = Semantics::new(db);
     let editioned_file_id = sema
         .attach_first_edition(file_id)
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
+
     let (file_id, _) = editioned_file_id.unpack(db);
     // [#3434] Only take first 128 errors to prevent slowing down editor/ide, the number 128 is chosen arbitrarily.
+
     db.parse_errors(editioned_file_id)
         .into_iter()
         .flatten()
@@ -339,12 +344,15 @@ pub fn semantic_diagnostics(
     let editioned_file_id = sema
         .attach_first_edition(file_id)
         .unwrap_or_else(|| EditionedFileId::current_edition(db, file_id));
+
     let (file_id, edition) = editioned_file_id.unpack(db);
     let mut res = Vec::new();
+
     let parse = sema.parse(editioned_file_id);
     // FIXME: This iterates the entire file which is a rather expensive operation.
     // We should implement these differently in some form?
     // Salsa caching + incremental re-parse would be better here
+
     for node in parse.syntax().descendants() {
         handlers::useless_braces::useless_braces(db, &mut res, editioned_file_id, &node);
         handlers::field_shorthand::field_shorthand(db, &mut res, editioned_file_id, &node);
@@ -357,11 +365,14 @@ pub fn semantic_diagnostics(
             edition,
         );
     }
+
     let module = sema.file_to_module_def(file_id);
+
     let is_nightly = matches!(
         module.and_then(|m| db.toolchain_channel(m.krate().into())),
         Some(ReleaseChannel::Nightly) | None
     );
+
     let krate = match module {
         Some(module) => module.krate(),
         None => {
@@ -374,6 +385,7 @@ pub fn semantic_diagnostics(
     };
     let display_target = krate.to_display_target(db);
     let ctx = DiagnosticsContext { config, sema, resolve, edition, is_nightly, display_target };
+
     let mut diags = Vec::new();
     match module {
         // A bunch of parse errors in a file indicate some bigger structural parse changes in the
@@ -387,6 +399,7 @@ pub fn semantic_diagnostics(
             handlers::unlinked_file::unlinked_file(&ctx, &mut res, editioned_file_id.file_id(db))
         }
     }
+
     for diag in diags {
         let d = match diag {
             AnyDiagnostic::AwaitOutsideOfAsync(d) => handlers::await_outside_of_async::await_outside_of_async(&ctx, &d),
@@ -473,10 +486,12 @@ pub fn semantic_diagnostics(
         };
         res.push(d)
     }
+
     res.retain(|d| {
         !(ctx.config.disabled.contains(d.code.as_str())
             || ctx.config.disable_experimental && d.experimental)
     });
+
     let mut lints = res
         .iter_mut()
         .filter(|it| matches!(it.code, DiagnosticCode::Clippy(_) | DiagnosticCode::RustcLint(_)))
@@ -491,8 +506,11 @@ pub fn semantic_diagnostics(
         .collect::<Vec<_>>();
     // The edition isn't accurate (each diagnostics may have its own edition due to macros),
     // but it's okay as it's only being used for error recovery.
+
     handle_lints(&ctx.sema, &mut lints, editioned_file_id.edition(db));
+
     res.retain(|d| d.severity != Severity::Allow);
+
     res.retain_mut(|diag| {
         if let Some(node) = diag
             .main_node
@@ -503,6 +521,7 @@ pub fn semantic_diagnostics(
             true
         }
     });
+
     res
 }
 
@@ -643,6 +662,7 @@ fn find_outline_mod_lint_severity(
         // Inline modules will be handled by `fill_lint_attrs()`.
         return None;
     }
+
     let mod_def = sema.to_module_def(&mod_node)?;
     let module_source_file = sema.module_definition_node(mod_def);
     let mut result = None;
@@ -718,16 +738,19 @@ fn cfg_attr_lint_attrs(
     lint_attrs: &mut Vec<(Severity, ast::TokenTree)>,
 ) {
     let prev_len = lint_attrs.len();
+
     let mut iter = value.token_trees_and_tokens().filter(|it| match it {
         NodeOrToken::Node(_) => true,
         NodeOrToken::Token(it) => !it.kind().is_trivia(),
     });
     // Skip the condition.
+
     for value in &mut iter {
         if value.as_token().is_some_and(|it| it.kind() == T![,]) {
             break;
         }
     }
+
     while let Some(value) = iter.next() {
         if let Some(token) = value.as_token()
             && token.kind() == SyntaxKind::IDENT
@@ -752,6 +775,7 @@ fn cfg_attr_lint_attrs(
             }
         }
     }
+
     if prev_len != lint_attrs.len()
         && let Some(false) | None = sema.check_cfg_attr(value)
     {

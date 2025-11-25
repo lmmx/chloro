@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5686 bytes
-Chloro size:   5347 bytes
+Chloro size:   5353 bytes
 Rustfmt size:  5758 bytes
 
 ✗ Outputs DIFFER
@@ -36,14 +36,12 @@ Rustfmt size:  5758 bytes
 -        .syntax()
 -        .parent()
 -        .and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
--
 +    let record =
 +        path.syntax().parent().and_then(<Either<ast::RecordExpr, ast::RecordPat>>::cast)?;
+ 
      let parent_node = match ctx.covering_element() {
          SyntaxElement::Node(n) => n,
-         SyntaxElement::Token(t) => t.parent()?,
-     };
--
+ 
      let ranks = compute_fields_ranks(&path, ctx)?;
      let get_rank_of_field = |of: Option<SmolStr>| {
 -        *ranks
@@ -51,17 +49,8 @@ Rustfmt size:  5758 bytes
 -            .unwrap_or(&usize::MAX)
 +        *ranks.get(of.unwrap_or_default().trim_start_matches("r#")).unwrap_or(&usize::MAX)
      };
--
+ 
      let field_list = match &record {
-         Either::Left(it) => Either::Left(it.record_expr_field_list()?),
-         Either::Right(it) => Either::Right(it.record_pat_field_list()?),
-             it,
-         )),
-     };
--
-     let is_sorted = fields.as_ref().either(
-         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
-         |(sorted, field_list)| field_list.fields().zip(sorted).all(|(a, b)| a == *b),
          cov_mark::hit!(reorder_sorted_fields);
          return None;
      }
@@ -73,20 +62,6 @@ Rustfmt size:  5758 bytes
      acc.add(
          AssistId::refactor_rewrite("reorder_fields"),
          "Reorder record fields",
-         Some(hir::PathResolution::Def(hir::ModuleDef::Adt(hir::Adt::Struct(it)))) => it,
-         _ => return None,
-     };
--
-     let res = strukt
-         .fields(ctx.db())
-         .into_iter()
-         .enumerate()
-         .map(|(idx, field)| (field.name(ctx.db()).as_str().to_owned(), idx))
-         .collect();
--
-     Some(res)
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

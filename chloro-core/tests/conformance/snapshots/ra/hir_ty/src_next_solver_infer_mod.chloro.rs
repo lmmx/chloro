@@ -285,6 +285,7 @@ pub struct FixupError {
 impl fmt::Display for FixupError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use TyOrConstInferVar::*;
+
         match self.unresolved {
             TyInt(_) => write!(
                 f,
@@ -422,6 +423,7 @@ impl<'db> InferCtxt<'db> {
                 if r.is_error() { self.infcx.next_region_var() } else { r }
             }
         }
+
         ty.fold_with(&mut Folder { infcx: self })
     }
 
@@ -494,6 +496,7 @@ impl<'db> InferCtxt<'db> {
 
     pub fn type_is_copy_modulo_regions(&self, param_env: ParamEnv<'db>, ty: Ty<'db>) -> bool {
         let ty = self.resolve_vars_if_possible(ty);
+
         let Some(copy_def_id) =
             LangItem::Copy.resolve_trait(self.interner.db, self.interner.krate.unwrap())
         else {
@@ -503,6 +506,7 @@ impl<'db> InferCtxt<'db> {
         // rightly refuses to work with inference variables, but
         // moves_by_default has a cache, which we want to use in other
         // cases.
+
         traits::type_known_to_meet_bound_modulo_regions(self, param_env, ty, copy_def_id)
     }
 
@@ -590,6 +594,7 @@ impl<'db> InferCtxt<'db> {
             }
             _ => {}
         }
+
         self.enter_forall(predicate, |SubtypePredicate { a_is_expected, a, b }| {
             if a_is_expected {
                 Ok(self.at(cause, param_env).sub(a, b))
@@ -844,6 +849,7 @@ impl<'db> InferCtxt<'db> {
     /// universe index of `TyVar(vid)`.
     pub fn probe_ty_var(&self, vid: TyVid) -> Result<Ty<'db>, UniverseIndex> {
         use self::type_variable::TypeVariableValue;
+
         match self.inner.borrow_mut().type_variables().probe(vid) {
             TypeVariableValue::Known { value } => Ok(value),
             TypeVariableValue::Unknown { universe } => Err(universe),
@@ -1006,8 +1012,10 @@ impl<'db> InferCtxt<'db> {
         if let Some(inner) = value.clone().no_bound_vars() {
             return inner;
         }
+
         let bound_vars = value.clone().bound_vars();
         let mut args = Vec::with_capacity(bound_vars.len());
+
         for bound_var_kind in bound_vars {
             let arg: GenericArg<'db> = match bound_var_kind {
                 BoundVarKind::Ty(_) => self.next_ty_var().into(),
@@ -1016,9 +1024,11 @@ impl<'db> InferCtxt<'db> {
             };
             args.push(arg);
         }
+
         struct ToFreshVars<'db> {
             args: Vec<GenericArg<'db>>,
         }
+
         impl<'db> BoundVarReplacerDelegate<'db> for ToFreshVars<'db> {
             fn replace_region(&mut self, br: BoundRegion) -> Region<'db> {
                 self.args[br.var.index()].expect_region()
@@ -1068,6 +1078,7 @@ impl<'db> InferCtxt<'db> {
     ) -> impl Fn(TyOrConstInferVar) -> bool + Captures<'db> + 'a {
         // This hoists the borrow/release out of the loop body.
         let inner = self.inner.try_borrow();
+
         move |infer_var: TyOrConstInferVar| match (infer_var, &inner) {
             (TyOrConstInferVar::Ty(ty_var), Ok(inner)) => {
                 use self::type_variable::TypeVariableValue;

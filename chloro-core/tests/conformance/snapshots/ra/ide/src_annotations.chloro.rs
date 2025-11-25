@@ -59,6 +59,7 @@ pub(crate) fn annotations(
     file_id: FileId,
 ) -> Vec<Annotation> {
     let mut annotations = FxIndexSet::default();
+
     if config.annotate_runnables {
         for runnable in runnables(db, file_id) {
             if should_skip_runnable(&runnable.kind, config.binary_target) {
@@ -70,6 +71,7 @@ pub(crate) fn annotations(
             annotations.insert(Annotation { range, kind: AnnotationKind::Runnable(runnable) });
         }
     }
+
     let mk_ranges = |(range, focus): (_, Option<_>)| {
         let cmd_target: TextRange = focus.unwrap_or(range);
         let annotation_range = match config.location {
@@ -79,6 +81,7 @@ pub(crate) fn annotations(
         let target_pos = FilePosition { file_id, offset: cmd_target.start() };
         (annotation_range, target_pos)
     };
+
     visit_file_defs(&Semantics::new(db), file_id, &mut |def| {
         let range = match def {
             Definition::Const(konst) if config.annotate_references => {
@@ -176,6 +179,7 @@ pub(crate) fn annotations(
             }
         }
     });
+
     if config.annotate_method_references {
         annotations.extend(find_all_methods(db, file_id).into_iter().map(|range| {
             let (annotation_range, target_range) = mk_ranges(range);
@@ -185,6 +189,7 @@ pub(crate) fn annotations(
             }
         }));
     }
+
     annotations
         .into_iter()
         .sorted_by_key(|a| {
@@ -225,6 +230,7 @@ pub(crate) fn resolve_annotation(
         }
         _ => {}
     };
+
     annotation
 }
 
@@ -258,12 +264,14 @@ mod tests {
         config: &AnnotationConfig<'_>,
     ) {
         let (analysis, file_id) = fixture::file(ra_fixture);
+
         let annotations: Vec<Annotation> = analysis
             .annotations(config, file_id)
             .unwrap()
             .into_iter()
             .map(|annotation| analysis.resolve_annotation(&DEFAULT_CONFIG, annotation).unwrap())
             .collect();
+
         expect.assert_debug_eq(&annotations);
     }
     fn check(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

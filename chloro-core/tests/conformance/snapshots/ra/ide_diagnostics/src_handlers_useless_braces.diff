@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 3904 bytes
-Chloro size:   3810 bytes
+Chloro size:   3812 bytes
 Rustfmt size:  3961 bytes
 
 ✗ Outputs DIFFER
@@ -38,13 +38,6 @@ Rustfmt size:  3961 bytes
              )
              .with_main_node(InFile::new(file_id.into(), SyntaxNodePtr::new(node)))
              .with_fixes(Some(vec![fix(
-             )])),
-         );
-     }
--
-     Some(())
- }
- 
          tests::{check_diagnostics, check_diagnostics_with_config, check_fix},
          DiagnosticsConfig,
      };
@@ -52,13 +45,6 @@ Rustfmt size:  3961 bytes
      #[test]
      fn test_check_unnecessary_braces_in_use_statement() {
          check_diagnostics(
- }
- "#,
-         );
--
-         let mut config = DiagnosticsConfig::test_sample();
-         config.disabled.insert("syntax-error".to_owned());
-         check_diagnostics_with_config(
  "#,
          );
      }

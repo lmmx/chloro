@@ -257,6 +257,7 @@ impl ItemScope {
 
     pub fn fully_resolve_import(&self, db: &dyn DefDatabase, mut import: ImportId) -> PerNs {
         let mut res = PerNs::none();
+
         let mut def_map;
         let mut scope = self;
         while let Some(&m) = scope.use_imports_macros.get(&ImportOrExternCrate::Import(import)) {
@@ -584,6 +585,7 @@ impl ItemScope {
     ) -> bool {
         let mut changed = false;
         // FIXME: Document and simplify this
+
         if let Some(mut fld) = def.types {
             let existing = self.types.entry(lookup.1.clone());
             match existing {
@@ -629,6 +631,7 @@ impl ItemScope {
                 }
             }
         }
+
         if let Some(mut fld) = def.values {
             let existing = self.values.entry(lookup.1.clone());
             match existing {
@@ -667,6 +670,7 @@ impl ItemScope {
                 _ => {}
             }
         }
+
         if let Some(mut fld) = def.macros {
             let existing = self.macros.entry(lookup.1.clone());
             match existing {
@@ -706,9 +710,11 @@ impl ItemScope {
                 _ => {}
             }
         }
+
         if def.is_none() && self.unresolved.insert(lookup.1) {
             changed = true;
         }
+
         changed
     }
 
@@ -720,6 +726,7 @@ impl ItemScope {
             .chain(self.values.values_mut().map(|def| &mut def.vis))
             .chain(self.unnamed_trait_imports.iter_mut().map(|(_, def)| &mut def.vis))
             .for_each(|vis| *vis = Visibility::PubCrate(krate));
+
         for mac in self.macros.values_mut() {
             if matches!(mac.def, MacroId::ProcMacroId(_) if mac.import.is_none()) {
                 continue;
@@ -731,6 +738,7 @@ impl ItemScope {
     pub(crate) fn dump(&self, db: &dyn ExpandDatabase, buf: &mut String) {
         let mut entries: Vec<_> = self.resolutions().collect();
         entries.sort_by_key(|(name, _)| name.clone());
+
         for (name, def) in entries {
             format_to!(
                 buf,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 6668 bytes
-Chloro size:   6317 bytes
+Chloro size:   6323 bytes
 Rustfmt size:  6668 bytes
 
 ✗ Outputs DIFFER
@@ -34,19 +34,6 @@ Rustfmt size:  6668 bytes
  pub(crate) fn replace_is_method_with_if_let_method(
      acc: &mut Assists,
      ctx: &AssistContext<'_>,
- ) -> Option<()> {
-     let has_cond = ctx.find_node_at_offset::<Either<ast::IfExpr, ast::WhileExpr>>()?;
--
-     let cond = either::for_both!(&has_cond, it => it.condition())?;
-     let cond = cover_let_chain(cond, ctx.selection_trimmed())?;
-     let call_expr = match cond {
-         ast::Expr::MethodCallExpr(call) => call,
-         _ => return None,
-     };
--
-     let name_ref = call_expr.name_ref()?;
-     match name_ref.text().as_str() {
-         "is_some" | "is_ok" => {
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};
@@ -56,13 +43,6 @@ Rustfmt size:  6668 bytes
      #[test]
      fn replace_is_some_with_if_let_some_works() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             replace_is_method_with_if_let_method,
-             r#"
  "#,
          );
      }
@@ -77,13 +57,6 @@ Rustfmt size:  6668 bytes
      #[test]
      fn replace_is_ok_with_if_let_ok_works() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             replace_is_method_with_if_let_method,
-             r#"
  "#,
          );
      }
@@ -98,20 +71,6 @@ Rustfmt size:  6668 bytes
      #[test]
      fn replace_is_some_with_if_let_some_in_let_chain() {
          check_assist(
- }
- "#,
-         );
--
-         check_assist(
-             replace_is_method_with_if_let_method,
-             r#"
- }
- "#,
-         );
--
-         check_assist(
-             replace_is_method_with_if_let_method,
-             r#"
  "#,
          );
      }

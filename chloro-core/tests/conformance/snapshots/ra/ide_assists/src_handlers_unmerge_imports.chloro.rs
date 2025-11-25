@@ -11,18 +11,22 @@ use crate::{
 
 pub(crate) fn unmerge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let tree = ctx.find_node_at_offset::<ast::UseTree>()?;
+
     let tree_list = tree.syntax().parent().and_then(ast::UseTreeList::cast)?;
     if tree_list.use_trees().count() < 2 {
         cov_mark::hit!(skip_single_import);
         return None;
     }
+
     let use_ = tree_list.syntax().ancestors().find_map(ast::Use::cast)?;
     let path = resolve_full_path(&tree)?;
     // If possible, explain what is going to be done.
+
     let label = match tree.path().and_then(|path| path.first_segment()) {
         Some(name) => format!("Unmerge use of `{name}`"),
         None => "Unmerge use".into(),
     };
+
     let target = tree.syntax().text_range();
     acc.add(AssistId::refactor_rewrite("unmerge_imports"), label, target, |builder| {
         let make = SyntaxFactory::with_mappings();
@@ -56,6 +60,7 @@ fn resolve_full_path(tree: &ast::UseTree) -> Option<ast::Path> {
         .take_while(|n| n.kind() != SyntaxKind::USE)
         .filter_map(ast::UseTree::cast)
         .filter_map(|t| t.path());
+
     let final_path = paths.reduce(|prev, next| make::path_concat(next, prev))?;
     if final_path.segment().is_some_and(|it| it.self_token().is_some()) {
         final_path.qualifier()
@@ -111,6 +116,7 @@ use std::fmt::{Debug};
 use std::fmt::Display;
 ",
         );
+
         check_assist(
             unmerge_imports,
             r"

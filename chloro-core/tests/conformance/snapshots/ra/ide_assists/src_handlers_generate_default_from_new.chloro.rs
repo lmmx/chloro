@@ -13,14 +13,17 @@ use crate::{
 pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
     let fn_node = ctx.find_node_at_offset::<ast::Fn>()?;
     let fn_name = fn_node.name()?;
+
     if fn_name.text() != "new" {
         cov_mark::hit!(other_function_than_new);
         return None;
     }
+
     if fn_node.param_list()?.params().next().is_some() {
         cov_mark::hit!(new_function_with_parameters);
         return None;
     }
+
     let impl_ = fn_node.syntax().ancestors().find_map(ast::Impl::cast)?;
     let self_ty = impl_.self_ty()?;
     if is_default_implemented(ctx, &impl_) {
@@ -28,7 +31,9 @@ pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'
         cov_mark::hit!(struct_in_module_with_default);
         return None;
     }
+
     let insert_location = impl_.syntax().text_range();
+
     acc.add(
         AssistId::generate("generate_default_from_new"),
         "Generate a Default impl from a new fn",
@@ -69,14 +74,17 @@ fn generate_trait_impl_text_from_impl(
 
         make::generic_param_list(itertools::chain(lifetime_params, ty_or_const_params))
     });
+
     let mut buf = String::with_capacity(code.len());
     buf.push_str("\n\n");
     // `impl{generic_params} {trait_text} for {impl_.self_ty()}`
+
     buf.push_str("impl");
     if let Some(generic_params) = &generic_params {
         format_to!(buf, "{generic_params}")
     }
     format_to!(buf, " {trait_text} for {self_ty}");
+
     match impl_.where_clause() {
         Some(where_clause) => {
             format_to!(buf, "\n{where_clause}\n{{\n{code}\n}}");
@@ -85,6 +93,7 @@ fn generate_trait_impl_text_from_impl(
             format_to!(buf, " {{\n{code}\n}}");
         }
     }
+
     buf
 }
 
@@ -95,6 +104,7 @@ fn is_default_implemented(ctx: &AssistContext<'_>, impl_: &Impl) -> bool {
         Some(value) => value,
         None => return false,
     };
+
     let ty = impl_def.self_ty(db);
     let krate = impl_def.module(db).krate();
     let default = FamousDefs(&ctx.sema, krate).core_default_Default();
@@ -104,6 +114,7 @@ fn is_default_implemented(ctx: &AssistContext<'_>, impl_: &Impl) -> bool {
         // to impl `Default` when it's missing.
         None => return true,
     };
+
     ty.impls_trait(db, default_trait, &[])
 }
 

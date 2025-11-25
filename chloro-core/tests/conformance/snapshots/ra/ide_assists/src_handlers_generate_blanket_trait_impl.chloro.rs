@@ -25,10 +25,12 @@ pub(crate) fn generate_blanket_trait_impl(
 ) -> Option<()> {
     let name = ctx.find_node_at_offset::<ast::Name>()?;
     let traitd = ast::Trait::cast(name.syntax().parent()?)?;
+
     if existing_any_impl(&traitd, &ctx.sema).is_some() {
         cov_mark::hit!(existing_any_impl);
         return None;
     }
+
     acc.add(
         AssistId("generate_blanket_trait_impl", AssistKind::Generate, None),
         "Generate blanket trait implementation",
@@ -100,6 +102,7 @@ pub(crate) fn generate_blanket_trait_impl(
             builder.add_file_edits(ctx.vfs_file_id(), edit);
         },
     );
+
     Some(())
 }
 
@@ -133,6 +136,7 @@ fn super_traits_has_sized(
 ) -> Option<bool> {
     let traitd = sema.to_def(traitd)?;
     let sized = FamousDefs(sema, traitd.krate(sema.db)).core_marker_Sized()?;
+
     Some(traitd.all_supertraits(sema.db).contains(&sized))
 }
 
@@ -194,6 +198,7 @@ fn exlucde_sized(bounds: ast::TypeBoundList) -> Option<ast::TypeBoundList> {
 
 fn this_name(traitd: &ast::Trait) -> ast::Name {
     let has_iter = find_bound("Iterator", traitd.type_bound_list()).is_some();
+
     let params = traitd
         .generic_param_list()
         .into_iter()
@@ -205,8 +210,10 @@ fn this_name(traitd: &ast::Trait) -> ast::Name {
         })
         .map(|name| name.to_string())
         .collect::<Vec<_>>();
+
     let mut name_gen =
         suggest_name::NameGenerator::new_with_names(params.iter().map(String::as_str));
+
     make::name(&name_gen.suggest_name(if has_iter { "I" } else { "T" }))
 }
 
@@ -317,6 +324,7 @@ trait Foo: Iterator + Sized {
 impl<I: Iterator> Foo for $0I {}
 "#,
         );
+
         check_assist(
             generate_blanket_trait_impl,
             r#"
@@ -336,6 +344,7 @@ impl<I: Iterator> Foo for $0I {
 }
 "#,
         );
+
         check_assist(
             generate_blanket_trait_impl,
             r#"
@@ -1449,6 +1458,7 @@ where
 }
 "#,
         );
+
         check_assist_not_applicable(
             generate_blanket_trait_impl,
             r#"
@@ -1464,6 +1474,7 @@ where
 }
 "#,
         );
+
         check_assist_not_applicable(
             generate_blanket_trait_impl,
             r#"
