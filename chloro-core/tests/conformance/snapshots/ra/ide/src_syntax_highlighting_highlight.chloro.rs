@@ -18,8 +18,8 @@ use syntax::{
 };
 
 use crate::{
-    Highlight, HlMod, HlTag,
     syntax_highlighting::tags::{HlOperator, HlPunct},
+    Highlight, HlMod, HlTag,
 };
 
 pub(super) fn token(

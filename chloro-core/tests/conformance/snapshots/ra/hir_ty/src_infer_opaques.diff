@@ -18,8 +18,9 @@ Rustfmt size:  5762 bytes
      infer::InferenceContext,
      next_solver::{
 -        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
-         EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
-+        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
+-        EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
++        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause}, EarlyBinder,
++        OpaqueTypeKey, SolverDefId, TypingMode,
      },
  };
  

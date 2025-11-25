@@ -3,12 +3,9 @@
 
 use base_db::{Crate, target::TargetLoadError};
 use hir_def::{
-    db::DefDatabase,
-    hir::ExprId,
-    layout::TargetDataLayout,
-    AdtId, BlockId, CallableDefId, ConstParamId, DefWithBodyId, EnumVariantId, FunctionId,
-    GeneralConstId, GenericDefId, ImplId, LifetimeParamId, LocalFieldId, StaticId, TraitId,
-    TypeAliasId, TypeOrConstParamId, VariantId,
+    db::DefDatabase, hir::ExprId, layout::TargetDataLayout, AdtId, BlockId, CallableDefId,
+    ConstParamId, DefWithBodyId, EnumVariantId, FunctionId, GeneralConstId, GenericDefId, ImplId,
+    LifetimeParamId, LocalFieldId, StaticId, TraitId, TypeAliasId, TypeOrConstParamId, VariantId,
 };
 use hir_expand::name::Name;
 use la_arena::ArenaMap;

@@ -7,10 +7,7 @@ use syntax::{Edition, SmolStr, ToSmolStr};
 
 use crate::{
     context::{ParamContext, ParamKind, PathCompletionCtx, PatternContext},
-    render::{
-        RenderContext,
-        variant::{format_literal_label, format_literal_lookup, visible_fields},
-    },
+    render::{variant::{format_literal_label, format_literal_lookup, visible_fields}, RenderContext},
     CompletionItem, CompletionItemKind,
 };
 

@@ -29,6 +29,13 @@ Rustfmt size:  167117 bytes
  };
  use itertools::{Either, Itertools};
  use paths::{Utf8Path, Utf8PathBuf};
+ use rustc_hash::{FxHashMap, FxHashSet};
+ use semver::Version;
+ use serde::{
+-    Deserialize, Serialize,
+     de::{DeserializeOwned, Error},
++    Deserialize, Serialize,
+ };
  use stdx::format_to_acc;
  use triomphe::Arc;
  use vfs::{AbsPath, AbsPathBuf, VfsPath};

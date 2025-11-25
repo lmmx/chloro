@@ -2,40 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 39047 bytes
-Chloro size:   39068 bytes
+Chloro size:   39060 bytes
 Rustfmt size:  42083 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use arrayvec::ArrayVec;
- use either::Either;
- use hir::{
--    db::ExpandDatabase, sym, symbols::FileSymbol, AssocItem, Crate, FieldSource, HasContainer,
--    HasCrate, HasSource, HirDisplay, HirFileId, InFile, LocalSource, ModuleSource, Semantics,
--    Symbol,
-+    db::ExpandDatabase,
-+    sym,
-+    symbols::FileSymbol,
-+    AssocItem, Crate, FieldSource, HasContainer, HasCrate, HasSource, HirDisplay, HirFileId, InFile,
-+    LocalSource, ModuleSource, Semantics, Symbol,
- };
- use ide_db::{
-     base_db::{CrateOrigin, LangCrateOrigin, RootQueryDb},
--    defs::{find_std_module, Definition},
-+    defs::{Definition, find_std_module},
-     documentation::{Documentation, HasDocs},
-     famous_defs::FamousDefs,
-     ra_fixture::UpmapFromRaFixture,
- };
- use stdx::never;
- use syntax::{
--    ast::{self, HasName},
-     AstNode, SyntaxNode, TextRange,
-+    ast::{self, HasName},
- };
- 
- /// `NavigationTarget` represents an element in the editor's UI which you can
                  }
              )*}
          }

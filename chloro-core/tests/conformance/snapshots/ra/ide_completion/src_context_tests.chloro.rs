@@ -3,7 +3,7 @@ use hir::HirDisplay;
 
 use crate::{
     context::CompletionContext,
-    tests::{TEST_CONFIG, position},
+    tests::{position, TEST_CONFIG},
 };
 
 fn check_expected_type_and_name(#[rust_analyzer::rust_fixture] ra_fixture: &str, expect: Expect) {

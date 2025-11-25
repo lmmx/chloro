@@ -288,7 +288,7 @@ fn is_adt_constructor_similar_to_param_name(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
         InlayHintsConfig,
     };
     #[track_caller]

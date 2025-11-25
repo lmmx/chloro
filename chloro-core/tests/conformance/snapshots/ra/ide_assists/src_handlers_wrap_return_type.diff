@@ -12,8 +12,9 @@ Rustfmt size:  53059 bytes
  };
  use syntax::{
 -    AstNode,
-     ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
+-    ast::{self, Expr, HasGenericArgs, HasGenericParams, syntax_factory::SyntaxFactory},
 -    match_ast,
++    ast::{self, syntax_factory::SyntaxFactory, Expr, HasGenericArgs, HasGenericParams},
 +    match_ast, AstNode,
  };
  

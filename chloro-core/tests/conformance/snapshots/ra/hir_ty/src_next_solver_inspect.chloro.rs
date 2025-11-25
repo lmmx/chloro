@@ -3,7 +3,7 @@ pub(crate) use rustc_next_trait_solver::solve::inspect::*;
 use rustc_next_trait_solver::{
     canonical::instantiate_canonical_state,
     resolve::eager_resolve_vars,
-    solve::{SolverDelegateEvalExt, inspect},
+    solve::{inspect, SolverDelegateEvalExt},
 };
 use rustc_type_ir::{
     inherent::{IntoKind, Span as _},
@@ -13,10 +13,7 @@ use rustc_type_ir::{
 
 use crate::next_solver::{
     fulfill::NextSolverError,
-    infer::{
-        InferCtxt,
-        traits::{Obligation, ObligationCause},
-    },
+    infer::{traits::{Obligation, ObligationCause}, InferCtxt},
     obligation_ctxt::ObligationCtxt,
     DbInterner, GenericArg, GenericArgs, Goal, NormalizesTo, ParamEnv, Predicate, PredicateKind,
     QueryResult, SolverContext, Span, Term,

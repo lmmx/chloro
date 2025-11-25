@@ -13,6 +13,15 @@ Rustfmt size:  15570 bytes
  use std::{
      fmt::{self, Debug},
      panic, thread,
+ };
+ 
+ use ide_db::base_db::{
+-    DbPanicContext,
+     salsa::{self, Cancelled},
++    DbPanicContext,
+ };
+ use lsp_server::{ExtractError, Response, ResponseError};
+ use serde::{Serialize, de::DeserializeOwned};
          if let Ok(response) = result_to_response::<R>(req.id, result) {
              self.global_state.respond(response);
          }

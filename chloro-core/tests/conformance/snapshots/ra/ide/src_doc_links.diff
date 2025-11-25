@@ -17,39 +17,46 @@ Rustfmt size:  31554 bytes
  
  use std::ops::Range;
  
--use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
--use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
--use stdx::format_to;
--use url::Url;
--
- use hir::{
--    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
-+    db::HirDatabase,
-+    sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs,
- };
- use ide_db::{
--    RootDatabase,
-     base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
-     defs::{Definition, NameClass, NameRefClass},
-     documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
-     helpers::pick_best_token,
++use hir::{
++    db::HirDatabase, sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner,
++    HasAttrs,
++};
++use ide_db::{
++    base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
++    defs::{Definition, NameClass, NameRefClass},
++    documentation::{docs_with_rangemap, DocsRangeMap, Documentation, HasDocs},
++    helpers::pick_best_token,
 +    RootDatabase,
- };
-+use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
-+use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
-+use stdx::format_to;
- use syntax::{
--    AstNode, AstToken,
--    SyntaxKind::*,
--    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
-     ast::{self, IsString},
--    match_ast,
++};
+ use pulldown_cmark::{BrokenLink, CowStr, Event, InlineStr, LinkType, Options, Parser, Tag};
+ use pulldown_cmark_to_cmark::{Options as CMarkOptions, cmark_resume_with_options};
+ use stdx::format_to;
++use syntax::{
++    ast::{self, IsString},
 +    match_ast, AstNode, AstToken,
 +    SyntaxKind::*,
 +    SyntaxNode, SyntaxToken, TextRange, TextSize, T,
- };
-+use url::Url;
++};
+ use url::Url;
  
+-use hir::{
+-    Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs, db::HirDatabase, sym,
+-};
+-use ide_db::{
+-    RootDatabase,
+-    base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
+-    defs::{Definition, NameClass, NameRefClass},
+-    documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
+-    helpers::pick_best_token,
+-};
+-use syntax::{
+-    AstNode, AstToken,
+-    SyntaxKind::*,
+-    SyntaxNode, SyntaxToken, T, TextRange, TextSize,
+-    ast::{self, IsString},
+-    match_ast,
+-};
+-
  use crate::{
 -    FilePosition, Semantics,
      doc_links::intra_doc_links::{parse_intra_doc_link, strip_prefixes_suffixes},

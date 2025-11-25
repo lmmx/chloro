@@ -17,12 +17,10 @@ Rustfmt size:  36357 bytes
      algo,
      ast::{
 -        self, edit_in_place::Removable, make, AstNode, HasAttrs, HasName, HasVisibility,
--        PathSegmentKind,
-+        self, AstNode, HasAttrs, HasName, HasVisibility, PathSegmentKind, edit_in_place::Removable,
-+        make,
++        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasName, HasVisibility,
+         PathSegmentKind,
      },
      ted::{self, Position},
-     Direction, SyntaxElement,
      if !eq_attrs(lhs.attrs(), rhs.attrs()) {
          return None;
      }

@@ -101,7 +101,7 @@ fn variant_hints(
 mod tests {
     use expect_test::expect;
     use crate::inlay_hints::{
-        tests::{DISABLED_CONFIG, check_edit, check_with_config},
+        tests::{check_edit, check_with_config, DISABLED_CONFIG},
         DiscriminantHints, InlayHintsConfig,
     };
     #[track_caller]

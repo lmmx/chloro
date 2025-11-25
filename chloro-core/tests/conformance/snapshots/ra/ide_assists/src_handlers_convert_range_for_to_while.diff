@@ -14,12 +14,10 @@ Rustfmt size:  6555 bytes
      algo::previous_non_trivia_token,
      ast::{
 -        self, edit::AstNodeEdit, make, syntax_factory::SyntaxFactory, HasArgList, HasLoopBody,
--        HasName, RangeItem,
-+        self, HasArgList, HasLoopBody, HasName, RangeItem, edit::AstNodeEdit, make,
-+        syntax_factory::SyntaxFactory,
++        edit::AstNodeEdit, make, self, syntax_factory::SyntaxFactory, HasArgList, HasLoopBody,
+         HasName, RangeItem,
      },
      syntax_editor::{Element, Position},
-     AstNode, T,
  
  use crate::assist_context::{AssistContext, Assists};
  

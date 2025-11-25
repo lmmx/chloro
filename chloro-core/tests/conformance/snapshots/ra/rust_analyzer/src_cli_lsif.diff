@@ -2,18 +2,14 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12611 bytes
-Chloro size:   12602 bytes
+Chloro size:   12606 bytes
 Rustfmt size:  12892 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use ide::{
-     Analysis, AnalysisHost, FileId, FileRange, MonikerKind, MonikerResult, PackageInformation,
--    RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
--    VendoredLibrariesConfig,
-+    RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData, VendoredLibrariesConfig,
+     RootDatabase, StaticIndex, StaticIndexedFile, TokenId, TokenStaticData,
+     VendoredLibrariesConfig,
  };
 -use ide_db::{line_index::WideEncoding, LineIndexDatabase};
 -use load_cargo::{load_workspace, LoadCargoConfig, ProcMacroServerChoice};

@@ -7,13 +7,13 @@ use ide_db::{
 };
 use stdx::never;
 use syntax::{
-    ast::{self, Use, UseTree, VisibilityKind, make},
+    ast::{make, self, Use, UseTree, VisibilityKind},
     AstNode, Direction, SyntaxNode, SyntaxToken, T,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn expand_glob_import(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

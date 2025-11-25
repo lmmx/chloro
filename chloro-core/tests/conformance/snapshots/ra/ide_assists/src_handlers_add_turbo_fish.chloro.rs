@@ -1,14 +1,14 @@
 use either::Either;
 use ide_db::defs::{Definition, NameRefClass};
 use syntax::{
-    ast::{self, HasArgList, HasGenericArgs, make, syntax_factory::SyntaxFactory},
+    ast::{make, self, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
     syntax_editor::Position,
     AstNode,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn add_turbo_fish(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

@@ -16,7 +16,8 @@ Rustfmt size:  15979 bytes
  
  use hir_def::{
 -    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,
-     expr_store::{Body, path::Path},
+-    expr_store::{Body, path::Path},
++    expr_store::{path::Path, Body},
      hir::PatId,
      item_tree::FieldsShape,
 +    AdtId, EnumVariantId, LocalFieldId, Lookup, VariantId,

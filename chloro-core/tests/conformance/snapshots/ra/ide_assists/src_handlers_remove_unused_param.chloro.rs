@@ -8,9 +8,7 @@ use syntax::{
 use SyntaxKind::WHITESPACE;
 
 use crate::{
-    assist_context::SourceChangeBuilder,
-    utils::next_prev,
-    AssistContext, AssistId, Assists,
+    assist_context::SourceChangeBuilder, utils::next_prev, AssistContext, AssistId, Assists,
 };
 
 pub(crate) fn remove_unused_param(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

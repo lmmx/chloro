@@ -323,10 +323,7 @@ mod tests {
     use test_fixture::WithFixture;
     use test_utils::{assert_eq_text, extract_offset};
     use crate::{
-        db::DefDatabase,
-        nameres::crate_def_map,
-        test_db::TestDB,
-        FunctionId, ModuleDefId,
+        db::DefDatabase, nameres::crate_def_map, test_db::TestDB, FunctionId, ModuleDefId,
     };
     fn find_function(db: &TestDB, file_id: FileId) -> FunctionId {
         let krate = db.test_crate();

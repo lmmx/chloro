@@ -24,8 +24,7 @@ use crate::{
     context::{DotAccess, DotAccessKind, PathCompletionCtx, PathKind, PatternContext},
     item::{Builder, CompletionRelevanceTypeMatch},
     render::{
-        function::render_fn,
-        literal::render_variant_lit,
+        function::render_fn, literal::render_variant_lit,
         macro_::{render_macro, render_macro_pat},
     },
     CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
@@ -646,7 +645,7 @@ mod tests {
     use itertools::Itertools;
     use crate::{
         item::CompletionRelevanceTypeMatch,
-        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
+        tests::{check_edit, do_completion, get_all_items, TEST_CONFIG},
         CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
     };
     #[track_caller]

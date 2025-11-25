@@ -2,7 +2,7 @@ use hir::{InFile, ModuleDef};
 use ide_db::{helpers::mod_path_to_ast, imports::import_assets::NameToImport, items_locator};
 use itertools::Itertools;
 use syntax::{
-    ast::{self, AstNode, HasName, make},
+    ast::{make, self, AstNode, HasName},
     syntax_editor::{Position, SyntaxEditor},
     SyntaxKind::WHITESPACE,
     T,
@@ -11,8 +11,8 @@ use syntax::{
 use crate::{
     assist_context::{AssistContext, Assists},
     utils::{
-        DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
-        gen_trait_fn_body, generate_trait_impl,
+        add_trait_assoc_items_to_impl, filter_assoc_items, gen_trait_fn_body, generate_trait_impl,
+        DefaultMethods, IgnoreAssocItems,
     },
     AssistConfig, AssistId,
 };

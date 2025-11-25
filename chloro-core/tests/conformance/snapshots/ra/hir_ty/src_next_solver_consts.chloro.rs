@@ -14,7 +14,7 @@ use rustc_type_ir::{
 };
 
 use crate::{
-    next_solver::{ClauseKind, ParamEnv, interner::InternedWrapperNoDebug},
+    next_solver::{interner::InternedWrapperNoDebug, ClauseKind, ParamEnv},
     MemoryMap,
 };
 use super::{BoundVarKind, DbInterner, ErrorGuaranteed, GenericArgs, Placeholder, Ty};

@@ -32,8 +32,28 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     let single_line = format!("{}use {};", vis_text, use_tree_text);
     let single_line_len = indent + single_line.len();
 
-    // If it fits on one line, write it directly
-    if single_line_len < MAX_WIDTH {
+    // Check if we need multi-line formatting due to nested groups
+    let has_nested_groups = if use_tree_text.contains('{') && use_tree_text.contains('}') {
+        if let Some(open_brace) = use_tree_text.find('{') {
+            let rest = &use_tree_text[open_brace + 1..];
+            if let Some(close_brace) = rest.rfind('}') {
+                let items_str = &rest[..close_brace];
+                let items = parse_items_with_nested_braces(items_str);
+                items
+                    .iter()
+                    .any(|item| item.contains('{') && item.contains(','))
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+
+    // If it fits on one line AND has no nested groups, write it directly
+    if single_line_len < MAX_WIDTH && !has_nested_groups {
         // NOTE: Should be <= but there's an off-by-one bug, so use <
         // See: https://github.com/rust-lang/rustfmt/issues/6727
         buf.push_str(&vis_text);
@@ -64,54 +84,58 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 // Parse items carefully, respecting nested braces
                 let items = parse_items_with_nested_braces(items_str);
 
+                // Sort nested brace contents
+                let items: Vec<_> = items.iter().map(|item| sort_nested_items(item)).collect();
+
                 // Sort items using standard lexicographic ordering
                 let mut sorted_items = items;
                 sorted_items.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
 
                 // Group items by their submodule prefix
-                let groups = grouping::group_by_submodule(sorted_items);
+                let mut groups = grouping::group_by_submodule(sorted_items);
+
+                // Sort within each group to maintain order
+                for group in &mut groups {
+                    group.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+                }
 
                 // Write out each group
                 let line_indent = indent + 4;
 
                 for group in groups.iter() {
-                    let is_root_group = group.iter().all(|item| !item.contains("::"));
+                    // Pack items in this group onto lines
+                    let mut current_line = String::new();
 
-                    if is_root_group {
-                        // Root-level items can be packed on lines
-                        let mut current_line = String::new();
+                    for item in group.iter() {
+                        // Use format_item_with_nested_braces for nested formatting
+                        let mut item_buf = String::new();
+                        format_item_with_nested_braces(item, &mut item_buf, line_indent);
 
-                        for item in group.iter() {
-                            let item_with_comma = format!("{},", item);
-                            let potential_line_len =
-                                line_indent + current_line.len() + item_with_comma.len();
+                        let item_with_comma = format!("{},", item_buf);
+                        let potential_line_len = if current_line.is_empty() {
+                            line_indent + item_with_comma.len()
+                        } else {
+                            line_indent + current_line.len() + 1 + item_with_comma.len() // +1 for the space
+                        };
 
-                            if current_line.is_empty() {
-                                current_line.push_str(&item_with_comma);
-                            } else if potential_line_len < MAX_WIDTH {
-                                current_line.push(' ');
-                                current_line.push_str(&item_with_comma);
-                            } else {
-                                write_indent(buf, line_indent);
-                                buf.push_str(&current_line);
-                                buf.push('\n');
-                                current_line.clear();
-                                current_line.push_str(&item_with_comma);
-                            }
-                        }
-
-                        if !current_line.is_empty() {
+                        if current_line.is_empty() {
+                            current_line.push_str(&item_with_comma);
+                        } else if potential_line_len < MAX_WIDTH {
+                            current_line.push(' ');
+                            current_line.push_str(&item_with_comma);
+                        } else {
                             write_indent(buf, line_indent);
                             buf.push_str(&current_line);
                             buf.push('\n');
+                            current_line.clear();
+                            current_line.push_str(&item_with_comma);
                         }
-                    } else {
-                        // Submodule items: one per line
-                        for item in group.iter() {
-                            write_indent(buf, line_indent);
-                            buf.push_str(item);
-                            buf.push_str(",\n");
-                        }
+                    }
+
+                    if !current_line.is_empty() {
+                        write_indent(buf, line_indent);
+                        buf.push_str(&current_line);
+                        buf.push('\n');
                     }
                 }
 
@@ -125,6 +149,67 @@ pub fn format_use(node: &SyntaxNode, buf: &mut String, indent: usize) {
     // Fallback: just write as-is if we can't parse it
     buf.push_str(&use_tree_text);
     buf.push_str(";\n");
+}
+
+/// Format an item, handling nested braces with proper indentation
+fn format_item_with_nested_braces(item: &str, buf: &mut String, indent: usize) {
+    if !item.contains('{') {
+        buf.push_str(item);
+        return;
+    }
+
+    if let Some(open_idx) = item.find('{') {
+        let prefix = &item[..open_idx];
+        let rest = &item[open_idx + 1..];
+
+        if let Some(close_idx) = rest.rfind('}') {
+            let inner = &rest[..close_idx];
+            let inner_items = parse_items_with_nested_braces(inner);
+
+            // Check if it fits on one line
+            let single_line = format!("{}{{{}}}", prefix, inner_items.join(", "));
+            if indent + single_line.len() < MAX_WIDTH {
+                // Note off-by-one error: max width=100 means at most 99 chars per line
+                buf.push_str(&single_line);
+                return;
+            }
+
+            // Multi-line format
+            buf.push_str(prefix);
+            buf.push_str("{\n");
+
+            // Format inner items (packed if they're root-level)
+            let inner_indent = indent + 4;
+            let mut current_line = String::new();
+
+            for inner_item in inner_items {
+                let item_with_comma = format!("{}, ", inner_item);
+                let potential_len = inner_indent + current_line.len() + item_with_comma.len();
+
+                if current_line.is_empty() || potential_len < MAX_WIDTH {
+                    current_line.push_str(&item_with_comma);
+                } else {
+                    write_indent(buf, inner_indent);
+                    buf.push_str(current_line.trim_end_matches(", "));
+                    buf.push_str(",\n");
+                    current_line.clear();
+                    current_line.push_str(&item_with_comma);
+                }
+            }
+
+            if !current_line.is_empty() {
+                write_indent(buf, inner_indent);
+                buf.push_str(current_line.trim_end_matches(", "));
+                buf.push_str(",\n");
+            }
+
+            write_indent(buf, indent);
+            buf.push('}');
+            return;
+        }
+    }
+
+    buf.push_str(item);
 }
 
 /// Parse items from a use tree, respecting nested braces.
@@ -147,10 +232,10 @@ fn parse_items_with_nested_braces(items_str: &str) -> Vec<String> {
                 current_item.push(ch);
             }
             ',' if brace_depth == 0 => {
-                // Only split on commas at the top level
                 let trimmed = current_item.trim().to_string();
                 if !trimmed.is_empty() {
-                    items.push(trimmed);
+                    // Unpack singleton braces
+                    items.push(unpack_singleton_braces(&trimmed));
                 }
                 current_item.clear();
             }
@@ -160,13 +245,59 @@ fn parse_items_with_nested_braces(items_str: &str) -> Vec<String> {
         }
     }
 
-    // Don't forget the last item
     let trimmed = current_item.trim().to_string();
     if !trimmed.is_empty() {
-        items.push(trimmed);
+        items.push(unpack_singleton_braces(&trimmed));
     }
 
     items
+}
+
+/// Unpack singleton braces: `foo::{bar}` -> `foo::bar`
+fn unpack_singleton_braces(item: &str) -> String {
+    if let Some(open_idx) = item.find('{') {
+        let prefix = &item[..open_idx];
+        let rest = &item[open_idx + 1..];
+
+        if let Some(close_idx) = rest.rfind('}') {
+            let inner = rest[..close_idx].trim();
+
+            // Check if it's a singleton (no commas at depth 0)
+            if !inner.contains(',') && !inner.contains('{') {
+                return format!("{}{}", prefix, inner);
+            }
+        }
+    }
+    item.to_string()
+}
+
+/// Recursively sort items within nested braces
+fn sort_nested_items(item: &str) -> String {
+    if !item.contains('{') {
+        return item.to_string();
+    }
+
+    // Find the opening brace
+    if let Some(open_idx) = item.find('{') {
+        let prefix = &item[..open_idx + 1];
+        let rest = &item[open_idx + 1..];
+
+        if let Some(close_idx) = rest.rfind('}') {
+            let inner = &rest[..close_idx];
+            let suffix = &rest[close_idx..];
+
+            // Parse and sort the inner items
+            let inner_items = parse_items_with_nested_braces(inner);
+            let mut sorted_inner = inner_items;
+            sorted_inner.sort_by(|a, b| sort::sort_key(a).cmp(&sort::sort_key(b)));
+
+            // Reconstruct
+            let sorted_inner_str = sorted_inner.join(", ");
+            return format!("{}{}{}", prefix, sorted_inner_str, suffix);
+        }
+    }
+
+    item.to_string()
 }
 
 #[cfg(test)]

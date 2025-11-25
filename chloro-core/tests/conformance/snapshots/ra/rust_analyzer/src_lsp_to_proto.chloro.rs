@@ -18,10 +18,7 @@ use ide::{
     UpdateTest,
 };
 use ide_db::{
-    assists,
-    rust_doc::format_docs,
-    source_change::ChangeAnnotationId,
-    FxHasher, MiniCore,
+    assists, rust_doc::format_docs, source_change::ChangeAnnotationId, FxHasher, MiniCore,
 };
 use itertools::Itertools;
 use paths::{Utf8Component, Utf8Prefix};
@@ -34,10 +31,8 @@ use crate::{
     global_state::GlobalStateSnapshot,
     line_index::{LineEndings, LineIndex, PositionEncoding},
     lsp::{
-        LspError, completion_item_hash,
-        ext::ShellRunnableArgs,
-        semantic_tokens::{self, standard_fallback_type},
-        utils::invalid_params_error,
+        completion_item_hash, ext::ShellRunnableArgs,
+        semantic_tokens::{self, standard_fallback_type}, utils::invalid_params_error, LspError,
     },
     lsp_ext::{self, SnippetTextEdit},
     target_spec::{CargoTargetSpec, TargetSpec},

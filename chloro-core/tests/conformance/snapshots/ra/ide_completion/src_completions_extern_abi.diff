@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2212 bytes
-Chloro size:   2116 bytes
+Chloro size:   2108 bytes
 Rustfmt size:  2243 bytes
 
 ✗ Outputs DIFFER
@@ -11,16 +11,9 @@ Rustfmt size:  2243 bytes
  //! Completes function abi strings.
 +
  use syntax::{
--    ast::{self, IsString},
+     ast::{self, IsString},
      AstNode, AstToken, SmolStr,
-+    ast::{self, IsString},
- };
- 
- use crate::{
--    completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
-+    completions::Completions,
-+    context::CompletionContext,
-+    CompletionItem, CompletionItemKind,
+     completions::Completions, context::CompletionContext, CompletionItem, CompletionItemKind,
  };
  
 -// Most of these are feature gated, we should filter/add feature gate completions once we have them.

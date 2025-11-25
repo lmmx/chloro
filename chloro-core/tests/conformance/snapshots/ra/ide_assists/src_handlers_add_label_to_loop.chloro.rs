@@ -1,13 +1,8 @@
 use ide_db::{
-    source_change::SourceChangeBuilder,
-    syntax_helpers::node_ext::for_each_break_and_continue_expr,
+    source_change::SourceChangeBuilder, syntax_helpers::node_ext::for_each_break_and_continue_expr,
 };
 use syntax::{
-    ast::{
-        self, AstNode, HasLoopBody,
-        make::{self, tokens},
-        syntax_factory::SyntaxFactory,
-    },
+    ast::{make::{self, tokens}, self, syntax_factory::SyntaxFactory, AstNode, HasLoopBody},
     syntax_editor::{Position, SyntaxEditor},
     SyntaxToken, T,
 };

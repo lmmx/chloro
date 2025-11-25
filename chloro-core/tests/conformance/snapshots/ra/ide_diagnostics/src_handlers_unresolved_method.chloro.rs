@@ -6,7 +6,7 @@ use ide_db::{
     source_change::SourceChange,
 };
 use syntax::{
-    ast::{self, HasArgList, make},
+    ast::{make, self, HasArgList},
     format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
 };
 

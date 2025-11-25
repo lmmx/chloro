@@ -25,7 +25,10 @@ Rustfmt size:  50684 bytes
 -    SolverContext, Span, Term, TraitPredicate, Ty, TyKind, TypeError,
      fulfill::NextSolverError,
      infer::{
-         InferCtxt,
+-        InferCtxt,
+         select::SelectionError,
+         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
++        InferCtxt,
      },
      inspect::{self, ProofTreeVisitor},
      normalize::deeply_normalize_for_diagnostics,

@@ -21,8 +21,10 @@ Rustfmt size:  20506 bytes
 -    Direction, NodeOrToken, SyntaxKind, SyntaxNode, algo,
 +    algo,
      ast::{
-         self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
-         edit_in_place::Removable, make,
+-        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
+-        edit_in_place::Removable, make,
++        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasModuleItem, HasVisibility,
++        PathSegmentKind,
      },
 -    ted,
 +    ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
@@ -31,8 +33,10 @@ Rustfmt size:  20506 bytes
  use crate::{
 -    RootDatabase,
      imports::merge_imports::{
-         MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
-         try_merge_imports, use_tree_cmp,
+-        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
+-        try_merge_imports, use_tree_cmp,
++        common_prefix, eq_attrs, eq_visibility, try_merge_imports, use_tree_cmp, MergeBehavior,
++        NormalizationStyle,
      },
 +    RootDatabase,
  };

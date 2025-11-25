@@ -8,6 +8,15 @@ Rustfmt size:  37899 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use hir::ChangeWithProcMacros;
+ use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
+ use ide_db::{
+-    MiniCore,
+     base_db::{Crate, ProcMacroPaths, SourceDatabase},
++    MiniCore,
+ };
+ use itertools::Itertools;
+ use load_cargo::SourceRootConfig;
      pub(crate) build_scripts: Vec<anyhow::Result<WorkspaceBuildScripts>>,
  }
  

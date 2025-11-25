@@ -20,7 +20,8 @@ Rustfmt size:  15319 bytes
  use itertools::Itertools;
  use syntax::{
 -    AstNode, SyntaxNode,
-     ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
+-    ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
++    ast::{edit::AstNodeEdit, self, syntax_factory::SyntaxFactory, HasArgList},
      syntax_editor::SyntaxEditor,
 +    AstNode, SyntaxNode,
  };

@@ -5,4 +5,15 @@ Original size: 1436 bytes
 Chloro size:   1436 bytes
 Rustfmt size:  1436 bytes
 
-✓ Outputs are IDENTICAL
+✗ Outputs DIFFER
+
+=== DIFF (- rustfmt, + chloro) ===
+ //! Completion for visibility specifiers.
+ 
+ use crate::{
+-    Completions,
+     context::{CompletionContext, PathCompletionCtx, Qualified},
++    Completions,
+ };
+ 
+ pub(crate) fn complete_vis_path(

@@ -19,14 +19,14 @@ use ide_db::{
 use itertools::{Itertools, izip};
 use syntax::{
     ast::{
-        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
+        edit::IndentLevel, edit_in_place::Indent, self, HasArgList, HasGenericArgs, Pat, PathExpr,
     },
     ted, AstNode, NodeOrToken, SyntaxKind,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn inline_into_callers(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

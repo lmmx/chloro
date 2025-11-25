@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27822 bytes
-Chloro size:   27643 bytes
+Chloro size:   27620 bytes
 Rustfmt size:  27822 bytes
 
 ✗ Outputs DIFFER
@@ -16,6 +16,13 @@ Rustfmt size:  27822 bytes
  pub(crate) fn missing_match_arms(
      ctx: &DiagnosticsContext<'_>,
      d: &hir::MissingMatchArms,
+ #[cfg(test)]
+ mod tests {
+     use crate::{
+-        tests::{
+-            check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled,
+-        },
++        tests::{check_diagnostics, check_diagnostics_with_config, check_diagnostics_with_disabled},
          DiagnosticsConfig,
      };
      use test_utils::skip_slow_tests;

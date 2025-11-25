@@ -1,10 +1,10 @@
 use ide_db::{
     assists::{AssistId, AssistKind},
-    syntax_helpers::format_string_exprs::{Arg, parse_format_exprs},
+    syntax_helpers::format_string_exprs::{parse_format_exprs, Arg},
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, TokenTree, make, syntax_factory::SyntaxFactory},
+    ast::{make, self, syntax_factory::SyntaxFactory, TokenTree},
     AstNode, AstToken, NodeOrToken,
     SyntaxKind::WHITESPACE,
     SyntaxToken, T,

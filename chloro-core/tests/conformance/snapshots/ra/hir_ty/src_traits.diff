@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8324 bytes
-Chloro size:   8104 bytes
+Chloro size:   8096 bytes
 Rustfmt size:  8412 bytes
 
 ✗ Outputs DIFFER
@@ -19,23 +19,16 @@ Rustfmt size:  8412 bytes
  use hir_expand::name::Name;
  use intern::sym;
  use rustc_next_trait_solver::solve::{HasChanged, SolverDelegateEvalExt};
- use rustc_type_ir::{
-+    TypingMode,
-     inherent::{IntoKind, Span as _},
-     solve::Certainty,
--    TypingMode,
- };
- use triomphe::Arc;
- 
  use crate::{
      db::HirDatabase,
      next_solver::{
 -        infer::{traits::ObligationCause, DbInternerInferExt, InferCtxt},
 -        obligation_ctxt::ObligationCtxt,
-         Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
-         TyKind,
+-        Canonical, DbInterner, GenericArgs, Goal, ParamEnv, Predicate, SolverContext, Span, Ty,
+-        TyKind,
 +        infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-+        obligation_ctxt::ObligationCtxt,
++        obligation_ctxt::ObligationCtxt, Canonical, DbInterner, GenericArgs, Goal, ParamEnv,
++        Predicate, SolverContext, Span, Ty, TyKind,
      },
  };
  

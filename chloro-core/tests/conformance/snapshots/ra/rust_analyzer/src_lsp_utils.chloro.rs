@@ -9,7 +9,7 @@ use triomphe::Arc;
 use crate::{
     global_state::GlobalState,
     line_index::{LineEndings, LineIndex, PositionEncoding},
-    lsp::{LspError, from_proto},
+    lsp::{from_proto, LspError},
     lsp_ext,
 };
 

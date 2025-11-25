@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9193 bytes
+Chloro size:   9162 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -12,21 +12,23 @@ Rustfmt size:  10026 bytes
      inherent::{IntoKind, Span as _},
      relate::{
 -        combine::{super_combine_consts, super_combine_tys, PredicateEmittingRelation},
-         Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
-+        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
+-        Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
++        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys}, Relate,
++        StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
      },
      AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
  };
  
  use crate::next_solver::{
-     infer::{
-+        InferCtxt, TypeTrace,
-         relate::RelateResult,
-         traits::{Obligation, PredicateObligations},
+-    infer::{
+-        relate::RelateResult,
+-        traits::{Obligation, PredicateObligations},
 -        InferCtxt, TypeTrace,
-     },
+-    },
++    infer::{relate::RelateResult, traits::{Obligation, PredicateObligations}, InferCtxt, TypeTrace},
      AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
      TyKind,
+ };
  /// A greatest lower bound" (common subtype) or least upper bound (common supertype).
  pub(crate) struct LatticeOp<'infcx, 'db> {
      infcx: &'infcx InferCtxt<'db>,

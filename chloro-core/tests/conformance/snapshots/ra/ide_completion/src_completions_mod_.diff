@@ -8,6 +8,18 @@ Rustfmt size:  9425 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ //! Completes mod declarations.
+ 
+ use std::iter;
+ 
+ use hir::Module;
+ use ide_db::{
+-    FxHashSet, RootDatabase, SymbolKind,
+     base_db::{SourceDatabase, VfsPath},
++    FxHashSet, RootDatabase, SymbolKind,
+ };
+ use syntax::{AstNode, SyntaxKind, ast};
+ 
      if mod_under_caret.item_list().is_some() {
          return None;
      }

@@ -6,8 +6,8 @@ use tracing::{debug, instrument};
 use crate::{
     infer::InferenceContext,
     next_solver::{
-        EarlyBinder, OpaqueTypeKey, SolverDefId, TypingMode,
-        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause},
+        infer::{opaque_types::OpaqueHiddenType, traits::ObligationCause}, EarlyBinder,
+        OpaqueTypeKey, SolverDefId, TypingMode,
     },
 };
 

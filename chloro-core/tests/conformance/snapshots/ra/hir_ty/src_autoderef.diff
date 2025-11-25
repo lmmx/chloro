@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12844 bytes
+Chloro size:   12836 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -16,17 +16,16 @@ Rustfmt size:  13256 bytes
  use rustc_type_ir::inherent::{IntoKind, Ty as _};
  use tracing::debug;
  use triomphe::Arc;
-     db::HirDatabase,
      infer::unify::InferenceTable,
      next_solver::{
-+        Canonical, TraitRef, Ty, TyKind,
          infer::{
 -            traits::{Obligation, ObligationCause, PredicateObligations},
              InferOk,
 +            traits::{Obligation, ObligationCause, PredicateObligations},
          },
-         obligation_ctxt::ObligationCtxt,
+-        obligation_ctxt::ObligationCtxt,
 -        Canonical, TraitRef, Ty, TyKind,
++        obligation_ctxt::ObligationCtxt, Canonical, TraitRef, Ty, TyKind,
      },
      TraitEnvironment,
  };

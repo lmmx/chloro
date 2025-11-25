@@ -28,10 +28,7 @@ use type_ref::TypeRefId;
 
 use crate::{
     builtin_type::{BuiltinFloat, BuiltinInt, BuiltinUint},
-    expr_store::{
-        HygieneId,
-        path::{GenericArgs, Path},
-    },
+    expr_store::{path::{GenericArgs, Path}, HygieneId},
     type_ref::{Mutability, Rawness},
     BlockId,
 };

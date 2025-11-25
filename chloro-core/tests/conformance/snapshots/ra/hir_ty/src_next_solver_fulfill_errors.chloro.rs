@@ -18,9 +18,9 @@ use tracing::{instrument, trace};
 use crate::next_solver::{
     fulfill::NextSolverError,
     infer::{
-        InferCtxt,
         select::SelectionError,
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
+        InferCtxt,
     },
     inspect::{self, ProofTreeVisitor},
     normalize::deeply_normalize_for_diagnostics,

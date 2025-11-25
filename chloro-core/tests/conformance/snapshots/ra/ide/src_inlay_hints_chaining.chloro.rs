@@ -3,8 +3,8 @@
 use hir::DisplayTarget;
 use ide_db::famous_defs::FamousDefs;
 use syntax::{
-    Direction, NodeOrToken, SyntaxKind, T,
     ast::{self, AstNode},
+    Direction, NodeOrToken, SyntaxKind, T,
 };
 
 use crate::{InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind};
@@ -76,8 +76,7 @@ mod tests {
     use crate::{
         fixture,
         inlay_hints::{
-            LazyProperty,
-            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config},
+            tests::{DISABLED_CONFIG, TEST_CONFIG, check_expect, check_with_config}, LazyProperty,
         },
         InlayHintsConfig,
     };

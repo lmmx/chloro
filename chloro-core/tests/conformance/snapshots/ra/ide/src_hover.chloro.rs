@@ -6,8 +6,8 @@ use std::{iter, ops::Not};
 
 use either::Either;
 use hir::{
-    db::DefDatabase,
-    DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem, Semantics,
+    db::DefDatabase, DisplayTarget, GenericDef, GenericSubstitution, HasCrate, HasSource, LangItem,
+    Semantics,
 };
 use ide_db::{
     defs::{Definition, IdentClass, NameRefClass, OperatorClass},
@@ -20,9 +20,9 @@ use itertools::{Itertools, multizip};
 use macros::UpmapFromRaFixture;
 use span::{Edition, TextRange};
 use syntax::{
-    AstNode, AstToken,
+    ast, AstNode, AstToken,
     SyntaxKind::{self, *},
-    SyntaxNode, T, ast,
+    SyntaxNode, T,
 };
 
 use crate::{

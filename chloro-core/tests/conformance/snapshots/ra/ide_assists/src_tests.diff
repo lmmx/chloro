@@ -16,16 +16,6 @@ Rustfmt size:  40546 bytes
  use ide_db::{
      assists::ExprFillDefaultMode,
      base_db::SourceDatabase,
- use test_utils::{assert_eq_text, extract_offset};
- 
- use crate::{
--    handlers::Handler, Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy,
--    Assists, SingleResolve,
-+    handlers::Handler,
-+    Assist, AssistConfig, AssistContext, AssistKind, AssistResolveStrategy, Assists, SingleResolve,
- };
- 
- pub(crate) const TEST_CONFIG: AssistConfig = AssistConfig {
      #[rust_analyzer::rust_fixture] ra_fixture_after: &str,
  ) {
      let ra_fixture_after = trim_indent(ra_fixture_after);

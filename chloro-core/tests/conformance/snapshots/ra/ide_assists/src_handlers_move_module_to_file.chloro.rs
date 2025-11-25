@@ -6,8 +6,8 @@ use ide_db::base_db::AnchoredPathBuf;
 use itertools::Itertools;
 use stdx::format_to;
 use syntax::{
+    ast::{edit::AstNodeEdit, self, HasName},
     AstNode, SmolStr, TextRange,
-    ast::{self, HasName, edit::AstNodeEdit},
 };
 
 use crate::{AssistContext, AssistId, Assists};

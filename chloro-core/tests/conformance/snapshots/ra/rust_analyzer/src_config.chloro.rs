@@ -31,8 +31,8 @@ use project_model::{
 use rustc_hash::{FxHashMap, FxHashSet};
 use semver::Version;
 use serde::{
-    Deserialize, Serialize,
     de::{DeserializeOwned, Error},
+    Deserialize, Serialize,
 };
 use stdx::format_to_acc;
 use triomphe::Arc;

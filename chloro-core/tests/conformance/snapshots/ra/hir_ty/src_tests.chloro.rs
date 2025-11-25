@@ -29,8 +29,8 @@ use itertools::Itertools;
 use rustc_hash::FxHashMap;
 use stdx::format_to;
 use syntax::{
-    SyntaxNode,
     ast::{self, AstNode, HasName},
+    SyntaxNode,
 };
 use test_fixture::WithFixture;
 use triomphe::Arc;

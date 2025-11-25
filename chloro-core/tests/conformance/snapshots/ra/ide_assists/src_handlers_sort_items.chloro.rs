@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 use syntax::{
-    AstNode, SyntaxNode,
     ast::{self, HasName},
+    AstNode, SyntaxNode,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::get_methods};

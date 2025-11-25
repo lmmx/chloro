@@ -8,26 +8,18 @@ Rustfmt size:  18165 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use either::Either;
- use ide_db::imports::{
-     insert_use::{ImportGranularity, InsertUseConfig},
--    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
-+    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
- };
- use syntax::{
-     algo::neighbor,
      syntax_editor::Removable,
      AstNode, SyntaxElement, SyntaxNode,
  };
--
--use crate::{
--    assist_context::{AssistContext, Assists},
--    utils::next_prev,
--    AssistId,
--};
--
- use Edit::*;
++use Edit::*;
  
+ use crate::{
+     assist_context::{AssistContext, Assists},
+     AssistId,
+ };
+ 
+-use Edit::*;
+-
 -// Assist: merge_imports
 -//
 -// Merges neighbor imports with a common prefix.
@@ -40,12 +32,6 @@ Rustfmt size:  18165 bytes
 -// ```
 -// use std::{fmt::Formatter, io};
 -// ```
-+use crate::{
-+    AssistId,
-+    assist_context::{AssistContext, Assists},
-+    utils::next_prev,
-+};
-+
  pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {
      let (target, edits) = if ctx.has_empty_selection() {
          // Merge a neighbor

@@ -10,16 +10,16 @@ use hir::Semantics;
 use syntax::{
     algo,
     ast::{
-        self, AstNode, HasAttrs, HasModuleItem, HasVisibility, PathSegmentKind,
-        edit_in_place::Removable, make,
+        edit_in_place::Removable, make, self, AstNode, HasAttrs, HasModuleItem, HasVisibility,
+        PathSegmentKind,
     },
     ted, Direction, NodeOrToken, SyntaxKind, SyntaxNode,
 };
 
 use crate::{
     imports::merge_imports::{
-        MergeBehavior, NormalizationStyle, common_prefix, eq_attrs, eq_visibility,
-        try_merge_imports, use_tree_cmp,
+        common_prefix, eq_attrs, eq_visibility, try_merge_imports, use_tree_cmp, MergeBehavior,
+        NormalizationStyle,
     },
     RootDatabase,
 };

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36953 bytes
-Chloro size:   36915 bytes
+Chloro size:   36907 bytes
 Rustfmt size:  36953 bytes
 
 ✗ Outputs DIFFER
@@ -29,9 +29,21 @@ Rustfmt size:  36953 bytes
  use crate::{
 -    FnAbi,
      db::{InternedClosure, InternedCoroutine},
-     infer::{BreakableKind, Diverges, coerce::CoerceMany},
+-    infer::{BreakableKind, Diverges, coerce::CoerceMany},
++    infer::{coerce::CoerceMany, BreakableKind, Diverges},
      next_solver::{
-         util::explicit_item_bounds,
+-        AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds, ClauseKind, DbInterner,
+-        ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig, PolyProjectionPredicate, Predicate,
+-        PredicateKind, SolverDefId, Ty, TyKind,
+         abi::Safety,
+         infer::{
+             BoundRegionConversionTime, InferOk, InferResult,
+             traits::{ObligationCause, PredicateObligations},
+         },
+-        util::explicit_item_bounds,
++        util::explicit_item_bounds, AliasTy, Binder, BoundRegionKind, BoundVarKind, BoundVarKinds,
++        ClauseKind, DbInterner, ErrorGuaranteed, FnSig, GenericArgs, PolyFnSig,
++        PolyProjectionPredicate, Predicate, PredicateKind, SolverDefId, Ty, TyKind,
      },
      traits::FnTrait,
 +    FnAbi,

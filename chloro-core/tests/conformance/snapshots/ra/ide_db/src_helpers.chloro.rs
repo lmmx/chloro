@@ -6,14 +6,13 @@ use base_db::SourceDatabase;
 use hir::{Crate, ItemInNs, ModuleDef, Name, Semantics};
 use span::{Edition, FileId};
 use syntax::{
-    ast::{self, make},
+    ast::{make, self},
     AstToken, SyntaxKind, SyntaxToken, ToSmolStr, TokenAtOffset,
 };
 
 use crate::{
-    RootDatabase,
     defs::{Definition, IdentClass},
-    generated,
+    generated, RootDatabase,
 };
 
 pub fn item_name(db: &RootDatabase, item: ItemInNs) -> Option<Name> {

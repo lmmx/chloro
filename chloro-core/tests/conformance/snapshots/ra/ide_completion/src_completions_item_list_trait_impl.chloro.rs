@@ -34,21 +34,18 @@
 use hir::{MacroCallId, Name, db::ExpandDatabase};
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    documentation::HasDocs,
-    path_transform::PathTransform,
-    syntax_helpers::prettify_macro_expansion,
-    traits::get_missing_assoc_items,
-    SymbolKind,
+    documentation::HasDocs, path_transform::PathTransform,
+    syntax_helpers::prettify_macro_expansion, traits::get_missing_assoc_items, SymbolKind,
 };
 use syntax::ast::HasGenericParams;
 use syntax::{
-    ast::{self, HasGenericArgs, HasTypeBounds, edit_in_place::AttrsOwnerEdit, make},
+    ast::{edit_in_place::AttrsOwnerEdit, make, self, HasGenericArgs, HasTypeBounds},
     format_smolstr, ted, AstNode, SmolStr, SyntaxElement, SyntaxKind, TextRange, ToSmolStr, T,
 };
 
 use crate::{
-    context::PathCompletionCtx,
-    CompletionContext, CompletionItem, CompletionItemKind, CompletionRelevance, Completions,
+    context::PathCompletionCtx, CompletionContext, CompletionItem, CompletionItemKind,
+    CompletionRelevance, Completions,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

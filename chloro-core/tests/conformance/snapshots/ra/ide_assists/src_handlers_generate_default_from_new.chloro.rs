@@ -1,13 +1,13 @@
 use ide_db::famous_defs::FamousDefs;
 use stdx::format_to;
 use syntax::{
-    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
+    ast::{make, self, HasGenericParams, HasName, HasTypeBounds, Impl},
     AstNode,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn generate_default_from_new(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

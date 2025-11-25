@@ -12,8 +12,8 @@ use smallvec::SmallVec;
 
 use crate::next_solver::{PolyFnSig, interned_vec_db};
 use super::{
-    generics::Generics,
-    Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region, SolverDefId, Ty, Tys,
+    generics::Generics, Const, DbInterner, EarlyParamRegion, ErrorGuaranteed, ParamConst, Region,
+    SolverDefId, Ty, Tys,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, TypeVisitable, TypeFoldable)]

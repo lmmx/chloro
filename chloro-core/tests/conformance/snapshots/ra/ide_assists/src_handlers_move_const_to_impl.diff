@@ -11,9 +11,9 @@ Rustfmt size:  10203 bytes
  use hir::{AsAssocItem, AssocItemContainer, FileRange, HasCrate, HasSource};
  use ide_db::{assists::AssistId, defs::Definition, search::SearchScope};
  use syntax::{
--    SyntaxKind,
-     ast::{self, AstNode, edit::IndentLevel, edit_in_place::Indent},
-+    SyntaxKind,
++    ast::{edit::IndentLevel, edit_in_place::Indent, self, AstNode},
+     SyntaxKind,
+-    ast::{self, AstNode, edit::IndentLevel, edit_in_place::Indent},
  };
  
  use crate::assist_context::{AssistContext, Assists};

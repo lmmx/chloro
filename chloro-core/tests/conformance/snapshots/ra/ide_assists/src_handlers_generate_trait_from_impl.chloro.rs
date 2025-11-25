@@ -1,6 +1,6 @@
 use ide_db::assists::AssistId;
 use syntax::{
-    ast::{self, HasGenericParams, HasName, HasVisibility, edit_in_place::Indent, make},
+    ast::{edit_in_place::Indent, make, self, HasGenericParams, HasName, HasVisibility},
     syntax_editor::{Position, SyntaxEditor},
     AstNode, SyntaxKind, T,
 };

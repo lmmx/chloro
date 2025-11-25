@@ -7,13 +7,11 @@ use hir::{DefMap, InFile, ModuleSource};
 use ide_db::base_db::RootQueryDb;
 use ide_db::text_edit::TextEdit;
 use ide_db::{
-    base_db::SourceDatabase,
-    source_change::SourceChange,
-    FileId, FileRange, LineIndexDatabase,
+    base_db::SourceDatabase, source_change::SourceChange, FileId, FileRange, LineIndexDatabase,
 };
 use paths::Utf8Component;
 use syntax::{
-    ast::{self, HasModuleItem, HasName, edit::IndentLevel},
+    ast::{edit::IndentLevel, self, HasModuleItem, HasName},
     AstNode, TextRange,
 };
 

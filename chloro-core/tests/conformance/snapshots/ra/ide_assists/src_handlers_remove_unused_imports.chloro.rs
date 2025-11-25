@@ -11,8 +11,8 @@ use ide_db::{
     FxHashMap, RootDatabase,
 };
 use syntax::{
-    AstNode,
     ast::{self, Rename},
+    AstNode,
 };
 
 use crate::{AssistContext, AssistId, Assists};

@@ -3,7 +3,7 @@
 use std::iter::repeat_with;
 
 use hir_def::{
-    expr_store::{Body, path::Path},
+    expr_store::{path::Path, Body},
     hir::{Binding, BindingAnnotation, BindingId, Expr, ExprId, Literal, Pat, PatId},
     HasModule,
 };
@@ -15,8 +15,8 @@ use stdx::TupleExt;
 use crate::{
     consteval::{self, try_const_usize, usize_const},
     infer::{
-        AllowTwoPhase, BindingMode, Expectation, InferenceContext, TypeMismatch,
-        coerce::CoerceNever, expr::ExprIsRead,
+        coerce::CoerceNever, expr::ExprIsRead, AllowTwoPhase, BindingMode, Expectation,
+        InferenceContext, TypeMismatch,
     },
     lower::lower_mutability,
     next_solver::{GenericArgs, Ty, TyKind},

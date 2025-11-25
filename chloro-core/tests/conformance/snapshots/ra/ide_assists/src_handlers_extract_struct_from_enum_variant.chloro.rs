@@ -5,7 +5,7 @@ use hir::{HasCrate, Module, ModuleDef, Name, Variant};
 use ide_db::{
     defs::Definition,
     helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, InsertUseConfig, insert_use},
+    imports::insert_use::{insert_use, ImportScope, InsertUseConfig},
     path_transform::PathTransform,
     search::FileReference,
     FxHashSet, RootDatabase,
@@ -13,9 +13,8 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        self, AstNode, HasAttrs, HasGenericParams, HasName, HasVisibility,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
+        edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasAttrs, HasGenericParams,
+        HasName, HasVisibility,
     },
     match_ast, ted, Edition, SyntaxElement,
     SyntaxKind::*,

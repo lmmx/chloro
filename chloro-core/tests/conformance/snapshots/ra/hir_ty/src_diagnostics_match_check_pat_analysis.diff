@@ -2,17 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21126 bytes
-Chloro size:   21025 bytes
+Chloro size:   21002 bytes
 Rustfmt size:  22047 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use intern::sym;
- use rustc_pattern_analysis::{
-     constructor::{Constructor, ConstructorSet, VariantVisibility},
--    usefulness::{compute_match_usefulness, PlaceValidity, UsefulnessReport},
-+    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness},
      IndexVec, PatCx, PrivateUninhabitedField,
  };
  use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
@@ -25,11 +20,11 @@ Rustfmt size:  22047 bytes
  use crate::{
      db::HirDatabase,
      inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
-     next_solver::{
+-    next_solver::{
 -        infer::{traits::ObligationCause, InferCtxt},
-         Ty, TyKind,
-+        infer::{InferCtxt, traits::ObligationCause},
-     },
+-        Ty, TyKind,
+-    },
++    next_solver::{infer::{InferCtxt, traits::ObligationCause}, Ty, TyKind},
      TraitEnvironment,
  };
 -

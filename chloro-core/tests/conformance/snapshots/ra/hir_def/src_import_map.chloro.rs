@@ -15,7 +15,7 @@ use triomphe::Arc;
 use crate::{
     db::DefDatabase,
     item_scope::{ImportOrExternCrate, ItemInNs},
-    nameres::{DefMap, assoc::TraitItems, crate_def_map},
+    nameres::{assoc::TraitItems, crate_def_map, DefMap},
     visibility::Visibility,
     AssocItemId, AttrDefId, Complete, FxIndexMap, ModuleDefId, ModuleId, TraitId,
 };

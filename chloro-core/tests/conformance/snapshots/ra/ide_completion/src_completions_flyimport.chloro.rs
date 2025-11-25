@@ -14,7 +14,7 @@ use crate::{
         CompletionContext, DotAccess, PathCompletionCtx, PathKind, PatternContext, Qualified,
         TypeLocation,
     },
-    render::{RenderContext, render_resolution_with_import, render_resolution_with_import_pat},
+    render::{render_resolution_with_import, render_resolution_with_import_pat, RenderContext},
     Completions,
 };
 

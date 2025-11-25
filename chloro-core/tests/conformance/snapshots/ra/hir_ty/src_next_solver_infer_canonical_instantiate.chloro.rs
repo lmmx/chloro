@@ -14,9 +14,8 @@ use rustc_type_ir::{
 };
 
 use crate::next_solver::{
-    fold::FnMutDelegate,
-    BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses, Const, ConstKind,
-    DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind,
+    fold::FnMutDelegate, BoundConst, BoundRegion, BoundTy, Canonical, CanonicalVarValues, Clauses,
+    Const, ConstKind, DbInterner, GenericArg, Predicate, Region, RegionKind, Ty, TyKind,
 };
 
 pub trait CanonicalExt<'db, V> {

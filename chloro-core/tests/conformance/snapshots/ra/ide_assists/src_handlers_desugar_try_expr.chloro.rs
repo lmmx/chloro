@@ -5,12 +5,7 @@ use ide_db::{
     ty_filter::TryEnum,
 };
 use syntax::{
-    ast::{
-        self,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
-        syntax_factory::SyntaxFactory,
-    },
+    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, syntax_factory::SyntaxFactory},
     AstNode, T,
 };
 

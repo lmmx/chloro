@@ -15,9 +15,9 @@ use syntax::{AstNode, SyntaxKind::*, SyntaxNode, SyntaxToken, T, TextRange};
 
 use crate::navigation_target::UpmappingResult;
 use crate::{
-    hover::{SubstTyLen, hover_for_definition},
+    hover::{hover_for_definition, SubstTyLen},
     inlay_hints::{AdjustmentHintsMode, InlayFieldsToResolve},
-    moniker::{MonikerResult, SymbolInformationKind, def_to_kind, def_to_moniker},
+    moniker::{def_to_kind, def_to_moniker, MonikerResult, SymbolInformationKind},
     parent_module::crates_for,
     Analysis, Fold, HoverConfig, HoverResult, InlayHint, InlayHintsConfig, TryToNav,
 };

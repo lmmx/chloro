@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5355 bytes
-Chloro size:   5054 bytes
+Chloro size:   5023 bytes
 Rustfmt size:  5418 bytes
 
 ✗ Outputs DIFFER
@@ -13,15 +13,15 @@ Rustfmt size:  5418 bytes
  use either::Either;
  use ide_db::syntax_helpers::node_ext::is_pattern_cond;
  use syntax::{
-     ast::{
+-    ast::{
 -        self,
-+        self, HasLoopBody,
-         edit::{AstNodeEdit, IndentLevel},
+-        edit::{AstNodeEdit, IndentLevel},
 -        make, HasLoopBody,
-+        make,
-     },
+-    },
++    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, HasLoopBody},
      AstNode, T,
  };
+ 
      AssistId,
  };
  

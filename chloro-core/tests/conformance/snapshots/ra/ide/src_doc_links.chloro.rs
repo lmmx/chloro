@@ -7,13 +7,13 @@ mod intra_doc_links;
 use std::ops::Range;
 
 use hir::{
-    db::HirDatabase,
-    sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner, HasAttrs,
+    db::HirDatabase, sym, Adt, AsAssocItem, AssocItem, AssocItemContainer, AttrsWithOwner,
+    HasAttrs,
 };
 use ide_db::{
     base_db::{CrateOrigin, LangCrateOrigin, ReleaseChannel, RootQueryDb},
     defs::{Definition, NameClass, NameRefClass},
-    documentation::{DocsRangeMap, Documentation, HasDocs, docs_with_rangemap},
+    documentation::{docs_with_rangemap, DocsRangeMap, Documentation, HasDocs},
     helpers::pick_best_token,
     RootDatabase,
 };

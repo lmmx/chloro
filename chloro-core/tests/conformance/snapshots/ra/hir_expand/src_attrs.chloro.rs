@@ -20,7 +20,7 @@ use crate::{
     mod_path::ModPath,
     name::Name,
     span_map::SpanMapRef,
-    tt::{self, TopSubtree, token_to_literal},
+    tt::{self, token_to_literal, TopSubtree},
 };
 
 /// Syntactical attributes, without filtering of `cfg_attr`s.

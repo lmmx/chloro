@@ -34,7 +34,7 @@ use crate::{
         Array, AsmOperand, Binding, BindingId, Expr, ExprId, ExprOrPatId, Label, LabelId, Pat,
         PatId, RecordFieldPat, Statement,
     },
-    nameres::{DefMap, block_def_map},
+    nameres::{block_def_map, DefMap},
     type_ref::{LifetimeRef, LifetimeRefId, PathId, TypeRef, TypeRefId},
     BlockId, SyntheticSyntax,
 };

@@ -4,7 +4,7 @@ use hir::{
 };
 use ide_db::{famous_defs::FamousDefs, syntax_helpers::suggest_name};
 use syntax::{
-    ast::{self, HasLoopBody, edit::IndentLevel, make, syntax_factory::SyntaxFactory},
+    ast::{edit::IndentLevel, make, self, syntax_factory::SyntaxFactory, HasLoopBody},
     syntax_editor::Position,
     AstNode,
 };

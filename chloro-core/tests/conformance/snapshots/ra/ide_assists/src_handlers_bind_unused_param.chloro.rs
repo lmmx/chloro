@@ -1,7 +1,7 @@
 use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
 use syntax::{
+    ast::{edit_in_place::Indent, self, HasName},
     AstNode,
-    ast::{self, HasName, edit_in_place::Indent},
 };
 
 use crate::assist_context::{AssistContext, Assists};

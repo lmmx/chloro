@@ -4,8 +4,8 @@ use base_db::RootQueryDb;
 use hir_def::db::DefDatabase;
 use hir_expand::EditionedFileId;
 use rustc_apfloat::{
-    Float,
     ieee::{Half as f16, Quad as f128},
+    Float,
 };
 use rustc_type_ir::inherent::IntoKind;
 use test_fixture::WithFixture;

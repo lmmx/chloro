@@ -18,8 +18,8 @@ use rustc_abi::{
 };
 use rustc_index::IndexVec;
 use rustc_type_ir::{
-    FloatTy, IntTy, UintTy,
     inherent::{IntoKind, SliceLike},
+    FloatTy, IntTy, UintTy,
 };
 use triomphe::Arc;
 
@@ -27,8 +27,8 @@ use crate::{
     consteval::try_const_usize,
     db::HirDatabase,
     next_solver::{
-        DbInterner, GenericArgs, ParamEnv, Ty, TyKind, TypingMode,
-        infer::{DbInternerInferExt, traits::ObligationCause},
+        infer::{DbInternerInferExt, traits::ObligationCause}, DbInterner, GenericArgs, ParamEnv,
+        Ty, TyKind, TypingMode,
     },
     TraitEnvironment,
 };

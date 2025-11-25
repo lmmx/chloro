@@ -8,18 +8,6 @@ Rustfmt size:  7929 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Helper functions for working with def, which don't need to be a separate
- //! query, but can't be computed directly from `*Data` (ie, which need a `db`).
- 
- use std::cell::LazyCell;
- 
- use base_db::{
--    target::{self, TargetData},
-     Crate,
-+    target::{self, TargetData},
- };
- use hir_def::{
-     db::DefDatabase,
  };
  use intern::sym;
  use rustc_abi::TargetDataLayout;

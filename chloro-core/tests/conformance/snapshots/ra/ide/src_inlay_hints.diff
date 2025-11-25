@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 36233 bytes
-Chloro size:   34287 bytes
+Chloro size:   34279 bytes
 Rustfmt size:  36233 bytes
 
 ✗ Outputs DIFFER
@@ -88,9 +88,7 @@ Rustfmt size:  36233 bytes
 +    HirWrite, InRealFile, ModuleDef, ModuleDefId, Semantics,
 +};
 +use ide_db::{
-+    famous_defs::FamousDefs,
-+    text_edit::TextEditBuilder,
-+    FileRange, MiniCore, RootDatabase,
++    famous_defs::FamousDefs, text_edit::TextEditBuilder, FileRange, MiniCore, RootDatabase,
 +};
 +use ide_db::{FxHashSet, text_edit::TextEdit};
 +use itertools::Itertools;

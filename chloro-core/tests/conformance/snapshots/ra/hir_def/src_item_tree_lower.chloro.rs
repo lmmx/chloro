@@ -12,8 +12,8 @@ use hir_expand::{
 use la_arena::Arena;
 use span::{AstIdMap, FileAstId, SyntaxContext};
 use syntax::{
-    AstNode,
     ast::{self, HasModuleItem, HasName},
+    AstNode,
 };
 use triomphe::Arc;
 

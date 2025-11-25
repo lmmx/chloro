@@ -67,10 +67,8 @@ use crate::{
     expr_store::ExpressionStoreSourceMap,
     hir::generics::{LocalLifetimeParamId, LocalTypeOrConstParamId},
     nameres::{
-        LocalDefMap,
-        assoc::{ImplItems, TraitItems},
-        block_def_map, crate_def_map, crate_local_def_map,
-        diagnostics::DefDiagnostics,
+        assoc::{ImplItems, TraitItems}, block_def_map, crate_def_map, crate_local_def_map,
+        diagnostics::DefDiagnostics, LocalDefMap,
     },
     signatures::{EnumVariants, InactiveEnumVariantCode, VariantFields},
 };

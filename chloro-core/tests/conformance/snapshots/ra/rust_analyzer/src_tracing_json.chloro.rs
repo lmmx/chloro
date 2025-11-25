@@ -12,8 +12,8 @@ use std::{io::Write as _, marker::PhantomData, time::Instant};
 
 use ide_db::FxHashSet;
 use tracing::{
-    Event, Subscriber,
     span::{Attributes, Id},
+    Event, Subscriber,
 };
 use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};
 

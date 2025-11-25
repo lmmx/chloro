@@ -1,9 +1,8 @@
 use either::Either;
 use syntax::{
     ast::{
-        self, AstNode, HasName, HasTypeBounds,
-        edit_in_place::{GenericParamsOwnerEdit, Removable},
-        make,
+        edit_in_place::{GenericParamsOwnerEdit, Removable}, make, self, AstNode, HasName,
+        HasTypeBounds,
     },
     match_ast,
 };

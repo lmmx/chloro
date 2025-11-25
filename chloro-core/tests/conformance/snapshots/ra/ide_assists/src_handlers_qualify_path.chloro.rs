@@ -10,8 +10,9 @@ use ide_db::{
 use syntax::Edition;
 use syntax::ast::HasGenericArgs;
 use syntax::{
-    AstNode, ast,
-    ast::{HasArgList, make},
+    ast,
+    ast::{make, HasArgList},
+    AstNode,
 };
 
 use crate::{

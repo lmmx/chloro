@@ -6,7 +6,7 @@ use hir_def::{EnumId, EnumVariantId, HasModule, LocalFieldId, ModuleId, VariantI
 use intern::sym;
 use rustc_pattern_analysis::{
     constructor::{Constructor, ConstructorSet, VariantVisibility},
-    usefulness::{PlaceValidity, UsefulnessReport, compute_match_usefulness},
+    usefulness::{compute_match_usefulness, PlaceValidity, UsefulnessReport},
     IndexVec, PatCx, PrivateUninhabitedField,
 };
 use rustc_type_ir::inherent::{AdtDef, IntoKind, SliceLike};
@@ -18,10 +18,7 @@ use Constructor::*;
 use crate::{
     db::HirDatabase,
     inhabitedness::{is_enum_variant_uninhabited_from, is_ty_uninhabited_from},
-    next_solver::{
-        Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-    },
+    next_solver::{infer::{InferCtxt, traits::ObligationCause}, Ty, TyKind},
     TraitEnvironment,
 };
 use super::{FieldPat, Pat, PatKind};

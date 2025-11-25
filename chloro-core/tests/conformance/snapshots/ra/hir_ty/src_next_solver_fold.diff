@@ -2,20 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5559 bytes
-Chloro size:   5564 bytes
+Chloro size:   5560 bytes
 Rustfmt size:  5644 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Fold impls for the next-trait-solver.
- 
- use rustc_type_ir::{
--    inherent::IntoKind, BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder,
--    TypeSuperFoldable, TypeVisitableExt,
-+    inherent::IntoKind,
-+    BoundVarIndexKind, DebruijnIndex, RegionKind, TypeFoldable, TypeFolder, TypeSuperFoldable,
-+    TypeVisitableExt,
  };
  
  use crate::next_solver::BoundConst;

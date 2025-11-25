@@ -3,15 +3,13 @@
 use either::Either;
 use hir_def::{
     expr_store::{
-        ExpressionStore, HygieneId,
         path::{
             GenericArg as HirGenericArg, GenericArgs as HirGenericArgs, GenericArgsParentheses,
             Path, PathSegment, PathSegments,
         },
+        ExpressionStore, HygieneId,
     },
-    hir::generics::{
-        GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance,
-    },
+    hir::generics::{GenericParamDataRef, TypeOrConstParamData, TypeParamData, TypeParamProvenance},
     resolver::{ResolveValueResult, TypeNs, ValueNs},
     signatures::TraitFlags,
     type_ref::{TypeRef, TypeRefId},
@@ -28,9 +26,10 @@ use stdx::never;
 use crate::{
     consteval::{unknown_const, unknown_const_as_generic},
     db::HirDatabase,
-    generics::{Generics, generics},
+    generics::{generics, Generics},
     lower::{
-        LifetimeElisionKind, PathDiagnosticCallbackData, named_associated_type_shorthand_candidates,
+        named_associated_type_shorthand_candidates, LifetimeElisionKind,
+        PathDiagnosticCallbackData,
     },
     next_solver::{
         Binder, Clause, Const, DbInterner, ErrorGuaranteed, GenericArg, GenericArgs, Predicate,

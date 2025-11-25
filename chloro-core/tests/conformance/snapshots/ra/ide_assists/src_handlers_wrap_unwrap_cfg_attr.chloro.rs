@@ -2,7 +2,7 @@ use ide_db::source_change::SourceChangeBuilder;
 use itertools::Itertools;
 use syntax::{
     algo,
-    ast::{self, AstNode, make, syntax_factory::SyntaxFactory},
+    ast::{make, self, syntax_factory::SyntaxFactory, AstNode},
     NodeOrToken, SyntaxToken, TextRange, T,
 };
 

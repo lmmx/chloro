@@ -12,8 +12,8 @@ use hir_expand::{
 use intern::Interned;
 use span::AstIdMap;
 use syntax::{
-    AstNode,
     ast::{self, HasModuleItem, HasName},
+    AstNode,
 };
 use thin_vec::ThinVec;
 use triomphe::Arc;
@@ -23,12 +23,11 @@ use crate::{
     db::DefDatabase,
     macro_call_as_call_id,
     nameres::{
-        DefMap, LocalDefMap, MacroSubNs,
-        attr_resolution::ResolvedAttr,
-        diagnostics::{DefDiagnostic, DefDiagnostics},
+        attr_resolution::ResolvedAttr, diagnostics::{DefDiagnostic, DefDiagnostics}, DefMap,
+        LocalDefMap, MacroSubNs,
     },
-    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId, ItemLoc,
-    MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
+    AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
+    ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

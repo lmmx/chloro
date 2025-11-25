@@ -4,8 +4,8 @@
 use std::cell::LazyCell;
 
 use base_db::{
-    Crate,
     target::{self, TargetData},
+    Crate,
 };
 use hir_def::{
     db::DefDatabase,

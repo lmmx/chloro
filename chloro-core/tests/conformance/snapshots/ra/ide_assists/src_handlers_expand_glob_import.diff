@@ -11,13 +11,15 @@ Rustfmt size:  23406 bytes
  };
  use stdx::never;
  use syntax::{
--    AstNode, Direction, SyntaxNode, SyntaxToken, T,
-     ast::{self, Use, UseTree, VisibilityKind, make},
-+    AstNode, Direction, SyntaxNode, SyntaxToken, T,
++    ast::{make, self, Use, UseTree, VisibilityKind},
+     AstNode, Direction, SyntaxNode, SyntaxToken, T,
+-    ast::{self, Use, UseTree, VisibilityKind, make},
  };
  
  use crate::{
+-    AssistId,
      assist_context::{AssistContext, Assists},
++    AssistId,
  };
  
 -// Assist: expand_glob_import

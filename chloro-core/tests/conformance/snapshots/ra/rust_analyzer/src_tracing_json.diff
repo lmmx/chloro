@@ -8,12 +8,8 @@ Rustfmt size:  2593 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- 
- use ide_db::FxHashSet;
- use tracing::{
--    span::{Attributes, Id},
+     span::{Attributes, Id},
      Event, Subscriber,
-+    span::{Attributes, Id},
  };
 -use tracing_subscriber::{fmt::MakeWriter, layer::Context, registry::LookupSpan, Layer};
 +use tracing_subscriber::{Layer, fmt::MakeWriter, layer::Context, registry::LookupSpan};

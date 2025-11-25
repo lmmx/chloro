@@ -8,13 +8,6 @@ Rustfmt size:  1463 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use ide_db::{
--    base_db::{CrateOrigin, RootQueryDb},
-     FileId, FxIndexSet, RootDatabase,
-+    base_db::{CrateOrigin, RootQueryDb},
- };
- 
- #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
      pub root_file_id: FileId,
  }
  

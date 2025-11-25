@@ -8,8 +8,8 @@ use itertools::Either;
 use stdx::always;
 use syntax::{
     algo::{
-        self, ancestors_at_offset, find_node_at_offset, non_trivia_sibling,
-        previous_non_trivia_token,
+        ancestors_at_offset, find_node_at_offset, non_trivia_sibling, previous_non_trivia_token,
+        self,
     },
     ast::{
         self, AttrKind, HasArgList, HasGenericArgs, HasGenericParams, HasLoopBody, HasName,
@@ -22,11 +22,11 @@ use syntax::{
 use crate::{
     completions::postfix::is_in_condition,
     context::{
-        AttrCtx, BreakableKind, COMPLETION_MARKER, CompletionAnalysis, DotAccess, DotAccessExprCtx,
-        DotAccessKind, ItemListKind, LifetimeContext, LifetimeKind, NameContext, NameKind,
-        NameRefContext, NameRefKind, ParamContext, ParamKind, PathCompletionCtx, PathExprCtx,
-        PathKind, PatternContext, PatternRefutability, Qualified, QualifierCtx,
-        TypeAscriptionTarget, TypeLocation,
+        AttrCtx, BreakableKind, CompletionAnalysis, DotAccess, DotAccessExprCtx, DotAccessKind,
+        ItemListKind, LifetimeContext, LifetimeKind, NameContext, NameKind, NameRefContext,
+        NameRefKind, ParamContext, ParamKind, PathCompletionCtx, PathExprCtx, PathKind,
+        PatternContext, PatternRefutability, Qualified, QualifierCtx, TypeAscriptionTarget,
+        TypeLocation, COMPLETION_MARKER,
     },
 };
 

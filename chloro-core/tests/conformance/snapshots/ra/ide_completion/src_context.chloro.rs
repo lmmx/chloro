@@ -8,13 +8,12 @@ use std::{iter, ops::ControlFlow};
 
 use base_db::RootQueryDb as _;
 use hir::{
-    DisplayTarget, HasAttrs, InFile, Local, ModuleDef, ModuleSource, Name, PathResolution, ScopeDef,
-    Semantics, SemanticsScope, Symbol, Type, TypeInfo,
+    DisplayTarget, HasAttrs, InFile, Local, ModuleDef, ModuleSource, Name, PathResolution,
+    ScopeDef, Semantics, SemanticsScope, Symbol, Type, TypeInfo,
 };
 use ide_db::{
-    famous_defs::FamousDefs,
-    helpers::is_editable_crate,
-    FilePosition, FxHashMap, FxHashSet, RootDatabase,
+    famous_defs::FamousDefs, helpers::is_editable_crate, FilePosition, FxHashMap, FxHashSet,
+    RootDatabase,
 };
 use itertools::Either;
 use syntax::{
@@ -26,7 +25,7 @@ use syntax::{
 
 use crate::{
     config::AutoImportExclusionType,
-    context::analysis::{AnalysisResult, expand_and_analyze},
+    context::analysis::{expand_and_analyze, AnalysisResult},
     CompletionConfig,
 };
 

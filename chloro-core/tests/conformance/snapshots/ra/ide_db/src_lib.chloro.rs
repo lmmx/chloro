@@ -34,8 +34,8 @@ use base_db::{
 };
 pub use base_db::{self, FxIndexMap, FxIndexSet};
 use hir::{
-    FilePositionWrapper, FileRangeWrapper,
     db::{DefDatabase, ExpandDatabase},
+    FilePositionWrapper, FileRangeWrapper,
 };
 pub use hir::{ChangeWithProcMacros, EditionedFileId};
 pub use rustc_hash::{FxHashMap, FxHashSet, FxHasher};

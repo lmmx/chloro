@@ -8,14 +8,14 @@ use std::iter;
 use ide_db::{FxHashMap, famous_defs::FamousDefs, syntax_helpers::node_ext::walk_ty};
 use itertools::Itertools;
 use syntax::{
-    SyntaxKind, SyntaxToken,
     ast::{self, AstNode, HasGenericParams, HasName},
+    SyntaxKind, SyntaxToken,
 };
 use syntax::{SmolStr, format_smolstr};
 
 use crate::{
-    inlay_hints::InlayHintCtx,
-    InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, LifetimeElisionHints,
+    inlay_hints::InlayHintCtx, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind,
+    LifetimeElisionHints,
 };
 
 pub(super) fn fn_hints(
@@ -387,7 +387,7 @@ fn hints_(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{TEST_CONFIG, check, check_with_config},
+        inlay_hints::tests::{check, check_with_config, TEST_CONFIG},
         InlayHintsConfig, LifetimeElisionHints,
     };
     #[test]

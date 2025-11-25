@@ -3,12 +3,12 @@
 use either::Either;
 use ide_db::{active_parameter::generic_def_for_node, famous_defs::FamousDefs};
 use syntax::{
-    AstNode,
     ast::{self, AnyHasGenericArgs, HasGenericArgs, HasName},
+    AstNode,
 };
 
 use crate::{
-    inlay_hints::{GenericParameterHints, param_name},
+    inlay_hints::{param_name, GenericParameterHints},
     InlayHint, InlayHintLabel, InlayHintsConfig, InlayKind,
 };
 use super::param_name::is_argument_similar_to_param_name;
@@ -155,10 +155,7 @@ fn get_segment_representation(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::{
-            GenericParameterHints,
-            tests::{DISABLED_CONFIG, check_with_config},
-        },
+        inlay_hints::{tests::{DISABLED_CONFIG, check_with_config}, GenericParameterHints},
         InlayHintsConfig,
     };
     #[track_caller]

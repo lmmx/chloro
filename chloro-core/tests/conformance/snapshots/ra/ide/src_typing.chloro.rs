@@ -25,7 +25,7 @@ pub(crate) use on_enter::on_enter;
 use span::Edition;
 use syntax::{
     algo::{ancestors_at_offset, find_node_at_offset},
-    ast::{self, AstToken, edit::IndentLevel},
+    ast::{edit::IndentLevel, self, AstToken},
     AstNode, Parse, SourceFile, SyntaxKind, TextRange, TextSize,
 };
 

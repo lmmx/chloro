@@ -8,7 +8,7 @@ use ide_db::{
 };
 use itertools::Itertools;
 use syntax::{
-    ast::{self, HasArgList, edit::AstNodeEdit, syntax_factory::SyntaxFactory},
+    ast::{edit::AstNodeEdit, self, syntax_factory::SyntaxFactory, HasArgList},
     syntax_editor::SyntaxEditor,
     AstNode, SyntaxNode,
 };

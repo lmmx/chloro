@@ -5,8 +5,8 @@ use expect_test::{Expect, expect};
 use crate::{
     config::AutoImportExclusionType,
     tests::{
-        BASE_ITEMS_FIXTURE, TEST_CONFIG, check, check_edit, check_with_base_items,
-        completion_list_with_config,
+        check, check_edit, check_with_base_items, completion_list_with_config, BASE_ITEMS_FIXTURE,
+        TEST_CONFIG,
     },
     CompletionConfig,
 };

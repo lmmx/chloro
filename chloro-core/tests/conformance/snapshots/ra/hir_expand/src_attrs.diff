@@ -31,13 +31,6 @@ Rustfmt size:  17571 bytes
  use triomphe::ThinArc;
  
  use crate::{
-     mod_path::ModPath,
-     name::Name,
-     span_map::SpanMapRef,
--    tt::{self, token_to_literal, TopSubtree},
-+    tt::{self, TopSubtree, token_to_literal},
- };
- 
  /// Syntactical attributes, without filtering of `cfg_attr`s.
  #[derive(Default, Debug, Clone, PartialEq, Eq)]
  pub struct RawAttrs {

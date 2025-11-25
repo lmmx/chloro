@@ -5,13 +5,13 @@ use ide_db::{
     EditionedFileId, RootDatabase,
 };
 use syntax::{
-    ast::{self, AstNode, AstToken, HasName, syntax_factory::SyntaxFactory},
+    ast::{self, syntax_factory::SyntaxFactory, AstNode, AstToken, HasName},
     SyntaxElement, TextRange,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn inline_local_variable(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

@@ -17,7 +17,7 @@ Rustfmt size:  10253 bytes
  };
  use syntax::{
 -    ast::{self, make, HasArgList},
-+    ast::{self, HasArgList, make},
++    ast::{make, self, HasArgList},
      format_smolstr, AstNode, SmolStr, TextRange, ToSmolStr,
  };
  

@@ -1,7 +1,7 @@
 use hir::{HasSource, HirDisplay, InRealFile};
 use ide_db::assists::AssistId;
 use syntax::{
-    ast::{self, HasArgList, syntax_factory::SyntaxFactory},
+    ast::{self, syntax_factory::SyntaxFactory, HasArgList},
     match_ast, AstNode, SyntaxNode,
 };
 

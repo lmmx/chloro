@@ -2,12 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17091 bytes
-Chloro size:   16595 bytes
+Chloro size:   16587 bytes
 Rustfmt size:  17091 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use hir::{HasCrate, HasVisibility};
+ use ide_db::{FxHashSet, path_transform::PathTransform};
+ use syntax::{
+     ast::{
+-        self, AstNode, HasGenericParams, HasName, HasVisibility as _,
+-        edit::{AstNodeEdit, IndentLevel},
+-        make,
++        edit::{AstNodeEdit, IndentLevel}, make, self, AstNode, HasGenericParams, HasName,
++        HasVisibility as _,
+     },
+     syntax_editor::Position,
  };
  
  use crate::{

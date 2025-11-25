@@ -2,21 +2,19 @@ use ast::make;
 use hir::next_solver::{DbInterner, TypingMode};
 use hir::{HasCrate, ModuleDef, Semantics};
 use ide_db::{
-    famous_defs::FamousDefs,
-    helpers::mod_path_to_ast,
-    imports::import_assets::item_for_path_search,
-    use_trivial_constructor::use_trivial_constructor,
+    famous_defs::FamousDefs, helpers::mod_path_to_ast,
+    imports::import_assets::item_for_path_search, use_trivial_constructor::use_trivial_constructor,
     RootDatabase,
 };
 use syntax::syntax_editor::{Element, Position};
 use syntax::{
-    ast::{self, AstNode, HasAttrs, HasGenericParams, HasName, edit::AstNodeEdit},
+    ast::{edit::AstNodeEdit, self, AstNode, HasAttrs, HasGenericParams, HasName},
     TokenText,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 
 pub(crate) fn generate_single_field_struct_from(

@@ -2,7 +2,7 @@ use expect_test::{Expect, expect};
 
 use crate::{
     context::{CompletionAnalysis, NameContext, NameKind, NameRefKind},
-    tests::{TEST_CONFIG, check_edit, check_edit_with_config},
+    tests::{check_edit, check_edit_with_config, TEST_CONFIG},
     CompletionConfig,
 };
 

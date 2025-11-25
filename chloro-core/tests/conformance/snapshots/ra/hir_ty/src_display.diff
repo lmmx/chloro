@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99223 bytes
+Chloro size:   99215 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -14,8 +14,11 @@ Rustfmt size:  99713 bytes
 -    FindPathConfig, GeneralConstId, GenericDefId, HasModule, LocalFieldId, Lookup, ModuleDefId,
 -    ModuleId, TraitId,
      db::DefDatabase,
-     expr_store::{ExpressionStore, path::Path},
+-    expr_store::{ExpressionStore, path::Path},
++    expr_store::{path::Path, ExpressionStore},
      find_path::{self, PrefixKind},
+     hir::generics::{TypeOrConstParamData, TypeParamProvenance, WherePredicate},
+     item_scope::ItemInNs,
          UseArgRef,
      },
      visibility::Visibility,
@@ -24,6 +27,13 @@ Rustfmt size:  99713 bytes
  };
  use hir_expand::{mod_path::PathKind, name::Name};
  use intern::{Internable, Interned, sym};
+ use itertools::Itertools;
+ use la_arena::ArenaMap;
+ use rustc_apfloat::{
+-    Float,
+     ieee::{Half as f16, Quad as f128},
++    Float,
+ };
  use rustc_ast_ir::FloatTy;
  use rustc_hash::FxHashSet;
  use rustc_type_ir::{
@@ -42,9 +52,21 @@ Rustfmt size:  99713 bytes
      db::{HirDatabase, InternedClosure, InternedCoroutine},
      generics::generics,
      layout::Layout,
+     mir::pad16,
+     next_solver::{
+-        AliasTy, Clause, ClauseKind, Const, ConstKind, DbInterner, EarlyBinder,
+-        ExistentialPredicate, FnSig, GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Term,
+-        TraitRef, Ty, TyKind, TypingMode,
+-        abi::Safety,
+-        infer::{DbInternerInferExt, traits::ObligationCause},
++        abi::Safety, infer::{DbInternerInferExt, traits::ObligationCause}, AliasTy, Clause,
++        ClauseKind, Const, ConstKind, DbInterner, EarlyBinder, ExistentialPredicate, FnSig,
++        GenericArg, GenericArgs, PolyFnSig, Region, SolverDefId, Term, TraitRef, Ty, TyKind,
++        TypingMode,
      },
      primitive,
-     utils::{self, detect_variant_from_bytes},
+-    utils::{self, detect_variant_from_bytes},
++    utils::{detect_variant_from_bytes, self},
 +    CallableDefId, FnAbi, ImplTraitId, MemoryMap, TraitEnvironment,
  };
  

@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use syntax::{
-    ast::{self, AstNode, make},
+    ast::{make, self, AstNode},
     match_ast,
     syntax_editor::{Position, SyntaxEditor},
     Edition, NodeOrToken, SyntaxNode, SyntaxToken, T,

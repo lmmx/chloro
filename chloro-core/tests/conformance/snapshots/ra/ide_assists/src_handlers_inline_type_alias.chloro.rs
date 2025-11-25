@@ -4,21 +4,20 @@
 use hir::{HasSource, PathResolution};
 use ide_db::FxHashMap;
 use ide_db::{
-    defs::Definition,
-    imports::insert_use::ast_to_remove_for_path_in_use_stmt,
+    defs::Definition, imports::insert_use::ast_to_remove_for_path_in_use_stmt,
     search::FileReference,
 };
 use itertools::Itertools;
 use syntax::ast::syntax_factory::SyntaxFactory;
 use syntax::syntax_editor::SyntaxEditor;
 use syntax::{
-    AstNode, NodeOrToken, SyntaxNode,
     ast::{self, HasGenericParams, HasName},
+    AstNode, NodeOrToken, SyntaxNode,
 };
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
+    AssistId,
 };
 use super::inline_call::split_refs_and_uses;
 

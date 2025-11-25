@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30604 bytes
-Chloro size:   30319 bytes
+Chloro size:   30303 bytes
 Rustfmt size:  30951 bytes
 
 ✗ Outputs DIFFER
@@ -15,19 +15,7 @@ Rustfmt size:  30951 bytes
 +use hir_def::{AdtId, GenericDefId, GenericParamId, VariantId, signatures::StructFlags};
  use rustc_ast_ir::Mutability;
  use rustc_type_ir::{
--    inherent::{AdtDef, IntoKind, SliceLike},
-     Variance,
-+    inherent::{AdtDef, IntoKind, SliceLike},
- };
- use stdx::never;
- 
- use crate::{
-     db::HirDatabase,
--    generics::{generics, Generics},
-+    generics::{Generics, generics},
-     next_solver::{
-         Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
-         RegionKind, Term, Ty, TyKind, VariancesOf,
+     inherent::{AdtDef, IntoKind, SliceLike},
          }
          _ => return VariancesOf::new_from_iter(interner, []),
      }
@@ -168,10 +156,7 @@ Rustfmt size:  30951 bytes
 -    use expect_test::{expect, Expect};
 +    use expect_test::{Expect, expect};
      use hir_def::{
--        hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
-+        hir::generics::GenericParamDataRef,
-+        src::HasSource,
-+        AdtId, GenericDefId, ModuleDefId,
+         hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
      };
      use itertools::Itertools;
 -    use rustc_type_ir::{inherent::SliceLike, Variance};

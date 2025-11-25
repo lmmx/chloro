@@ -2,21 +2,23 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1597 bytes
-Chloro size:   1628 bytes
+Chloro size:   1605 bytes
 Rustfmt size:  1772 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
+ use crate::{
      autoderef::{Autoderef, AutoderefKind},
      infer::unify::InferenceTable,
-     next_solver::{
+-    next_solver::{
 -        infer::{traits::PredicateObligations, InferOk},
-         Ty,
-+        infer::{InferOk, traits::PredicateObligations},
-     },
+-        Ty,
+-    },
++    next_solver::{infer::{InferOk, traits::PredicateObligations}, Ty},
      Adjust, Adjustment, OverloadedDeref,
  };
+ 
      pub(crate) fn adjust_steps_as_infer_ok(&mut self) -> InferOk<'db, Vec<Adjustment<'db>>> {
          let steps = self.steps();
          if steps.is_empty() {

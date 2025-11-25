@@ -7,12 +7,11 @@ use tracing::debug;
 use crate::{
     db::HirDatabase,
     next_solver::{
-        DbInterner, TypingMode,
         infer::{
             DbInternerInferExt,
             traits::{Obligation, ObligationCause},
         },
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, DbInterner, TypingMode,
     },
 };
 

@@ -22,8 +22,8 @@ use rustc_hash::FxHashSet;
 use rustc_pattern_analysis::constructor::Constructor;
 use rustc_type_ir::inherent::{AdtDef, IntoKind};
 use syntax::{
-    AstNode,
     ast::{self, UnaryOp},
+    AstNode,
 };
 use tracing::debug;
 use triomphe::Arc;
@@ -32,14 +32,10 @@ use typed_arena::Arena;
 use crate::{
     db::HirDatabase,
     diagnostics::match_check::{
-        self,
-        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat},
+        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat}, self,
     },
     display::{DisplayTarget, HirDisplay},
-    next_solver::{
-        DbInterner, Ty, TyKind, TypingMode,
-        infer::{DbInternerInferExt, InferCtxt},
-    },
+    next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, Ty, TyKind, TypingMode},
     Adjust, InferenceResult, TraitEnvironment,
 };
 

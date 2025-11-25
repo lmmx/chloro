@@ -1,6 +1,6 @@
 use syntax::{
-    AstNode, AstToken,
     ast::{self, HasAttrs},
+    AstNode, AstToken,
 };
 
 use crate::{AssistContext, AssistId, Assists, utils::test_related_attribute_syn};

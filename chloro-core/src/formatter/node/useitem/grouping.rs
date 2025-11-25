@@ -4,25 +4,6 @@
 //! matching rustfmt's behavior where items from different submodules are separated
 //! by blank lines.
 
-/// Extracts the submodule prefix from a use item.
-///
-/// Returns `Some(prefix)` for items like:
-/// - `attr::AttrsWithOwner` -> `Some("attr")`
-/// - `resolver::{HasResolver, Resolver}` -> `Some("resolver")`
-///
-/// Returns `None` for root-level items like:
-/// - `AssocItemId` -> `None`
-pub fn get_submodule_prefix(item: &str) -> Option<String> {
-    if item.contains("::") {
-        // For both nested imports like "resolver::{...}" and simple paths like "attr::Foo"
-        // we extract the first component before `::`
-        item.split("::").next().map(|s| s.to_string())
-    } else {
-        // Root-level import
-        None
-    }
-}
-
 /// Groups use items by their submodule prefix.
 ///
 /// Items from the same submodule are placed in the same group.
@@ -35,23 +16,28 @@ pub fn get_submodule_prefix(item: &str) -> Option<String> {
 /// Output: [["attr::A", "attr::B"], ["expr::C"], ["Root"]]
 /// ```
 pub fn group_by_submodule(items: Vec<String>) -> Vec<Vec<String>> {
+    // First check: are there any multi-item nested braces?
+    let has_nested_groups = items
+        .iter()
+        .any(|item| item.contains('{') && item.contains(','));
+
     let mut groups: Vec<Vec<String>> = Vec::new();
     let mut current_group: Vec<String> = Vec::new();
-    let mut last_prefix: Option<String> = None;
 
     for item in items {
-        let item_prefix = get_submodule_prefix(&item);
+        let has_multi_item_braces = item.contains('{') && item.contains(',');
+        let has_path_separator = item.contains("::");
 
-        // Check if we need to start a new group
-        if last_prefix != item_prefix {
+        let needs_own_line = has_multi_item_braces || (has_nested_groups && has_path_separator);
+
+        if needs_own_line {
             if !current_group.is_empty() {
-                groups.push(current_group);
-                current_group = Vec::new();
+                groups.push(std::mem::take(&mut current_group));
             }
-            last_prefix = item_prefix;
+            groups.push(vec![item]);
+        } else {
+            current_group.push(item);
         }
-
-        current_group.push(item);
     }
 
     if !current_group.is_empty() {

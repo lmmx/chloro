@@ -16,14 +16,14 @@
 use hir_def::{AdtId, GenericDefId, GenericParamId, VariantId, signatures::StructFlags};
 use rustc_ast_ir::Mutability;
 use rustc_type_ir::{
-    Variance,
     inherent::{AdtDef, IntoKind, SliceLike},
+    Variance,
 };
 use stdx::never;
 
 use crate::{
     db::HirDatabase,
-    generics::{Generics, generics},
+    generics::{generics, Generics},
     next_solver::{
         Const, ConstKind, DbInterner, ExistentialPredicate, GenericArg, GenericArgs, Region,
         RegionKind, Term, Ty, TyKind, VariancesOf,
@@ -367,9 +367,7 @@ impl<'db> Context<'db> {
 mod tests {
     use expect_test::{Expect, expect};
     use hir_def::{
-        hir::generics::GenericParamDataRef,
-        src::HasSource,
-        AdtId, GenericDefId, ModuleDefId,
+        hir::generics::GenericParamDataRef, src::HasSource, AdtId, GenericDefId, ModuleDefId,
     };
     use itertools::Itertools;
     use rustc_type_ir::{Variance, inherent::SliceLike};

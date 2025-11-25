@@ -3,8 +3,8 @@
 use std::{cmp, ops::Bound};
 
 use hir_def::{
-    AdtId, VariantId,
     signatures::{StructFlags, VariantFields},
+    AdtId, VariantId,
 };
 use intern::sym;
 use rustc_abi::{Integer, ReprOptions, TargetDataLayout};
@@ -14,7 +14,7 @@ use triomphe::Arc;
 
 use crate::{
     db::HirDatabase,
-    layout::{Layout, LayoutCx, LayoutError, field_ty},
+    layout::{field_ty, Layout, LayoutCx, LayoutError},
     next_solver::GenericArgs,
     TraitEnvironment,
 };

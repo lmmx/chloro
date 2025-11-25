@@ -4,9 +4,9 @@ use rustc_type_ir::{TypeFoldable, Upcast, Variance};
 use crate::next_solver::{
     fulfill::{FulfillmentCtxt, NextSolverError},
     infer::{
-        InferCtxt, InferOk,
         at::ToTrace,
         traits::{Obligation, ObligationCause, PredicateObligation, PredicateObligations},
+        InferCtxt, InferOk,
     },
     Const, DbInterner, ParamEnv, Term, TraitRef, Ty, TypeError,
 };

@@ -61,10 +61,8 @@ use std::ops::Deref;
 
 use base_db::Crate;
 use hir_expand::{
-    mod_path::ModPath,
-    name::Name,
-    proc_macro::ProcMacroKind,
-    EditionedFileId, ErasedAstId, HirFileId, InFile, MacroCallId,
+    mod_path::ModPath, name::Name, proc_macro::ProcMacroKind, EditionedFileId, ErasedAstId,
+    HirFileId, InFile, MacroCallId,
 };
 use intern::Symbol;
 use itertools::Itertools;

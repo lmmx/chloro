@@ -29,8 +29,8 @@ use hir::{FieldSource, FileRange, InFile, ModuleSource, Name, Semantics, sym};
 use span::{Edition, FileId, SyntaxContext};
 use stdx::{TupleExt, never};
 use syntax::{
-    AstNode, SyntaxKind, T, TextRange,
     ast::{self, HasName},
+    AstNode, SyntaxKind, TextRange, T,
 };
 pub use _bail as bail;
 pub use _format_err as format_err;

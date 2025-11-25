@@ -8,14 +8,6 @@ Rustfmt size:  11350 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use triomphe::Arc;
- 
- use crate::{
--    expr_store::{lower::ExprCollector, TypePtr},
-+    expr_store::{TypePtr, lower::ExprCollector},
-     hir::generics::{
-         ConstParamData, GenericParams, LifetimeParamData, TypeOrConstParamData, TypeParamData,
-         TypeParamProvenance, WherePredicate,
              parent,
          }
      }

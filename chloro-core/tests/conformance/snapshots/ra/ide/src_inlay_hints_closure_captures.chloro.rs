@@ -95,7 +95,7 @@ pub(super) fn hints(
 #[cfg(test)]
 mod tests {
     use crate::{
-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
+        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
         InlayHintsConfig,
     };
     #[test]

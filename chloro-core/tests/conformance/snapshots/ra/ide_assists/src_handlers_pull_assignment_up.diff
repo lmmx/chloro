@@ -18,7 +18,9 @@ Rustfmt size:  12272 bytes
  };
  
  use crate::{
+-    AssistId,
      assist_context::{AssistContext, Assists},
++    AssistId,
  };
  
 -// Assist: pull_assignment_up

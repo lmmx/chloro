@@ -12,15 +12,11 @@ Rustfmt size:  12073 bytes
  use ide_db::defs::{Definition, NameRefClass};
  use syntax::{
 -    ast::{self, make, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
-+    ast::{self, HasArgList, HasGenericArgs, make, syntax_factory::SyntaxFactory},
++    ast::{make, self, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
      syntax_editor::Position,
      AstNode,
  };
- 
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: add_turbo_fish

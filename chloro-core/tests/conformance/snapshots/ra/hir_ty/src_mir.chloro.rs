@@ -39,9 +39,8 @@ use crate::{
     infer::PointerCast,
     lang_items::is_box,
     next_solver::{
-        Const, DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
-        infer::{InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
+        infer::{InferCtxt, traits::ObligationCause}, obligation_ctxt::ObligationCtxt, Const,
+        DbInterner, ErrorGuaranteed, GenericArgs, ParamEnv, Ty, TyKind,
     },
     CallableDefId, InferenceResult, MemoryMap,
 };

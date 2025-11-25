@@ -12,14 +12,11 @@ Rustfmt size:  13024 bytes
  use stdx::format_to;
  use syntax::{
 -    ast::{self, make, HasGenericParams, HasName, HasTypeBounds, Impl},
-+    ast::{self, HasGenericParams, HasName, HasTypeBounds, Impl, make},
++    ast::{make, self, HasGenericParams, HasName, HasTypeBounds, Impl},
      AstNode,
  };
  
- use crate::{
--    assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: generate_default_from_new

@@ -8,9 +8,7 @@ use ide_db::{
 use syntax::ast;
 
 use crate::{
-    completions::Completions,
-    context::CompletionContext,
-    item::CompletionItemLabel,
+    completions::Completions, context::CompletionContext, item::CompletionItemLabel,
     CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
 };
 

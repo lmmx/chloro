@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 52351 bytes
-Chloro size:   51188 bytes
+Chloro size:   51149 bytes
 Rustfmt size:  52351 bytes
 
 ✗ Outputs DIFFER
@@ -11,15 +11,19 @@ Rustfmt size:  52351 bytes
  use hir::{HirDisplay, TypeInfo};
  use ide_db::{
      assists::GroupLabel,
-     syntax_helpers::{LexedStr, suggest_name},
+-    syntax_helpers::{LexedStr, suggest_name},
++    syntax_helpers::{suggest_name, LexedStr},
  };
  use syntax::{
 -    NodeOrToken, SyntaxKind, SyntaxNode, T,
      algo::ancestors_at_offset,
-     ast::{
-         self, AstNode,
-         syntax_factory::SyntaxFactory,
-     },
+-    ast::{
+-        self, AstNode,
+-        edit::{AstNodeEdit, IndentLevel},
+-        make,
+-        syntax_factory::SyntaxFactory,
+-    },
++    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, syntax_factory::SyntaxFactory, AstNode},
      syntax_editor::Position,
 +    NodeOrToken, SyntaxKind, SyntaxNode, T,
  };

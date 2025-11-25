@@ -20,18 +20,14 @@
 use rustc_type_ir::{
     inherent::{IntoKind, Span as _},
     relate::{
-        Relate, StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
-        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys},
+        combine::{PredicateEmittingRelation, super_combine_consts, super_combine_tys}, Relate,
+        StructurallyRelateAliases, TypeRelation, VarianceDiagInfo,
     },
     AliasRelationDirection, TypeVisitableExt, Upcast, Variance,
 };
 
 use crate::next_solver::{
-    infer::{
-        InferCtxt, TypeTrace,
-        relate::RelateResult,
-        traits::{Obligation, PredicateObligations},
-    },
+    infer::{relate::RelateResult, traits::{Obligation, PredicateObligations}, InferCtxt, TypeTrace},
     AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
     TyKind,
 };

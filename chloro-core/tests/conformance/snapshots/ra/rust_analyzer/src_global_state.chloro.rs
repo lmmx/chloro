@@ -14,8 +14,8 @@ use crossbeam_channel::{Receiver, Sender, unbounded};
 use hir::ChangeWithProcMacros;
 use ide::{Analysis, AnalysisHost, Cancellable, FileId, SourceRootId};
 use ide_db::{
-    MiniCore,
     base_db::{Crate, ProcMacroPaths, SourceDatabase},
+    MiniCore,
 };
 use itertools::Itertools;
 use load_cargo::SourceRootConfig;

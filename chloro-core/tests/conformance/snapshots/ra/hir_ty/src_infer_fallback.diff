@@ -8,22 +8,6 @@ Rustfmt size:  20619 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- //! Fallback of infer vars to `!` and `i32`/`f64`.
- 
- use intern::sym;
- use petgraph::{
--    visit::{Dfs, Walker},
-     Graph,
-+    visit::{Dfs, Walker},
- };
- use rustc_hash::{FxBuildHasher, FxHashMap, FxHashSet};
- use rustc_type_ir::{
--    inherent::{IntoKind, Ty as _},
-     TyVid,
-+    inherent::{IntoKind, Ty as _},
- };
- use tracing::debug;
- 
              "type-inference-fallback start obligations: {:#?}",
              self.table.fulfillment_cx.pending_obligations()
          );

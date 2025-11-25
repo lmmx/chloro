@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::assists::{AssistId, GroupLabel};
 use syntax::{
-    ast::{self, HasGenericParams, HasName, edit::IndentLevel, make},
+    ast::{edit::IndentLevel, make, self, HasGenericParams, HasName},
     syntax_editor, AstNode,
 };
 

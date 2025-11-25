@@ -23,8 +23,8 @@ use intern::sym;
 use la_arena::ArenaMap;
 use rustc_abi::TargetDataLayout;
 use rustc_apfloat::{
-    Float,
     ieee::{Half as f16, Quad as f128},
+    Float,
 };
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -39,17 +39,17 @@ use triomphe::Arc;
 use Address::*;
 
 use crate::{
-    consteval::{self, ConstEvalError, try_const_usize},
+    consteval::{self, try_const_usize, ConstEvalError},
     db::{HirDatabase, InternedClosure, InternedClosureId},
     display::{ClosureStyle, DisplayTarget, HirDisplay},
     infer::PointerCast,
     layout::{Layout, LayoutError, RustcEnumVariantIdx},
     method_resolution::{is_dyn_method, lookup_impl_const},
     next_solver::{
-        Const, ConstBytes, ConstKind, DbInterner, ErrorGuaranteed, GenericArgs, Region,
-        SolverDefId, Ty, TyKind, TypingMode, UnevaluatedConst, ValueConst,
         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, Const, ConstBytes, ConstKind, DbInterner,
+        ErrorGuaranteed, GenericArgs, Region, SolverDefId, Ty, TyKind, TypingMode,
+        UnevaluatedConst, ValueConst,
     },
     traits::FnTrait,
     utils::detect_variant_from_bytes,

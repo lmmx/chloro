@@ -1,10 +1,10 @@
 use hir::AsAssocItem;
 use ide_db::{
     helpers::mod_path_to_ast,
-    imports::insert_use::{ImportScope, insert_use},
+    imports::insert_use::{insert_use, ImportScope},
 };
 use syntax::{
-    ast::{self, HasGenericArgs, make},
+    ast::{make, self, HasGenericArgs},
     match_ast, ted, AstNode, Edition, SyntaxNode,
 };
 

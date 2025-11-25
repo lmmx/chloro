@@ -4,8 +4,8 @@ use arrayvec::ArrayVec;
 use ast::HasName;
 use cfg::{CfgAtom, CfgExpr};
 use hir::{
-    db::HirDatabase,
-    sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics, Symbol,
+    db::HirDatabase, sym, AsAssocItem, AttrsWithOwner, HasAttrs, HasCrate, HasSource, Semantics,
+    Symbol,
 };
 use ide_assists::utils::{has_test_related_attribute, test_related_attribute_syn};
 use ide_db::impl_empty_upmap_from_ra_fixture;
@@ -23,9 +23,8 @@ use smallvec::SmallVec;
 use span::{Edition, TextSize};
 use stdx::format_to;
 use syntax::{
-    SmolStr, SyntaxNode, ToSmolStr,
     ast::{self, AstNode},
-    format_smolstr,
+    format_smolstr, SmolStr, SyntaxNode, ToSmolStr,
 };
 
 use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};

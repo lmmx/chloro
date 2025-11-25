@@ -1,6 +1,6 @@
 use hir::HasSource;
 use syntax::{
-    ast::{self, AstNode, make},
+    ast::{make, self, AstNode},
     syntax_editor::{Position, SyntaxEditor},
     Edition,
 };
@@ -8,8 +8,8 @@ use syntax::{
 use crate::{
     assist_context::{AssistContext, Assists},
     utils::{
-        DefaultMethods, IgnoreAssocItems, add_trait_assoc_items_to_impl, filter_assoc_items,
-        gen_trait_fn_body,
+        add_trait_assoc_items_to_impl, filter_assoc_items, gen_trait_fn_body, DefaultMethods,
+        IgnoreAssocItems,
     },
     AssistId,
 };

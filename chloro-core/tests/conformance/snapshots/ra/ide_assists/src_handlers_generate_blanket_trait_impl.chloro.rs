@@ -7,16 +7,16 @@ use ide_db::{
 };
 use syntax::{
     ast::{
-        self, AssocItem, BlockExpr, GenericParam, HasAttrs, HasGenericParams, HasName,
-        HasTypeBounds, HasVisibility, edit::AstNodeEdit, make,
+        edit::AstNodeEdit, make, self, AssocItem, BlockExpr, GenericParam, HasAttrs,
+        HasGenericParams, HasName, HasTypeBounds, HasVisibility,
     },
     syntax_editor::Position,
     AstNode,
 };
 
 use crate::{
-    AssistConfig,
     assist_context::{AssistContext, Assists},
+    AssistConfig,
 };
 
 pub(crate) fn generate_blanket_trait_impl(

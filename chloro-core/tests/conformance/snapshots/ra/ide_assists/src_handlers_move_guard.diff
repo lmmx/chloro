@@ -9,9 +9,9 @@ Rustfmt size:  21223 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
--    SyntaxKind::WHITESPACE,
-     ast::{AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat, edit::AstNodeEdit, make},
-+    SyntaxKind::WHITESPACE,
++    ast::{edit::AstNodeEdit, make, AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat},
+     SyntaxKind::WHITESPACE,
+-    ast::{AstNode, BlockExpr, ElseBranch, Expr, IfExpr, MatchArm, Pat, edit::AstNodeEdit, make},
  };
  
  use crate::{AssistContext, AssistId, Assists};

@@ -11,11 +11,9 @@ use ide_db::{
 use itertools::Itertools;
 use syntax::{
     ast::{
-        self, AssocItem, GenericArgList, GenericParamList, HasAttrs, HasGenericArgs,
-        HasGenericParams, HasName, HasTypeBounds, HasVisibility as astHasVisibility, Path,
-        WherePred,
-        edit::{self, AstNodeEdit},
-        make,
+        edit::{self, AstNodeEdit}, make, self, AssocItem, GenericArgList, GenericParamList,
+        HasAttrs, HasGenericArgs, HasGenericParams, HasName, HasTypeBounds,
+        HasVisibility as astHasVisibility, Path, WherePred,
     },
     ted::{self, Position},
     AstNode, Edition, NodeOrToken, SmolStr, SyntaxKind, ToSmolStr,

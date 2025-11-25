@@ -8,11 +8,7 @@ Rustfmt size:  4581 bytes
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use crate::{
-     db::DefDatabase,
-     item_scope::BuiltinShadowMode,
--    nameres::{path_resolution::ResolveMode, LocalDefMap},
-+    nameres::{LocalDefMap, path_resolution::ResolveMode},
+     nameres::{path_resolution::ResolveMode, LocalDefMap},
      AstIdWithPath, LocalModuleId, MacroId, UnresolvedMacro,
  };
 -

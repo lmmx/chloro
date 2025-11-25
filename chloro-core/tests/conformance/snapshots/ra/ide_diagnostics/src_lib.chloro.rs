@@ -30,14 +30,12 @@ use std::{iter, sync::LazyLock};
 
 use either::Either;
 use hir::{
-    db::ExpandDatabase,
-    diagnostics::AnyDiagnostic,
-    Crate, DisplayTarget, InFile, Semantics,
+    db::ExpandDatabase, diagnostics::AnyDiagnostic, Crate, DisplayTarget, InFile, Semantics,
 };
 use ide_db::{
     assists::{Assist, AssistId, AssistResolveStrategy, ExprFillDefaultMode},
     base_db::{ReleaseChannel, RootQueryDb as _},
-    generated::lints::{CLIPPY_LINT_GROUPS, DEFAULT_LINT_GROUPS, DEFAULT_LINTS, Lint, LintGroup},
+    generated::lints::{Lint, LintGroup, CLIPPY_LINT_GROUPS, DEFAULT_LINTS, DEFAULT_LINT_GROUPS},
     imports::insert_use::InsertUseConfig,
     label::Label,
     source_change::SourceChange,

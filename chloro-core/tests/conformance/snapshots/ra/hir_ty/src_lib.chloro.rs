@@ -47,13 +47,13 @@ pub use infer::{
     cast::CastError,
     closure::analysis::{CaptureKind, CapturedItem},
     could_coerce, could_unify, could_unify_deeply, Adjust, Adjustment, AutoBorrow, BindingMode,
-    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref, PointerCast,
+    InferenceDiagnostic, InferenceResult, InferenceTyDiagnosticSource, OverloadedDeref,
+    PointerCast,
 };
 use intern::{Symbol, sym};
 pub use lower::{
-    associated_type_shorthand_candidates,
-    diagnostics::*,
-    LifetimeElisionKind, TyDefId, TyLoweringContext, ValueTyDefId,
+    associated_type_shorthand_candidates, diagnostics::*, LifetimeElisionKind, TyDefId,
+    TyLoweringContext, ValueTyDefId,
 };
 pub use method_resolution::check_orphan_rules;
 use mir::{MirEvalError, VTableMap};
@@ -78,9 +78,9 @@ use crate::{
     display::{DisplayTarget, HirDisplay},
     infer::unify::InferenceTable,
     next_solver::{
-        AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind, Canonical,
-        CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig, PolyFnSig, Predicate,
-        Region, RegionKind, TraitRef, Ty, TyKind, Tys, abi,
+        abi, AliasTy, Binder, BoundConst, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
+        Canonical, CanonicalVarKind, CanonicalVars, Const, ConstKind, DbInterner, FnSig,
+        PolyFnSig, Predicate, Region, RegionKind, TraitRef, Ty, TyKind, Tys,
     },
 };
 

@@ -25,8 +25,9 @@ Rustfmt size:  6951 bytes
  
  use crate::{
 -    InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
-     inlay_hints::LazyProperty,
-+    InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig, InlayKind,
+-    inlay_hints::LazyProperty,
++    inlay_hints::LazyProperty, InlayHint, InlayHintLabel, InlayHintPosition, InlayHintsConfig,
++    InlayKind,
  };
  
  pub(super) fn hints(
@@ -69,9 +70,9 @@ Rustfmt size:  6951 bytes
  #[cfg(test)]
  mod tests {
      use crate::{
--        InlayHintsConfig,
-         inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
-+        InlayHintsConfig,
++        inlay_hints::tests::{check_with_config, DISABLED_CONFIG},
+         InlayHintsConfig,
+-        inlay_hints::tests::{DISABLED_CONFIG, check_with_config},
      };
 -
      #[test]

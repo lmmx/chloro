@@ -30,7 +30,7 @@ use itertools::Itertools;
 use span::{Edition, ROOT_ERASED_FILE_AST_ID, Span, SpanAnchor, SyntaxContext};
 use stdx::{format_to, format_to_acc};
 use syntax::{
-    ast::{self, edit::IndentLevel},
+    ast::{edit::IndentLevel, self},
     AstNode, AstPtr,
     SyntaxKind::{COMMENT, EOF, IDENT, LIFETIME_IDENT},
     SyntaxNode, T,
@@ -41,7 +41,7 @@ use tt::{TextRange, TextSize};
 
 use crate::{
     db::DefDatabase,
-    nameres::{DefMap, ModuleSource, crate_def_map},
+    nameres::{crate_def_map, DefMap, ModuleSource},
     src::HasSource,
     test_db::TestDB,
     tt::TopSubtree,

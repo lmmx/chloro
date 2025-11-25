@@ -5,17 +5,15 @@ use ena::{
     unify::{self as ut, UnifyKey},
 };
 use rustc_type_ir::{
-    inherent::IntoKind,
-    ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable, TypeFolder,
-    TypeSuperFoldable, TypeVisitableExt,
+    inherent::IntoKind, ConstVid, FloatVid, IntVid, RegionKind, RegionVid, TyVid, TypeFoldable,
+    TypeFolder, TypeSuperFoldable, TypeVisitableExt,
 };
 
 use crate::next_solver::{
     infer::{
-        InferCtxt, UnificationTable, iter_idx_range,
-        snapshot::VariableLengths,
-        type_variable::TypeVariableOrigin,
-        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey},
+        iter_idx_range, snapshot::VariableLengths, type_variable::TypeVariableOrigin,
+        unify_key::{ConstVariableOrigin, ConstVariableValue, ConstVidKey}, InferCtxt,
+        UnificationTable,
     },
     Const, ConstKind, DbInterner, Region, Ty, TyKind,
 };

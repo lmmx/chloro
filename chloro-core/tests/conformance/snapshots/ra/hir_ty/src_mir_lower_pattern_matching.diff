@@ -13,10 +13,14 @@ Rustfmt size:  29552 bytes
  use crate::{
 -    BindingMode,
      mir::{
-         LocalId, MutBorrowKind, Operand, OperandKind,
+-        LocalId, MutBorrowKind, Operand, OperandKind,
          lower::{
+             BasicBlockId, BinOp, BindingId, BorrowKind, Either, Expr, FieldId, Idx, MemoryMap,
+             MirLowerCtx, MirLowerError, MirSpan, Pat, PatId, Place, PlaceElem, ProjectionElem,
+             RecordFieldPat, ResolveValueResult, Result, Rvalue, SwitchTargets, TerminatorKind,
              TupleFieldId, TupleId, Ty, TyKind, ValueNs, VariantId,
          },
++        LocalId, MutBorrowKind, Operand, OperandKind,
      },
 +    BindingMode,
  };

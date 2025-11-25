@@ -20,12 +20,6 @@ Rustfmt size:  10686 bytes
  use triomphe::Arc;
  
  use crate::{
-     db::DefDatabase,
--    nameres::{block_def_map, crate_def_map, DefMap, ModuleSource},
-+    nameres::{DefMap, ModuleSource, block_def_map, crate_def_map},
-     src::HasSource,
-     LocalModuleId, Lookup, ModuleDefId, ModuleId,
- };
  }
  
  #[salsa_macros::db]

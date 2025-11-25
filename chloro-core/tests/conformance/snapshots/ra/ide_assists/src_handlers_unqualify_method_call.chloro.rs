@@ -1,7 +1,7 @@
 use hir::AsAssocItem;
 use syntax::{
+    ast::{prec::ExprPrecedence, self, AstNode, HasArgList},
     TextRange,
-    ast::{self, AstNode, HasArgList, prec::ExprPrecedence},
 };
 
 use crate::{AssistContext, AssistId, Assists};

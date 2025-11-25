@@ -5,13 +5,11 @@ use test_fixture::WithFixture;
 
 use crate::{
     expr_store::{
-        ExpressionStore,
         lower::{
             ExprCollector,
             path::{SEGMENT_LOWERING_MAP, hir_segment_to_ast_segment},
         },
-        path::Path,
-        pretty,
+        path::Path, pretty, ExpressionStore,
     },
     nameres::crate_def_map,
     test_db::TestDB,

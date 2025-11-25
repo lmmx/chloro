@@ -1,7 +1,7 @@
 use either::Either;
 use itertools::Itertools;
 use syntax::{
-    ast::{self, CommentPlacement, Whitespace, edit::IndentLevel},
+    ast::{edit::IndentLevel, self, CommentPlacement, Whitespace},
     AstToken, TextRange,
 };
 

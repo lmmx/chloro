@@ -18,10 +18,9 @@ use crate::next_solver::{Const, ConstKind, Region, RegionKind};
 use crate::{
     db::{HirDatabase, InternedClosureId},
     next_solver::{
-        DbInterner, GenericArgs, Ty, TyKind, TypingMode,
         infer::{DbInternerInferExt, InferCtxt, traits::ObligationCause},
-        obligation_ctxt::ObligationCtxt,
-        references_non_lt_error,
+        obligation_ctxt::ObligationCtxt, references_non_lt_error, DbInterner, GenericArgs, Ty,
+        TyKind, TypingMode,
     },
     TraitEnvironment,
 };

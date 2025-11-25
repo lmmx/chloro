@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 98473 bytes
-Chloro size:   98217 bytes
+Chloro size:   98209 bytes
 Rustfmt size:  98473 bytes
 
 ✗ Outputs DIFFER
@@ -25,7 +25,9 @@ Rustfmt size:  98473 bytes
      context::{DotAccess, DotAccessKind, PathCompletionCtx, PathKind, PatternContext},
      item::{Builder, CompletionRelevanceTypeMatch},
      render::{
-         literal::render_variant_lit,
+-        function::render_fn,
+-        literal::render_variant_lit,
++        function::render_fn, literal::render_variant_lit,
          macro_::{render_macro, render_macro_pat},
      },
 +    CompletionContext, CompletionItem, CompletionItemKind, CompletionItemRefMode,
@@ -222,7 +224,8 @@ Rustfmt size:  98473 bytes
      use crate::{
 -        CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
          item::CompletionRelevanceTypeMatch,
-         tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
+-        tests::{TEST_CONFIG, check_edit, do_completion, get_all_items},
++        tests::{check_edit, do_completion, get_all_items, TEST_CONFIG},
 +        CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevancePostfixMatch,
      };
 -

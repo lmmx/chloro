@@ -8,8 +8,8 @@ use hir::{
 use itertools::Itertools;
 use span::{TextRange, TextSize};
 use syntax::{
-    AstToken,
     ast::{self, IsString},
+    AstToken,
 };
 
 /// Holds documentation

@@ -13,9 +13,8 @@ Rustfmt size:  7241 bytes
 +use syntax::{AstNode, ast};
  
  use crate::{
--    assist_context::{AssistContext, Assists},
+     assist_context::{AssistContext, Assists},
      AssistId,
-+    assist_context::{AssistContext, Assists},
  };
  
 -// Assist: normalize_import

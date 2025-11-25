@@ -13,8 +13,8 @@ use hir_def::{
 use hir_ty::{
     db::HirDatabase,
     display::{
-        HirDisplay, HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault,
         hir_display_with_store, write_bounds_like_dyn_trait_with_prefix, write_visibility,
+        HirDisplay, HirDisplayError, HirDisplayWithExpressionStore, HirFormatter, SizedByDefault,
     },
     next_solver::ClauseKind,
 };

@@ -7,7 +7,7 @@ use std::ops::ControlFlow;
 
 use base_db::Crate;
 use hir_def::{
-    nameres::{DefMap, block_def_map, crate_def_map},
+    nameres::{block_def_map, crate_def_map, DefMap},
     signatures::{ConstFlags, EnumFlags, FnFlags, StructFlags, TraitFlags, TypeAliasFlags},
     AdtId, AssocItemId, BlockId, ConstId, FunctionId, HasModule, ImplId, ItemContainerId, Lookup,
     ModuleId, TraitId, TypeAliasId,
@@ -17,9 +17,7 @@ use intern::sym;
 use rustc_ast_ir::Mutability;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_type_ir::{
-    inherent::{
-        AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _,
-    },
+    inherent::{AdtDef, BoundExistentialPredicates, GenericArgs as _, IntoKind, SliceLike, Ty as _},
     FloatTy, IntTy, TypeVisitableExt, UintTy,
 };
 use smallvec::{SmallVec, smallvec};
@@ -29,17 +27,16 @@ use triomphe::Arc;
 use crate::{
     autoderef::{self, AutoderefKind},
     db::HirDatabase,
-    infer::{Adjust, Adjustment, OverloadedDeref, PointerCast, unify::InferenceTable},
+    infer::{unify::InferenceTable, Adjust, Adjustment, OverloadedDeref, PointerCast},
     lang_items::is_box,
     next_solver::{
-        Canonical, DbInterner, ErrorGuaranteed, GenericArgs, Goal, Predicate, Region, SolverDefId,
-        TraitRef, Ty, TyKind, TypingMode,
         infer::{
             DbInternerInferExt, InferCtxt,
             select::ImplSource,
             traits::{Obligation, ObligationCause, PredicateObligation},
         },
-        obligation_ctxt::ObligationCtxt,
+        obligation_ctxt::ObligationCtxt, Canonical, DbInterner, ErrorGuaranteed, GenericArgs,
+        Goal, Predicate, Region, SolverDefId, TraitRef, Ty, TyKind, TypingMode,
     },
     traits::next_trait_solve_canonical_in_ctxt,
     utils::all_super_traits,

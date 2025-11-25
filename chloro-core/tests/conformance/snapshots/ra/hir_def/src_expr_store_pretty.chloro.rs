@@ -15,8 +15,8 @@ use syntax::ast::HasName;
 use crate::{
     expr_store::path::{GenericArg, GenericArgs},
     hir::{
-        Array, BindingAnnotation, CaptureBy, ClosureKind, Literal, Movability, Statement,
-        generics::{GenericParams, WherePredicate},
+        generics::{GenericParams, WherePredicate}, Array, BindingAnnotation, CaptureBy,
+        ClosureKind, Literal, Movability, Statement,
     },
     lang_item::LangItemTarget,
     signatures::{FnFlags, FunctionSignature, StructSignature},

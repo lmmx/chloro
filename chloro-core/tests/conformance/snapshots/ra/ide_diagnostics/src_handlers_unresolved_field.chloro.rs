@@ -9,12 +9,12 @@ use ide_db::{
 };
 use syntax::{
     algo,
-    ast::{self, FieldList, Name, Visibility, edit::IndentLevel, make},
+    ast::{edit::IndentLevel, make, self, FieldList, Name, Visibility},
     AstNode, AstPtr, Direction, SyntaxKind, TextSize,
 };
 use syntax::{
+    ast::{edit::AstNodeEdit, Type},
     SyntaxNode,
-    ast::{Type, edit::AstNodeEdit},
 };
 
 use crate::{Diagnostic, DiagnosticCode, DiagnosticsContext, adjusted_display_range};

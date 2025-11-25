@@ -1,11 +1,11 @@
 use hir::{HasVisibility, HirDisplay, Module};
 use ide_db::{
-    FileId,
     assists::AssistId,
     defs::{Definition, NameRefClass},
+    FileId,
 };
 use syntax::{
-    ast::{self, NameRef, edit::IndentLevel},
+    ast::{edit::IndentLevel, self, NameRef},
     AstNode, Direction, SyntaxKind, TextSize,
 };
 

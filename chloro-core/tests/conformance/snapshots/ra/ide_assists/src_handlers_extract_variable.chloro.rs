@@ -1,16 +1,11 @@
 use hir::{HirDisplay, TypeInfo};
 use ide_db::{
     assists::GroupLabel,
-    syntax_helpers::{LexedStr, suggest_name},
+    syntax_helpers::{suggest_name, LexedStr},
 };
 use syntax::{
     algo::ancestors_at_offset,
-    ast::{
-        self, AstNode,
-        edit::{AstNodeEdit, IndentLevel},
-        make,
-        syntax_factory::SyntaxFactory,
-    },
+    ast::{edit::{AstNodeEdit, IndentLevel}, make, self, syntax_factory::SyntaxFactory, AstNode},
     syntax_editor::Position,
     NodeOrToken, SyntaxKind, SyntaxNode, T,
 };

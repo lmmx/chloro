@@ -1,7 +1,7 @@
 use either::Either;
 use ide_db::imports::{
     insert_use::{ImportGranularity, InsertUseConfig},
-    merge_imports::{MergeBehavior, try_merge_imports, try_merge_trees},
+    merge_imports::{try_merge_imports, try_merge_trees, MergeBehavior},
 };
 use syntax::{
     algo::neighbor,
@@ -13,9 +13,9 @@ use syntax::{
 use Edit::*;
 
 use crate::{
-    AssistId,
     assist_context::{AssistContext, Assists},
     utils::next_prev,
+    AssistId,
 };
 
 pub(crate) fn merge_imports(acc: &mut Assists, ctx: &AssistContext<'_>) -> Option<()> {

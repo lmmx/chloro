@@ -18,21 +18,17 @@ use vfs::{AbsPathBuf, FileId, loader::LoadingProgress};
 
 use crate::{
     config::Config,
-    diagnostics::{DiagnosticsGeneration, NativeDiagnosticsFetchKind, fetch_native_diagnostics},
+    diagnostics::{fetch_native_diagnostics, DiagnosticsGeneration, NativeDiagnosticsFetchKind},
     discover::{DiscoverArgument, DiscoverCommand, DiscoverProjectMessage},
     flycheck::{self, ClearDiagnosticsKind, ClearScope, FlycheckMessage},
     global_state::{
-        FetchBuildDataResponse, FetchWorkspaceRequest, FetchWorkspaceResponse, GlobalState,
-        file_id_to_url, url_to_file_id,
+        file_id_to_url, url_to_file_id, FetchBuildDataResponse, FetchWorkspaceRequest,
+        FetchWorkspaceResponse, GlobalState,
     },
     handlers::{
-        dispatch::{NotificationDispatcher, RequestDispatcher},
-        request::empty_diagnostic_report,
+        dispatch::{NotificationDispatcher, RequestDispatcher}, request::empty_diagnostic_report,
     },
-    lsp::{
-        from_proto, to_proto,
-        utils::{Progress, notification_is},
-    },
+    lsp::{from_proto, to_proto, utils::{Progress, notification_is}},
     lsp_ext,
     reload::{BuildDataProgress, ProcMacroProgress, ProjectWorkspaceProgress},
     test_runner::{CargoTestMessage, CargoTestOutput, TestState},

@@ -13,8 +13,8 @@ Rustfmt size:  3796 bytes
 +use ide_db::{LineIndexDatabase, assists::AssistId, defs::Definition};
  use syntax::{
 -    ast::{self, edit_in_place::Indent, HasName},
++    ast::{edit_in_place::Indent, self, HasName},
      AstNode,
-+    ast::{self, HasName, edit_in_place::Indent},
  };
  
 -// Assist: bind_unused_param

@@ -1,6 +1,6 @@
 use syntax::{
-    SourceFile, SyntaxKind, T, TextSize,
     ast::{self, AstNode},
+    SourceFile, SyntaxKind, TextSize, T,
 };
 
 pub(crate) fn matching_brace(file: &SourceFile, offset: TextSize) -> Option<TextSize> {

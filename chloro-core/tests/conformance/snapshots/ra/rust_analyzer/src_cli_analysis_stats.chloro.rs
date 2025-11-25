@@ -4,7 +4,7 @@
 use std::{
     env, fmt,
     ops::AddAssign,
-    panic::{AssertUnwindSafe, catch_unwind},
+    panic::{catch_unwind, AssertUnwindSafe},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -16,16 +16,16 @@ use hir::{
     Name,
 };
 use hir_def::{
-    SyntheticSyntax,
     expr_store::BodySourceMap,
     hir::{ExprId, PatId},
+    SyntheticSyntax,
 };
 use ide::{
     Analysis, AnalysisHost, AnnotationConfig, DiagnosticsConfig, Edition, InlayFieldsToResolve,
     InlayHintsConfig, LineCol, RootDatabase,
 };
 use ide_db::{
-    base_db::{SourceDatabase, salsa::Database},
+    base_db::{salsa::Database, SourceDatabase},
     EditionedFileId, LineIndexDatabase, MiniCore, SnippetCap,
 };
 use itertools::Itertools;

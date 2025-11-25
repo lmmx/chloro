@@ -14,10 +14,7 @@ use crate::{
     db::{HirDatabase, InternedClosure, InternedClosureId},
     display::DisplayTarget,
     mir::OperandKind,
-    next_solver::{
-        DbInterner, GenericArgs, Ty, TypingMode,
-        infer::{DbInternerInferExt, InferCtxt},
-    },
+    next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, GenericArgs, Ty, TypingMode},
     TraitEnvironment,
 };
 use super::{

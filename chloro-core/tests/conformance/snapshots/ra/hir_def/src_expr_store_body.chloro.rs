@@ -11,7 +11,7 @@ use triomphe::Arc;
 use crate::{
     db::DefDatabase,
     expr_store::{
-        ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr, lower::lower_body, pretty,
+        lower::lower_body, pretty, ExpressionStore, ExpressionStoreSourceMap, SelfParamPtr,
     },
     hir::{BindingId, ExprId, PatId},
     src::HasSource,

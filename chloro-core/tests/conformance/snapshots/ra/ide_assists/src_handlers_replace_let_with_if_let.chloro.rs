@@ -1,6 +1,6 @@
 use ide_db::ty_filter::TryEnum;
 use syntax::{
-    ast::{self, edit::IndentLevel, edit_in_place::Indent, syntax_factory::SyntaxFactory},
+    ast::{edit::IndentLevel, edit_in_place::Indent, self, syntax_factory::SyntaxFactory},
     AstNode, T,
 };
 

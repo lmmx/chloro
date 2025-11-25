@@ -32,14 +32,17 @@ Rustfmt size:  41039 bytes
  use syntax::{
 -    AstNode, NodeOrToken, SyntaxKind,
      ast::{
-         self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
+-        self, HasArgList, HasGenericArgs, Pat, PathExpr, edit::IndentLevel, edit_in_place::Indent,
++        edit::IndentLevel, edit_in_place::Indent, self, HasArgList, HasGenericArgs, Pat, PathExpr,
      },
 -    ted,
 +    ted, AstNode, NodeOrToken, SyntaxKind,
  };
  
  use crate::{
+-    AssistId,
      assist_context::{AssistContext, Assists},
++    AssistId,
  };
  
 -// Assist: inline_into_callers

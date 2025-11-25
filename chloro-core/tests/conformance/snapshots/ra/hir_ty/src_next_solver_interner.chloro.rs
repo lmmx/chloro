@@ -30,21 +30,22 @@ pub use crate::_interned_vec_db as interned_vec_db;
 pub use crate::_interned_vec_nolifetime_salsa as interned_vec_nolifetime_salsa;
 use crate::{
     db::{HirDatabase, InternedCoroutine, InternedCoroutineId},
-    method_resolution::{ALL_FLOAT_FPS, ALL_INT_FPS, TyFingerprint},
+    method_resolution::{TyFingerprint, ALL_FLOAT_FPS, ALL_INT_FPS},
     next_solver::{
-        AdtIdWrapper, BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper,
-        CoroutineIdWrapper, Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey,
-        RegionAssumptions, SolverContext, SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
-        util::{ContainsTypeErrors, explicit_item_bounds, for_trait_impls},
+        util::{ContainsTypeErrors, explicit_item_bounds, for_trait_impls}, AdtIdWrapper,
+        BoundConst, CallableIdWrapper, CanonicalVarKind, ClosureIdWrapper, CoroutineIdWrapper,
+        Ctor, FnSig, FxIndexMap, ImplIdWrapper, OpaqueTypeKey, RegionAssumptions, SolverContext,
+        SolverDefIds, TraitIdWrapper, TypeAliasIdWrapper,
     },
     FnAbi,
 };
 use super::{
     abi::Safety,
     fold::{BoundVarReplacer, BoundVarReplacerDelegate, FnMutDelegate},
-    generics::{Generics, generics},
+    generics::{generics, Generics},
     region::{
-        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion, Region,
+        BoundRegion, BoundRegionKind, EarlyParamRegion, LateParamRegion, PlaceholderRegion,
+        Region,
     },
     util::sizedness_constraint_for_ty,
     Binder, BoundExistentialPredicates, BoundTy, BoundTyKind, Clause, ClauseKind, Clauses, Const,

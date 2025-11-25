@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12418 bytes
-Chloro size:   12407 bytes
+Chloro size:   12384 bytes
 Rustfmt size:  12418 bytes
 
 ✗ Outputs DIFFER
@@ -19,10 +19,11 @@ Rustfmt size:  12418 bytes
  
  use crate::next_solver::{
 -    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
-     infer::{
-         InferCtxt,
-         traits::{PredicateObligation, PredicateObligations},
-     },
+-    infer::{
+-        InferCtxt,
+-        traits::{PredicateObligation, PredicateObligations},
+-    },
++    infer::{traits::{PredicateObligation, PredicateObligations}, InferCtxt},
      inspect::ProofTreeVisitor,
 +    DbInterner, SolverContext, SolverDefId, Span, Ty, TyKind, TypingMode,
  };

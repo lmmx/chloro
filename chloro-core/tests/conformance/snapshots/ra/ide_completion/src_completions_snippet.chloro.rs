@@ -148,7 +148,7 @@ fn add_custom_completions(
 #[cfg(test)]
 mod tests {
     use crate::{
-        tests::{TEST_CONFIG, check_edit_with_config},
+        tests::{check_edit_with_config, TEST_CONFIG},
         CompletionConfig, Snippet,
     };
     #[test]

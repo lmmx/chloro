@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 21606 bytes
-Chloro size:   21564 bytes
+Chloro size:   21580 bytes
 Rustfmt size:  21606 bytes
 
 ✗ Outputs DIFFER
@@ -13,10 +13,18 @@ Rustfmt size:  21606 bytes
  use crate::{
 -    CallableSnippets,
      context::{
-         CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
+-        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx, PathKind,
++        CompleteSemicolon, CompletionContext, DotAccess, DotAccessKind, PathCompletionCtx,
++        PathKind,
+     },
+     item::{
+         Builder, CompletionItem, CompletionItemKind, CompletionRelevance, CompletionRelevanceFn,
+         CompletionRelevanceReturnType, CompletionRelevanceTraitInfo,
      },
      render::{
-         RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
+-        RenderContext, compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
++        compute_exact_name_match, compute_ref_match, compute_type_match, match_types,
++        RenderContext,
      },
 +    CallableSnippets,
  };
@@ -156,9 +164,9 @@ Rustfmt size:  21606 bytes
  #[cfg(test)]
  mod tests {
      use crate::{
--        CallableSnippets, CompletionConfig,
-         tests::{TEST_CONFIG, check_edit, check_edit_with_config},
-+        CallableSnippets, CompletionConfig,
++        tests::{check_edit, check_edit_with_config, TEST_CONFIG},
+         CallableSnippets, CompletionConfig,
+-        tests::{TEST_CONFIG, check_edit, check_edit_with_config},
      };
 -
      #[test]

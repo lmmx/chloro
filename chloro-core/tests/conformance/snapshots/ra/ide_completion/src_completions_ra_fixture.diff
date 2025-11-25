@@ -2,22 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2773 bytes
-Chloro size:   2638 bytes
+Chloro size:   2630 bytes
 Rustfmt size:  2828 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- use syntax::ast;
- 
- use crate::{
--    completions::Completions, context::CompletionContext, item::CompletionItemLabel,
-+    completions::Completions,
-+    context::CompletionContext,
-+    item::CompletionItemLabel,
-     CompletionItemKind, CompletionItemRefMode, CompletionRelevance,
- };
- 
          crate::completions(
              &analysis.db,
              ctx.config,

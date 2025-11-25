@@ -9,9 +9,8 @@ Rustfmt size:  2432 bytes
 
 === DIFF (- rustfmt, + chloro) ===
  use syntax::{
--    ast::{self, HasAttrs},
+     ast::{self, HasAttrs},
      AstNode, AstToken,
-+    ast::{self, HasAttrs},
  };
  
 -use crate::{utils::test_related_attribute_syn, AssistContext, AssistId, Assists};

@@ -16,11 +16,10 @@ Rustfmt size:  5132 bytes
 +
  use syntax::{
 -    ast::{self, make, FieldExpr, MethodCallExpr},
++    ast::{make, self, FieldExpr, MethodCallExpr},
      AstNode, T,
-+    ast::{self, FieldExpr, MethodCallExpr, make},
  };
  
- use crate::AssistContext;
      field_expr: &FieldExpr,
  ) -> (ast::Expr, RefData) {
      let s = field_expr.syntax();

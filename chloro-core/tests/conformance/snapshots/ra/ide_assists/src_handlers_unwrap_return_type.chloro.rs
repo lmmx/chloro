@@ -4,7 +4,7 @@ use ide_db::{
     syntax_helpers::node_ext::{for_each_tail_expr, walk_expr},
 };
 use syntax::{
-    ast::{self, HasArgList, HasGenericArgs, syntax_factory::SyntaxFactory},
+    ast::{self, syntax_factory::SyntaxFactory, HasArgList, HasGenericArgs},
     match_ast, AstNode, NodeOrToken, SyntaxKind,
 };
 

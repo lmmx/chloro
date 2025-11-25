@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 25126 bytes
-Chloro size:   24660 bytes
+Chloro size:   24629 bytes
 Rustfmt size:  25126 bytes
 
 ✗ Outputs DIFFER
@@ -23,22 +23,37 @@ Rustfmt size:  25126 bytes
  };
  use intern::sym;
  use itertools::Itertools;
+ use rustc_pattern_analysis::constructor::Constructor;
+ use rustc_type_ir::inherent::{AdtDef, IntoKind};
+ use syntax::{
+-    AstNode,
+     ast::{self, UnaryOp},
++    AstNode,
+ };
+ use tracing::debug;
+ use triomphe::Arc;
  use typed_arena::Arena;
  
  use crate::{
 -    Adjust, InferenceResult, TraitEnvironment,
      db::HirDatabase,
      diagnostics::match_check::{
-         self,
-         DbInterner, Ty, TyKind, TypingMode,
-         infer::{DbInternerInferExt, InferCtxt},
+-        self,
+-        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat},
++        pat_analysis::{self, DeconstructedPat, MatchCheckCtx, WitnessPat}, self,
      },
+     display::{DisplayTarget, HirDisplay},
+-    next_solver::{
+-        DbInterner, Ty, TyKind, TypingMode,
+-        infer::{DbInternerInferExt, InferCtxt},
+-    },
 -};
 -
 -pub(crate) use hir_def::{
 -    LocalFieldId, VariantId,
 -    expr_store::Body,
 -    hir::{Expr, ExprId, MatchArm, Pat, PatId, Statement},
++    next_solver::{infer::{DbInternerInferExt, InferCtxt}, DbInterner, Ty, TyKind, TypingMode},
 +    Adjust, InferenceResult, TraitEnvironment,
  };
  

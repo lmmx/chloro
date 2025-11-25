@@ -9,7 +9,7 @@ use expect_test::{Expect, expect};
 use test_fixture::WithFixture;
 
 use crate::{
-    nameres::{DefMap, crate_def_map},
+    nameres::{crate_def_map, DefMap},
     test_db::TestDB,
 };
 

@@ -12,7 +12,8 @@ Rustfmt size:  10188 bytes
  use ide_db::assists::AssistId;
  use syntax::{
 -    AstNode, SyntaxKind, T,
-     ast::{self, HasGenericParams, HasName, HasVisibility, edit_in_place::Indent, make},
+-    ast::{self, HasGenericParams, HasName, HasVisibility, edit_in_place::Indent, make},
++    ast::{edit_in_place::Indent, make, self, HasGenericParams, HasName, HasVisibility},
      syntax_editor::{Position, SyntaxEditor},
 +    AstNode, SyntaxKind, T,
  };
