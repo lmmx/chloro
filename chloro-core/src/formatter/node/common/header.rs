@@ -1,6 +1,6 @@
 // src/formatter/node/header.rs
 use ra_ap_syntax::ast::{
-    AstNode, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility,
+    AstNode, AstToken, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility,
 };
 
 use crate::formatter::write_indent;
@@ -14,11 +14,10 @@ where
 {
     // Doc comments (///)
     for comment in item.doc_comments() {
-        if let Some(text) = comment.doc_comment() {
-            write_indent(buf, indent);
-            buf.push_str(text.trim());
-            buf.push('\n');
-        }
+        let text = comment.text();
+        write_indent(buf, indent);
+        buf.push_str(text.trim());
+        buf.push('\n');
     }
 
     // Attributes

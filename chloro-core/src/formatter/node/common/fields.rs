@@ -1,6 +1,6 @@
 // src/formatter/node/fields.rs
 use ra_ap_syntax::ast::{HasAttrs, HasDocComments, HasName, HasVisibility};
-use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, ast};
+use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, ast};
 
 use crate::formatter::node::common::comments;
 use crate::formatter::write_indent;
@@ -35,11 +35,10 @@ pub fn format_record_fields(fields: &ast::RecordFieldList, buf: &mut String, ind
 
                     // Format field doc comments
                     for comment in field.doc_comments() {
-                        if let Some(text) = comment.doc_comment() {
-                            write_indent(buf, indent);
-                            buf.push_str(text.trim());
-                            buf.push('\n');
-                        }
+                        let text = comment.text();
+                        write_indent(buf, indent);
+                        buf.push_str(text.trim());
+                        buf.push('\n');
                     }
 
                     // Format field attributes
