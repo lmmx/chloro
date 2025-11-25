@@ -93,13 +93,13 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                         buf.push_str(",\n");
 
                         // Check for trailing comment on same line as variant
-                        if let Some(trailing) = comments::get_trailing_comment(&children, idx) {
-                            if buf.ends_with(",\n") {
-                                buf.pop(); // remove \n
-                                buf.push(' ');
-                                buf.push_str(&trailing);
-                                buf.push('\n');
-                            }
+                        if let Some(trailing) = comments::get_trailing_comment(&children, idx)
+                            && buf.ends_with(",\n")
+                        {
+                            buf.pop(); // remove \n
+                            buf.push(' ');
+                            buf.push_str(&trailing);
+                            buf.push('\n');
                         }
                     }
                 }
