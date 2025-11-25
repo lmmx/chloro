@@ -721,6 +721,12 @@ pub enum DefWithBodyId {
     StaticId(StaticId),
     ConstId(ConstId),
     VariantId(EnumVariantId),
+    // /// All fields of a variant are inference roots
+    // VariantId(VariantId),
+    // /// The signature can contain inference roots in a bunch of places
+    // /// like const parameters or const arguments in paths
+    // This should likely be kept on its own with a separate query
+    // GenericDefId(GenericDefId),
 }
 impl From<EnumVariantId> for DefWithBodyId {
     fn from(id: EnumVariantId) -> Self {

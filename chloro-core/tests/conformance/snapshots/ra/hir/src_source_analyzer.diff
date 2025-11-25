@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 72179 bytes
-Chloro size:   71916 bytes
+Chloro size:   71964 bytes
 Rustfmt size:  72179 bytes
 
 ✗ Outputs DIFFER
@@ -94,13 +94,6 @@ Rustfmt size:  72179 bytes
      VariantFields {
          def: VariantId,
          store: Arc<ExpressionStore>,
-         def: GenericDefId,
-         store: Arc<ExpressionStore>,
-         source_map: Arc<ExpressionStoreSourceMap>,
--        // infer: Option<Arc<InferenceResult>>,
-     },
- }
- 
          SourceAnalyzer { resolver, body_or_sig: None, file_id: node.file_id }
      }
  

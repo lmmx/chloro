@@ -369,6 +369,7 @@ pub enum AggregateKind<'db> {
     Adt(VariantId, GenericArgs<'db>),
     Union(UnionId, FieldId),
     Closure(Ty<'db>),
+    //Coroutine(LocalDefId, SubstsRef, Movability),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -570,6 +571,9 @@ pub enum TerminatorKind<'db> {
         /// `true` if this is from a call in HIR rather than from an overloaded
         /// operator. True for overloaded function call.
         from_hir_call: bool,
+        // This `Span` is the span of the function, without the dot and receiver
+        // (e.g. `foo(a, b)` in `x.foo(a, b)`
+        //fn_span: Span,
     },
     /// Evaluates the operand, which must have type `bool`. If it is not equal to `expected`,
     /// initiates a panic. Initiating a panic corresponds to a `Call` terminator with some

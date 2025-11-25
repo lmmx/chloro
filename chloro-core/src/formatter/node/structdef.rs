@@ -1,5 +1,5 @@
 use ra_ap_syntax::{
-    AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode,
+    AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, SyntaxToken,
     ast::{self, HasAttrs, HasDocComments, HasGenericParams, HasName, HasVisibility},
 };
 
@@ -73,13 +73,15 @@ pub fn format_struct(node: &SyntaxNode, buf: &mut String, indent: usize) {
     buf.push('\n');
 }
 
-/// Collect non-doc comments that appear immediately before a syntax node
-fn collect_preceding_comments(node: &SyntaxNode) -> Vec<String> {
+/// Collect comments immediately before an item at the given index in a children list
+fn collect_preceding_comments_in_list(
+    children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
+    item_idx: usize,
+) -> Vec<String> {
     let mut comments = Vec::new();
-    let mut prev = node.prev_sibling_or_token();
 
-    while let Some(p) = prev {
-        match &p {
+    for i in (0..item_idx).rev() {
+        match &children[i] {
             NodeOrToken::Token(t) => {
                 if t.kind() == SyntaxKind::COMMENT {
                     let text = t.text().to_string();
@@ -88,14 +90,13 @@ fn collect_preceding_comments(node: &SyntaxNode) -> Vec<String> {
                         comments.push(text);
                     }
                 } else if t.kind() == SyntaxKind::WHITESPACE {
-                    // Check for blank lines - if there are 2+ newlines, stop collecting
+                    // Stop at blank lines
                     if t.text().matches('\n').count() >= 2 {
                         break;
                     }
                 } else {
                     break;
                 }
-                prev = t.prev_sibling_or_token();
             }
             NodeOrToken::Node(_) => break,
         }
@@ -105,43 +106,84 @@ fn collect_preceding_comments(node: &SyntaxNode) -> Vec<String> {
     comments
 }
 
+/// Check if a comment at the given index is attached to the next field
+fn is_comment_attached_to_next_field(
+    children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
+    comment_idx: usize,
+) -> bool {
+    for child_item in children.iter().skip(comment_idx + 1) {
+        match &child_item {
+            NodeOrToken::Token(t) => {
+                if t.kind() == SyntaxKind::WHITESPACE {
+                    if t.text().matches('\n').count() >= 2 {
+                        return false;
+                    }
+                } else if t.kind() != SyntaxKind::COMMENT {
+                    return false;
+                }
+            }
+            NodeOrToken::Node(n) => {
+                return n.kind() == SyntaxKind::RECORD_FIELD;
+            }
+        }
+    }
+    false
+}
+
 /// Format record fields with their comments
 fn format_record_fields(fields: &ast::RecordFieldList, buf: &mut String, indent: usize) {
-    for field in fields.fields() {
-        // Collect comments immediately before this field
-        let comments = collect_preceding_comments(field.syntax());
-        for comment in comments {
-            write_indent(buf, indent);
-            buf.push_str(&comment);
-            buf.push('\n');
-        }
+    let children: Vec<_> = fields.syntax().children_with_tokens().collect();
 
-        // Format field doc comments
-        for doc_comment in field.doc_comments() {
-            write_indent(buf, indent);
-            buf.push_str(doc_comment.text().trim());
-            buf.push('\n');
-        }
+    for (idx, child) in children.iter().enumerate() {
+        match child {
+            NodeOrToken::Token(t) if t.kind() == SyntaxKind::COMMENT => {
+                // Check if this comment is attached to the next field
+                if !is_comment_attached_to_next_field(&children, idx) {
+                    write_indent(buf, indent);
+                    buf.push_str(t.text());
+                    buf.push('\n');
+                }
+            }
+            NodeOrToken::Node(n) if n.kind() == SyntaxKind::RECORD_FIELD => {
+                if let Some(field) = ast::RecordField::cast(n.clone()) {
+                    // Collect comments immediately before this field
+                    let comments = collect_preceding_comments_in_list(&children, idx);
+                    for comment in &comments {
+                        write_indent(buf, indent);
+                        buf.push_str(comment);
+                        buf.push('\n');
+                    }
 
-        // Format field attributes
-        for attr in field.attrs() {
-            write_indent(buf, indent);
-            buf.push_str(&attr.syntax().text().to_string());
-            buf.push('\n');
-        }
+                    // Format field doc comments
+                    for doc_comment in field.doc_comments() {
+                        write_indent(buf, indent);
+                        buf.push_str(doc_comment.text().trim());
+                        buf.push('\n');
+                    }
 
-        write_indent(buf, indent);
-        if let Some(vis) = field.visibility() {
-            buf.push_str(&vis.syntax().text().to_string());
-            buf.push(' ');
+                    // Format field attributes
+                    for attr in field.attrs() {
+                        write_indent(buf, indent);
+                        buf.push_str(&attr.syntax().text().to_string());
+                        buf.push('\n');
+                    }
+
+                    write_indent(buf, indent);
+                    if let Some(vis) = field.visibility() {
+                        buf.push_str(&vis.syntax().text().to_string());
+                        buf.push(' ');
+                    }
+                    if let Some(name) = field.name() {
+                        buf.push_str(&name.text());
+                    }
+                    buf.push_str(": ");
+                    if let Some(ty) = field.ty() {
+                        buf.push_str(&ty.syntax().text().to_string());
+                    }
+                    buf.push_str(",\n");
+                }
+            }
+            _ => {}
         }
-        if let Some(name) = field.name() {
-            buf.push_str(&name.text());
-        }
-        buf.push_str(": ");
-        if let Some(ty) = field.ty() {
-            buf.push_str(&ty.syntax().text().to_string());
-        }
-        buf.push_str(",\n");
     }
 }

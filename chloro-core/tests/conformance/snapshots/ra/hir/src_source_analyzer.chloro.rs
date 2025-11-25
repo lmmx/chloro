@@ -89,6 +89,7 @@ pub(crate) enum BodyOrSig<'db> {
         def: GenericDefId,
         store: Arc<ExpressionStore>,
         source_map: Arc<ExpressionStoreSourceMap>,
+        // infer: Option<Arc<InferenceResult>>,
     },
 }
 

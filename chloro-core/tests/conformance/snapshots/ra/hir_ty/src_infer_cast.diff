@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16362 bytes
+Chloro size:   16529 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -29,22 +29,6 @@ Rustfmt size:  16583 bytes
  };
  
  #[derive(Debug)]
-     Float,
-     FnPtr,
-     Ptr(Ty<'db>, Mutability),
--    // `DynStar` is Not supported yet in r-a
- }
- 
- impl<'db> CastTy<'db> {
-     NeedViaThinPtr,
-     NeedViaInt,
-     NonScalar,
--    // We don't want to report errors with unknown types currently.
--    // UnknownCastPtrKind,
--    // UnknownExprPtrKind,
- }
- 
- impl CastError {
      ) -> Result<(), InferenceDiagnostic<'db>> {
          self.expr_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.expr_ty);
          self.cast_ty = ctx.table.eagerly_normalize_and_resolve_shallow_in(self.cast_ty);

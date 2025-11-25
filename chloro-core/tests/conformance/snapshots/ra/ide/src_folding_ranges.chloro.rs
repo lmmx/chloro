@@ -29,6 +29,7 @@ pub enum FoldKind {
     Statics,
     TypeAliases,
     ExternCrates,
+    // endregion: item runs
 }
 
 #[derive(Debug)]

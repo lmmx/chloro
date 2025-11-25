@@ -31,6 +31,7 @@ pub(crate) enum CastTy<'db> {
     Float,
     FnPtr,
     Ptr(Ty<'db>, Mutability),
+    // `DynStar` is Not supported yet in r-a
 }
 
 impl<'db> CastTy<'db> {
@@ -71,6 +72,9 @@ pub enum CastError {
     NeedViaThinPtr,
     NeedViaInt,
     NonScalar,
+    // We don't want to report errors with unknown types currently.
+    // UnknownCastPtrKind,
+    // UnknownExprPtrKind,
 }
 
 impl CastError {
