@@ -66,7 +66,8 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                 }
                 NodeOrToken::Node(n) if n.kind() == SyntaxKind::VARIANT => {
                     if let Some(variant) = ast::Variant::cast(n.clone()) {
-                        // Collect comments immediately before this variant (attached comments)
+                        // Collect ALL comments immediately before this variant (attached comments)
+                        // including regular // comments, not just doc comments
                         let comments = collect_preceding_comments_in_list(&children, idx);
                         for comment in &comments {
                             write_indent(buf, indent + 4);
@@ -74,7 +75,7 @@ pub fn format_enum(node: &SyntaxNode, buf: &mut String, indent: usize) {
                             buf.push('\n');
                         }
 
-                        // Format variant doc comments
+                        // Format variant doc comments (these are /// style)
                         for doc_comment in variant.doc_comments() {
                             write_indent(buf, indent + 4);
                             buf.push_str(doc_comment.text().trim());
@@ -197,7 +198,9 @@ fn get_trailing_comment(
     None
 }
 
-/// Collect comments immediately before an item at the given index in a children list
+/// Collect comments immediately before an item at the given index in a children list.
+/// This includes ALL comment types (// and ///), but we let doc comments be handled
+/// separately by HasDocComments for items that support it.
 fn collect_preceding_comments_in_list(
     children: &[NodeOrToken<SyntaxNode, SyntaxToken>],
     item_idx: usize,
@@ -214,10 +217,11 @@ fn collect_preceding_comments_in_list(
                         comments.push(text);
                     }
                 } else if t.kind() == SyntaxKind::WHITESPACE {
-                    // Stop at blank lines
+                    // Stop at blank lines (2+ newlines)
                     if t.text().matches('\n').count() >= 2 {
                         break;
                     }
+                    // Single newline is fine, continue collecting
                 } else {
                     break;
                 }
