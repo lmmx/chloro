@@ -197,3 +197,19 @@ struct Foo;"#;
     struct Foo;
     ");
 }
+
+// // This would be a good test case:
+//
+// config_data! {
+//     /// Docs for the config
+//     global : struct GlobalDefaultConfigData <- GlobalConfigInput -> {
+//         /// Warm up caches
+//         cachePriming_enable: bool = true,
+//
+//         /// How many worker threads.
+//         cachePriming_numThreads: NumThreads = NumThreads::Physical,
+//     }
+// }
+// config_data![];
+// config_data! {}
+// config_data!();
