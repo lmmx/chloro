@@ -1,5 +1,5 @@
 // chloro-core/src/formatter/node/macrocall.rs
-use ra_ap_syntax::{AstNode, AstToken, NodeOrToken, SyntaxKind, SyntaxNode, ast};
+use ra_ap_syntax::{AstNode, SyntaxNode, ast};
 
 use crate::formatter::write_indent;
 
