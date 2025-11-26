@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13646 bytes
-Chloro size:   13558 bytes
+Chloro size:   13713 bytes
 Rustfmt size:  13995 bytes
 
 ✗ Outputs DIFFER
@@ -20,24 +20,6 @@ Rustfmt size:  13995 bytes
  pub type LocalLifetimeParamId = Idx<LifetimeParamData>;
  
  /// Data about a generic type parameter (to a function, struct, impl, ...).
-         }
-     }
- }
--
--impl_from!(TypeParamData, ConstParamData for TypeOrConstParamData);
--
- #[derive(Clone, PartialEq, Eq, Debug, Hash)]
- pub enum GenericParamData {
-     TypeParamData(TypeParamData),
-         }
-     }
- }
--
--impl_from!(TypeParamData, ConstParamData, LifetimeParamData for GenericParamData);
--
- #[derive(Debug, Clone, Copy)]
- pub enum GenericParamDataRef<'a> {
-     TypeParamData(&'a TypeParamData),
  
  impl ops::Index<LocalTypeOrConstParamId> for GenericParams {
      type Output = TypeOrConstParamData;

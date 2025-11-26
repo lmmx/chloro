@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 50564 bytes
-Chloro size:   49584 bytes
+Chloro size:   49647 bytes
 Rustfmt size:  50564 bytes
 
 ✗ Outputs DIFFER
@@ -42,15 +42,6 @@ Rustfmt size:  50564 bytes
  };
  
  use crate::{FileId, NavigationTarget, ToNav, TryToNav, references};
-     pub cfg: Option<CfgExpr>,
-     pub update_test: UpdateTest,
- }
--
--impl_empty_upmap_from_ra_fixture!(RunnableKind, UpdateTest);
--
- #[derive(Debug, Clone, Hash, PartialEq, Eq)]
- pub enum TestId {
-     Name(SmolStr),
  
  #[derive(Debug, Clone, Hash, PartialEq, Eq)]
  pub enum RunnableKind {

@@ -100,6 +100,23 @@ impl std::fmt::Debug for SolverDefId {
         }
     }
 }
+
+impl_from!(
+    AdtId(StructId, EnumId, UnionId),
+    ConstId,
+    FunctionId,
+    ImplId,
+    StaticId,
+    TraitId,
+    TypeAliasId,
+    InternedClosureId,
+    InternedCoroutineId,
+    InternedOpaqueTyId,
+    EnumVariantId,
+    Ctor
+    for SolverDefId
+);
+
 impl From<GenericDefId> for SolverDefId {
     fn from(value: GenericDefId) -> Self {
         match value {
@@ -264,6 +281,19 @@ macro_rules! declare_id_wrapper {
         }
     };
 }
+
+declare_id_wrapper!(TraitIdWrapper, TraitId);
+
+declare_id_wrapper!(TypeAliasIdWrapper, TypeAliasId);
+
+declare_id_wrapper!(ClosureIdWrapper, InternedClosureId);
+
+declare_id_wrapper!(CoroutineIdWrapper, InternedCoroutineId);
+
+declare_id_wrapper!(AdtIdWrapper, AdtId);
+
+declare_id_wrapper!(ImplIdWrapper, ImplId);
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CallableIdWrapper(pub CallableDefId);
 

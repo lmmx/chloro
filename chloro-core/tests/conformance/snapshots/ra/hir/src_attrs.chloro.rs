@@ -42,6 +42,23 @@ macro_rules! impl_has_attrs {
         }
     )*};
 }
+
+impl_has_attrs![
+    (Field, FieldId),
+    (Variant, EnumVariantId),
+    (Static, StaticId),
+    (Const, ConstId),
+    (Trait, TraitId),
+    (TypeAlias, TypeAliasId),
+    (Macro, MacroId),
+    (Function, FunctionId),
+    (Adt, AdtId),
+    (Module, ModuleId),
+    (GenericParam, GenericParamId),
+    (Impl, ImplId),
+    (ExternCrateDecl, ExternCrateId),
+];
+
 macro_rules! impl_has_attrs_enum {
     ($($variant:ident),* for $enum:ident) => {$(
         impl HasAttrs for $variant {
@@ -54,6 +71,11 @@ macro_rules! impl_has_attrs_enum {
         }
     )*};
 }
+
+impl_has_attrs_enum![Struct, Union, Enum for Adt];
+
+impl_has_attrs_enum![TypeParam, ConstParam, LifetimeParam for GenericParam];
+
 impl HasAttrs for AssocItem {
     fn attrs(self, db: &dyn HirDatabase) -> AttrsWithOwner {
         match self {

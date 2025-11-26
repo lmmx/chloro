@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11500 bytes
+Chloro size:   11567 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -101,7 +101,3 @@ Rustfmt size:  11829 bytes
          }
      }
  }
- 
- type GenericArgOutlivesPredicate<'db> = OutlivesPredicate<'db, GenericArg<'db>>;
--
--interned_vec_db!(RegionAssumptions, GenericArgOutlivesPredicate);

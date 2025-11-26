@@ -94,6 +94,9 @@ impl TypeOrConstParamData {
         }
     }
 }
+
+impl_from!(TypeParamData, ConstParamData for TypeOrConstParamData);
+
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum GenericParamData {
     TypeParamData(TypeParamData),
@@ -131,6 +134,9 @@ impl GenericParamData {
         }
     }
 }
+
+impl_from!(TypeParamData, ConstParamData, LifetimeParamData for GenericParamData);
+
 #[derive(Debug, Clone, Copy)]
 pub enum GenericParamDataRef<'a> {
     TypeParamData(&'a TypeParamData),

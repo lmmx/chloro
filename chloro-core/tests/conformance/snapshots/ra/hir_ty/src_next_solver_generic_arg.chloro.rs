@@ -174,6 +174,9 @@ impl<'db> Relate<DbInterner<'db>> for GenericArg<'db> {
         }
     }
 }
+
+interned_vec_db!(GenericArgs, GenericArg);
+
 impl<'db> rustc_type_ir::inherent::GenericArg<DbInterner<'db>> for GenericArg<'db> {
 }
 

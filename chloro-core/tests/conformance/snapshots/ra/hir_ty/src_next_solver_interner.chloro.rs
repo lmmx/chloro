@@ -301,6 +301,9 @@ impl<'db> inherent::Span<DbInterner<'db>> for Span {
         Span(())
     }
 }
+
+interned_vec_nolifetime_salsa!(BoundVarKinds, BoundVarKind, nofold);
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum BoundVarKind {
     Ty(BoundTyKind),
@@ -330,6 +333,9 @@ impl BoundVarKind {
         }
     }
 }
+
+interned_vec_db!(CanonicalVars, CanonicalVarKind, nofold);
+
 pub struct DepNodeIndex;
 
 #[derive(Debug)]
@@ -353,6 +359,9 @@ impl<T: std::fmt::Debug> std::fmt::Debug for Placeholder<T> {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct AllocId;
+
+interned_vec_nolifetime_salsa!(VariancesOf, Variance, nofold);
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct VariantIdx(usize);
 
@@ -812,6 +821,9 @@ impl<'db> rustc_type_ir::relate::Relate<DbInterner<'db>> for Pattern<'db> {
         }
     }
 }
+
+interned_vec_db!(PatList, Pattern);
+
 macro_rules! as_lang_item {
     (
         $solver_enum:ident, $var:ident;
@@ -2165,6 +2177,29 @@ macro_rules! TrivialTypeTraversalImpls {
         )+
     };
 }
+
+TrivialTypeTraversalImpls! {
+    SolverDefId,
+    TraitIdWrapper,
+    TypeAliasIdWrapper,
+    CallableIdWrapper,
+    ClosureIdWrapper,
+    CoroutineIdWrapper,
+    AdtIdWrapper,
+    ImplIdWrapper,
+    Pattern<'db>,
+    Safety,
+    FnAbi,
+    Span,
+    ParamConst,
+    ParamTy,
+    BoundRegion,
+    BoundVar,
+    Placeholder<BoundRegion>,
+    Placeholder<BoundTy>,
+    Placeholder<BoundVar>,
+}
+
 mod tls_db {
     use std::{cell::Cell, ptr::NonNull};
     use crate::db::HirDatabase;
@@ -2249,6 +2284,9 @@ mod tls_db {
             op(unsafe { db.as_ref() })
         }
     }
+    thread_local! {
+        static GLOBAL_DB: Attached = const { Attached { database: Cell::new(None) } };
+    }
     #[inline]
     pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
         GLOBAL_DB.with(|global_db| global_db.attach(db, op))
@@ -2277,6 +2315,9 @@ mod tls_cache {
         cache: GlobalCache<DbInterner<'static>>,
         revision: Revision,
         db_nonce: Nonce,
+    }
+    thread_local! {
+        static GLOBAL_CACHE: RefCell<Option<Cache>> = const { RefCell::new(None) };
     }
     pub(super) fn with_cache<'db, T>(
         db: &'db dyn HirDatabase,

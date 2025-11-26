@@ -196,6 +196,11 @@ macro_rules! impl_has_docs {
         }
     )*};
 }
+
+impl_has_docs![
+    Variant, Field, Static, Const, Trait, TypeAlias, Macro, Function, Adt, Module, Impl, Crate,
+];
+
 macro_rules! impl_has_docs_enum {
     ($($variant:ident),* for $enum:ident) => {$(
         impl HasDocs for hir::$variant {
@@ -221,6 +226,9 @@ macro_rules! impl_has_docs_enum {
         }
     )*};
 }
+
+impl_has_docs_enum![Struct, Union, Enum for Adt];
+
 impl HasDocs for hir::AssocItem {
     fn docs(self, db: &dyn HirDatabase) -> Option<Documentation> {
         match self {

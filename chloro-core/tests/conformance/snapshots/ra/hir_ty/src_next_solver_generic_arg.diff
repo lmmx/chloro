@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20827 bytes
-Chloro size:   20848 bytes
+Chloro size:   20893 bytes
 Rustfmt size:  21200 bytes
 
 ✗ Outputs DIFFER
@@ -42,10 +42,9 @@ Rustfmt size:  21200 bytes
              }
          }
      }
- }
--
--interned_vec_db!(GenericArgs, GenericArg);
--
+ 
+ interned_vec_db!(GenericArgs, GenericArg);
+ 
 -impl<'db> rustc_type_ir::inherent::GenericArg<DbInterner<'db>> for GenericArg<'db> {}
 +impl<'db> rustc_type_ir::inherent::GenericArg<DbInterner<'db>> for GenericArg<'db> {
 +}

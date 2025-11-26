@@ -7,6 +7,7 @@ mod enumdef;
 mod function;
 mod implblock;
 mod imports;
+mod macrocall;
 mod module;
 mod structdef;
 mod structliteral;
@@ -25,6 +26,7 @@ pub use enumdef::format_enum;
 pub use function::format_function;
 pub use implblock::format_impl;
 pub use imports::sort_and_format_imports;
+pub use macrocall::format_macro_call;
 pub use module::format_module;
 pub use structdef::format_struct;
 pub use structliteral::try_format_record_expr;
@@ -57,6 +59,7 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
             | SyntaxKind::TRAIT
             | SyntaxKind::MACRO_RULES
             | SyntaxKind::MACRO_DEF
+            | SyntaxKind::MACRO_CALL
     ) && matches!(
         curr_kind,
         SyntaxKind::FN
@@ -71,6 +74,7 @@ fn should_add_blank_line(prev_kind: Option<SyntaxKind>, curr_kind: SyntaxKind) -
             | SyntaxKind::TRAIT
             | SyntaxKind::MACRO_RULES
             | SyntaxKind::MACRO_DEF
+            | SyntaxKind::MACRO_CALL
     )
 }
 
@@ -342,6 +346,7 @@ pub fn format_node(node: &SyntaxNode, buf: &mut String, indent: usize) {
         SyntaxKind::BLOCK_EXPR => format_block(node, buf, indent),
         SyntaxKind::STMT_LIST => format_stmt_list(node, buf, indent),
 
+        SyntaxKind::MACRO_CALL => format_macro_call(node, buf, indent),
         SyntaxKind::MACRO_RULES | SyntaxKind::MACRO_DEF => {
             // Preserve macro definitions as-is for now
             crate::formatter::write_indent(buf, indent);

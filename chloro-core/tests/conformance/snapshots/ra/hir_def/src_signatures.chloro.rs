@@ -50,13 +50,27 @@ pub struct StructSignature {
     pub shape: FieldsShape,
     pub repr: Option<ReprOptions>,
 }
-/// Indicates whether the struct has a `#[rustc_has_incoherent_inherent_impls]` attribute.
-/// Indicates whether the struct has a `#[fundamental]` attribute.
-/// Indicates whether the struct is `PhantomData`.
-/// Indicates whether this struct is `Box`.
-/// Indicates whether this struct is `ManuallyDrop`.
-/// Indicates whether this struct is `UnsafeCell`.
-/// Indicates whether this struct is `UnsafePinned`.
+
+bitflags! {
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+    pub struct StructFlags: u8 {
+        /// Indicates whether the struct has a `#[rustc_has_incoherent_inherent_impls]` attribute.
+        const RUSTC_HAS_INCOHERENT_INHERENT_IMPLS = 1 << 1;
+        /// Indicates whether the struct has a `#[fundamental]` attribute.
+        const FUNDAMENTAL      = 1 << 2;
+        /// Indicates whether the struct is `PhantomData`.
+        const IS_PHANTOM_DATA  = 1 << 3;
+        /// Indicates whether this struct is `Box`.
+        const IS_BOX           = 1 << 4;
+        /// Indicates whether this struct is `ManuallyDrop`.
+        const IS_MANUALLY_DROP = 1 << 5;
+        /// Indicates whether this struct is `UnsafeCell`.
+        const IS_UNSAFE_CELL   = 1 << 6;
+        /// Indicates whether this struct is `UnsafePinned`.
+        const IS_UNSAFE_PINNED = 1 << 7;
+    }
+}
+
 impl StructSignature {
     pub fn query(
         db: &dyn DefDatabase,
@@ -161,6 +175,14 @@ impl UnionSignature {
         )
     }
 }
+
+bitflags! {
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+    pub struct EnumFlags: u8 {
+        const RUSTC_HAS_INCOHERENT_INHERENT_IMPLS  = 1 << 1;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct EnumSignature {
     pub name: Name,
@@ -210,6 +232,15 @@ impl EnumSignature {
         }
     }
 }
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct ConstFlags: u8 {
+        const HAS_BODY = 1 << 1;
+        const RUSTC_ALLOW_INCOHERENT_IMPL = 1 << 7;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct ConstSignature {
     pub name: Option<Name>,
@@ -252,6 +283,19 @@ impl ConstSignature {
         self.flags.contains(ConstFlags::HAS_BODY)
     }
 }
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct StaticFlags: u8 {
+        const HAS_BODY = 1 << 1;
+        const MUTABLE    = 1 << 3;
+        const UNSAFE     = 1 << 4;
+        const EXPLICIT_SAFE = 1 << 5;
+        const EXTERN     = 1 << 6;
+        const RUSTC_ALLOW_INCOHERENT_IMPL = 1 << 7;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct StaticSignature {
     pub name: Name,
@@ -307,6 +351,16 @@ impl StaticSignature {
         )
     }
 }
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct ImplFlags: u8 {
+        const NEGATIVE = 1 << 1;
+        const DEFAULT = 1 << 2;
+        const UNSAFE = 1 << 3;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImplSignature {
     pub generic_params: Arc<GenericParams>,
@@ -357,6 +411,22 @@ impl ImplSignature {
         self.flags.contains(ImplFlags::DEFAULT)
     }
 }
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct TraitFlags: u16 {
+        const RUSTC_HAS_INCOHERENT_INHERENT_IMPLS = 1 << 1;
+        const FUNDAMENTAL = 1 << 2;
+        const UNSAFE = 1 << 3;
+        const AUTO = 1 << 4;
+        const SKIP_ARRAY_DURING_METHOD_DISPATCH = 1 << 5;
+        const SKIP_BOXED_SLICE_DURING_METHOD_DISPATCH = 1 << 6;
+        const RUSTC_PAREN_SUGAR = 1 << 7;
+        const COINDUCTIVE = 1 << 8;
+        const ALIAS = 1 << 9;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct TraitSignature {
     pub name: Name,
@@ -421,10 +491,29 @@ impl TraitSignature {
         )
     }
 }
-/// The `#[target_feature]` attribute is necessary to check safety (with RFC 2396),
-/// but keeping it for all functions will consume a lot of memory when there are
-/// only very few functions with it. So we only encode its existence here, and lookup
-/// it if needed.
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct FnFlags: u16 {
+        const HAS_BODY = 1 << 1;
+        const DEFAULT = 1 << 2;
+        const CONST = 1 << 3;
+        const ASYNC = 1 << 4;
+        const UNSAFE = 1 << 5;
+        const HAS_VARARGS = 1 << 6;
+        const RUSTC_ALLOW_INCOHERENT_IMPL = 1 << 7;
+        const HAS_SELF_PARAM = 1 << 8;
+        /// The `#[target_feature]` attribute is necessary to check safety (with RFC 2396),
+        /// but keeping it for all functions will consume a lot of memory when there are
+        /// only very few functions with it. So we only encode its existence here, and lookup
+        /// it if needed.
+        const HAS_TARGET_FEATURE = 1 << 9;
+        const DEPRECATED_SAFE_2024 = 1 << 10;
+        const EXPLICIT_SAFE = 1 << 11;
+        const RUSTC_INTRINSIC = 1 << 12;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct FunctionSignature {
     pub name: Name,
@@ -569,6 +658,16 @@ impl FunctionSignature {
             }
     }
 }
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq, Default)]
+    pub struct TypeAliasFlags: u8 {
+        const RUSTC_HAS_INCOHERENT_INHERENT_IMPL = 1 << 1;
+        const IS_EXTERN = 1 << 6;
+        const RUSTC_ALLOW_INCOHERENT_IMPL = 1 << 7;
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeAliasSignature {
     pub name: Name,

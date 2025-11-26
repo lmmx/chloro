@@ -28,3 +28,5 @@ pub(super) fn hints(
     }
     Some(())
 }
+
+impl_empty_upmap_from_ra_fixture!(InlayHintPosition, InlayKind, InlayTooltip);

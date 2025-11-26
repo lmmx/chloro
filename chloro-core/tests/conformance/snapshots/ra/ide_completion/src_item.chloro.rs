@@ -362,6 +362,9 @@ pub enum CompletionItemKind {
     UnresolvedReference,
     Expression,
 }
+
+impl_from!(SymbolKind for CompletionItemKind);
+
 impl CompletionItemKind {
     pub fn tag(self) -> &'static str {
         match self {

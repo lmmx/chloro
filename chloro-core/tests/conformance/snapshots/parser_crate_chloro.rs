@@ -1883,6 +1883,12 @@ impl Trait2 {}
 
 impl NotType {
 }
+
+macro_rules! {}
+macro_rules! ()
+
+macro_rules! []
+
 fn foo() {
     x.
     ()
@@ -2354,7 +2360,8 @@ fn foo() {
     let S { x: 1 } = ();
     let S { #[cfg(any())] x: 1 } = ();
 }
-// 2015
+
+macro_rules!
 {
 }struct S(String, usize);
 
@@ -2620,6 +2627,13 @@ where
    <T as Iterator>::Item: 'a
 {
 }
+
+macro_rules! {}
+
+macro_rules! ();
+
+macro_rules! [];
+
 fn main() {
     let foo = macro_rules!();
 }
@@ -2674,6 +2688,11 @@ fn foo() {
 }
 
 macro_rules! foo {}
+
+foo::bar!();
+
+super::baz! {}
+
 struct S;
 
 struct S<T = i32>;

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32133 bytes
-Chloro size:   31866 bytes
+Chloro size:   32008 bytes
 Rustfmt size:  33070 bytes
 
 ✗ Outputs DIFFER
@@ -425,17 +425,7 @@ Rustfmt size:  33070 bytes
      /// here the children are generic parameters, and not, eg enum variants.
      GenericDefId(GenericDefId),
  }
--impl_from! {
--    DefWithBodyId,
--    ModuleId,
--    TraitId,
--    ImplId,
--    EnumId,
--    VariantId,
--    GenericDefId
--    for ChildContainer
--}
--
- impl ChildContainer {
-     fn child_by_source(self, db: &dyn HirDatabase, file_id: HirFileId) -> DynMap {
-         let _p = tracing::info_span!("ChildContainer::child_by_source").entered();
++
+ impl_from! {
+     DefWithBodyId,
+     ModuleId,

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 1147 bytes
-Chloro size:   1067 bytes
+Chloro size:   1147 bytes
 Rustfmt size:  1147 bytes
 
 ✗ Outputs DIFFER
@@ -18,8 +18,3 @@ Rustfmt size:  1147 bytes
  
  use crate::{Analysis, InlayHint, InlayHintPosition, InlayHintsConfig, InlayKind, InlayTooltip};
  
-     }
-     Some(())
- }
--
--impl_empty_upmap_from_ra_fixture!(InlayHintPosition, InlayKind, InlayTooltip);

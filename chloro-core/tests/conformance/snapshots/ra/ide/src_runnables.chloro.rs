@@ -37,6 +37,9 @@ pub struct Runnable {
     pub cfg: Option<CfgExpr>,
     pub update_test: UpdateTest,
 }
+
+impl_empty_upmap_from_ra_fixture!(RunnableKind, UpdateTest);
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum TestId {
     Name(SmolStr),

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11810 bytes
-Chloro size:   11632 bytes
+Chloro size:   11801 bytes
 Rustfmt size:  12398 bytes
 
 ✗ Outputs DIFFER
@@ -138,26 +138,6 @@ Rustfmt size:  12398 bytes
  }
  
  macro_rules! impl_has_docs {
-         }
-     )*};
- }
--
--impl_has_docs![
--    Variant, Field, Static, Const, Trait, TypeAlias, Macro, Function, Adt, Module, Impl, Crate,
--];
--
- macro_rules! impl_has_docs_enum {
-     ($($variant:ident),* for $enum:ident) => {$(
-         impl HasDocs for hir::$variant {
-         }
-     )*};
- }
--
--impl_has_docs_enum![Struct, Union, Enum for Adt];
--
- impl HasDocs for hir::AssocItem {
-     fn docs(self, db: &dyn HirDatabase) -> Option<Documentation> {
-         match self {
              }
          }
      }

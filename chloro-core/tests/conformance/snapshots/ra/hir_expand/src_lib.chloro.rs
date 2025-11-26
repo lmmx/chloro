@@ -114,6 +114,15 @@ pub trait Lookup {
 
     fn lookup(&self, db: &Self::Database) -> Self::Data;
 }
+
+impl_intern_lookup!(
+    ExpandDatabase,
+    MacroCallId,
+    MacroCallLoc,
+    intern_macro_call,
+    lookup_intern_macro_call
+);
+
 pub type ExpandResult<T> = ValueResult<T, ExpandError>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
@@ -1059,6 +1068,9 @@ impl ExpandTo {
         }
     }
 }
+
+intern::impl_internable!(ModPath, attrs::AttrInput);
+
 #[salsa_macros::interned(no_lifetime, debug, revisions = usize::MAX)]
 #[doc(alias = "MacroFileId")]
 pub struct MacroCallId {

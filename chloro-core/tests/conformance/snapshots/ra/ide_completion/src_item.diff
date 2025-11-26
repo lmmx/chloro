@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 27860 bytes
-Chloro size:   27740 bytes
+Chloro size:   27789 bytes
 Rustfmt size:  27860 bytes
 
 ✗ Outputs DIFFER
@@ -99,15 +99,6 @@ Rustfmt size:  27860 bytes
          // lower rank for conflicting import names
          if is_name_already_imported {
              score -= 1;
-     UnresolvedReference,
-     Expression,
- }
--
--impl_from!(SymbolKind for CompletionItemKind);
--
- impl CompletionItemKind {
-     pub fn tag(self) -> &'static str {
-         match self {
              import_to_add,
          }
      }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 5345 bytes
-Chloro size:   4923 bytes
+Chloro size:   5348 bytes
 Rustfmt size:  5475 bytes
 
 ✗ Outputs DIFFER
@@ -40,24 +40,6 @@ Rustfmt size:  5475 bytes
      pub fn is_test_case(self) -> bool {
          matches!(self, BuiltinAttrExpander::TestCase)
      }
- }
--
--register_builtin! {
--    (bench, Bench) => dummy_gate_test_expand,
--    (cfg_accessible, CfgAccessible) => dummy_attr_expand,
--    (cfg_eval, CfgEval) => dummy_attr_expand,
--    (derive, Derive) => derive_expand,
--    // derive const is equivalent to derive for our proposes.
--    (derive_const, DeriveConst) => derive_expand,
--    (global_allocator, GlobalAllocator) => dummy_attr_expand,
--    (test, Test) => dummy_gate_test_expand,
--    (test_case, TestCase) => dummy_gate_test_expand
--}
--
-+// derive const is equivalent to derive for our proposes.
- pub fn find_builtin_attr(ident: &name::Name) -> Option<BuiltinAttrExpander> {
-     BuiltinAttrExpander::find_by_name(ident)
- }
  ) -> ExpandResult<tt::TopSubtree> {
      let loc = db.lookup_intern_macro_call(id);
      let derives = match &loc.kind {

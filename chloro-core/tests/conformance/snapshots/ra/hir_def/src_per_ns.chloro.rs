@@ -17,7 +17,17 @@ pub enum Namespace {
     Values,
     Macros,
 }
-/// Describes only the presence/absence of each namespace, without its value.
+
+bitflags! {
+    /// Describes only the presence/absence of each namespace, without its value.
+    #[derive(Debug, PartialEq, Eq)]
+    pub(crate) struct NsAvailability : u32 {
+        const TYPES = 1 << 0;
+        const VALUES = 1 << 1;
+        const MACROS = 1 << 2;
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Item<Def, Import = ImportId> {
     pub def: Def,

@@ -1042,6 +1042,9 @@ pub enum TyDefId {
     AdtId(AdtId),
     TypeAliasId(TypeAliasId),
 }
+
+impl_from!(BuiltinType, AdtId(StructId, EnumId, UnionId), TypeAliasId for TyDefId);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
 pub enum ValueTyDefId {
     FunctionId(FunctionId),
@@ -1051,6 +1054,9 @@ pub enum ValueTyDefId {
     ConstId(ConstId),
     StaticId(StaticId),
 }
+
+impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
+
 impl ValueTyDefId {
     pub(crate) fn to_generic_def_id(self, db: &dyn HirDatabase) -> GenericDefId {
         match self {

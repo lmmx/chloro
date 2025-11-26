@@ -3,6 +3,7 @@ use crate::format_source;
 mod comments;
 mod functions;
 mod impl_blocks;
+mod macros;
 mod struct_literals;
 mod use_items;
 

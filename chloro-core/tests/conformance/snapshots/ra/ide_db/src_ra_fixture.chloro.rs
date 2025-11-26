@@ -420,6 +420,9 @@ macro_rules! impl_tuple {
         impl_tuple!( $($rest,)* );
     };
 }
+
+impl_tuple!(A, B, C, D, E,);
+
 impl UpmapFromRaFixture for TextSize {
     fn upmap_from_ra_fixture(
         self,
@@ -510,3 +513,27 @@ macro_rules! impl_empty_upmap_from_ra_fixture {
         )*
     };
 }
+
+impl_empty_upmap_from_ra_fixture!(
+    bool,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    f32,
+    f64,
+    &str,
+    String,
+    Symbol,
+    SmolStr,
+    Documentation,
+    SymbolKind,
+    CfgExpr,
+    ReferenceCategory,
+);

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   51296 bytes
+Chloro size:   51325 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -346,15 +346,6 @@ Rustfmt size:  52438 bytes
      }
  
      fn new_tup_from_iter<It, T>(interner: DbInterner<'db>, iter: It) -> T::Output
-         }
-     }
- }
--
--interned_vec_db!(Tys, Ty);
--
- impl<'db> Tys<'db> {
-     pub fn inputs(&self) -> &[Ty<'db>] {
-         self.as_slice().split_last().unwrap().1
      ) -> Result<Self, F::Error> {
          Ok(self)
      }

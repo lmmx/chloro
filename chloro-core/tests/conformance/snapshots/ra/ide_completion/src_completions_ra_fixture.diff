@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 2773 bytes
-Chloro size:   2630 bytes
+Chloro size:   2771 bytes
 Rustfmt size:  2828 bytes
 
 ✗ Outputs DIFFER
@@ -27,14 +27,6 @@ Rustfmt size:  2828 bytes
      acc.add_many(completions);
      Some(())
  }
--
--impl_empty_upmap_from_ra_fixture!(
--    CompletionItemLabel,
--    CompletionItemKind,
--    CompletionRelevance,
--    CompletionItemRefMode,
--);
--
  #[cfg(test)]
  mod tests {
      use expect_test::expect;

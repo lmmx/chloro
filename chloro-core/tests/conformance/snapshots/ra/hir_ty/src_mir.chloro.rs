@@ -1238,6 +1238,9 @@ impl MirSpan {
         }
     }
 }
+
+impl_from!(ExprId, PatId for MirSpan);
+
 impl From<&ExprId> for MirSpan {
     fn from(value: &ExprId) -> Self {
         (*value).into()

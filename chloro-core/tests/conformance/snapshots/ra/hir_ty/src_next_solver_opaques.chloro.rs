@@ -8,7 +8,13 @@ use super::{DbInterner, SolverDefId, Ty, interned_vec_db, interned_vec_nolifetim
 pub type OpaqueTypeKey<'db> = rustc_type_ir::OpaqueTypeKey<DbInterner<'db>>;
 
 type PredefinedOpaque<'db> = (OpaqueTypeKey<'db>, Ty<'db>);
+
+interned_vec_db!(PredefinedOpaques, PredefinedOpaque);
+
 pub type ExternalConstraintsData<'db> = rustc_type_ir::solve::ExternalConstraintsData<DbInterner<'db>>;
+
+interned_vec_nolifetime_salsa!(SolverDefIds, SolverDefId);
+
 #[salsa::interned(constructor = new_, debug)]
 pub struct ExternalConstraints<'db> {
     #[returns(ref)]

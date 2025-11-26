@@ -136,8 +136,19 @@ impl FileReferenceNode {
         }
     }
 }
-// FIXME: Add this variant and delete the `retain_adt_literal_usages` function.
-// const CREATE = 1 << 0;
+
+bitflags::bitflags! {
+    #[derive(Copy, Clone, Default, PartialEq, Eq, Hash, Debug)]
+    pub struct ReferenceCategory: u8 {
+        // FIXME: Add this variant and delete the `retain_adt_literal_usages` function.
+        // const CREATE = 1 << 0;
+        const WRITE = 1 << 0;
+        const READ = 1 << 1;
+        const IMPORT = 1 << 2;
+        const TEST = 1 << 3;
+    }
+}
+
 /// Generally, `search_scope` returns files that might contain references for the element.
 /// For `pub(crate)` things it's a crate, for `pub` things it's a crate and dependant crates.
 /// In some cases, the location of the references is known to within a `TextRange`,

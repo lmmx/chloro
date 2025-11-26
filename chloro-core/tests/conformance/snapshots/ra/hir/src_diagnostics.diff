@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33220 bytes
-Chloro size:   31857 bytes
+Chloro size:   33167 bytes
 Rustfmt size:  33220 bytes
 
 ✗ Outputs DIFFER
@@ -63,94 +63,51 @@ Rustfmt size:  33220 bytes
          )*
      };
  }
+-// FIXME Accept something like the following in the macro call instead
+-// diagnostics![
+-// pub struct BreakOutsideOfLoop {
+-//     pub expr: InFile<AstPtr<ast::Expr>>,
+-//     pub is_break: bool,
+-//     pub bad_value_break: bool,
+-// }, ...
+-// or more concisely
+-// BreakOutsideOfLoop {
+-//     expr: InFile<AstPtr<ast::Expr>>,
+-//     is_break: bool,
+-//     bad_value_break: bool,
+-// }, ...
+-// ]
+ 
++// FIXME Accept something like the following in the macro call instead
 +
- // FIXME Accept something like the following in the macro call instead
++// diagnostics![
 +
- // diagnostics![
++// pub struct BreakOutsideOfLoop {
 +
- // pub struct BreakOutsideOfLoop {
++//     pub expr: InFile<AstPtr<ast::Expr>>,
 +
- //     pub expr: InFile<AstPtr<ast::Expr>>,
++//     pub is_break: bool,
 +
- //     pub is_break: bool,
++//     pub bad_value_break: bool,
 +
- //     pub bad_value_break: bool,
++// }, ...
 +
- // }, ...
++// or more concisely
 +
- // or more concisely
++// BreakOutsideOfLoop {
 +
- // BreakOutsideOfLoop {
++//     expr: InFile<AstPtr<ast::Expr>>,
 +
- //     expr: InFile<AstPtr<ast::Expr>>,
++//     is_break: bool,
 +
- //     is_break: bool,
++//     bad_value_break: bool,
 +
- //     bad_value_break: bool,
++// }, ...
 +
- // }, ...
-+
- // ]
--
--diagnostics![AnyDiagnostic<'db> ->
--    AwaitOutsideOfAsync,
--    BreakOutsideOfLoop,
--    CastToUnsized<'db>,
--    ExpectedFunction<'db>,
--    InactiveCode,
--    IncoherentImpl,
--    IncorrectCase,
--    InvalidCast<'db>,
--    InvalidDeriveTarget,
--    MacroDefError,
--    MacroError,
--    MacroExpansionParseError,
--    MalformedDerive,
--    MismatchedArgCount,
--    MismatchedTupleStructPatArgCount,
--    MissingFields,
--    MissingMatchArms,
--    MissingUnsafe,
--    MovedOutOfRef<'db>,
--    NeedMut,
--    NonExhaustiveLet,
--    NoSuchField,
--    PrivateAssocItem,
--    PrivateField,
--    RemoveTrailingReturn,
--    RemoveUnnecessaryElse,
--    ReplaceFilterMapNextWithFindMap,
--    TraitImplIncorrectSafety,
--    TraitImplMissingAssocItems,
--    TraitImplOrphan,
--    TraitImplRedundantAssocItems,
--    TypedHole<'db>,
--    TypeMismatch<'db>,
--    UndeclaredLabel,
--    UnimplementedBuiltinMacro,
--    UnreachableLabel,
--    UnresolvedAssocItem,
--    UnresolvedExternCrate,
--    UnresolvedField<'db>,
--    UnresolvedImport,
--    UnresolvedMacroCall,
--    UnresolvedMethodCall<'db>,
--    UnresolvedModule,
--    UnresolvedIdent,
--    UnusedMut,
--    UnusedVariable,
--    GenericArgsProhibited,
--    ParenthesizedGenericArgsWithoutFnTrait,
--    BadRtn,
--    IncorrectGenericsLen,
--    IncorrectGenericsOrder,
--    MissingLifetime,
--    ElidedLifetimesInPath,
--];
--
- #[derive(Debug)]
- pub struct BreakOutsideOfLoop {
-     pub expr: InFile<ExprOrPatPtr>,
++// ]
+ diagnostics![AnyDiagnostic<'db> ->
+     AwaitOutsideOfAsync,
+     BreakOutsideOfLoop,
      pub path: ModPath,
      pub is_bang: bool,
  }

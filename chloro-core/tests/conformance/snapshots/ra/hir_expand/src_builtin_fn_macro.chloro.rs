@@ -115,6 +115,41 @@ pub fn find_builtin_macro(
 ) -> Option<Either<BuiltinFnLikeExpander, EagerExpander>> {
     find_by_name(ident)
 }
+
+register_builtin! {
+    BuiltinFnLikeExpander:
+    (column, Column) => line_expand,
+    (file, File) => file_expand,
+    (line, Line) => line_expand,
+    (module_path, ModulePath) => module_path_expand,
+    (assert, Assert) => assert_expand,
+    (stringify, Stringify) => stringify_expand,
+    (asm, Asm) => asm_expand,
+    (global_asm, GlobalAsm) => global_asm_expand,
+    (naked_asm, NakedAsm) => naked_asm_expand,
+    (cfg_select, CfgSelect) => cfg_select_expand,
+    (cfg, Cfg) => cfg_expand,
+    (core_panic, CorePanic) => panic_expand,
+    (std_panic, StdPanic) => panic_expand,
+    (unreachable, Unreachable) => unreachable_expand,
+    (log_syntax, LogSyntax) => log_syntax_expand,
+    (trace_macros, TraceMacros) => trace_macros_expand,
+    (format_args, FormatArgs) => format_args_expand,
+    (const_format_args, ConstFormatArgs) => format_args_expand,
+    (format_args_nl, FormatArgsNl) => format_args_nl_expand,
+    (quote, Quote) => quote_expand,
+
+    EagerExpander:
+    (compile_error, CompileError) => compile_error_expand,
+    (concat, Concat) => concat_expand,
+    (concat_bytes, ConcatBytes) => concat_bytes_expand,
+    (include, Include) => include_expand,
+    (include_bytes, IncludeBytes) => include_bytes_expand,
+    (include_str, IncludeStr) => include_str_expand,
+    (env, Env) => env_expand,
+    (option_env, OptionEnv) => option_env_expand
+}
+
 fn mk_pound(span: Span) -> tt::Leaf {
     crate::tt::Leaf::Punct(crate::tt::Punct { char: '#', spacing: crate::tt::Spacing::Alone, span })
 }

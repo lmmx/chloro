@@ -240,7 +240,13 @@ macro_rules! impl_loc {
 }
 
 type FunctionLoc = AssocItemLoc<ast::Fn>;
+
+impl_intern!(FunctionId, FunctionLoc, intern_function, lookup_intern_function);
+
 type StructLoc = ItemLoc<ast::Struct>;
+
+impl_intern!(StructId, StructLoc, intern_struct, lookup_intern_struct);
+
 impl StructId {
     pub fn fields(self, db: &dyn DefDatabase) -> &VariantFields {
         VariantFields::firewall(db, self.into())
@@ -255,6 +261,9 @@ impl StructId {
 }
 
 pub type UnionLoc = ItemLoc<ast::Union>;
+
+impl_intern!(UnionId, UnionLoc, intern_union, lookup_intern_union);
+
 impl UnionId {
     pub fn fields(self, db: &dyn DefDatabase) -> &VariantFields {
         VariantFields::firewall(db, self.into())
@@ -269,6 +278,9 @@ impl UnionId {
 }
 
 pub type EnumLoc = ItemLoc<ast::Enum>;
+
+impl_intern!(EnumId, EnumLoc, intern_enum, lookup_intern_enum);
+
 impl EnumId {
     #[inline]
     pub fn enum_variants(self, db: &dyn DefDatabase) -> &EnumVariants {
@@ -285,8 +297,17 @@ impl EnumId {
 }
 
 type ConstLoc = AssocItemLoc<ast::Const>;
+
+impl_intern!(ConstId, ConstLoc, intern_const, lookup_intern_const);
+
 pub type StaticLoc = AssocItemLoc<ast::Static>;
+
+impl_intern!(StaticId, StaticLoc, intern_static, lookup_intern_static);
+
 pub type TraitLoc = ItemLoc<ast::Trait>;
+
+impl_intern!(TraitId, TraitLoc, intern_trait, lookup_intern_trait);
+
 impl TraitId {
     #[inline]
     pub fn trait_items(self, db: &dyn DefDatabase) -> &TraitItems {
@@ -295,7 +316,13 @@ impl TraitId {
 }
 
 type TypeAliasLoc = AssocItemLoc<ast::TypeAlias>;
+
+impl_intern!(TypeAliasId, TypeAliasLoc, intern_type_alias, lookup_intern_type_alias);
+
 type ImplLoc = ItemLoc<ast::Impl>;
+
+impl_intern!(ImplId, ImplLoc, intern_impl, lookup_intern_impl);
+
 impl ImplId {
     #[inline]
     pub fn impl_items(self, db: &dyn DefDatabase) -> &ImplItems {
@@ -312,8 +339,17 @@ impl ImplId {
 }
 
 type UseLoc = ItemLoc<ast::Use>;
+
+impl_intern!(UseId, UseLoc, intern_use, lookup_intern_use);
+
 type ExternCrateLoc = ItemLoc<ast::ExternCrate>;
+
+impl_intern!(ExternCrateId, ExternCrateLoc, intern_extern_crate, lookup_intern_extern_crate);
+
 type ExternBlockLoc = ItemLoc<ast::ExternBlock>;
+
+impl_intern!(ExternBlockId, ExternBlockLoc, intern_extern_block, lookup_intern_extern_block);
+
 #[salsa::tracked]
 impl ExternBlockId {
     #[salsa::tracked]
@@ -328,6 +364,11 @@ pub struct EnumVariantLoc {
     pub parent: EnumId,
     pub index: u32,
 }
+
+impl_intern!(EnumVariantId, EnumVariantLoc, intern_enum_variant, lookup_intern_enum_variant);
+
+impl_loc!(EnumVariantLoc, id: Variant, parent: EnumId);
+
 impl EnumVariantId {
     pub fn fields(self, db: &dyn DefDatabase) -> &VariantFields {
         VariantFields::firewall(db, self.into())
@@ -349,6 +390,11 @@ pub struct Macro2Loc {
     pub allow_internal_unsafe: bool,
     pub edition: Edition,
 }
+
+impl_intern!(Macro2Id, Macro2Loc, intern_macro2, lookup_intern_macro2);
+
+impl_loc!(Macro2Loc, id: MacroDef, container: ModuleId);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MacroRulesLoc {
     pub container: ModuleId,
@@ -357,6 +403,19 @@ pub struct MacroRulesLoc {
     pub flags: MacroRulesLocFlags,
     pub edition: Edition,
 }
+
+impl_intern!(MacroRulesId, MacroRulesLoc, intern_macro_rules, lookup_intern_macro_rules);
+
+impl_loc!(MacroRulesLoc, id: MacroRules, container: ModuleId);
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub struct MacroRulesLocFlags: u8 {
+        const ALLOW_INTERNAL_UNSAFE = 1 << 0;
+        const LOCAL_INNER = 1 << 1;
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MacroExpander {
     Declarative,
@@ -374,12 +433,20 @@ pub struct ProcMacroLoc {
     pub kind: ProcMacroKind,
     pub edition: Edition,
 }
+
+impl_intern!(ProcMacroId, ProcMacroLoc, intern_proc_macro, lookup_intern_proc_macro);
+
+impl_loc!(ProcMacroLoc, id: Fn, container: CrateRootModuleId);
+
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct BlockLoc {
     pub ast_id: AstId<ast::BlockExpr>,
     /// The containing module.
     pub module: ModuleId,
 }
+
+impl_intern!(BlockId, BlockLoc, intern_block, lookup_intern_block);
+
 /// A `ModuleId` that is always a crate's root module.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CrateRootModuleId {
@@ -647,6 +714,9 @@ pub enum ItemContainerId {
     ImplId(ImplId),
     TraitId(TraitId),
 }
+
+impl_from!(ModuleId for ItemContainerId);
+
 /// A Data Type
 #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
 pub enum AdtId {
@@ -654,6 +724,9 @@ pub enum AdtId {
     UnionId(UnionId),
     EnumId(EnumId),
 }
+
+impl_from!(StructId, UnionId, EnumId for AdtId);
+
 /// A macro
 #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
 pub enum MacroId {
@@ -661,6 +734,9 @@ pub enum MacroId {
     MacroRulesId(MacroRulesId),
     ProcMacroId(ProcMacroId),
 }
+
+impl_from!(Macro2Id, MacroRulesId, ProcMacroId for MacroId);
+
 impl MacroId {
     pub fn is_attribute(self, db: &dyn DefDatabase) -> bool {
         matches!(self, MacroId::ProcMacroId(it) if it.lookup(db).kind == ProcMacroKind::Attr)
@@ -674,6 +750,9 @@ pub enum GenericParamId {
     ConstParamId(ConstParamId),
     LifetimeParamId(LifetimeParamId),
 }
+
+impl_from!(TypeParamId, LifetimeParamId, ConstParamId for GenericParamId);
+
 /// The defs which can be visible in the module.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ModuleDefId {
@@ -689,6 +768,21 @@ pub enum ModuleDefId {
     BuiltinType(BuiltinType),
     MacroId(MacroId),
 }
+
+impl_from!(
+    MacroId(Macro2Id, MacroRulesId, ProcMacroId),
+    ModuleId,
+    FunctionId,
+    AdtId(StructId, EnumId, UnionId),
+    EnumVariantId,
+    ConstId,
+    StaticId,
+    TraitId,
+    TypeAliasId,
+    BuiltinType
+    for ModuleDefId
+);
+
 /// A constant, which might appears as a const item, an anonymous const block in expressions
 /// or patterns, or as a constant in types with const generics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
@@ -696,6 +790,9 @@ pub enum GeneralConstId {
     ConstId(ConstId),
     StaticId(StaticId),
 }
+
+impl_from!(ConstId, StaticId for GeneralConstId);
+
 impl GeneralConstId {
     pub fn generic_def(self, _db: &dyn DefDatabase) -> Option<GenericDefId> {
         match self {
@@ -727,6 +824,9 @@ pub enum DefWithBodyId {
     ConstId(ConstId),
     VariantId(EnumVariantId),
 }
+
+impl_from!(FunctionId, ConstId, StaticId for DefWithBodyId);
+
 impl From<EnumVariantId> for DefWithBodyId {
     fn from(id: EnumVariantId) -> Self {
         DefWithBodyId::VariantId(id)
@@ -750,10 +850,9 @@ pub enum AssocItemId {
     ConstId(ConstId),
     TypeAliasId(TypeAliasId),
 }
-// FIXME: not every function, ... is actually an assoc item. maybe we should make
-// sure that you can only turn actual assoc items into AssocItemIds. This would
-// require not implementing From, and instead having some checked way of
-// casting them, and somehow making the constructors private, which would be annoying.
+
+impl_from!(FunctionId, ConstId, TypeAliasId for AssocItemId);
+
 impl From<AssocItemId> for ModuleDefId {
     fn from(item: AssocItemId) -> Self {
         match item {
@@ -778,6 +877,18 @@ pub enum GenericDefId {
     TraitId(TraitId),
     TypeAliasId(TypeAliasId),
 }
+
+impl_from!(
+    AdtId(StructId, EnumId, UnionId),
+    ConstId,
+    FunctionId,
+    ImplId,
+    StaticId,
+    TraitId,
+    TypeAliasId
+    for GenericDefId
+);
+
 impl GenericDefId {
     pub fn file_id_and_params_of(
         self,
@@ -845,6 +956,9 @@ pub enum CallableDefId {
     StructId(StructId),
     EnumVariantId(EnumVariantId),
 }
+
+impl_from!(FunctionId, StructId, EnumVariantId for CallableDefId);
+
 impl From<CallableDefId> for ModuleDefId {
     fn from(def: CallableDefId) -> ModuleDefId {
         match def {
@@ -883,6 +997,25 @@ pub enum AttrDefId {
     ExternCrateId(ExternCrateId),
     UseId(UseId),
 }
+
+impl_from!(
+    ModuleId,
+    FieldId,
+    AdtId(StructId, EnumId, UnionId),
+    EnumVariantId,
+    StaticId,
+    ConstId,
+    FunctionId,
+    TraitId,
+    TypeAliasId,
+    MacroId(Macro2Id, MacroRulesId, ProcMacroId),
+    ImplId,
+    GenericParamId,
+    ExternCrateId,
+    UseId
+    for AttrDefId
+);
+
 impl TryFrom<ModuleDefId> for AttrDefId {
     type Error = ();
 
@@ -939,6 +1072,9 @@ pub enum VariantId {
     StructId(StructId),
     UnionId(UnionId),
 }
+
+impl_from!(EnumVariantId, StructId, UnionId for VariantId);
+
 impl VariantId {
     pub fn fields(self, db: &dyn DefDatabase) -> &VariantFields {
         VariantFields::firewall(db, self)

@@ -305,6 +305,21 @@ pub enum ModuleDef {
     BuiltinType(BuiltinType),
     Macro(Macro),
 }
+
+impl_from!(
+    Module,
+    Function,
+    Adt(Struct, Enum, Union),
+    Variant,
+    Const,
+    Static,
+    Trait,
+    TypeAlias,
+    BuiltinType,
+    Macro
+    for ModuleDef
+);
+
 impl From<VariantDef> for ModuleDef {
     fn from(var: VariantDef) -> Self {
         match var {
@@ -1742,6 +1757,9 @@ pub enum Adt {
     Union(Union),
     Enum(Enum),
 }
+
+impl_from!(Struct, Union, Enum for Adt);
+
 impl Adt {
     pub fn has_non_default_type_params(self, db: &dyn HirDatabase) -> bool {
         has_non_default_type_params(db, self.into())
@@ -1842,6 +1860,9 @@ pub enum VariantDef {
     Union(Union),
     Variant(Variant),
 }
+
+impl_from!(Struct, Union, Variant for VariantDef);
+
 impl VariantDef {
     pub fn fields(self, db: &dyn HirDatabase) -> Vec<Field> {
         match self {
@@ -1876,6 +1897,9 @@ pub enum DefWithBody {
     Const(Const),
     Variant(Variant),
 }
+
+impl_from!(Function, Const, Static, Variant for DefWithBody);
+
 impl DefWithBody {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
         match self {
@@ -3553,6 +3577,18 @@ pub enum GenericDef {
     Const(Const),
     Static(Static),
 }
+
+impl_from!(
+    Function,
+    Adt(Struct, Enum, Union),
+    Trait,
+    TypeAlias,
+    Impl,
+    Const,
+    Static
+    for GenericDef
+);
+
 impl GenericDef {
     pub fn params(self, db: &dyn HirDatabase) -> Vec<GenericParam> {
         let generics = db.generic_params(self.into());
@@ -4001,6 +4037,9 @@ pub enum GenericParam {
     ConstParam(ConstParam),
     LifetimeParam(LifetimeParam),
 }
+
+impl_from!(TypeParam, ConstParam, LifetimeParam for GenericParam);
+
 impl GenericParam {
     pub fn module(self, db: &dyn HirDatabase) -> Module {
         match self {

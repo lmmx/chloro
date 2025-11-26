@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 32384 bytes
-Chloro size:   32215 bytes
+Chloro size:   32290 bytes
 Rustfmt size:  32663 bytes
 
 ✗ Outputs DIFFER
@@ -86,8 +86,9 @@ Rustfmt size:  32663 bytes
          (ExistentialPredicate::AutoTrait(_), _) => Ordering::Greater,
      }
  }
--interned_vec_db!(BoundExistentialPredicates, BoundExistentialPredicate);
--
++
+ interned_vec_db!(BoundExistentialPredicates, BoundExistentialPredicate);
+ 
 -impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>>
 -    for BoundExistentialPredicates<'db>
 -{

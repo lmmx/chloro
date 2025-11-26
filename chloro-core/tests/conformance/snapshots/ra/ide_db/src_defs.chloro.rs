@@ -883,6 +883,13 @@ impl<'db> NameRefClass<'db> {
         }
     }
 }
+
+impl_from!(
+    Field, Module, Function, Adt, Variant, Const, Static, Trait, TypeAlias, BuiltinType, Local,
+    GenericParam, Label, Macro, ExternCrateDecl
+    for Definition
+);
+
 impl From<Impl> for Definition {
     fn from(impl_: Impl) -> Self {
         Definition::SelfType(impl_)

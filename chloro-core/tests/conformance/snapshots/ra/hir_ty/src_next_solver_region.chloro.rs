@@ -381,3 +381,5 @@ impl<'db> PlaceholderLike<DbInterner<'db>> for PlaceholderRegion {
 }
 
 type GenericArgOutlivesPredicate<'db> = OutlivesPredicate<'db, GenericArg<'db>>;
+
+interned_vec_db!(RegionAssumptions, GenericArgOutlivesPredicate);
