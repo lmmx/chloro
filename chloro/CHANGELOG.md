@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.8](https://github.com/lmmx/chloro/compare/chloro-v0.6.7...chloro-v0.6.8) - 2025-11-26
+## [0.7.0](https://github.com/lmmx/chloro/compare/chloro-v0.6.7...chloro-v0.7.0) - 2025-11-26
 
 ### <!-- 2 -->Bug Fixes
 
