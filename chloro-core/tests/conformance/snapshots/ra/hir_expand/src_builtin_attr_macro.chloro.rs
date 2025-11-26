@@ -58,7 +58,19 @@ impl BuiltinAttrExpander {
         matches!(self, BuiltinAttrExpander::TestCase)
     }
 }
-// derive const is equivalent to derive for our proposes.
+
+register_builtin! {
+    (bench, Bench) => dummy_gate_test_expand,
+    (cfg_accessible, CfgAccessible) => dummy_attr_expand,
+    (cfg_eval, CfgEval) => dummy_attr_expand,
+    (derive, Derive) => derive_expand,
+    // derive const is equivalent to derive for our proposes.
+    (derive_const, DeriveConst) => derive_expand,
+    (global_allocator, GlobalAllocator) => dummy_attr_expand,
+    (test, Test) => dummy_gate_test_expand,
+    (test_case, TestCase) => dummy_gate_test_expand
+}
+
 pub fn find_builtin_attr(ident: &name::Name) -> Option<BuiltinAttrExpander> {
     BuiltinAttrExpander::find_by_name(ident)
 }

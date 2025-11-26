@@ -24,8 +24,11 @@ use crate::{
     type_ref::TypeRef,
 };
 
-#[cfg(test)]
-/// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
+thread_local! {
+    /// This is used to test `hir_segment_to_ast_segment()`. It's a hack, but it makes testing much easier.
+    pub(super) static SEGMENT_LOWERING_MAP: std::cell::RefCell<rustc_hash::FxHashMap<ast::PathSegment, usize>> = std::cell::RefCell::default();
+}
+
 /// Converts an `ast::Path` to `Path`. Works with use trees.
 /// It correctly handles `$crate` based path from macro call.
 pub(super) fn lower_path(

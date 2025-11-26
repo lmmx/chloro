@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   225872 bytes
+Chloro size:   226419 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -230,23 +230,10 @@ Rustfmt size:  227843 bytes
      BuiltinType(BuiltinType),
      Macro(Macro),
  }
--impl_from!(
--    Module,
--    Function,
--    Adt(Struct, Enum, Union),
--    Variant,
--    Const,
--    Static,
--    Trait,
--    TypeAlias,
--    BuiltinType,
--    Macro
--    for ModuleDef
--);
--
- impl From<VariantDef> for ModuleDef {
-     fn from(var: VariantDef) -> Self {
-         match var {
++
+ impl_from!(
+     Module,
+     Function,
          TypeNs::new(db, var_id, ty)
      }
  
@@ -289,27 +276,24 @@ Rustfmt size:  227843 bytes
      Union(Union),
      Enum(Enum),
  }
--impl_from!(Struct, Union, Enum for Adt);
--
++
+ impl_from!(Struct, Union, Enum for Adt);
+ 
  impl Adt {
-     pub fn has_non_default_type_params(self, db: &dyn HirDatabase) -> bool {
-         has_non_default_type_params(db, self.into())
      Union(Union),
      Variant(Variant),
  }
--impl_from!(Struct, Union, Variant for VariantDef);
--
++
+ impl_from!(Struct, Union, Variant for VariantDef);
+ 
  impl VariantDef {
-     pub fn fields(self, db: &dyn HirDatabase) -> Vec<Field> {
-         match self {
      Const(Const),
      Variant(Variant),
  }
--impl_from!(Function, Const, Static, Variant for DefWithBody);
--
++
+ impl_from!(Function, Const, Static, Variant for DefWithBody);
+ 
  impl DefWithBody {
-     pub fn module(self, db: &dyn HirDatabase) -> Module {
-         match self {
          .macro_calls()
          .for_each(|(_ast_id, call_id)| macro_call_diagnostics(db, call_id, acc));
  }
@@ -364,20 +348,10 @@ Rustfmt size:  227843 bytes
      Const(Const),
      Static(Static),
  }
--impl_from!(
--    Function,
--    Adt(Struct, Enum, Union),
--    Trait,
--    TypeAlias,
--    Impl,
--    Const,
--    Static
--    for GenericDef
--);
--
- impl GenericDef {
-     pub fn params(self, db: &dyn HirDatabase) -> Vec<GenericParam> {
-         let generics = db.generic_params(self.into());
++
+ impl_from!(
+     Function,
+     Adt(Struct, Enum, Union),
      }
  }
  
@@ -388,11 +362,10 @@ Rustfmt size:  227843 bytes
      ConstParam(ConstParam),
      LifetimeParam(LifetimeParam),
  }
--impl_from!(TypeParam, ConstParam, LifetimeParam for GenericParam);
--
++
+ impl_from!(TypeParam, ConstParam, LifetimeParam for GenericParam);
+ 
  impl GenericParam {
-     pub fn module(self, db: &dyn HirDatabase) -> Module {
-         match self {
              .to_string()
      }
  

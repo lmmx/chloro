@@ -1576,17 +1576,20 @@ expression: cleaned_diff
 +impl  {}
  
 -macro_rules! {};
--macro_rules! ()
--macro_rules! []
 +impl NotType {
 +}
- 
++
 +impl Trait2 {}
 +
 +impl NotType {
 +}
++
++macro_rules! {}
+ macro_rules! ()
++
+ macro_rules! []
+ 
  fn foo() {
-     x.
      ()
  }
  
@@ -2003,17 +2006,17 @@ expression: cleaned_diff
  
  type T = StreamingIterator<Item<'a> = &'a T>;
  
-     let S { x: 1 } = ();
      let S { #[cfg(any())] x: 1 } = ();
  }
--
- // 2015
+ 
+-// 2015
 -macro_rules! try { () => {} }
 -
 -use std as stdlib;
 -use Trait as _;
 -
 -struct S(String, usize);
++macro_rules!
 +{
 +}struct S(String, usize);
  
@@ -2233,12 +2236,15 @@ expression: cleaned_diff
     Iterator::Item: 'a,
     <T as Iterator>::Item: 'a
 -{}
--
--macro_rules! {}
--macro_rules! ();
--macro_rules! [];
 +{
 +}
+ 
+ macro_rules! {}
++
+ macro_rules! ();
++
+ macro_rules! [];
++
  fn main() {
      let foo = macro_rules!();
  }
@@ -2283,8 +2289,11 @@ expression: cleaned_diff
 +}
 +
  macro_rules! foo {}
--foo::bar!();
--super::baz! {}
++
+ foo::bar!();
++
+ super::baz! {}
++
  struct S;
  
  struct S<T = i32>;

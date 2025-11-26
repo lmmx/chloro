@@ -89,6 +89,9 @@ fn stable_cmp_existential_predicate<'db>(
         (ExistentialPredicate::AutoTrait(_), _) => Ordering::Greater,
     }
 }
+
+interned_vec_db!(BoundExistentialPredicates, BoundExistentialPredicate);
+
 impl<'db> rustc_type_ir::inherent::BoundExistentialPredicates<DbInterner<'db>> for BoundExistentialPredicates<'db> {
     fn principal_def_id(self) -> Option<TraitIdWrapper> {
         self.principal().map(|trait_ref| trait_ref.skip_binder().def_id)

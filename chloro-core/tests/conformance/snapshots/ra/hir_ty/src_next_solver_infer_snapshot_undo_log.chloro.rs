@@ -43,7 +43,21 @@ macro_rules! impl_from {
         )*
     }
 }
-// Upcast from a single kind of "undoable action" to the general enum
+
+impl_from! {
+    RegionConstraintCollector(region_constraints::UndoLog<'db>),
+
+    TypeVariables(sv::UndoLog<ut::Delegate<type_variable::TyVidEqKey<'db>>>),
+    TypeVariables(sv::UndoLog<ut::Delegate<type_variable::TyVidSubKey>>),
+    TypeVariables(type_variable::UndoLog<'db>),
+    IntUnificationTable(sv::UndoLog<ut::Delegate<IntVid>>),
+    FloatUnificationTable(sv::UndoLog<ut::Delegate<FloatVid>>),
+
+    ConstUnificationTable(sv::UndoLog<ut::Delegate<ConstVidKey<'db>>>),
+
+    RegionUnificationTable(sv::UndoLog<ut::Delegate<RegionVidKey<'db>>>),
+}
+
 /// The Rollback trait defines how to rollback a particular action.
 impl<'db> Rollback<UndoLog<'db>> for InferCtxtInner<'db> {
     fn reverse(&mut self, undo: UndoLog<'db>) {

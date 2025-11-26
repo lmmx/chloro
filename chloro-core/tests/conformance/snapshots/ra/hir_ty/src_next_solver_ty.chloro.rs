@@ -1208,6 +1208,9 @@ impl<'db> rustc_type_ir::inherent::Ty<DbInterner<'db>> for Ty<'db> {
         }
     }
 }
+
+interned_vec_db!(Tys, Ty);
+
 impl<'db> Tys<'db> {
     pub fn inputs(&self) -> &[Ty<'db>] {
         self.as_slice().split_last().unwrap().1

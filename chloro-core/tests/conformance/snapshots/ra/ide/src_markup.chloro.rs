@@ -44,3 +44,5 @@ impl Markup {
         format!("```text\n{contents}\n```").into()
     }
 }
+
+impl_empty_upmap_from_ra_fixture!(Markup);

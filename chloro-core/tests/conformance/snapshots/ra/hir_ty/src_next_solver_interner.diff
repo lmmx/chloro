@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 82113 bytes
-Chloro size:   80963 bytes
+Chloro size:   81815 bytes
 Rustfmt size:  84055 bytes
 
 ✗ Outputs DIFFER
@@ -139,30 +139,6 @@ Rustfmt size:  84055 bytes
  #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
  pub struct Span(());
  
-         Span(())
-     }
- }
--
--interned_vec_nolifetime_salsa!(BoundVarKinds, BoundVarKind, nofold);
--
- #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
- pub enum BoundVarKind {
-     Ty(BoundTyKind),
-         }
-     }
- }
--
--interned_vec_db!(CanonicalVars, CanonicalVarKind, nofold);
--
- pub struct DepNodeIndex;
- 
- #[derive(Debug)]
- 
- #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
- pub struct AllocId;
--
--interned_vec_nolifetime_salsa!(VariancesOf, Variance, nofold);
--
  #[derive(Debug, Clone, Eq, PartialEq, Hash)]
  pub struct VariantIdx(usize);
  
@@ -272,15 +248,6 @@ Rustfmt size:  84055 bytes
              ) => {
                  let start = relation.relate(start_a, start_b)?;
                  let end = relation.relate(end_a, end_b)?;
-         }
-     }
- }
--
--interned_vec_db!(PatList, Pattern);
--
- macro_rules! as_lang_item {
-     (
-         $solver_enum:ident, $var:ident;
  
  impl<'db> Interner for DbInterner<'db> {
      type DefId = SolverDefId;
@@ -655,32 +622,7 @@ Rustfmt size:  84055 bytes
                  },
              },
          )
-         )+
-     };
- }
--
--TrivialTypeTraversalImpls! {
--    SolverDefId,
--    TraitIdWrapper,
--    TypeAliasIdWrapper,
--    CallableIdWrapper,
--    ClosureIdWrapper,
--    CoroutineIdWrapper,
--    AdtIdWrapper,
--    ImplIdWrapper,
--    Pattern<'db>,
--    Safety,
--    FnAbi,
--    Span,
--    ParamConst,
--    ParamTy,
--    BoundRegion,
--    BoundVar,
--    Placeholder<BoundRegion>,
--    Placeholder<BoundTy>,
--    Placeholder<BoundVar>,
--}
--
+ 
  mod tls_db {
      use std::{cell::Cell, ptr::NonNull};
 -
@@ -728,9 +670,9 @@ Rustfmt size:  84055 bytes
          }
      }
 -
--    thread_local! {
--        static GLOBAL_DB: Attached = const { Attached { database: Cell::new(None) } };
--    }
+     thread_local! {
+         static GLOBAL_DB: Attached = const { Attached { database: Cell::new(None) } };
+     }
 -
      #[inline]
      pub fn attach_db<R>(db: &dyn HirDatabase, op: impl FnOnce() -> R) -> R {
@@ -761,9 +703,9 @@ Rustfmt size:  84055 bytes
          db_nonce: Nonce,
      }
 -
--    thread_local! {
--        static GLOBAL_CACHE: RefCell<Option<Cache>> = const { RefCell::new(None) };
--    }
+     thread_local! {
+         static GLOBAL_CACHE: RefCell<Option<Cache>> = const { RefCell::new(None) };
+     }
 -
      pub(super) fn with_cache<'db, T>(
          db: &'db dyn HirDatabase,

@@ -748,6 +748,18 @@ pub(crate) enum ChildContainer {
     /// here the children are generic parameters, and not, eg enum variants.
     GenericDefId(GenericDefId),
 }
+
+impl_from! {
+    DefWithBodyId,
+    ModuleId,
+    TraitId,
+    ImplId,
+    EnumId,
+    VariantId,
+    GenericDefId
+    for ChildContainer
+}
+
 impl ChildContainer {
     fn child_by_source(self, db: &dyn HirDatabase, file_id: HirFileId) -> DynMap {
         let _p = tracing::info_span!("ChildContainer::child_by_source").entered();

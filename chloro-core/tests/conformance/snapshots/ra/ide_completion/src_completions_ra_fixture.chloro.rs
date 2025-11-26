@@ -39,6 +39,14 @@ pub(crate) fn complete_ra_fixture(
     acc.add_many(completions);
     Some(())
 }
+
+impl_empty_upmap_from_ra_fixture!(
+    CompletionItemLabel,
+    CompletionItemKind,
+    CompletionRelevance,
+    CompletionItemRefMode,
+);
+
 #[cfg(test)]
 mod tests {
     use expect_test::expect;

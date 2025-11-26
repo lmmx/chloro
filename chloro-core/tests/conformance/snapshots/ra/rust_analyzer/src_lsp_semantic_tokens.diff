@@ -2,83 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11108 bytes
-Chloro size:   8306 bytes
+Chloro size:   11146 bytes
 Rustfmt size:  11838 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
-         }
-     };
- }
--
--define_semantic_token_types![
--    standard {
--        COMMENT,
--        DECORATOR,
--        ENUM_MEMBER,
--        ENUM,
--        FUNCTION,
--        INTERFACE,
--        KEYWORD,
--        MACRO,
--        METHOD,
--        NAMESPACE,
--        NUMBER,
--        OPERATOR,
--        PARAMETER,
--        PROPERTY,
--        STRING,
--        STRUCT,
--        TYPE_PARAMETER,
--        VARIABLE,
--        TYPE,
--    }
--
--    custom {
--        (ANGLE, "angle"),
--        (ARITHMETIC, "arithmetic") => OPERATOR,
--        (ATTRIBUTE_BRACKET, "attributeBracket") => DECORATOR,
--        (ATTRIBUTE, "attribute") => DECORATOR,
--        (BITWISE, "bitwise") => OPERATOR,
--        (BOOLEAN, "boolean"),
--        (BRACE, "brace"),
--        (BRACKET, "bracket"),
--        (BUILTIN_ATTRIBUTE, "builtinAttribute") => DECORATOR,
--        (BUILTIN_TYPE, "builtinType") => TYPE,
--        (CHAR, "character") => STRING,
--        (COLON, "colon"),
--        (COMMA, "comma"),
--        (COMPARISON, "comparison") => OPERATOR,
--        (CONST_PARAMETER, "constParameter"),
--        (CONST, "const") => VARIABLE,
--        (DERIVE_HELPER, "deriveHelper") => DECORATOR,
--        (DERIVE, "derive") => DECORATOR,
--        (DOT, "dot"),
--        (ESCAPE_SEQUENCE, "escapeSequence") => STRING,
--        (FORMAT_SPECIFIER, "formatSpecifier") => STRING,
--        (GENERIC, "generic") => TYPE_PARAMETER,
--        (INVALID_ESCAPE_SEQUENCE, "invalidEscapeSequence") => STRING,
--        (LABEL, "label"),
--        (LIFETIME, "lifetime"),
--        (LOGICAL, "logical") => OPERATOR,
--        (MACRO_BANG, "macroBang") => MACRO,
--        (NEGATION, "negation") => OPERATOR,
--        (PARENTHESIS, "parenthesis"),
--        (PROC_MACRO, "procMacro") => MACRO,
--        (PUNCTUATION, "punctuation"),
--        (SELF_KEYWORD, "selfKeyword") => KEYWORD,
--        (SELF_TYPE_KEYWORD, "selfTypeKeyword") => KEYWORD,
--        (SEMICOLON, "semicolon"),
--        (STATIC, "static") => VARIABLE,
--        (TOOL_MODULE, "toolModule") => DECORATOR,
--        (TYPE_ALIAS, "typeAlias") => TYPE,
--        (UNION, "union") => TYPE,
--        (UNRESOLVED_REFERENCE, "unresolvedReference"),
--    }
--];
--
- macro_rules! count_tts {
      () => {0usize};
      ($_head:tt $($tail:tt)*) => {1usize + count_tts!($($tail)*)};
  }
@@ -86,42 +15,6 @@ Rustfmt size:  11838 bytes
  macro_rules! define_semantic_token_modifiers {
      (
          standard {
-         const LAST_STANDARD_MOD: usize = count_tts!($($standard)*);
-     };
- }
--
--define_semantic_token_modifiers![
--    standard {
--        ASYNC,
--        DOCUMENTATION,
--        DECLARATION,
--        STATIC,
--        DEFAULT_LIBRARY,
--    }
--    custom {
--        (ASSOCIATED, "associated"),
--        (ATTRIBUTE_MODIFIER, "attribute"),
--        (CALLABLE, "callable"),
--        (CONSTANT, "constant"),
--        (CONSUMING, "consuming"),
--        (CONTROL_FLOW, "controlFlow"),
--        (CRATE_ROOT, "crateRoot"),
--        (INJECTED, "injected"),
--        (INTRA_DOC_LINK, "intraDocLink"),
--        (LIBRARY, "library"),
--        (MACRO_MODIFIER, "macro"),
--        (MUTABLE, "mutable"),
--        (PROC_MACRO_MODIFIER, "procMacro"),
--        (PUBLIC, "public"),
--        (REFERENCE, "reference"),
--        (TRAIT_MODIFIER, "trait"),
--        (UNSAFE, "unsafe"),
--    }
--];
--
- #[derive(Default)]
- pub(crate) struct ModifierSet(pub(crate) u32);
- 
  
  impl ops::BitOrAssign<SemanticTokenModifier> for ModifierSet {
      fn bitor_assign(&mut self, rhs: SemanticTokenModifier) {

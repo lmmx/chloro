@@ -3133,16 +3133,26 @@ impl IntValue {
         }
         for_each_int_type! { m, [] }
     }
+    for_each_int_type!(checked_int_op, [checked_add]);
+    for_each_int_type!(checked_int_op, [checked_sub]);
+    for_each_int_type!(checked_int_op, [checked_div]);
+    for_each_int_type!(checked_int_op, [checked_rem]);
+    for_each_int_type!(checked_int_op, [checked_mul]);
+    for_each_int_type!(int_bit_shifts, [checked_shl]);
+    for_each_int_type!(int_bit_shifts, [checked_shr]);
 }
 
 impl std::ops::BitAnd for IntValue {
     type Output = Self;
+    for_each_int_type!(unchecked_int_op, [bitand, &]);
 }
 
 impl std::ops::BitOr for IntValue {
     type Output = Self;
+    for_each_int_type!(unchecked_int_op, [bitor, |]);
 }
 
 impl std::ops::BitXor for IntValue {
     type Output = Self;
+    for_each_int_type!(unchecked_int_op, [bitxor, ^]);
 }

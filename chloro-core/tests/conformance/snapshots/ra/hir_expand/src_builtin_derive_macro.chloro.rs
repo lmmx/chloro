@@ -63,6 +63,20 @@ impl BuiltinDeriveExpander {
         self.expander()(db, span, tt)
     }
 }
+
+register_builtin! {
+    Copy => copy_expand,
+    Clone => clone_expand,
+    Default => default_expand,
+    Debug => debug_expand,
+    Hash => hash_expand,
+    Ord => ord_expand,
+    PartialOrd => partial_ord_expand,
+    Eq => eq_expand,
+    PartialEq => partial_eq_expand,
+    CoercePointee => coerce_pointee_expand
+}
+
 pub fn find_builtin_derive(ident: &name::Name) -> Option<BuiltinDeriveExpander> {
     BuiltinDeriveExpander::find_by_name(ident)
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86672 bytes
+Chloro size:   86854 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -112,19 +112,17 @@ Rustfmt size:  87058 bytes
      AdtId(AdtId),
      TypeAliasId(TypeAliasId),
  }
--impl_from!(BuiltinType, AdtId(StructId, EnumId, UnionId), TypeAliasId for TyDefId);
--
++
+ impl_from!(BuiltinType, AdtId(StructId, EnumId, UnionId), TypeAliasId for TyDefId);
+ 
  #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
- pub enum ValueTyDefId {
-     FunctionId(FunctionId),
      ConstId(ConstId),
      StaticId(StaticId),
  }
--impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
--
++
+ impl_from!(FunctionId, StructId, UnionId, EnumVariantId, ConstId, StaticId for ValueTyDefId);
+ 
  impl ValueTyDefId {
-     pub(crate) fn to_generic_def_id(self, db: &dyn HirDatabase) -> GenericDefId {
-         match self {
      db.const_param_ty_with_diagnostics(def).0
  }
  
