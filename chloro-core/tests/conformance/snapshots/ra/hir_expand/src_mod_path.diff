@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13520 bytes
-Chloro size:   13480 bytes
+Chloro size:   13522 bytes
 Rustfmt size:  13520 bytes
 
 ✗ Outputs DIFFER
@@ -34,13 +34,6 @@ Rustfmt size:  13520 bytes
  
  #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
  pub struct ModPath {
-     Crate,
-     /// Absolute path (::foo)
-     Abs,
--    // FIXME: Can we remove this somehow?
-     /// `$crate` from macro expansion
-     DollarCrate(Crate),
- }
              _ => None,
          }
      }

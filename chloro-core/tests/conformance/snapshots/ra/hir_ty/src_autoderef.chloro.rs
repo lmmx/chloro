@@ -113,9 +113,12 @@ struct AutoderefTraits {
 /// Although called `Autoderef` it can be configured to use the
 /// `Receiver` trait instead of the `Deref` trait.
 pub(crate) struct Autoderef<'a, 'db, Steps = Vec<(Ty<'db>, AutoderefKind)>> {
+    // Meta infos:
     pub(crate) table: &'a mut InferenceTable<'db>,
     traits: Option<AutoderefTraits>,
+    // Current state:
     state: AutoderefSnapshot<'db, Steps>,
+    // Configurations:
     include_raw_pointers: bool,
     use_receiver_trait: bool,
 }

@@ -72,6 +72,12 @@ pub type FileRange = FileRangeWrapper<FileId>;
 
 #[salsa_macros::db]
 pub struct RootDatabase {
+    // FIXME: Revisit this commit now that we migrated to the new salsa, given we store arcs in this
+    // db directly now
+    // We use `ManuallyDrop` here because every codegen unit that contains a
+    // `&RootDatabase -> &dyn OtherDatabase` cast will instantiate its drop glue in the vtable,
+    // which duplicates `Weak::drop` and `Arc::drop` tens of thousands of times, which makes
+    // compile times of all `ide_*` and downstream crates suffer greatly.
     storage: ManuallyDrop<salsa::Storage<Self>>,
     files: Arc<Files>,
     crates_map: Arc<CratesMap>,

@@ -188,11 +188,13 @@ pub(crate) type SelectionResult<'db, T> = Result<Option<T>, SelectionError<'db>>
 pub(crate) enum ImplSource<'db, N> {
     /// ImplSource identifying a particular impl.
     UserDefined(ImplSourceUserDefinedData<'db, N>),
+
     /// Successful resolution to an obligation provided by the caller
     /// for some type parameter. The `Vec<N>` represents the
     /// obligations incurred from normalizing the where-clause (if
     /// any).
     Param(Vec<N>),
+
     /// Successful resolution for a builtin impl.
     Builtin(BuiltinImplSource, Vec<N>),
 }

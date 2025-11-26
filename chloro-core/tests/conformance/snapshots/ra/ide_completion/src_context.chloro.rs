@@ -47,6 +47,7 @@ pub(crate) enum Visible {
 /// Existing qualifiers for the thing we are currently completing.
 #[derive(Debug, Default)]
 pub(crate) struct QualifierCtx {
+    // TODO: Add try_tok and default_tok
     pub(crate) async_tok: Option<SyntaxToken>,
     pub(crate) unsafe_tok: Option<SyntaxToken>,
     pub(crate) safe_tok: Option<SyntaxToken>,
@@ -455,6 +456,7 @@ pub(crate) struct CompletionContext<'a> {
     pub(crate) containing_function: Option<hir::Function>,
     /// Whether nightly toolchain is used. Cached since this is looked up a lot.
     pub(crate) is_nightly: bool,
+    // FIXME: This should probably be the crate of the current token?
     /// The edition of the current crate
     pub(crate) edition: Edition,
     /// The expected name of what we are completing.

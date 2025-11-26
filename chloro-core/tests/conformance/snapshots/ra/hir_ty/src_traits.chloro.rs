@@ -33,6 +33,7 @@ use crate::{
 pub struct TraitEnvironment<'db> {
     pub krate: Crate,
     pub block: Option<BlockId>,
+    // FIXME make this a BTreeMap
     traits_from_clauses: Box<[(Ty<'db>, TraitId)]>,
     pub env: ParamEnv<'db>,
 }
@@ -146,9 +147,12 @@ pub fn next_trait_solve_in_ctxt<'db, 'a>(
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum FnTrait {
+    // Warning: Order is important. If something implements `x` it should also implement
+    // `y` if `y <= x`.
     FnOnce,
     FnMut,
     Fn,
+
     AsyncFnOnce,
     AsyncFnMut,
     AsyncFn,

@@ -80,12 +80,15 @@ pub struct RegionConstraintData<'db> {
 pub enum Constraint<'db> {
     /// A region variable is a subregion of another.
     VarSubVar(RegionVid, RegionVid),
+
     /// A concrete region is a subregion of region variable.
     RegSubVar(Region<'db>, RegionVid),
+
     /// A region variable is a subregion of a concrete region. This does not
     /// directly affect inference, but instead is checked after
     /// inference is complete.
     VarSubReg(RegionVid, Region<'db>),
+
     /// A constraint where neither side is a variable. This does not
     /// directly affect inference, but instead is checked after
     /// inference is complete.
@@ -137,6 +140,7 @@ pub enum GenericKind<'db> {
 pub enum VerifyBound<'db> {
     /// See [`VerifyIfEq`] docs
     IfEq(Binder<'db, VerifyIfEq<'db>>),
+
     /// Given a region `R`, expands to the function:
     ///
     /// ```ignore (pseudo-rust)
@@ -148,8 +152,10 @@ pub enum VerifyBound<'db> {
     /// This is used when we can establish that `G: R` -- therefore,
     /// if `R: min`, then by transitivity `G: min`.
     OutlivedBy(Region<'db>),
+
     /// Given a region `R`, true if it is `'empty`.
     IsEmpty,
+
     /// Given a set of bounds `B`, expands to the function:
     ///
     /// ```ignore (pseudo-rust)
@@ -161,6 +167,7 @@ pub enum VerifyBound<'db> {
     /// In other words, if we meet some bound in `B`, that suffices.
     /// This is used when all the bounds in `B` are known to apply to `G`.
     AnyBound(Vec<VerifyBound<'db>>),
+
     /// Given a set of bounds `B`, expands to the function:
     ///
     /// ```ignore (pseudo-rust)
@@ -231,11 +238,14 @@ pub(crate) struct TwoRegions<'db> {
 pub(crate) enum UndoLog<'db> {
     /// We added `RegionVid`.
     AddVar(RegionVid),
+
     /// We added the given `constraint`.
     AddConstraint(usize),
+
     /// We added the given `verify`.
     #[expect(dead_code, reason = "this is used in rustc")]
     AddVerify(usize),
+
     /// We added a GLB/LUB "combination variable".
     AddCombination(CombineMapType, TwoRegions<'db>),
 }
@@ -250,6 +260,18 @@ type CombineMap<'db> = FxHashMap<TwoRegions<'db>, RegionVid>;
 
 #[derive(Debug, Clone)]
 pub struct RegionVariableInfo {
+    // FIXME: This is only necessary for `fn take_and_reset_data` and
+    // `lexical_region_resolve`. We should rework `lexical_region_resolve`
+    // in the near/medium future anyways and could move the unverse info
+    // for `fn take_and_reset_data` into a separate table which is
+    // only populated when needed.
+    //
+    // For both of these cases it is fine that this can diverge from the
+    // actual universe of the variable, which is directly stored in the
+    // unification table for unknown region variables. At some point we could
+    // stop emitting bidirectional outlives constraints if equate succeeds.
+    // This would be currently unsound as it would cause us to drop the universe
+    // changes in `lexical_region_resolve`.
     pub universe: UniverseIndex,
 }
 

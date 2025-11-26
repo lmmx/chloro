@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 75023 bytes
-Chloro size:   74309 bytes
+Chloro size:   74373 bytes
 Rustfmt size:  75023 bytes
 
 ✗ Outputs DIFFER
@@ -125,13 +125,6 @@ Rustfmt size:  75023 bytes
  /// Minimally implemented directed graph structure represented by adjacency list.
  struct Graph {
      edges: Vec<Vec<usize>>,
- struct Visitor<'g> {
-     graph: &'g Graph,
-     visited: Vec<bool>,
--    // Stack is held in this struct so we can reuse its buffer.
-     stack: Vec<usize>,
- }
- 
  #[cfg(test)]
  mod tests {
      use crate::tests::{check_assist, check_assist_not_applicable};

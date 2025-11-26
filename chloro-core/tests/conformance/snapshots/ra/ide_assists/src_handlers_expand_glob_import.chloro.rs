@@ -196,6 +196,7 @@ fn def_is_referenced_in(def: Definition, ctx: &AssistContext<'_>) -> bool {
 
 #[derive(Debug, Clone)]
 struct Ref {
+    // could be alias
     visible_name: Name,
     def: Definition,
     is_pub: bool,

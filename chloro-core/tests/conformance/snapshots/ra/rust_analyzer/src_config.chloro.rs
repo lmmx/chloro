@@ -1044,15 +1044,21 @@ pub struct CallInfoConfig {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LensConfig {
+    // runnables
     pub run: bool,
     pub debug: bool,
     pub update_test: bool,
     pub interpret: bool,
+    // implementations
     pub implementations: bool,
+    // references
     pub method_refs: bool,
     pub refs_adt: bool,
+    // for Struct, Enum, Union and Trait
     pub refs_trait: bool,
+    // for Struct, Enum, Union and Trait
     pub enum_variant_refs: bool,
+    // annotations
     pub location: AnnotationLocation,
     pub filter_adjacent_derive_implementations: bool,
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 45288 bytes
-Chloro size:   44475 bytes
+Chloro size:   44666 bytes
 Rustfmt size:  45288 bytes
 
 ✗ Outputs DIFFER
@@ -143,23 +143,6 @@ Rustfmt size:  45288 bytes
 +    trait_: ast::Type,
 +) -> ast::Impl {
      generate_impl_inner(is_unsafe, adt, Some(trait_), true, None)
- }
- 
- 
- #[derive(Debug)]
- enum ReferenceConversionType {
--    // reference can be stripped if the type is Copy
-     Copy,
--    // &String -> &str
-     AsRefStr,
--    // &Vec<T> -> &[T]
-     AsRefSlice,
--    // &Box<T> -> &T
-     Dereferenced,
--    // &Option<T> -> Option<&T>
-     Option,
--    // &Result<T, E> -> Result<&T, &E>
-     Result,
  }
  
      }

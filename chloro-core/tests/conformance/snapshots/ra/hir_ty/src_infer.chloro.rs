@@ -221,6 +221,7 @@ pub enum InferenceDiagnostic<'db> {
     UnresolvedIdent {
         id: ExprOrPatId,
     },
+    // FIXME: This should be emitted in body lowering
     BreakOutsideOfLoop {
         expr: ExprId,
         is_break: bool,
@@ -356,6 +357,7 @@ impl<'db> Adjustment<'db> {
 /// See #49434 for tracking.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum AllowTwoPhase {
+    // FIXME: We should use this when appropriate.
     Yes,
     No,
 }
@@ -397,16 +399,21 @@ impl<'db> AutoBorrow<'db> {
 pub enum PointerCast {
     /// Go from a fn-item type to a fn-pointer type.
     ReifyFnPointer,
+
     /// Go from a safe fn pointer to an unsafe fn pointer.
     UnsafeFnPointer,
+
     /// Go from a non-capturing closure to an fn pointer or an unsafe fn pointer.
     /// It cannot convert a closure that requires unsafe.
     ClosureFnPointer(Safety),
+
     /// Go from a mut raw pointer to a const raw pointer.
     MutToConstPointer,
+
     /// Go from `*const [T; N]` to `*const T`
     #[allow(dead_code)]
     ArrayToPointer,
+
     /// Unsize a pointer/reference value, e.g., `&[T; n]` to
     /// `&[T]`. Note that the source could be a thin or fat pointer.
     /// This will do things like convert thin pointers to fat
@@ -450,8 +457,12 @@ pub struct InferenceResult<'db> {
     pub(crate) type_of_binding: ArenaMap<BindingId, Ty<'db>>,
     pub(crate) type_of_opaque: FxHashMap<InternedOpaqueTyId, Ty<'db>>,
     type_mismatches: FxHashMap<ExprOrPatId, TypeMismatch<'db>>,
+    // FIXME: This isn't as useful as initially thought due to us falling back placeholders to
+    // `TyKind::Error`.
+    // Which will then mark this field.
     /// Whether there are any type-mismatching errors in the result.
     pub(crate) has_errors: bool,
+    // FIXME: Remove this.
     /// Interned `Error` type to return references to.
     error_ty: Ty<'db>,
     /// Stores the types which were implicitly dereferenced in pattern binding modes.
@@ -472,6 +483,7 @@ pub struct InferenceResult<'db> {
     pub(crate) binding_modes: ArenaMap<PatId, BindingMode>,
     pub(crate) expr_adjustments: FxHashMap<ExprId, Box<[Adjustment<'db>]>>,
     pub(crate) closure_info: FxHashMap<InternedClosureId, (Vec<CapturedItem<'db>>, FnTrait)>,
+    // FIXME: remove this field
     pub mutated_bindings_in_closure: FxHashSet<BindingId>,
     pub(crate) coercion_casts: FxHashSet<ExprId>,
 }
@@ -790,6 +802,7 @@ pub(crate) struct InferenceContext<'body, 'db> {
     /// Whether we are inside the pattern of a destructuring assignment.
     inside_assignment: bool,
     deferred_cast_checks: Vec<CastCheck<'db>>,
+    // fields related to closure capture
     current_captures: Vec<CapturedItemWithoutTy<'db>>,
     /// A stack that has an entry for each projection in the current capture.
     ///

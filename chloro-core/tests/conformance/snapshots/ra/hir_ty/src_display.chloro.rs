@@ -115,6 +115,7 @@ pub enum DisplayLifetime {
 #[derive(Default)]
 enum BoundsFormattingCtx<'db> {
     Entered {
+        //. prevent recursing into their bounds to avoid infinite loops.
         /// We can have recursive bounds like the following case:
         /// ```ignore
         /// where

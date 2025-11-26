@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 40650 bytes
-Chloro size:   39764 bytes
+Chloro size:   40043 bytes
 Rustfmt size:  40650 bytes
 
 ✗ Outputs DIFFER
@@ -148,22 +148,18 @@ Rustfmt size:  40650 bytes
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
  pub struct MacroCallLoc {
      pub def: MacroDefId,
+     FnLike {
+         ast_id: AstId<ast::MacroCall>,
          expand_to: ExpandTo,
-         /// Some if this is a macro call for an eager macro. Note that this is `None`
-         /// for the eager input macro file.
--        // FIXME: This is being interned, subtrees can vary quickly differing just slightly causing
--        // leakage problems here
+-        /// Some if this is a macro call for an eager macro. Note that this is `None`
+-        /// for the eager input macro file.
+         // FIXME: This is being interned, subtrees can vary quickly differing just slightly causing
+         // leakage problems here
++        /// Some if this is a macro call for an eager macro. Note that this is `None`
++        /// for the eager input macro file.
          eager: Option<Arc<EagerCallInfo>>,
      },
      Derive {
-     },
-     Attr {
-         ast_id: AstId<ast::Item>,
--        // FIXME: This shouldn't be here, we can derive this from `invoc_attr_index`
--        // but we need to fix the `cfg_attr` handling first.
-         attr_args: Option<Arc<tt::TopSubtree>>,
-         /// Syntactical index of the invoking `#[attribute]`.
-         ///
              HirFileId::MacroFile(m) => db.lookup_intern_macro_call(m).def.edition,
          }
      }

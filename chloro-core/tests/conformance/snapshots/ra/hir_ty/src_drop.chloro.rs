@@ -37,6 +37,7 @@ fn has_destructor(db: &dyn HirDatabase, adt: AdtId) -> bool {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DropGlue {
+    // Order of variants is important.
     None,
     /// May have a drop glue if some type parameter has it.
     ///

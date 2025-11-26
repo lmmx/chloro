@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 167117 bytes
-Chloro size:   149968 bytes
+Chloro size:   150127 bytes
 Rustfmt size:  167117 bytes
 
 ✗ Outputs DIFFER
@@ -1574,30 +1574,26 @@ Rustfmt size:  167117 bytes
          self.user_config_change = content;
      }
  
- 
- #[derive(Clone, Debug, PartialEq, Eq)]
- pub struct LensConfig {
--    // runnables
-     pub run: bool,
      pub debug: bool,
      pub update_test: bool,
      pub interpret: bool,
 -
--    // implementations
+     // implementations
      pub implementations: bool,
 -
--    // references
+     // references
      pub method_refs: bool,
 -    pub refs_adt: bool,   // for Struct, Enum, Union and Trait
 -    pub refs_trait: bool, // for Struct, Enum, Union and Trait
 +    pub refs_adt: bool,
++    // for Struct, Enum, Union and Trait
 +    pub refs_trait: bool,
++    // for Struct, Enum, Union and Trait
      pub enum_variant_refs: bool,
 -
--    // annotations
+     // annotations
      pub location: AnnotationLocation,
      pub filter_adjacent_derive_implementations: bool,
- }
  
  #[derive(Debug, Clone)]
  pub enum RustfmtConfig {

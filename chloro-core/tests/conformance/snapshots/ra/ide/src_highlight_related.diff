@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 58223 bytes
-Chloro size:   57069 bytes
+Chloro size:   57244 bytes
 Rustfmt size:  58223 bytes
 
 ✗ Outputs DIFFER
@@ -33,15 +33,6 @@ Rustfmt size:  58223 bytes
  };
  
  use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNav};
- #[derive(PartialEq, Eq, Hash)]
- pub struct HighlightedRange {
-     pub range: TextRange,
--    // FIXME: This needs to be more precise. Reference category makes sense only
--    // for references, but we also have defs. And things like exit points are
--    // neither.
-     pub category: ReferenceCategory,
- }
- 
  
  type HighlightMap = FxHashMap<EditionedFileId, FxHashSet<HighlightedRange>>;
  

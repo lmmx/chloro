@@ -142,6 +142,7 @@ impl fmt::Display for FlycheckConfig {
 /// The spawned thread is shut down when this struct is dropped.
 #[derive(Debug)]
 pub(crate) struct FlycheckHandle {
+    // XXX: drop order is significant
     sender: Sender<StateChange>,
     _thread: stdx::thread::JoinHandle,
     id: usize,
@@ -243,11 +244,13 @@ pub(crate) enum FlycheckMessage {
         diagnostic: Diagnostic,
         package_id: Option<Arc<PackageId>>,
     },
+
     /// Request clearing all outdated diagnostics.
     ClearDiagnostics {
         id: usize,
         kind: ClearDiagnosticsKind,
     },
+
     /// Request check progress notification to client
     Progress {
         /// Flycheck instance ID

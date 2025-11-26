@@ -46,6 +46,7 @@ use crate::{
 /// This is used as a key for indexing impls.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum TyFingerprint {
+    // These are lang item impls:
     Str,
     Slice,
     Array,
@@ -57,9 +58,11 @@ pub enum TyFingerprint {
     Int(IntTy),
     Uint(UintTy),
     Float(FloatTy),
+    // These can have user-defined impls:
     Adt(hir_def::AdtId),
     Dyn(TraitId),
     ForeignType(TypeAliasId),
+    // These only exist for trait impls
     Unit,
     Unnameable,
     Function(u32),
@@ -172,6 +175,7 @@ type TraitFpMapCollector = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, V
 /// Trait impls defined or available in some crate.
 #[derive(Debug, Eq, PartialEq)]
 pub struct TraitImpls {
+    // If the `Option<TyFingerprint>` is `None`, the impl may apply to any self type.
     map: TraitFpMap,
 }
 

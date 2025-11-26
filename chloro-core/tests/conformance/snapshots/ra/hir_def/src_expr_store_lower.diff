@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 144317 bytes
-Chloro size:   143706 bytes
+Chloro size:   143786 bytes
 Rustfmt size:  144317 bytes
 
 ✗ Outputs DIFFER
@@ -89,8 +89,8 @@ Rustfmt size:  144317 bytes
      module: ModuleId,
      pub store: ExpressionStoreBuilder,
 -
--    // state stuff
--    // Prevent nested impl traits like `impl Foo<impl Bar>`.
+     // state stuff
+     // Prevent nested impl traits like `impl Foo<impl Bar>`.
      outer_impl_trait: bool,
 -
      is_lowering_coroutine: bool,

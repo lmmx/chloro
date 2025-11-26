@@ -303,6 +303,8 @@ pub enum MacroCallKind {
     FnLike {
         ast_id: AstId<ast::MacroCall>,
         expand_to: ExpandTo,
+        // FIXME: This is being interned, subtrees can vary quickly differing just slightly causing
+        // leakage problems here
         /// Some if this is a macro call for an eager macro. Note that this is `None`
         /// for the eager input macro file.
         eager: Option<Arc<EagerCallInfo>>,
@@ -322,6 +324,8 @@ pub enum MacroCallKind {
     },
     Attr {
         ast_id: AstId<ast::Item>,
+        // FIXME: This shouldn't be here, we can derive this from `invoc_attr_index`
+        // but we need to fix the `cfg_attr` handling first.
         attr_args: Option<Arc<tt::TopSubtree>>,
         /// Syntactical index of the invoking `#[attribute]`.
         ///

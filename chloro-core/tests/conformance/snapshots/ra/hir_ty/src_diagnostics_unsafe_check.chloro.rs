@@ -148,6 +148,7 @@ struct UnsafeVisitor<'db> {
     inside_union_destructure: bool,
     callback: &'db mut dyn FnMut(UnsafeDiagnostic),
     def_target_features: TargetFeatures,
+    // FIXME: This needs to be the edition of the span of each call.
     edition: Edition,
     /// On some targets (WASM), calling safe functions with `#[target_feature]` is always safe, even when
     /// the target feature is not enabled. This flag encodes that.

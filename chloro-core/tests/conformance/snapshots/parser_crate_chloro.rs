@@ -4810,8 +4810,10 @@ pub(crate) enum Event {
         kind: SyntaxKind,
         forward_parent: Option<u32>,
     },
+
     /// Complete the previous `Start` event
     Finish,
+
     /// Produce a single leaf-element.
     /// `n_raw_tokens` is used to glue complex contextual tokens.
     /// For example, lexer tokenizes `>>` as `>`, `>`, and
@@ -7619,6 +7621,7 @@ pub(super) fn param_list_closure(p: &mut Parser<'_>) {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Flavor {
     FnDef,
+    // Includes trait fn params; omitted param idents are not supported
     FnPointer,
     Closure,
 }

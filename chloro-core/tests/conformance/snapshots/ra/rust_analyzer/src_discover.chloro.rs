@@ -78,6 +78,7 @@ impl DiscoverCommand {
 #[derive(Debug)]
 pub(crate) struct DiscoverHandle {
     _handle: CommandHandle<DiscoverProjectMessage>,
+    // not accessed, but used to log on drop.
     #[allow(dead_code)]
     span: EnteredSpan,
 }

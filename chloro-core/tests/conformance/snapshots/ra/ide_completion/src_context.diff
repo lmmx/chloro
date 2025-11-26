@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 30787 bytes
-Chloro size:   30669 bytes
+Chloro size:   30780 bytes
 Rustfmt size:  31005 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- /// Existing qualifiers for the thing we are currently completing.
- #[derive(Debug, Default)]
- pub(crate) struct QualifierCtx {
--    // TODO: Add try_tok and default_tok
-     pub(crate) async_tok: Option<SyntaxToken>,
-     pub(crate) unsafe_tok: Option<SyntaxToken>,
-     pub(crate) safe_tok: Option<SyntaxToken>,
      pub(crate) qualified: Qualified<'db>,
      /// The parent of the path we are completing.
      pub(crate) parent: Option<ast::Path>,
@@ -52,10 +45,12 @@ Rustfmt size:  31005 bytes
      pub(crate) trigger_character: Option<char>,
      /// The token before the cursor, in the original file.
      pub(crate) original_token: SyntaxToken,
+     pub(crate) containing_function: Option<hir::Function>,
      /// Whether nightly toolchain is used. Cached since this is looked up a lot.
      pub(crate) is_nightly: bool,
-     /// The edition of the current crate
--    // FIXME: This should probably be the crate of the current token?
+-    /// The edition of the current crate
+     // FIXME: This should probably be the crate of the current token?
++    /// The edition of the current crate
      pub(crate) edition: Edition,
 -
      /// The expected name of what we are completing.

@@ -33,6 +33,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TraitItems {
     pub items: Box<[(Name, AssocItemId)]>,
+    // `ThinVec` as the vec is usually empty anyways
     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
 }
 
@@ -104,6 +105,7 @@ impl TraitItems {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ImplItems {
     pub items: Box<[(Name, AssocItemId)]>,
+    // `ThinVec` as the vec is usually empty anyways
     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
 }
 

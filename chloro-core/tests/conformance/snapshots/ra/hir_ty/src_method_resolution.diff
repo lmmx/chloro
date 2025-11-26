@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 65944 bytes
-Chloro size:   65578 bytes
+Chloro size:   65780 bytes
 Rustfmt size:  65944 bytes
 
 ✗ Outputs DIFFER
@@ -64,23 +64,6 @@ Rustfmt size:  65944 bytes
  };
  
  /// This is used as a key for indexing impls.
- #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
- pub enum TyFingerprint {
--    // These are lang item impls:
-     Str,
-     Slice,
-     Array,
-     Int(IntTy),
-     Uint(UintTy),
-     Float(FloatTy),
--    // These can have user-defined impls:
-     Adt(hir_def::AdtId),
-     Dyn(TraitId),
-     ForeignType(TypeAliasId),
--    // These only exist for trait impls
-     Unit,
-     Unnameable,
-     Function(u32),
  ];
  
  type TraitFpMap = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Box<[ImplId]>>>;
@@ -88,12 +71,6 @@ Rustfmt size:  65944 bytes
  type TraitFpMapCollector = FxHashMap<TraitId, FxHashMap<Option<TyFingerprint>, Vec<ImplId>>>;
  
  /// Trait impls defined or available in some crate.
- #[derive(Debug, Eq, PartialEq)]
- pub struct TraitImpls {
--    // If the `Option<TyFingerprint>` is `None`, the impl may apply to any self type.
-     map: TraitFpMap,
- }
- 
      }
  
      /// Queries whether `self_ty` has potentially applicable implementations of `trait_`.

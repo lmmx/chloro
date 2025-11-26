@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 8527 bytes
-Chloro size:   8383 bytes
+Chloro size:   8491 bytes
 Rustfmt size:  8697 bytes
 
 ✗ Outputs DIFFER
@@ -29,15 +29,6 @@ Rustfmt size:  8697 bytes
  /// `AssistContext` allows to apply an assist or check if it could be applied.
  ///
  /// Assists use a somewhat over-engineered approach, given the current needs.
-     frange: FileRange,
-     trimmed_range: TextRange,
-     source_file: SourceFile,
--    // We cache this here to speed up things slightly
-     token_at_offset: TokenAtOffset<SyntaxToken>,
--    // We cache this here to speed up things slightly
-     covering_element: SyntaxElement,
- }
- 
          let end = frange.range.end();
          let left = source_file.syntax().token_at_offset(start);
          let right = source_file.syntax().token_at_offset(end);

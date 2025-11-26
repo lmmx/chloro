@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17460 bytes
-Chloro size:   16238 bytes
+Chloro size:   16600 bytes
 Rustfmt size:  17756 bytes
 
 ✗ Outputs DIFFER
@@ -66,12 +66,6 @@ Rustfmt size:  17756 bytes
  impl FloatTypeWrapper {
      pub fn new(sym: Symbol) -> Self {
          Self(sym)
-     Bool(bool),
-     Int(i128, Option<BuiltinInt>),
-     Uint(u128, Option<BuiltinUint>),
--    // Here we are using a wrapper around float because float primitives do not implement Eq, so they
--    // could not be used directly here, to understand how the wrapper works go to definition of
--    // FloatTypeWrapper
      Float(FloatTypeWrapper, Option<BuiltinFloat>),
  }
  
@@ -114,20 +108,6 @@ Rustfmt size:  17756 bytes
                  Literal::String(text)
              }
              LiteralKind::CString(s) => {
-         tail: Option<ExprId>,
-     },
-     Const(ExprId),
--    // FIXME: Fold this into Block with an unsafe flag?
-     Unsafe {
-         id: Option<BlockId>,
-         statements: Box<[Statement]>,
-         rhs: ExprId,
-         op: Option<BinaryOp>,
-     },
--    // Assignments need a special treatment because of destructuring assignment.
-     Assignment {
-         target: PatId,
-         value: ExprId,
  
  #[derive(Clone, Copy, PartialEq, Eq, Hash)]
  pub struct AsmOptions(u16);
@@ -183,19 +163,6 @@ Rustfmt size:  17756 bytes
  }
  
  #[derive(Debug, Clone, Eq, PartialEq)]
-     /// mode `None`; if you do `let Some(x) = &Some(22)`, it will
-     /// ultimately be inferred to be by-reference.
-     Unannotated,
--
-     /// Annotated with `mut x` -- could be either ref or not, similar to `None`.
-     Mutable,
--
-     /// Annotated as `ref`, like `ref x`
-     Ref,
--
-     /// Annotated as `ref mut x`.
-     RefMut,
- }
                  args.iter().copied().for_each(f);
              }
              Pat::Ref { pat, .. } => f(*pat),

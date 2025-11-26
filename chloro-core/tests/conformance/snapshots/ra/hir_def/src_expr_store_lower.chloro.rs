@@ -413,6 +413,8 @@ pub struct ExprCollector<'db> {
     local_def_map: &'db LocalDefMap,
     module: ModuleId,
     pub store: ExpressionStoreBuilder,
+    // state stuff
+    // Prevent nested impl traits like `impl Foo<impl Bar>`.
     outer_impl_trait: bool,
     is_lowering_coroutine: bool,
     /// Legacy (`macro_rules!`) macros can have multiple definitions and shadow each other,

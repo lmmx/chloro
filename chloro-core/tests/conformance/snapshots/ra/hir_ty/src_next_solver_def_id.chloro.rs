@@ -29,6 +29,7 @@ pub enum SolverDefId {
     InternedCoroutineId(InternedCoroutineId),
     InternedOpaqueTyId(InternedOpaqueTyId),
     EnumVariantId(EnumVariantId),
+    // FIXME(next-solver): Do we need the separation of `Ctor`? It duplicates some variants.
     Ctor(Ctor),
 }
 

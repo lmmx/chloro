@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 19259 bytes
-Chloro size:   19054 bytes
+Chloro size:   19156 bytes
 Rustfmt size:  19938 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  19938 bytes
  use la_arena::{Arena, ArenaMap, Idx, IdxRange, RawIdx};
  use triomphe::Arc;
  
-     parent: Option<ScopeId>,
-     block: Option<BlockId>,
-     label: Option<(LabelId, Name)>,
--    // FIXME: We can compress this with an enum for this and `label`/`block` if memory usage matters.
-     macro_def: Option<Box<MacroDefId>>,
-     entries: IdxRange<ScopeEntry>,
- }
      }
  
      /// If `scope` refers to a macro def scope, returns the corresponding `MacroId`.

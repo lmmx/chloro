@@ -195,6 +195,7 @@ pub struct Evaluator<'db> {
     cached_fn_mut_trait_func: Option<FunctionId>,
     cached_fn_once_trait_func: Option<FunctionId>,
     crate_id: Crate,
+    // FIXME: This is a workaround, see the comment on `interpret_mir`
     assert_placeholder_ty_is_unused: bool,
     /// A general limit on execution, to prevent non terminating programs from breaking r-a main process
     execution_limit: usize,
@@ -351,6 +352,7 @@ pub enum MirEvalError<'db> {
     /// then use this type of error.
     UndefinedBehavior(String),
     Panic(String),
+    // FIXME: This should be folded into ConstEvalError?
     MirLowerError(FunctionId, MirLowerError<'db>),
     MirLowerErrorForClosure(InternedClosureId, MirLowerError<'db>),
     TypeIsUnsized(Ty<'db>, &'static str),

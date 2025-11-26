@@ -141,6 +141,7 @@ pub type PlaceholderRegion = Placeholder<BoundRegion>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct EarlyParamRegion {
+    // FIXME: See `ParamTy`.
     pub id: LifetimeParamId,
     pub index: u32,
 }
@@ -169,11 +170,13 @@ impl std::fmt::Debug for LateParamRegion {
 pub enum BoundRegionKind {
     /// An anonymous region parameter for a given fn (&T)
     Anon,
+
     /// Named region parameters for functions (a in &'a T)
     ///
     /// The `DefId` is needed to distinguish free regions in
     /// the event of shadowing.
     Named(SolverDefId),
+
     /// Anonymous region for the implicit env pointer parameter
     /// to a closure
     ClosureEnv,

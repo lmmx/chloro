@@ -20,6 +20,7 @@ pub struct HlMods(u32);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum HlTag {
     Symbol(SymbolKind),
+
     AttributeBracket,
     BoolLiteral,
     BuiltinType,
@@ -35,6 +36,8 @@ pub enum HlTag {
     Punctuation(HlPunct),
     StringLiteral,
     UnresolvedReference,
+
+    // For things which don't have a specific highlight.
     None,
 }
 
@@ -84,6 +87,7 @@ pub enum HlMod {
     Static,
     /// Used for items in traits and trait impls.
     Trait,
+    // Keep this last!
     /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
     Unsafe,
 }

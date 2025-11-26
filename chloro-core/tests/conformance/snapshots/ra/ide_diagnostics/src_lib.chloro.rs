@@ -153,6 +153,7 @@ pub struct Diagnostic {
     pub unused: bool,
     pub experimental: bool,
     pub fixes: Option<Vec<Assist>>,
+    // The node that will be affected by `#[allow]` and similar attributes.
     pub main_node: Option<InFile<SyntaxNodePtr>>,
 }
 
@@ -224,6 +225,7 @@ pub struct DiagnosticsConfig {
     pub disabled: FxHashSet<String>,
     pub expr_fill_default: ExprFillDefaultMode,
     pub style_lints: bool,
+    // FIXME: We may want to include a whole `AssistConfig` here
     pub snippet_cap: Option<SnippetCap>,
     pub insert_use: InsertUseConfig,
     pub prefer_no_std: bool,

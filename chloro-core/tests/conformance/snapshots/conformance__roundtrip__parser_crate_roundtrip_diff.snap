@@ -4316,16 +4316,6 @@ expression: cleaned_diff
  /// `Parser` produces a flat list of `Event`s.
  /// They are converted to a tree-structure in
  /// a separate pass, via `TreeBuilder`.
-         kind: SyntaxKind,
-         forward_parent: Option<u32>,
-     },
--
-     /// Complete the previous `Start` event
-     Finish,
--
-     /// Produce a single leaf-element.
-     /// `n_raw_tokens` is used to glue complex contextual tokens.
-     /// For example, lexer tokenizes `>>` as `>`, `>`, and
  
  impl Event {
      pub(crate) fn tombstone() -> Self {
@@ -5366,6 +5356,7 @@ expression: cleaned_diff
  enum Flavor {
 -    FnDef, // Includes trait fn params; omitted param idents are not supported
 +    FnDef,
++    // Includes trait fn params; omitted param idents are not supported
      FnPointer,
      Closure,
  }

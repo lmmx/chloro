@@ -20,6 +20,7 @@ pub(crate) enum TestState {
     Ok,
     Ignored,
     Failed {
+        // the stdout field is not always present depending on cargo test flags
         #[serde(skip_serializing_if = "String::is_empty", default)]
         stdout: String,
     },

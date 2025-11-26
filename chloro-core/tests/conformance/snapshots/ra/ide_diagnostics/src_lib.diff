@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33895 bytes
-Chloro size:   33582 bytes
+Chloro size:   33723 bytes
 Rustfmt size:  33895 bytes
 
 ✗ Outputs DIFFER
@@ -79,20 +79,6 @@ Rustfmt size:  33895 bytes
  #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
  pub enum DiagnosticCode {
      RustcHardError(&'static str),
-     pub unused: bool,
-     pub experimental: bool,
-     pub fixes: Option<Vec<Assist>>,
--    // The node that will be affected by `#[allow]` and similar attributes.
-     pub main_node: Option<InFile<SyntaxNodePtr>>,
- }
- 
-     pub disabled: FxHashSet<String>,
-     pub expr_fill_default: ExprFillDefaultMode,
-     pub style_lints: bool,
--    // FIXME: We may want to include a whole `AssistConfig` here
-     pub snippet_cap: Option<SnippetCap>,
-     pub insert_use: InsertUseConfig,
-     pub prefer_no_std: bool,
      let parse = sema.parse(editioned_file_id);
  
      // FIXME: This iterates the entire file which is a rather expensive operation.

@@ -46,6 +46,7 @@ pub struct ScopeData {
     parent: Option<ScopeId>,
     block: Option<BlockId>,
     label: Option<(LabelId, Name)>,
+    // FIXME: We can compress this with an enum for this and `label`/`block` if memory usage matters.
     macro_def: Option<Box<MacroDefId>>,
     entries: IdxRange<ScopeEntry>,
 }

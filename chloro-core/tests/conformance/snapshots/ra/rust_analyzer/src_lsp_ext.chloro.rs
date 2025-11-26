@@ -570,7 +570,9 @@ pub struct CargoRunnableArgs {
     pub override_cargo: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub workspace_root: Option<Utf8PathBuf>,
+    // command, --package and --lib stuff
     pub cargo_args: Vec<String>,
+    // stuff after --
     pub executable_args: Vec<String>,
 }
 
@@ -959,6 +961,7 @@ pub struct CompletionResolveData {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InlayHintResolveData {
     pub file_id: u32,
+    // This is a string instead of a u64 as javascript can't represent u64 fully
     pub hash: String,
     pub resolve_range: lsp_types::Range,
     #[serde(skip_serializing_if = "Option::is_none", default)]

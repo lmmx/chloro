@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11497 bytes
-Chloro size:   11469 bytes
+Chloro size:   11500 bytes
 Rustfmt size:  11829 bytes
 
 ✗ Outputs DIFFER
@@ -26,11 +26,6 @@ Rustfmt size:  11829 bytes
      }
  
      pub fn is_placeholder(&self) -> bool {
- 
- #[derive(Copy, Clone, PartialEq, Eq, Hash)]
- pub struct EarlyParamRegion {
--    // FIXME: See `ParamTy`.
-     pub id: LifetimeParamId,
      pub index: u32,
  }
  
@@ -45,19 +40,6 @@ Rustfmt size:  11829 bytes
  pub struct LateParamRegion {
      pub scope: SolverDefId,
      pub bound_region: BoundRegionKind,
- pub enum BoundRegionKind {
-     /// An anonymous region parameter for a given fn (&T)
-     Anon,
--
-     /// Named region parameters for functions (a in &'a T)
-     ///
-     /// The `DefId` is needed to distinguish free regions in
-     /// the event of shadowing.
-     Named(SolverDefId),
--
-     /// Anonymous region for the implicit env pointer parameter
-     /// to a closure
-     ClosureEnv,
      ) -> Result<Self, F::Error> {
          folder.try_fold_region(self)
      }

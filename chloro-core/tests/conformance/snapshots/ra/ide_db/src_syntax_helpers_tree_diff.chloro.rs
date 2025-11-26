@@ -15,6 +15,7 @@ enum TreeDiffInsertPos {
 pub struct TreeDiff {
     replacements: FxHashMap<SyntaxElement, SyntaxElement>,
     deletions: Vec<SyntaxElement>,
+    // the vec as well as the indexmap are both here to preserve order
     insertions: FxIndexMap<TreeDiffInsertPos, Vec<SyntaxElement>>,
 }
 

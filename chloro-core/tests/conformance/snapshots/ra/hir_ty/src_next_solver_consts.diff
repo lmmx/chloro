@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14262 bytes
-Chloro size:   14271 bytes
+Chloro size:   14369 bytes
 Rustfmt size:  14546 bytes
 
 ✗ Outputs DIFFER
@@ -30,13 +30,6 @@ Rustfmt size:  14546 bytes
      }
  
      pub fn new_valtree(
- 
- #[derive(Copy, Clone, Hash, Eq, PartialEq)]
- pub struct ParamConst {
--    // FIXME: See `ParamTy`.
-     pub id: ConstParamId,
-     pub index: u32,
- }
          });
  
          // N.B. it may be tempting to fix ICEs by making this function return
@@ -52,13 +45,6 @@ Rustfmt size:  14546 bytes
          // to modify this function.
          let ty = candidates.next().unwrap_or_else(|| {
              panic!("cannot find `{self:?}` in param-env: {env:#?}");
- #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, TypeFoldable, TypeVisitable)]
- pub struct ValueConst<'db> {
-     pub ty: Ty<'db>,
--    // FIXME: Should we ignore this for TypeVisitable, TypeFoldable?
-     #[type_visitable(ignore)]
-     #[type_foldable(identity)]
-     pub value: Valtree<'db>,
      ) -> Result<Self, F::Error> {
          folder.try_fold_const(self)
      }

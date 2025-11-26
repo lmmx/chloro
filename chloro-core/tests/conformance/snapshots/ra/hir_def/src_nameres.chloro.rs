@@ -104,6 +104,8 @@ const PREDEFINED_TOOLS: &[SmolStr] = &[
 /// DefMap.
 #[derive(Debug, PartialEq, Eq, Default)]
 pub struct LocalDefMap {
+    // FIXME: There are probably some other things that could be here, but this is less severe and you
+    // need to be careful with things that block def maps also have.
     /// The extern prelude which contains all root modules of external crates that are in scope.
     extern_prelude: FxIndexMap<Name, (CrateRootModuleId, Option<ExternCrateId>)>,
 }
@@ -164,6 +166,7 @@ pub struct DefMap {
     /// this contains all kinds of macro, not just `macro_rules!` macro.
     /// ExternCrateId being None implies it being imported from the general prelude import.
     macro_use_prelude: FxHashMap<Name, (MacroId, Option<ExternCrateId>)>,
+    // FIXME: Figure out a better way for the IDE layer to resolve these?
     /// Tracks which custom derives are in scope for an item, to allow resolution of derive helper
     /// attributes.
     derive_helpers_in_scope: FxHashMap<AstId<ast::Item>, Vec<(Name, MacroId, MacroCallId)>>,

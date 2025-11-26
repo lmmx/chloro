@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 35489 bytes
-Chloro size:   34409 bytes
+Chloro size:   35173 bytes
 Rustfmt size:  37277 bytes
 
 ✗ Outputs DIFFER
@@ -99,11 +99,7 @@ Rustfmt size:  37277 bytes
      /// A map from an variable usages to their hygiene ID.
      ///
      /// Expressions (and destructuing patterns) that can be recorded here are single segment path, although not all single segments path refer
- 
- #[derive(Debug, Eq, Default)]
- struct ExpressionOnlySourceMap {
--    // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
--    // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
+     // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
      expr_map: FxHashMap<ExprSource, ExprOrPatId>,
      expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
 -
@@ -126,11 +122,13 @@ Rustfmt size:  37277 bytes
 -
      expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
 -
-     /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
-     /// the source map (since they're just as volatile).
--    //
--    // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
--    // maybe for cfgs, and they are also not common in type places).
+-    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
+-    /// the source map (since they're just as volatile).
+     //
+     // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
+     // maybe for cfgs, and they are also not common in type places).
++    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
++    /// the source map (since they're just as volatile).
      diagnostics: ThinVec<ExpressionStoreDiagnostics>,
  }
  
@@ -163,8 +161,8 @@ Rustfmt size:  37277 bytes
      block_scopes: Vec<BlockId>,
      ident_hygiene: FxHashMap<ExprOrPatId, HygieneId>,
 -
--    // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
--    // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
+     // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
+     // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
      expr_map: FxHashMap<ExprSource, ExprOrPatId>,
      expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
 -
@@ -193,11 +191,13 @@ Rustfmt size:  37277 bytes
 -
      expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
 -
-     /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
-     /// the source map (since they're just as volatile).
--    //
--    // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
--    // maybe for cfgs, and they are also not common in type places).
+-    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
+-    /// the source map (since they're just as volatile).
+     //
+     // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
+     // maybe for cfgs, and they are also not common in type places).
++    /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
++    /// the source map (since they're just as volatile).
      pub(crate) diagnostics: Vec<ExpressionStoreDiagnostics>,
  }
  

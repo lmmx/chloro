@@ -75,6 +75,7 @@ pub type Variants = hir_def::layout::Variants<RustcFieldIdx, RustcEnumVariantIdx
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum LayoutError {
+    // FIXME: Remove more variants once they get added to LayoutCalculatorError
     BadCalc(LayoutCalculatorError<()>),
     HasErrorConst,
     HasErrorType,

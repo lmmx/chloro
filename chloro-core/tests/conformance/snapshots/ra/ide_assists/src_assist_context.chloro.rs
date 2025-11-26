@@ -50,7 +50,9 @@ pub(crate) struct AssistContext<'a> {
     frange: FileRange,
     trimmed_range: TextRange,
     source_file: SourceFile,
+    // We cache this here to speed up things slightly
     token_at_offset: TokenAtOffset<SyntaxToken>,
+    // We cache this here to speed up things slightly
     covering_element: SyntaxElement,
 }
 

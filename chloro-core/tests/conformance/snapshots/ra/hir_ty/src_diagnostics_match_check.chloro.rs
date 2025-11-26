@@ -54,11 +54,13 @@ pub(crate) struct Pat<'db> {
 pub(crate) enum PatKind<'db> {
     Wild,
     Never,
+
     /// `x`, `ref x`, `x @ P`, etc.
     Binding {
         name: Name,
         subpattern: Option<Pat<'db>>,
     },
+
     /// `Foo(...)` or `Foo{...}` or `Foo`, where `Foo` is a variant name from an ADT with
     /// multiple variants.
     Variant {
@@ -66,18 +68,23 @@ pub(crate) enum PatKind<'db> {
         enum_variant: EnumVariantId,
         subpatterns: Vec<FieldPat<'db>>,
     },
+
     /// `(...)`, `Foo(...)`, `Foo{...}`, or `Foo`, where `Foo` is a variant name from an ADT with
     /// a single variant.
     Leaf {
         subpatterns: Vec<FieldPat<'db>>,
     },
+
     /// `&P`, `&mut P`, etc.
     Deref {
         subpattern: Pat<'db>,
     },
+
+    // FIXME: for now, only bool literals are implemented
     LiteralBool {
         value: bool,
     },
+
     /// An or-pattern, e.g. `p | q`.
     /// Invariant: `pats.len() >= 2`.
     Or {

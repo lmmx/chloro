@@ -25,6 +25,7 @@ struct AstSubsts {
 #[derive(Debug)]
 enum TypeOrConst {
     Either(ast::TypeArg),
+    // indistinguishable type or const param
     Const(ast::ConstArg),
 }
 
