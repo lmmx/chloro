@@ -395,6 +395,8 @@ impl<'db> InferenceContext<'_, 'db> {
 
 #[derive(Debug)]
 enum ValuePathResolution<'db> {
+    // It's awkward to wrap a single ID in two enums, but we need both and this saves fallible
+    // conversion between them + `unwrap()`.
     GenericDef(ValueTyDefId, GenericDefId, GenericArgs<'db>),
     NonGeneric(Ty<'db>),
 }

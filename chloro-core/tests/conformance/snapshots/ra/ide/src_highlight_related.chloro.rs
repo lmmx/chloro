@@ -23,6 +23,9 @@ use crate::{NavigationTarget, TryToNav, goto_definition, navigation_target::ToNa
 #[derive(PartialEq, Eq, Hash)]
 pub struct HighlightedRange {
     pub range: TextRange,
+    // FIXME: This needs to be more precise. Reference category makes sense only
+    // for references, but we also have defs. And things like exit points are
+    // neither.
     pub category: ReferenceCategory,
 }
 

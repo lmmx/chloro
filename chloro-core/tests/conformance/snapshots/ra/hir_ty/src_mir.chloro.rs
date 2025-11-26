@@ -80,6 +80,7 @@ pub struct Local<'db> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Operand<'db> {
     kind: OperandKind<'db>,
+    // FIXME : This should actually just be of type `MirSpan`.
     span: Option<MirSpan>,
 }
 
@@ -90,6 +91,7 @@ pub enum OperandKind<'db> {
     /// Before drop elaboration, the type of the place must be `Copy`. After drop elaboration there
     /// is no such requirement.
     Copy(Place<'db>),
+
     /// Creates a value by performing loading the place, just like the `Copy` operand.
     ///
     /// This *may* additionally overwrite the place with `uninit` bytes, depending on how we decide
@@ -143,6 +145,7 @@ impl<'db> Operand<'db> {
 pub enum ProjectionElem<V, T> {
     Deref,
     Field(Either<FieldId, TupleFieldId>),
+    // FIXME: get rid of this, and use FieldId for tuples and closures
     ClosureField(usize),
     Index(V),
     ConstantIndex {
@@ -153,6 +156,7 @@ pub enum ProjectionElem<V, T> {
         from: u64,
         to: u64,
     },
+    //Downcast(Option<Symbol>, VariantIdx),
     OpaqueCast(T),
 }
 
@@ -371,7 +375,6 @@ pub enum AggregateKind<'db> {
     Adt(VariantId, GenericArgs<'db>),
     Union(UnionId, FieldId),
     Closure(Ty<'db>),
-    //Coroutine(LocalDefId, SubstsRef, Movability),
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -379,6 +382,15 @@ pub struct SwitchTargets<'db> {
     /// Possible values. The locations to branch to in each case
     /// are found in the corresponding indices from the `targets` vector.
     values: SmallVec<[u128; 1]>,
+    //
+    // This invariant is quite non-obvious and also could be improved.
+    // One way to make this invariant is to have something like this instead:
+    //
+    // branches: Vec<(ConstInt, BasicBlock)>,
+    // otherwise: Option<BasicBlock> // exhaustive if None
+    //
+    // However we’ve decided to keep this as-is until we figure a case
+    // where some other approach seems to be strictly better than other.
     /// Possible branch sites. The last element of this vector is used
     /// for the otherwise branch, so targets.len() == values.len() + 1
     /// should hold.
@@ -448,6 +460,7 @@ pub enum TerminatorKind<'db> {
     Goto {
         target: BasicBlockId<'db>,
     },
+
     /// Switches based on the computed value.
     ///
     /// First, evaluates the `discr` operand. The type of the operand must be a signed or unsigned
@@ -461,6 +474,7 @@ pub enum TerminatorKind<'db> {
         discr: Operand<'db>,
         targets: SwitchTargets<'db>,
     },
+
     /// Indicates that the landing pad is finished and that the process should continue unwinding.
     ///
     /// Like a return, this marks the end of this invocation of the function.
@@ -468,11 +482,13 @@ pub enum TerminatorKind<'db> {
     /// Only permitted in cleanup blocks. `Resume` is not permitted with `-C unwind=abort` after
     /// deaggregation runs.
     UnwindResume,
+
     /// Indicates that the landing pad is finished and that the process should abort.
     ///
     /// Used to prevent unwinding for foreign items or with `-C unwind=abort`. Only permitted in
     /// cleanup blocks.
     Abort,
+
     /// Returns from the function.
     ///
     /// Like function calls, the exact semantics of returns in Rust are unclear. Returning very
@@ -485,10 +501,12 @@ pub enum TerminatorKind<'db> {
     /// `CoroutineState::Returned(_0)` to be created (as if by an `Aggregate` rvalue) and assigned
     /// to the return place.
     Return,
+
     /// Indicates a terminator that can never be reached.
     ///
     /// Executing this terminator is UB.
     Unreachable,
+
     /// The behavior of this statement differs significantly before and after drop elaboration.
     /// After drop elaboration, `Drop` executes the drop glue for the specified place, after which
     /// it continues execution/unwinds at the given basic blocks. It is possible that executing drop
@@ -510,6 +528,7 @@ pub enum TerminatorKind<'db> {
         target: BasicBlockId<'db>,
         unwind: Option<BasicBlockId<'db>>,
     },
+
     /// Drops the place and assigns a new value to it.
     ///
     /// This first performs the exact same operation as the pre drop-elaboration `Drop` terminator;
@@ -546,6 +565,7 @@ pub enum TerminatorKind<'db> {
         target: BasicBlockId<'db>,
         unwind: Option<BasicBlockId<'db>>,
     },
+
     /// Roughly speaking, evaluates the `func` operand and the arguments, and starts execution of
     /// the referred to function. The operand types must match the argument types of the function.
     /// The return place type must match the return type. The type of the `func` operand must be
@@ -573,10 +593,8 @@ pub enum TerminatorKind<'db> {
         /// `true` if this is from a call in HIR rather than from an overloaded
         /// operator. True for overloaded function call.
         from_hir_call: bool,
-        // This `Span` is the span of the function, without the dot and receiver
-        // (e.g. `foo(a, b)` in `x.foo(a, b)`
-        //fn_span: Span,
     },
+
     /// Evaluates the operand, which must have type `bool`. If it is not equal to `expected`,
     /// initiates a panic. Initiating a panic corresponds to a `Call` terminator with some
     /// unspecified constant as the function to call, all the operands stored in the `AssertMessage`
@@ -586,9 +604,11 @@ pub enum TerminatorKind<'db> {
     Assert {
         cond: Operand<'db>,
         expected: bool,
+        //msg: AssertMessage,
         target: BasicBlockId<'db>,
         cleanup: Option<BasicBlockId<'db>>,
     },
+
     /// Marks a suspend point.
     ///
     /// Like `Return` terminators in coroutine bodies, this computes `value` and then a
@@ -611,6 +631,7 @@ pub enum TerminatorKind<'db> {
         /// Cleanup to be done if the coroutine is dropped at this suspend point.
         drop: Option<BasicBlockId<'db>>,
     },
+
     /// Indicates the end of dropping a coroutine.
     ///
     /// Semantically just a `return` (from the coroutines drop glue). Only permitted in the same situations
@@ -622,6 +643,7 @@ pub enum TerminatorKind<'db> {
     /// **Needs clarification**: Are there type system constraints on these terminators? Should
     /// there be a "block type" like `cleanup` blocks for them?
     CoroutineDrop,
+
     /// A block where control flow only ever takes one real path, but borrowck needs to be more
     /// conservative.
     ///
@@ -635,6 +657,7 @@ pub enum TerminatorKind<'db> {
         /// practice.
         imaginary_target: BasicBlockId<'db>,
     },
+
     /// A terminator for blocks that only take one path in reality, but where we reserve the right
     /// to unwind in borrowck, even if it won't happen in practice. This can arise in infinite loops
     /// with no function calls for example.
@@ -659,6 +682,7 @@ pub enum TerminatorKind<'db> {
 pub enum BorrowKind {
     /// Data must be immutable and is aliasable.
     Shared,
+
     /// The immediately borrowed place must be immutable, but projections from
     /// it don't need to be. For example, a shallow borrow of `a.b` doesn't
     /// conflict with a mutable borrow of `a.b.c`.
@@ -679,6 +703,7 @@ pub enum BorrowKind {
     /// mutating `(*x as Some).0` can't affect the discriminant of `x`.
     /// We can also report errors with this kind of borrow differently.
     Shallow,
+
     /// Data is mutable and not aliasable.
     Mut {
         kind: MutBorrowKind,
@@ -869,10 +894,12 @@ pub enum CastKind {
 pub enum Rvalue<'db> {
     /// Yields the operand unchanged
     Use(Operand<'db>),
+
     /// Creates an array where each element is the value of the operand.
     ///
     /// Corresponds to source code like `[x; 32]`.
     Repeat(Operand<'db>, Const<'db>),
+
     /// Creates a reference of the indicated kind to the place.
     ///
     /// There is not much to document here, because besides the obvious parts the semantics of this
@@ -881,6 +908,8 @@ pub enum Rvalue<'db> {
     ///
     /// `Shallow` borrows are disallowed after drop lowering.
     Ref(BorrowKind, Place<'db>),
+
+    // ThreadLocalRef(DefId),
     /// Creates a pointer/reference to the given thread local.
     ///
     /// The yielded type is a `*mut T` if the static is mutable, otherwise if the static is extern a
@@ -893,6 +922,8 @@ pub enum Rvalue<'db> {
     /// **Needs clarification**: Are there weird additional semantics here related to the runtime
     /// nature of this operation?
     ThreadLocalRef(std::convert::Infallible),
+
+    // AddressOf(Mutability, Place),
     /// Creates a pointer with the indicated mutability to the place.
     ///
     /// This is generated by pointer casts like `&v as *const _` or raw address of expressions like
@@ -901,12 +932,14 @@ pub enum Rvalue<'db> {
     /// Like with references, the semantics of this operation are heavily dependent on the aliasing
     /// model.
     AddressOf(std::convert::Infallible),
+
     /// Yields the length of the place, as a `usize`.
     ///
     /// If the type of the place is an array, this is the array length. For slices (`[T]`, not
     /// `&[T]`) this accesses the place's metadata to determine the length. This rvalue is
     /// ill-formed for places of other types.
     Len(Place<'db>),
+
     /// Performs essentially all of the casts that can be performed via `as`.
     ///
     /// This allows for casts from/to a variety of types.
@@ -914,6 +947,9 @@ pub enum Rvalue<'db> {
     /// **FIXME**: Document exactly which `CastKind`s allow which types of casts. Figure out why
     /// `ArrayToPointer` and `MutToConstPointer` are special.
     Cast(CastKind, Operand<'db>, Ty<'db>),
+
+    // FIXME link to `pointer::offset` when it hits stable.
+    //BinaryOp(BinOp, Box<(Operand, Operand)>),
     /// * `Offset` has the same semantics as `pointer::offset`, except that the second
     ///   parameter may be a `usize` as well.
     /// * The comparison operations accept `bool`s, `char`s, signed or unsigned integers, floats,
@@ -927,6 +963,7 @@ pub enum Rvalue<'db> {
     /// * The remaining operations accept signed integers, unsigned integers, or floats with
     ///   matching types and return a value of that type.
     BinaryOp(std::convert::Infallible),
+
     /// Same as `BinaryOp`, but yields `(T, bool)` with a `bool` indicating an error condition.
     ///
     /// When overflow checking is disabled and we are generating run-time code, the error condition
@@ -942,14 +979,18 @@ pub enum Rvalue<'db> {
     ///
     /// Other combinations of types and operators are unsupported.
     CheckedBinaryOp(BinOp, Operand<'db>, Operand<'db>),
+
+    //NullaryOp(NullOp, Ty),
     /// Computes a value as described by the operation.
     NullaryOp(std::convert::Infallible),
+
     /// Exactly like `BinaryOp`, but less operands.
     ///
     /// Also does two's-complement arithmetic. Negation requires a signed integer or a float;
     /// bitwise not requires a signed integer, unsigned integer, or bool. Both operation kinds
     /// return a value with the same type as their operand.
     UnaryOp(UnOp, Operand<'db>),
+
     /// Computes the discriminant of the place, returning it as an integer of type
     /// [`discriminant_ty`]. Returns zero for types without discriminant.
     ///
@@ -961,6 +1002,7 @@ pub enum Rvalue<'db> {
     /// [#91095]: https://github.com/rust-lang/rust/issues/91095
     /// [`discriminant_for_variant`]: crate::ty::Ty::discriminant_for_variant
     Discriminant(Place<'db>),
+
     /// Creates an aggregate value, like a tuple or struct.
     ///
     /// This is needed because dataflow analysis needs to distinguish
@@ -970,14 +1012,17 @@ pub enum Rvalue<'db> {
     /// Disallowed after deaggregation for all aggregate kinds except `Array` and `Coroutine`. After
     /// coroutine lowering, `Coroutine` aggregate kinds are disallowed too.
     Aggregate(AggregateKind<'db>, Box<[Operand<'db>]>),
+
     /// Transmutes a `*mut u8` into shallow-initialized `Box<T>`.
     ///
     /// This is different from a normal transmute because dataflow analysis will treat the box as
     /// initialized but its content as uninitialized. Like other pointer casts, this in general
     /// affects alias analysis.
     ShallowInitBox(Operand<'db>, Ty<'db>),
+
     /// NON STANDARD: allocates memory with the type's layout, and shallow init the box with the resulting pointer.
     ShallowInitBoxWithAlloc(Ty<'db>),
+
     /// A CopyForDeref is equivalent to a read from a place at the
     /// codegen level, but is treated specially by drop elaboration. When such a read happens, it
     /// is guaranteed (via nature of the mir_opt `Derefer` in rustc_mir_transform/src/deref_separator)
@@ -993,9 +1038,16 @@ pub enum Rvalue<'db> {
 pub enum StatementKind<'db> {
     Assign(Place<'db>, Rvalue<'db>),
     FakeRead(Place<'db>),
+    //SetDiscriminant {
+    //    place: Box<Place>,
+    //    variant_index: VariantIdx,
+    //},
     Deinit(Place<'db>),
     StorageLive(LocalId<'db>),
     StorageDead(LocalId<'db>),
+    //Retag(RetagKind, Box<Place>),
+    //AscribeUserType(Place, UserTypeProjection, Variance),
+    //Intrinsic(Box<NonDivergingIntrinsic>),
     Nop,
 }
 

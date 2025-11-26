@@ -34,6 +34,7 @@ pub(crate) struct SyntaxFixups {
 /// This is the information needed to reverse the fixups.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SyntaxFixupUndoInfo {
+    // FIXME: ThinArc<[Subtree]>
     original: Option<Arc<Box<[TopSubtree]>>>,
 }
 

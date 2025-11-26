@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 99713 bytes
-Chloro size:   99240 bytes
+Chloro size:   99313 bytes
 Rustfmt size:  99713 bytes
 
 ✗ Outputs DIFFER
@@ -104,6 +104,13 @@ Rustfmt size:  99713 bytes
  #[derive(Copy, Clone)]
  pub enum DisplayLifetime {
      Always,
+ #[derive(Default)]
+ enum BoundsFormattingCtx<'db> {
+     Entered {
++        //. prevent recursing into their bounds to avoid infinite loops.
+         /// We can have recursive bounds like the following case:
+         /// ```ignore
+         /// where
          ///     T::FooAssoc: Baz<<T::FooAssoc as Bar>::BarAssoc> + Bar
          /// ```
          /// So, record the projection types met while formatting bounds and

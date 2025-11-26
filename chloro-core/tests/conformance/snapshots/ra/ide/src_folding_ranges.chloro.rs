@@ -24,12 +24,12 @@ pub enum FoldKind {
     ReturnType,
     MatchArm,
     Function,
+    // region: item runs
     Modules,
     Consts,
     Statics,
     TypeAliases,
     ExternCrates,
-    // endregion: item runs
 }
 
 #[derive(Debug)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 13221 bytes
-Chloro size:   13083 bytes
+Chloro size:   13203 bytes
 Rustfmt size:  13526 bytes
 
 ✗ Outputs DIFFER
@@ -30,10 +30,9 @@ Rustfmt size:  13526 bytes
  
  #[derive(Debug, Default, Clone)]
  pub struct DiagnosticsMapConfig {
- 
  #[derive(Debug, Default, Clone)]
  pub(crate) struct DiagnosticCollection {
--    // FIXME: should be FxHashMap<FileId, Vec<ra_id::Diagnostic>>
+     // FIXME: should be FxHashMap<FileId, Vec<ra_id::Diagnostic>>
 -    pub(crate) native_syntax:
 -        FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
 -    pub(crate) native_semantic:
@@ -43,13 +42,6 @@ Rustfmt size:  13526 bytes
      pub(crate) check: Vec<WorkspaceFlycheckDiagnostic>,
      pub(crate) check_fixes: CheckFixes,
      changes: FxHashSet<FileId>,
- 
- #[derive(Debug, Clone)]
- pub(crate) struct Fix {
--    // Fixes may be triggerable from multiple ranges.
-     pub(crate) ranges: SmallVec<[lsp_types::Range; 1]>,
-     pub(crate) action: lsp_ext::CodeAction,
- }
          let Some(check) = self.check.get_mut(flycheck_id) else {
              return;
          };

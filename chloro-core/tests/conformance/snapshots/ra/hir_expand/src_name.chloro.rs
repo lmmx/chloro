@@ -18,6 +18,8 @@ use syntax::{ast, format_smolstr};
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     symbol: Symbol,
+    // If you are making this carry actual hygiene, beware that the special handling for variables and labels
+    // in bodies can go.
     ctx: (),
 }
 

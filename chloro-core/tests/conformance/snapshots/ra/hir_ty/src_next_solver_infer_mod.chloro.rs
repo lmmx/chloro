@@ -271,8 +271,10 @@ pub struct TypeTrace<'db> {
 pub enum BoundRegionConversionTime {
     /// when a fn is called
     FnCall,
+
     /// when two higher-ranked types are compared
     HigherRankedType,
+
     /// when projecting an associated type
     AssocTypeProjection(SolverDefId),
 }
@@ -1165,6 +1167,7 @@ pub enum TyOrConstInferVar {
     TyInt(IntVid),
     /// Equivalent to `Infer(FloatVar(_))`.
     TyFloat(FloatVid),
+
     /// Equivalent to `ConstKind::Infer(InferConst::Var(_))`.
     Const(ConstVid),
 }

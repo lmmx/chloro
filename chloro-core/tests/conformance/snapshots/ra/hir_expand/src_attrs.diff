@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16886 bytes
-Chloro size:   16521 bytes
+Chloro size:   16648 bytes
 Rustfmt size:  17571 bytes
 
 ✗ Outputs DIFFER
@@ -31,13 +31,6 @@ Rustfmt size:  17571 bytes
  use triomphe::ThinArc;
  
  use crate::{
- /// Syntactical attributes, without filtering of `cfg_attr`s.
- #[derive(Default, Debug, Clone, PartialEq, Eq)]
- pub struct RawAttrs {
--    // FIXME: This can become `Box<[Attr]>` if https://internals.rust-lang.org/t/layout-of-dst-box/21728?u=chrefr is accepted.
-     entries: Option<ThinArc<(), Attr>>,
- }
- 
          span_map: SpanMapRef<'_>,
      ) -> impl Iterator<Item = Attr> {
          collect_attrs(owner).filter_map(move |(id, attr)| match attr {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 17194 bytes
-Chloro size:   17146 bytes
+Chloro size:   17215 bytes
 Rustfmt size:  17194 bytes
 
 ✗ Outputs DIFFER
@@ -45,10 +45,3 @@ Rustfmt size:  17194 bytes
  }
  
  pub fn unsafe_operations_for_body<'db>(
-     inside_union_destructure: bool,
-     callback: &'db mut dyn FnMut(UnsafeDiagnostic),
-     def_target_features: TargetFeatures,
--    // FIXME: This needs to be the edition of the span of each call.
-     edition: Edition,
-     /// On some targets (WASM), calling safe functions with `#[target_feature]` is always safe, even when
-     /// the target feature is not enabled. This flag encodes that.

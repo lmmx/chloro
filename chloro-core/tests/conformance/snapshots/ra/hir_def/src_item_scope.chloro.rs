@@ -163,11 +163,14 @@ pub struct ItemScope {
     unnamed_consts: ThinVec<ConstId>,
     /// Traits imported via `use Trait as _;`.
     unnamed_trait_imports: ThinVec<(TraitId, Item<()>)>,
+    // the resolutions of the imports of this scope
     use_imports_types: FxHashMap<ImportOrExternCrate, ImportOrDef>,
     use_imports_values: FxHashMap<ImportOrGlob, ImportOrDef>,
     use_imports_macros: FxHashMap<ImportOrExternCrate, ImportOrDef>,
     use_decls: ThinVec<UseId>,
     extern_crate_decls: ThinVec<ExternCrateId>,
+    // FIXME: Macro shadowing in one module is not properly handled. Non-item place macros will
+    // be all resolved to the last one defined if shadowing happens.
     /// Macros visible in current module in legacy textual scope
     ///
     /// For macros invoked by an unqualified identifier like `bar!()`, `legacy_macros` will be searched in first.

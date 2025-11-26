@@ -247,6 +247,7 @@ pub fn remove_path_if_in_use_stmt(path: &ast::Path) {
 
 #[derive(Eq, PartialEq, PartialOrd, Ord)]
 enum ImportGroup {
+    // the order here defines the order of new group inserts
     Std,
     ExternCrate,
     ThisCrate,

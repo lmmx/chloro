@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 51306 bytes
-Chloro size:   50927 bytes
+Chloro size:   51296 bytes
 Rustfmt size:  52438 bytes
 
 ✗ Outputs DIFFER
@@ -355,22 +355,6 @@ Rustfmt size:  52438 bytes
  impl<'db> Tys<'db> {
      pub fn inputs(&self) -> &[Ty<'db>] {
          self.as_slice().split_last().unwrap().1
- 
- #[derive(Copy, Clone, PartialEq, Eq, Hash)]
- pub struct ParamTy {
--    // FIXME: I'm not pleased with this. Ideally a `Param` should only know its index - the defining item
--    // is known from the `EarlyBinder`. This should also be beneficial for memory usage. But code currently
--    // assumes it can get the definition from `Param` alone - so that's what we got.
-     pub id: TypeParamId,
-     pub index: u32,
- }
- #[derive(Copy, Clone, PartialEq, Eq, Hash)]
- pub struct BoundTy {
-     pub var: BoundVar,
--    // FIXME: This is for diagnostics in rustc, do we really need it?
-     pub kind: BoundTyKind,
- }
- 
      ) -> Result<Self, F::Error> {
          Ok(self)
      }

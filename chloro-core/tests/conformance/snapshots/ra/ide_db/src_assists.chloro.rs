@@ -147,6 +147,7 @@ pub enum AssistResolveStrategy {
 pub struct SingleResolve {
     /// The id of the assist.
     pub assist_id: String,
+    // The kind of the assist.
     pub assist_kind: AssistKind,
     /// Subtype of the assist. When many assists have the same id, it differentiates among them.
     pub assist_subtype: Option<usize>,

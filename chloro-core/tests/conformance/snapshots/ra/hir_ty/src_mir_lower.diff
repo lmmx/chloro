@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 95826 bytes
-Chloro size:   95572 bytes
+Chloro size:   95605 bytes
 Rustfmt size:  95826 bytes
 
 ✗ Outputs DIFFER
@@ -90,13 +90,6 @@ Rustfmt size:  95826 bytes
  #[derive(Debug, Clone, PartialEq, Eq)]
  pub enum MirLowerError<'db> {
      ConstEvalError(Box<str>, Box<ConstEvalError<'db>>),
-     UnresolvedLabel,
-     UnresolvedUpvar(Place<'db>),
-     InaccessibleLocal,
--
--    // monomorphization errors:
-     GenericArgNotProvided(GenericParamId, GenericArgs<'db>),
- }
  
  /// A token to ensuring that each drop scope is popped at most once, thanks to the compiler that checks moves.
  struct DropScopeToken;

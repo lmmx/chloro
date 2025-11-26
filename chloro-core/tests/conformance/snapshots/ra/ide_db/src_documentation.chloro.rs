@@ -50,6 +50,9 @@ pub trait HasDocs {
 #[derive(Debug)]
 pub struct DocsRangeMap {
     source_map: AttrSourceMap,
+    // (docstring-line-range, attr_index, attr-string-range)
+    // a mapping from the text range of a line of the [`Documentation`] to the attribute index and
+    // the original (untrimmed) syntax doc line
     mapping: Vec<(TextRange, AttrId, TextRange)>,
 }
 

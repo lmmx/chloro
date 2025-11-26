@@ -1266,6 +1266,7 @@ impl Graph {
 struct Visitor<'g> {
     graph: &'g Graph,
     visited: Vec<bool>,
+    // Stack is held in this struct so we can reuse its buffer.
     stack: Vec<usize>,
 }
 

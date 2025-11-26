@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 74236 bytes
-Chloro size:   72771 bytes
+Chloro size:   73140 bytes
 Rustfmt size:  74236 bytes
 
 ✗ Outputs DIFFER
@@ -90,13 +90,6 @@ Rustfmt size:  74236 bytes
      // backwards compatibility. This makes fallback a stronger type hint than a cast coercion.
      let cast_checks = std::mem::take(&mut ctx.deferred_cast_checks);
      for mut cast in cast_checks.into_iter() {
-     UnresolvedIdent {
-         id: ExprOrPatId,
-     },
--    // FIXME: This should be emitted in body lowering
-     BreakOutsideOfLoop {
-         expr: ExprId,
-         is_break: bool,
  impl<'db> Adjustment<'db> {
      pub fn borrow(interner: DbInterner<'db>, m: Mutability, ty: Ty<'db>, lt: Region<'db>) -> Self {
          let ty = Ty::new_ref(interner, lt, ty, m);
@@ -108,54 +101,30 @@ Rustfmt size:  74236 bytes
      }
  }
  
- /// See #49434 for tracking.
- #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
- pub(crate) enum AllowTwoPhase {
--    // FIXME: We should use this when appropriate.
-     Yes,
-     No,
- }
- pub enum PointerCast {
-     /// Go from a fn-item type to a fn-pointer type.
-     ReifyFnPointer,
--
-     /// Go from a safe fn pointer to an unsafe fn pointer.
-     UnsafeFnPointer,
--
-     /// Go from a non-capturing closure to an fn pointer or an unsafe fn pointer.
-     /// It cannot convert a closure that requires unsafe.
-     ClosureFnPointer(Safety),
--
      /// Go from a mut raw pointer to a const raw pointer.
      MutToConstPointer,
--
+ 
 -    #[allow(dead_code)]
      /// Go from `*const [T; N]` to `*const T`
 +    #[allow(dead_code)]
      ArrayToPointer,
--
+ 
      /// Unsize a pointer/reference value, e.g., `&[T; n]` to
-     /// `&[T]`. Note that the source could be a thin or fat pointer.
-     /// This will do things like convert thin pointers to fat
+     pub(crate) type_of_binding: ArenaMap<BindingId, Ty<'db>>,
      pub(crate) type_of_opaque: FxHashMap<InternedOpaqueTyId, Ty<'db>>,
      type_mismatches: FxHashMap<ExprOrPatId, TypeMismatch<'db>>,
-     /// Whether there are any type-mismatching errors in the result.
--    // FIXME: This isn't as useful as initially thought due to us falling back placeholders to
--    // `TyKind::Error`.
--    // Which will then mark this field.
+-    /// Whether there are any type-mismatching errors in the result.
+     // FIXME: This isn't as useful as initially thought due to us falling back placeholders to
+     // `TyKind::Error`.
+     // Which will then mark this field.
++    /// Whether there are any type-mismatching errors in the result.
      pub(crate) has_errors: bool,
-     /// Interned `Error` type to return references to.
--    // FIXME: Remove this.
+-    /// Interned `Error` type to return references to.
+     // FIXME: Remove this.
++    /// Interned `Error` type to return references to.
      error_ty: Ty<'db>,
      /// Stores the types which were implicitly dereferenced in pattern binding modes.
      pub(crate) pat_adjustments: FxHashMap<PatId, Vec<Ty<'db>>>,
-     pub(crate) binding_modes: ArenaMap<PatId, BindingMode>,
-     pub(crate) expr_adjustments: FxHashMap<ExprId, Box<[Adjustment<'db>]>>,
-     pub(crate) closure_info: FxHashMap<InternedClosureId, (Vec<CapturedItem<'db>>, FnTrait)>,
--    // FIXME: remove this field
-     pub mutated_bindings_in_closure: FxHashSet<BindingId>,
-     pub(crate) coercion_casts: FxHashSet<ExprId>,
- }
      pub fn method_resolution(&self, expr: ExprId) -> Option<(FunctionId, GenericArgs<'db>)> {
          self.method_resolutions.get(&expr).copied()
      }
@@ -295,10 +264,9 @@ Rustfmt size:  74236 bytes
 -
      deferred_cast_checks: Vec<CastCheck<'db>>,
 -
--    // fields related to closure capture
+     // fields related to closure capture
      current_captures: Vec<CapturedItemWithoutTy<'db>>,
      /// A stack that has an entry for each projection in the current capture.
-     ///
      /// comment on `InferenceContext::sort_closures`
      closure_dependencies: FxHashMap<InternedClosureId, Vec<InternedClosureId>>,
      deferred_closures: FxHashMap<InternedClosureId, Vec<(Ty<'db>, Ty<'db>, Vec<Ty<'db>>, ExprId)>>,

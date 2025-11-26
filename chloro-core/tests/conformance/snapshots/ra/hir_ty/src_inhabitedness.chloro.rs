@@ -51,6 +51,7 @@ pub(crate) fn is_enum_variant_uninhabited_from<'db>(
 struct UninhabitedFrom<'a, 'db> {
     target_mod: ModuleId,
     recursive_ty: FxHashSet<Ty<'db>>,
+    // guard for preventing stack overflow in non trivial non terminating types
     max_depth: usize,
     infcx: &'a InferCtxt<'db>,
     env: Arc<TraitEnvironment<'db>>,

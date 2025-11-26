@@ -80,6 +80,7 @@ pub(crate) enum BodyOrSig<'db> {
         source_map: Arc<BodySourceMap>,
         infer: Option<Arc<InferenceResult<'db>>>,
     },
+    // To be folded into body once it is considered one
     VariantFields {
         def: VariantId,
         store: Arc<ExpressionStore>,
@@ -89,7 +90,6 @@ pub(crate) enum BodyOrSig<'db> {
         def: GenericDefId,
         store: Arc<ExpressionStore>,
         source_map: Arc<ExpressionStoreSourceMap>,
-        // infer: Option<Arc<InferenceResult>>,
     },
 }
 

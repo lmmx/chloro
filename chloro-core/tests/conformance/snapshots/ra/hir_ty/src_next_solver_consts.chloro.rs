@@ -116,6 +116,7 @@ pub type PlaceholderConst = Placeholder<BoundConst>;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
 pub struct ParamConst {
+    // FIXME: See `ParamTy`.
     pub id: ConstParamId,
     pub index: u32,
 }
@@ -171,6 +172,7 @@ impl ParamConst {
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, TypeFoldable, TypeVisitable)]
 pub struct ValueConst<'db> {
     pub ty: Ty<'db>,
+    // FIXME: Should we ignore this for TypeVisitable, TypeFoldable?
     #[type_visitable(ignore)]
     #[type_foldable(identity)]
     pub value: Valtree<'db>,

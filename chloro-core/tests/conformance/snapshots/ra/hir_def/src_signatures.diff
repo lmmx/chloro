@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 33467 bytes
-Chloro size:   30420 bytes
+Chloro size:   30594 bytes
 Rustfmt size:  34530 bytes
 
 ✗ Outputs DIFFER
@@ -157,10 +157,6 @@ Rustfmt size:  34530 bytes
  #[derive(Debug, PartialEq, Eq)]
  pub struct ConstSignature {
      pub name: Option<Name>,
--    // generic_params: Arc<GenericParams>,
-     pub store: Arc<ExpressionStore>,
-     pub type_ref: TypeRefId,
-     pub flags: ConstFlags,
          self.flags.contains(ConstFlags::HAS_BODY)
      }
  }
@@ -181,7 +177,7 @@ Rustfmt size:  34530 bytes
  pub struct StaticSignature {
      pub name: Name,
 -
--    // generic_params: Arc<GenericParams>,
+     // generic_params: Arc<GenericParams>,
      pub store: Arc<ExpressionStore>,
      pub type_ref: TypeRefId,
      pub flags: StaticFlags,
@@ -306,13 +302,6 @@ Rustfmt size:  34530 bytes
  #[derive(Debug, PartialEq, Eq)]
  pub struct FunctionSignature {
      pub name: Name,
-     pub ret_type: Option<TypeRefId>,
-     pub abi: Option<Symbol>,
-     pub flags: FnFlags,
--    // FIXME: we should put this behind a fn flags + query to avoid bloating the struct
-     pub legacy_const_generics_indices: Option<Box<Box<[u32]>>>,
- }
- 
  
          let name = as_name_opt(source.value.name());
          let abi = source.value.abi().map(|abi| {

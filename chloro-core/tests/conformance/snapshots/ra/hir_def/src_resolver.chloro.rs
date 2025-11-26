@@ -96,10 +96,13 @@ pub enum TypeNs {
     GenericParam(TypeParamId),
     AdtId(AdtId),
     AdtSelfType(AdtId),
+    // Yup, enum variants are added to the types ns, but any usage of variant as
+    // type is an error.
     EnumVariantId(EnumVariantId),
     TypeAliasId(TypeAliasId),
     BuiltinType(BuiltinType),
     TraitId(TraitId),
+
     ModuleId(ModuleId),
 }
 

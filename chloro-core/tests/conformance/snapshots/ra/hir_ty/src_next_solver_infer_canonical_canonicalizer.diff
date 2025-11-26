@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 29589 bytes
-Chloro size:   29449 bytes
+Chloro size:   29548 bytes
 Rustfmt size:  29841 bytes
 
 ✗ Outputs DIFFER
@@ -65,14 +65,6 @@ Rustfmt size:  29841 bytes
      }
  
      fn any(&self) -> bool {
-     tcx: DbInterner<'db>,
-     variables: SmallVec<[CanonicalVarKind<'db>; 8]>,
-     query_state: &'cx mut OriginalQueryValues<'db>,
--    // Note that indices is only used once `var_values` is big enough to be
--    // heap-allocated.
-     indices: FxHashMap<GenericArg<'db>, BoundVar>,
-     /// Maps each `sub_unification_table_root_var` to the index of the first
-     /// variable which used it.
      sub_root_lookup_table: FxHashMap<TyVid, usize>,
      canonicalize_mode: &'cx dyn CanonicalizeMode,
      needs_canonical_flags: TypeFlags,

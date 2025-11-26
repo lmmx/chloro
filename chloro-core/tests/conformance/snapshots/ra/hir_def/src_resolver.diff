@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 54481 bytes
-Chloro size:   54332 bytes
+Chloro size:   54439 bytes
 Rustfmt size:  54481 bytes
 
 ✗ Outputs DIFFER
@@ -72,19 +72,6 @@ Rustfmt size:  54481 bytes
      /// Local bindings
      ExprScope(ExprScope),
      /// Macro definition inside bodies that affects all paths after it in the same block.
-     GenericParam(TypeParamId),
-     AdtId(AdtId),
-     AdtSelfType(AdtId),
--    // Yup, enum variants are added to the types ns, but any usage of variant as
--    // type is an error.
-     EnumVariantId(EnumVariantId),
-     TypeAliasId(TypeAliasId),
-     BuiltinType(BuiltinType),
-     TraitId(TraitId),
--
-     ModuleId(ModuleId),
- }
- 
          &self,
          db: &dyn DefDatabase,
          path: &Path,

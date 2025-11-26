@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 9566 bytes
-Chloro size:   9166 bytes
+Chloro size:   9212 bytes
 Rustfmt size:  10026 bytes
 
 ✗ Outputs DIFFER
@@ -29,16 +29,6 @@ Rustfmt size:  10026 bytes
      AliasTy, Binder, Const, DbInterner, Goal, ParamEnv, Predicate, PredicateKind, Region, Span, Ty,
      TyKind,
  };
- /// A greatest lower bound" (common subtype) or least upper bound (common supertype).
- pub(crate) struct LatticeOp<'infcx, 'db> {
-     infcx: &'infcx InferCtxt<'db>,
--    // Immutable fields
-     trace: TypeTrace<'db>,
-     param_env: ParamEnv<'db>,
--    // Mutable fields
-     kind: LatticeOpKind,
-     obligations: PredicateObligations<'db>,
- }
          param_env: ParamEnv<'db>,
          kind: LatticeOpKind,
      ) -> LatticeOp<'infcx, 'db> {

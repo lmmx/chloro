@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 23100 bytes
-Chloro size:   22129 bytes
+Chloro size:   22131 bytes
 Rustfmt size:  23685 bytes
 
 ✗ Outputs DIFFER
@@ -195,22 +195,16 @@ Rustfmt size:  23685 bytes
      }
  }
  
-         path: Interned<ModPath>,
-         alias: Option<ImportAlias>,
-     },
--
-     /// ```ignore
      /// use *;  // (invalid, but can occur in nested tree)
      /// use path::*;
      /// ```
 -    Glob { path: Option<Interned<ModPath>> },
--
 +    Glob {
 +        path: Option<Interned<ModPath>>,
 +    },
+ 
      /// ```ignore
      /// use prefix::{self, Item, ...};
-     /// ```
  }
  
  #[derive(Debug, Clone, Eq, PartialEq)]

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14353 bytes
-Chloro size:   14231 bytes
+Chloro size:   14288 bytes
 Rustfmt size:  14730 bytes
 
 ✗ Outputs DIFFER
@@ -127,7 +127,7 @@ Rustfmt size:  14730 bytes
  pub(crate) struct TyVidEqKey<'db> {
      vid: TyVid,
 -
--    // in the table, we map each ty-vid to one of these:
+     // in the table, we map each ty-vid to one of these:
      phantom: PhantomData<TypeVariableValue<'db>>,
  }
  

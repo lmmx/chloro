@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 227843 bytes
-Chloro size:   225685 bytes
+Chloro size:   225872 bytes
 Rustfmt size:  227843 bytes
 
 ✗ Outputs DIFFER
@@ -227,14 +227,6 @@ Rustfmt size:  227843 bytes
      },
  };
  
-     Module(Module),
-     Function(Function),
-     Adt(Adt),
--    // Can't be directly declared, but can be imported.
--    // FIXME: Rename to `EnumVariant`
-     Variant(Variant),
-     Const(Const),
-     Static(Static),
      BuiltinType(BuiltinType),
      Macro(Macro),
  }
@@ -369,10 +361,6 @@ Rustfmt size:  227843 bytes
      pub fn str() -> BuiltinType {
          BuiltinType { inner: hir_def::builtin_type::BuiltinType::Str }
      }
-     Trait(Trait),
-     TypeAlias(TypeAlias),
-     Impl(Impl),
--    // consts can have type parameters from their parents (i.e. associated consts of traits)
      Const(Const),
      Static(Static),
  }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 49754 bytes
-Chloro size:   49345 bytes
+Chloro size:   49348 bytes
 Rustfmt size:  49754 bytes
 
 ✗ Outputs DIFFER
@@ -178,16 +178,6 @@ Rustfmt size:  49754 bytes
      /// What is the innermost universe we have created? Starts out as
      /// `UniverseIndex::root()` but grows from there as we enter
      /// universal quantifiers.
- pub enum BoundRegionConversionTime {
-     /// when a fn is called
-     FnCall,
--
-     /// when two higher-ranked types are compared
-     HigherRankedType,
--
-     /// when projecting an associated type
-     AssocTypeProjection(SolverDefId),
- }
          };
  
          // This can get called from typeck (by euv), and `moves_by_default`
@@ -212,13 +202,6 @@ Rustfmt size:  49754 bytes
      pub fn instantiate_binder_with_fresh_vars<T>(
          &self,
          _lbrct: BoundRegionConversionTime,
-     TyInt(IntVid),
-     /// Equivalent to `Infer(FloatVar(_))`.
-     TyFloat(FloatVid),
--
-     /// Equivalent to `ConstKind::Infer(InferConst::Var(_))`.
-     Const(ConstVid),
- }
          a: TraitRef<'db>,
          b: TraitRef<'db>,
      ) -> TypeTrace<'db> {

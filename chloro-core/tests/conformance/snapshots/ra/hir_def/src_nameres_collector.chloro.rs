@@ -206,6 +206,7 @@ enum MacroDirectiveKind<'db> {
         ast_id: AstIdWithPath<ast::Item>,
         attr: Attr,
         mod_item: ModItemId,
+        /* is this needed? */
         tree: TreeId,
         item_tree: &'db ItemTree,
     },
@@ -218,11 +219,15 @@ struct DefCollector<'db> {
     local_def_map: LocalDefMap,
     /// Set only in case of blocks.
     crate_local_def_map: Option<&'db LocalDefMap>,
+    // The dependencies of the current crate, including optional deps like `test`.
     deps: FxIndexMap<Name, BuiltDependency>,
     glob_imports: FxHashMap<LocalModuleId, Vec<(LocalModuleId, Visibility, GlobId)>>,
     unresolved_imports: Vec<ImportDirective>,
     indeterminate_imports: Vec<(ImportDirective, PerNs)>,
     unresolved_macros: Vec<MacroDirective<'db>>,
+    // We'd like to avoid emitting a diagnostics avalanche when some `extern crate` doesn't
+    // resolve. When we emit diagnostics for unresolved imports, we only do so if the import
+    // doesn't start with an unresolved crate's name.
     unresolved_extern_crates: FxHashSet<Name>,
     mod_dirs: FxHashMap<LocalModuleId, ModDir>,
     cfg_options: &'db CfgOptions,
@@ -233,6 +238,7 @@ struct DefCollector<'db> {
     proc_macros: Box<[(Name, CustomProcMacroExpander, bool)]>,
     is_proc_macro: bool,
     from_glob_import: PerNsGlobImports,
+    // FIXME: There has to be a better way to do this
     /// If we fail to resolve an attribute on a `ModItem`, we fall back to ignoring the attribute.
     /// This map is used to skip all attributes up to and including the one that failed to resolve,
     /// in order to not expand them twice.

@@ -84,6 +84,8 @@ enum CfgExprStage {
     StrippigCfgExpr,
     /// Found the comma after the CFGExpr. Will keep all tokens until the next comma or the end of the attribute
     FoundComma,
+    // FIXME: cfg_attr with multiple attributes will not be handled correctly. We will only keep the first attribute
+    // Related Issue: https://github.com/rust-lang/rust-analyzer/issues/10110
     /// Everything following the attribute. This could be another attribute or the end of the attribute.
     EverythingElse,
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 16583 bytes
-Chloro size:   16531 bytes
+Chloro size:   16417 bytes
 Rustfmt size:  16583 bytes
 
 ✗ Outputs DIFFER
@@ -29,6 +29,22 @@ Rustfmt size:  16583 bytes
  };
  
  #[derive(Debug)]
+     Float,
+     FnPtr,
+     Ptr(Ty<'db>, Mutability),
+-    // `DynStar` is Not supported yet in r-a
+ }
+ 
+ impl<'db> CastTy<'db> {
+     NeedViaThinPtr,
+     NeedViaInt,
+     NonScalar,
+-    // We don't want to report errors with unknown types currently.
+-    // UnknownCastPtrKind,
+-    // UnknownExprPtrKind,
+ }
+ 
+ impl CastError {
          }
  
          // Chalk doesn't support trait upcasting and fails to solve some obvious goals
@@ -45,14 +61,3 @@ Rustfmt size:  16583 bytes
          match (t_from, t_cast) {
              (_, CastTy::Int(Int::CEnum) | CastTy::FnPtr) => Err(CastError::NonScalar),
              (_, CastTy::Int(Int::Bool)) => Err(CastError::CastToBool),
- 
- #[derive(Debug, PartialEq, Eq)]
- enum PointerKind<'db> {
--    // thin pointer
-     Thin,
--    // trait object
-     VTable(BoundExistentialPredicates<'db>),
--    // slice
-     Length,
-     OfAlias,
-     OfParam(ParamTy),

@@ -2,24 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 10817 bytes
-Chloro size:   10479 bytes
+Chloro size:   10561 bytes
 Rustfmt size:  10923 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
- pub enum HlTag {
-     Symbol(SymbolKind),
--
-     AttributeBracket,
-     BoolLiteral,
-     BuiltinType,
-     Punctuation(HlPunct),
-     StringLiteral,
-     UnresolvedReference,
--
--    // For things which don't have a specific highlight.
      None,
  }
  
@@ -34,13 +22,6 @@ Rustfmt size:  10923 bytes
      /// Used with keywords like `async` and `await`.
      Async,
      /// Used to differentiate individual elements within attribute calls.
-     Static,
-     /// Used for items in traits and trait impls.
-     Trait,
--    // Keep this last!
-     /// Used for unsafe functions, unsafe traits, mutable statics, union accesses and unsafe operations.
-     Unsafe,
- }
      }
  
      fn mask(self) -> u32 {

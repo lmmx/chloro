@@ -213,6 +213,7 @@ impl EnumSignature {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ConstSignature {
     pub name: Option<Name>,
+    // generic_params: Arc<GenericParams>,
     pub store: Arc<ExpressionStore>,
     pub type_ref: TypeRefId,
     pub flags: ConstFlags,
@@ -254,6 +255,7 @@ impl ConstSignature {
 #[derive(Debug, PartialEq, Eq)]
 pub struct StaticSignature {
     pub name: Name,
+    // generic_params: Arc<GenericParams>,
     pub store: Arc<ExpressionStore>,
     pub type_ref: TypeRefId,
     pub flags: StaticFlags,
@@ -432,6 +434,7 @@ pub struct FunctionSignature {
     pub ret_type: Option<TypeRefId>,
     pub abi: Option<Symbol>,
     pub flags: FnFlags,
+    // FIXME: we should put this behind a fn flags + query to avoid bloating the struct
     pub legacy_const_generics_indices: Option<Box<Box<[u32]>>>,
 }
 

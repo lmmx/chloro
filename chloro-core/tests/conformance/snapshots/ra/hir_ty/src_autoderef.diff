@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 12941 bytes
-Chloro size:   12853 bytes
+Chloro size:   12917 bytes
 Rustfmt size:  13256 bytes
 
 ✗ Outputs DIFFER
@@ -56,20 +56,16 @@ Rustfmt size:  13256 bytes
      fn push(&mut self, ty: Ty<'db>, kind: AutoderefKind) {
          self.push((ty, kind));
      }
- /// Although called `Autoderef` it can be configured to use the
- /// `Receiver` trait instead of the `Deref` trait.
- pub(crate) struct Autoderef<'a, 'db, Steps = Vec<(Ty<'db>, AutoderefKind)>> {
--    // Meta infos:
+     // Meta infos:
      pub(crate) table: &'a mut InferenceTable<'db>,
      traits: Option<AutoderefTraits>,
 -
--    // Current state:
+     // Current state:
      state: AutoderefSnapshot<'db, Steps>,
 -
--    // Configurations:
+     // Configurations:
      include_raw_pointers: bool,
      use_receiver_trait: bool,
- }
      type Item = (Ty<'db>, usize);
  
      fn next(&mut self) -> Option<Self::Item> {

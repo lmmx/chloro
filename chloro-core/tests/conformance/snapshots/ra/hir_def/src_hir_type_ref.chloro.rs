@@ -132,6 +132,8 @@ pub enum TypeRef {
     Tuple(ThinVec<TypeRefId>),
     Path(Path),
     RawPtr(TypeRefId, Mutability),
+    // FIXME: Unbox this once `Idx` has a niche,
+    // as `RefType` should shrink by 4 bytes then
     Reference(Box<RefType>),
     Array(ArrayType),
     Slice(TypeRefId),
@@ -274,6 +276,11 @@ pub enum LiteralConstRef {
     UInt(u128),
     Bool(bool),
     Char(char),
+
+    // FIXME: this is a hack to get around chalk not being able to represent unevaluatable
+    // constants
+    // https://github.com/rust-lang/rust-analyzer/pull/8813#issuecomment-840679177
+    // https://rust-lang.zulipchat.com/#narrow/stream/144729-wg-traits/topic/Handling.20non.20evaluatable.20constants'.20equality/near/238386348
     /// Case of an unknown value that rustc might know but we don't
     Unknown,
 }

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14069 bytes
-Chloro size:   13950 bytes
+Chloro size:   14056 bytes
 Rustfmt size:  14657 bytes
 
 ✗ Outputs DIFFER
@@ -19,13 +19,6 @@ Rustfmt size:  14657 bytes
      },
      AssocItemId, AstIdWithPath, ConstLoc, FunctionId, FunctionLoc, ImplId, ItemContainerId,
      ItemLoc, MacroCallId, ModuleId, TraitId, TypeAliasId, TypeAliasLoc,
- #[derive(Debug, Clone, PartialEq, Eq)]
- pub struct TraitItems {
-     pub items: Box<[(Name, AssocItemId)]>,
--    // `ThinVec` as the vec is usually empty anyways
-     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
- }
- 
          db: &dyn DefDatabase,
          tr: TraitId,
      ) -> (TraitItems, DefDiagnostics) {
@@ -78,13 +71,6 @@ Rustfmt size:  14657 bytes
      }
  
      pub fn macro_calls(&self) -> impl Iterator<Item = (AstId<ast::Item>, MacroCallId)> + '_ {
- #[derive(Debug, PartialEq, Eq)]
- pub struct ImplItems {
-     pub items: Box<[(Name, AssocItemId)]>,
--    // `ThinVec` as the vec is usually empty anyways
-     pub macro_calls: ThinVec<(AstId<ast::Item>, MacroCallId)>,
- }
- 
      #[salsa::tracked(returns(ref))]
      pub fn of(db: &dyn DefDatabase, id: ImplId) -> (ImplItems, DefDiagnostics) {
          let _p = tracing::info_span!("impl_items_with_diagnostics_query").entered();

@@ -459,6 +459,7 @@ pub enum UseTreeKind {
         path: Interned<ModPath>,
         alias: Option<ImportAlias>,
     },
+
     /// ```ignore
     /// use *;  // (invalid, but can occur in nested tree)
     /// use path::*;
@@ -466,6 +467,7 @@ pub enum UseTreeKind {
     Glob {
         path: Option<Interned<ModPath>>,
     },
+
     /// ```ignore
     /// use prefix::{self, Item, ...};
     /// ```

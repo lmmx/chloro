@@ -131,6 +131,7 @@ impl<N: AstIdNode> HasModule for ItemLoc<N> {
 
 #[derive(Debug)]
 pub struct AssocItemLoc<N: AstIdNode> {
+    // FIXME: Store this as an erased `salsa::Id` to save space
     pub container: ItemContainerId,
     pub id: AstId<N>,
 }
@@ -557,6 +558,7 @@ pub type LocalModuleId = Idx<nameres::ModuleData>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FieldId {
+    // FIXME: Store this as an erased `salsa::Id` to save space
     pub parent: VariantId,
     pub local_id: LocalFieldId,
 }
@@ -572,6 +574,7 @@ pub struct TupleFieldId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TypeOrConstParamId {
+    // FIXME: Store this as an erased `salsa::Id` to save space
     pub parent: GenericDefId,
     pub local_id: LocalTypeOrConstParamId,
 }
@@ -632,6 +635,7 @@ impl From<ConstParamId> for TypeOrConstParamId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LifetimeParamId {
+    // FIXME: Store this as an erased `salsa::Id` to save space
     pub parent: GenericDefId,
     pub local_id: LocalLifetimeParamId,
 }
@@ -676,6 +680,7 @@ pub enum ModuleDefId {
     ModuleId(ModuleId),
     FunctionId(FunctionId),
     AdtId(AdtId),
+    // Can't be directly declared, but can be imported.
     EnumVariantId(EnumVariantId),
     ConstId(ConstId),
     StaticId(StaticId),
@@ -721,12 +726,6 @@ pub enum DefWithBodyId {
     StaticId(StaticId),
     ConstId(ConstId),
     VariantId(EnumVariantId),
-    // /// All fields of a variant are inference roots
-    // VariantId(VariantId),
-    // /// The signature can contain inference roots in a bunch of places
-    // /// like const parameters or const arguments in paths
-    // This should likely be kept on its own with a separate query
-    // GenericDefId(GenericDefId),
 }
 impl From<EnumVariantId> for DefWithBodyId {
     fn from(id: EnumVariantId) -> Self {
@@ -768,9 +767,13 @@ impl From<AssocItemId> for ModuleDefId {
 #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa_macros::Supertype)]
 pub enum GenericDefId {
     AdtId(AdtId),
+    // consts can have type parameters from their parents (i.e. associated consts of traits)
     ConstId(ConstId),
     FunctionId(FunctionId),
     ImplId(ImplId),
+    // can't actually have generics currently, but they might in the future
+    // More importantly, this completes the set of items that contain type references
+    // which is to be used by the signature expression store in the future.
     StaticId(StaticId),
     TraitId(TraitId),
     TypeAliasId(TypeAliasId),

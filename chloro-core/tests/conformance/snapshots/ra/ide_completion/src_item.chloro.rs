@@ -67,6 +67,9 @@ pub struct CompletionItem {
     /// all possible items, and then separately build an ordered completion list
     /// based on relevance and fuzzy matching with the already typed identifier.
     pub relevance: CompletionRelevance,
+    // FIXME: We shouldn't expose Mutability here (that is HIR types at all), its fine for now though
+    // until we have more splitting completions in which case we should think about
+    // generalizing this. See https://github.com/rust-lang/rust-analyzer/issues/12571
     /// Indicates that a reference or mutable reference to this variable is a
     /// possible match.
     pub ref_match: Option<(CompletionItemRefMode, TextSize)>,

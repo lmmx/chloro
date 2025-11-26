@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 14963 bytes
-Chloro size:   14880 bytes
+Chloro size:   14951 bytes
 Rustfmt size:  15195 bytes
 
 ✗ Outputs DIFFER
@@ -18,13 +18,6 @@ Rustfmt size:  15195 bytes
  
  #[derive(Debug, Hash, PartialEq, Eq)]
  enum TreeDiffInsertPos {
- pub struct TreeDiff {
-     replacements: FxHashMap<SyntaxElement, SyntaxElement>,
-     deletions: Vec<SyntaxElement>,
--    // the vec as well as the indexmap are both here to preserve order
-     insertions: FxIndexMap<TreeDiffInsertPos, Vec<SyntaxElement>>,
- }
- 
                  TreeDiffInsertPos::After(it) => it.text_range().end(),
                  TreeDiffInsertPos::AsFirstChild(it) => it.text_range().start(),
              };

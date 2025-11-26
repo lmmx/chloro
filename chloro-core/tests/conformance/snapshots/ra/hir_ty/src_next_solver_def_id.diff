@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 11678 bytes
-Chloro size:   11024 bytes
+Chloro size:   11117 bytes
 Rustfmt size:  12164 bytes
 
 ✗ Outputs DIFFER
@@ -15,13 +15,6 @@ Rustfmt size:  12164 bytes
  use super::DbInterner;
  
  #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Hash, salsa::Supertype)]
-     InternedCoroutineId(InternedCoroutineId),
-     InternedOpaqueTyId(InternedOpaqueTyId),
-     EnumVariantId(EnumVariantId),
--    // FIXME(next-solver): Do we need the separation of `Ctor`? It duplicates some variants.
-     Ctor(Ctor),
- }
- 
          let interner = DbInterner::conjure();
          let db = interner.db;
          match *self {

@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 18694 bytes
-Chloro size:   18377 bytes
+Chloro size:   18448 bytes
 Rustfmt size:  18694 bytes
 
 ✗ Outputs DIFFER
@@ -49,13 +49,6 @@ Rustfmt size:  18694 bytes
  };
  
  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-     Method(FunctionId, MethodViolationCode),
-     AssocConst(ConstId),
-     GAT(TypeAliasId),
--    // This doesn't exist in rustc, but added for better visualization
-     HasNonCompatibleSuperTrait(TraitId),
- }
- 
      }
  
      // rustc checks for non-lifetime binders here, but we don't support HRTB yet

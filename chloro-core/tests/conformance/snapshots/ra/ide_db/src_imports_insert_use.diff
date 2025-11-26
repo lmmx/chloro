@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 20506 bytes
-Chloro size:   20445 bytes
+Chloro size:   20506 bytes
 Rustfmt size:  20506 bytes
 
 ✗ Outputs DIFFER
@@ -46,10 +46,3 @@ Rustfmt size:  20506 bytes
  /// How imports should be grouped into use statements.
  #[derive(Copy, Clone, Debug, PartialEq, Eq)]
  pub enum ImportGranularity {
- 
- #[derive(Eq, PartialEq, PartialOrd, Ord)]
- enum ImportGroup {
--    // the order here defines the order of new group inserts
-     Std,
-     ExternCrate,
-     ThisCrate,

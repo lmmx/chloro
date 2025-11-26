@@ -305,6 +305,7 @@ impl<'db> TypeVariableTable<'_, 'db> {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) struct TyVidEqKey<'db> {
     vid: TyVid,
+    // in the table, we map each ty-vid to one of these:
     phantom: PhantomData<TypeVariableValue<'db>>,
 }
 

@@ -62,6 +62,7 @@ pub struct RaFixtureAnalysis {
     virtual_file_id_to_line: Vec<usize>,
     mapper: RangeMapper,
     literal: ast::String,
+    // `minicore` etc..
     sysroot_files: Vec<FileId>,
     combined_len: TextSize,
 }

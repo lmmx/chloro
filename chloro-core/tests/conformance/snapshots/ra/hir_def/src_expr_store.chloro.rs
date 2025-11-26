@@ -128,6 +128,8 @@ pub struct ExpressionStore {
 
 #[derive(Debug, Eq, Default)]
 struct ExpressionOnlySourceMap {
+    // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
+    // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
     expr_map: FxHashMap<ExprSource, ExprOrPatId>,
     expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
     pat_map: FxHashMap<PatSource, ExprOrPatId>,
@@ -141,6 +143,9 @@ struct ExpressionOnlySourceMap {
     pat_field_map_back: FxHashMap<PatId, PatFieldSource>,
     template_map: Option<Box<FormatTemplate>>,
     expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
+    //
+    // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
+    // maybe for cfgs, and they are also not common in type places).
     /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
     /// the source map (since they're just as volatile).
     diagnostics: ThinVec<ExpressionStoreDiagnostics>,
@@ -215,6 +220,8 @@ pub struct ExpressionStoreBuilder {
     pub types: Arena<TypeRef>,
     block_scopes: Vec<BlockId>,
     ident_hygiene: FxHashMap<ExprOrPatId, HygieneId>,
+    // AST expressions can create patterns in destructuring assignments. Therefore, `ExprSource` can also map
+    // to `PatId`, and `PatId` can also map to `ExprSource` (the other way around is unaffected).
     expr_map: FxHashMap<ExprSource, ExprOrPatId>,
     expr_map_back: ArenaMap<ExprId, ExprOrPatSource>,
     pat_map: FxHashMap<PatSource, ExprOrPatId>,
@@ -232,6 +239,9 @@ pub struct ExpressionStoreBuilder {
     pat_field_map_back: FxHashMap<PatId, PatFieldSource>,
     template_map: Option<Box<FormatTemplate>>,
     expansions: FxHashMap<InFile<MacroCallPtr>, MacroCallId>,
+    //
+    // We store diagnostics on the `ExpressionOnlySourceMap` because diagnostics are rare (except
+    // maybe for cfgs, and they are also not common in type places).
     /// Diagnostics accumulated during lowering. These contain `AstPtr`s and so are stored in
     /// the source map (since they're just as volatile).
     pub(crate) diagnostics: Vec<ExpressionStoreDiagnostics>,

@@ -40,6 +40,7 @@ pub(crate) struct PackageFlycheckDiagnostic {
 
 #[derive(Debug, Default, Clone)]
 pub(crate) struct DiagnosticCollection {
+    // FIXME: should be FxHashMap<FileId, Vec<ra_id::Diagnostic>>
     pub(crate) native_syntax: FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
     pub(crate) native_semantic: FxHashMap<FileId, (DiagnosticsGeneration, Vec<lsp_types::Diagnostic>)>,
     pub(crate) check: Vec<WorkspaceFlycheckDiagnostic>,
@@ -54,6 +55,7 @@ pub(crate) struct DiagnosticCollection {
 
 #[derive(Debug, Clone)]
 pub(crate) struct Fix {
+    // Fixes may be triggerable from multiple ranges.
     pub(crate) ranges: SmallVec<[lsp_types::Range; 1]>,
     pub(crate) action: lsp_ext::CodeAction,
 }

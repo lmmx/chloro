@@ -2,7 +2,7 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 87058 bytes
-Chloro size:   86556 bytes
+Chloro size:   86672 bytes
 Rustfmt size:  87058 bytes
 
 ✗ Outputs DIFFER
@@ -77,43 +77,26 @@ Rustfmt size:  87058 bytes
  };
  
  pub(crate) struct PathDiagnosticCallbackData(pub(crate) TypeRefId);
-     /// bounds at the same time to get the IDs correct (without becoming too
-     /// complicated).
-     mode: ImplTraitLoweringMode,
--    // This is structured as a struct with fields and not as an enum because it helps with the borrow checker.
-     opaque_type_data: Arena<ImplTrait<'db>>,
- }
- 
      /// struct Foo<'a> { x: &'a () }
      /// async fn foo(Foo { x: _ }: Foo<'_>) {}
      /// ```
 -    AnonymousCreateParameter { report_in_path: bool },
--
 +    AnonymousCreateParameter {
 +        report_in_path: bool,
 +    },
+ 
      /// Replace all anonymous lifetimes by provided lifetime.
      Elided(Region<'db>),
--
-     /// Give a hard error when either `&` or `'_` is written. Used to
-     /// rule out things like `where T: Foo<'_>`. Does not imply an
-     /// error on default object bounds (e.g., `Box<dyn Foo>`).
-     AnonymousReportError,
--
      /// Resolves elided lifetimes to `'static` if there are no other lifetimes in scope,
      /// otherwise give a warning that the previous behavior of introducing a new early-bound
      /// lifetime is a bug and will be removed (if `only_lint` is enabled).
 -    StaticIfNoLifetimeInScope { only_lint: bool },
--
 +    StaticIfNoLifetimeInScope {
 +        only_lint: bool,
 +    },
+ 
      /// Signal we cannot find which should be the anonymous lifetime.
      ElisionFailure,
--
-     /// Infer all elided lifetimes.
-     Infer,
- }
          )
      }
  

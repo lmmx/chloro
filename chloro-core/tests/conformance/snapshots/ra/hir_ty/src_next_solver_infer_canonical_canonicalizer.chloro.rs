@@ -309,6 +309,8 @@ struct Canonicalizer<'cx, 'db> {
     tcx: DbInterner<'db>,
     variables: SmallVec<[CanonicalVarKind<'db>; 8]>,
     query_state: &'cx mut OriginalQueryValues<'db>,
+    // Note that indices is only used once `var_values` is big enough to be
+    // heap-allocated.
     indices: FxHashMap<GenericArg<'db>, BoundVar>,
     /// Maps each `sub_unification_table_root_var` to the index of the first
     /// variable which used it.

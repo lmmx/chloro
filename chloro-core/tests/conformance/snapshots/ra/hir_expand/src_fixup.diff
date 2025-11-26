@@ -2,19 +2,12 @@ COMPARISON DIFF
 ============================================================
 
 Original size: 28147 bytes
-Chloro size:   27627 bytes
+Chloro size:   27660 bytes
 Rustfmt size:  28368 bytes
 
 ✗ Outputs DIFFER
 
 === DIFF (- rustfmt, + chloro) ===
- /// This is the information needed to reverse the fixups.
- #[derive(Clone, Debug, Default, PartialEq, Eq)]
- pub struct SyntaxFixupUndoInfo {
--    // FIXME: ThinArc<[Subtree]>
-     original: Option<Arc<Box<[TopSubtree]>>>,
- }
- 
      pub(crate) const NONE: Self = SyntaxFixupUndoInfo { original: None };
  }
  

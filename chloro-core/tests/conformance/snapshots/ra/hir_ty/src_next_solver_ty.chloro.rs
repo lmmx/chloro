@@ -1231,6 +1231,9 @@ pub type PlaceholderTy = Placeholder<BoundTy>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct ParamTy {
+    // FIXME: I'm not pleased with this. Ideally a `Param` should only know its index - the defining item
+    // is known from the `EarlyBinder`. This should also be beneficial for memory usage. But code currently
+    // assumes it can get the definition from `Param` alone - so that's what we got.
     pub id: TypeParamId,
     pub index: u32,
 }
@@ -1250,6 +1253,7 @@ impl std::fmt::Debug for ParamTy {
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct BoundTy {
     pub var: BoundVar,
+    // FIXME: This is for diagnostics in rustc, do we really need it?
     pub kind: BoundTyKind,
 }
 

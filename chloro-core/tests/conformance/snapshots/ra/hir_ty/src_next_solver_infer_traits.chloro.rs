@@ -29,6 +29,8 @@ use super::InferCtxt;
 /// only live for a short period of time.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObligationCause {
+    // FIXME: This should contain an `ExprId`/`PatId` etc., and a cause code. But for now we
+    // don't report trait solving diagnostics, so this is irrelevant.
     _private: (),
 }
 

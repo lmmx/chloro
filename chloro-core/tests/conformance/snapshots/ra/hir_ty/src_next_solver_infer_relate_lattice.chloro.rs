@@ -50,8 +50,10 @@ impl LatticeOpKind {
 /// A greatest lower bound" (common subtype) or least upper bound (common supertype).
 pub(crate) struct LatticeOp<'infcx, 'db> {
     infcx: &'infcx InferCtxt<'db>,
+    // Immutable fields
     trace: TypeTrace<'db>,
     param_env: ParamEnv<'db>,
+    // Mutable fields
     kind: LatticeOpKind,
     obligations: PredicateObligations<'db>,
 }
